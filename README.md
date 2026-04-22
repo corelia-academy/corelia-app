@@ -13,25 +13,66 @@ The React Compiler is enabled on this template. See [this documentation](https:/
 
 Note: This will impact Vite dev & build performances.
 
-## Supabase (email/password login)
+## Environment (Firebase)
 
-This project is wired to Supabase using the React quickstart:
-[Use Supabase with React](https://supabase.com/docs/guides/getting-started/quickstarts/reactjs).
-
-- **1) Create env file**
-  - Copy `.env.example` to `.env.local`
-  - Fill in:
-    - `VITE_SUPABASE_URL`
-    - `VITE_SUPABASE_PUBLISHABLE_KEY` (preferred) or legacy anon key if your project uses it
-
-- **2) Enable Email auth**
-  - In Supabase Dashboard: Auth → Providers → Email (enable).
-
-- **3) Run**
+- **Local dev**
+  - Copy `.env.development.example` → `.env.development`
+  - Fill Firebase web config vars (`VITE_FIREBASE_*`)
+  - Run:
 
 ```bash
 pnpm dev
 ```
+
+- **Staging build**
+  - Copy `.env.staging.example` → `.env.staging`
+  - Build with staging mode:
+
+```bash
+pnpm build:staging
+```
+
+## Deploy (dev / staging / production)
+
+This repo is set up to deploy to 3 Firebase projects via GitHub Actions:
+
+- **develop** → `corelia-dev`
+- **staging** → `corelia-staging`
+- **main** → `corelia-a2e6d` (production)
+
+### 1) Firebase projects (one-time, manual)
+
+Create (if not already) and enable **Auth / Firestore / Storage / Hosting / Functions**:
+
+- `corelia-dev`
+- `corelia-staging`
+- `corelia-a2e6d` (prod)
+
+### 2) GitHub Environments & Secrets (required)
+
+Create 3 environments in GitHub → Settings → Environments: `development`, `staging`, `production`.
+
+**Repository secrets** (Settings → Secrets and variables → Actions):
+
+- `DEV_FIREBASE_SERVICE_ACCOUNT`
+- `STAGING_FIREBASE_SERVICE_ACCOUNT`
+- `PROD_FIREBASE_SERVICE_ACCOUNT`
+
+> Service account JSON: Firebase Console → Project Settings → Service accounts → Generate new private key.
+
+**Environment secrets** — add inside each environment (same name, different values per env):
+
+- `FIREBASE_API_KEY`
+- `FIREBASE_AUTH_DOMAIN`
+- `FIREBASE_STORAGE_BUCKET`
+- `FIREBASE_MESSAGING_SENDER_ID`
+- `FIREBASE_APP_ID`
+- Optional: `OCID_CLIENT_ID`, `OCID_REDIRECT_URI`, `YOUTUBE_API_KEY`, `BETA_FEEDBACK_FORM_URL`
+
+### 3) Production gate (recommended)
+
+In GitHub → Settings → Environments, create environment `production` and enable **Required reviewers**.
+The production workflow uses `environment: production` and will wait for approval.
 
 ## Expanding the ESLint configuration
 

@@ -1,0 +1,77 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# ─── PRODUCTION GATE ────────────────────────────────────────────────────────
+#
+# `environment: name: production` liên kết job này với GitHub Environment
+# "production". Environment đã được tạo tại Settings → Environments.
+#
+# "Required reviewers" (approval gate) KHÔNG khả dụng trên GitHub Free
+# với private repo — chỉ có trên GitHub Pro / Team / Enterprise.
+#
+# Thay thế phù hợp cho tài khoản cá nhân (Free):
+# → Dùng Branch Protection Rule trên nhánh `main`:
+#   Settings → Branches → Add branch ruleset → chọn nhánh `main`
+#   Bật "Require a pull request before merging" + "Required approvals: 1"
+#   → Không ai push thẳng lên main được, mọi thay đổi phải qua PR review.
+#   → Khi PR được merge vào main, workflow này tự chạy và deploy prod.
+#
+# ────────────────────────────────────────────────────────────────────────────
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    permissions:
+      contents: read
+      checks: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install deps (root)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (prod)
+        run: pnpm build
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: corelia-a2e6d
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          VITE_OCID_CLIENT_ID: ${{ secrets.OCID_CLIENT_ID }}
+          VITE_OCID_REDIRECT_URI: ${{ secrets.OCID_REDIRECT_URI }}
+          VITE_YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          VITE_BETA_FEEDBACK_FORM_URL: ${{ secrets.BETA_FEEDBACK_FORM_URL }}
+
+      - name: Auth Firebase (service account)
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.PROD_FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          node -e "require('fs').writeFileSync('firebase-service-account.json', process.env.FIREBASE_SERVICE_ACCOUNT_JSON)"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$PWD/firebase-service-account.json" >> "$GITHUB_ENV"
+
+      - name: Deploy (hosting + rules + indexes + storage)
+        run: pnpm dlx firebase-tools deploy --project prod --only hosting,firestore:rules,firestore:indexes,storage
+
+      - name: Install deps (functions)
+        run: pnpm -C functions install --frozen-lockfile
+
+      - name: Deploy (functions)
+        run: pnpm dlx firebase-tools deploy --project prod --only functions
