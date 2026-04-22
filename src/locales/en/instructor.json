@@ -1,0 +1,383 @@
+{
+  "sidebar": {
+    "title": "Corelia Instructor",
+    "subtitle": "Manage courses, profile, and operations in one place.",
+    "createCourse": "Create course",
+    "courseList": "Course list",
+    "offlineClasses": "Offline classes",
+    "profile": "Instructor profile",
+    "contests": "Contests",
+    "contracts": "Contracts",
+    "invoices": "Invoices",
+    "payments": "Payments"
+  },
+  "finance": {
+    "externalOnlyHint": "This section is only available to external partner instructors."
+  },
+  "partnerFinance": {
+    "common": {
+      "notAvailable": "N/A",
+      "updated": "Updated"
+    },
+    "contracts": {
+      "stats": {
+        "totalDocuments": "Total documents",
+        "source": "Source",
+        "sourceValue": "Ops / Admin",
+        "status": "Status",
+        "statusValue": "Document tracking"
+      },
+      "panel": {
+        "title": "Contracts",
+        "description": "Contract documents shared by ops or admins for partner instructors.",
+        "countLabel": "{{count}} documents"
+      },
+      "list": {
+        "empty": "No contract documents yet.",
+        "meta": "Contract documents have been shared with you."
+      }
+    },
+    "invoices": {
+      "stats": {
+        "currentMonth": "Month",
+        "total": "Invoices",
+        "status": "Status",
+        "statusValue": "Periodic reconciliation"
+      },
+      "panel": {
+        "title": "Invoices",
+        "description": "Filter by month to view shared invoice or reconciliation files.",
+        "countLabel": "{{count}} documents"
+      },
+      "list": {
+        "empty": "No invoices for the selected month.",
+        "invoiceMonthPrefix": "Month {{month}}",
+        "noInvoiceMonth": "No invoice month attached"
+      }
+    },
+    "payments": {
+      "stats": {
+        "bankAccount": "Bank account",
+        "accountHolder": "Account holder",
+        "payoutGuide": "Payout guidance"
+      },
+      "panel": {
+        "title": "Payments",
+        "description": "Bank transfer info and reconciliation notes shared by ops/admin per the contract.",
+        "ready": "Ready for payout",
+        "missingInfo": "Missing information"
+      },
+      "sections": {
+        "transferInfo": "Transfer details",
+        "extraNotes": "Extra notes"
+      },
+      "fields": {
+        "bankName": "Bank:",
+        "accountNumber": "Account number:",
+        "accountHolder": "Account holder:",
+        "transferNote": "Transfer note:"
+      },
+      "emptyExtraNotes": "No additional payment notes.",
+      "empty": "No payment information available."
+    }
+  },
+  "layout": {
+    "crumbs": {
+      "home": "Home",
+      "teaching": "Teaching",
+      "createCourse": "Create course",
+      "offlineClasses": "Offline classes",
+      "createCohort": "Create cohort",
+      "cohortWorkspace": "Cohort workspace",
+      "contests": "Contests",
+      "createContest": "Create contest",
+      "contestWorkspace": "Contest workspace",
+      "contracts": "Contracts",
+      "invoices": "Invoices",
+      "payments": "Payments",
+      "profile": "Instructor profile",
+      "course": "Course",
+      "edit": "Edit"
+    },
+    "shell": {
+      "newCourse": {
+        "title": "Create a new course",
+        "description": "Set up content, pricing, and the learning journey from scratch."
+      },
+      "offlineList": {
+        "title": "Offline classes",
+        "description": "Coordinate offline cohorts, schedules, locations, and recordings per session."
+      },
+      "newCohort": {
+        "title": "Create a new cohort",
+        "description": "Create an offline cohort with a schedule, Google Meet, and learner roadmap."
+      },
+      "cohortWorkspace": {
+        "title": "Cohort workspace",
+        "description": "Manage session schedules, roster, and learner roadmaps in one place."
+      },
+      "contestsList": {
+        "title": "Contests",
+        "description": "Manage hackathons and contests as part of teaching operations."
+      },
+      "newContest": {
+        "title": "Create a new contest",
+        "description": "Set up an activity, timeline, and operational flow in the workspace."
+      },
+      "contestWorkspace": {
+        "title": "Contest workspace",
+        "description": "Coordinate applications, judges, submissions, and results in one place."
+      },
+      "profile": {
+        "title": "Instructor profile",
+        "description": "Keep your professional profile and collaboration info clear and up to date."
+      },
+      "contracts": {
+        "title": "Partner contracts",
+        "description": "Track collaboration documents and the latest updates."
+      },
+      "invoices": {
+        "title": "Invoices",
+        "description": "Centralize invoices for reconciliation and ops workflows."
+      },
+      "payments": {
+        "title": "Payments",
+        "description": "Check payout info and coordination history with ops."
+      },
+      "editCourse": {
+        "titleFallback": "Edit course",
+        "description": "Adjust content, learners, and business configuration in one place."
+      },
+      "courseList": {
+        "title": "Courses",
+        "description": "Track all training products, publish status, and next steps."
+      }
+    },
+    "hero": {
+      "eyebrow": "Teaching area"
+    },
+    "badges": {
+      "externalPartner": "External partner",
+      "coreliaInstructor": "Corelia instructor",
+      "adminMode": "Admin mode",
+      "teachingMode": "Teaching tasks"
+    }
+  },
+  "courseNew": {
+    "errors": {
+      "missingProfileName": "Please update your full name in Account.",
+      "missingTitle": "Enter a course title.",
+      "invalidPaidPrice": "Enter a valid course price for paid-upfront courses.",
+      "invalidCertificateFee": "Enter a valid certificate fee for the free-with-certificate model.",
+      "invalidRevenueShare": "Platform revenue share must be between 0 and 100%.",
+      "createFailed": "Failed to create course"
+    },
+    "toasts": {
+      "created": "Course created successfully. You can continue editing."
+    },
+    "labels": {
+      "draft": "Draft",
+      "originExternal": "External partner",
+      "originCorelia": "Corelia instructor",
+      "title": "Course title",
+      "shortDescription": "Short description",
+      "description": "Description",
+      "thumbnail": "Course cover image",
+      "ownerType": "Revenue ownership type",
+      "platformRevenueSharePercent": "Platform revenue share (%)",
+      "accessModel": "Course type",
+      "priceVnd": "Course price (VND)",
+      "certificateFeeVnd": "Certificate / assignment fee (VND)",
+      "level": "Level"
+    },
+    "placeholders": {
+      "title": "e.g. React from beginner to advanced",
+      "shortDescription": "One-line description (optional)",
+      "description": "Full course description...",
+      "priceVnd": "e.g. 499,000",
+      "certificateFeeVnd": "e.g. 199,000"
+    },
+    "actions": {
+      "uploadThumb": "Upload cover image",
+      "uploadingThumb": "Uploading...",
+      "create": "Create course",
+      "creating": "Creating..."
+    }
+  },
+  "courseListPage": {
+    "errors": {
+      "loadFailed": "Failed to load list"
+    },
+    "stats": {
+      "total": "Total courses",
+      "published": "Published",
+      "drafts": "Drafts",
+      "paidUpfront": "Paid upfront",
+      "free": "Free courses"
+    },
+    "hero": {
+      "title": "Your course catalog",
+      "description": "Quickly track publish status, revenue model, and jump into editing in one click.",
+      "create": "Create new course"
+    },
+    "empty": {
+      "title": "No courses in this workspace yet.",
+      "createFirst": "Create your first course"
+    },
+    "coursePills": {
+      "published": "Published",
+      "draft": "Draft"
+    },
+    "courseCards": {
+      "pricingLabel": "Pricing model",
+      "certificateFeePrefix": "Certificate fee {{price}}",
+      "free": "Free",
+      "instructorLabel": "Instructor",
+      "you": "You"
+    },
+    "actions": {
+      "viewCourseTitle": "Open course page",
+      "previewDraftTitle": "Preview draft",
+      "viewCourse": "View course",
+      "preview": "Preview",
+      "edit": "Edit"
+    }
+  },
+  "courseEdit": {
+    "defaults": {
+      "lessonTitle": "Lesson"
+    },
+    "errors": {
+      "loadCourseFailed": "Failed to load course",
+      "refreshTotalFailed": "Update failed",
+      "uploadThumbnailFailed": "Failed to upload course cover image",
+      "invalidPaidPrice": "Enter a valid course price for paid-upfront courses.",
+      "invalidPromoPrice": "Promo price must be lower than the base price.",
+      "invalidPromoEndsAt": "Invalid promo end time (must be an ISO string).",
+      "invalidCertificateFee": "Enter a valid certificate fee for the free-with-certificate model.",
+      "invalidRevenueShare": "Platform revenue share must be between 0 and 100%.",
+      "updateFailed": "Update failed",
+      "processFailed": "Action failed",
+      "uploadCertTemplateFailed": "Failed to upload certificate template",
+      "uploadPartnerDocsFailed": "Failed to upload partner documents",
+      "addSectionFailed": "Failed to add section",
+      "addLessonFailed": "Failed to add lesson",
+      "updatePreviewFailed": "Failed to update preview lesson",
+      "deleteSectionFailed": "Failed to delete section",
+      "deleteLessonFailed": "Failed to delete lesson",
+      "deleteCourseFailed": "Failed to delete course",
+      "reorderLessonsFailed": "Unable to update lesson order",
+      "createDiscountFailed": "Unable to create discount code."
+    },
+    "toasts": {
+      "totalDurationRefreshed": "Total duration updated. The course list page should now display correctly.",
+      "saved": "Changes saved.",
+      "assignmentApproved": "Submission approved. A certificate will be issued when the learner reaches 100% completion.",
+      "assignmentRejected": "Submission rejected.",
+      "certTemplateUploaded": "Certificate template uploaded.",
+      "partnerContractUploaded": "Partner contract document uploaded.",
+      "partnerInvoiceUploaded": "Partner invoice document uploaded.",
+      "discountCreated": "Discount code created."
+    },
+    "confirm": {
+      "deleteSection": "Delete this section and all lessons inside it?",
+      "deleteLesson": "Delete this lesson?",
+      "deleteCourse": "Delete the entire course and all content? This cannot be undone."
+    },
+    "labels": {
+      "published": "Published",
+      "draft": "Draft",
+      "uploadThumb": "Upload cover image",
+      "uploadingThumb": "Uploading...",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "saveInfo": "General info saved.",
+      "savePricing": "Pricing & payment saved.",
+      "saveAssignment": "Assignment settings saved.",
+      "saveCertificate": "Certificate settings saved.",
+      "reload": "Reload",
+      "loading": "Loading...",
+      "updating": "Updating…",
+      "updateTotalDuration": "Refresh total duration",
+      "creatingDiscount": "Creating...",
+      "createDiscount": "Create code",
+      "add": "Add",
+      "adding": "Adding…",
+      "addSection": "Add section",
+      "addingSection": "Adding...",
+      "uploadTemplate": "Upload template",
+      "uploadingTemplate": "Uploading..."
+    },
+    "certificate": {
+      "saveNamePosition": "Save name position",
+      "templateLabel": "Certificate template",
+      "uploadTemplate": "Upload template",
+      "uploadingTemplate": "Uploading...",
+      "nameXLabel": "Learner name position (% from left)",
+      "nameYLabel": "Learner name position (% from top)",
+      "afterUploadHintPrefix": "After uploading, adjust the two \"Name position\" fields (% from left / % from",
+      "fileFormatHint": "Format: PNG or JPG."
+    },
+    "form": {
+      "titleLabel": "Course title",
+      "shortDescriptionLabel": "Short description",
+      "shortDescriptionPlaceholder": "One-line description (optional)",
+      "descriptionLabel": "Description",
+      "thumbnailLabel": "Course cover image",
+      "platformRevenueShareLabel": "Platform revenue share (%)",
+      "partnerTransferPlaceholder": "e.g. Bank, account number, account holder, transfer note per contract...",
+      "partnerContractDocsLabel": "Partner contract documents",
+      "partnerInvoiceDocsLabel": "Invoices / reconciliation documents",
+      "levelLabel": "Level"
+    },
+    "pricing": {
+      "accessModelLabel": "Course type",
+      "priceVndLabel": "Full course price (VND)",
+      "promoPriceVndLabel": "Promo price (VND)",
+      "promoPricePlaceholder": "Leave blank if no promotion",
+      "promoEndsAtLabel": "Promo end time (ISO)",
+      "updateTotalDurationLabelPrefix": "Paid-upfront course: enable \"Free preview\" for lessons"
+    },
+    "discounts": {
+      "createTitle": "Create a discount code (percent or fixed amount) with limits",
+      "activeOn": "On",
+      "activeOff": "Off"
+    },
+    "content": {
+      "lessonTitlePlaceholder": "Lesson title (optional)",
+      "lessonMinutesPlaceholder": "Duration (minutes) — if YouTube duration can't be fetched, enter it here",
+      "sectionTitlePlaceholder": "Section title"
+    },
+    "assignments": {
+      "titleLabel": "Assignment title",
+      "titlePlaceholder": "e.g. Final project (leave blank = not required)",
+      "descriptionLabel": "Description / requirements",
+      "descriptionPlaceholder": "Describe what learners need to submit...",
+      "instructionsLabel": "Instructions (optional)",
+      "instructionsPlaceholder": "Additional guidance for learners...",
+      "reviewApprove": "Approve"
+    },
+    "publishing": {
+      "publishedHint": "Published (visible on the course page)"
+    },
+    "danger": {
+      "deleteCourseTitle": "Delete course?"
+    },
+    "stats": {
+      "sections": "Sections",
+      "lessons": "Lessons",
+      "students": "Students",
+      "submissions": "Submissions"
+    },
+    "tooltips": {
+      "dragReorder": "Drag to reorder",
+      "moveUp": "Move up",
+      "moveDown": "Move down"
+    },
+    "access": {
+      "noPermission": "You don't have permission to edit this course.",
+      "backToTeaching": "Teaching"
+    }
+  }
+}
+

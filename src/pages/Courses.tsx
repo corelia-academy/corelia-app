@@ -24,37 +24,39 @@ import {
   getCourseOwnerTypeLabel,
 } from "@/types/courses";
 import type { Course, CourseLevel, CourseOwnerType } from "@/types/courses";
+import { sortLocale } from "@/lib/intl";
+import { useTranslation } from "react-i18next";
 
 type PricingFilter = "all" | "free" | "paid" | "certificate";
 type OwnerFilter = "all" | CourseOwnerType;
 type SortMode = "featured" | "recent" | "duration_desc" | "title_asc";
 
-const LEVEL_OPTIONS: Array<{ value: "all" | CourseLevel; label: string }> = [
-  { value: "all", label: "Mọi cấp độ" },
-  { value: "beginner", label: "Cơ bản" },
-  { value: "intermediate", label: "Trung cấp" },
-  { value: "advanced", label: "Nâng cao" },
-];
+const LEVEL_OPTIONS = [
+  { value: "all" as const, labelKey: "filters.level.all" as const },
+  { value: "beginner" as const, labelKey: "filters.level.beginner" as const },
+  { value: "intermediate" as const, labelKey: "filters.level.intermediate" as const },
+  { value: "advanced" as const, labelKey: "filters.level.advanced" as const },
+] as const satisfies ReadonlyArray<{ value: "all" | CourseLevel; labelKey: string }>;
 
-const PRICING_OPTIONS: Array<{ value: PricingFilter; label: string }> = [
-  { value: "all", label: "Mọi mức phí" },
-  { value: "free", label: "Miễn phí" },
-  { value: "paid", label: "Trả phí trước" },
-  { value: "certificate", label: "Học miễn phí, trả phí chứng nhận" },
-];
+const PRICING_OPTIONS = [
+  { value: "all" as const, labelKey: "filters.pricing.all" as const },
+  { value: "free" as const, labelKey: "filters.pricing.free" as const },
+  { value: "paid" as const, labelKey: "filters.pricing.paid" as const },
+  { value: "certificate" as const, labelKey: "filters.pricing.certificate" as const },
+] as const satisfies ReadonlyArray<{ value: PricingFilter; labelKey: string }>;
 
-const OWNER_OPTIONS: Array<{ value: OwnerFilter; label: string }> = [
-  { value: "all", label: "Mọi đơn vị" },
-  { value: "corelia", label: "Corelia" },
-  { value: "external_partner", label: "Giảng viên hợp tác" },
-];
+const OWNER_OPTIONS = [
+  { value: "all" as const, labelKey: "filters.owner.all" as const },
+  { value: "corelia" as const, labelKey: "filters.owner.corelia" as const },
+  { value: "external_partner" as const, labelKey: "filters.owner.external_partner" as const },
+] as const satisfies ReadonlyArray<{ value: OwnerFilter; labelKey: string }>;
 
-const SORT_OPTIONS: Array<{ value: SortMode; label: string }> = [
-  { value: "featured", label: "Ưu tiên nổi bật" },
-  { value: "recent", label: "Mới cập nhật" },
-  { value: "duration_desc", label: "Thời lượng dài nhất" },
-  { value: "title_asc", label: "Tên A-Z" },
-];
+const SORT_OPTIONS = [
+  { value: "featured" as const, labelKey: "filters.sort.featured" as const },
+  { value: "recent" as const, labelKey: "filters.sort.recent" as const },
+  { value: "duration_desc" as const, labelKey: "filters.sort.duration_desc" as const },
+  { value: "title_asc" as const, labelKey: "filters.sort.title_asc" as const },
+] as const satisfies ReadonlyArray<{ value: SortMode; labelKey: string }>;
 
 function normalizeText(value: string | null | undefined): string {
   return (value ?? "").trim().toLowerCase();
@@ -68,17 +70,19 @@ function matchesPricing(course: Course, filter: PricingFilter): boolean {
   return accessModel === "free_with_paid_certificate";
 }
 
-function getPrimaryPriceLabel(course: Course): string {
+type Translate = (key: string, options?: { price?: string; count?: number }) => string;
+
+function getPrimaryPriceLabel(course: Course, t: Translate): string {
   const accessModel = course.access_model ?? "free";
   if (accessModel === "paid_upfront") {
     const promo = Number(course.promo_price_vnd ?? 0);
-    if (promo > 0) return `Từ ${formatVndPrice(promo)}`;
+    if (promo > 0) return t("pricing.fromPrice", { price: formatVndPrice(promo) });
     return formatVndPrice(course.price_vnd);
   }
   if (accessModel === "free_with_paid_certificate") {
-    return `Chứng nhận ${formatVndPrice(course.certificate_fee_vnd)}`;
+    return t("pricing.certificateFee", { price: formatVndPrice(course.certificate_fee_vnd) });
   }
-  return "Học miễn phí";
+  return t("pricing.freeLearning");
 }
 
 function getFeaturedScore(course: Course): number {
@@ -106,7 +110,7 @@ function sortCourses(list: Course[], sort: SortMode): Course[] {
     );
   }
   if (sort === "title_asc") {
-    return next.sort((a, b) => a.title.localeCompare(b.title, "vi"));
+    return next.sort((a, b) => a.title.localeCompare(b.title, sortLocale()));
   }
   return next.sort((a, b) => {
     const scoreDiff = getFeaturedScore(b) - getFeaturedScore(a);
@@ -141,6 +145,8 @@ function Pill({
 }
 
 export default function Courses() {
+  const { t } = useTranslation("courses");
+  const translate: Translate = (key, options) => String(t(key as never, options as never));
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -161,7 +167,7 @@ export default function Courses() {
       })
       .catch((e) => {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Lỗi tải khoá học");
+          setError(e instanceof Error ? e.message : t("catalog.loadErrorFallback"));
         }
       })
       .finally(() => {
@@ -171,7 +177,7 @@ export default function Courses() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const filteredOnlineCourses = useMemo(() => {
     const normalizedQuery = normalizeText(query);
@@ -225,7 +231,7 @@ export default function Courses() {
         <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-lg border border-border-subtle bg-card p-8 text-center shadow-card">
           <Spinner className="size-8 animate-spin text-muted-foreground" />
           <p className="mt-4 text-[15px] text-muted-foreground">
-            Đang tải danh sách chương trình học...
+            {t("catalog.loading")}
           </p>
         </div>
       </div>
@@ -237,7 +243,7 @@ export default function Courses() {
       <div className="container-app py-6 sm:py-8">
         <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-5 shadow-card">
           <p className="text-[15px] font-medium text-destructive">
-            Không thể tải danh sách khoá học.
+            {t("catalog.loadErrorTitle")}
           </p>
           <p className="mt-1.5 text-sm text-destructive/90">{error}</p>
           <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
@@ -251,11 +257,11 @@ export default function Courses() {
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-xl font-medium tracking-tight text-foreground">
-            Khoá học
+            {t("catalog.title")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {filteredOnlineCourses.length} kết quả
-            {hasActiveFilters ? ` · ${activeFilterCount} bộ lọc` : null}
+            {t("catalog.results", { count: filteredOnlineCourses.length })}
+            {hasActiveFilters ? t("catalog.activeFilters", { count: activeFilterCount }) : null}
           </p>
         </div>
 
@@ -267,7 +273,7 @@ export default function Courses() {
             className="h-8 rounded-full px-3 text-xs"
             onClick={resetFilters}
           >
-            Xoá bộ lọc
+            {t("catalog.clearFilters")}
           </Button>
         ) : null}
       </div>
@@ -279,13 +285,15 @@ export default function Courses() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Tìm theo tên khoá, giảng viên..."
+              placeholder={t("catalog.searchPlaceholder")}
               className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
           </div>
 
           <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline" size="sm">Sắp xếp</Button>} />
+            <DropdownMenuTrigger
+              render={<Button variant="outline" size="sm">{t("catalog.sort")}</Button>}
+            />
             <DropdownMenuContent align="end" className="w-56">
               {SORT_OPTIONS.map((opt) => (
                 <DropdownMenuItem
@@ -293,7 +301,7 @@ export default function Courses() {
                   onClick={() => setSortMode(opt.value)}
                 >
                   <span className={opt.value === sortMode ? "font-medium" : ""}>
-                    {opt.label}
+                    {t(opt.labelKey)}
                   </span>
                 </DropdownMenuItem>
               ))}
@@ -309,7 +317,7 @@ export default function Courses() {
                 active={levelFilter === opt.value}
                 onClick={() => setLevelFilter(opt.value)}
               >
-                {opt.label}
+                {t(opt.labelKey)}
               </Pill>
             ))}
           </div>
@@ -320,7 +328,7 @@ export default function Courses() {
                 active={pricingFilter === opt.value}
                 onClick={() => setPricingFilter(opt.value)}
               >
-                {opt.label}
+                {t(opt.labelKey)}
               </Pill>
             ))}
           </div>
@@ -331,7 +339,7 @@ export default function Courses() {
                 active={ownerFilter === opt.value}
                 onClick={() => setOwnerFilter(opt.value)}
               >
-                {opt.label}
+                {t(opt.labelKey)}
               </Pill>
             ))}
           </div>
@@ -342,11 +350,10 @@ export default function Courses() {
           <div className="mt-5 rounded-lg border border-border-subtle bg-card p-10 text-center shadow-card">
             <BookOpen className="mx-auto size-12 text-muted-foreground" />
             <p className="mt-4 text-[15px] font-medium text-foreground">
-              Chưa có khoá online nào khớp bộ lọc hiện tại.
+              {t("catalog.emptyTitle")}
             </p>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              Thử bỏ bớt bộ lọc hoặc tìm theo tên giảng viên, lĩnh vực và hình
-              thức học.
+              {t("catalog.emptyDescription")}
             </p>
           </div>
         ) : (
@@ -388,7 +395,7 @@ export default function Courses() {
 
                   <div className="mt-2 flex items-center justify-between gap-2">
                     <div className="text-sm font-semibold text-foreground">
-                      {getPrimaryPriceLabel(course)}
+                      {getPrimaryPriceLabel(course, translate)}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {getCourseOwnerTypeLabel(course.owner_type)}

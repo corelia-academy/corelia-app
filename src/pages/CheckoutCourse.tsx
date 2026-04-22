@@ -5,10 +5,12 @@ import { getCourse } from "@/lib/courses";
 import { createSePayCheckout, submitSePayCheckoutForm } from "@/lib/payments";
 import type { Course } from "@/types/courses";
 import { formatVndPrice } from "@/types/courses";
+import { intlLocale } from "@/lib/intl";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 function computeDisplayPrice(course: Course) {
   const base = Number(course.price_vnd || 0);
@@ -29,6 +31,7 @@ function computeDisplayPrice(course: Course) {
 }
 
 export default function CheckoutCourse() {
+  const { t } = useTranslation("courses");
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
@@ -40,7 +43,7 @@ export default function CheckoutCourse() {
 
   useEffect(() => {
     if (!courseId) {
-      setError("Thiếu mã khoá học");
+      setError(t("detail.checkout.missingCourseId"));
       setLoading(false);
       return;
     }
@@ -53,7 +56,7 @@ export default function CheckoutCourse() {
       })
       .catch((e) => {
         if (!cancelled)
-          setError(e instanceof Error ? e.message : "Không tải được khoá học");
+          setError(e instanceof Error ? e.message : t("detail.checkout.loadCourseFailed"));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -61,7 +64,7 @@ export default function CheckoutCourse() {
     return () => {
       cancelled = true;
     };
-  }, [courseId]);
+  }, [courseId, t]);
 
   const pricing = useMemo(() => {
     if (!course) return null;
@@ -77,12 +80,12 @@ export default function CheckoutCourse() {
   const handleContinue = async () => {
     if (!courseId || !course || !pricing) return;
     if (!profile?.id) {
-      toast.error("Bạn cần đăng nhập để thanh toán.");
+      toast.error(t("detail.checkout.mustLoginToPay"));
       navigate("/login", { replace: true });
       return;
     }
     if (!canPay) {
-      toast.error("Khoá học chưa cấu hình thanh toán hợp lệ.");
+      toast.error(t("detail.checkout.invalidPaymentConfig"));
       return;
     }
     setSubmitting(true);
@@ -113,7 +116,7 @@ export default function CheckoutCourse() {
       );
       submitSePayCheckoutForm(checkout);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Không tạo được thanh toán.");
+      toast.error(e instanceof Error ? e.message : t("detail.checkout.createPaymentFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -123,7 +126,7 @@ export default function CheckoutCourse() {
     return (
       <div className="mx-auto w-full max-w-[960px] px-4 py-8">
         <div className="rounded-lg border border-border-subtle bg-card p-6 text-sm text-muted-foreground">
-          Đang tải thông tin thanh toán...
+          {t("detail.checkout.loadingPaymentInfo")}
         </div>
       </div>
     );
@@ -133,13 +136,13 @@ export default function CheckoutCourse() {
     return (
       <div className="mx-auto w-full max-w-[960px] px-4 py-8">
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
-          {error || "Không tìm thấy khoá học"}
+          {error || t("detail.checkout.missingCourseFallback")}
         </div>
         <Link
           to="/courses"
           className="mt-4 inline-flex items-center gap-2 text-foreground hover:underline"
         >
-          <ArrowLeft className="size-4" /> Quay lại Khoá học
+          <ArrowLeft className="size-4" /> {t("detail.checkout.backToCourses")}
         </Link>
       </div>
     );
@@ -152,29 +155,29 @@ export default function CheckoutCourse() {
           to={`/courses/${courseId}`}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="size-4" /> Quay lại khoá học
+          <ArrowLeft className="size-4" /> {t("detail.checkout.backToCourse")}
         </Link>
         <h1 className="mt-3 text-2xl font-normal tracking-tight text-foreground">
-          Xác nhận thanh toán
+          {t("detail.checkout.title")}
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Kiểm tra thông tin trước khi chuyển sang cổng SePay (quét mã chuyển khoản).
+          {t("detail.checkout.subtitle")}
         </p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
         <section className="rounded-lg border border-border-subtle bg-card p-6">
-          <h2 className="text-sm font-medium text-foreground">Khoá học</h2>
+          <h2 className="text-sm font-medium text-foreground">{t("detail.checkout.courseSectionTitle")}</h2>
           <p className="mt-2 text-base text-foreground">{course.title}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Hình thức: Trả phí trước để mở toàn bộ
+            {t("detail.checkout.paymentMethodLabel")}: {t("accessModel.paid_upfront")}
           </p>
 
           <div className="mt-4 rounded-lg border border-border-subtle bg-muted/20 p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase text-muted-foreground">
-                  Số tiền thanh toán
+                  {t("detail.checkout.paymentAmountLabel")}
                 </p>
                 {pricing?.promoActive ? (
                   <>
@@ -186,7 +189,13 @@ export default function CheckoutCourse() {
                         {formatVndPrice(pricing.base)}
                       </span>
                       {pricing.promoEndsAtMs ? (
-                        <> · Kết thúc: {new Date(pricing.promoEndsAtMs).toLocaleString("vi-VN")}</>
+                        <>
+                          {" "}
+                          ·{" "}
+                          {t("detail.checkout.promoEndsPrefix", {
+                            date: new Date(pricing.promoEndsAtMs).toLocaleString(intlLocale()),
+                          })}
+                        </>
                       ) : null}
                     </div>
                   </>
@@ -197,32 +206,34 @@ export default function CheckoutCourse() {
                 )}
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <ShieldCheck className="size-4" /> SePay QR
+                <ShieldCheck className="size-4" /> {t("detail.checkout.sepayQr")}
               </div>
             </div>
 
             <div className="mt-4">
               <label className="block text-xs font-medium text-muted-foreground mb-1">
-                Mã giảm giá (tuỳ chọn)
+                {t("detail.checkout.discount.label")}
               </label>
               <Input
                 value={discountCode}
                 onChange={(e) => setDiscountCode(e.target.value)}
-                placeholder="VD: SPRING10"
+                placeholder={t("detail.checkout.discount.placeholder")}
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Mã hợp lệ sẽ được áp dụng khi tạo phiên thanh toán.
+                {t("detail.checkout.discount.hint")}
               </p>
             </div>
           </div>
         </section>
 
         <aside className="rounded-lg border border-border-subtle bg-card p-6">
-          <h2 className="text-sm font-medium text-foreground">Thanh toán</h2>
+          <h2 className="text-sm font-medium text-foreground">{t("detail.checkout.paymentAsideTitle")}</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Bạn sẽ được chuyển sang SePay để{" "}
-            <span className="font-medium text-foreground">quét QR chuyển khoản</span>.
-            Hiện tại hệ thống chỉ hỗ trợ hình thức này.
+            {t("detail.checkout.paymentAsideBodyPrefix")}{" "}
+            <span className="font-medium text-foreground">
+              {t("detail.checkout.paymentAsideBodyEmphasis")}
+            </span>
+            . {t("detail.checkout.paymentAsideBodySuffix")}
           </p>
 
           <Button
@@ -231,17 +242,17 @@ export default function CheckoutCourse() {
             disabled={submitting || !canPay || !user}
             onClick={() => void handleContinue()}
           >
-            {submitting ? "Đang chuyển..." : "Tiếp tục sang SePay"}
+            {submitting ? t("detail.checkout.redirecting") : t("detail.checkout.continueToSePay")}
           </Button>
 
           {!user ? (
             <p className="mt-3 text-xs text-destructive">
-              Bạn cần đăng nhập để thanh toán.
+              {t("detail.checkout.mustLoginInline")}
             </p>
           ) : null}
 
           <p className="mt-3 text-xs text-muted-foreground">
-            Sau khi thanh toán, bạn sẽ được chuyển về trang khoá học để hệ thống xác nhận.
+            {t("detail.checkout.postPayHint")}
           </p>
         </aside>
       </div>

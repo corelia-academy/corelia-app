@@ -1,0 +1,311 @@
+{
+  "layout": {
+    "sidebar": {
+      "brandTitle": "Corelia Admin",
+      "brandSubtitle": "Phân quyền, giảng viên và các tác vụ điều hành hệ thống hằng ngày.",
+      "primaryNavigation": "Điều hướng chính",
+      "users": { "label": "Tài khoản", "tooltip": "Tài khoản" },
+      "dashboard": { "label": "Dashboard" },
+      "instructors": { "label": "Giảng viên", "tooltip": "Giảng viên" },
+      "offlineClasses": { "label": "Lớp học trực tiếp", "tooltip": "Lớp học trực tiếp" },
+      "contests": { "label": "Cuộc thi", "tooltip": "Cuộc thi" }
+    },
+    "pageMeta": {
+      "users": {
+        "title": "Quản lý tài khoản",
+        "description": "Kiểm soát vai trò và sức khoẻ truy cập của toàn bộ người dùng."
+      },
+      "dashboard": {
+        "title": "Cấu hình dashboard",
+        "description": "Ghim các chương trình quan trọng để xuất hiện đúng vị trí trên Home của học viên."
+      },
+      "instructors": {
+        "title": "Quản lý giảng viên",
+        "description": "Theo dõi hồ sơ, loại giảng viên và dữ liệu hợp tác đối tác."
+      },
+      "instructorDetail": {
+        "title": "Chi tiết giảng viên",
+        "description": "Cập nhật hồ sơ, hợp đồng, hoá đơn và thông tin thanh toán."
+      }
+    },
+    "hero": {
+      "eyebrow": "Khu vực quản trị",
+      "pills": {
+        "sensitive": "Quyền nhạy cảm",
+        "manualAudit": "Audit thủ công"
+      }
+    }
+  },
+  "dashboard": {
+    "errors": {
+      "loadFailed": "Không thể tải cấu hình dashboard.",
+      "saveFailed": "Không thể lưu cấu hình dashboard."
+    },
+    "toasts": {
+      "saved": "Đã lưu cấu hình ghim chương trình lên dashboard."
+    },
+    "hero": {
+      "eyebrow": "Ghim chương trình trên dashboard",
+      "title": "Chọn tối đa 3 chương trình để đẩy lên Home của học viên",
+      "description": "Dashboard của học viên vẫn ưu tiên dữ liệu cá nhân. Khu vực này chỉ dành cho những chương trình mà admin hoặc học vụ muốn nhấn mạnh trong một giai đoạn nhất định."
+    },
+    "actions": {
+      "save": "Lưu cấu hình",
+      "saving": "Đang lưu..."
+    },
+    "slot": {
+      "label": "Slot {{index}}",
+      "activeOn": "Đang bật",
+      "activeOff": "Đang tắt",
+      "show": "Hiển thị"
+    },
+    "programType": {
+      "course": "Khoá học online",
+      "contest": "Contest",
+      "offlineCourse": "Chương trình offline"
+    },
+    "form": {
+      "programTypeLabel": "Loại chương trình",
+      "programSourceLabel": "Chương trình nguồn",
+      "programSourcePlaceholder": "Chọn chương trình",
+      "badgeLabel": "Badge tuỳ chỉnh",
+      "badgePlaceholder": "Ví dụ: Đang mở đăng ký",
+      "titleOverrideLabel": "Tiêu đề override",
+      "titleOverridePlaceholder": "Để trống nếu dùng tiêu đề gốc",
+      "descriptionOverrideLabel": "Mô tả override",
+      "descriptionOverridePlaceholder": "Để trống nếu dùng mô tả gốc",
+      "ctaLabel": "Nhãn CTA",
+      "ctaPlaceholder": "Ví dụ: Xem chương trình"
+    },
+    "hint": "Dashboard chỉ hiển thị những slot đang bật và đã chọn chương trình nguồn. Nếu bạn để trống tiêu đề hoặc mô tả override, hệ thống sẽ lấy nội dung từ chương trình gốc."
+  },
+  "instructors": {
+    "errors": {
+      "generic": "Đã có lỗi xảy ra",
+      "updateFailed": "Không thể cập nhật"
+    },
+    "toasts": {
+      "originUpdated": "Đã cập nhật loại giảng viên."
+    },
+    "stats": {
+      "total": "Tổng giảng viên",
+      "corelia": "Corelia",
+      "external": "Đối tác bên ngoài",
+      "unclassified": "Chưa phân loại",
+      "managedCourses": "Khoá học đang quản lý",
+      "loadingValue": "..."
+    },
+    "hero": {
+      "title": "Điều phối mạng lưới giảng viên",
+      "description": "Mở từng hồ sơ để xử lý hợp đồng, hoá đơn và thanh toán. Tại đây bạn có thể phân loại nhanh giảng viên nội bộ và giảng viên đối tác."
+    },
+    "filters": {
+      "searchPlaceholder": "Tìm theo tên, email, tổ chức, headline, UID…",
+      "originOptions": {
+        "all": "Tất cả",
+        "corelia": "Corelia",
+        "external": "Bên ngoài"
+      },
+      "quick": {
+        "all": "Tất cả",
+        "corelia": "Corelia",
+        "external": "Bên ngoài"
+      }
+    },
+    "actions": {
+      "refresh": "Làm mới",
+      "clearFilters": "Xoá bộ lọc"
+    },
+    "list": {
+      "syncing": "Đang đồng bộ danh sách giảng viên...",
+      "showing": "Đang hiển thị {{shown}} / {{total}} giảng viên",
+      "showingOriginSuffix": " · {{origin}}",
+      "loading": "Đang tải danh sách...",
+      "empty": "Chưa có giảng viên nào khớp bộ lọc hiện tại.",
+      "notUpdated": "Chưa cập nhật"
+    },
+    "originLabel": {
+      "corelia": "Corelia",
+      "external": "Bên ngoài",
+      "unclassified": "Chưa phân loại"
+    }
+  },
+  "instructorDetailPage": {
+    "errors": {
+      "loadFailed": "Không thể tải dữ liệu",
+      "saveFailed": "Không thể lưu cập nhật",
+      "uploadFailed": "Không thể tải tài liệu",
+      "paymentsSaveFailed": "Không thể lưu thanh toán"
+    },
+    "toasts": {
+      "detailsSaved": "Đã lưu thông tin giảng viên.",
+      "contractUploaded": "Đã tải lên hợp đồng cho giảng viên.",
+      "invoiceUploaded": "Đã tải lên hoá đơn cho giảng viên.",
+      "paymentsSaved": "Đã cập nhật thông tin thanh toán."
+    },
+    "loading": "Đang tải chi tiết giảng viên...",
+    "empty": {
+      "notFound": "Không tìm thấy giảng viên."
+    },
+    "actions": {
+      "backToList": "Quay lại danh sách",
+      "backToInstructors": "← Quay lại danh sách giảng viên"
+    },
+    "summary": {
+      "profileCompletion": "Hồ sơ hoàn thiện",
+      "contracts": "Hợp đồng",
+      "invoices": "Hoá đơn",
+      "bankAccount": "Tài khoản ngân hàng",
+      "ready": "Sẵn sàng",
+      "notAvailable": "Chưa có"
+    },
+    "hero": {
+      "eyebrow": "Instructor workspace",
+      "description": "Quản lý hồ sơ giảng viên, tài liệu đối tác và thông tin thanh toán trong một luồng vận hành rõ ràng hơn.",
+      "rolePrefix": "Role: {{role}}",
+      "partnerInstructor": "Giảng viên đối tác",
+      "coreliaInstructor": "Giảng viên Corelia"
+    },
+    "nav": {
+      "title": "Điều hướng hồ sơ",
+      "subtitle": "Chuyển nhanh giữa thông tin cá nhân, tài liệu đối tác và thanh toán."
+    },
+    "sections": {
+      "profile": "Thông tin giảng viên",
+      "partnerGroup": "Đối tác",
+      "contracts": "Hợp đồng",
+      "invoices": "Hoá đơn",
+      "payments": "Thanh toán"
+    },
+    "partnerMode": {
+      "titleOn": "Đang ở chế độ đối tác",
+      "titleOff": "Giảng viên nội bộ",
+      "descriptionOn": "Các section hợp đồng, hoá đơn và thanh toán đang được mở để quản trị đối soát.",
+      "descriptionOff": "Các section đối tác sẽ tự khoá vì hồ sơ này không dùng quy trình thanh toán đối tác."
+    },
+    "common": {
+      "dash": "—",
+      "notUpdated": "Chưa cập nhật"
+    },
+    "profile": {
+      "title": "Thông tin giảng viên",
+      "description": "Cập nhật hồ sơ công khai, vai trò hệ thống và thông tin chuyên môn.",
+      "completionLabel": "{{percent}}% hoàn thiện",
+      "fields": {
+        "role": "Vai trò",
+        "origin": "Loại giảng viên",
+        "fullName": "Họ tên",
+        "phone": "Số điện thoại",
+        "organization": "Đơn vị công tác"
+      },
+      "roleOptions": {
+        "instructor": "Giảng viên",
+        "supportStaff": "Học vụ",
+        "student": "Học viên"
+      },
+      "originOptions": {
+        "external": "Bên ngoài"
+      },
+      "actions": {
+        "save": "Lưu thay đổi",
+        "saving": "Đang lưu..."
+      }
+    },
+    "contracts": {
+      "externalOnly": "Chỉ áp dụng cho giảng viên đối tác bên ngoài.",
+      "title": "Hợp đồng",
+      "description": "Upload hợp đồng đã ký offline. File sẽ được lưu ngay và hiển thị cho giảng viên.",
+      "countLabel": "{{count}} file",
+      "noteLabel": "Ghi chú (tuỳ chọn)",
+      "notePlaceholder": "Ví dụ: HĐ CTV giảng viên, số hợp đồng, ngày ký...",
+      "uploadLabel": "Upload hợp đồng",
+      "empty": "Chưa có tài liệu hợp đồng.",
+      "noNote": "Không có ghi chú"
+    },
+    "invoices": {
+      "externalOnly": "Chỉ áp dụng cho giảng viên đối tác bên ngoài.",
+      "title": "Hoá đơn",
+      "description": "Upload hoá đơn/đối soát. File sẽ được lưu ngay và hiển thị cho giảng viên.",
+      "countLabel": "{{count}} file",
+      "invoiceMonthLabel": "Tháng hoá đơn",
+      "noteLabel": "Ghi chú (tuỳ chọn)",
+      "notePlaceholder": "Ví dụ: Kỳ đối soát, số hoá đơn...",
+      "uploadLabel": "Upload hoá đơn",
+      "empty": "Chưa có tài liệu hoá đơn.",
+      "invoiceMonthPrefix": "Tháng {{month}}"
+    },
+    "payments": {
+      "externalOnly": "Chỉ áp dụng cho giảng viên đối tác bên ngoài.",
+      "title": "Thanh toán",
+      "description": "Thông tin chuyển khoản hiển thị cho giảng viên ở mục “Thanh toán”.",
+      "stats": {
+        "profileType": "Loại hồ sơ",
+        "bankAccount": "Tài khoản ngân hàng",
+        "accountHolder": "Chủ tài khoản"
+      },
+      "profileType": {
+        "external": "Đối tác bên ngoài",
+        "internal": "Nội bộ"
+      },
+      "fields": {
+        "bankName": "Ngân hàng",
+        "bankNamePlaceholder": "Ví dụ: Vietcombank",
+        "accountNumber": "Số tài khoản",
+        "accountNumberPlaceholder": "0123456789",
+        "accountHolder": "Chủ tài khoản",
+        "accountHolderPlaceholder": "NGUYEN VAN A",
+        "transferNote": "Nội dung chuyển khoản (tuỳ chọn)",
+        "transferNotePlaceholder": "Ví dụ: Corelia - đối soát tháng 03/2026",
+        "extraNotes": "Ghi chú thêm (tuỳ chọn)",
+        "extraNotesPlaceholder": "Ví dụ: Điều kiện thanh toán, thời hạn đối soát, email nhận hoá đơn..."
+      },
+      "actions": {
+        "save": "Lưu thanh toán",
+        "saving": "Đang lưu..."
+      }
+    }
+  },
+  "users": {
+    "title": "Bảng điều phối quyền truy cập",
+    "subtitle": "Tìm nhanh theo tên, email hoặc UID và điều chỉnh vai trò ngay trong bảng để xử lý các yêu cầu vận hành thường ngày.",
+    "stats": {
+      "totalUsers": "Tổng người dùng",
+      "admin": "Admin",
+      "support": "Học vụ",
+      "instructor": "Giảng viên",
+      "student": "Học viên"
+    },
+    "searchPlaceholder": "Tìm theo tên, email, role, UID…",
+    "allRoles": "Tất cả vai trò",
+    "refresh": "Làm mới",
+    "clearFilters": "Xoá bộ lọc",
+    "loadingList": "Đang tải danh sách...",
+    "syncing": "Đang đồng bộ danh sách người dùng...",
+    "empty": "Không tìm thấy người dùng nào khớp bộ lọc hiện tại.",
+    "unknownError": "Đã có lỗi xảy ra",
+    "confirmChangeRole": "Bạn có chắc muốn đổi role thành {{role}}?",
+    "updateRoleErrorPrefix": "Lỗi khi cập nhật role: ",
+    "unknown": "Lỗi không xác định",
+    "showing": "Đang hiển thị {{shown}} / {{total}} tài khoản",
+    "showingRoleSuffix": " · {{role}}",
+    "table": {
+      "name": "Họ tên",
+      "email": "Email",
+      "role": "Vai trò",
+      "phone": "Số điện thoại",
+      "createdAt": "Ngày tạo",
+      "actions": "Thao tác"
+    },
+    "mobile": {
+      "uid": "UID: {{uid}}…",
+      "emailLabel": "Email",
+      "currentRole": "Vai trò hiện tại",
+      "phone": "Số điện thoại",
+      "createdAt": "Ngày tạo",
+      "changeRole": "Thay đổi vai trò",
+      "notUpdated": "Chưa cập nhật",
+      "dash": "—"
+    }
+  }
+}
+

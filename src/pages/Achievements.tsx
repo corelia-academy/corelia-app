@@ -29,6 +29,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/stores/authStore";
 import { getCourse, getMyEnrollments } from "@/lib/courses";
 import type { Enrollment } from "@/types/courses";
+import { intlLocale } from "@/lib/intl";
+import { useTranslation } from "react-i18next";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type ClaimStatus = "unclaimed" | "pending" | "claimed" | "failed";
@@ -73,13 +75,6 @@ type BadgeItem = {
 const CERT_PLACEHOLDER = "https://placehold.co/400x280/1e3a5f/fff?text=Ch%E1%BB%A9ng+ch%E1%BB%89";
 const BADGE_PLACEHOLDER = "https://placehold.co/160x160/2d1b4e/fff?text=Huy+hi%E1%BB%87u";
 
-const badgeCategoryLabel: Record<BadgeItem["category"], string> = {
-  learning: "Học tập",
-  streak: "Kiên trì",
-  milestone: "Cột mốc",
-  social: "Cộng đồng",
-};
-
 const BADGE_STYLES: Array<Pick<BadgeItem, "icon" | "color" | "bgColor" | "borderColor" | "category">> = [
   {
     icon: <Trophy weight="duotone" className="size-7" />,
@@ -115,7 +110,7 @@ function formatDate(value?: string | null): string {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString("vi-VN");
+  return date.toLocaleDateString(intlLocale());
 }
 
 function pickCertificateType(courseOwnerType?: string | null): CertificateItem["type"] {
@@ -126,17 +121,25 @@ function buildCredentialId(prefix: string, seed: string): string {
   return `${prefix}-${seed.slice(0, 8).toUpperCase()}`;
 }
 
-function buildCourseCertificates(enrollments: Enrollment[], courseMap: Map<string, Awaited<ReturnType<typeof getCourse>>>): CertificateItem[] {
+function buildCourseCertificates(
+  enrollments: Enrollment[],
+  courseMap: Map<string, Awaited<ReturnType<typeof getCourse>>>,
+  labels: {
+    courseCompletionTitle: string;
+    fallbackCourseName: string;
+    fallbackInstructorName: string;
+  },
+): CertificateItem[] {
   return enrollments
     .filter((item) => !!item.certificate_issued_at)
     .map((item) => {
       const course = courseMap.get(item.course_id);
       return {
         id: `course-cert-${item.id}`,
-        title: "Chứng chỉ hoàn thành khoá học",
-        course: course?.title || "Khoá học Corelia",
+        title: labels.courseCompletionTitle,
+        course: course?.title || labels.fallbackCourseName,
         issuedAt: formatDate(item.certificate_issued_at),
-        instructor: course?.instructor_name || "Corelia Academy",
+        instructor: course?.instructor_name || labels.fallbackInstructorName,
         type: pickCertificateType(course?.owner_type),
         credentialId: buildCredentialId("COURSE", item.id),
         imageUrl: course?.certificate_template_url || CERT_PLACEHOLDER,
@@ -146,14 +149,24 @@ function buildCourseCertificates(enrollments: Enrollment[], courseMap: Map<strin
     .sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));
 }
 
-function buildMilestoneBadges(enrollments: Enrollment[]): BadgeItem[] {
+function buildMilestoneBadges(
+  enrollments: Enrollment[],
+  labels: {
+    milestones: {
+      courseFirst: { title: string; description: string };
+      courseThree: { title: string; description: string };
+      firstCertificate: { title: string; description: string };
+      threeCertificates: { title: string; description: string };
+    };
+  },
+): BadgeItem[] {
   const enrolledCourses = enrollments.length;
   const courseCertificates = enrollments.filter((item) => !!item.certificate_issued_at).length;
   const milestones = [
     {
       id: "milestone-course-first",
-      title: "Khoá học đầu tiên",
-      description: "Ghi danh khóa học đầu tiên để mở cột mốc này.",
+      title: labels.milestones.courseFirst.title,
+      description: labels.milestones.courseFirst.description,
       thresholdMet: enrolledCourses >= 1,
       earnedAt: enrollments[0]?.enrolled_at ?? null,
       style: BADGE_STYLES[0],
@@ -161,8 +174,8 @@ function buildMilestoneBadges(enrollments: Enrollment[]): BadgeItem[] {
     },
     {
       id: "milestone-course-three",
-      title: "Người học bền bỉ",
-      description: "Ghi danh 3 khóa học khác nhau để mở cột mốc này.",
+      title: labels.milestones.courseThree.title,
+      description: labels.milestones.courseThree.description,
       thresholdMet: enrolledCourses >= 3,
       earnedAt: null,
       style: BADGE_STYLES[1],
@@ -170,8 +183,8 @@ function buildMilestoneBadges(enrollments: Enrollment[]): BadgeItem[] {
     },
     {
       id: "milestone-course-first-cert",
-      title: "Chứng chỉ đầu tiên",
-      description: "Nhận chứng chỉ đầu tiên từ một khóa học để mở cột mốc này.",
+      title: labels.milestones.firstCertificate.title,
+      description: labels.milestones.firstCertificate.description,
       thresholdMet: courseCertificates >= 1,
       earnedAt:
         enrollments.find((item) => item.certificate_issued_at)?.certificate_issued_at ?? null,
@@ -180,8 +193,8 @@ function buildMilestoneBadges(enrollments: Enrollment[]): BadgeItem[] {
     },
     {
       id: "milestone-course-three-certs",
-      title: "Learning portfolio",
-      description: "Sở hữu 3 chứng chỉ để hoàn thiện hồ sơ thành tích Corelia.",
+      title: labels.milestones.threeCertificates.title,
+      description: labels.milestones.threeCertificates.description,
       thresholdMet: courseCertificates >= 3,
       earnedAt: null,
       style: BADGE_STYLES[3],
@@ -207,12 +220,13 @@ function buildMilestoneBadges(enrollments: Enrollment[]): BadgeItem[] {
 
 // ── OpenCampus Claim Status Badge ─────────────────────────────────────────────
 function OcClaimBadge({ status }: { status: ClaimStatus }) {
+  const { t } = useTranslation("common");
   const base = "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold sm:text-sm";
   if (status === "claimed") {
     return (
       <span className={cn(base, "bg-success/15 text-success")}>
         <SealCheck weight="fill" className="size-3.5 shrink-0 sm:size-4" />
-        Đã claim OC
+        {t("achievements.oc.badge.claimed")}
       </span>
     );
   }
@@ -220,7 +234,7 @@ function OcClaimBadge({ status }: { status: ClaimStatus }) {
     return (
       <span className={cn(base, "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300")}>
         <Spinner className="size-3.5 shrink-0 animate-spin sm:size-4" />
-        Đang xử lý
+        {t("achievements.oc.badge.pending")}
       </span>
     );
   }
@@ -228,14 +242,14 @@ function OcClaimBadge({ status }: { status: ClaimStatus }) {
     return (
       <span className={cn(base, "bg-destructive/15 text-destructive")}>
         <Warning weight="fill" className="size-3.5 shrink-0 sm:size-4" />
-        Thất bại
+        {t("achievements.oc.badge.failed")}
       </span>
     );
   }
   return (
     <span className={cn(base, "bg-muted font-medium text-muted-foreground")}>
       <img src="/open-campus-edu-logo.png" alt="OC" className="size-3.5 shrink-0 rounded-full sm:size-4" />
-      Chưa claim OC
+      {t("achievements.oc.badge.unclaimed")}
     </span>
   );
 }
@@ -246,6 +260,7 @@ type ModalItem =
   | { kind: "badge"; data: BadgeItem };
 
 function CopyButton({ text }: { text: string }) {
+  const { t } = useTranslation("common");
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
     await navigator.clipboard.writeText(text);
@@ -256,7 +271,7 @@ function CopyButton({ text }: { text: string }) {
     <button
       onClick={handleCopy}
       className="shrink-0 rounded p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-      title="Sao chép"
+      title={t("actions.copy")}
     >
       {copied ? (
         <Check className="size-3.5 text-emerald-500" />
@@ -280,6 +295,7 @@ function OcCredentialModal({
   onClaim: (id: string, kind: "cert" | "badge") => void;
   claiming: boolean;
 }) {
+  const { t } = useTranslation("common");
   if (!item) return null;
 
   const d = item.data;
@@ -315,10 +331,10 @@ function OcCredentialModal({
                 </div>
               <div className="min-w-0 flex-1">
                 <DialogTitle className="text-base font-semibold leading-snug sm:text-lg">
-                  Open Campus Credential
+                  {t("achievements.oc.modal.title")}
                 </DialogTitle>
                 <DialogDescription className="mt-0.5 text-sm sm:text-base">
-                  Verifiable credential trên blockchain EDUChain
+                  {t("achievements.oc.modal.subtitle")}
                 </DialogDescription>
               </div>
             </div>
@@ -328,14 +344,18 @@ function OcCredentialModal({
           <div className="mb-4 space-y-3 rounded-lg border border-border-subtle bg-muted/40 p-3 sm:p-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:text-sm">
-                {item.kind === "cert" ? "Chứng chỉ" : "Huy hiệu"}
+                {item.kind === "cert"
+                  ? t("achievements.oc.modal.kind.cert")
+                  : t("achievements.oc.modal.kind.badge")}
               </p>
               <p className="mt-0.5 text-base font-semibold text-foreground sm:text-lg">{name}</p>
             </div>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <p className="text-xs text-muted-foreground sm:text-sm">
-                  {item.kind === "cert" ? "Ngày cấp" : "Ngày đạt"}
+                  {item.kind === "cert"
+                    ? t("achievements.oc.modal.date.issued")
+                    : t("achievements.oc.modal.date.earned")}
                 </p>
                 <p className="font-medium">{issued}</p>
               </div>
@@ -347,7 +367,9 @@ function OcCredentialModal({
 
             {/* Claim status */}
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs text-muted-foreground sm:text-sm">Trạng thái OC:</p>
+              <p className="text-xs text-muted-foreground sm:text-sm">
+                {t("achievements.oc.modal.statusLabel")}
+              </p>
               <OcClaimBadge status={d.ocClaimStatus} />
             </div>
 
@@ -368,7 +390,7 @@ function OcCredentialModal({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="shrink-0 rounded p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                      title="Xem trên block explorer"
+                      title={t("achievements.oc.modal.explorerTooltip")}
                     >
                       <ArrowSquareOut className="size-4" />
                     </a>
@@ -402,10 +424,10 @@ function OcCredentialModal({
                 />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-foreground sm:text-base">
-                    Xem trên OCID Dashboard
+                    {t("achievements.oc.modal.dashboardCtaTitle")}
                   </p>
                   <p className="text-xs text-muted-foreground sm:text-sm">
-                    opencampus.xyz · Public profile
+                    {t("achievements.oc.modal.dashboardCtaSubtitle")}
                   </p>
                 </div>
               </div>
@@ -415,12 +437,7 @@ function OcCredentialModal({
 
           {/* Standards note */}
           <p className="mb-4 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-            Credential này tuân theo chuẩn{" "}
-            <strong className="text-foreground">Open Badges</strong> &{" "}
-            <strong className="text-foreground">W3C Verifiable Credentials</strong>,
-            được neo cố định trên blockchain{" "}
-            <strong className="text-foreground">EDUChain</strong>. Có thể xác minh
-            độc lập và chuyển đổi giữa các nền tảng.
+            {t("achievements.oc.modal.standardsNote")}
           </p>
 
           <div className="flex flex-col gap-3 mt-2">
@@ -435,7 +452,7 @@ function OcCredentialModal({
                 {claiming ? (
                   <>
                     <Spinner className="size-5 shrink-0 animate-spin" />
-                    <span>Đang issue credentials...</span>
+                    <span>{t("achievements.oc.modal.claim.issuing")}</span>
                   </>
                 ) : (
                   <>
@@ -445,7 +462,9 @@ function OcCredentialModal({
                       className="size-5 shrink-0 rounded-full brightness-0 invert"
                     />
                     <span>
-                      {isFailed ? "Thử lại – Issue on Open Campus" : "Issue on Open Campus"}
+                      {isFailed
+                        ? t("achievements.oc.modal.claim.retry")
+                        : t("achievements.oc.modal.claim.issue")}
                     </span>
                   </>
                 )}
@@ -456,7 +475,7 @@ function OcCredentialModal({
             {isPending && (
               <Button disabled className="w-full gap-3 text-base" size="lg">
                 <Spinner className="size-5 shrink-0 animate-spin" />
-                <span>Đang xử lý trên blockchain...</span>
+                <span>{t("achievements.oc.modal.claim.pending")}</span>
               </Button>
             )}
 
@@ -465,11 +484,11 @@ function OcCredentialModal({
               <div className="flex w-full gap-3">
                 <Button variant="outline" className="flex-1 gap-2 text-sm sm:text-base" size="lg">
                   <Download className="size-4 shrink-0" />
-                  <span>Tải PDF</span>
+                  <span>{t("achievements.oc.modal.claimedActions.downloadPdf")}</span>
                 </Button>
                 <Button variant="outline" className="flex-1 gap-2 text-sm sm:text-base" size="lg">
                   <Share className="size-4 shrink-0" />
-                  <span>Chia sẻ</span>
+                  <span>{t("actions.share")}</span>
                 </Button>
               </div>
             )}
@@ -480,7 +499,7 @@ function OcCredentialModal({
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-1.5 py-2 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground transition-colors"
             >
-              Tìm hiểu về Open Campus Achievements
+              {t("achievements.oc.modal.learnMore")}
               <ArrowSquareOut className="size-4 shrink-0" />
             </a>
           </div>
@@ -498,6 +517,7 @@ function StatsBar({
   certificates: CertificateItem[];
   badges: BadgeItem[];
 }) {
+  const { t } = useTranslation("common");
   const earnedBadges = badges.filter((b) => !b.locked).length;
   const claimedOc = [
     ...certificates.filter((c) => c.ocClaimStatus === "claimed"),
@@ -508,22 +528,22 @@ function StatsBar({
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
       {[
         {
-          label: "Chứng chỉ",
+          label: t("achievements.stats.certificates"),
           value: certificates.length,
           icon: <Certificate weight="duotone" className="size-5 text-muted-foreground" />,
         },
         {
-          label: "Huy hiệu",
+          label: t("achievements.stats.badges"),
           value: `${earnedBadges}/${badges.length}`,
           icon: <Medal weight="duotone" className="size-5 text-amber-500" />,
         },
         {
-          label: "Tổng thành tích",
+          label: t("achievements.stats.total"),
           value: certificates.length + earnedBadges,
           icon: <Trophy weight="duotone" className="size-5 text-primary" />,
         },
         {
-          label: "OC Credential",
+          label: t("achievements.stats.ocCredential"),
           value: claimedOc,
           icon: (
             <img
@@ -559,6 +579,7 @@ function CertificateCard({
   cert: CertificateItem;
   onOpenModal: (item: ModalItem) => void;
 }) {
+  const { t } = useTranslation("common");
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   return (
     <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card transition-all duration-200 hover:shadow-elevation-2 hover:-translate-y-0.5">
@@ -604,7 +625,9 @@ function CertificateCard({
                     : "bg-primary-container text-on-primary-container dark:text-primary",
                 )}
               >
-                {cert.type === "online" ? "Online" : "Offline"}
+                {cert.type === "online"
+                  ? t("achievements.certificates.type.online")
+                  : t("achievements.certificates.type.offline")}
               </span>
               <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
                 {cert.title}
@@ -630,7 +653,7 @@ function CertificateCard({
           </div>
           <div className="flex items-center gap-1.5">
             <CalendarBlank className="size-3.5 shrink-0" />
-            <span>Cấp ngày {cert.issuedAt}</span>
+            <span>{t("achievements.certificates.issuedOnPrefix", { date: cert.issuedAt })}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle className="size-3.5 shrink-0 text-emerald-500" />
@@ -661,13 +684,13 @@ function CertificateCard({
             />
             <span className="truncate">
               {cert.ocClaimStatus === "claimed"
-                ? "Xem OC credential"
-                : "Claim OC credential"}
+                ? t("achievements.certificates.ocAction.view")
+                : t("achievements.certificates.ocAction.claim")}
             </span>
           </button>
           <button
             className="flex shrink-0 items-center justify-center rounded-lg bg-muted px-2.5 py-2 text-sm font-medium transition hover:bg-muted/80"
-            title="Tải xuống"
+            title={t("actions.download")}
           >
             <Download className="size-4 shrink-0" />
           </button>
@@ -685,6 +708,7 @@ function BadgeCard({
   badge: BadgeItem;
   onOpenModal: (item: ModalItem) => void;
 }) {
+  const { t } = useTranslation("common");
   const imageUrl = badge.imageUrl ?? BADGE_PLACEHOLDER;
   return (
     <div
@@ -711,14 +735,14 @@ function BadgeCard({
       {!badge.locked && (
         <div className="absolute left-2 top-2 sm:left-3 sm:top-3">
           {badge.ocClaimStatus === "claimed" ? (
-            <span title="Đã claim OC credential">
+            <span title={t("achievements.badges.ocDot.claimedTooltip")}>
               <SealCheck
                 weight="fill"
                 className="size-4 text-success sm:size-5"
               />
             </span>
           ) : (
-            <span title="Chưa claim OC credential">
+            <span title={t("achievements.badges.ocDot.unclaimedTooltip")}>
               <img
                 src="/open-campus-edu-logo.png"
                 alt="OC"
@@ -768,12 +792,12 @@ function BadgeCard({
         </p>
         {!badge.locked && badge.earnedAt && (
           <p className={cn("text-xs font-medium", badge.color)}>
-            Đạt: {badge.earnedAt}
+            {t("achievements.badges.earnedPrefix", { date: badge.earnedAt })}
           </p>
         )}
         {badge.locked && (
           <span className="inline-block rounded-full border border-border bg-background px-2 py-0.5 text-xs text-muted-foreground">
-            Chưa mở khoá
+            {t("achievements.badges.locked")}
           </span>
         )}
       </div>
@@ -788,7 +812,7 @@ function BadgeCard({
               badge.bgColor,
             )}
           >
-            {badgeCategoryLabel[badge.category]}
+            {t(`achievements.badgeCategory.${badge.category}` as never)}
           </span>
           <OcClaimBadge status={badge.ocClaimStatus} />
         </div>
@@ -806,6 +830,7 @@ export default function Achievements() {
   const [modalOpen, setModalOpen] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation("common");
 
   useEffect(() => {
     let cancelled = false;
@@ -814,7 +839,28 @@ export default function Achievements() {
       if (!user || !isAuthenticated) {
         if (!cancelled) {
           setCertificates([]);
-          setBadges(buildMilestoneBadges([]));
+          setBadges(
+            buildMilestoneBadges([], {
+              milestones: {
+                courseFirst: {
+                  title: t("achievements.milestones.courseFirst.title"),
+                  description: t("achievements.milestones.courseFirst.description"),
+                },
+                courseThree: {
+                  title: t("achievements.milestones.courseThree.title"),
+                  description: t("achievements.milestones.courseThree.description"),
+                },
+                firstCertificate: {
+                  title: t("achievements.milestones.firstCertificate.title"),
+                  description: t("achievements.milestones.firstCertificate.description"),
+                },
+                threeCertificates: {
+                  title: t("achievements.milestones.threeCertificates.title"),
+                  description: t("achievements.milestones.threeCertificates.description"),
+                },
+              },
+            }),
+          );
           setLoading(false);
         }
         return;
@@ -835,12 +881,35 @@ export default function Achievements() {
         if (cancelled) return;
 
         const courseMap = new Map(courseRows);
-        const nextCertificates = buildCourseCertificates(enrollments, courseMap).sort((a, b) => {
+        const nextCertificates = buildCourseCertificates(enrollments, courseMap, {
+          courseCompletionTitle: t("achievements.certificates.courseCompletionTitle"),
+          fallbackCourseName: t("achievements.certificates.fallbackCourseName"),
+          fallbackInstructorName: t("achievements.certificates.fallbackInstructorName"),
+        }).sort((a, b) => {
           const aDate = a.issuedAt.split("/").reverse().join("-");
           const bDate = b.issuedAt.split("/").reverse().join("-");
           return bDate.localeCompare(aDate);
         });
-        const nextBadges = buildMilestoneBadges(enrollments);
+        const nextBadges = buildMilestoneBadges(enrollments, {
+          milestones: {
+            courseFirst: {
+              title: t("achievements.milestones.courseFirst.title"),
+              description: t("achievements.milestones.courseFirst.description"),
+            },
+            courseThree: {
+              title: t("achievements.milestones.courseThree.title"),
+              description: t("achievements.milestones.courseThree.description"),
+            },
+            firstCertificate: {
+              title: t("achievements.milestones.firstCertificate.title"),
+              description: t("achievements.milestones.firstCertificate.description"),
+            },
+            threeCertificates: {
+              title: t("achievements.milestones.threeCertificates.title"),
+              description: t("achievements.milestones.threeCertificates.description"),
+            },
+          },
+        });
 
         setCertificates(nextCertificates);
         setBadges(nextBadges);
@@ -853,7 +922,7 @@ export default function Achievements() {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, t, user]);
 
   const openModal = (item: ModalItem) => {
     setModalItem(item);
@@ -958,13 +1027,13 @@ export default function Achievements() {
           <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
             <div className="min-w-0">
               <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
-                Hành trình thành tích
+                {t("achievements.hero.eyebrow")}
               </p>
               <h1 className="mt-3 text-3xl font-normal tracking-tight text-foreground sm:text-4xl">
-                Thành tích của tôi
+                {t("achievements.hero.title")}
               </h1>
               <p className="mt-2 max-w-2xl text-[15px] leading-7 text-muted-foreground sm:text-[16px]">
-                Theo dõi chứng chỉ, huy hiệu và các cột mốc học tập trong một hành trình liền mạch. Khi sẵn sàng, bạn có thể claim từng thành tích lên{" "}
+                {t("achievements.hero.subtitlePrefix")}{" "}
                 <a
                   href="https://opencampus.xyz"
                   target="_blank"
@@ -973,17 +1042,17 @@ export default function Achievements() {
                 >
                   Open Campus
                 </a>{" "}
-                để có verifiable credential trên blockchain.
+                {t("achievements.hero.subtitleSuffix")}
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-1.5 text-sm text-foreground">
-                  {certificates.length} chứng chỉ
+                  {t("achievements.hero.certCount", { count: certificates.length })}
                 </div>
                 <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-1.5 text-sm text-foreground">
-                  {earnedBadges.length} huy hiệu đã mở
+                  {t("achievements.hero.badgeUnlockedCount", { count: earnedBadges.length })}
                 </div>
                 <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-1.5 text-sm text-foreground">
-                  {unclaimedCount} sẵn sàng claim
+                  {t("achievements.hero.readyToClaimCount", { count: unclaimedCount })}
                 </div>
               </div>
             </div>
@@ -991,32 +1060,32 @@ export default function Achievements() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-border-subtle bg-background/85 p-4">
                 <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Đã claim trên OC
+                  {t("achievements.hero.claimedOnOc.title")}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-foreground">{claimedCount}</p>
                 <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
-                  Số lượng credential đã được đưa lên Open Campus.
+                  {t("achievements.hero.claimedOnOc.description")}
                 </p>
               </div>
               <div className="rounded-2xl border border-border-subtle bg-background/85 p-4">
                 <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Đang chờ xử lý
+                  {t("achievements.hero.pending.title")}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-foreground">{pendingCount}</p>
                 <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
-                  Các credential đang pending hoặc đang đợi issue.
+                  {t("achievements.hero.pending.description")}
                 </p>
               </div>
               <div className="rounded-2xl border border-border-subtle bg-background/85 p-4 sm:col-span-2">
                 <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Mốc tiếp theo
+                  {t("achievements.hero.nextMilestone")}
                 </p>
                 <p className="mt-2 text-lg font-medium text-foreground">
-                  {nextMilestones[0]?.title ?? "Bạn đã mở khóa tất cả milestone hiện có"}
+                  {nextMilestones[0]?.title ?? t("achievements.milestones.next.titleFallback")}
                 </p>
                 <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
                   {nextMilestones[0]?.description ??
-                    "Tiếp tục hoàn thành khóa học mới để bộ hồ sơ thành tích ngày càng đầy đặn hơn."}
+                    t("achievements.milestones.next.descriptionFallback")}
                 </p>
               </div>
             </div>
@@ -1031,36 +1100,34 @@ export default function Achievements() {
       <section className="mb-8 grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
         <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
           <div className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-            Ý nghĩa của chứng nhận Corelia
+            {t("achievements.meaning.title")}
           </div>
           <div className="mt-4 space-y-3 text-[14px] leading-6 text-muted-foreground">
             <p>
-              Thành tích trong Corelia phản ánh những gì bạn đã thật sự hoàn thành:
-              khóa học đã đi hết, chứng chỉ đã nhận và các cột mốc kỹ thuật đã mở.
+              {t("achievements.meaning.p1")}
             </p>
             <p>
-              Chứng chỉ và huy hiệu được xây dựng để hỗ trợ portfolio học tập, workshop,
-              hackathon và hành trình phát triển trong hệ sinh thái Web3, thay vì đóng vai trò như văn bằng học thuật chính thức.
+              {t("achievements.meaning.p2")}
             </p>
           </div>
         </div>
 
         <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
           <div className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-            Nơi bạn có thể dùng chúng
+            {t("achievements.useCases.title")}
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            {["Portfolio cá nhân", "Workshop", "Hackathon", "Demo day", "Mentor review"].map((item) => (
+            {[0, 1, 2, 3, 4].map((idx) => (
               <span
-                key={item}
+                key={idx}
                 className="rounded-full border border-border-subtle bg-background px-3 py-1.5 text-[13px] text-foreground"
               >
-                {item}
+                {t(`achievements.useCases.items.${idx}` as never)}
               </span>
             ))}
           </div>
           <p className="mt-4 text-[13px] leading-6 text-muted-foreground">
-            Khi claim lên Open Campus, các thành tích này trở thành verifiable credential để bạn chia sẻ rõ ràng hơn trên hồ sơ cá nhân.
+            {t("achievements.useCases.note")}
           </p>
         </div>
       </section>
@@ -1069,16 +1136,18 @@ export default function Achievements() {
         <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
           <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
             <CheckCircle weight="duotone" className="size-4" />
-            Vừa mở
+            {t("achievements.recent.title")}
           </div>
           {loading ? (
             <div className="mt-5 flex min-h-44 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border-subtle bg-muted/20 text-center">
               <Spinner className="size-10 animate-spin text-muted-foreground/60" />
-              <p className="text-sm text-muted-foreground">Đang tải các thành tích mới nhất của bạn.</p>
+              <p className="text-sm text-muted-foreground">
+                {t("achievements.recent.loading")}
+              </p>
             </div>
           ) : recentBadges.length === 0 && recentCertificates.length === 0 ? (
             <div className="mt-5 rounded-2xl border border-dashed border-border-subtle bg-muted/20 p-6 text-sm leading-6 text-muted-foreground">
-              Chưa có thành tích nào được mở. Hãy hoàn thành một khóa học đầu tiên để bắt đầu hành trình này.
+              {t("achievements.recent.empty")}
             </div>
           ) : (
             <div className="mt-5 space-y-3">
@@ -1155,7 +1224,7 @@ export default function Achievements() {
               ))
             ) : (
               <div className="rounded-2xl border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
-                Bạn đã mở khóa toàn bộ milestone hiện có. Bây giờ có thể tập trung vào việc claim OC credential và mở rộng hồ sơ thành tích của mình.
+                {t("achievements.vaults.nextUnlock.allUnlockedNote")}
               </div>
             )}
           </div>
@@ -1165,25 +1234,29 @@ export default function Achievements() {
       <section className="mb-8 rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-medium text-foreground">Kho chứng chỉ</h2>
+            <h2 className="text-lg font-medium text-foreground">
+              {t("achievements.vaults.certificates.title")}
+            </h2>
             <p className="mt-1 text-[13px] text-muted-foreground">
-              Nơi lưu trữ tất cả chứng chỉ từ các khóa học đã hoàn thành.
+              {t("achievements.vaults.certificates.subtitle")}
             </p>
           </div>
           <div className="rounded-full bg-muted px-3 py-1 text-[12px] text-muted-foreground">
-            {certificates.length} chứng chỉ
+            {t("achievements.vaults.certificates.countLabel", { count: certificates.length })}
           </div>
         </div>
         {loading ? (
           <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border-subtle bg-muted/20 py-16 text-center">
             <Spinner className="size-10 animate-spin text-muted-foreground/60" />
-            <p className="text-sm text-muted-foreground">Đang tải kho chứng chỉ của bạn.</p>
+            <p className="text-sm text-muted-foreground">
+              {t("achievements.vaults.certificates.loading")}
+            </p>
           </div>
         ) : certificates.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border-subtle bg-muted/20 py-16 text-center">
             <Certificate weight="duotone" className="size-12 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">
-              Bạn chưa có chứng chỉ nào. Hãy hoàn thành một khóa học có chứng nhận để bắt đầu.
+              {t("achievements.vaults.certificates.empty")}
             </p>
           </div>
         ) : (
@@ -1198,20 +1271,27 @@ export default function Achievements() {
       <section className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-medium text-foreground">Bộ huy hiệu và milestone</h2>
+            <h2 className="text-lg font-medium text-foreground">
+              {t("achievements.vaults.badges.title")}
+            </h2>
             <p className="mt-1 text-[13px] text-muted-foreground">
-              Gồm các milestone học tập và những cột mốc bạn đang mở khóa dần.
+              {t("achievements.vaults.badges.subtitle")}
             </p>
           </div>
           <div className="rounded-full bg-muted px-3 py-1 text-[12px] text-muted-foreground">
-            {earnedBadges.length}/{badges.length} đã mở
+            {t("achievements.vaults.badges.summaryUnlocked", {
+              earned: earnedBadges.length,
+              total: badges.length,
+            })}
           </div>
         </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border-subtle bg-muted/20 py-16 text-center">
             <Spinner className="size-10 animate-spin text-muted-foreground/60" />
-            <p className="text-sm text-muted-foreground">Đang tải huy hiệu và milestone của bạn.</p>
+            <p className="text-sm text-muted-foreground">
+              {t("achievements.vaults.badges.loading")}
+            </p>
           </div>
         ) : (
           <div className="space-y-8">
@@ -1221,11 +1301,11 @@ export default function Achievements() {
                   <div className="flex items-center gap-2">
                     <CheckCircle weight="duotone" className="size-5 shrink-0 text-muted-foreground" />
                     <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                      Đã đạt được ({earnedBadges.length})
+                      {t("achievements.vaults.badges.earnedSectionTitle", { count: earnedBadges.length })}
                     </h3>
                   </div>
                   <div className="rounded-full bg-success/15 px-3 py-1 text-[12px] font-medium text-success">
-                    Tiến triển tốt
+                    {t("achievements.vaults.badges.progressGood")}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">

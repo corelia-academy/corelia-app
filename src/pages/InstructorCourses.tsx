@@ -20,8 +20,10 @@ import {
 import type { Course } from "@/types/courses";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 const InstructorCourses = () => {
+  const { t } = useTranslation("instructor");
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -40,7 +42,7 @@ const InstructorCourses = () => {
       })
       .catch((e) => {
         if (!cancelled)
-          setError(e instanceof Error ? e.message : "Lỗi tải danh sách");
+          setError(e instanceof Error ? e.message : t("courseListPage.errors.loadFailed"));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -48,7 +50,7 @@ const InstructorCourses = () => {
     return () => {
       cancelled = true;
     };
-  }, [profile?.id, canViewAll]);
+  }, [profile?.id, canViewAll, t]);
 
   const stats = useMemo(() => {
     const published = courses.filter((course) => course.published).length;
@@ -79,7 +81,7 @@ const InstructorCourses = () => {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Tổng khoá học
+                {t("courseListPage.stats.total")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.total}
@@ -94,7 +96,7 @@ const InstructorCourses = () => {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Đã xuất bản
+                {t("courseListPage.stats.published")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.published}
@@ -109,7 +111,7 @@ const InstructorCourses = () => {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Bản nháp
+                {t("courseListPage.stats.drafts")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.drafts}
@@ -124,7 +126,7 @@ const InstructorCourses = () => {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Trả phí upfront
+                {t("courseListPage.stats.paidUpfront")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.paid}
@@ -139,7 +141,7 @@ const InstructorCourses = () => {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Khoá học miễn phí
+                {t("courseListPage.stats.free")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.free}
@@ -156,11 +158,10 @@ const InstructorCourses = () => {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-xl font-medium tracking-tight text-foreground">
-              Danh mục khoá học của bạn
+              {t("courseListPage.hero.title")}
             </h2>
             <p className="mt-1.5 max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
-              Theo dõi nhanh tình trạng xuất bản, mô hình doanh thu và mở màn chỉnh
-              sửa chỉ với một cú nhấp.
+              {t("courseListPage.hero.description")}
             </p>
           </div>
           <Button
@@ -169,7 +170,7 @@ const InstructorCourses = () => {
             onClick={() => navigate("/instructor/courses/new")}
           >
             <PlusCircle className="size-4" weight="duotone" />
-            Tạo khoá học mới
+            {t("courseListPage.hero.create")}
           </Button>
         </div>
       </div>
@@ -178,14 +179,14 @@ const InstructorCourses = () => {
         <div className="mt-6 rounded-2xl border border-border-subtle bg-card p-10 text-center shadow-card">
           <BookOpen className="mx-auto size-12 text-muted-foreground" />
           <p className="mt-4 text-[15px] text-muted-foreground">
-            Chưa có khoá học nào trong workspace này.
+            {t("courseListPage.empty.title")}
           </p>
           <Button
             type="button"
             className="mt-4"
             onClick={() => navigate("/instructor/courses/new")}
           >
-            Tạo khoá học đầu tiên
+            {t("courseListPage.empty.createFirst")}
           </Button>
         </div>
       ) : (
@@ -200,7 +201,7 @@ const InstructorCourses = () => {
                 className="text-left"
                 onClick={() => navigate(`/instructor/courses/${course.id}/edit`)}
               >
-                <div className="relative aspect-[16/9] overflow-hidden border-b border-border-subtle bg-muted/50">
+                <div className="relative aspect-video overflow-hidden border-b border-border-subtle bg-muted/50">
                   <img
                     src={course.thumbnail_url}
                     alt=""
@@ -208,7 +209,9 @@ const InstructorCourses = () => {
                   />
                   <div className="absolute inset-x-0 bottom-0 flex flex-wrap gap-2 p-3">
                     <span className="inline-flex items-center rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium text-foreground shadow-sm">
-                      {course.published ? "Đã xuất bản" : "Bản nháp"}
+                      {course.published
+                        ? t("courseListPage.coursePills.published")
+                        : t("courseListPage.coursePills.draft")}
                     </span>
                     <span className="inline-flex items-center rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium text-foreground shadow-sm">
                       {getCourseLevelLabel(course.level)}
@@ -233,22 +236,24 @@ const InstructorCourses = () => {
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     <div className="rounded-xl border border-border-subtle bg-muted/30 p-3">
                       <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                        Mô hình giá
+                        {t("courseListPage.courseCards.pricingLabel")}
                       </p>
                       <p className="mt-1 text-[14px] font-medium text-foreground">
                         {course.access_model === "paid_upfront"
                           ? formatVndPrice(course.price_vnd)
                           : course.access_model === "free_with_paid_certificate"
-                            ? `Phí chứng nhận ${formatVndPrice(course.certificate_fee_vnd)}`
-                            : "Miễn phí"}
+                            ? t("courseListPage.courseCards.certificateFeePrefix", {
+                                price: formatVndPrice(course.certificate_fee_vnd),
+                              })
+                            : t("courseListPage.courseCards.free")}
                       </p>
                     </div>
                     <div className="rounded-xl border border-border-subtle bg-muted/30 p-3">
                       <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                        Giảng viên
+                        {t("courseListPage.courseCards.instructorLabel")}
                       </p>
                       <p className="mt-1 line-clamp-1 text-[14px] font-medium text-foreground">
-                        {canViewAll ? course.instructor_name : "Bạn"}
+                        {canViewAll ? course.instructor_name : t("courseListPage.courseCards.you")}
                       </p>
                     </div>
                   </div>
@@ -263,9 +268,15 @@ const InstructorCourses = () => {
                   onClick={() => {
                     window.open(`/courses/${course.slug || course.id}`, "_blank", "noopener");
                   }}
-                  title={course.published ? "Xem trang khoá học" : "Xem trước bản nháp"}
+                  title={
+                    course.published
+                      ? t("courseListPage.actions.viewCourseTitle")
+                      : t("courseListPage.actions.previewDraftTitle")
+                  }
                 >
-                  {course.published ? "Xem khoá học" : "Xem trước"}
+                  {course.published
+                    ? t("courseListPage.actions.viewCourse")
+                    : t("courseListPage.actions.preview")}
                 </Button>
                 <Button
                   variant="outline"
@@ -275,7 +286,7 @@ const InstructorCourses = () => {
                   className="inline-flex items-center gap-1"
                 >
                   <PencilSimple className="size-4" />
-                  Chỉnh sửa
+                  {t("courseListPage.actions.edit")}
                 </Button>
               </div>
             </article>

@@ -3,7 +3,10 @@
  * Roles: học viên (student), giảng viên (instructor), chăm sóc viên (support_staff), admin
  */
 
+import i18n from "@/i18n";
+
 export type UserRole = "student" | "instructor" | "support_staff" | "admin";
+export type Locale = "vi" | "en";
 
 export interface PartnerProfileDocument {
   name: string;
@@ -25,6 +28,8 @@ export interface Profile {
   phone: string | null;
   /** Email đăng nhập (từ Firebase Auth), lưu khi tạo profile */
   email: string | null;
+  /** Ngôn ngữ UI người dùng chọn (vd: vi/en) */
+  locale?: Locale | null;
   /** Open Campus ID (OCID) đã liên kết (nếu có) */
   ocid?: string | null;
   /** Ethereum address liên kết với OCID (nếu có) */
@@ -63,6 +68,7 @@ export interface ProfileInsert {
   avatar_url?: string | null;
   phone?: string | null;
   email?: string | null;
+  locale?: Locale | null;
   ocid?: string | null;
   ocid_eth_address?: string | null;
   ocid_connected_at?: string | null;
@@ -86,6 +92,7 @@ export interface ProfileUpdate {
   avatar_url?: string | null;
   phone?: string | null;
   email?: string | null;
+  locale?: Locale | null;
   ocid?: string | null;
   ocid_eth_address?: string | null;
   ocid_connected_at?: string | null;
@@ -103,16 +110,8 @@ export interface ProfileUpdate {
   partner_bank_transfer_note?: string | null;
 }
 
-/** Nhãn tiếng Việt cho từng role */
-export const USER_ROLE_LABELS: Record<UserRole, string> = {
-  student: "Học viên",
-  instructor: "Giảng viên",
-  support_staff: "Chăm sóc viên (học vụ)",
-  admin: "Quản trị viên",
-};
-
 export function getRoleLabel(role: UserRole): string {
-  return USER_ROLE_LABELS[role];
+  return i18n.t(`auth:roles.${role}`, { defaultValue: role });
 }
 
 export function isStudent(role: UserRole): boolean {

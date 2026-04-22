@@ -20,11 +20,14 @@ import { updateCurrentProfile, uploadAvatar } from "@/lib/profile";
 import { getMyPaymentTransactions, type PaymentTransaction } from "@/lib/payments";
 import type { Profile } from "@/types/database";
 import { formatVndPrice } from "@/types/courses";
+import { intlLocale } from "@/lib/intl";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ConnectOCIDCard from "@/components/account/ConnectOCIDCard";
+import { useLocale } from "@/hooks/useLocale";
+import { useTranslation } from "react-i18next";
 import {
   Buildings,
   CreditCard,
@@ -39,6 +42,77 @@ import {
   UserCircle,
 } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
+
+function LanguageSettingsCard() {
+  const { t: tCommon } = useTranslation("common");
+  const { t } = useTranslation("account");
+  const { language, setLanguage } = useLocale();
+
+  return (
+    <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+      <div className="min-w-0">
+        <h2 className="text-base font-medium text-foreground">
+          {t("settings.language.title")}
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {t("settings.language.description")}
+        </p>
+      </div>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={() => void setLanguage("vi")}
+          className={cn(
+            "flex items-center justify-between rounded-lg border px-3 py-3 text-left transition-colors",
+            language === "vi"
+              ? "border-primary bg-primary/10"
+              : "border-border-subtle bg-background hover:bg-muted/30",
+          )}
+        >
+          <div className="min-w-0">
+            <div className="text-sm font-medium text-foreground">
+              {tCommon("language.vi")}
+            </div>
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              {t("settings.language.viMeta")}
+            </div>
+          </div>
+          {language === "vi" ? (
+            <span className="text-xs font-medium text-primary">
+              {t("settings.language.active_vi")}
+            </span>
+          ) : null}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => void setLanguage("en")}
+          className={cn(
+            "flex items-center justify-between rounded-lg border px-3 py-3 text-left transition-colors",
+            language === "en"
+              ? "border-primary bg-primary/10"
+              : "border-border-subtle bg-background hover:bg-muted/30",
+          )}
+        >
+          <div className="min-w-0">
+            <div className="text-sm font-medium text-foreground">
+              {tCommon("language.en")}
+            </div>
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              {t("settings.language.enMeta")}
+            </div>
+          </div>
+          {language === "en" ? (
+            <span className="text-xs font-medium text-primary">
+              {t("settings.language.active_en")}
+            </span>
+          ) : null}
+        </button>
+      </div>
+    </section>
+  );
+}
 
 function useProfileForm(profile: Profile | null) {
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
@@ -56,6 +130,7 @@ function useProfileForm(profile: Profile | null) {
 }
 
 function ChangePasswordCard({ user }: { user: User }) {
+  const { t } = useTranslation("account");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -72,32 +147,32 @@ function ChangePasswordCard({ user }: { user: User }) {
     setError(null);
     setSuccess(null);
     if (newPassword !== confirmPassword) {
-      setError("Mật khẩu mới và xác nhận không khớp.");
+      setError(t("password.errors.confirmMismatch"));
       return;
     }
     if (newPassword.length < 6) {
-      setError("Mật khẩu mới tối thiểu 6 ký tự.");
+      setError(t("password.errors.minLength"));
       return;
     }
     const email = user.email;
     if (!email) {
-      setError("Không tìm thấy email. Chỉ tài khoản đăng nhập bằng email mới đổi được mật khẩu.");
+      setError(t("password.errors.missingEmail"));
       return;
     }
     setLoading(true);
     try {
       const credential = EmailAuthProvider.credential(email, currentPassword);
       const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error("Chưa đăng nhập");
+      if (!currentUser) throw new Error(t("errors.notLoggedIn"));
       await reauthenticateWithCredential(currentUser, credential);
       await updatePassword(currentUser, newPassword);
-      setSuccess("Đã đổi mật khẩu thành công.");
+      setSuccess(t("password.success.changed"));
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
       const msg =
-        err instanceof Error ? err.message : "Không thể đổi mật khẩu.";
+        err instanceof Error ? err.message : t("password.errors.changeFailed");
       setError(msg);
     } finally {
       setLoading(false);
@@ -109,15 +184,15 @@ function ChangePasswordCard({ user }: { user: User }) {
   return (
     <div className="space-y-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
       <div>
-        <h2 className="text-base font-medium">Đổi mật khẩu</h2>
+        <h2 className="text-base font-medium">{t("password.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Chỉ áp dụng cho tài khoản đăng nhập bằng Email & Mật khẩu.
+          {t("password.subtitle")}
         </p>
       </div>
       <form onSubmit={(e) => void handleSubmit(e)} className="grid gap-4">
         <div className="grid gap-1.5">
           <label className="text-sm font-medium" htmlFor="current_password">
-            Mật khẩu hiện tại
+            {t("password.fields.current.label")}
           </label>
           <input
             id="current_password"
@@ -126,13 +201,13 @@ function ChangePasswordCard({ user }: { user: User }) {
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Nhập mật khẩu hiện tại"
+            placeholder={t("password.fields.current.placeholder")}
             required
           />
         </div>
         <div className="grid gap-1.5">
           <label className="text-sm font-medium" htmlFor="new_password">
-            Mật khẩu mới
+            {t("password.fields.next.label")}
           </label>
           <input
             id="new_password"
@@ -141,14 +216,14 @@ function ChangePasswordCard({ user }: { user: User }) {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Tối thiểu 6 ký tự"
+            placeholder={t("password.fields.next.placeholder")}
             required
             minLength={6}
           />
         </div>
         <div className="grid gap-1.5">
           <label className="text-sm font-medium" htmlFor="confirm_password">
-            Xác nhận mật khẩu mới
+            {t("password.fields.confirm.label")}
           </label>
           <input
             id="confirm_password"
@@ -157,7 +232,7 @@ function ChangePasswordCard({ user }: { user: User }) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Nhập lại mật khẩu mới"
+            placeholder={t("password.fields.confirm.placeholder")}
             required
             minLength={6}
           />
@@ -178,7 +253,7 @@ function ChangePasswordCard({ user }: { user: User }) {
             disabled={loading}
             className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            {loading ? "Đang xử lý…" : "Đổi mật khẩu"}
+            {loading ? t("common.loading") : t("password.actions.submit")}
           </button>
         </div>
       </form>
@@ -189,6 +264,7 @@ function ChangePasswordCard({ user }: { user: User }) {
 type MfaStep = "idle" | "reauth" | "phone" | "code";
 
 function MfaEnrollCard({ user }: { user: User }) {
+  const { t } = useTranslation("account");
   const [step, setStep] = useState<MfaStep>("idle");
   const [reauthPassword, setReauthPassword] = useState("");
   const [phone, setPhone] = useState("");
@@ -226,7 +302,7 @@ function MfaEnrollCard({ user }: { user: User }) {
     setLoading(true);
     try {
       const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error("Chưa đăng nhập");
+      if (!currentUser) throw new Error(t("errors.notLoggedIn"));
       if (hasPasswordProvider && user.email) {
         const credential = EmailAuthProvider.credential(
           user.email,
@@ -243,7 +319,7 @@ function MfaEnrollCard({ user }: { user: User }) {
       setReauthPassword("");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Xác thực lại thất bại. Vui lòng thử lại.",
+        err instanceof Error ? err.message : t("mfa.errors.reauthFailed"),
       );
     } finally {
       setLoading(false);
@@ -258,7 +334,7 @@ function MfaEnrollCard({ user }: { user: User }) {
       let normalized = phone.replace(/\D/g, "");
       if (normalized.startsWith("0")) normalized = normalized.slice(1);
       if (normalized.length < 9) {
-        setError("Số điện thoại không hợp lệ (ví dụ: 0901234567 hoặc +84901234567).");
+        setError(t("mfa.errors.invalidPhone"));
         return;
       }
       const withPlus = normalized.startsWith("84") ? `+${normalized}` : `+84${normalized}`;
@@ -272,7 +348,7 @@ function MfaEnrollCard({ user }: { user: User }) {
       setStep("code");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Không thể gửi mã. Vui lòng thử lại.",
+        err instanceof Error ? err.message : t("mfa.errors.sendCodeFailed"),
       );
     } finally {
       setLoading(false);
@@ -288,16 +364,16 @@ function MfaEnrollCard({ user }: { user: User }) {
         auth.currentUser,
         verificationId,
         code.trim(),
-        "Số điện thoại xác thực",
+        t("mfa.factorLabel"),
       );
-      setSuccess("Đã bật xác thực hai yếu tố (SMS).");
+      setSuccess(t("mfa.success.enabled"));
       setStep("idle");
       setVerificationId(null);
       setCode("");
       setPhone("");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Đăng ký thất bại. Vui lòng thử lại.",
+        err instanceof Error ? err.message : t("mfa.errors.enrollFailed"),
       );
     } finally {
       setLoading(false);
@@ -318,15 +394,15 @@ function MfaEnrollCard({ user }: { user: User }) {
     <div className="space-y-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
       <div className="flex items-center gap-2">
         <ShieldCheck className="size-5 text-muted-foreground" weight="duotone" />
-        <h2 className="text-base font-medium">Bảo mật hai lớp (MFA)</h2>
+        <h2 className="text-base font-medium">{t("mfa.title")}</h2>
       </div>
       <p className="text-sm text-muted-foreground">
-        Thêm số điện thoại để nhận mã SMS khi đăng nhập, giúp tài khoản an toàn hơn.
+        {t("mfa.subtitle")}
       </p>
 
       {enrolled && (
         <div className="rounded-lg bg-muted/50 p-3 text-sm">
-          <p className="font-medium text-muted-foreground">Số đã đăng ký xác thực:</p>
+          <p className="font-medium text-muted-foreground">{t("mfa.enrolled.title")}</p>
           <ul className="mt-1 list-disc pl-4">
             {factorsDisplay.map((f, i) => (
               <li key={i}>{f}</li>
@@ -354,19 +430,19 @@ function MfaEnrollCard({ user }: { user: User }) {
           onClick={() => setStep("reauth")}
           disabled={loading}
         >
-          Thêm số điện thoại xác thực
+          {t("mfa.actions.addPhone")}
         </Button>
       )}
 
       {step === "reauth" && (
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Vì lý do bảo mật, vui lòng xác thực lại trước khi thêm số điện thoại.
+            {t("mfa.reauth.hint")}
           </p>
           {hasPasswordProvider ? (
             <div className="grid gap-2">
               <label className="text-sm font-medium" htmlFor="mfa-reauth-password">
-                Mật khẩu hiện tại
+                {t("mfa.reauth.passwordLabel")}
               </label>
               <Input
                 id="mfa-reauth-password"
@@ -374,13 +450,17 @@ function MfaEnrollCard({ user }: { user: User }) {
                 autoComplete="current-password"
                 value={reauthPassword}
                 onChange={(e) => setReauthPassword(e.target.value)}
-                placeholder="Nhập mật khẩu"
+                placeholder={t("mfa.reauth.passwordPlaceholder")}
                 className="rounded-lg"
               />
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Bấm nút bên dưới để đăng nhập lại bằng {user.providerData?.some((p) => p.providerId === "google.com") ? "Google" : "GitHub"}.
+              {t("mfa.reauth.popupHint", {
+                provider: user.providerData?.some((p) => p.providerId === "google.com")
+                  ? t("mfa.providers.google")
+                  : t("mfa.providers.github"),
+              })}
             </p>
           )}
           <div className="flex gap-2">
@@ -390,10 +470,10 @@ function MfaEnrollCard({ user }: { user: User }) {
               disabled={loading}
               onClick={() => void handleReauth()}
             >
-              {loading ? "Đang xử lý…" : "Tiếp tục"}
+              {loading ? t("common.loading") : t("common.continue")}
             </Button>
             <Button type="button" variant="outline" size="default" onClick={resetFlow}>
-              Hủy
+              {t("common.cancel")}
             </Button>
           </div>
         </div>
@@ -403,7 +483,7 @@ function MfaEnrollCard({ user }: { user: User }) {
         <div className="space-y-3">
           <div className="grid gap-2">
             <label className="text-sm font-medium" htmlFor="mfa-enroll-phone">
-              Số điện thoại (E.164, ví dụ +84901234567)
+              {t("mfa.phone.label")}
             </label>
             <Input
               id="mfa-enroll-phone"
@@ -411,7 +491,7 @@ function MfaEnrollCard({ user }: { user: User }) {
               inputMode="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+84 901 234 567"
+              placeholder={t("mfa.phone.placeholder")}
               className="rounded-lg"
             />
           </div>
@@ -423,20 +503,20 @@ function MfaEnrollCard({ user }: { user: User }) {
             disabled={loading}
             onClick={() => void handleSendCode()}
           >
-            {loading ? "Đang gửi…" : "Gửi mã SMS"}
+            {loading ? t("mfa.actions.sending") : t("mfa.actions.sendSms")}
           </Button>
           <Button type="button" variant="outline" className="w-full" size="lg" onClick={resetFlow}>
-            Hủy
+            {t("common.cancel")}
           </Button>
         </div>
       )}
 
       {step === "code" && (
         <div className="space-y-3">
-          <p className="text-sm text-success">Mã đã gửi. Nhập mã 6 số vào ô bên dưới.</p>
+          <p className="text-sm text-success">{t("mfa.code.hint")}</p>
           <div className="grid gap-2">
             <label className="text-sm font-medium" htmlFor="mfa-enroll-code">
-              Mã xác thực
+              {t("mfa.code.label")}
             </label>
             <Input
               id="mfa-enroll-code"
@@ -444,7 +524,7 @@ function MfaEnrollCard({ user }: { user: User }) {
               autoComplete="one-time-code"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="000000"
+              placeholder={t("mfa.code.placeholder")}
               maxLength={6}
               className="rounded-lg font-mono text-lg tracking-widest"
             />
@@ -457,10 +537,10 @@ function MfaEnrollCard({ user }: { user: User }) {
               disabled={loading || code.length < 6}
               onClick={() => void handleEnroll()}
             >
-              {loading ? "Đang xử lý…" : "Hoàn tất"}
+              {loading ? t("common.loading") : t("common.finish")}
             </Button>
             <Button type="button" variant="outline" size="lg" onClick={resetFlow}>
-              Hủy
+              {t("common.cancel")}
             </Button>
           </div>
         </div>
@@ -497,6 +577,7 @@ function ProfileSection(props: {
     success,
     onSubmit,
   } = props;
+  const { t } = useTranslation("account");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -510,16 +591,16 @@ function ProfileSection(props: {
     <form onSubmit={(e) => void onSubmit(e)} className="space-y-5">
       <div className="grid gap-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
         <div className="grid gap-1.5">
-          <label className="text-sm font-medium">Email đăng nhập</label>
+          <label className="text-sm font-medium">{t("profile.emailLoginLabel")}</label>
           <div className="text-sm text-muted-foreground">{sessionEmail}</div>
         </div>
 
         {/* Ảnh đại diện: preview + upload */}
         <div className="grid gap-3">
-          <label className="text-sm font-medium">Ảnh đại diện</label>
+          <label className="text-sm font-medium">{t("profile.avatar.label")}</label>
           <div className="flex flex-wrap items-center gap-4">
             <Avatar className="size-20 shrink-0 rounded-full">
-              <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
+              <AvatarImage src={avatarUrl || undefined} alt={t("profile.avatar.alt")} />
               <AvatarFallback className="text-xl">
                 {fullName.trim()
                   ? fullName.trim().slice(0, 2).toUpperCase()
@@ -544,17 +625,17 @@ function ProfileSection(props: {
                 {uploadingAvatar ? (
                   <>
                     <SpinnerGap className="size-4 animate-spin" weight="bold" />
-                    Đang tải lên…
+                    {t("profile.avatar.uploading")}
                   </>
                 ) : (
                   <>
                     <ImageSquare className="size-4" weight="duotone" />
-                    Tải ảnh lên
+                    {t("profile.avatar.upload")}
                   </>
                 )}
               </button>
               <p className="text-xs text-muted-foreground">
-                JPG, PNG hoặc WebP. Ảnh sẽ được lưu và cập nhật ngay.
+                {t("profile.avatar.hint")}
               </p>
             </div>
           </div>
@@ -562,7 +643,7 @@ function ProfileSection(props: {
 
         <div className="grid gap-1.5">
           <label className="text-sm font-medium" htmlFor="full_name">
-            Họ và tên đầy đủ
+            {t("profile.fullName.label")}
           </label>
           <input
             id="full_name"
@@ -570,16 +651,16 @@ function ProfileSection(props: {
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Nguyễn Văn A"
+            placeholder={t("profile.fullName.placeholder")}
           />
           <p className="text-xs text-muted-foreground">
-            Dùng để hiển thị trên chứng chỉ, bảng điểm và hoá đơn.
+            {t("profile.fullName.hint")}
           </p>
         </div>
 
         <div className="grid gap-1.5">
           <label className="text-sm font-medium" htmlFor="phone">
-            Số điện thoại liên hệ
+            {t("profile.phone.label")}
           </label>
           <input
             id="phone"
@@ -587,10 +668,10 @@ function ProfileSection(props: {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Ví dụ: 09xxxxxxxx"
+            placeholder={t("profile.phone.placeholder")}
           />
           <p className="text-xs text-muted-foreground">
-            Dùng cho chăm sóc viên/học vụ liên hệ khi cần hỗ trợ.
+            {t("profile.phone.hint")}
           </p>
         </div>
       </div>
@@ -613,7 +694,7 @@ function ProfileSection(props: {
           disabled={saving}
           className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
         >
-          {saving ? "Đang lưu..." : "Lưu thay đổi"}
+          {saving ? t("profile.actions.saving") : t("profile.actions.save")}
         </button>
       </div>
     </form>
@@ -621,35 +702,32 @@ function ProfileSection(props: {
 }
 
 function CvSection() {
+  const { t } = useTranslation("account");
   return (
     <div className="space-y-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
       <div>
-        <h2 className="text-base font-semibold">Hồ sơ học tập & CV</h2>
+        <h2 className="text-base font-semibold">{t("cv.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Tổng hợp thông tin phục vụ tư vấn nghề nghiệp, giới thiệu việc làm và
-          hỗ trợ học bổng.
+          {t("cv.subtitle")}
         </p>
       </div>
 
       <div className="space-y-3 rounded-lg bg-muted/60 p-3 text-sm">
-        <p className="font-medium">Quản lý CV (sắp ra mắt)</p>
+        <p className="font-medium">{t("cv.comingSoon.title")}</p>
         <p className="text-muted-foreground">
-          Bạn sẽ có thể tải CV (PDF) và cập nhật thông tin nghề nghiệp của mình
-          trực tiếp tại đây. Chức năng này giúp giảng viên và chăm sóc viên có
-          thêm ngữ cảnh để hỗ trợ lộ trình học tập.
+          {t("cv.comingSoon.body")}
         </p>
         <p className="text-xs text-muted-foreground">
-          Tạm thời, bạn có thể thêm link CV (Google Drive, Notion, v.v.) vào
-          phần mô tả mở rộng hồ sơ khi tính năng hoàn thiện.
+          {t("cv.comingSoon.note")}
         </p>
       </div>
 
       <div className="space-y-3 text-sm">
-        <h3 className="font-medium">Gợi ý thông tin nên chuẩn bị</h3>
+        <h3 className="font-medium">{t("cv.prep.title")}</h3>
         <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
-          <li>Kinh nghiệm làm việc / dự án cá nhân nổi bật.</li>
-          <li>Các khoá học đã hoàn thành, chứng chỉ liên quan.</li>
-          <li>Kỹ năng chuyên môn (technical) và kỹ năng mềm.</li>
+          <li>{t("cv.prep.items.0")}</li>
+          <li>{t("cv.prep.items.1")}</li>
+          <li>{t("cv.prep.items.2")}</li>
         </ul>
       </div>
     </div>
@@ -657,6 +735,7 @@ function CvSection() {
 }
 
 function InstructorProfileSection() {
+  const { t } = useTranslation("account");
   const { profile, refreshProfile } = useAuth();
   const [headline, setHeadline] = useState(profile?.instructor_headline ?? "");
   const [bio, setBio] = useState(profile?.instructor_bio ?? "");
@@ -671,7 +750,7 @@ function InstructorProfileSection() {
   if (!profile || profile.role !== "instructor") {
     return (
       <div className="rounded-lg border border-border-subtle bg-card p-4 text-sm text-muted-foreground">
-        Chỉ giảng viên mới có thể chỉnh sửa hồ sơ giảng dạy.
+        {t("instructorProfile.onlyInstructors")}
       </div>
     );
   }
@@ -689,10 +768,10 @@ function InstructorProfileSection() {
         instructor_website: website || null,
       });
       await refreshProfile();
-      setSuccess("Đã cập nhật hồ sơ giảng viên.");
+      setSuccess(t("instructorProfile.success.updated"));
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Không thể cập nhật hồ sơ giảng viên.";
+        err instanceof Error ? err.message : t("instructorProfile.errors.updateFailed");
       setError(message);
     } finally {
       setSaving(false);
@@ -701,10 +780,10 @@ function InstructorProfileSection() {
 
   const originLabel =
     profile.instructor_origin === "corelia"
-      ? "Giảng viên Corelia"
+      ? t("instructorProfile.origin.corelia")
       : profile.instructor_origin === "external"
-        ? "Giảng viên đối tác (bên ngoài)"
-        : "Chưa phân loại";
+        ? t("instructorProfile.origin.external")
+        : t("instructorProfile.origin.unknown");
   const completedFields = [headline, bio, organization, website].filter((value) =>
     value.trim(),
   ).length;
@@ -718,21 +797,22 @@ function InstructorProfileSection() {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-lg font-medium text-foreground">Hồ sơ giảng viên</h2>
+            <h2 className="text-lg font-medium text-foreground">
+              {t("instructorProfile.title")}
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Đây là hồ sơ "show off" hiển thị cho học viên trên trang giảng viên và
-              trang khoá học.
+              {t("instructorProfile.subtitle")}
             </p>
           </div>
           <div className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
             <ShieldCheck className="mr-1.5 size-4 text-primary" weight="duotone" />
-            {completionPercent}% hoàn thiện
+            {t("instructorProfile.completion", { percent: completionPercent })}
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              Loại giảng viên
+              {t("instructorProfile.cards.originLabel")}
             </p>
             <p className="mt-2 text-[15px] font-medium text-foreground">
               {originLabel}
@@ -740,26 +820,26 @@ function InstructorProfileSection() {
           </div>
           <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              Đơn vị công tác
+              {t("instructorProfile.cards.organizationLabel")}
             </p>
             <p className="mt-2 text-[15px] font-medium text-foreground">
-              {organization.trim() || "Chưa cập nhật"}
+              {organization.trim() || t("instructorProfile.common.notUpdated")}
             </p>
           </div>
           <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              Headline
+              {t("instructorProfile.cards.headlineLabel")}
             </p>
             <p className="mt-2 text-[15px] font-medium text-foreground">
-              {headline.trim() || "Chưa cập nhật"}
+              {headline.trim() || t("instructorProfile.common.notUpdated")}
             </p>
           </div>
           <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              Website / Portfolio
+              {t("instructorProfile.cards.websiteLabel")}
             </p>
             <p className="mt-2 text-[15px] font-medium text-foreground">
-              {website.trim() || "Chưa cập nhật"}
+              {website.trim() || t("instructorProfile.common.notUpdated")}
             </p>
           </div>
         </div>
@@ -769,28 +849,28 @@ function InstructorProfileSection() {
         <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
           <div className="mb-2 flex items-center gap-2 text-[13px] font-medium text-foreground">
             <Buildings className="size-4 text-primary" weight="duotone" />
-            Hiển thị tổ chức
+            {t("instructorProfile.tips.organization.title")}
           </div>
           <p className="text-sm text-muted-foreground">
-            Đơn vị công tác giúp học viên hiểu bối cảnh chuyên môn của bạn.
+            {t("instructorProfile.tips.organization.body")}
           </p>
         </div>
         <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
           <div className="mb-2 flex items-center gap-2 text-[13px] font-medium text-foreground">
             <NotePencil className="size-4 text-primary" weight="duotone" />
-            Giới thiệu ngắn
+            {t("instructorProfile.tips.intro.title")}
           </div>
           <p className="text-sm text-muted-foreground">
-            Headline và bio nên nêu rõ thế mạnh, kinh nghiệm và lĩnh vực giảng dạy.
+            {t("instructorProfile.tips.intro.body")}
           </p>
         </div>
         <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
           <div className="mb-2 flex items-center gap-2 text-[13px] font-medium text-foreground">
             <LinkSimple className="size-4 text-primary" weight="duotone" />
-            Dẫn về hồ sơ ngoài
+            {t("instructorProfile.tips.externalProfile.title")}
           </div>
           <p className="text-sm text-muted-foreground">
-            LinkedIn hoặc portfolio giúp tăng độ tin cậy khi học viên cân nhắc đăng ký.
+            {t("instructorProfile.tips.externalProfile.body")}
           </p>
         </div>
       </div>
@@ -798,44 +878,44 @@ function InstructorProfileSection() {
       <div className="grid gap-3 md:grid-cols-2">
         <div className="grid gap-1.5">
           <label className="text-sm font-medium" htmlFor="instructor_origin">
-            Loại giảng viên
+            {t("instructorProfile.fields.origin.label")}
           </label>
           <div className="rounded-lg border border-input bg-muted/40 px-3 py-2 text-sm">
             {originLabel}
           </div>
           <p className="text-xs text-muted-foreground">
-            Loại giảng viên chỉ do học vụ/admin cập nhật.
+            {t("instructorProfile.fields.origin.hint")}
           </p>
         </div>
 
         <div className="grid gap-1.5">
           <label className="text-sm font-medium" htmlFor="instructor_org">
-            Đơn vị công tác / tổ chức
+            {t("instructorProfile.fields.organization.label")}
           </label>
           <Input
             id="instructor_org"
             value={organization}
             onChange={(e) => setOrganization(e.target.value)}
-            placeholder="Ví dụ: Corelia, Công ty ABC, Trường ĐH XYZ..."
+            placeholder={t("instructorProfile.fields.organization.placeholder")}
           />
         </div>
       </div>
 
       <div className="grid gap-1.5">
         <label className="text-sm font-medium" htmlFor="instructor_headline">
-          Tiêu đề ngắn (headline)
+          {t("instructorProfile.fields.headline.label")}
         </label>
         <Input
           id="instructor_headline"
           value={headline}
           onChange={(e) => setHeadline(e.target.value)}
-          placeholder="Ví dụ: Senior Frontend Engineer, Data Analytics Mentor..."
+          placeholder={t("instructorProfile.fields.headline.placeholder")}
         />
       </div>
 
       <div className="grid gap-1.5">
         <label className="text-sm font-medium" htmlFor="instructor_bio">
-          Giới thiệu giảng viên
+          {t("instructorProfile.fields.bio.label")}
         </label>
         <textarea
           id="instructor_bio"
@@ -843,19 +923,19 @@ function InstructorProfileSection() {
           onChange={(e) => setBio(e.target.value)}
           rows={5}
           className="min-h-[120px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          placeholder="Chia sẻ kinh nghiệm giảng dạy, dự án thực tế, doanh nghiệp đã làm việc, các lĩnh vực chuyên môn chính..."
+          placeholder={t("instructorProfile.fields.bio.placeholder")}
         />
       </div>
 
       <div className="grid gap-1.5">
         <label className="text-sm font-medium" htmlFor="instructor_website">
-          Website / LinkedIn / portfolio
+          {t("instructorProfile.fields.website.label")}
         </label>
         <Input
           id="instructor_website"
           value={website}
           onChange={(e) => setWebsite(e.target.value)}
-          placeholder="https://..., linkedin.com/in/..., portfolio cá nhân"
+          placeholder={t("instructorProfile.fields.website.placeholder")}
         />
       </div>
 
@@ -877,7 +957,7 @@ function InstructorProfileSection() {
           disabled={saving}
           className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
         >
-          {saving ? "Đang lưu..." : "Lưu hồ sơ giảng viên"}
+          {saving ? t("instructorProfile.actions.saving") : t("instructorProfile.actions.save")}
         </button>
       </div>
     </form>
@@ -885,6 +965,7 @@ function InstructorProfileSection() {
 }
 
 export function BillingSection() {
+  const { t } = useTranslation("account");
   const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<PaymentTransaction[] | null>(null);
@@ -898,32 +979,33 @@ export function BillingSection() {
       })
       .catch((e) => {
         if (!cancelled)
-          setError(e instanceof Error ? e.message : "Không lấy được lịch sử thanh toán.");
+          setError(
+            e instanceof Error ? e.message : t("billing.errors.fetchFailed"),
+          );
       });
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, t]);
 
   const transactionRows = transactions ?? [];
 
   return (
     <div className="space-y-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
       <div>
-        <h2 className="text-base font-semibold">Lịch sử thanh toán</h2>
+        <h2 className="text-base font-semibold">{t("billing.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Xem lại các lần đóng học phí, hoá đơn và thông tin liên quan để tiện
-          đối soát khi cần.
+          {t("billing.subtitle")}
         </p>
       </div>
 
       {!user ? (
         <div className="rounded-lg border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
-          Bạn cần đăng nhập để xem lịch sử thanh toán.
+          {t("billing.mustLogin")}
         </div>
       ) : transactions === null && !error ? (
         <div className="flex items-center gap-2 rounded-lg border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
-          <SpinnerGap className="size-4 animate-spin" /> Đang tải lịch sử...
+          <SpinnerGap className="size-4 animate-spin" /> {t("billing.loading")}
         </div>
       ) : error ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
@@ -931,34 +1013,36 @@ export function BillingSection() {
         </div>
       ) : transactionRows.length === 0 ? (
         <div className="rounded-lg border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
-          Chưa có giao dịch nào.
+          {t("billing.empty")}
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-border-subtle">
           <div className="divide-y divide-border-subtle md:hidden">
-            {transactionRows.map((t) => (
-              <div key={t.id} className="space-y-3 p-4">
+            {transactionRows.map((tx) => (
+              <div key={tx.id} className="space-y-3 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="font-medium text-foreground">
-                      {t.purpose === "course_purchase" ? "Mua khoá học" : "Phí chứng nhận"}
+                      {tx.purpose === "course_purchase"
+                        ? t("billing.purpose.coursePurchase")
+                        : t("billing.purpose.certificateFee")}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
-                      {new Date(t.created_at).toLocaleString("vi-VN")}
+                      {new Date(tx.created_at).toLocaleString(intlLocale())}
                     </div>
                   </div>
                   <span className="rounded-full border border-border-subtle bg-muted/40 px-2.5 py-1 text-[11px] text-muted-foreground">
-                    {t.status}
+                    {tx.status}
                   </span>
                 </div>
                 <div className="text-sm font-medium text-foreground">
-                  {formatVndPrice(t.amount_vnd)}
+                  {formatVndPrice(tx.amount_vnd)}
                 </div>
                 <div className="text-xs leading-5 text-muted-foreground">
-                  Course: {t.course_id}
+                  {t("billing.meta.course", { id: tx.course_id })}
                 </div>
                 <div className="text-xs leading-5 text-muted-foreground">
-                  Provider: {t.provider} · Order: {t.id}
+                  {t("billing.meta.providerOrder", { provider: tx.provider, order: tx.id })}
                 </div>
               </div>
             ))}
@@ -967,37 +1051,49 @@ export function BillingSection() {
           <table className="hidden w-full text-left text-sm md:table">
             <thead>
               <tr className="border-b border-border-subtle bg-muted/40">
-                <th className="px-4 py-3 font-medium text-foreground">Thời gian</th>
-                <th className="px-4 py-3 font-medium text-foreground">Nội dung</th>
-                <th className="px-4 py-3 font-medium text-foreground">Số tiền</th>
-                <th className="px-4 py-3 font-medium text-foreground">Trạng thái</th>
+                <th className="px-4 py-3 font-medium text-foreground">
+                  {t("billing.table.time")}
+                </th>
+                <th className="px-4 py-3 font-medium text-foreground">
+                  {t("billing.table.content")}
+                </th>
+                <th className="px-4 py-3 font-medium text-foreground">
+                  {t("billing.table.amount")}
+                </th>
+                <th className="px-4 py-3 font-medium text-foreground">
+                  {t("billing.table.status")}
+                </th>
               </tr>
             </thead>
             <tbody>
-              {transactionRows.map((t) => (
+              {transactionRows.map((tx) => (
                 <tr
-                  key={t.id}
+                  key={tx.id}
                   className="border-b border-border-subtle last:border-b-0 hover:bg-muted/30"
                 >
                   <td className="px-4 py-3 text-muted-foreground">
-                    {new Date(t.created_at).toLocaleString("vi-VN")}
+                    {new Date(tx.created_at).toLocaleString(intlLocale())}
                   </td>
                   <td className="px-4 py-3">
                     <div className="font-medium text-foreground">
-                      {t.purpose === "course_purchase"
-                        ? "Mua khoá học"
-                        : "Phí chứng nhận"}
+                      {tx.purpose === "course_purchase"
+                        ? t("billing.purpose.coursePurchase")
+                        : t("billing.purpose.certificateFee")}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Course: {t.course_id} · Provider: {t.provider} · Order: {t.id}
+                      {t("billing.meta.courseProviderOrder", {
+                        course: tx.course_id,
+                        provider: tx.provider,
+                        order: tx.id,
+                      })}
                     </div>
                   </td>
                   <td className="px-4 py-3 font-medium text-foreground">
-                    {formatVndPrice(t.amount_vnd)}
+                    {formatVndPrice(tx.amount_vnd)}
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-xs text-muted-foreground">
-                      {t.status}
+                      {tx.status}
                     </span>
                   </td>
                 </tr>
@@ -1011,6 +1107,7 @@ export function BillingSection() {
 }
 
 export function AccountProfileRoute() {
+  const { t } = useTranslation("account");
   const { user, profile, loading, refreshProfile } = useAuth();
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -1029,10 +1126,10 @@ export function AccountProfileRoute() {
       setAvatarUrl(url);
       await updateCurrentProfile({ avatar_url: url });
       await refreshProfile();
-      setSuccess("Đã cập nhật ảnh đại diện.");
+      setSuccess(t("profile.success.avatarUpdated"));
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Không thể tải ảnh lên.";
+        err instanceof Error ? err.message : t("profile.errors.avatarUploadFailed");
       setError(message);
     } finally {
       setUploadingAvatar(false);
@@ -1052,10 +1149,10 @@ export function AccountProfileRoute() {
         avatar_url: avatarUrl || null,
       });
       await refreshProfile();
-      setSuccess("Thông tin tài khoản đã được cập nhật.");
+      setSuccess(t("profile.success.updated"));
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Không thể cập nhật thông tin.";
+        err instanceof Error ? err.message : t("profile.errors.updateFailed");
       setError(message);
     } finally {
       setSaving(false);
@@ -1066,7 +1163,7 @@ export function AccountProfileRoute() {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <span className="text-muted-foreground">Đang tải thông tin...</span>
+          <span className="text-muted-foreground">{t("profile.loading")}</span>
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       </div>
@@ -1076,7 +1173,7 @@ export function AccountProfileRoute() {
   if (!user) {
     return (
       <div className="p-4 text-sm text-muted-foreground">
-        Bạn cần đăng nhập để xem trang này.
+        {t("profile.mustLogin")}
       </div>
     );
   }
@@ -1116,6 +1213,7 @@ export function AccountBillingRoute() {
 }
 
 function AccountSettingsSection() {
+  const { t } = useTranslation("account");
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { signOut } = useAuth();
@@ -1127,34 +1225,41 @@ function AccountSettingsSection() {
 
   return (
     <div className="space-y-4">
+      <LanguageSettingsCard />
       <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-base font-medium text-foreground">Giao diện</h2>
+            <h2 className="text-base font-medium text-foreground">
+              {t("settings.appearance.title")}
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Chọn chế độ hiển thị phù hợp với môi trường của bạn.
+              {t("settings.appearance.description")}
             </p>
           </div>
         </div>
 
         <div className="mt-4 rounded-md border border-border-subtle bg-background p-3">
           <div className="text-[12px] font-medium text-muted-foreground">
-            Theme
+            {t("settings.appearance.themeLabel")}
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
-            {(["light", "dark", "system"] as const).map((t) => (
+            {(["light", "dark", "system"] as const).map((themeOption) => (
               <button
-                key={t}
+                key={themeOption}
                 type="button"
-                onClick={() => setTheme(t)}
+                onClick={() => setTheme(themeOption)}
                 className={[
                   "h-9 rounded-full border px-3 text-sm font-medium transition-colors",
-                  (theme ?? "system") === t
+                  (theme ?? "system") === themeOption
                     ? "border-primary/25 bg-primary-container text-on-primary-container shadow-card"
                     : "border-border-subtle bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                 ].join(" ")}
               >
-                {t === "light" ? "Light" : t === "dark" ? "Dark" : "System"}
+                {themeOption === "light"
+                  ? t("settings.appearance.light")
+                  : themeOption === "dark"
+                    ? t("settings.appearance.dark")
+                    : t("settings.appearance.system")}
               </button>
             ))}
           </div>
@@ -1163,21 +1268,25 @@ function AccountSettingsSection() {
 
       <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
         <div className="min-w-0">
-          <h2 className="text-base font-medium text-foreground">Phiên đăng nhập</h2>
+          <h2 className="text-base font-medium text-foreground">
+            {t("settings.session.title")}
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Quản lý trạng thái đăng nhập trên thiết bị này.
+            {t("settings.session.description")}
           </p>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border-subtle bg-background p-3">
           <div className="min-w-0">
-            <div className="text-sm font-medium text-foreground">Đăng xuất</div>
+            <div className="text-sm font-medium text-foreground">
+              {t("settings.session.signOutTitle")}
+            </div>
             <div className="mt-1 text-[13px] leading-5 text-muted-foreground">
-              Kết thúc phiên hiện tại trên thiết bị này.
+              {t("settings.session.signOutDescription")}
             </div>
           </div>
           <Button type="button" variant="destructive" onClick={handleSignOut}>
-            Đăng xuất
+            {t("settings.session.signOutButton")}
           </Button>
         </div>
       </section>
@@ -1208,57 +1317,56 @@ export function InstructorWorkspaceProfileRoute() {
 export default function Account() {
   const { profile } = useAuth();
   const location = useLocation();
+  const { t } = useTranslation("account");
   const navItems = [
     {
       to: "/account/settings",
-      title: "Cài đặt",
-      description: "Theme, đăng xuất",
+      title: t("nav.settings.title"),
+      description: t("nav.settings.description"),
       icon: <Gear className="size-4" weight="duotone" />,
     },
     {
-      to: "/account",
-      end: true,
-      title: "Thông tin cá nhân",
-      description: "Họ tên, liên hệ, avatar",
+      to: "/account/profile",
+      end: false,
+      title: t("nav.profile.title"),
+      description: t("nav.profile.description"),
       icon: <UserCircle className="size-4" weight="duotone" />,
     },
     ...(profile?.role === "instructor"
       ? [
           {
             to: "/account/instructor",
-            title: "Hồ sơ giảng viên",
-            description: "Thông tin hiển thị cho học viên",
+            title: t("nav.instructor.title"),
+            description: t("nav.instructor.description"),
             icon: <GraduationCap className="size-4" weight="duotone" />,
           },
         ]
       : []),
     {
       to: "/account/cv",
-      title: "Hồ sơ học tập & CV",
-      description: "Thông tin phục vụ tư vấn & việc làm",
+      title: t("nav.cv.title"),
+      description: t("nav.cv.description"),
       icon: <IdentificationCard className="size-4" weight="duotone" />,
     },
     {
       to: "/account/billing",
-      title: "Thanh toán & lịch sử",
-      description: "Hoá đơn, lịch sử thanh toán",
+      title: t("nav.billing.title"),
+      description: t("nav.billing.description"),
       icon: <CreditCard className="size-4" weight="duotone" />,
     },
-  ] as const;
+  ];
 
   const accountRoleLabel =
     profile?.role === "instructor"
-      ? "Tài khoản giảng viên"
+      ? t("header.roleLabel.instructor")
       : profile?.role === "admin"
-        ? "Tài khoản quản trị"
+        ? t("header.roleLabel.admin")
         : profile?.role === "support_staff"
-        ? "Tài khoản học vụ"
-          : "Tài khoản học viên";
+        ? t("header.roleLabel.support_staff")
+          : t("header.roleLabel.student");
   const activeNavItem =
     navItems.find((item) =>
-      item.to === "/account"
-        ? location.pathname === "/account"
-        : location.pathname.startsWith(item.to),
+      location.pathname.startsWith(item.to),
     ) ?? navItems[0];
 
   // Layout cho khu vực account, nội dung từng tab được render qua nested routes (Outlet)
@@ -1271,25 +1379,30 @@ export default function Account() {
               {accountRoleLabel}
             </h1>
             <p className="mt-1.5 max-w-2xl text-[15px] text-muted-foreground">
-              Quản lý thông tin cá nhân, bảo mật, hồ sơ nghề nghiệp và toàn bộ
-              lịch sử thanh toán của bạn trong một nơi.
+              {t("header.subtitle")}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-md border border-border-subtle bg-background px-4 py-3 sm:col-span-1">
-              <p className="text-[12px] text-muted-foreground">Hồ sơ</p>
+              <p className="text-[12px] text-muted-foreground">
+                {t("header.summary.profileLabel")}
+              </p>
               <p className="mt-1 line-clamp-1 text-[15px] font-medium text-foreground">
-                {profile?.full_name || "Chưa cập nhật tên hiển thị"}
+                {profile?.full_name || t("header.summary.missingDisplayName")}
               </p>
             </div>
             <div className="rounded-md border border-border-subtle bg-background px-4 py-3">
-              <p className="text-[12px] text-muted-foreground">Vai trò</p>
+              <p className="text-[12px] text-muted-foreground">
+                {t("header.summary.roleLabel")}
+              </p>
               <p className="mt-1 line-clamp-1 text-[15px] font-medium text-foreground">
                 {profile?.role || "student"}
               </p>
             </div>
             <div className="rounded-md border border-border-subtle bg-background px-4 py-3">
-              <p className="text-[12px] text-muted-foreground">Trạng thái</p>
+              <p className="text-[12px] text-muted-foreground">
+                {t("header.summary.statusLabel")}
+              </p>
               <p className="mt-1 text-[15px] font-medium text-foreground">
                 Sẵn sàng học và theo dõi tiến độ
               </p>

@@ -11,26 +11,29 @@ import {
 import { createCourse, updateCourse } from "@/lib/courses";
 import { uploadCourseThumbnail } from "@/lib/storage";
 import {
-  COURSE_ACCESS_MODEL_LABELS,
-  COURSE_LEVEL_LABELS,
-  COURSE_OWNER_TYPE_LABELS,
   type CourseOwnerType,
   type CourseAccessModel,
   type CourseLevel,
+  getCourseAccessModelLabel,
+  getCourseLevelLabel,
+  getCourseOwnerTypeLabel,
 } from "@/types/courses";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { intlLocale } from "@/lib/intl";
+import { useTranslation } from "react-i18next";
 
 const normalizeVndDigits = (value: string) =>
   value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
 
 const formatVndInput = (value: string) =>
-  value ? Number(value).toLocaleString("vi-VN") : "";
+  value ? Number(value).toLocaleString(intlLocale()) : "";
 
 const InstructorCourseNew = () => {
+  const { t } = useTranslation("instructor");
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
@@ -100,22 +103,22 @@ const InstructorCourseNew = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile?.id || !profile?.full_name) {
-      setError("Vui lòng cập nhật họ tên trong Tài khoản.");
+      setError(t("courseNew.errors.missingProfileName"));
       return;
     }
     if (!form.title.trim()) {
-      setError("Nhập tên khoá học.");
+      setError(t("courseNew.errors.missingTitle"));
       return;
     }
     if (form.access_model === "paid_upfront" && Number(form.price_vnd) <= 0) {
-      setError("Nhập giá khoá học hợp lệ cho mô hình trả phí trước.");
+      setError(t("courseNew.errors.invalidPaidPrice"));
       return;
     }
     if (
       form.access_model === "free_with_paid_certificate" &&
       Number(form.certificate_fee_vnd) <= 0
     ) {
-      setError("Nhập phí chứng nhận hợp lệ cho mô hình học miễn phí.");
+      setError(t("courseNew.errors.invalidCertificateFee"));
       return;
     }
     if (
@@ -123,7 +126,7 @@ const InstructorCourseNew = () => {
       (Number(form.platform_revenue_share_percent) < 0 ||
         Number(form.platform_revenue_share_percent) > 100)
     ) {
-      setError("Tỷ lệ chia sẻ cho nền tảng phải từ 0 đến 100%.");
+      setError(t("courseNew.errors.invalidRevenueShare"));
       return;
     }
     setSaving(true);
@@ -171,10 +174,10 @@ const InstructorCourseNew = () => {
         }
       }
 
-      toast.success("Tạo khoá học thành công. Bạn có thể tiếp tục chỉnh sửa.");
+      toast.success(t("courseNew.toasts.created"));
       navigate(`/instructor/courses/${course.id}/edit`, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Lỗi tạo khoá học");
+      setError(err instanceof Error ? err.message : t("courseNew.errors.createFailed"));
     } finally {
       setSaving(false);
     }
@@ -195,8 +198,8 @@ const InstructorCourseNew = () => {
             </span>
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
               {profile?.instructor_origin === "external"
-                ? "Đối tác bên ngoài"
-                : "Giảng viên Corelia"}
+                ? t("courseNew.labels.originExternal")
+                : t("courseNew.labels.originCorelia")}
             </span>
           </div>
         </div>
@@ -206,14 +209,16 @@ const InstructorCourseNew = () => {
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
               Trạng thái
             </p>
-            <p className="mt-2 text-xl font-semibold text-foreground">Bản nháp</p>
+            <p className="mt-2 text-xl font-semibold text-foreground">
+              {t("courseNew.labels.draft")}
+            </p>
           </div>
           <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
               Loại truy cập
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
-              {COURSE_ACCESS_MODEL_LABELS[form.access_model]}
+              {getCourseAccessModelLabel(form.access_model)}
             </p>
           </div>
           <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
@@ -221,7 +226,7 @@ const InstructorCourseNew = () => {
               Sở hữu doanh thu
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
-              {COURSE_OWNER_TYPE_LABELS[form.owner_type]}
+              {getCourseOwnerTypeLabel(form.owner_type)}
             </p>
           </div>
           <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
@@ -229,7 +234,7 @@ const InstructorCourseNew = () => {
               Cấp độ
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
-              {COURSE_LEVEL_LABELS[form.level]}
+              {getCourseLevelLabel(form.level)}
             </p>
           </div>
         </div>
@@ -344,14 +349,14 @@ const InstructorCourseNew = () => {
             <form onSubmit={handleSubmit}>
               <FieldGroup className="mt-4">
                 <Field>
-                  <FieldLabel>Tên khoá học</FieldLabel>
+                  <FieldLabel>{t("courseNew.labels.title")}</FieldLabel>
                   <Input
                     value={form.title}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, title: e.target.value }))
                     }
                     onBlur={handleSlugFromTitle}
-                    placeholder="Ví dụ: React từ cơ bản đến nâng cao"
+                    placeholder={t("courseNew.placeholders.title")}
                     required
                   />
                 </Field>
@@ -366,7 +371,7 @@ const InstructorCourseNew = () => {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Mô tả ngắn</FieldLabel>
+                  <FieldLabel>{t("courseNew.labels.shortDescription")}</FieldLabel>
                   <Input
                     value={form.short_description}
                     onChange={(e) =>
@@ -375,11 +380,11 @@ const InstructorCourseNew = () => {
                         short_description: e.target.value,
                       }))
                     }
-                    placeholder="Một dòng mô tả (tuỳ chọn)"
+                    placeholder={t("courseNew.placeholders.shortDescription")}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Mô tả</FieldLabel>
+                  <FieldLabel>{t("courseNew.labels.description")}</FieldLabel>
                   <textarea
                     value={form.description}
                     onChange={(e) =>
@@ -387,11 +392,11 @@ const InstructorCourseNew = () => {
                     }
                     className="min-h-[100px] w-full rounded-lg border border-input bg-background px-3 py-2 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     rows={4}
-                    placeholder="Mô tả đầy đủ về khoá học..."
+                    placeholder={t("courseNew.placeholders.description")}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Ảnh bìa khoá học</FieldLabel>
+                  <FieldLabel>{t("courseNew.labels.thumbnail")}</FieldLabel>
                   <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center">
                     <input
                       ref={fileInputRef}
@@ -407,7 +412,9 @@ const InstructorCourseNew = () => {
                       disabled={uploadingThumb}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      {uploadingThumb ? "Đang tải ảnh..." : "Tải ảnh bìa lên"}
+                      {uploadingThumb
+                        ? t("courseNew.actions.uploadingThumb")
+                        : t("courseNew.actions.uploadThumb")}
                     </Button>
                     <img
                       src={thumbnailPreviewUrl ?? form.thumbnail_url}
@@ -419,7 +426,7 @@ const InstructorCourseNew = () => {
                 {showBusinessSettingsSection && (
                   <>
                     <Field>
-                      <FieldLabel>Loại khoá học theo sở hữu doanh thu</FieldLabel>
+                      <FieldLabel>{t("courseNew.labels.ownerType")}</FieldLabel>
                       <select
                         value={form.owner_type}
                         onChange={(e) =>
@@ -431,13 +438,16 @@ const InstructorCourseNew = () => {
                         disabled={!canManageBusinessSettings}
                         className="w-full rounded-lg border border-input bg-background px-3 py-2 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
                       >
-                        {Object.entries(COURSE_OWNER_TYPE_LABELS).map(
-                          ([value, label]) => (
-                            <option key={value} value={value}>
-                              {label}
-                            </option>
-                          ),
-                        )}
+                        {(
+                          [
+                            ["corelia", getCourseOwnerTypeLabel("corelia")],
+                            ["external_partner", getCourseOwnerTypeLabel("external_partner")],
+                          ] as const
+                        ).map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
                       </select>
                       {!canManageBusinessSettings && (
                         <p className="mt-1 text-xs text-muted-foreground">
@@ -447,7 +457,7 @@ const InstructorCourseNew = () => {
                     </Field>
                     {form.owner_type === "external_partner" && (
                       <Field>
-                        <FieldLabel>Tỷ lệ doanh thu nền tảng (%)</FieldLabel>
+                        <FieldLabel>{t("courseNew.labels.platformRevenueSharePercent")}</FieldLabel>
                         <Input
                           type="number"
                           min={0}
@@ -469,7 +479,7 @@ const InstructorCourseNew = () => {
                   </>
                 )}
                 <Field>
-                  <FieldLabel>Loại khoá học</FieldLabel>
+                  <FieldLabel>{t("courseNew.labels.accessModel")}</FieldLabel>
                   <select
                     value={form.access_model}
                     onChange={(e) =>
@@ -480,18 +490,25 @@ const InstructorCourseNew = () => {
                     }
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    {Object.entries(COURSE_ACCESS_MODEL_LABELS).map(
-                      ([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ),
-                    )}
+                    {(
+                      [
+                        ["free", getCourseAccessModelLabel("free")],
+                        ["paid_upfront", getCourseAccessModelLabel("paid_upfront")],
+                        [
+                          "free_with_paid_certificate",
+                          getCourseAccessModelLabel("free_with_paid_certificate"),
+                        ],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
                   </select>
                 </Field>
                 {form.access_model === "paid_upfront" && (
                   <Field>
-                    <FieldLabel>Giá khoá học (VND)</FieldLabel>
+                    <FieldLabel>{t("courseNew.labels.priceVnd")}</FieldLabel>
                     <Input
                       type="text"
                       inputMode="numeric"
@@ -502,7 +519,7 @@ const InstructorCourseNew = () => {
                           price_vnd: normalizeVndDigits(e.target.value),
                         }))
                       }
-                      placeholder="Ví dụ: 499.000"
+                      placeholder={t("courseNew.placeholders.priceVnd")}
                     />
                     <p className="mt-1 text-xs text-muted-foreground">
                       Đơn vị VND (đ), tự động định dạng khi nhập.
@@ -511,7 +528,7 @@ const InstructorCourseNew = () => {
                 )}
                 {form.access_model === "free_with_paid_certificate" && (
                   <Field>
-                    <FieldLabel>Phí chứng nhận / bài thu hoạch (VND)</FieldLabel>
+                    <FieldLabel>{t("courseNew.labels.certificateFeeVnd")}</FieldLabel>
                     <Input
                       type="text"
                       inputMode="numeric"
@@ -524,7 +541,7 @@ const InstructorCourseNew = () => {
                           ),
                         }))
                       }
-                      placeholder="Ví dụ: 199.000"
+                      placeholder={t("courseNew.placeholders.certificateFeeVnd")}
                     />
                     <p className="mt-1 text-xs text-muted-foreground">
                       Đơn vị VND (đ), tự động định dạng khi nhập.
@@ -532,7 +549,7 @@ const InstructorCourseNew = () => {
                   </Field>
                 )}
                 <Field>
-                  <FieldLabel>Cấp độ</FieldLabel>
+                  <FieldLabel>{t("courseNew.labels.level")}</FieldLabel>
                   <select
                     value={form.level}
                     onChange={(e) =>
@@ -543,13 +560,18 @@ const InstructorCourseNew = () => {
                     }
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    {Object.entries(COURSE_LEVEL_LABELS).map(
-                      ([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ),
-                    )}
+                    {(
+                      [
+                        ["beginner", getCourseLevelLabel("beginner")],
+                        ["intermediate", getCourseLevelLabel("intermediate")],
+                        ["advanced", getCourseLevelLabel("advanced")],
+                        ["all", getCourseLevelLabel("all")],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
                   </select>
                 </Field>
                 <Field>
@@ -574,7 +596,7 @@ const InstructorCourseNew = () => {
 
               <div className="mt-4 flex gap-3">
                 <Button type="submit" disabled={saving || uploadingThumb}>
-                  {saving ? "Đang tạo..." : "Tạo khoá học"}
+                  {saving ? t("courseNew.actions.creating") : t("courseNew.actions.create")}
                 </Button>
                 <Button
                   type="button"

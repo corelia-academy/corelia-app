@@ -3,6 +3,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { getCurrentProfile } from "@/lib/profile";
 import { useAuthStore } from "@/stores/authStore";
+import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
 
 /**
  * Đồng bộ session + profile từ Firebase vào auth store.
@@ -26,7 +27,11 @@ export function AuthSync() {
         setLoading(true);
         try {
           const p = await getCurrentProfile();
-          if (mounted) setProfile(p);
+          if (mounted) {
+            setProfile(p);
+            const locale = (p?.locale ?? DEFAULT_LANGUAGE) as SupportedLanguage;
+            void i18n.changeLanguage(locale);
+          }
         } catch (error) {
           console.error("Failed to load profile:", error);
           if (mounted) setProfile(null);
@@ -36,6 +41,7 @@ export function AuthSync() {
       } else {
         setProfile(null);
         setLoading(false);
+        void i18n.changeLanguage(DEFAULT_LANGUAGE);
       }
     });
 

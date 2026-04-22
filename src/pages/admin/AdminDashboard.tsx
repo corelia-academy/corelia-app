@@ -10,6 +10,7 @@ import type { DashboardPinnedProgram, DashboardPinnedProgramType } from "@/types
 import type { Course } from "@/types/courses";
 import type { Contest } from "@/types/contests";
 import type { OfflineCourse } from "@/types/offline";
+import { useTranslation } from "react-i18next";
 
 type ProgramOption = {
   value: string;
@@ -59,6 +60,7 @@ function toEditable(item: DashboardPinnedProgram, order: number): EditablePinned
 }
 
 export default function AdminDashboard() {
+  const { t } = useTranslation("admin");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +108,7 @@ export default function AdminDashboard() {
         setPrograms(normalized);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Không thể tải cấu hình dashboard.");
+          setError(err instanceof Error ? err.message : t("dashboard.errors.loadFailed"));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -117,7 +119,7 @@ export default function AdminDashboard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const programOptions = useMemo<ProgramOption[]>(() => {
     return [
@@ -125,22 +127,22 @@ export default function AdminDashboard() {
         value: item.id,
         label: item.title,
         type: "course" as const,
-        subtitle: "Khoá học online",
+        subtitle: t("dashboard.programType.course"),
       })),
       ...contests.map((item) => ({
         value: item.id,
         label: item.title,
         type: "contest" as const,
-        subtitle: "Contest",
+        subtitle: t("dashboard.programType.contest"),
       })),
       ...offlineCourses.map((item) => ({
         value: item.id,
         label: item.title,
         type: "offline_course" as const,
-        subtitle: "Chương trình offline",
+        subtitle: t("dashboard.programType.offlineCourse"),
       })),
     ];
-  }, [contests, courses, offlineCourses]);
+  }, [contests, courses, offlineCourses, t]);
 
   function updateProgram(index: number, patch: Partial<EditablePinnedProgram>) {
     setPrograms((prev) =>
@@ -172,9 +174,9 @@ export default function AdminDashboard() {
         }));
 
       await updateHomeDashboardConfig({ pinned_programs: payload });
-      setSaveMessage("Đã lưu cấu hình ghim chương trình lên dashboard.");
+      setSaveMessage(t("dashboard.toasts.saved"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể lưu cấu hình dashboard.");
+      setError(err instanceof Error ? err.message : t("dashboard.errors.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -187,19 +189,18 @@ export default function AdminDashboard() {
           <div>
             <div className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
               <PushPinSimple className="size-4" weight="duotone" />
-              Ghim chương trình trên dashboard
+              {t("dashboard.hero.eyebrow")}
             </div>
             <h2 className="mt-2 text-xl font-medium tracking-tight text-foreground">
-              Chọn tối đa 3 chương trình để đẩy lên Home của học viên
+              {t("dashboard.hero.title")}
             </h2>
             <p className="mt-1.5 max-w-3xl text-[14px] leading-6 text-muted-foreground">
-              Dashboard của học viên vẫn ưu tiên dữ liệu cá nhân. Khu vực này chỉ dành cho những
-              chương trình mà admin hoặc học vụ muốn nhấn mạnh trong một giai đoạn nhất định.
+              {t("dashboard.hero.description")}
             </p>
           </div>
           <Button onClick={() => void handleSave()} disabled={loading || saving}>
             <FloppyDiskBack className="size-4" weight="duotone" />
-            {saving ? "Đang lưu..." : "Lưu cấu hình"}
+            {saving ? t("dashboard.actions.saving") : t("dashboard.actions.save")}
           </Button>
         </div>
 
@@ -223,10 +224,10 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-                    Slot {index + 1}
+                    {t("dashboard.slot.label", { index: index + 1 })}
                   </div>
                   <div className="mt-1 text-sm font-medium text-foreground">
-                    {item.active ? "Đang bật" : "Đang tắt"}
+                    {item.active ? t("dashboard.slot.activeOn") : t("dashboard.slot.activeOff")}
                   </div>
                 </div>
                 <label className="inline-flex items-center gap-2 text-[13px] text-foreground">
@@ -235,13 +236,15 @@ export default function AdminDashboard() {
                     checked={item.active}
                     onChange={(e) => updateProgram(index, { active: e.target.checked })}
                   />
-                  Hiển thị
+                  {t("dashboard.slot.show")}
                 </label>
               </div>
 
               <div className="mt-4 space-y-3">
                 <div>
-                  <div className="mb-1 text-[12px] text-muted-foreground">Loại chương trình</div>
+                  <div className="mb-1 text-[12px] text-muted-foreground">
+                    {t("dashboard.form.programTypeLabel")}
+                  </div>
                   <select
                     value={item.type}
                     onChange={(e) =>
@@ -252,20 +255,22 @@ export default function AdminDashboard() {
                     }
                     className="h-10 w-full rounded-xl border border-input bg-background px-3 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <option value="course">Khoá học online</option>
-                    <option value="contest">Contest</option>
-                    <option value="offline_course">Chương trình offline</option>
+                    <option value="course">{t("dashboard.programType.course")}</option>
+                    <option value="contest">{t("dashboard.programType.contest")}</option>
+                    <option value="offline_course">{t("dashboard.programType.offlineCourse")}</option>
                   </select>
                 </div>
 
                 <div>
-                  <div className="mb-1 text-[12px] text-muted-foreground">Chương trình nguồn</div>
+                  <div className="mb-1 text-[12px] text-muted-foreground">
+                    {t("dashboard.form.programSourceLabel")}
+                  </div>
                   <select
                     value={item.ref_id}
                     onChange={(e) => updateProgram(index, { ref_id: e.target.value })}
                     className="h-10 w-full rounded-xl border border-input bg-background px-3 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <option value="">Chọn chương trình</option>
+                    <option value="">{t("dashboard.form.programSourcePlaceholder")}</option>
                     {programOptions
                       .filter((option) => option.type === item.type)
                       .map((option) => (
@@ -277,41 +282,49 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <div className="mb-1 text-[12px] text-muted-foreground">Badge tuỳ chỉnh</div>
+                  <div className="mb-1 text-[12px] text-muted-foreground">
+                    {t("dashboard.form.badgeLabel")}
+                  </div>
                   <Input
                     value={item.badge}
                     onChange={(e) => updateProgram(index, { badge: e.target.value })}
-                    placeholder="Ví dụ: Đang mở đăng ký"
+                    placeholder={t("dashboard.form.badgePlaceholder")}
                   />
                 </div>
 
                 <div>
-                  <div className="mb-1 text-[12px] text-muted-foreground">Tiêu đề override</div>
+                  <div className="mb-1 text-[12px] text-muted-foreground">
+                    {t("dashboard.form.titleOverrideLabel")}
+                  </div>
                   <Input
                     value={item.title_override}
                     onChange={(e) => updateProgram(index, { title_override: e.target.value })}
-                    placeholder="Để trống nếu dùng tiêu đề gốc"
+                    placeholder={t("dashboard.form.titleOverridePlaceholder")}
                   />
                 </div>
 
                 <div>
-                  <div className="mb-1 text-[12px] text-muted-foreground">Mô tả override</div>
+                  <div className="mb-1 text-[12px] text-muted-foreground">
+                    {t("dashboard.form.descriptionOverrideLabel")}
+                  </div>
                   <textarea
                     value={item.description_override}
                     onChange={(e) =>
                       updateProgram(index, { description_override: e.target.value })
                     }
-                    placeholder="Để trống nếu dùng mô tả gốc"
+                    placeholder={t("dashboard.form.descriptionOverridePlaceholder")}
                     className="min-h-24 w-full rounded-xl border border-input bg-background px-3 py-2 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
 
                 <div>
-                  <div className="mb-1 text-[12px] text-muted-foreground">Nhãn CTA</div>
+                  <div className="mb-1 text-[12px] text-muted-foreground">
+                    {t("dashboard.form.ctaLabel")}
+                  </div>
                   <Input
                     value={item.cta_label}
                     onChange={(e) => updateProgram(index, { cta_label: e.target.value })}
-                    placeholder="Ví dụ: Xem chương trình"
+                    placeholder={t("dashboard.form.ctaPlaceholder")}
                   />
                 </div>
               </div>
@@ -323,8 +336,7 @@ export default function AdminDashboard() {
           <div className="flex items-start gap-2">
             <Sparkle className="mt-0.5 size-4 shrink-0 text-primary" weight="duotone" />
             <span>
-              Dashboard chỉ hiển thị những slot đang bật và đã chọn chương trình nguồn. Nếu bạn
-              để trống tiêu đề hoặc mô tả override, hệ thống sẽ lấy nội dung từ chương trình gốc.
+              {t("dashboard.hint")}
             </span>
           </div>
         </div>

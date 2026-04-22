@@ -3,6 +3,9 @@
  * Firestore: courses, sections (sub), lessons (sub), enrollments, lesson_progress
  */
 
+import i18n from "@/i18n";
+import { intlLocale } from "@/lib/intl";
+
 export type CourseLevel = "beginner" | "intermediate" | "advanced" | "all";
 export type CourseAccessModel =
   | "free"
@@ -221,21 +224,23 @@ export const COURSE_OWNER_TYPE_LABELS: Record<CourseOwnerType, string> = {
 };
 
 export function getCourseLevelLabel(level: CourseLevel): string {
-  return COURSE_LEVEL_LABELS[level];
+  return i18n.t(`courses:level.${level}`, { defaultValue: COURSE_LEVEL_LABELS[level] });
 }
 
 export function getCourseAccessModelLabel(model?: CourseAccessModel): string {
-  return COURSE_ACCESS_MODEL_LABELS[model ?? "free"];
+  const key = model ?? "free";
+  return i18n.t(`courses:accessModel.${key}`, { defaultValue: COURSE_ACCESS_MODEL_LABELS[key] });
 }
 
 export function getCourseOwnerTypeLabel(ownerType?: CourseOwnerType): string {
-  return COURSE_OWNER_TYPE_LABELS[ownerType ?? "corelia"];
+  const key = ownerType ?? "corelia";
+  return i18n.t(`courses:ownerType.${key}`, { defaultValue: COURSE_OWNER_TYPE_LABELS[key] });
 }
 
 export function formatVndPrice(value?: number | null): string {
   const amount = Number(value ?? 0);
   if (!Number.isFinite(amount) || amount <= 0) return "0đ";
-  return `${amount.toLocaleString("vi-VN")}đ`;
+  return `${amount.toLocaleString(intlLocale())}đ`;
 }
 
 export function getInstructorSharePercent(course: Pick<Course, "owner_type" | "platform_revenue_share_percent">): number {

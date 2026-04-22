@@ -1,0 +1,314 @@
+{
+  "nav": {
+    "settings": {
+      "title": "Settings",
+      "description": "Theme, sign out"
+    },
+    "profile": {
+      "title": "Personal info",
+      "description": "Name, contact, avatar"
+    },
+    "instructor": {
+      "title": "Instructor profile",
+      "description": "Info visible to learners"
+    },
+    "cv": {
+      "title": "Learning profile & CV",
+      "description": "Info for advising & career support"
+    },
+    "billing": {
+      "title": "Billing & history",
+      "description": "Invoices, payment history"
+    }
+  },
+  "header": {
+    "roleLabel": {
+      "instructor": "Instructor account",
+      "admin": "Admin account",
+      "support_staff": "Support account",
+      "student": "Student account"
+    },
+    "subtitle": "Manage your personal info, security, career profile, and payment history in one place.",
+    "summary": {
+      "profileLabel": "Profile",
+      "roleLabel": "Role",
+      "statusLabel": "Status",
+      "missingDisplayName": "Display name not set"
+    }
+  },
+  "settings": {
+    "language": {
+      "title": "Language",
+      "description": "Change the app display language. When signed in, this preference is synced across your devices.",
+      "viMeta": "Vietnamese (VI)",
+      "enMeta": "English (EN)",
+      "active_vi": "Active",
+      "active_en": "Active"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Pick a theme that fits your environment.",
+      "themeLabel": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "session": {
+      "title": "Session",
+      "description": "Manage the sign-in state on this device.",
+      "signOutTitle": "Sign out",
+      "signOutDescription": "End the current session on this device.",
+      "signOutButton": "Sign out"
+    }
+  },
+  "common": {
+    "loading": "Working…",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "finish": "Finish"
+  },
+  "errors": {
+    "notLoggedIn": "Not signed in"
+  },
+  "password": {
+    "title": "Change password",
+    "subtitle": "Only applies to accounts signed in with Email & Password.",
+    "fields": {
+      "current": {
+        "label": "Current password",
+        "placeholder": "Enter current password"
+      },
+      "next": {
+        "label": "New password",
+        "placeholder": "At least 6 characters"
+      },
+      "confirm": {
+        "label": "Confirm new password",
+        "placeholder": "Re-enter new password"
+      }
+    },
+    "actions": {
+      "submit": "Change password"
+    },
+    "success": {
+      "changed": "Password changed successfully."
+    },
+    "errors": {
+      "confirmMismatch": "New password and confirmation do not match.",
+      "minLength": "New password must be at least 6 characters.",
+      "missingEmail": "Email not found. Only email-based accounts can change the password.",
+      "changeFailed": "Unable to change password."
+    }
+  },
+  "mfa": {
+    "title": "Two-factor security (MFA)",
+    "subtitle": "Add a phone number to receive SMS codes when signing in to keep your account safer.",
+    "factorLabel": "Verification phone number",
+    "providers": {
+      "google": "Google",
+      "github": "GitHub"
+    },
+    "enrolled": {
+      "title": "Enrolled factors:"
+    },
+    "actions": {
+      "addPhone": "Add verification phone number",
+      "sending": "Sending…",
+      "sendSms": "Send SMS code"
+    },
+    "reauth": {
+      "hint": "For security reasons, please re-authenticate before adding a phone number.",
+      "passwordLabel": "Current password",
+      "passwordPlaceholder": "Enter password",
+      "popupHint": "Click the button below to sign in again with {{provider}}."
+    },
+    "phone": {
+      "label": "Phone number (E.164, e.g. +84901234567)",
+      "placeholder": "+84 901 234 567"
+    },
+    "code": {
+      "hint": "Code sent. Enter the 6-digit code below.",
+      "label": "Verification code",
+      "placeholder": "000000"
+    },
+    "success": {
+      "enabled": "Two-factor authentication (SMS) enabled."
+    },
+    "errors": {
+      "reauthFailed": "Re-authentication failed. Please try again.",
+      "invalidPhone": "Invalid phone number (e.g. 0901234567 or +84901234567).",
+      "sendCodeFailed": "Unable to send code. Please try again.",
+      "enrollFailed": "Enrollment failed. Please try again."
+    }
+  },
+  "profile": {
+    "loading": "Loading profile…",
+    "mustLogin": "You need to sign in to view this page.",
+    "emailLoginLabel": "Sign-in email",
+    "avatar": {
+      "label": "Avatar",
+      "alt": "Avatar",
+      "upload": "Upload image",
+      "uploading": "Uploading…",
+      "hint": "JPG, PNG, or WebP. The image will be saved and updated immediately."
+    },
+    "fullName": {
+      "label": "Full name",
+      "placeholder": "Nguyen Van A",
+      "hint": "Used for certificates, transcripts, and invoices."
+    },
+    "phone": {
+      "label": "Contact phone",
+      "placeholder": "e.g. 09xxxxxxxx",
+      "hint": "Used by support staff to reach you when needed."
+    },
+    "actions": {
+      "saving": "Saving...",
+      "save": "Save changes"
+    },
+    "success": {
+      "avatarUpdated": "Avatar updated.",
+      "updated": "Account information updated."
+    },
+    "errors": {
+      "avatarUploadFailed": "Unable to upload image.",
+      "updateFailed": "Unable to update information."
+    }
+  },
+  "cv": {
+    "title": "Learning profile & CV",
+    "subtitle": "A consolidated profile for career advising, job referrals, and scholarship support.",
+    "comingSoon": {
+      "title": "CV management (coming soon)",
+      "body": "You will be able to upload a CV (PDF) and update your career information here. This helps instructors and support staff understand your context and better support your learning path.",
+      "note": "For now, you can add a CV link (Google Drive, Notion, etc.) to your extended profile description while this feature is being finalized."
+    },
+    "prep": {
+      "title": "Suggested info to prepare",
+      "items": {
+        "0": "Work experience / notable personal projects.",
+        "1": "Completed courses and relevant certificates.",
+        "2": "Technical skills and soft skills."
+      }
+    }
+  },
+  "instructorProfile": {
+    "onlyInstructors": "Only instructors can edit the teaching profile.",
+    "title": "Instructor profile",
+    "subtitle": "This is your public profile shown to learners on the instructor page and course pages.",
+    "completion": "{{percent}}% complete",
+    "common": {
+      "notUpdated": "Not updated"
+    },
+    "origin": {
+      "corelia": "Corelia instructor",
+      "external": "Partner instructor (external)",
+      "unknown": "Uncategorized"
+    },
+    "cards": {
+      "originLabel": "Instructor type",
+      "organizationLabel": "Organization",
+      "headlineLabel": "Headline",
+      "websiteLabel": "Website / Portfolio"
+    },
+    "tips": {
+      "organization": {
+        "title": "Show your organization",
+        "body": "Your organization gives learners more context about your expertise."
+      },
+      "intro": {
+        "title": "Short intro",
+        "body": "Your headline and bio should highlight strengths, experience, and teaching areas."
+      },
+      "externalProfile": {
+        "title": "Link external profile",
+        "body": "LinkedIn or a portfolio helps build trust when learners consider enrolling."
+      }
+    },
+    "fields": {
+      "origin": {
+        "label": "Instructor type",
+        "hint": "Instructor type can only be updated by support/admin."
+      },
+      "organization": {
+        "label": "Organization",
+        "placeholder": "e.g. Corelia, Company ABC, University XYZ..."
+      },
+      "headline": {
+        "label": "Headline",
+        "placeholder": "e.g. Senior Frontend Engineer, Data Analytics Mentor..."
+      },
+      "bio": {
+        "label": "Instructor bio",
+        "placeholder": "Share teaching experience, real projects, companies you've worked with, and your main expertise..."
+      },
+      "website": {
+        "label": "Website / LinkedIn / portfolio",
+        "placeholder": "https://..., linkedin.com/in/..., personal portfolio"
+      }
+    },
+    "actions": {
+      "saving": "Saving...",
+      "save": "Save instructor profile"
+    },
+    "success": {
+      "updated": "Instructor profile updated."
+    },
+    "errors": {
+      "updateFailed": "Unable to update instructor profile."
+    }
+  },
+  "billing": {
+    "title": "Payment history",
+    "subtitle": "Review tuition payments, invoices, and related details for easier reconciliation when needed.",
+    "mustLogin": "You need to sign in to view payment history.",
+    "loading": "Loading history...",
+    "empty": "No transactions yet.",
+    "purpose": {
+      "coursePurchase": "Course purchase",
+      "certificateFee": "Certificate fee"
+    },
+    "meta": {
+      "course": "Course: {{id}}",
+      "providerOrder": "Provider: {{provider}} · Order: {{order}}",
+      "courseProviderOrder": "Course: {{course}} · Provider: {{provider}} · Order: {{order}}"
+    },
+    "table": {
+      "time": "Time",
+      "content": "Description",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "errors": {
+      "fetchFailed": "Unable to load payment history."
+    }
+  },
+  "ocid": {
+    "card": {
+      "title": "Connect OCID",
+      "description": "Link your Open Campus ID to sync identity and wallet (if any) within the Open Campus ecosystem.",
+      "statusConnected": "Connected",
+      "statusDisconnected": "Not connected",
+      "initializing": "Initializing OCID SDK…",
+      "connectHint": "Click the button below to link OCID with your Corelia account.",
+      "ocidLabel": "OCID",
+      "ethAddressLabel": "ETH Address",
+      "disconnect": "Disconnect",
+      "connect": "Connect with OCID",
+      "loadingDisconnect": "Working…",
+      "loadingConnect": "Redirecting…"
+    },
+    "redirect": {
+      "finishing": "Finishing OCID linking…",
+      "connectFailedFallback": "Unable to link OCID. Please try again.",
+      "mustLoginFirst": "You need to sign in to Corelia before linking OCID.",
+      "missingOcidFromSession": "Couldn't retrieve OCID from the login session. Please reconnect."
+    },
+    "toasts": {
+      "startConnectFailed": "Unable to start OCID connection.",
+      "disconnectSuccess": "OCID disconnected.",
+      "disconnectFailed": "Unable to disconnect OCID."
+    }
+  }
+}
+

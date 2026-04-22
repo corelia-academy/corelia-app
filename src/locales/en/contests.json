@@ -1,0 +1,424 @@
+{
+  "status": {
+    "draft": "Draft",
+    "published": "Accepting applications",
+    "running": "Running",
+    "ended": "Ended",
+    "unknown": "—"
+  },
+  "location": {
+    "online": "Online",
+    "offline": "Offline",
+    "hybrid": "Hybrid",
+    "unknown": "—"
+  },
+  "registrationStatus": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "unknown": "—"
+  },
+  "catalog": {
+    "heroEyebrow": "Contests & ecosystem activities",
+    "heroTitle": "Corelia contests space",
+    "heroDescription": "Explore hackathons, mini contests, and multi-round activities open to the community. Participation is official only after Corelia reviews and approves your application.",
+    "pillReviewed": "Corelia-reviewed entry",
+    "pillTeamBased": "Team submissions",
+    "sectionWhyTitle": "Contests aren't just for winning — they're for learning and building in the real world",
+    "loadingTitle": "Loading contests...",
+    "loadingDescription": "Hackathons and contests will appear here once syncing is complete.",
+    "howItWorksEyebrow": "How Corelia runs contests",
+    "howItWorksDescription": "Each Corelia contest is designed like a hands-on real-world experience: an entry review round, mentors or judges, clear submission requirements, and outcomes strong enough to turn into a portfolio piece, workshop, or demo day.",
+    "whyBullets": {
+      "reviewFirst": "Applications are reviewed before official participation",
+      "realJourney": "Submissions and results reflect real learning progress",
+      "ecosystem": "Can extend to portfolios and ecosystem opportunities"
+    },
+    "dateRangeUnknown": "Schedule not announced yet",
+    "dateStartPrefix": "Starts {{date}}",
+    "dateEndPrefix": "Ends {{date}}",
+    "loadErrorFallback": "Unable to load contests.",
+    "emptyTitle": "No contests yet.",
+    "emptyDescriptionManager": "No public contests yet. Create and run contests in the instructor workspace before they appear here.",
+    "emptyDescriptionUser": "When Corelia announces new contests, you'll see the schedule and application requirements here.",
+    "registrationDeadlinePrefix": "Registration deadline {{date}}",
+    "registrationNoLimit": "No registration deadline",
+    "viewDetails": "View details",
+    "openWorkspace": "Open contests workspace",
+    "stats": {
+      "total": "Total contests",
+      "accepting": "Accepting applications",
+      "running": "Running",
+      "ended": "Ended"
+    },
+    "featuredEyebrow": "Featured",
+    "featured": {
+      "schedule": "Schedule",
+      "format": "Format",
+      "registrations": "Applications",
+      "submissions": "Submissions",
+      "registrationsCount": "{{count}} applications",
+      "submissionsCount": "{{count}} submissions"
+    },
+    "item": {
+      "formatPrefix": "Format: {{format}}",
+      "registrationsCount": "{{count}} applications",
+      "submissionsCount": "{{count}} submissions"
+    },
+    "sidebar": {
+      "leaderboardHint": "Judges score using a rubric; the leaderboard and winners are shown only after results are published."
+    }
+  },
+  "instructor": {
+    "statusLabel": {
+      "draft": "Draft",
+      "published": "Accepting applications",
+      "running": "Running",
+      "ended": "Ended",
+      "unknown": "—"
+    },
+    "locationLabel": {
+      "online": "Online",
+      "offline": "Offline",
+      "hybrid": "Hybrid",
+      "unknown": "—"
+    },
+    "dateRangeUnknown": "Schedule not announced yet",
+    "dateStartPrefix": "Starts {{date}}",
+    "dateEndPrefix": "Ends {{date}}",
+    "loadListFailed": "Unable to load contests list.",
+    "deleteSuccess": "Contest deleted.",
+    "deleteFailed": "Unable to delete contest right now.",
+    "loadingWorkspace": "Loading contests workspace...",
+    "hero": {
+      "eyebrow": "Contests workspace",
+      "title": "Managed contests",
+      "description": "Coordinate hackathons and contests alongside teaching operations, with judges, co-host partners, and a public contest page.",
+      "pillApplications": "Application review",
+      "pillJudging": "Judging flow",
+      "create": "Create new contest"
+    },
+    "featured": {
+      "eyebrow": "Featured",
+      "schedule": "Schedule",
+      "registrations": "Applications",
+      "submissions": "Submissions",
+      "publicSurface": "Public surface",
+      "publicDraft": "Not public",
+      "publicReady": "Ready for participants",
+      "openWorkspace": "Open workspace",
+      "viewPublic": "View public page"
+    },
+    "workflow": {
+      "eyebrow": "How it works",
+      "applicationsTitle": "Application review",
+      "applicationsDescription": "Corelia reviews applications and decides which teams advance.",
+      "judgingTitle": "Judging",
+      "judgingDescription": "Judges and co-host partners participate via dedicated roles (separate from course authoring).",
+      "publicTitle": "Public page",
+      "publicDescription": "Participants only see the overview, their application/submission, and published results."
+    },
+    "stats": {
+      "total": "Total contests",
+      "draft": "Draft",
+      "accepting": "Accepting applications",
+      "running": "Running",
+      "ended": "Ended",
+      "submissions": "Submissions"
+    },
+    "empty": {
+      "title": "No contests in this workspace yet.",
+      "createFirst": "Create your first contest"
+    },
+    "listItem": {
+      "pillPublicDraft": "Not public",
+      "pillPublicReady": "Has public page",
+      "metricsRegistrations": "{{total}} applications · {{approved}} approved",
+      "metricsSubmissions": "{{submissions}} submissions · {{winners}} winners",
+      "viewPublic": "View public page",
+      "openWorkspace": "Open workspace",
+      "delete": "Delete",
+      "deleteContest": "Delete contest"
+    },
+    "deleteDialog": {
+      "title": "Delete contest?",
+      "description": "This contest and all related data will be deleted. This action cannot be undone.",
+      "descriptionWithTitle": "Contest \"{{title}}\" and all applications, invites, submissions, and judging data will be deleted. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirmDeleting": "Deleting"
+    }
+  },
+  "instructorNew": {
+    "back": "Back to contests workspace",
+    "hero": {
+      "eyebrow": "Contest setup",
+      "title": "Create a new contest",
+      "description": "Build the public page, registration flow, and operations workspace for a new Corelia hackathon or contest.",
+      "pillMultiParty": "Multi-party flow",
+      "pillPublicOps": "Public + ops workspace"
+    },
+    "pillCards": {
+      "publicSurfaceTitle": "Public surface",
+      "publicSurfaceDescription": "Overview page and registration CTA",
+      "applicationsTitle": "Application review",
+      "applicationsDescription": "Corelia retains approval control",
+      "judgingTitle": "Judging",
+      "judgingDescription": "Rubric and role-based scoring",
+      "timelineTitle": "Timeline",
+      "timelineDescription": "Deadline, kickoff, publishing"
+    },
+    "readiness": {
+      "publicTitle": "Public page",
+      "publicDescription": "The contest page includes an overview, timeline, rules, and clear registration CTA.",
+      "applicationsTitle": "Application review",
+      "applicationsDescription": "Corelia reviews applications before granting submission access.",
+      "judgingTitle": "Judging flow",
+      "judgingDescription": "Judges are invited into the ops workspace to score using a weighted rubric."
+    },
+    "toasts": {
+      "created": "Contest created.",
+      "createFailed": "Unable to create contest."
+    },
+    "form": {
+      "titleLabel": "Contest title",
+      "titlePlaceholder": "e.g. Corelia Hackathon: AI for Education",
+      "titleDescription": "Shown in the list and on the contest detail page.",
+      "taglineLabel": "Short tagline",
+      "taglinePlaceholder": "e.g. Build in 48h • Mentors • Demo Day",
+      "taglineDescription": "Appears on the card and in the contest header.",
+      "statusLabel": "Status",
+      "statusOptions": {
+        "draft": "Draft",
+        "published": "Open for registration",
+        "running": "Running",
+        "ended": "Ended"
+      },
+      "locationLabel": "Format",
+      "locationOptions": {
+        "online": "Online",
+        "offline": "Offline",
+        "hybrid": "Hybrid"
+      },
+      "startsAtLabel": "Starts",
+      "endsAtLabel": "Ends",
+      "registrationDeadlineLabel": "Registration deadline",
+      "maxParticipantsLabel": "Approved applications limit",
+      "maxParticipantsPlaceholder": "Leave blank for no limit",
+      "maxParticipantsDescription": "If you need to cap participants/teams, set a limit here.",
+      "descriptionLabel": "Overview",
+      "descriptionPlaceholder": "Describe the theme, format, mentors, benefits, and key experience...",
+      "rulesLabel": "Requirements and rules",
+      "rulesPlaceholder": "Eligibility, judging criteria, submission format, demo requirements...",
+      "rulesDescription": "This will be shown on the detail page for participants to prepare."
+    }
+    ,
+    "actions": {
+      "back": "Back",
+      "create": "Create contest",
+      "creating": "Creating..."
+    },
+    "afterCreateChecklist": {
+      "eyebrow": "After creating"
+    },
+    "nextSteps": {
+      "eyebrow": "Next steps",
+      "intro": "The contest will open in the operations workspace so you can continue:",
+      "step1": "1. Invite judges and co-host partners.",
+      "step2": "2. Fine-tune the judging rubric.",
+      "step3": "3. Review applications and publish results."
+    }
+  },
+  "detail": {
+    "notUpdated": "Not updated",
+    "loading": {
+      "eyebrow": "Loading contest",
+      "title": "Loading contest details...",
+      "description": "Applications, invites, submissions, and judging will be ready in a moment."
+    },
+    "errorState": {
+      "description": "The link may have changed, the contest may not be published yet, or you're accessing a surface that no longer exists.",
+      "backToList": "Back to contests"
+    },
+    "manage": {
+      "sections": {
+        "applications": {
+          "label": "Applications",
+          "description": "Review applications and select teams for the next round"
+        },
+        "judging": {
+          "label": "Judging",
+          "description": "Score submissions and save notes"
+        },
+        "results": {
+          "label": "Results",
+          "description": "Leaderboard, winners, and aggregate reporting"
+        }
+      },
+      "overview": {
+        "label": "Overview",
+        "description": "Your role, the operating cadence, and the contest's current status."
+      },
+      "fallback": {
+        "label": "Contest workspace",
+        "description": "Coordinate between Corelia, judges, and co-host partners."
+      }
+    },
+    "journey": {
+      "step1": {
+        "title": "1. Apply",
+        "description": "Individuals or teams submit an application with motivation, portfolio, and contact details."
+      },
+      "step2": {
+        "title": "2. Get approved, then submit",
+        "description": "Corelia reviews applications before granting submission access to ensure a strong baseline."
+      },
+      "step3": {
+        "title": "3. Judges score and we publish",
+        "description": "Judges score with a rubric; the leaderboard and winners are shown only after results are published."
+      }
+    },
+    "lanes": {
+      "ops": {
+        "title": "Corelia operations",
+        "description": "Open the contest, review applications, invite collaborators, and publish official results."
+      },
+      "judge": {
+        "title": "Judge panel",
+        "description": "Access submissions, score with a rubric, and leave expert feedback."
+      },
+      "observer": {
+        "title": "Co-host observers",
+        "description": "Track aggregate metrics, leaderboard, and winners without seeing raw applications."
+      }
+    },
+    "actions": {
+      "deleteSuccess": "Contest deleted.",
+      "deleteErrorFallback": "Unable to delete the contest right now."
+    },
+    "cta": {
+      "continueSubmission": "Continue submission",
+      "submitSubmission": "Submit submission",
+      "approvedHelper": "Your application was approved. You can open the submissions area to update your submission.",
+      "viewApplicationStatus": "View application status",
+      "pendingHelper": "Corelia is reviewing your application before granting official access.",
+      "register": "Apply to join",
+      "registerHelper": "Applications are open. Submit yours to be reviewed by Corelia.",
+      "trackTimeline": "Track timeline",
+      "trackTimelineHelper": "Applications aren't open yet. You can review the timeline and wait for the application phase."
+    },
+    "errors": {
+      "notFound": "Contest not found.",
+      "loadFailed": "Unable to load the contest.",
+      "deleteAccessDeniedTitle": "Unable to access the contest",
+      "deleteAccessDeniedFallback": "Contest not found.",
+      "workspaceAccessDenied": "You don't have access to this contest's workspace."
+    },
+    "toasts": {
+      "contactEmailRequired": "Please enter a contact email so Corelia can follow up.",
+      "applicationMotivationTooShort": "Please describe your motivation and capabilities in more detail before submitting.",
+      "applicationSubmitted": "Application submitted. Corelia will review it before granting participation.",
+      "applicationSubmitFailed": "Unable to submit your application.",
+      "applicationReviewedApproved": "Application approved.",
+      "applicationReviewedRejected": "Application rejected.",
+      "applicationReviewUpdateFailed": "Unable to update the application.",
+      "contestStatusUpdated": "Contest status updated.",
+      "contestStatusUpdateFailed": "Unable to update the contest status.",
+      "inviteCreated": "Invite created.",
+      "inviteCreateFailed": "Unable to create the invite.",
+      "inviteAccepted": "Invite accepted.",
+      "inviteDeclined": "Invite declined.",
+      "inviteUpdateFailed": "Unable to update the invite.",
+      "inviteRevoked": "Access revoked.",
+      "inviteRevokeFailed": "Unable to revoke access.",
+      "rubricWeightMustBe100": "The total rubric weight must be 100 before saving.",
+      "rubricUpdated": "Rubric weights updated.",
+      "rubricUpdateFailed": "Unable to update the rubric.",
+      "submissionSummaryTooShort": "Please write a clearer submission summary before saving.",
+      "submissionSaved": "Submission saved.",
+      "submissionSaveFailed": "Unable to save the submission.",
+      "scoreCriterionOutOfRange": "Each criterion must be between 0 and 25.",
+      "scoreSaved": "Scores saved.",
+      "scoreSaveFailed": "Unable to save scores.",
+      "metricsRefreshed": "Metrics snapshot refreshed.",
+      "metricsRefreshFailed": "Unable to refresh metrics.",
+      "publishNeedsScoredSubmission": "At least one scored submission is required before publishing results.",
+      "publishNeedsAward": "Please enter at least one award before publishing.",
+      "resultsPublished": "Leaderboard and winners published.",
+      "publishFailed": "Unable to publish results.",
+      "inviteLinkCopied": "Invite link copied."
+    },
+    "forms": {
+      "awards": {
+        "awardPlaceholder": "e.g. Champion",
+        "notePlaceholder": "Additional note"
+      },
+      "invite": {
+        "emailPlaceholder": "invitee email",
+        "displayNamePlaceholder": "Display name",
+        "organizationPlaceholder": "Organization / school",
+        "notePlaceholder": "Invite note"
+      },
+      "submission": {
+        "titlePlaceholder": "Submission title",
+        "summaryPlaceholder": "Summarize the solution, the problem solved, and key highlights",
+        "demoUrlPlaceholder": "Demo URL",
+        "repoUrlPlaceholder": "Repo URL",
+        "slideUrlPlaceholder": "Slide URL",
+        "submitLabel": "Submit submission",
+        "updateLabel": "Update submission"
+      },
+      "application": {
+        "closedHint": "Applications are not open yet. When Corelia changes the status to “Accepting applications”, the application form will appear here.",
+        "teamNamePlaceholder": "Team name",
+        "teamMembersPlaceholder": "Other members, one per line",
+        "contactEmailPlaceholder": "Contact email",
+        "contactPhonePlaceholder": "Contact phone",
+        "portfolioPlaceholder": "Portfolio / GitHub / LinkedIn",
+        "motivationPlaceholder": "Describe your capabilities, motivation, and the idea you plan to bring to the contest...",
+        "submitLabel": "Submit application"
+      }
+    },
+    "dialogs": {
+      "delete": {
+        "title": "Delete contest?",
+        "descriptionManager": "This contest and all related data will be deleted. This action cannot be undone."
+      }
+    },
+    "labels": {
+      "manageArea": "Contest workspace",
+      "publicType": "Hackathon",
+      "unlimited": "Unlimited",
+      "contextManage": "Contest context",
+      "contextPublic": "About this contest",
+      "rulesManage": "Rules, format, and operating principles",
+      "rulesPublic": "Rules and requirements",
+      "rulesEmpty": "Corelia will add guidelines, judging criteria, and submission formats here.",
+      "refreshing": "Refreshing...",
+      "refreshMetrics": "Refresh metrics",
+      "defaultSoloRegistration": "Solo application",
+      "contact": "Contact:",
+      "notProvided": "Not provided",
+      "noDataDash": "—",
+      "noDemo": "Not available",
+      "saving": "Saving...",
+      "saveScore": "Save score",
+      "publishing": "Publishing...",
+      "publishResults": "Publish leaderboard and winners",
+      "saveStatus": "Save status",
+      "saveRubric": "Save rubric",
+      "creating": "Creating...",
+      "sendInvite": "Send invite",
+      "soloOrUnnamedTeam": "Solo application / team not named yet"
+    },
+    "inviteEmail": {
+      "subjectPrefix": "Contest collaboration invite: {{title}}",
+      "greeting": "Hi {{name}},",
+      "invitedLine": "You're invited to join the contest \"{{title}}\" with role(s): {{roles}}.",
+      "accessLinkLine": "Access link: {{link}}",
+      "notePrefix": "Note: {{note}}",
+      "signOff": "Best regards,",
+      "brand": "Corelia"
+    }
+  }
+}
+

@@ -4,15 +4,22 @@ import { LoginCallBack, useOCAuth } from "@opencampus/ocid-connect-js";
 import { updateOCIDProfile } from "@/lib/profile";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/stores/authStore";
+import { useTranslation } from "react-i18next";
+
+type OCAuthStateMaybe = {
+  OCId?: string;
+  ethAddress?: string;
+} | null | undefined;
 
 function Loading() {
+  const { t } = useTranslation("account");
   return (
     <div className="container-app py-10">
       <div className="rounded-2xl border border-border-subtle bg-card p-6 shadow-card">
         <div className="flex items-center gap-3">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <div className="text-sm text-muted-foreground">
-            Đang hoàn tất liên kết OCID…
+            {t("ocid.redirect.finishing")}
           </div>
         </div>
       </div>
@@ -21,17 +28,19 @@ function Loading() {
 }
 
 function ErrorView() {
+  const { t } = useTranslation("account");
   const { authState } = useOCAuth();
   return (
     <div className="container-app py-10">
       <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
-        {authState.error?.message ?? "Không thể liên kết OCID. Vui lòng thử lại."}
+        {authState.error?.message ?? t("ocid.redirect.connectFailedFallback")}
       </div>
     </div>
   );
 }
 
 export default function OCIDRedirect() {
+  const { t } = useTranslation("account");
   const navigate = useNavigate();
   const { refreshProfile } = useAuth();
   const { OCId, ethAddress, ocAuth } = useOCAuth();
@@ -43,25 +52,26 @@ export default function OCIDRedirect() {
         setError(null);
         const user = auth.currentUser;
         if (!user) {
-          setError("Bạn cần đăng nhập Corelia trước khi liên kết OCID.");
+          setError(t("ocid.redirect.mustLoginFirst"));
           navigate("/login", { replace: true });
           return;
         }
 
         const authState = ocAuth?.getAuthState?.();
+        const maybe = (authState && typeof authState === "object"
+          ? (authState as OCAuthStateMaybe)
+          : undefined);
         const resolvedOCId =
-          (authState && "OCId" in authState ? (authState as any).OCId : undefined) ??
+          (maybe?.OCId ?? undefined) ??
           OCId ??
           null;
         const resolvedEth =
-          (authState && "ethAddress" in authState
-            ? (authState as any).ethAddress
-            : undefined) ??
+          (maybe?.ethAddress ?? undefined) ??
           ethAddress ??
           null;
 
         if (!resolvedOCId) {
-          setError("Không lấy được OCID từ phiên đăng nhập. Vui lòng thử kết nối lại.");
+          setError(t("ocid.redirect.missingOcidFromSession"));
           navigate("/account", { replace: true });
           return;
         }
@@ -75,11 +85,11 @@ export default function OCIDRedirect() {
       },
       errorCallback: (e: unknown) => {
         const message =
-          e instanceof Error ? e.message : "Không thể liên kết OCID. Vui lòng thử lại.";
+          e instanceof Error ? e.message : t("ocid.redirect.connectFailedFallback");
         setError(message);
       },
     };
-  }, [OCId, ethAddress, navigate, ocAuth, refreshProfile]);
+  }, [OCId, ethAddress, navigate, ocAuth, refreshProfile, t]);
 
   return (
     <div className="min-h-[60vh]">

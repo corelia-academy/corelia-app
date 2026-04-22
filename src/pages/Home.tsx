@@ -28,6 +28,9 @@ import type { Contest } from "@/types/contests";
 import type { HomeDashboardConfig } from "@/types/dashboard";
 import type { OfflineCourse } from "@/types/offline";
 import type { Course, Enrollment } from "@/types/courses";
+import { intlLocale } from "@/lib/intl";
+import i18n from "@/i18n";
+import { useTranslation } from "react-i18next";
 
 type FocusCard = {
   id: string;
@@ -57,11 +60,13 @@ function formatCourseMeta(
 ): string {
   const durationHours =
     course.total_duration_seconds && course.total_duration_seconds > 0
-      ? `${Math.max(1, Math.round(course.total_duration_seconds / 3600))} giờ`
-      : "tự học";
+      ? i18n.t("common:home.meta.hours", {
+          count: Math.max(1, Math.round(course.total_duration_seconds / 3600)),
+        })
+      : i18n.t("common:home.meta.selfPaced");
   return format === "online"
     ? `${durationHours} · ${course.level}`
-    : `lớp trực tiếp · ${course.level}`;
+    : `${i18n.t("common:home.meta.offlinePrefix")} · ${course.level}`;
 }
 
 function pickCourseFormat(course: Course): "online" | "offline" {
@@ -69,6 +74,7 @@ function pickCourseFormat(course: Course): "online" | "offline" {
 }
 
 export default function Home() {
+  const { t } = useTranslation("common");
   const { profile, user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [courseCatalog, setCourseCatalog] = useState<Course[]>([]);
@@ -84,7 +90,7 @@ export default function Home() {
     (!profile.full_name || !profile.phone);
 
   const displayName =
-    profile?.full_name?.trim() || user?.displayName || "Học viên";
+    profile?.full_name?.trim() || user?.displayName || t("home.studentFallback");
   const firstName = displayName.split(" ")[0] || displayName;
   const email = profile?.email || user?.email || "";
   const avatarUrl = profile?.avatar_url || user?.photoURL || undefined;
@@ -165,9 +171,11 @@ export default function Home() {
                 nextStep:
                   format === "online"
                     ? nextLesson?.title
-                      ? `Bài tiếp theo: ${nextLesson.title}`
-                      : "Bạn đã hoàn thành toàn bộ bài học hiện có"
-                    : `Lần truy cập gần nhất: ${new Date(enrollment.last_accessed_at).toLocaleDateString("vi-VN")}`,
+                      ? t("home.focus.nextLesson", { title: nextLesson.title })
+                      : t("home.focus.allLessonsCompleted")
+                    : t("home.focus.lastAccessed", {
+                        date: new Date(enrollment.last_accessed_at).toLocaleDateString(intlLocale()),
+                      }),
                 meta: formatCourseMeta(course, format),
                 action: `/learn/${course.id}`,
                 thumbnailUrl: course.thumbnail_url,
@@ -196,41 +204,41 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, t]);
 
   const momentumCards = useMemo(
     () => [
       {
-        label: "Đang học",
+        label: t("home.momentum.learning.label"),
         value: String(focusCards.length),
         note:
           focusCards.length > 0
             ? `${focusCards.filter((item) => item.format === "online").length} online · ${
                 focusCards.filter((item) => item.format === "offline").length
               } offline`
-            : "Chưa có khóa nào đang theo dõi",
+            : t("home.momentum.learning.emptyNote"),
         icon: MonitorPlay,
       },
       {
-        label: "Contest đang mở",
+        label: t("home.momentum.contests.label"),
         value: String(contests.length),
         note:
           contests.length > 0
-            ? "Hackathon · mini contest · hoạt động hệ sinh thái"
-            : "Chưa có contest mới",
+            ? t("home.momentum.contests.note")
+            : t("home.momentum.contests.emptyNote"),
         icon: Trophy,
       },
       {
-        label: "Chứng chỉ đã cấp",
+        label: t("home.momentum.certificates.label"),
         value: String(issuedCertificates),
         note:
           issuedCertificates > 0
-            ? "Theo dõi toàn bộ trong mục Thành tích"
-            : "Chưa có chứng chỉ nào được cấp",
+            ? t("home.momentum.certificates.note")
+            : t("home.momentum.certificates.emptyNote"),
         icon: Medal,
       },
     ],
-    [contests.length, focusCards, issuedCertificates],
+    [contests.length, focusCards, issuedCertificates, t],
   );
 
   const featuredFocus = focusCards[0] ?? null;
@@ -247,27 +255,27 @@ export default function Home() {
           if (enrolledCourse) {
             return {
               id: item.id,
-              badge: item.badge || "Lộ trình online",
+              badge: item.badge || t("home.pinned.badges.onlinePath"),
               title: item.title_override || enrolledCourse.title,
               description:
                 item.description_override ||
                 `Ưu tiên cho giai đoạn này của dashboard. ${enrolledCourse.nextStep}`,
               to: `/courses/${enrolledCourse.id}`,
-              cta: item.cta_label || "Xem khoá học",
+              cta: item.cta_label || t("home.pinned.cta.viewCourse"),
               meta: enrolledCourse.meta,
             };
           }
           if (catalogCourse) {
             return {
               id: item.id,
-              badge: item.badge || "Lộ trình online",
+              badge: item.badge || t("home.pinned.badges.onlinePath"),
               title: item.title_override || catalogCourse.title,
               description:
                 item.description_override ||
                 catalogCourse.short_description ||
                 catalogCourse.description,
               to: `/courses/${catalogCourse.id}`,
-              cta: item.cta_label || "Xem khoá học",
+              cta: item.cta_label || t("home.pinned.cta.viewCourse"),
               meta: formatCourseMeta(catalogCourse, pickCourseFormat(catalogCourse)),
             };
           }
@@ -279,15 +287,17 @@ export default function Home() {
           if (!contest) return null;
           return {
             id: item.id,
-            badge: item.badge || "Sân chơi hệ sinh thái",
+            badge: item.badge || t("home.pinned.badges.ecosystemPlayground"),
             title: item.title_override || contest.title,
             description: item.description_override || contest.tagline,
             to: `/contests/${contest.id}`,
-            cta: item.cta_label || "Xem contest",
+            cta: item.cta_label || t("home.pinned.cta.viewContest"),
             meta:
               contest.registration_deadline != null
-                ? `Hạn đăng ký ${new Date(contest.registration_deadline).toLocaleDateString("vi-VN")}`
-                : "Đang mở trong hệ sinh thái Corelia",
+                ? t("home.pinned.contest.registrationDeadline", {
+                    date: new Date(contest.registration_deadline).toLocaleDateString(intlLocale()),
+                  })
+                : t("home.pinned.contest.openInEcosystem"),
           };
         }
 
@@ -295,17 +305,17 @@ export default function Home() {
         if (!offlineCourse) return null;
         return {
           id: item.id,
-          badge: item.badge || "Lớp trực tiếp",
+          badge: item.badge || t("home.pinned.badges.offlineClass"),
           title: item.title_override || offlineCourse.title,
           description: item.description_override || offlineCourse.tagline,
           to: `/cohorts/${offlineCourse.id}`,
-          cta: item.cta_label || "Xem chương trình",
-          meta: offlineCourse.venue_city || "Corelia Campus",
+          cta: item.cta_label || t("home.pinned.cta.viewProgram"),
+          meta: offlineCourse.venue_city || t("home.pinned.offlineCampusFallback"),
         };
       })
       .filter((item): item is PinnedProgramCard => item != null)
       .slice(0, 1);
-  }, [contests, courseCatalog, dashboardConfig, focusCards, offlineCourses]);
+  }, [contests, courseCatalog, dashboardConfig, focusCards, offlineCourses, t]);
 
   const activePinnedProgram = pinnedPrograms[0] ?? null;
 
@@ -318,16 +328,15 @@ export default function Home() {
             <section className="rounded-lg border border-border-subtle bg-card p-5 shadow-card sm:p-6">
               <div className="text-xs text-muted-foreground">Corelia Academy</div>
               <h1 className="mt-2 text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
-                Bắt đầu hành trình học Web3 cùng Corelia
+                {t("home.guest.heroTitle")}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Khám phá khoá học, chương trình và contest đang mở. Khi cần lưu tiến độ
-                hoặc đăng ký, bạn chỉ cần đăng nhập.
+                {t("home.guest.heroSubtitle")}
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button render={<NavLink to="/courses" />} nativeButton={false}>
-                  Khám phá khoá học
+                  {t("home.exploreCourses")}
                   <ArrowRight className="size-4" />
                 </Button>
                 <Button
@@ -335,7 +344,7 @@ export default function Home() {
                   nativeButton={false}
                   variant="outline"
                 >
-                  Đăng nhập
+                  {t("home.guest.signIn")}
                 </Button>
               </div>
             </section>
@@ -422,7 +431,7 @@ export default function Home() {
                           <div className="mt-2 text-[12px] text-muted-foreground">
                             Hạn đăng ký{" "}
                             {new Date(contest.registration_deadline).toLocaleDateString(
-                              "vi-VN",
+                              intlLocale(),
                             )}
                           </div>
                         ) : null}
@@ -438,10 +447,10 @@ export default function Home() {
           <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
             <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
               <div className="text-sm font-medium text-foreground">
-                Bắt đầu hành trình học tập
+                {t("home.guest.startLearningTitle")}
               </div>
               <p className="mt-1.5 text-[13px] leading-6 text-muted-foreground">
-                Đăng nhập để lưu tiến độ, theo dõi chứng chỉ và gửi hồ sơ tham gia contest.
+                {t("home.guest.startLearningSubtitle")}
               </p>
               <div className="mt-4 grid gap-2">
                 <Button
@@ -449,7 +458,7 @@ export default function Home() {
                   render={<NavLink to="/login" />}
                   nativeButton={false}
                 >
-                  Đăng nhập
+                  {t("home.guest.signIn")}
                 </Button>
                 <Button
                   className="w-full"
@@ -457,7 +466,7 @@ export default function Home() {
                   nativeButton={false}
                   variant="outline"
                 >
-                  Khám phá khoá học
+                  {t("home.exploreCourses")}
                 </Button>
               </div>
             </section>
@@ -465,13 +474,13 @@ export default function Home() {
             <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
               <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
                 <Chalkboard className="size-4" weight="duotone" />
-                Lối đi nhanh
+                {t("home.guest.quickLinksTitle")}
               </div>
               <div className="mt-4 space-y-2">
                 {[
-                  { label: "Tất cả khoá học", to: "/courses" },
-                  { label: "Cuộc thi", to: "/contests" },
-                  { label: "Lớp học", to: "/cohorts" },
+                  { label: t("home.allCourses"), to: "/courses" },
+                  { label: t("home.guest.quickLinks.contests"), to: "/contests" },
+                  { label: t("home.guest.quickLinks.cohorts"), to: "/cohorts" },
                 ].map((item) => (
                   <NavLink
                     key={item.to}
@@ -497,13 +506,13 @@ export default function Home() {
           <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card sm:p-5">
             <div className="flex flex-col gap-2">
               <div className="text-xs text-muted-foreground">
-                {loading ? "Đang đồng bộ..." : "Dashboard"}
+                {loading ? t("home.syncing") : t("home.dashboard")}
               </div>
               <h1 className="text-2xl font-medium tracking-tight text-foreground">
-                Xin chào, {firstName}
+                {t("home.sections.greeting", { name: firstName })}
               </h1>
               <p className="text-sm leading-6 text-muted-foreground">
-                Theo dõi khoá học, contest và thành tích trong một nơi.
+                {t("home.sections.greetingSubtitle")}
               </p>
             </div>
 
@@ -523,7 +532,9 @@ export default function Home() {
               ) : featuredFocus ? (
                 <div className="min-w-0">
                   <div className="inline-flex items-center rounded-full border border-border-subtle bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                    {featuredFocus.format === "online" ? "Khoá đang học" : "Lớp đang theo"}
+                    {featuredFocus.format === "online"
+                      ? t("home.sections.featuredOnline")
+                      : t("home.sections.featuredOffline")}
                   </div>
                   <div className="mt-2 line-clamp-2 text-sm font-medium text-foreground">
                     {featuredFocus.title}
@@ -533,7 +544,7 @@ export default function Home() {
                   </div>
                   <div className="mt-3">
                     <div className="flex items-center justify-between text-[12px] text-muted-foreground">
-                      <span>Tiến độ</span>
+                      <span>{t("home.sections.progress")}</span>
                       <span>{featuredFocus.progress}%</span>
                     </div>
                     <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
@@ -547,10 +558,10 @@ export default function Home() {
               ) : (
                 <div className="min-w-0">
                   <div className="text-sm font-medium text-foreground">
-                    Bắt đầu từ thư viện khoá học
+                    {t("home.sections.startFromCatalogTitle")}
                   </div>
                   <div className="mt-1 text-[13px] leading-5 text-muted-foreground">
-                    Chọn một khoá học nền tảng để tạo nhịp học tập.
+                    {t("home.sections.startFromCatalogSubtitle")}
                   </div>
                 </div>
               )}
@@ -564,7 +575,7 @@ export default function Home() {
                   size="sm"
                 >
                   {activePinnedProgram?.cta ??
-                    (featuredFocus ? "Tiếp tục học" : "Khám phá khoá học")}
+                    (featuredFocus ? t("home.continueLearning") : t("home.exploreCourses"))}
                   <ArrowRight className="size-4" />
                 </Button>
                 <Button
@@ -610,7 +621,9 @@ export default function Home() {
 
           <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
             <div className="flex items-center justify-between gap-3">
-              <div className="text-sm font-medium text-foreground">Tiếp tục học</div>
+              <div className="text-sm font-medium text-foreground">
+                {t("home.continueLearning")}
+              </div>
               <Button
                 render={<NavLink to="/courses" />}
                 nativeButton={false}
@@ -618,7 +631,7 @@ export default function Home() {
                 size="sm"
                 className="-mr-2"
               >
-                Xem tất cả
+                {t("home.sections.seeAll")}
                 <ArrowRight className="size-4" />
               </Button>
             </div>
@@ -639,7 +652,7 @@ export default function Home() {
                     </div>
                     <div className="mt-2">
                       <div className="flex items-center justify-between text-[12px] text-muted-foreground">
-                        <span>Tiến độ</span>
+                        <span>{t("home.sections.progress")}</span>
                         <span>{item.progress}%</span>
                       </div>
                       <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
@@ -657,14 +670,16 @@ export default function Home() {
               </div>
             ) : (
               <div className="mt-3 text-[13px] leading-6 text-muted-foreground">
-                Khi bạn ghi danh hoặc mua khoá học đầu tiên, khu vực này sẽ hiện tiến độ và lối vào nhanh.
+                {t("home.sections.enrollHint")}
               </div>
             )}
           </section>
 
           <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
             <div className="flex items-center justify-between gap-3">
-              <div className="text-sm font-medium text-foreground">Khám phá</div>
+              <div className="text-sm font-medium text-foreground">
+                {t("home.sections.exploreTitle")}
+              </div>
               <Button
                 render={<NavLink to="/courses" />}
                 nativeButton={false}
@@ -672,7 +687,7 @@ export default function Home() {
                 size="sm"
                 className="-mr-2"
               >
-                Tới thư viện
+                {t("home.sections.goToLibrary")}
                 <ArrowRight className="size-4" />
               </Button>
             </div>
@@ -744,7 +759,9 @@ export default function Home() {
                   </div>
                 ) : null}
                 <div className="mt-1 text-[12px] text-muted-foreground">
-                  {profile?.role || "Học viên"}
+                  {profile?.role
+                    ? i18n.t(`auth:roles.${profile.role}`, { defaultValue: profile.role })
+                    : t("home.studentFallback")}
                 </div>
               </div>
             </div>
@@ -756,14 +773,14 @@ export default function Home() {
                 variant="outline"
                 className="flex-1"
               >
-                Hồ sơ
+                {t("nav.account")}
               </Button>
               <Button
                 render={<NavLink to="/achievements" />}
                 nativeButton={false}
                 className="flex-1"
               >
-                Thành tích
+                {t("nav.achievements")}
               </Button>
             </div>
           </section>
@@ -771,12 +788,12 @@ export default function Home() {
           <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
             <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
               <Chalkboard className="size-4" weight="duotone" />
-              Lối đi nhanh
+              {t("home.guest.quickLinksTitle")}
             </div>
             <div className="mt-4 space-y-2">
               {[
-                { label: "Tất cả khoá học", to: "/courses" },
-                { label: "Cuộc thi", to: "/contests" },
+                { label: t("home.allCourses"), to: "/courses" },
+                { label: t("nav.contests"), to: "/contests" },
               ].map((item) => (
                 <NavLink
                   key={item.to}

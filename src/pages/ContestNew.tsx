@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { createContest } from "@/lib/contests";
 import type { ContestLocation, ContestStatus } from "@/types/contests";
+import { useTranslation } from "react-i18next";
 
 function toIsoOrNull(value: string): string | null {
   if (!value.trim()) return null;
@@ -20,6 +21,7 @@ function toIsoOrNull(value: string): string | null {
 }
 
 export default function ContestNew() {
+  const { t } = useTranslation("contests");
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [tagline, setTagline] = useState("");
@@ -39,19 +41,19 @@ export default function ContestNew() {
   const readinessItems = useMemo(
     () => [
       {
-        title: "Trang công khai",
-        description: "Trang cuộc thi sẽ có phần giới thiệu, mốc thời gian, thể lệ và CTA đăng ký rõ ràng.",
+        title: t("instructorNew.readiness.publicTitle"),
+        description: t("instructorNew.readiness.publicDescription"),
       },
       {
-        title: "Duyệt hồ sơ",
-        description: "Người của Corelia duyệt hồ sơ trước khi mở quyền submission.",
+        title: t("instructorNew.readiness.applicationsTitle"),
+        description: t("instructorNew.readiness.applicationsDescription"),
       },
       {
-        title: "Luồng chấm điểm",
-        description: "Ban giám khảo được mời vào khu vực vận hành để chấm theo rubric có trọng số.",
+        title: t("instructorNew.readiness.judgingTitle"),
+        description: t("instructorNew.readiness.judgingDescription"),
       },
     ],
-    [],
+    [t],
   );
 
   async function handleCreate() {
@@ -70,10 +72,10 @@ export default function ContestNew() {
         registration_deadline: toIsoOrNull(registrationDeadline),
         max_participants: maxParticipants.trim() ? Number(maxParticipants) : null,
       });
-      toast.success("Đã tạo cuộc thi.");
+      toast.success(t("instructorNew.toasts.created"));
       navigate(`/instructor/contests/${contest.id}/manage`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể tạo cuộc thi.");
+      toast.error(err instanceof Error ? err.message : t("instructorNew.toasts.createFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -88,7 +90,7 @@ export default function ContestNew() {
           onClick={() => navigate("/instructor/contests")}
         >
           <ArrowLeft className="size-4" />
-          Quay lại khu vực cuộc thi
+          {t("instructorNew.back")}
         </Button>
       </div>
 
@@ -97,21 +99,21 @@ export default function ContestNew() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Thiết lập cuộc thi
+                {t("instructorNew.hero.eyebrow")}
               </div>
               <h1 className="mt-2 text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
-                Khởi tạo cuộc thi mới
+                {t("instructorNew.hero.title")}
               </h1>
               <p className="mt-1.5 max-w-3xl text-[15px] text-muted-foreground">
-                Dựng trang công khai, luồng đăng ký và khu vực vận hành cho hackathon hoặc contest mới của Corelia.
+                {t("instructorNew.hero.description")}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
-                Luồng nhiều bên tham gia
+                {t("instructorNew.hero.pillMultiParty")}
               </span>
               <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
-                Trang công khai + vận hành
+                {t("instructorNew.hero.pillPublicOps")}
               </span>
             </div>
           </div>
@@ -122,10 +124,10 @@ export default function ContestNew() {
                 <Trophy className="size-5 text-primary" weight="duotone" />
                 <div>
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                    Bề mặt public
+                    {t("instructorNew.pillCards.publicSurfaceTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
-                    Trang giới thiệu và CTA đăng ký
+                    {t("instructorNew.pillCards.publicSurfaceDescription")}
                   </div>
                 </div>
               </div>
@@ -135,10 +137,10 @@ export default function ContestNew() {
                 <ShieldCheck className="size-5 text-primary" weight="duotone" />
                 <div>
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                    Duyệt hồ sơ
+                    {t("instructorNew.pillCards.applicationsTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
-                    Corelia giữ quyền xét duyệt
+                    {t("instructorNew.pillCards.applicationsDescription")}
                   </div>
                 </div>
               </div>
@@ -148,10 +150,10 @@ export default function ContestNew() {
                 <Gavel className="size-5 text-primary" weight="duotone" />
                 <div>
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                    Chấm điểm
+                    {t("instructorNew.pillCards.judgingTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
-                    Rubric và chấm điểm theo vai trò
+                    {t("instructorNew.pillCards.judgingDescription")}
                   </div>
                 </div>
               </div>
@@ -161,10 +163,10 @@ export default function ContestNew() {
                 <CalendarBlank className="size-5 text-primary" weight="duotone" />
                 <div>
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                    Timeline
+                    {t("instructorNew.pillCards.timelineTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
-                    Hạn đăng ký, khai mạc, công bố
+                    {t("instructorNew.pillCards.timelineDescription")}
                   </div>
                 </div>
               </div>
@@ -178,65 +180,75 @@ export default function ContestNew() {
           <CardContent className="p-5 sm:p-6">
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="contest-title">Tên cuộc thi</FieldLabel>
+                <FieldLabel htmlFor="contest-title">{t("instructorNew.form.titleLabel")}</FieldLabel>
                 <Input
                   id="contest-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ví dụ: Corelia Hackathon: AI for Education"
+                  placeholder={t("instructorNew.form.titlePlaceholder")}
                 />
                 <FieldDescription>
-                  Tên hiển thị trong danh sách và trang chi tiết cuộc thi.
+                  {t("instructorNew.form.titleDescription")}
                 </FieldDescription>
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="contest-tagline">Dòng mô tả ngắn</FieldLabel>
+                <FieldLabel htmlFor="contest-tagline">
+                  {t("instructorNew.form.taglineLabel")}
+                </FieldLabel>
                 <Input
                   id="contest-tagline"
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
-                  placeholder="Ví dụ: Build trong 48h • Có mentor đồng hành • Demo Day"
+                  placeholder={t("instructorNew.form.taglinePlaceholder")}
                 />
                 <FieldDescription>
-                  Mô tả ngắn xuất hiện ở card và phần mở đầu của cuộc thi.
+                  {t("instructorNew.form.taglineDescription")}
                 </FieldDescription>
               </Field>
 
               <div className="grid gap-6 lg:grid-cols-2">
                 <Field>
-                  <FieldLabel htmlFor="contest-status">Trạng thái</FieldLabel>
+                  <FieldLabel htmlFor="contest-status">
+                    {t("instructorNew.form.statusLabel")}
+                  </FieldLabel>
                   <select
                     id="contest-status"
                     className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                     value={status}
                     onChange={(e) => setStatus(e.target.value as ContestStatus)}
                   >
-                    <option value="draft">Bản nháp</option>
-                    <option value="published">Mở đăng ký</option>
-                    <option value="running">Đang diễn ra</option>
-                    <option value="ended">Đã kết thúc</option>
+                    <option value="draft">{t("instructorNew.form.statusOptions.draft")}</option>
+                    <option value="published">
+                      {t("instructorNew.form.statusOptions.published")}
+                    </option>
+                    <option value="running">{t("instructorNew.form.statusOptions.running")}</option>
+                    <option value="ended">{t("instructorNew.form.statusOptions.ended")}</option>
                   </select>
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="contest-location">Hình thức</FieldLabel>
+                  <FieldLabel htmlFor="contest-location">
+                    {t("instructorNew.form.locationLabel")}
+                  </FieldLabel>
                   <select
                     id="contest-location"
                     className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                     value={location}
                     onChange={(e) => setLocation(e.target.value as ContestLocation)}
                   >
-                    <option value="online">Online</option>
-                    <option value="offline">Offline</option>
-                    <option value="hybrid">Hybrid</option>
+                    <option value="online">{t("instructorNew.form.locationOptions.online")}</option>
+                    <option value="offline">{t("instructorNew.form.locationOptions.offline")}</option>
+                    <option value="hybrid">{t("instructorNew.form.locationOptions.hybrid")}</option>
                   </select>
                 </Field>
               </div>
 
               <div className="grid gap-6 lg:grid-cols-3">
                 <Field>
-                  <FieldLabel htmlFor="contest-starts-at">Bắt đầu</FieldLabel>
+                  <FieldLabel htmlFor="contest-starts-at">
+                    {t("instructorNew.form.startsAtLabel")}
+                  </FieldLabel>
                   <Input
                     id="contest-starts-at"
                     type="datetime-local"
@@ -246,7 +258,9 @@ export default function ContestNew() {
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="contest-ends-at">Kết thúc</FieldLabel>
+                  <FieldLabel htmlFor="contest-ends-at">
+                    {t("instructorNew.form.endsAtLabel")}
+                  </FieldLabel>
                   <Input
                     id="contest-ends-at"
                     type="datetime-local"
@@ -257,7 +271,7 @@ export default function ContestNew() {
 
                 <Field>
                   <FieldLabel htmlFor="contest-registration-deadline">
-                    Hạn đăng ký
+                    {t("instructorNew.form.registrationDeadlineLabel")}
                   </FieldLabel>
                   <Input
                     id="contest-registration-deadline"
@@ -270,7 +284,7 @@ export default function ContestNew() {
 
               <Field>
                 <FieldLabel htmlFor="contest-max-participants">
-                  Giới hạn số hồ sơ được duyệt
+                  {t("instructorNew.form.maxParticipantsLabel")}
                 </FieldLabel>
                 <Input
                   id="contest-max-participants"
@@ -278,47 +292,51 @@ export default function ContestNew() {
                   min={1}
                   value={maxParticipants}
                   onChange={(e) => setMaxParticipants(e.target.value)}
-                  placeholder="Để trống nếu không giới hạn"
+                  placeholder={t("instructorNew.form.maxParticipantsPlaceholder")}
                 />
                 <FieldDescription>
-                  Nếu cần kiểm soát số đội/người tham gia, nhập giới hạn tại đây.
+                  {t("instructorNew.form.maxParticipantsDescription")}
                 </FieldDescription>
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="contest-description">Giới thiệu</FieldLabel>
+                <FieldLabel htmlFor="contest-description">
+                  {t("instructorNew.form.descriptionLabel")}
+                </FieldLabel>
                 <textarea
                   id="contest-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={5}
                   className="min-h-32 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                  placeholder="Mô tả chủ đề, cách thi, mentor đồng hành, quyền lợi và trải nghiệm chính..."
+                  placeholder={t("instructorNew.form.descriptionPlaceholder")}
                 />
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="contest-rules">Yêu cầu và luật chơi</FieldLabel>
+                <FieldLabel htmlFor="contest-rules">
+                  {t("instructorNew.form.rulesLabel")}
+                </FieldLabel>
                 <textarea
                   id="contest-rules"
                   value={rules}
                   onChange={(e) => setRules(e.target.value)}
                   rows={6}
                   className="min-h-36 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                  placeholder="Điều kiện tham gia, tiêu chí chấm, cách nộp bài, yêu cầu demo..."
+                  placeholder={t("instructorNew.form.rulesPlaceholder")}
                 />
                 <FieldDescription>
-                  Nội dung này sẽ hiển thị ở trang chi tiết để người tham gia chuẩn bị hồ sơ.
+                  {t("instructorNew.form.rulesDescription")}
                 </FieldDescription>
               </Field>
             </FieldGroup>
 
             <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-end">
               <Button variant="ghost" onClick={() => navigate("/instructor/contests")}>
-                Quay lại
+                {t("instructorNew.actions.back")}
               </Button>
               <Button disabled={!canSubmit || submitting} onClick={handleCreate}>
-                {submitting ? "Đang tạo..." : "Tạo cuộc thi"}
+                {submitting ? t("instructorNew.actions.creating") : t("instructorNew.actions.create")}
               </Button>
             </div>
           </CardContent>
@@ -328,7 +346,7 @@ export default function ContestNew() {
           <Card>
             <CardContent className="p-5 sm:p-6">
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Danh sách sau khi tạo
+                {t("instructorNew.afterCreateChecklist.eyebrow")}
               </div>
               <div className="mt-4 space-y-3">
                 {readinessItems.map((item) => (
@@ -349,13 +367,13 @@ export default function ContestNew() {
           <Card>
             <CardContent className="p-5 sm:p-6">
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Sau khi tạo
+                {t("instructorNew.nextSteps.eyebrow")}
               </div>
               <div className="mt-4 space-y-3 text-[14px] leading-6 text-muted-foreground">
-                <p>Cuộc thi sẽ được mở trong khu vực vận hành để bạn tiếp tục:</p>
-                <p>1. Mời ban giám khảo và đơn vị đồng tổ chức.</p>
-                <p>2. Tinh chỉnh rubric chấm điểm.</p>
-                <p>3. Duyệt hồ sơ và công bố kết quả.</p>
+                <p>{t("instructorNew.nextSteps.intro")}</p>
+                <p>{t("instructorNew.nextSteps.step1")}</p>
+                <p>{t("instructorNew.nextSteps.step2")}</p>
+                <p>{t("instructorNew.nextSteps.step3")}</p>
               </div>
             </CardContent>
           </Card>

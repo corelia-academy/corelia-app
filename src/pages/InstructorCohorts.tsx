@@ -5,8 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { listOfflineCohorts, listOfflineCourses } from "@/lib/offline";
 import { useAuth } from "@/stores/authStore";
 import type { OfflineCohort, OfflineCourse } from "@/types/offline";
+import { useTranslation } from "react-i18next";
 
 export default function InstructorCohorts() {
+  const { t } = useTranslation("cohorts");
   const navigate = useNavigate();
   const { profile } = useAuth();
   const [items, setItems] = useState<OfflineCourse[]>([]);
@@ -36,7 +38,7 @@ export default function InstructorCohorts() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Không thể tải lớp học.");
+          setError(err instanceof Error ? err.message : t("catalog.loadErrorFallback"));
         }
       })
       .finally(() => {
@@ -45,7 +47,7 @@ export default function InstructorCohorts() {
     return () => {
       cancelled = true;
     };
-  }, [profile?.id, profile?.role]);
+  }, [profile?.id, profile?.role, t]);
 
   const stats = useMemo(
     () => ({
@@ -69,18 +71,17 @@ export default function InstructorCohorts() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              Workspace lớp trực tiếp
+              {t("instructorWorkspace.hero.eyebrow")}
             </div>
             <h1 className="mt-2 text-2xl font-normal tracking-tight text-foreground">
-              Quản lý khoá học offline
+              {t("instructorWorkspace.hero.title")}
             </h1>
             <p className="mt-1.5 max-w-3xl text-[15px] text-muted-foreground">
-              Quản lý khoá học trực tiếp ở tầng sản phẩm, sau đó đi vào từng cohort để
-              vận hành lịch học, recording và roadmap học viên.
+              {t("instructorWorkspace.hero.description")}
             </p>
           </div>
           <Button type="button" onClick={() => navigate("/instructor/cohorts/new")}>
-            Tạo lớp học mới
+            {t("instructorWorkspace.hero.create")}
           </Button>
         </div>
       </section>
@@ -88,25 +89,25 @@ export default function InstructorCohorts() {
       <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
             <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Tổng khoá
+            {t("instructorWorkspace.stats.totalCourses")}
           </div>
           <div className="mt-2 text-3xl font-semibold text-foreground">{stats.total}</div>
         </div>
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
             <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Cohort đang vận hành
+            {t("instructorWorkspace.stats.runningCohorts")}
           </div>
           <div className="mt-2 text-3xl font-semibold text-foreground">{stats.running}</div>
         </div>
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Học viên active
+            {t("instructorWorkspace.stats.activeStudents")}
           </div>
           <div className="mt-2 text-3xl font-semibold text-foreground">{stats.students}</div>
         </div>
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Recording sẵn sàng
+            {t("instructorWorkspace.stats.readyRecordings")}
           </div>
           <div className="mt-2 text-3xl font-semibold text-foreground">{stats.recordings}</div>
         </div>
@@ -115,7 +116,7 @@ export default function InstructorCohorts() {
       {loading ? (
         <Card className="mt-6">
           <CardContent className="p-8 text-center text-muted-foreground">
-            Đang tải workspace lớp học...
+            {t("instructorWorkspace.loading")}
           </CardContent>
         </Card>
       ) : error ? (
@@ -126,14 +127,14 @@ export default function InstructorCohorts() {
         <Card className="mt-6">
           <CardContent className="p-8 text-center">
             <div className="text-[15px] font-medium text-foreground">
-              Chưa có cohort nào trong workspace này.
+              {t("instructorWorkspace.empty.title")}
             </div>
             <Button
               type="button"
               className="mt-4"
               onClick={() => navigate("/instructor/cohorts/new")}
             >
-              Tạo cohort đầu tiên
+              {t("instructorWorkspace.empty.createFirst")}
             </Button>
           </CardContent>
         </Card>
@@ -151,7 +152,9 @@ export default function InstructorCohorts() {
               <div className="border-b border-border-subtle bg-muted/20 px-5 py-4">
                 <div className="flex flex-wrap gap-2">
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-background px-2.5 py-1 text-[11px] font-medium text-foreground">
-                    {course.published ? "Đã mở" : "Bản nháp"}
+                    {course.published
+                      ? t("instructorWorkspace.coursePills.open")
+                      : t("instructorWorkspace.coursePills.draft")}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-background px-2.5 py-1 text-[11px] font-medium text-foreground">
                     {course.level}
@@ -164,7 +167,7 @@ export default function InstructorCohorts() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-2xl border border-border-subtle bg-background p-4">
                     <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Cohorts
+                      {t("catalog.metrics.cohorts")}
                     </div>
                     <div className="mt-1.5 text-lg font-semibold text-foreground">
                       {course.metrics_snapshot.cohorts_total || courseCohorts.length}
@@ -172,7 +175,7 @@ export default function InstructorCohorts() {
                   </div>
                   <div className="rounded-2xl border border-border-subtle bg-background p-4">
                     <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Học viên
+                      {t("instructorWorkspace.courseMetrics.students")}
                     </div>
                     <div className="mt-1.5 text-lg font-semibold text-foreground">
                       {course.metrics_snapshot.enrolled_students}
@@ -185,13 +188,13 @@ export default function InstructorCohorts() {
                     variant="outline"
                     onClick={() => navigate(`/cohorts/${course.id}`)}
                   >
-                    Xem public
+                    {t("instructorWorkspace.actions.viewPublic")}
                   </Button>
                   <Button
                     type="button"
                     onClick={() => navigate(`/instructor/cohorts/${course.id}/manage`)}
                   >
-                    Mở workspace
+                    {t("instructorWorkspace.actions.openWorkspace")}
                   </Button>
                 </div>
               </div>

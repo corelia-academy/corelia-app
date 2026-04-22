@@ -12,6 +12,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, db, storage } from "@/lib/firebase";
 import type { Profile, ProfileInsert, ProfileUpdate } from "@/types/database";
+import { sortLocale } from "@/lib/intl";
 
 const TABLE = "profiles";
 
@@ -30,7 +31,8 @@ export async function getCurrentProfile(): Promise<Profile | null> {
     if (!docSnap.exists()) {
       const newProfile: ProfileInsert = {
         id: user.uid,
-        role: "student"
+        role: "student",
+        locale: "vi",
       };
       
       const profileData = {
@@ -108,6 +110,7 @@ export async function setNewUserProfile(data: {
     {
       id: user.uid,
       role: "student",
+      locale: "vi",
       full_name: data.full_name ?? user.displayName ?? null,
       email: data.email ?? user.email ?? null,
       avatar_url: user.photoURL ?? null,
@@ -134,6 +137,7 @@ export async function updateCurrentProfile(
     avatar_url: updates.avatar_url,
     phone: updates.phone,
     email: updates.email,
+    locale: updates.locale,
     instructor_headline: updates.instructor_headline,
     instructor_bio: updates.instructor_bio,
     instructor_organization: updates.instructor_organization,
@@ -205,7 +209,7 @@ export async function listCoreliaInstructorProfiles(): Promise<Profile[]> {
     .sort((a, b) => {
       const nameA = (a.full_name ?? a.email ?? a.id).toLowerCase();
       const nameB = (b.full_name ?? b.email ?? b.id).toLowerCase();
-      return nameA.localeCompare(nameB, "vi");
+      return nameA.localeCompare(nameB, sortLocale());
     });
 }
 

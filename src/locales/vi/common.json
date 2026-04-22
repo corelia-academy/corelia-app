@@ -1,0 +1,291 @@
+{
+  "appName": "Corelia",
+  "language": {
+    "vi": "Tiếng Việt",
+    "en": "English"
+  },
+  "actions": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "close": "Đóng",
+    "back": "Quay lại",
+    "continue": "Tiếp tục",
+    "confirm": "Xác nhận",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "submit": "Gửi",
+    "retry": "Thử lại",
+    "copy": "Sao chép",
+    "download": "Tải xuống",
+    "share": "Chia sẻ",
+    "search": "Tìm kiếm"
+  },
+  "footer": {
+    "copyrightPrefix": "© {{year}} Corelia Academy. Tất cả quyền được bảo lưu."
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "courses": "Khóa học",
+    "cohorts": "Cohorts",
+    "contests": "Cuộc thi",
+    "achievements": "Thành tích",
+    "account": "Tài khoản",
+    "admin": "Admin",
+    "instructor": "Instructor"
+  },
+  "tabs": {
+    "menu": "Menu",
+    "signIn": "Đăng nhập"
+  },
+  "status": {
+    "loading": "Đang tải…",
+    "empty": "Chưa có dữ liệu",
+    "error": "Có lỗi xảy ra"
+  },
+  "home": {
+    "syncing": "Đang đồng bộ...",
+    "dashboard": "Dashboard",
+    "continueLearning": "Tiếp tục học",
+    "exploreCourses": "Khám phá khoá học",
+    "allCourses": "Tất cả khoá học",
+    "studentFallback": "Học viên",
+    "meta": {
+      "hours": "{{count}} giờ",
+      "selfPaced": "tự học",
+      "offlinePrefix": "lớp trực tiếp"
+    },
+    "focus": {
+      "nextLesson": "Bài tiếp theo: {{title}}",
+      "allLessonsCompleted": "Bạn đã hoàn thành toàn bộ bài học hiện có",
+      "lastAccessed": "Lần truy cập gần nhất: {{date}}"
+    },
+    "momentum": {
+      "learning": {
+        "label": "Đang học",
+        "emptyNote": "Chưa có khóa nào đang theo dõi"
+      },
+      "contests": {
+        "label": "Contest đang mở",
+        "note": "Hackathon · mini contest · hoạt động hệ sinh thái",
+        "emptyNote": "Chưa có contest mới"
+      },
+      "certificates": {
+        "label": "Chứng chỉ đã cấp",
+        "note": "Theo dõi toàn bộ trong mục Thành tích",
+        "emptyNote": "Chưa có chứng chỉ nào được cấp"
+      }
+    },
+    "pinned": {
+      "badges": {
+        "onlinePath": "Lộ trình online",
+        "ecosystemPlayground": "Sân chơi hệ sinh thái",
+        "offlineClass": "Lớp trực tiếp"
+      },
+      "cta": {
+        "viewCourse": "Xem khoá học",
+        "viewProgram": "Xem chương trình",
+        "viewContest": "Xem contest"
+      },
+      "contest": {
+        "registrationDeadline": "Hạn đăng ký {{date}}",
+        "openInEcosystem": "Đang mở trong hệ sinh thái Corelia"
+      },
+      "offlineCampusFallback": "Corelia Campus"
+    },
+    "guest": {
+      "heroTitle": "Bắt đầu hành trình học Web3 cùng Corelia",
+      "heroSubtitle": "Khám phá khoá học, chương trình và contest đang mở. Khi cần lưu tiến độ hoặc đăng ký, bạn chỉ cần đăng nhập.",
+      "signIn": "Đăng nhập",
+      "openContestsTitle": "Cuộc thi đang mở",
+      "startLearningTitle": "Bắt đầu hành trình học tập",
+      "startLearningSubtitle": "Đăng nhập để lưu tiến độ, theo dõi chứng chỉ và gửi hồ sơ tham gia contest.",
+      "quickLinksTitle": "Lối đi nhanh",
+      "quickLinks": {
+        "contests": "Cuộc thi",
+        "cohorts": "Lớp học"
+      }
+    },
+    "sections": {
+      "greeting": "Xin chào, {{name}}",
+      "greetingSubtitle": "Theo dõi khoá học, contest và thành tích trong một nơi.",
+      "featuredOnline": "Khoá đang học",
+      "featuredOffline": "Lớp đang theo",
+      "progress": "Tiến độ",
+      "seeAll": "Xem tất cả",
+      "exploreTitle": "Khám phá",
+      "goToLibrary": "Tới thư viện",
+      "startFromCatalogTitle": "Bắt đầu từ thư viện khoá học",
+      "startFromCatalogSubtitle": "Chọn một khoá học nền tảng để tạo nhịp học tập.",
+      "enrollHint": "Khi bạn ghi danh hoặc mua khoá học đầu tiên, khu vực này sẽ hiện tiến độ và lối vào nhanh.",
+      "profileSetupHintPrefix": "Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc"
+    }
+  },
+  "achievements": {
+    "badgeCategory": {
+      "learning": "Học tập",
+      "streak": "Kiên trì",
+      "milestone": "Cột mốc",
+      "social": "Cộng đồng"
+    },
+    "certificates": {
+      "courseCompletionTitle": "Chứng chỉ hoàn thành khoá học",
+      "fallbackCourseName": "Khoá học Corelia",
+      "fallbackInstructorName": "Corelia Academy",
+      "issuedOnPrefix": "Cấp ngày {{date}}",
+      "type": {
+        "online": "Online",
+        "offline": "Offline"
+      },
+      "ocAction": {
+        "view": "Xem OC credential",
+        "claim": "Claim OC credential"
+      },
+      "downloadTooltip": "Tải xuống"
+    },
+    "badges": {
+      "earnedPrefix": "Đạt: {{date}}",
+      "locked": "Chưa mở khoá",
+      "ocDot": {
+        "claimedTooltip": "Đã claim OC credential",
+        "unclaimedTooltip": "Chưa claim OC credential"
+      }
+    },
+    "milestones": {
+      "courseFirst": {
+        "title": "Khoá học đầu tiên",
+        "description": "Ghi danh khóa học đầu tiên để mở cột mốc này."
+      },
+      "courseThree": {
+        "title": "Người học bền bỉ",
+        "description": "Ghi danh 3 khóa học khác nhau để mở cột mốc này."
+      },
+      "firstCertificate": {
+        "title": "Chứng chỉ đầu tiên",
+        "description": "Nhận chứng chỉ đầu tiên từ một khóa học để mở cột mốc này."
+      },
+      "threeCertificates": {
+        "title": "Learning portfolio",
+        "description": "Sở hữu 3 chứng chỉ để hoàn thiện hồ sơ thành tích Corelia."
+      },
+      "next": {
+        "titleFallback": "Bạn đã mở khóa tất cả milestone hiện có",
+        "descriptionFallback": "Tiếp tục hoàn thành khóa học mới để bộ hồ sơ thành tích ngày càng đầy đặn hơn."
+      }
+    },
+    "oc": {
+      "badge": {
+        "claimed": "Đã claim OC",
+        "pending": "Đang xử lý",
+        "failed": "Thất bại",
+        "unclaimed": "Chưa claim OC"
+      },
+      "modal": {
+        "title": "Open Campus Credential",
+        "subtitle": "Verifiable credential trên blockchain EDUChain",
+        "kind": {
+          "cert": "Chứng chỉ",
+          "badge": "Huy hiệu"
+        },
+        "date": {
+          "issued": "Ngày cấp",
+          "earned": "Ngày đạt"
+        },
+        "statusLabel": "Trạng thái OC:",
+        "explorerTooltip": "Xem trên block explorer",
+        "dashboardCtaTitle": "Xem trên OCID Dashboard",
+        "dashboardCtaSubtitle": "opencampus.xyz · Public profile",
+        "standardsNote": "Credential này tuân theo chuẩn Open Badges & W3C Verifiable Credentials, được neo cố định trên blockchain EDUChain. Có thể xác minh độc lập và chuyển đổi giữa các nền tảng.",
+        "claim": {
+          "issuing": "Đang issue credentials...",
+          "retry": "Thử lại – Issue on Open Campus",
+          "issue": "Issue on Open Campus",
+          "pending": "Đang xử lý trên blockchain..."
+        },
+        "claimedActions": {
+          "downloadPdf": "Tải PDF",
+          "share": "Chia sẻ"
+        },
+        "learnMore": "Tìm hiểu về Open Campus Achievements"
+      }
+    },
+    "stats": {
+      "certificates": "Chứng chỉ",
+      "badges": "Huy hiệu",
+      "total": "Tổng thành tích",
+      "ocCredential": "OC Credential"
+    },
+    "hero": {
+      "eyebrow": "Hành trình thành tích",
+      "title": "Thành tích của tôi",
+      "subtitlePrefix": "Theo dõi chứng chỉ, huy hiệu và các cột mốc học tập trong một hành trình liền mạch. Khi sẵn sàng, bạn có thể claim từng thành tích lên",
+      "subtitleSuffix": "để có verifiable credential trên blockchain.",
+      "certCount": "{{count}} chứng chỉ",
+      "badgeUnlockedCount": "{{count}} huy hiệu đã mở",
+      "readyToClaimCount": "{{count}} sẵn sàng claim",
+      "claimedOnOc": {
+        "title": "Đã claim trên OC",
+        "description": "Số lượng credential đã được đưa lên Open Campus."
+      },
+      "pending": {
+        "title": "Đang chờ xử lý",
+        "description": "Các credential đang pending hoặc đang đợi issue."
+      },
+      "nextMilestone": "Mốc tiếp theo"
+    },
+    "meaning": {
+      "title": "Ý nghĩa của chứng nhận Corelia",
+      "p1": "Thành tích trong Corelia phản ánh những gì bạn đã thật sự hoàn thành: khóa học đã đi hết, chứng chỉ đã nhận và các cột mốc kỹ thuật đã mở.",
+      "p2": "Chứng chỉ và huy hiệu được xây dựng để hỗ trợ portfolio học tập, workshop, hackathon và hành trình phát triển trong hệ sinh thái Web3, thay vì đóng vai trò như văn bằng học thuật chính thức."
+    },
+    "useCases": {
+      "title": "Nơi bạn có thể dùng chúng",
+      "items": {
+        "0": "Portfolio cá nhân",
+        "1": "Workshop",
+        "2": "Hackathon",
+        "3": "Demo day",
+        "4": "Mentor review"
+      },
+      "note": "Khi claim lên Open Campus, các thành tích này trở thành verifiable credential để bạn chia sẻ rõ ràng hơn trên hồ sơ cá nhân."
+    },
+    "recent": {
+      "title": "Vừa mở",
+      "loading": "Đang tải các thành tích mới nhất của bạn.",
+      "empty": "Chưa có thành tích nào được mở. Hãy hoàn thành một khóa học đầu tiên để bắt đầu hành trình này."
+    },
+    "vaults": {
+      "certificates": {
+        "title": "Kho chứng chỉ",
+        "subtitle": "Nơi lưu trữ tất cả chứng chỉ từ các khóa học đã hoàn thành.",
+        "countLabel": "{{count}} chứng chỉ",
+        "loading": "Đang tải kho chứng chỉ của bạn.",
+        "empty": "Bạn chưa có chứng chỉ nào. Hãy hoàn thành một khóa học có chứng nhận để bắt đầu."
+      },
+      "badges": {
+        "title": "Bộ huy hiệu và milestone",
+        "subtitle": "Gồm các milestone học tập và những cột mốc bạn đang mở khóa dần.",
+        "summaryUnlocked": "{{earned}}/{{total}} đã mở",
+        "loading": "Đang tải huy hiệu và milestone của bạn.",
+        "earnedSectionTitle": "Đã đạt được ({{count}})",
+        "progressGood": "Tiến triển tốt"
+      },
+      "nextUnlock": {
+        "title": "Sắp mở khóa",
+        "allUnlockedNote": "Bạn đã mở khóa toàn bộ milestone hiện có. Bây giờ có thể tập trung vào việc claim OC credential và mở rộng hồ sơ thành tích của mình."
+      }
+    }
+  }
+  ,
+  "feedback": {
+    "reportIssue": {
+      "short": "Báo lỗi",
+      "long": "Báo lỗi qua biểu mẫu"
+    }
+  },
+  "combobox": {
+    "searchPlaceholder": "Tìm theo tên hoặc email",
+    "emptyLabel": "Không có kết quả phù hợp.",
+    "done": "Xong"
+  }
+}
+

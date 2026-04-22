@@ -1,0 +1,251 @@
+{
+  "level": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "all": "All levels"
+  },
+  "accessModel": {
+    "free": "Free",
+    "paid_upfront": "Pay upfront to unlock full course",
+    "free_with_paid_certificate": "Learn free, pay to get certificate review"
+  },
+  "ownerType": {
+    "corelia": "Corelia course",
+    "external_partner": "Partner instructor course"
+  },
+  "catalog": {
+    "title": "Courses",
+    "loading": "Loading learning programs...",
+    "loadErrorTitle": "Unable to load courses.",
+    "loadErrorFallback": "Failed to load courses",
+    "results": "{{count}} results",
+    "activeFilters": " · {{count}} filters",
+    "clearFilters": "Clear filters",
+    "searchPlaceholder": "Search by course name, instructor...",
+    "sort": "Sort",
+    "emptyTitle": "No courses match the current filters.",
+    "emptyDescription": "Try removing some filters or search by instructor, topic, and learning format."
+  },
+  "detail": {
+    "missingCourseId": "Missing course id",
+    "loadCourseErrorFallback": "Failed to load course",
+    "loadLessonsErrorFallback": "Failed to load lessons",
+    "enrollErrorFallback": "Failed to enroll",
+    "payment": {
+      "failed": "Payment failed. Please try again.",
+      "cancelled": "You cancelled the payment.",
+      "checking": "Checking payment status...",
+      "success": "Payment successful. Your course access is now unlocked.",
+      "notConfirmedYet": "Payment is not confirmed yet. If you've paid, please wait a bit longer or refresh the page in a few minutes."
+    },
+    "instructorDetail": {
+      "crumbs": {
+        "home": "Home",
+        "courses": "Courses",
+        "instructorPrefix": "Instructor"
+      },
+      "errors": {
+        "missingId": "Missing instructor id.",
+        "notFound": "Instructor profile not found.",
+        "loadFailed": "Failed to load instructor profile"
+      },
+      "actions": {
+        "backToCourses": "Back to courses"
+      },
+      "loading": "Loading instructor profile...",
+      "origin": {
+        "corelia": "Corelia instructor",
+        "external": "Partner instructor",
+        "unknown": "Instructor"
+      },
+      "fallbackName": "Instructor",
+      "websiteLabel": "Website / LinkedIn",
+      "bioTitle": "About",
+      "courses": {
+        "title": "Courses by this instructor",
+        "viewAll": "View all courses",
+        "empty": "This instructor doesn't have any public courses yet.",
+        "durationPrefix": "Duration: {{duration}}"
+      }
+    },
+    "checkout": {
+      "missingCourseId": "Missing course id",
+      "loadCourseFailed": "Unable to load course",
+      "mustLoginToPay": "You need to sign in to pay.",
+      "invalidPaymentConfig": "This course isn't configured for payment.",
+      "createPaymentFailed": "Unable to create payment.",
+      "loadingPaymentInfo": "Loading payment information...",
+      "missingCourseFallback": "Course not found",
+      "backToCourses": "Back to courses",
+      "backToCourse": "Back to course",
+      "title": "Confirm payment",
+      "subtitle": "Review details before continuing to SePay (QR transfer).",
+      "courseSectionTitle": "Course",
+      "paymentMethodLabel": "Method",
+      "paymentAmountLabel": "Amount",
+      "promoEndsPrefix": "Ends: {{date}}",
+      "sepayQr": "SePay QR",
+      "discount": {
+        "label": "Discount code (optional)",
+        "placeholder": "e.g. SPRING10",
+        "hint": "A valid code will be applied when creating the checkout session."
+      },
+      "paymentAsideTitle": "Payment",
+      "paymentAsideBodyPrefix": "You'll be redirected to SePay to",
+      "paymentAsideBodyEmphasis": "scan a QR transfer",
+      "paymentAsideBodySuffix": "This is currently the only supported method.",
+      "continueToSePay": "Continue to SePay",
+      "redirecting": "Redirecting...",
+      "mustLoginInline": "You need to sign in to pay.",
+      "postPayHint": "After paying, you'll be redirected back to the course page for confirmation."
+    },
+    "checkoutSuccess": {
+      "verifyingPayment": "Verifying payment and course access...",
+      "missingOrderInfo": "Missing order info to auto-verify.",
+      "restoringSession": "Restoring sign-in session...",
+      "sessionNotReady": "Your session isn't ready on this device yet. You can still open the course and the system will re-check access.",
+      "verifiedViaSePay": "Payment verified via SePay and access granted.",
+      "verifiedFallback": "Payment confirmed and access granted.",
+      "waitingForAccess": "Transaction received. Waiting for access confirmation...",
+      "verifyFailedFallback": "Unable to verify payment right now.",
+      "timeoutStatus": "Verification timed out. You can still open the course and the system will continue checking later.",
+      "timeoutToast": "Payment verification timed out. The system will re-check when you open the course.",
+      "title": "Payment successful",
+      "autoRedirectPrefix": "Redirecting in",
+      "viewBilling": "View payment history",
+      "goToCourse": "Open course",
+      "skipNow": "Skip and go now"
+    },
+    "spotlight": {
+      "myCourseBadge": "Your course",
+      "resumeTitle": "Resume where you left off",
+      "enterSpaceTitle": "Back to the learning space",
+      "resumeDescription": "You're learning {{courseTitle}} and can continue with the next lesson.",
+      "enterSpaceDescription": "{{courseTitle}} is ready for you to start or revisit.",
+      "continueLearning": "Continue learning",
+      "enterLearningPage": "Go to learning",
+      "nextLessonMeta": "Next lesson: {{title}}",
+      "progressEverywhereMeta": "Progress is synced across your devices",
+      "runningContestBadge": "Live contest",
+      "newContestBadge": "New contest",
+      "exploreContest": "Explore contest",
+      "contestMetaNoDeadline": "A relevant next step in the Corelia ecosystem",
+      "exploreMoreBadge": "Explore more",
+      "exploreMoreTitle": "Expand your learning journey with Corelia",
+      "exploreMoreDescription": "After finishing a learning step, you can move on to contests or other practical courses.",
+      "seeMoreCourses": "See more courses",
+      "ecosystemMeta": "Learning paths and hands-on Web3 ecosystem"
+    },
+    "accessPanel": {
+      "ready": "Ready to learn",
+      "unlockToStart": "Unlock to start",
+      "enterToLearn": "Open the learning page to watch videos, save progress, and track your completion journey.",
+      "paymentConfirmed": "Payment confirmed. You can start learning now.",
+      "keptAccess": "You enrolled earlier, so you still have full access even if this course is now paid.",
+      "currentProgress": "Current progress",
+      "nextLessonLabel": "Next lesson: {{title}}",
+      "endOfPath": "You've reached the end of the current path.",
+      "priceLabel": "Price",
+      "promoEnds": "Ends: {{date}}",
+      "paidUpfrontCopy": "Unlock all videos, save progress, and follow the path right after payment.",
+      "previewAvailable": " {{count}} free preview lessons are available to try first.",
+      "previewNotAvailable": " No free preview lessons available yet.",
+      "buyCourse": "Buy course",
+      "tryFreePreview": "Try free preview",
+      "noPreviewYet": "No preview yet",
+      "freeEnrollCopy": "Enroll for free to start learning and sync progress across devices.",
+      "certificateFeeSuffix": " To submit the final assignment and get certificate review, the fee is {{fee}}.",
+      "processing": "Processing...",
+      "enrollAndEnter": "Enroll and start"
+    },
+    "loadingCourse": "Loading course details...",
+    "notFound": "Course not found.",
+    "learn": {
+      "pageEyebrow": "Learning",
+      "breadcrumbLearn": "Learn",
+      "backToCourses": "Back to courses",
+      "backToCourse": "Back to course",
+      "loadingPage": "Loading learning page...",
+      "previewModeNotice": "You're in free preview mode. Only lessons marked as preview are available.",
+      "lessonLockedBadge": "Locked",
+      "selectLessonToStart": "Select a lesson to start",
+      "completedPath": "Path completed",
+      "lessonPosition": "Lesson {{index}}/{{total}} in the current path",
+      "certificateFeeMissing": "This course doesn't have a valid certificate fee configured.",
+      "sepayCreateFailed": "Unable to create a SePay checkout.",
+      "stats": {
+        "progress": "Progress",
+        "completedLessons": "Completed",
+        "nextUp": "Next"
+      },
+      "lessonList": {
+        "title": "Lessons",
+        "metaFullAccess": "{{sections}} sections • {{lessons}} lessons",
+        "metaPreview": "{{open}}/{{total}} lessons unlocked"
+      },
+      "currentLesson": {
+        "label": "Current lesson",
+        "selectFromList": "Select a lesson from the list on the right",
+        "selectAside": "Select a lesson from the side list"
+      },
+      "lessonNumberBadge": "Lesson {{index}}",
+      "completedBadge": "Completed",
+      "lessonHint": "Finish this video to keep progressing through the path.",
+      "markComplete": {
+        "done": "Completed",
+        "action": "Mark as watched"
+      },
+      "nav": {
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "finalAssignment": {
+        "status": {
+          "approved": "Approved — your certificate will be issued.",
+          "rejected": "Rejected. You can resubmit.",
+          "pending": "Submitted — waiting for instructor review."
+        },
+        "certificateFeeRequired": "To submit the final assignment and request certificate review, you need to pay {{fee}}.",
+        "creatingPayment": "Creating checkout...",
+        "payViaSePay": "Pay with SePay",
+        "contentPlaceholder": "Enter your assignment content...",
+        "attachmentsLabel": "Attachments (optional)",
+        "submitting": "Submitting...",
+        "submit": "Submit"
+      },
+      "curriculumTitle": "Curriculum"
+    }
+  },
+  "filters": {
+    "level": {
+      "all": "All levels",
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "pricing": {
+      "all": "All pricing",
+      "free": "Free",
+      "paid": "Upfront payment",
+      "certificate": "Free learning, paid certificate"
+    },
+    "owner": {
+      "all": "All providers",
+      "corelia": "Corelia",
+      "external_partner": "Partner instructor"
+    },
+    "sort": {
+      "featured": "Featured first",
+      "recent": "Recently updated",
+      "duration_desc": "Longest duration",
+      "title_asc": "Title A–Z"
+    }
+  },
+  "pricing": {
+    "freeLearning": "Free learning",
+    "fromPrice": "From {{price}}",
+    "certificateFee": "Certificate {{price}}"
+  }
+}
+

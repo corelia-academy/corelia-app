@@ -23,47 +23,62 @@ import {
 import { deleteContest, listContests } from "@/lib/contests";
 import type { Contest } from "@/types/contests";
 import { toast } from "sonner";
+import { intlLocale } from "@/lib/intl";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
-function statusLabel(status: Contest["status"]): string {
+type ContestsT = TFunction<"contests", undefined>;
+
+function statusLabel(status: Contest["status"], t: ContestsT): string {
   switch (status) {
     case "draft":
-      return "Bản nháp";
+      return t("instructor.statusLabel.draft");
     case "published":
-      return "Đang nhận hồ sơ";
+      return t("instructor.statusLabel.published");
     case "running":
-      return "Đang diễn ra";
+      return t("instructor.statusLabel.running");
     case "ended":
-      return "Đã kết thúc";
+      return t("instructor.statusLabel.ended");
     default:
-      return "—";
+      return t("instructor.statusLabel.unknown");
   }
 }
 
-function locationLabel(loc: Contest["location"]): string {
+function locationLabel(loc: Contest["location"], t: ContestsT): string {
   switch (loc) {
     case "online":
-      return "Online";
+      return t("instructor.locationLabel.online");
     case "offline":
-      return "Offline";
+      return t("instructor.locationLabel.offline");
     case "hybrid":
-      return "Hybrid";
+      return t("instructor.locationLabel.hybrid");
     default:
-      return "—";
+      return t("instructor.locationLabel.unknown");
   }
 }
 
-function formatDateRange(startsAt: string | null, endsAt: string | null): string {
-  if (!startsAt && !endsAt) return "Chưa công bố lịch thi";
+function formatDateRange(
+  startsAt: string | null,
+  endsAt: string | null,
+  t: ContestsT,
+): string {
+  if (!startsAt && !endsAt) return t("instructor.dateRangeUnknown");
   if (startsAt && endsAt) {
-    return `${new Date(startsAt).toLocaleDateString("vi-VN")} - ${new Date(
+    return `${new Date(startsAt).toLocaleDateString(intlLocale())} - ${new Date(
       endsAt,
-    ).toLocaleDateString("vi-VN")}`;
+    ).toLocaleDateString(intlLocale())}`;
   }
-  if (startsAt) return `Bắt đầu ${new Date(startsAt).toLocaleDateString("vi-VN")}`;
-  return `Kết thúc ${new Date(endsAt as string).toLocaleDateString("vi-VN")}`;
+  if (startsAt)
+    return t("instructor.dateStartPrefix", {
+      date: new Date(startsAt).toLocaleDateString(intlLocale()),
+    });
+  return t("instructor.dateEndPrefix", {
+    date: new Date(endsAt as string).toLocaleDateString(intlLocale()),
+  });
 }
 
 export default function InstructorContests() {
+  const { t } = useTranslation("contests");
   const navigate = useNavigate();
   const [items, setItems] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,7 +94,9 @@ export default function InstructorContests() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Không thể tải danh sách cuộc thi.");
+          setError(
+            err instanceof Error ? err.message : t("instructor.loadListFailed"),
+          );
         }
       })
       .finally(() => {
@@ -88,7 +105,7 @@ export default function InstructorContests() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -112,10 +129,10 @@ export default function InstructorContests() {
       await deleteContest(contestToDelete.id);
       setItems((current) => current.filter((item) => item.id !== contestToDelete.id));
       setContestToDelete(null);
-      toast.success("Đã xoá cuộc thi.");
+      toast.success(t("instructor.deleteSuccess"));
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Không thể xoá cuộc thi lúc này.";
+        err instanceof Error ? err.message : t("instructor.deleteFailed");
       setError(message);
       toast.error(message);
     } finally {
@@ -126,7 +143,7 @@ export default function InstructorContests() {
   if (loading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
-        Đang tải khu vực cuộc thi...
+        {t("instructor.loadingWorkspace")}
       </div>
     );
   }
@@ -143,25 +160,25 @@ export default function InstructorContests() {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Khu vực cuộc thi
+              {t("instructor.hero.eyebrow")}
             </p>
             <h2 className="mt-2 text-2xl font-normal tracking-tight text-foreground">
-              Danh sách contests đang vận hành
+              {t("instructor.hero.title")}
             </h2>
             <p className="mt-1.5 text-[14px] text-muted-foreground sm:text-[15px]">
-              Điều phối hackathon và contest như một lớp vận hành song song với hoạt động giảng dạy, nhưng có thêm ban giám khảo, đơn vị đồng tổ chức và trang công khai riêng.
+              {t("instructor.hero.description")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
-              Duyệt hồ sơ
+              {t("instructor.hero.pillApplications")}
             </span>
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
-              Luồng chấm điểm
+              {t("instructor.hero.pillJudging")}
             </span>
             <Button type="button" onClick={() => navigate("/instructor/contests/new")}>
               <PlusCircle className="size-4" weight="duotone" />
-              Tạo cuộc thi mới
+              {t("instructor.hero.create")}
             </Button>
           </div>
         </div>
@@ -173,7 +190,7 @@ export default function InstructorContests() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Đang được quan tâm
+                  {t("instructor.featured.eyebrow")}
                 </p>
                 <h3 className="mt-2 text-xl font-normal tracking-tight text-foreground">
                   {featured.title}
@@ -183,22 +200,22 @@ export default function InstructorContests() {
                 </p>
               </div>
               <span className="inline-flex items-center rounded-full bg-muted/70 px-3 py-1.5 text-[12px] font-medium text-foreground">
-                {statusLabel(featured.status)}
+                {statusLabel(featured.status, t)}
               </span>
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <div className="rounded-2xl border border-border-subtle bg-background p-4">
                 <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                  Lịch contest
+                  {t("instructor.featured.schedule")}
                 </div>
                 <div className="mt-2 text-sm text-foreground">
-                  {formatDateRange(featured.starts_at, featured.ends_at)}
+                  {formatDateRange(featured.starts_at, featured.ends_at, t)}
                 </div>
               </div>
               <div className="rounded-2xl border border-border-subtle bg-background p-4">
                 <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                  Hồ sơ
+                  {t("instructor.featured.registrations")}
                 </div>
                 <div className="mt-2 text-sm text-foreground">
                   {featured.metrics_snapshot.registrations_total} tổng · {featured.metrics_snapshot.approved_registrations} duyệt
@@ -206,7 +223,7 @@ export default function InstructorContests() {
               </div>
               <div className="rounded-2xl border border-border-subtle bg-background p-4">
                 <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                  Bài nộp
+                  {t("instructor.featured.submissions")}
                 </div>
                 <div className="mt-2 text-sm text-foreground">
                   {featured.metrics_snapshot.submissions_total} bài nộp
@@ -214,10 +231,12 @@ export default function InstructorContests() {
               </div>
               <div className="rounded-2xl border border-border-subtle bg-background p-4">
                 <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                  Bề mặt public
+                  {t("instructor.featured.publicSurface")}
                 </div>
                 <div className="mt-2 text-sm text-foreground">
-                  {featured.status === "draft" ? "Chưa công khai" : "Đã sẵn sàng cho thí sinh"}
+                  {featured.status === "draft"
+                    ? t("instructor.featured.publicDraft")
+                    : t("instructor.featured.publicReady")}
                 </div>
               </div>
             </div>
@@ -227,14 +246,14 @@ export default function InstructorContests() {
                 type="button"
                 onClick={() => navigate(`/instructor/contests/${featured.id}/manage`)}
               >
-                Mở khu vực vận hành
+                {t("instructor.featured.openWorkspace")}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate(`/contests/${featured.id}`)}
               >
-                Xem trang công khai
+                {t("instructor.featured.viewPublic")}
               </Button>
               <Button
                 type="button"
@@ -242,32 +261,38 @@ export default function InstructorContests() {
                 onClick={() => setContestToDelete(featured)}
               >
                 <Trash className="size-4" weight="duotone" />
-                Xoá contest
+                {t("instructor.listItem.deleteContest")}
               </Button>
             </div>
           </div>
 
           <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Cách vận hành
+              {t("instructor.workflow.eyebrow")}
             </p>
             <div className="mt-4 space-y-3">
               <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                <div className="text-sm font-medium text-foreground">Duyệt hồ sơ</div>
+                <div className="text-sm font-medium text-foreground">
+                  {t("instructor.workflow.applicationsTitle")}
+                </div>
                 <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
-                  Corelia giữ quyền xét duyệt hồ sơ và quyết định đội vào vòng.
+                  {t("instructor.workflow.applicationsDescription")}
                 </div>
               </div>
               <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                <div className="text-sm font-medium text-foreground">Chấm điểm</div>
+                <div className="text-sm font-medium text-foreground">
+                  {t("instructor.workflow.judgingTitle")}
+                </div>
                 <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
-                  Ban giám khảo và đơn vị đồng tổ chức tham gia ở đúng lớp quyền, không dùng chung mô hình biên soạn khóa học.
+                  {t("instructor.workflow.judgingDescription")}
                 </div>
               </div>
               <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                <div className="text-sm font-medium text-foreground">Trang công khai</div>
+                <div className="text-sm font-medium text-foreground">
+                  {t("instructor.workflow.publicTitle")}
+                </div>
                 <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
-                  Thí sinh chỉ thấy trang giới thiệu, đăng ký, bài nộp của mình và kết quả đã công bố.
+                  {t("instructor.workflow.publicDescription")}
                 </div>
               </div>
             </div>
@@ -280,7 +305,7 @@ export default function InstructorContests() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Tổng contest
+                {t("instructor.stats.total")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">{stats.total}</p>
             </div>
@@ -293,7 +318,7 @@ export default function InstructorContests() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Bản nháp
+                {t("instructor.stats.draft")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">{stats.draft}</p>
             </div>
@@ -306,7 +331,7 @@ export default function InstructorContests() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Đang nhận hồ sơ
+                {t("instructor.stats.accepting")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.accepting}
@@ -321,7 +346,7 @@ export default function InstructorContests() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Đang diễn ra
+                {t("instructor.stats.running")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">{stats.running}</p>
             </div>
@@ -334,7 +359,7 @@ export default function InstructorContests() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Đã kết thúc
+                {t("instructor.stats.ended")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">{stats.ended}</p>
             </div>
@@ -347,7 +372,7 @@ export default function InstructorContests() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Submissions
+                {t("instructor.stats.submissions")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.submissions}
@@ -364,10 +389,10 @@ export default function InstructorContests() {
         <div className="mt-6 rounded-2xl border border-border-subtle bg-card p-10 text-center shadow-card">
           <Trophy className="mx-auto size-12 text-muted-foreground" />
           <p className="mt-4 text-[15px] text-muted-foreground">
-            Chưa có cuộc thi nào trong khu vực này.
+            {t("instructor.empty.title")}
           </p>
           <Button type="button" className="mt-4" onClick={() => navigate("/instructor/contests/new")}>
-            Tạo contest đầu tiên
+            {t("instructor.empty.createFirst")}
           </Button>
         </div>
       ) : (
@@ -384,23 +409,23 @@ export default function InstructorContests() {
               >
                 <div className="flex flex-wrap gap-2">
                   <span className="inline-flex items-center rounded-full bg-muted/70 px-2.5 py-1 text-[11px] font-medium text-foreground">
-                    {statusLabel(contest.status)}
+                    {statusLabel(contest.status, t)}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-foreground">
                     {contest.status === "draft" ? (
                       <>
                         <EyeSlash className="mr-1 size-3.5" weight="duotone" />
-                        Chưa công khai
+                        {t("instructor.listItem.pillPublicDraft")}
                       </>
                     ) : (
                       <>
                         <Eye className="mr-1 size-3.5" weight="duotone" />
-                        Có trang công khai
+                        {t("instructor.listItem.pillPublicReady")}
                       </>
                     )}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-foreground">
-                    {locationLabel(contest.location)}
+                    {locationLabel(contest.location, t)}
                   </span>
                 </div>
                 <h3 className="mt-4 text-lg font-medium tracking-tight text-foreground">
@@ -411,14 +436,20 @@ export default function InstructorContests() {
                 </p>
                 <div className="mt-4 grid gap-2 text-[13px] text-muted-foreground">
                   <div className="rounded-xl border border-border-subtle bg-background px-3 py-2">
-                    {formatDateRange(contest.starts_at, contest.ends_at)}
+                    {formatDateRange(contest.starts_at, contest.ends_at, t)}
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2">
                     <div className="rounded-xl border border-border-subtle bg-background px-3 py-2">
-                      {contest.metrics_snapshot.registrations_total} hồ sơ · {contest.metrics_snapshot.approved_registrations} duyệt
+                      {t("instructor.listItem.metricsRegistrations", {
+                        total: contest.metrics_snapshot.registrations_total,
+                        approved: contest.metrics_snapshot.approved_registrations,
+                      })}
                     </div>
                     <div className="rounded-xl border border-border-subtle bg-background px-3 py-2">
-                      {contest.metrics_snapshot.submissions_total} submissions · {contest.metrics_snapshot.published_winners} winners
+                      {t("instructor.listItem.metricsSubmissions", {
+                        submissions: contest.metrics_snapshot.submissions_total,
+                        winners: contest.metrics_snapshot.published_winners,
+                      })}
                     </div>
                   </div>
                 </div>
@@ -430,14 +461,14 @@ export default function InstructorContests() {
                     variant="ghost"
                     onClick={() => navigate(`/contests/${contest.id}`)}
                   >
-                    Xem trang công khai
+                    {t("instructor.listItem.viewPublic")}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => navigate(`/instructor/contests/${contest.id}/manage`)}
                   >
-                    Mở khu vực vận hành
+                    {t("instructor.listItem.openWorkspace")}
                   </Button>
                 </div>
                 <Button
@@ -446,7 +477,7 @@ export default function InstructorContests() {
                   onClick={() => setContestToDelete(contest)}
                 >
                   <Trash className="size-4" weight="duotone" />
-                  Xoá
+                  {t("instructor.listItem.delete")}
                 </Button>
               </div>
             </article>
@@ -464,12 +495,12 @@ export default function InstructorContests() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xoá cuộc thi?</DialogTitle>
+            <DialogTitle>{t("instructor.deleteDialog.title")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
             {contestToDelete?.title
-              ? `Contest "${contestToDelete.title}" cùng toàn bộ hồ sơ đăng ký, lời mời, bài nộp và điểm chấm sẽ bị xoá. Hành động này không thể hoàn tác.`
-              : "Cuộc thi và toàn bộ dữ liệu liên quan sẽ bị xoá. Hành động này không thể hoàn tác."}
+              ? t("instructor.deleteDialog.descriptionWithTitle", { title: contestToDelete.title })
+              : t("instructor.deleteDialog.description")}
           </p>
           <DialogFooter>
             <Button
@@ -478,7 +509,7 @@ export default function InstructorContests() {
               onClick={() => setContestToDelete(null)}
               disabled={deletingId != null}
             >
-              Huỷ
+              {t("instructor.deleteDialog.cancel")}
             </Button>
             <Button
               type="button"
@@ -489,12 +520,12 @@ export default function InstructorContests() {
               {deletingId != null ? (
                 <>
                   <Spinner className="size-4 animate-spin" />
-                  Đang xoá
+                  {t("instructor.deleteDialog.confirmDeleting")}
                 </>
               ) : (
                 <>
                   <Trash className="size-4" weight="duotone" />
-                  Xoá contest
+                  {t("instructor.listItem.deleteContest")}
                 </>
               )}
             </Button>

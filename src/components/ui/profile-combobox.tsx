@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useTranslation } from "react-i18next";
 
 export interface ProfileComboboxOption {
   id: string;
@@ -36,12 +37,13 @@ export function ProfileCombobox({
   description,
   options,
   placeholder,
-  searchPlaceholder = "Tìm theo tên hoặc email",
-  emptyLabel = "Không có kết quả phù hợp.",
+  searchPlaceholder,
+  emptyLabel,
   value,
   onChange,
   multiple = false,
 }: ProfileComboboxProps) {
+  const { t } = useTranslation("common");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
@@ -120,13 +122,13 @@ export function ProfileCombobox({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm"
-              placeholder={searchPlaceholder}
+              placeholder={searchPlaceholder ?? t("combobox.searchPlaceholder")}
             />
 
             <div className="mt-4 max-h-[min(60vh,28rem)] space-y-2 overflow-y-auto pr-1">
               {filtered.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-5 text-sm text-muted-foreground">
-                  {emptyLabel}
+                  {emptyLabel ?? t("combobox.emptyLabel")}
                 </div>
               ) : (
                 filtered.map((option) => {
@@ -170,7 +172,7 @@ export function ProfileCombobox({
             {multiple ? (
               <div className="mt-4 flex justify-end">
                 <Button type="button" onClick={() => setOpen(false)}>
-                  Xong
+                  {t("combobox.done")}
                 </Button>
               </div>
             ) : null}

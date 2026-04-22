@@ -1,0 +1,424 @@
+{
+  "status": {
+    "draft": "Bản nháp",
+    "published": "Đang nhận hồ sơ",
+    "running": "Đang diễn ra",
+    "ended": "Đã kết thúc",
+    "unknown": "—"
+  },
+  "location": {
+    "online": "Online",
+    "offline": "Offline",
+    "hybrid": "Hybrid",
+    "unknown": "—"
+  },
+  "registrationStatus": {
+    "pending": "Chờ duyệt",
+    "approved": "Đã duyệt",
+    "rejected": "Từ chối",
+    "unknown": "—"
+  },
+  "catalog": {
+    "heroEyebrow": "Cuộc thi & hoạt động hệ sinh thái",
+    "heroTitle": "Không gian cuộc thi của Corelia",
+    "heroDescription": "Khám phá hackathon, mini contest và các hoạt động nhiều vòng đang được Corelia mở cho cộng đồng. Hồ sơ chỉ được tham gia chính thức sau khi đội ngũ Corelia xét duyệt.",
+    "pillReviewed": "Corelia xét duyệt đầu vào",
+    "pillTeamBased": "Bài nộp theo đội",
+    "sectionWhyTitle": "Cuộc thi không chỉ để thi, mà còn để học, xây dựng và va chạm thực tế",
+    "loadingTitle": "Đang tải danh sách cuộc thi...",
+    "loadingDescription": "Các chương trình hackathon và contest sẽ xuất hiện ngay khi đồng bộ xong.",
+    "howItWorksEyebrow": "Cách Corelia vận hành cuộc thi",
+    "howItWorksDescription": "Mỗi cuộc thi tại Corelia được thiết kế như một lớp trải nghiệm thực chiến: có vòng duyệt đầu vào, có mentor hoặc ban giám khảo, có bài nộp rõ ràng và có kết quả đủ tốt để bạn mang vào portfolio, workshop hoặc demo day sau đó.",
+    "whyBullets": {
+      "reviewFirst": "Hồ sơ được duyệt trước khi tham gia chính thức",
+      "realJourney": "Bài nộp và kết quả gắn với hành trình học thật",
+      "ecosystem": "Có thể mở rộng sang portfolio và cơ hội hệ sinh thái"
+    },
+    "dateRangeUnknown": "Chưa công bố lịch thi",
+    "dateStartPrefix": "Bắt đầu {{date}}",
+    "dateEndPrefix": "Kết thúc {{date}}",
+    "loadErrorFallback": "Không thể tải cuộc thi.",
+    "emptyTitle": "Chưa có cuộc thi nào.",
+    "emptyDescriptionManager": "Chưa có contest public nào. Hãy tạo và vận hành contest trong instructor workspace trước khi nó xuất hiện tại đây.",
+    "emptyDescriptionUser": "Khi Corelia công bố contest mới, bạn sẽ thấy lịch và yêu cầu đăng ký tại đây.",
+    "registrationDeadlinePrefix": "Hạn đăng ký {{date}}",
+    "registrationNoLimit": "Không giới hạn thời gian đăng ký",
+    "viewDetails": "Xem chi tiết",
+    "openWorkspace": "Mở contest workspace",
+    "stats": {
+      "total": "Tổng cuộc thi",
+      "accepting": "Đang nhận hồ sơ",
+      "running": "Đang diễn ra",
+      "ended": "Đã kết thúc"
+    },
+    "featuredEyebrow": "Đang được quan tâm",
+    "featured": {
+      "schedule": "Lịch thi",
+      "format": "Hình thức",
+      "registrations": "Hồ sơ",
+      "submissions": "Bài nộp",
+      "registrationsCount": "{{count}} đăng ký",
+      "submissionsCount": "{{count}} bài nộp"
+    },
+    "item": {
+      "formatPrefix": "Hình thức: {{format}}",
+      "registrationsCount": "{{count}} hồ sơ",
+      "submissionsCount": "{{count}} bài nộp"
+    },
+    "sidebar": {
+      "leaderboardHint": "Judges chấm theo rubric, còn leaderboard và winners chỉ hiện khi được publish."
+    }
+  },
+  "instructor": {
+    "statusLabel": {
+      "draft": "Bản nháp",
+      "published": "Đang nhận hồ sơ",
+      "running": "Đang diễn ra",
+      "ended": "Đã kết thúc",
+      "unknown": "—"
+    },
+    "locationLabel": {
+      "online": "Online",
+      "offline": "Offline",
+      "hybrid": "Hybrid",
+      "unknown": "—"
+    },
+    "dateRangeUnknown": "Chưa công bố lịch thi",
+    "dateStartPrefix": "Bắt đầu {{date}}",
+    "dateEndPrefix": "Kết thúc {{date}}",
+    "loadListFailed": "Không thể tải danh sách cuộc thi.",
+    "deleteSuccess": "Đã xoá cuộc thi.",
+    "deleteFailed": "Không thể xoá cuộc thi lúc này.",
+    "loadingWorkspace": "Đang tải khu vực cuộc thi...",
+    "hero": {
+      "eyebrow": "Khu vực cuộc thi",
+      "title": "Danh sách contests đang vận hành",
+      "description": "Điều phối hackathon và contest như một lớp vận hành song song với hoạt động giảng dạy, nhưng có thêm ban giám khảo, đơn vị đồng tổ chức và trang công khai riêng.",
+      "pillApplications": "Duyệt hồ sơ",
+      "pillJudging": "Luồng chấm điểm",
+      "create": "Tạo cuộc thi mới"
+    },
+    "featured": {
+      "eyebrow": "Đang được quan tâm",
+      "schedule": "Lịch contest",
+      "registrations": "Hồ sơ",
+      "submissions": "Bài nộp",
+      "publicSurface": "Bề mặt public",
+      "publicDraft": "Chưa công khai",
+      "publicReady": "Đã sẵn sàng cho thí sinh",
+      "openWorkspace": "Mở khu vực vận hành",
+      "viewPublic": "Xem trang công khai"
+    },
+    "workflow": {
+      "eyebrow": "Cách vận hành",
+      "applicationsTitle": "Duyệt hồ sơ",
+      "applicationsDescription": "Corelia giữ quyền xét duyệt hồ sơ và quyết định đội vào vòng.",
+      "judgingTitle": "Chấm điểm",
+      "judgingDescription": "Ban giám khảo và đơn vị đồng tổ chức tham gia ở đúng lớp quyền, không dùng chung mô hình biên soạn khóa học.",
+      "publicTitle": "Trang công khai",
+      "publicDescription": "Thí sinh chỉ thấy trang giới thiệu, đăng ký, bài nộp của mình và kết quả đã công bố."
+    },
+    "stats": {
+      "total": "Tổng contest",
+      "draft": "Bản nháp",
+      "accepting": "Đang nhận hồ sơ",
+      "running": "Đang diễn ra",
+      "ended": "Đã kết thúc",
+      "submissions": "Submissions"
+    },
+    "empty": {
+      "title": "Chưa có cuộc thi nào trong khu vực này.",
+      "createFirst": "Tạo contest đầu tiên"
+    },
+    "listItem": {
+      "pillPublicDraft": "Chưa công khai",
+      "pillPublicReady": "Có trang công khai",
+      "metricsRegistrations": "{{total}} hồ sơ · {{approved}} duyệt",
+      "metricsSubmissions": "{{submissions}} submissions · {{winners}} winners",
+      "viewPublic": "Xem trang công khai",
+      "openWorkspace": "Mở khu vực vận hành",
+      "delete": "Xoá",
+      "deleteContest": "Xoá contest"
+    },
+    "deleteDialog": {
+      "title": "Xoá cuộc thi?",
+      "description": "Cuộc thi và toàn bộ dữ liệu liên quan sẽ bị xoá. Hành động này không thể hoàn tác.",
+      "descriptionWithTitle": "Contest \"{{title}}\" cùng toàn bộ hồ sơ đăng ký, lời mời, bài nộp và điểm chấm sẽ bị xoá. Hành động này không thể hoàn tác.",
+      "cancel": "Huỷ",
+      "confirmDeleting": "Đang xoá"
+    }
+  },
+  "instructorNew": {
+    "back": "Quay lại khu vực cuộc thi",
+    "hero": {
+      "eyebrow": "Thiết lập cuộc thi",
+      "title": "Khởi tạo cuộc thi mới",
+      "description": "Dựng trang công khai, luồng đăng ký và khu vực vận hành cho hackathon hoặc contest mới của Corelia.",
+      "pillMultiParty": "Luồng nhiều bên tham gia",
+      "pillPublicOps": "Trang công khai + vận hành"
+    },
+    "pillCards": {
+      "publicSurfaceTitle": "Bề mặt public",
+      "publicSurfaceDescription": "Trang giới thiệu và CTA đăng ký",
+      "applicationsTitle": "Duyệt hồ sơ",
+      "applicationsDescription": "Corelia giữ quyền xét duyệt",
+      "judgingTitle": "Chấm điểm",
+      "judgingDescription": "Rubric và chấm điểm theo vai trò",
+      "timelineTitle": "Timeline",
+      "timelineDescription": "Hạn đăng ký, khai mạc, công bố"
+    },
+    "readiness": {
+      "publicTitle": "Trang công khai",
+      "publicDescription": "Trang cuộc thi sẽ có phần giới thiệu, mốc thời gian, thể lệ và CTA đăng ký rõ ràng.",
+      "applicationsTitle": "Duyệt hồ sơ",
+      "applicationsDescription": "Người của Corelia duyệt hồ sơ trước khi mở quyền submission.",
+      "judgingTitle": "Luồng chấm điểm",
+      "judgingDescription": "Ban giám khảo được mời vào khu vực vận hành để chấm theo rubric có trọng số."
+    },
+    "toasts": {
+      "created": "Đã tạo cuộc thi.",
+      "createFailed": "Không thể tạo cuộc thi."
+    },
+    "form": {
+      "titleLabel": "Tên cuộc thi",
+      "titlePlaceholder": "Ví dụ: Corelia Hackathon: AI for Education",
+      "titleDescription": "Tên hiển thị trong danh sách và trang chi tiết cuộc thi.",
+      "taglineLabel": "Dòng mô tả ngắn",
+      "taglinePlaceholder": "Ví dụ: Build trong 48h • Có mentor đồng hành • Demo Day",
+      "taglineDescription": "Mô tả ngắn xuất hiện ở card và phần mở đầu của cuộc thi.",
+      "statusLabel": "Trạng thái",
+      "statusOptions": {
+        "draft": "Bản nháp",
+        "published": "Mở đăng ký",
+        "running": "Đang diễn ra",
+        "ended": "Đã kết thúc"
+      },
+      "locationLabel": "Hình thức",
+      "locationOptions": {
+        "online": "Online",
+        "offline": "Offline",
+        "hybrid": "Hybrid"
+      },
+      "startsAtLabel": "Bắt đầu",
+      "endsAtLabel": "Kết thúc",
+      "registrationDeadlineLabel": "Hạn đăng ký",
+      "maxParticipantsLabel": "Giới hạn số hồ sơ được duyệt",
+      "maxParticipantsPlaceholder": "Để trống nếu không giới hạn",
+      "maxParticipantsDescription": "Nếu cần kiểm soát số đội/người tham gia, nhập giới hạn tại đây.",
+      "descriptionLabel": "Giới thiệu",
+      "descriptionPlaceholder": "Mô tả chủ đề, cách thi, mentor đồng hành, quyền lợi và trải nghiệm chính...",
+      "rulesLabel": "Yêu cầu và luật chơi",
+      "rulesPlaceholder": "Điều kiện tham gia, tiêu chí chấm, cách nộp bài, yêu cầu demo...",
+      "rulesDescription": "Nội dung này sẽ hiển thị ở trang chi tiết để người tham gia chuẩn bị hồ sơ."
+    }
+    ,
+    "actions": {
+      "back": "Quay lại",
+      "create": "Tạo cuộc thi",
+      "creating": "Đang tạo..."
+    },
+    "afterCreateChecklist": {
+      "eyebrow": "Danh sách sau khi tạo"
+    },
+    "nextSteps": {
+      "eyebrow": "Sau khi tạo",
+      "intro": "Cuộc thi sẽ được mở trong khu vực vận hành để bạn tiếp tục:",
+      "step1": "1. Mời ban giám khảo và đơn vị đồng tổ chức.",
+      "step2": "2. Tinh chỉnh rubric chấm điểm.",
+      "step3": "3. Duyệt hồ sơ và công bố kết quả."
+    }
+  },
+  "detail": {
+    "notUpdated": "Chưa cập nhật",
+    "loading": {
+      "eyebrow": "Đang tải cuộc thi",
+      "title": "Đang tải thông tin cuộc thi...",
+      "description": "Khu đăng ký, lời mời cộng tác, bài nộp và chấm điểm sẽ sẵn sàng trong giây lát."
+    },
+    "errorState": {
+      "description": "Liên kết có thể đã thay đổi, cuộc thi chưa được công bố, hoặc bạn đang truy cập một bề mặt không còn tồn tại.",
+      "backToList": "Quay lại danh sách cuộc thi"
+    },
+    "manage": {
+      "sections": {
+        "applications": {
+          "label": "Hồ sơ",
+          "description": "Duyệt đăng ký và chọn đội vào vòng"
+        },
+        "judging": {
+          "label": "Chấm điểm",
+          "description": "Score submissions và lưu nhận xét"
+        },
+        "results": {
+          "label": "Kết quả",
+          "description": "Leaderboard, winners và báo cáo tổng hợp"
+        }
+      },
+      "overview": {
+        "label": "Tổng quan",
+        "description": "Vai trò tham gia, nhịp vận hành và tình trạng hiện tại của contest."
+      },
+      "fallback": {
+        "label": "Contest workspace",
+        "description": "Điều phối contest giữa Corelia, judges và đơn vị đồng tổ chức."
+      }
+    },
+    "journey": {
+      "step1": {
+        "title": "1. Nộp hồ sơ",
+        "description": "Cá nhân hoặc đội gửi hồ sơ tham gia với động lực, portfolio và thông tin liên hệ."
+      },
+      "step2": {
+        "title": "2. Được duyệt rồi nộp bài",
+        "description": "Corelia xét duyệt trước khi mở quyền submission để bảo đảm chất lượng đầu vào."
+      },
+      "step3": {
+        "title": "3. Ban giám khảo chấm và công bố",
+        "description": "Judges chấm theo rubric, sau đó leaderboard và winners chỉ hiện khi được publish."
+      }
+    },
+    "lanes": {
+      "ops": {
+        "title": "Corelia operations",
+        "description": "Mở contest, duyệt hồ sơ, mời cộng tác viên và công bố kết quả chính thức."
+      },
+      "judge": {
+        "title": "Judge panel",
+        "description": "Truy cập submissions, chấm theo rubric và để lại nhận xét chuyên môn."
+      },
+      "observer": {
+        "title": "Co-host observers",
+        "description": "Theo dõi metrics tổng hợp, leaderboard và winners mà không thấy hồ sơ thô."
+      }
+    },
+    "actions": {
+      "deleteSuccess": "Đã xoá cuộc thi.",
+      "deleteErrorFallback": "Không thể xoá cuộc thi lúc này."
+    },
+    "cta": {
+      "continueSubmission": "Tiếp tục submission",
+      "submitSubmission": "Nộp submission",
+      "approvedHelper": "Hồ sơ đã được duyệt. Bạn có thể mở khu submission để cập nhật bài nộp.",
+      "viewApplicationStatus": "Xem trạng thái hồ sơ",
+      "pendingHelper": "Corelia đang xử lý hồ sơ của bạn trước khi mở quyền tham gia chính thức.",
+      "register": "Đăng ký tham gia",
+      "registerHelper": "Contest đang mở nhận hồ sơ. Gửi đăng ký để được Corelia xét duyệt.",
+      "trackTimeline": "Theo dõi mốc contest",
+      "trackTimelineHelper": "Contest chưa mở đăng ký. Bạn có thể xem timeline và chờ giai đoạn nhận hồ sơ."
+    },
+    "errors": {
+      "notFound": "Không tìm thấy cuộc thi.",
+      "loadFailed": "Không thể tải cuộc thi.",
+      "deleteAccessDeniedTitle": "Không thể truy cập cuộc thi",
+      "deleteAccessDeniedFallback": "Không tìm thấy cuộc thi.",
+      "workspaceAccessDenied": "Bạn không có quyền truy cập khu vực vận hành của cuộc thi này."
+    },
+    "toasts": {
+      "contactEmailRequired": "Hãy nhập email liên hệ để Corelia phản hồi hồ sơ.",
+      "applicationMotivationTooShort": "Hãy mô tả động lực và năng lực chi tiết hơn trước khi gửi hồ sơ.",
+      "applicationSubmitted": "Đã gửi hồ sơ đăng ký. Corelia sẽ duyệt trước khi bạn được tham gia.",
+      "applicationSubmitFailed": "Không thể gửi đăng ký.",
+      "applicationReviewedApproved": "Đã duyệt hồ sơ.",
+      "applicationReviewedRejected": "Đã từ chối hồ sơ.",
+      "applicationReviewUpdateFailed": "Không thể cập nhật hồ sơ.",
+      "contestStatusUpdated": "Đã cập nhật trạng thái cuộc thi.",
+      "contestStatusUpdateFailed": "Không thể cập nhật trạng thái.",
+      "inviteCreated": "Đã tạo lời mời.",
+      "inviteCreateFailed": "Không thể tạo lời mời.",
+      "inviteAccepted": "Bạn đã nhận lời mời.",
+      "inviteDeclined": "Bạn đã từ chối lời mời.",
+      "inviteUpdateFailed": "Không thể cập nhật lời mời.",
+      "inviteRevoked": "Đã thu hồi quyền truy cập.",
+      "inviteRevokeFailed": "Không thể thu hồi quyền.",
+      "rubricWeightMustBe100": "Tổng trọng số rubric cần bằng 100 trước khi lưu.",
+      "rubricUpdated": "Đã cập nhật trọng số rubric.",
+      "rubricUpdateFailed": "Không thể cập nhật rubric.",
+      "submissionSummaryTooShort": "Hãy viết tóm tắt submission rõ hơn trước khi lưu.",
+      "submissionSaved": "Đã lưu bài nộp.",
+      "submissionSaveFailed": "Không thể lưu bài nộp.",
+      "scoreCriterionOutOfRange": "Mỗi tiêu chí cần nằm trong khoảng 0 đến 25.",
+      "scoreSaved": "Đã lưu điểm chấm.",
+      "scoreSaveFailed": "Không thể lưu điểm.",
+      "metricsRefreshed": "Đã làm mới metrics snapshot.",
+      "metricsRefreshFailed": "Không thể làm mới metrics.",
+      "publishNeedsScoredSubmission": "Cần có ít nhất một submission đã được chấm trước khi publish kết quả.",
+      "publishNeedsAward": "Hãy nhập ít nhất một giải thưởng trước khi publish.",
+      "resultsPublished": "Đã publish leaderboard và winners.",
+      "publishFailed": "Không thể publish kết quả.",
+      "inviteLinkCopied": "Đã copy invite link."
+    },
+    "forms": {
+      "awards": {
+        "awardPlaceholder": "Ví dụ: Champion",
+        "notePlaceholder": "Ghi chú thêm"
+      },
+      "invite": {
+        "emailPlaceholder": "email người được mời",
+        "displayNamePlaceholder": "Tên hiển thị",
+        "organizationPlaceholder": "Đơn vị / trường / tổ chức",
+        "notePlaceholder": "Ghi chú lời mời"
+      },
+      "submission": {
+        "titlePlaceholder": "Tên submission",
+        "summaryPlaceholder": "Tóm tắt giải pháp, vấn đề giải quyết và điểm nổi bật",
+        "demoUrlPlaceholder": "Demo URL",
+        "repoUrlPlaceholder": "Repo URL",
+        "slideUrlPlaceholder": "Slide URL",
+        "submitLabel": "Nộp submission",
+        "updateLabel": "Cập nhật submission"
+      },
+      "application": {
+        "closedHint": "Contest hiện chưa mở nhận hồ sơ. Khi Corelia chuyển trạng thái sang “Đang nhận hồ sơ”, form đăng ký sẽ xuất hiện tại đây.",
+        "teamNamePlaceholder": "Tên đội / nhóm",
+        "teamMembersPlaceholder": "Thành viên khác, mỗi dòng một người",
+        "contactEmailPlaceholder": "Email liên hệ",
+        "contactPhonePlaceholder": "Số điện thoại liên hệ",
+        "portfolioPlaceholder": "Portfolio / GitHub / LinkedIn",
+        "motivationPlaceholder": "Giới thiệu năng lực, động lực và ý tưởng dự định mang vào contest...",
+        "submitLabel": "Gửi hồ sơ đăng ký"
+      }
+    },
+    "dialogs": {
+      "delete": {
+        "title": "Xoá cuộc thi?",
+        "descriptionManager": "Cuộc thi và toàn bộ dữ liệu liên quan sẽ bị xoá. Hành động này không thể hoàn tác."
+      }
+    },
+    "labels": {
+      "manageArea": "Khu vực vận hành cuộc thi",
+      "publicType": "Hackathon",
+      "unlimited": "Không giới hạn",
+      "contextManage": "Bối cảnh contest",
+      "contextPublic": "Về contest này",
+      "rulesManage": "Rule, format và nguyên tắc vận hành",
+      "rulesPublic": "Rule và yêu cầu",
+      "rulesEmpty": "Corelia sẽ cập nhật guideline, tiêu chí chấm và format nộp bài tại đây.",
+      "refreshing": "Đang làm mới...",
+      "refreshMetrics": "Làm mới metrics",
+      "defaultSoloRegistration": "Đăng ký cá nhân",
+      "contact": "Liên hệ:",
+      "notProvided": "Chưa cung cấp",
+      "noDataDash": "—",
+      "noDemo": "Chưa có",
+      "saving": "Đang lưu...",
+      "saveScore": "Lưu điểm",
+      "publishing": "Đang publish...",
+      "publishResults": "Publish leaderboard và winners",
+      "saveStatus": "Lưu trạng thái",
+      "saveRubric": "Lưu rubric",
+      "creating": "Đang tạo...",
+      "sendInvite": "Gửi lời mời",
+      "soloOrUnnamedTeam": "Đăng ký cá nhân / chưa đặt tên đội"
+    },
+    "inviteEmail": {
+      "subjectPrefix": "Lời mời cộng tác contest: {{title}}",
+      "greeting": "Chào {{name}},",
+      "invitedLine": "Bạn được mời tham gia contest \"{{title}}\" với vai trò: {{roles}}.",
+      "accessLinkLine": "Link truy cập: {{link}}",
+      "notePrefix": "Ghi chú: {{note}}",
+      "signOff": "Trân trọng,",
+      "brand": "Corelia"
+    }
+  }
+}
+

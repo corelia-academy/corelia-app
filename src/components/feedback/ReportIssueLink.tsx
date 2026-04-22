@@ -1,5 +1,6 @@
 import { Bug } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 type ReportIssueLinkProps = {
   compact?: boolean;
@@ -10,6 +11,7 @@ export function ReportIssueLink({
   compact = false,
   className,
 }: ReportIssueLinkProps) {
+  const { t } = useTranslation("common");
   const href = import.meta.env.VITE_BETA_FEEDBACK_FORM_URL?.trim() || "";
 
   if (!href) return null;
@@ -29,7 +31,7 @@ export function ReportIssueLink({
       className={className}
     >
       <Bug className="size-4" weight="duotone" />
-      {compact ? "Báo lỗi" : "Báo lỗi qua biểu mẫu"}
+      {compact ? t("feedback.reportIssue.short") : t("feedback.reportIssue.long")}
     </Button>
   );
 }

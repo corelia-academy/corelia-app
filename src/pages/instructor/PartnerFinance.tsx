@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "@/stores/authStore";
+import { intlLocale } from "@/lib/intl";
 import { Input } from "@/components/ui/input";
 import type { PartnerProfileDocument } from "@/types/database";
 import {
@@ -9,12 +10,14 @@ import {
   FileText,
   Receipt,
 } from "@phosphor-icons/react";
+import { useTranslation } from "react-i18next";
 
 function ExternalOnlyHint() {
+  const { t } = useTranslation("instructor");
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <div className="rounded-2xl border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-5">
-        Mục này chỉ hiển thị cho giảng viên đối tác bên ngoài.
+        {t("finance.externalOnlyHint")}
       </div>
     </div>
   );
@@ -96,7 +99,7 @@ function DocumentList({
           </div>
           <div className="inline-flex items-center gap-2 text-[12px] text-muted-foreground">
             <CalendarDots className="size-4" weight="duotone" />
-            {new Date(doc.uploaded_at).toLocaleDateString("vi-VN")}
+            {new Date(doc.uploaded_at).toLocaleDateString(intlLocale())}
           </div>
         </article>
       ))}
@@ -105,6 +108,7 @@ function DocumentList({
 }
 
 export function PartnerContractsPage() {
+  const { t } = useTranslation("instructor");
   const { profile } = useAuth();
   const rows = profile?.partner_contract_docs ?? [];
 
@@ -116,7 +120,7 @@ export function PartnerContractsPage() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Tổng tài liệu
+            {t("partnerFinance.contracts.stats.totalDocuments")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
             {rows.length}
@@ -124,32 +128,32 @@ export function PartnerContractsPage() {
         </div>
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Nguồn cung cấp
+            {t("partnerFinance.contracts.stats.source")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
-            Học vụ / Admin
+            {t("partnerFinance.contracts.stats.sourceValue")}
           </p>
         </div>
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Trạng thái
+            {t("partnerFinance.contracts.stats.status")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
-            Theo dõi tài liệu
+            {t("partnerFinance.contracts.stats.statusValue")}
           </p>
         </div>
       </div>
 
       <DocumentPanel
-        title="Hợp đồng"
-        description="Danh sách tài liệu hợp đồng do học vụ hoặc admin cung cấp cho giảng viên đối tác."
-        countLabel={`${rows.length} tài liệu`}
+        title={t("partnerFinance.contracts.panel.title")}
+        description={t("partnerFinance.contracts.panel.description")}
+        countLabel={t("partnerFinance.contracts.panel.countLabel", { count: rows.length })}
         icon={FileText}
       >
         <DocumentList
           rows={rows}
-          emptyLabel="Chưa có tài liệu hợp đồng."
-          renderMeta={() => "Tài liệu hợp đồng đã được chia sẻ cho bạn."}
+          emptyLabel={t("partnerFinance.contracts.list.empty")}
+          renderMeta={() => t("partnerFinance.contracts.list.meta")}
         />
       </DocumentPanel>
       </div>
@@ -158,6 +162,7 @@ export function PartnerContractsPage() {
 }
 
 export function PartnerInvoicesPage() {
+  const { t } = useTranslation("instructor");
   const { profile } = useAuth();
   const [monthFilter, setMonthFilter] = useState(() => {
     const d = new Date();
@@ -183,7 +188,7 @@ export function PartnerInvoicesPage() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Tháng đang xem
+            {t("partnerFinance.invoices.stats.currentMonth")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
             {monthFilter}
@@ -191,7 +196,7 @@ export function PartnerInvoicesPage() {
         </div>
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Số hoá đơn
+            {t("partnerFinance.invoices.stats.total")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
             {rows.length}
@@ -199,18 +204,18 @@ export function PartnerInvoicesPage() {
         </div>
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Trạng thái
+            {t("partnerFinance.invoices.stats.status")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
-            Đối soát theo kỳ
+            {t("partnerFinance.invoices.stats.statusValue")}
           </p>
         </div>
       </div>
 
       <DocumentPanel
-        title="Hoá đơn"
-        description="Lọc theo tháng để xem các file hoá đơn hoặc đối soát đã được chia sẻ cho bạn."
-        countLabel={`${rows.length} tài liệu`}
+        title={t("partnerFinance.invoices.panel.title")}
+        description={t("partnerFinance.invoices.panel.description")}
+        countLabel={t("partnerFinance.invoices.panel.countLabel", { count: rows.length })}
         icon={Receipt}
       >
         <div className="mb-5 w-full max-w-xs">
@@ -222,12 +227,14 @@ export function PartnerInvoicesPage() {
         </div>
         <DocumentList
           rows={rows}
-          emptyLabel="Không có hoá đơn trong tháng đã chọn."
+          emptyLabel={t("partnerFinance.invoices.list.empty")}
           renderMeta={(doc) => (
             <>
               {(doc.invoice_month ?? "").trim()
-                ? `Tháng ${doc.invoice_month}`
-                : "Không gắn tháng hoá đơn"}
+                ? t("partnerFinance.invoices.list.invoiceMonthPrefix", {
+                    month: doc.invoice_month,
+                  })
+                : t("partnerFinance.invoices.list.noInvoiceMonth")}
               {doc.note ? ` · ${doc.note}` : ""}
             </>
           )}
@@ -239,6 +246,7 @@ export function PartnerInvoicesPage() {
 }
 
 export function PartnerPaymentsPage() {
+  const { t } = useTranslation("instructor");
   const { profile } = useAuth();
   const transferInfo = (profile?.partner_transfer_info ?? "").trim();
   const bankName = (profile?.partner_bank_name ?? "").trim();
@@ -256,34 +264,40 @@ export function PartnerPaymentsPage() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Tài khoản ngân hàng
+            {t("partnerFinance.payments.stats.bankAccount")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
-            {bankAccount || "Chưa có"}
+            {bankAccount || t("partnerFinance.common.notAvailable")}
           </p>
         </div>
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Chủ tài khoản
+            {t("partnerFinance.payments.stats.accountHolder")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
-            {bankHolder || "Chưa có"}
+            {bankHolder || t("partnerFinance.common.notAvailable")}
           </p>
         </div>
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Hướng dẫn thanh toán
+            {t("partnerFinance.payments.stats.payoutGuide")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
-            {transferInfo ? "Đã cập nhật" : "Chưa có"}
+            {transferInfo
+              ? t("partnerFinance.common.updated")
+              : t("partnerFinance.common.notAvailable")}
           </p>
         </div>
       </div>
 
       <DocumentPanel
-        title="Thanh toán"
-        description="Thông tin chuyển khoản và ghi chú đối soát do học vụ hoặc admin cung cấp theo hợp đồng."
-        countLabel={hasBankInfo ? "Sẵn sàng nhận thanh toán" : "Chưa đủ thông tin"}
+        title={t("partnerFinance.payments.panel.title")}
+        description={t("partnerFinance.payments.panel.description")}
+        countLabel={
+          hasBankInfo
+            ? t("partnerFinance.payments.panel.ready")
+            : t("partnerFinance.payments.panel.missingInfo")
+        }
         icon={CreditCard}
       >
         {hasBankInfo ? (
@@ -291,30 +305,38 @@ export function PartnerPaymentsPage() {
             <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
               <div className="mb-3 flex items-center gap-2 text-[13px] font-medium text-foreground">
                 <Bank className="size-4 text-primary" weight="duotone" />
-                Thông tin chuyển khoản
+                {t("partnerFinance.payments.sections.transferInfo")}
               </div>
               <div className="grid gap-2 text-sm">
                 {bankName ? (
                   <div>
-                    <span className="text-muted-foreground">Ngân hàng:</span>{" "}
+                    <span className="text-muted-foreground">
+                      {t("partnerFinance.payments.fields.bankName")}
+                    </span>{" "}
                     <span className="font-medium text-foreground">{bankName}</span>
                   </div>
                 ) : null}
                 {bankAccount ? (
                   <div>
-                    <span className="text-muted-foreground">Số tài khoản:</span>{" "}
+                    <span className="text-muted-foreground">
+                      {t("partnerFinance.payments.fields.accountNumber")}
+                    </span>{" "}
                     <span className="font-medium text-foreground">{bankAccount}</span>
                   </div>
                 ) : null}
                 {bankHolder ? (
                   <div>
-                    <span className="text-muted-foreground">Chủ tài khoản:</span>{" "}
+                    <span className="text-muted-foreground">
+                      {t("partnerFinance.payments.fields.accountHolder")}
+                    </span>{" "}
                     <span className="font-medium text-foreground">{bankHolder}</span>
                   </div>
                 ) : null}
                 {bankNote ? (
                   <div>
-                    <span className="text-muted-foreground">Nội dung CK:</span>{" "}
+                    <span className="text-muted-foreground">
+                      {t("partnerFinance.payments.fields.transferNote")}
+                    </span>{" "}
                     <span className="text-foreground">{bankNote}</span>
                   </div>
                 ) : null}
@@ -323,7 +345,7 @@ export function PartnerPaymentsPage() {
             <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
               <div className="mb-3 flex items-center gap-2 text-[13px] font-medium text-foreground">
                 <CreditCard className="size-4 text-primary" weight="duotone" />
-                Ghi chú thêm
+                {t("partnerFinance.payments.sections.extraNotes")}
               </div>
               {transferInfo ? (
                 <p className="whitespace-pre-wrap text-sm text-muted-foreground">
@@ -331,14 +353,14 @@ export function PartnerPaymentsPage() {
                 </p>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Chưa có ghi chú thanh toán bổ sung.
+                  {t("partnerFinance.payments.emptyExtraNotes")}
                 </p>
               )}
             </div>
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-border-subtle bg-muted/20 p-5 text-sm text-muted-foreground">
-            Chưa có thông tin thanh toán.
+            {t("partnerFinance.payments.empty")}
           </div>
         )}
       </DocumentPanel>

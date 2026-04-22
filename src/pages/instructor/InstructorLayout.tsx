@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useParams } from "react-router";
 import React from "react";
 import {
@@ -37,8 +37,10 @@ import {
 import { getCourse } from "@/lib/courses";
 import { useAuth } from "@/stores/authStore";
 import { canManageContests, canManageOfflineAcademy } from "@/lib/permissions";
+import { useTranslation } from "react-i18next";
 
 function InstructorSidebar() {
+  const { t } = useTranslation("instructor");
   const location = useLocation();
   const pathname = location.pathname;
   const { profile } = useAuth();
@@ -57,10 +59,10 @@ function InstructorSidebar() {
             </div>
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
               <div className="truncate text-[13px] font-semibold leading-tight text-sidebar-foreground">
-                Corelia Instructor
+                {t("sidebar.title")}
               </div>
               <div className="mt-1 line-clamp-2 text-[12px] leading-5 text-sidebar-foreground/72">
-                Quản lý khoá học, hồ sơ và các tác vụ vận hành trong một nơi.
+                {t("sidebar.subtitle")}
               </div>
             </div>
           </div>
@@ -76,18 +78,18 @@ function InstructorSidebar() {
               <SidebarMenuItem className="flex items-center gap-2">
                 <NavLink to="/instructor/courses/new" className="flex w-full">
                   <SidebarMenuButton
-                    tooltip="Tạo khoá học"
+                    tooltip={t("sidebar.createCourse")}
                     className="min-w-8 w-full cursor-pointer rounded-xl bg-primary text-[13px] font-medium text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
                   >
                     <PlusCircleIcon />
-                    <span>Tạo khoá học</span>
+                    <span>{t("sidebar.createCourse")}</span>
                   </SidebarMenuButton>
                 </NavLink>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-xl"
-                  tooltip="Danh sách khoá học"
+                  tooltip={t("sidebar.courseList")}
                   isActive={
                     pathname === "/instructor/courses" ||
                     (pathname.startsWith("/instructor/courses/") &&
@@ -100,7 +102,7 @@ function InstructorSidebar() {
                       className="flex w-full items-center gap-2"
                     >
                       <VideoIcon className="size-4" weight="duotone" />
-                      <span>Danh sách khoá học</span>
+                      <span>{t("sidebar.courseList")}</span>
                     </NavLink>
                   }
                 />
@@ -109,7 +111,7 @@ function InstructorSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="rounded-xl"
-                    tooltip="Lớp học trực tiếp"
+                    tooltip={t("sidebar.offlineClasses")}
                     isActive={pathname.startsWith("/instructor/cohorts")}
                     render={
                       <NavLink
@@ -118,7 +120,7 @@ function InstructorSidebar() {
                         className="flex w-full items-center gap-2"
                       >
                         <CalendarDots className="size-4" weight="duotone" />
-                        <span>Lớp học trực tiếp</span>
+                        <span>{t("sidebar.offlineClasses")}</span>
                       </NavLink>
                     }
                   />
@@ -127,7 +129,7 @@ function InstructorSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-xl"
-                  tooltip="Hồ sơ giảng viên"
+                  tooltip={t("sidebar.profile")}
                   isActive={pathname === "/instructor/profile"}
                   render={
                     <NavLink
@@ -136,7 +138,7 @@ function InstructorSidebar() {
                       className="flex w-full items-center gap-2"
                     >
                       <UserCircle className="size-4" weight="duotone" />
-                      <span>Hồ sơ giảng viên</span>
+                      <span>{t("sidebar.profile")}</span>
                     </NavLink>
                   }
                 />
@@ -145,7 +147,7 @@ function InstructorSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="rounded-xl"
-                    tooltip="Cuộc thi"
+                    tooltip={t("sidebar.contests")}
                     isActive={pathname.startsWith("/instructor/contests")}
                     render={
                       <NavLink
@@ -154,7 +156,7 @@ function InstructorSidebar() {
                         className="flex w-full items-center gap-2"
                       >
                         <Trophy className="size-4" weight="duotone" />
-                        <span>Cuộc thi</span>
+                        <span>{t("sidebar.contests")}</span>
                       </NavLink>
                     }
                   />
@@ -165,7 +167,7 @@ function InstructorSidebar() {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       className="rounded-xl"
-                      tooltip="Hợp đồng"
+                      tooltip={t("sidebar.contracts")}
                       isActive={pathname === "/instructor/contracts"}
                       render={
                         <NavLink
@@ -174,7 +176,7 @@ function InstructorSidebar() {
                           className="flex w-full items-center gap-2"
                         >
                           <FileText className="size-4" weight="duotone" />
-                          <span>Hợp đồng</span>
+                          <span>{t("sidebar.contracts")}</span>
                         </NavLink>
                       }
                     />
@@ -182,7 +184,7 @@ function InstructorSidebar() {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       className="rounded-xl"
-                      tooltip="Hoá đơn"
+                      tooltip={t("sidebar.invoices")}
                       isActive={pathname === "/instructor/invoices"}
                       render={
                         <NavLink
@@ -191,7 +193,7 @@ function InstructorSidebar() {
                           className="flex w-full items-center gap-2"
                         >
                           <Receipt className="size-4" weight="duotone" />
-                          <span>Hoá đơn</span>
+                          <span>{t("sidebar.invoices")}</span>
                         </NavLink>
                       }
                     />
@@ -199,7 +201,7 @@ function InstructorSidebar() {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       className="rounded-xl"
-                      tooltip="Thanh toán"
+                      tooltip={t("sidebar.payments")}
                       isActive={pathname === "/instructor/payments"}
                       render={
                         <NavLink
@@ -208,7 +210,7 @@ function InstructorSidebar() {
                           className="flex w-full items-center gap-2"
                         >
                           <CreditCard className="size-4" weight="duotone" />
-                          <span>Thanh toán</span>
+                          <span>{t("sidebar.payments")}</span>
                         </NavLink>
                       }
                     />
@@ -226,6 +228,12 @@ function InstructorSidebar() {
 }
 
 export default function InstructorLayout() {
+  const { t } = useTranslation("instructor");
+  const translate = useCallback(
+    (key: string, options?: Record<string, unknown>) =>
+      String(t(key as never, options as never)),
+    [t],
+  );
   const location = useLocation();
   const { id } = useParams<{ id?: string }>();
   const pathname = location.pathname;
@@ -255,122 +263,128 @@ export default function InstructorLayout() {
 
   const crumbs: Array<{ label: string; to?: string }> = useMemo(() => {
     const list: Array<{ label: string; to?: string }> = [
-      { label: "Home", to: "/" },
-      { label: "Quản lý giảng dạy", to: "/instructor/courses" },
+      { label: translate("layout.crumbs.home"), to: "/" },
+      { label: translate("layout.crumbs.teaching"), to: "/instructor/courses" },
     ];
 
     if (pathname === "/instructor/courses/new") {
-      list.push({ label: "Tạo khoá học" });
+      list.push({ label: translate("layout.crumbs.createCourse") });
     } else if (pathname === "/instructor/cohorts") {
-      list.push({ label: "Lớp học trực tiếp" });
+      list.push({ label: translate("layout.crumbs.offlineClasses") });
     } else if (pathname === "/instructor/cohorts/new") {
-      list.push({ label: "Lớp học trực tiếp", to: "/instructor/cohorts" });
-      list.push({ label: "Tạo cohort" });
+      list.push({
+        label: translate("layout.crumbs.offlineClasses"),
+        to: "/instructor/cohorts",
+      });
+      list.push({ label: translate("layout.crumbs.createCohort") });
     } else if (pathname.startsWith("/instructor/cohorts/") && pathname.endsWith("/manage")) {
-      list.push({ label: "Lớp học trực tiếp", to: "/instructor/cohorts" });
-      list.push({ label: "Khu vực vận hành cohort" });
+      list.push({
+        label: translate("layout.crumbs.offlineClasses"),
+        to: "/instructor/cohorts",
+      });
+      list.push({ label: translate("layout.crumbs.cohortWorkspace") });
     } else if (pathname === "/instructor/contests") {
-      list.push({ label: "Cuộc thi" });
+      list.push({ label: translate("layout.crumbs.contests") });
     } else if (pathname === "/instructor/contests/new") {
-      list.push({ label: "Cuộc thi", to: "/instructor/contests" });
-      list.push({ label: "Tạo contest" });
+      list.push({ label: translate("layout.crumbs.contests"), to: "/instructor/contests" });
+      list.push({ label: translate("layout.crumbs.createContest") });
     } else if (pathname.startsWith("/instructor/contests/") && pathname.endsWith("/manage")) {
-      list.push({ label: "Cuộc thi", to: "/instructor/contests" });
-      list.push({ label: "Khu vực vận hành cuộc thi" });
+      list.push({ label: translate("layout.crumbs.contests"), to: "/instructor/contests" });
+      list.push({ label: translate("layout.crumbs.contestWorkspace") });
     } else if (pathname === "/instructor/contracts") {
-      list.push({ label: "Hợp đồng" });
+      list.push({ label: translate("layout.crumbs.contracts") });
     } else if (pathname === "/instructor/invoices") {
-      list.push({ label: "Hoá đơn" });
+      list.push({ label: translate("layout.crumbs.invoices") });
     } else if (pathname === "/instructor/payments") {
-      list.push({ label: "Thanh toán" });
+      list.push({ label: translate("layout.crumbs.payments") });
     } else if (pathname === "/instructor/profile") {
-      list.push({ label: "Hồ sơ giảng viên" });
+      list.push({ label: translate("layout.crumbs.profile") });
     } else if (needsCourseTitle) {
-      list.push({ label: courseTitle ?? "Khoá học" });
-      list.push({ label: "Chỉnh sửa" });
+      list.push({ label: courseTitle ?? translate("layout.crumbs.course") });
+      list.push({ label: translate("layout.crumbs.edit") });
     }
 
     return list;
-  }, [pathname, needsCourseTitle, courseTitle]);
+  }, [pathname, needsCourseTitle, courseTitle, translate]);
 
   const shellMeta = useMemo(() => {
     if (pathname === "/instructor/courses/new") {
       return {
-        title: "Tạo khoá học mới",
-        description: "Khởi tạo nội dung, mô hình giá và hành trình học ngay từ đầu.",
+        title: translate("layout.shell.newCourse.title"),
+        description: translate("layout.shell.newCourse.description"),
       };
     }
     if (pathname === "/instructor/cohorts") {
       return {
-        title: "Danh sách lớp trực tiếp",
-        description: "Điều phối cohort offline, lịch học, địa điểm và recording theo từng buổi.",
+        title: translate("layout.shell.offlineList.title"),
+        description: translate("layout.shell.offlineList.description"),
       };
     }
     if (pathname === "/instructor/cohorts/new") {
       return {
-        title: "Tạo cohort mới",
-        description: "Khởi tạo lớp học offline với lịch học, Google Meet và lộ trình học viên.",
+        title: translate("layout.shell.newCohort.title"),
+        description: translate("layout.shell.newCohort.description"),
       };
     }
     if (pathname.startsWith("/instructor/cohorts/") && pathname.endsWith("/manage")) {
       return {
-        title: "Khu vực vận hành cohort",
-        description: "Quản lý lịch buổi học, roster và roadmap của học viên trong cùng một nơi.",
+        title: translate("layout.shell.cohortWorkspace.title"),
+        description: translate("layout.shell.cohortWorkspace.description"),
       };
     }
     if (pathname === "/instructor/contests") {
       return {
-        title: "Danh sách contests",
-        description: "Quản lý hackathon và contest như một phần của hoạt động giảng dạy.",
+        title: translate("layout.shell.contestsList.title"),
+        description: translate("layout.shell.contestsList.description"),
       };
     }
     if (pathname === "/instructor/contests/new") {
       return {
-        title: "Tạo contest mới",
-        description: "Khởi tạo hoạt động thi đấu, timeline và luồng vận hành trong workspace.",
+        title: translate("layout.shell.newContest.title"),
+        description: translate("layout.shell.newContest.description"),
       };
     }
     if (pathname.startsWith("/instructor/contests/") && pathname.endsWith("/manage")) {
       return {
-        title: "Khu vực vận hành cuộc thi",
-        description: "Điều phối đăng ký, ban giám khảo, bài nộp và kết quả trong một nơi.",
+        title: translate("layout.shell.contestWorkspace.title"),
+        description: translate("layout.shell.contestWorkspace.description"),
       };
     }
     if (pathname === "/instructor/profile") {
       return {
-        title: "Hồ sơ giảng viên",
-        description: "Giữ hồ sơ chuyên môn, mô tả và thông tin hợp tác luôn rõ ràng.",
+        title: translate("layout.shell.profile.title"),
+        description: translate("layout.shell.profile.description"),
       };
     }
     if (pathname === "/instructor/contracts") {
       return {
-        title: "Hợp đồng đối tác",
-        description: "Theo dõi tài liệu hợp tác và những bản cập nhật mới nhất.",
+        title: translate("layout.shell.contracts.title"),
+        description: translate("layout.shell.contracts.description"),
       };
     }
     if (pathname === "/instructor/invoices") {
       return {
-        title: "Hoá đơn",
-        description: "Tập trung toàn bộ hoá đơn để đối soát và làm việc với vận hành.",
+        title: translate("layout.shell.invoices.title"),
+        description: translate("layout.shell.invoices.description"),
       };
     }
     if (pathname === "/instructor/payments") {
       return {
-        title: "Thanh toán",
-        description: "Kiểm tra thông tin nhận tiền và lịch sử phối hợp với đội ngũ.",
+        title: translate("layout.shell.payments.title"),
+        description: translate("layout.shell.payments.description"),
       };
     }
     if (needsCourseTitle) {
       return {
-        title: courseTitle ?? "Chỉnh sửa khoá học",
-        description: "Điều chỉnh nội dung, học viên và cấu hình kinh doanh trong cùng một nơi.",
+        title: courseTitle ?? translate("layout.shell.editCourse.titleFallback"),
+        description: translate("layout.shell.editCourse.description"),
       };
     }
     return {
-      title: "Danh sách khoá học",
-      description: "Theo dõi toàn bộ sản phẩm đào tạo, trạng thái xuất bản và bước tiếp theo.",
+      title: translate("layout.shell.courseList.title"),
+      description: translate("layout.shell.courseList.description"),
     };
-  }, [pathname, needsCourseTitle, courseTitle]);
+  }, [pathname, needsCourseTitle, courseTitle, translate]);
 
   return (
     <SidebarProvider
@@ -405,7 +419,7 @@ export default function InstructorLayout() {
           <div className="px-3 pb-4 md:px-4">
             <div className="rounded-lg border border-border-subtle bg-card/85 px-4 py-4 shadow-card">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Khu vực giảng dạy
+                {translate("layout.hero.eyebrow")}
               </p>
               <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div>
@@ -419,11 +433,13 @@ export default function InstructorLayout() {
                 <div className="flex flex-wrap gap-2">
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
                     {profile?.instructor_origin === "external"
-                      ? "Đối tác bên ngoài"
-                      : "Giảng viên Corelia"}
+                      ? translate("layout.badges.externalPartner")
+                      : translate("layout.badges.coreliaInstructor")}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
-                    {profile?.role === "admin" ? "Chế độ quản trị" : "Tác vụ giảng dạy"}
+                    {profile?.role === "admin"
+                      ? translate("layout.badges.adminMode")
+                      : translate("layout.badges.teachingMode")}
                   </span>
                 </div>
               </div>

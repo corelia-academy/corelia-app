@@ -25,8 +25,10 @@ import {
   PushPinSimple,
 } from "@phosphor-icons/react";
 import { ShowForContestManager } from "@/components/auth/ShowForContestManager";
+import { useTranslation } from "react-i18next";
 
 function AdminSidebar() {
+  const { t } = useTranslation("admin");
   const location = useLocation();
   const pathname = location.pathname;
 
@@ -40,10 +42,10 @@ function AdminSidebar() {
             </div>
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
               <div className="truncate text-[13px] font-semibold leading-tight text-sidebar-foreground">
-                Corelia Admin
+                {t("layout.sidebar.brandTitle")}
               </div>
               <div className="mt-1 line-clamp-2 text-[12px] leading-5 text-sidebar-foreground/72">
-                Phân quyền, giảng viên và các tác vụ điều hành hệ thống hằng ngày.
+                {t("layout.sidebar.brandSubtitle")}
               </div>
             </div>
           </div>
@@ -54,18 +56,18 @@ function AdminSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Điều hướng chính</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("layout.sidebar.primaryNavigation")}</SidebarGroupLabel>
           <SidebarGroupContent className="px-1">
             <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-xl"
-                  tooltip="Tài khoản"
+                  tooltip={t("layout.sidebar.users.tooltip")}
                   isActive={pathname === "/admin" || pathname.startsWith("/admin/users")}
                   render={
                     <NavLink to="/admin" end className="flex w-full items-center gap-2">
                       <Users className="size-4" weight="duotone" />
-                      <span>Tài khoản</span>
+                      <span>{t("layout.sidebar.users.label")}</span>
                     </NavLink>
                   }
                 />
@@ -81,7 +83,7 @@ function AdminSidebar() {
                       className="flex w-full items-center gap-2"
                     >
                       <PushPinSimple className="size-4" weight="duotone" />
-                      <span>Dashboard</span>
+                      <span>{t("layout.sidebar.dashboard.label")}</span>
                     </NavLink>
                   }
                 />
@@ -89,7 +91,7 @@ function AdminSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-xl"
-                  tooltip="Giảng viên"
+                  tooltip={t("layout.sidebar.instructors.tooltip")}
                   isActive={pathname.startsWith("/admin/instructors")}
                   render={
                     <NavLink
@@ -97,7 +99,7 @@ function AdminSidebar() {
                       className="flex w-full items-center gap-2"
                     >
                       <ChalkboardTeacher className="size-4" weight="duotone" />
-                      <span>Giảng viên</span>
+                      <span>{t("layout.sidebar.instructors.label")}</span>
                     </NavLink>
                   }
                 />
@@ -105,7 +107,7 @@ function AdminSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-xl"
-                  tooltip="Lớp học trực tiếp"
+                  tooltip={t("layout.sidebar.offlineClasses.tooltip")}
                   isActive={pathname.startsWith("/instructor/cohorts")}
                   render={
                     <NavLink
@@ -113,7 +115,7 @@ function AdminSidebar() {
                       className="flex w-full items-center gap-2"
                     >
                       <CalendarDots className="size-4" weight="duotone" />
-                      <span>Lớp học trực tiếp</span>
+                      <span>{t("layout.sidebar.offlineClasses.label")}</span>
                     </NavLink>
                   }
                 />
@@ -122,7 +124,7 @@ function AdminSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="rounded-xl"
-                    tooltip="Cuộc thi"
+                    tooltip={t("layout.sidebar.contests.tooltip")}
                     isActive={pathname.startsWith("/instructor/contests")}
                     render={
                       <NavLink
@@ -130,7 +132,7 @@ function AdminSidebar() {
                         className="flex w-full items-center gap-2"
                       >
                         <Trophy className="size-4" weight="duotone" />
-                        <span>Cuộc thi</span>
+                        <span>{t("layout.sidebar.contests.label")}</span>
                       </NavLink>
                     }
                   />
@@ -149,30 +151,33 @@ function AdminSidebar() {
 const PAGE_META = [
   {
     match: (pathname: string) => pathname === "/admin" || pathname.startsWith("/admin/users"),
-    title: "Quản lý tài khoản",
-    description: "Kiểm soát vai trò và sức khoẻ truy cập của toàn bộ người dùng.",
+    titleKey: "layout.pageMeta.users.title",
+    descriptionKey: "layout.pageMeta.users.description",
   },
   {
     match: (pathname: string) => pathname === "/admin/dashboard",
-    title: "Cấu hình dashboard",
-    description: "Ghim các chương trình quan trọng để xuất hiện đúng vị trí trên Home của học viên.",
+    titleKey: "layout.pageMeta.dashboard.title",
+    descriptionKey: "layout.pageMeta.dashboard.description",
   },
   {
     match: (pathname: string) => pathname === "/admin/instructors",
-    title: "Quản lý giảng viên",
-    description: "Theo dõi hồ sơ, loại giảng viên và dữ liệu hợp tác đối tác.",
+    titleKey: "layout.pageMeta.instructors.title",
+    descriptionKey: "layout.pageMeta.instructors.description",
   },
   {
     match: (pathname: string) => pathname.startsWith("/admin/instructors/"),
-    title: "Chi tiết giảng viên",
-    description: "Cập nhật hồ sơ, hợp đồng, hoá đơn và thông tin thanh toán.",
+    titleKey: "layout.pageMeta.instructorDetail.title",
+    descriptionKey: "layout.pageMeta.instructorDetail.description",
   },
 ];
 
 export default function AdminLayout() {
+  const { t } = useTranslation("admin");
   const location = useLocation();
   const currentMeta =
     PAGE_META.find((item) => item.match(location.pathname)) ?? PAGE_META[0];
+  const metaTitle = t(currentMeta.titleKey as never);
+  const metaDescription = t(currentMeta.descriptionKey as never);
 
   return (
     <SidebarProvider
@@ -186,29 +191,29 @@ export default function AdminLayout() {
             <SidebarTrigger />
             <div className="flex min-w-0 items-center gap-2 text-[13px] text-muted-foreground">
               <ShieldCheck className="size-4 text-primary" weight="duotone" />
-              <span className="truncate">{currentMeta.title}</span>
+              <span className="truncate">{metaTitle}</span>
             </div>
           </div>
           <div className="px-3 pb-4 md:px-4">
             <div className="rounded-lg border border-border-subtle bg-card/85 px-4 py-4 shadow-card">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Khu vực quản trị
+                {t("layout.hero.eyebrow")}
               </p>
               <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <h1 className="text-2xl font-normal tracking-tight text-foreground">
-                    {currentMeta.title}
+                    {metaTitle}
                   </h1>
                   <p className="mt-1.5 max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
-                    {currentMeta.description}
+                    {metaDescription}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
-                    Quyền nhạy cảm
+                    {t("layout.hero.pills.sensitive")}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
-                    Audit thủ công
+                    {t("layout.hero.pills.manualAudit")}
                   </span>
                 </div>
               </div>

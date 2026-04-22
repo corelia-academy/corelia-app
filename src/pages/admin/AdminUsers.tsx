@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/stores/authStore";
 import { getAllProfiles, updateProfileAdmin } from "@/lib/profile";
 import type { Profile, UserRole } from "@/types/database";
@@ -6,8 +6,11 @@ import { getRoleLabel } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShieldCheck, User, Student, ChalkboardTeacher } from "@phosphor-icons/react";
+import { intlLocale } from "@/lib/intl";
+import { useTranslation } from "react-i18next";
 
 export default function AdminUsers() {
+  const { t } = useTranslation("admin");
   const { user: currentUser } = useAuth();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,25 +18,32 @@ export default function AdminUsers() {
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
 
-  useEffect(() => {
-    void fetchProfiles();
-  }, []);
-
-  async function fetchProfiles() {
+  const fetchProfiles = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await getAllProfiles();
       setProfiles(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
+      setError(
+        err instanceof Error ? err.message : t("users.unknownError"),
+      );
     } finally {
       setLoading(false);
     }
-  }
+  }, [t]);
+
+  useEffect(() => {
+    void fetchProfiles();
+  }, [fetchProfiles]);
 
   async function handleRoleChange(userId: string, newRole: UserRole) {
-    if (!confirm(`Bạn có chắc muốn đổi role thành ${getRoleLabel(newRole)}?`)) return;
+    if (
+      !confirm(
+        t("users.confirmChangeRole", { role: getRoleLabel(newRole) }),
+      )
+    )
+      return;
     try {
       await updateProfileAdmin(userId, { role: newRole });
       setProfiles((prev) =>
@@ -41,8 +51,8 @@ export default function AdminUsers() {
       );
     } catch (err) {
       alert(
-        "Lỗi khi cập nhật role: " +
-          (err instanceof Error ? err.message : "Unknown error"),
+        t("users.updateRoleErrorPrefix") +
+          (err instanceof Error ? err.message : t("users.unknown")),
       );
     }
   }
@@ -90,7 +100,7 @@ export default function AdminUsers() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Tổng người dùng
+                {t("users.stats.totalUsers")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.total}
@@ -105,7 +115,7 @@ export default function AdminUsers() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Admin
+                {t("users.stats.admin")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.admins}
@@ -120,7 +130,7 @@ export default function AdminUsers() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Học vụ
+                {t("users.stats.support")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.support}
@@ -135,7 +145,7 @@ export default function AdminUsers() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Giảng viên
+                {t("users.stats.instructor")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.instructors}
@@ -150,7 +160,7 @@ export default function AdminUsers() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Học viên
+                {t("users.stats.student")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.students}
@@ -167,11 +177,10 @@ export default function AdminUsers() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-xl font-medium tracking-tight text-foreground">
-              Bảng điều phối quyền truy cập
+              {t("users.title")}
             </h2>
             <p className="mt-1.5 max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
-              Tìm nhanh theo tên, email hoặc UID và điều chỉnh vai trò ngay trong
-              bảng để xử lý các yêu cầu vận hành thường ngày.
+              {t("users.subtitle")}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -179,7 +188,7 @@ export default function AdminUsers() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Tìm theo tên, email, role, UID…"
+                placeholder={t("users.searchPlaceholder")}
               />
             </div>
             <select
@@ -187,7 +196,7 @@ export default function AdminUsers() {
               onChange={(e) => setRoleFilter(e.target.value as UserRole | "all")}
               className="h-10 rounded-xl border border-input bg-background px-3 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="all">Tất cả vai trò</option>
+              <option value="all">{t("users.allRoles")}</option>
               {roleOptions.map((role) => (
                 <option key={role} value={role}>
                   {getRoleLabel(role)}
@@ -201,7 +210,7 @@ export default function AdminUsers() {
               size="sm"
               className="text-muted-foreground hover:text-foreground"
             >
-              Làm mới
+              {t("users.refresh")}
             </Button>
           </div>
         </div>
@@ -212,7 +221,7 @@ export default function AdminUsers() {
             variant={roleFilter === "all" ? "default" : "outline"}
             onClick={() => setRoleFilter("all")}
           >
-            Tất cả
+            {t("users.allRoles")}
           </Button>
           {roleOptions.map((role) => (
             <Button
@@ -235,7 +244,7 @@ export default function AdminUsers() {
                 setRoleFilter("all");
               }}
             >
-              Xoá bộ lọc
+              {t("users.clearFilters")}
             </Button>
           )}
         </div>
@@ -251,18 +260,21 @@ export default function AdminUsers() {
         <div className="border-b border-border-subtle bg-muted/35 px-4 py-3">
           <p className="text-[13px] text-muted-foreground">
             {loading
-              ? "Đang đồng bộ danh sách người dùng..."
-              : `Đang hiển thị ${filtered.length} / ${profiles.length} tài khoản${roleFilter !== "all" ? ` · ${getRoleLabel(roleFilter)}` : ""}`}
+              ? t("users.syncing")
+              : t("users.showing", { shown: filtered.length, total: profiles.length }) +
+                (roleFilter !== "all"
+                  ? t("users.showingRoleSuffix", { role: getRoleLabel(roleFilter) })
+                  : "")}
           </p>
         </div>
         <div className="divide-y divide-border-subtle md:hidden">
           {loading ? (
             <div className="p-6 text-center text-[13px] text-muted-foreground">
-              Đang tải danh sách...
+              {t("users.loadingList")}
             </div>
           ) : filtered.length === 0 ? (
             <div className="p-10 text-center text-[13px] text-muted-foreground">
-              Không tìm thấy người dùng nào khớp bộ lọc hiện tại.
+              {t("users.empty")}
             </div>
           ) : (
             filtered.map((p) => (
@@ -281,17 +293,17 @@ export default function AdminUsers() {
                   )}
                   <div className="min-w-0">
                     <p className="truncate text-[15px] font-medium text-foreground">
-                      {p.full_name || "Chưa cập nhật"}
+                      {p.full_name || t("users.mobile.notUpdated")}
                     </p>
                     <p className="mt-0.5 truncate text-[12px] text-muted-foreground">
-                      UID: {p.id.substring(0, 8)}…
+                      {t("users.mobile.uid", { uid: p.id.substring(0, 8) })}
                     </p>
                   </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Email
+                      {t("users.mobile.emailLabel")}
                     </p>
                     <p className="mt-1 text-[13px] text-foreground">
                       {p.id === currentUser?.uid
@@ -301,7 +313,7 @@ export default function AdminUsers() {
                   </div>
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Vai trò hiện tại
+                      {t("users.mobile.currentRole")}
                     </p>
                     <p className="mt-1">
                       <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[12px] font-medium text-foreground">
@@ -311,26 +323,26 @@ export default function AdminUsers() {
                   </div>
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Số điện thoại
+                      {t("users.mobile.phone")}
                     </p>
                     <p className="mt-1 text-[13px] text-muted-foreground">
-                      {p.phone || "—"}
+                      {p.phone || t("users.mobile.dash")}
                     </p>
                   </div>
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Ngày tạo
+                      {t("users.mobile.createdAt")}
                     </p>
                     <p className="mt-1 text-[13px] text-muted-foreground">
                       {p.created_at
-                        ? new Date(p.created_at).toLocaleDateString("vi-VN")
-                        : "—"}
+                        ? new Date(p.created_at).toLocaleDateString(intlLocale())
+                        : t("users.mobile.dash")}
                     </p>
                   </div>
                 </div>
                 <div>
                   <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                    Thay đổi vai trò
+                    {t("users.mobile.changeRole")}
                   </p>
                   <select
                     value={p.role}
@@ -355,22 +367,22 @@ export default function AdminUsers() {
             <thead className="border-b border-border-subtle bg-muted/50">
               <tr>
                 <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Họ tên
+                  {t("users.table.name")}
                 </th>
                 <th className="min-w-[180px] px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Email
+                  {t("users.table.email")}
                 </th>
                 <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Vai trò
+                  {t("users.table.role")}
                 </th>
                 <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Số điện thoại
+                  {t("users.table.phone")}
                 </th>
                 <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Ngày tạo
+                  {t("users.table.createdAt")}
                 </th>
                 <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Thao tác
+                  {t("users.table.actions")}
                 </th>
               </tr>
             </thead>
@@ -381,7 +393,7 @@ export default function AdminUsers() {
                     colSpan={6}
                     className="p-6 text-center text-[13px] text-muted-foreground"
                   >
-                    Đang tải danh sách...
+                    {t("users.loadingList")}
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
@@ -390,7 +402,7 @@ export default function AdminUsers() {
                     colSpan={6}
                     className="p-10 text-center text-[13px] text-muted-foreground"
                   >
-                    Không tìm thấy người dùng nào khớp bộ lọc hiện tại.
+                    {t("users.empty")}
                   </td>
                 </tr>
               ) : (
@@ -411,13 +423,13 @@ export default function AdminUsers() {
                         )}
                         <div className="min-w-0">
                           <p className="truncate text-[15px] font-medium text-foreground">
-                            {p.full_name || "Chưa cập nhật"}
+                            {p.full_name || t("users.mobile.notUpdated")}
                           </p>
                           <p
                             className="mt-0.5 truncate text-[12px] text-muted-foreground"
                             title={p.id}
                           >
-                            UID: {p.id.substring(0, 8)}…
+                            {t("users.mobile.uid", { uid: p.id.substring(0, 8) })}
                           </p>
                         </div>
                       </div>
@@ -446,7 +458,7 @@ export default function AdminUsers() {
                     </td>
                     <td className="px-4 py-3 text-[13px] text-muted-foreground">
                       {p.created_at
-                        ? new Date(p.created_at).toLocaleDateString("vi-VN")
+                        ? new Date(p.created_at).toLocaleDateString(intlLocale())
                         : "—"}
                     </td>
                     <td className="px-4 py-3">

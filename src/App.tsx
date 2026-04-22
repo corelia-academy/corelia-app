@@ -56,6 +56,7 @@ import {
   PartnerPaymentsPage,
 } from "@/pages/instructor/PartnerFinance";
 import OCIDRedirect from "@/pages/OCIDRedirect";
+import { useTranslation } from "react-i18next";
 
 function ScrollToTop() {
   const location = useLocation();
@@ -80,6 +81,12 @@ function LegacyContestManageRedirect() {
 }
 
 export default function App() {
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    document.documentElement.lang = i18n.resolvedLanguage ?? i18n.language ?? "vi";
+  }, [i18n.resolvedLanguage, i18n.language]);
+
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Toaster />
@@ -155,7 +162,8 @@ export default function App() {
                   </RequireAuth>
                 }
               >
-                <Route index element={<AccountProfileRoute />} />
+                <Route index element={<AccountSettingsRoute />} />
+                <Route path="profile" element={<AccountProfileRoute />} />
                 <Route path="cv" element={<AccountCvRoute />} />
                 <Route path="billing" element={<AccountBillingRoute />} />
                 <Route path="settings" element={<AccountSettingsRoute />} />

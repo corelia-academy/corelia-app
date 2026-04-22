@@ -1,0 +1,290 @@
+{
+  "appName": "Corelia",
+  "language": {
+    "vi": "Vietnamese",
+    "en": "English"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "continue": "Continue",
+    "confirm": "Confirm",
+    "edit": "Edit",
+    "delete": "Delete",
+    "submit": "Submit",
+    "retry": "Retry",
+    "copy": "Copy",
+    "download": "Download",
+    "share": "Share",
+    "search": "Search"
+  },
+  "footer": {
+    "copyrightPrefix": "© {{year}} Corelia Academy. All rights reserved."
+  },
+  "nav": {
+    "home": "Home",
+    "courses": "Courses",
+    "cohorts": "Cohorts",
+    "contests": "Contests",
+    "achievements": "Achievements",
+    "account": "Account",
+    "admin": "Admin",
+    "instructor": "Instructor"
+  },
+  "tabs": {
+    "menu": "Menu",
+    "signIn": "Sign in"
+  },
+  "status": {
+    "loading": "Loading…",
+    "empty": "No data yet",
+    "error": "Something went wrong"
+  },
+  "home": {
+    "syncing": "Syncing...",
+    "dashboard": "Dashboard",
+    "continueLearning": "Continue learning",
+    "exploreCourses": "Explore courses",
+    "allCourses": "All courses",
+    "studentFallback": "Student",
+    "meta": {
+      "hours": "{{count}}h",
+      "selfPaced": "self-paced",
+      "offlinePrefix": "offline class"
+    },
+    "focus": {
+      "nextLesson": "Next lesson: {{title}}",
+      "allLessonsCompleted": "You’ve completed all available lessons",
+      "lastAccessed": "Last accessed: {{date}}"
+    },
+    "momentum": {
+      "learning": {
+        "label": "Learning",
+        "emptyNote": "No courses being tracked yet"
+      },
+      "contests": {
+        "label": "Open contests",
+        "note": "Hackathon · mini contest · ecosystem activities",
+        "emptyNote": "No new contests"
+      },
+      "certificates": {
+        "label": "Certificates issued",
+        "note": "View all in Achievements",
+        "emptyNote": "No certificates issued yet"
+      }
+    },
+    "pinned": {
+      "badges": {
+        "onlinePath": "Online path",
+        "ecosystemPlayground": "Ecosystem playground",
+        "offlineClass": "Offline class"
+      },
+      "cta": {
+        "viewCourse": "View course",
+        "viewProgram": "View program",
+        "viewContest": "View contest"
+      },
+      "contest": {
+        "registrationDeadline": "Registration deadline {{date}}",
+        "openInEcosystem": "Open in the Corelia ecosystem"
+      },
+      "offlineCampusFallback": "Corelia Campus"
+    },
+    "guest": {
+      "heroTitle": "Start your Web3 learning journey with Corelia",
+      "heroSubtitle": "Explore courses, programs, and open contests. When you want to save progress or enroll, just sign in.",
+      "signIn": "Sign in",
+      "openContestsTitle": "Open contests",
+      "startLearningTitle": "Start learning",
+      "startLearningSubtitle": "Sign in to save progress, track certificates, and submit contest applications.",
+      "quickLinksTitle": "Quick links",
+      "quickLinks": {
+        "contests": "Contests",
+        "cohorts": "Classes"
+      }
+    },
+    "sections": {
+      "greeting": "Hi, {{name}}",
+      "greetingSubtitle": "Track courses, contests, and achievements in one place.",
+      "featuredOnline": "Learning now",
+      "featuredOffline": "Following now",
+      "progress": "Progress",
+      "seeAll": "See all",
+      "exploreTitle": "Explore",
+      "goToLibrary": "Go to library",
+      "startFromCatalogTitle": "Start from the course library",
+      "startFromCatalogSubtitle": "Pick a foundational course to build momentum.",
+      "enrollHint": "Once you enroll in or purchase your first course, this area will show progress and quick entry points.",
+      "profileSetupHintPrefix": "Please update your full name and phone number so Corelia, instructors, or"
+    }
+  },
+  "achievements": {
+    "badgeCategory": {
+      "learning": "Learning",
+      "streak": "Streak",
+      "milestone": "Milestone",
+      "social": "Social"
+    },
+    "certificates": {
+      "courseCompletionTitle": "Course completion certificate",
+      "fallbackCourseName": "Corelia course",
+      "fallbackInstructorName": "Corelia Academy",
+      "issuedOnPrefix": "Issued on {{date}}",
+      "type": {
+        "online": "Online",
+        "offline": "Offline"
+      },
+      "ocAction": {
+        "view": "View OC credential",
+        "claim": "Claim OC credential"
+      },
+      "downloadTooltip": "Download"
+    },
+    "badges": {
+      "earnedPrefix": "Earned: {{date}}",
+      "locked": "Locked",
+      "ocDot": {
+        "claimedTooltip": "OC credential claimed",
+        "unclaimedTooltip": "OC credential not claimed"
+      }
+    },
+    "milestones": {
+      "courseFirst": {
+        "title": "First course",
+        "description": "Enroll in your first course to unlock this milestone."
+      },
+      "courseThree": {
+        "title": "Consistent learner",
+        "description": "Enroll in 3 different courses to unlock this milestone."
+      },
+      "firstCertificate": {
+        "title": "First certificate",
+        "description": "Earn your first certificate from a course to unlock this milestone."
+      },
+      "threeCertificates": {
+        "title": "Learning portfolio",
+        "description": "Earn 3 certificates to complete your Corelia achievement profile."
+      },
+      "next": {
+        "titleFallback": "You’ve unlocked all available milestones",
+        "descriptionFallback": "Keep completing new courses to enrich your achievement profile over time."
+      }
+    },
+    "oc": {
+      "badge": {
+        "claimed": "OC claimed",
+        "pending": "Processing",
+        "failed": "Failed",
+        "unclaimed": "Not claimed"
+      },
+      "modal": {
+        "title": "Open Campus Credential",
+        "subtitle": "Verifiable credential on EDUChain blockchain",
+        "kind": {
+          "cert": "Certificate",
+          "badge": "Badge"
+        },
+        "date": {
+          "issued": "Issued",
+          "earned": "Earned"
+        },
+        "statusLabel": "OC status:",
+        "explorerTooltip": "View on block explorer",
+        "dashboardCtaTitle": "View on OCID Dashboard",
+        "dashboardCtaSubtitle": "opencampus.xyz · Public profile",
+        "standardsNote": "This credential follows Open Badges and W3C Verifiable Credentials standards, anchored on the EDUChain blockchain. It can be independently verified and portable across platforms.",
+        "claim": {
+          "issuing": "Issuing credentials...",
+          "retry": "Retry – Issue on Open Campus",
+          "issue": "Issue on Open Campus",
+          "pending": "Processing on blockchain..."
+        },
+        "claimedActions": {
+          "downloadPdf": "Download PDF",
+          "share": "Share"
+        },
+        "learnMore": "Learn about Open Campus Achievements"
+      }
+    },
+    "stats": {
+      "certificates": "Certificates",
+      "badges": "Badges",
+      "total": "Total achievements",
+      "ocCredential": "OC Credential"
+    },
+    "hero": {
+      "eyebrow": "Achievement journey",
+      "title": "My achievements",
+      "subtitlePrefix": "Track certificates, badges, and learning milestones in one seamless journey. When you're ready, you can claim each achievement to",
+      "subtitleSuffix": "to get verifiable credentials on the blockchain.",
+      "certCount": "{{count}} certificates",
+      "badgeUnlockedCount": "{{count}} badges unlocked",
+      "readyToClaimCount": "{{count}} ready to claim",
+      "claimedOnOc": {
+        "title": "Claimed on OC",
+        "description": "Number of credentials published to Open Campus."
+      },
+      "pending": {
+        "title": "Pending",
+        "description": "Credentials that are pending or waiting to be issued."
+      },
+      "nextMilestone": "Next milestone"
+    },
+    "meaning": {
+      "title": "What Corelia credentials mean",
+      "p1": "Achievements in Corelia reflect what you have truly completed: finished courses, earned certificates, and unlocked technical milestones.",
+      "p2": "Certificates and badges are designed to support your learning portfolio, workshops, hackathons, and Web3 journey, rather than acting as formal academic degrees."
+    },
+    "useCases": {
+      "title": "Where you can use them",
+      "items": {
+        "0": "Personal portfolio",
+        "1": "Workshop",
+        "2": "Hackathon",
+        "3": "Demo day",
+        "4": "Mentor review"
+      },
+      "note": "When claimed on Open Campus, these achievements become verifiable credentials you can share more clearly on your personal profile."
+    },
+    "recent": {
+      "title": "Recently unlocked",
+      "loading": "Loading your latest achievements.",
+      "empty": "No achievements unlocked yet. Complete your first course to start this journey."
+    },
+    "vaults": {
+      "certificates": {
+        "title": "Certificate vault",
+        "subtitle": "A place to store all certificates from completed courses.",
+        "countLabel": "{{count}} certificates",
+        "loading": "Loading your certificate vault.",
+        "empty": "You don't have any certificates yet. Complete a course with certification to get started."
+      },
+      "badges": {
+        "title": "Badges & milestones",
+        "subtitle": "Includes learning milestones and progress you’re gradually unlocking.",
+        "summaryUnlocked": "{{earned}}/{{total}} unlocked",
+        "loading": "Loading your badges and milestones.",
+        "earnedSectionTitle": "Earned ({{count}})",
+        "progressGood": "Great progress"
+      },
+      "nextUnlock": {
+        "title": "Coming next",
+        "allUnlockedNote": "You've unlocked all available milestones. You can now focus on claiming OC credentials and expanding your achievement profile."
+      }
+    }
+  },
+  "feedback": {
+    "reportIssue": {
+      "short": "Report issue",
+      "long": "Report an issue via form"
+    }
+  },
+  "combobox": {
+    "searchPlaceholder": "Search by name or email",
+    "emptyLabel": "No matching results.",
+    "done": "Done"
+  }
+}
+

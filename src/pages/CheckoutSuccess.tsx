@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/firebase";
 import { verifySePayPayment } from "@/lib/payments";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 type StoredCheckout = {
   orderId?: string;
@@ -14,6 +15,7 @@ type StoredCheckout = {
 };
 
 export default function CheckoutSuccess() {
+  const { t } = useTranslation("courses");
   const { courseId, purpose } = useParams<{ courseId: string; purpose: string }>();
   const navigate = useNavigate();
   const [seconds, setSeconds] = useState(10);
@@ -21,8 +23,8 @@ export default function CheckoutSuccess() {
   const [verifying, setVerifying] = useState(hasCheckoutContext);
   const [statusMessage, setStatusMessage] = useState(() =>
     hasCheckoutContext
-      ? "Đang xác nhận thanh toán và quyền truy cập khoá học..."
-      : "Thiếu thông tin đơn hàng để xác minh tự động.",
+      ? t("detail.checkoutSuccess.verifyingPayment")
+      : t("detail.checkoutSuccess.missingOrderInfo"),
   );
   const targetPath = useMemo(() => {
     if (!courseId) return "/courses";
@@ -52,19 +54,19 @@ export default function CheckoutSuccess() {
       stored?.courseId === courseId && stored?.purpose === purpose ? stored.orderId : undefined;
 
     void (async () => {
-      setStatusMessage("Đang khôi phục phiên đăng nhập...");
+      setStatusMessage(t("detail.checkoutSuccess.restoringSession"));
       await auth.authStateReady();
       if (cancelled) return;
 
       if (!auth.currentUser) {
         setVerifying(false);
         setStatusMessage(
-          "Phiên đăng nhập chưa sẵn sàng trên thiết bị này. Bạn vẫn có thể vào khoá học để hệ thống kiểm tra lại quyền truy cập.",
+          t("detail.checkoutSuccess.sessionNotReady"),
         );
         return;
       }
 
-      setStatusMessage("Đang xác nhận thanh toán và quyền truy cập khoá học...");
+      setStatusMessage(t("detail.checkoutSuccess.verifyingPayment"));
       const deadline = Date.now() + 30_000;
       while (!cancelled && Date.now() < deadline) {
         try {
@@ -78,19 +80,19 @@ export default function CheckoutSuccess() {
             setVerifying(false);
             setStatusMessage(
               result.verified_by === "sepay_lookup"
-                ? "Đã xác minh thanh toán từ cổng SePay và mở quyền truy cập."
-                : "Đã xác nhận thanh toán và mở quyền truy cập thành công.",
+                ? t("detail.checkoutSuccess.verifiedViaSePay")
+                : t("detail.checkoutSuccess.verifiedFallback"),
             );
             window.sessionStorage.removeItem("corelia:lastCheckout");
             return;
           }
-          setStatusMessage("Đã ghi nhận giao dịch. Hệ thống đang chờ xác nhận quyền truy cập...");
+          setStatusMessage(t("detail.checkoutSuccess.waitingForAccess"));
         } catch (error) {
           if (cancelled) return;
           setStatusMessage(
             error instanceof Error
               ? error.message
-              : "Không thể xác minh thanh toán ngay lúc này.",
+              : t("detail.checkoutSuccess.verifyFailedFallback"),
           );
         }
         await new Promise((resolve) => window.setTimeout(resolve, 2000));
@@ -99,10 +101,10 @@ export default function CheckoutSuccess() {
       if (!cancelled) {
         setVerifying(false);
         setStatusMessage(
-          "Chưa xác minh xong trong thời gian chờ. Bạn vẫn có thể vào khoá học, hệ thống sẽ tiếp tục kiểm tra ở bước tiếp theo.",
+          t("detail.checkoutSuccess.timeoutStatus"),
         );
         toast.message(
-          "Chưa xác minh xong thanh toán. Hệ thống sẽ kiểm tra lại khi bạn vào khoá học.",
+          t("detail.checkoutSuccess.timeoutToast"),
         );
       }
     })();
@@ -110,7 +112,7 @@ export default function CheckoutSuccess() {
     return () => {
       cancelled = true;
     };
-  }, [courseId, purpose]);
+  }, [courseId, purpose, t]);
 
   useEffect(() => {
     if (verifying || seconds > 0) return;
@@ -121,13 +123,13 @@ export default function CheckoutSuccess() {
     <div className="mx-auto w-full max-w-[960px] px-4 py-10">
       <div className="rounded-lg border border-border-subtle bg-card p-6">
         <h1 className="text-2xl font-normal tracking-tight text-foreground">
-          Thanh toán thành công
+          {t("detail.checkoutSuccess.title")}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {statusMessage}{" "}
           {!verifying ? (
             <>
-              Hệ thống sẽ tự chuyển sau{" "}
+              {t("detail.checkoutSuccess.autoRedirectPrefix")}{" "}
               <span className="font-medium text-foreground tabular-nums">{seconds}s</span>.
             </>
           ) : null}
@@ -139,7 +141,7 @@ export default function CheckoutSuccess() {
             size="lg"
             onClick={() => navigate("/account/billing")}
           >
-            <Receipt className="size-4" /> Xem lịch sử thanh toán
+            <Receipt className="size-4" /> {t("detail.checkoutSuccess.viewBilling")}
           </Button>
           <Button
             className="sm:w-auto w-full"
@@ -147,13 +149,13 @@ export default function CheckoutSuccess() {
             variant="outline"
             onClick={() => navigate(targetPath)}
           >
-            <BookOpen className="size-4" /> Vào khoá học
+            <BookOpen className="size-4" /> {t("detail.checkoutSuccess.goToCourse")}
           </Button>
         </div>
 
         <div className="mt-6 text-xs text-muted-foreground">
           <Link to={targetPath} className="inline-flex items-center gap-1 hover:underline">
-            Bỏ qua và chuyển ngay <ArrowRight className="size-3.5" />
+            {t("detail.checkoutSuccess.skipNow")} <ArrowRight className="size-3.5" />
           </Link>
         </div>
       </div>

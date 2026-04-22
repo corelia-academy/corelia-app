@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
@@ -51,8 +51,15 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export default function Learn() {
+  const { t } = useTranslation("courses");
+  const translate = useCallback(
+    (key: string, options?: Record<string, unknown>) =>
+      String(t(key as never, options as never)),
+    [t],
+  );
   const { courseId, lessonId } = useParams<{
     courseId: string;
     lessonId?: string;
@@ -94,7 +101,9 @@ export default function Learn() {
       })
       .catch((e) => {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Lỗi tải khoá học");
+          setError(
+            e instanceof Error ? e.message : translate("detail.loadCourseErrorFallback"),
+          );
         }
       })
       .finally(() => {
@@ -104,7 +113,7 @@ export default function Learn() {
     return () => {
       cancelled = true;
     };
-  }, [courseId]);
+  }, [courseId, translate]);
 
   useEffect(() => {
     if (!courseId || !profile?.id) {
@@ -151,7 +160,7 @@ export default function Learn() {
     };
 
     if (paymentQuery === "error") {
-      toast.error("Thanh toán thất bại. Vui lòng thử lại.");
+      toast.error(translate("detail.payment.failed"));
       clearPaymentQuery();
       return;
     }
@@ -172,13 +181,13 @@ export default function Learn() {
           clearPaymentQuery();
           return;
         }
-        toast.message("Bạn đã huỷ thanh toán.");
+        toast.message(translate("detail.payment.cancelled"));
         clearPaymentQuery();
       })();
       return;
     }
 
-    toast.message("Đang xác nhận thanh toán...");
+    toast.message(translate("detail.payment.checking"));
     void (async () => {
       const deadline = Date.now() + 20_000;
       while (!cancelled && Date.now() < deadline) {
@@ -186,16 +195,14 @@ export default function Learn() {
         if (cancelled) return;
         if (pay?.certificate_fee_paid || pay?.full_access_granted) {
           setPaymentAccess(pay);
-          toast.success("Thanh toán thành công.");
+          toast.success(translate("detail.payment.success", { defaultValue: translate("detail.payment.success") }));
           clearPaymentQuery();
           return;
         }
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
       if (!cancelled) {
-        toast.message(
-          "Chưa thấy xác nhận thanh toán. Nếu bạn đã thanh toán, vui lòng chờ thêm hoặc tải lại trang sau ít phút.",
-        );
+        toast.message(translate("detail.payment.notConfirmedYet"));
         clearPaymentQuery();
       }
     })();
@@ -212,6 +219,7 @@ export default function Learn() {
     paymentAccess?.full_access_granted,
     paymentQuery,
     profile?.id,
+    translate,
   ]);
 
   useEffect(() => {
@@ -362,7 +370,9 @@ export default function Learn() {
                     <span className="min-w-0 flex-1 line-clamp-2 text-[14px] leading-5 text-muted-foreground">
                       {lesson.title}
                     </span>
-                    <span className="shrink-0 text-[11px] text-warning">Khoá</span>
+                    <span className="shrink-0 text-[11px] text-warning">
+                      {translate("detail.learn.lessonLockedBadge")}
+                    </span>
                   </div>
                 ) : (
                   <Link
@@ -404,7 +414,7 @@ export default function Learn() {
     if (!courseId || !course || !profile?.id) return;
     const amount = Number(course.certificate_fee_vnd || 0);
     if (amount <= 0) {
-      toast.error("Khoá học chưa cấu hình phí chứng nhận hợp lệ.");
+      toast.error(translate("detail.learn.certificateFeeMissing"));
       return;
     }
     setPayingCertificateFee(true);
@@ -429,7 +439,9 @@ export default function Learn() {
       );
       submitSePayCheckoutForm(checkout);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Không tạo được thanh toán SePay.");
+      toast.error(
+        e instanceof Error ? e.message : translate("detail.learn.sepayCreateFailed"),
+      );
     } finally {
       setPayingCertificateFee(false);
     }
@@ -439,13 +451,15 @@ export default function Learn() {
     return (
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
-          <p className="text-[15px] font-medium text-destructive">Thiếu mã khoá học.</p>
+          <p className="text-[15px] font-medium text-destructive">
+            {translate("detail.missingCourseId")}
+          </p>
           <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
           <Link
             to="/courses"
             className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
           >
-            <ArrowLeft className="size-4" /> Quay lại khoá học
+            <ArrowLeft className="size-4" /> {translate("detail.learn.backToCourses")}
           </Link>
         </div>
       </div>
@@ -458,7 +472,7 @@ export default function Learn() {
         <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border-subtle bg-card p-8 text-center shadow-card">
           <Spinner className="size-8 animate-spin text-muted-foreground" />
           <p className="mt-4 text-[15px] text-muted-foreground">
-            Đang tải trang học...
+            {translate("detail.learn.loadingPage")}
           </p>
         </div>
       </div>
@@ -470,14 +484,14 @@ export default function Learn() {
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
           <p className="text-[15px] font-medium text-destructive">
-            {error ?? "Không tìm thấy khoá học."}
+            {error ?? translate("detail.notFound")}
           </p>
           <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
           <Link
             to="/courses"
             className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
           >
-            <ArrowLeft className="size-4" /> Quay lại khoá học
+            <ArrowLeft className="size-4" /> {translate("detail.learn.backToCourses")}
           </Link>
         </div>
       </div>
@@ -488,14 +502,13 @@ export default function Learn() {
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       {!hasFullCourseAccess ? (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-          Bạn đang ở chế độ học thử miễn phí. Chỉ các bài được đánh dấu học thử mới mở xem.
+          {translate("detail.learn.previewModeNotice")}
         </div>
       ) : null}
 
       {accessModel === "paid_upfront" && enrolled && !paymentAccess?.full_access_granted ? (
         <div className="mb-4 rounded-xl border border-success/25 bg-success/10 px-4 py-3 text-sm text-success">
-          Bạn đã ghi danh khoá học này từ trước, nên vẫn giữ quyền truy cập đầy đủ dù khoá học
-          hiện đang ở chế độ trả phí.
+          {translate("detail.accessPanel.keptAccess")}
         </div>
       ) : null}
 
@@ -504,7 +517,7 @@ export default function Learn() {
         className="mb-3 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground sm:hidden"
       >
         <ArrowLeft className="size-4" />
-        Quay lại khoá học
+        {translate("detail.learn.backToCourse")}
       </Link>
 
       <Breadcrumb className="mb-3 hidden sm:flex">
@@ -517,7 +530,7 @@ export default function Learn() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink>
-              <Link to="/courses">Khoá học</Link>
+              <Link to="/courses">{translate("catalog.title")}</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -528,7 +541,9 @@ export default function Learn() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>{currentLesson ? currentLesson.title : "Học"}</BreadcrumbPage>
+            <BreadcrumbPage>
+              {currentLesson ? currentLesson.title : translate("detail.learn.breadcrumbLearn")}
+            </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -537,32 +552,41 @@ export default function Learn() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wide text-primary">
-              Trang học
+              {translate("detail.learn.pageEyebrow")}
             </p>
             <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               {course.title}
             </h1>
             <p className="mt-1 text-[14px] text-muted-foreground">
               {currentLesson
-                ? `Bài ${currentLessonIndex + 1}/${visibleLessons.length} trong lộ trình hiện tại`
-                : "Chọn một bài học để bắt đầu"}
+                ? translate("detail.learn.lessonPosition", {
+                    index: currentLessonIndex + 1,
+                    total: visibleLessons.length,
+                  })
+                : translate("detail.learn.selectLessonToStart")}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl border border-border-subtle bg-card/85 px-4 py-3 shadow-card">
-              <p className="text-[12px] text-muted-foreground">Tiến độ</p>
+              <p className="text-[12px] text-muted-foreground">
+                {translate("detail.learn.stats.progress")}
+              </p>
               <p className="mt-1 text-[18px] font-medium text-foreground">{progressPercent}%</p>
             </div>
             <div className="rounded-xl border border-border-subtle bg-card/85 px-4 py-3 shadow-card">
-              <p className="text-[12px] text-muted-foreground">Bài đã xong</p>
+              <p className="text-[12px] text-muted-foreground">
+                {translate("detail.learn.stats.completedLessons")}
+              </p>
               <p className="mt-1 text-[18px] font-medium text-foreground">
                 {completedIds.size}/{visibleLessons.length}
               </p>
             </div>
             <div className="rounded-xl border border-border-subtle bg-card/85 px-4 py-3 shadow-card">
-              <p className="text-[12px] text-muted-foreground">Tiếp theo</p>
+              <p className="text-[12px] text-muted-foreground">
+                {translate("detail.learn.stats.nextUp")}
+              </p>
               <p className="mt-1 line-clamp-1 text-[14px] font-medium text-foreground">
-                {nextLesson?.title ?? "Hoàn thành lộ trình"}
+                {nextLesson?.title ?? translate("detail.learn.completedPath")}
               </p>
             </div>
           </div>
@@ -574,15 +598,21 @@ export default function Learn() {
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-[13px] font-medium text-foreground">
               <List className="size-4" />
-              Danh sách bài học
+              {translate("detail.learn.lessonList.title")}
             </div>
             <p className="mt-1 text-[12px] text-muted-foreground">
               {hasFullCourseAccess
-                ? `${visibleSectionCount} chương • ${visibleLessons.length} bài`
-                : `${visibleLessons.length}/${sortedLessons.length} bài đang mở`}
+                ? translate("detail.learn.lessonList.metaFullAccess", {
+                    sections: visibleSectionCount,
+                    lessons: visibleLessons.length,
+                  })
+                : translate("detail.learn.lessonList.metaPreview", {
+                    open: visibleLessons.length,
+                    total: sortedLessons.length,
+                  })}
             </p>
             <p className="mt-1 line-clamp-1 text-[13px] text-foreground">
-              {currentLesson?.title ?? "Chọn một bài học để bắt đầu"}
+              {currentLesson?.title ?? translate("detail.learn.selectLessonToStart")}
             </p>
           </div>
           <div className="inline-flex shrink-0 items-center gap-2 rounded-full bg-muted px-3 py-1 text-[11px] text-muted-foreground">
@@ -602,10 +632,10 @@ export default function Learn() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-[12px] uppercase tracking-wide text-muted-foreground">
-                    Bài học hiện tại
+                    {translate("detail.learn.currentLesson.label")}
                   </p>
                   <p className="text-[15px] font-medium text-foreground">
-                    {currentLesson?.title ?? "Chọn một bài học từ danh sách bên phải"}
+                    {currentLesson?.title ?? translate("detail.learn.currentLesson.selectFromList")}
                   </p>
                 </div>
                 {currentLesson ? (
@@ -628,7 +658,9 @@ export default function Learn() {
               </div>
             ) : (
               <div className="flex aspect-video items-center justify-center bg-muted/50">
-                <p className="text-muted-foreground">Chọn một bài học bên cạnh</p>
+                <p className="text-muted-foreground">
+                  {translate("detail.learn.currentLesson.selectAside")}
+                </p>
               </div>
             )}
 
@@ -637,11 +669,11 @@ export default function Learn() {
                 <>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-md bg-primary-container px-2.5 py-1 text-[11px] font-medium text-on-primary-container">
-                      Bài {currentLessonIndex + 1}
+                      {translate("detail.learn.lessonNumberBadge", { index: currentLessonIndex + 1 })}
                     </span>
                     {completedIds.has(currentLesson.id) ? (
                       <span className="rounded-md bg-success/15 px-2.5 py-1 text-[11px] font-medium text-success">
-                        Đã hoàn thành
+                        {translate("detail.learn.completedBadge")}
                       </span>
                     ) : null}
                   </div>
@@ -649,7 +681,7 @@ export default function Learn() {
                     {currentLesson.title}
                   </h2>
                   <p className="mt-1 text-[13px] text-muted-foreground">
-                    Học xong video này để tiếp tục mở tiến độ cho toàn bộ lộ trình.
+                    {translate("detail.learn.lessonHint")}
                   </p>
 
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -662,11 +694,13 @@ export default function Learn() {
                     >
                       {completedIds.has(currentLesson.id) ? (
                         <>
-                          <CheckCircle className="size-4" weight="fill" /> Đã hoàn thành
+                          <CheckCircle className="size-4" weight="fill" />{" "}
+                          {translate("detail.learn.markComplete.done")}
                         </>
                       ) : (
                         <>
-                          <CheckCircle className="size-4" /> Đánh dấu đã xem
+                          <CheckCircle className="size-4" />{" "}
+                          {translate("detail.learn.markComplete.action")}
                         </>
                       )}
                     </Button>
@@ -677,7 +711,7 @@ export default function Learn() {
                         className="w-full justify-center sm:w-auto"
                         onClick={() => navigate(`/learn/${courseId}/lesson/${previousLesson.id}`)}
                       >
-                        <ArrowLeft className="size-4" /> Bài trước
+                        <ArrowLeft className="size-4" /> {translate("detail.learn.nav.previous")}
                       </Button>
                     ) : null}
                     {nextLesson ? (
@@ -686,7 +720,7 @@ export default function Learn() {
                         className="w-full justify-center sm:w-auto"
                         onClick={() => navigate(`/learn/${courseId}/lesson/${nextLesson.id}`)}
                       >
-                        Bài tiếp theo <ArrowRight className="size-4" />
+                        {translate("detail.learn.nav.next")} <ArrowRight className="size-4" />
                       </Button>
                     ) : null}
                   </div>
@@ -718,10 +752,10 @@ export default function Learn() {
                 <div className="mt-4 rounded-xl bg-muted/40 p-4">
                   <p className="text-sm font-medium text-foreground">
                     {submission.status === "approved"
-                      ? "Đã duyệt — Chứng nhận sẽ được cấp."
+                      ? translate("detail.learn.finalAssignment.status.approved")
                       : submission.status === "rejected"
-                        ? "Bài bị từ chối. Bạn có thể nộp lại."
-                        : "Đã nộp — Đang chờ giảng viên duyệt."}
+                        ? translate("detail.learn.finalAssignment.status.rejected")
+                        : translate("detail.learn.finalAssignment.status.pending")}
                   </p>
                   {submission.reviewer_comment ? (
                     <p className="mt-2 text-sm text-muted-foreground">
@@ -733,15 +767,18 @@ export default function Learn() {
 
               {requiresCertificatePayment && !submission && !canSubmitCertificateAssignment ? (
                 <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-                  Để nộp bài thu hoạch và xét chứng nhận, học viên cần thanh toán{" "}
-                  {formatVndPrice(course.certificate_fee_vnd)}.
+                  {translate("detail.learn.finalAssignment.certificateFeeRequired", {
+                    fee: formatVndPrice(course.certificate_fee_vnd),
+                  })}
                   <div className="mt-3">
                     <Button
                       onClick={() => void handlePayCertificateFee()}
                       disabled={payingCertificateFee}
                       size="sm"
                     >
-                      {payingCertificateFee ? "Đang tạo thanh toán..." : "Thanh toán qua SePay"}
+                      {payingCertificateFee
+                        ? translate("detail.learn.finalAssignment.creatingPayment")
+                        : translate("detail.learn.finalAssignment.payViaSePay")}
                     </Button>
                   </div>
                 </div>
@@ -751,7 +788,7 @@ export default function Learn() {
                 (!submission && canSubmitCertificateAssignment)) ? (
                 <div className="mt-4 space-y-3">
                   <textarea
-                    placeholder="Nhập nội dung bài làm của bạn..."
+                    placeholder={translate("detail.learn.finalAssignment.contentPlaceholder")}
                     value={submitContent}
                     onChange={(e) => setSubmitContent(e.target.value)}
                     className="min-h-[140px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -759,7 +796,7 @@ export default function Learn() {
                   />
                   <div>
                     <label className="mb-1 block text-sm font-medium text-foreground">
-                      File đính kèm (tuỳ chọn)
+                      {translate("detail.learn.finalAssignment.attachmentsLabel")}
                     </label>
                     <input
                       type="file"
@@ -773,7 +810,9 @@ export default function Learn() {
                     onClick={() => void handleSubmitFinalAssignment()}
                     disabled={submitting || !submitContent.trim()}
                   >
-                    {submitting ? "Đang nộp..." : "Nộp bài"}
+                    {submitting
+                      ? translate("detail.learn.finalAssignment.submitting")
+                      : translate("detail.learn.finalAssignment.submit")}
                   </Button>
                 </div>
               ) : null}
@@ -786,7 +825,7 @@ export default function Learn() {
             <div className="border-b border-border-subtle bg-muted/40 px-4 py-3">
               <div className="flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2 text-[13px] font-medium text-foreground">
-                  <List className="size-4" /> Curriculum
+                  <List className="size-4" /> {translate("detail.learn.curriculumTitle")}
                 </span>
                 <span className="text-[12px] text-muted-foreground">{progressPercent}%</span>
               </div>

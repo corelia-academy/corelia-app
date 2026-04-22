@@ -1,0 +1,383 @@
+{
+  "sidebar": {
+    "title": "Corelia Instructor",
+    "subtitle": "Quản lý khoá học, hồ sơ và các tác vụ vận hành trong một nơi.",
+    "createCourse": "Tạo khoá học",
+    "courseList": "Danh sách khoá học",
+    "offlineClasses": "Lớp học trực tiếp",
+    "profile": "Hồ sơ giảng viên",
+    "contests": "Cuộc thi",
+    "contracts": "Hợp đồng",
+    "invoices": "Hoá đơn",
+    "payments": "Thanh toán"
+  },
+  "finance": {
+    "externalOnlyHint": "Mục này chỉ hiển thị cho giảng viên đối tác bên ngoài."
+  },
+  "partnerFinance": {
+    "common": {
+      "notAvailable": "Chưa có",
+      "updated": "Đã cập nhật"
+    },
+    "contracts": {
+      "stats": {
+        "totalDocuments": "Tổng tài liệu",
+        "source": "Nguồn cung cấp",
+        "sourceValue": "Học vụ / Admin",
+        "status": "Trạng thái",
+        "statusValue": "Theo dõi tài liệu"
+      },
+      "panel": {
+        "title": "Hợp đồng",
+        "description": "Danh sách tài liệu hợp đồng do học vụ hoặc admin cung cấp cho giảng viên đối tác.",
+        "countLabel": "{{count}} tài liệu"
+      },
+      "list": {
+        "empty": "Chưa có tài liệu hợp đồng.",
+        "meta": "Tài liệu hợp đồng đã được chia sẻ cho bạn."
+      }
+    },
+    "invoices": {
+      "stats": {
+        "currentMonth": "Tháng đang xem",
+        "total": "Số hoá đơn",
+        "status": "Trạng thái",
+        "statusValue": "Đối soát theo kỳ"
+      },
+      "panel": {
+        "title": "Hoá đơn",
+        "description": "Lọc theo tháng để xem các file hoá đơn hoặc đối soát đã được chia sẻ cho bạn.",
+        "countLabel": "{{count}} tài liệu"
+      },
+      "list": {
+        "empty": "Không có hoá đơn trong tháng đã chọn.",
+        "invoiceMonthPrefix": "Tháng {{month}}",
+        "noInvoiceMonth": "Không gắn tháng hoá đơn"
+      }
+    },
+    "payments": {
+      "stats": {
+        "bankAccount": "Tài khoản ngân hàng",
+        "accountHolder": "Chủ tài khoản",
+        "payoutGuide": "Hướng dẫn thanh toán"
+      },
+      "panel": {
+        "title": "Thanh toán",
+        "description": "Thông tin chuyển khoản và ghi chú đối soát do học vụ hoặc admin cung cấp theo hợp đồng.",
+        "ready": "Sẵn sàng nhận thanh toán",
+        "missingInfo": "Chưa đủ thông tin"
+      },
+      "sections": {
+        "transferInfo": "Thông tin chuyển khoản",
+        "extraNotes": "Ghi chú thêm"
+      },
+      "fields": {
+        "bankName": "Ngân hàng:",
+        "accountNumber": "Số tài khoản:",
+        "accountHolder": "Chủ tài khoản:",
+        "transferNote": "Nội dung CK:"
+      },
+      "emptyExtraNotes": "Chưa có ghi chú thanh toán bổ sung.",
+      "empty": "Chưa có thông tin thanh toán."
+    }
+  },
+  "layout": {
+    "crumbs": {
+      "home": "Home",
+      "teaching": "Quản lý giảng dạy",
+      "createCourse": "Tạo khoá học",
+      "offlineClasses": "Lớp học trực tiếp",
+      "createCohort": "Tạo cohort",
+      "cohortWorkspace": "Khu vực vận hành cohort",
+      "contests": "Cuộc thi",
+      "createContest": "Tạo contest",
+      "contestWorkspace": "Khu vực vận hành cuộc thi",
+      "contracts": "Hợp đồng",
+      "invoices": "Hoá đơn",
+      "payments": "Thanh toán",
+      "profile": "Hồ sơ giảng viên",
+      "course": "Khoá học",
+      "edit": "Chỉnh sửa"
+    },
+    "shell": {
+      "newCourse": {
+        "title": "Tạo khoá học mới",
+        "description": "Khởi tạo nội dung, mô hình giá và hành trình học ngay từ đầu."
+      },
+      "offlineList": {
+        "title": "Danh sách lớp trực tiếp",
+        "description": "Điều phối cohort offline, lịch học, địa điểm và recording theo từng buổi."
+      },
+      "newCohort": {
+        "title": "Tạo cohort mới",
+        "description": "Khởi tạo lớp học offline với lịch học, Google Meet và lộ trình học viên."
+      },
+      "cohortWorkspace": {
+        "title": "Khu vực vận hành cohort",
+        "description": "Quản lý lịch buổi học, roster và roadmap của học viên trong cùng một nơi."
+      },
+      "contestsList": {
+        "title": "Danh sách contests",
+        "description": "Quản lý hackathon và contest như một phần của hoạt động giảng dạy."
+      },
+      "newContest": {
+        "title": "Tạo contest mới",
+        "description": "Khởi tạo hoạt động thi đấu, timeline và luồng vận hành trong workspace."
+      },
+      "contestWorkspace": {
+        "title": "Khu vực vận hành cuộc thi",
+        "description": "Điều phối đăng ký, ban giám khảo, bài nộp và kết quả trong một nơi."
+      },
+      "profile": {
+        "title": "Hồ sơ giảng viên",
+        "description": "Giữ hồ sơ chuyên môn, mô tả và thông tin hợp tác luôn rõ ràng."
+      },
+      "contracts": {
+        "title": "Hợp đồng đối tác",
+        "description": "Theo dõi tài liệu hợp tác và những bản cập nhật mới nhất."
+      },
+      "invoices": {
+        "title": "Hoá đơn",
+        "description": "Tập trung toàn bộ hoá đơn để đối soát và làm việc với vận hành."
+      },
+      "payments": {
+        "title": "Thanh toán",
+        "description": "Kiểm tra thông tin nhận tiền và lịch sử phối hợp với đội ngũ."
+      },
+      "editCourse": {
+        "titleFallback": "Chỉnh sửa khoá học",
+        "description": "Điều chỉnh nội dung, học viên và cấu hình kinh doanh trong cùng một nơi."
+      },
+      "courseList": {
+        "title": "Danh sách khoá học",
+        "description": "Theo dõi toàn bộ sản phẩm đào tạo, trạng thái xuất bản và bước tiếp theo."
+      }
+    },
+    "hero": {
+      "eyebrow": "Khu vực giảng dạy"
+    },
+    "badges": {
+      "externalPartner": "Đối tác bên ngoài",
+      "coreliaInstructor": "Giảng viên Corelia",
+      "adminMode": "Chế độ quản trị",
+      "teachingMode": "Tác vụ giảng dạy"
+    }
+  },
+  "courseNew": {
+    "errors": {
+      "missingProfileName": "Vui lòng cập nhật họ tên trong Tài khoản.",
+      "missingTitle": "Nhập tên khoá học.",
+      "invalidPaidPrice": "Nhập giá khoá học hợp lệ cho mô hình trả phí trước.",
+      "invalidCertificateFee": "Nhập phí chứng nhận hợp lệ cho mô hình học miễn phí.",
+      "invalidRevenueShare": "Tỷ lệ chia sẻ cho nền tảng phải từ 0 đến 100%.",
+      "createFailed": "Lỗi tạo khoá học"
+    },
+    "toasts": {
+      "created": "Tạo khoá học thành công. Bạn có thể tiếp tục chỉnh sửa."
+    },
+    "labels": {
+      "draft": "Bản nháp",
+      "originExternal": "Đối tác bên ngoài",
+      "originCorelia": "Giảng viên Corelia",
+      "title": "Tên khoá học",
+      "shortDescription": "Mô tả ngắn",
+      "description": "Mô tả",
+      "thumbnail": "Ảnh bìa khoá học",
+      "ownerType": "Loại khoá học theo sở hữu doanh thu",
+      "platformRevenueSharePercent": "Tỷ lệ doanh thu nền tảng (%)",
+      "accessModel": "Loại khoá học",
+      "priceVnd": "Giá khoá học (VND)",
+      "certificateFeeVnd": "Phí chứng nhận / bài thu hoạch (VND)",
+      "level": "Cấp độ"
+    },
+    "placeholders": {
+      "title": "Ví dụ: React từ cơ bản đến nâng cao",
+      "shortDescription": "Một dòng mô tả (tuỳ chọn)",
+      "description": "Mô tả đầy đủ về khoá học...",
+      "priceVnd": "Ví dụ: 499.000",
+      "certificateFeeVnd": "Ví dụ: 199.000"
+    },
+    "actions": {
+      "uploadThumb": "Tải ảnh bìa lên",
+      "uploadingThumb": "Đang tải ảnh...",
+      "create": "Tạo khoá học",
+      "creating": "Đang tạo..."
+    }
+  },
+  "courseListPage": {
+    "errors": {
+      "loadFailed": "Lỗi tải danh sách"
+    },
+    "stats": {
+      "total": "Tổng khoá học",
+      "published": "Đã xuất bản",
+      "drafts": "Bản nháp",
+      "paidUpfront": "Trả phí upfront",
+      "free": "Khoá học miễn phí"
+    },
+    "hero": {
+      "title": "Danh mục khoá học của bạn",
+      "description": "Theo dõi nhanh tình trạng xuất bản, mô hình doanh thu và mở màn chỉnh sửa chỉ với một cú nhấp.",
+      "create": "Tạo khoá học mới"
+    },
+    "empty": {
+      "title": "Chưa có khoá học nào trong workspace này.",
+      "createFirst": "Tạo khoá học đầu tiên"
+    },
+    "coursePills": {
+      "published": "Đã xuất bản",
+      "draft": "Bản nháp"
+    },
+    "courseCards": {
+      "pricingLabel": "Mô hình giá",
+      "certificateFeePrefix": "Phí chứng nhận {{price}}",
+      "free": "Miễn phí",
+      "instructorLabel": "Giảng viên",
+      "you": "Bạn"
+    },
+    "actions": {
+      "viewCourseTitle": "Xem trang khoá học",
+      "previewDraftTitle": "Xem trước bản nháp",
+      "viewCourse": "Xem khoá học",
+      "preview": "Xem trước",
+      "edit": "Chỉnh sửa"
+    }
+  },
+  "courseEdit": {
+    "defaults": {
+      "lessonTitle": "Bài học"
+    },
+    "errors": {
+      "loadCourseFailed": "Lỗi tải khoá học",
+      "refreshTotalFailed": "Lỗi cập nhật",
+      "uploadThumbnailFailed": "Lỗi tải ảnh bìa khoá học",
+      "invalidPaidPrice": "Nhập giá khoá học hợp lệ cho mô hình trả phí trước.",
+      "invalidPromoPrice": "Giá khuyến mãi phải nhỏ hơn giá gốc.",
+      "invalidPromoEndsAt": "Thời gian kết thúc khuyến mãi không hợp lệ (cần ISO string).",
+      "invalidCertificateFee": "Nhập phí chứng nhận hợp lệ cho mô hình học miễn phí.",
+      "invalidRevenueShare": "Tỷ lệ chia sẻ cho nền tảng phải từ 0 đến 100%.",
+      "updateFailed": "Lỗi cập nhật",
+      "processFailed": "Lỗi xử lý",
+      "uploadCertTemplateFailed": "Lỗi tải template chứng nhận",
+      "uploadPartnerDocsFailed": "Lỗi tải tài liệu đối tác",
+      "addSectionFailed": "Lỗi thêm chương",
+      "addLessonFailed": "Lỗi thêm bài học",
+      "updatePreviewFailed": "Lỗi cập nhật bài học thử",
+      "deleteSectionFailed": "Lỗi xoá chương",
+      "deleteLessonFailed": "Lỗi xoá bài học",
+      "deleteCourseFailed": "Lỗi xoá khoá học",
+      "reorderLessonsFailed": "Không thể cập nhật thứ tự bài học",
+      "createDiscountFailed": "Không tạo được mã giảm giá."
+    },
+    "toasts": {
+      "totalDurationRefreshed": "Đã cập nhật tổng thời lượng. Trang danh sách khoá học sẽ hiển thị đúng.",
+      "saved": "Đã lưu thay đổi.",
+      "assignmentApproved": "Đã duyệt bài. Chứng nhận sẽ được cấp nếu học viên đã hoàn thành 100% bài học.",
+      "assignmentRejected": "Đã từ chối bài.",
+      "certTemplateUploaded": "Đã tải template chứng nhận lên.",
+      "partnerContractUploaded": "Đã tải lên hồ sơ hợp đồng.",
+      "partnerInvoiceUploaded": "Đã tải lên hồ sơ hoá đơn.",
+      "discountCreated": "Đã tạo mã giảm giá."
+    },
+    "confirm": {
+      "deleteSection": "Xoá chương và toàn bộ bài học trong chương?",
+      "deleteLesson": "Xoá bài học?",
+      "deleteCourse": "Xoá toàn bộ khoá học và nội dung? Không thể hoàn tác."
+    },
+    "labels": {
+      "published": "Đã xuất bản",
+      "draft": "Bản nháp",
+      "uploadThumb": "Tải ảnh bìa lên",
+      "uploadingThumb": "Đang tải ảnh...",
+      "save": "Lưu thay đổi",
+      "saving": "Đang lưu...",
+      "saveInfo": "Đã lưu thông tin chung.",
+      "savePricing": "Đã lưu thay đổi giá & thanh toán.",
+      "saveAssignment": "Đã lưu cấu hình bài tập.",
+      "saveCertificate": "Đã lưu cấu hình chứng nhận.",
+      "reload": "Tải lại",
+      "loading": "Đang tải...",
+      "updating": "Đang cập nhật…",
+      "updateTotalDuration": "Cập nhật tổng thời lượng",
+      "creatingDiscount": "Đang tạo...",
+      "createDiscount": "Tạo mã",
+      "add": "Thêm",
+      "adding": "Đang thêm…",
+      "addSection": "Thêm chương",
+      "addingSection": "Đang thêm...",
+      "uploadTemplate": "Tải template lên",
+      "uploadingTemplate": "Đang tải lên..."
+    },
+    "certificate": {
+      "saveNamePosition": "Lưu vị trí tên",
+      "templateLabel": "Template chứng nhận",
+      "uploadTemplate": "Tải template lên",
+      "uploadingTemplate": "Đang tải lên...",
+      "nameXLabel": "Vị trí tên học viên ( % từ trái )",
+      "nameYLabel": "Vị trí tên học viên ( % từ trên )",
+      "afterUploadHintPrefix": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" ( % từ trái / % từ",
+      "fileFormatHint": "Định dạng: PNG hoặc JPG."
+    },
+    "form": {
+      "titleLabel": "Tên khoá học",
+      "shortDescriptionLabel": "Mô tả ngắn",
+      "shortDescriptionPlaceholder": "Một dòng mô tả (tuỳ chọn)",
+      "descriptionLabel": "Mô tả",
+      "thumbnailLabel": "Ảnh bìa khoá học",
+      "platformRevenueShareLabel": "Tỷ lệ doanh thu nền tảng (%)",
+      "partnerTransferPlaceholder": "Ví dụ: Ngân hàng, số tài khoản, chủ tài khoản, nội dung chuyển khoản theo hợp đồng...",
+      "partnerContractDocsLabel": "Hồ sơ hợp đồng đối tác",
+      "partnerInvoiceDocsLabel": "Hồ sơ hoá đơn / đối soát",
+      "levelLabel": "Cấp độ"
+    },
+    "pricing": {
+      "accessModelLabel": "Loại khoá học",
+      "priceVndLabel": "Giá mở toàn bộ khoá học (VND)",
+      "promoPriceVndLabel": "Giá khuyến mãi (VND)",
+      "promoPricePlaceholder": "Để trống nếu không khuyến mãi",
+      "promoEndsAtLabel": "Hẹn giờ kết thúc khuyến mãi (ISO)",
+      "updateTotalDurationLabelPrefix": "Khoá học trả phí trước: bật \"Học thử miễn phí\" cho các bài"
+    },
+    "discounts": {
+      "createTitle": "Tạo mã giảm giá (theo % hoặc số tiền) và giới hạn",
+      "activeOn": "Bật",
+      "activeOff": "Tắt"
+    },
+    "content": {
+      "lessonTitlePlaceholder": "Tên bài (tùy chọn)",
+      "lessonMinutesPlaceholder": "Thời lượng (phút) — nếu không lấy được từ YouTube, nhập vào đây",
+      "sectionTitlePlaceholder": "Tên chương"
+    },
+    "assignments": {
+      "titleLabel": "Tiêu đề bài tập",
+      "titlePlaceholder": "VD: Dự án cuối khoá (để trống = không yêu cầu)",
+      "descriptionLabel": "Mô tả / yêu cầu",
+      "descriptionPlaceholder": "Mô tả chi tiết bài tập học viên cần làm...",
+      "instructionsLabel": "Hướng dẫn (tùy chọn)",
+      "instructionsPlaceholder": "Hướng dẫn thêm cho học viên...",
+      "reviewApprove": "Duyệt"
+    },
+    "publishing": {
+      "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)"
+    },
+    "danger": {
+      "deleteCourseTitle": "Xoá khoá học?"
+    },
+    "stats": {
+      "sections": "Chương",
+      "lessons": "Bài học",
+      "students": "Học viên",
+      "submissions": "Bài nộp"
+    },
+    "tooltips": {
+      "dragReorder": "Kéo để đổi thứ tự",
+      "moveUp": "Đưa lên trên",
+      "moveDown": "Đưa xuống dưới"
+    },
+    "access": {
+      "noPermission": "Bạn không có quyền sửa khoá học này.",
+      "backToTeaching": "Quản lý giảng dạy"
+    }
+  }
+}
+

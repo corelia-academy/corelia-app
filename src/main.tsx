@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import "./styles/globals.css";
+import "./i18n";
 import App from "./App";
 import { OCConnect } from "@opencampus/ocid-connect-js";
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { ChalkboardTeacher, Globe, MapPin, Spinner } from "@phosphor-icons/react";
 import { getProfile } from "@/lib/profile";
@@ -16,13 +16,15 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
-const ORIGIN_LABELS: Record<NonNullable<Profile["instructor_origin"]>, string> = {
-  corelia: "Giảng viên Corelia",
-  external: "Giảng viên đối tác",
-};
+import { useTranslation } from "react-i18next";
 
 const InstructorDetail = () => {
+  const { t } = useTranslation("courses");
+  const translate = useCallback(
+    (key: string, options?: Record<string, unknown>) =>
+      String(t(key as never, options as never)),
+    [t],
+  );
   const { id } = useParams<{ id: string }>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -37,7 +39,7 @@ const InstructorDetail = () => {
       .then(([prof, list]) => {
         if (cancelled) return;
         if (!prof || prof.role !== "instructor") {
-          setError("Không tìm thấy hồ sơ giảng viên.");
+          setError(translate("detail.instructorDetail.errors.notFound"));
           return;
         }
         setProfile(prof);
@@ -45,7 +47,11 @@ const InstructorDetail = () => {
       })
       .catch((e) => {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Lỗi tải hồ sơ giảng viên");
+          setError(
+            e instanceof Error
+              ? e.message
+              : translate("detail.instructorDetail.errors.loadFailed"),
+          );
         }
       })
       .finally(() => {
@@ -55,18 +61,20 @@ const InstructorDetail = () => {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, translate]);
 
   if (!id) {
     return (
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
-          <p className="text-[15px] font-medium text-destructive">Thiếu mã giảng viên.</p>
+          <p className="text-[15px] font-medium text-destructive">
+            {translate("detail.instructorDetail.errors.missingId")}
+          </p>
           <Link
             to="/courses"
             className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
           >
-            Quay lại danh sách khoá học
+            {translate("detail.instructorDetail.actions.backToCourses")}
           </Link>
         </div>
       </div>
@@ -79,7 +87,7 @@ const InstructorDetail = () => {
         <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border-subtle bg-card p-8 text-center shadow-card">
           <Spinner className="size-8 animate-spin text-muted-foreground" />
           <p className="mt-4 text-[15px] text-muted-foreground">
-            Đang tải hồ sơ giảng viên...
+            {translate("detail.instructorDetail.loading")}
           </p>
         </div>
       </div>
@@ -91,13 +99,13 @@ const InstructorDetail = () => {
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
           <p className="text-[15px] font-medium text-destructive">
-            {error ?? "Không tìm thấy hồ sơ giảng viên."}
+            {error ?? translate("detail.instructorDetail.errors.notFound")}
           </p>
           <Link
             to="/courses"
             className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
           >
-            Quay lại danh sách khoá học
+            {translate("detail.instructorDetail.actions.backToCourses")}
           </Link>
         </div>
       </div>
@@ -105,8 +113,8 @@ const InstructorDetail = () => {
   }
 
   const originLabel = profile.instructor_origin
-    ? ORIGIN_LABELS[profile.instructor_origin]
-    : "Giảng viên";
+    ? translate(`detail.instructorDetail.origin.${profile.instructor_origin}`)
+    : translate("detail.instructorDetail.origin.unknown");
 
   const initials =
     profile.full_name?.trim().slice(0, 2).toUpperCase() ||
@@ -118,18 +126,20 @@ const InstructorDetail = () => {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink>
-              <Link to="/">Home</Link>
+              <Link to="/">{translate("detail.instructorDetail.crumbs.home")}</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink>
-              <Link to="/courses">Khoá học</Link>
+              <Link to="/courses">{translate("detail.instructorDetail.crumbs.courses")}</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Giảng viên {profile.full_name}</BreadcrumbPage>
+            <BreadcrumbPage>
+              {translate("detail.instructorDetail.crumbs.instructorPrefix")} {profile.full_name}
+            </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -147,7 +157,7 @@ const InstructorDetail = () => {
                 <span>{originLabel}</span>
               </div>
               <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                {profile.full_name ?? "Giảng viên"}
+                {profile.full_name ?? translate("detail.instructorDetail.fallbackName")}
               </h1>
               {profile.instructor_headline ? (
                 <p className="text-[14px] text-muted-foreground">
@@ -169,7 +179,7 @@ const InstructorDetail = () => {
                     className="inline-flex items-center gap-1.5 text-primary hover:underline"
                   >
                     <Globe className="size-4" />
-                    <span>Website / LinkedIn</span>
+                    <span>{translate("detail.instructorDetail.websiteLabel")}</span>
                   </a>
                 )}
               </div>
@@ -179,7 +189,7 @@ const InstructorDetail = () => {
           {profile.instructor_bio ? (
             <div className="mt-5 border-t border-border-subtle pt-4">
               <h2 className="mb-2 text-sm font-semibold text-foreground">
-                Giới thiệu
+                {translate("detail.instructorDetail.bioTitle")}
               </h2>
               <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-foreground/90">
                 {profile.instructor_bio}
@@ -191,7 +201,7 @@ const InstructorDetail = () => {
         <section className="rounded-2xl border border-border-subtle bg-card p-6 shadow-card">
           <div className="mb-3 flex items-center justify-between gap-2">
             <h2 className="text-lg font-medium text-foreground">
-              Khoá học do giảng viên phụ trách
+              {translate("detail.instructorDetail.courses.title")}
             </h2>
             <Button
               variant="outline"
@@ -199,12 +209,12 @@ const InstructorDetail = () => {
               type="button"
               render={<Link to="/courses" />}
             >
-              Xem tất cả khoá học
+              {translate("detail.instructorDetail.courses.viewAll")}
             </Button>
           </div>
           {courses.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border-subtle bg-muted/20 p-5 text-sm text-muted-foreground">
-              Giảng viên hiện chưa có khoá học public trên nền tảng.
+              {translate("detail.instructorDetail.courses.empty")}
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
@@ -234,7 +244,9 @@ const InstructorDetail = () => {
                       </p>
                     ) : null}
                     <p className="text-[12px] text-muted-foreground">
-                      Thời lượng: {formatDuration(Number(course.total_duration_seconds) || 0)}
+                      {translate("detail.instructorDetail.courses.durationPrefix", {
+                        duration: formatDuration(Number(course.total_duration_seconds) || 0),
+                      })}
                     </p>
                   </div>
                 </Link>

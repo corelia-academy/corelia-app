@@ -1,11 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { listOfflineCohorts, listOfflineCourses } from "@/lib/offline";
 import type { OfflineCohort, OfflineCourse } from "@/types/offline";
+import { useTranslation } from "react-i18next";
 
 export default function Cohorts() {
+  const { t } = useTranslation("cohorts");
+  const translate = useCallback(
+    (key: string, options?: Record<string, unknown>) =>
+      String(t(key as never, options as never)),
+    [t],
+  );
   const [items, setItems] = useState<OfflineCourse[]>([]);
   const [cohorts, setCohorts] = useState<OfflineCohort[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +29,9 @@ export default function Cohorts() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Không thể tải lớp học.");
+          setError(
+            err instanceof Error ? err.message : translate("catalog.loadErrorFallback"),
+          );
         }
       })
       .finally(() => {
@@ -31,7 +40,7 @@ export default function Cohorts() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [translate]);
 
   const stats = useMemo(
     () => ({
@@ -52,20 +61,19 @@ export default function Cohorts() {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              Lớp học trực tiếp
+              {t("catalog.heroEyebrow")}
             </div>
             <h1 className="mt-2 text-3xl font-normal tracking-tight text-foreground">
-              Hành trình học offline của Corelia
+              {t("catalog.heroTitle")}
             </h1>
             <p className="mt-2 max-w-3xl text-[15px] leading-7 text-muted-foreground">
-              Theo dõi lịch học từng tuần, địa điểm, bài tập sau buổi và bản ghi buổi học
-              để học viên có thể xem lại khi cần.
+              {t("catalog.heroDescription")}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-border-subtle bg-background px-4 py-3">
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Khoá offline
+                {t("catalog.stats.totalCourses")}
               </div>
               <div className="mt-2 text-2xl font-semibold text-foreground">
                 {stats.totalCourses}
@@ -73,7 +81,7 @@ export default function Cohorts() {
             </div>
             <div className="rounded-2xl border border-border-subtle bg-background px-4 py-3">
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Cohort đang mở
+                {t("catalog.stats.totalCohorts")}
               </div>
               <div className="mt-2 text-2xl font-semibold text-foreground">
                 {stats.totalCohorts}
@@ -81,7 +89,7 @@ export default function Cohorts() {
             </div>
             <div className="rounded-2xl border border-border-subtle bg-background px-4 py-3">
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Đang diễn ra
+                {t("catalog.stats.running")}
               </div>
               <div className="mt-2 text-2xl font-semibold text-foreground">
                 {stats.running}
@@ -94,7 +102,7 @@ export default function Cohorts() {
       {loading ? (
         <Card className="mt-6">
           <CardContent className="p-8 text-center text-muted-foreground">
-            Đang tải lớp học trực tiếp...
+            {t("catalog.loading")}
           </CardContent>
         </Card>
       ) : error ? (
@@ -105,10 +113,10 @@ export default function Cohorts() {
         <Card className="mt-6">
           <CardContent className="p-8 text-center">
             <div className="text-[15px] font-medium text-foreground">
-              Chưa có lớp học trực tiếp nào được mở.
+              {t("catalog.emptyTitle")}
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Khi Corelia mở cohort mới, lịch học và thông tin địa điểm sẽ xuất hiện tại đây.
+              {t("catalog.emptyDescription")}
             </p>
           </CardContent>
         </Card>
@@ -126,7 +134,9 @@ export default function Cohorts() {
               <div className="border-b border-border-subtle bg-muted/25 px-5 py-4">
                 <div className="flex flex-wrap gap-2">
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-background/90 px-2.5 py-1 text-[11px] font-medium text-foreground">
-                    {course.published ? "Đang mở" : "Bản nháp"}
+                    {course.published
+                      ? t("catalog.course.statusOpen")
+                      : t("catalog.course.statusDraft")}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-background/90 px-2.5 py-1 text-[11px] font-medium text-foreground">
                     {course.level}
@@ -144,18 +154,18 @@ export default function Cohorts() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-2xl border border-border-subtle bg-background p-4">
                     <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                      Thành phố
+                      {t("catalog.course.cityLabel")}
                     </div>
                     <div className="mt-2 text-sm text-foreground">
-                      {course.venue_city || "Cập nhật sau"}
+                      {course.venue_city || t("catalog.course.venueCityFallback")}
                     </div>
                   </div>
                   <div className="rounded-2xl border border-border-subtle bg-background p-4">
                     <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                      Chứng nhận
+                      {t("catalog.course.certificateLabel")}
                     </div>
                     <div className="mt-2 text-sm text-foreground">
-                      {course.certificate_title || "Theo cấu hình khoá học"}
+                      {course.certificate_title || t("catalog.course.certificateFallback")}
                     </div>
                   </div>
                 </div>
@@ -163,7 +173,7 @@ export default function Cohorts() {
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div className="rounded-2xl border border-border-subtle bg-background p-3">
                     <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Buổi học
+                      {t("catalog.metrics.sessions")}
                     </div>
                     <div className="mt-1.5 text-lg font-semibold text-foreground">
                       {courseCohorts.reduce(
@@ -174,7 +184,7 @@ export default function Cohorts() {
                   </div>
                   <div className="rounded-2xl border border-border-subtle bg-background p-3">
                     <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Cohorts
+                      {t("catalog.metrics.cohorts")}
                     </div>
                     <div className="mt-1.5 text-lg font-semibold text-foreground">
                       {course.metrics_snapshot.cohorts_total || courseCohorts.length}
@@ -182,7 +192,7 @@ export default function Cohorts() {
                   </div>
                   <div className="rounded-2xl border border-border-subtle bg-background p-3">
                     <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Recording
+                      {t("catalog.metrics.recordings")}
                     </div>
                     <div className="mt-1.5 text-lg font-semibold text-foreground">
                       {course.metrics_snapshot.published_recordings}
@@ -195,7 +205,7 @@ export default function Cohorts() {
                   nativeButton={false}
                   className="w-full"
                 >
-                  Xem khoá học
+                  {t("catalog.viewCourse")}
                 </Button>
               </div>
             </article>

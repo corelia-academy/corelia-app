@@ -30,15 +30,17 @@ import { useAuth } from "@/stores/authStore";
 import { ShowForRole } from "@/components/auth/ShowForRole";
 import { ShowForAuth } from "@/components/auth/ShowForAuth";
 import { getRoleLabel } from "@/types/database";
+import { useTranslation } from "react-i18next";
 
 const primaryNav = [
-  { label: "Trang chủ", href: "/", icon: House, end: true },
-  { label: "Khoá học", href: "/courses", icon: BookOpen },
-  { label: "Lớp học", href: "/cohorts", icon: CalendarDots },
-  { label: "Cuộc thi", href: "/contests", icon: Trophy },
+  { labelKey: "nav.home" as const, href: "/", icon: House, end: true },
+  { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
+  { labelKey: "nav.cohorts" as const, href: "/cohorts", icon: CalendarDots },
+  { labelKey: "nav.contests" as const, href: "/contests", icon: Trophy },
 ] as const;
 
 export default function AppSidebar() {
+  const { t } = useTranslation("common");
   const location = useLocation();
   const pathname = location.pathname;
   const navigate = useNavigate();
@@ -86,7 +88,7 @@ export default function AppSidebar() {
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
                           className="rounded-md"
-                          tooltip={item.label}
+                          tooltip={t(item.labelKey)}
                           isActive={isActive}
                           render={
                             <NavLink
@@ -95,7 +97,7 @@ export default function AppSidebar() {
                               className="flex w-full items-center gap-2"
                             >
                               <Icon className="size-4" weight="duotone" />
-                              <span>{item.label}</span>
+                              <span>{t(item.labelKey)}</span>
                             </NavLink>
                           }
                         />
@@ -108,7 +110,7 @@ export default function AppSidebar() {
                 <SidebarMenuItem key="/achievements">
                   <SidebarMenuButton
                     className="rounded-md"
-                    tooltip="Thành tích"
+                    tooltip={t("nav.achievements")}
                     isActive={pathname.startsWith("/achievements")}
                     render={
                       <NavLink
@@ -116,7 +118,7 @@ export default function AppSidebar() {
                         className="flex w-full items-center gap-2"
                       >
                         <Medal className="size-4" weight="duotone" />
-                        <span>Thành tích</span>
+                        <span>{t("nav.achievements")}</span>
                       </NavLink>
                     }
                   />
@@ -153,7 +155,7 @@ export default function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="rounded-md"
-                    tooltip="Quản trị"
+                    tooltip={t("nav.admin")}
                     isActive={pathname.startsWith("/admin")}
                     render={
                       <NavLink
@@ -161,7 +163,7 @@ export default function AppSidebar() {
                         className="flex w-full items-center gap-2"
                       >
                         <Gear className="size-4" weight="duotone" />
-                        <span>Admin</span>
+                        <span>{t("nav.admin")}</span>
                       </NavLink>
                     }
                   />
@@ -200,7 +202,9 @@ export default function AppSidebar() {
             size="sm"
           >
             <SignIn className="size-4" weight="duotone" />
-            <span className="group-data-[collapsible=icon]:hidden">Đăng nhập</span>
+            <span className="group-data-[collapsible=icon]:hidden">
+              {t("tabs.signIn")}
+            </span>
           </Button>
         )}
       </SidebarFooter>

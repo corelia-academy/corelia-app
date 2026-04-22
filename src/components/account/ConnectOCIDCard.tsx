@@ -3,6 +3,7 @@ import { useOCAuth } from "@opencampus/ocid-connect-js";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/stores/authStore";
 import { updateOCIDProfile } from "@/lib/profile";
+import { useTranslation } from "react-i18next";
 
 function truncateMiddle(value: string, head = 6, tail = 4) {
   if (value.length <= head + tail + 1) return value;
@@ -10,6 +11,7 @@ function truncateMiddle(value: string, head = 6, tail = 4) {
 }
 
 export default function ConnectOCIDCard() {
+  const { t } = useTranslation("account");
   const { profile, refreshProfile } = useAuth();
   const { isInitialized, authState, ocAuth } = useOCAuth();
   const [loading, setLoading] = useState(false);
@@ -39,7 +41,7 @@ export default function ConnectOCIDCard() {
       await ocAuth.signInWithRedirect({ state: "corelia-ocid-connect" });
     } catch (e) {
       const message =
-        e instanceof Error ? e.message : "Không thể bắt đầu kết nối OCID.";
+        e instanceof Error ? e.message : t("ocid.toasts.startConnectFailed");
       setError(message);
       setLoading(false);
     }
@@ -52,10 +54,10 @@ export default function ConnectOCIDCard() {
     try {
       await updateOCIDProfile({ ocid: null, ocid_eth_address: null });
       await refreshProfile();
-      setSuccess("Đã hủy liên kết OCID.");
+      setSuccess(t("ocid.toasts.disconnectSuccess"));
     } catch (e) {
       const message =
-        e instanceof Error ? e.message : "Không thể hủy liên kết OCID.";
+        e instanceof Error ? e.message : t("ocid.toasts.disconnectFailed");
       setError(message);
     } finally {
       setLoading(false);
@@ -66,19 +68,19 @@ export default function ConnectOCIDCard() {
     <section className="space-y-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-base font-medium">Kết nối OCID</h2>
+          <h2 className="text-base font-medium">{t("ocid.card.title")}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Liên kết Open Campus ID để đồng bộ danh tính và ví (nếu có) trong hệ sinh thái Open Campus.
+            {t("ocid.card.description")}
           </p>
         </div>
         <span className="shrink-0 rounded-full border border-border-subtle bg-muted/40 px-2.5 py-1 text-[11px] text-muted-foreground">
-          {connected ? "Đã kết nối" : "Chưa kết nối"}
+          {connected ? t("ocid.card.statusConnected") : t("ocid.card.statusDisconnected")}
         </span>
       </div>
 
       {!isInitialized ? (
         <div className="rounded-lg border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
-          Đang khởi tạo OCID SDK…
+          {t("ocid.card.initializing")}
         </div>
       ) : authState.error ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
@@ -87,13 +89,13 @@ export default function ConnectOCIDCard() {
       ) : connected ? (
         <div className="grid gap-3 rounded-lg border border-border-subtle bg-background p-3 text-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-muted-foreground">OCID</div>
+            <div className="text-muted-foreground">{t("ocid.card.ocidLabel")}</div>
             <div className="font-mono text-foreground">
               {ocidDisplay ?? profile?.ocid ?? "—"}
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-muted-foreground">ETH Address</div>
+            <div className="text-muted-foreground">{t("ocid.card.ethAddressLabel")}</div>
             <div className="font-mono text-foreground">
               {ethDisplay ?? profile?.ocid_eth_address ?? "—"}
             </div>
@@ -101,7 +103,7 @@ export default function ConnectOCIDCard() {
         </div>
       ) : (
         <div className="rounded-lg border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
-          Bấm nút bên dưới để liên kết OCID với tài khoản Corelia của bạn.
+          {t("ocid.card.connectHint")}
         </div>
       )}
 
@@ -125,7 +127,7 @@ export default function ConnectOCIDCard() {
             disabled={loading}
             onClick={() => void handleDisconnect()}
           >
-            {loading ? "Đang xử lý…" : "Disconnect"}
+            {loading ? t("ocid.card.loadingDisconnect") : t("ocid.card.disconnect")}
           </Button>
         ) : (
           <Button
@@ -133,7 +135,7 @@ export default function ConnectOCIDCard() {
             disabled={loading || !isInitialized}
             onClick={() => void handleConnect()}
           >
-            {loading ? "Đang chuyển hướng…" : "Connect with OCID"}
+            {loading ? t("ocid.card.loadingConnect") : t("ocid.card.connect")}
           </Button>
         )}
       </div>

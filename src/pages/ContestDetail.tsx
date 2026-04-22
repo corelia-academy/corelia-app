@@ -67,57 +67,8 @@ import type {
   ContestSubmission,
   ContestWinnerInput,
 } from "@/types/contests";
-
-function statusLabel(status: Contest["status"]): string {
-  switch (status) {
-    case "draft":
-      return "Bản nháp";
-    case "published":
-      return "Đang nhận hồ sơ";
-    case "running":
-      return "Đang diễn ra";
-    case "ended":
-      return "Đã kết thúc";
-    default:
-      return "—";
-  }
-}
-
-function registrationStatusLabel(status: ContestRegistrationStatus): string {
-  switch (status) {
-    case "pending":
-      return "Chờ duyệt";
-    case "approved":
-      return "Đã duyệt";
-    case "rejected":
-      return "Từ chối";
-    default:
-      return "—";
-  }
-}
-
-function locationLabel(loc: Contest["location"]): string {
-  switch (loc) {
-    case "online":
-      return "Online";
-    case "offline":
-      return "Offline";
-    case "hybrid":
-      return "Hybrid";
-    default:
-      return "—";
-  }
-}
-
-function formatDateTime(value: string | null): string {
-  if (!value) return "Chưa cập nhật";
-  return new Date(value).toLocaleString("vi-VN");
-}
-
-function formatDate(value: string | null): string {
-  if (!value) return "Chưa cập nhật";
-  return new Date(value).toLocaleDateString("vi-VN");
-}
+import { intlLocale } from "@/lib/intl";
+import { useTranslation } from "react-i18next";
 
 function parseLineList(value: string): string[] {
   return Array.from(
@@ -181,10 +132,36 @@ function buildLeaderboard(
 }
 
 export default function ContestDetail() {
+  const { t } = useTranslation("contests");
+  const translate = useCallback(
+    (key: string, options?: Record<string, unknown>) => String(t(key as never, options as never)),
+    [t],
+  );
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, user, isAuthenticated } = useAuth();
+
+  const statusLabel = (status: Contest["status"]): string =>
+    translate(`status.${status}`, { defaultValue: translate("status.unknown") });
+
+  const registrationStatusLabel = (status: ContestRegistrationStatus): string =>
+    translate(`registrationStatus.${status}`, {
+      defaultValue: translate("registrationStatus.unknown"),
+    });
+
+  const locationLabel = (loc: Contest["location"]): string =>
+    translate(`location.${loc}`, { defaultValue: translate("location.unknown") });
+
+  const formatDateTime = (value: string | null): string => {
+    if (!value) return translate("detail.notUpdated");
+    return new Date(value).toLocaleString(intlLocale());
+  };
+
+  const formatDate = (value: string | null): string => {
+    if (!value) return translate("detail.notUpdated");
+    return new Date(value).toLocaleDateString(intlLocale());
+  };
 
   const [contest, setContest] = useState<Contest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -266,16 +243,28 @@ export default function ContestDetail() {
     () =>
       [
         canReview
-          ? { id: "applications", label: "Hồ sơ", description: "Duyệt đăng ký và chọn đội vào vòng" }
+          ? {
+              id: "applications",
+              label: translate("detail.manage.sections.applications.label"),
+              description: translate("detail.manage.sections.applications.description"),
+            }
           : null,
         canJudge
-          ? { id: "judging", label: "Chấm điểm", description: "Score submissions và lưu nhận xét" }
+          ? {
+              id: "judging",
+              label: translate("detail.manage.sections.judging.label"),
+              description: translate("detail.manage.sections.judging.description"),
+            }
           : null,
         canViewAggregate
-          ? { id: "results", label: "Kết quả", description: "Leaderboard, winners và báo cáo tổng hợp" }
+          ? {
+              id: "results",
+              label: translate("detail.manage.sections.results.label"),
+              description: translate("detail.manage.sections.results.description"),
+            }
           : null,
       ].filter((item): item is { id: string; label: string; description: string } => item != null),
-    [canJudge, canReview, canViewAggregate],
+    [canJudge, canReview, canViewAggregate, translate],
   );
   const [activeManageSection, setActiveManageSection] = useState<string>("overview");
 
@@ -283,53 +272,50 @@ export default function ContestDetail() {
   const activeManageSectionMeta = useMemo(() => {
     if (activeManageSection === "overview") {
       return {
-        label: "Tổng quan",
-        description: "Vai trò tham gia, nhịp vận hành và tình trạng hiện tại của contest.",
+        label: translate("detail.manage.overview.label"),
+        description: translate("detail.manage.overview.description"),
       };
     }
     return (
       manageSections.find((section) => section.id === activeManageSection) ?? {
-        label: "Contest workspace",
-        description: "Điều phối contest giữa Corelia, judges và đơn vị đồng tổ chức.",
+        label: translate("detail.manage.fallback.label"),
+        description: translate("detail.manage.fallback.description"),
       }
     );
-  }, [activeManageSection, manageSections]);
+  }, [activeManageSection, manageSections, translate]);
   const publicJourney = useMemo(
     () => [
       {
-        title: "1. Nộp hồ sơ",
-        description:
-          "Cá nhân hoặc đội gửi hồ sơ tham gia với động lực, portfolio và thông tin liên hệ.",
+        title: translate("detail.journey.step1.title"),
+        description: translate("detail.journey.step1.description"),
       },
       {
-        title: "2. Được duyệt rồi nộp bài",
-        description:
-          "Corelia xét duyệt trước khi mở quyền submission để bảo đảm chất lượng đầu vào.",
+        title: translate("detail.journey.step2.title"),
+        description: translate("detail.journey.step2.description"),
       },
       {
-        title: "3. Ban giám khảo chấm và công bố",
-        description:
-          "Judges chấm theo rubric, sau đó leaderboard và winners chỉ hiện khi được publish.",
+        title: translate("detail.journey.step3.title"),
+        description: translate("detail.journey.step3.description"),
       },
     ],
-    [],
+    [translate],
   );
   const collaborationLanes = useMemo(
     () => [
       {
-        title: "Corelia operations",
-        description: "Mở contest, duyệt hồ sơ, mời cộng tác viên và công bố kết quả chính thức.",
+        title: translate("detail.lanes.ops.title"),
+        description: translate("detail.lanes.ops.description"),
       },
       {
-        title: "Judge panel",
-        description: "Truy cập submissions, chấm theo rubric và để lại nhận xét chuyên môn.",
+        title: translate("detail.lanes.judge.title"),
+        description: translate("detail.lanes.judge.description"),
       },
       {
-        title: "Co-host observers",
-        description: "Theo dõi metrics tổng hợp, leaderboard và winners mà không thấy hồ sơ thô.",
+        title: translate("detail.lanes.observer.title"),
+        description: translate("detail.lanes.observer.description"),
       },
     ],
-    [],
+    [translate],
   );
   const judgeOwnScores = useMemo(() => {
     if (!user) return new Map<string, ContestScore>();
@@ -346,11 +332,11 @@ export default function ContestDetail() {
     setDeletingContest(true);
     try {
       await deleteContest(contest.id);
-      toast.success("Đã xoá cuộc thi.");
+      toast.success(translate("detail.actions.deleteSuccess"));
       navigate("/instructor/contests", { replace: true });
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Không thể xoá cuộc thi lúc này.";
+        err instanceof Error ? err.message : translate("detail.actions.deleteErrorFallback");
       toast.error(message);
     } finally {
       setDeletingContest(false);
@@ -360,27 +346,29 @@ export default function ContestDetail() {
     if (isManageView) return null;
     if (registration?.status === "approved") {
       return {
-        label: mySubmission ? "Tiếp tục submission" : "Nộp submission",
-        helper: "Hồ sơ đã được duyệt. Bạn có thể mở khu submission để cập nhật bài nộp.",
+        label: mySubmission
+          ? translate("detail.cta.continueSubmission")
+          : translate("detail.cta.submitSubmission"),
+        helper: translate("detail.cta.approvedHelper"),
       };
     }
     if (registration) {
       return {
-        label: "Xem trạng thái hồ sơ",
-        helper: "Corelia đang xử lý hồ sơ của bạn trước khi mở quyền tham gia chính thức.",
+        label: translate("detail.cta.viewApplicationStatus"),
+        helper: translate("detail.cta.pendingHelper"),
       };
     }
     if (contest?.status === "published") {
       return {
-        label: "Đăng ký tham gia",
-        helper: "Contest đang mở nhận hồ sơ. Gửi đăng ký để được Corelia xét duyệt.",
+        label: translate("detail.cta.register"),
+        helper: translate("detail.cta.registerHelper"),
       };
     }
     return {
-      label: "Theo dõi mốc contest",
-      helper: "Contest chưa mở đăng ký. Bạn có thể xem timeline và chờ giai đoạn nhận hồ sơ.",
+      label: translate("detail.cta.trackTimeline"),
+      helper: translate("detail.cta.trackTimelineHelper"),
     };
-  }, [contest?.status, isManageView, mySubmission, registration]);
+  }, [contest?.status, isManageView, mySubmission, registration, translate]);
   const parsedTeamMembers = useMemo(() => parseLineList(teamMembers), [teamMembers]);
   const registrationDraftReady = useMemo(() => {
     return contactEmail.trim().length > 0 && motivation.trim().length >= 24;
@@ -420,7 +408,7 @@ export default function ContestDetail() {
       const contestData = await getContest(id);
       if (!contestData) {
         setContest(null);
-        setError("Không tìm thấy cuộc thi.");
+        setError(translate("detail.errors.notFound"));
         return;
       }
 
@@ -499,11 +487,11 @@ export default function ContestDetail() {
         setRegistrations([]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể tải cuộc thi.");
+      setError(err instanceof Error ? err.message : translate("detail.errors.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, [id, isManager, profile, user?.email]);
+  }, [id, isManager, profile, translate, user?.email]);
 
   useEffect(() => {
     void loadContestData();
@@ -556,11 +544,11 @@ export default function ContestDetail() {
       return;
     }
     if (!contactEmail.trim()) {
-      toast.error("Hãy nhập email liên hệ để Corelia phản hồi hồ sơ.");
+      toast.error(translate("detail.toasts.contactEmailRequired"));
       return;
     }
     if (motivation.trim().length < 24) {
-      toast.error("Hãy mô tả động lực và năng lực chi tiết hơn trước khi gửi hồ sơ.");
+      toast.error(translate("detail.toasts.applicationMotivationTooShort"));
       return;
     }
     setApplying(true);
@@ -575,9 +563,11 @@ export default function ContestDetail() {
         user_full_name: profile?.full_name ?? undefined,
       });
       setRegistration(result);
-      toast.success("Đã gửi hồ sơ đăng ký. Corelia sẽ duyệt trước khi bạn được tham gia.");
+      toast.success(translate("detail.toasts.applicationSubmitted"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể gửi đăng ký.");
+      toast.error(
+        err instanceof Error ? err.message : translate("detail.toasts.applicationSubmitFailed"),
+      );
     } finally {
       setApplying(false);
     }
@@ -594,10 +584,16 @@ export default function ContestDetail() {
         status,
         review_note: reviewNotes[userId] ?? "",
       });
-      toast.success(status === "approved" ? "Đã duyệt hồ sơ." : "Đã từ chối hồ sơ.");
+      toast.success(
+        status === "approved"
+          ? translate("detail.toasts.applicationReviewedApproved")
+          : translate("detail.toasts.applicationReviewedRejected"),
+      );
       await loadContestData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể cập nhật hồ sơ.");
+      toast.error(
+        err instanceof Error ? err.message : translate("detail.toasts.applicationReviewUpdateFailed"),
+      );
     } finally {
       setSavingReviewId(null);
     }
@@ -611,9 +607,11 @@ export default function ContestDetail() {
     try {
       await updateContest(id, { status: managerStatus });
       setContest((prev) => (prev ? { ...prev, status: managerStatus } : prev));
-      toast.success("Đã cập nhật trạng thái cuộc thi.");
+      toast.success(translate("detail.toasts.contestStatusUpdated"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể cập nhật trạng thái.");
+      toast.error(
+        err instanceof Error ? err.message : translate("detail.toasts.contestStatusUpdateFailed"),
+      );
     } finally {
       setSavingStatus(false);
     }
@@ -634,10 +632,10 @@ export default function ContestDetail() {
       setInviteDisplayName("");
       setInviteOrganization("");
       setInviteNote("");
-      toast.success("Đã tạo lời mời.");
+      toast.success(translate("detail.toasts.inviteCreated"));
       await loadContestData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể tạo lời mời.");
+      toast.error(err instanceof Error ? err.message : translate("detail.toasts.inviteCreateFailed"));
     } finally {
       setSavingInvite(false);
     }
@@ -648,10 +646,14 @@ export default function ContestDetail() {
     setInviteActionId(myInvite.id);
     try {
       await respondToContestAccessInvite(id, status);
-      toast.success(status === "accepted" ? "Bạn đã nhận lời mời." : "Bạn đã từ chối lời mời.");
+      toast.success(
+        status === "accepted"
+          ? translate("detail.toasts.inviteAccepted")
+          : translate("detail.toasts.inviteDeclined"),
+      );
       await loadContestData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể cập nhật lời mời.");
+      toast.error(err instanceof Error ? err.message : translate("detail.toasts.inviteUpdateFailed"));
     } finally {
       setInviteActionId(null);
     }
@@ -662,10 +664,10 @@ export default function ContestDetail() {
     setInviteActionId(email);
     try {
       await revokeContestAccessInvite(id, email);
-      toast.success("Đã thu hồi quyền truy cập.");
+      toast.success(translate("detail.toasts.inviteRevoked"));
       await loadContestData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể thu hồi quyền.");
+      toast.error(err instanceof Error ? err.message : translate("detail.toasts.inviteRevokeFailed"));
     } finally {
       setInviteActionId(null);
     }
@@ -683,14 +685,14 @@ export default function ContestDetail() {
       };
       const totalWeight = Object.values(weights).reduce((sum, value) => sum + value, 0);
       if (totalWeight !== 100) {
-        toast.error("Tổng trọng số rubric cần bằng 100 trước khi lưu.");
+        toast.error(translate("detail.toasts.rubricWeightMustBe100"));
         return;
       }
       await updateContest(id, { rubric_weights: weights });
       setContest((prev) => (prev ? { ...prev, rubric_weights: weights } : prev));
-      toast.success("Đã cập nhật trọng số rubric.");
+      toast.success(translate("detail.toasts.rubricUpdated"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể cập nhật rubric.");
+      toast.error(err instanceof Error ? err.message : translate("detail.toasts.rubricUpdateFailed"));
     } finally {
       setSavingRubric(false);
     }
@@ -699,7 +701,7 @@ export default function ContestDetail() {
   async function handleSubmissionSave() {
     if (!id || savingSubmission || !submissionTitle.trim()) return;
     if (submissionSummary.trim().length < 32) {
-      toast.error("Hãy viết tóm tắt submission rõ hơn trước khi lưu.");
+      toast.error(translate("detail.toasts.submissionSummaryTooShort"));
       return;
     }
     setSavingSubmission(true);
@@ -712,9 +714,9 @@ export default function ContestDetail() {
         slide_url: submissionSlideUrl,
       });
       setMySubmission(saved);
-      toast.success("Đã lưu bài nộp.");
+      toast.success(translate("detail.toasts.submissionSaved"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể lưu bài nộp.");
+      toast.error(err instanceof Error ? err.message : translate("detail.toasts.submissionSaveFailed"));
     } finally {
       setSavingSubmission(false);
     }
@@ -730,7 +732,7 @@ export default function ContestDetail() {
       Number(draft.impact) || 0,
     ];
     if (values.some((value) => value < 0 || value > 25)) {
-      toast.error("Mỗi tiêu chí cần nằm trong khoảng 0 đến 25.");
+      toast.error(translate("detail.toasts.scoreCriterionOutOfRange"));
       return;
     }
     setSavingScoreId(submissionId);
@@ -742,10 +744,10 @@ export default function ContestDetail() {
         impact_score: values[3],
         note: draft.note,
       });
-      toast.success("Đã lưu điểm chấm.");
+      toast.success(translate("detail.toasts.scoreSaved"));
       await loadContestData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể lưu điểm.");
+      toast.error(err instanceof Error ? err.message : translate("detail.toasts.scoreSaveFailed"));
     } finally {
       setSavingScoreId(null);
     }
@@ -757,9 +759,9 @@ export default function ContestDetail() {
     try {
       const snapshot = await refreshContestMetricsSnapshot(id);
       setContest((prev) => (prev ? { ...prev, metrics_snapshot: snapshot } : prev));
-      toast.success("Đã làm mới metrics snapshot.");
+      toast.success(translate("detail.toasts.metricsRefreshed"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể làm mới metrics.");
+      toast.error(err instanceof Error ? err.message : translate("detail.toasts.metricsRefreshFailed"));
     } finally {
       setRefreshingMetrics(false);
     }
@@ -768,7 +770,7 @@ export default function ContestDetail() {
   async function handlePublishResults() {
     if (!id || !isManager || publishingResults) return;
     if (leaderboardReadyForPublish.length === 0) {
-      toast.error("Cần có ít nhất một submission đã được chấm trước khi publish kết quả.");
+      toast.error(translate("detail.toasts.publishNeedsScoredSubmission"));
       return;
     }
     const winnerInputs: ContestWinnerInput[] = Object.entries(winnerAwards)
@@ -779,7 +781,7 @@ export default function ContestDetail() {
         note: winnerNotes[submissionId] ?? "",
       }));
     if (winnerInputs.length === 0) {
-      toast.error("Hãy nhập ít nhất một giải thưởng trước khi publish.");
+      toast.error(translate("detail.toasts.publishNeedsAward"));
       return;
     }
 
@@ -795,9 +797,9 @@ export default function ContestDetail() {
             }
           : prev,
       );
-      toast.success("Đã publish leaderboard và winners.");
+      toast.success(translate("detail.toasts.resultsPublished"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể publish kết quả.");
+      toast.error(err instanceof Error ? err.message : translate("detail.toasts.publishFailed"));
     } finally {
       setPublishingResults(false);
     }
@@ -818,19 +820,26 @@ export default function ContestDetail() {
     if (!id) return;
     const link = `${window.location.origin}/instructor/contests/${id}/manage?invite=${encodeURIComponent(email)}`;
     await navigator.clipboard.writeText(link);
-    toast.success("Đã copy invite link.");
+    toast.success(translate("detail.toasts.inviteLinkCopied"));
   }
 
   function handleInviteMailTo(invite: ContestAccessInvite) {
     if (!id || !contest) return;
     const link = `${window.location.origin}/instructor/contests/${id}/manage?invite=${encodeURIComponent(invite.email)}`;
-    const subject = encodeURIComponent(`Lời mời cộng tác contest: ${contest.title}`);
+    const subject = encodeURIComponent(
+      translate("detail.inviteEmail.subjectPrefix", { title: contest.title }),
+    );
     const body = encodeURIComponent(
-      `Chào ${invite.display_name || invite.email},\n\n` +
-        `Bạn được mời tham gia contest "${contest.title}" với vai trò: ${invite.roles.join(", ")}.\n` +
-        `Link truy cập: ${link}\n\n` +
-        `${invite.note ? `Ghi chú: ${invite.note}\n\n` : ""}` +
-        `Trân trọng,\nCorelia`,
+      `${translate("detail.inviteEmail.greeting", {
+        name: invite.display_name || invite.email,
+      })}\n\n` +
+        `${translate("detail.inviteEmail.invitedLine", {
+          title: contest.title,
+          roles: invite.roles.join(", "),
+        })}\n` +
+        `${translate("detail.inviteEmail.accessLinkLine", { link })}\n\n` +
+        `${invite.note ? `${translate("detail.inviteEmail.notePrefix", { note: invite.note })}\n\n` : ""}` +
+        `${translate("detail.inviteEmail.signOff")}\n${translate("detail.inviteEmail.brand")}`,
     );
     window.open(`mailto:${invite.email}?subject=${subject}&body=${body}`, "_blank");
   }
@@ -860,13 +869,13 @@ export default function ContestDetail() {
         <Card>
           <CardContent className="flex min-h-[320px] flex-col items-center justify-center p-8 text-center">
             <div className="rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-              Đang tải cuộc thi
+              {translate("detail.loading.eyebrow")}
             </div>
             <div className="mt-4 text-[15px] font-medium text-foreground">
-              Đang tải thông tin cuộc thi...
+              {translate("detail.loading.title")}
             </div>
             <div className="mt-1.5 text-sm text-muted-foreground">
-              Khu đăng ký, lời mời cộng tác, bài nộp và chấm điểm sẽ sẵn sàng trong giây lát.
+              {translate("detail.loading.description")}
             </div>
             <div className="mt-6 grid w-full max-w-3xl gap-3 md:grid-cols-3">
               <div className="rounded-2xl border border-border-subtle bg-background p-4 text-left">
@@ -897,13 +906,13 @@ export default function ContestDetail() {
         <Card>
           <CardContent className="flex min-h-[280px] flex-col items-center justify-center p-8 text-center">
             <div className="rounded-full border border-destructive/20 bg-destructive/10 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-destructive">
-              Không thể truy cập cuộc thi
+              {translate("detail.errors.deleteAccessDeniedTitle")}
             </div>
             <div className="text-[16px] font-medium text-foreground">
-              {error || "Không tìm thấy cuộc thi."}
+              {error || translate("detail.errors.deleteAccessDeniedFallback")}
             </div>
             <div className="mt-1.5 max-w-xl text-sm text-muted-foreground">
-              Liên kết có thể đã thay đổi, cuộc thi chưa được công bố, hoặc bạn đang truy cập một bề mặt không còn tồn tại.
+              {translate("detail.errorState.description")}
             </div>
             <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-muted-foreground hover:text-foreground" />
             <Button
@@ -912,7 +921,7 @@ export default function ContestDetail() {
               variant="ghost"
               className="mt-4"
             >
-              Quay lại danh sách cuộc thi
+              {translate("detail.errorState.backToList")}
             </Button>
           </CardContent>
         </Card>
@@ -926,7 +935,7 @@ export default function ContestDetail() {
         <Card>
           <CardContent className="flex min-h-[280px] flex-col items-center justify-center p-8 text-center">
             <div className="text-[16px] font-medium text-foreground">
-              Bạn không có quyền truy cập khu vực vận hành của cuộc thi này.
+              {translate("detail.errors.workspaceAccessDenied")}
             </div>
             <Button
               render={<NavLink to={`/contests/${contest.id}`} />}
@@ -1011,7 +1020,7 @@ export default function ContestDetail() {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                    {isManageView ? "Khu vực vận hành cuộc thi" : "Hackathon"}
+                    {isManageView ? translate("detail.labels.manageArea") : translate("detail.labels.publicType")}
                   </div>
                   <h1 className="mt-2 text-3xl font-normal tracking-tight text-foreground">
                     {contest.title}
@@ -1157,7 +1166,7 @@ export default function ContestDetail() {
                         Giới hạn duyệt
                       </div>
                       <div className="mt-1 text-sm text-foreground">
-                        {contest.max_participants ?? "Không giới hạn"}
+                        {contest.max_participants ?? translate("detail.labels.unlimited")}
                       </div>
                     </div>
                   </div>
@@ -1286,7 +1295,9 @@ export default function ContestDetail() {
             <Card>
               <CardContent className="p-5 sm:p-6">
                 <h2 className="text-lg font-medium tracking-tight text-foreground">
-                  {isManageView ? "Bối cảnh contest" : "Về contest này"}
+                  {isManageView
+                    ? translate("detail.labels.contextManage")
+                    : translate("detail.labels.contextPublic")}
                 </h2>
                 <p className="mt-3 whitespace-pre-wrap text-[15px] leading-7 text-muted-foreground">
                   {contest.description}
@@ -1299,12 +1310,14 @@ export default function ContestDetail() {
           <Card>
             <CardContent className="p-5 sm:p-6">
               <h2 className="text-lg font-medium tracking-tight text-foreground">
-                {isManageView ? "Rule, format và nguyên tắc vận hành" : "Rule và yêu cầu"}
+                {isManageView
+                  ? translate("detail.labels.rulesManage")
+                  : translate("detail.labels.rulesPublic")}
               </h2>
               <p className="mt-3 whitespace-pre-wrap text-[15px] leading-7 text-muted-foreground">
                 {contest.rules?.trim()
                   ? contest.rules
-                  : "Corelia sẽ cập nhật guideline, tiêu chí chấm và format nộp bài tại đây."}
+                  : translate("detail.labels.rulesEmpty")}
               </p>
             </CardContent>
           </Card>
@@ -1404,7 +1417,9 @@ export default function ContestDetail() {
                     </p>
                   </div>
                   <Button type="button" variant="outline" onClick={() => void handleRefreshMetrics()}>
-                    {refreshingMetrics ? "Đang làm mới..." : "Làm mới metrics"}
+                    {refreshingMetrics
+                      ? translate("detail.labels.refreshing")
+                      : translate("detail.labels.refreshMetrics")}
                   </Button>
                 </div>
 
@@ -1430,7 +1445,7 @@ export default function ContestDetail() {
                               {item.user_full_name || item.user_id}
                             </div>
                             <div className="mt-1 text-[13px] text-muted-foreground">
-                              {item.team_name || "Đăng ký cá nhân"}
+                              {item.team_name || translate("detail.labels.defaultSoloRegistration")}
                             </div>
                             {item.team_members.length > 0 && (
                               <div className="mt-1 text-[13px] text-muted-foreground">
@@ -1468,12 +1483,15 @@ export default function ContestDetail() {
 
                         <div className="mt-3 grid gap-3 sm:grid-cols-2">
                           <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-[13px] text-muted-foreground">
-                            <span className="font-medium text-foreground">Liên hệ:</span>{" "}
-                            {item.contact_email || "Chưa cung cấp"} · {item.contact_phone || "—"}
+                            <span className="font-medium text-foreground">
+                              {translate("detail.labels.contact")}
+                            </span>{" "}
+                            {item.contact_email || translate("detail.labels.notProvided")} ·{" "}
+                            {item.contact_phone || translate("detail.labels.noDataDash")}
                           </div>
                           <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-[13px] text-muted-foreground">
                             <span className="font-medium text-foreground">Portfolio:</span>{" "}
-                            {item.portfolio_url || "Chưa cung cấp"}
+                            {item.portfolio_url || translate("detail.labels.notProvided")}
                           </div>
                         </div>
 
@@ -1582,13 +1600,13 @@ export default function ContestDetail() {
 
                           <div className="mt-3 grid gap-3 sm:grid-cols-3">
                             <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-[13px] text-muted-foreground">
-                              Demo: {submission.demo_url || "Chưa có"}
+                              Demo: {submission.demo_url || translate("detail.labels.noDemo")}
                             </div>
                             <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-[13px] text-muted-foreground">
-                              Repo: {submission.repo_url || "Chưa có"}
+                              Repo: {submission.repo_url || translate("detail.labels.noDemo")}
                             </div>
                             <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-[13px] text-muted-foreground">
-                              Slide: {submission.slide_url || "Chưa có"}
+                              Slide: {submission.slide_url || translate("detail.labels.noDemo")}
                             </div>
                           </div>
 
@@ -1657,7 +1675,9 @@ export default function ContestDetail() {
                             disabled={savingScoreId === submission.id}
                             onClick={() => void handleScoreSave(submission.id)}
                           >
-                            {savingScoreId === submission.id ? "Đang lưu..." : "Lưu điểm"}
+                            {savingScoreId === submission.id
+                              ? translate("detail.labels.saving")
+                              : translate("detail.labels.saveScore")}
                           </Button>
                         </div>
                       );
@@ -1743,7 +1763,7 @@ export default function ContestDetail() {
                                 }))
                               }
                               className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                              placeholder="Ví dụ: Champion"
+                              placeholder={translate("detail.forms.awards.awardPlaceholder")}
                             />
                             <input
                               value={winnerNotes[entry.submission_id] ?? ""}
@@ -1754,7 +1774,7 @@ export default function ContestDetail() {
                                 }))
                               }
                               className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                              placeholder="Ghi chú thêm"
+                              placeholder={translate("detail.forms.awards.notePlaceholder")}
                             />
                           </div>
                         </div>
@@ -1766,7 +1786,9 @@ export default function ContestDetail() {
                       disabled={publishingResults}
                       onClick={() => void handlePublishResults()}
                     >
-                      {publishingResults ? "Đang publish..." : "Publish leaderboard và winners"}
+                      {publishingResults
+                        ? translate("detail.labels.publishing")
+                        : translate("detail.labels.publishResults")}
                     </Button>
                   </div>
                 )}
@@ -1985,7 +2007,7 @@ export default function ContestDetail() {
                   disabled={savingStatus || managerStatus === contest.status}
                   onClick={() => void handleStatusSave()}
                 >
-                  {savingStatus ? "Đang lưu..." : "Lưu trạng thái"}
+                  {savingStatus ? translate("detail.labels.saving") : translate("detail.labels.saveStatus")}
                 </Button>
 
                 <div className="mt-6 border-t border-border-subtle pt-6">
@@ -2037,7 +2059,7 @@ export default function ContestDetail() {
                     disabled={savingRubric}
                     onClick={() => void handleRubricSave()}
                   >
-                    {savingRubric ? "Đang lưu..." : "Lưu rubric"}
+                    {savingRubric ? translate("detail.labels.saving") : translate("detail.labels.saveRubric")}
                   </Button>
                 </div>
 
@@ -2050,7 +2072,7 @@ export default function ContestDetail() {
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
                       className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="email người được mời"
+                      placeholder={translate("detail.forms.invite.emailPlaceholder")}
                     />
                     <div className="grid gap-3 sm:grid-cols-2">
                       <select
@@ -2065,24 +2087,26 @@ export default function ContestDetail() {
                         value={inviteDisplayName}
                         onChange={(e) => setInviteDisplayName(e.target.value)}
                         className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                        placeholder="Tên hiển thị"
+                        placeholder={translate("detail.forms.invite.displayNamePlaceholder")}
                       />
                     </div>
                     <input
                       value={inviteOrganization}
                       onChange={(e) => setInviteOrganization(e.target.value)}
                       className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Đơn vị / trường / tổ chức"
+                      placeholder={translate("detail.forms.invite.organizationPlaceholder")}
                     />
                     <textarea
                       rows={3}
                       value={inviteNote}
                       onChange={(e) => setInviteNote(e.target.value)}
                       className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Ghi chú lời mời"
+                      placeholder={translate("detail.forms.invite.notePlaceholder")}
                     />
                     <Button type="button" className="w-full" disabled={savingInvite || !inviteEmail.trim()} onClick={() => void handleInviteCreate()}>
-                      {savingInvite ? "Đang tạo..." : "Gửi lời mời"}
+                      {savingInvite
+                        ? translate("detail.labels.creating")
+                        : translate("detail.labels.sendInvite")}
                     </Button>
                   </div>
 
@@ -2223,32 +2247,32 @@ export default function ContestDetail() {
                     value={submissionTitle}
                     onChange={(e) => setSubmissionTitle(e.target.value)}
                     className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                    placeholder="Tên submission"
+                    placeholder={translate("detail.forms.submission.titlePlaceholder")}
                   />
                   <textarea
                     rows={5}
                     value={submissionSummary}
                     onChange={(e) => setSubmissionSummary(e.target.value)}
                     className="min-h-32 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                    placeholder="Tóm tắt giải pháp, vấn đề giải quyết và điểm nổi bật"
+                    placeholder={translate("detail.forms.submission.summaryPlaceholder")}
                   />
                   <input
                     value={submissionDemoUrl}
                     onChange={(e) => setSubmissionDemoUrl(e.target.value)}
                     className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                    placeholder="Demo URL"
+                    placeholder={translate("detail.forms.submission.demoUrlPlaceholder")}
                   />
                   <input
                     value={submissionRepoUrl}
                     onChange={(e) => setSubmissionRepoUrl(e.target.value)}
                     className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                    placeholder="Repo URL"
+                    placeholder={translate("detail.forms.submission.repoUrlPlaceholder")}
                   />
                   <input
                     value={submissionSlideUrl}
                     onChange={(e) => setSubmissionSlideUrl(e.target.value)}
                     className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                    placeholder="Slide URL"
+                    placeholder={translate("detail.forms.submission.slideUrlPlaceholder")}
                   />
                   {submissionDraftDirty && (
                     <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-[13px] text-amber-700 dark:text-amber-300">
@@ -2256,7 +2280,11 @@ export default function ContestDetail() {
                     </div>
                   )}
                   <Button type="button" className="w-full" disabled={savingSubmission || !submissionTitle.trim()} onClick={() => void handleSubmissionSave()}>
-                    {savingSubmission ? "Đang lưu..." : mySubmission ? "Cập nhật submission" : "Nộp submission"}
+                    {savingSubmission
+                      ? translate("common:status.loading")
+                      : mySubmission
+                        ? translate("detail.forms.submission.updateLabel")
+                        : translate("detail.forms.submission.submitLabel")}
                   </Button>
                   <p className="text-[12px] leading-5 text-muted-foreground">
                     Submission nên có tiêu đề rõ ràng, phần tóm tắt đủ chi tiết và ít nhất một đường dẫn demo hoặc repo nếu đã sẵn sàng.
@@ -2285,7 +2313,7 @@ export default function ContestDetail() {
                       {registrationStatusLabel(registration.status)}
                     </div>
                     <div className="mt-2 text-sm text-muted-foreground">
-                      Gửi lúc {new Date(registration.applied_at).toLocaleString("vi-VN")}
+                      Gửi lúc {new Date(registration.applied_at).toLocaleString(intlLocale())}
                     </div>
                     {registration.review_note && (
                       <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground">
@@ -2295,7 +2323,7 @@ export default function ContestDetail() {
                   </div>
                 ) : contest.status !== "published" ? (
                   <div className="mt-4 rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-5 text-sm text-muted-foreground">
-                    Contest hiện chưa mở nhận hồ sơ. Khi Corelia chuyển trạng thái sang “Đang nhận hồ sơ”, form đăng ký sẽ xuất hiện tại đây.
+                    {translate("detail.forms.application.closedHint")}
                   </div>
                 ) : (
                   <div className="mt-4 space-y-4">
@@ -2303,14 +2331,14 @@ export default function ContestDetail() {
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
                       className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Tên đội / nhóm"
+                      placeholder={translate("detail.forms.application.teamNamePlaceholder")}
                     />
                     <textarea
                       rows={4}
                       value={teamMembers}
                       onChange={(e) => setTeamMembers(e.target.value)}
                       className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Thành viên khác, mỗi dòng một người"
+                      placeholder={translate("detail.forms.application.teamMembersPlaceholder")}
                     />
                     <div className="rounded-2xl border border-border-subtle bg-background p-4">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -2319,7 +2347,7 @@ export default function ContestDetail() {
                             Team preview
                           </div>
                           <div className="mt-1 text-sm text-foreground">
-                            {teamName.trim() || "Đăng ký cá nhân / chưa đặt tên đội"}
+                            {teamName.trim() || translate("detail.labels.soloOrUnnamedTeam")}
                           </div>
                         </div>
                         <div className="rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-[12px] text-muted-foreground">
@@ -2347,29 +2375,31 @@ export default function ContestDetail() {
                       value={contactEmail}
                       onChange={(e) => setContactEmail(e.target.value)}
                       className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Email liên hệ"
+                      placeholder={translate("detail.forms.application.contactEmailPlaceholder")}
                     />
                     <input
                       value={contactPhone}
                       onChange={(e) => setContactPhone(e.target.value)}
                       className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Số điện thoại liên hệ"
+                      placeholder={translate("detail.forms.application.contactPhonePlaceholder")}
                     />
                     <input
                       value={portfolioUrl}
                       onChange={(e) => setPortfolioUrl(e.target.value)}
                       className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Portfolio / GitHub / LinkedIn"
+                      placeholder={translate("detail.forms.application.portfolioPlaceholder")}
                     />
                     <textarea
                       rows={6}
                       value={motivation}
                       onChange={(e) => setMotivation(e.target.value)}
                       className="min-h-36 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Giới thiệu năng lực, động lực và ý tưởng dự định mang vào contest..."
+                      placeholder={translate("detail.forms.application.motivationPlaceholder")}
                     />
                     <Button className="w-full" disabled={applying || !registrationDraftReady} onClick={() => void handleApply()}>
-                      {applying ? "Đang gửi..." : "Gửi hồ sơ đăng ký"}
+                      {applying
+                        ? translate("common:status.loading")
+                        : translate("detail.forms.application.submitLabel")}
                     </Button>
                     <p className="text-[12px] leading-5 text-muted-foreground">
                       Sau khi gửi, hồ sơ sẽ chuyển sang trạng thái chờ duyệt. Bạn chỉ có thể nộp submission khi được Corelia phê duyệt.
@@ -2451,12 +2481,12 @@ export default function ContestDetail() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xoá cuộc thi?</DialogTitle>
+            <DialogTitle>{translate("detail.dialogs.delete.title")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
             {contest?.title
               ? `Contest "${contest.title}" cùng toàn bộ hồ sơ đăng ký, lời mời, bài nộp và điểm chấm sẽ bị xoá. Hành động này không thể hoàn tác.`
-              : "Cuộc thi và toàn bộ dữ liệu liên quan sẽ bị xoá. Hành động này không thể hoàn tác."}
+              : translate("detail.dialogs.delete.descriptionManager")}
           </p>
           <DialogFooter>
             <Button

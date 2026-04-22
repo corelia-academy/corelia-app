@@ -33,14 +33,22 @@ import {
   getCourseAccessModelLabel,
   getCourseLevelLabel,
 } from "@/types/courses";
+import { intlLocale } from "@/lib/intl";
 import type { Contest } from "@/types/contests";
 import type { Course, CourseLesson, CourseSection } from "@/types/courses";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export default function CourseDetail() {
+  const { t } = useTranslation("courses");
+  const translate = useMemo(
+    () => (key: string, options?: Record<string, unknown>) =>
+      String(t(key as never, options as never)),
+    [t],
+  );
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,7 +78,7 @@ export default function CourseDetail() {
   useEffect(() => {
     if (!id) {
       setLoading(false);
-      setError("Thiếu mã khoá học");
+      setError(translate("detail.missingCourseId"));
       return;
     }
     let cancelled = false;
@@ -91,7 +99,9 @@ export default function CourseDetail() {
     })()
       .catch((e) => {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Lỗi tải khoá học");
+          setError(
+            e instanceof Error ? e.message : translate("detail.loadCourseErrorFallback"),
+          );
         }
       })
       .finally(() => {
@@ -101,7 +111,7 @@ export default function CourseDetail() {
     return () => {
       cancelled = true;
     };
-  }, [id, navigate]);
+  }, [id, navigate, translate]);
 
   useEffect(() => {
     if (!resolvedCourseId || !course) return;
@@ -117,14 +127,16 @@ export default function CourseDetail() {
       })
       .catch((e) => {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Lỗi tải danh sách bài học");
+          setError(
+            e instanceof Error ? e.message : translate("detail.loadLessonsErrorFallback"),
+          );
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [resolvedCourseId, course, enrolled, paymentAccess?.full_access_granted]);
+  }, [resolvedCourseId, course, enrolled, paymentAccess?.full_access_granted, translate]);
 
   useEffect(() => {
     if (!resolvedCourseId || !profile?.id) {
@@ -187,7 +199,7 @@ export default function CourseDetail() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [translate]);
 
   const paymentQuery = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -212,7 +224,7 @@ export default function CourseDetail() {
     };
 
     if (paymentQuery === "error") {
-      toast.error("Thanh toán thất bại. Vui lòng thử lại.");
+      toast.error(translate("detail.payment.failed"));
       clearPaymentQuery();
       return;
     }
@@ -233,13 +245,13 @@ export default function CourseDetail() {
           clearPaymentQuery();
           return;
         }
-        toast.message("Bạn đã huỷ thanh toán.");
+        toast.message(translate("detail.payment.cancelled"));
         clearPaymentQuery();
       })();
       return;
     }
 
-    toast.message("Đang xác nhận thanh toán...");
+    toast.message(translate("detail.payment.checking"));
     void (async () => {
       const deadline = Date.now() + 20_000;
       while (!cancelled && Date.now() < deadline) {
@@ -247,16 +259,14 @@ export default function CourseDetail() {
         if (cancelled) return;
         if (pay?.full_access_granted) {
           setPaymentAccess(pay);
-          toast.success("Thanh toán thành công. Bạn đã được mở khoá khoá học.");
+          toast.success(translate("detail.payment.success"));
           clearPaymentQuery();
           return;
         }
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
       if (!cancelled) {
-        toast.message(
-          "Chưa thấy xác nhận thanh toán. Nếu bạn đã thanh toán, vui lòng chờ thêm hoặc tải lại trang sau ít phút.",
-        );
+        toast.message(translate("detail.payment.notConfirmedYet"));
         clearPaymentQuery();
       }
     })();
@@ -272,6 +282,7 @@ export default function CourseDetail() {
     paymentAccess?.full_access_granted,
     paymentQuery,
     profile?.id,
+    translate,
   ]);
 
   const handleEnroll = async () => {
@@ -295,7 +306,9 @@ export default function CourseDetail() {
       else if (sorted[0]) navigate(`/learn/${resolvedCourseId}/lesson/${sorted[0].id}`);
       else navigate(`/learn/${resolvedCourseId}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi ghi danh");
+      setError(
+        e instanceof Error ? e.message : translate("detail.enrollErrorFallback"),
+      );
     } finally {
       setEnrolling(false);
     }
@@ -391,16 +404,22 @@ export default function CourseDetail() {
     if (hasFullCourseAccess) {
       items.push({
         id: `learn-${courseIdForSpotlight}`,
-        badge: "Khoá học của bạn",
-        title: nextLesson ? "Quay lại đúng bài đang dở" : "Vào lại không gian học tập",
+        badge: translate("detail.spotlight.myCourseBadge"),
+        title: nextLesson
+          ? translate("detail.spotlight.resumeTitle")
+          : translate("detail.spotlight.enterSpaceTitle"),
         description: nextLesson
-          ? `Bạn đang học ${courseTitle} và có thể tiếp tục ngay với bài tiếp theo.`
-          : `Khoá ${courseTitle} đã sẵn sàng để bạn bắt đầu hoặc xem lại.`,
+          ? translate("detail.spotlight.resumeDescription", { courseTitle })
+          : translate("detail.spotlight.enterSpaceDescription", { courseTitle }),
         href: nextLesson
           ? `/learn/${courseIdForSpotlight}/lesson/${nextLesson.id}`
           : `/learn/${courseIdForSpotlight}`,
-        ctaLabel: nextLesson ? "Tiếp tục học" : "Vào trang học",
-        meta: nextLesson ? `Bài tiếp theo: ${nextLesson.title}` : "Tiến độ sẽ được lưu trên mọi thiết bị",
+        ctaLabel: nextLesson
+          ? translate("detail.spotlight.continueLearning")
+          : translate("detail.spotlight.enterLearningPage"),
+        meta: nextLesson
+          ? translate("detail.spotlight.nextLessonMeta", { title: nextLesson.title })
+          : translate("detail.spotlight.progressEverywhereMeta"),
         icon: <RocketLaunch className="size-5" weight="duotone" />,
         accent: "sky",
       });
@@ -410,15 +429,18 @@ export default function CourseDetail() {
     if (liveContest) {
       items.push({
         id: `contest-${liveContest.id}`,
-        badge: liveContest.status === "running" ? "Contest đang chạy" : "Contest mới",
+        badge:
+          liveContest.status === "running"
+            ? translate("detail.spotlight.runningContestBadge")
+            : translate("detail.spotlight.newContestBadge"),
         title: liveContest.title,
         description: liveContest.tagline,
         href: `/contests/${liveContest.id}`,
-        ctaLabel: "Khám phá contest",
+        ctaLabel: translate("detail.spotlight.exploreContest"),
         meta:
           liveContest.registration_deadline != null
-            ? `Hạn đăng ký: ${new Date(liveContest.registration_deadline).toLocaleDateString("vi-VN")}`
-            : "Một nhịp tiếp theo trong hệ sinh thái Corelia",
+            ? `Hạn đăng ký: ${new Date(liveContest.registration_deadline).toLocaleDateString(intlLocale())}`
+            : translate("detail.spotlight.contestMetaNoDeadline"),
         icon: <Trophy className="size-5" weight="duotone" />,
         accent: "amber",
       });
@@ -427,20 +449,19 @@ export default function CourseDetail() {
     if (items.length < 2) {
       items.push({
         id: "courses-library",
-        badge: "Khám phá thêm",
-        title: "Mở rộng lộ trình học tập của bạn cùng Corelia",
-        description:
-          "Khi hoàn thành một nhịp học, bạn có thể nối sang contest hoặc các khoá học thực hành khác.",
+        badge: translate("detail.spotlight.exploreMoreBadge"),
+        title: translate("detail.spotlight.exploreMoreTitle"),
+        description: translate("detail.spotlight.exploreMoreDescription"),
         href: "/courses",
-        ctaLabel: "Xem thêm khoá học",
-        meta: "Lộ trình học và hệ sinh thái Web3 thực chiến",
+        ctaLabel: translate("detail.spotlight.seeMoreCourses"),
+        meta: translate("detail.spotlight.ecosystemMeta"),
         icon: <BookOpen className="size-5" weight="duotone" />,
         accent: "sky",
       });
     }
 
     return items.slice(0, 2);
-  }, [courseIdForSpotlight, courseTitle, hasFullCourseAccess, nextLesson, spotlightContests]);
+  }, [courseIdForSpotlight, courseTitle, hasFullCourseAccess, nextLesson, spotlightContests, translate]);
 
   const renderAccessPanel = (className?: string) => (
     <div
@@ -451,7 +472,9 @@ export default function CourseDetail() {
     >
       <div className="border-b border-border-subtle bg-muted/30 px-4 py-3">
         <h3 className="text-sm font-medium text-foreground">
-          {hasFullCourseAccess ? "Sẵn sàng vào học" : "Mở khoá để bắt đầu"}
+          {hasFullCourseAccess
+            ? translate("detail.accessPanel.ready")
+            : translate("detail.accessPanel.unlockToStart")}
         </h3>
       </div>
       <div className="p-4">
@@ -459,22 +482,21 @@ export default function CourseDetail() {
         {hasFullCourseAccess ? (
           <>
             <p className="mb-3 text-[13px] leading-6 text-muted-foreground">
-              Vào trang học để xem video, lưu tiến độ và theo dõi hành trình hoàn thành.
+              {translate("detail.accessPanel.enterToLearn")}
             </p>
             {isPaidUpfront && paymentAccess?.full_access_granted && !enrolled ? (
               <div className="mb-4 rounded-md border border-success/25 bg-success/10 p-3 text-[13px] text-success">
-                Thanh toán đã được xác nhận. Bạn có thể vào học ngay bây giờ.
+                {translate("detail.accessPanel.paymentConfirmed")}
               </div>
             ) : null}
             {isPaidUpfront && enrolled && !paymentAccess?.full_access_granted ? (
               <div className="mb-4 rounded-md border border-success/25 bg-success/10 p-3 text-[13px] text-success">
-                Bạn đã ghi danh khoá học này từ trước, nên vẫn giữ quyền truy cập đầy đủ dù
-                khoá học hiện đang ở chế độ trả phí.
+                {translate("detail.accessPanel.keptAccess")}
               </div>
             ) : null}
             <div className="mb-4 rounded-md bg-muted/40 p-3">
               <div className="flex items-center justify-between gap-3 text-[12px] text-muted-foreground">
-                <span>Tiến độ hiện tại</span>
+                <span>{translate("detail.accessPanel.currentProgress")}</span>
                 <span>{progressPercent}%</span>
               </div>
               <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-background">
@@ -485,8 +507,10 @@ export default function CourseDetail() {
               </div>
               <p className="mt-2 line-clamp-2 text-[12px] leading-5 text-muted-foreground">
                 {nextLesson
-                  ? `Bài tiếp theo: ${nextLesson.title}`
-                  : "Bạn đã đi tới cuối lộ trình hiện tại."}
+                  ? translate("detail.accessPanel.nextLessonLabel", {
+                      title: nextLesson.title,
+                    })
+                  : translate("detail.accessPanel.endOfPath")}
               </p>
             </div>
             <Button
@@ -501,14 +525,18 @@ export default function CourseDetail() {
                 )
               }
             >
-              {nextLesson ? "Tiếp tục học" : "Vào trang học"}
+              {nextLesson
+                ? translate("detail.spotlight.continueLearning")
+                : translate("detail.spotlight.enterLearningPage")}
               <ArrowRight className="size-4" />
             </Button>
           </>
         ) : isPaidUpfront ? (
           <>
             <div className="mb-4 rounded-md bg-muted/40 p-3">
-              <div className="text-[12px] text-muted-foreground">Giá</div>
+              <div className="text-[12px] text-muted-foreground">
+                {translate("detail.accessPanel.priceLabel")}
+              </div>
               <div className="mt-1 text-[20px] font-semibold text-foreground">
                 {formatVndPrice(pricing.display)}
               </div>
@@ -518,17 +546,21 @@ export default function CourseDetail() {
                   {Number.isFinite(pricing.endsAt) ? (
                     <span className="block sm:inline">
                       {" "}
-                      Kết thúc: {new Date(pricing.endsAt).toLocaleString("vi-VN")}
+                      {translate("detail.accessPanel.promoEnds", {
+                        date: new Date(pricing.endsAt).toLocaleString(intlLocale()),
+                      })}
                     </span>
                   ) : null}
                 </p>
               ) : null}
             </div>
             <p className="mb-4 text-[13px] leading-6 text-muted-foreground">
-              Mở toàn bộ video, lưu tiến độ và học theo lộ trình ngay sau khi thanh toán.
+              {translate("detail.accessPanel.paidUpfrontCopy")}
               {previewLessons.length > 0
-                ? ` Hiện có ${previewLessons.length} bài học thử miễn phí để bạn trải nghiệm trước.`
-                : " Hiện chưa có bài học thử miễn phí."}
+                ? translate("detail.accessPanel.previewAvailable", {
+                    count: previewLessons.length,
+                  })
+                : translate("detail.accessPanel.previewNotAvailable")}
             </p>
             <div className="space-y-2">
               <Button
@@ -536,7 +568,7 @@ export default function CourseDetail() {
                 size="default"
                 onClick={() => navigate(`/checkout/course/${resolvedCourseId}`)}
               >
-                Mua khoá học
+                {translate("detail.accessPanel.buyCourse")}
               </Button>
               <Button
                 className="w-full"
@@ -545,16 +577,20 @@ export default function CourseDetail() {
                 onClick={handleStartPreview}
                 disabled={previewLessons.length === 0}
               >
-                {previewLessons.length > 0 ? "Học thử miễn phí" : "Chưa có bài học thử"}
+                {previewLessons.length > 0
+                  ? translate("detail.accessPanel.tryFreePreview")
+                  : translate("detail.accessPanel.noPreviewYet")}
               </Button>
             </div>
           </>
         ) : (
           <>
             <p className="mb-4 text-[13px] leading-6 text-muted-foreground">
-              Ghi danh miễn phí để bắt đầu học và lưu tiến độ trên mọi thiết bị.
+              {translate("detail.accessPanel.freeEnrollCopy")}
               {isFreeWithPaidCertificate
-                ? ` Nếu muốn nộp bài thu hoạch và xét chứng nhận, phí áp dụng là ${formatVndPrice(course?.certificate_fee_vnd ?? 0)}.`
+                ? translate("detail.accessPanel.certificateFeeSuffix", {
+                    fee: formatVndPrice(course?.certificate_fee_vnd ?? 0),
+                  })
                 : ""}
             </p>
             <Button
@@ -569,7 +605,9 @@ export default function CourseDetail() {
                 void handleEnroll();
               }}
             >
-              {enrolling ? "Đang xử lý..." : "Ghi danh và vào học"}
+              {enrolling
+                ? translate("detail.accessPanel.processing")
+                : translate("detail.accessPanel.enrollAndEnter")}
             </Button>
           </>
         )}
@@ -583,7 +621,7 @@ export default function CourseDetail() {
         <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-lg border border-border-subtle bg-card p-8 text-center shadow-card">
           <Spinner className="size-8 animate-spin text-muted-foreground" />
           <p className="mt-4 text-[15px] text-muted-foreground">
-            Đang tải thông tin khoá học...
+            {translate("detail.loadingCourse")}
           </p>
         </div>
       </div>
@@ -595,7 +633,7 @@ export default function CourseDetail() {
       <div className="container-app py-6 sm:py-8">
         <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-5 shadow-card">
           <p className="text-[15px] font-medium text-destructive">
-            {error ?? "Không tìm thấy khoá học."}
+            {error ?? translate("detail.notFound")}
           </p>
           <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
           <Link

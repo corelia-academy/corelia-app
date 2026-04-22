@@ -7,6 +7,7 @@ import type { PartnerProfileDocument, Profile } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { intlLocale } from "@/lib/intl";
 import { toast } from "sonner";
 import {
   Bank,
@@ -17,6 +18,7 @@ import {
   ShieldCheck,
   UserCircle,
 } from "@phosphor-icons/react";
+import { useTranslation } from "react-i18next";
 
 type InstructorOrigin = NonNullable<Profile["instructor_origin"]>;
 
@@ -111,7 +113,7 @@ function DocumentList({
               <div className="text-xs text-muted-foreground">{renderMeta(doc)}</div>
             </div>
             <span className="shrink-0 text-xs text-muted-foreground">
-              {new Date(doc.uploaded_at).toLocaleDateString("vi-VN")}
+              {new Date(doc.uploaded_at).toLocaleDateString(intlLocale())}
             </span>
           </li>
         ))}
@@ -120,6 +122,7 @@ function DocumentList({
 }
 
 export default function AdminInstructorDetail() {
+  const { t } = useTranslation("admin");
   const { id } = useParams<{ id: string }>();
   const { profile: currentProfile } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -185,7 +188,7 @@ export default function AdminInstructorDetail() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Không thể tải dữ liệu");
+          setError(err instanceof Error ? err.message : t("instructorDetailPage.errors.loadFailed"));
         }
       })
       .finally(() => {
@@ -196,7 +199,7 @@ export default function AdminInstructorDetail() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, t]);
 
   const instructor = useMemo(() => {
     if (!id) return null;
@@ -293,9 +296,9 @@ export default function AdminInstructorDetail() {
             : p,
         ),
       );
-      toast.success("Đã lưu thông tin giảng viên.");
+      toast.success(t("instructorDetailPage.toasts.detailsSaved"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể lưu cập nhật");
+      setError(err instanceof Error ? err.message : t("instructorDetailPage.errors.saveFailed"));
     } finally {
       setSavingDetails(false);
     }
@@ -348,14 +351,16 @@ export default function AdminInstructorDetail() {
 
       toast.success(
         kind === "contract"
-          ? "Đã tải lên hợp đồng cho giảng viên."
-          : "Đã tải lên hoá đơn cho giảng viên.",
+          ? t("instructorDetailPage.toasts.contractUploaded")
+          : t("instructorDetailPage.toasts.invoiceUploaded"),
       );
 
       if (kind === "invoice") setInvoiceNoteDraft("");
       if (kind === "contract") setContractNoteDraft("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể tải tài liệu");
+      setError(
+        err instanceof Error ? err.message : t("instructorDetailPage.errors.uploadFailed"),
+      );
     } finally {
       setUploadingPartnerDoc(null);
     }
@@ -377,9 +382,11 @@ export default function AdminInstructorDetail() {
             : p,
         ),
       );
-      toast.success("Đã cập nhật thông tin thanh toán.");
+      toast.success(t("instructorDetailPage.toasts.paymentsSaved"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể lưu thanh toán");
+      setError(
+        err instanceof Error ? err.message : t("instructorDetailPage.errors.paymentsSaveFailed"),
+      );
     } finally {
       setSavingTransferCourseId(null);
     }
@@ -388,7 +395,7 @@ export default function AdminInstructorDetail() {
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-[1990px] px-4 py-8 text-sm text-muted-foreground">
-        Đang tải chi tiết giảng viên...
+        {t("instructorDetailPage.loading")}
       </div>
     );
   }
@@ -396,12 +403,14 @@ export default function AdminInstructorDetail() {
   if (!instructor || !editForm) {
     return (
       <div className="mx-auto w-full max-w-[1990px] px-4 py-8">
-        <p className="text-sm text-muted-foreground">Không tìm thấy giảng viên.</p>
+        <p className="text-sm text-muted-foreground">
+          {t("instructorDetailPage.empty.notFound")}
+        </p>
         <Link
           to="/admin/instructors"
           className="mt-3 inline-flex text-sm text-primary hover:underline"
         >
-          Quay lại danh sách
+          {t("instructorDetailPage.actions.backToList")}
         </Link>
       </div>
     );
@@ -421,15 +430,25 @@ export default function AdminInstructorDetail() {
   const profileCompletionPercent = Math.round((completedProfileFields / 7) * 100);
   const summaryCards = [
     {
-      label: "Hồ sơ hoàn thiện",
+      label: t("instructorDetailPage.summary.profileCompletion"),
       value: `${profileCompletionPercent}%`,
       icon: UserCircle,
     },
-    { label: "Hợp đồng", value: String(contractDocs.length), icon: FileText },
-    { label: "Hoá đơn", value: String(invoiceDocs.length), icon: Receipt },
     {
-      label: "Tài khoản ngân hàng",
-      value: bankForm.account_number.trim() ? "Sẵn sàng" : "Chưa có",
+      label: t("instructorDetailPage.summary.contracts"),
+      value: String(contractDocs.length),
+      icon: FileText,
+    },
+    {
+      label: t("instructorDetailPage.summary.invoices"),
+      value: String(invoiceDocs.length),
+      icon: Receipt,
+    },
+    {
+      label: t("instructorDetailPage.summary.bankAccount"),
+      value: bankForm.account_number.trim()
+        ? t("instructorDetailPage.summary.ready")
+        : t("instructorDetailPage.summary.notAvailable"),
       icon: Bank,
     },
   ];
@@ -441,7 +460,7 @@ export default function AdminInstructorDetail() {
           to="/admin/instructors"
           className="text-sm text-primary hover:underline"
         >
-          ← Quay lại danh sách giảng viên
+          {t("instructorDetailPage.actions.backToInstructors")}
         </Link>
         <div className="mt-4 rounded-2xl border border-border-subtle bg-card p-5 shadow-card">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
@@ -459,7 +478,7 @@ export default function AdminInstructorDetail() {
               )}
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Instructor workspace
+                  {t("instructorDetailPage.hero.eyebrow")}
                 </p>
                 <h1 className="mt-2 truncate text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
                   {displayName}
@@ -468,17 +487,18 @@ export default function AdminInstructorDetail() {
                   UID: <span className="font-mono">{instructor.id}</span>
                 </p>
                 <p className="mt-2 max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
-                  Quản lý hồ sơ giảng viên, tài liệu đối tác và thông tin thanh
-                  toán trong một luồng vận hành rõ ràng hơn.
+                  {t("instructorDetailPage.hero.description")}
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
-                Role: {editForm.role}
+                {t("instructorDetailPage.hero.rolePrefix", { role: editForm.role })}
               </span>
               <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
-                {isExternal ? "Giảng viên đối tác" : "Giảng viên Corelia"}
+                {isExternal
+                  ? t("instructorDetailPage.hero.partnerInstructor")
+                  : t("instructorDetailPage.hero.coreliaInstructor")}
               </span>
               {editForm.instructor_organization ? (
                 <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
@@ -526,10 +546,10 @@ export default function AdminInstructorDetail() {
         <nav className="h-fit shrink-0 rounded-2xl border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24 xl:w-72">
           <div className="mb-3 px-2">
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Điều hướng hồ sơ
+              {t("instructorDetailPage.nav.title")}
             </p>
             <p className="mt-1 text-[13px] text-muted-foreground">
-              Chuyển nhanh giữa thông tin cá nhân, tài liệu đối tác và thanh toán.
+              {t("instructorDetailPage.nav.subtitle")}
             </p>
           </div>
 
@@ -538,13 +558,13 @@ export default function AdminInstructorDetail() {
               <SectionButton
                 active={activeSection === "profile"}
                 icon={Gear}
-                label="Thông tin giảng viên"
+                label={t("instructorDetailPage.sections.profile")}
                 onClick={() => setSection("profile")}
               />
             </li>
             <li className="mt-2 border-t border-border-subtle pt-2">
               <div className="px-3 pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Đối tác
+                {t("instructorDetailPage.sections.partnerGroup")}
               </div>
             </li>
             <li>
@@ -552,7 +572,7 @@ export default function AdminInstructorDetail() {
                 active={activeSection === "contracts"}
                 disabled={!isExternal}
                 icon={FileText}
-                label="Hợp đồng"
+                label={t("instructorDetailPage.sections.contracts")}
                 onClick={() => setSection("contracts")}
               />
             </li>
@@ -561,7 +581,7 @@ export default function AdminInstructorDetail() {
                 active={activeSection === "invoices"}
                 disabled={!isExternal}
                 icon={Receipt}
-                label="Hoá đơn"
+                label={t("instructorDetailPage.sections.invoices")}
                 onClick={() => setSection("invoices")}
               />
             </li>
@@ -570,7 +590,7 @@ export default function AdminInstructorDetail() {
                 active={activeSection === "payments"}
                 disabled={!isExternal}
                 icon={CreditCard}
-                label="Thanh toán"
+                label={t("instructorDetailPage.sections.payments")}
                 onClick={() => setSection("payments")}
               />
             </li>
@@ -578,12 +598,14 @@ export default function AdminInstructorDetail() {
 
           <div className="mt-4 rounded-2xl border border-border-subtle bg-muted/25 p-4">
             <p className="text-[12px] font-medium text-foreground">
-              {isExternal ? "Đang ở chế độ đối tác" : "Giảng viên nội bộ"}
+              {isExternal
+                ? t("instructorDetailPage.partnerMode.titleOn")
+                : t("instructorDetailPage.partnerMode.titleOff")}
             </p>
             <p className="mt-1 text-[13px] text-muted-foreground">
               {isExternal
-                ? "Các section hợp đồng, hoá đơn và thanh toán đang được mở để quản trị đối soát."
-                : "Các section đối tác sẽ tự khoá vì hồ sơ này không dùng quy trình thanh toán đối tác."}
+                ? t("instructorDetailPage.partnerMode.descriptionOn")
+                : t("instructorDetailPage.partnerMode.descriptionOff")}
             </p>
           </div>
         </nav>
@@ -594,10 +616,10 @@ export default function AdminInstructorDetail() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h2 className="text-lg font-medium text-foreground">
-                    Thông tin giảng viên
+                    {t("instructorDetailPage.profile.title")}
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Cập nhật hồ sơ công khai, vai trò hệ thống và thông tin chuyên môn.
+                    {t("instructorDetailPage.profile.description")}
                   </p>
                 </div>
                 <div className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
@@ -605,13 +627,17 @@ export default function AdminInstructorDetail() {
                     className="mr-1.5 size-4 text-primary"
                     weight="duotone"
                   />
-                  {profileCompletionPercent}% hoàn thiện
+                  {t("instructorDetailPage.profile.completionLabel", {
+                    percent: profileCompletionPercent,
+                  })}
                 </div>
               </div>
 
               <div className="mt-5 grid gap-4 lg:grid-cols-2">
                 <div className="grid gap-1.5">
-                  <label className="text-sm font-medium">Vai trò</label>
+                  <label className="text-sm font-medium">
+                    {t("instructorDetailPage.profile.fields.role")}
+                  </label>
                   <select
                     value={editForm.role}
                     onChange={(e) =>
@@ -623,15 +649,23 @@ export default function AdminInstructorDetail() {
                     }
                     className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <option value="instructor">Giảng viên</option>
-                    <option value="support_staff">Học vụ</option>
+                    <option value="instructor">
+                      {t("instructorDetailPage.profile.roleOptions.instructor")}
+                    </option>
+                    <option value="support_staff">
+                      {t("instructorDetailPage.profile.roleOptions.supportStaff")}
+                    </option>
                     <option value="admin">Admin</option>
-                    <option value="student">Học viên</option>
+                    <option value="student">
+                      {t("instructorDetailPage.profile.roleOptions.student")}
+                    </option>
                   </select>
                 </div>
 
                 <div className="grid gap-1.5">
-                  <label className="text-sm font-medium">Loại giảng viên</label>
+                  <label className="text-sm font-medium">
+                    {t("instructorDetailPage.profile.fields.origin")}
+                  </label>
                   <select
                     value={editForm.instructor_origin}
                     onChange={(e) =>
@@ -647,12 +681,16 @@ export default function AdminInstructorDetail() {
                     className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <option value="corelia">Corelia</option>
-                    <option value="external">Bên ngoài</option>
+                    <option value="external">
+                      {t("instructorDetailPage.profile.originOptions.external")}
+                    </option>
                   </select>
                 </div>
 
                 <div className="grid gap-1.5">
-                  <label className="text-sm font-medium">Họ tên</label>
+                  <label className="text-sm font-medium">
+                    {t("instructorDetailPage.profile.fields.fullName")}
+                  </label>
                   <Input
                     value={editForm.full_name}
                     onChange={(e) =>
@@ -676,7 +714,9 @@ export default function AdminInstructorDetail() {
                 </div>
 
                 <div className="grid gap-1.5">
-                  <label className="text-sm font-medium">Số điện thoại</label>
+                  <label className="text-sm font-medium">
+                    {t("instructorDetailPage.profile.fields.phone")}
+                  </label>
                   <Input
                     value={editForm.phone}
                     onChange={(e) =>
@@ -688,7 +728,9 @@ export default function AdminInstructorDetail() {
                 </div>
 
                 <div className="grid gap-1.5">
-                  <label className="text-sm font-medium">Đơn vị công tác</label>
+                  <label className="text-sm font-medium">
+                    {t("instructorDetailPage.profile.fields.organization")}
+                  </label>
                   <Input
                     value={editForm.instructor_organization}
                     onChange={(e) =>
@@ -752,7 +794,9 @@ export default function AdminInstructorDetail() {
                     onClick={() => void handleSaveDetails()}
                     disabled={savingDetails}
                   >
-                    {savingDetails ? "Đang lưu..." : "Lưu thay đổi"}
+                    {savingDetails
+                      ? t("instructorDetailPage.profile.actions.saving")
+                      : t("instructorDetailPage.profile.actions.save")}
                   </Button>
                 </div>
               </div>
@@ -763,36 +807,39 @@ export default function AdminInstructorDetail() {
             <section className="rounded-2xl border border-border-subtle bg-card p-6 shadow-card">
               {!isExternal ? (
                 <p className="text-sm text-muted-foreground">
-                  Chỉ áp dụng cho giảng viên đối tác bên ngoài.
+                  {t("instructorDetailPage.contracts.externalOnly")}
                 </p>
               ) : (
                 <>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h2 className="text-lg font-medium text-foreground">
-                        Hợp đồng
+                        {t("instructorDetailPage.contracts.title")}
                       </h2>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Upload hợp đồng đã ký offline. File sẽ được lưu ngay và hiển
-                        thị cho giảng viên.
+                        {t("instructorDetailPage.contracts.description")}
                       </p>
                     </div>
                     <span className="rounded-full border border-border-subtle bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
-                      {contractDocs.length} file
+                      {t("instructorDetailPage.contracts.countLabel", { count: contractDocs.length })}
                     </span>
                   </div>
 
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     <div className="grid gap-1.5">
-                      <label className="text-sm font-medium">Ghi chú (tuỳ chọn)</label>
+                      <label className="text-sm font-medium">
+                        {t("instructorDetailPage.contracts.noteLabel")}
+                      </label>
                       <Input
                         value={contractNoteDraft}
                         onChange={(e) => setContractNoteDraft(e.target.value)}
-                        placeholder="Ví dụ: HĐ CTV giảng viên, số hợp đồng, ngày ký..."
+                        placeholder={t("instructorDetailPage.contracts.notePlaceholder")}
                       />
                     </div>
                     <div className="grid gap-1.5">
-                      <label className="text-sm font-medium">Upload hợp đồng</label>
+                      <label className="text-sm font-medium">
+                        {t("instructorDetailPage.contracts.uploadLabel")}
+                      </label>
                       <input
                         type="file"
                         className="block w-full text-xs"
@@ -811,8 +858,10 @@ export default function AdminInstructorDetail() {
                   <div className="mt-5">
                     <DocumentList
                       docs={contractDocs}
-                      emptyLabel="Chưa có tài liệu hợp đồng."
-                      renderMeta={(doc) => doc.note || "Không có ghi chú"}
+                      emptyLabel={t("instructorDetailPage.contracts.empty")}
+                      renderMeta={(doc) =>
+                        doc.note || t("instructorDetailPage.contracts.noNote")
+                      }
                     />
                   </div>
                 </>
@@ -824,28 +873,31 @@ export default function AdminInstructorDetail() {
             <section className="rounded-2xl border border-border-subtle bg-card p-6 shadow-card">
               {!isExternal ? (
                 <p className="text-sm text-muted-foreground">
-                  Chỉ áp dụng cho giảng viên đối tác bên ngoài.
+                  {t("instructorDetailPage.invoices.externalOnly")}
                 </p>
               ) : (
                 <>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h2 className="text-lg font-medium text-foreground">
-                        Hoá đơn
+                        {t("instructorDetailPage.invoices.title")}
                       </h2>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Upload hoá đơn/đối soát. File sẽ được lưu ngay và hiển thị
-                        cho giảng viên.
+                        {t("instructorDetailPage.invoices.description")}
                       </p>
                     </div>
                     <span className="rounded-full border border-border-subtle bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
-                      {invoiceDocs.length} file
+                      {t("instructorDetailPage.invoices.countLabel", {
+                        count: invoiceDocs.length,
+                      })}
                     </span>
                   </div>
 
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
                     <div className="grid gap-1.5">
-                      <label className="text-sm font-medium">Tháng hoá đơn</label>
+                      <label className="text-sm font-medium">
+                        {t("instructorDetailPage.invoices.invoiceMonthLabel")}
+                      </label>
                       <Input
                         type="month"
                         value={invoiceMonthDraft}
@@ -853,15 +905,19 @@ export default function AdminInstructorDetail() {
                       />
                     </div>
                     <div className="grid gap-1.5 sm:col-span-2">
-                      <label className="text-sm font-medium">Ghi chú (tuỳ chọn)</label>
+                      <label className="text-sm font-medium">
+                        {t("instructorDetailPage.invoices.noteLabel")}
+                      </label>
                       <Input
                         value={invoiceNoteDraft}
                         onChange={(e) => setInvoiceNoteDraft(e.target.value)}
-                        placeholder="Ví dụ: Kỳ đối soát, số hoá đơn..."
+                        placeholder={t("instructorDetailPage.invoices.notePlaceholder")}
                       />
                     </div>
                     <div className="grid gap-1.5 sm:col-span-3">
-                      <label className="text-sm font-medium">Upload hoá đơn</label>
+                      <label className="text-sm font-medium">
+                        {t("instructorDetailPage.invoices.uploadLabel")}
+                      </label>
                       <input
                         type="file"
                         className="block w-full text-xs"
@@ -880,10 +936,14 @@ export default function AdminInstructorDetail() {
                   <div className="mt-5">
                     <DocumentList
                       docs={invoiceDocs}
-                      emptyLabel="Chưa có tài liệu hoá đơn."
+                      emptyLabel={t("instructorDetailPage.invoices.empty")}
                       renderMeta={(doc) => (
                         <>
-                          {doc.invoice_month ? `Tháng ${doc.invoice_month}` : "—"}
+                          {doc.invoice_month
+                            ? t("instructorDetailPage.invoices.invoiceMonthPrefix", {
+                                month: doc.invoice_month,
+                              })
+                            : t("instructorDetailPage.common.dash")}
                           {doc.note ? ` · ${doc.note}` : ""}
                         </>
                       )}
@@ -898,49 +958,54 @@ export default function AdminInstructorDetail() {
             <section className="rounded-2xl border border-border-subtle bg-card p-6 shadow-card">
               {!isExternal ? (
                 <p className="text-sm text-muted-foreground">
-                  Chỉ áp dụng cho giảng viên đối tác bên ngoài.
+                  {t("instructorDetailPage.payments.externalOnly")}
                 </p>
               ) : (
                 <>
                   <div>
                     <h2 className="text-lg font-medium text-foreground">
-                      Thanh toán
+                      {t("instructorDetailPage.payments.title")}
                     </h2>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Thông tin chuyển khoản hiển thị cho giảng viên ở mục “Thanh
-                      toán”.
+                      {t("instructorDetailPage.payments.description")}
                     </p>
                   </div>
 
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
                     <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
                       <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                        Loại hồ sơ
+                        {t("instructorDetailPage.payments.stats.profileType")}
                       </p>
                       <p className="mt-2 text-[15px] font-medium text-foreground">
-                        {isExternal ? "Đối tác bên ngoài" : "Nội bộ"}
+                        {isExternal
+                          ? t("instructorDetailPage.payments.profileType.external")
+                          : t("instructorDetailPage.payments.profileType.internal")}
                       </p>
                     </div>
                     <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
                       <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                        Tài khoản ngân hàng
+                        {t("instructorDetailPage.payments.stats.bankAccount")}
                       </p>
                       <p className="mt-2 text-[15px] font-medium text-foreground">
-                        {bankForm.account_number.trim() || "Chưa cập nhật"}
+                        {bankForm.account_number.trim() ||
+                          t("instructorDetailPage.common.notUpdated")}
                       </p>
                     </div>
                     <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
                       <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                        Chủ tài khoản
+                        {t("instructorDetailPage.payments.stats.accountHolder")}
                       </p>
                       <p className="mt-2 text-[15px] font-medium text-foreground">
-                        {bankForm.account_holder.trim() || "Chưa cập nhật"}
+                        {bankForm.account_holder.trim() ||
+                          t("instructorDetailPage.common.notUpdated")}
                       </p>
                     </div>
                   </div>
 
                   <div className="mt-5 grid gap-1.5">
-                    <label className="text-sm font-medium">Ngân hàng</label>
+                    <label className="text-sm font-medium">
+                      {t("instructorDetailPage.payments.fields.bankName")}
+                    </label>
                     <Input
                       value={bankForm.bank_name}
                       onChange={(e) =>
@@ -949,13 +1014,15 @@ export default function AdminInstructorDetail() {
                           bank_name: e.target.value,
                         }))
                       }
-                      placeholder="Ví dụ: Vietcombank"
+                      placeholder={t("instructorDetailPage.payments.fields.bankNamePlaceholder")}
                     />
                   </div>
 
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-1.5">
-                      <label className="text-sm font-medium">Số tài khoản</label>
+                      <label className="text-sm font-medium">
+                        {t("instructorDetailPage.payments.fields.accountNumber")}
+                      </label>
                       <Input
                         value={bankForm.account_number}
                         onChange={(e) =>
@@ -964,11 +1031,13 @@ export default function AdminInstructorDetail() {
                             account_number: e.target.value,
                           }))
                         }
-                        placeholder="0123456789"
+                        placeholder={t("instructorDetailPage.payments.fields.accountNumberPlaceholder")}
                       />
                     </div>
                     <div className="grid gap-1.5">
-                      <label className="text-sm font-medium">Chủ tài khoản</label>
+                      <label className="text-sm font-medium">
+                        {t("instructorDetailPage.payments.fields.accountHolder")}
+                      </label>
                       <Input
                         value={bankForm.account_holder}
                         onChange={(e) =>
@@ -977,14 +1046,14 @@ export default function AdminInstructorDetail() {
                             account_holder: e.target.value,
                           }))
                         }
-                        placeholder="NGUYEN VAN A"
+                        placeholder={t("instructorDetailPage.payments.fields.accountHolderPlaceholder")}
                       />
                     </div>
                   </div>
 
                   <div className="mt-4 grid gap-1.5">
                     <label className="text-sm font-medium">
-                      Nội dung chuyển khoản (tuỳ chọn)
+                      {t("instructorDetailPage.payments.fields.transferNote")}
                     </label>
                     <Input
                       value={bankForm.transfer_note}
@@ -994,20 +1063,20 @@ export default function AdminInstructorDetail() {
                           transfer_note: e.target.value,
                         }))
                       }
-                      placeholder="Ví dụ: Corelia - đối soát tháng 03/2026"
+                      placeholder={t("instructorDetailPage.payments.fields.transferNotePlaceholder")}
                     />
                   </div>
 
                   <div className="mt-4 grid gap-1.5">
                     <label className="text-sm font-medium">
-                      Ghi chú thêm (tuỳ chọn)
+                      {t("instructorDetailPage.payments.fields.extraNotes")}
                     </label>
                     <textarea
                       rows={6}
                       value={transferInfo}
                       onChange={(e) => setTransferInfo(e.target.value)}
                       className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Ví dụ: Điều kiện thanh toán, thời hạn đối soát, email nhận hoá đơn..."
+                      placeholder={t("instructorDetailPage.payments.fields.extraNotesPlaceholder")}
                     />
                   </div>
 
@@ -1021,8 +1090,8 @@ export default function AdminInstructorDetail() {
                       disabled={savingTransferCourseId === instructor.id}
                     >
                       {savingTransferCourseId === instructor.id
-                        ? "Đang lưu..."
-                        : "Lưu thanh toán"}
+                        ? t("instructorDetailPage.payments.actions.saving")
+                        : t("instructorDetailPage.payments.actions.save")}
                     </Button>
                   </div>
                 </>

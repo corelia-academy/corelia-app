@@ -242,6 +242,7 @@ service cloud.firestore {
           'avatar_url',
           'phone',
           'email',
+          'locale',
           'created_at',
           'updated_at'
         ]);
@@ -255,6 +256,7 @@ service cloud.firestore {
           'avatar_url',
           'phone',
           'email',
+          'locale',
           'ocid',
           'ocid_eth_address',
           'ocid_connected_at',

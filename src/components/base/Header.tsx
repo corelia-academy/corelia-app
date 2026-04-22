@@ -17,15 +17,17 @@ import { useAuth } from "@/stores/authStore";
 import { ShowForRole } from "@/components/auth/ShowForRole";
 import { ShowForAuth } from "@/components/auth/ShowForAuth";
 import { getRoleLabel } from "@/types/database";
+import { useTranslation } from "react-i18next";
 
 const navItems = [
-  { label: "Dashboard", href: "/" },
-  { label: "Khoá học", href: "/courses" },
-  { label: "Lớp học", href: "/cohorts" },
-  { label: "Cuộc thi", href: "/contests" },
-];
+  { labelKey: "nav.home" as const, href: "/" },
+  { labelKey: "nav.courses" as const, href: "/courses" },
+  { labelKey: "nav.cohorts" as const, href: "/cohorts" },
+  { labelKey: "nav.contests" as const, href: "/contests" },
+] as const;
 
 const Header = () => {
+  const { t } = useTranslation("common");
   const { theme, setTheme } = useTheme();
   const { isAuthenticated, profile, signOut } = useAuth();
   const navigate = useNavigate();
@@ -79,7 +81,7 @@ const Header = () => {
                 }`
               }
             >
-              {item.label}
+              {t(item.labelKey)}
             </NavLink>
           ))}
 
@@ -94,7 +96,7 @@ const Header = () => {
                 }`
               }
             >
-              Thành tích
+              {t("nav.achievements")}
             </NavLink>
           </ShowForAuth>
 
@@ -123,7 +125,7 @@ const Header = () => {
                 }`
               }
             >
-              Quản trị
+              {t("nav.admin")}
             </NavLink>
           </ShowForRole>
         </nav>

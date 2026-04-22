@@ -1,0 +1,290 @@
+{
+  "catalog": {
+    "loadErrorFallback": "Unable to load classes.",
+    "heroEyebrow": "In-person classes",
+    "heroTitle": "Corelia offline learning journey",
+    "heroDescription": "Track the weekly schedule, locations, after-class assignments, and session recordings so learners can revisit when needed.",
+    "stats": {
+      "totalCourses": "Offline courses",
+      "totalCohorts": "Open cohorts",
+      "running": "Running"
+    },
+    "loading": "Loading in-person classes...",
+    "emptyTitle": "No in-person classes are available yet.",
+    "emptyDescription": "When Corelia opens a new cohort, the schedule and location details will appear here.",
+    "course": {
+      "statusOpen": "Open",
+      "statusDraft": "Draft",
+      "cityLabel": "City",
+      "venueCityFallback": "Coming soon",
+      "certificateLabel": "Certificate",
+      "certificateFallback": "Per course configuration"
+    },
+    "metrics": {
+      "sessions": "Sessions",
+      "cohorts": "Cohorts",
+      "recordings": "Recordings"
+    },
+    "viewCourse": "View course"
+  },
+  "detail": {
+    "scheduleUnknown": "Not scheduled yet",
+    "toasts": {
+      "loadInstructorsFailed": "Unable to load Corelia instructors.",
+      "courseNotFound": "Offline course not found.",
+      "courseLoadFailed": "Unable to load the offline course.",
+      "cohortStatusUpdated": "Cohort status updated.",
+      "cohortStatusUpdateFailed": "Unable to update cohort status.",
+      "sessionCreateMeetFailed": "Session was created but Google Meet could not be created automatically.",
+      "sessionAddedWithMeet": "Session added and Google Meet created automatically.",
+      "sessionAdded": "Session added.",
+      "sessionAddFailed": "Unable to add session.",
+      "enrollmentAdded": "Student added to cohort.",
+      "enrollmentAddFailed": "Unable to add student.",
+      "cohortCreated": "New cohort created for the course.",
+      "cohortCreateFailed": "Unable to create cohort.",
+      "courseTitleTaglineTooShort": "Course title and tagline need to be clearer.",
+      "courseInstructorRequired": "Please select at least one instructor for the course.",
+      "courseUpdated": "Offline course updated.",
+      "courseUpdateFailed": "Unable to update the offline course.",
+      "roadmapUpdated": "Student roadmap updated.",
+      "roadmapUpdateFailed": "Unable to update roadmap.",
+      "attendanceUpdated": "Attendance updated.",
+      "attendanceUpdateFailed": "Unable to save attendance.",
+      "submissionSaved": "Submission saved.",
+      "submissionSaveFailed": "Unable to save submission.",
+      "submissionReviewed": "Assignment result updated.",
+      "submissionReviewFailed": "Unable to review submission."
+    },
+    "errors": {
+      "loadingCourse": "Loading offline course..."
+    },
+    "forms": {
+      "course": {
+        "titlePlaceholder": "Offline course title",
+        "taglinePlaceholder": "Course tagline",
+        "venueCityPlaceholder": "Primary city",
+        "instructorsTitle": "Select instructors",
+        "instructorsDescription": "An offline course can have multiple Corelia instructors responsible for it.",
+        "instructorsPlaceholder": "Select course instructors",
+        "certificatePlaceholder": "Certificate name",
+        "priceNotePlaceholder": "Tuition / registration note",
+        "descriptionPlaceholder": "Offline course overview",
+        "learningOutcomesPlaceholder": "Learning outcomes, skills, and expected results",
+        "saveCourse": "Save course info"
+      },
+      "cohort": {
+        "namePlaceholder": "Cohort name, e.g. Cohort 2 · Tue/Thu evenings",
+        "taglinePlaceholder": "Cohort tagline",
+        "instructorTitle": "Select lead instructor",
+        "instructorDescription": "Each cohort has one primary instructor. Selecting here also adds that instructor to the course-level instructors list if not already included.",
+        "instructorPlaceholder": "Select cohort instructor",
+        "venueNamePlaceholder": "Venue name",
+        "venueAddressPlaceholder": "Full address",
+        "cityPlaceholder": "City",
+        "meetHostEmailPlaceholder": "Google Meet host email",
+        "meetJoinPlaceholder": "Google Meet link for students",
+        "meetStartPlaceholder": "Google Meet link for instructor",
+        "notePlaceholder": "Notes for this cohort: attendance rules, room info, how to view recordings...",
+        "createCohort": "Create new cohort",
+        "statusRunning": "Running",
+        "meetingManual": "No online meeting"
+      },
+      "studentSubmission": {
+        "summaryPlaceholder": "Summarize what you completed this week",
+        "evidencePlaceholder": "Evidence link / repo / file",
+        "save": "Save submission"
+      },
+      "session": {
+        "addTitle": "Add new session",
+        "weekIndexPlaceholder": "Week number",
+        "titlePlaceholder": "Session title",
+        "roomPlaceholder": "Room / building",
+        "addressPlaceholder": "Full address",
+        "meetJoinPlaceholder": "Google Meet link for students",
+        "meetStartPlaceholder": "Google Meet link for instructor",
+        "recordingUrlPlaceholder": "Recording URL",
+        "assignmentTitlePlaceholder": "Weekly assignment title",
+        "recordingNotExpected": "No recording expected",
+        "recordingProcessing": "Processing",
+        "recordingLive": "Live",
+        "recordingCountPlaceholder": "Recording files count",
+        "summaryPlaceholder": "Session objective",
+        "assignmentDescriptionPlaceholder": "Weekly assignment description",
+        "addSession": "Add session"
+      },
+      "enrollment": {
+        "addStudentTitle": "Add student to cohort",
+        "addStudent": "Add student",
+        "adding": "Adding...",
+        "activeStatus": "Active",
+        "progressPlaceholder": "Progress %",
+        "completedSessionsPlaceholder": "Sessions completed",
+        "assignmentCompletionPlaceholder": "Assignments %",
+        "mentorNotePlaceholder": "Mentor note",
+        "saveRoadmap": "Save roadmap"
+      },
+      "attendance": {
+        "notePlaceholder": "Attendance note",
+        "save": "Save"
+      },
+      "review": {
+        "placeholder": "Feedback for learner"
+      }
+    },
+    "labels": {
+      "noSessionsWithAssignments": "No sessions have assignments yet.",
+      "publicSection": "Program info",
+      "manageSection": "Course operations",
+      "certificateFallback": "Per course configuration",
+      "priceNoteFallback": "Provided per cohort opening"
+    },
+    "ui": {
+      "selectCohortLabel": "Select a cohort to view details",
+      "courseOverviewTitle": "Course overview",
+      "courseSettingsTitle": "Offline course info",
+      "courseSettingsDescription": "This is the base layer of the course. All cohorts below share this program context, certificate, and public information.",
+      "publishedPublic": "Public",
+      "publishedHidden": "Hidden",
+      "workspaceTitle": "Offline course workspace",
+      "publicTitle": "Offline course",
+      "levelAll": "All levels",
+      "saving": "Saving...",
+      "creating": "Creating..."
+    },
+    "actions": {
+      "createCohortSuccess": "New cohort created for the course.",
+      "createCohortFailed": "Unable to create cohort.",
+      "courseTitleTaglineTooShort": "Course title and tagline need to be clearer.",
+      "courseInstructorRequired": "Please select at least one instructor for the course.",
+      "courseUpdated": "Offline course updated.",
+      "courseUpdateFailed": "Unable to update the offline course.",
+      "roadmapUpdated": "Student roadmap updated.",
+      "roadmapUpdateFailed": "Unable to update roadmap.",
+      "attendanceUpdated": "Attendance updated.",
+      "attendanceUpdateFailed": "Unable to save attendance.",
+      "submissionSaved": "Submission saved.",
+      "submissionSaveFailed": "Unable to save submission.",
+      "submissionReviewed": "Assignment result updated.",
+      "submissionReviewFailed": "Unable to review submission."
+    },
+    "fallbacks": {
+      "venueCity": "Coming soon",
+      "sessionLocation": "Scheduled update",
+      "noAssignment": "No dedicated assignment",
+      "noRecording": "No recording yet",
+      "notUpdated": "Not updated",
+      "certificateTitle": "Per course configuration",
+      "priceNote": "Provided per cohort opening",
+      "noMeetHost": "No Google Meet host linked yet"
+    },
+    "buttons": {
+      "saveCourse": "Save course info",
+      "createCohort": "Create new cohort",
+      "saveSubmission": "Save submission",
+      "addSession": "Add session",
+      "addStudent": "Add student",
+      "adding": "Adding...",
+      "saveRoadmap": "Save roadmap",
+      "save": "Save",
+      "saveStatus": "Save cohort status"
+    },
+    "sections": {
+      "manage": "Course operations",
+      "public": "Program info"
+    }
+  }
+  ,
+  "instructorNew": {
+    "hero": {
+      "eyebrow": "Offline cohort setup",
+      "title": "Create a new offline course",
+      "description": "Create the offline course at the product layer and also create the first cohort so you can start running schedules and recordings."
+    },
+    "defaults": {
+      "firstCohortTitle": "{{title}} · Cohort 1"
+    },
+    "toasts": {
+      "loadInstructorsFailed": "Unable to load instructors.",
+      "cohortInstructorRequired": "Please select the lead instructor for the first cohort.",
+      "created": "Offline course and first cohort created.",
+      "createFailed": "Unable to create class."
+    },
+    "actions": {
+      "back": "Back",
+      "create": "Create offline course",
+      "creating": "Creating..."
+    },
+    "form": {
+      "titlePlaceholder": "Offline course title",
+      "taglinePlaceholder": "Tagline: who this course is for",
+      "statusOptions": {
+        "draft": "Draft",
+        "published": "Open enrollment",
+        "running": "Running",
+        "completed": "Completed"
+      },
+      "deliveryModeOptions": {
+        "offline": "In-person",
+        "hybrid": "Hybrid"
+      },
+      "meetingProviderOptions": {
+        "googleMeet": "Google Meet",
+        "manual": "No online meeting"
+      },
+      "courseInstructorsLabel": "Course instructors",
+      "courseInstructorsTitle": "Select instructors",
+      "courseInstructorsDescription": "An offline course can have multiple Corelia instructors responsible for it.",
+      "courseInstructorsPlaceholder": "Select one or more instructors",
+      "courseInstructorsPlaceholderLoading": "Loading instructors...",
+      "cohortInstructorLabel": "Lead instructor for the first cohort",
+      "cohortInstructorTitle": "Select cohort instructor",
+      "cohortInstructorDescription": "Each cohort has one primary instructor to run schedules, Google Meet, and recordings.",
+      "cohortInstructorPlaceholder": "Select lead instructor",
+      "cohortInstructorPlaceholderLoading": "Loading instructors...",
+      "venueNamePlaceholder": "Venue name",
+      "venueAddressPlaceholder": "Address",
+      "cityPlaceholder": "City",
+      "meetHostEmailPlaceholder": "Google Meet host email",
+      "meetJoinPlaceholder": "Google Meet link for students",
+      "meetStartPlaceholder": "Google Meet link for instructor",
+      "certificateTitlePlaceholder": "Certificate title (optional)",
+      "priceNotePlaceholder": "Tuition / registration note",
+      "meetFallbackHint": "If the cohort uses `Google Meet`, the links above are treated as fallback channels for learners to check in and join online when they can't attend in person. Newly created sessions will prefill these links so the ops team doesn't have to re-enter them.",
+      "descriptionPlaceholder": "Describe the offline course, outcomes, and context",
+      "registrationNotesPlaceholder": "Registration notes, attendance rules, how to view recordings..."
+    }
+  }
+  ,
+  "instructorWorkspace": {
+    "hero": {
+      "eyebrow": "In-person workspace",
+      "title": "Manage offline courses",
+      "description": "Manage offline courses at the product layer, then drill into cohorts to run schedules, recordings, and learner roadmaps.",
+      "create": "Create new class"
+    },
+    "loading": "Loading classes workspace...",
+    "stats": {
+      "totalCourses": "Total courses",
+      "runningCohorts": "Running cohorts",
+      "activeStudents": "Active learners",
+      "readyRecordings": "Ready recordings"
+    },
+    "empty": {
+      "title": "No cohorts in this workspace yet.",
+      "createFirst": "Create the first cohort"
+    },
+    "coursePills": {
+      "open": "Open",
+      "draft": "Draft"
+    },
+    "courseMetrics": {
+      "students": "Learners"
+    },
+    "actions": {
+      "viewPublic": "View public",
+      "openWorkspace": "Open workspace"
+    }
+  }
+}
+

@@ -30,62 +30,13 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { WarningCircle } from "@phosphor-icons/react";
+import { useTranslation } from "react-i18next";
 
 type AuthMode = "sign_in" | "sign_up";
 
-/**
- * Firebase Auth (Client/Web SDK) – mã lỗi user có thể gặp khi đăng nhập/đăng ký/quên mật khẩu.
- * Tham khảo: https://firebase.google.com/docs/reference/js/auth#autherrorcodes
- */
-const AUTH_ERROR_MESSAGES: Record<string, string> = {
-  "auth/invalid-email": "Địa chỉ email không hợp lệ. Vui lòng kiểm tra lại.",
-  "auth/user-not-found": "Email hoặc mật khẩu không đúng.",
-  "auth/wrong-password": "Email hoặc mật khẩu không đúng.",
-  "auth/invalid-credential":
-    "Email hoặc mật khẩu không đúng. Vui lòng thử lại.",
-  "auth/invalid-login-credentials":
-    "Email hoặc mật khẩu không đúng. Vui lòng thử lại.",
-  "auth/email-already-in-use":
-    "Email này đã được sử dụng cho tài khoản khác. Vui lòng đăng nhập hoặc dùng email khác.",
-  "auth/weak-password":
-    "Mật khẩu quá yếu. Vui lòng chọn mật khẩu có ít nhất 6 ký tự.",
-  "auth/operation-not-allowed":
-    "Phương thức đăng nhập này chưa được bật. Vui lòng liên hệ quản trị viên.",
-  "auth/user-disabled":
-    "Tài khoản này đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.",
-  "auth/account-exists-with-different-credential":
-    "Email này đã được đăng ký bằng cách đăng nhập khác (Email/Mật khẩu, Google hoặc GitHub). Vui lòng dùng đúng cách bạn đã chọn khi đăng ký.",
-  "auth/popup-blocked":
-    "Trình duyệt đã chặn cửa sổ đăng nhập. Vui lòng cho phép popup cho trang này và thử lại.",
-  "auth/popup-closed-by-user":
-    "Bạn đã đóng cửa sổ đăng nhập. Vui lòng thử lại.",
-  "auth/cancelled-popup-request":
-    "Đã mở một cửa sổ đăng nhập khác. Vui lòng thử lại.",
-  "auth/unauthorized-domain":
-    "Tên miền này chưa được phép đăng nhập. Vui lòng liên hệ quản trị viên.",
-  "auth/invalid-action-code":
-    "Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng gửi lại email đặt lại mật khẩu.",
-  "auth/expired-action-code":
-    "Link đặt lại mật khẩu đã hết hạn. Vui lòng gửi lại email đặt lại mật khẩu.",
-  "auth/user-mismatch":
-    "Thông tin xác thực không khớp với tài khoản. Vui lòng thử lại.",
-  "auth/too-many-requests":
-    'Quá nhiều lần thử. Vui lòng thử lại sau vài phút hoặc dùng chức năng "Quên mật khẩu".',
-  "auth/requires-recent-login":
-    "Vì lý do bảo mật, vui lòng đăng nhập lại rồi thực hiện thao tác.",
-  "auth/multi-factor-auth-required":
-    "Tài khoản bật xác thực hai yếu tố. Vui lòng nhập mã SMS.",
-  "auth/network-request-failed":
-    "Lỗi kết nối mạng. Vui lòng kiểm tra internet và thử lại.",
-  "auth/internal-error": "Đã xảy ra lỗi từ dịch vụ. Vui lòng thử lại sau.",
-  "auth/app-deleted": "Ứng dụng tạm thời không khả dụng. Vui lòng thử lại sau.",
-  "auth/app-not-authorized":
-    "Ứng dụng chưa được cấu hình đúng. Vui lòng liên hệ quản trị viên.",
-  "auth/invalid-api-key":
-    "Cấu hình ứng dụng lỗi. Vui lòng liên hệ quản trị viên.",
-  "auth/web-storage-unsupported":
-    "Trình duyệt không hỗ trợ lưu phiên đăng nhập. Vui lòng bật cookie/dữ liệu trang web hoặc thử trình duyệt khác.",
-};
+function authCodeKey(code: string): string {
+  return code.replaceAll("/", "__");
+}
 
 function isFirebaseAuthError(
   e: unknown,
@@ -103,23 +54,42 @@ export type AuthErrorInfo = {
   code?: string;
 };
 
-function getAuthErrorInfo(err: unknown): AuthErrorInfo {
+type Translate = (key: string, options?: { defaultValue?: string }) => string;
+
+function getAuthErrorInfo(err: unknown, translate?: Translate): AuthErrorInfo {
   if (isFirebaseAuthError(err)) {
-    const message = AUTH_ERROR_MESSAGES[err.code];
+    const codeKey = `errors.${authCodeKey(err.code)}`;
+    const translated = translate ? translate(codeKey, { defaultValue: "" }) : "";
+    const message = translated || null;
     return {
       code: err.code,
-      message: message ?? (err.message || "Có lỗi xảy ra. Vui lòng thử lại."),
+      message:
+        message ??
+        (err.message ||
+          (translate
+            ? translate("errors.generic", {
+                defaultValue: "",
+              })
+            : "Something went wrong.")),
     };
   }
   if (err instanceof Error) return { message: err.message };
   if (typeof err === "string") return { message: err };
-  return { message: "Có lỗi xảy ra. Vui lòng thử lại." };
+  return {
+    message: translate
+      ? translate("errors.generic", { defaultValue: "" })
+      : "Something went wrong.",
+  };
 }
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t } = useTranslation("auth");
+  const translate: Translate = (key, options) =>
+    // `t` is strongly typed; wrap to allow dynamic keys (e.g. auth error codes).
+    String(t(key as never, options as never));
   const [mode, setMode] = useState<AuthMode>("sign_in");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -139,18 +109,16 @@ export function LoginForm({
   const mfaRecaptchaRef = useRef<RecaptchaVerifier | null>(null);
 
   const title = useMemo(() => {
-    if (mfaResolver) return "Xác thực bước 2";
-    if (showForgotPassword) return "Đặt lại mật khẩu";
-    return mode === "sign_in" ? "Đăng nhập" : "Tạo tài khoản";
-  }, [mode, showForgotPassword, mfaResolver]);
+    if (mfaResolver) return t("login.title.mfa");
+    if (showForgotPassword) return t("login.title.forgotPassword");
+    return mode === "sign_in" ? t("login.title.signIn") : t("login.title.signUp");
+  }, [mode, showForgotPassword, mfaResolver, t]);
   const subtitle = useMemo(() => {
-    if (mfaResolver)
-      return "Nhập mã SMS đã gửi đến số điện thoại đăng ký của bạn.";
-    if (showForgotPassword)
-      return "Nhập email đăng ký, chúng tôi sẽ gửi link đặt lại mật khẩu.";
-    if (mode === "sign_in") return "Đăng nhập bằng email và mật khẩu.";
-    return "Tạo tài khoản mới để bắt đầu học.";
-  }, [mode, showForgotPassword, mfaResolver]);
+    if (mfaResolver) return t("login.subtitle.mfa");
+    if (showForgotPassword) return t("login.subtitle.forgotPassword");
+    if (mode === "sign_in") return t("login.subtitle.signIn");
+    return t("login.subtitle.signUp");
+  }, [mode, showForgotPassword, mfaResolver, t]);
 
   useEffect(() => {
     if (!mfaResolver) return;
@@ -177,7 +145,7 @@ export function LoginForm({
       if (showForgotPassword) {
         await sendPasswordResetEmail(auth, email);
         setSuccessMessage(
-          "Đã gửi email đặt lại mật khẩu. Vui lòng kiểm tra hộp thư (và thư mục spam).",
+          t("login.forgotPassword.sent"),
         );
         return;
       }
@@ -194,12 +162,12 @@ export function LoginForm({
         }
       } else {
         if (password !== confirmPassword) {
-          setErrorInfo({ message: "Mật khẩu xác nhận không khớp." });
+          setErrorInfo({ message: t("errors.passwordMismatch") });
           return;
         }
         const name = fullName.trim();
         if (!name) {
-          setErrorInfo({ message: "Vui lòng nhập họ tên." });
+          setErrorInfo({ message: t("errors.missingFullName") });
           return;
         }
         const { user } = await createUserWithEmailAndPassword(
@@ -214,7 +182,7 @@ export function LoginForm({
         });
       }
     } catch (e: unknown) {
-      setErrorInfo(getAuthErrorInfo(e));
+      setErrorInfo(getAuthErrorInfo(e, translate));
     } finally {
       setLoading(false);
     }
@@ -230,7 +198,7 @@ export function LoginForm({
       if (resolver) {
         setMfaResolver(resolver);
       } else {
-        setErrorInfo(getAuthErrorInfo(e));
+        setErrorInfo(getAuthErrorInfo(e, translate));
       }
     } finally {
       setLoading(false);
@@ -245,7 +213,7 @@ export function LoginForm({
       const firstPhoneIndex = mfaResolver.hints.findIndex(isPhoneFactorHint);
       if (firstPhoneIndex === -1) {
         setErrorInfo({
-          message: "Chỉ hỗ trợ xác thực bằng SMS. Vui lòng liên hệ quản trị viên.",
+          message: t("login.mfa.smsOnly"),
         });
         return;
       }
@@ -257,7 +225,7 @@ export function LoginForm({
       );
       setMfaVerificationId(vid);
     } catch (e: unknown) {
-      setErrorInfo(getAuthErrorInfo(e));
+      setErrorInfo(getAuthErrorInfo(e, translate));
     } finally {
       setLoading(false);
     }
@@ -266,7 +234,7 @@ export function LoginForm({
   async function handleConfirmMfa(e?: React.FormEvent) {
     e?.preventDefault();
     if (!mfaResolver || !mfaVerificationId || !mfaCode.trim()) {
-      setErrorInfo({ message: "Vui lòng bấm 'Gửi mã' rồi nhập mã SMS." });
+      setErrorInfo({ message: t("login.mfa.needSendAndEnter") });
       return;
     }
     setErrorInfo(null);
@@ -281,7 +249,7 @@ export function LoginForm({
       setMfaVerificationId(null);
       setMfaCode("");
     } catch (e: unknown) {
-      setErrorInfo(getAuthErrorInfo(e));
+      setErrorInfo(getAuthErrorInfo(e, translate));
     } finally {
       setLoading(false);
     }
@@ -321,7 +289,7 @@ export function LoginForm({
                   {!mfaVerificationId ? (
                     <Field>
                       <p className="text-sm text-muted-foreground">
-                        Bấm &quot;Gửi mã&quot; để nhận mã SMS đến số điện thoại đã đăng ký.
+                        {t("login.mfa.sendCodeHint")}
                       </p>
                       <Button
                         id="mfa-send-code-btn"
@@ -330,24 +298,26 @@ export function LoginForm({
                         className="mt-2 w-full"
                         onClick={() => void handleSendMfaCode()}
                       >
-                        {loading ? "Đang gửi…" : "Gửi mã"}
+                        {loading ? t("login.mfa.sending") : t("login.mfa.sendCode")}
                       </Button>
                     </Field>
                   ) : (
                     <Field>
                       <p className="text-sm text-success">
-                        Mã đã gửi. Nhập mã vào ô bên dưới.
+                        {t("login.mfa.sentHint")}
                       </p>
                     </Field>
                   )}
                   <div className="space-y-4">
                     <Field>
-                      <FieldLabel htmlFor="mfa-code">Mã xác thực (6 số)</FieldLabel>
+                      <FieldLabel htmlFor="mfa-code">
+                        {t("login.mfa.codeLabel")}
+                      </FieldLabel>
                       <Input
                         id="mfa-code"
                         inputMode="numeric"
                         autoComplete="one-time-code"
-                        placeholder="000000"
+                        placeholder={t("login.mfa.codePlaceholder")}
                         value={mfaCode}
                         onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                         maxLength={6}
@@ -366,7 +336,7 @@ export function LoginForm({
                         className="flex-1"
                         onClick={() => void handleConfirmMfa()}
                       >
-                        {loading ? "Đang xác thực…" : "Xác nhận"}
+                        {loading ? t("login.mfa.verifying") : t("login.mfa.verify")}
                       </Button>
                       <Button
                         type="button"
@@ -415,7 +385,7 @@ export function LoginForm({
                           setSuccessMessage(null);
                         }}
                       >
-                        Quay lại đăng nhập
+                        {t("login.forgotPassword.backToSignIn")}
                       </Button>
                     ) : (
                       <Button
@@ -423,7 +393,9 @@ export function LoginForm({
                         disabled={loading}
                         className="w-full rounded-lg"
                       >
-                        {loading ? "Đang gửi…" : "Gửi link đặt lại mật khẩu"}
+                        {loading
+                          ? t("login.forgotPassword.submitting")
+                          : t("login.forgotPassword.submit")}
                       </Button>
                     )}
                   </Field>
@@ -437,7 +409,7 @@ export function LoginForm({
                       }}
                       className="font-medium underline underline-offset-2 text-muted-foreground hover:text-foreground"
                     >
-                      ← Quay lại đăng nhập
+                      {t("login.forgotPassword.backArrow")}
                     </button>
                   </FieldDescription>
                 </>
@@ -445,12 +417,14 @@ export function LoginForm({
                 <>
                   {mode === "sign_up" && (
                     <Field>
-                      <FieldLabel htmlFor="fullName">Họ và tên</FieldLabel>
+                      <FieldLabel htmlFor="fullName">
+                        {t("login.fields.fullName")}
+                      </FieldLabel>
                       <Input
                         id="fullName"
                         type="text"
                         autoComplete="name"
-                        placeholder="Nguyễn Văn A"
+                        placeholder={t("login.placeholders.fullName")}
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         required
@@ -459,13 +433,13 @@ export function LoginForm({
                   )}
 
                   <Field>
-                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                    <FieldLabel htmlFor="email">{t("login.fields.email")}</FieldLabel>
                     <Input
                       id="email"
                       type="email"
                       inputMode="email"
                       autoComplete="email"
-                      placeholder="ban@example.com"
+                      placeholder={t("login.placeholders.email")}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -474,14 +448,16 @@ export function LoginForm({
 
                   <Field>
                     <div className="flex items-center">
-                      <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
+                      <FieldLabel htmlFor="password">
+                        {t("login.fields.password")}
+                      </FieldLabel>
                       {mode === "sign_in" && (
                         <button
                           type="button"
                           onClick={() => setShowForgotPassword(true)}
                           className="ml-auto text-[13px] text-muted-foreground underline-offset-2 hover:underline"
                         >
-                          Quên mật khẩu?
+                          {t("login.actions.forgotPassword")}
                         </button>
                       )}
                     </div>
@@ -491,7 +467,7 @@ export function LoginForm({
                       autoComplete={
                         mode === "sign_in" ? "current-password" : "new-password"
                       }
-                      placeholder="Tối thiểu 6 ký tự"
+                      placeholder={t("login.placeholders.password")}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -502,13 +478,13 @@ export function LoginForm({
                   {mode === "sign_up" && (
                     <Field>
                       <FieldLabel htmlFor="confirmPassword">
-                        Xác nhận mật khẩu
+                        {t("login.fields.confirmPassword")}
                       </FieldLabel>
                       <Input
                         id="confirmPassword"
                         type="password"
                         autoComplete="new-password"
-                        placeholder="Nhập lại mật khẩu"
+                        placeholder={t("login.placeholders.confirmPassword")}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
@@ -529,16 +505,17 @@ export function LoginForm({
                         />
                         <div className="min-w-0 space-y-1">
                           <p className="text-[13px] font-medium text-amber-900 dark:text-amber-100">
-                            Tài khoản đã tồn tại với cách đăng nhập khác
+                            {t("login.hints.accountExistsTitle")}
                           </p>
                           <p className="text-[13px] text-amber-800 dark:text-amber-200">
                             {errorInfo.message}
                           </p>
                           <p className="mt-1.5 text-[12px] text-amber-700 dark:text-amber-300">
-                            Gợi ý: thử đăng nhập bằng{" "}
-                            <strong>Email & Mật khẩu</strong> hoặc nút{" "}
+                            {t("login.hints.accountExistsSuggestionPrefix")}{" "}
+                            <strong>{t("login.hints.accountExistsEmailPassword")}</strong>{" "}
+                            {t("login.hints.accountExistsSuggestionOrButton")}{" "}
                             <strong>Google</strong> / <strong>GitHub</strong>{" "}
-                            tương ứng với lần đầu bạn đăng ký.
+                            {t("login.hints.accountExistsSuggestionSuffix")}
                           </p>
                         </div>
                       </div>
@@ -555,12 +532,12 @@ export function LoginForm({
                       disabled={loading}
                       className="w-full rounded-lg"
                     >
-                      {loading ? "Đang xử lý…" : title}
+                      {loading ? t("login.actions.processing") : title}
                     </Button>
                   </Field>
 
                   <FieldSeparator className="**:data-[slot=field-separator-content]:bg-card">
-                    Hoặc tiếp tục với
+                    {t("login.actions.orContinueWith")}
                   </FieldSeparator>
 
                   <Field className="grid grid-cols-2 gap-3">
@@ -606,8 +583,8 @@ export function LoginForm({
 
                   <FieldDescription className="text-center">
                     {mode === "sign_in"
-                      ? "Bạn mới dùng? "
-                      : "Đã có tài khoản? "}
+                      ? t("login.actions.newUser")
+                      : t("login.actions.haveAccount")}
                     <button
                       type="button"
                       onClick={() => {
@@ -621,7 +598,9 @@ export function LoginForm({
                       disabled={loading}
                       className="font-medium underline underline-offset-2 disabled:opacity-50"
                     >
-                      {mode === "sign_in" ? "Tạo tài khoản" : "Đăng nhập"}
+                      {mode === "sign_in"
+                        ? t("login.actions.createAccount")
+                        : t("login.actions.signIn")}
                     </button>
                   </FieldDescription>
                 </>
@@ -640,23 +619,23 @@ export function LoginForm({
       </Card>
 
       <FieldDescription className="px-2 text-center text-[12px] text-muted-foreground">
-        Bằng việc tiếp tục, bạn đồng ý với{" "}
+        {t("login.terms.prefix")}
         <a
           href="https://corelia.academy/terms"
           className="underline underline-offset-2 hover:no-underline"
           target="_blank"
         >
-          Điều khoản sử dụng
+          {t("login.terms.termsOfUse")}
         </a>{" "}
-        và{" "}
+        {t("login.terms.and")}
         <a
           href="https://corelia.academy/policy"
           className="underline underline-offset-2 hover:no-underline"
           target="_blank"
         >
-          Chính sách bảo mật
+          {t("login.terms.privacyPolicy")}
         </a>
-        .
+        {t("login.terms.suffix")}
       </FieldDescription>
     </div>
   );

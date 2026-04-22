@@ -12,15 +12,12 @@ import {
   Sparkle,
   BookOpen,
 } from "@phosphor-icons/react";
+import { useTranslation } from "react-i18next";
 
 type InstructorOrigin = NonNullable<Profile["instructor_origin"]>;
 
-const ORIGIN_LABEL: Record<InstructorOrigin, string> = {
-  corelia: "Corelia",
-  external: "Bên ngoài",
-};
-
 export default function AdminInstructors() {
+  const { t } = useTranslation("admin");
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [courseCountByInstructor, setCourseCountByInstructor] = useState<
@@ -59,11 +56,11 @@ export default function AdminInstructors() {
       setProfiles(data);
       void fetchCourseCounts();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
+      setError(err instanceof Error ? err.message : t("instructors.errors.generic"));
     } finally {
       setLoading(false);
     }
-  }, [fetchCourseCounts]);
+  }, [fetchCourseCounts, t]);
 
   useEffect(() => {
     void fetchProfiles();
@@ -118,9 +115,9 @@ export default function AdminInstructors() {
       setProfiles((prev) =>
         prev.map((p) => (p.id === userId ? { ...p, instructor_origin: origin } : p)),
       );
-      toast.success("Đã cập nhật loại giảng viên.");
+      toast.success(t("instructors.toasts.originUpdated"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể cập nhật");
+      setError(err instanceof Error ? err.message : t("instructors.errors.updateFailed"));
     } finally {
       setSavingId(null);
     }
@@ -133,7 +130,7 @@ export default function AdminInstructors() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Tổng giảng viên
+                {t("instructors.stats.total")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.total}
@@ -148,7 +145,7 @@ export default function AdminInstructors() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Corelia
+                {t("instructors.stats.corelia")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.corelia}
@@ -163,7 +160,7 @@ export default function AdminInstructors() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Đối tác bên ngoài
+                {t("instructors.stats.external")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.external}
@@ -178,7 +175,7 @@ export default function AdminInstructors() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Chưa phân loại
+                {t("instructors.stats.unclassified")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
                 {stats.unclassified}
@@ -193,10 +190,10 @@ export default function AdminInstructors() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                Khoá học đang quản lý
+                {t("instructors.stats.managedCourses")}
               </p>
               <p className="mt-2 text-3xl font-semibold text-foreground">
-                {loadingCourses ? "..." : stats.totalCourses}
+                {loadingCourses ? t("instructors.stats.loadingValue") : stats.totalCourses}
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -210,11 +207,10 @@ export default function AdminInstructors() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-xl font-medium tracking-tight text-foreground">
-              Điều phối mạng lưới giảng viên
+              {t("instructors.hero.title")}
             </h2>
             <p className="mt-1.5 max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
-              Mở từng hồ sơ để xử lý hợp đồng, hoá đơn và thanh toán. Tại đây bạn có
-              thể phân loại nhanh giảng viên nội bộ và giảng viên đối tác.
+              {t("instructors.hero.description")}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -222,7 +218,7 @@ export default function AdminInstructors() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Tìm theo tên, email, tổ chức, headline, UID…"
+                placeholder={t("instructors.filters.searchPlaceholder")}
               />
             </div>
             <select
@@ -232,9 +228,9 @@ export default function AdminInstructors() {
               }
               className="h-10 rounded-xl border border-input bg-background px-3 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="all">Tất cả</option>
-              <option value="corelia">Corelia</option>
-              <option value="external">Bên ngoài</option>
+              <option value="all">{t("instructors.filters.originOptions.all")}</option>
+              <option value="corelia">{t("instructors.filters.originOptions.corelia")}</option>
+              <option value="external">{t("instructors.filters.originOptions.external")}</option>
             </select>
             <Button
               onClick={() => void fetchProfiles()}
@@ -243,7 +239,7 @@ export default function AdminInstructors() {
               size="sm"
               className="text-muted-foreground hover:text-foreground"
             >
-              Làm mới
+              {t("instructors.actions.refresh")}
             </Button>
           </div>
         </div>
@@ -254,7 +250,7 @@ export default function AdminInstructors() {
             variant={originFilter === "all" ? "default" : "outline"}
             onClick={() => setOriginFilter("all")}
           >
-            Tất cả
+            {t("instructors.filters.quick.all")}
           </Button>
           <Button
             type="button"
@@ -262,7 +258,7 @@ export default function AdminInstructors() {
             variant={originFilter === "corelia" ? "default" : "outline"}
             onClick={() => setOriginFilter("corelia")}
           >
-            Corelia
+            {t("instructors.filters.quick.corelia")}
           </Button>
           <Button
             type="button"
@@ -270,7 +266,7 @@ export default function AdminInstructors() {
             variant={originFilter === "external" ? "default" : "outline"}
             onClick={() => setOriginFilter("external")}
           >
-            Bên ngoài
+            {t("instructors.filters.quick.external")}
           </Button>
           {(query || originFilter !== "all") && (
             <Button
@@ -282,7 +278,7 @@ export default function AdminInstructors() {
                 setOriginFilter("all");
               }}
             >
-              Xoá bộ lọc
+              {t("instructors.actions.clearFilters")}
             </Button>
           )}
         </div>
@@ -298,18 +294,30 @@ export default function AdminInstructors() {
         <div className="border-b border-border-subtle bg-muted/35 px-4 py-3">
           <p className="text-[13px] text-muted-foreground">
             {loading
-              ? "Đang đồng bộ danh sách giảng viên..."
-              : `Đang hiển thị ${filtered.length} / ${instructors.length} giảng viên${originFilter !== "all" ? ` · ${originFilter === "corelia" ? "Corelia" : "Bên ngoài"}` : ""}`}
+              ? t("instructors.list.syncing")
+              : `${t("instructors.list.showing", {
+                  shown: filtered.length,
+                  total: instructors.length,
+                })}${
+                  originFilter === "all"
+                    ? ""
+                    : t("instructors.list.showingOriginSuffix", {
+                        origin:
+                          originFilter === "corelia"
+                            ? t("instructors.filters.originOptions.corelia")
+                            : t("instructors.filters.originOptions.external"),
+                      })
+                }`}
           </p>
         </div>
         <div className="divide-y divide-border-subtle md:hidden">
           {loading ? (
             <div className="p-6 text-center text-[13px] text-muted-foreground">
-              Đang tải danh sách...
+              {t("instructors.list.loading")}
             </div>
           ) : filtered.length === 0 ? (
             <div className="p-10 text-center text-[13px] text-muted-foreground">
-              Chưa có giảng viên nào khớp bộ lọc hiện tại.
+              {t("instructors.list.empty")}
             </div>
           ) : (
             filtered.map((p) => {
@@ -334,7 +342,7 @@ export default function AdminInstructors() {
                     )}
                     <div className="min-w-0">
                       <p className="truncate text-[15px] font-medium text-foreground">
-                        {p.full_name || "Chưa cập nhật"}
+                        {p.full_name || t("instructors.list.notUpdated")}
                       </p>
                       <p className="mt-0.5 truncate text-[12px] text-muted-foreground">
                         UID: {p.id.substring(0, 8)}…
@@ -357,8 +365,8 @@ export default function AdminInstructors() {
                       <p className="mt-1">
                         <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[12px] font-medium text-foreground">
                           {p.instructor_origin
-                            ? ORIGIN_LABEL[p.instructor_origin]
-                            : "Chưa phân loại"}
+                            ? t(`instructors.originLabel.${p.instructor_origin}` as never)
+                            : t("instructors.originLabel.unclassified")}
                         </span>
                       </p>
                     </div>
@@ -382,7 +390,7 @@ export default function AdminInstructors() {
                         void handleSetOrigin(p.id, "corelia");
                       }}
                     >
-                      Corelia
+                      {t("instructors.originLabel.corelia")}
                     </Button>
                     <Button
                       type="button"
@@ -394,7 +402,7 @@ export default function AdminInstructors() {
                         void handleSetOrigin(p.id, "external");
                       }}
                     >
-                      Bên ngoài
+                      {t("instructors.originLabel.external")}
                     </Button>
                     <Button
                       type="button"
@@ -477,7 +485,7 @@ export default function AdminInstructors() {
                           )}
                           <div className="min-w-0">
                             <p className="truncate text-[15px] font-medium text-foreground">
-                              {p.full_name || "Chưa cập nhật"}
+                              {p.full_name || t("instructors.list.notUpdated")}
                             </p>
                             <p
                               className="mt-0.5 truncate text-[12px] text-muted-foreground"
@@ -496,8 +504,8 @@ export default function AdminInstructors() {
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[12px] font-medium text-foreground">
                           {p.instructor_origin
-                            ? ORIGIN_LABEL[p.instructor_origin]
-                            : "Chưa phân loại"}
+                            ? t(`instructors.originLabel.${p.instructor_origin}` as never)
+                            : t("instructors.originLabel.unclassified")}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-[13px] text-muted-foreground">
@@ -515,7 +523,7 @@ export default function AdminInstructors() {
                               void handleSetOrigin(p.id, "corelia");
                             }}
                           >
-                            Corelia
+                            {t("instructors.originLabel.corelia")}
                           </Button>
                           <Button
                             type="button"
@@ -527,7 +535,7 @@ export default function AdminInstructors() {
                               void handleSetOrigin(p.id, "external");
                             }}
                           >
-                            Bên ngoài
+                            {t("instructors.originLabel.external")}
                           </Button>
                           <Button
                             type="button"

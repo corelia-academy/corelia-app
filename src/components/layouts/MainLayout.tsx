@@ -12,8 +12,10 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/base/AppSidebar";
 import { useAuth } from "@/stores/authStore";
+import { useTranslation } from "react-i18next";
 
 const MainLayout = () => {
+  const { t } = useTranslation("common");
   const betaFeedbackUrl =
     import.meta.env.VITE_BETA_FEEDBACK_FORM_URL?.trim() || "";
   const { isAuthenticated } = useAuth();
@@ -21,13 +23,13 @@ const MainLayout = () => {
   const navigate = useNavigate();
 
   const mobilePrimaryNav = [
-    { label: "Trang chủ", href: "/", icon: House, end: true },
-    { label: "Khoá học", href: "/courses", icon: BookOpen },
-    { label: "Lớp học", href: "/cohorts", icon: CalendarDots },
-    { label: "Cuộc thi", href: "/contests", icon: Trophy },
+    { labelKey: "nav.home" as const, href: "/", icon: House, end: true },
+    { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
+    { labelKey: "nav.cohorts" as const, href: "/cohorts", icon: CalendarDots },
+    { labelKey: "nav.contests" as const, href: "/contests", icon: Trophy },
     isAuthenticated
-      ? { label: "Menu", href: "/menu", icon: List }
-      : { label: "Đăng nhập", href: "/login", icon: SignIn },
+      ? { labelKey: "tabs.menu" as const, href: "/menu", icon: List }
+      : { labelKey: "tabs.signIn" as const, href: "/login", icon: SignIn },
   ] as const;
 
   return (
@@ -43,8 +45,7 @@ const MainLayout = () => {
         <footer className="hidden border-t border-border-subtle bg-card/70 md:block">
           <div className="container-app flex items-center justify-between gap-3 py-3 text-xs text-muted-foreground">
             <span>
-              © {new Date().getFullYear()} Corelia Academy. Tất cả quyền được bảo
-              lưu.
+              {t("footer.copyrightPrefix", { year: new Date().getFullYear() })}
             </span>
             {betaFeedbackUrl ? (
               <ReportIssueLink
@@ -62,7 +63,13 @@ const MainLayout = () => {
           {mobilePrimaryNav.map((item) => {
             const Icon = item.icon;
             if (item.href === "/menu") {
-              return <MobileMenuTab key={item.href} icon={Icon} label={item.label} />;
+              return (
+                <MobileMenuTab
+                  key={item.href}
+                  icon={Icon}
+                  label={t(item.labelKey)}
+                />
+              );
             }
             if (item.href === "/login") {
               return (
@@ -74,7 +81,7 @@ const MainLayout = () => {
                 >
                   <Icon className="size-4 shrink-0" weight="duotone" />
                   <span className="line-clamp-1 text-[11px] leading-4">
-                    {item.label}
+                    {t(item.labelKey)}
                   </span>
                 </button>
               );
@@ -96,7 +103,7 @@ const MainLayout = () => {
               >
                 <Icon className="size-4 shrink-0" weight="duotone" />
                 <span className="line-clamp-1 text-[11px] leading-4">
-                  {item.label}
+                  {t(item.labelKey)}
                 </span>
               </NavLink>
             );

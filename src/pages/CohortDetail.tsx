@@ -57,13 +57,8 @@ import type {
   OfflineCohortSession,
   OfflineEnrollmentStatus,
 } from "@/types/offline";
-
-function formatDateRange(start: string | null, end: string | null): string {
-  if (!start) return "Chưa lên lịch";
-  const startText = new Date(start).toLocaleString("vi-VN");
-  if (!end) return startText;
-  return `${startText} - ${new Date(end).toLocaleString("vi-VN")}`;
-}
+import { intlLocale } from "@/lib/intl";
+import { useTranslation } from "react-i18next";
 
 function toIsoOrNull(value: string): string | null {
   if (!value.trim()) return null;
@@ -71,10 +66,26 @@ function toIsoOrNull(value: string): string | null {
 }
 
 export default function CohortDetail() {
+  const { t } = useTranslation("cohorts");
+  const translate = useCallback(
+    (key: string, options?: Record<string, unknown>) =>
+      String(t(key as never, options as never)),
+    [t],
+  );
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const { profile } = useAuth();
   const isManageView = location.pathname.endsWith("/manage");
+
+  const formatDateRange = useCallback(
+    (start: string | null, end: string | null): string => {
+      if (!start) return translate("detail.scheduleUnknown");
+      const startText = new Date(start).toLocaleString(intlLocale());
+      if (!end) return startText;
+      return `${startText} - ${new Date(end).toLocaleString(intlLocale())}`;
+    },
+    [translate],
+  );
 
   const [course, setCourse] = useState<OfflineCourse | null>(null);
   const [cohorts, setCohorts] = useState<OfflineCohort[]>([]);
@@ -235,13 +246,13 @@ export default function CohortDetail() {
       })
       .catch((err) => {
         toast.error(
-          err instanceof Error ? err.message : "Không thể tải danh sách giảng viên Corelia.",
+          err instanceof Error ? err.message : translate("detail.toasts.loadInstructorsFailed"),
         );
       });
     return () => {
       active = false;
     };
-  }, []);
+  }, [translate]);
 
   useEffect(() => {
     if (!selectedNewCohortInstructor) return;
@@ -298,7 +309,7 @@ export default function CohortDetail() {
         listOfflineCohortsForCourse(id),
       ]);
       if (!courseRow) {
-        setError("Không tìm thấy khoá học offline.");
+        setError(translate("detail.toasts.courseNotFound"));
         setCourse(null);
         return;
       }
@@ -441,7 +452,7 @@ export default function CohortDetail() {
         );
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể tải khoá học offline.");
+      setError(err instanceof Error ? err.message : translate("detail.toasts.courseLoadFailed"));
     } finally {
       setLoading(false);
     }
@@ -451,6 +462,7 @@ export default function CohortDetail() {
     selectedAttendanceSessionId,
     selectedCohortId,
     selectedSubmissionSessionId,
+    translate,
   ]);
 
   useEffect(() => {
@@ -472,10 +484,12 @@ export default function CohortDetail() {
     setSavingStatus(true);
     try {
       await updateOfflineCohort(selectedCohort.id, { status: managerStatus });
-      toast.success("Đã cập nhật trạng thái cohort.");
+      toast.success(translate("detail.toasts.cohortStatusUpdated"));
       await loadData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể cập nhật trạng thái.");
+      toast.error(
+        err instanceof Error ? err.message : translate("detail.toasts.cohortStatusUpdateFailed"),
+      );
     } finally {
       setSavingStatus(false);
     }
@@ -541,7 +555,7 @@ export default function CohortDetail() {
           toast.error(
             meetErr instanceof Error
               ? meetErr.message
-              : "Đã tạo buổi học nhưng không thể tạo Google Meet tự động.",
+              : translate("detail.toasts.sessionCreateMeetFailed"),
           );
         }
       }
@@ -571,12 +585,12 @@ export default function CohortDetail() {
       });
       toast.success(
         sessionCreatedWithMeet
-          ? "Đã thêm buổi học và tạo Google Meet tự động."
-          : "Đã thêm buổi học.",
+          ? translate("detail.toasts.sessionAddedWithMeet")
+          : translate("detail.toasts.sessionAdded"),
       );
       await loadData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể thêm buổi học.");
+      toast.error(err instanceof Error ? err.message : translate("detail.toasts.sessionAddFailed"));
     } finally {
       setSavingSession(false);
     }
@@ -594,10 +608,12 @@ export default function CohortDetail() {
         student_email: selectedProfile.email,
       });
       setSelectedStudentId("");
-      toast.success("Đã thêm học viên vào cohort.");
+      toast.success(translate("detail.toasts.enrollmentAdded"));
       await loadData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể thêm học viên.");
+      toast.error(
+        err instanceof Error ? err.message : translate("detail.toasts.enrollmentAddFailed"),
+      );
     } finally {
       setSavingEnrollment(false);
     }
@@ -645,10 +661,10 @@ export default function CohortDetail() {
         ends_at: "",
         registration_notes: "",
       });
-      toast.success("Đã tạo cohort mới cho khoá học.");
+      toast.success(translate("detail.actions.createCohortSuccess"));
       await loadData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể tạo cohort mới.");
+      toast.error(err instanceof Error ? err.message : translate("detail.actions.createCohortFailed"));
     } finally {
       setSavingNewCohort(false);
     }
@@ -660,11 +676,11 @@ export default function CohortDetail() {
       courseSettingsForm.title.trim().length < 3 ||
       courseSettingsForm.tagline.trim().length < 12
     ) {
-      toast.error("Tên khoá học và tagline chưa đủ rõ.");
+      toast.error(translate("detail.actions.courseTitleTaglineTooShort"));
       return;
     }
     if (courseSettingsForm.instructor_ids.length === 0) {
-      toast.error("Hãy chọn ít nhất một giảng viên phụ trách cho khoá.");
+      toast.error(translate("detail.actions.courseInstructorRequired"));
       return;
     }
     setSavingCourseSettings(true);
@@ -682,11 +698,11 @@ export default function CohortDetail() {
         learning_outcomes: courseSettingsForm.learning_outcomes,
         published: courseSettingsForm.published,
       });
-      toast.success("Đã cập nhật thông tin khoá offline.");
+      toast.success(translate("detail.actions.courseUpdated"));
       await loadData();
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Không thể cập nhật khoá học offline.",
+        err instanceof Error ? err.message : translate("detail.actions.courseUpdateFailed"),
       );
     } finally {
       setSavingCourseSettings(false);
@@ -706,10 +722,10 @@ export default function CohortDetail() {
         assignment_completion_percent: Number(draft.assignment_completion_percent) || 0,
         mentor_note: draft.mentor_note,
       });
-      toast.success("Đã cập nhật roadmap học viên.");
+      toast.success(translate("detail.actions.roadmapUpdated"));
       await loadData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể cập nhật roadmap.");
+      toast.error(err instanceof Error ? err.message : translate("detail.actions.roadmapUpdateFailed"));
     } finally {
       setSavingRoadmapId(null);
     }
@@ -723,10 +739,10 @@ export default function CohortDetail() {
     setSavingAttendanceKey(key);
     try {
       await upsertOfflineAttendance(selectedCohort.id, sessionId, userId, studentName, draft);
-      toast.success("Đã cập nhật điểm danh.");
+      toast.success(translate("detail.actions.attendanceUpdated"));
       await loadData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể lưu điểm danh.");
+      toast.error(err instanceof Error ? err.message : translate("detail.actions.attendanceUpdateFailed"));
     } finally {
       setSavingAttendanceKey(null);
     }
@@ -739,10 +755,10 @@ export default function CohortDetail() {
     setSavingSubmissionSessionId(sessionId);
     try {
       await upsertOfflineAssignmentSubmission(selectedCohort.id, sessionId, draft);
-      toast.success("Đã lưu bài nộp.");
+      toast.success(translate("detail.actions.submissionSaved"));
       await loadData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể lưu bài nộp.");
+      toast.error(err instanceof Error ? err.message : translate("detail.actions.submissionSaveFailed"));
     } finally {
       setSavingSubmissionSessionId(null);
     }
@@ -761,10 +777,10 @@ export default function CohortDetail() {
         status,
         review_note: reviewDrafts[submissionId] ?? "",
       });
-      toast.success("Đã cập nhật kết quả bài tập.");
+      toast.success(translate("detail.actions.submissionReviewed"));
       await loadData();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể review bài nộp.");
+      toast.error(err instanceof Error ? err.message : translate("detail.actions.submissionReviewFailed"));
     } finally {
       setSavingReviewSubmissionId(null);
     }
@@ -773,7 +789,7 @@ export default function CohortDetail() {
   if (loading) {
     return (
       <div className="mx-auto max-w-[1990px] px-4 py-10 text-center text-muted-foreground">
-        Đang tải khoá học offline...
+        {translate("detail.errors.loadingCourse")}
       </div>
     );
   }
@@ -783,7 +799,7 @@ export default function CohortDetail() {
       <div className="mx-auto max-w-[1990px] px-4 py-10 text-center">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
           <p className="text-[15px] font-medium text-destructive">
-            {error || "Không tìm thấy khoá học offline."}
+            {error || translate("detail.toasts.courseNotFound")}
           </p>
           <div className="mt-3 flex justify-center">
             <ReportIssueLink className="h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
@@ -818,7 +834,9 @@ export default function CohortDetail() {
           <Card>
             <CardContent className="p-5 sm:p-6">
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {isManageView ? "Workspace khoá học offline" : "Khoá học offline"}
+                {isManageView
+                  ? translate("detail.ui.workspaceTitle")
+                  : translate("detail.ui.publicTitle")}
               </div>
               <h1 className="mt-2 text-3xl font-normal tracking-tight text-foreground">
                 {course.title}
@@ -833,7 +851,7 @@ export default function CohortDetail() {
                     Thành phố
                   </div>
                   <div className="mt-2 text-sm text-foreground">
-                    {course.venue_city || "Cập nhật sau"}
+                    {course.venue_city || translate("detail.fallbacks.venueCity")}
                   </div>
                 </div>
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
@@ -865,7 +883,7 @@ export default function CohortDetail() {
               {cohorts.length > 0 ? (
                 <div className="mt-5">
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                    Chọn cohort để xem chi tiết
+                    {translate("detail.ui.selectCohortLabel")}
                   </div>
                   <select
                     value={selectedCohortId}
@@ -886,7 +904,9 @@ export default function CohortDetail() {
           {course.description ? (
             <Card>
               <CardContent className="p-5 sm:p-6">
-                <h2 className="text-lg font-medium text-foreground">Tổng quan khoá học</h2>
+                <h2 className="text-lg font-medium text-foreground">
+                  {translate("detail.ui.courseOverviewTitle")}
+                </h2>
                 <p className="mt-3 whitespace-pre-wrap text-[15px] leading-7 text-muted-foreground">
                   {course.description}
                 </p>
@@ -900,15 +920,16 @@ export default function CohortDetail() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h2 className="text-lg font-medium text-foreground">
-                      Thông tin khoá học offline
+                      {translate("detail.ui.courseSettingsTitle")}
                     </h2>
                     <p className="mt-1.5 text-[14px] leading-6 text-muted-foreground">
-                      Đây là lớp thông tin gốc của khoá. Mọi cohort bên dưới sẽ dùng chung ngữ
-                      cảnh chương trình, chứng nhận và thông tin công khai này.
+                      {translate("detail.ui.courseSettingsDescription")}
                     </p>
                   </div>
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
-                    {courseSettingsForm.published ? "Đang hiển thị công khai" : "Đang ẩn"}
+                    {courseSettingsForm.published
+                      ? translate("detail.ui.publishedPublic")
+                      : translate("detail.ui.publishedHidden")}
                   </span>
                 </div>
 
@@ -919,7 +940,7 @@ export default function CohortDetail() {
                       setCourseSettingsForm((prev) => ({ ...prev, title: e.target.value }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Tên khoá học offline"
+                    placeholder={translate("detail.forms.course.titlePlaceholder")}
                   />
                   <input
                     value={courseSettingsForm.tagline}
@@ -927,7 +948,7 @@ export default function CohortDetail() {
                       setCourseSettingsForm((prev) => ({ ...prev, tagline: e.target.value }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Tagline mô tả khoá học"
+                    placeholder={translate("detail.forms.course.taglinePlaceholder")}
                   />
                   <select
                     value={courseSettingsForm.level}
@@ -939,7 +960,7 @@ export default function CohortDetail() {
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
                   >
-                    <option value="all">Mọi trình độ</option>
+                    <option value="all">{translate("detail.ui.levelAll")}</option>
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
                     <option value="advanced">Advanced</option>
@@ -953,14 +974,14 @@ export default function CohortDetail() {
                       }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Thành phố triển khai chính"
+                    placeholder={translate("detail.forms.course.venueCityPlaceholder")}
                   />
                   <div className="xl:col-span-2">
                     <ProfileCombobox
-                      title="Chọn giảng viên phụ trách"
-                      description="Một khoá offline có thể có nhiều giảng viên nội bộ Corelia cùng phụ trách."
+                      title={translate("detail.forms.course.instructorsTitle")}
+                      description={translate("detail.forms.course.instructorsDescription")}
                       options={instructorPickerOptions}
-                      placeholder="Chọn giảng viên phụ trách của khoá"
+                      placeholder={translate("detail.forms.course.instructorsPlaceholder")}
                       value={courseSettingsForm.instructor_ids}
                       onChange={(value) =>
                         setCourseSettingsForm((prev) => ({
@@ -980,7 +1001,7 @@ export default function CohortDetail() {
                       }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Tên chứng nhận"
+                    placeholder={translate("detail.forms.course.certificatePlaceholder")}
                   />
                   <input
                     value={courseSettingsForm.price_note}
@@ -991,7 +1012,7 @@ export default function CohortDetail() {
                       }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Ghi chú học phí / đăng ký"
+                    placeholder={translate("detail.forms.course.priceNotePlaceholder")}
                   />
                 </div>
 
@@ -1018,7 +1039,7 @@ export default function CohortDetail() {
                   }
                   rows={5}
                   className="mt-4 min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                  placeholder="Mô tả tổng quan khoá học offline"
+                  placeholder={translate("detail.forms.course.descriptionPlaceholder")}
                 />
                 <textarea
                   value={courseSettingsForm.learning_outcomes}
@@ -1030,7 +1051,7 @@ export default function CohortDetail() {
                   }
                   rows={4}
                   className="mt-4 min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                  placeholder="Chuẩn đầu ra, kỹ năng, kết quả học tập mong đợi"
+                  placeholder={translate("detail.forms.course.learningOutcomesPlaceholder")}
                 />
 
                 <label className="mt-4 flex items-center gap-3 rounded-2xl border border-border-subtle bg-background px-4 py-3 text-sm text-foreground">
@@ -1053,7 +1074,9 @@ export default function CohortDetail() {
                     disabled={savingCourseSettings}
                     onClick={() => void handleSaveCourseSettings()}
                   >
-                    {savingCourseSettings ? "Đang lưu..." : "Lưu thông tin khoá học"}
+                    {savingCourseSettings
+                      ? translate("detail.ui.saving")
+                      : translate("detail.buttons.saveCourse")}
                   </Button>
                 </div>
               </CardContent>
@@ -1152,7 +1175,7 @@ export default function CohortDetail() {
                       setNewCohortForm((prev) => ({ ...prev, title: e.target.value }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Tên cohort, ví dụ Cohort 2 · Tối T3 T5"
+                    placeholder={translate("detail.forms.cohort.namePlaceholder")}
                   />
                   <input
                     value={newCohortForm.tagline}
@@ -1160,7 +1183,7 @@ export default function CohortDetail() {
                       setNewCohortForm((prev) => ({ ...prev, tagline: e.target.value }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Tagline cho cohort này"
+                    placeholder={translate("detail.forms.cohort.taglinePlaceholder")}
                   />
                   <select
                     value={newCohortForm.status}
@@ -1174,7 +1197,7 @@ export default function CohortDetail() {
                   >
                     <option value="draft">Bản nháp</option>
                     <option value="published">Mở ghi danh</option>
-                    <option value="running">Đang diễn ra</option>
+                    <option value="running">{translate("detail.forms.cohort.statusRunning")}</option>
                     <option value="completed">Đã hoàn thành</option>
                   </select>
                   <select
@@ -1201,14 +1224,14 @@ export default function CohortDetail() {
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
                   >
                     <option value="google_meet">Google Meet</option>
-                    <option value="manual">Không dùng họp online</option>
+                    <option value="manual">{translate("detail.forms.cohort.meetingManual")}</option>
                   </select>
                   <div className="md:col-span-2 xl:col-span-2">
                     <ProfileCombobox
-                      title="Chọn giảng viên đứng lớp"
-                      description="Mỗi cohort chỉ có một giảng viên phụ trách chính. Khi chọn ở đây, giảng viên đó cũng được thêm vào danh sách phụ trách của khoá nếu chưa có."
+                      title={translate("detail.forms.cohort.instructorTitle")}
+                      description={translate("detail.forms.cohort.instructorDescription")}
                       options={instructorPickerOptions}
-                      placeholder="Chọn giảng viên cho cohort này"
+                      placeholder={translate("detail.forms.cohort.instructorPlaceholder")}
                       value={newCohortForm.instructor_id}
                       onChange={(value) =>
                         setNewCohortForm((prev) => ({
@@ -1224,7 +1247,7 @@ export default function CohortDetail() {
                       setNewCohortForm((prev) => ({ ...prev, venue_name: e.target.value }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Tên địa điểm"
+                    placeholder={translate("detail.forms.cohort.venueNamePlaceholder")}
                   />
                   <input
                     value={newCohortForm.venue_address}
@@ -1235,7 +1258,7 @@ export default function CohortDetail() {
                       }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Địa chỉ chi tiết"
+                    placeholder={translate("detail.forms.cohort.venueAddressPlaceholder")}
                   />
                   <input
                     value={newCohortForm.city}
@@ -1243,7 +1266,7 @@ export default function CohortDetail() {
                       setNewCohortForm((prev) => ({ ...prev, city: e.target.value }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Thành phố"
+                    placeholder={translate("detail.forms.cohort.cityPlaceholder")}
                   />
                   <input
                     value={newCohortForm.zoom_host_email}
@@ -1254,7 +1277,7 @@ export default function CohortDetail() {
                       }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Email host Google Meet"
+                    placeholder={translate("detail.forms.cohort.meetHostEmailPlaceholder")}
                   />
                   <input
                     value={newCohortForm.default_zoom_join_url}
@@ -1265,7 +1288,7 @@ export default function CohortDetail() {
                       }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Google Meet link cho học viên"
+                    placeholder={translate("detail.forms.cohort.meetJoinPlaceholder")}
                   />
                   <input
                     value={newCohortForm.default_zoom_start_url}
@@ -1276,7 +1299,7 @@ export default function CohortDetail() {
                       }))
                     }
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-                    placeholder="Google Meet link cho giảng viên"
+                    placeholder={translate("detail.forms.cohort.meetStartPlaceholder")}
                   />
                   <input
                     type="datetime-local"
@@ -1311,14 +1334,16 @@ export default function CohortDetail() {
                   }
                   rows={4}
                   className="mt-4 min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                  placeholder="Ghi chú cho đợt mở lớp này: quy định điểm danh, phòng học, cách xem recording..."
+                  placeholder={translate("detail.forms.cohort.notePlaceholder")}
                 />
                 <div className="mt-4 flex justify-end">
                   <Button
                     disabled={!canCreateCohort || savingNewCohort}
                     onClick={() => void handleCreateCohort()}
                   >
-                    {savingNewCohort ? "Đang tạo..." : "Tạo cohort mới"}
+                    {savingNewCohort
+                      ? translate("detail.ui.creating")
+                      : translate("detail.buttons.createCohort")}
                   </Button>
                 </div>
               </CardContent>
@@ -1362,7 +1387,9 @@ export default function CohortDetail() {
                       Địa điểm
                     </div>
                     <div className="mt-2 text-sm text-foreground">
-                      {selectedCohort.venue_name || selectedCohort.city || "Cập nhật sau"}
+                      {selectedCohort.venue_name ||
+                        selectedCohort.city ||
+                        translate("detail.fallbacks.venueCity")}
                     </div>
                   </div>
                   <div className="rounded-2xl border border-border-subtle bg-background p-4">
@@ -1421,7 +1448,9 @@ export default function CohortDetail() {
                             </div>
                           </div>
                           <div className="text-right text-[13px] text-muted-foreground">
-                            {session.location_label || selectedCohort.venue_name || "Theo lịch cập nhật"}
+                            {session.location_label ||
+                              selectedCohort.venue_name ||
+                              translate("detail.fallbacks.sessionLocation")}
                           </div>
                         </div>
 
@@ -1442,7 +1471,7 @@ export default function CohortDetail() {
                                   Xem lại buổi học
                                 </a>
                               ) : (
-                                "Chưa có recording"
+                                translate("detail.fallbacks.noRecording")
                               )}
                             </div>
                             <div className="mt-2 text-[12px] text-muted-foreground">
@@ -1478,11 +1507,11 @@ export default function CohortDetail() {
                             Bài tập tuần
                           </div>
                           <div className="mt-2 text-sm text-foreground">
-                            {session.assignment_title || "Không có bài tập riêng"}
+                            {session.assignment_title || translate("detail.fallbacks.noAssignment")}
                           </div>
                           {session.assignment_due_at ? (
                             <div className="mt-1 text-[13px] text-muted-foreground">
-                              Hạn nộp: {new Date(session.assignment_due_at).toLocaleString("vi-VN")}
+                              Hạn nộp: {new Date(session.assignment_due_at).toLocaleString(intlLocale())}
                             </div>
                           ) : null}
                         </div>
@@ -1499,7 +1528,7 @@ export default function CohortDetail() {
                                 );
                                 return attendance
                                   ? getOfflineAttendanceStatusLabel(attendance.status)
-                                  : "Chưa cập nhật";
+                                  : translate("detail.fallbacks.notUpdated");
                               })()}
                             </div>
                           </div>
@@ -1521,7 +1550,7 @@ export default function CohortDetail() {
                               }
                               rows={4}
                               className="mt-3 min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                              placeholder="Tóm tắt những gì bạn đã hoàn thành trong tuần này"
+                              placeholder={translate("detail.forms.studentSubmission.summaryPlaceholder")}
                             />
                             <input
                               value={submissionDrafts[session.id]?.proof_url ?? ""}
@@ -1535,10 +1564,12 @@ export default function CohortDetail() {
                                 }))
                               }
                               className="mt-3 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"
-                              placeholder="Link minh chứng / repo / file"
+                              placeholder={translate("detail.forms.studentSubmission.evidencePlaceholder")}
                             />
                             <Button className="mt-3" onClick={() => void handleSaveAssignmentSubmission(session.id)} disabled={savingSubmissionSessionId === session.id}>
-                              {savingSubmissionSessionId === session.id ? "Đang lưu..." : "Lưu bài nộp"}
+                              {savingSubmissionSessionId === session.id
+                                ? translate("detail.ui.saving")
+                                : translate("detail.buttons.saveSubmission")}
                             </Button>
                           </div>
                         ) : null}
@@ -1554,21 +1585,23 @@ export default function CohortDetail() {
             <>
               <Card>
                 <CardContent className="p-5 sm:p-6">
-                  <h2 className="text-lg font-medium text-foreground">Thêm buổi học mới</h2>
+                  <h2 className="text-lg font-medium text-foreground">
+                    {translate("detail.forms.session.addTitle")}
+                  </h2>
                   <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    <input value={sessionForm.week_index} onChange={(e) => setSessionForm((prev) => ({ ...prev, week_index: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Tuần số" />
-                    <input value={sessionForm.title} onChange={(e) => setSessionForm((prev) => ({ ...prev, title: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Tên buổi học" />
+                    <input value={sessionForm.week_index} onChange={(e) => setSessionForm((prev) => ({ ...prev, week_index: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.session.weekIndexPlaceholder")} />
+                    <input value={sessionForm.title} onChange={(e) => setSessionForm((prev) => ({ ...prev, title: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.session.titlePlaceholder")} />
                     <input type="datetime-local" value={sessionForm.starts_at} onChange={(e) => setSessionForm((prev) => ({ ...prev, starts_at: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" />
                     <input type="datetime-local" value={sessionForm.ends_at} onChange={(e) => setSessionForm((prev) => ({ ...prev, ends_at: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" />
-                    <input value={sessionForm.location_label} onChange={(e) => setSessionForm((prev) => ({ ...prev, location_label: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Phòng học / toà nhà" />
-                    <input value={sessionForm.location_address} onChange={(e) => setSessionForm((prev) => ({ ...prev, location_address: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Địa chỉ chi tiết" />
-                    <input value={sessionForm.zoom_join_url} onChange={(e) => setSessionForm((prev) => ({ ...prev, zoom_join_url: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Google Meet link cho học viên" />
-                    <input value={sessionForm.zoom_start_url} onChange={(e) => setSessionForm((prev) => ({ ...prev, zoom_start_url: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Google Meet link cho giảng viên" />
-                    <input value={sessionForm.recording_url} onChange={(e) => setSessionForm((prev) => ({ ...prev, recording_url: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Recording URL" />
-                    <input value={sessionForm.assignment_title} onChange={(e) => setSessionForm((prev) => ({ ...prev, assignment_title: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Tên bài tập tuần" />
+                    <input value={sessionForm.location_label} onChange={(e) => setSessionForm((prev) => ({ ...prev, location_label: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.session.roomPlaceholder")} />
+                    <input value={sessionForm.location_address} onChange={(e) => setSessionForm((prev) => ({ ...prev, location_address: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.session.addressPlaceholder")} />
+                    <input value={sessionForm.zoom_join_url} onChange={(e) => setSessionForm((prev) => ({ ...prev, zoom_join_url: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.session.meetJoinPlaceholder")} />
+                    <input value={sessionForm.zoom_start_url} onChange={(e) => setSessionForm((prev) => ({ ...prev, zoom_start_url: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.session.meetStartPlaceholder")} />
+                    <input value={sessionForm.recording_url} onChange={(e) => setSessionForm((prev) => ({ ...prev, recording_url: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.session.recordingUrlPlaceholder")} />
+                    <input value={sessionForm.assignment_title} onChange={(e) => setSessionForm((prev) => ({ ...prev, assignment_title: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.session.assignmentTitlePlaceholder")} />
                     <select value={sessionForm.meeting_status} onChange={(e) => setSessionForm((prev) => ({ ...prev, meeting_status: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm">
                       <option value="scheduled">Đã lên lịch</option>
-                      <option value="live">Đang diễn ra</option>
+                      <option value="live">{translate("detail.forms.session.recordingLive")}</option>
                       <option value="ended">Đã kết thúc</option>
                       <option value="cancelled">Đã huỷ</option>
                     </select>
@@ -1577,21 +1610,21 @@ export default function CohortDetail() {
                       <option value="zoom_import">Đồng bộ từ Google Meet</option>
                     </select>
                     <select value={sessionForm.recording_sync_status} onChange={(e) => setSessionForm((prev) => ({ ...prev, recording_sync_status: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm">
-                      <option value="not_expected">Không chờ recording</option>
+                      <option value="not_expected">{translate("detail.forms.session.recordingNotExpected")}</option>
                       <option value="pending">Chờ đồng bộ</option>
-                      <option value="processing">Đang xử lý</option>
+                      <option value="processing">{translate("detail.forms.session.recordingProcessing")}</option>
                       <option value="ready">Sẵn sàng</option>
                       <option value="failed">Lỗi đồng bộ</option>
                     </select>
-                    <input value={sessionForm.zoom_recording_count} onChange={(e) => setSessionForm((prev) => ({ ...prev, zoom_recording_count: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Số file recording" />
+                    <input value={sessionForm.zoom_recording_count} onChange={(e) => setSessionForm((prev) => ({ ...prev, zoom_recording_count: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.session.recordingCountPlaceholder")} />
                     <input type="datetime-local" value={sessionForm.assignment_due_at} onChange={(e) => setSessionForm((prev) => ({ ...prev, assignment_due_at: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" />
                     <input type="datetime-local" value={sessionForm.recording_ready_at} onChange={(e) => setSessionForm((prev) => ({ ...prev, recording_ready_at: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" />
                     <input type="datetime-local" value={sessionForm.last_zoom_sync_at} onChange={(e) => setSessionForm((prev) => ({ ...prev, last_zoom_sync_at: e.target.value }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" />
                   </div>
-                  <textarea value={sessionForm.summary} onChange={(e) => setSessionForm((prev) => ({ ...prev, summary: e.target.value }))} rows={4} className="mt-4 min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder="Mục tiêu của buổi học" />
-                  <textarea value={sessionForm.assignment_description} onChange={(e) => setSessionForm((prev) => ({ ...prev, assignment_description: e.target.value }))} rows={4} className="mt-4 min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder="Mô tả bài tập tuần" />
+                  <textarea value={sessionForm.summary} onChange={(e) => setSessionForm((prev) => ({ ...prev, summary: e.target.value }))} rows={4} className="mt-4 min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={translate("detail.forms.session.summaryPlaceholder")} />
+                  <textarea value={sessionForm.assignment_description} onChange={(e) => setSessionForm((prev) => ({ ...prev, assignment_description: e.target.value }))} rows={4} className="mt-4 min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={translate("detail.forms.session.assignmentDescriptionPlaceholder")} />
                   <Button className="mt-4" onClick={() => void handleAddSession()}>
-                    {savingSession ? "Đang lưu..." : "Thêm buổi học"}
+                    {savingSession ? translate("detail.ui.saving") : translate("detail.buttons.addSession")}
                   </Button>
                 </CardContent>
               </Card>
@@ -1601,7 +1634,9 @@ export default function CohortDetail() {
                   <h2 className="text-lg font-medium text-foreground">Học viên và roadmap</h2>
                   {canCoordinateRosterAccess ? (
                     <div className="mt-4 rounded-2xl border border-border-subtle bg-background p-4">
-                      <div className="text-[13px] font-medium text-foreground">Thêm học viên vào cohort</div>
+                      <div className="text-[13px] font-medium text-foreground">
+                        {translate("detail.forms.enrollment.addStudentTitle")}
+                      </div>
                       <div className="mt-3 flex flex-col gap-3 sm:flex-row">
                         <select value={selectedStudentId} onChange={(e) => setSelectedStudentId(e.target.value)} className="h-10 flex-1 rounded-lg border border-border bg-background px-3 text-sm">
                           <option value="">Chọn học viên đã có tài khoản</option>
@@ -1612,7 +1647,9 @@ export default function CohortDetail() {
                           ))}
                         </select>
                         <Button type="button" disabled={!selectedStudentId || savingEnrollment} onClick={() => void handleAddStudent()}>
-                          {savingEnrollment ? "Đang thêm..." : "Thêm học viên"}
+                          {savingEnrollment
+                            ? translate("detail.buttons.adding")
+                            : translate("detail.buttons.addStudent")}
                         </Button>
                       </div>
                     </div>
@@ -1634,19 +1671,21 @@ export default function CohortDetail() {
                           </div>
                           <div className="mt-4 grid gap-3 md:grid-cols-4">
                             <select value={draft?.status ?? item.status} onChange={(e) => setRoadmapDrafts((prev) => ({ ...prev, [item.user_id]: { ...prev[item.user_id], status: e.target.value as OfflineEnrollmentStatus } }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm">
-                              <option value="active">Đang theo học</option>
+                              <option value="active">{translate("detail.forms.enrollment.activeStatus")}</option>
                               <option value="at_risk">Cần theo dõi</option>
                               <option value="completed">Đã hoàn thành</option>
                               <option value="withdrawn">Đã rút</option>
                             </select>
-                            <input value={draft?.progress_percent ?? "0"} onChange={(e) => setRoadmapDrafts((prev) => ({ ...prev, [item.user_id]: { ...prev[item.user_id], progress_percent: e.target.value } }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Tiến độ %" />
-                            <input value={draft?.completed_sessions ?? "0"} onChange={(e) => setRoadmapDrafts((prev) => ({ ...prev, [item.user_id]: { ...prev[item.user_id], completed_sessions: e.target.value } }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Buổi đã học" />
-                            <input value={draft?.assignment_completion_percent ?? "0"} onChange={(e) => setRoadmapDrafts((prev) => ({ ...prev, [item.user_id]: { ...prev[item.user_id], assignment_completion_percent: e.target.value } }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Bài tập %" />
+                            <input value={draft?.progress_percent ?? "0"} onChange={(e) => setRoadmapDrafts((prev) => ({ ...prev, [item.user_id]: { ...prev[item.user_id], progress_percent: e.target.value } }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.enrollment.progressPlaceholder")} />
+                            <input value={draft?.completed_sessions ?? "0"} onChange={(e) => setRoadmapDrafts((prev) => ({ ...prev, [item.user_id]: { ...prev[item.user_id], completed_sessions: e.target.value } }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.enrollment.completedSessionsPlaceholder")} />
+                            <input value={draft?.assignment_completion_percent ?? "0"} onChange={(e) => setRoadmapDrafts((prev) => ({ ...prev, [item.user_id]: { ...prev[item.user_id], assignment_completion_percent: e.target.value } }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.enrollment.assignmentCompletionPlaceholder")} />
                           </div>
-                          <textarea value={draft?.mentor_note ?? ""} onChange={(e) => setRoadmapDrafts((prev) => ({ ...prev, [item.user_id]: { ...prev[item.user_id], mentor_note: e.target.value } }))} rows={3} className="mt-4 min-h-20 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder="Nhận xét từ đội ngũ học tập" />
+                          <textarea value={draft?.mentor_note ?? ""} onChange={(e) => setRoadmapDrafts((prev) => ({ ...prev, [item.user_id]: { ...prev[item.user_id], mentor_note: e.target.value } }))} rows={3} className="mt-4 min-h-20 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={translate("detail.forms.enrollment.mentorNotePlaceholder")} />
                           <div className="mt-4 flex justify-end">
                             <Button onClick={() => void handleSaveRoadmap(item.user_id)} disabled={savingRoadmapId === item.user_id}>
-                              {savingRoadmapId === item.user_id ? "Đang lưu..." : "Lưu roadmap"}
+                              {savingRoadmapId === item.user_id
+                                ? translate("detail.ui.saving")
+                                : translate("detail.buttons.saveRoadmap")}
                             </Button>
                           </div>
                         </div>
@@ -1682,9 +1721,11 @@ export default function CohortDetail() {
                                   <option value="excused">Có phép</option>
                                   <option value="absent">Vắng mặt</option>
                                 </select>
-                                <input value={draft.note} onChange={(e) => setAttendanceDrafts((prev) => ({ ...prev, [key]: { ...draft, note: e.target.value } }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Ghi chú điểm danh" />
+                                <input value={draft.note} onChange={(e) => setAttendanceDrafts((prev) => ({ ...prev, [key]: { ...draft, note: e.target.value } }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.attendance.notePlaceholder")} />
                                 <Button onClick={() => void handleSaveAttendance(selectedAttendanceSessionId, item.user_id, item.student_name)} disabled={savingAttendanceKey === key}>
-                                  {savingAttendanceKey === key ? "Đang lưu..." : "Lưu"}
+                                  {savingAttendanceKey === key
+                                    ? translate("detail.ui.saving")
+                                    : translate("detail.buttons.save")}
                                 </Button>
                               </div>
                             </div>
@@ -1734,7 +1775,7 @@ export default function CohortDetail() {
                                   Mở minh chứng
                                 </a>
                               ) : null}
-                              <input value={reviewDrafts[submission.id] ?? ""} onChange={(e) => setReviewDrafts((prev) => ({ ...prev, [submission.id]: e.target.value }))} className="mt-4 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm" placeholder="Nhận xét cho học viên" />
+                              <input value={reviewDrafts[submission.id] ?? ""} onChange={(e) => setReviewDrafts((prev) => ({ ...prev, [submission.id]: e.target.value }))} className="mt-4 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm" placeholder={translate("detail.forms.review.placeholder")} />
                               <div className="mt-4 flex flex-wrap gap-2">
                                 <Button onClick={() => void handleReviewSubmission(submission.id, submission.session_id, submission.user_id, "passed")} disabled={savingReviewSubmissionId === submission.id}>
                                   Đạt yêu cầu
@@ -1749,7 +1790,9 @@ export default function CohortDetail() {
                       </div>
                     </>
                   ) : (
-                    <div className="mt-4 text-sm text-muted-foreground">Chưa có buổi nào gắn bài tập.</div>
+                    <div className="mt-4 text-sm text-muted-foreground">
+                      {translate("detail.labels.noSessionsWithAssignments")}
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -1761,7 +1804,7 @@ export default function CohortDetail() {
           <Card>
             <CardContent className="p-5 sm:p-6">
               <h2 className="text-lg font-medium text-foreground">
-                {isManageView ? "Điều phối khoá học" : "Thông tin chương trình"}
+                {isManageView ? translate("detail.sections.manage") : translate("detail.sections.public")}
               </h2>
               <div className="mt-4 space-y-4">
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
@@ -1769,7 +1812,7 @@ export default function CohortDetail() {
                     Chứng nhận
                   </div>
                   <div className="mt-2 text-sm text-foreground">
-                    {course.certificate_title || "Theo cấu hình khoá học"}
+                    {course.certificate_title || translate("detail.fallbacks.certificateTitle")}
                   </div>
                 </div>
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
@@ -1777,7 +1820,7 @@ export default function CohortDetail() {
                     Học phí / ghi chú
                   </div>
                   <div className="mt-2 text-sm text-foreground">
-                    {course.price_note || "Cập nhật trong đợt mở cohort cụ thể"}
+                    {course.price_note || translate("detail.fallbacks.priceNote")}
                   </div>
                 </div>
                 {selectedCohort ? (
@@ -1802,11 +1845,11 @@ export default function CohortDetail() {
                   <select value={managerStatus} onChange={(e) => setManagerStatus(e.target.value as OfflineCohort["status"])} className="mt-4 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">
                     <option value="draft">Bản nháp</option>
                     <option value="published">Mở ghi danh</option>
-                    <option value="running">Đang diễn ra</option>
+                    <option value="running">{translate("detail.forms.cohort.statusRunning")}</option>
                     <option value="completed">Đã hoàn thành</option>
                   </select>
                   <Button className="mt-4 w-full" onClick={() => void handleSaveStatus()}>
-                    {savingStatus ? "Đang lưu..." : "Lưu trạng thái cohort"}
+                    {savingStatus ? translate("detail.ui.saving") : translate("detail.buttons.saveStatus")}
                   </Button>
                 </CardContent>
               </Card>
@@ -1820,7 +1863,7 @@ export default function CohortDetail() {
                         Host email
                       </div>
                       <div className="mt-2 text-sm text-foreground">
-                        {selectedCohort.zoom_host_email || "Chưa gắn host Google Meet"}
+                        {selectedCohort.zoom_host_email || translate("detail.fallbacks.noMeetHost")}
                       </div>
                     </div>
                     <div className="rounded-2xl border border-border-subtle bg-background p-4">

@@ -59,10 +59,9 @@ import {
   uploadCertificateTemplate,
 } from "@/lib/storage";
 import {
-  COURSE_ACCESS_MODEL_LABELS,
-  COURSE_LEVEL_LABELS,
-  COURSE_OWNER_TYPE_LABELS,
   getCourseOwnerTypeLabel,
+  getCourseAccessModelLabel,
+  getCourseLevelLabel,
   formatVndPrice,
   formatDuration,
   type PartnerCourseDocument,
@@ -92,12 +91,14 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { intlLocale } from "@/lib/intl";
+import { useTranslation } from "react-i18next";
 
 const normalizeVndDigits = (value: string) =>
   value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
 
 const formatVndInput = (value: string) =>
-  value ? Number(value).toLocaleString("vi-VN") : "";
+  value ? Number(value).toLocaleString(intlLocale()) : "";
 
 const EDIT_SECTION_IDS = [
   "info",
@@ -121,6 +122,7 @@ const getNextOrder = (items: Array<{ order?: number | null }>) =>
   items.reduce((max, item) => Math.max(max, Number(item.order ?? -1)), -1) + 1;
 
 const InstructorCourseEdit = () => {
+  const { t } = useTranslation("instructor");
   const { id } = useParams<{ id: string }>();
   const { profile } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
@@ -356,7 +358,9 @@ const InstructorCourseEdit = () => {
       })
       .catch((e) => {
         if (!cancelled)
-          setError(e instanceof Error ? e.message : "Lỗi tải khoá học");
+          setError(
+            e instanceof Error ? e.message : t("courseEdit.errors.loadCourseFailed"),
+          );
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -364,7 +368,7 @@ const InstructorCourseEdit = () => {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, t]);
 
   // Backfill tổng thời lượng khi mở trang (để danh sách khoá học bên ngoài hiển thị đúng)
   useEffect(() => {
@@ -379,11 +383,9 @@ const InstructorCourseEdit = () => {
     setRefreshingTotal(true);
     try {
       await refreshCourseTotalDuration(id);
-      toast.success(
-        "Đã cập nhật tổng thời lượng. Trang danh sách khoá học sẽ hiển thị đúng.",
-      );
+      toast.success(t("courseEdit.toasts.totalDurationRefreshed"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Lỗi cập nhật");
+      toast.error(e instanceof Error ? e.message : t("courseEdit.errors.refreshTotalFailed"));
     } finally {
       setRefreshingTotal(false);
     }
@@ -420,17 +422,17 @@ const InstructorCourseEdit = () => {
       );
       setForm((p) => ({ ...p, thumbnail_url: result.url }));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi tải ảnh bìa khoá học");
+      setError(e instanceof Error ? e.message : t("courseEdit.errors.uploadThumbnailFailed"));
     } finally {
       setUploadingThumb(false);
       e.target.value = "";
     }
   };
 
-  const saveCourseInfo = async (successMessage = "Đã lưu thay đổi.") => {
+  const saveCourseInfo = async (successMessage = t("courseEdit.toasts.saved")) => {
     if (!id || !course) return;
     if (form.access_model === "paid_upfront" && Number(form.price_vnd) <= 0) {
-      setError("Nhập giá khoá học hợp lệ cho mô hình trả phí trước.");
+      setError(t("courseEdit.errors.invalidPaidPrice"));
       return;
     }
     if (
@@ -438,15 +440,13 @@ const InstructorCourseEdit = () => {
       form.promo_price_vnd &&
       Number(form.promo_price_vnd) >= Number(form.price_vnd || 0)
     ) {
-      setError("Giá khuyến mãi phải nhỏ hơn giá gốc.");
+      setError(t("courseEdit.errors.invalidPromoPrice"));
       return;
     }
     if (form.access_model === "paid_upfront" && form.promo_ends_at) {
       const ts = Date.parse(form.promo_ends_at);
       if (!Number.isFinite(ts)) {
-        setError(
-          "Thời gian kết thúc khuyến mãi không hợp lệ (cần ISO string).",
-        );
+        setError(t("courseEdit.errors.invalidPromoEndsAt"));
         return;
       }
     }
@@ -454,7 +454,7 @@ const InstructorCourseEdit = () => {
       form.access_model === "free_with_paid_certificate" &&
       Number(form.certificate_fee_vnd) <= 0
     ) {
-      setError("Nhập phí chứng nhận hợp lệ cho mô hình học miễn phí.");
+      setError(t("courseEdit.errors.invalidCertificateFee"));
       return;
     }
     if (
@@ -462,7 +462,7 @@ const InstructorCourseEdit = () => {
       (Number(form.platform_revenue_share_percent) < 0 ||
         Number(form.platform_revenue_share_percent) > 100)
     ) {
-      setError("Tỷ lệ chia sẻ cho nền tảng phải từ 0 đến 100%.");
+      setError(t("courseEdit.errors.invalidRevenueShare"));
       return;
     }
     setSaving(true);
@@ -566,7 +566,7 @@ const InstructorCourseEdit = () => {
       );
       toast.success(successMessage);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi cập nhật");
+      setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     } finally {
       setSaving(false);
     }
@@ -608,11 +608,11 @@ const InstructorCourseEdit = () => {
       }
       toast.success(
         status === "approved"
-          ? "Đã duyệt bài. Chứng nhận sẽ được cấp nếu học viên đã hoàn thành 100% bài học."
-          : "Đã từ chối bài.",
+          ? t("courseEdit.toasts.assignmentApproved")
+          : t("courseEdit.toasts.assignmentRejected"),
       );
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Lỗi xử lý");
+      toast.error(e instanceof Error ? e.message : t("courseEdit.errors.processFailed"));
     } finally {
       setReviewingSubmissionId(null);
     }
@@ -649,10 +649,12 @@ const InstructorCourseEdit = () => {
         certificate_template_url: result.url,
         certificate_template_path: result.path,
       }));
-      toast.success("Đã tải template chứng nhận lên.");
+      toast.success(t("courseEdit.toasts.certTemplateUploaded"));
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Lỗi tải template chứng nhận",
+        err instanceof Error
+          ? err.message
+          : t("courseEdit.errors.uploadCertTemplateFailed"),
       );
     } finally {
       setUploadingCert(false);
@@ -690,11 +692,13 @@ const InstructorCourseEdit = () => {
       }));
       toast.success(
         kind === "contract"
-          ? "Đã tải lên hồ sơ hợp đồng."
-          : "Đã tải lên hồ sơ hoá đơn.",
+          ? t("courseEdit.toasts.partnerContractUploaded")
+          : t("courseEdit.toasts.partnerInvoiceUploaded"),
       );
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi tải tài liệu đối tác");
+      setError(
+        e instanceof Error ? e.message : t("courseEdit.errors.uploadPartnerDocsFailed"),
+      );
     } finally {
       if (kind === "contract") setUploadingContractDoc(false);
       else setUploadingInvoiceDoc(false);
@@ -712,7 +716,7 @@ const InstructorCourseEdit = () => {
       setSections((prev) => [...prev, sec]);
       setNewSectionTitle("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi thêm chương");
+      setError(e instanceof Error ? e.message : t("courseEdit.errors.addSectionFailed"));
     } finally {
       setAddingSection(false);
     }
@@ -731,7 +735,7 @@ const InstructorCourseEdit = () => {
       const durationSeconds = fromInput > 0 ? fromInput : fromApi;
       const les = await addLesson(id, {
         section_id: sectionId,
-        title: newLessonTitle.trim() || "Bài học",
+        title: newLessonTitle.trim() || t("courseEdit.defaults.lessonTitle"),
         youtube_url: newLessonYoutubeUrl.trim(),
         duration_seconds: durationSeconds,
         order: getNextOrder(secLessons),
@@ -746,7 +750,7 @@ const InstructorCourseEdit = () => {
       setAddingLessonSectionId(null);
       await refreshCourseTotalDuration(id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi thêm bài học");
+      setError(e instanceof Error ? e.message : t("courseEdit.errors.addLessonFailed"));
     } finally {
       setAddingLessonInProgress(false);
     }
@@ -765,12 +769,12 @@ const InstructorCourseEdit = () => {
         ),
       );
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi cập nhật bài học thử");
+      setError(e instanceof Error ? e.message : t("courseEdit.errors.updatePreviewFailed"));
     }
   };
 
   const handleDeleteSection = async (sectionId: string) => {
-    if (!id || !confirm("Xoá chương và toàn bộ bài học trong chương?")) return;
+    if (!id || !confirm(t("courseEdit.confirm.deleteSection"))) return;
     const secLessons = lessons.filter((l) => l.section_id === sectionId);
     try {
       await deleteSection(
@@ -782,32 +786,32 @@ const InstructorCourseEdit = () => {
       setLessons((prev) => prev.filter((l) => l.section_id !== sectionId));
       await refreshCourseTotalDuration(id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi xoá chương");
+      setError(e instanceof Error ? e.message : t("courseEdit.errors.deleteSectionFailed"));
     }
   };
 
   const handleDeleteLesson = async (lessonId: string) => {
-    if (!id || !confirm("Xoá bài học?")) return;
+    if (!id || !confirm(t("courseEdit.confirm.deleteLesson"))) return;
     try {
       await deleteLesson(id, lessonId);
       setLessons((prev) => prev.filter((l) => l.id !== lessonId));
       await refreshCourseTotalDuration(id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi xoá bài học");
+      setError(e instanceof Error ? e.message : t("courseEdit.errors.deleteLessonFailed"));
     }
   };
 
   const handleDeleteCourse = async () => {
     if (
       !id ||
-      !confirm("Xoá toàn bộ khoá học và nội dung? Không thể hoàn tác.")
+      !confirm(t("courseEdit.confirm.deleteCourse"))
     )
       return;
     try {
       await deleteCourse(id);
       window.location.href = "/instructor/courses";
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi xoá khoá học");
+      setError(e instanceof Error ? e.message : t("courseEdit.errors.deleteCourseFailed"));
     }
   };
 
@@ -902,7 +906,9 @@ const InstructorCourseEdit = () => {
     } catch (e) {
       setLessons(previousLessons);
       const message =
-        e instanceof Error ? e.message : "Không thể cập nhật thứ tự bài học";
+        e instanceof Error
+          ? e.message
+          : t("courseEdit.errors.reorderLessonsFailed");
       setError(message);
       toast.error(message);
     } finally {
@@ -1042,23 +1048,23 @@ const InstructorCourseEdit = () => {
     return (
       <div className="mx-auto max-w-[1990px] px-4 py-8">
         <p className="text-muted-foreground">
-          Bạn không có quyền sửa khoá học này.
+          {t("courseEdit.access.noPermission")}
         </p>
         <Link
           to="/instructor/courses"
           className="mt-4 inline-flex items-center gap-2 text-foreground hover:underline"
         >
-          <ArrowLeft className="size-4" /> Quản lý giảng dạy
+          <ArrowLeft className="size-4" /> {t("courseEdit.access.backToTeaching")}
         </Link>
       </div>
     );
   }
 
   const editorStats = [
-    { label: "Chương", value: String(sections.length), icon: List },
-    { label: "Bài học", value: String(lessons.length), icon: PlayCircle },
-    { label: "Học viên", value: String(enrollments.length), icon: Users },
-    { label: "Bài nộp", value: String(submissions.length), icon: FileText },
+    { label: t("courseEdit.stats.sections"), value: String(sections.length), icon: List },
+    { label: t("courseEdit.stats.lessons"), value: String(lessons.length), icon: PlayCircle },
+    { label: t("courseEdit.stats.students"), value: String(enrollments.length), icon: Users },
+    { label: t("courseEdit.stats.submissions"), value: String(submissions.length), icon: FileText },
   ];
 
   return (
@@ -1067,13 +1073,15 @@ const InstructorCourseEdit = () => {
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap gap-2">
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
-              {course.published ? "Đã xuất bản" : "Bản nháp"}
+              {course.published
+                ? t("courseEdit.labels.published")
+                : t("courseEdit.labels.draft")}
             </span>
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
-              {COURSE_ACCESS_MODEL_LABELS[course.access_model ?? "free"]}
+              {getCourseAccessModelLabel(course.access_model)}
             </span>
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
-              {COURSE_LEVEL_LABELS[course.level]}
+              {getCourseLevelLabel(course.level)}
             </span>
           </div>
         </div>
@@ -1240,7 +1248,7 @@ const InstructorCourseEdit = () => {
               </h2>
               <FieldGroup className="mt-4">
                 <Field>
-                  <FieldLabel>Tên khoá học</FieldLabel>
+                  <FieldLabel>{t("courseEdit.form.titleLabel")}</FieldLabel>
                   <Input
                     value={form.title}
                     onChange={(e) =>
@@ -1258,7 +1266,7 @@ const InstructorCourseEdit = () => {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Mô tả ngắn</FieldLabel>
+                  <FieldLabel>{t("courseEdit.form.shortDescriptionLabel")}</FieldLabel>
                   <Input
                     value={form.short_description}
                     onChange={(e) =>
@@ -1267,11 +1275,11 @@ const InstructorCourseEdit = () => {
                         short_description: e.target.value,
                       }))
                     }
-                    placeholder="Một dòng mô tả (tuỳ chọn)"
+                    placeholder={t("courseEdit.form.shortDescriptionPlaceholder")}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Mô tả</FieldLabel>
+                  <FieldLabel>{t("courseEdit.form.descriptionLabel")}</FieldLabel>
                   <textarea
                     value={form.description}
                     onChange={(e) =>
@@ -1282,7 +1290,7 @@ const InstructorCourseEdit = () => {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Ảnh bìa khoá học</FieldLabel>
+                  <FieldLabel>{t("courseEdit.form.thumbnailLabel")}</FieldLabel>
                   <div className="mt-1 flex items-center gap-3">
                     <input
                       ref={fileInputRef}
@@ -1298,7 +1306,9 @@ const InstructorCourseEdit = () => {
                       disabled={uploadingThumb}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      {uploadingThumb ? "Đang tải ảnh..." : "Tải ảnh bìa lên"}
+                      {uploadingThumb
+                        ? t("courseEdit.labels.uploadingThumb")
+                        : t("courseEdit.labels.uploadThumb")}
                     </Button>
                     {course.thumbnail_url && (
                       <img
@@ -1326,13 +1336,16 @@ const InstructorCourseEdit = () => {
                         disabled={!canManageBusinessSettings}
                         className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
                       >
-                        {Object.entries(COURSE_OWNER_TYPE_LABELS).map(
-                          ([value, label]) => (
-                            <option key={value} value={value}>
-                              {label}
-                            </option>
-                          ),
-                        )}
+                        {(
+                          [
+                            ["corelia", getCourseOwnerTypeLabel("corelia")],
+                            ["external_partner", getCourseOwnerTypeLabel("external_partner")],
+                          ] as const
+                        ).map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
                       </select>
                       {!canManageBusinessSettings && (
                         <p className="mt-1 text-xs text-muted-foreground">
@@ -1347,7 +1360,7 @@ const InstructorCourseEdit = () => {
                     {form.owner_type === "external_partner" && (
                       <>
                         <Field>
-                          <FieldLabel>Tỷ lệ doanh thu nền tảng (%)</FieldLabel>
+                          <FieldLabel>{t("courseEdit.form.platformRevenueShareLabel")}</FieldLabel>
                           <Input
                             type="number"
                             min={0}
@@ -1383,7 +1396,7 @@ const InstructorCourseEdit = () => {
                             disabled={!canManageBusinessSettings}
                             rows={4}
                             className="min-h-[90px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-                            placeholder="Ví dụ: Ngân hàng, số tài khoản, chủ tài khoản, nội dung chuyển khoản theo hợp đồng..."
+                            placeholder={t("courseEdit.form.partnerTransferPlaceholder")}
                           />
                           <p className="mt-1 text-xs text-muted-foreground">
                             Hiển thị cho giảng viên đối tác trong mục Hoá đơn &
@@ -1391,7 +1404,7 @@ const InstructorCourseEdit = () => {
                           </p>
                         </Field>
                         <Field>
-                          <FieldLabel>Hồ sơ hợp đồng đối tác</FieldLabel>
+                          <FieldLabel>{t("courseEdit.form.partnerContractDocsLabel")}</FieldLabel>
                           <Input
                             type="file"
                             disabled={
@@ -1428,7 +1441,7 @@ const InstructorCourseEdit = () => {
                           )}
                         </Field>
                         <Field>
-                          <FieldLabel>Hồ sơ hoá đơn / đối soát</FieldLabel>
+                          <FieldLabel>{t("courseEdit.form.partnerInvoiceDocsLabel")}</FieldLabel>
                           <Input
                             type="file"
                             disabled={
@@ -1469,7 +1482,7 @@ const InstructorCourseEdit = () => {
                   </>
                 )}
                 <Field>
-                  <FieldLabel>Cấp độ</FieldLabel>
+                  <FieldLabel>{t("courseEdit.form.levelLabel")}</FieldLabel>
                   <select
                     value={form.level}
                     onChange={(e) =>
@@ -1480,13 +1493,18 @@ const InstructorCourseEdit = () => {
                     }
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    {Object.entries(COURSE_LEVEL_LABELS).map(
-                      ([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ),
-                    )}
+                    {(
+                      [
+                        ["beginner", getCourseLevelLabel("beginner")],
+                        ["intermediate", getCourseLevelLabel("intermediate")],
+                        ["advanced", getCourseLevelLabel("advanced")],
+                        ["all", getCourseLevelLabel("all")],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
                   </select>
                 </Field>
                 <Field>
@@ -1500,17 +1518,17 @@ const InstructorCourseEdit = () => {
                       className="rounded border-input"
                     />
                     <span className="text-sm font-medium">
-                      Đã xuất bản (hiển thị trên trang Khoá học)
+                      {t("courseEdit.publishing.publishedHint")}
                     </span>
                   </label>
                 </Field>
               </FieldGroup>
               <Button
                 className="mt-4"
-                onClick={() => void saveCourseInfo("Đã lưu thông tin chung.")}
+                onClick={() => void saveCourseInfo(t("courseEdit.labels.saveInfo"))}
                 disabled={saving}
               >
-                {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                {saving ? t("courseEdit.labels.saving") : t("courseEdit.labels.save")}
               </Button>
             </section>
           )}
@@ -1527,7 +1545,7 @@ const InstructorCourseEdit = () => {
 
               <FieldGroup className="mt-4">
                 <Field>
-                  <FieldLabel>Loại khoá học</FieldLabel>
+                  <FieldLabel>{t("courseEdit.pricing.accessModelLabel")}</FieldLabel>
                   <select
                     value={form.access_model}
                     onChange={(e) =>
@@ -1538,20 +1556,27 @@ const InstructorCourseEdit = () => {
                     }
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    {Object.entries(COURSE_ACCESS_MODEL_LABELS).map(
-                      ([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ),
-                    )}
+                    {(
+                      [
+                        ["free", getCourseAccessModelLabel("free")],
+                        ["paid_upfront", getCourseAccessModelLabel("paid_upfront")],
+                        [
+                          "free_with_paid_certificate",
+                          getCourseAccessModelLabel("free_with_paid_certificate"),
+                        ],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
                   </select>
                 </Field>
 
                 {form.access_model === "paid_upfront" && (
                   <>
                     <Field>
-                      <FieldLabel>Giá mở toàn bộ khoá học (VND)</FieldLabel>
+                      <FieldLabel>{t("courseEdit.pricing.priceVndLabel")}</FieldLabel>
                       <Input
                         type="text"
                         inputMode="numeric"
@@ -1570,7 +1595,7 @@ const InstructorCourseEdit = () => {
                     </Field>
 
                     <Field>
-                      <FieldLabel>Giá khuyến mãi (VND)</FieldLabel>
+                      <FieldLabel>{t("courseEdit.pricing.promoPriceVndLabel")}</FieldLabel>
                       <Input
                         type="text"
                         inputMode="numeric"
@@ -1581,7 +1606,7 @@ const InstructorCourseEdit = () => {
                             promo_price_vnd: normalizeVndDigits(e.target.value),
                           }))
                         }
-                        placeholder="Để trống nếu không khuyến mãi"
+                        placeholder={t("courseEdit.pricing.promoPricePlaceholder")}
                       />
                       <p className="mt-1 text-xs text-muted-foreground">
                         Giá khuyến mãi phải nhỏ hơn giá gốc.
@@ -1589,7 +1614,7 @@ const InstructorCourseEdit = () => {
                     </Field>
 
                     <Field>
-                      <FieldLabel>Hẹn giờ kết thúc khuyến mãi (ISO)</FieldLabel>
+                      <FieldLabel>{t("courseEdit.pricing.promoEndsAtLabel")}</FieldLabel>
                       <Input
                         value={form.promo_ends_at}
                         onChange={(e) =>
@@ -1612,7 +1637,7 @@ const InstructorCourseEdit = () => {
                             Mã giảm giá & khuyến mãi
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Tạo mã giảm giá (theo % hoặc số tiền) và giới hạn
+                            {t("courseEdit.discounts.createTitle")}
                             thời gian/lượt dùng.
                           </p>
                         </div>
@@ -1629,7 +1654,9 @@ const InstructorCourseEdit = () => {
                               .finally(() => setLoadingDiscounts(false));
                           }}
                         >
-                          {loadingDiscounts ? "Đang tải..." : "Tải lại"}
+                          {loadingDiscounts
+                            ? t("courseEdit.labels.loading")
+                            : t("courseEdit.labels.reload")}
                         </Button>
                       </div>
 
@@ -1709,7 +1736,9 @@ const InstructorCourseEdit = () => {
                                           );
                                         }}
                                       >
-                                        {d.active ? "Tắt" : "Bật"}
+                                        {d.active
+                                          ? t("courseEdit.discounts.activeOff")
+                                          : t("courseEdit.discounts.activeOn")}
                                       </Button>
                                       <Button
                                         type="button"
@@ -1874,19 +1903,21 @@ const InstructorCourseEdit = () => {
                                   ends_at: "",
                                   max_redemptions: "",
                                 });
-                                toast.success("Đã tạo mã giảm giá.");
+                                toast.success(t("courseEdit.toasts.discountCreated"));
                               } catch (e) {
                                 toast.error(
                                   e instanceof Error
                                     ? e.message
-                                    : "Không tạo được mã giảm giá.",
+                                    : t("courseEdit.errors.createDiscountFailed"),
                                 );
                               } finally {
                                 setCreatingDiscount(false);
                               }
                             }}
                           >
-                            {creatingDiscount ? "Đang tạo..." : "Tạo mã"}
+                            {creatingDiscount
+                              ? t("courseEdit.labels.creatingDiscount")
+                              : t("courseEdit.labels.createDiscount")}
                           </Button>
                         </div>
                       </div>
@@ -1923,11 +1954,11 @@ const InstructorCourseEdit = () => {
               <Button
                 className="mt-4"
                 onClick={() =>
-                  void saveCourseInfo("Đã lưu thay đổi giá & thanh toán.")
+                  void saveCourseInfo(t("courseEdit.labels.savePricing"))
                 }
                 disabled={saving}
               >
-                {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                {saving ? t("courseEdit.labels.saving") : t("courseEdit.labels.save")}
               </Button>
             </section>
           )}
@@ -1952,8 +1983,8 @@ const InstructorCourseEdit = () => {
                     onClick={() => void handleRefreshTotalDuration()}
                   >
                     {refreshingTotal
-                      ? "Đang cập nhật…"
-                      : "Cập nhật tổng thời lượng"}
+                      ? t("courseEdit.labels.updating")
+                      : t("courseEdit.labels.updateTotalDuration")}
                   </Button>
                 </div>
               </div>
@@ -1965,7 +1996,7 @@ const InstructorCourseEdit = () => {
               <div className="mt-4 space-y-6">
                 {form.access_model === "paid_upfront" && (
                   <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
-                    Khoá học trả phí trước: bật "Học thử miễn phí" cho các bài
+                    {t("courseEdit.pricing.updateTotalDurationLabelPrefix")}
                     muốn mở cho học viên chưa thanh toán.
                   </div>
                 )}
@@ -2030,7 +2061,7 @@ const InstructorCourseEdit = () => {
                                 }
                                 onDragEnd={clearLessonDragState}
                                 aria-label={`Kéo để đổi thứ tự bài ${lesson.title}`}
-                                title="Kéo để đổi thứ tự"
+                                title={t("courseEdit.tooltips.dragReorder")}
                                 className="flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-muted-foreground transition hover:border-border-subtle hover:bg-muted hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 <DotsSixVertical className="size-4" />
@@ -2060,7 +2091,7 @@ const InstructorCourseEdit = () => {
                                   void handleMoveLesson(section.id, lesson.id, -1)
                                 }
                                 aria-label={`Đưa bài ${lesson.title} lên trên`}
-                                title="Đưa lên trên"
+                                title={t("courseEdit.tooltips.moveUp")}
                               >
                                 <ArrowLineUp className="size-4" />
                               </Button>
@@ -2076,7 +2107,7 @@ const InstructorCourseEdit = () => {
                                   void handleMoveLesson(section.id, lesson.id, 1)
                                 }
                                 aria-label={`Đưa bài ${lesson.title} xuống dưới`}
-                                title="Đưa xuống dưới"
+                                title={t("courseEdit.tooltips.moveDown")}
                               >
                                 <ArrowLineDown className="size-4" />
                               </Button>
@@ -2123,14 +2154,14 @@ const InstructorCourseEdit = () => {
                             }
                           />
                           <Input
-                            placeholder="Tên bài (tùy chọn)"
+                            placeholder={t("courseEdit.content.lessonTitlePlaceholder")}
                             value={newLessonTitle}
                             onChange={(e) => setNewLessonTitle(e.target.value)}
                           />
                           <Input
                             type="number"
                             min={0}
-                            placeholder="Thời lượng (phút) — nếu không lấy được từ YouTube, nhập vào đây"
+                            placeholder={t("courseEdit.content.lessonMinutesPlaceholder")}
                             value={
                               newLessonMinutes === "" ? "" : newLessonMinutes
                             }
@@ -2170,7 +2201,9 @@ const InstructorCourseEdit = () => {
                                 addingLessonInProgress
                               }
                             >
-                              {addingLessonInProgress ? "Đang thêm…" : "Thêm"}
+                              {addingLessonInProgress
+                                ? t("courseEdit.labels.adding")
+                                : t("courseEdit.labels.add")}
                             </Button>
                             <Button
                               size="sm"
@@ -2208,7 +2241,7 @@ const InstructorCourseEdit = () => {
                 </p>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Tên chương"
+                    placeholder={t("courseEdit.content.sectionTitlePlaceholder")}
                     value={newSectionTitle}
                     onChange={(e) => setNewSectionTitle(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleAddSection()}
@@ -2217,7 +2250,9 @@ const InstructorCourseEdit = () => {
                     onClick={() => void handleAddSection()}
                     disabled={addingSection || !newSectionTitle.trim()}
                   >
-                    {addingSection ? "Đang thêm..." : "Thêm chương"}
+                    {addingSection
+                      ? t("courseEdit.labels.addingSection")
+                      : t("courseEdit.labels.addSection")}
                   </Button>
                 </div>
               </div>
@@ -2248,9 +2283,9 @@ const InstructorCourseEdit = () => {
                 </h3>
                 <FieldGroup>
                   <Field>
-                    <FieldLabel>Tiêu đề bài tập</FieldLabel>
+                    <FieldLabel>{t("courseEdit.assignments.titleLabel")}</FieldLabel>
                     <Input
-                      placeholder="VD: Dự án cuối khoá (để trống = không yêu cầu)"
+                      placeholder={t("courseEdit.assignments.titlePlaceholder")}
                       value={form.final_assignment_title}
                       onChange={(e) =>
                         setForm((p) => ({
@@ -2261,9 +2296,9 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel>Mô tả / yêu cầu</FieldLabel>
+                    <FieldLabel>{t("courseEdit.assignments.descriptionLabel")}</FieldLabel>
                     <textarea
-                      placeholder="Mô tả chi tiết bài tập học viên cần làm..."
+                      placeholder={t("courseEdit.assignments.descriptionPlaceholder")}
                       value={form.final_assignment_description}
                       onChange={(e) =>
                         setForm((p) => ({
@@ -2276,9 +2311,9 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel>Hướng dẫn (tùy chọn)</FieldLabel>
+                    <FieldLabel>{t("courseEdit.assignments.instructionsLabel")}</FieldLabel>
                     <textarea
-                      placeholder="Hướng dẫn thêm cho học viên..."
+                      placeholder={t("courseEdit.assignments.instructionsPlaceholder")}
                       value={form.final_assignment_instructions}
                       onChange={(e) =>
                         setForm((p) => ({
@@ -2292,11 +2327,11 @@ const InstructorCourseEdit = () => {
                   </Field>
                   <Button
                     onClick={() =>
-                      void saveCourseInfo("Đã lưu cấu hình bài tập.")
+                      void saveCourseInfo(t("courseEdit.labels.saveAssignment"))
                     }
                     disabled={saving}
                   >
-                    {saving ? "Đang lưu..." : "Lưu cấu hình bài tập"}
+                    {saving ? t("courseEdit.labels.saving") : t("courseEdit.labels.saveAssignment")}
                   </Button>
                 </FieldGroup>
               </div>
@@ -2364,7 +2399,7 @@ const InstructorCourseEdit = () => {
                                 <td className="px-4 py-3 text-muted-foreground">
                                   {new Date(
                                     sub.submitted_at,
-                                  ).toLocaleDateString("vi-VN")}
+                                  ).toLocaleDateString(intlLocale())}
                                 </td>
                                 <td className="px-4 py-3">
                                   {sub.status === "approved" ? (
@@ -2401,7 +2436,7 @@ const InstructorCourseEdit = () => {
                                       >
                                         {reviewingSubmissionId === sub.id
                                           ? "..."
-                                          : "Duyệt"}
+                                          : t("courseEdit.assignments.reviewApprove")}
                                       </Button>
                                       <Button
                                         size="sm"
@@ -2452,7 +2487,7 @@ const InstructorCourseEdit = () => {
 
               <div className="mb-8 space-y-4">
                 <Field>
-                  <FieldLabel>Template chứng nhận</FieldLabel>
+                  <FieldLabel>{t("courseEdit.certificate.templateLabel")}</FieldLabel>
                   <input
                     ref={certificateInputRef}
                     type="file"
@@ -2468,7 +2503,9 @@ const InstructorCourseEdit = () => {
                       disabled={uploadingCert}
                       onClick={() => certificateInputRef.current?.click()}
                     >
-                      {uploadingCert ? "Đang tải lên..." : "Tải template lên"}
+                      {uploadingCert
+                        ? t("courseEdit.certificate.uploadingTemplate")
+                        : t("courseEdit.certificate.uploadTemplate")}
                     </Button>
                     {course.certificate_template_url && (
                       <a
@@ -2483,7 +2520,7 @@ const InstructorCourseEdit = () => {
                   </div>
                 </Field>
                 <Field>
-                  <FieldLabel>Vị trí tên học viên ( % từ trái )</FieldLabel>
+                  <FieldLabel>{t("courseEdit.certificate.nameXLabel")}</FieldLabel>
                   <Input
                     type="number"
                     min={0}
@@ -2503,7 +2540,7 @@ const InstructorCourseEdit = () => {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Vị trí tên học viên ( % từ trên )</FieldLabel>
+                  <FieldLabel>{t("courseEdit.certificate.nameYLabel")}</FieldLabel>
                   <Input
                     type="number"
                     min={0}
@@ -2524,11 +2561,11 @@ const InstructorCourseEdit = () => {
                 </Field>
                 <Button
                   onClick={() =>
-                    void saveCourseInfo("Đã lưu cấu hình chứng nhận.")
+                    void saveCourseInfo(t("courseEdit.labels.saveCertificate"))
                   }
                   disabled={saving}
                 >
-                  {saving ? "Đang lưu..." : "Lưu vị trí tên"}
+                  {saving ? t("courseEdit.labels.saving") : t("courseEdit.certificate.saveNamePosition")}
                 </Button>
               </div>
 
@@ -2545,10 +2582,10 @@ const InstructorCourseEdit = () => {
                     trang).
                   </li>
                   <li>
-                    Sau khi tải lên, chỉnh hai ô "Vị trí tên" ( % từ trái / % từ
+                    {t("courseEdit.certificate.afterUploadHintPrefix")}
                     trên ) để tên học viên nằm đúng vùng trống. 50% = giữa.
                   </li>
-                  <li>Định dạng: PNG hoặc JPG.</li>
+                  <li>{t("courseEdit.certificate.fileFormatHint")}</li>
                 </ul>
                 <div className="mt-4">
                   <a
@@ -2713,7 +2750,7 @@ const InstructorCourseEdit = () => {
                               {e.last_accessed_at
                                 ? new Date(
                                     e.last_accessed_at,
-                                  ).toLocaleDateString("vi-VN")
+                                  ).toLocaleDateString(intlLocale())
                                 : "—"}
                             </td>
                           </tr>
@@ -2749,7 +2786,7 @@ const InstructorCourseEdit = () => {
                 />
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Xoá khoá học?</DialogTitle>
+                    <DialogTitle>{t("courseEdit.danger.deleteCourseTitle")}</DialogTitle>
                   </DialogHeader>
                   <p className="text-sm text-muted-foreground">
                     Toàn bộ nội dung (chương, bài học) sẽ bị xoá. Hành động này

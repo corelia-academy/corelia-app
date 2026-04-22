@@ -12,6 +12,7 @@ import type {
   OfflineDeliveryMode,
   OfflineMeetingProvider,
 } from "@/types/offline";
+import { useTranslation } from "react-i18next";
 
 function toIsoOrNull(value: string): string | null {
   if (!value.trim()) return null;
@@ -19,6 +20,7 @@ function toIsoOrNull(value: string): string | null {
 }
 
 export default function CohortNew() {
+  const { t } = useTranslation("cohorts");
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [tagline, setTagline] = useState("");
@@ -52,7 +54,9 @@ export default function CohortNew() {
         setInstructorOptions(rows);
       })
       .catch((err) => {
-        toast.error(err instanceof Error ? err.message : "Không thể tải danh sách giảng viên.");
+        toast.error(
+          err instanceof Error ? err.message : t("instructorNew.toasts.loadInstructorsFailed"),
+        );
       })
       .finally(() => {
         if (active) setLoadingInstructors(false);
@@ -61,7 +65,7 @@ export default function CohortNew() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [t]);
 
   const instructorPickerOptions = useMemo(
     () =>
@@ -109,7 +113,7 @@ export default function CohortNew() {
   async function handleCreate() {
     if (!canSubmit || submitting) return;
     if (!selectedCohortInstructor) {
-      toast.error("Hãy chọn giảng viên đứng lớp cho cohort đầu tiên.");
+      toast.error(t("instructorNew.toasts.cohortInstructorRequired"));
       return;
     }
     setSubmitting(true);
@@ -127,7 +131,7 @@ export default function CohortNew() {
       });
       await createOfflineCohort({
         offline_course_id: course.id,
-        title: `${title} · Cohort 1`,
+        title: t("instructorNew.defaults.firstCohortTitle", { title }),
         tagline,
         description,
         status,
@@ -148,10 +152,10 @@ export default function CohortNew() {
         ends_at: toIsoOrNull(endsAt),
         registration_notes: registrationNotes,
       });
-      toast.success("Đã tạo khoá offline và cohort đầu tiên.");
+      toast.success(t("instructorNew.toasts.created"));
       navigate(`/instructor/cohorts/${course.id}/manage`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể tạo lớp học.");
+      toast.error(err instanceof Error ? err.message : t("instructorNew.toasts.createFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -162,14 +166,13 @@ export default function CohortNew() {
       <Card>
         <CardContent className="p-5 sm:p-6">
           <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Thiết lập cohort trực tiếp
+            {t("instructorNew.hero.eyebrow")}
           </div>
           <h1 className="mt-2 text-2xl font-normal tracking-tight text-foreground">
-            Tạo khoá học offline mới
+            {t("instructorNew.hero.title")}
           </h1>
           <p className="mt-1.5 text-[15px] text-muted-foreground">
-            Khởi tạo khoá offline ở tầng sản phẩm, đồng thời tạo luôn cohort đầu tiên để
-            bạn bắt đầu vận hành lịch học và recording.
+            {t("instructorNew.hero.description")}
           </p>
         </CardContent>
       </Card>
@@ -180,13 +183,13 @@ export default function CohortNew() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"
-            placeholder="Tên khoá học offline"
+            placeholder={t("instructorNew.form.titlePlaceholder")}
           />
           <input
             value={tagline}
             onChange={(e) => setTagline(e.target.value)}
             className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"
-            placeholder="Tagline: mô tả ngắn về khoá học này dành cho ai"
+            placeholder={t("instructorNew.form.taglinePlaceholder")}
           />
           <div className="grid gap-4 md:grid-cols-3">
             <select
@@ -194,18 +197,18 @@ export default function CohortNew() {
               onChange={(e) => setStatus(e.target.value as OfflineCohortStatus)}
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
             >
-              <option value="draft">Bản nháp</option>
-              <option value="published">Mở ghi danh</option>
-              <option value="running">Đang diễn ra</option>
-              <option value="completed">Đã hoàn thành</option>
+              <option value="draft">{t("instructorNew.form.statusOptions.draft")}</option>
+              <option value="published">{t("instructorNew.form.statusOptions.published")}</option>
+              <option value="running">{t("instructorNew.form.statusOptions.running")}</option>
+              <option value="completed">{t("instructorNew.form.statusOptions.completed")}</option>
             </select>
             <select
               value={deliveryMode}
               onChange={(e) => setDeliveryMode(e.target.value as OfflineDeliveryMode)}
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
             >
-              <option value="offline">Học trực tiếp</option>
-              <option value="hybrid">Hybrid</option>
+              <option value="offline">{t("instructorNew.form.deliveryModeOptions.offline")}</option>
+              <option value="hybrid">{t("instructorNew.form.deliveryModeOptions.hybrid")}</option>
             </select>
             <select
               value={meetingProvider}
@@ -214,24 +217,26 @@ export default function CohortNew() {
               }
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
             >
-              <option value="google_meet">Google Meet</option>
-              <option value="manual">Không dùng họp online</option>
+              <option value="google_meet">
+                {t("instructorNew.form.meetingProviderOptions.googleMeet")}
+              </option>
+              <option value="manual">{t("instructorNew.form.meetingProviderOptions.manual")}</option>
             </select>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <div className="text-sm font-medium text-foreground">
-                Giảng viên phụ trách của khoá
+                {t("instructorNew.form.courseInstructorsLabel")}
               </div>
               <ProfileCombobox
-                title="Chọn giảng viên phụ trách"
-                description="Một khoá offline có thể có nhiều giảng viên nội bộ Corelia cùng phụ trách."
+                title={t("instructorNew.form.courseInstructorsTitle")}
+                description={t("instructorNew.form.courseInstructorsDescription")}
                 options={instructorPickerOptions}
                 placeholder={
                   loadingInstructors
-                    ? "Đang tải danh sách giảng viên..."
-                    : "Chọn một hoặc nhiều giảng viên"
+                    ? t("instructorNew.form.courseInstructorsPlaceholderLoading")
+                    : t("instructorNew.form.courseInstructorsPlaceholder")
                 }
                 value={courseInstructorIds}
                 onChange={(value) => setCourseInstructorIds(value as string[])}
@@ -241,16 +246,16 @@ export default function CohortNew() {
 
             <div className="space-y-2">
               <div className="text-sm font-medium text-foreground">
-                Giảng viên đứng lớp cho cohort đầu tiên
+                {t("instructorNew.form.cohortInstructorLabel")}
               </div>
               <ProfileCombobox
-                title="Chọn giảng viên cho cohort"
-                description="Mỗi cohort chỉ có một giảng viên phụ trách chính để vận hành lịch học, Google Meet và recording."
+                title={t("instructorNew.form.cohortInstructorTitle")}
+                description={t("instructorNew.form.cohortInstructorDescription")}
                 options={instructorPickerOptions}
                 placeholder={
                   loadingInstructors
-                    ? "Đang tải danh sách giảng viên..."
-                    : "Chọn giảng viên đứng lớp"
+                    ? t("instructorNew.form.cohortInstructorPlaceholderLoading")
+                    : t("instructorNew.form.cohortInstructorPlaceholder")
                 }
                 value={cohortInstructorId}
                 onChange={(value) => setCohortInstructorId(value as string)}
@@ -263,19 +268,19 @@ export default function CohortNew() {
               value={venueName}
               onChange={(e) => setVenueName(e.target.value)}
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-              placeholder="Tên địa điểm"
+              placeholder={t("instructorNew.form.venueNamePlaceholder")}
             />
             <input
               value={venueAddress}
               onChange={(e) => setVenueAddress(e.target.value)}
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-              placeholder="Địa chỉ"
+              placeholder={t("instructorNew.form.venueAddressPlaceholder")}
             />
             <input
               value={city}
               onChange={(e) => setCity(e.target.value)}
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-              placeholder="Thành phố"
+              placeholder={t("instructorNew.form.cityPlaceholder")}
             />
           </div>
           <div className="grid gap-4 md:grid-cols-3">
@@ -283,31 +288,31 @@ export default function CohortNew() {
               value={zoomHostEmail}
               onChange={(e) => setZoomHostEmail(e.target.value)}
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-              placeholder="Email host Google Meet"
+              placeholder={t("instructorNew.form.meetHostEmailPlaceholder")}
             />
             <input
               value={defaultZoomJoinUrl}
               onChange={(e) => setDefaultZoomJoinUrl(e.target.value)}
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-              placeholder="Google Meet link cho học viên"
+              placeholder={t("instructorNew.form.meetJoinPlaceholder")}
             />
             <input
               value={defaultZoomStartUrl}
               onChange={(e) => setDefaultZoomStartUrl(e.target.value)}
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-              placeholder="Google Meet link cho giảng viên"
+              placeholder={t("instructorNew.form.meetStartPlaceholder")}
             />
             <input
               value={certificateTitle}
               onChange={(e) => setCertificateTitle(e.target.value)}
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-              placeholder="Tên chứng nhận (nếu có)"
+              placeholder={t("instructorNew.form.certificateTitlePlaceholder")}
             />
             <input
               value={priceNote}
               onChange={(e) => setPriceNote(e.target.value)}
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
-              placeholder="Ghi chú học phí / chính sách đăng ký"
+              placeholder={t("instructorNew.form.priceNotePlaceholder")}
             />
             <input
               type="datetime-local"
@@ -323,31 +328,28 @@ export default function CohortNew() {
             />
           </div>
           <div className="rounded-2xl border border-border-subtle bg-background p-4 text-[13px] leading-6 text-muted-foreground">
-            Khi cohort dùng `Google Meet`, link ở trên sẽ được xem như kênh dự phòng
-            cho học viên check-in và tham gia online nếu không thể đến lớp trực tiếp. Các
-            buổi học tạo sau đó sẽ tự điền sẵn link này để đội ngũ vận hành không phải nhập
-            lặp lại.
+            {t("instructorNew.form.meetFallbackHint")}
           </div>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={5}
             className="min-h-32 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            placeholder="Mô tả khoá offline, kết quả đầu ra và ngữ cảnh triển khai"
+            placeholder={t("instructorNew.form.descriptionPlaceholder")}
           />
           <textarea
             value={registrationNotes}
             onChange={(e) => setRegistrationNotes(e.target.value)}
             rows={4}
             className="min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            placeholder="Ghi chú ghi danh, quy định điểm danh, cách xem recording..."
+            placeholder={t("instructorNew.form.registrationNotesPlaceholder")}
           />
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Button variant="ghost" onClick={() => navigate("/instructor/cohorts")}>
-              Quay lại
+              {t("instructorNew.actions.back")}
             </Button>
             <Button disabled={!canSubmit || submitting} onClick={handleCreate}>
-              {submitting ? "Đang tạo..." : "Tạo khoá offline"}
+              {submitting ? t("instructorNew.actions.creating") : t("instructorNew.actions.create")}
             </Button>
           </div>
         </CardContent>
