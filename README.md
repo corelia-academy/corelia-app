@@ -54,9 +54,7 @@ Create 3 environments in GitHub → Settings → Environments: `development`, `s
 
 **Repository secrets** (Settings → Secrets and variables → Actions):
 
-- `DEV_FIREBASE_SERVICE_ACCOUNT`
-- `STAGING_FIREBASE_SERVICE_ACCOUNT`
-- `PROD_FIREBASE_SERVICE_ACCOUNT`
+- `FIREBASE_SERVICE_ACCOUNT`
 
 > Service account JSON: Firebase Console → Project Settings → Service accounts → Generate new private key.
 
@@ -68,6 +66,26 @@ Create 3 environments in GitHub → Settings → Environments: `development`, `s
 - `FIREBASE_MESSAGING_SENDER_ID`
 - `FIREBASE_APP_ID`
 - Optional: `OCID_CLIENT_ID`, `OCID_REDIRECT_URI`, `YOUTUBE_API_KEY`, `BETA_FEEDBACK_FORM_URL`
+
+### 2.1) Deploy troubleshooting (common CI errors)
+
+- **401 UNAUTHENTICATED / CREDENTIALS_MISSING** (Google APIs)
+  - **Symptom**: deploy fails early with “Request is missing required authentication credential”.
+  - **Fix**: ensure `FIREBASE_SERVICE_ACCOUNT` secret is present and is a valid service account JSON key; workflows write it to `GOOGLE_APPLICATION_CREDENTIALS`.
+
+- **403 Permission `firebasestorage.defaultBucket.get` denied**
+  - **Symptom**: `Unexpected error when fetching default storage bucket` while deploying `--only ... ,storage`.
+  - **Fix**: grant the service account (the `client_email` inside the JSON key) a Firebase Storage role on the target project:
+    - Recommended: **Firebase Storage Admin** (`roles/firebasestorage.admin`)
+    - “Just make it work” (broad): **Firebase Admin** (`roles/firebase.admin`) or **Editor** (`roles/editor`)
+
+- **Functions deploy fails: `functions/lib/index.js does not exist`**
+  - **Cause**: `functions/` is TypeScript and must be built to `functions/lib/` before deploying (`functions/package.json` has `"main": "lib/index.js"`).
+  - **Fix**: run `pnpm -C functions build` before `firebase-tools deploy --only functions` (workflows already do this).
+
+- **Functions deploy fails: Cloud Billing API disabled**
+  - **Symptom**: 403 from `cloudbilling.googleapis.com` during Functions deploy (Gen 2).
+  - **Fix**: enable **Cloud Billing API** (`cloudbilling.googleapis.com`) for the project in Google Cloud Console (even if the project is already linked to a billing account).
 
 ### 3) Production gate (recommended)
 
