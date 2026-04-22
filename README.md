@@ -36,16 +36,16 @@ pnpm build:staging
 
 This repo is set up to deploy to 3 Firebase projects via GitHub Actions:
 
-- **develop** → `corelia-dev`
-- **staging** → `corelia-staging`
+- **develop** → `corelia-5d38d`
+- **staging** → `corelia-ebaf2`
 - **main** → `corelia-a2e6d` (production)
 
 ### 1) Firebase projects (one-time, manual)
 
 Create (if not already) and enable **Auth / Firestore / Storage / Hosting / Functions**:
 
-- `corelia-dev`
-- `corelia-staging`
+- `corelia-5d38d` (dev)
+- `corelia-ebaf2` (staging)
 - `corelia-a2e6d` (prod)
 
 ### 2) GitHub Environments & Secrets (required)

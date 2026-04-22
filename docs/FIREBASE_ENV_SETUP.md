@@ -106,7 +106,7 @@ Sau khi set xong, deploy Functions cho đúng project.
 ## 5) Checklist nhanh
 
 - **Dev**
-  - Firebase project `corelia-dev` tồn tại
+  - Firebase project `corelia-5d38d` tồn tại
   - `.env.development` trỏ đúng project dev
   - SePay sandbox keys + IPN sandbox cấu hình đúng URL dev
   - Deploy: `pnpm deploy:dev`
