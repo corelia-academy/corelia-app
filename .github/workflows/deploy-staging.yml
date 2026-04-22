@@ -46,8 +46,9 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          node -e "require('fs').writeFileSync('firebase-service-account.json', process.env.FIREBASE_SERVICE_ACCOUNT_JSON)"
+          node -e "const fs=require('fs'); const raw=process.env.FIREBASE_SERVICE_ACCOUNT_JSON||''; const json=JSON.parse(raw); fs.writeFileSync('firebase-service-account.json', JSON.stringify(json)); console.log('service account JSON: ok')"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$PWD/firebase-service-account.json" >> "$GITHUB_ENV"
+          echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$PWD/firebase-service-account.json" >> "$GITHUB_ENV"
 
       - name: Deploy (hosting + rules + indexes + storage)
         run: pnpm dlx firebase-tools deploy --project staging --only hosting,firestore:rules,firestore:indexes,storage
