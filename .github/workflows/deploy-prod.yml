@@ -74,5 +74,8 @@ jobs:
       - name: Install deps (functions)
         run: pnpm -C functions install --frozen-lockfile
 
+      - name: Build (functions)
+        run: pnpm -C functions build
+
       - name: Deploy (functions)
         run: pnpm dlx firebase-tools deploy --project prod --only functions
