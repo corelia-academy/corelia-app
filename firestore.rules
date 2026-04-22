@@ -1,0 +1,997 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function profilePath(uid) {
+      return /databases/$(database)/documents/profiles/$(uid);
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function hasProfile(uid) {
+      return exists(profilePath(uid));
+    }
+
+    function isAdmin() {
+      return isSignedIn() && hasProfile(request.auth.uid) &&
+        get(profilePath(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isInstructor() {
+      return isSignedIn() && hasProfile(request.auth.uid) &&
+        get(profilePath(request.auth.uid)).data.role == 'instructor';
+    }
+
+    function isSupportStaff() {
+      return isSignedIn() && hasProfile(request.auth.uid) &&
+        get(profilePath(request.auth.uid)).data.role == 'support_staff';
+    }
+
+    function isCoreliaContestManager() {
+      return isSignedIn() && hasProfile(request.auth.uid) && (
+        get(profilePath(request.auth.uid)).data.role == 'admin' ||
+        get(profilePath(request.auth.uid)).data.role == 'support_staff' ||
+        (
+          get(profilePath(request.auth.uid)).data.role == 'instructor' &&
+          get(profilePath(request.auth.uid)).data.instructor_origin == 'corelia'
+        )
+      );
+    }
+
+    function isOfflineAcademyManager() {
+      return isSignedIn() && hasProfile(request.auth.uid) && (
+        get(profilePath(request.auth.uid)).data.role == 'admin' ||
+        get(profilePath(request.auth.uid)).data.role == 'support_staff' ||
+        (
+          get(profilePath(request.auth.uid)).data.role == 'instructor' &&
+          get(profilePath(request.auth.uid)).data.instructor_origin == 'corelia'
+        )
+      );
+    }
+
+    function isCourseInstructor(courseId) {
+      return isSignedIn() && (
+        isAdmin() ||
+        isSupportStaff() ||
+        (
+          isInstructor() &&
+          get(/databases/$(database)/documents/courses/$(courseId)).data.instructor_id == request.auth.uid
+        )
+      );
+    }
+
+    function enrollmentQuery(userId, courseId) {
+      return /databases/$(database)/documents/enrollments/$(userId + "_" + courseId);
+    }
+
+    function paymentAccessPath(userId, courseId) {
+      return /databases/$(database)/documents/course_payment_access/$(userId + "_" + courseId);
+    }
+
+    function isEnrolledInCourse(courseId) {
+      return isSignedIn() &&
+        exists(enrollmentQuery(request.auth.uid, courseId));
+    }
+
+    function hasFullCoursePaymentAccess(courseId) {
+      return isSignedIn() &&
+        exists(paymentAccessPath(request.auth.uid, courseId)) &&
+        get(paymentAccessPath(request.auth.uid, courseId)).data.full_access_granted == true;
+    }
+
+    function hasCertificateFeeAccess(courseId) {
+      return isSignedIn() &&
+        exists(paymentAccessPath(request.auth.uid, courseId)) &&
+        get(paymentAccessPath(request.auth.uid, courseId)).data.certificate_fee_paid == true;
+    }
+
+    function canSelfEnroll(courseId) {
+      return isSignedIn() && (
+        get(/databases/$(database)/documents/courses/$(courseId)).data.access_model != 'paid_upfront' ||
+        hasFullCoursePaymentAccess(courseId)
+      );
+    }
+
+    function canTrackProgress(courseId) {
+      return isSignedIn() && (
+        isEnrolledInCourse(courseId) ||
+        hasFullCoursePaymentAccess(courseId)
+      );
+    }
+
+    function canSubmitFinalAssignment(courseId) {
+      return isSignedIn() &&
+        canTrackProgress(courseId) &&
+        (
+          get(/databases/$(database)/documents/courses/$(courseId)).data.access_model != 'free_with_paid_certificate' ||
+          hasCertificateFeeAccess(courseId) ||
+          hasFullCoursePaymentAccess(courseId)
+        );
+    }
+
+    function canReadAllLessons(courseId) {
+      return get(/databases/$(database)/documents/courses/$(courseId)).data.published == true &&
+        get(/databases/$(database)/documents/courses/$(courseId)).data.access_model != 'paid_upfront';
+    }
+
+    function canReadPreviewLesson(courseId) {
+      return get(/databases/$(database)/documents/courses/$(courseId)).data.published == true;
+    }
+
+    function offlineCohortPath(cohortId) {
+      return /databases/$(database)/documents/offline_cohorts/$(cohortId);
+    }
+
+    function offlineCoursePath(courseId) {
+      return /databases/$(database)/documents/offline_courses/$(courseId);
+    }
+
+    function offlineEnrollmentPath(cohortId, userId) {
+      return /databases/$(database)/documents/offline_cohort_enrollments/$(cohortId + '_' + userId);
+    }
+
+    function offlineCohortExists(cohortId) {
+      return exists(offlineCohortPath(cohortId));
+    }
+
+    function offlineCourseExists(courseId) {
+      return exists(offlineCoursePath(courseId));
+    }
+
+    function offlineCourseIsVisible(courseId) {
+      return offlineCourseExists(courseId) &&
+        get(offlineCoursePath(courseId)).data.published == true;
+    }
+
+    function offlineCohortIsVisible(cohortId) {
+      return offlineCohortExists(cohortId) &&
+        (
+          get(offlineCohortPath(cohortId)).data.status == 'published' ||
+          get(offlineCohortPath(cohortId)).data.status == 'running' ||
+          get(offlineCohortPath(cohortId)).data.status == 'completed'
+        );
+    }
+
+    function isOfflineCohortManager(cohortId) {
+      return isSignedIn() && offlineCohortExists(cohortId) && (
+        isAdmin() ||
+        isSupportStaff() ||
+        (
+          isInstructor() &&
+          (
+            get(offlineCohortPath(cohortId)).data.instructor_id == request.auth.uid ||
+            (
+              get(offlineCohortPath(cohortId)).data.keys().hasAny(['coordinator_ids']) &&
+              get(offlineCohortPath(cohortId)).data.coordinator_ids.hasAny([request.auth.uid])
+            )
+          )
+        )
+      );
+    }
+
+    function isEnrolledInOfflineCohort(cohortId) {
+      return isSignedIn() &&
+        exists(offlineEnrollmentPath(cohortId, request.auth.uid)) &&
+        get(offlineEnrollmentPath(cohortId, request.auth.uid)).data.status != 'withdrawn';
+    }
+
+    function contestPath(contestId) {
+      return /databases/$(database)/documents/contests/$(contestId);
+    }
+
+    function contestExists(contestId) {
+      return exists(contestPath(contestId));
+    }
+
+    function contestAllowsRegistration(contestId) {
+      return contestExists(contestId) &&
+        get(contestPath(contestId)).data.status == 'published';
+    }
+
+    function contestHasJudgeEmailAccess(contestId) {
+      return isSignedIn() &&
+        request.auth.token.email != null &&
+        contestExists(contestId) &&
+        get(contestPath(contestId)).data.keys().hasAny(['judge_emails']) &&
+        get(contestPath(contestId)).data.judge_emails.hasAny([request.auth.token.email]);
+    }
+
+    function contestHasCoHostEmailAccess(contestId) {
+      return isSignedIn() &&
+        request.auth.token.email != null &&
+        contestExists(contestId) &&
+        get(contestPath(contestId)).data.keys().hasAny(['co_host_viewer_emails']) &&
+        get(contestPath(contestId)).data.co_host_viewer_emails.hasAny([request.auth.token.email]);
+    }
+
+    function contestHasAnyScopedAccess(contestId) {
+      return contestHasJudgeEmailAccess(contestId) ||
+        contestHasCoHostEmailAccess(contestId);
+    }
+
+    function contestRegistrationPath(contestId, userId) {
+      return /databases/$(database)/documents/contest_registrations/$(contestId + '_' + userId);
+    }
+
+    function invitePath(contestId, email) {
+      return /databases/$(database)/documents/contest_access_invites/$(contestId + '_' + email);
+    }
+
+    function isApprovedContestRegistrant(contestId, userId) {
+      return exists(contestRegistrationPath(contestId, userId)) &&
+        get(contestRegistrationPath(contestId, userId)).data.status == 'approved';
+    }
+
+    function contestIsVisible(contestId) {
+      return contestExists(contestId) &&
+        (
+          get(contestPath(contestId)).data.status == 'published' ||
+          get(contestPath(contestId)).data.status == 'running' ||
+          get(contestPath(contestId)).data.status == 'ended'
+        );
+    }
+
+    function ownerProfileAllowedCreate() {
+      return request.resource.data.id == request.auth.uid &&
+        request.resource.data.role == 'student' &&
+        request.resource.data.keys().hasOnly([
+          'id',
+          'role',
+          'full_name',
+          'avatar_url',
+          'phone',
+          'email',
+          'created_at',
+          'updated_at'
+        ]);
+    }
+
+    function ownerProfileAllowedUpdate() {
+      return request.resource.data.id == resource.data.id &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'full_name',
+          'avatar_url',
+          'phone',
+          'email',
+          'ocid',
+          'ocid_eth_address',
+          'ocid_connected_at',
+          'instructor_headline',
+          'instructor_bio',
+          'instructor_organization',
+          'instructor_website',
+          'updated_at'
+        ]);
+    }
+
+    match /profiles/{userId} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId ||
+        isAdmin() ||
+        isSupportStaff() ||
+        (
+          isInstructor() &&
+          resource.data.role == 'instructor' &&
+          resource.data.instructor_origin == 'corelia'
+        )
+      );
+      allow create: if isSignedIn() && (
+        (request.auth.uid == userId && ownerProfileAllowedCreate()) ||
+        isAdmin() ||
+        isSupportStaff()
+      );
+      allow update: if isSignedIn() && (
+        (request.auth.uid == userId && ownerProfileAllowedUpdate()) ||
+        isAdmin() ||
+        isSupportStaff()
+      );
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /dashboard_configs/{configId} {
+      allow read, create, update: if isSignedIn() && (
+        isAdmin() ||
+        isSupportStaff()
+      );
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /courses/{courseId} {
+      allow read: if resource.data.published == true ||
+        canTrackProgress(courseId) || (
+          isSignedIn() && (isAdmin() || isSupportStaff() || isInstructor())
+        );
+      allow create: if isSignedIn() && (
+        isAdmin() ||
+        isSupportStaff() ||
+        (
+          isInstructor() &&
+          request.resource.data.instructor_id == request.auth.uid
+        )
+      );
+      allow update, delete: if isSignedIn() && (
+        isAdmin() ||
+        isSupportStaff() ||
+        (
+          isInstructor() &&
+          resource.data.instructor_id == request.auth.uid &&
+          request.resource.data.instructor_id == resource.data.instructor_id
+        )
+      );
+
+      match /sections/{sectionId} {
+        allow read: if get(/databases/$(database)/documents/courses/$(courseId)).data.published == true ||
+          canTrackProgress(courseId) ||
+          (isSignedIn() && isCourseInstructor(courseId));
+        allow write: if isSignedIn() && isCourseInstructor(courseId);
+      }
+
+      match /lessons/{lessonId} {
+        allow read: if canReadAllLessons(courseId) ||
+          (canReadPreviewLesson(courseId) && resource.data.is_preview_free == true) ||
+          canTrackProgress(courseId) ||
+          isCourseInstructor(courseId);
+        allow write: if isSignedIn() && isCourseInstructor(courseId);
+      }
+
+      match /discounts/{discountId} {
+        allow read, write: if isSignedIn() && (
+          isAdmin() ||
+          isSupportStaff() ||
+          (isInstructor() && get(/databases/$(database)/documents/courses/$(courseId)).data.instructor_id == request.auth.uid)
+        );
+      }
+    }
+
+    match /offline_cohorts/{cohortId} {
+      allow read: if isOfflineAcademyManager() ||
+        (
+          resource.data.status == 'published' ||
+          resource.data.status == 'running' ||
+          resource.data.status == 'completed'
+        ) ||
+        isOfflineCohortManager(cohortId) ||
+        isEnrolledInOfflineCohort(cohortId);
+      allow create: if isSignedIn() && (
+        isAdmin() ||
+        isSupportStaff() ||
+        (
+          isInstructor() &&
+          get(profilePath(request.auth.uid)).data.instructor_origin == 'corelia'
+        )
+      ) &&
+        offlineCourseExists(request.resource.data.offline_course_id) &&
+        request.resource.data.created_by == request.auth.uid &&
+        request.resource.data.updated_by == request.auth.uid &&
+        request.resource.data.keys().hasOnly([
+          'offline_course_id',
+          'title',
+          'tagline',
+          'description',
+          'status',
+          'delivery_mode',
+          'meeting_provider',
+          'venue_name',
+          'venue_address',
+          'city',
+          'cover_image_url',
+          'instructor_id',
+          'instructor_name',
+          'coordinator_ids',
+          'zoom_host_email',
+          'default_zoom_join_url',
+          'default_zoom_start_url',
+          'starts_at',
+          'ends_at',
+          'registration_notes',
+          'created_by',
+          'updated_by',
+          'created_at',
+          'updated_at',
+          'metrics_snapshot'
+        ]);
+      allow update: if isOfflineCohortManager(cohortId) &&
+        request.resource.data.created_by == resource.data.created_by &&
+        request.resource.data.created_at == resource.data.created_at &&
+        request.resource.data.updated_by == request.auth.uid &&
+        (
+          !isInstructor() ||
+          request.resource.data.instructor_id == resource.data.instructor_id
+        ) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'offline_course_id',
+          'title',
+          'tagline',
+          'description',
+          'status',
+          'delivery_mode',
+          'meeting_provider',
+          'venue_name',
+          'venue_address',
+          'city',
+          'cover_image_url',
+          'instructor_name',
+          'coordinator_ids',
+          'zoom_host_email',
+          'default_zoom_join_url',
+          'default_zoom_start_url',
+          'starts_at',
+          'ends_at',
+          'registration_notes',
+          'updated_by',
+          'updated_at',
+          'metrics_snapshot'
+        ]);
+      allow delete: if isCoreliaContestManager();
+
+      match /sessions/{sessionId} {
+        allow read: if isOfflineAcademyManager() ||
+          (
+            get(offlineCohortPath(cohortId)).data.status == 'published' ||
+            get(offlineCohortPath(cohortId)).data.status == 'running' ||
+            get(offlineCohortPath(cohortId)).data.status == 'completed'
+          ) ||
+          isOfflineCohortManager(cohortId) ||
+          isEnrolledInOfflineCohort(cohortId);
+        allow write: if isOfflineCohortManager(cohortId);
+      }
+    }
+
+    match /offline_courses/{courseId} {
+      allow read: if isOfflineAcademyManager() ||
+        resource.data.published == true ||
+        (
+          isInstructor() &&
+          (
+            resource.data.created_by == request.auth.uid ||
+            (
+              resource.data.keys().hasAny(['instructor_ids']) &&
+              request.auth.uid in resource.data.instructor_ids
+            )
+          )
+        );
+      allow create: if isSignedIn() && (
+        isAdmin() ||
+        isSupportStaff() ||
+        (
+          isInstructor() &&
+          get(profilePath(request.auth.uid)).data.instructor_origin == 'corelia'
+        )
+      ) &&
+        request.resource.data.created_by == request.auth.uid &&
+        request.resource.data.updated_by == request.auth.uid &&
+        request.resource.data.keys().hasOnly([
+          'title',
+          'tagline',
+          'description',
+          'cover_image_url',
+          'level',
+          'venue_city',
+          'instructor_ids',
+          'instructor_names',
+          'learning_outcomes',
+          'certificate_title',
+          'price_note',
+          'published',
+          'created_by',
+          'updated_by',
+          'created_at',
+          'updated_at',
+          'metrics_snapshot'
+        ]);
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        isSupportStaff() ||
+        (
+          isInstructor() &&
+          get(profilePath(request.auth.uid)).data.instructor_origin == 'corelia' &&
+          (
+            resource.data.created_by == request.auth.uid ||
+            (
+              resource.data.keys().hasAny(['instructor_ids']) &&
+              request.auth.uid in resource.data.instructor_ids
+            )
+          )
+        )
+      ) &&
+        request.resource.data.created_by == resource.data.created_by &&
+        request.resource.data.created_at == resource.data.created_at &&
+        request.resource.data.updated_by == request.auth.uid;
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /offline_cohort_enrollments/{enrollmentId} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        isSupportStaff() ||
+        resource.data.user_id == request.auth.uid ||
+        isOfflineCohortManager(resource.data.cohort_id)
+      );
+      allow create: if isSignedIn() &&
+        isOfflineCohortManager(request.resource.data.cohort_id) &&
+        enrollmentId == request.resource.data.cohort_id + '_' + request.resource.data.user_id &&
+        request.resource.data.keys().hasOnly([
+          'cohort_id',
+          'user_id',
+          'student_name',
+          'student_email',
+          'status',
+          'progress_percent',
+          'completed_sessions',
+          'assignment_completion_percent',
+          'mentor_note',
+          'enrolled_at',
+          'updated_at',
+          'last_reviewed_at'
+        ]);
+      allow update: if isSignedIn() &&
+        isOfflineCohortManager(resource.data.cohort_id) &&
+        request.resource.data.cohort_id == resource.data.cohort_id &&
+        request.resource.data.user_id == resource.data.user_id &&
+        request.resource.data.enrolled_at == resource.data.enrolled_at &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'student_name',
+          'student_email',
+          'status',
+          'progress_percent',
+          'completed_sessions',
+          'assignment_completion_percent',
+          'mentor_note',
+          'updated_at',
+          'last_reviewed_at'
+        ]);
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /offline_session_attendance/{attendanceId} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        isSupportStaff() ||
+        resource.data.user_id == request.auth.uid ||
+        isOfflineCohortManager(resource.data.cohort_id)
+      );
+      allow create, update: if isSignedIn() &&
+        isOfflineCohortManager(request.resource.data.cohort_id) &&
+        attendanceId == request.resource.data.session_id + '_' + request.resource.data.user_id &&
+        request.resource.data.keys().hasOnly([
+          'cohort_id',
+          'session_id',
+          'user_id',
+          'student_name',
+          'status',
+          'note',
+          'marked_by',
+          'marked_at',
+          'updated_at'
+        ]) &&
+        request.resource.data.marked_by == request.auth.uid;
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /offline_assignment_submissions/{submissionId} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        isSupportStaff() ||
+        resource.data.user_id == request.auth.uid ||
+        isOfflineCohortManager(resource.data.cohort_id)
+      );
+      allow create: if isSignedIn() &&
+        submissionId == request.resource.data.session_id + '_' + request.auth.uid &&
+        request.resource.data.user_id == request.auth.uid &&
+        isEnrolledInOfflineCohort(request.resource.data.cohort_id) &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.review_note == null &&
+        request.resource.data.reviewed_by == null &&
+        request.resource.data.reviewed_at == null &&
+        request.resource.data.keys().hasOnly([
+          'cohort_id',
+          'session_id',
+          'user_id',
+          'student_name',
+          'submission_text',
+          'proof_url',
+          'status',
+          'review_note',
+          'reviewed_by',
+          'reviewed_at',
+          'submitted_at',
+          'updated_at'
+        ]);
+      allow update: if isSignedIn() && (
+        (
+          resource.data.user_id == request.auth.uid &&
+          request.resource.data.user_id == resource.data.user_id &&
+          request.resource.data.cohort_id == resource.data.cohort_id &&
+          request.resource.data.session_id == resource.data.session_id &&
+          request.resource.data.student_name == resource.data.student_name &&
+          request.resource.data.status == 'pending' &&
+          request.resource.data.review_note == null &&
+          request.resource.data.reviewed_by == null &&
+          request.resource.data.reviewed_at == null &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'submission_text',
+            'proof_url',
+            'status',
+            'review_note',
+            'reviewed_by',
+            'reviewed_at',
+            'updated_at'
+          ])
+        ) ||
+        (
+          isOfflineCohortManager(resource.data.cohort_id) &&
+          request.resource.data.user_id == resource.data.user_id &&
+          request.resource.data.cohort_id == resource.data.cohort_id &&
+          request.resource.data.session_id == resource.data.session_id &&
+          request.resource.data.student_name == resource.data.student_name &&
+          request.resource.data.submission_text == resource.data.submission_text &&
+          request.resource.data.proof_url == resource.data.proof_url &&
+          request.resource.data.submitted_at == resource.data.submitted_at &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status',
+            'review_note',
+            'reviewed_by',
+            'reviewed_at',
+            'updated_at'
+          ]) &&
+          request.resource.data.reviewed_by == request.auth.uid &&
+          (
+            request.resource.data.status == 'needs_revision' ||
+            request.resource.data.status == 'passed'
+          )
+        )
+      );
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /enrollments/{enrollmentId} {
+      allow read: if isSignedIn() && (
+        resource.data.user_id == request.auth.uid ||
+        isCourseInstructor(resource.data.course_id)
+      );
+      allow create: if isSignedIn() &&
+        enrollmentId == request.auth.uid + '_' + request.resource.data.course_id &&
+        request.resource.data.user_id == request.auth.uid &&
+        canSelfEnroll(request.resource.data.course_id) &&
+        request.resource.data.keys().hasOnly([
+          'user_id',
+          'course_id',
+          'enrolled_at',
+          'last_accessed_at'
+        ]);
+      allow update: if isSignedIn() && (
+        (
+          resource.data.user_id == request.auth.uid &&
+          request.resource.data.user_id == resource.data.user_id &&
+          request.resource.data.course_id == resource.data.course_id &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'last_accessed_at'
+          ])
+        )
+      );
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /lesson_progress/{progressId} {
+      allow read: if isSignedIn() && (
+        resource.data.user_id == request.auth.uid ||
+        isCourseInstructor(resource.data.course_id)
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.user_id == request.auth.uid &&
+        canTrackProgress(request.resource.data.course_id) &&
+        request.resource.data.keys().hasOnly([
+          'user_id',
+          'lesson_id',
+          'course_id',
+          'completed_at',
+          'watch_seconds'
+        ]);
+      allow update: if isSignedIn() &&
+        resource.data.user_id == request.auth.uid &&
+        request.resource.data.user_id == resource.data.user_id &&
+        request.resource.data.lesson_id == resource.data.lesson_id &&
+        request.resource.data.course_id == resource.data.course_id &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'completed_at',
+          'watch_seconds'
+        ]);
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /final_assignment_submissions/{submissionId} {
+      allow read: if isSignedIn() && (
+        resource.data.user_id == request.auth.uid ||
+        isCourseInstructor(resource.data.course_id)
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.user_id == request.auth.uid &&
+        canSubmitFinalAssignment(request.resource.data.course_id) &&
+        request.resource.data.keys().hasOnly([
+          'user_id',
+          'course_id',
+          'content',
+          'file_urls',
+          'submitted_at',
+          'status'
+        ]) &&
+        request.resource.data.status == 'pending';
+      allow update: if isSignedIn() &&
+        isCourseInstructor(resource.data.course_id) &&
+        request.resource.data.user_id == resource.data.user_id &&
+        request.resource.data.course_id == resource.data.course_id;
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /contests/{contestId} {
+      allow read: if (
+        resource.data.status == 'published' ||
+        resource.data.status == 'running' ||
+        resource.data.status == 'ended'
+      ) ||
+        isCoreliaContestManager() ||
+        contestHasAnyScopedAccess(contestId);
+      allow create: if isCoreliaContestManager() &&
+        request.resource.data.created_by == request.auth.uid &&
+        request.resource.data.updated_by == request.auth.uid &&
+        request.resource.data.keys().hasOnly([
+          'title',
+          'tagline',
+          'description',
+          'rules',
+          'status',
+          'starts_at',
+          'ends_at',
+          'location',
+          'cover_image_url',
+          'registration_deadline',
+          'max_participants',
+          'judge_emails',
+          'co_host_viewer_emails',
+          'rubric_weights',
+          'metrics_snapshot',
+          'published_leaderboard',
+          'winner_announcements',
+          'created_by',
+          'updated_by',
+          'created_at',
+          'updated_at'
+        ]);
+      allow update: if isCoreliaContestManager() &&
+        request.resource.data.created_by == resource.data.created_by &&
+        request.resource.data.created_at == resource.data.created_at &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'title',
+          'tagline',
+          'description',
+          'rules',
+          'status',
+          'starts_at',
+          'ends_at',
+          'location',
+          'cover_image_url',
+          'registration_deadline',
+          'max_participants',
+          'judge_emails',
+          'co_host_viewer_emails',
+          'rubric_weights',
+          'metrics_snapshot',
+          'published_leaderboard',
+          'winner_announcements',
+          'updated_by',
+          'updated_at'
+        ]) &&
+        request.resource.data.updated_by == request.auth.uid;
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /contest_registrations/{registrationId} {
+      allow read: if isSignedIn() && (
+        resource.data.user_id == request.auth.uid ||
+        isCoreliaContestManager()
+      );
+      allow create: if isSignedIn() &&
+        registrationId == request.resource.data.contest_id + '_' + request.auth.uid &&
+        request.resource.data.user_id == request.auth.uid &&
+        contestAllowsRegistration(request.resource.data.contest_id) &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.reviewed_at == null &&
+        request.resource.data.reviewed_by == null &&
+        request.resource.data.review_note == null &&
+        request.resource.data.keys().hasOnly([
+          'contest_id',
+          'user_id',
+          'status',
+          'motivation',
+          'team_name',
+          'team_members',
+          'contact_email',
+          'contact_phone',
+          'portfolio_url',
+          'user_full_name',
+          'reviewed_at',
+          'reviewed_by',
+          'review_note',
+          'applied_at',
+          'updated_at'
+        ]);
+      allow update: if isSignedIn() &&
+        isCoreliaContestManager() &&
+        request.resource.data.user_id == resource.data.user_id &&
+        request.resource.data.contest_id == resource.data.contest_id &&
+        request.resource.data.applied_at == resource.data.applied_at &&
+        request.resource.data.motivation == resource.data.motivation &&
+        request.resource.data.team_name == resource.data.team_name &&
+        request.resource.data.team_members == resource.data.team_members &&
+        request.resource.data.contact_email == resource.data.contact_email &&
+        request.resource.data.contact_phone == resource.data.contact_phone &&
+        request.resource.data.portfolio_url == resource.data.portfolio_url &&
+        request.resource.data.user_full_name == resource.data.user_full_name &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'reviewed_at',
+          'reviewed_by',
+          'review_note',
+          'updated_at'
+        ]) &&
+        (
+          request.resource.data.status == 'approved' ||
+          request.resource.data.status == 'rejected'
+        ) &&
+        request.resource.data.reviewed_by == request.auth.uid;
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /contest_access_invites/{inviteId} {
+      allow read: if isSignedIn() && (
+        isCoreliaContestManager() ||
+        (
+          request.auth.token.email != null &&
+          resource.data.email == request.auth.token.email
+        )
+      );
+      allow create: if isSignedIn() &&
+        isCoreliaContestManager() &&
+        request.resource.data.keys().hasOnly([
+          'contest_id',
+          'email',
+          'roles',
+          'display_name',
+          'organization_name',
+          'note',
+          'status',
+          'invited_by',
+          'invited_at',
+          'responded_at'
+        ]);
+      allow update: if isSignedIn() && (
+        (
+          isCoreliaContestManager() &&
+          request.resource.data.email == resource.data.email &&
+          request.resource.data.contest_id == resource.data.contest_id &&
+          request.resource.data.invited_by == resource.data.invited_by &&
+          request.resource.data.invited_at == resource.data.invited_at
+        ) ||
+        (
+          request.auth.token.email != null &&
+          resource.data.email == request.auth.token.email &&
+          request.resource.data.email == resource.data.email &&
+          request.resource.data.contest_id == resource.data.contest_id &&
+          request.resource.data.roles == resource.data.roles &&
+          request.resource.data.invited_by == resource.data.invited_by &&
+          request.resource.data.invited_at == resource.data.invited_at &&
+          request.resource.data.display_name == resource.data.display_name &&
+          request.resource.data.organization_name == resource.data.organization_name &&
+          request.resource.data.note == resource.data.note &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status',
+            'responded_at'
+          ]) &&
+          (
+            request.resource.data.status == 'accepted' ||
+            request.resource.data.status == 'declined'
+          )
+        )
+      );
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /contest_submissions/{submissionId} {
+      allow read: if isSignedIn() && (
+        resource.data.user_id == request.auth.uid ||
+        isCoreliaContestManager() ||
+        contestHasJudgeEmailAccess(resource.data.contest_id)
+      );
+      allow create: if isSignedIn() &&
+        submissionId == request.resource.data.contest_id + '_' + request.auth.uid &&
+        request.resource.data.user_id == request.auth.uid &&
+        isApprovedContestRegistrant(request.resource.data.contest_id, request.auth.uid) &&
+        request.resource.data.keys().hasOnly([
+          'contest_id',
+          'user_id',
+          'registration_id',
+          'team_name',
+          'team_members',
+          'contestant_name',
+          'title',
+          'summary',
+          'demo_url',
+          'repo_url',
+          'slide_url',
+          'submitted_at',
+          'updated_at'
+        ]);
+      allow update: if isSignedIn() &&
+        resource.data.user_id == request.auth.uid &&
+        request.resource.data.user_id == resource.data.user_id &&
+        request.resource.data.contest_id == resource.data.contest_id &&
+        request.resource.data.registration_id == resource.data.registration_id &&
+        request.resource.data.team_name == resource.data.team_name &&
+        request.resource.data.team_members == resource.data.team_members &&
+        request.resource.data.contestant_name == resource.data.contestant_name &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'title',
+          'summary',
+          'demo_url',
+          'repo_url',
+          'slide_url',
+          'submitted_at',
+          'updated_at'
+        ]);
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /contest_scores/{scoreId} {
+      allow read: if isSignedIn() && (
+        isCoreliaContestManager() ||
+        contestHasJudgeEmailAccess(resource.data.contest_id)
+      );
+      allow create: if isSignedIn() &&
+        (
+          isCoreliaContestManager() ||
+          contestHasJudgeEmailAccess(request.resource.data.contest_id)
+        ) &&
+        request.resource.data.keys().hasOnly([
+          'contest_id',
+          'submission_id',
+          'judge_uid',
+          'judge_email',
+          'product_score',
+          'technical_score',
+          'presentation_score',
+          'impact_score',
+          'note',
+          'total_score',
+          'created_at',
+          'updated_at'
+        ]) &&
+        request.resource.data.judge_uid == request.auth.uid;
+      allow update: if isSignedIn() &&
+        request.resource.data.judge_uid == resource.data.judge_uid &&
+        request.resource.data.submission_id == resource.data.submission_id &&
+        request.resource.data.contest_id == resource.data.contest_id &&
+        (
+          isCoreliaContestManager() ||
+          (
+            contestHasJudgeEmailAccess(resource.data.contest_id) &&
+            resource.data.judge_uid == request.auth.uid
+          )
+        );
+      allow delete: if isCoreliaContestManager();
+    }
+
+    match /course_payment_access/{docId} {
+      allow get: if isSignedIn() && docId.matches('^' + request.auth.uid + '_.*$');
+      allow list: if false;
+      allow create, update, delete: if false;
+    }
+
+    match /payment_transactions/{orderId} {
+      allow get: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      allow list: if false;
+      allow create, update, delete: if false;
+    }
+  }
+}

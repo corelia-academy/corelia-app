@@ -1,0 +1,273 @@
+/**
+ * Types cho khoá học online (video YouTube) kiểu Udemy
+ * Firestore: courses, sections (sub), lessons (sub), enrollments, lesson_progress
+ */
+
+export type CourseLevel = "beginner" | "intermediate" | "advanced" | "all";
+export type CourseAccessModel =
+  | "free"
+  | "paid_upfront"
+  | "free_with_paid_certificate";
+export type CourseOwnerType = "corelia" | "external_partner";
+
+export interface PartnerCourseDocument {
+  name: string;
+  url: string;
+  path: string;
+  uploaded_at: string;
+  uploaded_by: string;
+}
+
+export interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  short_description?: string;
+  thumbnail_url: string;
+  /** Đường dẫn gốc trong Firebase Storage (course-thumbnails/...), dùng để xoá ảnh cũ khi thay */
+  thumbnail_path?: string;
+  instructor_id: string;
+  instructor_name: string;
+  level: CourseLevel;
+  /** Tổng thời lượng ước tính (giây) */
+  total_duration_seconds: number;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+  /** Bài tập cuối khoá: tiêu đề (nếu có = khoá yêu cầu bài tập) */
+  final_assignment_title?: string;
+  /** Mô tả / yêu cầu bài tập cuối khoá */
+  final_assignment_description?: string;
+  /** Hướng dẫn chi tiết (tùy chọn) */
+  final_assignment_instructions?: string;
+  /** URL template chứng nhận (ảnh) */
+  certificate_template_url?: string;
+  /** Đường dẫn Storage template chứng nhận */
+  certificate_template_path?: string;
+  /** Vị trí tên học viên trên template: % từ trái (0–100) */
+  certificate_name_x_percent?: number;
+  /** Vị trí tên học viên trên template: % từ trên (0–100) */
+  certificate_name_y_percent?: number;
+  /** Mô hình truy cập khoá học */
+  access_model?: CourseAccessModel;
+  /** Giá mở toàn bộ khoá học (VND) khi access_model = paid_upfront */
+  price_vnd?: number | null;
+  /** Giá khuyến mãi (VND) khi access_model = paid_upfront (nếu có) */
+  promo_price_vnd?: number | null;
+  /** Thời điểm kết thúc khuyến mãi (ISO) */
+  promo_ends_at?: string | null;
+  /** Phí làm bài thu hoạch/chứng nhận (VND) khi access_model = free_with_paid_certificate */
+  certificate_fee_vnd?: number | null;
+  /** Loại sở hữu khoá học: nội bộ Corelia hoặc đối tác ngoài */
+  owner_type?: CourseOwnerType;
+  /** Tỷ lệ % doanh thu nền tảng nhận (áp dụng cho khoá đối tác ngoài) */
+  platform_revenue_share_percent?: number | null;
+  /** Hồ sơ hợp đồng đối tác (upload bởi học vụ/admin) */
+  partner_contract_docs?: PartnerCourseDocument[];
+  /** Hồ sơ hoá đơn/đối soát đối tác (upload bởi học vụ/admin) */
+  partner_invoice_docs?: PartnerCourseDocument[];
+  /** Thông tin chuyển khoản cho đối tác (theo hợp đồng) */
+  partner_transfer_info?: string | null;
+}
+
+export interface CourseSection {
+  id: string;
+  title: string;
+  order: number;
+}
+
+export interface CourseLesson {
+  id: string;
+  section_id: string;
+  title: string;
+  /** URL YouTube (embed hoặc watch), ví dụ https://www.youtube.com/watch?v=VIDEO_ID */
+  youtube_url: string;
+  /** Thời lượng ước tính (giây) */
+  duration_seconds: number;
+  order: number;
+  /** Bật để làm bài học học thử khi khoá thuộc mô hình trả phí trước */
+  is_preview_free?: boolean;
+}
+
+export interface Enrollment {
+  id: string;
+  user_id: string;
+  course_id: string;
+  enrolled_at: string;
+  last_accessed_at: string;
+  /** Thời điểm cấp chứng nhận hoàn thành (null = chưa đủ điều kiện) */
+  certificate_issued_at?: string | null;
+  /** Metadata thanh toán (chỉ có khi khoá trả phí/có phí) */
+  paid_provider?: "sepay";
+  paid_amount_vnd?: number;
+  paid_order_id?: string;
+  paid_at?: string;
+}
+
+/** Trạng thái bài nộp bài tập cuối khoá */
+export type FinalSubmissionStatus = "pending" | "approved" | "rejected";
+
+export interface FinalAssignmentSubmission {
+  id: string;
+  user_id: string;
+  course_id: string;
+  /** Nội dung text học viên nộp */
+  content: string;
+  /** URL file đính kèm (nếu có) */
+  file_urls?: string[];
+  submitted_at: string;
+  status: FinalSubmissionStatus;
+  reviewer_comment?: string | null;
+  reviewed_at?: string | null;
+}
+
+export interface LessonProgress {
+  id: string;
+  user_id: string;
+  lesson_id: string;
+  course_id: string;
+  /** null = chưa hoàn thành */
+  completed_at: string | null;
+  /** Số giây đã xem (tùy chọn) */
+  watch_seconds?: number;
+}
+
+/** Dùng khi tạo/cập nhật khoá học */
+export interface CourseInsert {
+  title: string;
+  slug: string;
+  description: string;
+  short_description?: string;
+  thumbnail_url: string;
+  thumbnail_path?: string;
+  instructor_id: string;
+  instructor_name: string;
+  level?: CourseLevel;
+  total_duration_seconds?: number;
+  published?: boolean;
+  access_model?: CourseAccessModel;
+  price_vnd?: number | null;
+  promo_price_vnd?: number | null;
+  promo_ends_at?: string | null;
+  certificate_fee_vnd?: number | null;
+  owner_type?: CourseOwnerType;
+  platform_revenue_share_percent?: number | null;
+  partner_contract_docs?: PartnerCourseDocument[];
+  partner_invoice_docs?: PartnerCourseDocument[];
+  partner_transfer_info?: string | null;
+}
+
+/** Cập nhật một phần thông tin khoá (instructor/admin) */
+export interface CourseUpdate {
+  title?: string;
+  slug?: string;
+  description?: string;
+  short_description?: string;
+  thumbnail_url?: string;
+  thumbnail_path?: string;
+  instructor_name?: string;
+  level?: CourseLevel;
+  total_duration_seconds?: number;
+  published?: boolean;
+  final_assignment_title?: string | null;
+  final_assignment_description?: string | null;
+  final_assignment_instructions?: string | null;
+  certificate_template_url?: string | null;
+  certificate_template_path?: string | null;
+  certificate_name_x_percent?: number | null;
+  certificate_name_y_percent?: number | null;
+  access_model?: CourseAccessModel;
+  price_vnd?: number | null;
+  promo_price_vnd?: number | null;
+  promo_ends_at?: string | null;
+  certificate_fee_vnd?: number | null;
+  owner_type?: CourseOwnerType;
+  platform_revenue_share_percent?: number | null;
+  partner_contract_docs?: PartnerCourseDocument[];
+  partner_invoice_docs?: PartnerCourseDocument[];
+  partner_transfer_info?: string | null;
+}
+
+export interface CourseSectionInsert {
+  title: string;
+  order: number;
+}
+
+export interface CourseLessonInsert {
+  section_id: string;
+  title: string;
+  youtube_url: string;
+  duration_seconds: number;
+  order: number;
+  is_preview_free?: boolean;
+}
+
+export const COURSE_LEVEL_LABELS: Record<CourseLevel, string> = {
+  beginner: "Cơ bản",
+  intermediate: "Trung cấp",
+  advanced: "Nâng cao",
+  all: "Mọi cấp độ",
+};
+
+export const COURSE_ACCESS_MODEL_LABELS: Record<CourseAccessModel, string> = {
+  free: "Miễn phí",
+  paid_upfront: "Trả phí trước để mở toàn bộ",
+  free_with_paid_certificate: "Học miễn phí, trả phí để làm chứng nhận",
+};
+export const COURSE_OWNER_TYPE_LABELS: Record<CourseOwnerType, string> = {
+  corelia: "Khoá học Corelia",
+  external_partner: "Khoá học giảng viên đối tác",
+};
+
+export function getCourseLevelLabel(level: CourseLevel): string {
+  return COURSE_LEVEL_LABELS[level];
+}
+
+export function getCourseAccessModelLabel(model?: CourseAccessModel): string {
+  return COURSE_ACCESS_MODEL_LABELS[model ?? "free"];
+}
+
+export function getCourseOwnerTypeLabel(ownerType?: CourseOwnerType): string {
+  return COURSE_OWNER_TYPE_LABELS[ownerType ?? "corelia"];
+}
+
+export function formatVndPrice(value?: number | null): string {
+  const amount = Number(value ?? 0);
+  if (!Number.isFinite(amount) || amount <= 0) return "0đ";
+  return `${amount.toLocaleString("vi-VN")}đ`;
+}
+
+export function getInstructorSharePercent(course: Pick<Course, "owner_type" | "platform_revenue_share_percent">): number {
+  if ((course.owner_type ?? "corelia") === "corelia") return 0;
+  const platformPercent = Math.max(
+    0,
+    Math.min(100, Number(course.platform_revenue_share_percent ?? 0)),
+  );
+  return 100 - platformPercent;
+}
+
+/** Trích xuất YouTube video ID từ URL (watch hoặc embed) */
+export function getYoutubeVideoId(url: string): string | null {
+  if (!url) return null;
+  const watchMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (watchMatch) return watchMatch[1];
+  const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+  return embedMatch ? embedMatch[1] : null;
+}
+
+/** URL embed để nhúng iframe */
+export function getYoutubeEmbedUrl(url: string): string | null {
+  const id = getYoutubeVideoId(url);
+  return id ? `https://www.youtube.com/embed/${id}?rel=0` : null;
+}
+
+/** Format thời lượng (giây) sang text. Trả về "—" khi 0 hoặc không hợp lệ (tránh "0 phút"). */
+export function formatDuration(seconds: number): string {
+  if (seconds == null || typeof seconds !== "number" || seconds <= 0) return "—";
+  if (seconds < 60) return "< 1 phút";
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h === 0) return `${m} phút`;
+  return `${h} giờ ${m} phút`;
+}

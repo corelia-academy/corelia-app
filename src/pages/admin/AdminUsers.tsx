@@ -1,0 +1,476 @@
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/stores/authStore";
+import { getAllProfiles, updateProfileAdmin } from "@/lib/profile";
+import type { Profile, UserRole } from "@/types/database";
+import { getRoleLabel } from "@/types/database";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ShieldCheck, User, Student, ChalkboardTeacher } from "@phosphor-icons/react";
+
+export default function AdminUsers() {
+  const { user: currentUser } = useAuth();
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
+
+  useEffect(() => {
+    void fetchProfiles();
+  }, []);
+
+  async function fetchProfiles() {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getAllProfiles();
+      setProfiles(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRoleChange(userId: string, newRole: UserRole) {
+    if (!confirm(`Bạn có chắc muốn đổi role thành ${getRoleLabel(newRole)}?`)) return;
+    try {
+      await updateProfileAdmin(userId, { role: newRole });
+      setProfiles((prev) =>
+        prev.map((p) => (p.id === userId ? { ...p, role: newRole } : p)),
+      );
+    } catch (err) {
+      alert(
+        "Lỗi khi cập nhật role: " +
+          (err instanceof Error ? err.message : "Unknown error"),
+      );
+    }
+  }
+
+  const roleOptions: UserRole[] = [
+    "student",
+    "instructor",
+    "support_staff",
+    "admin",
+  ];
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return profiles.filter((p) => {
+      if (roleFilter !== "all" && p.role !== roleFilter) {
+        return false;
+      }
+      if (!q) return true;
+      const name = (p.full_name ?? "").toLowerCase();
+      const email =
+        (p.id === currentUser?.uid ? (currentUser.email ?? "") : p.email ?? "")
+          .toLowerCase();
+      return (
+        name.includes(q) ||
+        email.includes(q) ||
+        p.id.toLowerCase().includes(q) ||
+        p.role.toLowerCase().includes(q)
+      );
+    });
+  }, [profiles, query, roleFilter, currentUser?.uid, currentUser?.email]);
+
+  const stats = useMemo(() => {
+    const total = profiles.length;
+    const admins = profiles.filter((p) => p.role === "admin").length;
+    const support = profiles.filter((p) => p.role === "support_staff").length;
+    const instructors = profiles.filter((p) => p.role === "instructor").length;
+    const students = profiles.filter((p) => p.role === "student").length;
+    return { total, admins, support, instructors, students };
+  }, [profiles]);
+
+  return (
+    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                Tổng người dùng
+              </p>
+              <p className="mt-2 text-3xl font-semibold text-foreground">
+                {stats.total}
+              </p>
+            </div>
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <User className="size-5" weight="duotone" />
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                Admin
+              </p>
+              <p className="mt-2 text-3xl font-semibold text-foreground">
+                {stats.admins}
+              </p>
+            </div>
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <ShieldCheck className="size-5" weight="duotone" />
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                Học vụ
+              </p>
+              <p className="mt-2 text-3xl font-semibold text-foreground">
+                {stats.support}
+              </p>
+            </div>
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <ShieldCheck className="size-5" weight="duotone" />
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                Giảng viên
+              </p>
+              <p className="mt-2 text-3xl font-semibold text-foreground">
+                {stats.instructors}
+              </p>
+            </div>
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <ChalkboardTeacher className="size-5" weight="duotone" />
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                Học viên
+              </p>
+              <p className="mt-2 text-3xl font-semibold text-foreground">
+                {stats.students}
+              </p>
+            </div>
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Student className="size-5" weight="duotone" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h2 className="text-xl font-medium tracking-tight text-foreground">
+              Bảng điều phối quyền truy cập
+            </h2>
+            <p className="mt-1.5 max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
+              Tìm nhanh theo tên, email hoặc UID và điều chỉnh vai trò ngay trong
+              bảng để xử lý các yêu cầu vận hành thường ngày.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="w-full sm:w-[320px]">
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Tìm theo tên, email, role, UID…"
+              />
+            </div>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value as UserRole | "all")}
+              className="h-10 rounded-xl border border-input bg-background px-3 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="all">Tất cả vai trò</option>
+              {roleOptions.map((role) => (
+                <option key={role} value={role}>
+                  {getRoleLabel(role)}
+                </option>
+              ))}
+            </select>
+            <Button
+              onClick={() => void fetchProfiles()}
+              disabled={loading}
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Làm mới
+            </Button>
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={roleFilter === "all" ? "default" : "outline"}
+            onClick={() => setRoleFilter("all")}
+          >
+            Tất cả
+          </Button>
+          {roleOptions.map((role) => (
+            <Button
+              key={role}
+              type="button"
+              size="sm"
+              variant={roleFilter === role ? "default" : "outline"}
+              onClick={() => setRoleFilter(role)}
+            >
+              {getRoleLabel(role)}
+            </Button>
+          ))}
+          {(query || roleFilter !== "all") && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setQuery("");
+                setRoleFilter("all");
+              }}
+            >
+              Xoá bộ lọc
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {error && (
+        <div className="mt-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-[13px] text-destructive">
+          {error}
+        </div>
+      )}
+
+      <div className="mt-6 overflow-hidden rounded-2xl border border-border-subtle bg-card text-card-foreground shadow-card">
+        <div className="border-b border-border-subtle bg-muted/35 px-4 py-3">
+          <p className="text-[13px] text-muted-foreground">
+            {loading
+              ? "Đang đồng bộ danh sách người dùng..."
+              : `Đang hiển thị ${filtered.length} / ${profiles.length} tài khoản${roleFilter !== "all" ? ` · ${getRoleLabel(roleFilter)}` : ""}`}
+          </p>
+        </div>
+        <div className="divide-y divide-border-subtle md:hidden">
+          {loading ? (
+            <div className="p-6 text-center text-[13px] text-muted-foreground">
+              Đang tải danh sách...
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="p-10 text-center text-[13px] text-muted-foreground">
+              Không tìm thấy người dùng nào khớp bộ lọc hiện tại.
+            </div>
+          ) : (
+            filtered.map((p) => (
+              <article key={p.id} className="space-y-4 p-4">
+                <div className="flex items-center gap-3">
+                  {p.avatar_url ? (
+                    <img
+                      src={p.avatar_url}
+                      alt=""
+                      className="size-10 rounded-full bg-muted/60 object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted/60 text-[13px] font-medium text-muted-foreground">
+                      {(p.full_name || "U")[0]}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate text-[15px] font-medium text-foreground">
+                      {p.full_name || "Chưa cập nhật"}
+                    </p>
+                    <p className="mt-0.5 truncate text-[12px] text-muted-foreground">
+                      UID: {p.id.substring(0, 8)}…
+                    </p>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      Email
+                    </p>
+                    <p className="mt-1 text-[13px] text-foreground">
+                      {p.id === currentUser?.uid
+                        ? currentUser?.email ?? p.email ?? "—"
+                        : p.email ?? "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      Vai trò hiện tại
+                    </p>
+                    <p className="mt-1">
+                      <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[12px] font-medium text-foreground">
+                        {getRoleLabel(p.role)}
+                      </span>
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      Số điện thoại
+                    </p>
+                    <p className="mt-1 text-[13px] text-muted-foreground">
+                      {p.phone || "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      Ngày tạo
+                    </p>
+                    <p className="mt-1 text-[13px] text-muted-foreground">
+                      {p.created_at
+                        ? new Date(p.created_at).toLocaleDateString("vi-VN")
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Thay đổi vai trò
+                  </p>
+                  <select
+                    value={p.role}
+                    onChange={(e) =>
+                      void handleRoleChange(p.id, e.target.value as UserRole)
+                    }
+                    className="w-full rounded-xl border border-border-subtle bg-background px-3 py-2.5 text-[13px] outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                  >
+                    {roleOptions.map((role) => (
+                      <option key={role} value={role}>
+                        {getRoleLabel(role)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+        <div className="hidden overflow-x-auto md:block">
+          <table className="w-full text-left">
+            <thead className="border-b border-border-subtle bg-muted/50">
+              <tr>
+                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Họ tên
+                </th>
+                <th className="min-w-[180px] px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Email
+                </th>
+                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Vai trò
+                </th>
+                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Số điện thoại
+                </th>
+                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Ngày tạo
+                </th>
+                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Thao tác
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-subtle">
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="p-6 text-center text-[13px] text-muted-foreground"
+                  >
+                    Đang tải danh sách...
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="p-10 text-center text-[13px] text-muted-foreground"
+                  >
+                    Không tìm thấy người dùng nào khớp bộ lọc hiện tại.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((p) => (
+                  <tr key={p.id} className="transition-colors hover:bg-muted/40">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        {p.avatar_url ? (
+                          <img
+                            src={p.avatar_url}
+                            alt=""
+                            className="size-9 rounded-full bg-muted/60 object-cover"
+                          />
+                        ) : (
+                          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted/60 text-[13px] font-medium text-muted-foreground">
+                            {(p.full_name || "U")[0]}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate text-[15px] font-medium text-foreground">
+                            {p.full_name || "Chưa cập nhật"}
+                          </p>
+                          <p
+                            className="mt-0.5 truncate text-[12px] text-muted-foreground"
+                            title={p.id}
+                          >
+                            UID: {p.id.substring(0, 8)}…
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="min-w-[180px] px-4 py-3">
+                      <span
+                        className="block max-w-[240px] truncate text-[13px] text-foreground"
+                        title={
+                          p.id === currentUser?.uid
+                            ? currentUser?.email ?? p.email ?? ""
+                            : p.email ?? ""
+                        }
+                      >
+                        {p.id === currentUser?.uid
+                          ? currentUser?.email ?? p.email ?? "—"
+                          : p.email ?? "—"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[12px] font-medium text-foreground">
+                        {getRoleLabel(p.role)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-[13px] text-muted-foreground">
+                      {p.phone || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-[13px] text-muted-foreground">
+                      {p.created_at
+                        ? new Date(p.created_at).toLocaleDateString("vi-VN")
+                        : "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <select
+                        value={p.role}
+                        onChange={(e) =>
+                          void handleRoleChange(p.id, e.target.value as UserRole)
+                        }
+                        className="rounded-xl border border-border-subtle bg-background px-2.5 py-2 text-[13px] outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                      >
+                        {roleOptions.map((role) => (
+                          <option key={role} value={role}>
+                            {getRoleLabel(role)}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

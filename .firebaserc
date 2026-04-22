@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "dev": "corelia-dev",
+    "staging": "corelia-staging",
+    "prod": "corelia-a2e6d",
+    "default": "corelia-dev"
+  }
+}

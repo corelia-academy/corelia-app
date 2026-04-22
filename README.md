@@ -13,6 +13,26 @@ The React Compiler is enabled on this template. See [this documentation](https:/
 
 Note: This will impact Vite dev & build performances.
 
+## Supabase (email/password login)
+
+This project is wired to Supabase using the React quickstart:
+[Use Supabase with React](https://supabase.com/docs/guides/getting-started/quickstarts/reactjs).
+
+- **1) Create env file**
+  - Copy `.env.example` to `.env.local`
+  - Fill in:
+    - `VITE_SUPABASE_URL`
+    - `VITE_SUPABASE_PUBLISHABLE_KEY` (preferred) or legacy anon key if your project uses it
+
+- **2) Enable Email auth**
+  - In Supabase Dashboard: Auth → Providers → Email (enable).
+
+- **3) Run**
+
+```bash
+pnpm dev
+```
+
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:

@@ -1,0 +1,97 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function profileDoc(uid) {
+      return firestore.get(/databases/(default)/documents/profiles/$(uid));
+    }
+
+    function hasProfile(uid) {
+      return firestore.exists(/databases/(default)/documents/profiles/$(uid));
+    }
+
+    function isAdmin() {
+      return isSignedIn() && hasProfile(request.auth.uid) &&
+        profileDoc(request.auth.uid).data.role == 'admin';
+    }
+
+    function isSupportStaff() {
+      return isSignedIn() && hasProfile(request.auth.uid) &&
+        profileDoc(request.auth.uid).data.role == 'support_staff';
+    }
+
+    function isInstructor() {
+      return isSignedIn() && hasProfile(request.auth.uid) &&
+        profileDoc(request.auth.uid).data.role == 'instructor';
+    }
+
+    function courseDoc(courseId) {
+      return firestore.get(/databases/(default)/documents/courses/$(courseId));
+    }
+
+    function isCourseManager(courseId) {
+      return isSignedIn() && (
+        isAdmin() ||
+        isSupportStaff() ||
+        (
+          isInstructor() &&
+          courseDoc(courseId).data.instructor_id == request.auth.uid
+        )
+      );
+    }
+
+    function isCourseLearner(courseId) {
+      return isSignedIn() && (
+        firestore.exists(/databases/(default)/documents/enrollments/$(request.auth.uid + "_" + courseId)) ||
+        (
+          firestore.exists(/databases/(default)/documents/course_payment_access/$(request.auth.uid + "_" + courseId)) &&
+          firestore.get(/databases/(default)/documents/course_payment_access/$(request.auth.uid + "_" + courseId)).data.full_access_granted == true
+        )
+      );
+    }
+
+    match /avatars/{userId}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /course-thumbnails/{courseId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isCourseManager(courseId);
+    }
+
+    match /final-assignment-submissions/{courseId}/{userId}/{allPaths=**} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId ||
+        isCourseManager(courseId)
+      );
+      allow write: if isSignedIn() &&
+        request.auth.uid == userId &&
+        isCourseLearner(courseId);
+    }
+
+    match /certificate-templates/{courseId}/{allPaths=**} {
+      allow read: if isSignedIn() && (
+        isCourseLearner(courseId) ||
+        isCourseManager(courseId)
+      );
+      allow write: if isCourseManager(courseId);
+    }
+
+    match /course-partner-docs/{courseId}/{kind}/{allPaths=**} {
+      allow read, write: if isCourseManager(courseId);
+    }
+
+    match /instructor-partner-docs/{instructorId}/{kind}/{allPaths=**} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == instructorId ||
+        isAdmin() ||
+        isSupportStaff()
+      );
+      allow write: if isAdmin() || isSupportStaff();
+    }
+  }
+}
