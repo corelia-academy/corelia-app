@@ -44,7 +44,7 @@ jobs:
 
       - name: Auth Firebase (service account)
         env:
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.STAGING_FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
           node -e "require('fs').writeFileSync('firebase-service-account.json', process.env.FIREBASE_SERVICE_ACCOUNT_JSON)"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$PWD/firebase-service-account.json" >> "$GITHUB_ENV"
