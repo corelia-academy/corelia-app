@@ -64,7 +64,7 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          node -e "const fs=require('fs'); const raw=process.env.FIREBASE_SERVICE_ACCOUNT_JSON||''; const json=JSON.parse(raw); fs.writeFileSync('firebase-service-account.json', JSON.stringify(json)); console.log('service account JSON: ok')"
+          node -e "const fs=require('fs'); const raw=process.env.FIREBASE_SERVICE_ACCOUNT_JSON||''; const json=JSON.parse(raw); fs.writeFileSync('firebase-service-account.json', JSON.stringify(json)); console.log('service account JSON: ok'); console.log('service account project_id:', json.project_id); console.log('service account client_email:', json.client_email)"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$PWD/firebase-service-account.json" >> "$GITHUB_ENV"
           echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$PWD/firebase-service-account.json" >> "$GITHUB_ENV"
 

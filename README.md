@@ -52,13 +52,11 @@ Create (if not already) and enable **Auth / Firestore / Storage / Hosting / Func
 
 Create 3 environments in GitHub → Settings → Environments: `development`, `staging`, `production`.
 
-**Repository secrets** (Settings → Secrets and variables → Actions):
+**Environment secrets** — add inside each environment (same name, different values per env):
 
-- `FIREBASE_SERVICE_ACCOUNT`
+- `FIREBASE_SERVICE_ACCOUNT` (service account JSON key for that environment)
 
 > Service account JSON: Firebase Console → Project Settings → Service accounts → Generate new private key.
-
-**Environment secrets** — add inside each environment (same name, different values per env):
 
 - `FIREBASE_API_KEY`
 - `FIREBASE_AUTH_DOMAIN`
