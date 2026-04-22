@@ -5,10 +5,6 @@ import { resolve } from 'node:path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/learn/',
-  build: {
-    outDir: 'dist'
-  },
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),

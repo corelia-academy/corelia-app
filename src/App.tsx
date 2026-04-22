@@ -85,7 +85,7 @@ export default function App() {
       <Toaster />
       <AuthSync />
       <TooltipProvider>
-        <BrowserRouter basename="/learn">
+        <BrowserRouter>
           <ScrollToTop />
           <Routes>
             <Route path="/login" element={<Auth />} />
