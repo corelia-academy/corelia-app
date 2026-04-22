@@ -85,6 +85,10 @@ Create 3 environments in GitHub → Settings → Environments: `development`, `s
   - **Symptom**: 403 from `cloudbilling.googleapis.com` during Functions deploy (Gen 2).
   - **Fix**: enable **Cloud Billing API** (`cloudbilling.googleapis.com`) for the project in Google Cloud Console (even if the project is already linked to a billing account).
 
+- **Functions deployed but CI fails: “could not set up cleanup policy …”**
+  - **Symptom**: functions deploy succeeds, but Firebase CLI exits 1 because it can’t auto-configure Artifact Registry cleanup policy.
+  - **Fix**: add `--force` to the functions deploy command (or run `firebase functions:artifacts:setpolicy` once per region).
+
 ### 3) Production gate (recommended)
 
 In GitHub → Settings → Environments, create environment `production` and enable **Required reviewers**.

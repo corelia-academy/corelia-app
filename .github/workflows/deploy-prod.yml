@@ -78,4 +78,4 @@ jobs:
         run: pnpm -C functions build
 
       - name: Deploy (functions)
-        run: pnpm dlx firebase-tools deploy --project prod --only functions
+        run: pnpm dlx firebase-tools deploy --project prod --only functions --force

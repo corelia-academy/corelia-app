@@ -60,4 +60,4 @@ jobs:
         run: pnpm -C functions build
 
       - name: Deploy (functions)
-        run: pnpm dlx firebase-tools deploy --project staging --only functions
+        run: pnpm dlx firebase-tools deploy --project staging --only functions --force
