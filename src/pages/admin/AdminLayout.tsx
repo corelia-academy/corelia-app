@@ -16,15 +16,12 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
-  CalendarDays,
   GraduationCap,
   Pin,
   Settings,
   ShieldCheck,
-  Trophy,
   Users,
 } from "lucide-react";
-import { ShowForContestManager } from "@/components/auth/ShowForContestManager";
 import { useTranslation } from "react-i18next";
 
 function AdminSidebar() {
@@ -104,40 +101,6 @@ function AdminSidebar() {
                   }
                 />
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  className="rounded-xl"
-                  tooltip={t("layout.sidebar.offlineClasses.tooltip")}
-                  isActive={pathname.startsWith("/instructor/cohorts")}
-                  render={
-                    <NavLink
-                      to="/instructor/cohorts"
-                      className="flex w-full items-center gap-2"
-                    >
-                      <CalendarDays className="size-4" aria-hidden />
-                      <span>{t("layout.sidebar.offlineClasses.label")}</span>
-                    </NavLink>
-                  }
-                />
-              </SidebarMenuItem>
-              <ShowForContestManager>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="rounded-xl"
-                    tooltip={t("layout.sidebar.contests.tooltip")}
-                    isActive={pathname.startsWith("/instructor/contests")}
-                    render={
-                      <NavLink
-                        to="/instructor/contests"
-                        className="flex w-full items-center gap-2"
-                      >
-                        <Trophy className="size-4" aria-hidden />
-                        <span>{t("layout.sidebar.contests.label")}</span>
-                      </NavLink>
-                    }
-                  />
-                </SidebarMenuItem>
-              </ShowForContestManager>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
