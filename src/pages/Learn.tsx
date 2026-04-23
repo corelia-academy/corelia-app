@@ -3,14 +3,14 @@ import { Link, useLocation, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
   ArrowRight,
-  CaretDown,
-  CheckCircle,
   FileText,
-  LockSimple,
   List,
   PlayCircle,
-  Spinner,
-} from "@phosphor-icons/react";
+  CheckCircle2,
+  ChevronDown,
+  Loader2,
+  Lock,
+} from "lucide-react";
 import {
   computeProgressPercent,
   getCourse,
@@ -344,70 +344,89 @@ export default function Learn() {
     profile?.role === "admin";
 
   const renderCurriculumList = (scrollClassName?: string) => (
-    <div className={cn(scrollClassName)}>
-      {lessonsBySection.map(({ section, lessons: sectionLessons }) => (
-        <div key={section.id}>
-          <div className="bg-muted/25 px-4 py-2 text-[12px] font-medium text-foreground">
-            {section.title}
-          </div>
-          {sectionLessons.map((lesson) => {
-            const done = completedIds.has(lesson.id);
-            const active = currentLesson?.id === lesson.id;
-            const locked = !hasFullCourseAccess && !lesson.is_preview_free;
-            return (
-              <div
-                key={lesson.id}
-                className={cn(
-                  "border-t border-border-subtle px-4 py-3 transition-colors",
-                  active && "bg-primary-container/85",
-                  !locked && "hover:bg-muted/40",
-                  locked && "opacity-75",
-                )}
-              >
-                {locked ? (
-                  <div className="flex items-start gap-3">
-                    <LockSimple className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                    <span className="min-w-0 flex-1 line-clamp-2 text-[14px] leading-5 text-muted-foreground">
-                      {lesson.title}
-                    </span>
-                    <span className="shrink-0 text-[11px] text-warning">
-                      {translate("detail.learn.lessonLockedBadge")}
-                    </span>
-                  </div>
-                ) : (
-                  <Link
-                    to={`/learn/${courseId}/lesson/${lesson.id}`}
-                    className="flex items-start gap-3 sm:items-center"
-                  >
-                    {done ? (
-                      <CheckCircle className="mt-0.5 size-4 shrink-0 text-success sm:mt-0" weight="fill" />
-                    ) : (
-                      <PlayCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground sm:mt-0" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <span
-                        className={cn(
-                          "block line-clamp-2 text-[14px] leading-5 sm:line-clamp-1",
-                          active ? "font-medium text-on-primary-container" : "text-foreground",
-                        )}
-                      >
+    lessonsBySection.length === 0 ? (
+      <div className="flex flex-col items-center gap-3 py-16 text-center">
+        <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+          <List className="size-6 text-muted-foreground" aria-hidden />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-foreground">
+            {translate("detail.learn.emptyCurriculumTitle")}
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {translate("detail.learn.emptyCurriculumDescription")}
+          </p>
+        </div>
+        <Button size="sm" variant="outline" render={<Link to={`/courses/${courseId}`} />} nativeButton={false}>
+          {translate("detail.learn.backToCourse")}
+        </Button>
+      </div>
+    ) : (
+      <div className={cn(scrollClassName)}>
+        {lessonsBySection.map(({ section, lessons: sectionLessons }) => (
+          <div key={section.id}>
+            <div className="bg-muted/25 px-4 py-2 text-xs font-medium text-foreground">
+              {section.title}
+            </div>
+            {sectionLessons.map((lesson) => {
+              const done = completedIds.has(lesson.id);
+              const active = currentLesson?.id === lesson.id;
+              const locked = !hasFullCourseAccess && !lesson.is_preview_free;
+              return (
+                <div
+                  key={lesson.id}
+                  className={cn(
+                    "border-t border-border-subtle px-4 py-3 transition-colors",
+                    active && "bg-primary-container/85",
+                    !locked && "hover:bg-muted/40",
+                    locked && "opacity-75",
+                  )}
+                >
+                  {locked ? (
+                    <div className="flex items-start gap-3">
+                      <Lock className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+                      <span className="min-w-0 flex-1 line-clamp-2 text-sm leading-5 text-muted-foreground">
                         {lesson.title}
                       </span>
-                      <span className="mt-1 block text-[12px] text-muted-foreground sm:hidden">
-                        {formatDuration(lesson.duration_seconds)}
+                      <span className="shrink-0 text-xs text-warning">
+                        {translate("detail.learn.lessonLockedBadge")}
                       </span>
                     </div>
-                    <span className="hidden shrink-0 text-[12px] text-muted-foreground sm:inline">
-                      {formatDuration(lesson.duration_seconds)}
-                    </span>
-                  </Link>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      ))}
-    </div>
+                  ) : (
+                    <Link
+                      to={`/learn/${courseId}/lesson/${lesson.id}`}
+                      className="flex items-start gap-3 sm:items-center"
+                    >
+                      {done ? (
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success sm:mt-0" aria-hidden />
+                      ) : (
+                        <PlayCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground sm:mt-0" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <span
+                          className={cn(
+                            "block line-clamp-2 text-sm leading-5 sm:line-clamp-1",
+                            active ? "font-medium text-on-primary-container" : "text-foreground",
+                          )}
+                        >
+                          {lesson.title}
+                        </span>
+                        <span className="mt-1 block text-xs text-muted-foreground sm:hidden">
+                          {formatDuration(lesson.duration_seconds)}
+                        </span>
+                      </div>
+                      <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
+                        {formatDuration(lesson.duration_seconds)}
+                      </span>
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    )
   );
 
   const handlePayCertificateFee = async () => {
@@ -451,7 +470,7 @@ export default function Learn() {
     return (
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
-          <p className="text-[15px] font-medium text-destructive">
+          <p className="text-sm font-medium text-destructive">
             {translate("detail.missingCourseId")}
           </p>
           <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
@@ -459,7 +478,7 @@ export default function Learn() {
             to="/courses"
             className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
           >
-            <ArrowLeft className="size-4" /> {translate("detail.learn.backToCourses")}
+            <ArrowLeft className="size-4" aria-hidden /> {translate("detail.learn.backToCourses")}
           </Link>
         </div>
       </div>
@@ -470,8 +489,8 @@ export default function Learn() {
     return (
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border-subtle bg-card p-8 text-center shadow-card">
-          <Spinner className="size-8 animate-spin text-muted-foreground" />
-          <p className="mt-4 text-[15px] text-muted-foreground">
+          <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
+          <p className="mt-4 text-sm text-muted-foreground">
             {translate("detail.learn.loadingPage")}
           </p>
         </div>
@@ -483,7 +502,7 @@ export default function Learn() {
     return (
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
-          <p className="text-[15px] font-medium text-destructive">
+          <p className="text-sm font-medium text-destructive">
             {error ?? translate("detail.notFound")}
           </p>
           <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
@@ -491,7 +510,7 @@ export default function Learn() {
             to="/courses"
             className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
           >
-            <ArrowLeft className="size-4" /> {translate("detail.learn.backToCourses")}
+            <ArrowLeft className="size-4" aria-hidden /> {translate("detail.learn.backToCourses")}
           </Link>
         </div>
       </div>
@@ -501,7 +520,7 @@ export default function Learn() {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       {!hasFullCourseAccess ? (
-        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+        <div className="mb-4 rounded-xl border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
           {translate("detail.learn.previewModeNotice")}
         </div>
       ) : null}
@@ -516,7 +535,7 @@ export default function Learn() {
         to={`/courses/${courseId}`}
         className="mb-3 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground sm:hidden"
       >
-        <ArrowLeft className="size-4" />
+        <ArrowLeft className="size-4" aria-hidden />
         {translate("detail.learn.backToCourse")}
       </Link>
 
@@ -557,7 +576,7 @@ export default function Learn() {
             <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               {course.title}
             </h1>
-            <p className="mt-1 text-[14px] text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               {currentLesson
                 ? translate("detail.learn.lessonPosition", {
                     index: currentLessonIndex + 1,
@@ -568,24 +587,24 @@ export default function Learn() {
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl border border-border-subtle bg-card/85 px-4 py-3 shadow-card">
-              <p className="text-[12px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {translate("detail.learn.stats.progress")}
               </p>
-              <p className="mt-1 text-[18px] font-medium text-foreground">{progressPercent}%</p>
+              <p className="mt-1 text-lg font-medium text-foreground">{progressPercent}%</p>
             </div>
             <div className="rounded-xl border border-border-subtle bg-card/85 px-4 py-3 shadow-card">
-              <p className="text-[12px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {translate("detail.learn.stats.completedLessons")}
               </p>
-              <p className="mt-1 text-[18px] font-medium text-foreground">
+              <p className="mt-1 text-lg font-medium text-foreground">
                 {completedIds.size}/{visibleLessons.length}
               </p>
             </div>
             <div className="rounded-xl border border-border-subtle bg-card/85 px-4 py-3 shadow-card">
-              <p className="text-[12px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {translate("detail.learn.stats.nextUp")}
               </p>
-              <p className="mt-1 line-clamp-1 text-[14px] font-medium text-foreground">
+              <p className="mt-1 line-clamp-1 text-sm font-medium text-foreground">
                 {nextLesson?.title ?? translate("detail.learn.completedPath")}
               </p>
             </div>
@@ -596,11 +615,11 @@ export default function Learn() {
       <details className="mb-6 overflow-hidden rounded-2xl border border-border-subtle bg-card shadow-card lg:hidden [&_summary::-webkit-details-marker]:hidden">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-[13px] font-medium text-foreground">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <List className="size-4" />
               {translate("detail.learn.lessonList.title")}
             </div>
-            <p className="mt-1 text-[12px] text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground">
               {hasFullCourseAccess
                 ? translate("detail.learn.lessonList.metaFullAccess", {
                     sections: visibleSectionCount,
@@ -611,13 +630,13 @@ export default function Learn() {
                     total: sortedLessons.length,
                   })}
             </p>
-            <p className="mt-1 line-clamp-1 text-[13px] text-foreground">
+            <p className="mt-1 line-clamp-1 text-sm text-foreground">
               {currentLesson?.title ?? translate("detail.learn.selectLessonToStart")}
             </p>
           </div>
-          <div className="inline-flex shrink-0 items-center gap-2 rounded-full bg-muted px-3 py-1 text-[11px] text-muted-foreground">
+          <div className="inline-flex shrink-0 items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
             {progressPercent}%
-            <CaretDown className="size-3.5" />
+            <ChevronDown className="size-3.5" aria-hidden />
           </div>
         </summary>
         <div className="border-t border-border-subtle">
@@ -631,15 +650,15 @@ export default function Learn() {
             <div className="border-b border-border-subtle bg-muted/30 px-4 py-3 sm:px-5">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-[12px] uppercase tracking-wide text-muted-foreground">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
                     {translate("detail.learn.currentLesson.label")}
                   </p>
-                  <p className="text-[15px] font-medium text-foreground">
+                  <p className="text-sm font-medium text-foreground">
                     {currentLesson?.title ?? translate("detail.learn.currentLesson.selectFromList")}
                   </p>
                 </div>
                 {currentLesson ? (
-                  <div className="rounded-full bg-muted px-3 py-1 text-[12px] text-muted-foreground">
+                  <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
                     {formatDuration(currentLesson.duration_seconds)}
                   </div>
                 ) : null}
@@ -668,11 +687,11 @@ export default function Learn() {
               {currentLesson ? (
                 <>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-md bg-primary-container px-2.5 py-1 text-[11px] font-medium text-on-primary-container">
+                    <span className="rounded-md bg-primary-container px-3 py-1 text-xs font-medium text-on-primary-container">
                       {translate("detail.learn.lessonNumberBadge", { index: currentLessonIndex + 1 })}
                     </span>
                     {completedIds.has(currentLesson.id) ? (
-                      <span className="rounded-md bg-success/15 px-2.5 py-1 text-[11px] font-medium text-success">
+                      <span className="rounded-md bg-success/15 px-3 py-1 text-xs font-medium text-success">
                         {translate("detail.learn.completedBadge")}
                       </span>
                     ) : null}
@@ -680,7 +699,7 @@ export default function Learn() {
                   <h2 className="mt-3 text-xl font-medium text-foreground">
                     {currentLesson.title}
                   </h2>
-                  <p className="mt-1 text-[13px] text-muted-foreground">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {translate("detail.learn.lessonHint")}
                   </p>
 
@@ -694,12 +713,12 @@ export default function Learn() {
                     >
                       {completedIds.has(currentLesson.id) ? (
                         <>
-                          <CheckCircle className="size-4" weight="fill" />{" "}
+                          <CheckCircle2 className="size-4" aria-hidden />{" "}
                           {translate("detail.learn.markComplete.done")}
                         </>
                       ) : (
                         <>
-                          <CheckCircle className="size-4" />{" "}
+                          <CheckCircle2 className="size-4" aria-hidden />{" "}
                           {translate("detail.learn.markComplete.action")}
                         </>
                       )}
@@ -711,7 +730,7 @@ export default function Learn() {
                         className="w-full justify-center sm:w-auto"
                         onClick={() => navigate(`/learn/${courseId}/lesson/${previousLesson.id}`)}
                       >
-                        <ArrowLeft className="size-4" /> {translate("detail.learn.nav.previous")}
+                        <ArrowLeft className="size-4" aria-hidden /> {translate("detail.learn.nav.previous")}
                       </Button>
                     ) : null}
                     {nextLesson ? (
@@ -720,7 +739,7 @@ export default function Learn() {
                         className="w-full justify-center sm:w-auto"
                         onClick={() => navigate(`/learn/${courseId}/lesson/${nextLesson.id}`)}
                       >
-                        {translate("detail.learn.nav.next")} <ArrowRight className="size-4" />
+                        {translate("detail.learn.nav.next")} <ArrowRight className="size-4" aria-hidden />
                       </Button>
                     ) : null}
                   </div>
@@ -766,7 +785,7 @@ export default function Learn() {
               ) : null}
 
               {requiresCertificatePayment && !submission && !canSubmitCertificateAssignment ? (
-                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+                <div className="mt-4 rounded-xl border border-warning/20 bg-warning/10 p-4 text-sm text-warning">
                   {translate("detail.learn.finalAssignment.certificateFeeRequired", {
                     fee: formatVndPrice(course.certificate_fee_vnd),
                   })}
@@ -824,14 +843,14 @@ export default function Learn() {
           <div className="overflow-hidden rounded-2xl border border-border-subtle bg-card shadow-elevation-2">
             <div className="border-b border-border-subtle bg-muted/40 px-4 py-3">
               <div className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 text-[13px] font-medium text-foreground">
+                <span className="flex items-center gap-2 text-sm font-medium text-foreground">
                   <List className="size-4" /> {translate("detail.learn.curriculumTitle")}
                 </span>
-                <span className="text-[12px] text-muted-foreground">{progressPercent}%</span>
+                <span className="text-xs text-muted-foreground">{progressPercent}%</span>
               </div>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-background">
                 <div
-                  className="h-full rounded-full bg-success transition-all"
+                  className="h-full rounded-full bg-success"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>

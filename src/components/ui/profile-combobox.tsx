@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CheckIcon, CaretDownIcon } from "@phosphor-icons/react";
+import { Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -97,7 +97,7 @@ export function ProfileCombobox({
               {selectedLabels.map((label) => (
                 <span
                   key={label}
-                  className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[12px] font-medium text-foreground"
+                  className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-xs font-medium text-foreground"
                 >
                   {label}
                 </span>
@@ -107,7 +107,7 @@ export function ProfileCombobox({
             <div className="text-sm text-foreground">{selectedLabels[0]}</div>
           )}
         </div>
-        <CaretDownIcon className="size-4 shrink-0 text-muted-foreground" />
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -149,7 +149,7 @@ export function ProfileCombobox({
                           {option.label}
                         </div>
                         {option.description ? (
-                          <div className="mt-1 text-[13px] leading-5 text-muted-foreground">
+                          <div className="mt-1 text-sm leading-5 text-muted-foreground">
                             {option.description}
                           </div>
                         ) : null}
@@ -161,7 +161,7 @@ export function ProfileCombobox({
                             : "border-border-subtle text-transparent"
                         }`}
                       >
-                        <CheckIcon className="size-3.5" />
+                        <Check className="size-3" aria-hidden />
                       </span>
                     </button>
                   );

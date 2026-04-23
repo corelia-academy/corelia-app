@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
-  ChalkboardTeacher,
-  Buildings,
-  Sparkle,
+  Building2,
+  GraduationCap,
+  Sparkles,
   BookOpen,
-} from "@phosphor-icons/react";
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 type InstructorOrigin = NonNullable<Profile["instructor_origin"]>;
@@ -137,7 +137,7 @@ export default function AdminInstructors() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ChalkboardTeacher className="size-5" weight="duotone" />
+              <GraduationCap className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function AdminInstructors() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Sparkle className="size-5" weight="duotone" />
+              <Sparkles className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function AdminInstructors() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Buildings className="size-5" weight="duotone" />
+              <Building2 className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function AdminInstructors() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Sparkle className="size-5" weight="duotone" />
+              <Sparkles className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -197,7 +197,7 @@ export default function AdminInstructors() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <BookOpen className="size-5" weight="duotone" />
+              <BookOpen className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -209,7 +209,7 @@ export default function AdminInstructors() {
             <h2 className="text-xl font-medium tracking-tight text-foreground">
               {t("instructors.hero.title")}
             </h2>
-            <p className="mt-1.5 max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
+            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               {t("instructors.hero.description")}
             </p>
           </div>
@@ -226,7 +226,7 @@ export default function AdminInstructors() {
               onChange={(e) =>
                 setOriginFilter(e.target.value as InstructorOrigin | "all")
               }
-              className="h-10 rounded-xl border border-input bg-background px-3 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-10 rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="all">{t("instructors.filters.originOptions.all")}</option>
               <option value="corelia">{t("instructors.filters.originOptions.corelia")}</option>
@@ -285,14 +285,14 @@ export default function AdminInstructors() {
       </div>
 
       {error && (
-        <div className="mt-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-[13px] text-destructive">
+        <div className="mt-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-border-subtle bg-card text-card-foreground shadow-card">
         <div className="border-b border-border-subtle bg-muted/35 px-4 py-3">
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {loading
               ? t("instructors.list.syncing")
               : `${t("instructors.list.showing", {
@@ -312,11 +312,11 @@ export default function AdminInstructors() {
         </div>
         <div className="divide-y divide-border-subtle md:hidden">
           {loading ? (
-            <div className="p-6 text-center text-[13px] text-muted-foreground">
+            <div className="p-6 text-center text-sm text-muted-foreground">
               {t("instructors.list.loading")}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="p-10 text-center text-[13px] text-muted-foreground">
+            <div className="p-10 text-center text-sm text-muted-foreground">
               {t("instructors.list.empty")}
             </div>
           ) : (
@@ -336,34 +336,34 @@ export default function AdminInstructors() {
                         className="size-10 rounded-full bg-muted/60 object-cover"
                       />
                     ) : (
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted/60 text-[13px] font-medium text-muted-foreground">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted/60 text-sm font-medium text-muted-foreground">
                         {(p.full_name || "I")[0]}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="truncate text-[15px] font-medium text-foreground">
+                      <p className="truncate text-sm font-medium text-foreground">
                         {p.full_name || t("instructors.list.notUpdated")}
                       </p>
-                      <p className="mt-0.5 truncate text-[12px] text-muted-foreground">
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
                         UID: {p.id.substring(0, 8)}…
                       </p>
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         Email
                       </p>
-                      <p className="mt-1 text-[13px] text-foreground">
+                      <p className="mt-1 text-sm text-foreground">
                         {p.email ?? "—"}
                       </p>
                     </div>
                     <div>
-                      <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         Phân loại
                       </p>
                       <p className="mt-1">
-                        <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[12px] font-medium text-foreground">
+                        <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
                           {p.instructor_origin
                             ? t(`instructors.originLabel.${p.instructor_origin}` as never)
                             : t("instructors.originLabel.unclassified")}
@@ -371,10 +371,10 @@ export default function AdminInstructors() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         Khoá học
                       </p>
-                      <p className="mt-1 text-[13px] text-muted-foreground">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         {loadingCourses ? "..." : courseCountByInstructor[p.id] ?? 0}
                       </p>
                     </div>
@@ -425,19 +425,19 @@ export default function AdminInstructors() {
           <table className="w-full text-left">
             <thead className="border-b border-border-subtle bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Giảng viên
                 </th>
-                <th className="min-w-[180px] px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="min-w-[180px] px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Email
                 </th>
-                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Phân loại
                 </th>
-                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Khoá học
                 </th>
-                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Tác vụ
                 </th>
               </tr>
@@ -447,7 +447,7 @@ export default function AdminInstructors() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="p-6 text-center text-[13px] text-muted-foreground"
+                    className="p-6 text-center text-sm text-muted-foreground"
                   >
                     Đang tải danh sách...
                   </td>
@@ -456,7 +456,7 @@ export default function AdminInstructors() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="p-10 text-center text-[13px] text-muted-foreground"
+                    className="p-10 text-center text-sm text-muted-foreground"
                   >
                     Chưa có giảng viên nào khớp bộ lọc hiện tại.
                   </td>
@@ -479,16 +479,16 @@ export default function AdminInstructors() {
                               className="size-9 rounded-full bg-muted/60 object-cover"
                             />
                           ) : (
-                            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted/60 text-[13px] font-medium text-muted-foreground">
+                            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted/60 text-sm font-medium text-muted-foreground">
                               {(p.full_name || "I")[0]}
                             </div>
                           )}
                           <div className="min-w-0">
-                            <p className="truncate text-[15px] font-medium text-foreground">
+                            <p className="truncate text-sm font-medium text-foreground">
                               {p.full_name || t("instructors.list.notUpdated")}
                             </p>
                             <p
-                              className="mt-0.5 truncate text-[12px] text-muted-foreground"
+                              className="mt-0.5 truncate text-xs text-muted-foreground"
                               title={p.id}
                             >
                               UID: {p.id.substring(0, 8)}…
@@ -497,18 +497,18 @@ export default function AdminInstructors() {
                         </div>
                       </td>
                       <td className="min-w-[180px] px-4 py-3">
-                        <span className="block max-w-[260px] truncate text-[13px] text-foreground">
+                        <span className="block max-w-[260px] truncate text-sm text-foreground">
                           {p.email ?? "—"}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[12px] font-medium text-foreground">
+                        <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
                           {p.instructor_origin
                             ? t(`instructors.originLabel.${p.instructor_origin}` as never)
                             : t("instructors.originLabel.unclassified")}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-[13px] text-muted-foreground">
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
                         {loadingCourses ? "..." : courseCountByInstructor[p.id] ?? 0}
                       </td>
                       <td className="px-4 py-3">

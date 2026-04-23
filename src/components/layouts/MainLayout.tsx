@@ -1,11 +1,11 @@
 import {
   BookOpen,
-  CalendarDots,
-  House,
+  CalendarDays,
+  Home,
   List,
-  SignIn,
+  LogIn,
   Trophy,
-} from "@phosphor-icons/react";
+} from "lucide-react";
 import React from "react";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
@@ -23,13 +23,13 @@ const MainLayout = () => {
   const navigate = useNavigate();
 
   const mobilePrimaryNav = [
-    { labelKey: "nav.home" as const, href: "/", icon: House, end: true },
+    { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
     { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
-    { labelKey: "nav.cohorts" as const, href: "/cohorts", icon: CalendarDots },
+    { labelKey: "nav.cohorts" as const, href: "/cohorts", icon: CalendarDays },
     { labelKey: "nav.contests" as const, href: "/contests", icon: Trophy },
     isAuthenticated
       ? { labelKey: "tabs.menu" as const, href: "/menu", icon: List }
-      : { labelKey: "tabs.signIn" as const, href: "/login", icon: SignIn },
+      : { labelKey: "tabs.signIn" as const, href: "/login", icon: LogIn },
   ] as const;
 
   return (
@@ -79,8 +79,8 @@ const MainLayout = () => {
                   onClick={() => navigate("/login", { state: { from: location } })}
                   className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-center text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
                 >
-                  <Icon className="size-4 shrink-0" weight="duotone" />
-                  <span className="line-clamp-1 text-[11px] leading-4">
+                  <Icon className="size-4 shrink-0" aria-hidden />
+                  <span className="line-clamp-1 text-xs leading-4">
                     {t(item.labelKey)}
                   </span>
                 </button>
@@ -101,8 +101,8 @@ const MainLayout = () => {
                   ].join(" ")
                 }
               >
-                <Icon className="size-4 shrink-0" weight="duotone" />
-                <span className="line-clamp-1 text-[11px] leading-4">
+                <Icon className="size-4 shrink-0" aria-hidden />
+                <span className="line-clamp-1 text-xs leading-4">
                   {t(item.labelKey)}
                 </span>
               </NavLink>
@@ -120,7 +120,7 @@ function MobileMenuTab({
   icon: Icon,
   label,
 }: {
-  icon: React.ComponentType<{ className?: string; weight?: "duotone" | "fill" }>;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
 }) {
   const { toggleSidebar } = useSidebar();
@@ -130,8 +130,8 @@ function MobileMenuTab({
       onClick={toggleSidebar}
       className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-center text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
     >
-      <Icon className="size-4 shrink-0" weight="duotone" />
-      <span className="line-clamp-1 text-[11px] leading-4">{label}</span>
+      <Icon className="size-4 shrink-0" aria-hidden />
+      <span className="line-clamp-1 text-xs leading-4">{label}</span>
     </button>
   );
 }

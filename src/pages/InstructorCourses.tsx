@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   BookOpen,
-  PencilSimple,
-  Spinner,
   Eye,
-  EyeSlash,
   PlusCircle,
-  CurrencyCircleDollar,
   GraduationCap,
-} from "@phosphor-icons/react";
+  Loader2,
+  DollarSign,
+  EyeOff,
+  Pencil,
+} from "lucide-react";
 import { getCoursesForManagement } from "@/lib/courses";
 import {
   getCourseAccessModelLabel,
@@ -63,7 +63,7 @@ const InstructorCourses = () => {
   if (loading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <Spinner className="size-8 animate-spin text-muted-foreground" />
+        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
       </div>
     );
   }
@@ -71,7 +71,7 @@ const InstructorCourses = () => {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       {error && (
-        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-[13px] text-destructive">
+        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -88,7 +88,7 @@ const InstructorCourses = () => {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <BookOpen className="size-5" weight="duotone" />
+              <BookOpen className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -103,7 +103,7 @@ const InstructorCourses = () => {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Eye className="size-5" weight="duotone" />
+              <Eye className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -118,7 +118,7 @@ const InstructorCourses = () => {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <EyeSlash className="size-5" weight="duotone" />
+              <EyeOff className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -133,7 +133,7 @@ const InstructorCourses = () => {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <CurrencyCircleDollar className="size-5" weight="duotone" />
+              <DollarSign className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -148,7 +148,7 @@ const InstructorCourses = () => {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <GraduationCap className="size-5" weight="duotone" />
+              <GraduationCap className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -160,7 +160,7 @@ const InstructorCourses = () => {
             <h2 className="text-xl font-medium tracking-tight text-foreground">
               {t("courseListPage.hero.title")}
             </h2>
-            <p className="mt-1.5 max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
+            <p className="mt-2 max-w-3xl text-sm text-muted-foreground sm:text-sm">
               {t("courseListPage.hero.description")}
             </p>
           </div>
@@ -169,25 +169,37 @@ const InstructorCourses = () => {
             className="inline-flex items-center gap-2"
             onClick={() => navigate("/instructor/courses/new")}
           >
-            <PlusCircle className="size-4" weight="duotone" />
+            <PlusCircle className="size-4" aria-hidden />
             {t("courseListPage.hero.create")}
           </Button>
         </div>
       </div>
 
       {courses.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-border-subtle bg-card p-10 text-center shadow-card">
-          <BookOpen className="mx-auto size-12 text-muted-foreground" />
-          <p className="mt-4 text-[15px] text-muted-foreground">
-            {t("courseListPage.empty.title")}
-          </p>
-          <Button
-            type="button"
-            className="mt-4"
-            onClick={() => navigate("/instructor/courses/new")}
-          >
-            {t("courseListPage.empty.createFirst")}
-          </Button>
+        <div className="mt-6 rounded-2xl border border-border-subtle bg-card shadow-card">
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+              <BookOpen className="size-6 text-muted-foreground" aria-hidden />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {t("courseListPage.empty.title")}
+              </p>
+              {t("courseListPage.empty.description", { defaultValue: "" }) ? (
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {t("courseListPage.empty.description", { defaultValue: "" })}
+                </p>
+              ) : null}
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => navigate("/instructor/courses/new")}
+            >
+              {t("courseListPage.empty.createFirst")}
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="mt-6 grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
@@ -196,49 +208,50 @@ const InstructorCourses = () => {
               key={course.id}
               className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-card shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lg"
             >
-              <button
+              <Button
                 type="button"
-                className="text-left"
+                variant="ghost"
+                className="w-full justify-start p-0 text-left hover:bg-transparent"
                 onClick={() => navigate(`/instructor/courses/${course.id}/edit`)}
               >
                 <div className="relative aspect-video overflow-hidden border-b border-border-subtle bg-muted/50">
                   <img
                     src={course.thumbnail_url}
                     alt=""
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-95"
                   />
                   <div className="absolute inset-x-0 bottom-0 flex flex-wrap gap-2 p-3">
-                    <span className="inline-flex items-center rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium text-foreground shadow-sm">
+                    <span className="inline-flex items-center rounded-full bg-background/90 px-3 py-1 text-xs font-medium text-foreground shadow-sm">
                       {course.published
                         ? t("courseListPage.coursePills.published")
                         : t("courseListPage.coursePills.draft")}
                     </span>
-                    <span className="inline-flex items-center rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium text-foreground shadow-sm">
+                    <span className="inline-flex items-center rounded-full bg-background/90 px-3 py-1 text-xs font-medium text-foreground shadow-sm">
                       {getCourseLevelLabel(course.level)}
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-1 flex-col p-4">
                   <div className="flex flex-wrap gap-2">
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[11px] font-medium text-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
                       {getCourseAccessModelLabel(course.access_model)}
                     </span>
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[11px] font-medium text-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
                       {getCourseOwnerTypeLabel(course.owner_type)}
                     </span>
                   </div>
                   <h3 className="mt-3 line-clamp-2 text-lg font-medium tracking-tight text-foreground">
                     {course.title}
                   </h3>
-                  <p className="mt-1 text-[13px] text-muted-foreground">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {course.slug}
                   </p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     <div className="rounded-xl border border-border-subtle bg-muted/30 p-3">
-                      <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         {t("courseListPage.courseCards.pricingLabel")}
                       </p>
-                      <p className="mt-1 text-[14px] font-medium text-foreground">
+                      <p className="mt-1 text-sm font-medium text-foreground">
                         {course.access_model === "paid_upfront"
                           ? formatVndPrice(course.price_vnd)
                           : course.access_model === "free_with_paid_certificate"
@@ -249,16 +262,16 @@ const InstructorCourses = () => {
                       </p>
                     </div>
                     <div className="rounded-xl border border-border-subtle bg-muted/30 p-3">
-                      <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         {t("courseListPage.courseCards.instructorLabel")}
                       </p>
-                      <p className="mt-1 line-clamp-1 text-[14px] font-medium text-foreground">
+                      <p className="mt-1 line-clamp-1 text-sm font-medium text-foreground">
                         {canViewAll ? course.instructor_name : t("courseListPage.courseCards.you")}
                       </p>
                     </div>
                   </div>
                 </div>
-              </button>
+              </Button>
 
               <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle px-4 py-3">
                 <Button
@@ -285,7 +298,7 @@ const InstructorCourses = () => {
                   onClick={() => navigate(`/instructor/courses/${course.id}/edit`)}
                   className="inline-flex items-center gap-1"
                 >
-                  <PencilSimple className="size-4" />
+                  <Pencil className="size-4" aria-hidden />
                   {t("courseListPage.actions.edit")}
                 </Button>
               </div>

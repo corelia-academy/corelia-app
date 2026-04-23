@@ -1,4 +1,4 @@
-import { ArrowRight } from "@phosphor-icons/react";
+import { ArrowRight } from "lucide-react";
 import { NavLink } from "react-router";
 import { cn } from "@/lib/utils";
 
@@ -54,22 +54,22 @@ export function CoreliaSpotlight({
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+    <section className="rounded-md border border-border-subtle bg-card p-5 shadow-card sm:p-6">
       <div className="flex flex-col gap-2">
-        <div className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {eyebrow}
         </div>
-        <h2 className="text-xl font-normal tracking-tight text-foreground">
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">
           {title}
         </h2>
-        <p className="max-w-3xl text-[14px] leading-6 text-muted-foreground">
+        <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
           {description}
         </p>
       </div>
 
       <div
         className={cn(
-          "mt-5 grid gap-4",
+          "mt-6 grid gap-4",
           compact ? "md:grid-cols-2" : "md:grid-cols-2 xl:grid-cols-3",
         )}
       >
@@ -80,18 +80,18 @@ export function CoreliaSpotlight({
               key={item.id}
               to={item.href}
               className={cn(
-                "group overflow-hidden rounded-[24px] border border-border-subtle p-4 transition hover:border-border hover:bg-muted/30",
+                "group cursor-pointer overflow-hidden rounded-md border border-border-subtle p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md",
                 accent.shell,
               )}
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="rounded-full border border-border-subtle bg-background/85 px-2.5 py-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {item.badge}
                 </div>
                 {item.icon ? (
                   <div
                     className={cn(
-                      "flex size-10 items-center justify-center rounded-2xl",
+                      "flex size-10 items-center justify-center rounded-md",
                       accent.icon,
                     )}
                   >
@@ -100,22 +100,25 @@ export function CoreliaSpotlight({
                 ) : null}
               </div>
 
-              <div className="mt-4 text-[17px] font-medium leading-snug text-foreground">
+              <div className="mt-4 text-lg font-semibold leading-snug text-foreground">
                 {item.title}
               </div>
-              <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
+              <div className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {item.description}
               </div>
 
               {item.meta ? (
-                <div className="mt-4 rounded-2xl border border-border-subtle bg-background/80 px-3 py-2 text-[12px] text-muted-foreground">
+                <div className="mt-4 rounded-md border border-border-subtle bg-background/80 px-3 py-2 text-xs text-muted-foreground">
                   {item.meta}
                 </div>
               ) : null}
 
               <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-foreground">
                 <span>{item.ctaLabel}</span>
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight
+                  className="size-4 shrink-0 transition-transform duration-150 group-hover:translate-x-0.5"
+                  aria-hidden
+                />
               </div>
             </NavLink>
           );

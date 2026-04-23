@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { ArrowLeft, ShieldCheck } from "@phosphor-icons/react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { getCourse } from "@/lib/courses";
 import { createSePayCheckout, submitSePayCheckoutForm } from "@/lib/payments";
 import type { Course } from "@/types/courses";
@@ -9,6 +9,8 @@ import { intlLocale } from "@/lib/intl";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
@@ -125,8 +127,27 @@ export default function CheckoutCourse() {
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-[960px] px-4 py-8">
-        <div className="rounded-lg border border-border-subtle bg-card p-6 text-sm text-muted-foreground">
-          {t("detail.checkout.loadingPaymentInfo")}
+        <div className="rounded-md border border-border-subtle bg-card p-6">
+          <div className="flex flex-col items-center gap-3 py-12 text-center">
+            <Loader2 className="size-10 animate-spin text-muted-foreground/60" aria-hidden />
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {t("detail.checkout.loadingPaymentInfo")}
+              </p>
+            </div>
+          </div>
+          <div className="mt-6 grid gap-3 md:grid-cols-2">
+            <div className="space-y-3 rounded-md border border-border-subtle bg-background p-4">
+              <Skeleton className="h-4 w-40 rounded-full" />
+              <Skeleton className="h-4 w-3/4 rounded-full" />
+              <Skeleton className="h-4 w-2/3 rounded-full" />
+            </div>
+            <div className="space-y-3 rounded-md border border-border-subtle bg-background p-4">
+              <Skeleton className="h-4 w-32 rounded-full" />
+              <Skeleton className="h-4 w-2/3 rounded-full" />
+              <Skeleton className="h-4 w-1/2 rounded-full" />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -135,14 +156,14 @@ export default function CheckoutCourse() {
   if (error || !course || !courseId) {
     return (
       <div className="mx-auto w-full max-w-[960px] px-4 py-8">
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
           {error || t("detail.checkout.missingCourseFallback")}
         </div>
         <Link
           to="/courses"
           className="mt-4 inline-flex items-center gap-2 text-foreground hover:underline"
         >
-          <ArrowLeft className="size-4" /> {t("detail.checkout.backToCourses")}
+          <ArrowLeft className="size-4" aria-hidden /> {t("detail.checkout.backToCourses")}
         </Link>
       </div>
     );
@@ -155,25 +176,25 @@ export default function CheckoutCourse() {
           to={`/courses/${courseId}`}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="size-4" /> {t("detail.checkout.backToCourse")}
+          <ArrowLeft className="size-4" aria-hidden /> {t("detail.checkout.backToCourse")}
         </Link>
         <h1 className="mt-3 text-2xl font-normal tracking-tight text-foreground">
           {t("detail.checkout.title")}
         </h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-muted-foreground">
           {t("detail.checkout.subtitle")}
         </p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
-        <section className="rounded-lg border border-border-subtle bg-card p-6">
+        <section className="rounded-md border border-border-subtle bg-card p-6">
           <h2 className="text-sm font-medium text-foreground">{t("detail.checkout.courseSectionTitle")}</h2>
           <p className="mt-2 text-base text-foreground">{course.title}</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {t("detail.checkout.paymentMethodLabel")}: {t("accessModel.paid_upfront")}
           </p>
 
-          <div className="mt-4 rounded-lg border border-border-subtle bg-muted/20 p-4">
+          <div className="mt-4 rounded-md border border-border-subtle bg-muted/20 p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase text-muted-foreground">
@@ -206,7 +227,7 @@ export default function CheckoutCourse() {
                 )}
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <ShieldCheck className="size-4" /> {t("detail.checkout.sepayQr")}
+                <ShieldCheck className="size-4" aria-hidden /> {t("detail.checkout.sepayQr")}
               </div>
             </div>
 
@@ -226,7 +247,7 @@ export default function CheckoutCourse() {
           </div>
         </section>
 
-        <aside className="rounded-lg border border-border-subtle bg-card p-6">
+        <aside className="rounded-md border border-border-subtle bg-card p-6">
           <h2 className="text-sm font-medium text-foreground">{t("detail.checkout.paymentAsideTitle")}</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             {t("detail.checkout.paymentAsideBodyPrefix")}{" "}

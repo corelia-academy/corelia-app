@@ -2,24 +2,24 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   ArrowLeft,
-  ArrowLineDown,
-  ArrowLineUp,
   Plus,
-  Spinner,
-  Trash,
   List,
   PlayCircle,
   Users,
   FileText,
-  CheckCircle,
   XCircle,
-  Gear,
-  Money,
-  Warning,
-  Certificate,
-  DownloadSimple,
-  DotsSixVertical,
-} from "@phosphor-icons/react";
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Award,
+  AlertTriangle,
+  CheckCircle2,
+  Download,
+  GripVertical,
+  Loader2,
+  Settings,
+  DollarSign,
+  Trash2,
+} from "lucide-react";
 import {
   getCourse,
   getCourseSections,
@@ -1025,7 +1025,7 @@ const InstructorCourseEdit = () => {
   if (loading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <Spinner className="size-8 animate-spin text-muted-foreground" />
+        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
       </div>
     );
   }
@@ -1072,15 +1072,15 @@ const InstructorCourseEdit = () => {
       <div className="mb-6 rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
               {course.published
                 ? t("courseEdit.labels.published")
                 : t("courseEdit.labels.draft")}
             </span>
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
               {getCourseAccessModelLabel(course.access_model)}
             </span>
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
               {getCourseLevelLabel(course.level)}
             </span>
           </div>
@@ -1104,7 +1104,7 @@ const InstructorCourseEdit = () => {
                     </p>
                   </div>
                   <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                    <Icon className="size-5" weight="duotone" />
+                    <Icon className="size-5" aria-hidden />
                   </div>
                 </div>
               </div>
@@ -1114,7 +1114,7 @@ const InstructorCourseEdit = () => {
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-[13px] text-destructive">
+        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -1123,26 +1123,26 @@ const InstructorCourseEdit = () => {
         {/* Sidebar inner — điều hướng từng phần */}
         <nav className="h-fit shrink-0 rounded-2xl border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24 xl:w-64">
           <div className="mb-3 px-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Điều hướng chỉnh sửa
             </p>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               Đi qua từng nhóm cấu hình để hoàn thiện khoá học trước khi xuất bản.
             </p>
           </div>
-          <ul className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1">
+          <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
             <li>
               <button
                 type="button"
                 onClick={() => setSection("info")}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
+                  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "info"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                <Gear className="size-4 shrink-0" weight="duotone" />
+                <Settings className="size-4 shrink-0" aria-hidden />
                 Thông tin chung
               </button>
             </li>
@@ -1151,13 +1151,13 @@ const InstructorCourseEdit = () => {
                 type="button"
                 onClick={() => setSection("pricing")}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
+                  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "pricing"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                <Money className="size-4 shrink-0" weight="duotone" />
+                <DollarSign className="size-4 shrink-0" aria-hidden />
                 Giá & thanh toán
               </button>
             </li>
@@ -1166,13 +1166,13 @@ const InstructorCourseEdit = () => {
                 type="button"
                 onClick={() => setSection("content")}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
+                  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "content"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                <List className="size-4 shrink-0" weight="duotone" />
+                <List className="size-4 shrink-0" aria-hidden />
                 Nội dung & bài học
               </button>
             </li>
@@ -1181,13 +1181,13 @@ const InstructorCourseEdit = () => {
                 type="button"
                 onClick={() => setSection("assignments")}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
+                  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "assignments"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                <FileText className="size-4 shrink-0" weight="duotone" />
+                <FileText className="size-4 shrink-0" aria-hidden />
                 Bài tập cuối khoá
               </button>
             </li>
@@ -1196,13 +1196,13 @@ const InstructorCourseEdit = () => {
                 type="button"
                 onClick={() => setSection("certificate")}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
+                  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "certificate"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                <Certificate className="size-4 shrink-0" weight="duotone" />
+                <Award className="size-4 shrink-0" aria-hidden />
                 Chứng nhận
               </button>
             </li>
@@ -1211,13 +1211,13 @@ const InstructorCourseEdit = () => {
                 type="button"
                 onClick={() => setSection("students")}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
+                  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "students"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                <Users className="size-4 shrink-0" weight="duotone" />
+                <Users className="size-4 shrink-0" aria-hidden />
                 Quản lý học viên
               </button>
             </li>
@@ -1226,13 +1226,13 @@ const InstructorCourseEdit = () => {
                 type="button"
                 onClick={() => setSection("danger")}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
+                  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "danger"
                     ? "bg-destructive/10 text-destructive"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                <Warning className="size-4 shrink-0" weight="duotone" />
+                <AlertTriangle className="size-4 shrink-0" aria-hidden />
                 Xoá khoá học
               </button>
             </li>
@@ -1242,7 +1242,7 @@ const InstructorCourseEdit = () => {
         {/* Nội dung theo section đang chọn */}
         <div className="min-w-0 flex-1">
           {activeSection === "info" && (
-            <section className="rounded-lg border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground">
                 Thông tin chung
               </h2>
@@ -1285,7 +1285,7 @@ const InstructorCourseEdit = () => {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, description: e.target.value }))
                     }
-                    className="min-h-[100px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-[100px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     rows={4}
                   />
                 </Field>
@@ -1334,7 +1334,7 @@ const InstructorCourseEdit = () => {
                           }))
                         }
                         disabled={!canManageBusinessSettings}
-                        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                        className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
                       >
                         {(
                           [
@@ -1395,7 +1395,7 @@ const InstructorCourseEdit = () => {
                             }
                             disabled={!canManageBusinessSettings}
                             rows={4}
-                            className="min-h-[90px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                            className="min-h-[90px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
                             placeholder={t("courseEdit.form.partnerTransferPlaceholder")}
                           />
                           <p className="mt-1 text-xs text-muted-foreground">
@@ -1491,7 +1491,7 @@ const InstructorCourseEdit = () => {
                         level: e.target.value as CourseLevel,
                       }))
                     }
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {(
                       [
@@ -1534,9 +1534,9 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "pricing" && (
-            <section className="rounded-lg border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
-                <Money className="size-5" /> Giá & thanh toán
+                <DollarSign className="size-5" aria-hidden /> Giá & thanh toán
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Thiết lập mô hình truy cập, giá khoá học, phí chứng nhận và mã
@@ -1554,7 +1554,7 @@ const InstructorCourseEdit = () => {
                         access_model: e.target.value as CourseAccessModel,
                       }))
                     }
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {(
                       [
@@ -1630,7 +1630,7 @@ const InstructorCourseEdit = () => {
                       </p>
                     </Field>
 
-                    <div className="rounded-lg border border-border-subtle bg-muted/20 p-4">
+                    <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="text-sm font-medium text-foreground">
@@ -1665,7 +1665,7 @@ const InstructorCourseEdit = () => {
                           Chưa có mã giảm giá nào.
                         </p>
                       ) : (
-                        <div className="mt-3 overflow-hidden rounded-lg border border-border-subtle bg-background">
+                        <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-background">
                           <table className="w-full text-left text-xs">
                             <thead>
                               <tr className="border-b border-border-subtle bg-muted/40">
@@ -1796,7 +1796,7 @@ const InstructorCourseEdit = () => {
                                   type: e.target.value as CourseDiscountType,
                                 }))
                               }
-                              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <option value="percent">%</option>
                               <option value="amount_vnd">VND</option>
@@ -1964,7 +1964,7 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "content" && (
-            <section className="rounded-lg border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
                   <List className="size-5" /> Nội dung khoá học
@@ -1995,7 +1995,7 @@ const InstructorCourseEdit = () => {
 
               <div className="mt-4 space-y-6">
                 {form.access_model === "paid_upfront" && (
-                  <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
+                  <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
                     {t("courseEdit.pricing.updateTotalDurationLabelPrefix")}
                     muốn mở cho học viên chưa thanh toán.
                   </div>
@@ -2003,9 +2003,9 @@ const InstructorCourseEdit = () => {
                 {lessonsBySection.map(({ section, lessons: secLessons }) => (
                   <div
                     key={section.id}
-                    className="rounded-lg border border-border-subtle bg-card overflow-hidden"
+                    className="overflow-hidden rounded-md border border-border-subtle bg-card"
                   >
-                    <div className="flex items-center justify-between border-b border-border-subtle bg-muted/40 px-4 py-2.5">
+                    <div className="flex items-center justify-between border-b border-border-subtle bg-muted/40 px-4 py-2">
                       <span className="font-medium text-foreground">
                         {section.title}
                       </span>
@@ -2015,7 +2015,7 @@ const InstructorCourseEdit = () => {
                         className="text-destructive hover:text-destructive"
                         onClick={() => handleDeleteSection(section.id)}
                       >
-                        <Trash className="size-4" />
+                        <Trash2 className="size-4" aria-hidden />
                       </Button>
                     </div>
                     <ul className="divide-y divide-border-subtle">
@@ -2041,7 +2041,7 @@ const InstructorCourseEdit = () => {
                             }
                             onDragEnd={clearLessonDragState}
                             className={cn(
-                              "flex flex-col gap-2 px-4 py-2.5 transition-[background-color,border-color,opacity] md:flex-row md:items-center md:justify-between",
+                              "flex flex-col gap-2 px-4 py-2 transition-[background-color,border-color,opacity] md:flex-row md:items-center md:justify-between",
                               isDragging && "opacity-45",
                               isDropBefore && "border-t-2 border-primary bg-primary/5",
                               isDropAfter && "border-b-2 border-primary bg-primary/5",
@@ -2064,7 +2064,7 @@ const InstructorCourseEdit = () => {
                                 title={t("courseEdit.tooltips.dragReorder")}
                                 className="flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-muted-foreground transition hover:border-border-subtle hover:bg-muted hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
                               >
-                                <DotsSixVertical className="size-4" />
+                                <GripVertical className="size-4" aria-hidden />
                               </button>
                               <PlayCircle className="size-4 shrink-0 text-muted-foreground" />
                               <span className="text-sm text-foreground truncate">
@@ -2072,7 +2072,7 @@ const InstructorCourseEdit = () => {
                               </span>
                               {form.access_model === "paid_upfront" &&
                                 lesson.is_preview_free && (
-                                  <span className="rounded-md bg-success/15 px-2 py-0.5 text-[11px] font-medium text-success">
+                                  <span className="rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
                                     Học thử
                                   </span>
                                 )}
@@ -2093,7 +2093,7 @@ const InstructorCourseEdit = () => {
                                 aria-label={`Đưa bài ${lesson.title} lên trên`}
                                 title={t("courseEdit.tooltips.moveUp")}
                               >
-                                <ArrowLineUp className="size-4" />
+                                <ArrowUpFromLine className="size-4" aria-hidden />
                               </Button>
                               <Button
                                 type="button"
@@ -2109,10 +2109,10 @@ const InstructorCourseEdit = () => {
                                 aria-label={`Đưa bài ${lesson.title} xuống dưới`}
                                 title={t("courseEdit.tooltips.moveDown")}
                               >
-                                <ArrowLineDown className="size-4" />
+                                <ArrowDownToLine className="size-4" aria-hidden />
                               </Button>
                               {form.access_model === "paid_upfront" && (
-                                <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                                   <input
                                     type="checkbox"
                                     checked={!!lesson.is_preview_free}
@@ -2136,7 +2136,7 @@ const InstructorCourseEdit = () => {
                                 disabled={reorderingLessons}
                                 onClick={() => handleDeleteLesson(lesson.id)}
                               >
-                                <Trash className="size-4" />
+                                <Trash2 className="size-4" aria-hidden />
                               </Button>
                             </div>
                           </li>
@@ -2235,7 +2235,7 @@ const InstructorCourseEdit = () => {
                 ))}
               </div>
 
-              <div className="mt-4 rounded-lg border border-dashed border-border-subtle p-4">
+              <div className="mt-4 rounded-md border border-dashed border-border-subtle p-4">
                 <p className="text-sm text-muted-foreground mb-2">
                   Thêm chương mới
                 </p>
@@ -2260,7 +2260,7 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "assignments" && (
-            <section className="rounded-lg border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
                 <FileText className="size-5" /> Bài tập cuối khoá
               </h2>
@@ -2277,7 +2277,7 @@ const InstructorCourseEdit = () => {
                 chứng nhận.
               </p>
 
-              <div className="mb-8 rounded-lg border border-border-subtle bg-muted/20 p-4">
+              <div className="mb-8 rounded-md border border-border-subtle bg-muted/20 p-4">
                 <h3 className="text-sm font-medium text-foreground mb-3">
                   Cấu hình bài tập
                 </h3>
@@ -2306,7 +2306,7 @@ const InstructorCourseEdit = () => {
                           final_assignment_description: e.target.value,
                         }))
                       }
-                      className="min-h-[80px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="min-h-[80px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       rows={3}
                     />
                   </Field>
@@ -2321,7 +2321,7 @@ const InstructorCourseEdit = () => {
                           final_assignment_instructions: e.target.value,
                         }))
                       }
-                      className="min-h-[60px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="min-h-[60px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       rows={2}
                     />
                   </Field>
@@ -2346,7 +2346,7 @@ const InstructorCourseEdit = () => {
                       Chưa có bài nộp nào.
                     </p>
                   ) : (
-                    <div className="overflow-hidden rounded-lg border border-border-subtle">
+                    <div className="overflow-hidden rounded-md border border-border-subtle">
                       <table className="w-full text-left text-sm">
                         <thead>
                           <tr className="border-b border-border-subtle bg-muted/40">
@@ -2404,7 +2404,7 @@ const InstructorCourseEdit = () => {
                                 <td className="px-4 py-3">
                                   {sub.status === "approved" ? (
                                     <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
-                                      <CheckCircle className="size-3.5" /> Đã
+                                      <CheckCircle2 className="size-3.5" aria-hidden /> Đã
                                       duyệt
                                     </span>
                                   ) : sub.status === "rejected" ? (
@@ -2412,7 +2412,7 @@ const InstructorCourseEdit = () => {
                                       <XCircle className="size-3.5" /> Từ chối
                                     </span>
                                   ) : (
-                                    <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                    <span className="inline-flex items-center gap-1 rounded-md bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">
                                       Chờ duyệt
                                     </span>
                                   )}
@@ -2475,9 +2475,9 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "certificate" && (
-            <section className="rounded-lg border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
-                <Certificate className="size-5" weight="duotone" /> Template
+                <Award className="size-5" aria-hidden /> Template
                 chứng nhận
               </h2>
               <p className="text-sm text-muted-foreground mb-6">
@@ -2569,7 +2569,7 @@ const InstructorCourseEdit = () => {
                 </Button>
               </div>
 
-              <div className="rounded-lg border border-border-subtle bg-muted/20 p-4">
+              <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
                 <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
                   <FileText className="size-4" /> Hướng dẫn tạo template
                 </h3>
@@ -2593,7 +2593,7 @@ const InstructorCourseEdit = () => {
                     download="certificate-template-sample.svg"
                     className="inline-flex items-center gap-2 rounded-md border border-border-subtle bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
                   >
-                    <DownloadSimple className="size-4" /> Tải template mẫu (SVG)
+                    <Download className="size-4" aria-hidden /> Tải template mẫu (SVG)
                   </a>
                 </div>
               </div>
@@ -2601,7 +2601,7 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "students" && (
-            <section className="rounded-lg border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
                 <Users className="size-5" /> Quản lý học viên
               </h2>
@@ -2610,7 +2610,7 @@ const InstructorCourseEdit = () => {
                   Chưa có học viên nào ghi danh vào khoá học này.
                 </p>
               ) : (
-                <div className="overflow-hidden rounded-lg border border-border-subtle">
+                <div className="overflow-hidden rounded-md border border-border-subtle">
                   <table className="w-full text-left text-sm">
                     <thead>
                       <tr className="border-b border-border-subtle bg-muted/40">
@@ -2691,7 +2691,7 @@ const InstructorCourseEdit = () => {
                                       Từ chối
                                     </span>
                                   ) : (
-                                    <span className="text-amber-600 text-xs">
+                                    <span className="text-warning text-xs">
                                       Chờ duyệt
                                     </span>
                                   )
@@ -2709,7 +2709,7 @@ const InstructorCourseEdit = () => {
                             <td className="px-4 py-3">
                               {hasCert ? (
                                 <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
-                                  <CheckCircle className="size-3.5" /> Đã cấp
+                                  <CheckCircle2 className="size-3.5" aria-hidden /> Đã cấp
                                 </span>
                               ) : (
                                 <span className="text-muted-foreground text-xs">
@@ -2724,7 +2724,7 @@ const InstructorCourseEdit = () => {
                                     Trả phí ·{" "}
                                     {formatVndPrice(e.paid_amount_vnd)}
                                   </div>
-                                  <div className="text-[11px] text-muted-foreground">
+                                  <div className="text-xs text-muted-foreground">
                                     {e.paid_provider
                                       ? `Provider: ${e.paid_provider}`
                                       : "Provider: —"}
@@ -2764,9 +2764,9 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "danger" && (
-            <section className="rounded-lg border border-destructive/30 bg-card p-6">
+            <section className="rounded-md border border-destructive/30 bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
-                <Warning className="size-5" weight="duotone" /> Vùng nguy hiểm
+                <AlertTriangle className="size-5" aria-hidden /> Vùng nguy hiểm
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
                 Xoá khoá học sẽ xoá toàn bộ nội dung (chương, bài học). Hành
@@ -2780,7 +2780,7 @@ const InstructorCourseEdit = () => {
                       className="text-destructive border-destructive/50 hover:bg-destructive/10"
                       type="button"
                     >
-                      <Trash className="size-4" /> Xoá khoá học
+                      <Trash2 className="size-4" aria-hidden /> Xoá khoá học
                     </Button>
                   }
                 />

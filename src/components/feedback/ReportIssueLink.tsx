@@ -1,4 +1,4 @@
-import { Bug } from "@phosphor-icons/react";
+import { Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 
@@ -30,7 +30,7 @@ export function ReportIssueLink({
       variant="ghost"
       className={className}
     >
-      <Bug className="size-4" weight="duotone" />
+      <Bug className="size-4" aria-hidden />
       {compact ? t("feedback.reportIssue.short") : t("feedback.reportIssue.long")}
     </Button>
   );

@@ -798,7 +798,7 @@ export default function CohortDetail() {
     return (
       <div className="mx-auto max-w-[1990px] px-4 py-10 text-center">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
-          <p className="text-[15px] font-medium text-destructive">
+          <p className="text-sm font-medium text-destructive">
             {error || translate("detail.toasts.courseNotFound")}
           </p>
           <div className="mt-3 flex justify-center">
@@ -841,7 +841,7 @@ export default function CohortDetail() {
               <h1 className="mt-2 text-3xl font-normal tracking-tight text-foreground">
                 {course.title}
               </h1>
-              <p className="mt-2 text-[15px] leading-7 text-muted-foreground">
+              <p className="mt-2 text-sm leading-7 text-muted-foreground">
                 {course.tagline}
               </p>
 
@@ -907,7 +907,7 @@ export default function CohortDetail() {
                 <h2 className="text-lg font-medium text-foreground">
                   {translate("detail.ui.courseOverviewTitle")}
                 </h2>
-                <p className="mt-3 whitespace-pre-wrap text-[15px] leading-7 text-muted-foreground">
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
                   {course.description}
                 </p>
               </CardContent>
@@ -922,11 +922,11 @@ export default function CohortDetail() {
                     <h2 className="text-lg font-medium text-foreground">
                       {translate("detail.ui.courseSettingsTitle")}
                     </h2>
-                    <p className="mt-1.5 text-[14px] leading-6 text-muted-foreground">
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
                       {translate("detail.ui.courseSettingsDescription")}
                     </p>
                   </div>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
                     {courseSettingsForm.published
                       ? translate("detail.ui.publishedPublic")
                       : translate("detail.ui.publishedHidden")}
@@ -1021,7 +1021,7 @@ export default function CohortDetail() {
                     {courseInstructorNames.map((name) => (
                       <span
                         key={name}
-                        className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[12px] font-medium text-foreground"
+                        className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground"
                       >
                         {name}
                       </span>
@@ -1089,7 +1089,7 @@ export default function CohortDetail() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h2 className="text-lg font-medium text-foreground">Các cohort của khoá</h2>
-                    <p className="mt-1.5 text-[14px] leading-6 text-muted-foreground">
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
                       Mỗi cohort là một đợt mở lớp riêng, có lịch học, roster, recording và
                       roadmap học viên tách biệt.
                     </p>
@@ -1119,16 +1119,16 @@ export default function CohortDetail() {
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="text-sm font-medium text-foreground">{item.title}</div>
-                          <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-[11px] font-medium text-foreground">
+                          <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
                             {getOfflineCohortStatusLabel(item.status)}
                           </span>
                         </div>
-                        <div className="mt-2 text-[13px] text-muted-foreground">
+                        <div className="mt-2 text-sm text-muted-foreground">
                           Đợt {index + 1} · {formatDateRange(item.starts_at, item.ends_at)}
                         </div>
                         <div className="mt-3 grid gap-3 sm:grid-cols-3">
                           <div className="rounded-xl border border-border-subtle bg-card px-3 py-2">
-                            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                               Học viên
                             </div>
                             <div className="mt-1 text-sm text-foreground">
@@ -1136,7 +1136,7 @@ export default function CohortDetail() {
                             </div>
                           </div>
                           <div className="rounded-xl border border-border-subtle bg-card px-3 py-2">
-                            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                               Buổi học
                             </div>
                             <div className="mt-1 text-sm text-foreground">
@@ -1144,7 +1144,7 @@ export default function CohortDetail() {
                             </div>
                           </div>
                           <div className="rounded-xl border border-border-subtle bg-card px-3 py-2">
-                            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                               Recording
                             </div>
                             <div className="mt-1 text-sm text-foreground">
@@ -1164,7 +1164,7 @@ export default function CohortDetail() {
             <Card>
               <CardContent className="p-5 sm:p-6">
                 <h2 className="text-lg font-medium text-foreground">Mở cohort mới</h2>
-                <p className="mt-1.5 text-[14px] leading-6 text-muted-foreground">
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   Dùng khi khoá offline mở thêm đợt học mới, đổi lịch khai giảng, đổi giảng
                   viên hoặc tách batch theo địa điểm.
                 </p>
@@ -1318,7 +1318,7 @@ export default function CohortDetail() {
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
                   />
                 </div>
-                <div className="mt-4 rounded-2xl border border-border-subtle bg-background p-4 text-[13px] leading-6 text-muted-foreground">
+                <div className="mt-4 rounded-2xl border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
                   Nếu cohort dùng Google Meet, link ở đây sẽ được ưu tiên hiển thị cho học
                   viên trong lịch buổi học để họ vẫn có thể tham gia online khi không đến
                   lớp trực tiếp. Các session mới cũng sẽ tự điền sẵn link này để đội ngũ
@@ -1356,18 +1356,18 @@ export default function CohortDetail() {
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <h2 className="text-lg font-medium text-foreground">{selectedCohort.title}</h2>
-                    <p className="mt-1.5 text-[14px] text-muted-foreground">
+                    <p className="mt-2 text-sm text-muted-foreground">
                       {selectedCohort.tagline}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
                       {getOfflineCohortStatusLabel(selectedCohort.status)}
                     </span>
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
                       {getOfflineDeliveryModeLabel(selectedCohort.delivery_mode)}
                     </span>
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
                       {getOfflineMeetingProviderLabel(selectedCohort.meeting_provider)}
                     </span>
                   </div>
@@ -1437,17 +1437,17 @@ export default function CohortDetail() {
                       <div key={session.id} className="rounded-2xl border border-border-subtle bg-background p-4">
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                           <div>
-                            <div className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                               Tuần {session.week_index}
                             </div>
                             <div className="mt-1 text-lg font-medium text-foreground">
                               {session.title}
                             </div>
-                            <div className="mt-1 text-[13px] text-muted-foreground">
+                            <div className="mt-1 text-sm text-muted-foreground">
                               {formatDateRange(session.starts_at, session.ends_at)}
                             </div>
                           </div>
-                          <div className="text-right text-[13px] text-muted-foreground">
+                          <div className="text-right text-sm text-muted-foreground">
                             {session.location_label ||
                               selectedCohort.venue_name ||
                               translate("detail.fallbacks.sessionLocation")}
@@ -1455,14 +1455,14 @@ export default function CohortDetail() {
                         </div>
 
                         {session.summary ? (
-                          <p className="mt-3 text-[14px] leading-6 text-muted-foreground">
+                          <p className="mt-3 text-sm leading-6 text-muted-foreground">
                             {session.summary}
                           </p>
                         ) : null}
 
                         <div className="mt-4 grid gap-3 md:grid-cols-2">
                           <div className="rounded-2xl border border-border-subtle p-4">
-                            <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                               Recording
                             </div>
                             <div className="mt-2 text-sm text-foreground">
@@ -1474,7 +1474,7 @@ export default function CohortDetail() {
                                 translate("detail.fallbacks.noRecording")
                               )}
                             </div>
-                            <div className="mt-2 text-[12px] text-muted-foreground">
+                            <div className="mt-2 text-xs text-muted-foreground">
                               {getOfflineRecordingSyncStatusLabel(session.recording_sync_status)}
                               {session.zoom_recording_count > 0 ? ` · ${session.zoom_recording_count} file` : ""}
                             </div>
@@ -1490,27 +1490,27 @@ export default function CohortDetail() {
                             ) : null}
                           </div>
                           <div className="rounded-2xl border border-border-subtle p-4">
-                            <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                               Trạng thái buổi
                             </div>
                             <div className="mt-2 text-sm text-foreground">
                               {getOfflineMeetingLifecycleStatusLabel(session.meeting_status)}
                             </div>
-                            <div className="mt-1 text-[13px] text-muted-foreground">
+                            <div className="mt-1 text-sm text-muted-foreground">
                               Điểm danh: {getOfflineAttendanceSourceLabel(session.attendance_source)}
                             </div>
                           </div>
                         </div>
 
                         <div className="mt-3 rounded-2xl border border-border-subtle p-4">
-                          <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                          <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                             Bài tập tuần
                           </div>
                           <div className="mt-2 text-sm text-foreground">
                             {session.assignment_title || translate("detail.fallbacks.noAssignment")}
                           </div>
                           {session.assignment_due_at ? (
-                            <div className="mt-1 text-[13px] text-muted-foreground">
+                            <div className="mt-1 text-sm text-muted-foreground">
                               Hạn nộp: {new Date(session.assignment_due_at).toLocaleString(intlLocale())}
                             </div>
                           ) : null}
@@ -1518,7 +1518,7 @@ export default function CohortDetail() {
 
                         {!isManageView && myEnrollment ? (
                           <div className="mt-3 rounded-2xl border border-border-subtle p-4">
-                            <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                               Điểm danh của bạn
                             </div>
                             <div className="mt-2 text-sm text-foreground">
@@ -1634,7 +1634,7 @@ export default function CohortDetail() {
                   <h2 className="text-lg font-medium text-foreground">Học viên và roadmap</h2>
                   {canCoordinateRosterAccess ? (
                     <div className="mt-4 rounded-2xl border border-border-subtle bg-background p-4">
-                      <div className="text-[13px] font-medium text-foreground">
+                      <div className="text-sm font-medium text-foreground">
                         {translate("detail.forms.enrollment.addStudentTitle")}
                       </div>
                       <div className="mt-3 flex flex-col gap-3 sm:flex-row">
@@ -1664,7 +1664,7 @@ export default function CohortDetail() {
                               <div className="text-sm font-medium text-foreground">
                                 {item.student_name || item.student_email || item.user_id}
                               </div>
-                              <div className="mt-1 text-[13px] text-muted-foreground">
+                              <div className="mt-1 text-sm text-muted-foreground">
                                 {getOfflineEnrollmentStatusLabel(item.status)}
                               </div>
                             </div>
@@ -1762,11 +1762,11 @@ export default function CohortDetail() {
                               <div className="text-sm font-medium text-foreground">
                                 {submission.student_name || submission.user_id}
                               </div>
-                              <div className="mt-1 text-[13px] text-muted-foreground">
+                              <div className="mt-1 text-sm text-muted-foreground">
                                 {getOfflineAssignmentSubmissionStatusLabel(submission.status)}
                               </div>
                               {submission.submission_text ? (
-                                <p className="mt-3 whitespace-pre-wrap text-[14px] leading-6 text-muted-foreground">
+                                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
                                   {submission.submission_text}
                                 </p>
                               ) : null}
@@ -1808,7 +1808,7 @@ export default function CohortDetail() {
               </h2>
               <div className="mt-4 space-y-4">
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                  <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                     Chứng nhận
                   </div>
                   <div className="mt-2 text-sm text-foreground">
@@ -1816,7 +1816,7 @@ export default function CohortDetail() {
                   </div>
                 </div>
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                  <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                     Học phí / ghi chú
                   </div>
                   <div className="mt-2 text-sm text-foreground">
@@ -1825,7 +1825,7 @@ export default function CohortDetail() {
                 </div>
                 {selectedCohort ? (
                   <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                    <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       Thời gian cohort hiện tại
                     </div>
                     <div className="mt-2 text-sm text-foreground">
@@ -1859,7 +1859,7 @@ export default function CohortDetail() {
                   <h2 className="text-lg font-medium text-foreground">Google Meet</h2>
                   <div className="mt-4 space-y-4">
                     <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                      <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         Host email
                       </div>
                       <div className="mt-2 text-sm text-foreground">
@@ -1867,14 +1867,14 @@ export default function CohortDetail() {
                       </div>
                     </div>
                     <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                      <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         Buổi học có link Meet
                       </div>
                       <div className="mt-2 text-sm text-foreground">
                         {sessions.filter((item) => !!item.zoom_join_url).length} buổi đã gắn link Meet
                       </div>
                     </div>
-                    <div className="rounded-2xl border border-dashed border-border-subtle bg-background p-4 text-[13px] leading-6 text-muted-foreground">
+                    <div className="rounded-2xl border border-dashed border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
                       Hiện tại hệ thống dùng Google Meet theo cách gọn hơn: lưu link tham gia
                       cho học viên, giữ trạng thái buổi học và recording trong từng session.
                     </div>
@@ -1888,7 +1888,7 @@ export default function CohortDetail() {
                 <h2 className="text-lg font-medium text-foreground">Lộ trình của bạn</h2>
                 <div className="mt-4 space-y-4">
                   <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                    <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       Trạng thái hiện tại
                     </div>
                     <div className="mt-2 text-sm text-foreground">
@@ -1897,7 +1897,7 @@ export default function CohortDetail() {
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                      <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         Tiến độ tổng
                       </div>
                       <div className="mt-2 text-lg font-semibold text-foreground">
@@ -1905,7 +1905,7 @@ export default function CohortDetail() {
                       </div>
                     </div>
                     <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                      <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         Bài tập hoàn thành
                       </div>
                       <div className="mt-2 text-lg font-semibold text-foreground">
@@ -1920,7 +1920,7 @@ export default function CohortDetail() {
             <Card>
               <CardContent className="p-5 sm:p-6">
                 <h2 className="text-lg font-medium text-foreground">Cách tham gia khoá học</h2>
-                <p className="mt-3 text-[14px] leading-7 text-muted-foreground">
+                <p className="mt-3 text-sm leading-7 text-muted-foreground">
                   Khoá học offline có thể mở nhiều cohort khác nhau. Bạn sẽ được xếp vào cohort cụ thể bởi đội ngũ Corelia để nhận lịch học, recording và bài tập theo tuần.
                 </p>
               </CardContent>

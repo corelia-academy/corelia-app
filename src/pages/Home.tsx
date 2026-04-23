@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
-  Chalkboard,
-  Medal,
-  MonitorPlay,
+  Award,
+  BookOpen,
+  PlaySquare,
   Trophy,
-} from "@phosphor-icons/react";
+} from "lucide-react";
 import { NavLink } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/stores/authStore";
 import {
   computeProgressPercent,
@@ -217,7 +218,7 @@ export default function Home() {
                 focusCards.filter((item) => item.format === "offline").length
               } offline`
             : t("home.momentum.learning.emptyNote"),
-        icon: MonitorPlay,
+        icon: PlaySquare,
       },
       {
         label: t("home.momentum.contests.label"),
@@ -235,7 +236,7 @@ export default function Home() {
           issuedCertificates > 0
             ? t("home.momentum.certificates.note")
             : t("home.momentum.certificates.emptyNote"),
-        icon: Medal,
+        icon: Award,
       },
     ],
     [contests.length, focusCards, issuedCertificates, t],
@@ -325,12 +326,12 @@ export default function Home() {
       <div className="container-app w-full min-w-0 py-6 sm:py-8">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="min-w-0 space-y-6">
-            <section className="rounded-lg border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+            <section className="rounded-md border border-border-subtle bg-card p-5 shadow-card sm:p-6">
               <div className="text-xs text-muted-foreground">Corelia Academy</div>
-              <h1 className="mt-2 text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
                 {t("home.guest.heroTitle")}
               </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                 {t("home.guest.heroSubtitle")}
               </p>
 
@@ -349,7 +350,7 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+            <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-5">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-sm font-medium text-foreground">
                   Khoá học nổi bật
@@ -367,36 +368,55 @@ export default function Home() {
               </div>
 
               <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {featuredCourses.map((course) => (
-                  <NavLink
-                    key={course.id}
-                    to={`/courses/${course.slug || course.id}`}
-                    className="group overflow-hidden rounded-lg border border-border-subtle bg-background transition-colors hover:bg-muted/40"
-                  >
-                    <div className="relative aspect-video bg-muted/40">
-                      {course.thumbnail_url ? (
-                        <img
-                          src={course.thumbnail_url}
-                          alt=""
-                          className="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                        />
-                      ) : null}
+                {featuredCourses.length === 0 ? (
+                  <div className="col-span-full flex flex-col items-center gap-3 py-12 text-center sm:py-16">
+                    <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                      <BookOpen className="size-6 text-muted-foreground" aria-hidden />
                     </div>
-                    <div className="p-3">
-                      <div className="line-clamp-2 text-[13px] font-medium leading-5 text-foreground">
-                        {course.title}
-                      </div>
-                      <div className="mt-1 line-clamp-1 text-[12px] text-muted-foreground">
-                        {course.level}
-                      </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {t("home.sections.exploreTitle")}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {t("home.sections.startFromCatalogSubtitle")}
+                      </p>
                     </div>
-                  </NavLink>
-                ))}
+                    <Button size="sm" render={<NavLink to="/courses" />} nativeButton={false}>
+                      {t("home.exploreCourses")}
+                    </Button>
+                  </div>
+                ) : (
+                  featuredCourses.map((course) => (
+                    <NavLink
+                      key={course.id}
+                      to={`/courses/${course.slug || course.id}`}
+                      className="group cursor-pointer overflow-hidden rounded-md border border-border-subtle bg-background transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <div className="relative aspect-video bg-muted/40">
+                        {course.thumbnail_url ? (
+                          <img
+                            src={course.thumbnail_url}
+                            alt=""
+                            className="absolute inset-0 size-full object-cover"
+                          />
+                        ) : null}
+                      </div>
+                      <div className="p-3">
+                        <div className="line-clamp-2 text-sm font-medium leading-relaxed text-foreground">
+                          {course.title}
+                        </div>
+                        <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                          {course.level}
+                        </div>
+                      </div>
+                    </NavLink>
+                  ))
+                )}
               </div>
             </section>
 
             {contests.length > 0 ? (
-              <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+              <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm font-medium text-foreground">
                     Cuộc thi đang mở
@@ -418,17 +438,17 @@ export default function Home() {
                     <NavLink
                       key={contest.id}
                       to={`/contests/${contest.id}`}
-                      className="flex items-start justify-between gap-3 rounded-lg border border-border-subtle bg-background px-3 py-3 transition-colors hover:bg-muted"
+                      className="flex cursor-pointer items-start justify-between gap-3 rounded-md border border-border-subtle bg-background px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                     >
                       <div className="min-w-0">
                         <div className="line-clamp-1 text-sm font-medium text-foreground">
                           {contest.title}
                         </div>
-                        <div className="mt-1 line-clamp-2 text-[12px] leading-5 text-muted-foreground">
+                        <div className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                           {contest.tagline}
                         </div>
                         {contest.registration_deadline ? (
-                          <div className="mt-2 text-[12px] text-muted-foreground">
+                          <div className="mt-2 text-xs text-muted-foreground">
                             Hạn đăng ký{" "}
                             {new Date(contest.registration_deadline).toLocaleDateString(
                               intlLocale(),
@@ -445,11 +465,11 @@ export default function Home() {
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
-            <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+            <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
               <div className="text-sm font-medium text-foreground">
                 {t("home.guest.startLearningTitle")}
               </div>
-              <p className="mt-1.5 text-[13px] leading-6 text-muted-foreground">
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {t("home.guest.startLearningSubtitle")}
               </p>
               <div className="mt-4 grid gap-2">
@@ -471,9 +491,9 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-              <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-                <Chalkboard className="size-4" weight="duotone" />
+            <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+              <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <BookOpen className="size-4 shrink-0" aria-hidden />
                 {t("home.guest.quickLinksTitle")}
               </div>
               <div className="mt-4 space-y-2">
@@ -503,35 +523,50 @@ export default function Home() {
     <div className="container-app w-full min-w-0 py-6 sm:py-8">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-6">
-          <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+          <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-5">
             <div className="flex flex-col gap-2">
               <div className="text-xs text-muted-foreground">
                 {loading ? t("home.syncing") : t("home.dashboard")}
               </div>
-              <h1 className="text-2xl font-medium tracking-tight text-foreground">
-                {t("home.sections.greeting", { name: firstName })}
-              </h1>
-              <p className="text-sm leading-6 text-muted-foreground">
-                {t("home.sections.greetingSubtitle")}
-              </p>
+              {loading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-8 w-48 rounded-md" />
+                  <Skeleton className="h-4 w-full max-w-md rounded" />
+                </div>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                    {t("home.sections.greeting", { name: firstName })}
+                  </h1>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {t("home.sections.greetingSubtitle")}
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              {activePinnedProgram ? (
+              {loading ? (
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32 rounded-full" />
+                  <Skeleton className="h-5 w-full max-w-sm rounded" />
+                  <Skeleton className="h-4 w-full max-w-md rounded" />
+                </div>
+              ) : activePinnedProgram ? (
                 <div className="min-w-0">
-                  <div className="inline-flex items-center rounded-full border border-border-subtle bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                  <div className="inline-flex items-center rounded-full border border-border-subtle bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
                     {activePinnedProgram.badge}
                   </div>
                   <div className="mt-2 line-clamp-2 text-sm font-medium text-foreground">
                     {activePinnedProgram.title}
                   </div>
-                  <div className="mt-1 line-clamp-2 text-[13px] leading-5 text-muted-foreground">
+                  <div className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                     {activePinnedProgram.description}
                   </div>
                 </div>
               ) : featuredFocus ? (
                 <div className="min-w-0">
-                  <div className="inline-flex items-center rounded-full border border-border-subtle bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                  <div className="inline-flex items-center rounded-full border border-border-subtle bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
                     {featuredFocus.format === "online"
                       ? t("home.sections.featuredOnline")
                       : t("home.sections.featuredOffline")}
@@ -539,17 +574,17 @@ export default function Home() {
                   <div className="mt-2 line-clamp-2 text-sm font-medium text-foreground">
                     {featuredFocus.title}
                   </div>
-                  <div className="mt-1 line-clamp-2 text-[13px] leading-5 text-muted-foreground">
+                  <div className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                     {featuredFocus.nextStep}
                   </div>
                   <div className="mt-3">
-                    <div className="flex items-center justify-between text-[12px] text-muted-foreground">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{t("home.sections.progress")}</span>
                       <span>{featuredFocus.progress}%</span>
                     </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
                       <div
-                        className="h-full rounded-full bg-primary transition-all"
+                        className="h-full rounded-full bg-primary"
                         style={{ width: `${featuredFocus.progress}%` }}
                       />
                     </div>
@@ -560,32 +595,38 @@ export default function Home() {
                   <div className="text-sm font-medium text-foreground">
                     {t("home.sections.startFromCatalogTitle")}
                   </div>
-                  <div className="mt-1 text-[13px] leading-5 text-muted-foreground">
+                  <div className="mt-1 text-sm leading-relaxed text-muted-foreground">
                     {t("home.sections.startFromCatalogSubtitle")}
                   </div>
                 </div>
               )}
 
               <div className="flex shrink-0 gap-2">
-                <Button
-                  render={
-                    <NavLink to={activePinnedProgram?.to ?? featuredFocus?.action ?? "/courses"} />
-                  }
-                  nativeButton={false}
-                  size="sm"
-                >
-                  {activePinnedProgram?.cta ??
-                    (featuredFocus ? t("home.continueLearning") : t("home.exploreCourses"))}
-                  <ArrowRight className="size-4" />
-                </Button>
-                <Button
-                  render={<NavLink to="/courses" />}
-                  nativeButton={false}
-                  variant="outline"
-                  size="sm"
-                >
-                  Khoá học
-                </Button>
+                {!loading ? (
+                  <>
+                    <Button
+                      render={
+                        <NavLink
+                          to={activePinnedProgram?.to ?? featuredFocus?.action ?? "/courses"}
+                        />
+                      }
+                      nativeButton={false}
+                      size="sm"
+                    >
+                      {activePinnedProgram?.cta ??
+                        (featuredFocus ? t("home.continueLearning") : t("home.exploreCourses"))}
+                      <ArrowRight className="size-4 shrink-0" aria-hidden />
+                    </Button>
+                    <Button
+                      render={<NavLink to="/courses" />}
+                      nativeButton={false}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Khoá học
+                    </Button>
+                  </>
+                ) : null}
               </div>
             </div>
           </section>
@@ -596,22 +637,22 @@ export default function Home() {
               return (
                 <div
                   key={item.label}
-                  className="rounded-lg border border-border-subtle bg-card p-4 shadow-card"
+                  className="rounded-md border border-border-subtle bg-card p-4 shadow-card"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="text-[12px] font-medium text-muted-foreground">
+                      <div className="text-xs font-medium text-muted-foreground">
                         {item.label}
                       </div>
                       <div className="mt-1 text-2xl font-semibold text-foreground">
                         {item.value}
                       </div>
-                      <div className="mt-1 line-clamp-2 text-[12px] leading-5 text-muted-foreground">
+                      <div className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                         {item.note}
                       </div>
                     </div>
                     <div className="flex size-9 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <Icon className="size-4" weight="duotone" />
+                      <Icon className="size-4 shrink-0" aria-hidden />
                     </div>
                   </div>
                 </div>
@@ -619,7 +660,7 @@ export default function Home() {
             })}
           </section>
 
-          <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
             <div className="flex items-center justify-between gap-3">
               <div className="text-sm font-medium text-foreground">
                 {t("home.continueLearning")}
@@ -642,40 +683,53 @@ export default function Home() {
                   <NavLink
                     key={item.id}
                     to={item.action}
-                    className="min-w-[240px] max-w-[240px] rounded-lg border border-border-subtle bg-background p-3 transition-colors hover:bg-muted/50"
+                    className="min-w-[240px] max-w-[240px] cursor-pointer rounded-md border border-border-subtle bg-background p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                   >
                     <div className="line-clamp-2 text-sm font-medium text-foreground">
                       {item.title}
                     </div>
-                    <div className="mt-1 line-clamp-1 text-[12px] text-muted-foreground">
+                    <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">
                       {item.meta}
                     </div>
                     <div className="mt-2">
-                      <div className="flex items-center justify-between text-[12px] text-muted-foreground">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>{t("home.sections.progress")}</span>
                         <span>{item.progress}%</span>
                       </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
                         <div
                           className="h-full rounded-full bg-primary"
                           style={{ width: `${item.progress}%` }}
                         />
                       </div>
                     </div>
-                    <div className="mt-2 line-clamp-2 text-[12px] leading-5 text-muted-foreground">
+                    <div className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                       {item.nextStep}
                     </div>
                   </NavLink>
                 ))}
               </div>
             ) : (
-              <div className="mt-3 text-[13px] leading-6 text-muted-foreground">
-                {t("home.sections.enrollHint")}
+              <div className="mt-3 flex flex-col items-center gap-3 py-8 text-center sm:py-12">
+                <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                  <BookOpen className="size-6 text-muted-foreground" aria-hidden />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {t("home.sections.startFromCatalogTitle")}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {t("home.sections.enrollHint")}
+                  </p>
+                </div>
+                <Button size="sm" render={<NavLink to="/courses" />} nativeButton={false}>
+                  {t("home.exploreCourses")}
+                </Button>
               </div>
             )}
           </section>
 
-          <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
             <div className="flex items-center justify-between gap-3">
               <div className="text-sm font-medium text-foreground">
                 {t("home.sections.exploreTitle")}
@@ -692,73 +746,92 @@ export default function Home() {
               </Button>
             </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {(courseCatalog ?? []).slice(0, 4).map((course) => (
-                <NavLink
-                  key={course.id}
-                  to={`/courses/${course.slug || course.id}`}
-                  className="group overflow-hidden rounded-lg border border-border-subtle bg-background transition-colors hover:bg-muted/40"
-                >
-                  <div className="relative aspect-video bg-muted/40">
-                    {course.thumbnail_url ? (
-                      <img
-                        src={course.thumbnail_url}
-                        alt=""
-                        className="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                      />
-                    ) : null}
+              {(courseCatalog ?? []).length === 0 ? (
+                <div className="col-span-full flex flex-col items-center gap-3 py-12 text-center sm:py-16">
+                  <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                    <BookOpen className="size-6 text-muted-foreground" aria-hidden />
                   </div>
-                  <div className="p-3">
-                    <div className="line-clamp-2 text-[13px] font-medium leading-5 text-foreground">
-                      {course.title}
-                    </div>
-                    <div className="mt-1 line-clamp-1 text-[12px] text-muted-foreground">
-                      {course.level}
-                    </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {t("home.sections.exploreTitle")}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {t("home.sections.startFromCatalogSubtitle")}
+                    </p>
                   </div>
-                </NavLink>
-              ))}
+                  <Button size="sm" render={<NavLink to="/courses" />} nativeButton={false}>
+                    {t("home.exploreCourses")}
+                  </Button>
+                </div>
+              ) : (
+                (courseCatalog ?? []).slice(0, 4).map((course) => (
+                  <NavLink
+                    key={course.id}
+                    to={`/courses/${course.slug || course.id}`}
+                    className="group cursor-pointer overflow-hidden rounded-md border border-border-subtle bg-background transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <div className="relative aspect-video bg-muted/40">
+                      {course.thumbnail_url ? (
+                        <img
+                          src={course.thumbnail_url}
+                          alt=""
+                          className="absolute inset-0 size-full object-cover"
+                        />
+                      ) : null}
+                    </div>
+                    <div className="p-3">
+                      <div className="line-clamp-2 text-sm font-medium leading-relaxed text-foreground">
+                        {course.title}
+                      </div>
+                      <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                        {course.level}
+                      </div>
+                    </div>
+                  </NavLink>
+                ))
+              )}
             </div>
           </section>
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
           {needsProfileSetup && (
-            <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-[13px] text-amber-700 dark:text-amber-300">
+            <div className="rounded-md border border-warning/20 bg-warning/10 p-4 text-sm text-warning">
               <p className="font-medium">
                 Hồ sơ của bạn cần bổ sung thêm thông tin.
               </p>
-              <p className="mt-1.5 leading-6">
+              <p className="mt-2 leading-relaxed">
                 Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc
                 học vụ hỗ trợ bạn tốt hơn.
               </p>
               <NavLink
                 to="/account"
-                className="mt-2.5 inline-flex text-[12px] font-medium underline underline-offset-2"
+                className="mt-3 inline-flex text-xs font-medium underline underline-offset-2"
               >
                 Cập nhật tài khoản
               </NavLink>
             </div>
           )}
 
-          <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
             <div className="flex items-start gap-3">
               <Avatar className="size-10 shrink-0">
                 <AvatarImage src={avatarUrl} alt={displayName} />
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <div className="text-[15px] font-medium text-foreground">
+                <div className="text-sm font-medium text-foreground">
                   {displayName}
                 </div>
                 {email ? (
                   <div
-                    className="mt-1 truncate text-[13px] text-muted-foreground"
+                    className="mt-1 truncate text-sm text-muted-foreground"
                     title={email}
                   >
                     {email}
                   </div>
                 ) : null}
-                <div className="mt-1 text-[12px] text-muted-foreground">
+                <div className="mt-1 text-xs text-muted-foreground">
                   {profile?.role
                     ? i18n.t(`auth:roles.${profile.role}`, { defaultValue: profile.role })
                     : t("home.studentFallback")}
@@ -778,6 +851,7 @@ export default function Home() {
               <Button
                 render={<NavLink to="/achievements" />}
                 nativeButton={false}
+                variant="secondary"
                 className="flex-1"
               >
                 {t("nav.achievements")}
@@ -785,9 +859,9 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-              <Chalkboard className="size-4" weight="duotone" />
+          <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <BookOpen className="size-4 shrink-0" aria-hidden />
               {t("home.guest.quickLinksTitle")}
             </div>
             <div className="mt-4 space-y-2">

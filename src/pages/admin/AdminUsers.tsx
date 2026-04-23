@@ -5,7 +5,8 @@ import type { Profile, UserRole } from "@/types/database";
 import { getRoleLabel } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShieldCheck, User, Student, ChalkboardTeacher } from "@phosphor-icons/react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { GraduationCap, ShieldCheck, User } from "lucide-react";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 
@@ -107,7 +108,7 @@ export default function AdminUsers() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <User className="size-5" weight="duotone" />
+              <User className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -122,7 +123,7 @@ export default function AdminUsers() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ShieldCheck className="size-5" weight="duotone" />
+              <ShieldCheck className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -137,7 +138,7 @@ export default function AdminUsers() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ShieldCheck className="size-5" weight="duotone" />
+              <ShieldCheck className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -152,7 +153,7 @@ export default function AdminUsers() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ChalkboardTeacher className="size-5" weight="duotone" />
+              <GraduationCap className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -167,7 +168,7 @@ export default function AdminUsers() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Student className="size-5" weight="duotone" />
+              <GraduationCap className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -179,7 +180,7 @@ export default function AdminUsers() {
             <h2 className="text-xl font-medium tracking-tight text-foreground">
               {t("users.title")}
             </h2>
-            <p className="mt-1.5 max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
+            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               {t("users.subtitle")}
             </p>
           </div>
@@ -194,7 +195,7 @@ export default function AdminUsers() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value as UserRole | "all")}
-              className="h-10 rounded-xl border border-input bg-background px-3 text-[14px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-10 rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="all">{t("users.allRoles")}</option>
               {roleOptions.map((role) => (
@@ -251,14 +252,14 @@ export default function AdminUsers() {
       </div>
 
       {error && (
-        <div className="mt-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-[13px] text-destructive">
+        <div className="mt-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-border-subtle bg-card text-card-foreground shadow-card">
         <div className="border-b border-border-subtle bg-muted/35 px-4 py-3">
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {loading
               ? t("users.syncing")
               : t("users.showing", { shown: filtered.length, total: profiles.length }) +
@@ -269,12 +270,38 @@ export default function AdminUsers() {
         </div>
         <div className="divide-y divide-border-subtle md:hidden">
           {loading ? (
-            <div className="p-6 text-center text-[13px] text-muted-foreground">
-              {t("users.loadingList")}
+            <div className="space-y-4 p-4">
+              {[0, 1, 2].map((idx) => (
+                <div key={idx} className="space-y-4 rounded-2xl border border-border-subtle bg-background p-4">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="size-10 rounded-full" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <Skeleton className="h-4 w-40 rounded-full" />
+                      <Skeleton className="h-3 w-24 rounded-full" />
+                    </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Skeleton className="h-3 w-16 rounded-full" />
+                      <Skeleton className="h-4 w-full rounded-full" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-3 w-16 rounded-full" />
+                      <Skeleton className="h-4 w-28 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="p-10 text-center text-[13px] text-muted-foreground">
-              {t("users.empty")}
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
+              <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                <User className="size-6 text-muted-foreground" aria-hidden />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">{t("users.empty")}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t("users.subtitle")}</p>
+              </div>
             </div>
           ) : (
             filtered.map((p) => (
@@ -287,53 +314,53 @@ export default function AdminUsers() {
                       className="size-10 rounded-full bg-muted/60 object-cover"
                     />
                   ) : (
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted/60 text-[13px] font-medium text-muted-foreground">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted/60 text-sm font-medium text-muted-foreground">
                       {(p.full_name || "U")[0]}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="truncate text-[15px] font-medium text-foreground">
+                    <p className="truncate text-sm font-medium text-foreground">
                       {p.full_name || t("users.mobile.notUpdated")}
                     </p>
-                    <p className="mt-0.5 truncate text-[12px] text-muted-foreground">
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {t("users.mobile.uid", { uid: p.id.substring(0, 8) })}
                     </p>
                   </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("users.mobile.emailLabel")}
                     </p>
-                    <p className="mt-1 text-[13px] text-foreground">
+                    <p className="mt-1 text-sm text-foreground">
                       {p.id === currentUser?.uid
                         ? currentUser?.email ?? p.email ?? "—"
                         : p.email ?? "—"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("users.mobile.currentRole")}
                     </p>
                     <p className="mt-1">
-                      <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[12px] font-medium text-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
                         {getRoleLabel(p.role)}
                       </span>
                     </p>
                   </div>
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("users.mobile.phone")}
                     </p>
-                    <p className="mt-1 text-[13px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {p.phone || t("users.mobile.dash")}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("users.mobile.createdAt")}
                     </p>
-                    <p className="mt-1 text-[13px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {p.created_at
                         ? new Date(p.created_at).toLocaleDateString(intlLocale())
                         : t("users.mobile.dash")}
@@ -341,7 +368,7 @@ export default function AdminUsers() {
                   </div>
                 </div>
                 <div>
-                  <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="mb-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
                     {t("users.mobile.changeRole")}
                   </p>
                   <select
@@ -349,7 +376,7 @@ export default function AdminUsers() {
                     onChange={(e) =>
                       void handleRoleChange(p.id, e.target.value as UserRole)
                     }
-                    className="w-full rounded-xl border border-border-subtle bg-background px-3 py-2.5 text-[13px] outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                    className="w-full rounded-xl border border-border-subtle bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
                   >
                     {roleOptions.map((role) => (
                       <option key={role} value={role}>
@@ -366,43 +393,71 @@ export default function AdminUsers() {
           <table className="w-full text-left">
             <thead className="border-b border-border-subtle bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("users.table.name")}
                 </th>
-                <th className="min-w-[180px] px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="min-w-[180px] px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("users.table.email")}
                 </th>
-                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("users.table.role")}
                 </th>
-                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("users.table.phone")}
                 </th>
-                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("users.table.createdAt")}
                 </th>
-                <th className="px-4 py-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("users.table.actions")}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">
               {loading ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="p-6 text-center text-[13px] text-muted-foreground"
-                  >
-                    {t("users.loadingList")}
-                  </td>
-                </tr>
+                [0, 1, 2, 3, 4].map((idx) => (
+                  <tr key={idx}>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="size-9 rounded-full" />
+                        <div className="min-w-0 space-y-2">
+                          <Skeleton className="h-4 w-40 rounded-full" />
+                          <Skeleton className="h-3 w-24 rounded-full" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="min-w-[180px] px-4 py-3">
+                      <Skeleton className="h-4 w-48 rounded-full" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-6 w-24 rounded-full" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-28 rounded-full" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-24 rounded-full" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-8 w-32 rounded-full" />
+                    </td>
+                  </tr>
+                ))
               ) : filtered.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
-                    className="p-10 text-center text-[13px] text-muted-foreground"
+                    className="p-10"
                   >
-                    {t("users.empty")}
+                    <div className="flex flex-col items-center gap-3 py-8 text-center">
+                      <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                        <User className="size-6 text-muted-foreground" aria-hidden />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{t("users.empty")}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{t("users.subtitle")}</p>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -417,16 +472,16 @@ export default function AdminUsers() {
                             className="size-9 rounded-full bg-muted/60 object-cover"
                           />
                         ) : (
-                          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted/60 text-[13px] font-medium text-muted-foreground">
+                          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted/60 text-sm font-medium text-muted-foreground">
                             {(p.full_name || "U")[0]}
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="truncate text-[15px] font-medium text-foreground">
+                          <p className="truncate text-sm font-medium text-foreground">
                             {p.full_name || t("users.mobile.notUpdated")}
                           </p>
                           <p
-                            className="mt-0.5 truncate text-[12px] text-muted-foreground"
+                            className="mt-0.5 truncate text-xs text-muted-foreground"
                             title={p.id}
                           >
                             {t("users.mobile.uid", { uid: p.id.substring(0, 8) })}
@@ -436,7 +491,7 @@ export default function AdminUsers() {
                     </td>
                     <td className="min-w-[180px] px-4 py-3">
                       <span
-                        className="block max-w-[240px] truncate text-[13px] text-foreground"
+                        className="block max-w-[240px] truncate text-sm text-foreground"
                         title={
                           p.id === currentUser?.uid
                             ? currentUser?.email ?? p.email ?? ""
@@ -449,14 +504,14 @@ export default function AdminUsers() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-[12px] font-medium text-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
                         {getRoleLabel(p.role)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-[13px] text-muted-foreground">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {p.phone || "—"}
                     </td>
-                    <td className="px-4 py-3 text-[13px] text-muted-foreground">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {p.created_at
                         ? new Date(p.created_at).toLocaleDateString(intlLocale())
                         : "—"}
@@ -467,7 +522,7 @@ export default function AdminUsers() {
                         onChange={(e) =>
                           void handleRoleChange(p.id, e.target.value as UserRole)
                         }
-                        className="rounded-xl border border-border-subtle bg-background px-2.5 py-2 text-[13px] outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                        className="rounded-xl border border-border-subtle bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
                       >
                         {roleOptions.map((role) => (
                           <option key={role} value={role}>

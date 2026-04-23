@@ -47,7 +47,7 @@ const Header = () => {
         <div className="flex items-center gap-2 sm:gap-3">
           <NavLink
             to="/"
-            className="group -ml-2 flex items-center gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-muted/60 lg:gap-3"
+            className="group -ml-2 flex items-center gap-2 rounded-md px-2 py-2 transition-colors duration-150 hover:bg-muted/60 lg:gap-3"
           >
             <img
               src="/corelia_favicon.svg"
@@ -56,10 +56,10 @@ const Header = () => {
             />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className="hidden truncate text-[13px] font-medium leading-tight text-foreground sm:block">
+                <p className="hidden truncate text-sm font-medium leading-tight text-foreground sm:block">
                   Corelia Academy
                 </p>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-muted/55 px-2.5 py-0.5 text-[10px] font-medium tracking-[0.14em] text-muted-foreground">
+                <span className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-muted/55 px-2 py-0.5 text-xs font-medium tracking-wide text-muted-foreground">
                   <span className="size-1.5 rounded-full bg-warning" />
                   <span className="uppercase">Beta</span>
                 </span>
@@ -74,7 +74,7 @@ const Header = () => {
               key={item.href}
               to={item.href}
               className={({ isActive }) =>
-                `rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                `rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                   isActive
                     ? "bg-primary-container text-on-primary-container"
                     : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
@@ -89,7 +89,7 @@ const Header = () => {
             <NavLink
               to="/achievements"
               className={({ isActive }) =>
-                `rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                `rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                   isActive
                     ? "bg-primary-container text-on-primary-container"
                     : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
@@ -104,7 +104,7 @@ const Header = () => {
             <NavLink
               to="/instructor/courses"
               className={({ isActive }) =>
-                `rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                `rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                   isActive
                     ? "bg-primary-container text-on-primary-container"
                     : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
@@ -118,7 +118,7 @@ const Header = () => {
             <NavLink
               to="/admin"
               className={({ isActive }) =>
-                `rounded-lg px-3 py-2 text-[13px] font-medium transition-colors ${
+                `rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                   isActive
                     ? "bg-primary-container text-on-primary-container"
                     : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"

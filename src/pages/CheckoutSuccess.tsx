@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { ArrowRight, Receipt, BookOpen } from "@phosphor-icons/react";
+import { ArrowRight, BookOpen, Loader2, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/firebase";
 import { verifySePayPayment } from "@/lib/payments";
@@ -121,7 +121,7 @@ export default function CheckoutSuccess() {
 
   return (
     <div className="mx-auto w-full max-w-[960px] px-4 py-10">
-      <div className="rounded-lg border border-border-subtle bg-card p-6">
+      <div className="rounded-md border border-border-subtle bg-card p-6">
         <h1 className="text-2xl font-normal tracking-tight text-foreground">
           {t("detail.checkoutSuccess.title")}
         </h1>
@@ -135,13 +135,19 @@ export default function CheckoutSuccess() {
           ) : null}
         </p>
 
+        {verifying ? (
+          <div className="mt-6 flex items-center justify-center">
+            <Loader2 className="size-10 animate-spin text-muted-foreground/60" aria-hidden />
+          </div>
+        ) : null}
+
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Button
             className="sm:w-auto w-full"
             size="lg"
             onClick={() => navigate("/account/billing")}
           >
-            <Receipt className="size-4" /> {t("detail.checkoutSuccess.viewBilling")}
+            <Receipt className="size-4" aria-hidden /> {t("detail.checkoutSuccess.viewBilling")}
           </Button>
           <Button
             className="sm:w-auto w-full"
@@ -149,13 +155,13 @@ export default function CheckoutSuccess() {
             variant="outline"
             onClick={() => navigate(targetPath)}
           >
-            <BookOpen className="size-4" /> {t("detail.checkoutSuccess.goToCourse")}
+            <BookOpen className="size-4" aria-hidden /> {t("detail.checkoutSuccess.goToCourse")}
           </Button>
         </div>
 
         <div className="mt-6 text-xs text-muted-foreground">
           <Link to={targetPath} className="inline-flex items-center gap-1 hover:underline">
-            {t("detail.checkoutSuccess.skipNow")} <ArrowRight className="size-3.5" />
+            {t("detail.checkoutSuccess.skipNow")} <ArrowRight className="size-3.5" aria-hidden />
           </Link>
         </div>
       </div>

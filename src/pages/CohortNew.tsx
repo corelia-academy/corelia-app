@@ -171,7 +171,7 @@ export default function CohortNew() {
           <h1 className="mt-2 text-2xl font-normal tracking-tight text-foreground">
             {t("instructorNew.hero.title")}
           </h1>
-          <p className="mt-1.5 text-[15px] text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
             {t("instructorNew.hero.description")}
           </p>
         </CardContent>
@@ -327,7 +327,7 @@ export default function CohortNew() {
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
             />
           </div>
-          <div className="rounded-2xl border border-border-subtle bg-background p-4 text-[13px] leading-6 text-muted-foreground">
+          <div className="rounded-2xl border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
             {t("instructorNew.form.meetFallbackHint")}
           </div>
           <textarea

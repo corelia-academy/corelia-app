@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router";
 import {
-  CalendarBlank,
-  Checks,
-  ClockCountdown,
   MapPin,
-  RocketLaunch,
   Trophy,
-  UsersThree,
-} from "@phosphor-icons/react";
+  Calendar,
+  CheckCheck,
+  Rocket,
+  Timer,
+  Users,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { listContests } from "@/lib/contests";
@@ -94,16 +95,16 @@ export default function Contests() {
             <h1 className="mt-2 text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
               {t("catalog.heroTitle")}
             </h1>
-            <p className="mt-1.5 text-[15px] text-muted-foreground">
+            <p className="mt-2 text-sm text-muted-foreground">
               {t("catalog.heroDescription")}
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
               {t("catalog.pillReviewed")}
             </span>
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
               {t("catalog.pillTeamBased")}
             </span>
           </div>
@@ -113,13 +114,13 @@ export default function Contests() {
       <section className="mt-6 rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
           <div>
-            <div className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
               {t("catalog.howItWorksEyebrow")}
             </div>
             <h2 className="mt-2 text-xl font-normal tracking-tight text-foreground">
               {t("catalog.sectionWhyTitle")}
             </h2>
-            <p className="mt-2 text-[14px] leading-6 text-muted-foreground">
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {t("catalog.howItWorksDescription")}
             </p>
           </div>
@@ -131,7 +132,7 @@ export default function Contests() {
             ].map((item) => (
               <div
                 key={item}
-                className="rounded-2xl border border-border-subtle bg-background p-4 text-[13px] leading-6 text-muted-foreground"
+                className="rounded-2xl border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground"
               >
                 {item}
               </div>
@@ -152,7 +153,7 @@ export default function Contests() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <RocketLaunch className="size-5" weight="duotone" />
+              <Rocket className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -167,7 +168,7 @@ export default function Contests() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Checks className="size-5" weight="duotone" />
+              <CheckCheck className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -182,7 +183,7 @@ export default function Contests() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ClockCountdown className="size-5" weight="duotone" />
+              <Timer className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -197,7 +198,7 @@ export default function Contests() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <CalendarBlank className="size-5" weight="duotone" />
+              <Calendar className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -215,11 +216,11 @@ export default function Contests() {
                   <h2 className="mt-2 text-xl font-normal tracking-tight text-foreground">
                     {featured.title}
                   </h2>
-                  <p className="mt-2 max-w-3xl text-[14px] leading-6 text-muted-foreground">
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
                     {featured.tagline}
                   </p>
                 </div>
-                <span className="rounded-full bg-muted px-3 py-1 text-[12px] font-medium text-muted-foreground">
+                <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
                   {statusLabel(featured.status)}
                 </span>
               </div>
@@ -291,19 +292,19 @@ export default function Contests() {
               <div className="mt-4 space-y-3">
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
                   <div className="text-sm font-medium text-foreground">1. Đăng ký</div>
-                  <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
+                  <div className="mt-2 text-sm leading-6 text-muted-foreground">
                     Cá nhân hoặc đội gửi hồ sơ và chờ Corelia xét duyệt.
                   </div>
                 </div>
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
                   <div className="text-sm font-medium text-foreground">2. Tham gia & nộp bài</div>
-                  <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
+                  <div className="mt-2 text-sm leading-6 text-muted-foreground">
                     Chỉ các đội đã được duyệt mới mở được khu submission và tài nguyên contest.
                   </div>
                 </div>
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
                   <div className="text-sm font-medium text-foreground">3. Chấm & công bố</div>
-                  <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
+                  <div className="mt-2 text-sm leading-6 text-muted-foreground">
                     {t("catalog.sidebar.leaderboardHint")}
                   </div>
                 </div>
@@ -314,7 +315,7 @@ export default function Contests() {
       )}
 
       {error && (
-        <div className="mt-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-[13px] text-destructive">
+        <div className="mt-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -323,71 +324,81 @@ export default function Contests() {
         {loading ? (
           <Card className="sm:col-span-2 xl:col-span-3">
             <CardContent className="flex min-h-[240px] flex-col items-center justify-center p-6 text-center">
-              <div className="text-[15px] font-medium text-foreground">
-                {t("catalog.loadingTitle")}
-              </div>
-              <div className="mt-1.5 text-sm text-muted-foreground">
-                {t("catalog.loadingDescription")}
+              <Loader2 className="size-10 animate-spin text-muted-foreground/60" aria-hidden />
+              <div>
+                <div className="text-sm font-medium text-foreground">
+                  {t("catalog.loadingTitle")}
+                </div>
+                <div className="mt-0.5 text-xs text-muted-foreground">
+                  {t("catalog.loadingDescription")}
+                </div>
               </div>
             </CardContent>
           </Card>
         ) : items.length === 0 ? (
           <Card className="sm:col-span-2 xl:col-span-3">
             <CardContent className="p-8 text-center">
-              <div className="text-[15px] font-medium text-foreground">
-                {t("catalog.emptyTitle")}
+              <div className="flex flex-col items-center gap-3 py-8 text-center">
+                <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                  <Trophy className="size-6 text-muted-foreground" aria-hidden />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {t("catalog.emptyTitle")}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {isManager
+                      ? t("catalog.emptyDescriptionManager")
+                      : t("catalog.emptyDescriptionUser")}
+                  </p>
+                </div>
+                {isManager && (
+                  <Button
+                    render={<NavLink to="/instructor/contests" />}
+                    nativeButton={false}
+                    size="sm"
+                    variant="outline"
+                  >
+                    {t("catalog.openWorkspace")}
+                  </Button>
+                )}
               </div>
-              <div className="mt-1.5 text-sm text-muted-foreground">
-                {isManager
-                  ? t("catalog.emptyDescriptionManager")
-                  : t("catalog.emptyDescriptionUser")}
-              </div>
-              {isManager && (
-                <Button
-                  render={<NavLink to="/instructor/contests" />}
-                  nativeButton={false}
-                  variant="ghost"
-                  className="mt-3 -ml-2 w-fit text-foreground hover:bg-muted"
-                >
-                  {t("catalog.openWorkspace")}
-                </Button>
-              )}
             </CardContent>
           </Card>
         ) : (
           items.map((contest) => (
             <Card
               key={contest.id}
-              className="overflow-hidden transition-[box-shadow,border-color] hover:border-border hover:shadow-elevation-2"
+              className="overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
             >
               <CardContent className="flex h-full flex-col p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-[12px] text-muted-foreground">
+                    <div className="text-xs text-muted-foreground">
                       {statusLabel(contest.status)}
                     </div>
-                    <div className="mt-1 text-[18px] font-medium leading-snug text-foreground">
+                    <div className="mt-1 text-lg font-medium leading-snug text-foreground">
                       {contest.title}
                     </div>
                   </div>
-                  <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                  <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                     {locationLabel(contest.location)}
                   </span>
                 </div>
 
-                <div className="mt-2.5 text-[14px] text-muted-foreground">
+                <div className="mt-2 text-sm text-muted-foreground">
                   {contest.tagline}
                 </div>
 
                 {contest.description && (
-                  <div className="mt-3 line-clamp-3 text-[13px] leading-6 text-muted-foreground">
+                  <div className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">
                     {contest.description}
                   </div>
                 )}
 
-                <div className="mt-4 grid gap-2 text-[12px] text-muted-foreground">
+                <div className="mt-4 grid gap-2 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2 rounded-xl border border-border-subtle bg-background px-3 py-2">
-                    <CalendarBlank className="size-4" />
+                    <Calendar className="size-4" aria-hidden />
                     <span>{formatDateRange(contest.starts_at, contest.ends_at)}</span>
                   </div>
                   <div className="flex items-center gap-2 rounded-xl border border-border-subtle bg-background px-3 py-2">
@@ -401,7 +412,7 @@ export default function Contests() {
                   <div className="grid gap-2 sm:grid-cols-2">
                     <div className="rounded-xl border border-border-subtle bg-background px-3 py-2">
                       <div className="flex items-center gap-2">
-                        <UsersThree className="size-4" />
+                        <Users className="size-4" aria-hidden />
                         <span>
                           {t("catalog.item.registrationsCount", {
                             count: contest.metrics_snapshot.registrations_total,
@@ -423,7 +434,7 @@ export default function Contests() {
                 </div>
 
                 <div className="mt-5 flex items-center justify-between gap-3">
-                  <div className="text-[12px] text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     {contest.registration_deadline
                       ? t("catalog.registrationDeadlinePrefix", {
                           date: new Date(

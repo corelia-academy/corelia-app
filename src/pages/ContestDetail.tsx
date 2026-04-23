@@ -2,22 +2,23 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
-  Buildings,
-  CalendarBlank,
-  Checks,
-  ClockCountdown,
-  EnvelopeSimple,
+  Building2,
+  Calendar,
+  CheckCheck,
   Gavel,
+  Mail,
   MapPin,
-  Spinner,
   ShieldCheck,
-  Trash,
   Trophy,
-  UsersThree,
-} from "@phosphor-icons/react";
+  Users,
+  Timer,
+  Loader2,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -868,30 +869,30 @@ export default function ContestDetail() {
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <Card>
           <CardContent className="flex min-h-[320px] flex-col items-center justify-center p-8 text-center">
-            <div className="rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
               {translate("detail.loading.eyebrow")}
             </div>
-            <div className="mt-4 text-[15px] font-medium text-foreground">
+            <div className="mt-4 text-sm font-medium text-foreground">
               {translate("detail.loading.title")}
             </div>
-            <div className="mt-1.5 text-sm text-muted-foreground">
+            <div className="mt-2 text-sm text-muted-foreground">
               {translate("detail.loading.description")}
             </div>
             <div className="mt-6 grid w-full max-w-3xl gap-3 md:grid-cols-3">
               <div className="rounded-2xl border border-border-subtle bg-background p-4 text-left">
-                <div className="h-3 w-24 rounded-full bg-muted" />
-                <div className="mt-3 h-4 w-3/4 rounded-full bg-muted" />
-                <div className="mt-2 h-4 w-2/3 rounded-full bg-muted" />
+                <Skeleton className="h-3 w-24 rounded-full" />
+                <Skeleton className="mt-3 h-4 w-3/4 rounded-full" />
+                <Skeleton className="mt-2 h-4 w-2/3 rounded-full" />
               </div>
               <div className="rounded-2xl border border-border-subtle bg-background p-4 text-left">
-                <div className="h-3 w-20 rounded-full bg-muted" />
-                <div className="mt-3 h-4 w-4/5 rounded-full bg-muted" />
-                <div className="mt-2 h-4 w-1/2 rounded-full bg-muted" />
+                <Skeleton className="h-3 w-20 rounded-full" />
+                <Skeleton className="mt-3 h-4 w-4/5 rounded-full" />
+                <Skeleton className="mt-2 h-4 w-1/2 rounded-full" />
               </div>
               <div className="rounded-2xl border border-border-subtle bg-background p-4 text-left">
-                <div className="h-3 w-28 rounded-full bg-muted" />
-                <div className="mt-3 h-4 w-2/3 rounded-full bg-muted" />
-                <div className="mt-2 h-4 w-3/5 rounded-full bg-muted" />
+                <Skeleton className="h-3 w-28 rounded-full" />
+                <Skeleton className="mt-3 h-4 w-2/3 rounded-full" />
+                <Skeleton className="mt-2 h-4 w-3/5 rounded-full" />
               </div>
             </div>
           </CardContent>
@@ -905,13 +906,13 @@ export default function ContestDetail() {
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <Card>
           <CardContent className="flex min-h-[280px] flex-col items-center justify-center p-8 text-center">
-            <div className="rounded-full border border-destructive/20 bg-destructive/10 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-destructive">
+            <div className="rounded-full border border-destructive/20 bg-destructive/10 px-3 py-1 text-xs uppercase tracking-[0.16em] text-destructive">
               {translate("detail.errors.deleteAccessDeniedTitle")}
             </div>
-            <div className="text-[16px] font-medium text-foreground">
+            <div className="text-base font-medium text-foreground">
               {error || translate("detail.errors.deleteAccessDeniedFallback")}
             </div>
-            <div className="mt-1.5 max-w-xl text-sm text-muted-foreground">
+            <div className="mt-2 max-w-xl text-sm text-muted-foreground">
               {translate("detail.errorState.description")}
             </div>
             <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-muted-foreground hover:text-foreground" />
@@ -934,7 +935,7 @@ export default function ContestDetail() {
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <Card>
           <CardContent className="flex min-h-[280px] flex-col items-center justify-center p-8 text-center">
-            <div className="text-[16px] font-medium text-foreground">
+            <div className="text-base font-medium text-foreground">
               {translate("detail.errors.workspaceAccessDenied")}
             </div>
             <Button
@@ -969,43 +970,37 @@ export default function ContestDetail() {
         {isManageView ? (
           <nav className="h-fit rounded-2xl border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24">
             <div className="mb-3 px-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Điều hướng workspace
                 
               </p>
-              <p className="mt-1 text-[13px] text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Không gian phối hợp nhiều bên cho Corelia, ban giám khảo và đơn vị đồng tổ chức.
               </p>
             </div>
-            <ul className="flex gap-1.5 overflow-x-auto pb-1 xl:grid xl:gap-1.5 xl:overflow-visible xl:pb-0">
+            <ul className="flex gap-2 overflow-x-auto pb-1 xl:grid xl:gap-2 xl:overflow-visible xl:pb-0">
               <li>
-                <button
+                <Button
                   type="button"
                   onClick={() => setActiveManageSection("overview")}
-                  className={`flex min-w-[180px] flex-col rounded-xl px-3 py-2.5 text-left transition-colors xl:min-w-0 ${
-                    activeManageSection === "overview"
-                      ? "bg-primary/10 text-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
+                  variant={activeManageSection === "overview" ? "secondary" : "ghost"}
+                  className="min-w-[180px] justify-start rounded-xl px-3 py-2 text-left xl:min-w-0"
                 >
                   <span className="text-sm font-medium">Tổng quan</span>
-                  <span className="mt-0.5 text-[12px]">Vai trò, health và nhịp vận hành</span>
-                </button>
+                  <span className="mt-0.5 text-xs">Vai trò, health và nhịp vận hành</span>
+                </Button>
               </li>
               {manageSections.map((section) => (
                 <li key={section.id}>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setActiveManageSection(section.id)}
-                    className={`flex min-w-[180px] flex-col rounded-xl px-3 py-2.5 text-left transition-colors xl:min-w-0 ${
-                      activeManageSection === section.id
-                        ? "bg-primary/10 text-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
+                    variant={activeManageSection === section.id ? "secondary" : "ghost"}
+                    className="min-w-[180px] justify-start rounded-xl px-3 py-2 text-left xl:min-w-0"
                   >
                     <span className="text-sm font-medium">{section.label}</span>
-                    <span className="mt-0.5 text-[12px]">{section.description}</span>
-                  </button>
+                    <span className="mt-0.5 text-xs">{section.description}</span>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -1025,13 +1020,13 @@ export default function ContestDetail() {
                   <h1 className="mt-2 text-3xl font-normal tracking-tight text-foreground">
                     {contest.title}
                   </h1>
-                  <p className="mt-2 max-w-3xl text-[15px] text-muted-foreground">
+                  <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
                     {isManageView
                       ? activeManageSectionMeta.description
                       : contest.tagline}
                   </p>
                 </div>
-                <span className="w-fit rounded-full bg-muted px-3 py-1 text-[12px] font-medium text-muted-foreground">
+                <span className="w-fit rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
                   {statusLabel(contest.status)}
                 </span>
               </div>
@@ -1039,17 +1034,17 @@ export default function ContestDetail() {
               {isManageView && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {isManager && (
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
                       Vận hành Corelia
                     </span>
                   )}
                   {canJudge && (
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
                       Ban giám khảo
                     </span>
                   )}
                   {viewerRoles.includes("co_host_viewer") && (
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
                       Đồng tổ chức quan sát
                     </span>
                   )}
@@ -1091,7 +1086,7 @@ export default function ContestDetail() {
                   >
                     Mở khu vực vận hành
                   </Button>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-[12px] text-muted-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
                     Bạn đang có quyền xem bề mặt vận hành của cuộc thi này
                   </span>
                 </div>
@@ -1121,7 +1116,7 @@ export default function ContestDetail() {
               <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
                   <div className="flex items-center gap-3">
-                    <CalendarBlank className="size-5 text-primary" />
+                    <Calendar className="size-5 text-primary" aria-hidden />
                     <div>
                       <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                         Bắt đầu
@@ -1134,7 +1129,7 @@ export default function ContestDetail() {
                 </div>
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
                   <div className="flex items-center gap-3">
-                    <ClockCountdown className="size-5 text-primary" />
+                    <Timer className="size-5 text-primary" aria-hidden />
                     <div>
                       <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                         Kết thúc
@@ -1147,7 +1142,7 @@ export default function ContestDetail() {
                 </div>
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
                   <div className="flex items-center gap-3">
-                    <MapPin className="size-5 text-primary" />
+                    <MapPin className="size-5 text-primary" aria-hidden />
                     <div>
                       <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                         Hình thức
@@ -1160,7 +1155,7 @@ export default function ContestDetail() {
                 </div>
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
                   <div className="flex items-center gap-3">
-                    <UsersThree className="size-5 text-primary" />
+                    <Users className="size-5 text-primary" aria-hidden />
                     <div>
                       <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                         Giới hạn duyệt
@@ -1252,7 +1247,7 @@ export default function ContestDetail() {
                           className="rounded-2xl border border-border-subtle bg-card p-4"
                         >
                           <div className="text-sm font-medium text-foreground">{step.title}</div>
-                          <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
+                          <div className="mt-2 text-sm leading-6 text-muted-foreground">
                             {step.description}
                           </div>
                         </div>
@@ -1268,19 +1263,19 @@ export default function ContestDetail() {
                         <div className="text-sm font-medium text-foreground">
                           Hạn đăng ký
                         </div>
-                        <div className="mt-1 text-[13px] text-muted-foreground">
+                        <div className="mt-1 text-sm text-muted-foreground">
                           {formatDate(contest.registration_deadline)}
                         </div>
                       </div>
                       <div className="rounded-2xl border border-border-subtle bg-card px-4 py-3">
                         <div className="text-sm font-medium text-foreground">Khai mạc</div>
-                        <div className="mt-1 text-[13px] text-muted-foreground">
+                        <div className="mt-1 text-sm text-muted-foreground">
                           {formatDate(contest.starts_at)}
                         </div>
                       </div>
                       <div className="rounded-2xl border border-border-subtle bg-card px-4 py-3">
                         <div className="text-sm font-medium text-foreground">Công bố kết quả</div>
-                        <div className="mt-1 text-[13px] text-muted-foreground">
+                        <div className="mt-1 text-sm text-muted-foreground">
                           {formatDate(contest.ends_at)}
                         </div>
                       </div>
@@ -1299,7 +1294,7 @@ export default function ContestDetail() {
                     ? translate("detail.labels.contextManage")
                     : translate("detail.labels.contextPublic")}
                 </h2>
-                <p className="mt-3 whitespace-pre-wrap text-[15px] leading-7 text-muted-foreground">
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
                   {contest.description}
                 </p>
               </CardContent>
@@ -1314,7 +1309,7 @@ export default function ContestDetail() {
                   ? translate("detail.labels.rulesManage")
                   : translate("detail.labels.rulesPublic")}
               </h2>
-              <p className="mt-3 whitespace-pre-wrap text-[15px] leading-7 text-muted-foreground">
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
                 {contest.rules?.trim()
                   ? contest.rules
                   : translate("detail.labels.rulesEmpty")}
@@ -1331,11 +1326,11 @@ export default function ContestDetail() {
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
                       Operating model
                     </h2>
-                    <p className="mt-1.5 text-[14px] text-muted-foreground">
+                    <p className="mt-2 text-sm text-muted-foreground">
                       Contest này được tổ chức như một workspace đa bên, không phải một editor nội dung đơn lẻ.
                     </p>
                   </div>
-                  <div className="rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] text-muted-foreground">
+                  <div className="rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
                     Section hiện tại: {activeManageSectionMeta.label}
                   </div>
                 </div>
@@ -1347,7 +1342,7 @@ export default function ContestDetail() {
                       className="rounded-2xl border border-border-subtle bg-background p-4"
                     >
                       <div className="text-sm font-medium text-foreground">{lane.title}</div>
-                      <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
+                      <div className="mt-2 text-sm leading-6 text-muted-foreground">
                         {lane.description}
                       </div>
                     </div>
@@ -1362,7 +1357,7 @@ export default function ContestDetail() {
                     <div className="mt-2 text-sm font-medium text-foreground">
                       Applications
                     </div>
-                    <div className="mt-1 text-[13px] text-muted-foreground">
+                    <div className="mt-1 text-sm text-muted-foreground">
                       Thu hồ sơ và duyệt đầu vào.
                     </div>
                   </div>
@@ -1373,7 +1368,7 @@ export default function ContestDetail() {
                     <div className="mt-2 text-sm font-medium text-foreground">
                       Submission flow
                     </div>
-                    <div className="mt-1 text-[13px] text-muted-foreground">
+                    <div className="mt-1 text-sm text-muted-foreground">
                       Mở quyền nộp bài cho các đội đã được duyệt.
                     </div>
                   </div>
@@ -1384,7 +1379,7 @@ export default function ContestDetail() {
                     <div className="mt-2 text-sm font-medium text-foreground">
                       Judge scoring
                     </div>
-                    <div className="mt-1 text-[13px] text-muted-foreground">
+                    <div className="mt-1 text-sm text-muted-foreground">
                       Judges chấm theo rubric có trọng số.
                     </div>
                   </div>
@@ -1395,7 +1390,7 @@ export default function ContestDetail() {
                     <div className="mt-2 text-sm font-medium text-foreground">
                       Publish outcomes
                     </div>
-                    <div className="mt-1 text-[13px] text-muted-foreground">
+                    <div className="mt-1 text-sm text-muted-foreground">
                       Công bố leaderboard và winners ra public surface.
                     </div>
                   </div>
@@ -1412,7 +1407,7 @@ export default function ContestDetail() {
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
                       Application review
                     </h2>
-                    <p className="mt-1.5 text-[14px] text-muted-foreground">
+                    <p className="mt-2 text-sm text-muted-foreground">
                       Chỉ người của Corelia mới duyệt hồ sơ. Judges và đồng tổ chức không thấy khu này.
                     </p>
                   </div>
@@ -1425,12 +1420,15 @@ export default function ContestDetail() {
 
                 <div className="mt-5 space-y-4">
                   {registrations.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-6 text-center">
-                      <div className="text-sm font-medium text-foreground">
-                        Chưa có hồ sơ đăng ký nào
+                    <div className="flex flex-col items-center gap-3 py-16 text-center">
+                      <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                        <Users className="size-6 text-muted-foreground" aria-hidden />
                       </div>
-                      <div className="mt-1.5 text-sm text-muted-foreground">
-                        Khi thí sinh gửi hồ sơ, khu duyệt đầu vào của Corelia sẽ xuất hiện tại đây.
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Chưa có hồ sơ đăng ký nào</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Khi thí sinh gửi hồ sơ, khu duyệt đầu vào của Corelia sẽ xuất hiện tại đây.
+                        </p>
                       </div>
                     </div>
                   ) : (
@@ -1438,17 +1436,17 @@ export default function ContestDetail() {
                       <div key={item.id} className="rounded-2xl border border-border-subtle bg-background p-4">
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                           <div>
-                            <div className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                               {registrationStatusLabel(item.status)}
                             </div>
                             <div className="mt-1 text-lg font-medium text-foreground">
                               {item.user_full_name || item.user_id}
                             </div>
-                            <div className="mt-1 text-[13px] text-muted-foreground">
+                            <div className="mt-1 text-sm text-muted-foreground">
                               {item.team_name || translate("detail.labels.defaultSoloRegistration")}
                             </div>
                             {item.team_members.length > 0 && (
-                              <div className="mt-1 text-[13px] text-muted-foreground">
+                              <div className="mt-1 text-sm text-muted-foreground">
                                 Thành viên: {item.team_members.join(", ")}
                               </div>
                             )}
@@ -1476,20 +1474,20 @@ export default function ContestDetail() {
                         </div>
 
                         {item.motivation && (
-                          <p className="mt-3 whitespace-pre-wrap text-[14px] leading-6 text-muted-foreground">
+                          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
                             {item.motivation}
                           </p>
                         )}
 
                         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-[13px] text-muted-foreground">
+                          <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
                             <span className="font-medium text-foreground">
                               {translate("detail.labels.contact")}
                             </span>{" "}
                             {item.contact_email || translate("detail.labels.notProvided")} ·{" "}
                             {item.contact_phone || translate("detail.labels.noDataDash")}
                           </div>
-                          <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-[13px] text-muted-foreground">
+                          <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
                             <span className="font-medium text-foreground">Portfolio:</span>{" "}
                             {item.portfolio_url || translate("detail.labels.notProvided")}
                           </div>
@@ -1512,7 +1510,7 @@ export default function ContestDetail() {
                                 [item.user_id]: e.target.value,
                               }))
                             }
-                            className="mt-2 min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="mt-2 min-h-24 w-full rounded border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                           />
                         </div>
                       </div>
@@ -1527,15 +1525,15 @@ export default function ContestDetail() {
             <Card id="judging">
               <CardContent className="p-5 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <Gavel className="size-5 text-primary" weight="duotone" />
+                  <Gavel className="size-5 text-primary" aria-hidden />
                   <div>
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
                       Judging panel
                     </h2>
-                    <p className="mt-1 text-[14px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Chấm điểm theo 4 tiêu chí và lưu điểm trực tiếp cho từng submission.
                     </p>
-                    <p className="mt-1 text-[13px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Trọng số: Product {contest.rubric_weights.product}% · Technical{" "}
                       {contest.rubric_weights.technical}% · Presentation{" "}
                       {contest.rubric_weights.presentation}% · Impact {contest.rubric_weights.impact}%
@@ -1545,12 +1543,15 @@ export default function ContestDetail() {
 
                 <div className="mt-5 space-y-4">
                   {submissions.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-6 text-center">
-                      <div className="text-sm font-medium text-foreground">
-                        Chưa có submission nào được gửi
+                    <div className="flex flex-col items-center gap-3 py-16 text-center">
+                      <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                        <Trophy className="size-6 text-muted-foreground" aria-hidden />
                       </div>
-                      <div className="mt-1.5 text-sm text-muted-foreground">
-                        Judges sẽ thấy bài nộp tại đây ngay khi các đội đã được duyệt bắt đầu cập nhật submission.
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Chưa có submission nào được gửi</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Judges sẽ thấy bài nộp tại đây ngay khi các đội đã được duyệt bắt đầu cập nhật submission.
+                        </p>
                       </div>
                     </div>
                   ) : (
@@ -1572,18 +1573,18 @@ export default function ContestDetail() {
                         >
                           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                             <div>
-                              <div className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                                 Rank hiện tại #{boardEntry?.rank ?? "—"}
                               </div>
                               <div className="mt-1 text-lg font-medium text-foreground">
                                 {submission.title}
                               </div>
-                              <div className="mt-1 text-[13px] text-muted-foreground">
+                              <div className="mt-1 text-sm text-muted-foreground">
                                 {submission.contestant_name || submission.user_id}
                                 {submission.team_name ? ` · ${submission.team_name}` : ""}
                               </div>
                             </div>
-                            <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-[13px] text-muted-foreground">
+                            <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
                               Trung bình:{" "}
                               <span className="font-medium text-foreground">
                                 {boardEntry?.average_score ?? 0}
@@ -1593,19 +1594,19 @@ export default function ContestDetail() {
                           </div>
 
                           {submission.summary && (
-                            <p className="mt-3 whitespace-pre-wrap text-[14px] leading-6 text-muted-foreground">
+                            <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
                               {submission.summary}
                             </p>
                           )}
 
                           <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                            <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-[13px] text-muted-foreground">
+                            <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
                               Demo: {submission.demo_url || translate("detail.labels.noDemo")}
                             </div>
-                            <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-[13px] text-muted-foreground">
+                            <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
                               Repo: {submission.repo_url || translate("detail.labels.noDemo")}
                             </div>
-                            <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-[13px] text-muted-foreground">
+                            <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
                               Slide: {submission.slide_url || translate("detail.labels.noDemo")}
                             </div>
                           </div>
@@ -1658,7 +1659,7 @@ export default function ContestDetail() {
                             />
                           </div>
 
-                          <div className="mt-4 flex flex-col gap-2 rounded-xl border border-border-subtle bg-card px-3 py-3 text-[13px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                          <div className="mt-4 flex flex-col gap-2 rounded-xl border border-border-subtle bg-card px-3 py-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                             <span>
                               Tổng điểm thô hiện tại:{" "}
                               <span className="font-medium text-foreground">
@@ -1693,12 +1694,12 @@ export default function ContestDetail() {
             <Card id="results">
               <CardContent className="p-5 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <Trophy className="size-5 text-primary" weight="duotone" />
+                  <Trophy className="size-5 text-primary" aria-hidden />
                   <div>
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
                       Outcomes dashboard
                     </h2>
-                    <p className="mt-1 text-[14px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Co-host chỉ thấy aggregate metrics, leaderboard đã publish và danh sách giải thưởng.
                     </p>
                   </div>
@@ -1750,7 +1751,7 @@ export default function ContestDetail() {
                           <div className="text-sm font-medium text-foreground">
                             #{entry.rank} · {entry.submission_title}
                           </div>
-                          <div className="mt-1 text-[13px] text-muted-foreground">
+                          <div className="mt-1 text-sm text-muted-foreground">
                             {entry.contestant_name || entry.contestant_user_id} · {entry.average_score} điểm
                           </div>
                           <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -1815,7 +1816,7 @@ export default function ContestDetail() {
                         <div className="text-sm font-medium text-foreground">
                           Chưa publish leaderboard
                         </div>
-                        <div className="mt-1.5 text-sm text-muted-foreground">
+                        <div className="mt-2 text-sm text-muted-foreground">
                           Kết quả tổng hợp sẽ xuất hiện sau khi Corelia chốt bảng điểm và publish chính thức.
                         </div>
                       </div>
@@ -1827,7 +1828,7 @@ export default function ContestDetail() {
                               <div className="text-sm font-medium text-foreground">
                                 #{entry.rank} · {entry.submission_title}
                               </div>
-                              <div className="mt-1 text-[13px] text-muted-foreground">
+                              <div className="mt-1 text-sm text-muted-foreground">
                                 {entry.contestant_name || entry.contestant_user_id}
                               </div>
                             </div>
@@ -1849,7 +1850,7 @@ export default function ContestDetail() {
                         <div className="text-sm font-medium text-foreground">
                           Chưa công bố giải thưởng
                         </div>
-                        <div className="mt-1.5 text-sm text-muted-foreground">
+                        <div className="mt-2 text-sm text-muted-foreground">
                           Danh sách giải thưởng sẽ hiển thị tại đây khi ban tổ chức công bố winners.
                         </div>
                       </div>
@@ -1859,11 +1860,11 @@ export default function ContestDetail() {
                           <div className="text-sm font-medium text-foreground">
                             {winner.award_title}
                           </div>
-                          <div className="mt-1 text-[13px] text-muted-foreground">
+                          <div className="mt-1 text-sm text-muted-foreground">
                             {winner.contestant_name || winner.contestant_user_id} · {winner.submission_title}
                           </div>
                           {winner.note && (
-                            <div className="mt-1 text-[13px] text-muted-foreground">
+                            <div className="mt-1 text-sm text-muted-foreground">
                               {winner.note}
                             </div>
                           )}
@@ -1879,12 +1880,12 @@ export default function ContestDetail() {
             <Card>
               <CardContent className="p-5 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <Trophy className="size-5 text-primary" weight="duotone" />
+                  <Trophy className="size-5 text-primary" aria-hidden />
                   <div>
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
                       Kết quả contest
                     </h2>
-                    <p className="mt-1 text-[14px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Những kết quả đã được Corelia công bố sẽ hiển thị tại đây.
                     </p>
                   </div>
@@ -1900,7 +1901,7 @@ export default function ContestDetail() {
                         <div className="text-sm font-medium text-foreground">
                           Chưa publish leaderboard
                         </div>
-                        <div className="mt-1.5 text-sm text-muted-foreground">
+                        <div className="mt-2 text-sm text-muted-foreground">
                           Khi contest được chốt điểm, bảng xếp hạng chính thức sẽ xuất hiện tại đây.
                         </div>
                       </div>
@@ -1915,7 +1916,7 @@ export default function ContestDetail() {
                               <div className="text-sm font-medium text-foreground">
                                 #{entry.rank} · {entry.submission_title}
                               </div>
-                              <div className="mt-1 text-[13px] text-muted-foreground">
+                              <div className="mt-1 text-sm text-muted-foreground">
                                 {entry.contestant_name || entry.contestant_user_id}
                               </div>
                             </div>
@@ -1937,7 +1938,7 @@ export default function ContestDetail() {
                         <div className="text-sm font-medium text-foreground">
                           Chưa công bố giải thưởng
                         </div>
-                        <div className="mt-1.5 text-sm text-muted-foreground">
+                        <div className="mt-2 text-sm text-muted-foreground">
                           Hãy theo dõi trang này để xem winners khi Corelia publish kết quả.
                         </div>
                       </div>
@@ -1950,12 +1951,12 @@ export default function ContestDetail() {
                           <div className="text-sm font-medium text-foreground">
                             {winner.award_title}
                           </div>
-                          <div className="mt-1 text-[13px] text-muted-foreground">
+                          <div className="mt-1 text-sm text-muted-foreground">
                             {winner.contestant_name || winner.contestant_user_id} ·{" "}
                             {winner.submission_title}
                           </div>
                           {winner.note && (
-                            <div className="mt-1 text-[13px] text-muted-foreground">
+                            <div className="mt-1 text-sm text-muted-foreground">
                               {winner.note}
                             </div>
                           )}
@@ -1974,12 +1975,12 @@ export default function ContestDetail() {
             <Card>
               <CardContent className="p-5 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <ShieldCheck className="size-5 text-primary" weight="duotone" />
+                  <ShieldCheck className="size-5 text-primary" aria-hidden />
                   <div>
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
                       Operations controls
                     </h2>
-                    <p className="mt-1 text-[14px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Điều phối trạng thái, rubric và quyền truy cập cho các bên tham gia vận hành contest.
                     </p>
                   </div>
@@ -2012,7 +2013,7 @@ export default function ContestDetail() {
 
                 <div className="mt-6 border-t border-border-subtle pt-6">
                   <h3 className="text-base font-medium text-foreground">Judge rubric</h3>
-                  <p className="mt-1.5 text-[14px] text-muted-foreground">
+                  <p className="mt-2 text-sm text-muted-foreground">
                     Điều chỉnh trọng số cho 4 tiêu chí. Tổng nên bằng 100 để điểm tổng rõ ràng hơn.
                   </p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -2040,7 +2041,7 @@ export default function ContestDetail() {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-3 rounded-xl border border-border-subtle bg-background px-3 py-2 text-[13px] text-muted-foreground">
+                  <div className="mt-3 rounded-xl border border-border-subtle bg-background px-3 py-2 text-sm text-muted-foreground">
                     Tổng hiện tại:{" "}
                     <span className="font-medium text-foreground">
                       {[
@@ -2121,11 +2122,11 @@ export default function ContestDetail() {
                           <div className="text-sm font-medium text-foreground">
                             {invite.display_name || invite.email}
                           </div>
-                          <div className="mt-1 text-[13px] text-muted-foreground">
+                          <div className="mt-1 text-sm text-muted-foreground">
                             {invite.email} · {invite.roles.join(", ")} · {invite.status}
                           </div>
                           {invite.organization_name && (
-                            <div className="mt-1 text-[13px] text-muted-foreground">
+                            <div className="mt-1 text-sm text-muted-foreground">
                               {invite.organization_name}
                             </div>
                           )}
@@ -2167,7 +2168,7 @@ export default function ContestDetail() {
 
                 <div className="mt-6 border-t border-destructive/20 pt-6">
                   <h3 className="text-base font-medium text-foreground">Vùng nguy hiểm</h3>
-                  <p className="mt-1.5 text-[14px] text-muted-foreground">
+                  <p className="mt-2 text-sm text-muted-foreground">
                     Xoá contest sẽ xoá toàn bộ hồ sơ đăng ký, lời mời cộng tác, bài nộp
                     và điểm chấm liên quan. Hành động này không thể hoàn tác.
                   </p>
@@ -2177,7 +2178,7 @@ export default function ContestDetail() {
                     variant="destructive"
                     onClick={() => setDeleteDialogOpen(true)}
                   >
-                    <Trash className="size-4" weight="duotone" />
+                    <Trash2 className="size-4" aria-hidden />
                     Xoá contest
                   </Button>
                 </div>
@@ -2188,15 +2189,15 @@ export default function ContestDetail() {
               <CardContent className="p-5 sm:p-6">
                 <div className="flex items-center gap-3">
                   {myInvite.roles.includes("judge") ? (
-                    <Gavel className="size-5 text-primary" weight="duotone" />
+                    <Gavel className="size-5 text-primary" aria-hidden />
                   ) : (
-                    <Buildings className="size-5 text-primary" weight="duotone" />
+                    <Building2 className="size-5 text-primary" aria-hidden />
                   )}
                   <div>
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
                       Lời mời cộng tác
                     </h2>
-                    <p className="mt-1 text-[14px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Vai trò: {myInvite.roles.join(", ")} · trạng thái: {myInvite.status}
                     </p>
                   </div>
@@ -2231,12 +2232,12 @@ export default function ContestDetail() {
             <Card id="participant-workspace" className="xl:sticky xl:top-24">
               <CardContent className="p-5 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <Checks className="size-5 text-primary" weight="duotone" />
+                  <CheckCheck className="size-5 text-primary" aria-hidden />
                   <div>
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
                       Submission workspace
                     </h2>
-                    <p className="mt-1 text-[14px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Hồ sơ của bạn đã được duyệt. Bạn có thể nộp và cập nhật submission tại đây.
                     </p>
                   </div>
@@ -2275,7 +2276,7 @@ export default function ContestDetail() {
                     placeholder={translate("detail.forms.submission.slideUrlPlaceholder")}
                   />
                   {submissionDraftDirty && (
-                    <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-[13px] text-amber-700 dark:text-amber-300">
+                    <div className="rounded-2xl border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
                       Bạn có thay đổi chưa lưu. Nếu rời trang lúc này, nội dung mới có thể bị mất.
                     </div>
                   )}
@@ -2286,7 +2287,7 @@ export default function ContestDetail() {
                         ? translate("detail.forms.submission.updateLabel")
                         : translate("detail.forms.submission.submitLabel")}
                   </Button>
-                  <p className="text-[12px] leading-5 text-muted-foreground">
+                  <p className="text-xs leading-5 text-muted-foreground">
                     Submission nên có tiêu đề rõ ràng, phần tóm tắt đủ chi tiết và ít nhất một đường dẫn demo hoặc repo nếu đã sẵn sàng.
                   </p>
                 </div>
@@ -2296,12 +2297,12 @@ export default function ContestDetail() {
             <Card id="participant-workspace" className="xl:sticky xl:top-24">
               <CardContent className="p-5 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <Checks className="size-5 text-primary" weight="duotone" />
+                  <CheckCheck className="size-5 text-primary" aria-hidden />
                   <div>
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
                       Hồ sơ tham gia
                     </h2>
-                    <p className="mt-1 text-[14px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Bạn chỉ chính thức được tham gia contest sau khi đội ngũ Corelia duyệt.
                     </p>
                   </div>
@@ -2350,20 +2351,20 @@ export default function ContestDetail() {
                             {teamName.trim() || translate("detail.labels.soloOrUnnamedTeam")}
                           </div>
                         </div>
-                        <div className="rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-[12px] text-muted-foreground">
+                    <div className="rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs text-muted-foreground">
                           {parsedTeamMembers.length} thành viên bổ sung
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {parsedTeamMembers.length === 0 ? (
-                          <span className="text-[13px] text-muted-foreground">
+                      <span className="text-sm text-muted-foreground">
                             Bạn có thể để trống nếu đăng ký cá nhân.
                           </span>
                         ) : (
                           parsedTeamMembers.map((member) => (
                             <span
                               key={member}
-                              className="inline-flex items-center rounded-full border border-border-subtle bg-card px-3 py-1.5 text-[12px] text-foreground"
+                          className="inline-flex items-center rounded-full border border-border-subtle bg-card px-3 py-2 text-xs text-foreground"
                             >
                               {member}
                             </span>
@@ -2401,11 +2402,11 @@ export default function ContestDetail() {
                         ? translate("common:status.loading")
                         : translate("detail.forms.application.submitLabel")}
                     </Button>
-                    <p className="text-[12px] leading-5 text-muted-foreground">
+                  <p className="text-xs leading-5 text-muted-foreground">
                       Sau khi gửi, hồ sơ sẽ chuyển sang trạng thái chờ duyệt. Bạn chỉ có thể nộp submission khi được Corelia phê duyệt.
                     </p>
                     {!registrationDraftReady && (
-                      <div className="rounded-2xl border border-border-subtle bg-background px-4 py-3 text-[13px] text-muted-foreground">
+                      <div className="rounded-2xl border border-border-subtle bg-background px-4 py-3 text-sm text-muted-foreground">
                         Hãy điền email liên hệ và phần động lực đủ rõ trước khi gửi hồ sơ.
                       </div>
                     )}
@@ -2423,7 +2424,7 @@ export default function ContestDetail() {
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
                       Quay lại bề mặt public
                     </h2>
-                    <p className="mt-1 text-[14px] text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Trang public chỉ dành cho học viên/người tham gia xem contest và kết quả đã công bố.
                     </p>
                   </div>
@@ -2442,12 +2443,12 @@ export default function ContestDetail() {
           <Card>
             <CardContent className="p-5 sm:p-6">
               <div className="flex items-center gap-3">
-                <EnvelopeSimple className="size-5 text-primary" weight="duotone" />
+                <Mail className="size-5 text-primary" aria-hidden />
                 <div>
                   <h2 className="text-lg font-medium tracking-tight text-foreground">
                     Mốc quan trọng
                   </h2>
-                  <p className="mt-1 text-[14px] text-muted-foreground">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Dùng các mốc này để truyền thông và nhắc mọi bên chuẩn bị đúng tiến độ.
                   </p>
                 </div>
@@ -2505,12 +2506,12 @@ export default function ContestDetail() {
             >
               {deletingContest ? (
                 <>
-                  <Spinner className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
                   Đang xoá
                 </>
               ) : (
                 <>
-                  <Trash className="size-4" weight="duotone" />
+                  <Trash2 className="size-4" aria-hidden />
                   Xoá contest
                 </>
               )}

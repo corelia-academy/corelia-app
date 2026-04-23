@@ -65,7 +65,7 @@ export default function ConnectOCIDCard() {
   }
 
   return (
-    <section className="space-y-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+    <section className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-base font-medium">{t("ocid.card.title")}</h2>
@@ -73,21 +73,21 @@ export default function ConnectOCIDCard() {
             {t("ocid.card.description")}
           </p>
         </div>
-        <span className="shrink-0 rounded-full border border-border-subtle bg-muted/40 px-2.5 py-1 text-[11px] text-muted-foreground">
+        <span className="shrink-0 rounded-full border border-border-subtle bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground">
           {connected ? t("ocid.card.statusConnected") : t("ocid.card.statusDisconnected")}
         </span>
       </div>
 
       {!isInitialized ? (
-        <div className="rounded-lg border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
+        <div className="rounded-md border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
           {t("ocid.card.initializing")}
         </div>
       ) : authState.error ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {authState.error.message}
         </div>
       ) : connected ? (
-        <div className="grid gap-3 rounded-lg border border-border-subtle bg-background p-3 text-sm">
+        <div className="grid gap-3 rounded-md border border-border-subtle bg-background p-3 text-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="text-muted-foreground">{t("ocid.card.ocidLabel")}</div>
             <div className="font-mono text-foreground">
@@ -102,19 +102,19 @@ export default function ConnectOCIDCard() {
           </div>
         </div>
       ) : (
-        <div className="rounded-lg border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
+        <div className="rounded-md border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
           {t("ocid.card.connectHint")}
         </div>
       )}
 
       {error ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
         </div>
       ) : null}
 
       {success ? (
-        <div className="rounded-lg border bg-emerald-500/10 p-3 text-sm text-emerald-600 dark:text-emerald-300">
+        <div className="rounded-md border border-success/20 bg-success/10 p-3 text-sm text-success">
           {success}
         </div>
       ) : null}

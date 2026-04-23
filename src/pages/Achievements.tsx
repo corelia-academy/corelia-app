@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react";
 import {
-  Certificate,
+  Award,
+  BadgeCheck,
   Medal,
+  Copy,
+  Calendar,
+  Check,
+  CheckCircle2,
+  Download,
+  ExternalLink,
+  Loader2,
+  Lock,
   Star,
   Trophy,
-  SealCheck,
-  Download,
-  Share,
-  Lock,
-  CheckCircle,
-  CalendarBlank,
+  AlertTriangle,
   GraduationCap,
-  ArrowSquareOut,
-  Spinner,
-  Warning,
-  CopySimple,
-  Check,
-} from "@phosphor-icons/react";
+  Share2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -77,28 +77,28 @@ const BADGE_PLACEHOLDER = "https://placehold.co/160x160/2d1b4e/fff?text=Huy+hi%E
 
 const BADGE_STYLES: Array<Pick<BadgeItem, "icon" | "color" | "bgColor" | "borderColor" | "category">> = [
   {
-    icon: <Trophy weight="duotone" className="size-7" />,
-    color: "text-amber-600 dark:text-amber-400",
-    bgColor: "bg-amber-50 dark:bg-amber-950/50",
-    borderColor: "border-amber-200 dark:border-amber-700/50",
+    icon: <Trophy className="size-7" aria-hidden />,
+    color: "text-warning",
+    bgColor: "bg-warning/10",
+    borderColor: "border-warning/20",
     category: "milestone",
   },
   {
-    icon: <Star weight="duotone" className="size-7" />,
+    icon: <Star className="size-7" aria-hidden />,
     color: "text-primary",
     bgColor: "bg-primary/10",
     borderColor: "border-primary/20",
     category: "learning",
   },
   {
-    icon: <Medal weight="duotone" className="size-7" />,
+    icon: <Medal className="size-7" aria-hidden />,
     color: "text-sky-600 dark:text-sky-400",
     bgColor: "bg-sky-50 dark:bg-sky-950/50",
     borderColor: "border-sky-200 dark:border-sky-700/50",
     category: "learning",
   },
   {
-    icon: <GraduationCap weight="duotone" className="size-7" />,
+    icon: <GraduationCap className="size-7" aria-hidden />,
     color: "text-on-primary-container dark:text-primary",
     bgColor: "bg-primary-container",
     borderColor: "border-primary/20",
@@ -221,19 +221,19 @@ function buildMilestoneBadges(
 // ── OpenCampus Claim Status Badge ─────────────────────────────────────────────
 function OcClaimBadge({ status }: { status: ClaimStatus }) {
   const { t } = useTranslation("common");
-  const base = "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold sm:text-sm";
+  const base = "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold sm:text-sm";
   if (status === "claimed") {
     return (
       <span className={cn(base, "bg-success/15 text-success")}>
-        <SealCheck weight="fill" className="size-3.5 shrink-0 sm:size-4" />
+        <BadgeCheck className="size-3.5 shrink-0 sm:size-4" aria-hidden />
         {t("achievements.oc.badge.claimed")}
       </span>
     );
   }
   if (status === "pending") {
     return (
-      <span className={cn(base, "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300")}>
-        <Spinner className="size-3.5 shrink-0 animate-spin sm:size-4" />
+      <span className={cn(base, "bg-warning/15 text-warning")}>
+        <Loader2 className="size-3.5 shrink-0 animate-spin sm:size-4" aria-hidden />
         {t("achievements.oc.badge.pending")}
       </span>
     );
@@ -241,7 +241,7 @@ function OcClaimBadge({ status }: { status: ClaimStatus }) {
   if (status === "failed") {
     return (
       <span className={cn(base, "bg-destructive/15 text-destructive")}>
-        <Warning weight="fill" className="size-3.5 shrink-0 sm:size-4" />
+        <AlertTriangle className="size-3.5 shrink-0 sm:size-4" aria-hidden />
         {t("achievements.oc.badge.failed")}
       </span>
     );
@@ -268,17 +268,19 @@ function CopyButton({ text }: { text: string }) {
     setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <button
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-xs"
       onClick={handleCopy}
-      className="shrink-0 rounded p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
       title={t("actions.copy")}
     >
       {copied ? (
-        <Check className="size-3.5 text-emerald-500" />
+        <Check className="size-3.5 text-success" aria-hidden />
       ) : (
-        <CopySimple className="size-3.5" />
+        <Copy className="size-3.5" aria-hidden />
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -322,7 +324,7 @@ function OcCredentialModal({
           <DialogHeader className="mb-4">
             <div className="flex items-start gap-3">
               {/* OC Logo */}
-                <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted border border-border-subtle sm:size-14">
+                <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted border border-border-subtle sm:size-14">
                   <img
                     src={item.data.imageUrl || (item.kind === 'cert' ? CERT_PLACEHOLDER : BADGE_PLACEHOLDER)}
                     alt=""
@@ -341,7 +343,7 @@ function OcCredentialModal({
           </DialogHeader>
 
           {/* Credential info */}
-          <div className="mb-4 space-y-3 rounded-lg border border-border-subtle bg-muted/40 p-3 sm:p-4">
+          <div className="mb-4 space-y-3 rounded-md border border-border-subtle bg-muted/40 p-3 sm:p-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:text-sm">
                 {item.kind === "cert"
@@ -380,7 +382,7 @@ function OcCredentialModal({
               <p className="text-xs text-muted-foreground sm:text-sm">
                     Transaction Hash
                   </p>
-                  <div className="mt-0.5 flex items-center gap-1.5">
+                  <div className="mt-0.5 flex items-center gap-2">
                     <p className="min-w-0 flex-1 truncate font-mono text-xs text-foreground sm:text-sm">
                       {d.ocTransactionHash}
                     </p>
@@ -392,7 +394,7 @@ function OcCredentialModal({
                       className="shrink-0 rounded p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                       title={t("achievements.oc.modal.explorerTooltip")}
                     >
-                      <ArrowSquareOut className="size-4" />
+                      <ExternalLink className="size-4" aria-hidden />
                     </a>
                   </div>
                 </div>
@@ -414,9 +416,9 @@ function OcCredentialModal({
               href={d.ocCredentialUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mb-4 flex min-w-0 items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5 transition hover:bg-primary/10"
+              className="mb-4 flex min-w-0 items-center justify-between gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 transition hover:bg-primary/10"
             >
-              <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              <div className="flex min-w-0 flex-1 items-center gap-2">
                 <img
                   src="/open-campus-edu-logo.png"
                   alt="OC"
@@ -431,7 +433,7 @@ function OcCredentialModal({
                   </p>
                 </div>
               </div>
-              <ArrowSquareOut className="size-4 shrink-0 text-muted-foreground" />
+              <ExternalLink className="size-4 shrink-0 text-muted-foreground" aria-hidden />
             </a>
           )}
 
@@ -451,7 +453,7 @@ function OcCredentialModal({
               >
                 {claiming ? (
                   <>
-                    <Spinner className="size-5 shrink-0 animate-spin" />
+                    <Loader2 className="size-5 shrink-0 animate-spin" aria-hidden />
                     <span>{t("achievements.oc.modal.claim.issuing")}</span>
                   </>
                 ) : (
@@ -474,7 +476,7 @@ function OcCredentialModal({
             {/* Pending */}
             {isPending && (
               <Button disabled className="w-full gap-3 text-base" size="lg">
-                <Spinner className="size-5 shrink-0 animate-spin" />
+                <Loader2 className="size-5 shrink-0 animate-spin" aria-hidden />
                 <span>{t("achievements.oc.modal.claim.pending")}</span>
               </Button>
             )}
@@ -483,11 +485,11 @@ function OcCredentialModal({
             {isClaimed && (
               <div className="flex w-full gap-3">
                 <Button variant="outline" className="flex-1 gap-2 text-sm sm:text-base" size="lg">
-                  <Download className="size-4 shrink-0" />
+                  <Download className="size-4 shrink-0" aria-hidden />
                   <span>{t("achievements.oc.modal.claimedActions.downloadPdf")}</span>
                 </Button>
                 <Button variant="outline" className="flex-1 gap-2 text-sm sm:text-base" size="lg">
-                  <Share className="size-4 shrink-0" />
+                  <Share2 className="size-4 shrink-0" aria-hidden />
                   <span>{t("actions.share")}</span>
                 </Button>
               </div>
@@ -497,10 +499,10 @@ function OcCredentialModal({
               href="https://devdocs.educhain.xyz/start-building/open-campus-achievements-badges/introduction"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1.5 py-2 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground transition-colors"
+              className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
             >
               {t("achievements.oc.modal.learnMore")}
-              <ArrowSquareOut className="size-4 shrink-0" />
+              <ExternalLink className="size-4 shrink-0" aria-hidden />
             </a>
           </div>
         </div>
@@ -530,17 +532,17 @@ function StatsBar({
         {
           label: t("achievements.stats.certificates"),
           value: certificates.length,
-          icon: <Certificate weight="duotone" className="size-5 text-muted-foreground" />,
+          icon: <Award className="size-5 text-muted-foreground" aria-hidden />,
         },
         {
           label: t("achievements.stats.badges"),
           value: `${earnedBadges}/${badges.length}`,
-          icon: <Medal weight="duotone" className="size-5 text-amber-500" />,
+          icon: <Medal className="size-5 text-warning" aria-hidden />,
         },
         {
           label: t("achievements.stats.total"),
           value: certificates.length + earnedBadges,
-          icon: <Trophy weight="duotone" className="size-5 text-primary" />,
+          icon: <Trophy className="size-5 text-primary" aria-hidden />,
         },
         {
           label: t("achievements.stats.ocCredential"),
@@ -556,12 +558,12 @@ function StatsBar({
       ].map((stat) => (
         <div
           key={stat.label}
-          className="flex flex-col items-center gap-1.5 rounded-lg border border-border-subtle bg-card p-3 shadow-card sm:flex-row sm:gap-3 sm:p-4"
+          className="flex flex-col items-center gap-2 rounded-md border border-border-subtle bg-card p-3 shadow-card sm:flex-row sm:gap-3 sm:p-4"
         >
-          <div className="shrink-0 rounded-lg bg-muted/50 p-2">{stat.icon}</div>
+          <div className="shrink-0 rounded-md bg-muted/50 p-2">{stat.icon}</div>
           <div className="min-w-0 text-center sm:text-left">
             <p className="text-xl font-medium tabular-nums leading-none text-foreground sm:text-2xl">{stat.value}</p>
-            <p className="mt-1 text-[12px] text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground">
               {stat.label}
             </p>
           </div>
@@ -582,7 +584,7 @@ function CertificateCard({
   const { t } = useTranslation("common");
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   return (
-    <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card transition-all duration-200 hover:shadow-elevation-2 hover:-translate-y-0.5">
+    <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-md border border-border-subtle bg-card shadow-card transition-all duration-200 hover:shadow-elevation-2 hover:-translate-y-0.5">
       {/* Gradient top strip */}
       <div
         className={cn(
@@ -598,7 +600,7 @@ function CertificateCard({
         <img
           src={imageUrl}
           alt=""
-          className="size-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+          className="size-full object-cover transition-opacity duration-200 group-hover:opacity-95"
         />
       </div>
 
@@ -608,13 +610,13 @@ function CertificateCard({
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <div
               className={cn(
-                "flex size-9 shrink-0 items-center justify-center rounded-lg sm:size-10",
+                "flex size-9 shrink-0 items-center justify-center rounded-md sm:size-10",
                 cert.type === "online"
                   ? "bg-primary/10 text-primary"
                   : "bg-primary-container text-on-primary-container dark:text-primary",
               )}
             >
-              <Certificate weight="duotone" className="size-4 sm:size-5" />
+              <Award className="size-4 sm:size-5" aria-hidden />
             </div>
             <div className="min-w-0">
               <span
@@ -634,10 +636,7 @@ function CertificateCard({
               </p>
             </div>
           </div>
-          <SealCheck
-            weight="duotone"
-            className="size-4 shrink-0 text-emerald-500 sm:size-5"
-          />
+          <BadgeCheck className="size-4 shrink-0 text-success sm:size-5" aria-hidden />
         </div>
 
         {/* Course name */}
@@ -647,16 +646,16 @@ function CertificateCard({
 
         {/* Meta */}
         <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <GraduationCap className="size-3.5 shrink-0" />
+          <div className="flex items-center gap-2">
+            <GraduationCap className="size-3.5 shrink-0" aria-hidden />
             <span className="truncate">{cert.instructor}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <CalendarBlank className="size-3.5 shrink-0" />
+          <div className="flex items-center gap-2">
+            <Calendar className="size-3.5 shrink-0" aria-hidden />
             <span>{t("achievements.certificates.issuedOnPrefix", { date: cert.issuedAt })}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <CheckCircle className="size-3.5 shrink-0 text-emerald-500" />
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="size-3.5 shrink-0 text-success" aria-hidden />
             <span className="truncate font-mono text-xs">{cert.credentialId}</span>
           </div>
         </div>
@@ -668,13 +667,14 @@ function CertificateCard({
 
         {/* Actions — tránh tràn: flex-wrap, min-w-0 */}
         <div className="mt-3 flex min-w-0 flex-wrap items-stretch gap-2">
-          <button
+          <Button
+            type="button"
+            variant="outline"
             onClick={() => onOpenModal({ kind: "cert", data: cert })}
             className={cn(
-              "flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium transition sm:px-3 sm:text-sm",
               cert.ocClaimStatus === "claimed"
-                ? "border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/60"
-                : "border border-border bg-background hover:bg-muted",
+                ? "border-success/20 bg-success/10 text-success hover:bg-success/15"
+                : "border-border bg-background hover:bg-muted",
             )}
           >
             <img
@@ -687,13 +687,14 @@ function CertificateCard({
                 ? t("achievements.certificates.ocAction.view")
                 : t("achievements.certificates.ocAction.claim")}
             </span>
-          </button>
-          <button
-            className="flex shrink-0 items-center justify-center rounded-lg bg-muted px-2.5 py-2 text-sm font-medium transition hover:bg-muted/80"
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
             title={t("actions.download")}
           >
-            <Download className="size-4 shrink-0" />
-          </button>
+            <Download className="size-4 shrink-0" aria-hidden />
+          </Button>
         </div>
       </div>
     </div>
@@ -713,7 +714,7 @@ function BadgeCard({
   return (
     <div
       className={cn(
-        "group relative flex min-w-0 flex-col items-center gap-2 rounded-lg border p-3 text-center transition-all duration-200 sm:gap-3 sm:p-4",
+        "group relative flex min-w-0 flex-col items-center gap-2 rounded-md border p-3 text-center transition-all duration-200 sm:gap-3 sm:p-4",
         badge.locked
           ? "border-border bg-muted/30 opacity-60 grayscale"
           : cn(
@@ -736,10 +737,7 @@ function BadgeCard({
         <div className="absolute left-2 top-2 sm:left-3 sm:top-3">
           {badge.ocClaimStatus === "claimed" ? (
             <span title={t("achievements.badges.ocDot.claimedTooltip")}>
-              <SealCheck
-                weight="fill"
-                className="size-4 text-success sm:size-5"
-              />
+              <BadgeCheck className="size-4 text-success sm:size-5" aria-hidden />
             </span>
           ) : (
             <span title={t("achievements.badges.ocDot.unclaimedTooltip")}>
@@ -804,7 +802,7 @@ function BadgeCard({
 
       {/* Bottom row: category + oc status */}
       {!badge.locked && (
-        <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-1.5 sm:justify-between">
+        <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-2 sm:justify-between">
           <span
             className={cn(
               "rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide",
@@ -1032,7 +1030,7 @@ export default function Achievements() {
               <h1 className="mt-3 text-3xl font-normal tracking-tight text-foreground sm:text-4xl">
                 {t("achievements.hero.title")}
               </h1>
-              <p className="mt-2 max-w-2xl text-[15px] leading-7 text-muted-foreground sm:text-[16px]">
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
                 {t("achievements.hero.subtitlePrefix")}{" "}
                 <a
                   href="https://opencampus.xyz"
@@ -1045,13 +1043,13 @@ export default function Achievements() {
                 {t("achievements.hero.subtitleSuffix")}
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
-                <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-1.5 text-sm text-foreground">
+                <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-2 text-sm text-foreground">
                   {t("achievements.hero.certCount", { count: certificates.length })}
                 </div>
-                <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-1.5 text-sm text-foreground">
+                <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-2 text-sm text-foreground">
                   {t("achievements.hero.badgeUnlockedCount", { count: earnedBadges.length })}
                 </div>
-                <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-1.5 text-sm text-foreground">
+                <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-2 text-sm text-foreground">
                   {t("achievements.hero.readyToClaimCount", { count: unclaimedCount })}
                 </div>
               </div>
@@ -1059,31 +1057,31 @@ export default function Achievements() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-border-subtle bg-background/85 p-4">
-                <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                   {t("achievements.hero.claimedOnOc.title")}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-foreground">{claimedCount}</p>
-                <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
                   {t("achievements.hero.claimedOnOc.description")}
                 </p>
               </div>
               <div className="rounded-2xl border border-border-subtle bg-background/85 p-4">
-                <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                   {t("achievements.hero.pending.title")}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-foreground">{pendingCount}</p>
-                <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
                   {t("achievements.hero.pending.description")}
                 </p>
               </div>
               <div className="rounded-2xl border border-border-subtle bg-background/85 p-4 sm:col-span-2">
-                <p className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                   {t("achievements.hero.nextMilestone")}
                 </p>
                 <p className="mt-2 text-lg font-medium text-foreground">
                   {nextMilestones[0]?.title ?? t("achievements.milestones.next.titleFallback")}
                 </p>
-                <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
                   {nextMilestones[0]?.description ??
                     t("achievements.milestones.next.descriptionFallback")}
                 </p>
@@ -1099,10 +1097,10 @@ export default function Achievements() {
 
       <section className="mb-8 grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
         <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
-          <div className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
             {t("achievements.meaning.title")}
           </div>
-          <div className="mt-4 space-y-3 text-[14px] leading-6 text-muted-foreground">
+          <div className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
             <p>
               {t("achievements.meaning.p1")}
             </p>
@@ -1113,20 +1111,20 @@ export default function Achievements() {
         </div>
 
         <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
-          <div className="text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
             {t("achievements.useCases.title")}
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {[0, 1, 2, 3, 4].map((idx) => (
               <span
                 key={idx}
-                className="rounded-full border border-border-subtle bg-background px-3 py-1.5 text-[13px] text-foreground"
+                className="rounded-full border border-border-subtle bg-background px-3 py-2 text-sm text-foreground"
               >
                 {t(`achievements.useCases.items.${idx}` as never)}
               </span>
             ))}
           </div>
-          <p className="mt-4 text-[13px] leading-6 text-muted-foreground">
+          <p className="mt-4 text-sm leading-6 text-muted-foreground">
             {t("achievements.useCases.note")}
           </p>
         </div>
@@ -1134,47 +1132,58 @@ export default function Achievements() {
 
       <section className="mb-8 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
         <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
-          <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-            <CheckCircle weight="duotone" className="size-4" />
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <CheckCircle2 className="size-4" aria-hidden />
             {t("achievements.recent.title")}
           </div>
           {loading ? (
             <div className="mt-5 flex min-h-44 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border-subtle bg-muted/20 text-center">
-              <Spinner className="size-10 animate-spin text-muted-foreground/60" />
+              <Loader2 className="size-10 animate-spin text-muted-foreground/60" aria-hidden />
               <p className="text-sm text-muted-foreground">
                 {t("achievements.recent.loading")}
               </p>
             </div>
           ) : recentBadges.length === 0 && recentCertificates.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-border-subtle bg-muted/20 p-6 text-sm leading-6 text-muted-foreground">
-              {t("achievements.recent.empty")}
+            <div className="mt-5 flex flex-col items-center gap-3 py-16 text-center">
+              <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                <Trophy className="size-6 text-muted-foreground" aria-hidden />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {t("achievements.recent.empty")}
+                </p>
+              </div>
             </div>
           ) : (
             <div className="mt-5 space-y-3">
               {recentCertificates.map((cert) => (
-                <button
-                  key={cert.id}
-                  onClick={() => openModal({ kind: "cert", data: cert })}
-                  className="flex w-full items-start gap-4 rounded-2xl border border-border-subtle bg-background p-4 text-left transition hover:bg-muted/40"
-                >
+                  <Button
+                    key={cert.id}
+                    type="button"
+                    variant="ghost"
+                    onClick={() => openModal({ kind: "cert", data: cert })}
+                    className="h-auto w-full justify-start rounded-2xl border border-border-subtle bg-background p-4 text-left hover:bg-muted/40"
+                  >
                   <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                    <Certificate weight="duotone" className="size-5" />
+                    <Award className="size-5" aria-hidden />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-foreground">{cert.course}</div>
-                    <div className="mt-1 text-[13px] leading-6 text-muted-foreground">
+                    <div className="mt-1 text-sm leading-6 text-muted-foreground">
                       {cert.title} · {cert.issuedAt}
                     </div>
                   </div>
                   <OcClaimBadge status={cert.ocClaimStatus} />
-                </button>
+                  </Button>
               ))}
               {recentBadges.map((badge) => (
-                <button
-                  key={badge.id}
-                  onClick={() => openModal({ kind: "badge", data: badge })}
-                  className="flex w-full items-start gap-4 rounded-2xl border border-border-subtle bg-background p-4 text-left transition hover:bg-muted/40"
-                >
+                  <Button
+                    key={badge.id}
+                    type="button"
+                    variant="ghost"
+                    onClick={() => openModal({ kind: "badge", data: badge })}
+                    className="h-auto w-full justify-start rounded-2xl border border-border-subtle bg-background p-4 text-left hover:bg-muted/40"
+                  >
                   <div
                     className={cn(
                       "flex size-11 shrink-0 items-center justify-center rounded-2xl",
@@ -1186,20 +1195,20 @@ export default function Achievements() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-foreground">{badge.title}</div>
-                    <div className="mt-1 text-[13px] leading-6 text-muted-foreground">
+                    <div className="mt-1 text-sm leading-6 text-muted-foreground">
                       {badge.description}
                     </div>
                   </div>
                   <OcClaimBadge status={badge.ocClaimStatus} />
-                </button>
+                  </Button>
               ))}
             </div>
           )}
         </div>
 
         <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
-          <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
-            <Lock weight="duotone" className="size-4" />
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <Lock className="size-4" aria-hidden />
             Sắp mở khóa
           </div>
           <div className="mt-5 space-y-3">
@@ -1215,7 +1224,7 @@ export default function Achievements() {
                     </div>
                     <div className="min-w-0">
                       <div className="text-sm font-medium text-foreground">{badge.title}</div>
-                      <div className="mt-1 text-[13px] leading-6 text-muted-foreground">
+                      <div className="mt-1 text-sm leading-6 text-muted-foreground">
                         {badge.description}
                       </div>
                     </div>
@@ -1237,27 +1246,35 @@ export default function Achievements() {
             <h2 className="text-lg font-medium text-foreground">
               {t("achievements.vaults.certificates.title")}
             </h2>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               {t("achievements.vaults.certificates.subtitle")}
             </p>
           </div>
-          <div className="rounded-full bg-muted px-3 py-1 text-[12px] text-muted-foreground">
+          <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
             {t("achievements.vaults.certificates.countLabel", { count: certificates.length })}
           </div>
         </div>
         {loading ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border-subtle bg-muted/20 py-16 text-center">
-            <Spinner className="size-10 animate-spin text-muted-foreground/60" />
-            <p className="text-sm text-muted-foreground">
-              {t("achievements.vaults.certificates.loading")}
-            </p>
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {t("achievements.vaults.certificates.loading")}
+              </p>
+            </div>
           </div>
         ) : certificates.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border-subtle bg-muted/20 py-16 text-center">
-            <Certificate weight="duotone" className="size-12 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">
-              {t("achievements.vaults.certificates.empty")}
-            </p>
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+              <Award className="size-6 text-muted-foreground" aria-hidden />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {t("achievements.vaults.certificates.empty")}
+              </p>
+            </div>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -1274,11 +1291,11 @@ export default function Achievements() {
             <h2 className="text-lg font-medium text-foreground">
               {t("achievements.vaults.badges.title")}
             </h2>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               {t("achievements.vaults.badges.subtitle")}
             </p>
           </div>
-          <div className="rounded-full bg-muted px-3 py-1 text-[12px] text-muted-foreground">
+          <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
             {t("achievements.vaults.badges.summaryUnlocked", {
               earned: earnedBadges.length,
               total: badges.length,
@@ -1287,11 +1304,15 @@ export default function Achievements() {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border-subtle bg-muted/20 py-16 text-center">
-            <Spinner className="size-10 animate-spin text-muted-foreground/60" />
-            <p className="text-sm text-muted-foreground">
-              {t("achievements.vaults.badges.loading")}
-            </p>
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {t("achievements.vaults.badges.loading")}
+              </p>
+            </div>
           </div>
         ) : (
           <div className="space-y-8">
@@ -1299,12 +1320,12 @@ export default function Achievements() {
               <div>
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <CheckCircle weight="duotone" className="size-5 shrink-0 text-muted-foreground" />
+                    <CheckCircle2 className="size-5 shrink-0 text-muted-foreground" aria-hidden />
                     <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
                       {t("achievements.vaults.badges.earnedSectionTitle", { count: earnedBadges.length })}
                     </h3>
                   </div>
-                  <div className="rounded-full bg-success/15 px-3 py-1 text-[12px] font-medium text-success">
+                  <div className="rounded-full bg-success/15 px-3 py-1 text-xs font-medium text-success">
                     {t("achievements.vaults.badges.progressGood")}
                   </div>
                 </div>
@@ -1320,12 +1341,12 @@ export default function Achievements() {
               <div>
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <Lock className="size-5 shrink-0 text-muted-foreground" weight="duotone" />
+                    <Lock className="size-5 shrink-0 text-muted-foreground" aria-hidden />
                     <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
                       Chưa mở khóa ({lockedBadges.length})
                     </h3>
                   </div>
-                  <div className="rounded-full bg-muted px-3 py-1 text-[12px] text-muted-foreground">
+                  <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
                     Tiếp tục học để mở thêm
                   </div>
                 </div>

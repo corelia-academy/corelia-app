@@ -29,18 +29,18 @@ import ConnectOCIDCard from "@/components/account/ConnectOCIDCard";
 import { useLocale } from "@/hooks/useLocale";
 import { useTranslation } from "react-i18next";
 import {
-  Buildings,
+  Building2,
   CreditCard,
+  FilePenLine,
   GraduationCap,
-  Gear,
-  IdentificationCard,
-  ImageSquare,
-  LinkSimple,
-  NotePencil,
+  IdCard,
+  Image as ImageIcon,
+  Link2,
+  Loader2,
+  Settings,
   ShieldCheck,
-  SpinnerGap,
   UserCircle,
-} from "@phosphor-icons/react";
+} from "lucide-react";
 import { useTheme } from "next-themes";
 
 function LanguageSettingsCard() {
@@ -49,9 +49,9 @@ function LanguageSettingsCard() {
   const { language, setLanguage } = useLocale();
 
   return (
-    <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+    <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div className="min-w-0">
-        <h2 className="text-base font-medium text-foreground">
+        <h2 className="text-lg font-semibold text-foreground">
           {t("settings.language.title")}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -64,7 +64,7 @@ function LanguageSettingsCard() {
           type="button"
           onClick={() => void setLanguage("vi")}
           className={cn(
-            "flex items-center justify-between rounded-lg border px-3 py-3 text-left transition-colors",
+            "flex items-center justify-between rounded-md border px-3 py-3 text-left transition-colors duration-150",
             language === "vi"
               ? "border-primary bg-primary/10"
               : "border-border-subtle bg-background hover:bg-muted/30",
@@ -89,7 +89,7 @@ function LanguageSettingsCard() {
           type="button"
           onClick={() => void setLanguage("en")}
           className={cn(
-            "flex items-center justify-between rounded-lg border px-3 py-3 text-left transition-colors",
+            "flex items-center justify-between rounded-md border px-3 py-3 text-left transition-colors duration-150",
             language === "en"
               ? "border-primary bg-primary/10"
               : "border-border-subtle bg-background hover:bg-muted/30",
@@ -182,7 +182,7 @@ function ChangePasswordCard({ user }: { user: User }) {
   if (!hasPasswordProvider) return null;
 
   return (
-    <div className="space-y-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+    <div className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div>
         <h2 className="text-base font-medium">{t("password.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -190,7 +190,7 @@ function ChangePasswordCard({ user }: { user: User }) {
         </p>
       </div>
       <form onSubmit={(e) => void handleSubmit(e)} className="grid gap-4">
-        <div className="grid gap-1.5">
+        <div className="grid gap-2">
           <label className="text-sm font-medium" htmlFor="current_password">
             {t("password.fields.current.label")}
           </label>
@@ -200,12 +200,12 @@ function ChangePasswordCard({ user }: { user: User }) {
             autoComplete="current-password"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             placeholder={t("password.fields.current.placeholder")}
             required
           />
         </div>
-        <div className="grid gap-1.5">
+        <div className="grid gap-2">
           <label className="text-sm font-medium" htmlFor="new_password">
             {t("password.fields.next.label")}
           </label>
@@ -215,13 +215,13 @@ function ChangePasswordCard({ user }: { user: User }) {
             autoComplete="new-password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             placeholder={t("password.fields.next.placeholder")}
             required
             minLength={6}
           />
         </div>
-        <div className="grid gap-1.5">
+        <div className="grid gap-2">
           <label className="text-sm font-medium" htmlFor="confirm_password">
             {t("password.fields.confirm.label")}
           </label>
@@ -231,30 +231,26 @@ function ChangePasswordCard({ user }: { user: User }) {
             autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             placeholder={t("password.fields.confirm.placeholder")}
             required
             minLength={6}
           />
         </div>
         {error ? (
-          <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {error}
           </div>
         ) : null}
         {success ? (
-          <div className="rounded-lg border border-success/25 bg-success/10 px-3 py-2 text-sm text-success">
+          <div className="rounded-md border border-success/25 bg-success/10 px-3 py-2 text-sm text-success">
             {success}
           </div>
         ) : null}
         <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-          >
+          <Button type="submit" disabled={loading}>
             {loading ? t("common.loading") : t("password.actions.submit")}
-          </button>
+          </Button>
         </div>
       </form>
     </div>
@@ -391,9 +387,9 @@ function MfaEnrollCard({ user }: { user: User }) {
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+    <div className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div className="flex items-center gap-2">
-        <ShieldCheck className="size-5 text-muted-foreground" weight="duotone" />
+        <ShieldCheck className="size-5 shrink-0 text-muted-foreground" aria-hidden />
         <h2 className="text-base font-medium">{t("mfa.title")}</h2>
       </div>
       <p className="text-sm text-muted-foreground">
@@ -401,7 +397,7 @@ function MfaEnrollCard({ user }: { user: User }) {
       </p>
 
       {enrolled && (
-        <div className="rounded-lg bg-muted/50 p-3 text-sm">
+        <div className="rounded-md bg-muted/50 p-3 text-sm">
           <p className="font-medium text-muted-foreground">{t("mfa.enrolled.title")}</p>
           <ul className="mt-1 list-disc pl-4">
             {factorsDisplay.map((f, i) => (
@@ -412,12 +408,12 @@ function MfaEnrollCard({ user }: { user: User }) {
       )}
 
       {success && (
-        <div className="rounded-lg border border-success/25 bg-success/10 px-3 py-2 text-sm text-success">
+        <div className="rounded-md border border-success/25 bg-success/10 px-3 py-2 text-sm text-success">
           {success}
         </div>
       )}
       {error && (
-        <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -426,7 +422,7 @@ function MfaEnrollCard({ user }: { user: User }) {
         <Button
           type="button"
           variant="outline"
-          className="w-full rounded-lg"
+          className="w-full"
           onClick={() => setStep("reauth")}
           disabled={loading}
         >
@@ -451,7 +447,7 @@ function MfaEnrollCard({ user }: { user: User }) {
                 value={reauthPassword}
                 onChange={(e) => setReauthPassword(e.target.value)}
                 placeholder={t("mfa.reauth.passwordPlaceholder")}
-                className="rounded-lg"
+                className="rounded"
               />
             </div>
           ) : (
@@ -492,7 +488,7 @@ function MfaEnrollCard({ user }: { user: User }) {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder={t("mfa.phone.placeholder")}
-              className="rounded-lg"
+              className="rounded"
             />
           </div>
           <Button
@@ -526,7 +522,7 @@ function MfaEnrollCard({ user }: { user: User }) {
               onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
               placeholder={t("mfa.code.placeholder")}
               maxLength={6}
-              className="rounded-lg font-mono text-lg tracking-widest"
+              className="rounded font-mono text-lg tracking-widest"
             />
           </div>
           <div className="flex gap-2">
@@ -589,8 +585,8 @@ function ProfileSection(props: {
 
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="space-y-5">
-      <div className="grid gap-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-        <div className="grid gap-1.5">
+      <div className="grid gap-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
+        <div className="grid gap-2">
           <label className="text-sm font-medium">{t("profile.emailLoginLabel")}</label>
           <div className="text-sm text-muted-foreground">{sessionEmail}</div>
         </div>
@@ -601,7 +597,7 @@ function ProfileSection(props: {
           <div className="flex flex-wrap items-center gap-4">
             <Avatar className="size-20 shrink-0 rounded-full">
               <AvatarImage src={avatarUrl || undefined} alt={t("profile.avatar.alt")} />
-              <AvatarFallback className="text-xl">
+              <AvatarFallback className="text-lg">
                 {fullName.trim()
                   ? fullName.trim().slice(0, 2).toUpperCase()
                   : "?"}
@@ -616,24 +612,25 @@ function ProfileSection(props: {
                 onChange={handleFileChange}
                 disabled={uploadingAvatar || saving}
               />
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingAvatar || saving}
-                className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+                className="inline-flex items-center gap-2"
               >
                 {uploadingAvatar ? (
                   <>
-                    <SpinnerGap className="size-4 animate-spin" weight="bold" />
+                    <Loader2 className="size-4 animate-spin shrink-0" aria-hidden />
                     {t("profile.avatar.uploading")}
                   </>
                 ) : (
                   <>
-                    <ImageSquare className="size-4" weight="duotone" />
+                    <ImageIcon className="size-4 shrink-0" aria-hidden />
                     {t("profile.avatar.upload")}
                   </>
                 )}
-              </button>
+              </Button>
               <p className="text-xs text-muted-foreground">
                 {t("profile.avatar.hint")}
               </p>
@@ -641,7 +638,7 @@ function ProfileSection(props: {
           </div>
         </div>
 
-        <div className="grid gap-1.5">
+        <div className="grid gap-2">
           <label className="text-sm font-medium" htmlFor="full_name">
             {t("profile.fullName.label")}
           </label>
@@ -650,7 +647,7 @@ function ProfileSection(props: {
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             placeholder={t("profile.fullName.placeholder")}
           />
           <p className="text-xs text-muted-foreground">
@@ -658,7 +655,7 @@ function ProfileSection(props: {
           </p>
         </div>
 
-        <div className="grid gap-1.5">
+        <div className="grid gap-2">
           <label className="text-sm font-medium" htmlFor="phone">
             {t("profile.phone.label")}
           </label>
@@ -667,7 +664,7 @@ function ProfileSection(props: {
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             placeholder={t("profile.phone.placeholder")}
           />
           <p className="text-xs text-muted-foreground">
@@ -677,25 +674,21 @@ function ProfileSection(props: {
       </div>
 
       {error ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
         </div>
       ) : null}
 
       {success ? (
-        <div className="rounded-lg border bg-emerald-500/10 p-3 text-sm text-emerald-600 dark:text-emerald-300">
+        <div className="rounded-md border border-success/20 bg-success/10 p-3 text-sm text-success">
           {success}
         </div>
       ) : null}
 
       <div className="flex items-center justify-end gap-3">
-        <button
-          type="submit"
-          disabled={saving}
-          className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={saving}>
           {saving ? t("profile.actions.saving") : t("profile.actions.save")}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -704,7 +697,7 @@ function ProfileSection(props: {
 function CvSection() {
   const { t } = useTranslation("account");
   return (
-    <div className="space-y-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+    <div className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div>
         <h2 className="text-base font-semibold">{t("cv.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -712,7 +705,7 @@ function CvSection() {
         </p>
       </div>
 
-      <div className="space-y-3 rounded-lg bg-muted/60 p-3 text-sm">
+      <div className="space-y-3 rounded-md bg-muted/60 p-3 text-sm">
         <p className="font-medium">{t("cv.comingSoon.title")}</p>
         <p className="text-muted-foreground">
           {t("cv.comingSoon.body")}
@@ -749,7 +742,7 @@ function InstructorProfileSection() {
 
   if (!profile || profile.role !== "instructor") {
     return (
-      <div className="rounded-lg border border-border-subtle bg-card p-4 text-sm text-muted-foreground">
+      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground">
         {t("instructorProfile.onlyInstructors")}
       </div>
     );
@@ -792,7 +785,7 @@ function InstructorProfileSection() {
   return (
     <form
       onSubmit={(e) => void handleSubmit(e)}
-      className="space-y-5 rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5"
+      className="space-y-5 rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-5"
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -804,41 +797,41 @@ function InstructorProfileSection() {
               {t("instructorProfile.subtitle")}
             </p>
           </div>
-          <div className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
-            <ShieldCheck className="mr-1.5 size-4 text-primary" weight="duotone" />
+          <div className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+            <ShieldCheck className="mr-2 size-4 shrink-0 text-primary" aria-hidden />
             {t("instructorProfile.completion", { percent: completionPercent })}
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
+          <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
               {t("instructorProfile.cards.originLabel")}
             </p>
-            <p className="mt-2 text-[15px] font-medium text-foreground">
+            <p className="mt-2 text-sm font-medium text-foreground">
               {originLabel}
             </p>
           </div>
-          <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
+          <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
               {t("instructorProfile.cards.organizationLabel")}
             </p>
-            <p className="mt-2 text-[15px] font-medium text-foreground">
+            <p className="mt-2 text-sm font-medium text-foreground">
               {organization.trim() || t("instructorProfile.common.notUpdated")}
             </p>
           </div>
-          <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
+          <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
               {t("instructorProfile.cards.headlineLabel")}
             </p>
-            <p className="mt-2 text-[15px] font-medium text-foreground">
+            <p className="mt-2 text-sm font-medium text-foreground">
               {headline.trim() || t("instructorProfile.common.notUpdated")}
             </p>
           </div>
-          <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
+          <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
               {t("instructorProfile.cards.websiteLabel")}
             </p>
-            <p className="mt-2 text-[15px] font-medium text-foreground">
+            <p className="mt-2 text-sm font-medium text-foreground">
               {website.trim() || t("instructorProfile.common.notUpdated")}
             </p>
           </div>
@@ -846,27 +839,27 @@ function InstructorProfileSection() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
-          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium text-foreground">
-            <Buildings className="size-4 text-primary" weight="duotone" />
+        <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
+            <Building2 className="size-4 shrink-0 text-primary" aria-hidden />
             {t("instructorProfile.tips.organization.title")}
           </div>
           <p className="text-sm text-muted-foreground">
             {t("instructorProfile.tips.organization.body")}
           </p>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
-          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium text-foreground">
-            <NotePencil className="size-4 text-primary" weight="duotone" />
+        <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
+            <FilePenLine className="size-4 shrink-0 text-primary" aria-hidden />
             {t("instructorProfile.tips.intro.title")}
           </div>
           <p className="text-sm text-muted-foreground">
             {t("instructorProfile.tips.intro.body")}
           </p>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
-          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium text-foreground">
-            <LinkSimple className="size-4 text-primary" weight="duotone" />
+        <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
+            <Link2 className="size-4 shrink-0 text-primary" aria-hidden />
             {t("instructorProfile.tips.externalProfile.title")}
           </div>
           <p className="text-sm text-muted-foreground">
@@ -876,11 +869,11 @@ function InstructorProfileSection() {
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <div className="grid gap-1.5">
+        <div className="grid gap-2">
           <label className="text-sm font-medium" htmlFor="instructor_origin">
             {t("instructorProfile.fields.origin.label")}
           </label>
-          <div className="rounded-lg border border-input bg-muted/40 px-3 py-2 text-sm">
+          <div className="rounded border border-input bg-muted/40 px-3 py-2 text-sm">
             {originLabel}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -888,7 +881,7 @@ function InstructorProfileSection() {
           </p>
         </div>
 
-        <div className="grid gap-1.5">
+        <div className="grid gap-2">
           <label className="text-sm font-medium" htmlFor="instructor_org">
             {t("instructorProfile.fields.organization.label")}
           </label>
@@ -901,7 +894,7 @@ function InstructorProfileSection() {
         </div>
       </div>
 
-      <div className="grid gap-1.5">
+      <div className="grid gap-2">
         <label className="text-sm font-medium" htmlFor="instructor_headline">
           {t("instructorProfile.fields.headline.label")}
         </label>
@@ -913,7 +906,7 @@ function InstructorProfileSection() {
         />
       </div>
 
-      <div className="grid gap-1.5">
+      <div className="grid gap-2">
         <label className="text-sm font-medium" htmlFor="instructor_bio">
           {t("instructorProfile.fields.bio.label")}
         </label>
@@ -922,12 +915,12 @@ function InstructorProfileSection() {
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={5}
-          className="min-h-[120px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="min-h-[120px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           placeholder={t("instructorProfile.fields.bio.placeholder")}
         />
       </div>
 
-      <div className="grid gap-1.5">
+      <div className="grid gap-2">
         <label className="text-sm font-medium" htmlFor="instructor_website">
           {t("instructorProfile.fields.website.label")}
         </label>
@@ -940,25 +933,21 @@ function InstructorProfileSection() {
       </div>
 
       {error ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
         </div>
       ) : null}
 
       {success ? (
-        <div className="rounded-lg border bg-emerald-500/10 p-3 text-sm text-emerald-600 dark:text-emerald-300">
+        <div className="rounded-md border border-success/20 bg-success/10 p-3 text-sm text-success">
           {success}
         </div>
       ) : null}
 
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={saving}
-          className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={saving}>
           {saving ? t("instructorProfile.actions.saving") : t("instructorProfile.actions.save")}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -991,7 +980,7 @@ export function BillingSection() {
   const transactionRows = transactions ?? [];
 
   return (
-    <div className="space-y-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+    <div className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div>
         <h2 className="text-base font-semibold">{t("billing.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -1000,23 +989,29 @@ export function BillingSection() {
       </div>
 
       {!user ? (
-        <div className="rounded-lg border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
+        <div className="rounded-md border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
           {t("billing.mustLogin")}
         </div>
       ) : transactions === null && !error ? (
-        <div className="flex items-center gap-2 rounded-lg border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
-          <SpinnerGap className="size-4 animate-spin" /> {t("billing.loading")}
+        <div className="flex items-center gap-2 rounded-md border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin shrink-0" aria-hidden /> {t("billing.loading")}
         </div>
       ) : error ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
         </div>
       ) : transactionRows.length === 0 ? (
-        <div className="rounded-lg border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
-          {t("billing.empty")}
+        <div className="flex flex-col items-center gap-3 py-12 text-center">
+          <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+            <CreditCard className="size-6 text-muted-foreground" aria-hidden />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">{t("billing.empty")}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t("billing.subtitle")}</p>
+          </div>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border-subtle">
+        <div className="overflow-hidden rounded-md border border-border-subtle">
           <div className="divide-y divide-border-subtle md:hidden">
             {transactionRows.map((tx) => (
               <div key={tx.id} className="space-y-3 p-4">
@@ -1031,7 +1026,7 @@ export function BillingSection() {
                       {new Date(tx.created_at).toLocaleString(intlLocale())}
                     </div>
                   </div>
-                  <span className="rounded-full border border-border-subtle bg-muted/40 px-2.5 py-1 text-[11px] text-muted-foreground">
+                  <span className="rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
                     {tx.status}
                   </span>
                 </div>
@@ -1226,7 +1221,7 @@ function AccountSettingsSection() {
   return (
     <div className="space-y-4">
       <LanguageSettingsCard />
-      <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+      <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-base font-medium text-foreground">
@@ -1239,7 +1234,7 @@ function AccountSettingsSection() {
         </div>
 
         <div className="mt-4 rounded-md border border-border-subtle bg-background p-3">
-          <div className="text-[12px] font-medium text-muted-foreground">
+          <div className="text-xs font-medium text-muted-foreground">
             {t("settings.appearance.themeLabel")}
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -1266,7 +1261,7 @@ function AccountSettingsSection() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+      <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
         <div className="min-w-0">
           <h2 className="text-base font-medium text-foreground">
             {t("settings.session.title")}
@@ -1281,7 +1276,7 @@ function AccountSettingsSection() {
             <div className="text-sm font-medium text-foreground">
               {t("settings.session.signOutTitle")}
             </div>
-            <div className="mt-1 text-[13px] leading-5 text-muted-foreground">
+            <div className="mt-1 text-sm leading-relaxed text-muted-foreground">
               {t("settings.session.signOutDescription")}
             </div>
           </div>
@@ -1323,14 +1318,14 @@ export default function Account() {
       to: "/account/settings",
       title: t("nav.settings.title"),
       description: t("nav.settings.description"),
-      icon: <Gear className="size-4" weight="duotone" />,
+      icon: <Settings className="size-4 shrink-0" aria-hidden />,
     },
     {
       to: "/account/profile",
       end: false,
       title: t("nav.profile.title"),
       description: t("nav.profile.description"),
-      icon: <UserCircle className="size-4" weight="duotone" />,
+      icon: <UserCircle className="size-4 shrink-0" aria-hidden />,
     },
     ...(profile?.role === "instructor"
       ? [
@@ -1338,7 +1333,7 @@ export default function Account() {
             to: "/account/instructor",
             title: t("nav.instructor.title"),
             description: t("nav.instructor.description"),
-            icon: <GraduationCap className="size-4" weight="duotone" />,
+            icon: <GraduationCap className="size-4 shrink-0" aria-hidden />,
           },
         ]
       : []),
@@ -1346,13 +1341,13 @@ export default function Account() {
       to: "/account/cv",
       title: t("nav.cv.title"),
       description: t("nav.cv.description"),
-      icon: <IdentificationCard className="size-4" weight="duotone" />,
+      icon: <IdCard className="size-4 shrink-0" aria-hidden />,
     },
     {
       to: "/account/billing",
       title: t("nav.billing.title"),
       description: t("nav.billing.description"),
-      icon: <CreditCard className="size-4" weight="duotone" />,
+      icon: <CreditCard className="size-4 shrink-0" aria-hidden />,
     },
   ];
 
@@ -1372,38 +1367,38 @@ export default function Account() {
   // Layout cho khu vực account, nội dung từng tab được render qua nested routes (Outlet)
   return (
     <div className="container-app py-6 sm:py-8">
-      <section className="mb-6 rounded-lg border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+      <section className="mb-6 rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-5">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <h1 className="mt-2 text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
               {accountRoleLabel}
             </h1>
-            <p className="mt-1.5 max-w-2xl text-[15px] text-muted-foreground">
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               {t("header.subtitle")}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-md border border-border-subtle bg-background px-4 py-3 sm:col-span-1">
-              <p className="text-[12px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {t("header.summary.profileLabel")}
               </p>
-              <p className="mt-1 line-clamp-1 text-[15px] font-medium text-foreground">
+              <p className="mt-1 line-clamp-1 text-sm font-medium text-foreground">
                 {profile?.full_name || t("header.summary.missingDisplayName")}
               </p>
             </div>
             <div className="rounded-md border border-border-subtle bg-background px-4 py-3">
-              <p className="text-[12px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {t("header.summary.roleLabel")}
               </p>
-              <p className="mt-1 line-clamp-1 text-[15px] font-medium text-foreground">
+              <p className="mt-1 line-clamp-1 text-sm font-medium text-foreground">
                 {profile?.role || "student"}
               </p>
             </div>
             <div className="rounded-md border border-border-subtle bg-background px-4 py-3">
-              <p className="text-[12px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {t("header.summary.statusLabel")}
               </p>
-              <p className="mt-1 text-[15px] font-medium text-foreground">
+              <p className="mt-1 text-sm font-medium text-foreground">
                 Sẵn sàng học và theo dõi tiến độ
               </p>
             </div>
@@ -1439,7 +1434,7 @@ export default function Account() {
             </div>
           </div>
 
-          <div className="hidden rounded-2xl border border-border-subtle bg-card p-2 shadow-card lg:block">
+          <div className="hidden rounded-md border border-border-subtle bg-card p-2 shadow-card lg:block">
             <div className="grid gap-2">
               {navItems.map((item) => (
                 <NavLink
@@ -1448,7 +1443,7 @@ export default function Account() {
                   end={"end" in item ? item.end : undefined}
                   className={({ isActive }) =>
                     cn(
-                      "rounded-xl px-3 py-3 text-left transition",
+                      "rounded-md px-3 py-3 text-left transition-colors duration-150",
                       isActive
                         ? "bg-primary-container text-on-primary-container shadow-card"
                         : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
@@ -1471,14 +1466,14 @@ export default function Account() {
         </div>
 
         <div className="flex w-full min-w-0 flex-col gap-4">
-          <section className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card lg:hidden">
+          <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card lg:hidden">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 shrink-0 text-primary">{activeNavItem.icon}</div>
               <div className="min-w-0">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Mục đang xem
                 </p>
-                <h2 className="mt-1 text-base font-medium text-foreground">
+                <h2 className="mt-1 text-lg font-semibold text-foreground">
                   {activeNavItem.title}
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">

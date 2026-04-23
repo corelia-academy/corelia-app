@@ -1,5 +1,15 @@
 import { NavLink, useLocation, useNavigate } from "react-router";
 import {
+  BookOpen,
+  CalendarDays,
+  GraduationCap,
+  Home,
+  LogIn,
+  Medal,
+  Settings,
+  Trophy,
+} from "lucide-react";
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -14,16 +24,6 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  BookOpen,
-  CalendarDots,
-  Gear,
-  GraduationCap,
-  House,
-  Medal,
-  SignIn,
-  Trophy,
-} from "@phosphor-icons/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/stores/authStore";
@@ -33,9 +33,9 @@ import { getRoleLabel } from "@/types/database";
 import { useTranslation } from "react-i18next";
 
 const primaryNav = [
-  { labelKey: "nav.home" as const, href: "/", icon: House, end: true },
+  { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
   { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
-  { labelKey: "nav.cohorts" as const, href: "/cohorts", icon: CalendarDots },
+  { labelKey: "nav.cohorts" as const, href: "/cohorts", icon: CalendarDays },
   { labelKey: "nav.contests" as const, href: "/contests", icon: Trophy },
 ] as const;
 
@@ -96,7 +96,7 @@ export default function AppSidebar() {
                               end={"end" in item ? item.end : undefined}
                               className="flex w-full items-center gap-2"
                             >
-                              <Icon className="size-4" weight="duotone" />
+                              <Icon className="size-5 shrink-0" aria-hidden />
                               <span>{t(item.labelKey)}</span>
                             </NavLink>
                           }
@@ -117,7 +117,7 @@ export default function AppSidebar() {
                         to="/achievements"
                         className="flex w-full items-center gap-2"
                       >
-                        <Medal className="size-4" weight="duotone" />
+                        <Medal className="size-5 shrink-0" aria-hidden />
                         <span>{t("nav.achievements")}</span>
                       </NavLink>
                     }
@@ -144,7 +144,7 @@ export default function AppSidebar() {
                         to="/instructor/courses"
                         className="flex w-full items-center gap-2"
                       >
-                        <GraduationCap className="size-4" weight="duotone" />
+                        <GraduationCap className="size-5 shrink-0" aria-hidden />
                         <span>Giảng dạy</span>
                       </NavLink>
                     }
@@ -162,7 +162,7 @@ export default function AppSidebar() {
                         to="/admin"
                         className="flex w-full items-center gap-2"
                       >
-                        <Gear className="size-4" weight="duotone" />
+                        <Settings className="size-5 shrink-0" aria-hidden />
                         <span>{t("nav.admin")}</span>
                       </NavLink>
                     }
@@ -189,7 +189,7 @@ export default function AppSidebar() {
               <div className="truncate text-xs font-medium text-sidebar-foreground">
                 {displayName}
               </div>
-              <div className="truncate text-[11px] text-sidebar-foreground/70">
+              <div className="truncate text-xs text-sidebar-foreground/70">
                 {profile?.role ? getRoleLabel(profile.role) : email}
               </div>
             </div>
@@ -201,7 +201,7 @@ export default function AppSidebar() {
             className="w-full rounded-md group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:px-0"
             size="sm"
           >
-            <SignIn className="size-4" weight="duotone" />
+            <LogIn className="size-4 shrink-0" aria-hidden />
             <span className="group-data-[collapsible=icon]:hidden">
               {t("tabs.signIn")}
             </span>
@@ -213,4 +213,3 @@ export default function AppSidebar() {
     </Sidebar>
   );
 }
-

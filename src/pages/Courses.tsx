@@ -1,14 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
-import {
-  BookOpen,
-  Clock,
-  MagnifyingGlass,
-  SealCheck,
-  Spinner,
-} from "@phosphor-icons/react";
+import { BadgeCheck, BookOpen, Clock, Search } from "lucide-react";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -228,11 +223,15 @@ export default function Courses() {
   if (loading) {
     return (
       <div className="container-app py-6 sm:py-8">
-        <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-lg border border-border-subtle bg-card p-8 text-center shadow-card">
-          <Spinner className="size-8 animate-spin text-muted-foreground" />
-          <p className="mt-4 text-[15px] text-muted-foreground">
-            {t("catalog.loading")}
-          </p>
+        <div className="mb-4 space-y-2">
+          <Skeleton className="h-8 w-56 rounded-md" />
+          <Skeleton className="h-4 w-72 max-w-full rounded" />
+        </div>
+        <Skeleton className="h-40 w-full rounded-md border border-border-subtle" />
+        <div className="mt-5 grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-64 w-full rounded-md" />
+          ))}
         </div>
       </div>
     );
@@ -241,11 +240,11 @@ export default function Courses() {
   if (error) {
     return (
       <div className="container-app py-6 sm:py-8">
-        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-5 shadow-card">
-          <p className="text-[15px] font-medium text-destructive">
+        <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5 shadow-card">
+          <p className="text-sm font-medium text-destructive">
             {t("catalog.loadErrorTitle")}
           </p>
-          <p className="mt-1.5 text-sm text-destructive/90">{error}</p>
+          <p className="mt-2 text-sm leading-relaxed text-destructive/90">{error}</p>
           <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
         </div>
       </div>
@@ -256,7 +255,7 @@ export default function Courses() {
     <div className="container-app py-6 sm:py-8">
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-xl font-medium tracking-tight text-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {t("catalog.title")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -278,10 +277,10 @@ export default function Courses() {
         ) : null}
       </div>
 
-      <section className="rounded-lg border border-border-subtle bg-card p-3 shadow-card sm:p-4">
+      <section className="rounded-md border border-border-subtle bg-card p-3 shadow-card sm:p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-1 items-center gap-2 rounded-md border border-border-subtle bg-background px-3 py-2">
-            <MagnifyingGlass className="size-4 text-muted-foreground" />
+            <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -347,14 +346,27 @@ export default function Courses() {
       </section>
 
         {filteredOnlineCourses.length === 0 ? (
-          <div className="mt-5 rounded-lg border border-border-subtle bg-card p-10 text-center shadow-card">
-            <BookOpen className="mx-auto size-12 text-muted-foreground" />
-            <p className="mt-4 text-[15px] font-medium text-foreground">
-              {t("catalog.emptyTitle")}
-            </p>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              {t("catalog.emptyDescription")}
-            </p>
+          <div className="mt-5 flex flex-col items-center gap-3 rounded-md border border-border-subtle bg-card py-16 text-center shadow-card">
+            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+              <BookOpen className="size-6 text-muted-foreground" aria-hidden />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {t("catalog.emptyTitle")}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {t("catalog.emptyDescription")}
+              </p>
+            </div>
+            {hasActiveFilters ? (
+              <Button type="button" size="sm" variant="outline" onClick={resetFilters}>
+                {t("catalog.clearFilters")}
+              </Button>
+            ) : (
+              <Button render={<Link to="/" />} nativeButton={false} size="sm" variant="outline">
+                {t("catalog.backHome", { defaultValue: "Về trang chủ" })}
+              </Button>
+            )}
           </div>
         ) : (
           <div className="mt-5 grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -362,33 +374,33 @@ export default function Courses() {
               <Link
                 key={course.id}
                 to={`/courses/${course.slug || course.id}`}
-                className="group overflow-hidden rounded-lg border border-border-subtle bg-card text-card-foreground shadow-card transition-colors hover:border-border hover:bg-muted/30"
+                className="group cursor-pointer overflow-hidden rounded-md border border-border-subtle bg-card text-card-foreground shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
               >
                 <div className="relative aspect-video overflow-hidden bg-muted/50">
                   <img
                     src={course.thumbnail_url}
                     alt={course.title}
-                    className="size-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                    className="size-full object-cover"
                   />
                 </div>
                 <div className="p-3">
-                  <div className="line-clamp-2 text-[13px] font-medium leading-5 text-foreground">
+                  <div className="line-clamp-2 text-sm font-medium leading-relaxed text-foreground">
                     {course.title}
                   </div>
-                  <div className="mt-1 line-clamp-1 text-[12px] text-muted-foreground">
+                  <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">
                     {course.instructor_name}
                   </div>
 
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-[11px] text-muted-foreground">
-                      <Clock className="size-3.5" />
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                      <Clock className="size-3 shrink-0" aria-hidden />
                       {formatDuration(Number(course.total_duration_seconds) || 0)}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-[11px] text-muted-foreground">
-                      <SealCheck className="size-3.5" />
+                    <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                      <BadgeCheck className="size-3 shrink-0" aria-hidden />
                       {getCourseAccessModelLabel(course.access_model)}
                     </span>
-                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-[11px] text-muted-foreground">
+                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
                       {getCourseLevelLabel(course.level)}
                     </span>
                   </div>

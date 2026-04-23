@@ -10,14 +10,14 @@ import { cn } from "@/lib/utils";
 import { intlLocale } from "@/lib/intl";
 import { toast } from "sonner";
 import {
-  Bank,
   CreditCard,
   FileText,
-  Gear,
+  Landmark,
   Receipt,
+  Settings,
   ShieldCheck,
   UserCircle,
-} from "@phosphor-icons/react";
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 type InstructorOrigin = NonNullable<Profile["instructor_origin"]>;
@@ -52,7 +52,7 @@ function SectionButton({
 }: {
   active: boolean;
   disabled?: boolean;
-  icon: React.ComponentType<{ className?: string; weight?: "duotone" }>;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   onClick: () => void;
 }) {
@@ -64,14 +64,14 @@ function SectionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
+        "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
         active
           ? "bg-sidebar-accent text-sidebar-accent-foreground"
           : "text-muted-foreground hover:bg-muted hover:text-foreground",
         disabled && "cursor-not-allowed opacity-50 hover:bg-transparent",
       )}
     >
-      <Icon className="size-4 shrink-0" weight="duotone" />
+      <Icon className="size-4 shrink-0" aria-hidden />
       {label}
     </button>
   );
@@ -449,7 +449,7 @@ export default function AdminInstructorDetail() {
       value: bankForm.account_number.trim()
         ? t("instructorDetailPage.summary.ready")
         : t("instructorDetailPage.summary.notAvailable"),
-      icon: Bank,
+      icon: Landmark,
     },
   ];
 
@@ -477,7 +477,7 @@ export default function AdminInstructorDetail() {
                 </div>
               )}
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   {t("instructorDetailPage.hero.eyebrow")}
                 </p>
                 <h1 className="mt-2 truncate text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
@@ -486,22 +486,22 @@ export default function AdminInstructorDetail() {
                 <p className="mt-1 text-sm text-muted-foreground">
                   UID: <span className="font-mono">{instructor.id}</span>
                 </p>
-                <p className="mt-2 max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
+                <p className="mt-2 max-w-3xl text-sm text-muted-foreground sm:text-sm">
                   {t("instructorDetailPage.hero.description")}
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
                 {t("instructorDetailPage.hero.rolePrefix", { role: editForm.role })}
               </span>
-              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
                 {isExternal
                   ? t("instructorDetailPage.hero.partnerInstructor")
                   : t("instructorDetailPage.hero.coreliaInstructor")}
               </span>
               {editForm.instructor_organization ? (
-                <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+                <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
                   {editForm.instructor_organization}
                 </span>
               ) : null}
@@ -526,7 +526,7 @@ export default function AdminInstructorDetail() {
                       </p>
                     </div>
                     <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                      <Icon className="size-5" weight="duotone" />
+                      <Icon className="size-5" aria-hidden />
                     </div>
                   </div>
                 </div>
@@ -537,7 +537,7 @@ export default function AdminInstructorDetail() {
       </div>
 
       {error && (
-        <div className="mb-4 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-[13px] text-destructive">
+        <div className="mb-4 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -545,19 +545,19 @@ export default function AdminInstructorDetail() {
       <div className="flex flex-col gap-6 xl:flex-row">
         <nav className="h-fit shrink-0 rounded-2xl border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24 xl:w-72">
           <div className="mb-3 px-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               {t("instructorDetailPage.nav.title")}
             </p>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               {t("instructorDetailPage.nav.subtitle")}
             </p>
           </div>
 
-          <ul className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1">
+          <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
             <li>
               <SectionButton
                 active={activeSection === "profile"}
-                icon={Gear}
+                icon={Settings}
                 label={t("instructorDetailPage.sections.profile")}
                 onClick={() => setSection("profile")}
               />
@@ -597,12 +597,12 @@ export default function AdminInstructorDetail() {
           </ul>
 
           <div className="mt-4 rounded-2xl border border-border-subtle bg-muted/25 p-4">
-            <p className="text-[12px] font-medium text-foreground">
+            <p className="text-xs font-medium text-foreground">
               {isExternal
                 ? t("instructorDetailPage.partnerMode.titleOn")
                 : t("instructorDetailPage.partnerMode.titleOff")}
             </p>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               {isExternal
                 ? t("instructorDetailPage.partnerMode.descriptionOn")
                 : t("instructorDetailPage.partnerMode.descriptionOff")}
@@ -622,11 +622,8 @@ export default function AdminInstructorDetail() {
                     {t("instructorDetailPage.profile.description")}
                   </p>
                 </div>
-                <div className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
-                  <ShieldCheck
-                    className="mr-1.5 size-4 text-primary"
-                    weight="duotone"
-                  />
+                <div className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+                  <ShieldCheck className="mr-2 size-4 text-primary" aria-hidden />
                   {t("instructorDetailPage.profile.completionLabel", {
                     percent: profileCompletionPercent,
                   })}
@@ -634,7 +631,7 @@ export default function AdminInstructorDetail() {
               </div>
 
               <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                <div className="grid gap-1.5">
+                <div className="grid gap-2">
                   <label className="text-sm font-medium">
                     {t("instructorDetailPage.profile.fields.role")}
                   </label>
@@ -662,7 +659,7 @@ export default function AdminInstructorDetail() {
                   </select>
                 </div>
 
-                <div className="grid gap-1.5">
+                <div className="grid gap-2">
                   <label className="text-sm font-medium">
                     {t("instructorDetailPage.profile.fields.origin")}
                   </label>
@@ -687,7 +684,7 @@ export default function AdminInstructorDetail() {
                   </select>
                 </div>
 
-                <div className="grid gap-1.5">
+                <div className="grid gap-2">
                   <label className="text-sm font-medium">
                     {t("instructorDetailPage.profile.fields.fullName")}
                   </label>
@@ -701,7 +698,7 @@ export default function AdminInstructorDetail() {
                   />
                 </div>
 
-                <div className="grid gap-1.5">
+                <div className="grid gap-2">
                   <label className="text-sm font-medium">Email</label>
                   <Input
                     value={editForm.email}
@@ -713,7 +710,7 @@ export default function AdminInstructorDetail() {
                   />
                 </div>
 
-                <div className="grid gap-1.5">
+                <div className="grid gap-2">
                   <label className="text-sm font-medium">
                     {t("instructorDetailPage.profile.fields.phone")}
                   </label>
@@ -727,7 +724,7 @@ export default function AdminInstructorDetail() {
                   />
                 </div>
 
-                <div className="grid gap-1.5">
+                <div className="grid gap-2">
                   <label className="text-sm font-medium">
                     {t("instructorDetailPage.profile.fields.organization")}
                   </label>
@@ -746,7 +743,7 @@ export default function AdminInstructorDetail() {
                   />
                 </div>
 
-                <div className="grid gap-1.5">
+                <div className="grid gap-2">
                   <label className="text-sm font-medium">Headline</label>
                   <Input
                     value={editForm.instructor_headline}
@@ -760,7 +757,7 @@ export default function AdminInstructorDetail() {
                   />
                 </div>
 
-                <div className="grid gap-1.5">
+                <div className="grid gap-2">
                   <label className="text-sm font-medium">Website / LinkedIn</label>
                   <Input
                     value={editForm.instructor_website}
@@ -774,7 +771,7 @@ export default function AdminInstructorDetail() {
                   />
                 </div>
 
-                <div className="grid gap-1.5 lg:col-span-2">
+                <div className="grid gap-2 lg:col-span-2">
                   <label className="text-sm font-medium">Bio</label>
                   <textarea
                     value={editForm.instructor_bio}
@@ -820,13 +817,13 @@ export default function AdminInstructorDetail() {
                         {t("instructorDetailPage.contracts.description")}
                       </p>
                     </div>
-                    <span className="rounded-full border border-border-subtle bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
+                    <span className="rounded-full border border-border-subtle bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
                       {t("instructorDetailPage.contracts.countLabel", { count: contractDocs.length })}
                     </span>
                   </div>
 
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    <div className="grid gap-1.5">
+                    <div className="grid gap-2">
                       <label className="text-sm font-medium">
                         {t("instructorDetailPage.contracts.noteLabel")}
                       </label>
@@ -836,7 +833,7 @@ export default function AdminInstructorDetail() {
                         placeholder={t("instructorDetailPage.contracts.notePlaceholder")}
                       />
                     </div>
-                    <div className="grid gap-1.5">
+                    <div className="grid gap-2">
                       <label className="text-sm font-medium">
                         {t("instructorDetailPage.contracts.uploadLabel")}
                       </label>
@@ -886,7 +883,7 @@ export default function AdminInstructorDetail() {
                         {t("instructorDetailPage.invoices.description")}
                       </p>
                     </div>
-                    <span className="rounded-full border border-border-subtle bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
+                    <span className="rounded-full border border-border-subtle bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
                       {t("instructorDetailPage.invoices.countLabel", {
                         count: invoiceDocs.length,
                       })}
@@ -894,7 +891,7 @@ export default function AdminInstructorDetail() {
                   </div>
 
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                    <div className="grid gap-1.5">
+                    <div className="grid gap-2">
                       <label className="text-sm font-medium">
                         {t("instructorDetailPage.invoices.invoiceMonthLabel")}
                       </label>
@@ -904,7 +901,7 @@ export default function AdminInstructorDetail() {
                         onChange={(e) => setInvoiceMonthDraft(e.target.value)}
                       />
                     </div>
-                    <div className="grid gap-1.5 sm:col-span-2">
+                    <div className="grid gap-2 sm:col-span-2">
                       <label className="text-sm font-medium">
                         {t("instructorDetailPage.invoices.noteLabel")}
                       </label>
@@ -914,7 +911,7 @@ export default function AdminInstructorDetail() {
                         placeholder={t("instructorDetailPage.invoices.notePlaceholder")}
                       />
                     </div>
-                    <div className="grid gap-1.5 sm:col-span-3">
+                    <div className="grid gap-2 sm:col-span-3">
                       <label className="text-sm font-medium">
                         {t("instructorDetailPage.invoices.uploadLabel")}
                       </label>
@@ -976,7 +973,7 @@ export default function AdminInstructorDetail() {
                       <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                         {t("instructorDetailPage.payments.stats.profileType")}
                       </p>
-                      <p className="mt-2 text-[15px] font-medium text-foreground">
+                      <p className="mt-2 text-sm font-medium text-foreground">
                         {isExternal
                           ? t("instructorDetailPage.payments.profileType.external")
                           : t("instructorDetailPage.payments.profileType.internal")}
@@ -986,7 +983,7 @@ export default function AdminInstructorDetail() {
                       <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                         {t("instructorDetailPage.payments.stats.bankAccount")}
                       </p>
-                      <p className="mt-2 text-[15px] font-medium text-foreground">
+                      <p className="mt-2 text-sm font-medium text-foreground">
                         {bankForm.account_number.trim() ||
                           t("instructorDetailPage.common.notUpdated")}
                       </p>
@@ -995,14 +992,14 @@ export default function AdminInstructorDetail() {
                       <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                         {t("instructorDetailPage.payments.stats.accountHolder")}
                       </p>
-                      <p className="mt-2 text-[15px] font-medium text-foreground">
+                      <p className="mt-2 text-sm font-medium text-foreground">
                         {bankForm.account_holder.trim() ||
                           t("instructorDetailPage.common.notUpdated")}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-1.5">
+                  <div className="mt-5 grid gap-2">
                     <label className="text-sm font-medium">
                       {t("instructorDetailPage.payments.fields.bankName")}
                     </label>
@@ -1019,7 +1016,7 @@ export default function AdminInstructorDetail() {
                   </div>
 
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    <div className="grid gap-1.5">
+                    <div className="grid gap-2">
                       <label className="text-sm font-medium">
                         {t("instructorDetailPage.payments.fields.accountNumber")}
                       </label>
@@ -1034,7 +1031,7 @@ export default function AdminInstructorDetail() {
                         placeholder={t("instructorDetailPage.payments.fields.accountNumberPlaceholder")}
                       />
                     </div>
-                    <div className="grid gap-1.5">
+                    <div className="grid gap-2">
                       <label className="text-sm font-medium">
                         {t("instructorDetailPage.payments.fields.accountHolder")}
                       </label>
@@ -1051,7 +1048,7 @@ export default function AdminInstructorDetail() {
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-1.5">
+                  <div className="mt-4 grid gap-2">
                     <label className="text-sm font-medium">
                       {t("instructorDetailPage.payments.fields.transferNote")}
                     </label>
@@ -1067,7 +1064,7 @@ export default function AdminInstructorDetail() {
                     />
                   </div>
 
-                  <div className="mt-4 grid gap-1.5">
+                  <div className="mt-4 grid gap-2">
                     <label className="text-sm font-medium">
                       {t("instructorDetailPage.payments.fields.extraNotes")}
                     </label>

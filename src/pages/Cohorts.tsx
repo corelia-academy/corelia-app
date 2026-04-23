@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { GraduationCap } from "lucide-react";
 import { listOfflineCohorts, listOfflineCourses } from "@/lib/offline";
 import type { OfflineCohort, OfflineCourse } from "@/types/offline";
 import { useTranslation } from "react-i18next";
@@ -66,7 +68,7 @@ export default function Cohorts() {
             <h1 className="mt-2 text-3xl font-normal tracking-tight text-foreground">
               {t("catalog.heroTitle")}
             </h1>
-            <p className="mt-2 max-w-3xl text-[15px] leading-7 text-muted-foreground">
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">
               {t("catalog.heroDescription")}
             </p>
           </div>
@@ -101,8 +103,19 @@ export default function Cohorts() {
 
       {loading ? (
         <Card className="mt-6">
-          <CardContent className="p-8 text-center text-muted-foreground">
-            {t("catalog.loading")}
+          <CardContent className="p-8">
+            <div className="space-y-4">
+              {[0, 1, 2].map((idx) => (
+                <div key={idx} className="rounded-2xl border border-border-subtle bg-background p-4">
+                  <Skeleton className="h-4 w-40 rounded-full" />
+                  <Skeleton className="mt-3 h-4 w-3/4 rounded-full" />
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <Skeleton className="h-20 rounded-2xl" />
+                    <Skeleton className="h-20 rounded-2xl" />
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       ) : error ? (
@@ -112,12 +125,18 @@ export default function Cohorts() {
       ) : items.length === 0 ? (
         <Card className="mt-6">
           <CardContent className="p-8 text-center">
-            <div className="text-[15px] font-medium text-foreground">
-              {t("catalog.emptyTitle")}
+            <div className="flex flex-col items-center gap-3 py-8 text-center">
+              <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                <GraduationCap className="size-6 text-muted-foreground" aria-hidden />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">{t("catalog.emptyTitle")}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t("catalog.emptyDescription")}</p>
+              </div>
+              <Button size="sm" variant="outline" render={<NavLink to="/courses" />} nativeButton={false}>
+                {t("catalog.viewCourse")}
+              </Button>
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t("catalog.emptyDescription")}
-            </p>
           </CardContent>
         </Card>
       ) : (
@@ -133,19 +152,19 @@ export default function Cohorts() {
             >
               <div className="border-b border-border-subtle bg-muted/25 px-5 py-4">
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-background/90 px-2.5 py-1 text-[11px] font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-background/90 px-3 py-1 text-xs font-medium text-foreground">
                     {course.published
                       ? t("catalog.course.statusOpen")
                       : t("catalog.course.statusDraft")}
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-background/90 px-2.5 py-1 text-[11px] font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-background/90 px-3 py-1 text-xs font-medium text-foreground">
                     {course.level}
                   </span>
                 </div>
                 <h2 className="mt-3 text-xl font-medium tracking-tight text-foreground">
                   {course.title}
                 </h2>
-                <p className="mt-1.5 text-[14px] leading-6 text-muted-foreground">
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   {course.tagline}
                 </p>
               </div>
@@ -172,10 +191,10 @@ export default function Cohorts() {
 
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div className="rounded-2xl border border-border-subtle bg-background p-3">
-                    <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("catalog.metrics.sessions")}
                     </div>
-                    <div className="mt-1.5 text-lg font-semibold text-foreground">
+                    <div className="mt-2 text-lg font-semibold text-foreground">
                       {courseCohorts.reduce(
                         (sum, item) => sum + item.metrics_snapshot.sessions_total,
                         0,
@@ -183,18 +202,18 @@ export default function Cohorts() {
                     </div>
                   </div>
                   <div className="rounded-2xl border border-border-subtle bg-background p-3">
-                    <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("catalog.metrics.cohorts")}
                     </div>
-                    <div className="mt-1.5 text-lg font-semibold text-foreground">
+                    <div className="mt-2 text-lg font-semibold text-foreground">
                       {course.metrics_snapshot.cohorts_total || courseCohorts.length}
                     </div>
                   </div>
                   <div className="rounded-2xl border border-border-subtle bg-background p-3">
-                    <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("catalog.metrics.recordings")}
                     </div>
-                    <div className="mt-1.5 text-lg font-semibold text-foreground">
+                    <div className="mt-2 text-lg font-semibold text-foreground">
                       {course.metrics_snapshot.published_recordings}
                     </div>
                   </div>

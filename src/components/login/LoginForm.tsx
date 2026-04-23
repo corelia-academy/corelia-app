@@ -29,7 +29,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { WarningCircle } from "@phosphor-icons/react";
+import { AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 type AuthMode = "sign_in" | "sign_up";
@@ -279,7 +279,7 @@ export function LoginForm({
                 <h1 className="text-2xl font-normal tracking-tight text-foreground">
                   {title}
                 </h1>
-                <p className="text-balance text-[15px] text-muted-foreground">
+                <p className="text-balance text-sm text-muted-foreground">
                   {subtitle}
                 </p>
               </div>
@@ -325,7 +325,7 @@ export function LoginForm({
                       />
                     </Field>
                     {errorInfo ? (
-                      <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-[13px] text-destructive">
+                      <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                         {errorInfo.message}
                       </div>
                     ) : null}
@@ -365,12 +365,12 @@ export function LoginForm({
                     />
                   </Field>
                   {successMessage ? (
-                    <div className="rounded-lg border border-success/25 bg-success/10 px-3 py-2 text-[13px] text-success">
+                    <div className="rounded-md border border-success/25 bg-success/10 px-3 py-2 text-sm text-success">
                       {successMessage}
                     </div>
                   ) : null}
                   {errorInfo ? (
-                    <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-[13px] text-destructive">
+                    <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                       {errorInfo.message}
                     </div>
                   ) : null}
@@ -379,7 +379,7 @@ export function LoginForm({
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-full rounded-lg"
+                        className="w-full rounded-md"
                         onClick={() => {
                           setShowForgotPassword(false);
                           setSuccessMessage(null);
@@ -391,7 +391,7 @@ export function LoginForm({
                       <Button
                         type="submit"
                         disabled={loading}
-                        className="w-full rounded-lg"
+                        className="w-full rounded-md"
                       >
                         {loading
                           ? t("login.forgotPassword.submitting")
@@ -455,7 +455,7 @@ export function LoginForm({
                         <button
                           type="button"
                           onClick={() => setShowForgotPassword(true)}
-                          className="ml-auto text-[13px] text-muted-foreground underline-offset-2 hover:underline"
+                          className="ml-auto text-sm text-muted-foreground underline-offset-2 hover:underline"
                         >
                           {t("login.actions.forgotPassword")}
                         </button>
@@ -496,21 +496,18 @@ export function LoginForm({
                   {errorInfo ? (
                     isAccountExistsError ? (
                       <div
-                        className="flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-700/50 dark:bg-amber-950/30"
+                        className="flex gap-3 rounded-md border border-warning/20 bg-warning/10 p-4"
                         role="alert"
                       >
-                        <WarningCircle
-                          weight="fill"
-                          className="size-5 shrink-0 text-amber-600 dark:text-amber-400"
-                        />
+                        <AlertCircle className="size-5 shrink-0 text-warning" aria-hidden />
                         <div className="min-w-0 space-y-1">
-                          <p className="text-[13px] font-medium text-amber-900 dark:text-amber-100">
+                          <p className="text-sm font-medium text-warning">
                             {t("login.hints.accountExistsTitle")}
                           </p>
-                          <p className="text-[13px] text-amber-800 dark:text-amber-200">
+                          <p className="text-sm text-warning">
                             {errorInfo.message}
                           </p>
-                          <p className="mt-1.5 text-[12px] text-amber-700 dark:text-amber-300">
+                          <p className="mt-1.5 text-xs text-warning">
                             {t("login.hints.accountExistsSuggestionPrefix")}{" "}
                             <strong>{t("login.hints.accountExistsEmailPassword")}</strong>{" "}
                             {t("login.hints.accountExistsSuggestionOrButton")}{" "}
@@ -520,7 +517,7 @@ export function LoginForm({
                         </div>
                       </div>
                     ) : (
-                      <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-[13px] text-destructive">
+                      <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                         {errorInfo.message}
                       </div>
                     )
@@ -530,7 +527,7 @@ export function LoginForm({
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="w-full rounded-lg"
+                      className="w-full rounded-md"
                     >
                       {loading ? t("login.actions.processing") : title}
                     </Button>
@@ -546,7 +543,7 @@ export function LoginForm({
                       type="button"
                       disabled={loading}
                       onClick={() => handleProvider(googleProvider)}
-                      className="gap-2 rounded-lg"
+                      className="gap-2 rounded-md"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -565,7 +562,7 @@ export function LoginForm({
                       type="button"
                       disabled={loading}
                       onClick={() => handleProvider(githubProvider)}
-                      className="gap-2 rounded-lg"
+                      className="gap-2 rounded-md"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -618,7 +615,7 @@ export function LoginForm({
         </CardContent>
       </Card>
 
-      <FieldDescription className="px-2 text-center text-[12px] text-muted-foreground">
+      <FieldDescription className="px-2 text-center text-xs text-muted-foreground">
         {t("login.terms.prefix")}
         <a
           href="https://corelia.academy/terms"

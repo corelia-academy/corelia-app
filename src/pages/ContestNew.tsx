@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, CalendarBlank, Gavel, ShieldCheck, Trophy } from "@phosphor-icons/react";
+import { ArrowLeft, Calendar, Gavel, ShieldCheck, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -89,7 +89,7 @@ export default function ContestNew() {
           className="-ml-2 text-muted-foreground hover:text-foreground"
           onClick={() => navigate("/instructor/contests")}
         >
-          <ArrowLeft className="size-4" />
+          <ArrowLeft className="size-4" aria-hidden />
           {t("instructorNew.back")}
         </Button>
       </div>
@@ -104,15 +104,15 @@ export default function ContestNew() {
               <h1 className="mt-2 text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
                 {t("instructorNew.hero.title")}
               </h1>
-              <p className="mt-1.5 max-w-3xl text-[15px] text-muted-foreground">
+              <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
                 {t("instructorNew.hero.description")}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
+              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
                 {t("instructorNew.hero.pillMultiParty")}
               </span>
-              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
+              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
                 {t("instructorNew.hero.pillPublicOps")}
               </span>
             </div>
@@ -121,7 +121,7 @@ export default function ContestNew() {
           <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-2xl border border-border-subtle bg-background p-4">
               <div className="flex items-center gap-3">
-                <Trophy className="size-5 text-primary" weight="duotone" />
+                <Trophy className="size-5 text-primary" aria-hidden />
                 <div>
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                     {t("instructorNew.pillCards.publicSurfaceTitle")}
@@ -134,7 +134,7 @@ export default function ContestNew() {
             </div>
             <div className="rounded-2xl border border-border-subtle bg-background p-4">
               <div className="flex items-center gap-3">
-                <ShieldCheck className="size-5 text-primary" weight="duotone" />
+                <ShieldCheck className="size-5 text-primary" aria-hidden />
                 <div>
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                     {t("instructorNew.pillCards.applicationsTitle")}
@@ -147,7 +147,7 @@ export default function ContestNew() {
             </div>
             <div className="rounded-2xl border border-border-subtle bg-background p-4">
               <div className="flex items-center gap-3">
-                <Gavel className="size-5 text-primary" weight="duotone" />
+                <Gavel className="size-5 text-primary" aria-hidden />
                 <div>
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                     {t("instructorNew.pillCards.judgingTitle")}
@@ -160,7 +160,7 @@ export default function ContestNew() {
             </div>
             <div className="rounded-2xl border border-border-subtle bg-background p-4">
               <div className="flex items-center gap-3">
-                <CalendarBlank className="size-5 text-primary" weight="duotone" />
+                <Calendar className="size-5 text-primary" aria-hidden />
                 <div>
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                     {t("instructorNew.pillCards.timelineTitle")}
@@ -355,7 +355,7 @@ export default function ContestNew() {
                     className="rounded-2xl border border-border-subtle bg-background p-4"
                   >
                     <div className="text-sm font-medium text-foreground">{item.title}</div>
-                    <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
+                    <div className="mt-2 text-sm leading-6 text-muted-foreground">
                       {item.description}
                     </div>
                   </div>
@@ -369,7 +369,7 @@ export default function ContestNew() {
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                 {t("instructorNew.nextSteps.eyebrow")}
               </div>
-              <div className="mt-4 space-y-3 text-[14px] leading-6 text-muted-foreground">
+              <div className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
                 <p>{t("instructorNew.nextSteps.intro")}</p>
                 <p>{t("instructorNew.nextSteps.step1")}</p>
                 <p>{t("instructorNew.nextSteps.step2")}</p>

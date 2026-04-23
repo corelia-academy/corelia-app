@@ -16,16 +16,16 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
+  CalendarDays,
   CreditCard,
   FileText,
-  PlusCircleIcon,
+  GraduationCap,
+  PlusCircle,
   Receipt,
   Trophy,
   UserCircle,
-  VideoIcon,
-  CalendarDots,
-  GraduationCap,
-} from "@phosphor-icons/react";
+  Video,
+} from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -52,16 +52,16 @@ function InstructorSidebar() {
   return (
     <Sidebar collapsible="icon" variant="sidebar">
       <div className="px-3 pb-2 pt-3 transition-[padding] duration-200 ease-linear group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:pb-1">
-        <div className="rounded-2xl border border-sidebar-border/70 bg-sidebar-accent/45 p-3.5 transition-[padding,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:p-1">
+        <div className="rounded-2xl border border-sidebar-border/70 bg-sidebar-accent/45 p-4 transition-[padding,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:p-1">
           <div className="flex items-start gap-3 transition-[gap] duration-200 ease-linear group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm transition-[width,height,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:size-8">
-              <GraduationCap className="size-5" weight="fill" />
+              <GraduationCap className="size-5" aria-hidden />
             </div>
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-              <div className="truncate text-[13px] font-semibold leading-tight text-sidebar-foreground">
+              <div className="truncate text-sm font-semibold leading-tight text-sidebar-foreground">
                 {t("sidebar.title")}
               </div>
-              <div className="mt-1 line-clamp-2 text-[12px] leading-5 text-sidebar-foreground/72">
+              <div className="mt-1 line-clamp-2 text-xs leading-5 text-sidebar-foreground/72">
                 {t("sidebar.subtitle")}
               </div>
             </div>
@@ -74,14 +74,14 @@ function InstructorSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent className="flex flex-col gap-2 px-1">
-            <SidebarMenu className="flex flex-col gap-1.5">
+            <SidebarMenu className="flex flex-col gap-2">
               <SidebarMenuItem className="flex items-center gap-2">
                 <NavLink to="/instructor/courses/new" className="flex w-full">
                   <SidebarMenuButton
                     tooltip={t("sidebar.createCourse")}
-                    className="min-w-8 w-full cursor-pointer rounded-xl bg-primary text-[13px] font-medium text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
+                    className="min-w-8 w-full cursor-pointer rounded-xl bg-primary text-sm font-medium text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
                   >
-                    <PlusCircleIcon />
+                    <PlusCircle className="size-4" aria-hidden />
                     <span>{t("sidebar.createCourse")}</span>
                   </SidebarMenuButton>
                 </NavLink>
@@ -101,7 +101,7 @@ function InstructorSidebar() {
                       end
                       className="flex w-full items-center gap-2"
                     >
-                      <VideoIcon className="size-4" weight="duotone" />
+                      <Video className="size-4" aria-hidden />
                       <span>{t("sidebar.courseList")}</span>
                     </NavLink>
                   }
@@ -119,7 +119,7 @@ function InstructorSidebar() {
                         end
                         className="flex w-full items-center gap-2"
                       >
-                        <CalendarDots className="size-4" weight="duotone" />
+                        <CalendarDays className="size-4" aria-hidden />
                         <span>{t("sidebar.offlineClasses")}</span>
                       </NavLink>
                     }
@@ -137,7 +137,7 @@ function InstructorSidebar() {
                       end
                       className="flex w-full items-center gap-2"
                     >
-                      <UserCircle className="size-4" weight="duotone" />
+                      <UserCircle className="size-4" aria-hidden />
                       <span>{t("sidebar.profile")}</span>
                     </NavLink>
                   }
@@ -155,7 +155,7 @@ function InstructorSidebar() {
                         end
                         className="flex w-full items-center gap-2"
                       >
-                        <Trophy className="size-4" weight="duotone" />
+                        <Trophy className="size-4" aria-hidden />
                         <span>{t("sidebar.contests")}</span>
                       </NavLink>
                     }
@@ -175,7 +175,7 @@ function InstructorSidebar() {
                           end
                           className="flex w-full items-center gap-2"
                         >
-                          <FileText className="size-4" weight="duotone" />
+                          <FileText className="size-4" aria-hidden />
                           <span>{t("sidebar.contracts")}</span>
                         </NavLink>
                       }
@@ -192,7 +192,7 @@ function InstructorSidebar() {
                           end
                           className="flex w-full items-center gap-2"
                         >
-                          <Receipt className="size-4" weight="duotone" />
+                          <Receipt className="size-4" aria-hidden />
                           <span>{t("sidebar.invoices")}</span>
                         </NavLink>
                       }
@@ -209,7 +209,7 @@ function InstructorSidebar() {
                           end
                           className="flex w-full items-center gap-2"
                         >
-                          <CreditCard className="size-4" weight="duotone" />
+                          <CreditCard className="size-4" aria-hidden />
                           <span>{t("sidebar.payments")}</span>
                         </NavLink>
                       }
@@ -417,8 +417,8 @@ export default function InstructorLayout() {
             </Breadcrumb>
           </div>
           <div className="px-3 pb-4 md:px-4">
-            <div className="rounded-lg border border-border-subtle bg-card/85 px-4 py-4 shadow-card">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <div className="rounded-md border border-border-subtle bg-card/85 px-4 py-4 shadow-card">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 {translate("layout.hero.eyebrow")}
               </p>
               <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -426,17 +426,17 @@ export default function InstructorLayout() {
                   <h1 className="text-2xl font-normal tracking-tight text-foreground">
                     {shellMeta.title}
                   </h1>
-                  <p className="mt-1.5 max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
+                  <p className="mt-2 max-w-3xl text-sm text-muted-foreground sm:text-sm">
                     {shellMeta.description}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
                     {profile?.instructor_origin === "external"
                       ? translate("layout.badges.externalPartner")
                       : translate("layout.badges.coreliaInstructor")}
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
                     {profile?.role === "admin"
                       ? translate("layout.badges.adminMode")
                       : translate("layout.badges.teachingMode")}

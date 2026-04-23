@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Certificate,
+  Award,
+  AlertTriangle,
   FileText,
-  Gear,
   List,
+  Settings,
   Users,
-  Warning,
-} from "@phosphor-icons/react";
+} from "lucide-react";
 import { createCourse, updateCourse } from "@/lib/courses";
 import { uploadCourseThumbnail } from "@/lib/storage";
 import {
@@ -188,15 +188,15 @@ const InstructorCourseNew = () => {
       <section className="mb-6 rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
-            <p className="max-w-3xl text-[14px] text-muted-foreground sm:text-[15px]">
+            <p className="max-w-3xl text-sm text-muted-foreground sm:text-sm">
               Thiết lập nhanh cấu hình khởi tạo trước khi chuyển sang màn chỉnh sửa chi tiết.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
               Bước 1: Khởi tạo
             </span>
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
               {profile?.instructor_origin === "external"
                 ? t("courseNew.labels.originExternal")
                 : t("courseNew.labels.originCorelia")}
@@ -241,7 +241,7 @@ const InstructorCourseNew = () => {
       </section>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-[13px] text-destructive">
+        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -249,21 +249,21 @@ const InstructorCourseNew = () => {
       <div className="grid gap-6 xl:grid-cols-[260px_1fr]">
         <nav className="h-fit rounded-2xl border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24">
           <div className="mb-3 px-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Lộ trình thiết lập
             </p>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               Sau bước khởi tạo này, bạn sẽ tiếp tục hoàn thiện nội dung và cấu hình nâng cao.
               
             </p>
           </div>
-          <ul className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1">
+          <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
             <li>
               <button
                 type="button"
-                className="flex w-full items-center gap-2 rounded-xl bg-sidebar-accent px-3 py-2.5 text-left text-[13px] font-medium text-sidebar-accent-foreground"
+                className="flex w-full items-center gap-2 rounded-xl bg-sidebar-accent px-3 py-2 text-left text-sm font-medium text-sidebar-accent-foreground"
               >
-                <Gear className="size-4 shrink-0" weight="duotone" />
+                <Settings className="size-4 shrink-0" aria-hidden />
                 Thông tin chung
               </button>
             </li>
@@ -271,9 +271,9 @@ const InstructorCourseNew = () => {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
               >
-                <List className="size-4 shrink-0" weight="duotone" />
+                <List className="size-4 shrink-0" aria-hidden />
                 Nội dung & bài học
               </button>
             </li>
@@ -281,9 +281,9 @@ const InstructorCourseNew = () => {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
               >
-                <FileText className="size-4 shrink-0" weight="duotone" />
+                <FileText className="size-4 shrink-0" aria-hidden />
                 Bài tập cuối khoá
               </button>
             </li>
@@ -291,9 +291,9 @@ const InstructorCourseNew = () => {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
               >
-                <Certificate className="size-4 shrink-0" weight="duotone" />
+                <Award className="size-4 shrink-0" aria-hidden />
                 Chứng nhận
               </button>
             </li>
@@ -301,9 +301,9 @@ const InstructorCourseNew = () => {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
               >
-                <Users className="size-4 shrink-0" weight="duotone" />
+                <Users className="size-4 shrink-0" aria-hidden />
                 Quản lý học viên
               </button>
             </li>
@@ -311,19 +311,19 @@ const InstructorCourseNew = () => {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
               >
-                <Warning className="size-4 shrink-0" weight="duotone" />
+                <AlertTriangle className="size-4 shrink-0" aria-hidden />
                 Xoá khoá học
               </button>
             </li>
           </ul>
 
           <div className="mt-4 rounded-2xl border border-border-subtle bg-muted/25 p-4">
-            <p className="text-[12px] font-medium text-foreground">
+            <p className="text-xs font-medium text-foreground">
               Mẹo khởi tạo nhanh
             </p>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               Tên, slug, ảnh bìa và mô hình giá là 4 trường nên chốt sớm để bước chỉnh sửa sau nhanh hơn.
             </p>
           </div>
@@ -336,12 +336,12 @@ const InstructorCourseNew = () => {
                 <h2 className="text-lg font-medium text-foreground">
                   Thông tin chung
                 </h2>
-                <p className="mt-1.5 text-[15px] text-muted-foreground">
+                <p className="mt-2 text-sm text-muted-foreground">
                   Điền thông tin cơ bản. Sau khi tạo, bạn sẽ được chuyển sang trang
                   chỉnh sửa để thêm chương, bài học và các cấu hình nâng cao.
                 </p>
               </div>
-              <div className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
+              <div className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
                 Bước bắt đầu
               </div>
             </div>
@@ -390,7 +390,7 @@ const InstructorCourseNew = () => {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, description: e.target.value }))
                     }
-                    className="min-h-[100px] w-full rounded-lg border border-input bg-background px-3 py-2 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-[100px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     rows={4}
                     placeholder={t("courseNew.placeholders.description")}
                   />
@@ -436,7 +436,7 @@ const InstructorCourseNew = () => {
                           }))
                         }
                         disabled={!canManageBusinessSettings}
-                        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
                       >
                         {(
                           [
@@ -488,7 +488,7 @@ const InstructorCourseNew = () => {
                         access_model: e.target.value as CourseAccessModel,
                       }))
                     }
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {(
                       [
@@ -558,7 +558,7 @@ const InstructorCourseNew = () => {
                         level: e.target.value as CourseLevel,
                       }))
                     }
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {(
                       [
@@ -587,7 +587,7 @@ const InstructorCourseNew = () => {
                       }
                       className="rounded border-input"
                     />
-                    <span className="text-[13px] font-medium text-foreground">
+                    <span className="text-sm font-medium text-foreground">
                       Đã xuất bản (hiển thị trên trang Khoá học)
                     </span>
                   </label>

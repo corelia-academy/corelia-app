@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  CalendarBlank,
-  Checks,
-  ClockCountdown,
+  Calendar,
+  CheckCheck,
   Eye,
-  EyeSlash,
   PlusCircle,
-  Spinner,
-  Trash,
+  Timer,
+  Loader2,
+  Trash2,
   Trophy,
-  UsersThree,
-} from "@phosphor-icons/react";
+  Users,
+  EyeOff,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -151,7 +151,7 @@ export default function InstructorContests() {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       {error && (
-        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-[13px] text-destructive">
+        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -159,25 +159,25 @@ export default function InstructorContests() {
       <section className="mb-6 rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               {t("instructor.hero.eyebrow")}
             </p>
             <h2 className="mt-2 text-2xl font-normal tracking-tight text-foreground">
               {t("instructor.hero.title")}
             </h2>
-            <p className="mt-1.5 text-[14px] text-muted-foreground sm:text-[15px]">
+            <p className="mt-2 text-sm text-muted-foreground sm:text-sm">
               {t("instructor.hero.description")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
               {t("instructor.hero.pillApplications")}
             </span>
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-[12px] font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
               {t("instructor.hero.pillJudging")}
             </span>
             <Button type="button" onClick={() => navigate("/instructor/contests/new")}>
-              <PlusCircle className="size-4" weight="duotone" />
+              <PlusCircle className="size-4" aria-hidden />
               {t("instructor.hero.create")}
             </Button>
           </div>
@@ -189,17 +189,17 @@ export default function InstructorContests() {
           <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   {t("instructor.featured.eyebrow")}
                 </p>
                 <h3 className="mt-2 text-xl font-normal tracking-tight text-foreground">
                   {featured.title}
                 </h3>
-                <p className="mt-2 max-w-3xl text-[14px] leading-6 text-muted-foreground">
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
                   {featured.tagline}
                 </p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-muted/70 px-3 py-1.5 text-[12px] font-medium text-foreground">
+              <span className="inline-flex items-center rounded-full bg-muted/70 px-3 py-2 text-xs font-medium text-foreground">
                 {statusLabel(featured.status, t)}
               </span>
             </div>
@@ -260,14 +260,14 @@ export default function InstructorContests() {
                 variant="destructive"
                 onClick={() => setContestToDelete(featured)}
               >
-                <Trash className="size-4" weight="duotone" />
+                <Trash2 className="size-4" aria-hidden />
                 {t("instructor.listItem.deleteContest")}
               </Button>
             </div>
           </div>
 
           <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               {t("instructor.workflow.eyebrow")}
             </p>
             <div className="mt-4 space-y-3">
@@ -275,7 +275,7 @@ export default function InstructorContests() {
                 <div className="text-sm font-medium text-foreground">
                   {t("instructor.workflow.applicationsTitle")}
                 </div>
-                <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
+                <div className="mt-2 text-sm leading-6 text-muted-foreground">
                   {t("instructor.workflow.applicationsDescription")}
                 </div>
               </div>
@@ -283,7 +283,7 @@ export default function InstructorContests() {
                 <div className="text-sm font-medium text-foreground">
                   {t("instructor.workflow.judgingTitle")}
                 </div>
-                <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
+                <div className="mt-2 text-sm leading-6 text-muted-foreground">
                   {t("instructor.workflow.judgingDescription")}
                 </div>
               </div>
@@ -291,7 +291,7 @@ export default function InstructorContests() {
                 <div className="text-sm font-medium text-foreground">
                   {t("instructor.workflow.publicTitle")}
                 </div>
-                <div className="mt-2 text-[13px] leading-6 text-muted-foreground">
+                <div className="mt-2 text-sm leading-6 text-muted-foreground">
                   {t("instructor.workflow.publicDescription")}
                 </div>
               </div>
@@ -310,7 +310,7 @@ export default function InstructorContests() {
               <p className="mt-2 text-3xl font-semibold text-foreground">{stats.total}</p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Trophy className="size-5" weight="duotone" />
+              <Trophy className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -323,7 +323,7 @@ export default function InstructorContests() {
               <p className="mt-2 text-3xl font-semibold text-foreground">{stats.draft}</p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Eye className="size-5" weight="duotone" />
+              <Eye className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -338,7 +338,7 @@ export default function InstructorContests() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Checks className="size-5" weight="duotone" />
+              <CheckCheck className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -351,7 +351,7 @@ export default function InstructorContests() {
               <p className="mt-2 text-3xl font-semibold text-foreground">{stats.running}</p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ClockCountdown className="size-5" weight="duotone" />
+              <Timer className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -364,7 +364,7 @@ export default function InstructorContests() {
               <p className="mt-2 text-3xl font-semibold text-foreground">{stats.ended}</p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <CalendarBlank className="size-5" weight="duotone" />
+              <Calendar className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -379,7 +379,7 @@ export default function InstructorContests() {
               </p>
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <UsersThree className="size-5" weight="duotone" />
+              <Users className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -388,7 +388,7 @@ export default function InstructorContests() {
       {items.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-border-subtle bg-card p-10 text-center shadow-card">
           <Trophy className="mx-auto size-12 text-muted-foreground" />
-          <p className="mt-4 text-[15px] text-muted-foreground">
+          <p className="mt-4 text-sm text-muted-foreground">
             {t("instructor.empty.title")}
           </p>
           <Button type="button" className="mt-4" onClick={() => navigate("/instructor/contests/new")}>
@@ -408,33 +408,33 @@ export default function InstructorContests() {
                 onClick={() => navigate(`/instructor/contests/${contest.id}/manage`)}
               >
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full bg-muted/70 px-2.5 py-1 text-[11px] font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full bg-muted/70 px-3 py-1 text-xs font-medium text-foreground">
                     {statusLabel(contest.status, t)}
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
                     {contest.status === "draft" ? (
                       <>
-                        <EyeSlash className="mr-1 size-3.5" weight="duotone" />
+                        <EyeOff className="mr-1 size-3.5" aria-hidden />
                         {t("instructor.listItem.pillPublicDraft")}
                       </>
                     ) : (
                       <>
-                        <Eye className="mr-1 size-3.5" weight="duotone" />
+                        <Eye className="mr-1 size-3.5" aria-hidden />
                         {t("instructor.listItem.pillPublicReady")}
                       </>
                     )}
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
                     {locationLabel(contest.location, t)}
                   </span>
                 </div>
                 <h3 className="mt-4 text-lg font-medium tracking-tight text-foreground">
                   {contest.title}
                 </h3>
-                <p className="mt-2 text-[14px] leading-6 text-muted-foreground">
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   {contest.tagline}
                 </p>
-                <div className="mt-4 grid gap-2 text-[13px] text-muted-foreground">
+                <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
                   <div className="rounded-xl border border-border-subtle bg-background px-3 py-2">
                     {formatDateRange(contest.starts_at, contest.ends_at, t)}
                   </div>
@@ -476,7 +476,7 @@ export default function InstructorContests() {
                   variant="destructive"
                   onClick={() => setContestToDelete(contest)}
                 >
-                  <Trash className="size-4" weight="duotone" />
+                  <Trash2 className="size-4" aria-hidden />
                   {t("instructor.listItem.delete")}
                 </Button>
               </div>
@@ -519,12 +519,12 @@ export default function InstructorContests() {
             >
               {deletingId != null ? (
                 <>
-                  <Spinner className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
                   {t("instructor.deleteDialog.confirmDeleting")}
                 </>
               ) : (
                 <>
-                  <Trash className="size-4" weight="duotone" />
+                  <Trash2 className="size-4" aria-hidden />
                   {t("instructor.listItem.deleteContest")}
                 </>
               )}

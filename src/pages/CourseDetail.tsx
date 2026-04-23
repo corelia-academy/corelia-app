@@ -4,13 +4,13 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
-  CaretDown,
+  ChevronDown,
   Eye,
-  PencilSimple,
-  RocketLaunch,
-  Spinner,
+  Loader2,
+  Pencil,
+  Rocket,
   Trophy,
-} from "@phosphor-icons/react";
+} from "lucide-react";
 import { CoreliaSpotlight } from "@/components/spotlight/CoreliaSpotlight";
 import {
   computeProgressPercent,
@@ -420,7 +420,7 @@ export default function CourseDetail() {
         meta: nextLesson
           ? translate("detail.spotlight.nextLessonMeta", { title: nextLesson.title })
           : translate("detail.spotlight.progressEverywhereMeta"),
-        icon: <RocketLaunch className="size-5" weight="duotone" />,
+        icon: <Rocket className="size-5 shrink-0" aria-hidden />,
         accent: "sky",
       });
     }
@@ -441,7 +441,7 @@ export default function CourseDetail() {
           liveContest.registration_deadline != null
             ? `Hạn đăng ký: ${new Date(liveContest.registration_deadline).toLocaleDateString(intlLocale())}`
             : translate("detail.spotlight.contestMetaNoDeadline"),
-        icon: <Trophy className="size-5" weight="duotone" />,
+        icon: <Trophy className="size-5 shrink-0" aria-hidden />,
         accent: "amber",
       });
     }
@@ -455,7 +455,7 @@ export default function CourseDetail() {
         href: "/courses",
         ctaLabel: translate("detail.spotlight.seeMoreCourses"),
         meta: translate("detail.spotlight.ecosystemMeta"),
-        icon: <BookOpen className="size-5" weight="duotone" />,
+        icon: <BookOpen className="size-5 shrink-0" aria-hidden />,
         accent: "sky",
       });
     }
@@ -466,7 +466,7 @@ export default function CourseDetail() {
   const renderAccessPanel = (className?: string) => (
     <div
       className={cn(
-        "overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card",
+        "overflow-hidden rounded-md border border-border-subtle bg-card shadow-card",
         className,
       )}
     >
@@ -481,31 +481,31 @@ export default function CourseDetail() {
 
         {hasFullCourseAccess ? (
           <>
-            <p className="mb-3 text-[13px] leading-6 text-muted-foreground">
+            <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
               {translate("detail.accessPanel.enterToLearn")}
             </p>
             {isPaidUpfront && paymentAccess?.full_access_granted && !enrolled ? (
-              <div className="mb-4 rounded-md border border-success/25 bg-success/10 p-3 text-[13px] text-success">
+              <div className="mb-4 rounded-md border border-success/25 bg-success/10 p-3 text-sm text-success">
                 {translate("detail.accessPanel.paymentConfirmed")}
               </div>
             ) : null}
             {isPaidUpfront && enrolled && !paymentAccess?.full_access_granted ? (
-              <div className="mb-4 rounded-md border border-success/25 bg-success/10 p-3 text-[13px] text-success">
+              <div className="mb-4 rounded-md border border-success/25 bg-success/10 p-3 text-sm text-success">
                 {translate("detail.accessPanel.keptAccess")}
               </div>
             ) : null}
             <div className="mb-4 rounded-md bg-muted/40 p-3">
-              <div className="flex items-center justify-between gap-3 text-[12px] text-muted-foreground">
+              <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
                 <span>{translate("detail.accessPanel.currentProgress")}</span>
                 <span>{progressPercent}%</span>
               </div>
               <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-background">
                 <div
-                  className="h-full rounded-full bg-success transition-all"
+                  className="h-full rounded-full bg-success"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
-              <p className="mt-2 line-clamp-2 text-[12px] leading-5 text-muted-foreground">
+              <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                 {nextLesson
                   ? translate("detail.accessPanel.nextLessonLabel", {
                       title: nextLesson.title,
@@ -534,14 +534,14 @@ export default function CourseDetail() {
         ) : isPaidUpfront ? (
           <>
             <div className="mb-4 rounded-md bg-muted/40 p-3">
-              <div className="text-[12px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 {translate("detail.accessPanel.priceLabel")}
               </div>
-              <div className="mt-1 text-[20px] font-semibold text-foreground">
+              <div className="mt-1 text-lg font-semibold text-foreground">
                 {formatVndPrice(pricing.display)}
               </div>
               {pricing.promoActive ? (
-                <p className="mt-1 text-[12px] leading-5 text-muted-foreground">
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                   <span className="line-through">{formatVndPrice(pricing.base)}</span>
                   {Number.isFinite(pricing.endsAt) ? (
                     <span className="block sm:inline">
@@ -554,7 +554,7 @@ export default function CourseDetail() {
                 </p>
               ) : null}
             </div>
-            <p className="mb-4 text-[13px] leading-6 text-muted-foreground">
+            <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
               {translate("detail.accessPanel.paidUpfrontCopy")}
               {previewLessons.length > 0
                 ? translate("detail.accessPanel.previewAvailable", {
@@ -585,7 +585,7 @@ export default function CourseDetail() {
           </>
         ) : (
           <>
-            <p className="mb-4 text-[13px] leading-6 text-muted-foreground">
+            <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
               {translate("detail.accessPanel.freeEnrollCopy")}
               {isFreeWithPaidCertificate
                 ? translate("detail.accessPanel.certificateFeeSuffix", {
@@ -618,9 +618,9 @@ export default function CourseDetail() {
   if (loading) {
     return (
       <div className="container-app py-6 sm:py-8">
-        <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-lg border border-border-subtle bg-card p-8 text-center shadow-card">
-          <Spinner className="size-8 animate-spin text-muted-foreground" />
-          <p className="mt-4 text-[15px] text-muted-foreground">
+        <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-md border border-border-subtle bg-card p-8 text-center shadow-card">
+          <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
+          <p className="mt-4 text-sm text-muted-foreground">
             {translate("detail.loadingCourse")}
           </p>
         </div>
@@ -631,8 +631,8 @@ export default function CourseDetail() {
   if (error || !course) {
     return (
       <div className="container-app py-6 sm:py-8">
-        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-5 shadow-card">
-          <p className="text-[15px] font-medium text-destructive">
+        <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5 shadow-card">
+          <p className="text-sm font-medium text-destructive">
             {error ?? translate("detail.notFound")}
           </p>
           <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
@@ -650,19 +650,23 @@ export default function CourseDetail() {
   return (
     <div className="container-app py-6 sm:py-8">
       {canReviewDraft ? (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/40">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-md border border-warning/25 bg-warning/10 px-4 py-3">
           <div className="flex items-center gap-2">
-            <Eye className="size-5 text-amber-600 dark:text-amber-400" weight="duotone" />
-            <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
+            <Eye className="size-5 shrink-0 text-warning" aria-hidden />
+            <span className="text-sm font-medium text-warning">
               Chế độ xem trước — Khoá học đang nháp (chưa xuất bản)
             </span>
           </div>
-          <Link
-            to={`/instructor/courses/${resolvedCourseId ?? id}/edit`}
-            className="inline-flex items-center gap-2 rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600"
+          <Button
+            render={
+              <Link to={`/instructor/courses/${resolvedCourseId ?? id}/edit`} />
+            }
+            nativeButton={false}
+            size="sm"
+            className="inline-flex items-center gap-2"
           >
-            <PencilSimple className="size-4" /> Chỉnh sửa khoá học
-          </Link>
+            <Pencil className="size-4 shrink-0" aria-hidden /> Chỉnh sửa khoá học
+          </Button>
         </div>
       ) : null}
 
@@ -676,10 +680,10 @@ export default function CourseDetail() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
         <div className="min-w-0">
-          <section className="rounded-lg border border-border-subtle bg-card shadow-card">
+          <section className="rounded-md border border-border-subtle bg-card shadow-card">
             <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.55fr)]">
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                   <span className="rounded-md bg-muted px-2 py-1">
                     {getCourseLevelLabel(course.level)}
                   </span>
@@ -713,13 +717,13 @@ export default function CourseDetail() {
                 </p>
 
                 {course.short_description ? (
-                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                     {course.short_description}
                   </p>
                 ) : null}
 
                 <div className="mt-4 grid gap-2 text-sm">
-                  <dl className="grid grid-cols-2 gap-2 rounded-md border border-border-subtle bg-background p-3 text-[13px]">
+                  <dl className="grid grid-cols-2 gap-2 rounded-md border border-border-subtle bg-background p-3 text-sm">
                     <div>
                       <dt className="text-muted-foreground">Thời lượng</dt>
                       <dd className="mt-0.5 font-medium text-foreground">
@@ -763,24 +767,24 @@ export default function CourseDetail() {
           <section className="mt-8">
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="flex items-center gap-2 text-lg font-medium text-foreground">
-                  <BookOpen className="size-5" /> Lộ trình học
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                  <BookOpen className="size-5 shrink-0" aria-hidden /> Lộ trình học
                 </h2>
-                <p className="mt-1 text-[13px] text-muted-foreground">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {isPreviewOnlyCurriculum
                     ? "Bạn đang xem phần preview. Mở khoá để thấy toàn bộ curriculum."
                     : "Nội dung được chia theo chương để bạn theo dõi mạch học dễ hơn."}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <div className="rounded-full bg-muted px-3 py-1 text-[12px] text-muted-foreground">
+                <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
                   {visibleLessonGroups.length} chương
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-7 rounded-full px-3 text-[12px]"
+                  className="h-8 rounded-full px-3 text-xs"
                   onClick={() => {
                     setCollapsedSections((prev) => {
                       const next = new Set(prev);
@@ -808,7 +812,7 @@ export default function CourseDetail() {
                   return (
                 <div
                   key={section.id}
-                  className="overflow-hidden rounded-xl border border-border-subtle bg-card shadow-card"
+                  className="overflow-hidden rounded-md border border-border-subtle bg-card shadow-card"
                 >
                   <button
                     type="button"
@@ -820,64 +824,54 @@ export default function CourseDetail() {
                         return next;
                       })
                     }
-                    className="flex w-full flex-col gap-1.5 border-b border-border-subtle bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted/60 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex w-full flex-col gap-2 border-b border-border-subtle bg-muted/40 px-4 py-3 text-left transition-colors duration-150 hover:bg-muted/60 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="min-w-0">
-                      <p className="text-[12px] uppercase tracking-wide text-muted-foreground">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         Chương {sectionIndex + 1}
                       </p>
-                      <p className="text-[15px] font-medium text-foreground">
+                      <p className="text-sm font-medium text-foreground">
                         {section.title}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span>{sectionLessons.length} bài</span>
-                      <CaretDown
+                      <ChevronDown
                         className={cn(
                           "size-4 shrink-0 transition-transform duration-200",
                           isCollapsed ? "-rotate-90" : "rotate-0",
                         )}
-                        weight="duotone"
+                        aria-hidden
                       />
                     </div>
                   </button>
-                  <div
-                    className={cn(
-                      "grid transition-[grid-template-rows] duration-250 ease-out",
-                      isCollapsed ? "grid-rows-[0fr]" : "grid-rows-[1fr]",
-                    )}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="divide-y divide-border-subtle">
-                        {sectionLessons.map((lesson, lessonIndex) => (
-                          <div
-                            key={lesson.id}
-                            className={cn(
-                              "flex items-start gap-3 px-4 py-3 transition-[opacity,transform] duration-200 ease-out sm:items-center",
-                              isCollapsed ? "opacity-0 -translate-y-1" : "opacity-100 translate-y-0",
-                            )}
-                          >
-                            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-[12px] font-medium text-muted-foreground">
-                              {lessonIndex + 1}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="line-clamp-2 text-[14px] text-foreground sm:line-clamp-1">
-                                {lesson.title}
-                              </p>
-                              <p className="mt-0.5 text-[12px] text-muted-foreground">
-                                {formatDuration(lesson.duration_seconds)}
-                              </p>
-                            </div>
-                            {isPaidUpfront && lesson.is_preview_free ? (
-                              <span className="mt-0.5 rounded-md bg-success/15 px-2 py-0.5 text-[11px] font-medium text-success sm:mt-0">
-                                Học thử
-                              </span>
-                            ) : null}
+                  {!isCollapsed ? (
+                    <div className="divide-y divide-border-subtle">
+                      {sectionLessons.map((lesson, lessonIndex) => (
+                        <div
+                          key={lesson.id}
+                          className="flex items-start gap-3 px-4 py-3 sm:items-center"
+                        >
+                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                            {lessonIndex + 1}
                           </div>
-                        ))}
-                      </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="line-clamp-2 text-sm text-foreground sm:line-clamp-1">
+                              {lesson.title}
+                            </p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {formatDuration(lesson.duration_seconds)}
+                            </p>
+                          </div>
+                          {isPaidUpfront && lesson.is_preview_free ? (
+                            <span className="mt-0.5 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success sm:mt-0">
+                              Học thử
+                            </span>
+                          ) : null}
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  ) : null}
                 </div>
                   );
                 })()

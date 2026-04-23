@@ -4,12 +4,12 @@ import { intlLocale } from "@/lib/intl";
 import { Input } from "@/components/ui/input";
 import type { PartnerProfileDocument } from "@/types/database";
 import {
-  Bank,
-  CalendarDots,
   CreditCard,
   FileText,
+  Landmark,
+  CalendarDays,
   Receipt,
-} from "@phosphor-icons/react";
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 function ExternalOnlyHint() {
@@ -43,12 +43,12 @@ function DocumentPanel({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-lg font-medium text-foreground">{title}</h2>
-          <p className="mt-1.5 text-[14px] text-muted-foreground sm:text-[15px]">
+          <p className="mt-2 text-sm text-muted-foreground sm:text-sm">
             {description}
           </p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-muted/50 px-3 py-1.5 text-[12px] font-medium text-foreground">
-          <Icon className="size-4 text-primary" weight="duotone" />
+        <div className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+          <Icon className="size-4 text-primary" aria-hidden />
           {countLabel}
         </div>
       </div>
@@ -86,19 +86,19 @@ function DocumentList({
               href={doc.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block truncate text-[15px] font-medium text-primary hover:underline"
+              className="block truncate text-sm font-medium text-primary hover:underline"
               title={doc.name}
             >
               {doc.name}
             </a>
             {renderMeta ? (
-              <div className="mt-1 text-[13px] text-muted-foreground">
+              <div className="mt-1 text-sm text-muted-foreground">
                 {renderMeta(doc)}
               </div>
             ) : null}
           </div>
-          <div className="inline-flex items-center gap-2 text-[12px] text-muted-foreground">
-            <CalendarDots className="size-4" weight="duotone" />
+          <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <CalendarDays className="size-4" aria-hidden />
             {new Date(doc.uploaded_at).toLocaleDateString(intlLocale())}
           </div>
         </article>
@@ -303,8 +303,8 @@ export function PartnerPaymentsPage() {
         {hasBankInfo ? (
           <div className="grid gap-3 lg:grid-cols-2">
             <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
-              <div className="mb-3 flex items-center gap-2 text-[13px] font-medium text-foreground">
-                <Bank className="size-4 text-primary" weight="duotone" />
+              <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+                <Landmark className="size-4 text-primary" aria-hidden />
                 {t("partnerFinance.payments.sections.transferInfo")}
               </div>
               <div className="grid gap-2 text-sm">
@@ -343,8 +343,8 @@ export function PartnerPaymentsPage() {
               </div>
             </div>
             <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
-              <div className="mb-3 flex items-center gap-2 text-[13px] font-medium text-foreground">
-                <CreditCard className="size-4 text-primary" weight="duotone" />
+              <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+                <CreditCard className="size-4 text-primary" aria-hidden />
                 {t("partnerFinance.payments.sections.extraNotes")}
               </div>
               {transferInfo ? (

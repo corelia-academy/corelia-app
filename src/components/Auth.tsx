@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from "react-router";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
 import { LoginForm } from "@/components/login/LoginForm";
 
@@ -11,7 +12,7 @@ export default function Auth() {
   if (!authInitialized) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-auth-page">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden />
       </div>
     );
   }

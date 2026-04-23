@@ -76,7 +76,7 @@ export default function InstructorCohorts() {
             <h1 className="mt-2 text-2xl font-normal tracking-tight text-foreground">
               {t("instructorWorkspace.hero.title")}
             </h1>
-            <p className="mt-1.5 max-w-3xl text-[15px] text-muted-foreground">
+            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               {t("instructorWorkspace.hero.description")}
             </p>
           </div>
@@ -126,7 +126,7 @@ export default function InstructorCohorts() {
       ) : items.length === 0 ? (
         <Card className="mt-6">
           <CardContent className="p-8 text-center">
-            <div className="text-[15px] font-medium text-foreground">
+            <div className="text-sm font-medium text-foreground">
               {t("instructorWorkspace.empty.title")}
             </div>
             <Button
@@ -151,33 +151,33 @@ export default function InstructorCohorts() {
             >
               <div className="border-b border-border-subtle bg-muted/20 px-5 py-4">
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-background px-2.5 py-1 text-[11px] font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-background px-3 py-1 text-xs font-medium text-foreground">
                     {course.published
                       ? t("instructorWorkspace.coursePills.open")
                       : t("instructorWorkspace.coursePills.draft")}
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-background px-2.5 py-1 text-[11px] font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-background px-3 py-1 text-xs font-medium text-foreground">
                     {course.level}
                   </span>
                 </div>
                 <h2 className="mt-3 text-lg font-medium text-foreground">{course.title}</h2>
-                <p className="mt-1.5 text-[14px] text-muted-foreground">{course.tagline}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{course.tagline}</p>
               </div>
               <div className="space-y-4 p-5">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                    <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("catalog.metrics.cohorts")}
                     </div>
-                    <div className="mt-1.5 text-lg font-semibold text-foreground">
+                    <div className="mt-2 text-lg font-semibold text-foreground">
                       {course.metrics_snapshot.cohorts_total || courseCohorts.length}
                     </div>
                   </div>
                   <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                    <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("instructorWorkspace.courseMetrics.students")}
                     </div>
-                    <div className="mt-1.5 text-lg font-semibold text-foreground">
+                    <div className="mt-2 text-lg font-semibold text-foreground">
                       {course.metrics_snapshot.enrolled_students}
                     </div>
                   </div>
