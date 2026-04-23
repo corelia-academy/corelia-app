@@ -208,10 +208,9 @@ const InstructorCourses = () => {
               key={course.id}
               className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-card shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lg"
             >
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                className="w-full justify-start p-0 text-left hover:bg-transparent"
+                className="w-full text-left hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
                 onClick={() => navigate(`/instructor/courses/${course.id}/edit`)}
               >
                 <div className="relative aspect-video overflow-hidden border-b border-border-subtle bg-muted/50">
@@ -271,7 +270,7 @@ const InstructorCourses = () => {
                     </div>
                   </div>
                 </div>
-              </Button>
+              </button>
 
               <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle px-4 py-3">
                 <Button

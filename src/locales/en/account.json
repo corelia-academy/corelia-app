@@ -1,5 +1,7 @@
 {
   "nav": {
+    "sectionTitle": "Account setup",
+    "currentSectionLabel": "Currently viewing",
     "settings": {
       "title": "Settings",
       "description": "Theme, sign out"
@@ -33,7 +35,8 @@
       "profileLabel": "Profile",
       "roleLabel": "Role",
       "statusLabel": "Status",
-      "missingDisplayName": "Display name not set"
+      "missingDisplayName": "Display name not set",
+      "statusReady": "Ready to learn and track progress"
     }
   },
   "settings": {

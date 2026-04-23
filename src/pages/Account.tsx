@@ -25,6 +25,8 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import ConnectOCIDCard from "@/components/account/ConnectOCIDCard";
 import { useLocale } from "@/hooks/useLocale";
 import { useTranslation } from "react-i18next";
@@ -190,51 +192,51 @@ function ChangePasswordCard({ user }: { user: User }) {
         </p>
       </div>
       <form onSubmit={(e) => void handleSubmit(e)} className="grid gap-4">
-        <div className="grid gap-2">
-          <label className="text-sm font-medium" htmlFor="current_password">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium" htmlFor="current_password">
             {t("password.fields.current.label")}
-          </label>
-          <input
+          </Label>
+          <Input
             id="current_password"
             type="password"
             autoComplete="current-password"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
-            className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             placeholder={t("password.fields.current.placeholder")}
             required
+            className="rounded"
           />
         </div>
-        <div className="grid gap-2">
-          <label className="text-sm font-medium" htmlFor="new_password">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium" htmlFor="new_password">
             {t("password.fields.next.label")}
-          </label>
-          <input
+          </Label>
+          <Input
             id="new_password"
             type="password"
             autoComplete="new-password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             placeholder={t("password.fields.next.placeholder")}
             required
             minLength={6}
+            className="rounded"
           />
         </div>
-        <div className="grid gap-2">
-          <label className="text-sm font-medium" htmlFor="confirm_password">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium" htmlFor="confirm_password">
             {t("password.fields.confirm.label")}
-          </label>
-          <input
+          </Label>
+          <Input
             id="confirm_password"
             type="password"
             autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             placeholder={t("password.fields.confirm.placeholder")}
             required
             minLength={6}
+            className="rounded"
           />
         </div>
         {error ? (
@@ -436,10 +438,10 @@ function MfaEnrollCard({ user }: { user: User }) {
             {t("mfa.reauth.hint")}
           </p>
           {hasPasswordProvider ? (
-            <div className="grid gap-2">
-              <label className="text-sm font-medium" htmlFor="mfa-reauth-password">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium" htmlFor="mfa-reauth-password">
                 {t("mfa.reauth.passwordLabel")}
-              </label>
+              </Label>
               <Input
                 id="mfa-reauth-password"
                 type="password"
@@ -477,10 +479,10 @@ function MfaEnrollCard({ user }: { user: User }) {
 
       {step === "phone" && (
         <div className="space-y-3">
-          <div className="grid gap-2">
-            <label className="text-sm font-medium" htmlFor="mfa-enroll-phone">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium" htmlFor="mfa-enroll-phone">
               {t("mfa.phone.label")}
-            </label>
+            </Label>
             <Input
               id="mfa-enroll-phone"
               type="tel"
@@ -510,10 +512,10 @@ function MfaEnrollCard({ user }: { user: User }) {
       {step === "code" && (
         <div className="space-y-3">
           <p className="text-sm text-success">{t("mfa.code.hint")}</p>
-          <div className="grid gap-2">
-            <label className="text-sm font-medium" htmlFor="mfa-enroll-code">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium" htmlFor="mfa-enroll-code">
               {t("mfa.code.label")}
-            </label>
+            </Label>
             <Input
               id="mfa-enroll-code"
               inputMode="numeric"
@@ -587,13 +589,13 @@ function ProfileSection(props: {
     <form onSubmit={(e) => void onSubmit(e)} className="space-y-5">
       <div className="grid gap-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
         <div className="grid gap-2">
-          <label className="text-sm font-medium">{t("profile.emailLoginLabel")}</label>
+          <Label className="text-sm font-medium">{t("profile.emailLoginLabel")}</Label>
           <div className="text-sm text-muted-foreground">{sessionEmail}</div>
         </div>
 
         {/* Ảnh đại diện: preview + upload */}
         <div className="grid gap-3">
-          <label className="text-sm font-medium">{t("profile.avatar.label")}</label>
+          <Label className="text-sm font-medium">{t("profile.avatar.label")}</Label>
           <div className="flex flex-wrap items-center gap-4">
             <Avatar className="size-20 shrink-0 rounded-full">
               <AvatarImage src={avatarUrl || undefined} alt={t("profile.avatar.alt")} />
@@ -638,34 +640,34 @@ function ProfileSection(props: {
           </div>
         </div>
 
-        <div className="grid gap-2">
-          <label className="text-sm font-medium" htmlFor="full_name">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium" htmlFor="full_name">
             {t("profile.fullName.label")}
-          </label>
-          <input
+          </Label>
+          <Input
             id="full_name"
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             placeholder={t("profile.fullName.placeholder")}
+            className="rounded"
           />
           <p className="text-xs text-muted-foreground">
             {t("profile.fullName.hint")}
           </p>
         </div>
 
-        <div className="grid gap-2">
-          <label className="text-sm font-medium" htmlFor="phone">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium" htmlFor="phone">
             {t("profile.phone.label")}
-          </label>
-          <input
+          </Label>
+          <Input
             id="phone"
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             placeholder={t("profile.phone.placeholder")}
+            className="rounded"
           />
           <p className="text-xs text-muted-foreground">
             {t("profile.phone.hint")}
@@ -742,8 +744,18 @@ function InstructorProfileSection() {
 
   if (!profile || profile.role !== "instructor") {
     return (
-      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground">
-        {t("instructorProfile.onlyInstructors")}
+      <div className="flex flex-col items-center gap-3 py-16 text-center">
+        <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+          <GraduationCap className="size-6 text-muted-foreground" aria-hidden />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-foreground">
+            {t("instructorProfile.onlyInstructors")}
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {t("nav.instructor.description")}
+          </p>
+        </div>
       </div>
     );
   }
@@ -869,10 +881,10 @@ function InstructorProfileSection() {
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <div className="grid gap-2">
-          <label className="text-sm font-medium" htmlFor="instructor_origin">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium" htmlFor="instructor_origin">
             {t("instructorProfile.fields.origin.label")}
-          </label>
+          </Label>
           <div className="rounded border border-input bg-muted/40 px-3 py-2 text-sm">
             {originLabel}
           </div>
@@ -881,10 +893,10 @@ function InstructorProfileSection() {
           </p>
         </div>
 
-        <div className="grid gap-2">
-          <label className="text-sm font-medium" htmlFor="instructor_org">
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium" htmlFor="instructor_org">
             {t("instructorProfile.fields.organization.label")}
-          </label>
+          </Label>
           <Input
             id="instructor_org"
             value={organization}
@@ -894,10 +906,10 @@ function InstructorProfileSection() {
         </div>
       </div>
 
-      <div className="grid gap-2">
-        <label className="text-sm font-medium" htmlFor="instructor_headline">
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium" htmlFor="instructor_headline">
           {t("instructorProfile.fields.headline.label")}
-        </label>
+        </Label>
         <Input
           id="instructor_headline"
           value={headline}
@@ -906,10 +918,10 @@ function InstructorProfileSection() {
         />
       </div>
 
-      <div className="grid gap-2">
-        <label className="text-sm font-medium" htmlFor="instructor_bio">
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium" htmlFor="instructor_bio">
           {t("instructorProfile.fields.bio.label")}
-        </label>
+        </Label>
         <textarea
           id="instructor_bio"
           value={bio}
@@ -920,10 +932,10 @@ function InstructorProfileSection() {
         />
       </div>
 
-      <div className="grid gap-2">
-        <label className="text-sm font-medium" htmlFor="instructor_website">
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium" htmlFor="instructor_website">
           {t("instructorProfile.fields.website.label")}
-        </label>
+        </Label>
         <Input
           id="instructor_website"
           value={website}
@@ -1156,10 +1168,35 @@ export function AccountProfileRoute() {
 
   if (loading && !profile) {
     return (
-      <div className="flex min-h-[300px] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <span className="text-muted-foreground">{t("profile.loading")}</span>
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="space-y-4">
+        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+          <Skeleton className="h-6 w-56 rounded" />
+          <Skeleton className="mt-2 h-4 w-full max-w-[520px] rounded" />
+        </div>
+        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+          <div className="flex items-center gap-4">
+            <Skeleton className="size-20 rounded-full" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <Skeleton className="h-4 w-40 rounded" />
+              <Skeleton className="h-9 w-44 rounded" />
+              <Skeleton className="h-3 w-64 rounded" />
+            </div>
+          </div>
+          <div className="mt-5 space-y-4">
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-28 rounded" />
+              <Skeleton className="h-10 w-full rounded" />
+              <Skeleton className="h-3 w-48 rounded" />
+            </div>
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-24 rounded" />
+              <Skeleton className="h-10 w-full rounded" />
+              <Skeleton className="h-3 w-56 rounded" />
+            </div>
+            <div className="flex justify-end">
+              <Skeleton className="h-10 w-28 rounded" />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -1167,8 +1204,14 @@ export function AccountProfileRoute() {
 
   if (!user) {
     return (
-      <div className="p-4 text-sm text-muted-foreground">
-        {t("profile.mustLogin")}
+      <div className="flex flex-col items-center gap-3 py-16 text-center">
+        <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+          <UserCircle className="size-6 text-muted-foreground" aria-hidden />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-foreground">{t("profile.mustLogin")}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t("header.subtitle")}</p>
+        </div>
       </div>
     );
   }
@@ -1391,7 +1434,7 @@ export default function Account() {
                 {t("header.summary.roleLabel")}
               </p>
               <p className="mt-1 line-clamp-1 text-sm font-medium text-foreground">
-                {profile?.role || "student"}
+                {accountRoleLabel}
               </p>
             </div>
             <div className="rounded-md border border-border-subtle bg-background px-4 py-3">
@@ -1399,7 +1442,7 @@ export default function Account() {
                 {t("header.summary.statusLabel")}
               </p>
               <p className="mt-1 text-sm font-medium text-foreground">
-                Sẵn sàng học và theo dõi tiến độ
+                {t("header.summary.statusReady")}
               </p>
             </div>
           </div>
@@ -1409,7 +1452,7 @@ export default function Account() {
       <div className="flex w-full min-w-0 flex-col gap-6 lg:flex-row">
         <div className="w-full lg:w-72 lg:shrink-0">
           <div className="mb-4 hidden text-xs font-semibold uppercase tracking-wide text-muted-foreground lg:block">
-            Thiết lập tài khoản
+            {t("nav.sectionTitle")}
           </div>
           <div className="-mx-4 overflow-x-auto px-4 lg:hidden">
             <div className="flex min-w-max gap-2 pb-1">
@@ -1471,7 +1514,7 @@ export default function Account() {
               <div className="mt-0.5 shrink-0 text-primary">{activeNavItem.icon}</div>
               <div className="min-w-0">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Mục đang xem
+                  {t("nav.currentSectionLabel")}
                 </p>
                 <h2 className="mt-1 text-lg font-semibold text-foreground">
                   {activeNavItem.title}

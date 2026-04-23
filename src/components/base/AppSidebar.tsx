@@ -47,9 +47,10 @@ export default function AppSidebar() {
   const { isMobile } = useSidebar();
   const { profile, isAuthenticated } = useAuth();
 
-  const displayName = profile?.full_name ?? profile?.id?.slice(0, 8) ?? "User";
+  const displayName =
+    profile?.full_name ?? profile?.id?.slice(0, 8) ?? t("user.fallbackName");
   const avatarUrl = profile?.avatar_url ?? undefined;
-  const email = profile ? "(đăng nhập bằng email)" : "";
+  const email = profile ? t("account.signedInViaEmail") : "";
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
@@ -137,7 +138,7 @@ export default function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="rounded-md"
-                    tooltip="Quản lý giảng dạy"
+                    tooltip={t("nav.instructorManagement")}
                     isActive={pathname.startsWith("/instructor")}
                     render={
                       <NavLink
@@ -145,7 +146,7 @@ export default function AppSidebar() {
                         className="flex w-full items-center gap-2"
                       >
                         <GraduationCap className="size-5 shrink-0" aria-hidden />
-                        <span>Giảng dạy</span>
+                        <span>{t("nav.instructor")}</span>
                       </NavLink>
                     }
                   />

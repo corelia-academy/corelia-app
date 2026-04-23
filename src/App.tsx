@@ -162,7 +162,7 @@ export default function App() {
                   </RequireAuth>
                 }
               >
-                <Route index element={<AccountSettingsRoute />} />
+                <Route index element={<Navigate to="settings" replace />} />
                 <Route path="profile" element={<AccountProfileRoute />} />
                 <Route path="cv" element={<AccountCvRoute />} />
                 <Route path="billing" element={<AccountBillingRoute />} />

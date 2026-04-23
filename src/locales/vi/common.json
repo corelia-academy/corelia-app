@@ -31,7 +31,14 @@
     "achievements": "Thành tích",
     "account": "Tài khoản",
     "admin": "Admin",
-    "instructor": "Instructor"
+    "instructor": "Giảng dạy",
+    "instructorManagement": "Quản lý giảng dạy"
+  },
+  "account": {
+    "signedInViaEmail": "(đăng nhập bằng email)"
+  },
+  "user": {
+    "fallbackName": "Người dùng"
   },
   "tabs": {
     "menu": "Menu",

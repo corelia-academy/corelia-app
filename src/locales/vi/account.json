@@ -1,5 +1,7 @@
 {
   "nav": {
+    "sectionTitle": "Thiết lập tài khoản",
+    "currentSectionLabel": "Mục đang xem",
     "settings": {
       "title": "Cài đặt",
       "description": "Theme, đăng xuất"
@@ -33,7 +35,8 @@
       "profileLabel": "Hồ sơ",
       "roleLabel": "Vai trò",
       "statusLabel": "Trạng thái",
-      "missingDisplayName": "Chưa cập nhật tên hiển thị"
+      "missingDisplayName": "Chưa cập nhật tên hiển thị",
+      "statusReady": "Sẵn sàng học và theo dõi tiến độ"
     }
   },
   "settings": {

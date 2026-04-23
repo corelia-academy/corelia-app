@@ -31,7 +31,14 @@
     "achievements": "Achievements",
     "account": "Account",
     "admin": "Admin",
-    "instructor": "Instructor"
+    "instructor": "Teaching",
+    "instructorManagement": "Teaching management"
+  },
+  "account": {
+    "signedInViaEmail": "(signed in via email)"
+  },
+  "user": {
+    "fallbackName": "User"
   },
   "tabs": {
     "menu": "Menu",
