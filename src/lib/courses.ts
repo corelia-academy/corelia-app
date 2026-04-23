@@ -153,7 +153,16 @@ export async function getMyEnrollments(userId: string): Promise<Enrollment[]> {
     orderBy("last_accessed_at", "desc")
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Enrollment));
+  const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Enrollment));
+  // Defensive: legacy/migrated data can produce duplicates for same course_id.
+  // Keep the most recently accessed one (query is already desc by last_accessed_at).
+  const seen = new Set<string>();
+  return rows.filter((e) => {
+    if (!e.course_id) return false;
+    if (seen.has(e.course_id)) return false;
+    seen.add(e.course_id);
+    return true;
+  });
 }
 
 /** Lấy tất cả enrollment của một khoá (instructor/admin quản lý học viên) */
