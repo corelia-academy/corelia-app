@@ -58,8 +58,8 @@ export default function Cohorts() {
   );
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <section className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
@@ -73,7 +73,7 @@ export default function Cohorts() {
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-border-subtle bg-background px-4 py-3">
+            <div className="rounded-md border border-border-subtle bg-background px-4 py-3">
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                 {t("catalog.stats.totalCourses")}
               </div>
@@ -81,7 +81,7 @@ export default function Cohorts() {
                 {stats.totalCourses}
               </div>
             </div>
-            <div className="rounded-2xl border border-border-subtle bg-background px-4 py-3">
+            <div className="rounded-md border border-border-subtle bg-background px-4 py-3">
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                 {t("catalog.stats.totalCohorts")}
               </div>
@@ -89,7 +89,7 @@ export default function Cohorts() {
                 {stats.totalCohorts}
               </div>
             </div>
-            <div className="rounded-2xl border border-border-subtle bg-background px-4 py-3">
+            <div className="rounded-md border border-border-subtle bg-background px-4 py-3">
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                 {t("catalog.stats.running")}
               </div>
@@ -106,12 +106,12 @@ export default function Cohorts() {
           <CardContent className="p-8">
             <div className="space-y-4">
               {[0, 1, 2].map((idx) => (
-                <div key={idx} className="rounded-2xl border border-border-subtle bg-background p-4">
+                <div key={idx} className="rounded-md border border-border-subtle bg-background p-4">
                   <Skeleton className="h-4 w-40 rounded-full" />
                   <Skeleton className="mt-3 h-4 w-3/4 rounded-full" />
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <Skeleton className="h-20 rounded-2xl" />
-                    <Skeleton className="h-20 rounded-2xl" />
+                    <Skeleton className="h-20 rounded-md" />
+                    <Skeleton className="h-20 rounded-md" />
                   </div>
                 </div>
               ))}
@@ -120,7 +120,7 @@ export default function Cohorts() {
         </Card>
       ) : error ? (
         <Card className="mt-6 border-destructive/20 bg-destructive/5">
-          <CardContent className="p-5 text-sm text-destructive">{error}</CardContent>
+          <CardContent className="p-4 text-sm text-destructive sm:p-6">{error}</CardContent>
         </Card>
       ) : items.length === 0 ? (
         <Card className="mt-6">
@@ -148,7 +148,7 @@ export default function Cohorts() {
             return (
             <article
               key={course.id}
-              className="overflow-hidden rounded-2xl border border-border-subtle bg-card shadow-card"
+              className="overflow-hidden rounded-md border border-border-subtle bg-card shadow-card"
             >
               <div className="border-b border-border-subtle bg-muted/25 px-5 py-4">
                 <div className="flex flex-wrap gap-2">
@@ -169,9 +169,9 @@ export default function Cohorts() {
                 </p>
               </div>
 
-              <div className="space-y-4 p-5">
+              <div className="space-y-4 p-4 sm:p-6">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                  <div className="rounded-md border border-border-subtle bg-background p-4">
                     <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                       {t("catalog.course.cityLabel")}
                     </div>
@@ -179,7 +179,7 @@ export default function Cohorts() {
                       {course.venue_city || t("catalog.course.venueCityFallback")}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                  <div className="rounded-md border border-border-subtle bg-background p-4">
                     <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                       {t("catalog.course.certificateLabel")}
                     </div>
@@ -190,7 +190,7 @@ export default function Cohorts() {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-border-subtle bg-background p-3">
+                  <div className="rounded-md border border-border-subtle bg-background p-3">
                     <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("catalog.metrics.sessions")}
                     </div>
@@ -201,7 +201,7 @@ export default function Cohorts() {
                       )}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-border-subtle bg-background p-3">
+                  <div className="rounded-md border border-border-subtle bg-background p-3">
                     <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("catalog.metrics.cohorts")}
                     </div>
@@ -209,7 +209,7 @@ export default function Cohorts() {
                       {course.metrics_snapshot.cohorts_total || courseCohorts.length}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-border-subtle bg-background p-3">
+                  <div className="rounded-md border border-border-subtle bg-background p-3">
                     <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {t("catalog.metrics.recordings")}
                     </div>

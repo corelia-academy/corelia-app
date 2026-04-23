@@ -85,8 +85,8 @@ export default function Contests() {
   const featured = items[0] ?? null;
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <section className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="min-w-0 max-w-3xl">
             <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
@@ -111,7 +111,7 @@ export default function Contests() {
         </div>
       </section>
 
-      <section className="mt-6 rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+      <section className="mt-6 rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
           <div>
             <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
@@ -132,7 +132,7 @@ export default function Contests() {
             ].map((item) => (
               <div
                 key={item}
-                className="rounded-2xl border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground"
+                className="rounded-md border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground"
               >
                 {item}
               </div>
@@ -142,7 +142,7 @@ export default function Contests() {
       </section>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
@@ -152,12 +152,12 @@ export default function Contests() {
                 {loading ? "..." : stats.total}
               </p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
               <Rocket className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
@@ -167,12 +167,12 @@ export default function Contests() {
                 {loading ? "..." : stats.accepting}
               </p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
               <CheckCheck className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
@@ -182,12 +182,12 @@ export default function Contests() {
                 {loading ? "..." : stats.running}
               </p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
               <Timer className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
@@ -197,7 +197,7 @@ export default function Contests() {
                 {loading ? "..." : stats.ended}
               </p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
               <Calendar className="size-5" aria-hidden />
             </div>
           </div>
@@ -207,7 +207,7 @@ export default function Contests() {
       {featured && !loading && (
         <section className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.75fr)]">
           <Card>
-            <CardContent className="p-5 sm:p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
@@ -226,7 +226,7 @@ export default function Contests() {
               </div>
 
               <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                <div className="rounded-md border border-border-subtle bg-background p-4">
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                     {t("catalog.featured.schedule")}
                   </div>
@@ -234,7 +234,7 @@ export default function Contests() {
                     {formatDateRange(featured.starts_at, featured.ends_at)}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                <div className="rounded-md border border-border-subtle bg-background p-4">
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                     {t("catalog.featured.format")}
                   </div>
@@ -242,7 +242,7 @@ export default function Contests() {
                     {locationLabel(featured.location)}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                <div className="rounded-md border border-border-subtle bg-background p-4">
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                     {t("catalog.featured.registrations")}
                   </div>
@@ -252,7 +252,7 @@ export default function Contests() {
                     })}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                <div className="rounded-md border border-border-subtle bg-background p-4">
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                     {t("catalog.featured.submissions")}
                   </div>
@@ -285,24 +285,24 @@ export default function Contests() {
           </Card>
 
           <Card>
-            <CardContent className="p-5 sm:p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                 Cách tham gia
               </div>
               <div className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                <div className="rounded-md border border-border-subtle bg-background p-4">
                   <div className="text-sm font-medium text-foreground">1. Đăng ký</div>
                   <div className="mt-2 text-sm leading-6 text-muted-foreground">
                     Cá nhân hoặc đội gửi hồ sơ và chờ Corelia xét duyệt.
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                <div className="rounded-md border border-border-subtle bg-background p-4">
                   <div className="text-sm font-medium text-foreground">2. Tham gia & nộp bài</div>
                   <div className="mt-2 text-sm leading-6 text-muted-foreground">
                     Chỉ các đội đã được duyệt mới mở được khu submission và tài nguyên contest.
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                <div className="rounded-md border border-border-subtle bg-background p-4">
                   <div className="text-sm font-medium text-foreground">3. Chấm & công bố</div>
                   <div className="mt-2 text-sm leading-6 text-muted-foreground">
                     {t("catalog.sidebar.leaderboardHint")}
@@ -315,7 +315,7 @@ export default function Contests() {
       )}
 
       {error && (
-        <div className="mt-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="mt-6 rounded-md border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -371,7 +371,7 @@ export default function Contests() {
               key={contest.id}
               className="overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
             >
-              <CardContent className="flex h-full flex-col p-5">
+              <CardContent className="flex h-full flex-col p-4 sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="text-xs text-muted-foreground">

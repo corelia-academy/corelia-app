@@ -316,11 +316,11 @@ function OcCredentialModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl w-full min-w-0 rounded-2xl p-0 overflow-hidden">
+      <DialogContent className="max-w-xl w-full min-w-0 rounded-lg p-0 overflow-hidden">
         {/* Gradient header strip */}
         <div className="h-1.5 w-full bg-linear-to-r from-[#00e5b4] via-[#0047ff] to-[#00e5b4]" />
 
-        <div className="min-w-0 p-5 sm:p-6">
+        <div className="min-w-0 p-4 sm:p-6">
           <DialogHeader className="mb-4">
             <div className="flex items-start gap-3">
               {/* OC Logo */}
@@ -584,7 +584,7 @@ function CertificateCard({
   const { t } = useTranslation("common");
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   return (
-    <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-md border border-border-subtle bg-card shadow-card transition-all duration-200 hover:shadow-elevation-2 hover:-translate-y-0.5">
+    <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-md border border-border-subtle bg-card shadow-card transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
       {/* Gradient top strip */}
       <div
         className={cn(
@@ -604,7 +604,7 @@ function CertificateCard({
         />
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-5">
+      <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -720,7 +720,7 @@ function BadgeCard({
           : cn(
               badge.bgColor,
               badge.borderColor,
-              "cursor-pointer hover:shadow-elevation-2 hover:-translate-y-0.5",
+              "cursor-pointer hover:shadow-md hover:-translate-y-0.5",
             ),
       )}
       onClick={() => !badge.locked && onOpenModal({ kind: "badge", data: badge })}
@@ -754,7 +754,7 @@ function BadgeCard({
       {/* Ảnh huy hiệu (placeholder nếu chưa có) */}
       <div
         className={cn(
-          "relative size-14 overflow-hidden rounded-2xl border-2 sm:size-20",
+          "relative size-14 overflow-hidden rounded-md border-2 sm:size-20",
           badge.locked
             ? "border-border bg-muted"
             : cn("border-2", badge.borderColor, badge.bgColor),
@@ -764,7 +764,7 @@ function BadgeCard({
           src={imageUrl}
           alt=""
           className={cn(
-            "size-full object-cover transition-transform group-hover:scale-105",
+            "size-full object-cover transition-opacity duration-200 group-hover:opacity-95",
             badge.locked && "opacity-60",
           )}
         />
@@ -1018,11 +1018,11 @@ export default function Achievements() {
   const nextMilestones = lockedBadges.slice(0, 3);
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <section className="mb-8 overflow-hidden rounded-[28px] border border-border-subtle bg-card shadow-elevation-2">
-        <div className="relative p-5 sm:p-6 lg:p-7">
+    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <section className="mb-6 overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card">
+        <div className="relative p-4 sm:p-6">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--primary)_15%,transparent),transparent_38%),linear-gradient(180deg,color-mix(in_oklch,var(--primary-container)_58%,transparent),transparent_72%)]" />
-          <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+          <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
             <div className="min-w-0">
               <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
                 {t("achievements.hero.eyebrow")}
@@ -1056,7 +1056,7 @@ export default function Achievements() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-border-subtle bg-background/85 p-4">
+              <div className="rounded-md border border-border-subtle bg-background/85 p-4">
                 <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                   {t("achievements.hero.claimedOnOc.title")}
                 </p>
@@ -1065,7 +1065,7 @@ export default function Achievements() {
                   {t("achievements.hero.claimedOnOc.description")}
                 </p>
               </div>
-              <div className="rounded-2xl border border-border-subtle bg-background/85 p-4">
+              <div className="rounded-md border border-border-subtle bg-background/85 p-4">
                 <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                   {t("achievements.hero.pending.title")}
                 </p>
@@ -1074,7 +1074,7 @@ export default function Achievements() {
                   {t("achievements.hero.pending.description")}
                 </p>
               </div>
-              <div className="rounded-2xl border border-border-subtle bg-background/85 p-4 sm:col-span-2">
+              <div className="rounded-md border border-border-subtle bg-background/85 p-4 sm:col-span-2">
                 <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                   {t("achievements.hero.nextMilestone")}
                 </p>
@@ -1091,12 +1091,12 @@ export default function Achievements() {
         </div>
       </section>
 
-      <div className="mb-8">
+      <div className="mb-6">
         <StatsBar certificates={certificates} badges={badges} />
       </div>
 
-      <section className="mb-8 grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-        <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+      <section className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
           <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
             {t("achievements.meaning.title")}
           </div>
@@ -1110,7 +1110,7 @@ export default function Achievements() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
           <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
             {t("achievements.useCases.title")}
           </div>
@@ -1130,21 +1130,21 @@ export default function Achievements() {
         </div>
       </section>
 
-      <section className="mb-8 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+      <section className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
             <CheckCircle2 className="size-4" aria-hidden />
             {t("achievements.recent.title")}
           </div>
           {loading ? (
-            <div className="mt-5 flex min-h-44 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border-subtle bg-muted/20 text-center">
+            <div className="mt-5 flex min-h-44 flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border-subtle bg-muted/20 text-center">
               <Loader2 className="size-10 animate-spin text-muted-foreground/60" aria-hidden />
               <p className="text-sm text-muted-foreground">
                 {t("achievements.recent.loading")}
               </p>
             </div>
           ) : recentBadges.length === 0 && recentCertificates.length === 0 ? (
-            <div className="mt-5 flex flex-col items-center gap-3 py-16 text-center">
+            <div className="mt-5 flex flex-col items-center gap-3 py-12 text-center">
               <div className="flex size-12 items-center justify-center rounded-full bg-muted">
                 <Trophy className="size-6 text-muted-foreground" aria-hidden />
               </div>
@@ -1162,9 +1162,9 @@ export default function Achievements() {
                     type="button"
                     variant="ghost"
                     onClick={() => openModal({ kind: "cert", data: cert })}
-                    className="h-auto w-full justify-start rounded-2xl border border-border-subtle bg-background p-4 text-left hover:bg-muted/40"
+                    className="h-auto w-full justify-start rounded-md border border-border-subtle bg-background p-4 text-left hover:bg-muted/40"
                   >
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
                     <Award className="size-5" aria-hidden />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -1182,11 +1182,11 @@ export default function Achievements() {
                     type="button"
                     variant="ghost"
                     onClick={() => openModal({ kind: "badge", data: badge })}
-                    className="h-auto w-full justify-start rounded-2xl border border-border-subtle bg-background p-4 text-left hover:bg-muted/40"
+                    className="h-auto w-full justify-start rounded-md border border-border-subtle bg-background p-4 text-left hover:bg-muted/40"
                   >
                   <div
                     className={cn(
-                      "flex size-11 shrink-0 items-center justify-center rounded-2xl",
+                      "flex size-11 shrink-0 items-center justify-center rounded-md",
                       badge.bgColor,
                       badge.color,
                     )}
@@ -1206,7 +1206,7 @@ export default function Achievements() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
             <Lock className="size-4" aria-hidden />
             Sắp mở khóa
@@ -1216,10 +1216,10 @@ export default function Achievements() {
               nextMilestones.map((badge) => (
                 <div
                   key={badge.id}
-                  className="rounded-2xl border border-border-subtle bg-muted/20 p-4"
+                  className="rounded-md border border-border-subtle bg-muted/20 p-4"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-background text-muted-foreground">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground">
                       {badge.icon}
                     </div>
                     <div className="min-w-0">
@@ -1232,7 +1232,7 @@ export default function Achievements() {
                 </div>
               ))
             ) : (
-              <div className="rounded-2xl border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
                 {t("achievements.vaults.nextUnlock.allUnlockedNote")}
               </div>
             )}
@@ -1240,7 +1240,7 @@ export default function Achievements() {
         </div>
       </section>
 
-      <section className="mb-8 rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+      <section className="mb-6 rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
             <h2 className="text-lg font-medium text-foreground">
@@ -1255,7 +1255,7 @@ export default function Achievements() {
           </div>
         </div>
         {loading ? (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
+          <div className="flex flex-col items-center gap-3 py-12 text-center">
             <div className="flex size-12 items-center justify-center rounded-full bg-muted">
               <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden />
             </div>
@@ -1266,7 +1266,7 @@ export default function Achievements() {
             </div>
           </div>
         ) : certificates.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
+          <div className="flex flex-col items-center gap-3 py-12 text-center">
             <div className="flex size-12 items-center justify-center rounded-full bg-muted">
               <Award className="size-6 text-muted-foreground" aria-hidden />
             </div>
@@ -1285,7 +1285,7 @@ export default function Achievements() {
         )}
       </section>
 
-      <section className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+      <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
             <h2 className="text-lg font-medium text-foreground">
@@ -1304,7 +1304,7 @@ export default function Achievements() {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
+          <div className="flex flex-col items-center gap-3 py-12 text-center">
             <div className="flex size-12 items-center justify-center rounded-full bg-muted">
               <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden />
             </div>
