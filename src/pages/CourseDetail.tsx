@@ -71,6 +71,7 @@ export default function CourseDetail() {
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
     () => new Set(),
   );
@@ -285,6 +286,10 @@ export default function CourseDetail() {
     translate,
   ]);
 
+  useEffect(() => {
+    setThumbnailFailed(false);
+  }, [course?.thumbnail_url]);
+
   const handleEnroll = async () => {
     if (!resolvedCourseId) return;
     if (!isAuthenticated) {
@@ -387,6 +392,10 @@ export default function CourseDetail() {
   }, [course?.price_vnd, course?.promo_ends_at, course?.promo_price_vnd]);
   const courseIdForSpotlight = resolvedCourseId ?? "";
   const courseTitle = course?.title ?? "";
+  const courseThumbnailSrc =
+    course?.thumbnail_url && course.thumbnail_url.trim().length > 0 && !thumbnailFailed
+      ? course.thumbnail_url
+      : null;
 
   const courseSpotlightItems = useMemo(() => {
     const items: {
@@ -763,14 +772,36 @@ export default function CourseDetail() {
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-md border border-border-subtle bg-muted/40">
-                <div className="relative aspect-video">
+              <div className="relative aspect-video overflow-hidden rounded-md border border-border-subtle bg-muted/40 lg:aspect-auto lg:h-full">
+                <img
+                  src="/Corelia_Banner_Square.png"
+                  alt=""
+                  aria-hidden
+                  decoding="async"
+                  className="absolute inset-0 size-full object-cover opacity-90"
+                />
+
+                {courseThumbnailSrc ? (
                   <img
-                    src={course.thumbnail_url}
+                    src={courseThumbnailSrc}
                     alt={course.title}
+                    loading="lazy"
+                    decoding="async"
+                    onError={() => setThumbnailFailed(true)}
                     className="absolute inset-0 size-full object-cover"
                   />
-                </div>
+                ) : null}
+
+                {!courseThumbnailSrc ? (
+                  <div className="absolute inset-0 grid place-items-center bg-linear-to-br from-transparent via-transparent to-background/10">
+                    <div className="flex items-center gap-2 rounded-full bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+                      <BookOpen className="size-4" aria-hidden />
+                      {translate("detail.courseDetail.thumbnailFallback", {
+                        defaultValue: "Chưa có hình ảnh khoá học",
+                      })}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
           </section>
