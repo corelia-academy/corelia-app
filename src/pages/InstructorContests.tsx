@@ -26,6 +26,11 @@ import { toast } from "sonner";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
+import {
+  EmptyState,
+  PageContainer,
+  PageSectionCard,
+} from "@/components/layouts/PagePrimitives";
 
 type ContestsT = TFunction<"contests", undefined>;
 
@@ -142,27 +147,28 @@ export default function InstructorContests() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
+      <div className="flex min-h-80 items-center justify-center gap-3 text-sm text-muted-foreground">
+        <Loader2 className="size-4 animate-spin" aria-hidden />
         {t("instructor.loadingWorkspace")}
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+    <PageContainer>
       {error && (
-        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+        <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      <section className="mb-6 rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+      <PageSectionCard className="mb-4">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {t("instructor.hero.eyebrow")}
             </p>
-            <h2 className="mt-2 text-2xl font-normal tracking-tight text-foreground">
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
               {t("instructor.hero.title")}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground sm:text-sm">
@@ -182,17 +188,17 @@ export default function InstructorContests() {
             </Button>
           </div>
         </div>
-      </section>
+      </PageSectionCard>
 
       {featured && (
-        <section className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
-          <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+        <section className="mb-4 grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
+          <div className="rounded-lg border border-border-subtle bg-card p-6 shadow-card">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {t("instructor.featured.eyebrow")}
                 </p>
-                <h3 className="mt-2 text-xl font-normal tracking-tight text-foreground">
+                <h3 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
                   {featured.title}
                 </h3>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
@@ -205,32 +211,32 @@ export default function InstructorContests() {
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="rounded-lg border border-border-subtle bg-background p-4">
+                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("instructor.featured.schedule")}
                 </div>
                 <div className="mt-2 text-sm text-foreground">
                   {formatDateRange(featured.starts_at, featured.ends_at, t)}
                 </div>
               </div>
-              <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="rounded-lg border border-border-subtle bg-background p-4">
+                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("instructor.featured.registrations")}
                 </div>
                 <div className="mt-2 text-sm text-foreground">
                   {featured.metrics_snapshot.registrations_total} tổng · {featured.metrics_snapshot.approved_registrations} duyệt
                 </div>
               </div>
-              <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="rounded-lg border border-border-subtle bg-background p-4">
+                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("instructor.featured.submissions")}
                 </div>
                 <div className="mt-2 text-sm text-foreground">
                   {featured.metrics_snapshot.submissions_total} bài nộp
                 </div>
               </div>
-              <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="rounded-lg border border-border-subtle bg-background p-4">
+                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("instructor.featured.publicSurface")}
                 </div>
                 <div className="mt-2 text-sm text-foreground">
@@ -266,12 +272,12 @@ export default function InstructorContests() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="rounded-lg border border-border-subtle bg-card p-6 shadow-card">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {t("instructor.workflow.eyebrow")}
             </p>
             <div className="mt-4 space-y-3">
-              <div className="rounded-2xl border border-border-subtle bg-background p-4">
+              <div className="rounded-lg border border-border-subtle bg-background p-4">
                 <div className="text-sm font-medium text-foreground">
                   {t("instructor.workflow.applicationsTitle")}
                 </div>
@@ -279,7 +285,7 @@ export default function InstructorContests() {
                   {t("instructor.workflow.applicationsDescription")}
                 </div>
               </div>
-              <div className="rounded-2xl border border-border-subtle bg-background p-4">
+              <div className="rounded-lg border border-border-subtle bg-background p-4">
                 <div className="text-sm font-medium text-foreground">
                   {t("instructor.workflow.judgingTitle")}
                 </div>
@@ -287,7 +293,7 @@ export default function InstructorContests() {
                   {t("instructor.workflow.judgingDescription")}
                 </div>
               </div>
-              <div className="rounded-2xl border border-border-subtle bg-background p-4">
+              <div className="rounded-lg border border-border-subtle bg-background p-4">
                 <div className="text-sm font-medium text-foreground">
                   {t("instructor.workflow.publicTitle")}
                 </div>
@@ -301,84 +307,84 @@ export default function InstructorContests() {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("instructor.stats.total")}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">{stats.total}</p>
+              <p className="mt-2 text-2xl font-semibold text-foreground">{stats.total}</p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Trophy className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("instructor.stats.draft")}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">{stats.draft}</p>
+              <p className="mt-2 text-2xl font-semibold text-foreground">{stats.draft}</p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Eye className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("instructor.stats.accepting")}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
+              <p className="mt-2 text-2xl font-semibold text-foreground">
                 {stats.accepting}
               </p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <CheckCheck className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("instructor.stats.running")}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">{stats.running}</p>
+              <p className="mt-2 text-2xl font-semibold text-foreground">{stats.running}</p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Timer className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("instructor.stats.ended")}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">{stats.ended}</p>
+              <p className="mt-2 text-2xl font-semibold text-foreground">{stats.ended}</p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Calendar className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("instructor.stats.submissions")}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
+              <p className="mt-2 text-2xl font-semibold text-foreground">
                 {stats.submissions}
               </p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Users className="size-5" aria-hidden />
             </div>
           </div>
@@ -386,21 +392,27 @@ export default function InstructorContests() {
       </div>
 
       {items.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-border-subtle bg-card p-10 text-center shadow-card">
-          <Trophy className="mx-auto size-12 text-muted-foreground" />
-          <p className="mt-4 text-sm text-muted-foreground">
-            {t("instructor.empty.title")}
-          </p>
-          <Button type="button" className="mt-4" onClick={() => navigate("/instructor/contests/new")}>
-            {t("instructor.empty.createFirst")}
-          </Button>
+        <div className="mt-4 rounded-lg border border-border-subtle bg-card shadow-card">
+          <EmptyState
+            icon={<Trophy className="size-6 text-muted-foreground" aria-hidden />}
+            title={t("instructor.empty.title")}
+            action={
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => navigate("/instructor/contests/new")}
+              >
+                {t("instructor.empty.createFirst")}
+              </Button>
+            }
+          />
         </div>
       ) : (
-        <div className="mt-6 grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+        <div className="mt-4 grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
           {items.map((contest) => (
             <article
               key={contest.id}
-              className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-card shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              className="group flex h-full flex-col overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
             >
               <button
                 type="button"
@@ -435,17 +447,17 @@ export default function InstructorContests() {
                   {contest.tagline}
                 </p>
                 <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
-                  <div className="rounded-xl border border-border-subtle bg-background px-3 py-2">
+                  <div className="rounded-md border border-border-subtle bg-background px-3 py-2">
                     {formatDateRange(contest.starts_at, contest.ends_at, t)}
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2">
-                    <div className="rounded-xl border border-border-subtle bg-background px-3 py-2">
+                    <div className="rounded-md border border-border-subtle bg-background px-3 py-2">
                       {t("instructor.listItem.metricsRegistrations", {
                         total: contest.metrics_snapshot.registrations_total,
                         approved: contest.metrics_snapshot.approved_registrations,
                       })}
                     </div>
-                    <div className="rounded-xl border border-border-subtle bg-background px-3 py-2">
+                    <div className="rounded-md border border-border-subtle bg-background px-3 py-2">
                       {t("instructor.listItem.metricsSubmissions", {
                         submissions: contest.metrics_snapshot.submissions_total,
                         winners: contest.metrics_snapshot.published_winners,
@@ -493,7 +505,7 @@ export default function InstructorContests() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="rounded-lg">
           <DialogHeader>
             <DialogTitle>{t("instructor.deleteDialog.title")}</DialogTitle>
           </DialogHeader>
@@ -532,6 +544,6 @@ export default function InstructorContests() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

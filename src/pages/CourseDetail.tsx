@@ -352,8 +352,8 @@ export default function CourseDetail() {
   const isPreviewOnlyCurriculum =
     isPaidUpfront && !hasFullCourseAccess;
   const curriculumCountLabel = isPreviewOnlyCurriculum
-    ? `${lessons.length} bài học thử`
-    : `${lessons.length} bài học`;
+    ? translate("detail.courseDetail.lessonCountPreview", { count: lessons.length })
+    : translate("detail.courseDetail.lessonCount", { count: lessons.length });
 
   const canReviewDraft =
     course &&
@@ -427,6 +427,10 @@ export default function CourseDetail() {
 
     const liveContest = spotlightContests[0];
     if (liveContest) {
+      const registrationDeadlineText =
+        liveContest.registration_deadline != null
+          ? new Date(liveContest.registration_deadline).toLocaleDateString(intlLocale())
+          : null;
       items.push({
         id: `contest-${liveContest.id}`,
         badge:
@@ -438,8 +442,8 @@ export default function CourseDetail() {
         href: `/contests/${liveContest.id}`,
         ctaLabel: translate("detail.spotlight.exploreContest"),
         meta:
-          liveContest.registration_deadline != null
-            ? `Hạn đăng ký: ${new Date(liveContest.registration_deadline).toLocaleDateString(intlLocale())}`
+          registrationDeadlineText
+            ? translate("detail.spotlight.contestDeadlineMeta", { date: registrationDeadlineText })
             : translate("detail.spotlight.contestMetaNoDeadline"),
         icon: <Trophy className="size-5 shrink-0" aria-hidden />,
         accent: "amber",
@@ -640,7 +644,7 @@ export default function CourseDetail() {
             to="/courses"
             className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
           >
-            <ArrowLeft className="size-4" /> Quay lại danh sách
+            <ArrowLeft className="size-4" /> {translate("detail.courseDetail.backToCoursesList")}
           </Link>
         </div>
       </div>
@@ -654,7 +658,7 @@ export default function CourseDetail() {
           <div className="flex items-center gap-2">
             <Eye className="size-5 shrink-0 text-warning" aria-hidden />
             <span className="text-sm font-medium text-warning">
-              Chế độ xem trước — Khoá học đang nháp (chưa xuất bản)
+              {translate("detail.courseDetail.previewDraftNotice")}
             </span>
           </div>
           <Button
@@ -665,7 +669,8 @@ export default function CourseDetail() {
             size="sm"
             className="inline-flex items-center gap-2"
           >
-            <Pencil className="size-4 shrink-0" aria-hidden /> Chỉnh sửa khoá học
+            <Pencil className="size-4 shrink-0" aria-hidden />{" "}
+            {translate("detail.courseDetail.editCourse")}
           </Button>
         </div>
       ) : null}
@@ -675,7 +680,7 @@ export default function CourseDetail() {
         className="mb-3 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
-        Quay lại khoá học
+        {translate("detail.courseDetail.backToCourses")}
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
@@ -692,12 +697,14 @@ export default function CourseDetail() {
                   </span>
                   {isPaidUpfront && previewLessons.length > 0 ? (
                     <span className="rounded-md bg-success/15 px-2 py-1 text-success">
-                      {previewLessons.length} bài học thử
+                      {translate("detail.courseDetail.lessonCountPreview", {
+                        count: previewLessons.length,
+                      })}
                     </span>
                   ) : null}
                   {enrollment?.certificate_issued_at ? (
                     <span className="rounded-md bg-success/15 px-2 py-1 text-success">
-                      Đã cấp chứng nhận
+                      {translate("detail.courseDetail.certificateIssued")}
                     </span>
                   ) : null}
                 </div>
@@ -707,7 +714,7 @@ export default function CourseDetail() {
                 </h1>
 
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Giảng viên{" "}
+                  {translate("detail.courseDetail.instructorLabel")}{" "}
                   <Link
                     to={`/instructors/${course.instructor_id}`}
                     className="font-medium text-foreground hover:underline"
@@ -725,25 +732,31 @@ export default function CourseDetail() {
                 <div className="mt-4 grid gap-2 text-sm">
                   <dl className="grid grid-cols-2 gap-2 rounded-md border border-border-subtle bg-background p-3 text-sm">
                     <div>
-                      <dt className="text-muted-foreground">Thời lượng</dt>
+                      <dt className="text-muted-foreground">
+                        {translate("detail.courseDetail.stats.duration")}
+                      </dt>
                       <dd className="mt-0.5 font-medium text-foreground">
                         {formatDuration(displayTotalDuration)}
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-muted-foreground">Curriculum</dt>
+                      <dt className="text-muted-foreground">
+                        {translate("detail.courseDetail.stats.curriculum")}
+                      </dt>
                       <dd className="mt-0.5 font-medium text-foreground">
                         {curriculumCountLabel}
                       </dd>
                     </div>
                     <div className="col-span-2">
-                      <dt className="text-muted-foreground">Hoàn thành</dt>
+                      <dt className="text-muted-foreground">
+                        {translate("detail.courseDetail.stats.completion")}
+                      </dt>
                       <dd className="mt-0.5 font-medium text-foreground">
                         {course.final_assignment_title
-                          ? "Có bài cuối khoá cần duyệt"
+                          ? translate("detail.courseDetail.completion.hasFinalAssignment")
                           : isFreeWithPaidCertificate
-                            ? "Có phí xét chứng nhận"
-                            : "100% bài học"}
+                            ? translate("detail.courseDetail.completion.certificateFeeRequired")
+                            : translate("detail.courseDetail.completion.fullLessons")}
                       </dd>
                     </div>
                   </dl>
@@ -768,17 +781,20 @@ export default function CourseDetail() {
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                  <BookOpen className="size-5 shrink-0" aria-hidden /> Lộ trình học
+                  <BookOpen className="size-5 shrink-0" aria-hidden />{" "}
+                  {translate("detail.courseDetail.curriculum.title")}
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {isPreviewOnlyCurriculum
-                    ? "Bạn đang xem phần preview. Mở khoá để thấy toàn bộ curriculum."
-                    : "Nội dung được chia theo chương để bạn theo dõi mạch học dễ hơn."}
+                    ? translate("detail.courseDetail.curriculum.previewDescription")
+                    : translate("detail.courseDetail.curriculum.fullDescription")}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-                  {visibleLessonGroups.length} chương
+                  {translate("detail.courseDetail.sectionCount", {
+                    count: visibleLessonGroups.length,
+                  })}
                 </div>
                 <Button
                   type="button"
@@ -800,7 +816,7 @@ export default function CourseDetail() {
                     });
                   }}
                 >
-                  Thu gọn curriculum
+                  {translate("detail.courseDetail.curriculum.collapseAll")}
                 </Button>
               </div>
             </div>
@@ -828,14 +844,20 @@ export default function CourseDetail() {
                   >
                     <div className="min-w-0">
                       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Chương {sectionIndex + 1}
+                        {translate("detail.courseDetail.sectionLabel", {
+                          index: sectionIndex + 1,
+                        })}
                       </p>
                       <p className="text-sm font-medium text-foreground">
                         {section.title}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{sectionLessons.length} bài</span>
+                      <span>
+                        {translate("detail.courseDetail.lessonCountShort", {
+                          count: sectionLessons.length,
+                        })}
+                      </span>
                       <ChevronDown
                         className={cn(
                           "size-4 shrink-0 transition-transform duration-200",
@@ -865,7 +887,7 @@ export default function CourseDetail() {
                           </div>
                           {isPaidUpfront && lesson.is_preview_free ? (
                             <span className="mt-0.5 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success sm:mt-0">
-                              Học thử
+                              {translate("detail.courseDetail.previewLessonBadge")}
                             </span>
                           ) : null}
                         </div>
@@ -881,9 +903,9 @@ export default function CourseDetail() {
 
           <div className="mt-8">
             <CoreliaSpotlight
-              eyebrow="Bước tiếp theo cùng Corelia"
-              title="Những hoạt động nên đến sau khi bạn đã hiểu khoá học này"
-              description="Phần này không cố bán thêm. Nó chỉ gợi ý những nhịp tiếp theo thực sự liên quan: quay lại bài đang dở, contest đang mở hoặc các khoá học phù hợp trong hệ sinh thái."
+              eyebrow={translate("detail.courseDetail.spotlight.eyebrow")}
+              title={translate("detail.courseDetail.spotlight.title")}
+              description={translate("detail.courseDetail.spotlight.description")}
               items={courseSpotlightItems}
               compact
             />

@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
+import { PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 
 const normalizeVndDigits = (value: string) =>
   value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
@@ -184,8 +185,8 @@ const InstructorCourseNew = () => {
   };
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <section className="mb-6 rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+    <PageContainer>
+      <PageSectionCard className="mb-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
             <p className="max-w-3xl text-sm text-muted-foreground sm:text-sm">
@@ -205,32 +206,32 @@ const InstructorCourseNew = () => {
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="rounded-lg border border-border-subtle bg-muted/25 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Trạng thái
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
               {t("courseNew.labels.draft")}
             </p>
           </div>
-          <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="rounded-lg border border-border-subtle bg-muted/25 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Loại truy cập
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
               {getCourseAccessModelLabel(form.access_model)}
             </p>
           </div>
-          <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="rounded-lg border border-border-subtle bg-muted/25 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Sở hữu doanh thu
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
               {getCourseOwnerTypeLabel(form.owner_type)}
             </p>
           </div>
-          <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="rounded-lg border border-border-subtle bg-muted/25 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Cấp độ
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
@@ -238,18 +239,18 @@ const InstructorCourseNew = () => {
             </p>
           </div>
         </div>
-      </section>
+      </PageSectionCard>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+        <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[260px_1fr]">
-        <nav className="h-fit rounded-2xl border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24">
+      <div className="grid gap-4 xl:grid-cols-[260px_1fr]">
+        <nav className="h-fit rounded-lg border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24">
           <div className="mb-3 px-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Lộ trình thiết lập
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -261,7 +262,7 @@ const InstructorCourseNew = () => {
             <li>
               <button
                 type="button"
-                className="flex w-full items-center gap-2 rounded-xl bg-sidebar-accent px-3 py-2 text-left text-sm font-medium text-sidebar-accent-foreground"
+                className="flex w-full items-center gap-2 rounded-md bg-sidebar-accent px-3 py-2 text-left text-sm font-medium text-sidebar-accent-foreground"
               >
                 <Settings className="size-4 shrink-0" aria-hidden />
                 Thông tin chung
@@ -271,7 +272,7 @@ const InstructorCourseNew = () => {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
               >
                 <List className="size-4 shrink-0" aria-hidden />
                 Nội dung & bài học
@@ -281,7 +282,7 @@ const InstructorCourseNew = () => {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
               >
                 <FileText className="size-4 shrink-0" aria-hidden />
                 Bài tập cuối khoá
@@ -291,7 +292,7 @@ const InstructorCourseNew = () => {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
               >
                 <Award className="size-4 shrink-0" aria-hidden />
                 Chứng nhận
@@ -301,7 +302,7 @@ const InstructorCourseNew = () => {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
               >
                 <Users className="size-4 shrink-0" aria-hidden />
                 Quản lý học viên
@@ -311,7 +312,7 @@ const InstructorCourseNew = () => {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
               >
                 <AlertTriangle className="size-4 shrink-0" aria-hidden />
                 Xoá khoá học
@@ -319,7 +320,7 @@ const InstructorCourseNew = () => {
             </li>
           </ul>
 
-          <div className="mt-4 rounded-2xl border border-border-subtle bg-muted/25 p-4">
+          <div className="mt-4 rounded-lg border border-border-subtle bg-muted/25 p-4">
             <p className="text-xs font-medium text-foreground">
               Mẹo khởi tạo nhanh
             </p>
@@ -330,7 +331,7 @@ const InstructorCourseNew = () => {
         </nav>
 
         <div className="min-w-0 flex-1">
-          <section className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+          <PageSectionCard className="p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-lg font-medium text-foreground">
@@ -390,7 +391,7 @@ const InstructorCourseNew = () => {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, description: e.target.value }))
                     }
-                    className="min-h-[100px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-28 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     rows={4}
                     placeholder={t("courseNew.placeholders.description")}
                   />
@@ -419,7 +420,7 @@ const InstructorCourseNew = () => {
                     <img
                       src={thumbnailPreviewUrl ?? form.thumbnail_url}
                       alt=""
-                      className="h-20 w-32 rounded-xl border border-border-subtle object-cover"
+                      className="h-20 w-32 rounded-md border border-border-subtle object-cover"
                     />
                   </div>
                 </Field>
@@ -608,10 +609,10 @@ const InstructorCourseNew = () => {
                 </Button>
               </div>
             </form>
-          </section>
+          </PageSectionCard>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 

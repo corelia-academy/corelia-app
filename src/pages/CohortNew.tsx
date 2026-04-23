@@ -13,6 +13,7 @@ import type {
   OfflineMeetingProvider,
 } from "@/types/offline";
 import { useTranslation } from "react-i18next";
+import { PageContainer } from "@/components/layouts/PagePrimitives";
 
 function toIsoOrNull(value: string): string | null {
   if (!value.trim()) return null;
@@ -162,13 +163,13 @@ export default function CohortNew() {
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1100px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+    <PageContainer width="narrow">
       <Card>
-        <CardContent className="p-5 sm:p-6">
-          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <CardContent className="p-6">
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("instructorNew.hero.eyebrow")}
           </div>
-          <h1 className="mt-2 text-2xl font-normal tracking-tight text-foreground">
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
             {t("instructorNew.hero.title")}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -177,8 +178,8 @@ export default function CohortNew() {
         </CardContent>
       </Card>
 
-      <Card className="mt-6">
-        <CardContent className="space-y-4 p-5 sm:p-6">
+      <Card className="mt-4">
+        <CardContent className="space-y-4 p-6">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -327,7 +328,7 @@ export default function CohortNew() {
               className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
             />
           </div>
-          <div className="rounded-2xl border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
+          <div className="rounded-lg border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
             {t("instructorNew.form.meetFallbackHint")}
           </div>
           <textarea
@@ -354,6 +355,6 @@ export default function CohortNew() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

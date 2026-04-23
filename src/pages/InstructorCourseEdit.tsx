@@ -93,6 +93,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
+import { PageContainer } from "@/components/layouts/PagePrimitives";
 
 const normalizeVndDigits = (value: string) =>
   value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
@@ -1024,7 +1025,7 @@ const InstructorCourseEdit = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
+      <div className="flex min-h-80 items-center justify-center">
         <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
       </div>
     );
@@ -1032,7 +1033,7 @@ const InstructorCourseEdit = () => {
 
   if (error && !course) {
     return (
-      <div className="mx-auto max-w-[1990px] px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-6 lg:px-8">
         <p className="text-destructive">{error}</p>
         <Link
           to="/instructor/courses"
@@ -1046,7 +1047,7 @@ const InstructorCourseEdit = () => {
 
   if (!course || !canEdit) {
     return (
-      <div className="mx-auto max-w-[1990px] px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-6 lg:px-8">
         <p className="text-muted-foreground">
           {t("courseEdit.access.noPermission")}
         </p>
@@ -1068,8 +1069,8 @@ const InstructorCourseEdit = () => {
   ];
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="mb-6 rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+    <PageContainer>
+      <div className="mb-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap gap-2">
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
@@ -1090,20 +1091,17 @@ const InstructorCourseEdit = () => {
           {editorStats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div
-                key={stat.label}
-                className="rounded-2xl border border-border-subtle bg-muted/25 p-4"
-              >
+              <div key={stat.label} className="rounded-lg border border-border-subtle bg-muted/25 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       {stat.label}
                     </p>
                     <p className="mt-2 text-xl font-semibold text-foreground">
                       {stat.value}
                     </p>
                   </div>
-                  <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Icon className="size-5" aria-hidden />
                   </div>
                 </div>
@@ -1114,16 +1112,16 @@ const InstructorCourseEdit = () => {
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      <div className="flex flex-col gap-6 xl:flex-row">
+      <div className="flex flex-col gap-4 xl:flex-row">
         {/* Sidebar inner — điều hướng từng phần */}
-        <nav className="h-fit shrink-0 rounded-2xl border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24 xl:w-64">
+        <nav className="h-fit shrink-0 rounded-lg border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24 xl:w-64">
           <div className="mb-3 px-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Điều hướng chỉnh sửa
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -1993,7 +1991,7 @@ const InstructorCourseEdit = () => {
                 dùng mũi tên lên/xuống khi cần.
               </p>
 
-              <div className="mt-4 space-y-6">
+              <div className="mt-4 space-y-4">
                 {form.access_model === "paid_upfront" && (
                   <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
                     {t("courseEdit.pricing.updateTotalDurationLabelPrefix")}
@@ -2272,7 +2270,7 @@ const InstructorCourseEdit = () => {
                   tích hợp sau).
                 </p>
               )}
-              <p className="text-sm text-muted-foreground mb-6">
+              <p className="mb-4 text-sm text-muted-foreground">
                 Nếu có, học viên phải nộp và được duyệt mới đủ điều kiện nhận
                 chứng nhận.
               </p>
@@ -2480,7 +2478,7 @@ const InstructorCourseEdit = () => {
                 <Award className="size-5" aria-hidden /> Template
                 chứng nhận
               </h2>
-              <p className="text-sm text-muted-foreground mb-6">
+              <p className="mb-4 text-sm text-muted-foreground">
                 Tải lên ảnh template chứng nhận (PNG/JPG). Tên học viên sẽ được
                 hiển thị tại vị trí bạn chọn (theo % từ trái và từ trên).
               </p>
@@ -2806,7 +2804,7 @@ const InstructorCourseEdit = () => {
           )}
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 

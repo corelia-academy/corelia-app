@@ -11,15 +11,16 @@ import {
   Receipt,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 
 function ExternalOnlyHint() {
   const { t } = useTranslation("instructor");
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="rounded-2xl border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-5">
+    <PageContainer>
+      <PageSectionCard className="text-sm text-muted-foreground">
         {t("finance.externalOnlyHint")}
-      </div>
-    </div>
+      </PageSectionCard>
+    </PageContainer>
   );
 }
 
@@ -39,10 +40,10 @@ function DocumentPanel({
   const Icon = icon;
 
   return (
-    <section className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+    <PageSectionCard>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-lg font-medium text-foreground">{title}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
           <p className="mt-2 text-sm text-muted-foreground sm:text-sm">
             {description}
           </p>
@@ -53,7 +54,7 @@ function DocumentPanel({
         </div>
       </div>
       <div className="mt-5">{children}</div>
-    </section>
+    </PageSectionCard>
   );
 }
 
@@ -68,9 +69,9 @@ function DocumentList({
 }) {
   if (rows.length === 0) {
     return (
-          <div className="rounded-2xl border border-dashed border-border-subtle bg-muted/20 p-4 text-sm text-muted-foreground sm:p-5">
-            {emptyLabel}
-          </div>
+      <div className="rounded-lg border border-dashed border-border-subtle bg-muted/20 p-4 text-sm text-muted-foreground">
+        {emptyLabel}
+      </div>
     );
   }
 
@@ -79,7 +80,7 @@ function DocumentList({
       {rows.map((doc) => (
         <article
           key={doc.path}
-          className="flex flex-col gap-3 rounded-2xl border border-border-subtle bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-col gap-3 rounded-lg border border-border-subtle bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div className="min-w-0">
             <a
@@ -115,27 +116,27 @@ export function PartnerContractsPage() {
   if (profile?.instructor_origin !== "external") return <ExternalOnlyHint />;
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="space-y-6">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+    <PageContainer>
+      <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("partnerFinance.contracts.stats.totalDocuments")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
             {rows.length}
           </p>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("partnerFinance.contracts.stats.source")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
             {t("partnerFinance.contracts.stats.sourceValue")}
           </p>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("partnerFinance.contracts.stats.status")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -157,7 +158,7 @@ export function PartnerContractsPage() {
         />
       </DocumentPanel>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
@@ -183,27 +184,27 @@ export function PartnerInvoicesPage() {
   if (profile?.instructor_origin !== "external") return <ExternalOnlyHint />;
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="space-y-6">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+    <PageContainer>
+      <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("partnerFinance.invoices.stats.currentMonth")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
             {monthFilter}
           </p>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("partnerFinance.invoices.stats.total")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
             {rows.length}
           </p>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("partnerFinance.invoices.stats.status")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -241,7 +242,7 @@ export function PartnerInvoicesPage() {
         />
       </DocumentPanel>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
@@ -259,27 +260,27 @@ export function PartnerPaymentsPage() {
   const hasBankInfo = Boolean(bankName || bankAccount || bankHolder || bankNote);
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="space-y-6">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+    <PageContainer>
+      <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("partnerFinance.payments.stats.bankAccount")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
             {bankAccount || t("partnerFinance.common.notAvailable")}
           </p>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("partnerFinance.payments.stats.accountHolder")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
             {bankHolder || t("partnerFinance.common.notAvailable")}
           </p>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("partnerFinance.payments.stats.payoutGuide")}
           </p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -302,7 +303,7 @@ export function PartnerPaymentsPage() {
       >
         {hasBankInfo ? (
           <div className="grid gap-3 lg:grid-cols-2">
-            <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
+            <div className="rounded-lg border border-border-subtle bg-muted/20 p-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
                 <Landmark className="size-4 text-primary" aria-hidden />
                 {t("partnerFinance.payments.sections.transferInfo")}
@@ -342,7 +343,7 @@ export function PartnerPaymentsPage() {
                 ) : null}
               </div>
             </div>
-            <div className="rounded-2xl border border-border-subtle bg-muted/20 p-4">
+            <div className="rounded-lg border border-border-subtle bg-muted/20 p-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
                 <CreditCard className="size-4 text-primary" aria-hidden />
                 {t("partnerFinance.payments.sections.extraNotes")}
@@ -359,12 +360,12 @@ export function PartnerPaymentsPage() {
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-border-subtle bg-muted/20 p-5 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-dashed border-border-subtle bg-muted/20 p-4 text-sm text-muted-foreground">
             {t("partnerFinance.payments.empty")}
           </div>
         )}
       </DocumentPanel>
       </div>
-    </div>
+    </PageContainer>
   );
 }

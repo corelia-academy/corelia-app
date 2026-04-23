@@ -130,12 +130,48 @@
       "runningContestBadge": "Contest đang chạy",
       "newContestBadge": "Contest mới",
       "exploreContest": "Khám phá contest",
+      "contestDeadlineMeta": "Hạn đăng ký: {{date}}",
       "contestMetaNoDeadline": "Một nhịp tiếp theo trong hệ sinh thái Corelia",
       "exploreMoreBadge": "Khám phá thêm",
       "exploreMoreTitle": "Mở rộng lộ trình học tập của bạn cùng Corelia",
       "exploreMoreDescription": "Khi hoàn thành một nhịp học, bạn có thể nối sang contest hoặc các khoá học thực hành khác.",
       "seeMoreCourses": "Xem thêm khoá học",
       "ecosystemMeta": "Lộ trình học và hệ sinh thái Web3 thực chiến"
+    },
+    "courseDetail": {
+      "backToCoursesList": "Quay lại danh sách",
+      "backToCourses": "Quay lại khoá học",
+      "previewDraftNotice": "Chế độ xem trước — Khoá học đang nháp (chưa xuất bản)",
+      "editCourse": "Chỉnh sửa khoá học",
+      "certificateIssued": "Đã cấp chứng nhận",
+      "instructorLabel": "Giảng viên",
+      "stats": {
+        "duration": "Thời lượng",
+        "curriculum": "Curriculum",
+        "completion": "Hoàn thành"
+      },
+      "completion": {
+        "hasFinalAssignment": "Có bài cuối khoá cần duyệt",
+        "certificateFeeRequired": "Có phí xét chứng nhận",
+        "fullLessons": "100% bài học"
+      },
+      "sectionCount": "{{count}} chương",
+      "sectionLabel": "Chương {{index}}",
+      "lessonCount": "{{count}} bài học",
+      "lessonCountPreview": "{{count}} bài học thử",
+      "lessonCountShort": "{{count}} bài",
+      "previewLessonBadge": "Học thử",
+      "curriculum": {
+        "title": "Lộ trình học",
+        "previewDescription": "Bạn đang xem phần preview. Mở khoá để thấy toàn bộ curriculum.",
+        "fullDescription": "Nội dung được chia theo chương để bạn theo dõi mạch học dễ hơn.",
+        "collapseAll": "Thu gọn curriculum"
+      },
+      "spotlight": {
+        "eyebrow": "Bước tiếp theo cùng Corelia",
+        "title": "Những hoạt động nên đến sau khi bạn đã hiểu khoá học này",
+        "description": "Phần này không cố bán thêm. Nó chỉ gợi ý những nhịp tiếp theo thực sự liên quan: quay lại bài đang dở, contest đang mở hoặc các khoá học phù hợp trong hệ sinh thái."
+      }
     },
     "accessPanel": {
       "ready": "Sẵn sàng vào học",

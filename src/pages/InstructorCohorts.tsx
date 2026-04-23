@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { listOfflineCohorts, listOfflineCourses } from "@/lib/offline";
 import { useAuth } from "@/stores/authStore";
 import type { OfflineCohort, OfflineCourse } from "@/types/offline";
 import { useTranslation } from "react-i18next";
+import { CalendarDays, Loader2 } from "lucide-react";
+import {
+  EmptyState,
+  PageContainer,
+  PageSectionCard,
+} from "@/components/layouts/PagePrimitives";
 
 export default function InstructorCohorts() {
   const { t } = useTranslation("cohorts");
@@ -66,14 +71,14 @@ export default function InstructorCohorts() {
   );
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <section className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+    <PageContainer>
+      <PageSectionCard>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {t("instructorWorkspace.hero.eyebrow")}
             </div>
-            <h1 className="mt-2 text-2xl font-normal tracking-tight text-foreground">
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
               {t("instructorWorkspace.hero.title")}
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
@@ -84,71 +89,67 @@ export default function InstructorCohorts() {
             {t("instructorWorkspace.hero.create")}
           </Button>
         </div>
-      </section>
+      </PageSectionCard>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("instructorWorkspace.stats.totalCourses")}
           </div>
-          <div className="mt-2 text-3xl font-semibold text-foreground">{stats.total}</div>
+          <div className="mt-2 text-2xl font-semibold text-foreground">{stats.total}</div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("instructorWorkspace.stats.runningCohorts")}
           </div>
-          <div className="mt-2 text-3xl font-semibold text-foreground">{stats.running}</div>
+          <div className="mt-2 text-2xl font-semibold text-foreground">{stats.running}</div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("instructorWorkspace.stats.activeStudents")}
           </div>
-          <div className="mt-2 text-3xl font-semibold text-foreground">{stats.students}</div>
+          <div className="mt-2 text-2xl font-semibold text-foreground">{stats.students}</div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t("instructorWorkspace.stats.readyRecordings")}
           </div>
-          <div className="mt-2 text-3xl font-semibold text-foreground">{stats.recordings}</div>
+          <div className="mt-2 text-2xl font-semibold text-foreground">{stats.recordings}</div>
         </div>
       </div>
 
       {loading ? (
-        <Card className="mt-6">
-          <CardContent className="p-8 text-center text-muted-foreground">
-            {t("instructorWorkspace.loading")}
-          </CardContent>
-        </Card>
+        <div className="mt-4 flex min-h-80 items-center justify-center gap-3 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" aria-hidden />
+          {t("instructorWorkspace.loading")}
+        </div>
       ) : error ? (
-        <Card className="mt-6 border-destructive/20 bg-destructive/5">
-          <CardContent className="p-5 text-sm text-destructive">{error}</CardContent>
-        </Card>
+        <div className="mt-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+          {error}
+        </div>
       ) : items.length === 0 ? (
-        <Card className="mt-6">
-          <CardContent className="p-8 text-center">
-            <div className="text-sm font-medium text-foreground">
-              {t("instructorWorkspace.empty.title")}
-            </div>
-            <Button
-              type="button"
-              className="mt-4"
-              onClick={() => navigate("/instructor/cohorts/new")}
-            >
-              {t("instructorWorkspace.empty.createFirst")}
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="mt-4 rounded-lg border border-border-subtle bg-card shadow-card">
+          <EmptyState
+            icon={<CalendarDays className="size-6 text-muted-foreground" aria-hidden />}
+            title={t("instructorWorkspace.empty.title")}
+            action={
+              <Button type="button" size="sm" onClick={() => navigate("/instructor/cohorts/new")}>
+                {t("instructorWorkspace.empty.createFirst")}
+              </Button>
+            }
+          />
+        </div>
       ) : (
-        <div className="mt-6 grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
+        <div className="mt-4 grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
           {items.map((course) => {
             const courseCohorts = cohorts.filter(
               (cohort) => cohort.offline_course_id === course.id,
             );
             return (
-            <article
-              key={course.id}
-              className="overflow-hidden rounded-2xl border border-border-subtle bg-card shadow-card"
-            >
+              <article
+                key={course.id}
+                className="overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card"
+              >
               <div className="border-b border-border-subtle bg-muted/20 px-5 py-4">
                 <div className="flex flex-wrap gap-2">
                   <span className="inline-flex items-center rounded-full border border-border-subtle bg-background px-3 py-1 text-xs font-medium text-foreground">
@@ -163,18 +164,18 @@ export default function InstructorCohorts() {
                 <h2 className="mt-3 text-lg font-medium text-foreground">{course.title}</h2>
                 <p className="mt-2 text-sm text-muted-foreground">{course.tagline}</p>
               </div>
-              <div className="space-y-4 p-5">
+              <div className="space-y-4 p-4">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                    <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="rounded-lg border border-border-subtle bg-background p-4">
+                    <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       {t("catalog.metrics.cohorts")}
                     </div>
                     <div className="mt-2 text-lg font-semibold text-foreground">
                       {course.metrics_snapshot.cohorts_total || courseCohorts.length}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                    <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="rounded-lg border border-border-subtle bg-background p-4">
+                    <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       {t("instructorWorkspace.courseMetrics.students")}
                     </div>
                     <div className="mt-2 text-lg font-semibold text-foreground">
@@ -198,11 +199,11 @@ export default function InstructorCohorts() {
                   </Button>
                 </div>
               </div>
-            </article>
+              </article>
             );
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

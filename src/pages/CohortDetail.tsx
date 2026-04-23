@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { ProfileCombobox } from "@/components/ui/profile-combobox";
+import { PageContainer } from "@/components/layouts/PagePrimitives";
 import {
   createGoogleMeetSpaceForOfflineSession,
   createOfflineCohort,
@@ -788,7 +789,7 @@ export default function CohortDetail() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-[1990px] px-4 py-10 text-center text-muted-foreground">
+      <div className="mx-auto max-w-7xl px-4 py-10 text-center text-muted-foreground sm:px-6 lg:px-8">
         {translate("detail.errors.loadingCourse")}
       </div>
     );
@@ -796,8 +797,8 @@ export default function CohortDetail() {
 
   if (error || !course) {
     return (
-      <div className="mx-auto max-w-[1990px] px-4 py-10 text-center">
-        <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
+      <div className="mx-auto max-w-7xl px-4 py-10 text-center sm:px-6 lg:px-8">
+        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 shadow-card">
           <p className="text-sm font-medium text-destructive">
             {error || translate("detail.toasts.courseNotFound")}
           </p>
@@ -811,14 +812,14 @@ export default function CohortDetail() {
 
   if (isManageView && selectedCohort && !canManage) {
     return (
-      <div className="mx-auto max-w-[1990px] px-4 py-10 text-center text-muted-foreground">
+      <div className="mx-auto max-w-7xl px-4 py-10 text-center text-muted-foreground sm:px-6 lg:px-8">
         Bạn không có quyền vào workspace của khoá học này.
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+    <PageContainer>
       <div className="mb-4">
         <Button
           render={<NavLink to={isManageView ? "/instructor/cohorts" : "/cohorts"} />}
@@ -829,11 +830,11 @@ export default function CohortDetail() {
         </Button>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
-        <div className="space-y-6">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
+        <div className="space-y-4">
           <Card>
-            <CardContent className="p-5 sm:p-6">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <CardContent className="p-6">
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {isManageView
                   ? translate("detail.ui.workspaceTitle")
                   : translate("detail.ui.publicTitle")}
@@ -846,32 +847,32 @@ export default function CohortDetail() {
               </p>
 
               <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                <div className="rounded-lg border border-border-subtle bg-background p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Thành phố
                   </div>
                   <div className="mt-2 text-sm text-foreground">
                     {course.venue_city || translate("detail.fallbacks.venueCity")}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                <div className="rounded-lg border border-border-subtle bg-background p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Cohorts
                   </div>
                   <div className="mt-2 text-sm text-foreground">
                     {course.metrics_snapshot.cohorts_total}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                <div className="rounded-lg border border-border-subtle bg-background p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Học viên active
                   </div>
                   <div className="mt-2 text-sm text-foreground">
                     {course.metrics_snapshot.enrolled_students}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                <div className="rounded-lg border border-border-subtle bg-background p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Recording
                   </div>
                   <div className="mt-2 text-sm text-foreground">
@@ -882,7 +883,7 @@ export default function CohortDetail() {
 
               {cohorts.length > 0 ? (
                 <div className="mt-5">
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {translate("detail.ui.selectCohortLabel")}
                   </div>
                   <select
@@ -903,7 +904,7 @@ export default function CohortDetail() {
 
           {course.description ? (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <h2 className="text-lg font-medium text-foreground">
                   {translate("detail.ui.courseOverviewTitle")}
                 </h2>
@@ -916,7 +917,7 @@ export default function CohortDetail() {
 
           {isManageView && canManageCourse ? (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h2 className="text-lg font-medium text-foreground">
@@ -1054,7 +1055,7 @@ export default function CohortDetail() {
                   placeholder={translate("detail.forms.course.learningOutcomesPlaceholder")}
                 />
 
-                <label className="mt-4 flex items-center gap-3 rounded-2xl border border-border-subtle bg-background px-4 py-3 text-sm text-foreground">
+                <label className="mt-4 flex items-center gap-3 rounded-lg border border-border-subtle bg-background px-4 py-3 text-sm text-foreground">
                   <input
                     type="checkbox"
                     checked={courseSettingsForm.published}
@@ -1085,7 +1086,7 @@ export default function CohortDetail() {
 
           {isManageView && canManageCourse ? (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h2 className="text-lg font-medium text-foreground">Các cohort của khoá</h2>
@@ -1100,7 +1101,7 @@ export default function CohortDetail() {
                 </div>
 
                 {cohorts.length === 0 ? (
-                  <div className="mt-5 rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-5 text-sm text-muted-foreground">
+                  <div className="mt-5 rounded-lg border border-dashed border-border-subtle bg-background px-4 py-5 text-sm text-muted-foreground">
                     Khoá này chưa có cohort nào. Tạo cohort đầu tiên ở ngay bên dưới để bắt
                     đầu lên lịch học và xếp học viên.
                   </div>
@@ -1111,7 +1112,7 @@ export default function CohortDetail() {
                         key={item.id}
                         type="button"
                         onClick={() => setSelectedCohortId(item.id)}
-                        className={`rounded-2xl border p-4 text-left transition ${
+                        className={`rounded-lg border p-4 text-left transition ${
                           item.id === selectedCohortId
                             ? "border-primary bg-primary/5"
                             : "border-border-subtle bg-background hover:border-border"
@@ -1162,7 +1163,7 @@ export default function CohortDetail() {
 
           {isManageView && canManageCourse ? (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <h2 className="text-lg font-medium text-foreground">Mở cohort mới</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   Dùng khi khoá offline mở thêm đợt học mới, đổi lịch khai giảng, đổi giảng
@@ -1318,7 +1319,7 @@ export default function CohortDetail() {
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm"
                   />
                 </div>
-                <div className="mt-4 rounded-2xl border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
+                <div className="mt-4 rounded-lg border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
                   Nếu cohort dùng Google Meet, link ở đây sẽ được ưu tiên hiển thị cho học
                   viên trong lịch buổi học để họ vẫn có thể tham gia online khi không đến
                   lớp trực tiếp. Các session mới cũng sẽ tự điền sẵn link này để đội ngũ
@@ -1352,7 +1353,7 @@ export default function CohortDetail() {
 
           {selectedCohort ? (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <h2 className="text-lg font-medium text-foreground">{selectedCohort.title}</h2>
@@ -1374,16 +1375,16 @@ export default function CohortDetail() {
                 </div>
 
                 <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                    <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="rounded-lg border border-border-subtle bg-background p-4">
+                    <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Giảng viên
                     </div>
                     <div className="mt-2 text-sm text-foreground">
                       {selectedCohort.instructor_name}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                    <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="rounded-lg border border-border-subtle bg-background p-4">
+                    <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Địa điểm
                     </div>
                     <div className="mt-2 text-sm text-foreground">
@@ -1392,16 +1393,16 @@ export default function CohortDetail() {
                         translate("detail.fallbacks.venueCity")}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                    <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="rounded-lg border border-border-subtle bg-background p-4">
+                    <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Buổi học
                     </div>
                     <div className="mt-2 text-sm text-foreground">
                       {selectedCohort.metrics_snapshot.sessions_total}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                    <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="rounded-lg border border-border-subtle bg-background p-4">
+                    <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Recording
                     </div>
                     <div className="mt-2 text-sm text-foreground">
@@ -1413,7 +1414,7 @@ export default function CohortDetail() {
             </Card>
           ) : (
             <Card>
-              <CardContent className="p-5 text-sm text-muted-foreground">
+              <CardContent className="p-4 text-sm text-muted-foreground">
                 Khoá học này chưa có cohort nào.
               </CardContent>
             </Card>
@@ -1421,23 +1422,23 @@ export default function CohortDetail() {
 
           {selectedCohort ? (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <h2 className="text-lg font-medium text-foreground">Lịch học từng tuần</h2>
                 {!canSeePrivateOps ? (
-                  <div className="mt-4 rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-5 text-sm text-muted-foreground">
+                  <div className="mt-4 rounded-lg border border-dashed border-border-subtle bg-background px-4 py-5 text-sm text-muted-foreground">
                     Lịch chi tiết và recording mở cho học viên đã được xếp vào cohort hoặc đội ngũ vận hành.
                   </div>
                 ) : sessions.length === 0 ? (
-                  <div className="mt-4 rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-5 text-sm text-muted-foreground">
+                  <div className="mt-4 rounded-lg border border-dashed border-border-subtle bg-background px-4 py-5 text-sm text-muted-foreground">
                     Chưa có buổi học nào được lên lịch.
                   </div>
                 ) : (
                   <div className="mt-5 space-y-4">
                     {sessions.map((session) => (
-                      <div key={session.id} className="rounded-2xl border border-border-subtle bg-background p-4">
+                      <div key={session.id} className="rounded-lg border border-border-subtle bg-background p-4">
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                           <div>
-                            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                            <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                               Tuần {session.week_index}
                             </div>
                             <div className="mt-1 text-lg font-medium text-foreground">
@@ -1461,7 +1462,7 @@ export default function CohortDetail() {
                         ) : null}
 
                         <div className="mt-4 grid gap-3 md:grid-cols-2">
-                          <div className="rounded-2xl border border-border-subtle p-4">
+                          <div className="rounded-lg border border-border-subtle p-4">
                             <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                               Recording
                             </div>
@@ -1489,7 +1490,7 @@ export default function CohortDetail() {
                               </a>
                             ) : null}
                           </div>
-                          <div className="rounded-2xl border border-border-subtle p-4">
+                          <div className="rounded-lg border border-border-subtle p-4">
                             <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                               Trạng thái buổi
                             </div>
@@ -1502,7 +1503,7 @@ export default function CohortDetail() {
                           </div>
                         </div>
 
-                        <div className="mt-3 rounded-2xl border border-border-subtle p-4">
+                        <div className="mt-3 rounded-lg border border-border-subtle p-4">
                           <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                             Bài tập tuần
                           </div>
@@ -1517,7 +1518,7 @@ export default function CohortDetail() {
                         </div>
 
                         {!isManageView && myEnrollment ? (
-                          <div className="mt-3 rounded-2xl border border-border-subtle p-4">
+                          <div className="mt-3 rounded-lg border border-border-subtle p-4">
                             <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                               Điểm danh của bạn
                             </div>
@@ -1535,7 +1536,7 @@ export default function CohortDetail() {
                         ) : null}
 
                         {!isManageView && myEnrollment && session.assignment_title ? (
-                          <div className="mt-4 rounded-2xl border border-border-subtle bg-card p-4">
+                          <div className="mt-4 rounded-lg border border-border-subtle bg-card p-4">
                             <div className="text-sm font-medium text-foreground">Nộp bài cho buổi này</div>
                             <textarea
                               value={submissionDrafts[session.id]?.submission_text ?? ""}
@@ -1584,7 +1585,7 @@ export default function CohortDetail() {
           {isManageView && selectedCohort ? (
             <>
               <Card>
-                <CardContent className="p-5 sm:p-6">
+                <CardContent className="p-6">
                   <h2 className="text-lg font-medium text-foreground">
                     {translate("detail.forms.session.addTitle")}
                   </h2>
@@ -1630,10 +1631,10 @@ export default function CohortDetail() {
               </Card>
 
               <Card>
-                <CardContent className="p-5 sm:p-6">
+                <CardContent className="p-6">
                   <h2 className="text-lg font-medium text-foreground">Học viên và roadmap</h2>
                   {canCoordinateRosterAccess ? (
-                    <div className="mt-4 rounded-2xl border border-border-subtle bg-background p-4">
+                    <div className="mt-4 rounded-lg border border-border-subtle bg-background p-4">
                       <div className="text-sm font-medium text-foreground">
                         {translate("detail.forms.enrollment.addStudentTitle")}
                       </div>
@@ -1658,7 +1659,7 @@ export default function CohortDetail() {
                     {enrollments.map((item) => {
                       const draft = roadmapDrafts[item.user_id];
                       return (
-                        <div key={item.id} className="rounded-2xl border border-border-subtle bg-background p-4">
+                        <div key={item.id} className="rounded-lg border border-border-subtle bg-background p-4">
                           <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                               <div className="text-sm font-medium text-foreground">
@@ -1696,7 +1697,7 @@ export default function CohortDetail() {
               </Card>
 
               <Card>
-                <CardContent className="p-5 sm:p-6">
+                <CardContent className="p-6">
                   <h2 className="text-lg font-medium text-foreground">Điểm danh theo buổi</h2>
                   {sessions.length > 0 ? (
                     <>
@@ -1712,7 +1713,7 @@ export default function CohortDetail() {
                           const key = `${selectedAttendanceSessionId}:${item.user_id}`;
                           const draft = attendanceDrafts[key] ?? { status: "absent" as OfflineAttendanceStatus, note: "" };
                           return (
-                            <div key={item.id} className="rounded-2xl border border-border-subtle bg-background p-4">
+                            <div key={item.id} className="rounded-lg border border-border-subtle bg-background p-4">
                               <div className="text-sm font-medium text-foreground">{item.student_name || item.student_email || item.user_id}</div>
                               <div className="mt-3 grid gap-3 md:grid-cols-[220px_minmax(0,1fr)_auto]">
                                 <select value={draft.status} onChange={(e) => setAttendanceDrafts((prev) => ({ ...prev, [key]: { ...draft, status: e.target.value as OfflineAttendanceStatus } }))} className="h-10 rounded-lg border border-border bg-background px-3 text-sm">
@@ -1740,7 +1741,7 @@ export default function CohortDetail() {
               </Card>
 
               <Card>
-                <CardContent className="p-5 sm:p-6">
+                <CardContent className="p-6">
                   <h2 className="text-lg font-medium text-foreground">Review bài tập theo buổi</h2>
                   {assignmentSessions.length > 0 ? (
                     <>
@@ -1753,12 +1754,12 @@ export default function CohortDetail() {
                       </select>
                       <div className="mt-5 space-y-4">
                         {submissionsForSelectedSession.length === 0 ? (
-                          <div className="rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-6 text-center text-sm text-muted-foreground">
+                          <div className="rounded-lg border border-dashed border-border-subtle bg-background px-4 py-6 text-center text-sm text-muted-foreground">
                             Chưa có bài nộp nào cho buổi này.
                           </div>
                         ) : (
                           submissionsForSelectedSession.map((submission) => (
-                            <div key={submission.id} className="rounded-2xl border border-border-subtle bg-background p-4">
+                            <div key={submission.id} className="rounded-lg border border-border-subtle bg-background p-4">
                               <div className="text-sm font-medium text-foreground">
                                 {submission.student_name || submission.user_id}
                               </div>
@@ -1800,14 +1801,14 @@ export default function CohortDetail() {
           ) : null}
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <Card>
-            <CardContent className="p-5 sm:p-6">
+            <CardContent className="p-6">
               <h2 className="text-lg font-medium text-foreground">
                 {isManageView ? translate("detail.sections.manage") : translate("detail.sections.public")}
               </h2>
               <div className="mt-4 space-y-4">
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                <div className="rounded-lg border border-border-subtle bg-background p-4">
                   <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                     Chứng nhận
                   </div>
@@ -1815,7 +1816,7 @@ export default function CohortDetail() {
                     {course.certificate_title || translate("detail.fallbacks.certificateTitle")}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                <div className="rounded-lg border border-border-subtle bg-background p-4">
                   <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                     Học phí / ghi chú
                   </div>
@@ -1824,7 +1825,7 @@ export default function CohortDetail() {
                   </div>
                 </div>
                 {selectedCohort ? (
-                  <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                  <div className="rounded-lg border border-border-subtle bg-background p-4">
                     <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       Thời gian cohort hiện tại
                     </div>
@@ -1840,7 +1841,7 @@ export default function CohortDetail() {
           {isManageView && selectedCohort ? (
             <>
               <Card>
-                <CardContent className="p-5 sm:p-6">
+                <CardContent className="p-6">
                   <h2 className="text-lg font-medium text-foreground">Trạng thái cohort</h2>
                   <select value={managerStatus} onChange={(e) => setManagerStatus(e.target.value as OfflineCohort["status"])} className="mt-4 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">
                     <option value="draft">Bản nháp</option>
@@ -1855,10 +1856,10 @@ export default function CohortDetail() {
               </Card>
 
               <Card>
-                <CardContent className="p-5 sm:p-6">
+                <CardContent className="p-6">
                   <h2 className="text-lg font-medium text-foreground">Google Meet</h2>
                   <div className="mt-4 space-y-4">
-                    <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                    <div className="rounded-lg border border-border-subtle bg-background p-4">
                       <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         Host email
                       </div>
@@ -1866,7 +1867,7 @@ export default function CohortDetail() {
                         {selectedCohort.zoom_host_email || translate("detail.fallbacks.noMeetHost")}
                       </div>
                     </div>
-                    <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                    <div className="rounded-lg border border-border-subtle bg-background p-4">
                       <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         Buổi học có link Meet
                       </div>
@@ -1874,7 +1875,7 @@ export default function CohortDetail() {
                         {sessions.filter((item) => !!item.zoom_join_url).length} buổi đã gắn link Meet
                       </div>
                     </div>
-                    <div className="rounded-2xl border border-dashed border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
+                    <div className="rounded-lg border border-dashed border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
                       Hiện tại hệ thống dùng Google Meet theo cách gọn hơn: lưu link tham gia
                       cho học viên, giữ trạng thái buổi học và recording trong từng session.
                     </div>
@@ -1884,10 +1885,10 @@ export default function CohortDetail() {
             </>
           ) : myEnrollment ? (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <h2 className="text-lg font-medium text-foreground">Lộ trình của bạn</h2>
                 <div className="mt-4 space-y-4">
-                  <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                  <div className="rounded-lg border border-border-subtle bg-background p-4">
                     <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       Trạng thái hiện tại
                     </div>
@@ -1896,7 +1897,7 @@ export default function CohortDetail() {
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                    <div className="rounded-lg border border-border-subtle bg-background p-4">
                       <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         Tiến độ tổng
                       </div>
@@ -1904,7 +1905,7 @@ export default function CohortDetail() {
                         {myEnrollment.progress_percent}%
                       </div>
                     </div>
-                    <div className="rounded-2xl border border-border-subtle bg-background p-4">
+                    <div className="rounded-lg border border-border-subtle bg-background p-4">
                       <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                         Bài tập hoàn thành
                       </div>
@@ -1918,7 +1919,7 @@ export default function CohortDetail() {
             </Card>
           ) : (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <h2 className="text-lg font-medium text-foreground">Cách tham gia khoá học</h2>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">
                   Khoá học offline có thể mở nhiều cohort khác nhau. Bạn sẽ được xếp vào cohort cụ thể bởi đội ngũ Corelia để nhận lịch học, recording và bài tập theo tuần.
@@ -1928,6 +1929,6 @@ export default function CohortDetail() {
           )}
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

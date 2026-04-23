@@ -21,6 +21,7 @@ import type { Course } from "@/types/courses";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { EmptyState, PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 
 const InstructorCourses = () => {
   const { t } = useTranslation("instructor");
@@ -62,102 +63,102 @@ const InstructorCourses = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
+      <div className="flex min-h-80 items-center justify-center">
         <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+    <PageContainer>
       {error && (
-        <div className="mb-6 rounded-2xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+        <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
         </div>
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("courseListPage.stats.total")}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
+              <p className="mt-2 text-2xl font-semibold text-foreground">
                 {stats.total}
               </p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <BookOpen className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("courseListPage.stats.published")}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
+              <p className="mt-2 text-2xl font-semibold text-foreground">
                 {stats.published}
               </p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Eye className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("courseListPage.stats.drafts")}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
+              <p className="mt-2 text-2xl font-semibold text-foreground">
                 {stats.drafts}
               </p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <EyeOff className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("courseListPage.stats.paidUpfront")}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
+              <p className="mt-2 text-2xl font-semibold text-foreground">
                 {stats.paid}
               </p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <DollarSign className="size-5" aria-hidden />
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("courseListPage.stats.free")}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
+              <p className="mt-2 text-2xl font-semibold text-foreground">
                 {stats.free}
               </p>
             </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <GraduationCap className="size-5" aria-hidden />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+      <PageSectionCard className="mt-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-xl font-medium tracking-tight text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
               {t("courseListPage.hero.title")}
             </h2>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground sm:text-sm">
@@ -173,40 +174,34 @@ const InstructorCourses = () => {
             {t("courseListPage.hero.create")}
           </Button>
         </div>
-      </div>
+      </PageSectionCard>
 
       {courses.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-border-subtle bg-card shadow-card">
-          <div className="flex flex-col items-center gap-3 py-16 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-              <BookOpen className="size-6 text-muted-foreground" aria-hidden />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">
-                {t("courseListPage.empty.title")}
-              </p>
-              {t("courseListPage.empty.description", { defaultValue: "" }) ? (
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {t("courseListPage.empty.description", { defaultValue: "" })}
-                </p>
-              ) : null}
-            </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => navigate("/instructor/courses/new")}
-            >
-              {t("courseListPage.empty.createFirst")}
-            </Button>
-          </div>
+        <div className="mt-4 rounded-lg border border-border-subtle bg-card shadow-card">
+          <EmptyState
+            icon={<BookOpen className="size-6 text-muted-foreground" aria-hidden />}
+            title={t("courseListPage.empty.title")}
+            description={
+              t("courseListPage.empty.description", { defaultValue: "" }) || undefined
+            }
+            action={
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => navigate("/instructor/courses/new")}
+              >
+                {t("courseListPage.empty.createFirst")}
+              </Button>
+            }
+          />
         </div>
       ) : (
-        <div className="mt-6 grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+        <div className="mt-4 grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
           {courses.map((course) => (
             <article
               key={course.id}
-              className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-card shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              className="group flex h-full flex-col overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
             >
               <button
                 type="button"
@@ -246,8 +241,8 @@ const InstructorCourses = () => {
                     {course.slug}
                   </p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-xl border border-border-subtle bg-muted/30 p-3">
-                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="rounded-md border border-border-subtle bg-muted/30 p-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         {t("courseListPage.courseCards.pricingLabel")}
                       </p>
                       <p className="mt-1 text-sm font-medium text-foreground">
@@ -260,8 +255,8 @@ const InstructorCourses = () => {
                             : t("courseListPage.courseCards.free")}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-border-subtle bg-muted/30 p-3">
-                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="rounded-md border border-border-subtle bg-muted/30 p-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         {t("courseListPage.courseCards.instructorLabel")}
                       </p>
                       <p className="mt-1 line-clamp-1 text-sm font-medium text-foreground">
@@ -305,7 +300,7 @@ const InstructorCourses = () => {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 };
 

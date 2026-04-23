@@ -52,7 +52,7 @@ function InstructorSidebar() {
   return (
     <Sidebar collapsible="icon" variant="sidebar">
       <div className="px-3 pb-2 pt-3 transition-[padding] duration-200 ease-linear group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:pb-1">
-        <div className="rounded-2xl border border-sidebar-border/70 bg-sidebar-accent/45 p-4 transition-[padding,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:p-1">
+        <div className="rounded-lg border border-sidebar-border/70 bg-sidebar-accent/45 p-4 transition-[padding,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:rounded-md group-data-[collapsible=icon]:p-1">
           <div className="flex items-start gap-3 transition-[gap] duration-200 ease-linear group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm transition-[width,height,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:size-8">
               <GraduationCap className="size-5" aria-hidden />
@@ -418,7 +418,7 @@ export default function InstructorLayout() {
           </div>
           <div className="px-3 pb-4 md:px-4">
             <div className="rounded-md border border-border-subtle bg-card/85 px-4 py-4 shadow-card">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {translate("layout.hero.eyebrow")}
               </p>
               <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">

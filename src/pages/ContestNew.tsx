@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { createContest } from "@/lib/contests";
 import type { ContestLocation, ContestStatus } from "@/types/contests";
 import { useTranslation } from "react-i18next";
+import { PageContainer } from "@/components/layouts/PagePrimitives";
 
 function toIsoOrNull(value: string): string | null {
   if (!value.trim()) return null;
@@ -82,7 +83,7 @@ export default function ContestNew() {
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1100px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+    <PageContainer width="narrow">
       <div className="mb-4">
         <Button
           variant="ghost"
@@ -95,13 +96,13 @@ export default function ContestNew() {
       </div>
 
       <Card>
-        <CardContent className="p-5 sm:p-6">
+        <CardContent className="p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("instructorNew.hero.eyebrow")}
               </div>
-              <h1 className="mt-2 text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 {t("instructorNew.hero.title")}
               </h1>
               <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
@@ -119,11 +120,11 @@ export default function ContestNew() {
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-2xl border border-border-subtle bg-background p-4">
+            <div className="rounded-lg border border-border-subtle bg-background p-4">
               <div className="flex items-center gap-3">
                 <Trophy className="size-5 text-primary" aria-hidden />
                 <div>
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {t("instructorNew.pillCards.publicSurfaceTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
@@ -132,11 +133,11 @@ export default function ContestNew() {
                 </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-border-subtle bg-background p-4">
+            <div className="rounded-lg border border-border-subtle bg-background p-4">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="size-5 text-primary" aria-hidden />
                 <div>
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {t("instructorNew.pillCards.applicationsTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
@@ -145,11 +146,11 @@ export default function ContestNew() {
                 </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-border-subtle bg-background p-4">
+            <div className="rounded-lg border border-border-subtle bg-background p-4">
               <div className="flex items-center gap-3">
                 <Gavel className="size-5 text-primary" aria-hidden />
                 <div>
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {t("instructorNew.pillCards.judgingTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
@@ -158,11 +159,11 @@ export default function ContestNew() {
                 </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-border-subtle bg-background p-4">
+            <div className="rounded-lg border border-border-subtle bg-background p-4">
               <div className="flex items-center gap-3">
                 <Calendar className="size-5 text-primary" aria-hidden />
                 <div>
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {t("instructorNew.pillCards.timelineTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
@@ -175,9 +176,9 @@ export default function ContestNew() {
         </CardContent>
       </Card>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.75fr)]">
+      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.75fr)]">
         <Card>
-          <CardContent className="p-5 sm:p-6">
+          <CardContent className="p-6">
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="contest-title">{t("instructorNew.form.titleLabel")}</FieldLabel>
@@ -207,7 +208,7 @@ export default function ContestNew() {
                 </FieldDescription>
               </Field>
 
-              <div className="grid gap-6 lg:grid-cols-2">
+              <div className="grid gap-4 lg:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="contest-status">
                     {t("instructorNew.form.statusLabel")}
@@ -244,7 +245,7 @@ export default function ContestNew() {
                 </Field>
               </div>
 
-              <div className="grid gap-6 lg:grid-cols-3">
+              <div className="grid gap-4 lg:grid-cols-3">
                 <Field>
                   <FieldLabel htmlFor="contest-starts-at">
                     {t("instructorNew.form.startsAtLabel")}
@@ -342,17 +343,17 @@ export default function ContestNew() {
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <Card>
-            <CardContent className="p-5 sm:p-6">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <CardContent className="p-6">
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("instructorNew.afterCreateChecklist.eyebrow")}
               </div>
               <div className="mt-4 space-y-3">
                 {readinessItems.map((item) => (
                   <div
                     key={item.title}
-                    className="rounded-2xl border border-border-subtle bg-background p-4"
+                    className="rounded-lg border border-border-subtle bg-background p-4"
                   >
                     <div className="text-sm font-medium text-foreground">{item.title}</div>
                     <div className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -365,8 +366,8 @@ export default function ContestNew() {
           </Card>
 
           <Card>
-            <CardContent className="p-5 sm:p-6">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <CardContent className="p-6">
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("instructorNew.nextSteps.eyebrow")}
               </div>
               <div className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
@@ -379,6 +380,6 @@ export default function ContestNew() {
           </Card>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

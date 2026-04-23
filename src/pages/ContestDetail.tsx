@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageContainer } from "@/components/layouts/PagePrimitives";
 import {
   Dialog,
   DialogContent,
@@ -866,10 +867,10 @@ export default function ContestDetail() {
 
   if (loading) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <PageContainer>
         <Card>
           <CardContent className="flex min-h-[320px] flex-col items-center justify-center p-8 text-center">
-            <div className="rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {translate("detail.loading.eyebrow")}
             </div>
             <div className="mt-4 text-sm font-medium text-foreground">
@@ -878,7 +879,7 @@ export default function ContestDetail() {
             <div className="mt-2 text-sm text-muted-foreground">
               {translate("detail.loading.description")}
             </div>
-            <div className="mt-6 grid w-full max-w-3xl gap-3 md:grid-cols-3">
+            <div className="mt-4 grid w-full max-w-3xl gap-3 md:grid-cols-3">
               <div className="rounded-2xl border border-border-subtle bg-background p-4 text-left">
                 <Skeleton className="h-3 w-24 rounded-full" />
                 <Skeleton className="mt-3 h-4 w-3/4 rounded-full" />
@@ -897,16 +898,16 @@ export default function ContestDetail() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </PageContainer>
     );
   }
 
   if (error || !contest) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <PageContainer>
         <Card>
           <CardContent className="flex min-h-[280px] flex-col items-center justify-center p-8 text-center">
-            <div className="rounded-full border border-destructive/20 bg-destructive/10 px-3 py-1 text-xs uppercase tracking-[0.16em] text-destructive">
+            <div className="rounded-full border border-destructive/20 bg-destructive/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-destructive">
               {translate("detail.errors.deleteAccessDeniedTitle")}
             </div>
             <div className="text-base font-medium text-foreground">
@@ -926,13 +927,13 @@ export default function ContestDetail() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </PageContainer>
     );
   }
 
   if (isManageView && !canAccessWorkspace) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <PageContainer>
         <Card>
           <CardContent className="flex min-h-[280px] flex-col items-center justify-center p-8 text-center">
             <div className="text-base font-medium text-foreground">
@@ -948,12 +949,12 @@ export default function ContestDetail() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+    <PageContainer>
       <div className="mb-4">
         <Button
           render={<NavLink to="/contests" />}
@@ -966,7 +967,7 @@ export default function ContestDetail() {
         </Button>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,240px)_minmax(0,1.55fr)_minmax(340px,0.9fr)]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,240px)_minmax(0,1.55fr)_minmax(340px,0.9fr)]">
         {isManageView ? (
           <nav className="h-fit rounded-2xl border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24">
             <div className="mb-3 px-2">
@@ -1009,9 +1010,9 @@ export default function ContestDetail() {
           <div className="hidden xl:block" />
         )}
 
-        <div className="min-w-0 space-y-6">
+        <div className="min-w-0 space-y-4">
           <Card>
-            <CardContent className="p-5 sm:p-6">
+            <CardContent className="p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
                   <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
@@ -1113,7 +1114,7 @@ export default function ContestDetail() {
                 </div>
               )}
 
-              <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <div className="rounded-2xl border border-border-subtle bg-background p-4">
                   <div className="flex items-center gap-3">
                     <Calendar className="size-5 text-primary" aria-hidden />
@@ -1288,7 +1289,7 @@ export default function ContestDetail() {
 
           {(!isManageView || activeManageSection === "overview") && contest.description && (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <h2 className="text-lg font-medium tracking-tight text-foreground">
                   {isManageView
                     ? translate("detail.labels.contextManage")
@@ -1303,7 +1304,7 @@ export default function ContestDetail() {
 
           {(!isManageView || activeManageSection === "overview") && (
           <Card>
-            <CardContent className="p-5 sm:p-6">
+            <CardContent className="p-6">
               <h2 className="text-lg font-medium tracking-tight text-foreground">
                 {isManageView
                   ? translate("detail.labels.rulesManage")
@@ -1320,7 +1321,7 @@ export default function ContestDetail() {
 
           {isManageView && activeManageSection === "overview" && (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                   <div>
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
@@ -1401,7 +1402,7 @@ export default function ContestDetail() {
 
           {isManageView && canReview && activeManageSection === "applications" && (
             <Card id="applications">
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                   <div>
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
@@ -1523,7 +1524,7 @@ export default function ContestDetail() {
 
           {isManageView && canJudge && activeManageSection === "judging" && (
             <Card id="judging">
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <Gavel className="size-5 text-primary" aria-hidden />
                   <div>
@@ -1692,7 +1693,7 @@ export default function ContestDetail() {
           {isManageView ? (
             canViewAggregate && activeManageSection === "results" && (
             <Card id="results">
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <Trophy className="size-5 text-primary" aria-hidden />
                   <div>
@@ -1741,7 +1742,7 @@ export default function ContestDetail() {
                 </div>
 
                 {isManager && leaderboard.length > 0 && (
-                  <div className="mt-6 rounded-2xl border border-border-subtle bg-background p-4">
+                  <div className="mt-4 rounded-2xl border border-border-subtle bg-background p-4">
                     <h3 className="text-base font-medium text-foreground">
                       Publish kết quả
                     </h3>
@@ -1794,7 +1795,7 @@ export default function ContestDetail() {
                   </div>
                 )}
 
-                <div className="mt-6">
+                <div className="mt-4">
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-base font-medium text-foreground">
                       Leaderboard đã publish
@@ -1842,7 +1843,7 @@ export default function ContestDetail() {
                   </div>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-4">
                   <h3 className="text-base font-medium text-foreground">Winners</h3>
                   <div className="mt-3 space-y-3">
                     {contest.winner_announcements.length === 0 ? (
@@ -1878,7 +1879,7 @@ export default function ContestDetail() {
             )
           ) : (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <Trophy className="size-5 text-primary" aria-hidden />
                   <div>
@@ -1891,7 +1892,7 @@ export default function ContestDetail() {
                   </div>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-4">
                   <h3 className="text-base font-medium text-foreground">
                     Leaderboard đã publish
                   </h3>
@@ -1930,7 +1931,7 @@ export default function ContestDetail() {
                   </div>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-4">
                   <h3 className="text-base font-medium text-foreground">Winners</h3>
                   <div className="mt-3 space-y-3">
                     {contest.winner_announcements.length === 0 ? (
@@ -1970,10 +1971,10 @@ export default function ContestDetail() {
           )}
         </div>
 
-        <div className="min-w-0 space-y-6">
+        <div className="min-w-0 space-y-4">
           {isManageView && isManager ? (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <ShieldCheck className="size-5 text-primary" aria-hidden />
                   <div>
@@ -2011,7 +2012,7 @@ export default function ContestDetail() {
                   {savingStatus ? translate("detail.labels.saving") : translate("detail.labels.saveStatus")}
                 </Button>
 
-                <div className="mt-6 border-t border-border-subtle pt-6">
+                <div className="mt-4 border-t border-border-subtle pt-4">
                   <h3 className="text-base font-medium text-foreground">Judge rubric</h3>
                   <p className="mt-2 text-sm text-muted-foreground">
                     Điều chỉnh trọng số cho 4 tiêu chí. Tổng nên bằng 100 để điểm tổng rõ ràng hơn.
@@ -2064,7 +2065,7 @@ export default function ContestDetail() {
                   </Button>
                 </div>
 
-                <div className="mt-6 border-t border-border-subtle pt-6">
+                <div className="mt-4 border-t border-border-subtle pt-4">
                   <h3 className="text-base font-medium text-foreground">
                     Access & invites
                   </h3>
@@ -2166,7 +2167,7 @@ export default function ContestDetail() {
                   </div>
                 </div>
 
-                <div className="mt-6 border-t border-destructive/20 pt-6">
+                <div className="mt-4 border-t border-destructive/20 pt-4">
                   <h3 className="text-base font-medium text-foreground">Vùng nguy hiểm</h3>
                   <p className="mt-2 text-sm text-muted-foreground">
                     Xoá contest sẽ xoá toàn bộ hồ sơ đăng ký, lời mời cộng tác, bài nộp
@@ -2186,7 +2187,7 @@ export default function ContestDetail() {
             </Card>
           ) : isManageView && myInvite ? (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   {myInvite.roles.includes("judge") ? (
                     <Gavel className="size-5 text-primary" aria-hidden />
@@ -2230,7 +2231,7 @@ export default function ContestDetail() {
             </Card>
           ) : !isManageView && registration?.status === "approved" ? (
             <Card id="participant-workspace" className="xl:sticky xl:top-24">
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <CheckCheck className="size-5 text-primary" aria-hidden />
                   <div>
@@ -2295,7 +2296,7 @@ export default function ContestDetail() {
             </Card>
           ) : !isManageView ? (
             <Card id="participant-workspace" className="xl:sticky xl:top-24">
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <CheckCheck className="size-5 text-primary" aria-hidden />
                   <div>
@@ -2418,7 +2419,7 @@ export default function ContestDetail() {
 
           {isManageView && (
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
@@ -2441,7 +2442,7 @@ export default function ContestDetail() {
           )}
 
           <Card>
-            <CardContent className="p-5 sm:p-6">
+            <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <Mail className="size-5 text-primary" aria-hidden />
                 <div>
@@ -2519,6 +2520,6 @@ export default function ContestDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }
