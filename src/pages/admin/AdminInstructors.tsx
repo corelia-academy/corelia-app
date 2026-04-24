@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { getAllProfiles, updateProfileAdmin } from "@/lib/profile";
-import { getCoursesForManagement } from "@/lib/courses";
+import { updateProfileAdmin } from "@/lib/profile";
 import type { Profile } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,58 +12,29 @@ import {
   BookOpen,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useAdminProfiles } from "@/features/admin/users/hooks/useAdminProfiles";
+import { useCourseCountsByInstructor } from "@/features/admin/instructors/hooks/useCourseCountsByInstructor";
+import { AdminStatsCard } from "@/features/admin/ui/AdminStatsCard";
+import { AdminErrorBanner } from "@/features/admin/ui/AdminErrorBanner";
 
 type InstructorOrigin = NonNullable<Profile["instructor_origin"]>;
 
 export default function AdminInstructors() {
   const { t } = useTranslation("admin");
   const navigate = useNavigate();
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [courseCountByInstructor, setCourseCountByInstructor] = useState<
-    Record<string, number>
-  >({});
-  const [loading, setLoading] = useState(true);
-  const [loadingCourses, setLoadingCourses] = useState(true);
+  const { profiles, setProfiles, loading, error, setError, refresh } = useAdminProfiles({
+    fallbackErrorMessage: t("instructors.errors.generic"),
+  });
+  const {
+    counts: courseCountByInstructor,
+    loading: loadingCourses,
+    refresh: refreshCourseCounts,
+  } = useCourseCountsByInstructor();
   const [savingId, setSavingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [originFilter, setOriginFilter] = useState<InstructorOrigin | "all">(
     "all",
   );
-
-  const fetchCourseCounts = useCallback(async () => {
-    setLoadingCourses(true);
-    try {
-      const courses = await getCoursesForManagement("", true);
-      const counts: Record<string, number> = {};
-      for (const c of courses) {
-        counts[c.instructor_id] = (counts[c.instructor_id] ?? 0) + 1;
-      }
-      setCourseCountByInstructor(counts);
-    } catch {
-      setCourseCountByInstructor({});
-    } finally {
-      setLoadingCourses(false);
-    }
-  }, []);
-
-  const fetchProfiles = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getAllProfiles();
-      setProfiles(data);
-      void fetchCourseCounts();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("instructors.errors.generic"));
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchCourseCounts, t]);
-
-  useEffect(() => {
-    void fetchProfiles();
-  }, [fetchProfiles]);
 
   const instructors = useMemo(
     () => profiles.filter((p) => p.role === "instructor"),
@@ -126,90 +96,40 @@ export default function AdminInstructors() {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {t("instructors.stats.total")}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {stats.total}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <GraduationCap className="size-5" aria-hidden />
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {t("instructors.stats.corelia")}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {stats.corelia}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Sparkles className="size-5" aria-hidden />
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {t("instructors.stats.external")}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {stats.external}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Building2 className="size-5" aria-hidden />
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {t("instructors.stats.unclassified")}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {stats.unclassified}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Sparkles className="size-5" aria-hidden />
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {t("instructors.stats.managedCourses")}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {loadingCourses ? t("instructors.stats.loadingValue") : stats.totalCourses}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <BookOpen className="size-5" aria-hidden />
-            </div>
-          </div>
-        </div>
+        <AdminStatsCard
+          label={t("instructors.stats.total")}
+          value={stats.total}
+          icon={<GraduationCap className="size-5" aria-hidden />}
+        />
+        <AdminStatsCard
+          label={t("instructors.stats.corelia")}
+          value={stats.corelia}
+          icon={<Sparkles className="size-5" aria-hidden />}
+        />
+        <AdminStatsCard
+          label={t("instructors.stats.external")}
+          value={stats.external}
+          icon={<Building2 className="size-5" aria-hidden />}
+        />
+        <AdminStatsCard
+          label={t("instructors.stats.unclassified")}
+          value={stats.unclassified}
+          icon={<Sparkles className="size-5" aria-hidden />}
+        />
+        <AdminStatsCard
+          label={t("instructors.stats.managedCourses")}
+          value={loadingCourses ? t("instructors.stats.loadingValue") : stats.totalCourses}
+          icon={<BookOpen className="size-5" aria-hidden />}
+        />
       </div>
 
-      <div className="mt-6 rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+      <div className="mt-6 rounded-lg border border-border-subtle bg-card p-6 shadow-card">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-xl font-medium tracking-tight text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
               {t("instructors.hero.title")}
             </h2>
-            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
               {t("instructors.hero.description")}
             </p>
           </div>
@@ -226,14 +146,17 @@ export default function AdminInstructors() {
               onChange={(e) =>
                 setOriginFilter(e.target.value as InstructorOrigin | "all")
               }
-              className="h-10 rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="all">{t("instructors.filters.originOptions.all")}</option>
               <option value="corelia">{t("instructors.filters.originOptions.corelia")}</option>
               <option value="external">{t("instructors.filters.originOptions.external")}</option>
             </select>
             <Button
-              onClick={() => void fetchProfiles()}
+              onClick={() => {
+                void refresh();
+                void refreshCourseCounts();
+              }}
               disabled={loading}
               variant="ghost"
               size="sm"
@@ -284,13 +207,9 @@ export default function AdminInstructors() {
         </div>
       </div>
 
-      {error && (
-        <div className="mt-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
-        </div>
-      )}
+      {error ? <AdminErrorBanner message={error} /> : null}
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-border-subtle bg-card text-card-foreground shadow-card">
+      <div className="mt-6 overflow-hidden rounded-lg border border-border-subtle bg-card text-card-foreground shadow-card">
         <div className="border-b border-border-subtle bg-muted/35 px-4 py-3">
           <p className="text-sm text-muted-foreground">
             {loading
@@ -351,7 +270,7 @@ export default function AdminInstructors() {
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Email
                       </p>
                       <p className="mt-1 text-sm text-foreground">
@@ -359,7 +278,7 @@ export default function AdminInstructors() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Phân loại
                       </p>
                       <p className="mt-1">
@@ -371,7 +290,7 @@ export default function AdminInstructors() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Khoá học
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">

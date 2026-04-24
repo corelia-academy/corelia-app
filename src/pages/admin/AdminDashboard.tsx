@@ -184,17 +184,17 @@ export default function AdminDashboard() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <section className="rounded-2xl border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+      <section className="rounded-lg border border-border-subtle bg-card p-6 shadow-card">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
               <Pin className="size-4" aria-hidden />
               {t("dashboard.hero.eyebrow")}
             </div>
-            <h2 className="mt-2 text-xl font-medium tracking-tight text-foreground">
+            <h2 className="mt-2 text-lg font-semibold text-foreground">
               {t("dashboard.hero.title")}
             </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
               {t("dashboard.hero.description")}
             </p>
           </div>
@@ -205,12 +205,12 @@ export default function AdminDashboard() {
         </div>
 
         {error ? (
-          <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <div className="mt-4 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
           </div>
         ) : null}
         {saveMessage ? (
-          <div className="mt-4 rounded-2xl border border-success/20 bg-success/10 px-4 py-3 text-sm text-success">
+          <div className="mt-4 rounded-lg border border-success/20 bg-success/10 px-4 py-3 text-sm text-success">
             {saveMessage}
           </div>
         ) : null}
@@ -219,11 +219,11 @@ export default function AdminDashboard() {
           {programs.map((item, index) => (
             <div
               key={item.id}
-              className="rounded-2xl border border-border-subtle bg-background p-4"
+              className="rounded-lg border border-border-subtle bg-background p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     {t("dashboard.slot.label", { index: index + 1 })}
                   </div>
                   <div className="mt-1 text-sm font-medium text-foreground">
@@ -242,7 +242,7 @@ export default function AdminDashboard() {
 
               <div className="mt-4 space-y-3">
                 <div>
-                    <div className="mb-1 text-xs text-muted-foreground">
+                  <div className="mb-1 text-xs text-muted-foreground">
                     {t("dashboard.form.programTypeLabel")}
                   </div>
                   <select
@@ -253,7 +253,7 @@ export default function AdminDashboard() {
                         ref_id: "",
                       })
                     }
-                    className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <option value="course">{t("dashboard.programType.course")}</option>
                     <option value="contest">{t("dashboard.programType.contest")}</option>
@@ -262,13 +262,13 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                    <div className="mb-1 text-xs text-muted-foreground">
+                  <div className="mb-1 text-xs text-muted-foreground">
                     {t("dashboard.form.programSourceLabel")}
                   </div>
                   <select
                     value={item.ref_id}
                     onChange={(e) => updateProgram(index, { ref_id: e.target.value })}
-                    className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <option value="">{t("dashboard.form.programSourcePlaceholder")}</option>
                     {programOptions
@@ -282,7 +282,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                    <div className="mb-1 text-xs text-muted-foreground">
+                  <div className="mb-1 text-xs text-muted-foreground">
                     {t("dashboard.form.badgeLabel")}
                   </div>
                   <Input
@@ -293,7 +293,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                    <div className="mb-1 text-xs text-muted-foreground">
+                  <div className="mb-1 text-xs text-muted-foreground">
                     {t("dashboard.form.titleOverrideLabel")}
                   </div>
                   <Input
@@ -304,7 +304,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                    <div className="mb-1 text-xs text-muted-foreground">
+                  <div className="mb-1 text-xs text-muted-foreground">
                     {t("dashboard.form.descriptionOverrideLabel")}
                   </div>
                   <textarea
@@ -313,12 +313,12 @@ export default function AdminDashboard() {
                       updateProgram(index, { description_override: e.target.value })
                     }
                     placeholder={t("dashboard.form.descriptionOverridePlaceholder")}
-                    className="min-h-24 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
 
                 <div>
-                    <div className="mb-1 text-xs text-muted-foreground">
+                  <div className="mb-1 text-xs text-muted-foreground">
                     {t("dashboard.form.ctaLabel")}
                   </div>
                   <Input
@@ -332,7 +332,7 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        <div className="mt-5 rounded-2xl border border-border-subtle bg-muted/30 px-4 py-3 text-sm leading-6 text-muted-foreground">
+        <div className="mt-6 rounded-lg border border-border-subtle bg-muted/30 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
           <div className="flex items-start gap-2">
             <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
             <span>

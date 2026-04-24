@@ -84,7 +84,8 @@ export default function App() {
   const { i18n } = useTranslation();
 
   useEffect(() => {
-    document.documentElement.lang = i18n.resolvedLanguage ?? i18n.language ?? "vi";
+    document.documentElement.lang =
+      i18n.resolvedLanguage ?? i18n.language ?? "vi";
   }, [i18n.resolvedLanguage, i18n.language]);
 
   return (
