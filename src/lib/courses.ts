@@ -74,11 +74,32 @@ export async function getCourse(courseId: string): Promise<Course | null> {
 export async function getCourseBySlug(slug: string): Promise<Course | null> {
   const normalized = slug.trim();
   if (!normalized) return null;
-  const q = query(collection(db, COURSES), where("slug", "==", normalized));
-  const snap = await getDocs(q);
-  if (snap.empty) return null;
-  const d = snap.docs[0];
-  return { id: d.id, ...d.data() } as Course;
+  // Always prefer a "published-only" query first.
+  // This avoids Firestore Rules rejecting the whole query when a signed-in student
+  // hits a draft course slug (permission-denied -> UI shows "not found").
+  const publishedQ = query(
+    collection(db, COURSES),
+    where("slug", "==", normalized),
+    where("published", "==", true),
+  );
+  const publishedSnap = await getDocs(publishedQ);
+  if (!publishedSnap.empty) {
+    const d = publishedSnap.docs[0];
+    return { id: d.id, ...d.data() } as Course;
+  }
+
+  // If signed in, allow privileged users (admin/support/instructor) to resolve drafts.
+  // Students will still be denied by rules; we surface it as null ("not found").
+  if (!auth.currentUser) return null;
+  try {
+    const draftQ = query(collection(db, COURSES), where("slug", "==", normalized));
+    const draftSnap = await getDocs(draftQ);
+    if (draftSnap.empty) return null;
+    const d = draftSnap.docs[0];
+    return { id: d.id, ...d.data() } as Course;
+  } catch {
+    return null;
+  }
 }
 
 /** Lấy các section của khoá */
