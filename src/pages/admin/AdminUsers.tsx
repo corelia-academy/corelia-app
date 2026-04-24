@@ -91,12 +91,13 @@ export default function AdminUsers() {
     const support = profiles.filter((p) => p.role === "support_staff").length;
     const instructors = profiles.filter((p) => p.role === "instructor").length;
     const students = profiles.filter((p) => p.role === "student").length;
-    return { total, admins, support, instructors, students };
+    const openCampusConnected = profiles.filter((p) => Boolean(p.ocid)).length;
+    return { total, admins, support, instructors, students, openCampusConnected };
   }, [profiles]);
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
         <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -124,6 +125,26 @@ export default function AdminUsers() {
             </div>
             <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <ShieldCheck className="size-5" aria-hidden />
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                {t("users.stats.opencampusConnected")}
+              </p>
+              <p className="mt-2 text-3xl font-semibold text-foreground">
+                {stats.openCampusConnected}
+              </p>
+            </div>
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10">
+              <img
+                src="/open-campus-edu-logo.png"
+                alt=""
+                className="size-5 rounded-full"
+                aria-hidden
+              />
             </div>
           </div>
         </div>

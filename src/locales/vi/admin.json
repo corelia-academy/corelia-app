@@ -273,7 +273,8 @@
       "admin": "Admin",
       "support": "Học vụ",
       "instructor": "Giảng viên",
-      "student": "Học viên"
+      "student": "Học viên",
+      "opencampusConnected": "Đã kết nối OpenCampus"
     },
     "searchPlaceholder": "Tìm theo tên, email, role, UID…",
     "allRoles": "Tất cả vai trò",

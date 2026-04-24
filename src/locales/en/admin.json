@@ -273,7 +273,8 @@
       "admin": "Admin",
       "support": "Support",
       "instructor": "Instructor",
-      "student": "Student"
+      "student": "Student",
+      "opencampusConnected": "OpenCampus connected"
     },
     "searchPlaceholder": "Search by name, email, role, UID…",
     "allRoles": "All roles",
