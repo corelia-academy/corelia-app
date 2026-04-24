@@ -39,7 +39,9 @@ export default function Header() {
       await ocAuth!.signInWithRedirect({ state: "corelia-ocid-connect" });
     } catch (e) {
       const message =
-        e instanceof Error ? e.message : t("openCampusConnect.modal.startFailed");
+        e instanceof Error
+          ? e.message
+          : t("openCampusConnect.modal.startFailed");
       setOcConnectError(message);
       setOcConnectLoading(false);
     }
@@ -106,20 +108,22 @@ export default function Header() {
                 </span>
               </button>
 
-              <button
-                type="button"
-                onClick={handleOcLogoClick}
-                className="rounded-full transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={t("openCampusConnect.header.ariaLabel")}
-              >
-                <Avatar>
-                  <AvatarImage
-                    src="/logo/OC-square-logo.svg"
-                    alt={t("openCampusConnect.header.logoAlt")}
-                    className="overflow-hidden"
-                  />
-                </Avatar>
-              </button>
+              {!isOcidConnected && (
+                <button
+                  type="button"
+                  onClick={handleOcLogoClick}
+                  className="rounded-full transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={t("openCampusConnect.header.ariaLabel")}
+                >
+                  <Avatar>
+                    <AvatarImage
+                      src="/logo/OC-square-logo.svg"
+                      alt={t("openCampusConnect.header.logoAlt")}
+                      className="overflow-hidden"
+                    />
+                  </Avatar>
+                </button>
+              )}
 
               <OpenCampusConnectDialog
                 open={ocConnectOpen}
