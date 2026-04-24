@@ -29,7 +29,7 @@ import Account, {
   AccountSettingsRoute,
   InstructorWorkspaceProfileRoute,
 } from "@/pages/Account";
-import Auth from "@/components/Auth";
+import Auth from "@/pages/login/Auth";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminInstructors from "@/pages/admin/AdminInstructors";

@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
-import { LoginForm } from "@/components/login/LoginForm";
+import { LoginForm } from "@/pages/login/LoginForm";
 
 export default function Auth() {
   const { user, authInitialized } = useAuth();
@@ -12,7 +12,10 @@ export default function Auth() {
   if (!authInitialized) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-auth-page">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden />
+        <Loader2
+          className="size-6 animate-spin text-muted-foreground"
+          aria-hidden
+        />
       </div>
     );
   }
