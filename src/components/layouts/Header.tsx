@@ -7,6 +7,7 @@ import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
 import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
+import { useTheme } from "next-themes";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ export default function Header() {
   const { isAuthenticated, profile } = useAuth();
   const { t } = useTranslation("common");
   const { isInitialized, authState, ocAuth } = useOCAuth();
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
   const [ocConnectOpen, setOcConnectOpen] = useState(false);
   const [ocConnectLoading, setOcConnectLoading] = useState(false);
   const [ocConnectError, setOcConnectError] = useState<string | null>(null);
@@ -59,18 +62,25 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 hidden border-b border-border-subtle bg-background/85 backdrop-blur supports-backdrop-filter:bg-background/65 md:block">
-      <div className="flex h-12 items-center justify-between gap-3 p-4 bg-white dark:bg-black">
-        <div className="flex items-center gap-2">
-          <SidebarTrigger className="shrink-0">
-            <MenuIcon className="size-4" aria-hidden />
+    <header className="sticky top-0 z-40 hidden w-full border-b border-border-subtle bg-card/95 backdrop-blur-md supports-backdrop-filter:bg-card/90 md:block">
+      <div className="mx-auto flex h-14 w-full max-w-[1990px] items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="shrink-0 size-7">
+            <MenuIcon className="size-5" aria-hidden />
           </SidebarTrigger>
           <NavLink
             to="/"
-            className="flex items-center gap-2 text-sm font-medium"
+            className="flex h-10 items-center gap-2 text-sm font-medium"
           >
-            <img src="/corelia_favicon.svg" alt="Corelia" className="size-5" />
-            <span className="text-foreground">Corelia</span>
+            <img
+              src={
+                isDarkMode
+                  ? "/logo/corelia-logo-white.svg"
+                  : "/logo/corelia-logo-black.svg"
+              }
+              alt="Corelia"
+              className="h-9"
+            />
           </NavLink>
         </div>
 
@@ -80,14 +90,13 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => navigate("/account")}
-                className="inline-flex items-center gap-2 rounded-full border border-border-subtle pr-3 text-left text-sm transition-colors hover:bg-card cursor-pointer"
-                style={
+                className={`inline-flex h-10 items-center gap-2 rounded-full border border-border-subtle pr-3 text-left text-sm transition-colors hover:bg-muted/50 ${
                   isOcidConnected
-                    ? ({ backgroundColor: "#00eebf" } as React.CSSProperties)
-                    : undefined
-                }
+                    ? "bg-primary-container text-on-primary-container hover:bg-primary-container"
+                    : "bg-card"
+                } cursor-pointer`}
               >
-                <Avatar>
+                <Avatar className="size-10">
                   <AvatarImage
                     src={profile?.avatar_url ?? undefined}
                     alt={profile?.full_name ?? profile?.id?.slice(0, 8) ?? ""}
@@ -96,32 +105,24 @@ export default function Header() {
                     {(profile?.full_name ?? profile?.id ?? "U").charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <span
-                  className="max-w-[180px] truncate"
-                  style={
-                    isOcidConnected
-                      ? ({ color: "#141bec" } as React.CSSProperties)
-                      : undefined
-                  }
-                >
-                  {displayName}
-                </span>
+                <span className="max-w-[180px] truncate">{displayName}</span>
               </button>
 
               {!isOcidConnected && (
                 <button
                   type="button"
                   onClick={handleOcLogoClick}
-                  className="rounded-full transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-border-subtle bg-[#141bec] px-2.5 py-2 text-left text-sm cursor-pointer"
                   aria-label={t("openCampusConnect.header.ariaLabel")}
                 >
-                  <Avatar>
-                    <AvatarImage
-                      src="/logo/OC-square-logo.svg"
-                      alt={t("openCampusConnect.header.logoAlt")}
-                      className="overflow-hidden"
-                    />
-                  </Avatar>
+                  <img
+                    src="/logo/OC-square-logo.svg"
+                    alt="Open Campus"
+                    className="h-6 rounded-full"
+                  />
+                  <span className="text-white">
+                    Link <span className="font-bold">OCID</span>
+                  </span>
                 </button>
               )}
 

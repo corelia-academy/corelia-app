@@ -28,7 +28,7 @@ import Account, {
   AccountInstructorProfileRoute,
   AccountSettingsRoute,
   InstructorWorkspaceProfileRoute,
-} from "@/pages/Account";
+} from "@/pages/account/Account";
 import Auth from "@/pages/login/Auth";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminUsers from "@/pages/admin/AdminUsers";
@@ -163,7 +163,7 @@ export default function App() {
                   </RequireAuth>
                 }
               >
-                <Route index element={<Navigate to="settings" replace />} />
+                <Route index element={<Navigate to="profile" replace />} />
                 <Route path="profile" element={<AccountProfileRoute />} />
                 <Route path="cv" element={<AccountCvRoute />} />
                 <Route path="billing" element={<AccountBillingRoute />} />

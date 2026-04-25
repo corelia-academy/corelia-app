@@ -74,7 +74,9 @@ export default function ConnectOCIDCard() {
           </p>
         </div>
         <span className="shrink-0 rounded-full border border-border-subtle bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground">
-          {connected ? t("ocid.card.statusConnected") : t("ocid.card.statusDisconnected")}
+          {connected
+            ? t("ocid.card.statusConnected")
+            : t("ocid.card.statusDisconnected")}
         </span>
       </div>
 
@@ -89,13 +91,17 @@ export default function ConnectOCIDCard() {
       ) : connected ? (
         <div className="grid gap-3 rounded-md border border-border-subtle bg-background p-3 text-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-muted-foreground">{t("ocid.card.ocidLabel")}</div>
+            <div className="text-muted-foreground">
+              {t("ocid.card.ocidLabel")}
+            </div>
             <div className="font-mono text-foreground">
               {ocidDisplay ?? profile?.ocid ?? "—"}
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-muted-foreground">{t("ocid.card.ethAddressLabel")}</div>
+            <div className="text-muted-foreground">
+              {t("ocid.card.ethAddressLabel")}
+            </div>
             <div className="font-mono text-foreground">
               {ethDisplay ?? profile?.ocid_eth_address ?? "—"}
             </div>
@@ -124,22 +130,43 @@ export default function ConnectOCIDCard() {
           <Button
             type="button"
             variant="destructive"
-            disabled={loading}
-            onClick={() => void handleDisconnect()}
+            onClick={handleConnect}
+            disabled={loading || !isInitialized}
+            className="h-11 inline-flex items-center justify-center gap-2 border border-border-subtle py-2.5 px-3 text-left text-sm cursor-pointer"
           >
-            {loading ? t("ocid.card.loadingDisconnect") : t("ocid.card.disconnect")}
+            <img
+              src="/logo/OC-square-logo.svg"
+              alt="Open Campus"
+              className="h-full rounded-full"
+            />
+
+            {loading ? (
+              t("ocid.card.loadingConnect")
+            ) : (
+              <span className="text-white">{t("ocid.card.connect")}</span>
+            )}
           </Button>
         ) : (
           <Button
             type="button"
+            onClick={handleConnect}
             disabled={loading || !isInitialized}
-            onClick={() => void handleConnect()}
+            className="bg-[#141bec] text-white hover:bg-[#141bec]/90 h-11 inline-flex items-center justify-center gap-2 border border-border-subtle py-2.5 px-3 text-left text-sm cursor-pointer"
           >
-            {loading ? t("ocid.card.loadingConnect") : t("ocid.card.connect")}
+            <img
+              src="/logo/OC-square-logo.svg"
+              alt="Open Campus"
+              className="h-full rounded-full"
+            />
+
+            {loading ? (
+              t("ocid.card.loadingConnect")
+            ) : (
+              <span className="text-white">{t("ocid.card.connect")}</span>
+            )}
           </Button>
         )}
       </div>
     </section>
   );
 }
-

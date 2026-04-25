@@ -1,0 +1,15 @@
+---
+description: React Router v7 + auth/role guard conventions
+globs: src/{App.tsx,pages/**/*.tsx,components/auth/**/*.tsx}
+alwaysApply: false
+---
+
+# Routing & guards
+
+- Routes live in `src/App.tsx` using **React Router v7** (`Routes`/`Route`) with nested layouts.
+- Use existing guards:
+  - `RequireAuth` for authenticated-only pages.
+  - `RequireRole` for role-based access (admin/support/instructor).
+  - Feature-specific guards like `RequireOfflineAcademyManager`, `RequireContestManager`.
+- Keep nested route patterns consistent (e.g. `/account/*` uses `Outlet`).
+- Prefer `Navigate` redirects for legacy/renamed routes; keep them small and deterministic.

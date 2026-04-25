@@ -1,0 +1,14 @@
+---
+description: i18n rules (namespaces, keys, updating vi/en locales)
+globs: src/**/*.{ts,tsx,json}
+alwaysApply: false
+---
+
+# i18n (i18next) rules
+
+- Use `useTranslation("<ns>")` with an existing namespace: `common`, `auth`, `courses`, `contests`, `cohorts`, `account`, `instructor`, `admin` (see `src/i18n.ts`).
+- When adding UI text:
+  - Add keys to **both** `src/locales/vi/<ns>.json` and `src/locales/en/<ns>.json`.
+  - Prefer descriptive nested keys (e.g. `openCampusConnect.modal.title`) consistent with current structure.
+- Do not rely on `defaultValue` except for safe fallbacks; primary copy should live in locales.
+- App sets `document.documentElement.lang` from i18n (see `src/App.tsx`); don’t bypass language detection caches (`localStorage` key `i18nextLng`).

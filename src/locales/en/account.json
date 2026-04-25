@@ -148,6 +148,10 @@
     "loading": "Loading profile…",
     "mustLogin": "You need to sign in to view this page.",
     "emailLoginLabel": "Sign-in email",
+    "setupWarning": {
+      "title": "Your profile needs a bit more information.",
+      "body": "Please update your full name and phone number so Corelia, instructors, or support staff can help you better."
+    },
     "avatar": {
       "label": "Avatar",
       "alt": "Avatar",

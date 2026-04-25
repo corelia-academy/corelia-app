@@ -71,6 +71,7 @@ export default function OpenCampusConnectDialog(props: Props) {
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={loading}
+            className="h-11"
           >
             {t("openCampusConnect.modal.later")}
           </Button>
@@ -78,10 +79,21 @@ export default function OpenCampusConnectDialog(props: Props) {
             type="button"
             onClick={onConnect}
             disabled={disabled || loading}
+            className="bg-[#141bec] text-white hover:bg-[#141bec]/90 h-11 inline-flex items-center justify-center gap-2 border border-border-subtle py-2.5 px-3 text-left text-sm cursor-pointer"
           >
-            {loading
-              ? t("openCampusConnect.modal.connecting")
-              : t("openCampusConnect.modal.connect")}
+            <img
+              src="/logo/OC-square-logo.svg"
+              alt="Open Campus"
+              className="h-full rounded-full"
+            />
+
+            {loading ? (
+              t("openCampusConnect.modal.connecting")
+            ) : (
+              <span className="text-white">
+                Link <span className="font-bold">OCID</span>
+              </span>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

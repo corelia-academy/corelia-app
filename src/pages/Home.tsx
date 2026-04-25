@@ -795,24 +795,6 @@ export default function Home() {
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
-          {needsProfileSetup && (
-            <div className="rounded-md border border-warning/20 bg-warning/10 p-4 text-sm text-warning">
-              <p className="font-medium">
-                Hồ sơ của bạn cần bổ sung thêm thông tin.
-              </p>
-              <p className="mt-2 leading-relaxed">
-                Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc
-                học vụ hỗ trợ bạn tốt hơn.
-              </p>
-              <NavLink
-                to="/account"
-                className="mt-3 inline-flex text-xs font-medium underline underline-offset-2"
-              >
-                Cập nhật tài khoản
-              </NavLink>
-            </div>
-          )}
-
           <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
             <div className="flex items-start gap-3">
               <Avatar className="size-10 shrink-0">
