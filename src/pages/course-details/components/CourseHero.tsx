@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { CourseBadge } from "./CourseBadge";
 import {
   formatDuration,
   getCourseAccessModelLabel,
@@ -45,27 +46,27 @@ export function CourseHero({
       : null;
 
   return (
-    <section className="rounded-md border border-border-subtle bg-card shadow-card">
+    <section className="rounded-md border border-border-subtle bg-card shadow-sm">
       <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.55fr)]">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span className="rounded-md bg-muted px-2 py-1">
+            <CourseBadge variant="secondary">
               {getCourseLevelLabel(course.level)}
-            </span>
-            <span className="rounded-md bg-muted px-2 py-1">
+            </CourseBadge>
+            <CourseBadge variant="secondary">
               {getCourseAccessModelLabel(course.access_model)}
-            </span>
+            </CourseBadge>
             {isPaidUpfront && previewLessons.length > 0 ? (
-              <span className="rounded-md bg-success/15 px-2 py-1 text-success">
+              <CourseBadge variant="success">
                 {translate("detail.courseDetail.lessonCountPreview", {
                   count: previewLessons.length,
                 })}
-              </span>
+              </CourseBadge>
             ) : null}
             {enrollment?.certificate_issued_at ? (
-              <span className="rounded-md bg-success/15 px-2 py-1 text-success">
+              <CourseBadge variant="success">
                 {translate("detail.courseDetail.certificateIssued")}
-              </span>
+              </CourseBadge>
             ) : null}
           </div>
 
@@ -77,7 +78,7 @@ export function CourseHero({
             {translate("detail.courseDetail.instructorLabel")}{" "}
             <Link
               to={`/instructors/${course.instructor_id}`}
-              className="font-medium text-foreground hover:underline"
+              className="font-medium text-foreground transition-colors duration-150 hover:text-primary"
             >
               {course.instructor_name}
             </Link>
@@ -90,7 +91,7 @@ export function CourseHero({
           ) : null}
 
           <div className="mt-4 grid gap-2 text-sm">
-            <dl className="grid grid-cols-2 gap-2 rounded-md border border-border-subtle bg-background p-3 text-sm">
+            <dl className="grid grid-cols-1 gap-2 rounded-md border border-border-subtle bg-background p-3 text-sm sm:grid-cols-2">
               <div>
                 <dt className="text-muted-foreground">
                   {translate("detail.courseDetail.stats.duration")}
