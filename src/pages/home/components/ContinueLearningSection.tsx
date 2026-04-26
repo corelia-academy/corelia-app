@@ -1,0 +1,81 @@
+import { ArrowRight, BookOpen } from "lucide-react";
+import { NavLink } from "react-router";
+import type { TFunction } from "i18next";
+import { Button } from "@/components/ui/button";
+import type { FocusCard } from "../utils/homeTypes";
+
+export function ContinueLearningSection({
+  t,
+  focusCards,
+}: {
+  t: TFunction<"common">;
+  focusCards: FocusCard[];
+}) {
+  return (
+    <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-sm font-medium text-foreground">{t("home.continueLearning")}</div>
+        <Button
+          render={<NavLink to="/courses" />}
+          nativeButton={false}
+          variant="ghost"
+          size="sm"
+          className="-mr-2"
+        >
+          {t("home.sections.seeAll")}
+          <ArrowRight className="size-4" />
+        </Button>
+      </div>
+
+      {focusCards.length > 0 ? (
+        <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+          {focusCards.map((item) => (
+            <NavLink
+              key={item.id}
+              to={item.action}
+              className="min-w-[240px] max-w-[240px] cursor-pointer rounded-md border border-border-subtle bg-background p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="line-clamp-2 text-sm font-medium text-foreground">
+                {item.title}
+              </div>
+              <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                {item.meta}
+              </div>
+              <div className="mt-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{t("home.sections.progress")}</span>
+                  <span>{item.progress}%</span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${item.progress}%` }}
+                  />
+                </div>
+              </div>
+              <div className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                {item.nextStep}
+              </div>
+            </NavLink>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-3 flex flex-col items-center gap-3 py-8 text-center sm:py-12">
+          <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+            <BookOpen className="size-6 text-muted-foreground" aria-hidden />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              {t("home.sections.startFromCatalogTitle")}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t("home.sections.enrollHint")}</p>
+          </div>
+          <Button size="sm" render={<NavLink to="/courses" />} nativeButton={false}>
+            {t("home.exploreCourses")}
+          </Button>
+        </div>
+      )}
+    </section>
+  );
+}
+
