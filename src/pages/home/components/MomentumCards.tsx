@@ -31,7 +31,7 @@ export function MomentumCards({
                   {item.note}
                 </div>
               </div>
-              <div className="flex size-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <div className="flex size-9 items-center justify-center rounded-md bg-primary-container text-on-primary-container">
                 <Icon className="size-4 shrink-0" aria-hidden />
               </div>
             </div>

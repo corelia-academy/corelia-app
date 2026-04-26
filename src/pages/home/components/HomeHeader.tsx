@@ -78,7 +78,7 @@ export function HomeHeader({
                 <span>{t("home.sections.progress")}</span>
                 <span>{featuredFocus.progress}%</span>
               </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full rounded-full bg-primary"
                   style={{ width: `${featuredFocus.progress}%` }}
@@ -117,7 +117,7 @@ export function HomeHeader({
                 variant="outline"
                 size="sm"
               >
-                Khoá học
+                {t("home.allCourses")}
               </Button>
             </>
           ) : null}

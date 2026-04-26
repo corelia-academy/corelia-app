@@ -15,7 +15,7 @@ export function ExploreCoursesSection({
   return (
     <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-medium text-foreground">{t("home.sections.exploreTitle")}</div>
+        <h2 className="text-sm font-medium text-foreground">{t("home.sections.exploreTitle")}</h2>
         <Button
           render={<NavLink to="/courses" />}
           nativeButton={false}
@@ -55,7 +55,7 @@ export function ExploreCoursesSection({
                   <img
                     src={course.thumbnail_url}
                     alt=""
-                    className="absolute inset-0 size-full object-cover"
+                    className="absolute inset-0 size-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
                   />
                 ) : null}
               </div>

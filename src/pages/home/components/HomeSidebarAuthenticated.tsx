@@ -64,7 +64,7 @@ export function HomeSidebarAuthenticated({
       </section>
 
       <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
-        <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           <BookOpen className="size-4 shrink-0" aria-hidden />
           {t("home.guest.quickLinksTitle")}
         </div>

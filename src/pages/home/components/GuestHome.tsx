@@ -48,9 +48,7 @@ export function GuestHome({
 
           <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-5">
             <div className="flex items-center justify-between gap-3">
-              <div className="text-sm font-medium text-foreground">
-                Khoá học nổi bật
-              </div>
+              <h2 className="text-sm font-medium text-foreground">Khoá học nổi bật</h2>
               <Button
                 render={<NavLink to="/courses" />}
                 nativeButton={false}
@@ -58,7 +56,7 @@ export function GuestHome({
                 size="sm"
                 className="-mr-2"
               >
-                Xem tất cả
+                {t("home.sections.seeAll")}
                 <ArrowRight className="size-4" />
               </Button>
             </div>
@@ -93,7 +91,7 @@ export function GuestHome({
                         <img
                           src={course.thumbnail_url}
                           alt=""
-                          className="absolute inset-0 size-full object-cover"
+                          className="absolute inset-0 size-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
                         />
                       ) : null}
                     </div>
@@ -114,7 +112,7 @@ export function GuestHome({
           {contests.length > 0 ? (
             <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-5">
               <div className="flex items-center justify-between gap-3">
-                <div className="text-sm font-medium text-foreground">Cuộc thi đang mở</div>
+                <h2 className="text-sm font-medium text-foreground">{t("home.guest.openContestsTitle")}</h2>
                 <Button
                   render={<NavLink to="/contests" />}
                   nativeButton={false}
@@ -122,7 +120,7 @@ export function GuestHome({
                   size="sm"
                   className="-mr-2"
                 >
-                  Xem tất cả
+                  {t("home.sections.seeAll")}
                   <ArrowRight className="size-4" />
                 </Button>
               </div>
@@ -143,10 +141,9 @@ export function GuestHome({
                       </div>
                       {contest.registration_deadline ? (
                         <div className="mt-2 text-xs text-muted-foreground">
-                          Hạn đăng ký{" "}
-                          {new Date(contest.registration_deadline).toLocaleDateString(
-                            intlLocale(),
-                          )}
+                          {t("home.pinned.contest.registrationDeadline", {
+                            date: new Date(contest.registration_deadline).toLocaleDateString(intlLocale()),
+                          })}
                         </div>
                       ) : null}
                     </div>
@@ -167,7 +164,12 @@ export function GuestHome({
               {t("home.guest.startLearningSubtitle")}
             </p>
             <div className="mt-4 grid gap-2">
-              <Button className="w-full" render={<NavLink to="/login" />} nativeButton={false}>
+              <Button
+                className="w-full"
+                variant="secondary"
+                render={<NavLink to="/login" />}
+                nativeButton={false}
+              >
                 {t("home.guest.signIn")}
               </Button>
               <Button
@@ -182,7 +184,7 @@ export function GuestHome({
           </section>
 
           <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               <BookOpen className="size-4 shrink-0" aria-hidden />
               {t("home.guest.quickLinksTitle")}
             </div>

@@ -14,7 +14,7 @@ export function ContinueLearningSection({
   return (
     <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-medium text-foreground">{t("home.continueLearning")}</div>
+        <h2 className="text-sm font-medium text-foreground">{t("home.continueLearning")}</h2>
         <Button
           render={<NavLink to="/courses" />}
           nativeButton={false}
@@ -46,7 +46,7 @@ export function ContinueLearningSection({
                   <span>{t("home.sections.progress")}</span>
                   <span>{item.progress}%</span>
                 </div>
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
                   <div
                     className="h-full rounded-full bg-primary"
                     style={{ width: `${item.progress}%` }}
@@ -70,7 +70,12 @@ export function ContinueLearningSection({
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">{t("home.sections.enrollHint")}</p>
           </div>
-          <Button size="sm" render={<NavLink to="/courses" />} nativeButton={false}>
+          <Button
+            size="sm"
+            variant="outline"
+            render={<NavLink to="/courses" />}
+            nativeButton={false}
+          >
             {t("home.exploreCourses")}
           </Button>
         </div>
