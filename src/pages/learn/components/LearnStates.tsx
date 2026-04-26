@@ -1,0 +1,67 @@
+import { Link } from "react-router";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
+
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
+
+export function LearnMissingCourseIdState({
+  translate,
+}: {
+  translate: TranslateFn;
+}) {
+  return (
+    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
+        <p className="text-sm font-medium text-destructive">
+          {translate("detail.missingCourseId")}
+        </p>
+        <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
+        <Link
+          to="/courses"
+          className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
+        >
+          <ArrowLeft className="size-4" aria-hidden />{" "}
+          {translate("detail.learn.backToCourses")}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+export function LearnLoadingState({ translate }: { translate: TranslateFn }) {
+  return (
+    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border-subtle bg-card p-8 text-center shadow-card">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
+        <p className="mt-4 text-sm text-muted-foreground">
+          {translate("detail.learn.loadingPage")}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function LearnErrorState({
+  translate,
+  message,
+}: {
+  translate: TranslateFn;
+  message: string;
+}) {
+  return (
+    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
+        <p className="text-sm font-medium text-destructive">{message}</p>
+        <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
+        <Link
+          to="/courses"
+          className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
+        >
+          <ArrowLeft className="size-4" aria-hidden />{" "}
+          {translate("detail.learn.backToCourses")}
+        </Link>
+      </div>
+    </div>
+  );
+}
+

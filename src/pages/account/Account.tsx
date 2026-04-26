@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router";
 import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";

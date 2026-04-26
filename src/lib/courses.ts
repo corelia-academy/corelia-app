@@ -1,5 +1,6 @@
 import {
   collection,
+  collectionGroup,
   doc,
   getDoc,
   getDocs,
@@ -23,6 +24,10 @@ import type {
   CourseUpdate,
   CourseSectionInsert,
   CourseLessonInsert,
+  CourseLocaleContent,
+  CourseSectionLocaleContent,
+  CourseLessonLocaleContent,
+  SupportedCourseLocale,
 } from "@/types/courses";
 
 const COURSES = "courses";
@@ -31,10 +36,413 @@ const LESSON_PROGRESS = "lesson_progress";
 const CERTIFICATE_API =
   import.meta.env.VITE_CERTIFICATE_ISSUE_API || "/api/certificates/issue";
 
+type CacheKey = string;
+const courseLocaleCache = new Map<CacheKey, Promise<CourseLocaleContent | null>>();
+const sectionLocaleCache = new Map<
+  CacheKey,
+  Promise<CourseSectionLocaleContent | null>
+>();
+const lessonLocaleCache = new Map<CacheKey, Promise<CourseLessonLocaleContent | null>>();
+const lessonLocaleMapCache = new Map<
+  CacheKey,
+  Promise<Map<string, CourseLessonLocaleContent>>
+>();
+const sectionLocaleMapCache = new Map<
+  CacheKey,
+  Promise<Map<string, CourseSectionLocaleContent>>
+>();
+
 function removeUndefinedFields<T extends Record<string, unknown>>(data: T): T {
   return Object.fromEntries(
     Object.entries(data).filter(([, value]) => value !== undefined),
   ) as T;
+}
+
+export function normalizeCourseLocale(input?: string | null): SupportedCourseLocale {
+  return input === "en" ? "en" : "vi";
+}
+
+export function clearCourseLocaleCaches(courseId?: string): void {
+  if (!courseId) {
+    courseLocaleCache.clear();
+    sectionLocaleCache.clear();
+    lessonLocaleCache.clear();
+    return;
+  }
+  for (const key of Array.from(courseLocaleCache.keys())) {
+    if (key.startsWith(`${courseId}:`)) courseLocaleCache.delete(key);
+  }
+  for (const key of Array.from(sectionLocaleCache.keys())) {
+    if (key.startsWith(`${courseId}:`)) sectionLocaleCache.delete(key);
+  }
+  for (const key of Array.from(lessonLocaleCache.keys())) {
+    if (key.startsWith(`${courseId}:`)) lessonLocaleCache.delete(key);
+  }
+}
+
+export function getCoursePrimaryLocale(course?: Pick<Course, "i18n"> | null): SupportedCourseLocale {
+  const primary = course?.i18n?.primary_content_locale;
+  return normalizeCourseLocale(primary);
+}
+
+export function getCourseSupportedLocales(course?: Pick<Course, "i18n"> | null): SupportedCourseLocale[] {
+  const list = course?.i18n?.supported_locales;
+  const fallback: SupportedCourseLocale[] = ["vi", "en"];
+  const supported: SupportedCourseLocale[] =
+    Array.isArray(list) && list.length ? list.map(normalizeCourseLocale) : fallback;
+  return Array.from(new Set<SupportedCourseLocale>(supported));
+}
+
+export function pickCourseContentLocale(
+  course: Pick<Course, "i18n"> | null,
+  uiLocale?: string | null,
+): SupportedCourseLocale {
+  const preferred = normalizeCourseLocale(uiLocale);
+  const supported = getCourseSupportedLocales(course);
+  if (supported.includes(preferred)) return preferred;
+  return getCoursePrimaryLocale(course);
+}
+
+export function applyCourseLocaleContent(course: Course, localized: CourseLocaleContent | null): Course {
+  if (!localized) return course;
+  return {
+    ...course,
+    title: localized.title ?? course.title,
+    slug: localized.slug ?? course.slug,
+    description: localized.description ?? course.description,
+    short_description: localized.short_description ?? course.short_description,
+    learning_outcomes: localized.learning_outcomes ?? course.learning_outcomes,
+    final_assignment_title:
+      localized.final_assignment_title ?? course.final_assignment_title,
+    final_assignment_description:
+      localized.final_assignment_description ?? course.final_assignment_description,
+    final_assignment_instructions:
+      localized.final_assignment_instructions ?? course.final_assignment_instructions,
+  };
+}
+
+export function applyCourseSectionLocaleContent(
+  section: CourseSection,
+  localized: CourseSectionLocaleContent | null,
+): CourseSection {
+  if (!localized) return section;
+  return {
+    ...section,
+    title: localized.title ?? section.title,
+    description: localized.description ?? section.description,
+  };
+}
+
+export function applyCourseLessonLocaleContent(
+  lesson: CourseLesson,
+  localized: CourseLessonLocaleContent | null,
+): CourseLesson {
+  if (!localized) return lesson;
+  return {
+    ...lesson,
+    title: localized.title ?? lesson.title,
+    short_description: localized.short_description ?? lesson.short_description,
+    description_markdown: localized.description_markdown ?? lesson.description_markdown,
+    resources: localized.resources ?? lesson.resources,
+    youtube_url: localized.youtube_url ?? lesson.youtube_url,
+    video_primary_locale: localized.video_primary_locale ?? lesson.video_primary_locale,
+    has_subtitle: localized.has_subtitle ?? lesson.has_subtitle,
+    subtitle_locales: localized.subtitle_locales ?? lesson.subtitle_locales,
+  };
+}
+
+export async function getCourseLocaleContent(
+  courseId: string,
+  locale: SupportedCourseLocale,
+): Promise<CourseLocaleContent | null> {
+  const key: CacheKey = `${courseId}:${locale}`;
+  const existing = courseLocaleCache.get(key);
+  if (existing) return existing;
+  const promise = (async () => {
+    const ref = doc(db, COURSES, courseId, "locales", locale);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return null;
+    return { ...(snap.data() as Omit<CourseLocaleContent, "locale">), locale };
+  })();
+  courseLocaleCache.set(key, promise);
+  try {
+    return await promise;
+  } catch (e) {
+    courseLocaleCache.delete(key);
+    throw e;
+  }
+}
+
+export async function setCourseLocaleContent(
+  courseId: string,
+  locale: SupportedCourseLocale,
+  data: Partial<Omit<CourseLocaleContent, "locale">>,
+): Promise<void> {
+  const ref = doc(db, COURSES, courseId, "locales", locale);
+  await setDoc(ref, removeUndefinedFields({
+    ...data,
+    entity: "course",
+    course_id: courseId,
+    locale,
+    updated_at: new Date().toISOString(),
+  }) as Record<string, unknown>, { merge: true });
+  courseLocaleCache.delete(`${courseId}:${locale}`);
+}
+
+export async function getCourseSectionLocaleContent(
+  courseId: string,
+  sectionId: string,
+  locale: SupportedCourseLocale,
+): Promise<CourseSectionLocaleContent | null> {
+  const key: CacheKey = `${courseId}:${sectionId}:${locale}`;
+  const existing = sectionLocaleCache.get(key);
+  if (existing) return existing;
+  const promise = (async () => {
+    const ref = doc(db, COURSES, courseId, "sections", sectionId, "locales", locale);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return null;
+    return { ...(snap.data() as Omit<CourseSectionLocaleContent, "locale">), locale };
+  })();
+  sectionLocaleCache.set(key, promise);
+  try {
+    return await promise;
+  } catch (e) {
+    sectionLocaleCache.delete(key);
+    throw e;
+  }
+}
+
+export async function setCourseSectionLocaleContent(
+  courseId: string,
+  sectionId: string,
+  locale: SupportedCourseLocale,
+  data: Partial<Omit<CourseSectionLocaleContent, "locale">>,
+): Promise<void> {
+  const ref = doc(db, COURSES, courseId, "sections", sectionId, "locales", locale);
+  await setDoc(ref, removeUndefinedFields({
+    ...data,
+    entity: "section",
+    course_id: courseId,
+    section_id: sectionId,
+    locale,
+    updated_at: new Date().toISOString(),
+  }) as Record<string, unknown>, { merge: true });
+  sectionLocaleCache.delete(`${courseId}:${sectionId}:${locale}`);
+  sectionLocaleMapCache.delete(`${courseId}:${locale}`);
+}
+
+export async function getCourseLessonLocaleContent(
+  courseId: string,
+  lessonId: string,
+  locale: SupportedCourseLocale,
+): Promise<CourseLessonLocaleContent | null> {
+  const key: CacheKey = `${courseId}:${lessonId}:${locale}`;
+  const existing = lessonLocaleCache.get(key);
+  if (existing) return existing;
+  const promise = (async () => {
+    const ref = doc(db, COURSES, courseId, "lessons", lessonId, "locales", locale);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return null;
+    return { ...(snap.data() as Omit<CourseLessonLocaleContent, "locale">), locale };
+  })();
+  lessonLocaleCache.set(key, promise);
+  try {
+    return await promise;
+  } catch (e) {
+    lessonLocaleCache.delete(key);
+    throw e;
+  }
+}
+
+export async function setCourseLessonLocaleContent(
+  courseId: string,
+  lessonId: string,
+  locale: SupportedCourseLocale,
+  data: Partial<Omit<CourseLessonLocaleContent, "locale">>,
+): Promise<void> {
+  const ref = doc(db, COURSES, courseId, "lessons", lessonId, "locales", locale);
+  await setDoc(ref, removeUndefinedFields({
+    ...data,
+    entity: "lesson",
+    course_id: courseId,
+    lesson_id: lessonId,
+    locale,
+    updated_at: new Date().toISOString(),
+  }) as Record<string, unknown>, { merge: true });
+  lessonLocaleCache.delete(`${courseId}:${lessonId}:${locale}`);
+  lessonLocaleMapCache.delete(`${courseId}:${locale}`);
+}
+
+export async function getCourseLessonLocaleContentMap(
+  courseId: string,
+  locale: SupportedCourseLocale,
+): Promise<Map<string, CourseLessonLocaleContent>> {
+  const key: CacheKey = `${courseId}:${locale}`;
+  const existing = lessonLocaleMapCache.get(key);
+  if (existing) return existing;
+  const promise = (async () => {
+    const q = query(
+      collectionGroup(db, "locales"),
+      where("entity", "==", "lesson"),
+      where("course_id", "==", courseId),
+      where("locale", "==", locale),
+    );
+    const snap = await getDocs(q);
+    const map = new Map<string, CourseLessonLocaleContent>();
+    for (const d of snap.docs) {
+      const raw = d.data() as Partial<CourseLessonLocaleContent> & {
+        lesson_id?: string;
+      };
+      const lessonId = String(raw.lesson_id ?? "").trim();
+      if (!lessonId) continue;
+      map.set(lessonId, { ...(raw as CourseLessonLocaleContent), locale });
+    }
+    return map;
+  })();
+  lessonLocaleMapCache.set(key, promise);
+  try {
+    return await promise;
+  } catch (e) {
+    lessonLocaleMapCache.delete(key);
+    throw e;
+  }
+}
+
+export async function getCourseSectionLocaleContentMap(
+  courseId: string,
+  locale: SupportedCourseLocale,
+): Promise<Map<string, CourseSectionLocaleContent>> {
+  const key: CacheKey = `${courseId}:${locale}`;
+  const existing = sectionLocaleMapCache.get(key);
+  if (existing) return existing;
+  const promise = (async () => {
+    const q = query(
+      collectionGroup(db, "locales"),
+      where("entity", "==", "section"),
+      where("course_id", "==", courseId),
+      where("locale", "==", locale),
+    );
+    const snap = await getDocs(q);
+    const map = new Map<string, CourseSectionLocaleContent>();
+    for (const d of snap.docs) {
+      const raw = d.data() as Partial<CourseSectionLocaleContent> & {
+        section_id?: string;
+      };
+      const sectionId = String(raw.section_id ?? "").trim();
+      if (!sectionId) continue;
+      map.set(sectionId, { ...(raw as CourseSectionLocaleContent), locale });
+    }
+    return map;
+  })();
+  sectionLocaleMapCache.set(key, promise);
+  try {
+    return await promise;
+  } catch (e) {
+    sectionLocaleMapCache.delete(key);
+    throw e;
+  }
+}
+
+export async function backfillCourseLocaleIndex(
+  courseId: string,
+  locales: SupportedCourseLocale[] = ["vi", "en"],
+): Promise<{ updated: number }> {
+  const normalizedLocales = Array.from(
+    new Set(locales.map((l) => normalizeCourseLocale(l))),
+  );
+  const [sections, lessons] = await Promise.all([
+    getCourseSections(courseId).catch(() => [] as CourseSection[]),
+    getCourseLessons(courseId).catch(() => [] as CourseLesson[]),
+  ]);
+
+  let updated = 0;
+  let batch = writeBatch(db);
+  let ops = 0;
+  const commitIfNeeded = async (force = false) => {
+    if (ops === 0) return;
+    if (!force && ops < 400) return;
+    await batch.commit();
+    batch = writeBatch(db);
+    ops = 0;
+  };
+
+  // courses/{courseId}/locales/{locale}
+  for (const locale of normalizedLocales) {
+    const ref = doc(db, COURSES, courseId, "locales", locale);
+    const snap = await getDoc(ref).catch(() => null);
+    if (!snap?.exists()) continue;
+    const data = snap.data() as Record<string, unknown>;
+    const needs =
+      data.entity !== "course" || data.course_id !== courseId || data.locale !== locale;
+    if (!needs) continue;
+    batch.set(
+      ref,
+      { entity: "course", course_id: courseId, locale },
+      { merge: true },
+    );
+    updated += 1;
+    ops += 1;
+    await commitIfNeeded();
+  }
+
+  // sections/{sectionId}/locales/{locale}
+  for (const section of sections) {
+    for (const locale of normalizedLocales) {
+      const ref = doc(db, COURSES, courseId, "sections", section.id, "locales", locale);
+      const snap = await getDoc(ref).catch(() => null);
+      if (!snap?.exists()) continue;
+      const data = snap.data() as Record<string, unknown>;
+      const needs =
+        data.entity !== "section" ||
+        data.course_id !== courseId ||
+        data.section_id !== section.id ||
+        data.locale !== locale;
+      if (!needs) continue;
+      batch.set(
+        ref,
+        { entity: "section", course_id: courseId, section_id: section.id, locale },
+        { merge: true },
+      );
+      updated += 1;
+      ops += 1;
+      await commitIfNeeded();
+    }
+  }
+
+  // lessons/{lessonId}/locales/{locale}
+  for (const lesson of lessons) {
+    for (const locale of normalizedLocales) {
+      const ref = doc(db, COURSES, courseId, "lessons", lesson.id, "locales", locale);
+      const snap = await getDoc(ref).catch(() => null);
+      if (!snap?.exists()) continue;
+      const data = snap.data() as Record<string, unknown>;
+      const needs =
+        data.entity !== "lesson" ||
+        data.course_id !== courseId ||
+        data.lesson_id !== lesson.id ||
+        data.locale !== locale;
+      if (!needs) continue;
+      batch.set(
+        ref,
+        { entity: "lesson", course_id: courseId, lesson_id: lesson.id, locale },
+        { merge: true },
+      );
+      updated += 1;
+      ops += 1;
+      await commitIfNeeded();
+    }
+  }
+
+  await commitIfNeeded(true);
+
+  // Invalidate caches so UI uses bulk-query immediately.
+  clearCourseLocaleCaches(courseId);
+  lessonLocaleMapCache.delete(`${courseId}:vi`);
+  lessonLocaleMapCache.delete(`${courseId}:en`);
+  sectionLocaleMapCache.delete(`${courseId}:vi`);
+  sectionLocaleMapCache.delete(`${courseId}:en`);
+
+  return { updated };
 }
 
 /** Lấy tất cả khoá học (đã publish) */
@@ -394,6 +802,7 @@ export async function createCourse(data: CourseInsert): Promise<Course> {
     title: data.title,
     slug: data.slug,
     description: data.description,
+    learning_outcomes: data.learning_outcomes ?? [],
     short_description: data.short_description ?? "",
     thumbnail_url: data.thumbnail_url,
     thumbnail_path: data.thumbnail_path,
@@ -402,6 +811,7 @@ export async function createCourse(data: CourseInsert): Promise<Course> {
     level: data.level ?? "all",
     total_duration_seconds: data.total_duration_seconds ?? 0,
     published: data.published ?? false,
+    i18n: data.i18n,
     access_model: data.access_model ?? "free",
     price_vnd: data.price_vnd ?? null,
     certificate_fee_vnd: data.certificate_fee_vnd ?? null,
@@ -423,11 +833,14 @@ export async function addSection(
   courseId: string,
   data: CourseSectionInsert
 ): Promise<CourseSection> {
+  const payload = removeUndefinedFields(
+    data as unknown as Record<string, unknown>,
+  ) as unknown as CourseSectionInsert;
   const ref = await addDoc(
     collection(db, COURSES, courseId, "sections"),
-    data
+    payload
   );
-  return { id: ref.id, ...data };
+  return { id: ref.id, ...payload } as CourseSection;
 }
 
 /** Thêm lesson vào khoá */
@@ -435,11 +848,14 @@ export async function addLesson(
   courseId: string,
   data: CourseLessonInsert
 ): Promise<CourseLesson> {
+  const payload = removeUndefinedFields(
+    data as unknown as Record<string, unknown>,
+  ) as unknown as CourseLessonInsert;
   const ref = await addDoc(
     collection(db, COURSES, courseId, "lessons"),
-    data
+    payload
   );
-  return { id: ref.id, ...data };
+  return { id: ref.id, ...payload } as CourseLesson;
 }
 
 /** Lấy khoá học do giảng viên tạo (instructor) hoặc tất cả (admin) */
@@ -487,7 +903,7 @@ export async function refreshCourseTotalDuration(courseId: string): Promise<void
 export async function updateSection(
   courseId: string,
   sectionId: string,
-  data: Partial<Pick<CourseSection, "title" | "order">>
+  data: Partial<Pick<CourseSection, "title" | "order" | "description">>
 ): Promise<void> {
   await updateDoc(
     doc(db, COURSES, courseId, "sections", sectionId),

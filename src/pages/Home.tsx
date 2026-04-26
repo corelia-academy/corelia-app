@@ -21,6 +21,9 @@ import {
   getNextLesson,
   getPublishedCourses,
   sortLessonsByCurriculum,
+  applyCourseLocaleContent,
+  getCourseLocaleContent,
+  pickCourseContentLocale,
 } from "@/lib/courses";
 import { listContests } from "@/lib/contests";
 import { getHomeDashboardConfig } from "@/lib/dashboardConfig";
@@ -29,6 +32,7 @@ import type { Contest } from "@/types/contests";
 import type { HomeDashboardConfig } from "@/types/dashboard";
 import type { OfflineCourse } from "@/types/offline";
 import type { Course, Enrollment } from "@/types/courses";
+import { getCourseLevelLabel } from "@/types/courses";
 import { intlLocale } from "@/lib/intl";
 import i18n from "@/i18n";
 import { useTranslation } from "react-i18next";
@@ -66,8 +70,8 @@ function formatCourseMeta(
         })
       : i18n.t("common:home.meta.selfPaced");
   return format === "online"
-    ? `${durationHours} · ${course.level}`
-    : `${i18n.t("common:home.meta.offlinePrefix")} · ${course.level}`;
+    ? `${durationHours} · ${getCourseLevelLabel(course.level)}`
+    : `${i18n.t("common:home.meta.offlinePrefix")} · ${getCourseLevelLabel(course.level)}`;
 }
 
 function pickCourseFormat(course: Course): "online" | "offline" {
@@ -84,11 +88,6 @@ export default function Home() {
   const [offlineCourses, setOfflineCourses] = useState<OfflineCourse[]>([]);
   const [issuedCertificates, setIssuedCertificates] = useState(0);
   const [dashboardConfig, setDashboardConfig] = useState<HomeDashboardConfig | null>(null);
-
-  const needsProfileSetup =
-    isAuthenticated &&
-    profile != null &&
-    (!profile.full_name || !profile.phone);
 
   const displayName =
     profile?.full_name?.trim() || user?.displayName || t("home.studentFallback");
@@ -111,7 +110,22 @@ export default function Home() {
       listContests().catch(() => [] as Contest[]),
     ]).then(([publishedCourses, contestList]) => {
       if (cancelled) return;
-      setCourseCatalog(publishedCourses);
+      // Localize only what Home actually shows (avoid N+1 over large catalogs).
+      const previewCourses = publishedCourses.slice(0, 8);
+      void (async () => {
+        const localizedPreview = await Promise.all(
+          previewCourses.map(async (c) => {
+            const locale = pickCourseContentLocale(c, i18n.language);
+            const loc = await getCourseLocaleContent(c.id, locale).catch(() => null);
+            return applyCourseLocaleContent(c, loc);
+          }),
+        );
+        if (!cancelled) {
+          // keep full catalog for IDs, but use localized preview for display.
+          const localizedMap = new Map(localizedPreview.map((c) => [c.id, c]));
+          setCourseCatalog(publishedCourses.map((c) => localizedMap.get(c.id) ?? c));
+        }
+      })();
       setContests(
         contestList.filter(
           (item) => item.status === "published" || item.status === "running",
@@ -406,7 +420,7 @@ export default function Home() {
                           {course.title}
                         </div>
                         <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                          {course.level}
+                          {getCourseLevelLabel(course.level)}
                         </div>
                       </div>
                     </NavLink>
@@ -784,7 +798,7 @@ export default function Home() {
                         {course.title}
                       </div>
                       <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                        {course.level}
+                        {getCourseLevelLabel(course.level)}
                       </div>
                     </div>
                   </NavLink>

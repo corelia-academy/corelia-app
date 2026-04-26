@@ -130,7 +130,7 @@ export default function ConnectOCIDCard() {
           <Button
             type="button"
             variant="destructive"
-            onClick={handleConnect}
+            onClick={handleDisconnect}
             disabled={loading || !isInitialized}
             className="h-11 inline-flex items-center justify-center gap-2 border border-border-subtle py-2.5 px-3 text-left text-sm cursor-pointer"
           >
@@ -141,9 +141,9 @@ export default function ConnectOCIDCard() {
             />
 
             {loading ? (
-              t("ocid.card.loadingConnect")
+              t("ocid.card.loadingDisconnect")
             ) : (
-              <span className="text-white">{t("ocid.card.connect")}</span>
+              <span className="text-white">{t("ocid.card.disconnect")}</span>
             )}
           </Button>
         ) : (

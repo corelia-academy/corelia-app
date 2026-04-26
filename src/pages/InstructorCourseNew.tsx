@@ -7,8 +7,15 @@ import {
   List,
   Settings,
   Users,
+  XCircle,
+  Plus,
 } from "lucide-react";
-import { createCourse, updateCourse } from "@/lib/courses";
+import {
+  createCourse,
+  normalizeCourseLocale,
+  setCourseLocaleContent,
+  updateCourse,
+} from "@/lib/courses";
 import { uploadCourseThumbnail } from "@/lib/storage";
 import {
   type CourseOwnerType,
@@ -17,6 +24,7 @@ import {
   getCourseAccessModelLabel,
   getCourseLevelLabel,
   getCourseOwnerTypeLabel,
+  type SupportedCourseLocale,
 } from "@/types/courses";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
@@ -46,9 +54,13 @@ const InstructorCourseNew = () => {
     null,
   );
   const [form, setForm] = useState({
+    supported_locales: ["vi", "en"] as SupportedCourseLocale[],
+    primary_content_locale: "vi" as SupportedCourseLocale,
+    default_video_primary_locale: "vi" as SupportedCourseLocale,
     title: "",
     slug: "",
     description: "",
+    learning_outcomes: [] as string[],
     short_description: "",
     thumbnail_url:
       "https://placehold.co/640x360/1e3a5f/fff?text=Kho%C3%A1+h%E1%BB%8Dc",
@@ -133,12 +145,19 @@ const InstructorCourseNew = () => {
     setSaving(true);
     setError(null);
     try {
+      const sanitizedOutcomes = (form.learning_outcomes ?? [])
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .slice(0, 20)
+        .map((item) => (item.length > 140 ? item.slice(0, 140) : item));
+
       const course = await createCourse({
         title: form.title.trim(),
         slug:
           form.slug.trim() ||
           form.title.trim().toLowerCase().replace(/\s+/g, "-"),
         description: form.description.trim(),
+        learning_outcomes: sanitizedOutcomes,
         short_description: form.short_description.trim() || "",
         thumbnail_url: form.thumbnail_url.trim(),
         instructor_id: profile.id,
@@ -146,6 +165,12 @@ const InstructorCourseNew = () => {
         level: form.level,
         total_duration_seconds: 0,
         published: form.published,
+        i18n: {
+          supported_locales: form.supported_locales,
+          primary_content_locale: form.primary_content_locale,
+          default_video_primary_locale: form.default_video_primary_locale,
+          subtitle_note_policy: "suggest",
+        },
         access_model: form.access_model,
         price_vnd:
           form.access_model === "paid_upfront"
@@ -160,6 +185,14 @@ const InstructorCourseNew = () => {
           form.owner_type === "corelia"
             ? 100
             : Number(form.platform_revenue_share_percent || 0),
+      });
+
+      await setCourseLocaleContent(course.id, form.primary_content_locale, {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        short_description: form.short_description.trim() || "",
+        learning_outcomes: sanitizedOutcomes,
+        slug: form.slug.trim() || undefined,
       });
 
       if (thumbnailFile) {
@@ -350,6 +383,82 @@ const InstructorCourseNew = () => {
             <form onSubmit={handleSubmit}>
               <FieldGroup className="mt-4">
                 <Field>
+                  <FieldLabel>{t("courseNew.labels.contentLocales" as never)}</FieldLabel>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {(["vi", "en"] as const).map((loc) => {
+                      const enabled = form.supported_locales.includes(loc);
+                      return (
+                        <button
+                          key={loc}
+                          type="button"
+                          onClick={() =>
+                            setForm((p) => {
+                              const next = new Set(p.supported_locales);
+                              if (next.has(loc)) next.delete(loc);
+                              else next.add(loc);
+                              const result = Array.from(next);
+                              if (result.length === 0) return p;
+                              const primaryOk = result.includes(p.primary_content_locale);
+                              const primary = primaryOk
+                                ? p.primary_content_locale
+                                : normalizeCourseLocale(result[0]);
+                              return { ...p, supported_locales: result, primary_content_locale: primary };
+                            })
+                          }
+                          className={`rounded-md border px-2 py-1 text-xs font-medium ${
+                            enabled
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border-subtle bg-background text-muted-foreground"
+                          }`}
+                        >
+                          {loc.toUpperCase()}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("courseNew.labels.contentLocalesHint" as never)}
+                  </p>
+                </Field>
+                <Field>
+                  <FieldLabel>{t("courseNew.labels.primaryContentLocale" as never)}</FieldLabel>
+                  <select
+                    value={form.primary_content_locale}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        primary_content_locale: normalizeCourseLocale(e.target.value),
+                      }))
+                    }
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {form.supported_locales.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {loc.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field>
+                  <FieldLabel>{t("courseNew.labels.defaultVideoLocale" as never)}</FieldLabel>
+                  <select
+                    value={form.default_video_primary_locale}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        default_video_primary_locale: normalizeCourseLocale(e.target.value),
+                      }))
+                    }
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {(["vi", "en"] as const).map((loc) => (
+                      <option key={loc} value={loc}>
+                        {loc.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field>
                   <FieldLabel>{t("courseNew.labels.title")}</FieldLabel>
                   <Input
                     value={form.title}
@@ -386,15 +495,71 @@ const InstructorCourseNew = () => {
                 </Field>
                 <Field>
                   <FieldLabel>{t("courseNew.labels.description")}</FieldLabel>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("courseNew.labels.descriptionMarkdownHint")}
+                  </p>
                   <textarea
                     value={form.description}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, description: e.target.value }))
                     }
-                    className="min-h-28 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-[140px] w-full rounded-lg border border-input bg-background px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     rows={4}
                     placeholder={t("courseNew.placeholders.description")}
                   />
+                </Field>
+                <Field>
+                  <FieldLabel>{t("courseNew.labels.learningOutcomes")}</FieldLabel>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("courseNew.labels.learningOutcomesSubtitle")}
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    {(form.learning_outcomes ?? []).map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <Input
+                          value={item}
+                          onChange={(e) =>
+                            setForm((p) => {
+                              const next = [...(p.learning_outcomes ?? [])];
+                              next[idx] = e.target.value;
+                              return { ...p, learning_outcomes: next };
+                            })
+                          }
+                          placeholder={t("courseNew.placeholders.learningOutcomesItem")}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-9 px-3"
+                          onClick={() =>
+                            setForm((p) => {
+                              const next = [...(p.learning_outcomes ?? [])];
+                              next.splice(idx, 1);
+                              return { ...p, learning_outcomes: next };
+                            })
+                          }
+                        >
+                          <XCircle className="size-4" aria-hidden />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 inline-flex items-center gap-2"
+                    onClick={() =>
+                      setForm((p) => ({
+                        ...p,
+                        learning_outcomes: [...(p.learning_outcomes ?? []), ""],
+                      }))
+                    }
+                  >
+                    <Plus className="size-4" aria-hidden />
+                    {t("courseNew.labels.learningOutcomesAdd")}
+                  </Button>
                 </Field>
                 <Field>
                   <FieldLabel>{t("courseNew.labels.thumbnail")}</FieldLabel>

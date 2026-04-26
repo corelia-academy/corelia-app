@@ -16,10 +16,10 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
 import Home from "@/pages/Home";
 import Courses from "@/pages/Courses";
-import CourseDetail from "@/pages/CourseDetail";
+import CourseDetail from "@/pages/course-details";
 import CheckoutCourse from "@/pages/CheckoutCourse";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
-import Learn from "@/pages/Learn";
+import Learn from "@/pages/learn";
 import InstructorDetail from "@/pages/InstructorDetail";
 import Account, {
   AccountProfileRoute,

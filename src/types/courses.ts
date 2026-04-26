@@ -6,12 +6,39 @@
 import i18n from "@/i18n";
 import { intlLocale } from "@/lib/intl";
 
+export type SupportedCourseLocale = "vi" | "en";
+
 export type CourseLevel = "beginner" | "intermediate" | "advanced" | "all";
 export type CourseAccessModel =
   | "free"
   | "paid_upfront"
   | "free_with_paid_certificate";
 export type CourseOwnerType = "corelia" | "external_partner";
+
+export interface CourseI18nConfig {
+  /** Khoá học hỗ trợ ngôn ngữ nội dung nào (hiện: vi/en) */
+  supported_locales?: SupportedCourseLocale[];
+  /** Ngôn ngữ nội dung chính (fallback) */
+  primary_content_locale?: SupportedCourseLocale;
+  /** Ngôn ngữ chính của video (có thể khác ngôn ngữ nội dung) */
+  default_video_primary_locale?: SupportedCourseLocale;
+  /** Luôn gợi ý về YouTube subtitles/auto-translate */
+  subtitle_note_policy?: "suggest" | "none";
+}
+
+export interface CourseLocaleContent {
+  /** Locale của nội dung này */
+  locale: SupportedCourseLocale;
+  title: string;
+  slug?: string;
+  description: string;
+  learning_outcomes?: string[];
+  short_description?: string;
+  final_assignment_title?: string | null;
+  final_assignment_description?: string | null;
+  final_assignment_instructions?: string | null;
+  updated_at?: string;
+}
 
 export interface PartnerCourseDocument {
   name: string;
@@ -26,6 +53,8 @@ export interface Course {
   title: string;
   slug: string;
   description: string;
+  /** What you'll learn: danh sách kết quả học tập */
+  learning_outcomes?: string[];
   short_description?: string;
   thumbnail_url: string;
   /** Đường dẫn gốc trong Firebase Storage (course-thumbnails/...), dùng để xoá ảnh cũ khi thay */
@@ -38,6 +67,8 @@ export interface Course {
   published: boolean;
   created_at: string;
   updated_at: string;
+  /** Cấu hình đa ngôn ngữ cho nội dung khoá (không ảnh hưởng progress) */
+  i18n?: CourseI18nConfig;
   /** Bài tập cuối khoá: tiêu đề (nếu có = khoá yêu cầu bài tập) */
   final_assignment_title?: string;
   /** Mô tả / yêu cầu bài tập cuối khoá */
@@ -78,19 +109,58 @@ export interface CourseSection {
   id: string;
   title: string;
   order: number;
+  /** Mô tả ngắn cho chương (plain text) */
+  description?: string;
+}
+
+export interface CourseSectionLocaleContent {
+  locale: SupportedCourseLocale;
+  title: string;
+  description?: string;
+  updated_at?: string;
+}
+
+export interface LessonResource {
+  title: string;
+  url: string;
 }
 
 export interface CourseLesson {
   id: string;
   section_id: string;
   title: string;
+  /** Mô tả ngắn cho bài học (plain text) */
+  short_description?: string;
+  /** Mô tả dài cho bài học (Markdown) */
+  description_markdown?: string;
+  /** Danh sách tài liệu/resources cho bài học */
+  resources?: LessonResource[];
   /** URL YouTube (embed hoặc watch), ví dụ https://www.youtube.com/watch?v=VIDEO_ID */
-  youtube_url: string;
+  youtube_url?: string;
+  /** Ngôn ngữ chính của video (có thể khác ngôn ngữ nội dung) */
+  video_primary_locale?: SupportedCourseLocale;
+  /** Flag subtitle theo locale nội dung (không kiểm tra YouTube API) */
+  has_subtitle?: boolean;
+  /** Các locale subtitle đã chuẩn bị/có sẵn */
+  subtitle_locales?: SupportedCourseLocale[];
   /** Thời lượng ước tính (giây) */
   duration_seconds: number;
   order: number;
   /** Bật để làm bài học học thử khi khoá thuộc mô hình trả phí trước */
   is_preview_free?: boolean;
+}
+
+export interface CourseLessonLocaleContent {
+  locale: SupportedCourseLocale;
+  title: string;
+  short_description?: string;
+  description_markdown?: string;
+  resources?: LessonResource[];
+  youtube_url?: string;
+  video_primary_locale?: SupportedCourseLocale;
+  has_subtitle?: boolean;
+  subtitle_locales?: SupportedCourseLocale[];
+  updated_at?: string;
 }
 
 export interface Enrollment {
@@ -141,6 +211,7 @@ export interface CourseInsert {
   title: string;
   slug: string;
   description: string;
+  learning_outcomes?: string[];
   short_description?: string;
   thumbnail_url: string;
   thumbnail_path?: string;
@@ -149,6 +220,7 @@ export interface CourseInsert {
   level?: CourseLevel;
   total_duration_seconds?: number;
   published?: boolean;
+  i18n?: CourseI18nConfig;
   access_model?: CourseAccessModel;
   price_vnd?: number | null;
   promo_price_vnd?: number | null;
@@ -166,6 +238,7 @@ export interface CourseUpdate {
   title?: string;
   slug?: string;
   description?: string;
+  learning_outcomes?: string[];
   short_description?: string;
   thumbnail_url?: string;
   thumbnail_path?: string;
@@ -173,6 +246,7 @@ export interface CourseUpdate {
   level?: CourseLevel;
   total_duration_seconds?: number;
   published?: boolean;
+  i18n?: CourseI18nConfig;
   final_assignment_title?: string | null;
   final_assignment_description?: string | null;
   final_assignment_instructions?: string | null;
@@ -195,12 +269,19 @@ export interface CourseUpdate {
 export interface CourseSectionInsert {
   title: string;
   order: number;
+  description?: string;
 }
 
 export interface CourseLessonInsert {
   section_id: string;
   title: string;
-  youtube_url: string;
+  short_description?: string;
+  description_markdown?: string;
+  resources?: LessonResource[];
+  youtube_url?: string;
+  video_primary_locale?: SupportedCourseLocale;
+  has_subtitle?: boolean;
+  subtitle_locales?: SupportedCourseLocale[];
   duration_seconds: number;
   order: number;
   is_preview_free?: boolean;
