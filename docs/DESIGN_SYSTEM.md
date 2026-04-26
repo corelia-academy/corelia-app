@@ -58,6 +58,18 @@ Popover/menu  → bg-secondary           (sáng nhất)
 > Không dùng quá 2 font-weight trên 1 màn hình.  
 > Không viết `text-[15px]` — chỉ dùng scale mặc định của Tailwind.
 
+### Eyebrow / Section Label (bổ sung)
+
+Dùng cho các label nhỏ phía trên tiêu đề lớn (ví dụ: "CUỘC THI & HOẠT ĐỘNG HỆ SINH THÁI").
+
+```tsx
+<p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+  Eyebrow label
+</p>
+```
+
+> Chỉ dùng ALL CAPS cho eyebrow text. **Không dùng cho bất kỳ element nào khác.**
+
 ---
 
 ## Spacing — bội số 4px, không dùng số lẻ
@@ -74,6 +86,52 @@ Popover/menu  → bg-secondary           (sáng nhất)
 
 > **Sai:** `mt-[22px]` `p-[15px]`  
 > **Đúng:** `mt-6` `p-4`
+
+---
+
+## Z-index Scale — không hardcode số
+
+| Layer                    | Class  | Giá trị |
+| ------------------------ | ------ | ------- |
+| Nội dung trang           | `z-0`  | 0       |
+| Sticky header / sidebar  | `z-10` | 10      |
+| Dropdown / popover       | `z-20` | 20      |
+| Modal overlay (backdrop) | `z-30` | 30      |
+| Modal content            | `z-40` | 40      |
+| Toast / notification     | `z-50` | 50      |
+
+> Không dùng `z-[999]` hay `z-[9999]`. Mọi element đều phải nằm trong scale này.
+
+---
+
+## Shadow Scale
+
+| Dùng cho                           | Class         |
+| ---------------------------------- | ------------- |
+| Card trên card (phân cấp bằng màu) | `shadow-none` |
+| Card mặc định trên nền trang       | `shadow-sm`   |
+| Card đang hover / floating element | `shadow-md`   |
+| Modal, popover, dropdown           | `shadow-lg`   |
+
+---
+
+## Responsive / Breakpoints
+
+| Breakpoint        | Layout chính           | Padding ngang |
+| ----------------- | ---------------------- | ------------- |
+| Mobile <640px     | 1 cột, stack dọc       | `px-4`        |
+| Tablet 640–1024px | 2 cột                  | `px-6`        |
+| Desktop >1024px   | Sidebar + content area | `px-8`        |
+
+```tsx
+// Grid chuẩn cho card list
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+// Container chuẩn
+<div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+```
+
+> **Checklist:** Test 375px trước khi ship. Không có layout nào được vỡ ở 375px.
 
 ---
 
@@ -95,7 +153,10 @@ Popover/menu  → bg-secondary           (sáng nhất)
 <Button size="icon">     {/* Icon-only */}
 ```
 
-**Rule:** Mỗi page/section chỉ có **1 Primary button**.
+**Rules:**
+- Mỗi page/section chỉ có **1 Primary button**.
+- Không đặt 2 nút Outline cạnh nhau mà không có nút Primary — mất hierarchy.
+- Trong 1 viewport không được có 2 Primary button xuất hiện cùng lúc (kể cả ở các section khác nhau nếu cùng nhìn thấy).
 
 ---
 
@@ -114,6 +175,47 @@ Popover/menu  → bg-secondary           (sáng nhất)
 
 ---
 
+### Filter Pill / Tab Pills
+
+Dùng cho bộ lọc dạng chip (ví dụ: filter khoá học theo cấp độ, giá).
+
+```tsx
+{/* Active */}
+<button className="rounded-full px-3 py-1 text-sm font-medium
+  bg-primary/10 text-primary border border-primary/20 transition-colors duration-150">
+  Mọi cấp độ
+</button>
+
+{/* Default */}
+<button className="rounded-full px-3 py-1 text-sm font-medium
+  bg-transparent text-muted-foreground border border-border
+  hover:border-primary/40 hover:text-foreground transition-colors duration-150">
+  Cơ bản
+</button>
+```
+
+> Không dùng `Badge` cho filter pill — Badge không có interactive state.  
+> Filter pills luôn dùng `rounded-full`, không phải `rounded-md`.
+
+---
+
+### Breadcrumb
+
+```tsx
+<nav className="flex items-center gap-1 text-xs text-muted-foreground">
+  <a href="/dashboard" className="hover:text-foreground transition-colors duration-150">
+    Dashboard
+  </a>
+  <ChevronRight className="w-3 h-3" />
+  <span className="text-foreground font-medium">Tên trang hiện tại</span>
+</nav>
+```
+
+> Breadcrumb luôn nằm phía trên `<h1>` của trang.  
+> Không in đậm các cấp cha, chỉ in đậm level hiện tại.
+
+---
+
 ### Form Field — cấu trúc chuẩn
 
 ```tsx
@@ -126,6 +228,16 @@ Popover/menu  → bg-secondary           (sáng nhất)
 ```
 
 > Placeholder = gợi ý format, **không** phải thay thế label.
+
+### Input States
+
+| Trạng thái | Style                                           |
+| ---------- | ----------------------------------------------- |
+| Default    | `border-border`                                 |
+| Focus      | `border-primary ring-2 ring-primary/20`         |
+| Error      | `border-destructive ring-2 ring-destructive/20` |
+| Disabled   | `opacity-50 cursor-not-allowed bg-muted`        |
+| Read-only  | `bg-muted cursor-default`                       |
 
 ---
 
@@ -159,11 +271,128 @@ Popover/menu  → bg-secondary           (sáng nhất)
 
 ---
 
+### Toast / Notification
+
+| Tình huống               | Dùng gì                               |
+| ------------------------ | ------------------------------------- |
+| Action thành công        | Toast bottom-right, auto-dismiss 3s   |
+| Lỗi inline (form, field) | Error text đỏ ngay dưới field         |
+| Lỗi page-level           | Alert banner phía trên content        |
+| Hành động destructive    | Dialog xác nhận, **không phải toast** |
+| Info hệ thống            | Banner cố định top, dismissable       |
+
+```tsx
+// Alert banner page-level
+<div className="flex items-center gap-3 px-4 py-3 rounded-md
+  bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+  <AlertCircle className="w-4 h-4 shrink-0" />
+  <p>Nội dung thông báo lỗi</p>
+</div>
+```
+
+---
+
+### Dialog / Modal
+
+```tsx
+<Dialog>
+  <DialogContent className="rounded-lg max-w-md w-full">
+    {/* Header */}
+    <div className="flex items-start justify-between gap-4 p-6 pb-0">
+      <div>
+        <DialogTitle className="text-lg font-semibold">Tiêu đề</DialogTitle>
+        <DialogDescription className="text-sm text-muted-foreground mt-1">
+          Mô tả ngắn nếu cần
+        </DialogDescription>
+      </div>
+      <Button size="icon" variant="ghost" aria-label="Đóng dialog">
+        <X className="w-4 h-4" />
+      </Button>
+    </div>
+
+    {/* Body */}
+    <div className="p-6 space-y-4">
+      {/* content */}
+    </div>
+
+    {/* Footer */}
+    <div className="flex justify-end gap-2 p-6 pt-0">
+      <Button variant="outline">Huỷ</Button>
+      <Button>Xác nhận</Button>
+    </div>
+  </DialogContent>
+</Dialog>
+```
+
+**Modal width chuẩn:**
+- Nhỏ (confirm): `max-w-sm`
+- Mặc định (form): `max-w-md`
+- Lớn (nội dung phức tạp): `max-w-2xl`
+- Fullscreen: `max-w-screen-lg`
+
+---
+
+### Table
+
+```tsx
+<div className="rounded-md border border-border overflow-hidden">
+  <table className="w-full text-sm">
+    <thead className="bg-muted">
+      <tr>
+        <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+          Tên cột
+        </th>
+      </tr>
+    </thead>
+    <tbody className="divide-y divide-border">
+      <tr className="hover:bg-muted/50 transition-colors duration-150">
+        <td className="px-4 py-3 text-foreground">Dữ liệu</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+// Row empty state
+<tr>
+  <td colSpan={n} className="py-16 text-center text-sm text-muted-foreground">
+    Chưa có dữ liệu
+  </td>
+</tr>
+```
+
+---
+
 ### Clickable Card
 
 ```tsx
 <Card className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
 ```
+
+---
+
+### Avatar / Image
+
+```tsx
+// Avatar với fallback
+<div className="w-10 h-10 rounded-full bg-muted overflow-hidden shrink-0">
+  <img
+    src={avatarUrl}
+    alt={name}
+    className="w-full h-full object-cover"
+    onError={(e) => { e.currentTarget.src = '/placeholder-avatar.png' }}
+  />
+</div>
+
+// Course thumbnail
+<div className="aspect-video w-full rounded-md bg-muted overflow-hidden">
+  <img src={thumbnail} alt={title} className="w-full h-full object-cover" />
+</div>
+```
+
+**Aspect ratio chuẩn:**
+- Avatar: `rounded-full` — 1:1
+- Course thumbnail: `aspect-video` — 16:9
+- Card banner: `aspect-[3/1]` — 3:1
 
 ---
 
@@ -175,6 +404,7 @@ Popover/menu  → bg-secondary           (sáng nhất)
 | Button, card, mặc định | `rounded-md` (8px)  |
 | Modal, large card      | `rounded-lg` (12px) |
 | Avatar, chip, toggle   | `rounded-full`      |
+| Filter pill            | `rounded-full`      |
 
 ---
 
@@ -183,6 +413,7 @@ Popover/menu  → bg-secondary           (sáng nhất)
 | Vị trí                    | Size      |
 | ------------------------- | --------- |
 | Inline text / badge       | `w-3 h-3` |
+| Breadcrumb separator      | `w-3 h-3` |
 | Trong nút, inline action  | `w-4 h-4` |
 | Sidebar, icon-only button | `w-5 h-5` |
 | Empty state / hero        | `w-8 h-8` |
@@ -205,13 +436,67 @@ className="animate-in fade-in duration-200"
 
 // Modal / slide panel
 className="animate-in slide-in-from-bottom-4 duration-300"
+
+// Sidebar drawer
+className="animate-in slide-in-from-left-4 duration-300"
 ```
 
 > Không animate `width`, `height`, `padding` — gây jank.
 
 ---
 
-## Accessibility — 3 điều bắt buộc
+## Link Style
+
+| Vị trí                  | Style                                                           |
+| ----------------------- | --------------------------------------------------------------- |
+| Link trong body text    | `text-primary underline underline-offset-4 hover:opacity-80`    |
+| Link navigation / label | `text-foreground hover:text-primary transition-colors`          |
+| Link phụ / breadcrumb   | `text-muted-foreground hover:text-foreground transition-colors` |
+
+> Không bao giờ dùng màu xanh dương thuần (#0000ff). Luôn dùng `text-primary`.
+
+---
+
+## Ngôn ngữ & Thuật ngữ UI
+
+> **Quy tắc:** Toàn bộ UI phải **nhất quán tiếng Việt**. Không trộn lẫn Anh-Việt trong cùng 1 trang.
+
+| Nên dùng           | Không dùng                |
+| ------------------ | ------------------------- |
+| Tổng quan khoá học | Overview Description      |
+| Đối tượng học viên | Target Audience           |
+| Chương trình học   | Curriculum                |
+| Tiếp tục học       | Continue Learning         |
+| Đăng ký            | Register / Sign up (trộn) |
+
+**Ngoại lệ:** Tên riêng, brand name, thuật ngữ kỹ thuật không có bản dịch chuẩn (blockchain, XLM, SDK...) được giữ nguyên tiếng Anh.
+
+---
+
+## Scrollbar
+
+```css
+/* Áp dụng cho overflow containers */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+
+/* Ẩn scrollbar nhưng vẫn scroll được */
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+```
+
+> Sidebar và modal body dùng `scrollbar-thin`. Horizontal scroll chips dùng `scrollbar-hidden`.
+
+---
+
+## Accessibility — bắt buộc
 
 ```tsx
 // 1. Icon-only button phải có aria-label
@@ -223,6 +508,10 @@ className="animate-in slide-in-from-bottom-4 duration-300"
 
 // 3. Contrast: text thường ≥ 4.5:1, text lớn ≥ 3:1
 // Kiểm tra: webaim.org/resources/contrastchecker
+
+// 4. Link phải có text mô tả, không dùng "Xem thêm" / "Click here" đơn lẻ
+<a href="/courses">Xem tất cả khoá học</a>  {/* ✓ */}
+<a href="/courses">Xem thêm</a>              {/* ✗ */}
 ```
 
 ---
@@ -232,12 +521,18 @@ className="animate-in slide-in-from-bottom-4 duration-300"
 ```
 □ Dùng token màu, không hardcode
 □ Spacing bội số 4px
-□ Có empty state + loading state
+□ Chỉ 1 Primary button trên viewport
+□ Có empty state + loading state cho mọi list/grid
+□ Input có đủ 5 states (default, focus, error, disabled, readonly)
 □ Test dark mode
 □ Mobile 375px không vỡ layout
 □ Icon-only button có aria-label
+□ Ngôn ngữ UI nhất quán tiếng Việt
+□ Không mix icon library
+□ Z-index nằm trong scale (0–50)
+□ Thumbnail/avatar có fallback khi ảnh lỗi
 ```
 
 ---
 
-*[Material Design 3](https://m3.material.io/) · [Lucide Icons](https://lucide.dev/) · [OKLCH Picker](https://oklch.com/)*
+*[Material Design 3](https://m3.material.io/) · [Lucide Icons](https://lucide.dev/) · [OKLCH Picker](https://oklch.com/) · [Contrast Checker](https://webaim.org/resources/contrastchecker/)*
