@@ -3,6 +3,7 @@ import { BookOpen, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CourseBadge } from "./CourseBadge";
 import {
   formatDuration,
   type CourseLesson,
@@ -88,7 +89,7 @@ export function CourseCurriculum({
             return (
               <div
                 key={section.id}
-                className="overflow-hidden rounded-md border border-border-subtle bg-card shadow-card"
+                className="overflow-hidden rounded-md border border-border-subtle bg-card shadow-sm"
               >
                 <button
                   type="button"
@@ -103,7 +104,7 @@ export function CourseCurriculum({
                   className="flex w-full flex-col gap-2 border-b border-border-subtle bg-muted/40 px-4 py-3 text-left transition-colors duration-150 hover:bg-muted/60 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                       {translate("detail.courseDetail.sectionLabel", {
                         index: sectionIndex + 1,
                       })}
@@ -156,18 +157,18 @@ export function CourseCurriculum({
                           </p>
                         </div>
                         {isPaidUpfront && lesson.is_preview_free ? (
-                          <span className="mt-0.5 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success sm:mt-0">
+                          <CourseBadge className="mt-0.5 sm:mt-0" variant="success">
                             {translate(
                               "detail.courseDetail.previewLessonBadge",
                             )}
-                          </span>
+                          </CourseBadge>
                         ) : null}
                         {!lesson.youtube_url?.trim() ? (
-                          <span className="mt-0.5 rounded-md bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning sm:mt-0">
+                          <CourseBadge className="mt-0.5 sm:mt-0" variant="warning">
                             {translate(
                               "detail.courseDetail.lessonDraftBadge",
                             )}
-                          </span>
+                          </CourseBadge>
                         ) : null}
                       </div>
                     ))}

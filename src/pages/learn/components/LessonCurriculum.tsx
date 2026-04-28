@@ -32,8 +32,8 @@ function CurriculumList({
   if (groups.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-          <List className="size-6 text-muted-foreground" aria-hidden />
+        <div className="flex w-12 h-12 items-center justify-center rounded-full bg-muted">
+          <List className="w-6 h-6 text-muted-foreground" aria-hidden />
         </div>
         <div>
           <p className="text-sm font-medium text-foreground">
@@ -70,7 +70,7 @@ function CurriculumList({
               <div
                 key={lesson.id}
                 className={cn(
-                  "border-t border-border-subtle px-4 py-3 transition-colors",
+                  "border-t border-border-subtle px-4 py-3 transition-colors duration-150",
                   active && "bg-primary-container/85",
                   !locked && "hover:bg-muted/40",
                   locked && "opacity-75",
@@ -79,7 +79,7 @@ function CurriculumList({
                 {locked ? (
                   <div className="flex items-start gap-3">
                     <Lock
-                      className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                      className="mt-0.5 w-4 h-4 shrink-0 text-muted-foreground"
                       aria-hidden
                     />
                     <span className="min-w-0 flex-1 line-clamp-2 text-sm leading-5 text-muted-foreground">
@@ -96,11 +96,11 @@ function CurriculumList({
                   >
                     {done ? (
                       <CheckCircle2
-                        className="mt-0.5 size-4 shrink-0 text-success sm:mt-0"
+                        className="mt-0.5 w-4 h-4 shrink-0 text-success sm:mt-0"
                         aria-hidden
                       />
                     ) : (
-                      <PlayCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground sm:mt-0" />
+                      <PlayCircle className="mt-0.5 w-4 h-4 shrink-0 text-muted-foreground sm:mt-0" />
                     )}
                     <div className="min-w-0 flex-1">
                       <span
@@ -141,6 +141,9 @@ export function LessonCurriculum({
   currentLessonId,
   progressPercent,
   completedIds,
+  completedCount,
+  lessonTotal,
+  nextLessonTitle,
   hasFullCourseAccess,
   translate,
 }: {
@@ -153,16 +156,24 @@ export function LessonCurriculum({
   currentLessonId: string | null;
   progressPercent: number;
   completedIds: Set<string>;
+  completedCount: number;
+  lessonTotal: number;
+  nextLessonTitle: string | null;
   hasFullCourseAccess: boolean;
   translate: TranslateFn;
 }) {
+  const completedLabel = `${translate("detail.learn.stats.completedLessons")}: ${completedCount}/${lessonTotal}`;
+  const nextUpLabel = `${translate("detail.learn.stats.nextUp")}: ${
+    nextLessonTitle ?? translate("detail.learn.completedPath")
+  }`;
+
   return (
     <>
-      <details className="mb-6 overflow-hidden rounded-2xl border border-border-subtle bg-card shadow-card lg:hidden [&_summary::-webkit-details-marker]:hidden">
+      <details className="mb-6 overflow-hidden rounded-md border border-border-subtle bg-card shadow-sm lg:hidden [&_summary::-webkit-details-marker]:hidden">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <List className="size-4" />
+              <List className="w-4 h-4" />
               {translate("detail.learn.lessonList.title")}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -179,10 +190,16 @@ export function LessonCurriculum({
             <p className="mt-1 line-clamp-1 text-sm text-foreground">
               {currentLessonTitle ?? translate("detail.learn.selectLessonToStart")}
             </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {completedLabel}
+            </p>
+            <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+              {nextUpLabel}
+            </p>
           </div>
           <div className="inline-flex shrink-0 items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
             {progressPercent}%
-            <ChevronDown className="size-3.5" aria-hidden />
+            <ChevronDown className="w-3 h-3" aria-hidden />
           </div>
         </summary>
         <div className="border-t border-border-subtle">
@@ -199,11 +216,11 @@ export function LessonCurriculum({
       </details>
 
       <aside className="hidden lg:sticky lg:top-20 lg:block lg:self-start">
-        <div className="overflow-hidden rounded-2xl border border-border-subtle bg-card shadow-elevation-2">
+        <div className="overflow-hidden rounded-md border border-border-subtle bg-card shadow-sm">
           <div className="border-b border-border-subtle bg-muted/40 px-4 py-3">
             <div className="flex items-center justify-between gap-3">
               <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <List className="size-4" />{" "}
+                <List className="w-4 h-4" />{" "}
                 {translate("detail.learn.curriculumTitle")}
               </span>
               <span className="text-xs text-muted-foreground">
@@ -216,6 +233,12 @@ export function LessonCurriculum({
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {completedLabel}
+            </p>
+            <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+              {nextUpLabel}
+            </p>
           </div>
 
           <CurriculumList
@@ -232,4 +255,3 @@ export function LessonCurriculum({
     </>
   );
 }
-

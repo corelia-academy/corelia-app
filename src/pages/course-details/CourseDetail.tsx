@@ -24,6 +24,7 @@ import {
 } from "./components/CourseCurriculum";
 import { CourseAccessPanel } from "./components/CourseAccessPanel";
 import { CourseSpotlightSection } from "./components/CourseSpotlightSection";
+import { CourseLanguagePanel } from "./components/CourseLanguagePanel";
 
 export default function CourseDetail() {
   const { t } = useTranslation("courses");
@@ -225,40 +226,41 @@ export default function CourseDetail() {
         />
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
-        <div className="min-w-0">
-          <CourseHero
-            course={course}
-            enrollment={access.enrollment}
-            isPaidUpfront={isPaidUpfront}
-            isFreeWithPaidCertificate={isFreeWithPaidCertificate}
-            previewLessons={previewLessons}
-            displayTotalDuration={displayTotalDuration}
-            curriculumCountLabel={curriculumCountLabel}
-          />
+      <CourseHero
+        course={course}
+        enrollment={access.enrollment}
+        isPaidUpfront={isPaidUpfront}
+        isFreeWithPaidCertificate={isFreeWithPaidCertificate}
+        previewLessons={previewLessons}
+        displayTotalDuration={displayTotalDuration}
+        curriculumCountLabel={curriculumCountLabel}
+      />
 
-          <div className="mt-4 lg:hidden">
-            <CourseAccessPanel
-              course={course}
-              resolvedCourseId={courseLoad.resolvedCourseId}
-              hasFullCourseAccess={hasFullCourseAccess}
-              isPaidUpfront={isPaidUpfront}
-              isFreeWithPaidCertificate={isFreeWithPaidCertificate}
-              enrolled={access.enrolled}
-              paymentAccess={access.paymentAccess}
-              progressPercent={progress.progressPercent}
-              nextLesson={progress.nextLesson}
-              pricing={pricing}
-              previewLessons={previewLessons}
-              isAuthenticated={isAuthenticated}
-              enrolling={access.enrolling}
-              onContinue={handleContinue}
-              onBuy={handleBuy}
-              onStartPreview={handleStartPreview}
-              onEnroll={handleEnrollClick}
-            />
-          </div>
+      <div className="mt-6 space-y-4 lg:hidden">
+        <CourseAccessPanel
+          course={course}
+          resolvedCourseId={courseLoad.resolvedCourseId}
+          hasFullCourseAccess={hasFullCourseAccess}
+          isPaidUpfront={isPaidUpfront}
+          isFreeWithPaidCertificate={isFreeWithPaidCertificate}
+          enrolled={access.enrolled}
+          paymentAccess={access.paymentAccess}
+          progressPercent={progress.progressPercent}
+          nextLesson={progress.nextLesson}
+          pricing={pricing}
+          previewLessons={previewLessons}
+          isAuthenticated={isAuthenticated}
+          enrolling={access.enrolling}
+          onContinue={handleContinue}
+          onBuy={handleBuy}
+          onStartPreview={handleStartPreview}
+          onEnroll={handleEnrollClick}
+        />
+        <CourseLanguagePanel course={course} lessons={lessons} />
+      </div>
 
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
+        <main className="min-w-0">
           <CourseLearningOutcomes outcomes={course.learning_outcomes ?? []} />
 
           <CourseDescription description={course.description ?? ""} />
@@ -276,11 +278,10 @@ export default function CourseDetail() {
             nextLesson={progress.nextLesson}
             spotlightContests={spotlightContests}
           />
-        </div>
+        </main>
 
-        <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
+        <aside className="hidden space-y-6 lg:block lg:sticky lg:top-20 lg:self-start">
           <CourseAccessPanel
-            className="hidden lg:block"
             course={course}
             resolvedCourseId={courseLoad.resolvedCourseId}
             hasFullCourseAccess={hasFullCourseAccess}
@@ -299,6 +300,7 @@ export default function CourseDetail() {
             onStartPreview={handleStartPreview}
             onEnroll={handleEnrollClick}
           />
+          <CourseLanguagePanel course={course} lessons={lessons} />
         </aside>
       </div>
     </div>
