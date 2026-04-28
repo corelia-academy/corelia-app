@@ -85,6 +85,11 @@ export function CourseHero({
                 })}
               </CourseBadge>
             ) : null}
+            {isFreeWithPaidCertificate ? (
+              <CourseBadge variant="secondary">
+                {translate("filters.pricing.certificate")}
+              </CourseBadge>
+            ) : null}
             {enrollment?.certificate_issued_at ? (
               <CourseBadge variant="success">
                 {translate("detail.courseDetail.certificateIssued")}
