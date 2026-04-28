@@ -292,6 +292,27 @@
     "searchPlaceholder": "Search by name or email",
     "emptyLabel": "No matching results.",
     "done": "Done"
+  },
+  "openCampusConnect": {
+    "header": {
+      "ariaLabel": "Connect OpenCampus",
+      "logoAlt": "OpenCampus"
+    },
+    "modal": {
+      "logoAlt": "OpenCampus",
+      "title": "Connect OpenCampus (OCID)",
+      "description": "Connect to use OCID and claim/verify achievements on Open Campus.",
+      "benefits": {
+        "0": "Link your OCID identity to your Corelia account",
+        "1": "Claim achievements as verifiable credentials",
+        "2": "Easily share your achievement profile on Open Campus"
+      },
+      "later": "Maybe later",
+      "learnMoreLink": "Learn more",
+      "connect": "Connect OpenCampus",
+      "connecting": "Connecting…",
+      "startFailed": "Could not start OpenCampus connection. Please try again."
+    }
   }
 }
 

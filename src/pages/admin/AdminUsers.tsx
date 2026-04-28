@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/stores/authStore";
-import { getAllProfiles, updateProfileAdmin } from "@/lib/profile";
-import type { Profile, UserRole } from "@/types/database";
+import { updateProfileAdmin } from "@/lib/profile";
+import type { UserRole } from "@/types/database";
 import { getRoleLabel } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,34 +9,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { GraduationCap, ShieldCheck, User } from "lucide-react";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
+import { useAdminProfiles } from "@/features/admin/users/hooks/useAdminProfiles";
+import { AdminStatsCard } from "@/features/admin/ui/AdminStatsCard";
+import { AdminErrorBanner } from "@/features/admin/ui/AdminErrorBanner";
 
 export default function AdminUsers() {
   const { t } = useTranslation("admin");
   const { user: currentUser } = useAuth();
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { profiles, setProfiles, loading, error, refresh } = useAdminProfiles({
+    fallbackErrorMessage: t("users.unknownError"),
+  });
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
-
-  const fetchProfiles = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getAllProfiles();
-      setProfiles(data);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t("users.unknownError"),
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
-
-  useEffect(() => {
-    void fetchProfiles();
-  }, [fetchProfiles]);
 
   async function handleRoleChange(userId: string, newRole: UserRole) {
     if (
@@ -83,7 +67,7 @@ export default function AdminUsers() {
         p.role.toLowerCase().includes(q)
       );
     });
-  }, [profiles, query, roleFilter, currentUser?.uid, currentUser?.email]);
+  }, [profiles, query, roleFilter, currentUser]);
 
   const stats = useMemo(() => {
     const total = profiles.length;
@@ -98,110 +82,53 @@ export default function AdminUsers() {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {t("users.stats.totalUsers")}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {stats.total}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <User className="size-5" aria-hidden />
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {t("users.stats.admin")}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {stats.admins}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ShieldCheck className="size-5" aria-hidden />
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {t("users.stats.opencampusConnected")}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {stats.openCampusConnected}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10">
-              <img
-                src="/open-campus-edu-logo.png"
-                alt=""
-                className="size-5 rounded-full"
-                aria-hidden
-              />
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {t("users.stats.support")}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {stats.support}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ShieldCheck className="size-5" aria-hidden />
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {t("users.stats.instructor")}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {stats.instructors}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <GraduationCap className="size-5" aria-hidden />
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-card p-4 shadow-card">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                {t("users.stats.student")}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {stats.students}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <GraduationCap className="size-5" aria-hidden />
-            </div>
-          </div>
-        </div>
+        <AdminStatsCard
+          label={t("users.stats.totalUsers")}
+          value={stats.total}
+          icon={<User className="size-5" aria-hidden />}
+        />
+        <AdminStatsCard
+          label={t("users.stats.admin")}
+          value={stats.admins}
+          icon={<ShieldCheck className="size-5" aria-hidden />}
+        />
+        <AdminStatsCard
+          label={t("users.stats.opencampusConnected")}
+          value={stats.openCampusConnected}
+          icon={
+            <img
+              src="/open-campus-edu-logo.png"
+              alt=""
+              className="size-5 rounded-full"
+              aria-hidden
+            />
+          }
+          iconClassName="flex size-11 items-center justify-center rounded-lg bg-primary/10"
+        />
+        <AdminStatsCard
+          label={t("users.stats.support")}
+          value={stats.support}
+          icon={<ShieldCheck className="size-5" aria-hidden />}
+        />
+        <AdminStatsCard
+          label={t("users.stats.instructor")}
+          value={stats.instructors}
+          icon={<GraduationCap className="size-5" aria-hidden />}
+        />
+        <AdminStatsCard
+          label={t("users.stats.student")}
+          value={stats.students}
+          icon={<GraduationCap className="size-5" aria-hidden />}
+        />
       </div>
 
-      <div className="mt-6 rounded-2xl border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+      <div className="mt-6 rounded-lg border border-border-subtle bg-card p-6 shadow-card">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-xl font-medium tracking-tight text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
               {t("users.title")}
             </h2>
-            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
               {t("users.subtitle")}
             </p>
           </div>
@@ -216,7 +143,7 @@ export default function AdminUsers() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value as UserRole | "all")}
-              className="h-10 rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="all">{t("users.allRoles")}</option>
               {roleOptions.map((role) => (
@@ -226,7 +153,7 @@ export default function AdminUsers() {
               ))}
             </select>
             <Button
-              onClick={() => void fetchProfiles()}
+              onClick={() => void refresh()}
               disabled={loading}
               variant="ghost"
               size="sm"
@@ -272,13 +199,9 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      {error && (
-        <div className="mt-6 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
-        </div>
-      )}
+      {error ? <AdminErrorBanner message={error} /> : null}
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-border-subtle bg-card text-card-foreground shadow-card">
+      <div className="mt-6 overflow-hidden rounded-lg border border-border-subtle bg-card text-card-foreground shadow-card">
         <div className="border-b border-border-subtle bg-muted/35 px-4 py-3">
           <p className="text-sm text-muted-foreground">
             {loading
@@ -293,7 +216,7 @@ export default function AdminUsers() {
           {loading ? (
             <div className="space-y-4 p-4">
               {[0, 1, 2].map((idx) => (
-                <div key={idx} className="space-y-4 rounded-2xl border border-border-subtle bg-background p-4">
+                <div key={idx} className="space-y-4 rounded-lg border border-border-subtle bg-background p-4">
                   <div className="flex items-center gap-3">
                     <Skeleton className="size-10 rounded-full" />
                     <div className="min-w-0 flex-1 space-y-2">
@@ -397,7 +320,7 @@ export default function AdminUsers() {
                     onChange={(e) =>
                       void handleRoleChange(p.id, e.target.value as UserRole)
                     }
-                    className="w-full rounded-xl border border-border-subtle bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                    className="w-full rounded-md border border-border-subtle bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
                   >
                     {roleOptions.map((role) => (
                       <option key={role} value={role}>
@@ -543,7 +466,7 @@ export default function AdminUsers() {
                         onChange={(e) =>
                           void handleRoleChange(p.id, e.target.value as UserRole)
                         }
-                        className="rounded-xl border border-border-subtle bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                        className="rounded-md border border-border-subtle bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
                       >
                         {roleOptions.map((role) => (
                           <option key={role} value={role}>

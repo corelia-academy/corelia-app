@@ -1,0 +1,18 @@
+---
+description: Corelia project baseline (stack + safe defaults)
+alwaysApply: true
+---
+
+# Corelia baseline
+
+- Use **Vite + React 19 + TypeScript (strict)**. Prefer type-safe changes; do not weaken TS config.
+- Use path alias **`@/…` → `src/…`** for internal imports.
+- Routing is **React Router v7** with nested routes (see `src/App.tsx`). Keep route structure consistent.
+- UI is **Tailwind v4** + existing UI primitives in `src/components/ui/*` (base-ui/shadcn-style). Reuse them before adding new dependencies.
+- i18n is **i18next/react-i18next**. Text in UI should come from `t()` (not hard-coded), unless truly non-user-facing.
+- Auth state uses Zustand `useAuth()` from `src/stores/authStore.ts`. Prefer that API over reaching into Firebase directly from components.
+
+## Change discipline
+
+- Follow the formatting style of the file you touch; **avoid drive-by reformatting**.
+- Keep changes minimal, cohesive, and localized (don’t refactor unrelated code).

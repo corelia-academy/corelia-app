@@ -1,0 +1,12 @@
+---
+description: Environment variables, Firebase, and OCID connect conventions
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Env / Firebase / OCID
+
+- Client env vars must be accessed via `import.meta.env` and use the **`VITE_`** prefix.
+- Firebase usage should go through shared modules in `src/lib/*` when available (avoid scattering SDK init or auth listeners across components).
+- Auth/session UI should use `useAuth()` from `src/stores/authStore.ts` for `profile`, `isAuthenticated`, `hasRole`, etc.
+- OCID connect is wrapped at app root (`OCConnect` in `src/main.tsx`). For connect flows, follow the existing pattern using `useOCAuth()` and redirect-based sign-in.

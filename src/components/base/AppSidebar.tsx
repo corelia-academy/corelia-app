@@ -1,10 +1,9 @@
-import { NavLink, useLocation, useNavigate } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import {
   BookOpen,
   CalendarDays,
   GraduationCap,
   Home,
-  LogIn,
   Medal,
   Settings,
   Trophy,
@@ -12,7 +11,6 @@ import {
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -24,12 +22,8 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/stores/authStore";
 import { ShowForRole } from "@/components/auth/ShowForRole";
 import { ShowForAuth } from "@/components/auth/ShowForAuth";
-import { getRoleLabel } from "@/types/database";
 import { useTranslation } from "react-i18next";
 
 const primaryNav = [
@@ -39,21 +33,20 @@ const primaryNav = [
   { labelKey: "nav.contests" as const, href: "/contests", icon: Trophy },
 ] as const;
 
-export default function AppSidebar() {
+export default function AppSidebar({
+  collapsible = "icon",
+  showDesktopTrigger = true,
+}: {
+  collapsible?: "offcanvas" | "icon" | "none";
+  showDesktopTrigger?: boolean;
+}) {
   const { t } = useTranslation("common");
   const location = useLocation();
   const pathname = location.pathname;
-  const navigate = useNavigate();
   const { isMobile } = useSidebar();
-  const { profile, isAuthenticated } = useAuth();
-
-  const displayName =
-    profile?.full_name ?? profile?.id?.slice(0, 8) ?? t("user.fallbackName");
-  const avatarUrl = profile?.avatar_url ?? undefined;
-  const email = profile ? t("account.signedInViaEmail") : "";
 
   return (
-    <Sidebar collapsible="icon" variant="sidebar">
+    <Sidebar collapsible={collapsible} variant="sidebar">
       <SidebarHeader className="p-2">
         <div className="flex items-center justify-between gap-2 group-data-[collapsible=icon]:justify-center">
           <NavLink
@@ -66,9 +59,11 @@ export default function AppSidebar() {
             </span>
           </NavLink>
 
-          <div className="hidden group-data-[collapsible=icon]:hidden md:block">
-            <SidebarTrigger />
-          </div>
+          {showDesktopTrigger ? (
+            <div className="hidden group-data-[collapsible=icon]:hidden md:block">
+              <SidebarTrigger />
+            </div>
+          ) : null}
         </div>
       </SidebarHeader>
 
@@ -174,41 +169,6 @@ export default function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter>
-        {isAuthenticated ? (
-          <button
-            type="button"
-            onClick={() => navigate("/account")}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-1"
-          >
-            <Avatar className="size-7">
-              <AvatarImage src={avatarUrl} alt={displayName} />
-              <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-              <div className="truncate text-xs font-medium text-sidebar-foreground">
-                {displayName}
-              </div>
-              <div className="truncate text-xs text-sidebar-foreground/70">
-                {profile?.role ? getRoleLabel(profile.role) : email}
-              </div>
-            </div>
-          </button>
-        ) : (
-          <Button
-            render={<NavLink to="/login" />}
-            nativeButton={false}
-            className="w-full rounded-md group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:px-0"
-            size="sm"
-          >
-            <LogIn className="size-4 shrink-0" aria-hidden />
-            <span className="group-data-[collapsible=icon]:hidden">
-              {t("tabs.signIn")}
-            </span>
-          </Button>
-        )}
-      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>

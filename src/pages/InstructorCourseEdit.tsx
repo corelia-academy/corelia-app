@@ -29,8 +29,21 @@ import {
   computeProgressPercent,
   checkAndIssueCertificate,
   updateCourse,
+  applyCourseLessonLocaleContent,
+  applyCourseSectionLocaleContent,
+  backfillCourseLocaleIndex,
+  getCourseLessonLocaleContent,
+  getCourseLocaleContent,
+  getCoursePrimaryLocale,
+  getCourseSectionLocaleContent,
+  getCourseSupportedLocales,
+  normalizeCourseLocale,
+  setCourseLessonLocaleContent,
+  setCourseLocaleContent,
+  setCourseSectionLocaleContent,
   addSection,
   addLesson,
+  updateSection,
   updateLesson,
   reorderCourseLessons,
   deleteSection,
@@ -68,6 +81,7 @@ import {
   type CourseOwnerType,
   type CourseAccessModel,
   type CourseLevel,
+  type SupportedCourseLocale,
 } from "@/types/courses";
 import type {
   Course,
@@ -94,6 +108,7 @@ import { cn } from "@/lib/utils";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
+import { Markdown } from "@/components/markdown/Markdown";
 
 const normalizeVndDigits = (value: string) =>
   value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
@@ -139,9 +154,10 @@ const InstructorCourseEdit = () => {
   const [error, setError] = useState<string | null>(null);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [addingSection, setAddingSection] = useState(false);
-  const [addingLessonSectionId, setAddingLessonSectionId] = useState<
-    string | null
-  >(null);
+  const [newSectionDescription, setNewSectionDescription] = useState("");
+  const [editingSection, setEditingSection] = useState<CourseSection | null>(null);
+  const [editingSectionTitle, setEditingSectionTitle] = useState("");
+  const [editingSectionDescription, setEditingSectionDescription] = useState("");
   const [addingLessonInProgress, setAddingLessonInProgress] = useState(false);
   const [reorderingLessons, setReorderingLessons] = useState(false);
   const [draggingLessonId, setDraggingLessonId] = useState<string | null>(null);
@@ -150,21 +166,38 @@ const InstructorCourseEdit = () => {
   >(null);
   const [lessonDropTarget, setLessonDropTarget] =
     useState<LessonDropTarget | null>(null);
+  const [addingLessonDraftSectionId, setAddingLessonDraftSectionId] = useState<string | null>(null);
   const [newLessonTitle, setNewLessonTitle] = useState("");
+  const [newLessonShortDescription, setNewLessonShortDescription] = useState("");
   const [newLessonYoutubeUrl, setNewLessonYoutubeUrl] = useState("");
   const [newLessonMinutes, setNewLessonMinutes] = useState<number | "">("");
   const [newLessonIsPreviewFree, setNewLessonIsPreviewFree] = useState(false);
+  const [newLessonMarkdown, setNewLessonMarkdown] = useState("");
+  const [newLessonResources, setNewLessonResources] = useState<
+    Array<{ title: string; url: string }>
+  >([]);
+  const [editingLesson, setEditingLesson] = useState<CourseLesson | null>(null);
+  const [editingLessonTitle, setEditingLessonTitle] = useState("");
+  const [editingLessonYoutubeUrl, setEditingLessonYoutubeUrl] = useState("");
+  const [editingLessonVideoPrimaryLocale, setEditingLessonVideoPrimaryLocale] =
+    useState<SupportedCourseLocale>("vi");
+  const [editingLessonHasSubtitle, setEditingLessonHasSubtitle] = useState(false);
+  const [editingLessonSubtitleLocales, setEditingLessonSubtitleLocales] = useState<
+    SupportedCourseLocale[]
+  >([]);
+  const [editingLessonShortDescription, setEditingLessonShortDescription] = useState("");
+  const [editingLessonMarkdown, setEditingLessonMarkdown] = useState("");
+  const [editingLessonResources, setEditingLessonResources] = useState<
+    Array<{ title: string; url: string }>
+  >([]);
+  const [expandedLessonIds, setExpandedLessonIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [form, setForm] = useState({
-    title: "",
     slug: "",
-    short_description: "",
-    description: "",
     thumbnail_url: "",
     level: "all" as CourseLevel,
     published: false,
-    final_assignment_title: "",
-    final_assignment_description: "",
-    final_assignment_instructions: "",
     certificate_template_url: "",
     certificate_template_path: "",
     certificate_name_x_percent: 50,
@@ -179,6 +212,21 @@ const InstructorCourseEdit = () => {
     partner_contract_docs: [] as PartnerCourseDocument[],
     partner_invoice_docs: [] as PartnerCourseDocument[],
     partner_transfer_info: "",
+  });
+
+  const [supportedLocales, setSupportedLocales] = useState<SupportedCourseLocale[]>(["vi", "en"]);
+  const [primaryContentLocale, setPrimaryContentLocale] = useState<SupportedCourseLocale>("vi");
+  const [defaultVideoPrimaryLocale, setDefaultVideoPrimaryLocale] =
+    useState<SupportedCourseLocale>("vi");
+  const [activeContentLocale, setActiveContentLocale] = useState<SupportedCourseLocale>("vi");
+  const [contentForm, setContentForm] = useState({
+    title: "",
+    short_description: "",
+    description: "",
+    learning_outcomes: [] as string[],
+    final_assignment_title: "",
+    final_assignment_description: "",
+    final_assignment_instructions: "",
   });
   const [submissions, setSubmissions] = useState<FinalAssignmentSubmission[]>(
     [],
@@ -199,6 +247,7 @@ const InstructorCourseEdit = () => {
   const [uploadingContractDoc, setUploadingContractDoc] = useState(false);
   const [uploadingInvoiceDoc, setUploadingInvoiceDoc] = useState(false);
   const [discounts, setDiscounts] = useState<CourseDiscount[]>([]);
+  const [backfillingLocales, setBackfillingLocales] = useState(false);
   const [loadingDiscounts, setLoadingDiscounts] = useState(false);
   const [creatingDiscount, setCreatingDiscount] = useState(false);
   const [discountForm, setDiscountForm] = useState({
@@ -273,17 +322,10 @@ const InstructorCourseEdit = () => {
   useEffect(() => {
     if (course) {
       setForm({
-        title: course.title,
         slug: course.slug,
-        short_description: course.short_description ?? "",
-        description: course.description,
         thumbnail_url: course.thumbnail_url,
         level: course.level,
         published: course.published,
-        final_assignment_title: course.final_assignment_title ?? "",
-        final_assignment_description: course.final_assignment_description ?? "",
-        final_assignment_instructions:
-          course.final_assignment_instructions ?? "",
         certificate_template_url: course.certificate_template_url ?? "",
         certificate_template_path: course.certificate_template_path ?? "",
         certificate_name_x_percent: course.certificate_name_x_percent ?? 50,
@@ -310,8 +352,56 @@ const InstructorCourseEdit = () => {
         partner_invoice_docs: course.partner_invoice_docs ?? [],
         partner_transfer_info: course.partner_transfer_info ?? "",
       });
+
+      const supported = getCourseSupportedLocales(course);
+      const primary = getCoursePrimaryLocale(course);
+      const defaultVideo = normalizeCourseLocale(course.i18n?.default_video_primary_locale);
+      setSupportedLocales(supported);
+      setPrimaryContentLocale(primary);
+      setDefaultVideoPrimaryLocale(defaultVideo);
+      setActiveContentLocale((prev) => (supported.includes(prev) ? prev : primary));
     }
   }, [course]);
+
+  useEffect(() => {
+    if (!id || !course) return;
+    let cancelled = false;
+    const fallbackFromCourse = () => ({
+      title: course.title ?? "",
+      short_description: course.short_description ?? "",
+      description: course.description ?? "",
+      learning_outcomes: course.learning_outcomes ?? [],
+      final_assignment_title: course.final_assignment_title ?? "",
+      final_assignment_description: course.final_assignment_description ?? "",
+      final_assignment_instructions: course.final_assignment_instructions ?? "",
+    });
+    setContentForm(fallbackFromCourse());
+    void (async () => {
+      const localized = await getCourseLocaleContent(id, activeContentLocale).catch(() => null);
+      if (cancelled) return;
+      if (!localized) {
+        setContentForm(fallbackFromCourse());
+        return;
+      }
+      setContentForm({
+        title: localized.title ?? fallbackFromCourse().title,
+        short_description: localized.short_description ?? fallbackFromCourse().short_description,
+        description: localized.description ?? fallbackFromCourse().description,
+        learning_outcomes: localized.learning_outcomes ?? fallbackFromCourse().learning_outcomes,
+        final_assignment_title:
+          (localized.final_assignment_title ?? "") || fallbackFromCourse().final_assignment_title,
+        final_assignment_description:
+          (localized.final_assignment_description ?? "") ||
+          fallbackFromCourse().final_assignment_description,
+        final_assignment_instructions:
+          (localized.final_assignment_instructions ?? "") ||
+          fallbackFromCourse().final_assignment_instructions,
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeContentLocale, course, id]);
 
   useEffect(() => {
     if (!id) return;
@@ -469,19 +559,52 @@ const InstructorCourseEdit = () => {
     setSaving(true);
     setError(null);
     try {
+      const sanitizedOutcomes = (contentForm.learning_outcomes ?? [])
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .slice(0, 20)
+        .map((item) => (item.length > 140 ? item.slice(0, 140) : item));
+
+      await setCourseLocaleContent(id, activeContentLocale, {
+        title: contentForm.title.trim() || course.title,
+        description: contentForm.description.trim() || course.description,
+        short_description: contentForm.short_description.trim() || "",
+        learning_outcomes: sanitizedOutcomes,
+        final_assignment_title: contentForm.final_assignment_title.trim() || null,
+        final_assignment_description:
+          contentForm.final_assignment_description.trim() || null,
+        final_assignment_instructions:
+          contentForm.final_assignment_instructions.trim() || null,
+      });
+
+      const nextSupported = Array.from(
+        new Set<SupportedCourseLocale>(supportedLocales),
+      );
+      const i18nPayload = {
+        supported_locales: nextSupported,
+        primary_content_locale: primaryContentLocale,
+        default_video_primary_locale: defaultVideoPrimaryLocale,
+        subtitle_note_policy: "suggest" as const,
+      };
+
+      const shouldUpdateRootContent = activeContentLocale === primaryContentLocale;
       await updateCourse(id, {
-        title: form.title,
         slug: form.slug,
-        short_description: form.short_description.trim() || undefined,
-        description: form.description,
         thumbnail_url: form.thumbnail_url,
         level: form.level,
         published: form.published,
-        final_assignment_title: form.final_assignment_title.trim() || null,
-        final_assignment_description:
-          form.final_assignment_description.trim() || null,
-        final_assignment_instructions:
-          form.final_assignment_instructions.trim() || null,
+        i18n: i18nPayload,
+        ...(shouldUpdateRootContent && {
+          title: contentForm.title.trim() || course.title,
+          short_description: contentForm.short_description.trim() || undefined,
+          description: contentForm.description.trim() || course.description,
+          learning_outcomes: sanitizedOutcomes,
+          final_assignment_title: contentForm.final_assignment_title.trim() || null,
+          final_assignment_description:
+            contentForm.final_assignment_description.trim() || null,
+          final_assignment_instructions:
+            contentForm.final_assignment_instructions.trim() || null,
+        }),
         certificate_template_url: form.certificate_template_url || null,
         certificate_template_path: form.certificate_template_path || null,
         certificate_name_x_percent: form.certificate_name_x_percent,
@@ -519,16 +642,20 @@ const InstructorCourseEdit = () => {
         prev
           ? {
               ...prev,
-              title: form.title,
               slug: form.slug,
-              short_description: form.short_description,
-              description: form.description,
               thumbnail_url: form.thumbnail_url,
               level: form.level,
               published: form.published,
-              final_assignment_title: form.final_assignment_title,
-              final_assignment_description: form.final_assignment_description,
-              final_assignment_instructions: form.final_assignment_instructions,
+            i18n: i18nPayload,
+            ...(shouldUpdateRootContent && {
+              title: contentForm.title.trim() || prev.title,
+              short_description: contentForm.short_description,
+              description: contentForm.description,
+              learning_outcomes: sanitizedOutcomes,
+              final_assignment_title: contentForm.final_assignment_title,
+              final_assignment_description: contentForm.final_assignment_description,
+              final_assignment_instructions: contentForm.final_assignment_instructions,
+            }),
               certificate_template_url: form.certificate_template_url,
               certificate_template_path: form.certificate_template_path,
               certificate_name_x_percent: form.certificate_name_x_percent,
@@ -712,10 +839,27 @@ const InstructorCourseEdit = () => {
     try {
       const sec = await addSection(id, {
         title: newSectionTitle.trim(),
+        description: newSectionDescription.trim() || undefined,
         order: getNextOrder(sections),
       });
+      if (activeContentLocale !== primaryContentLocale) {
+        await setCourseSectionLocaleContent(id, sec.id, activeContentLocale, {
+          title: newSectionTitle.trim(),
+          description: newSectionDescription.trim() || undefined,
+        });
+        setSections((prev) => [
+          ...prev,
+          applyCourseSectionLocaleContent(sec, {
+            locale: activeContentLocale,
+            title: newSectionTitle.trim(),
+            description: newSectionDescription.trim() || undefined,
+          }),
+        ]);
+      } else {
       setSections((prev) => [...prev, sec]);
+      }
       setNewSectionTitle("");
+      setNewSectionDescription("");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.addSectionFailed"));
     } finally {
@@ -723,37 +867,235 @@ const InstructorCourseEdit = () => {
     }
   };
 
+  const openEditSection = (section: CourseSection) => {
+    setEditingSection(section);
+    setEditingSectionTitle(section.title ?? "");
+    setEditingSectionDescription(section.description ?? "");
+    if (!id) return;
+    if (activeContentLocale === primaryContentLocale) return;
+    void (async () => {
+      const localized = await getCourseSectionLocaleContent(id, section.id, activeContentLocale).catch(() => null);
+      if (!localized) return;
+      setEditingSectionTitle(localized.title ?? section.title ?? "");
+      setEditingSectionDescription(localized.description ?? section.description ?? "");
+    })();
+  };
+
+  const handleSaveSectionDetails = async () => {
+    if (!id || !editingSection) return;
+    try {
+      if (activeContentLocale === primaryContentLocale) {
+        await updateSection(id, editingSection.id, {
+          title: editingSectionTitle.trim() || editingSection.title,
+          description: editingSectionDescription.trim() || undefined,
+        });
+        setSections((prev) =>
+          prev.map((s) =>
+            s.id === editingSection.id
+              ? {
+                  ...s,
+                  title: editingSectionTitle.trim() || s.title,
+                  description: editingSectionDescription.trim() || undefined,
+                }
+              : s,
+          ),
+        );
+      } else {
+        await setCourseSectionLocaleContent(id, editingSection.id, activeContentLocale, {
+          title: editingSectionTitle.trim() || editingSection.title,
+          description: editingSectionDescription.trim() || undefined,
+        });
+        setSections((prev) =>
+          prev.map((s) =>
+            s.id === editingSection.id
+              ? applyCourseSectionLocaleContent(s, {
+                  locale: activeContentLocale,
+                  title: editingSectionTitle.trim() || s.title,
+                  description: editingSectionDescription.trim() || undefined,
+                })
+              : s,
+          ),
+        );
+      }
+      setEditingSection(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
+    }
+  };
+
   const handleAddLesson = async (sectionId: string) => {
-    if (!id || !newLessonYoutubeUrl.trim()) return;
+    if (!id) return;
     const secLessons = lessons.filter((l) => l.section_id === sectionId);
     setAddingLessonInProgress(true);
     try {
-      const fromApi = await getYoutubeVideoDuration(newLessonYoutubeUrl.trim());
+      const youtubeUrl = newLessonYoutubeUrl.trim();
+      const fromApi = youtubeUrl
+        ? await getYoutubeVideoDuration(youtubeUrl)
+        : 0;
       const fromInput =
         newLessonMinutes !== "" && Number(newLessonMinutes) > 0
           ? Number(newLessonMinutes) * 60
           : 0;
       const durationSeconds = fromInput > 0 ? fromInput : fromApi;
+      const sanitizedResources = (newLessonResources ?? [])
+        .map((r) => ({ title: (r.title ?? "").trim(), url: (r.url ?? "").trim() }))
+        .filter((r) => r.title && r.url);
       const les = await addLesson(id, {
         section_id: sectionId,
         title: newLessonTitle.trim() || t("courseEdit.defaults.lessonTitle"),
-        youtube_url: newLessonYoutubeUrl.trim(),
-        duration_seconds: durationSeconds,
+        short_description: newLessonShortDescription.trim() || undefined,
+        youtube_url: youtubeUrl,
+        description_markdown: newLessonMarkdown.trim() || undefined,
+        resources: sanitizedResources.length ? sanitizedResources : undefined,
+        video_primary_locale: defaultVideoPrimaryLocale,
+        has_subtitle: false,
+        subtitle_locales: [],
+        duration_seconds: durationSeconds || 0,
         order: getNextOrder(secLessons),
         is_preview_free:
           form.access_model === "paid_upfront" ? newLessonIsPreviewFree : false,
       });
-      setLessons((prev) => [...prev, les]);
+      if (activeContentLocale !== primaryContentLocale) {
+        await setCourseLessonLocaleContent(id, les.id, activeContentLocale, {
+          title: newLessonTitle.trim() || t("courseEdit.defaults.lessonTitle"),
+          short_description: newLessonShortDescription.trim() || undefined,
+          youtube_url: youtubeUrl || undefined,
+          description_markdown: newLessonMarkdown.trim() || undefined,
+          resources: sanitizedResources.length ? sanitizedResources : undefined,
+          video_primary_locale: defaultVideoPrimaryLocale,
+          has_subtitle: false,
+          subtitle_locales: [],
+        });
+        setLessons((prev) => [
+          ...prev,
+          applyCourseLessonLocaleContent(les, {
+            locale: activeContentLocale,
+            title: newLessonTitle.trim() || t("courseEdit.defaults.lessonTitle"),
+            short_description: newLessonShortDescription.trim() || undefined,
+            youtube_url: youtubeUrl || undefined,
+            description_markdown: newLessonMarkdown.trim() || undefined,
+            resources: sanitizedResources.length ? sanitizedResources : undefined,
+            video_primary_locale: defaultVideoPrimaryLocale,
+            has_subtitle: false,
+            subtitle_locales: [],
+          }),
+        ]);
+      } else {
+        setLessons((prev) => [...prev, les]);
+      }
       setNewLessonTitle("");
+      setNewLessonShortDescription("");
       setNewLessonYoutubeUrl("");
       setNewLessonMinutes("");
       setNewLessonIsPreviewFree(false);
-      setAddingLessonSectionId(null);
+      setNewLessonMarkdown("");
+      setNewLessonResources([]);
+      setAddingLessonDraftSectionId(null);
       await refreshCourseTotalDuration(id);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.addLessonFailed"));
     } finally {
       setAddingLessonInProgress(false);
+    }
+  };
+
+  const openEditLesson = (lesson: CourseLesson) => {
+    setEditingLesson(lesson);
+    setEditingLessonTitle(lesson.title ?? "");
+    setEditingLessonYoutubeUrl(lesson.youtube_url ?? "");
+    setEditingLessonVideoPrimaryLocale(
+      normalizeCourseLocale(lesson.video_primary_locale ?? defaultVideoPrimaryLocale),
+    );
+    setEditingLessonHasSubtitle(lesson.has_subtitle ?? false);
+    setEditingLessonSubtitleLocales((lesson.subtitle_locales ?? []).map(normalizeCourseLocale));
+    setEditingLessonShortDescription(lesson.short_description ?? "");
+    setEditingLessonMarkdown(lesson.description_markdown ?? "");
+    setEditingLessonResources((lesson.resources ?? []).map((r) => ({ title: r.title ?? "", url: r.url ?? "" })));
+    if (!id) return;
+    if (activeContentLocale === primaryContentLocale) return;
+    void (async () => {
+      const localized = await getCourseLessonLocaleContent(id, lesson.id, activeContentLocale).catch(() => null);
+      if (!localized) return;
+      setEditingLessonTitle(localized.title ?? lesson.title ?? "");
+      setEditingLessonYoutubeUrl(localized.youtube_url ?? lesson.youtube_url ?? "");
+      setEditingLessonVideoPrimaryLocale(
+        normalizeCourseLocale(localized.video_primary_locale ?? lesson.video_primary_locale ?? defaultVideoPrimaryLocale),
+      );
+      setEditingLessonHasSubtitle(localized.has_subtitle ?? lesson.has_subtitle ?? false);
+      setEditingLessonSubtitleLocales((localized.subtitle_locales ?? lesson.subtitle_locales ?? []).map(normalizeCourseLocale));
+      setEditingLessonShortDescription(localized.short_description ?? lesson.short_description ?? "");
+      setEditingLessonMarkdown(localized.description_markdown ?? lesson.description_markdown ?? "");
+      setEditingLessonResources((localized.resources ?? lesson.resources ?? []).map((r) => ({ title: r.title ?? "", url: r.url ?? "" })));
+    })();
+  };
+
+  const handleSaveLessonDetails = async () => {
+    if (!id || !editingLesson) return;
+    const sanitizedResources = (editingLessonResources ?? [])
+      .map((r) => ({ title: (r.title ?? "").trim(), url: (r.url ?? "").trim() }))
+      .filter((r) => r.title && r.url);
+
+    try {
+      if (activeContentLocale === primaryContentLocale) {
+        await updateLesson(id, editingLesson.id, {
+          title: editingLessonTitle.trim() || editingLesson.title,
+          youtube_url: editingLessonYoutubeUrl.trim() || undefined,
+          video_primary_locale: editingLessonVideoPrimaryLocale,
+          has_subtitle: editingLessonHasSubtitle,
+          subtitle_locales: editingLessonHasSubtitle ? editingLessonSubtitleLocales : [],
+          short_description: editingLessonShortDescription.trim() || undefined,
+          description_markdown: editingLessonMarkdown.trim() || undefined,
+          resources: sanitizedResources.length ? sanitizedResources : undefined,
+        });
+        setLessons((prev) =>
+          prev.map((l) =>
+            l.id === editingLesson.id
+              ? {
+                  ...l,
+                  title: editingLessonTitle.trim() || l.title,
+                  youtube_url: editingLessonYoutubeUrl.trim() || undefined,
+                  video_primary_locale: editingLessonVideoPrimaryLocale,
+                  has_subtitle: editingLessonHasSubtitle,
+                  subtitle_locales: editingLessonHasSubtitle ? editingLessonSubtitleLocales : [],
+                  short_description: editingLessonShortDescription.trim() || undefined,
+                  description_markdown: editingLessonMarkdown.trim() || undefined,
+                  resources: sanitizedResources.length ? sanitizedResources : undefined,
+                }
+              : l,
+          ),
+        );
+      } else {
+        await setCourseLessonLocaleContent(id, editingLesson.id, activeContentLocale, {
+          title: editingLessonTitle.trim() || editingLesson.title,
+          youtube_url: editingLessonYoutubeUrl.trim() || undefined,
+          video_primary_locale: editingLessonVideoPrimaryLocale,
+          has_subtitle: editingLessonHasSubtitle,
+          subtitle_locales: editingLessonHasSubtitle ? editingLessonSubtitleLocales : [],
+          short_description: editingLessonShortDescription.trim() || undefined,
+          description_markdown: editingLessonMarkdown.trim() || undefined,
+          resources: sanitizedResources.length ? sanitizedResources : undefined,
+        });
+        setLessons((prev) =>
+          prev.map((l) =>
+            l.id === editingLesson.id
+              ? applyCourseLessonLocaleContent(l, {
+                  locale: activeContentLocale,
+                  title: editingLessonTitle.trim() || l.title,
+                  youtube_url: editingLessonYoutubeUrl.trim() || undefined,
+                  video_primary_locale: editingLessonVideoPrimaryLocale,
+                  has_subtitle: editingLessonHasSubtitle,
+                  subtitle_locales: editingLessonHasSubtitle ? editingLessonSubtitleLocales : [],
+                  short_description: editingLessonShortDescription.trim() || undefined,
+                  description_markdown: editingLessonMarkdown.trim() || undefined,
+                  resources: sanitizedResources.length ? sanitizedResources : undefined,
+                })
+              : l,
+          ),
+        );
+      }
+      setEditingLesson(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     }
   };
 
@@ -1246,11 +1588,135 @@ const InstructorCourseEdit = () => {
               </h2>
               <FieldGroup className="mt-4">
                 <Field>
+                  <FieldLabel>{t("courseEdit.i18n.supportedLocalesLabel" as never)}</FieldLabel>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {(["vi", "en"] as const).map((loc) => {
+                      const enabled = supportedLocales.includes(loc);
+                      return (
+                        <button
+                          key={loc}
+                          type="button"
+                          onClick={() =>
+                            setSupportedLocales((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(loc)) next.delete(loc);
+                              else next.add(loc);
+                              const result = Array.from(next);
+                              // ensure at least 1 locale exists
+                              if (result.length === 0) return prev;
+                              // keep primary valid
+                              if (!result.includes(primaryContentLocale)) {
+                                setPrimaryContentLocale(result[0] ?? "vi");
+                              }
+                              // keep active valid
+                              if (!result.includes(activeContentLocale)) {
+                                setActiveContentLocale(result[0] ?? "vi");
+                              }
+                              return result;
+                            })
+                          }
+                          className={cn(
+                            "rounded-md border px-2 py-1 text-xs font-medium",
+                            enabled
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border-subtle bg-background text-muted-foreground",
+                          )}
+                        >
+                          {loc.toUpperCase()}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("courseEdit.i18n.supportedLocalesHint" as never)}
+                  </p>
+                </Field>
+                <Field>
+                  <FieldLabel>{t("courseEdit.i18n.primaryLocaleLabel" as never)}</FieldLabel>
+                  <select
+                    value={primaryContentLocale}
+                    onChange={(e) =>
+                      setPrimaryContentLocale(normalizeCourseLocale(e.target.value))
+                    }
+                    className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {supportedLocales.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {loc.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field>
+                  <FieldLabel>{t("courseEdit.i18n.editingLocaleLabel" as never)}</FieldLabel>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {supportedLocales.map((loc) => (
+                      <button
+                        key={loc}
+                        type="button"
+                        onClick={() => setActiveContentLocale(loc)}
+                        className={cn(
+                          "rounded-md border px-2 py-1 text-xs font-medium",
+                          activeContentLocale === loc
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border-subtle bg-background text-muted-foreground",
+                        )}
+                      >
+                        {loc.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                  {activeContentLocale !== primaryContentLocale ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t("courseEdit.i18n.editingNonPrimaryHint" as never)}
+                    </p>
+                  ) : null}
+                </Field>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={!id || backfillingLocales}
+                    onClick={() => {
+                      if (!id) return;
+                      if (!confirm(t("courseEdit.i18n.backfillConfirm" as never))) return;
+                      setBackfillingLocales(true);
+                      void backfillCourseLocaleIndex(id, supportedLocales)
+                        .then((res) => {
+                          toast.success(
+                            String(
+                              t("courseEdit.i18n.backfillDone" as never, {
+                                defaultValue: `Đã backfill ${res.updated} tài liệu locale.`,
+                                count: res.updated,
+                              } as never),
+                            ),
+                          );
+                        })
+                        .catch((e) => {
+                          toast.error(
+                            e instanceof Error
+                              ? e.message
+                              : t("courseEdit.i18n.backfillFailed" as never),
+                          );
+                        })
+                        .finally(() => setBackfillingLocales(false));
+                    }}
+                  >
+                    {backfillingLocales
+                      ? t("courseEdit.i18n.backfilling" as never)
+                      : t("courseEdit.i18n.backfillAction" as never)}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    {t("courseEdit.i18n.backfillHint" as never)}
+                  </p>
+                </div>
+                <Field>
                   <FieldLabel>{t("courseEdit.form.titleLabel")}</FieldLabel>
                   <Input
-                    value={form.title}
+                    value={contentForm.title}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, title: e.target.value }))
+                      setContentForm((p) => ({ ...p, title: e.target.value }))
                     }
                   />
                 </Field>
@@ -1266,9 +1732,9 @@ const InstructorCourseEdit = () => {
                 <Field>
                   <FieldLabel>{t("courseEdit.form.shortDescriptionLabel")}</FieldLabel>
                   <Input
-                    value={form.short_description}
+                    value={contentForm.short_description}
                     onChange={(e) =>
-                      setForm((p) => ({
+                      setContentForm((p) => ({
                         ...p,
                         short_description: e.target.value,
                       }))
@@ -1278,14 +1744,70 @@ const InstructorCourseEdit = () => {
                 </Field>
                 <Field>
                   <FieldLabel>{t("courseEdit.form.descriptionLabel")}</FieldLabel>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("courseEdit.form.descriptionMarkdownHint")}
+                  </p>
                   <textarea
-                    value={form.description}
+                    value={contentForm.description}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, description: e.target.value }))
+                      setContentForm((p) => ({ ...p, description: e.target.value }))
                     }
-                    className="min-h-[100px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-[140px] w-full rounded border border-input bg-background px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     rows={4}
                   />
+                </Field>
+                <Field>
+                  <FieldLabel>{t("courseEdit.form.learningOutcomesLabel")}</FieldLabel>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("courseEdit.form.learningOutcomesSubtitle")}
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    {(contentForm.learning_outcomes ?? []).map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <Input
+                          value={item}
+                          onChange={(e) =>
+                            setContentForm((p) => {
+                              const next = [...(p.learning_outcomes ?? [])];
+                              next[idx] = e.target.value;
+                              return { ...p, learning_outcomes: next };
+                            })
+                          }
+                          placeholder={t("courseEdit.form.learningOutcomesItemPlaceholder")}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-9 px-3"
+                          onClick={() =>
+                            setContentForm((p) => {
+                              const next = [...(p.learning_outcomes ?? [])];
+                              next.splice(idx, 1);
+                              return { ...p, learning_outcomes: next };
+                            })
+                          }
+                        >
+                          <XCircle className="size-4" aria-hidden />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 inline-flex items-center gap-2"
+                    onClick={() =>
+                      setContentForm((p) => ({
+                        ...p,
+                        learning_outcomes: [...(p.learning_outcomes ?? []), ""],
+                      }))
+                    }
+                  >
+                    <Plus className="size-4" aria-hidden />
+                    {t("courseEdit.form.learningOutcomesAdd")}
+                  </Button>
                 </Field>
                 <Field>
                   <FieldLabel>{t("courseEdit.form.thumbnailLabel")}</FieldLabel>
@@ -2004,17 +2526,34 @@ const InstructorCourseEdit = () => {
                     className="overflow-hidden rounded-md border border-border-subtle bg-card"
                   >
                     <div className="flex items-center justify-between border-b border-border-subtle bg-muted/40 px-4 py-2">
-                      <span className="font-medium text-foreground">
-                        {section.title}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => handleDeleteSection(section.id)}
-                      >
-                        <Trash2 className="size-4" aria-hidden />
-                      </Button>
+                      <div className="min-w-0">
+                        <span className="font-medium text-foreground">
+                          {section.title}
+                        </span>
+                        {section.description?.trim() ? (
+                          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                            {section.description}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditSection(section)}
+                        >
+                          {t("courseEdit.sections.edit")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteSection(section.id)}
+                        >
+                          <Trash2 className="size-4" aria-hidden />
+                        </Button>
+                      </div>
                     </div>
                     <ul className="divide-y divide-border-subtle">
                       {secLessons.map((lesson, lessonIndex) => {
@@ -2045,7 +2584,8 @@ const InstructorCourseEdit = () => {
                               isDropAfter && "border-b-2 border-primary bg-primary/5",
                             )}
                           >
-                            <div className="flex min-w-0 items-center gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex min-w-0 items-center gap-2">
                               <button
                                 type="button"
                                 draggable={!reorderingLessons}
@@ -2074,12 +2614,86 @@ const InstructorCourseEdit = () => {
                                     Học thử
                                   </span>
                                 )}
+                              {!lesson.youtube_url?.trim() ? (
+                                <span className="rounded-md bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">
+                                  {t("courseEdit.lessons.draftBadge")}
+                                </span>
+                              ) : null}
                               <span className="text-xs text-muted-foreground shrink-0">
                                 {formatDuration(lesson.duration_seconds)}
                               </span>
+                              </div>
+                              {lesson.short_description?.trim() ? (
+                                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                  {lesson.short_description}
+                                </p>
+                              ) : null}
+
+                              {expandedLessonIds.has(lesson.id) ? (
+                                <div className="mt-3 rounded-md border border-border-subtle bg-muted/20 p-3">
+                                  {lesson.description_markdown?.trim() ? (
+                                    <Markdown content={lesson.description_markdown} />
+                                  ) : null}
+                                  {lesson.resources?.length ? (
+                                    <div className="mt-3">
+                                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                        {t("courseEdit.lessons.resourcesLabel")}
+                                      </p>
+                                      <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                                        {lesson.resources
+                                          .map((r) => ({
+                                            title: (r.title ?? "").trim(),
+                                            url: (r.url ?? "").trim(),
+                                          }))
+                                          .filter((r) => r.title && r.url)
+                                          .map((r) => (
+                                            <li key={r.url} className="truncate">
+                                              <a
+                                                href={r.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="underline underline-offset-4"
+                                              >
+                                                {r.title}
+                                              </a>
+                                            </li>
+                                          ))}
+                                      </ul>
+                                    </div>
+                                  ) : null}
+                                </div>
+                              ) : null}
                             </div>
 
                             <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                              {(lesson.description_markdown?.trim() ||
+                                lesson.resources?.length) ? (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    setExpandedLessonIds((prev) => {
+                                      const next = new Set(prev);
+                                      if (next.has(lesson.id)) next.delete(lesson.id);
+                                      else next.add(lesson.id);
+                                      return next;
+                                    })
+                                  }
+                                >
+                                  {expandedLessonIds.has(lesson.id)
+                                    ? t("courseEdit.lessons.hidePreview")
+                                    : t("courseEdit.lessons.showPreview")}
+                                </Button>
+                              ) : null}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openEditLesson(lesson)}
+                              >
+                                {t("courseEdit.lessons.edit")}
+                              </Button>
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -2142,92 +2756,23 @@ const InstructorCourseEdit = () => {
                       })}
                     </ul>
                     <div className="border-t border-border-subtle p-3">
-                      {addingLessonSectionId === section.id ? (
-                        <div className="flex flex-col gap-2">
-                          <Input
-                            placeholder="Link YouTube *"
-                            value={newLessonYoutubeUrl}
-                            onChange={(e) =>
-                              setNewLessonYoutubeUrl(e.target.value)
-                            }
-                          />
-                          <Input
-                            placeholder={t("courseEdit.content.lessonTitlePlaceholder")}
-                            value={newLessonTitle}
-                            onChange={(e) => setNewLessonTitle(e.target.value)}
-                          />
-                          <Input
-                            type="number"
-                            min={0}
-                            placeholder={t("courseEdit.content.lessonMinutesPlaceholder")}
-                            value={
-                              newLessonMinutes === "" ? "" : newLessonMinutes
-                            }
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              setNewLessonMinutes(
-                                v === ""
-                                  ? ""
-                                  : Math.max(0, parseInt(v, 10) || 0),
-                              );
-                            }}
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            Thời lượng: ưu tiên từ ô phút phía trên; nếu để
-                            trống sẽ lấy từ YouTube API (cần
-                            VITE_YOUTUBE_API_KEY).
-                          </p>
-                          {form.access_model === "paid_upfront" && (
-                            <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-                              <input
-                                type="checkbox"
-                                checked={newLessonIsPreviewFree}
-                                onChange={(e) =>
-                                  setNewLessonIsPreviewFree(e.target.checked)
-                                }
-                                className="rounded border-input"
-                              />
-                              Bật bài học thử miễn phí
-                            </label>
-                          )}
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => handleAddLesson(section.id)}
-                              disabled={
-                                !newLessonYoutubeUrl.trim() ||
-                                addingLessonInProgress
-                              }
-                            >
-                              {addingLessonInProgress
-                                ? t("courseEdit.labels.adding")
-                                : t("courseEdit.labels.add")}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                setAddingLessonSectionId(null);
-                                setNewLessonTitle("");
-                                setNewLessonYoutubeUrl("");
-                                setNewLessonMinutes("");
-                                setNewLessonIsPreviewFree(false);
-                              }}
-                            >
-                              Huỷ
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setAddingLessonSectionId(section.id)}
-                          className="inline-flex items-center gap-1"
-                        >
-                          <Plus className="size-4" /> Thêm bài học
-                        </Button>
-                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setAddingLessonDraftSectionId(section.id);
+                          setNewLessonTitle("");
+                          setNewLessonShortDescription("");
+                          setNewLessonYoutubeUrl("");
+                          setNewLessonMinutes("");
+                          setNewLessonIsPreviewFree(false);
+                          setNewLessonMarkdown("");
+                          setNewLessonResources([]);
+                        }}
+                        className="inline-flex items-center gap-1"
+                      >
+                        <Plus className="size-4" /> {t("courseEdit.lessons.create")}
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -2237,12 +2782,19 @@ const InstructorCourseEdit = () => {
                 <p className="text-sm text-muted-foreground mb-2">
                   Thêm chương mới
                 </p>
-                <div className="flex gap-2">
+                <div className="grid gap-2">
                   <Input
                     placeholder={t("courseEdit.content.sectionTitlePlaceholder")}
                     value={newSectionTitle}
                     onChange={(e) => setNewSectionTitle(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleAddSection()}
+                  />
+                  <textarea
+                    value={newSectionDescription}
+                    onChange={(e) => setNewSectionDescription(e.target.value)}
+                    placeholder={t("courseEdit.sections.descriptionPlaceholder")}
+                    className="min-h-[72px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    rows={3}
                   />
                   <Button
                     onClick={() => void handleAddSection()}
@@ -2256,6 +2808,496 @@ const InstructorCourseEdit = () => {
               </div>
             </section>
           )}
+
+          <Dialog open={!!editingSection} onOpenChange={(open) => !open && setEditingSection(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t("courseEdit.sections.editTitle")}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Field>
+                  <FieldLabel>{t("courseEdit.sections.titleLabel")}</FieldLabel>
+                  <Input
+                    value={editingSectionTitle}
+                    onChange={(e) => setEditingSectionTitle(e.target.value)}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel>{t("courseEdit.sections.descriptionLabel")}</FieldLabel>
+                  <textarea
+                    value={editingSectionDescription}
+                    onChange={(e) => setEditingSectionDescription(e.target.value)}
+                    placeholder={t("courseEdit.sections.descriptionPlaceholder")}
+                    className="min-h-[100px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    rows={4}
+                  />
+                </Field>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditingSection(null)}>
+                  {t("courseEdit.sections.cancel")}
+                </Button>
+                <Button type="button" onClick={() => void handleSaveSectionDetails()}>
+                  {t("courseEdit.sections.save")}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={!!editingLesson} onOpenChange={(open) => !open && setEditingLesson(null)}>
+            <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden p-0">
+              <div className="flex max-h-[85vh] flex-col">
+                <DialogHeader className="sticky top-0 z-10 border-b border-border-subtle bg-background/95 p-4 backdrop-blur">
+                  <DialogTitle>{t("courseEdit.lessons.editTitle")}</DialogTitle>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto p-4">
+                  <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_360px]">
+                <div className="space-y-4 md:pr-2">
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.youtubeLabel")}</FieldLabel>
+                    <Input
+                      value={editingLessonYoutubeUrl}
+                      onChange={(e) => setEditingLessonYoutubeUrl(e.target.value)}
+                      placeholder={t("courseEdit.lessons.youtubePlaceholder")}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.titleLabel")}</FieldLabel>
+                    <Input
+                      value={editingLessonTitle}
+                      onChange={(e) => setEditingLessonTitle(e.target.value)}
+                      placeholder={t("courseEdit.content.lessonTitlePlaceholder")}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.videoPrimaryLocaleLabel" as never)}</FieldLabel>
+                    <select
+                      value={editingLessonVideoPrimaryLocale}
+                      onChange={(e) =>
+                        setEditingLessonVideoPrimaryLocale(
+                          normalizeCourseLocale(e.target.value),
+                        )
+                      }
+                      className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {(["vi", "en"] as const).map((loc) => (
+                        <option key={loc} value={loc}>
+                          {loc.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t("courseEdit.lessons.videoPrimaryLocaleHint" as never)}
+                    </p>
+                  </Field>
+                  <Field>
+                    <label className="inline-flex items-center gap-2 text-sm text-foreground">
+                      <input
+                        type="checkbox"
+                        checked={editingLessonHasSubtitle}
+                        onChange={(e) => setEditingLessonHasSubtitle(e.target.checked)}
+                        className="rounded border-input"
+                      />
+                      <span>{t("courseEdit.lessons.hasSubtitleLabel" as never)}</span>
+                    </label>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t("courseEdit.lessons.subtitleHint" as never)}
+                    </p>
+                    {editingLessonHasSubtitle ? (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(["vi", "en"] as const).map((loc) => {
+                          const active = editingLessonSubtitleLocales.includes(loc);
+                          return (
+                            <button
+                              key={loc}
+                              type="button"
+                              onClick={() =>
+                                setEditingLessonSubtitleLocales((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(loc)) next.delete(loc);
+                                  else next.add(loc);
+                                  return Array.from(next);
+                                })
+                              }
+                              className={cn(
+                                "rounded-md border px-2 py-1 text-xs font-medium",
+                                active
+                                  ? "border-primary bg-primary/10 text-primary"
+                                  : "border-border-subtle bg-background text-muted-foreground",
+                              )}
+                            >
+                              {loc.toUpperCase()}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.shortDescriptionLabel")}</FieldLabel>
+                    <Input
+                      value={editingLessonShortDescription}
+                      onChange={(e) => setEditingLessonShortDescription(e.target.value)}
+                      placeholder={t("courseEdit.lessons.shortDescriptionPlaceholder")}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.markdownLabel")}</FieldLabel>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t("courseEdit.lessons.markdownHint")}
+                    </p>
+                    <textarea
+                      value={editingLessonMarkdown}
+                      onChange={(e) => setEditingLessonMarkdown(e.target.value)}
+                      className="min-h-[220px] w-full rounded border border-input bg-background px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      rows={10}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.resourcesLabel")}</FieldLabel>
+                    <div className="mt-2 space-y-2">
+                      {editingLessonResources.map((r, idx) => (
+                        <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_1.2fr_auto] sm:items-center">
+                          <Input
+                            value={r.title}
+                            placeholder={t("courseEdit.lessons.resourceTitlePlaceholder")}
+                            onChange={(e) =>
+                              setEditingLessonResources((prev) => {
+                                const next = [...prev];
+                                next[idx] = { ...next[idx], title: e.target.value };
+                                return next;
+                              })
+                            }
+                          />
+                          <Input
+                            value={r.url}
+                            placeholder={t("courseEdit.lessons.resourceUrlPlaceholder")}
+                            onChange={(e) =>
+                              setEditingLessonResources((prev) => {
+                                const next = [...prev];
+                                next[idx] = { ...next[idx], url: e.target.value };
+                                return next;
+                              })
+                            }
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-9"
+                            onClick={() =>
+                              setEditingLessonResources((prev) => {
+                                const next = [...prev];
+                                next.splice(idx, 1);
+                                return next;
+                              })
+                            }
+                          >
+                            <XCircle className="size-4" aria-hidden />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-3 inline-flex items-center gap-2"
+                      onClick={() =>
+                        setEditingLessonResources((prev) => [...prev, { title: "", url: "" }])
+                      }
+                    >
+                      <Plus className="size-4" aria-hidden />
+                      {t("courseEdit.lessons.addResource")}
+                    </Button>
+                  </Field>
+                </div>
+                <div className="space-y-4 md:sticky md:top-4 md:self-start">
+                  <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      {t("courseEdit.lessons.previewTitle")}
+                    </p>
+                    {editingLessonShortDescription.trim() ? (
+                      <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
+                        {editingLessonShortDescription.trim()}
+                      </p>
+                    ) : null}
+                    {editingLessonMarkdown.trim() ? (
+                      <div className="mt-3">
+                        <Markdown content={editingLessonMarkdown} />
+                      </div>
+                    ) : (
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        {t("courseEdit.lessons.previewEmpty")}
+                      </p>
+                    )}
+                    {editingLessonResources
+                      .map((r) => ({ title: r.title.trim(), url: r.url.trim() }))
+                      .filter((r) => r.title && r.url).length ? (
+                      <div className="mt-4">
+                        <p className="text-sm font-medium text-foreground">
+                          {t("courseEdit.lessons.resourcesLabel")}
+                        </p>
+                        <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                          {editingLessonResources
+                            .map((r) => ({ title: r.title.trim(), url: r.url.trim() }))
+                            .filter((r) => r.title && r.url)
+                            .map((r, idx) => (
+                              <li key={`${idx}-${r.url}`} className="truncate">
+                                <a
+                                  href={r.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="underline underline-offset-4"
+                                >
+                                  {r.title}
+                                </a>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                  </div>
+                </div>
+                <DialogFooter className="sticky bottom-0 z-10 border-t border-border-subtle bg-background/95 p-4 backdrop-blur">
+                  <Button type="button" variant="outline" onClick={() => setEditingLesson(null)}>
+                    {t("courseEdit.lessons.cancel")}
+                  </Button>
+                  <Button type="button" onClick={() => void handleSaveLessonDetails()}>
+                    {t("courseEdit.lessons.save")}
+                  </Button>
+                </DialogFooter>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog
+            open={addingLessonDraftSectionId != null}
+            onOpenChange={(open) => !open && setAddingLessonDraftSectionId(null)}
+          >
+            <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden p-0">
+              <div className="flex max-h-[85vh] flex-col">
+                <DialogHeader className="sticky top-0 z-10 border-b border-border-subtle bg-background/95 p-4 backdrop-blur">
+                  <DialogTitle>{t("courseEdit.lessons.createTitle")}</DialogTitle>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto p-4">
+                  <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_360px]">
+                <div className="space-y-4 md:pr-2">
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.youtubeLabel")}</FieldLabel>
+                    <Input
+                      value={newLessonYoutubeUrl}
+                      onChange={(e) => setNewLessonYoutubeUrl(e.target.value)}
+                      placeholder={t("courseEdit.lessons.youtubePlaceholder")}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.videoPrimaryLocaleLabel" as never)}</FieldLabel>
+                    <select
+                      value={defaultVideoPrimaryLocale}
+                      onChange={(e) =>
+                        setDefaultVideoPrimaryLocale(normalizeCourseLocale(e.target.value))
+                      }
+                      className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {(["vi", "en"] as const).map((loc) => (
+                        <option key={loc} value={loc}>
+                          {loc.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t("courseEdit.lessons.videoPrimaryLocaleHint" as never)}
+                    </p>
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.titleLabel")}</FieldLabel>
+                    <Input
+                      value={newLessonTitle}
+                      onChange={(e) => setNewLessonTitle(e.target.value)}
+                      placeholder={t("courseEdit.content.lessonTitlePlaceholder")}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.shortDescriptionLabel")}</FieldLabel>
+                    <Input
+                      value={newLessonShortDescription}
+                      onChange={(e) => setNewLessonShortDescription(e.target.value)}
+                      placeholder={t("courseEdit.lessons.shortDescriptionPlaceholder")}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.durationMinutesLabel")}</FieldLabel>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={newLessonMinutes === "" ? "" : String(newLessonMinutes)}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setNewLessonMinutes(
+                          v === "" ? "" : Math.max(0, parseInt(v, 10) || 0),
+                        );
+                      }}
+                      placeholder={t("courseEdit.content.lessonMinutesPlaceholder")}
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t("courseEdit.lessons.durationHint")}
+                    </p>
+                  </Field>
+                  {form.access_model === "paid_upfront" && (
+                    <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={newLessonIsPreviewFree}
+                        onChange={(e) => setNewLessonIsPreviewFree(e.target.checked)}
+                        className="rounded border-input"
+                      />
+                      {t("courseEdit.lessons.previewFreeLabel")}
+                    </label>
+                  )}
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.markdownLabel")}</FieldLabel>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t("courseEdit.lessons.markdownHint")}
+                    </p>
+                    <textarea
+                      value={newLessonMarkdown}
+                      onChange={(e) => setNewLessonMarkdown(e.target.value)}
+                      className="min-h-[220px] w-full rounded border border-input bg-background px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      rows={10}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.lessons.resourcesLabel")}</FieldLabel>
+                    <div className="mt-2 space-y-2">
+                      {newLessonResources.map((r, idx) => (
+                        <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_1.2fr_auto] sm:items-center">
+                          <Input
+                            value={r.title}
+                            placeholder={t("courseEdit.lessons.resourceTitlePlaceholder")}
+                            onChange={(e) =>
+                              setNewLessonResources((prev) => {
+                                const next = [...prev];
+                                next[idx] = { ...next[idx], title: e.target.value };
+                                return next;
+                              })
+                            }
+                          />
+                          <Input
+                            value={r.url}
+                            placeholder={t("courseEdit.lessons.resourceUrlPlaceholder")}
+                            onChange={(e) =>
+                              setNewLessonResources((prev) => {
+                                const next = [...prev];
+                                next[idx] = { ...next[idx], url: e.target.value };
+                                return next;
+                              })
+                            }
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-9"
+                            onClick={() =>
+                              setNewLessonResources((prev) => {
+                                const next = [...prev];
+                                next.splice(idx, 1);
+                                return next;
+                              })
+                            }
+                          >
+                            <XCircle className="size-4" aria-hidden />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-3 inline-flex items-center gap-2"
+                      onClick={() =>
+                        setNewLessonResources((prev) => [...prev, { title: "", url: "" }])
+                      }
+                    >
+                      <Plus className="size-4" aria-hidden />
+                      {t("courseEdit.lessons.addResource")}
+                    </Button>
+                  </Field>
+                </div>
+                <div className="space-y-4 md:sticky md:top-4 md:self-start">
+                  <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      {t("courseEdit.lessons.previewTitle")}
+                    </p>
+                    {newLessonShortDescription.trim() ? (
+                      <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
+                        {newLessonShortDescription.trim()}
+                      </p>
+                    ) : null}
+                    {newLessonMarkdown.trim() ? (
+                      <div className="mt-3">
+                        <Markdown content={newLessonMarkdown} />
+                      </div>
+                    ) : (
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        {t("courseEdit.lessons.previewEmpty")}
+                      </p>
+                    )}
+                    {newLessonResources
+                      .map((r) => ({ title: r.title.trim(), url: r.url.trim() }))
+                      .filter((r) => r.title && r.url).length ? (
+                      <div className="mt-4">
+                        <p className="text-sm font-medium text-foreground">
+                          {t("courseEdit.lessons.resourcesLabel")}
+                        </p>
+                        <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                          {newLessonResources
+                            .map((r) => ({ title: r.title.trim(), url: r.url.trim() }))
+                            .filter((r) => r.title && r.url)
+                            .map((r, idx) => (
+                              <li key={`${idx}-${r.url}`} className="truncate">
+                                <a
+                                  href={r.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="underline underline-offset-4"
+                                >
+                                  {r.title}
+                                </a>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                  </div>
+                </div>
+                <DialogFooter className="sticky bottom-0 z-10 border-t border-border-subtle bg-background/95 p-4 backdrop-blur">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setAddingLessonDraftSectionId(null)}
+                  >
+                    {t("courseEdit.lessons.cancel")}
+                  </Button>
+                  <Button
+                    type="button"
+                    disabled={addingLessonInProgress || !addingLessonDraftSectionId}
+                    onClick={() => addingLessonDraftSectionId && handleAddLesson(addingLessonDraftSectionId)}
+                  >
+                    {addingLessonInProgress
+                      ? t("courseEdit.lessons.creating")
+                      : t("courseEdit.lessons.createAction")}
+                  </Button>
+                </DialogFooter>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {activeSection === "assignments" && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
@@ -2284,9 +3326,9 @@ const InstructorCourseEdit = () => {
                     <FieldLabel>{t("courseEdit.assignments.titleLabel")}</FieldLabel>
                     <Input
                       placeholder={t("courseEdit.assignments.titlePlaceholder")}
-                      value={form.final_assignment_title}
+                    value={contentForm.final_assignment_title}
                       onChange={(e) =>
-                        setForm((p) => ({
+                      setContentForm((p) => ({
                           ...p,
                           final_assignment_title: e.target.value,
                         }))
@@ -2297,9 +3339,9 @@ const InstructorCourseEdit = () => {
                     <FieldLabel>{t("courseEdit.assignments.descriptionLabel")}</FieldLabel>
                     <textarea
                       placeholder={t("courseEdit.assignments.descriptionPlaceholder")}
-                      value={form.final_assignment_description}
+                    value={contentForm.final_assignment_description}
                       onChange={(e) =>
-                        setForm((p) => ({
+                      setContentForm((p) => ({
                           ...p,
                           final_assignment_description: e.target.value,
                         }))
@@ -2312,9 +3354,9 @@ const InstructorCourseEdit = () => {
                     <FieldLabel>{t("courseEdit.assignments.instructionsLabel")}</FieldLabel>
                     <textarea
                       placeholder={t("courseEdit.assignments.instructionsPlaceholder")}
-                      value={form.final_assignment_instructions}
+                    value={contentForm.final_assignment_instructions}
                       onChange={(e) =>
-                        setForm((p) => ({
+                      setContentForm((p) => ({
                           ...p,
                           final_assignment_instructions: e.target.value,
                         }))
@@ -2337,7 +3379,7 @@ const InstructorCourseEdit = () => {
               <h3 className="text-sm font-medium text-foreground mb-3">
                 Bài nộp của học viên
               </h3>
-              {course.final_assignment_title ? (
+              {(contentForm.final_assignment_title || course.final_assignment_title) ? (
                 <>
                   {submissions.length === 0 ? (
                     <p className="text-sm text-muted-foreground py-4">

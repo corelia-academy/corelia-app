@@ -34,7 +34,9 @@ export const useAuthStore = create<AuthStore>()(
 
       signOut: async () => {
         await auth.signOut();
-        set({ user: null, profile: null, authInitialized: false });
+        // Không reset authInitialized khi signOut; nếu không /login sẽ kẹt loader
+        // cho tới khi onAuthStateChanged chạy lại.
+        set({ user: null, profile: null, loading: false, authInitialized: true });
       },
 
       refreshProfile: async () => {

@@ -1,0 +1,18 @@
+---
+description: React + Tailwind UI patterns (components, classnames, a11y)
+globs: **/*.tsx
+alwaysApply: false
+---
+
+# React/UI conventions
+
+- Prefer **function components** and local state via React hooks.
+- Reuse UI primitives in `src/components/ui/*` (e.g. `Button`, `Dialog`, `Toaster`, `TooltipProvider`) instead of rolling custom ones.
+- Use Tailwind utility classes; when composing class strings use `cn` from `@/lib/utils` if available in the file’s area.
+- Keep components presentational where possible; move side effects / data sync into hooks or store helpers.
+
+## Accessibility & UX
+
+- Interactive elements must have **`type="button"`** for non-submit buttons and meaningful **`aria-*`** / `alt` text.
+- Prefer `NavLink` active styling patterns already used in `src/pages/account/Account.tsx`.
+- Avoid adding new icon packs; project already uses `lucide-react` and `@phosphor-icons/react`.

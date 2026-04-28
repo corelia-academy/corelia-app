@@ -118,32 +118,32 @@ export function PartnerContractsPage() {
   return (
     <PageContainer>
       <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("partnerFinance.contracts.stats.totalDocuments")}
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {rows.length}
-          </p>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <PageSectionCard>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t("partnerFinance.contracts.stats.totalDocuments")}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {rows.length}
+            </p>
+          </PageSectionCard>
+          <PageSectionCard>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t("partnerFinance.contracts.stats.source")}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {t("partnerFinance.contracts.stats.sourceValue")}
+            </p>
+          </PageSectionCard>
+          <PageSectionCard>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t("partnerFinance.contracts.stats.status")}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {t("partnerFinance.contracts.stats.statusValue")}
+            </p>
+          </PageSectionCard>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("partnerFinance.contracts.stats.source")}
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {t("partnerFinance.contracts.stats.sourceValue")}
-          </p>
-        </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("partnerFinance.contracts.stats.status")}
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {t("partnerFinance.contracts.stats.statusValue")}
-          </p>
-        </div>
-      </div>
 
       <DocumentPanel
         title={t("partnerFinance.contracts.panel.title")}
@@ -186,32 +186,32 @@ export function PartnerInvoicesPage() {
   return (
     <PageContainer>
       <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("partnerFinance.invoices.stats.currentMonth")}
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {monthFilter}
-          </p>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <PageSectionCard>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t("partnerFinance.invoices.stats.currentMonth")}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {monthFilter}
+            </p>
+          </PageSectionCard>
+          <PageSectionCard>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t("partnerFinance.invoices.stats.total")}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {rows.length}
+            </p>
+          </PageSectionCard>
+          <PageSectionCard>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t("partnerFinance.invoices.stats.status")}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {t("partnerFinance.invoices.stats.statusValue")}
+            </p>
+          </PageSectionCard>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("partnerFinance.invoices.stats.total")}
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {rows.length}
-          </p>
-        </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("partnerFinance.invoices.stats.status")}
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {t("partnerFinance.invoices.stats.statusValue")}
-          </p>
-        </div>
-      </div>
 
       <DocumentPanel
         title={t("partnerFinance.invoices.panel.title")}
@@ -262,34 +262,34 @@ export function PartnerPaymentsPage() {
   return (
     <PageContainer>
       <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("partnerFinance.payments.stats.bankAccount")}
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {bankAccount || t("partnerFinance.common.notAvailable")}
-          </p>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <PageSectionCard>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t("partnerFinance.payments.stats.bankAccount")}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {bankAccount || t("partnerFinance.common.notAvailable")}
+            </p>
+          </PageSectionCard>
+          <PageSectionCard>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t("partnerFinance.payments.stats.accountHolder")}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {bankHolder || t("partnerFinance.common.notAvailable")}
+            </p>
+          </PageSectionCard>
+          <PageSectionCard>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t("partnerFinance.payments.stats.payoutGuide")}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {transferInfo
+                ? t("partnerFinance.common.updated")
+                : t("partnerFinance.common.notAvailable")}
+            </p>
+          </PageSectionCard>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("partnerFinance.payments.stats.accountHolder")}
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {bankHolder || t("partnerFinance.common.notAvailable")}
-          </p>
-        </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("partnerFinance.payments.stats.payoutGuide")}
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {transferInfo
-              ? t("partnerFinance.common.updated")
-              : t("partnerFinance.common.notAvailable")}
-          </p>
-        </div>
-      </div>
 
       <DocumentPanel
         title={t("partnerFinance.payments.panel.title")}

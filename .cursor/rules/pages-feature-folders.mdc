@@ -1,0 +1,34 @@
+---
+description: Enforce feature-folder structure for large pages (hooks/components/utils) like course-details
+globs: src/pages/*/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Pages: feature-folder structure
+
+When refactoring or adding a **large** page in `src/pages/*/**`, prefer a **feature folder** layout instead of a single mega-file.
+
+- **Folder-first**: create `src/pages/<feature>/` and keep related code colocated:
+  - `index.ts` re-export default page
+  - `/<feature>/<Page>.tsx` = composition only (no big side-effects)
+  - `/<feature>/hooks/*` for data-fetching, polling, progress, redirects
+  - `/<feature>/components/*` for UI sections (Hero, Panels, States, etc.)
+  - `/<feature>/utils/*` for pure helpers (pricing, mapping, formatting)
+
+- **Public behavior must not change** unless explicitly requested:
+  - keep existing route path and params
+  - keep query param behaviors (e.g. `?payment=...`)
+  - keep slug redirect behavior if it existed
+
+- **Separation of concerns**:
+  - side-effects + data sync belong in hooks (with `cancelled` cleanup pattern)
+  - page component should mostly compute derived props and render sub-components
+
+- **i18n discipline**:
+  - do not hardcode user-facing text; use existing `useTranslation("<ns>")`
+  - do not invent new keys during pure refactors unless requested
+
+- **Imports**:
+  - use `@/…` path alias for internal imports
+  - reuse `src/components/ui/*` primitives; Tailwind v4 + `cn` for class composition
+

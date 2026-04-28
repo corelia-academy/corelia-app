@@ -16,10 +16,10 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
 import Home from "@/pages/Home";
 import Courses from "@/pages/Courses";
-import CourseDetail from "@/pages/CourseDetail";
+import CourseDetail from "@/pages/course-details";
 import CheckoutCourse from "@/pages/CheckoutCourse";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
-import Learn from "@/pages/Learn";
+import Learn from "@/pages/learn";
 import InstructorDetail from "@/pages/InstructorDetail";
 import Account, {
   AccountProfileRoute,
@@ -28,8 +28,8 @@ import Account, {
   AccountInstructorProfileRoute,
   AccountSettingsRoute,
   InstructorWorkspaceProfileRoute,
-} from "@/pages/Account";
-import Auth from "@/components/Auth";
+} from "@/pages/account/Account";
+import Auth from "@/pages/login/Auth";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminInstructors from "@/pages/admin/AdminInstructors";
@@ -84,7 +84,8 @@ export default function App() {
   const { i18n } = useTranslation();
 
   useEffect(() => {
-    document.documentElement.lang = i18n.resolvedLanguage ?? i18n.language ?? "vi";
+    document.documentElement.lang =
+      i18n.resolvedLanguage ?? i18n.language ?? "vi";
   }, [i18n.resolvedLanguage, i18n.language]);
 
   return (
@@ -162,7 +163,7 @@ export default function App() {
                   </RequireAuth>
                 }
               >
-                <Route index element={<Navigate to="settings" replace />} />
+                <Route index element={<Navigate to="profile" replace />} />
                 <Route path="profile" element={<AccountProfileRoute />} />
                 <Route path="cv" element={<AccountCvRoute />} />
                 <Route path="billing" element={<AccountBillingRoute />} />

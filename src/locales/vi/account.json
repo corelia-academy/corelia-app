@@ -148,6 +148,10 @@
     "loading": "Đang tải thông tin...",
     "mustLogin": "Bạn cần đăng nhập để xem trang này.",
     "emailLoginLabel": "Email đăng nhập",
+    "setupWarning": {
+      "title": "Hồ sơ của bạn cần bổ sung thêm thông tin.",
+      "body": "Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc học vụ hỗ trợ bạn tốt hơn."
+    },
     "avatar": {
       "label": "Ảnh đại diện",
       "alt": "Avatar",
