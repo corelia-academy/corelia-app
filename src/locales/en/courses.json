@@ -156,7 +156,20 @@
       "stats": {
         "duration": "Duration",
         "curriculum": "Curriculum",
-        "completion": "Completion"
+        "completion": "Completion",
+        "contentLanguage": "Content language",
+        "videoLanguage": "Video language"
+      },
+      "language": {
+        "supportedLabel": "Supports",
+        "contentFallbackNotice": "This course content is displayed in {{content}} (based on the course language configuration)."
+      },
+      "languagePanel": {
+        "title": "Language & subtitles"
+      },
+      "subtitles": {
+        "note": "Lessons use YouTube. You can enable Subtitles (CC) or Auto-translate in the player if needed.",
+        "coverage": "Subtitles: {{with}}/{{total}} lessons"
       },
       "completion": {
         "hasFinalAssignment": "Has a final assignment for review",

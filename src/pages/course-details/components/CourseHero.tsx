@@ -3,6 +3,8 @@ import { Link } from "react-router";
 import { BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CourseBadge } from "./CourseBadge";
+import i18n from "@/i18n";
+import { getCoursePrimaryLocale, normalizeCourseLocale, pickCourseContentLocale } from "@/lib/courses";
 import {
   formatDuration,
   getCourseAccessModelLabel,
@@ -31,12 +33,28 @@ export function CourseHero({
   displayTotalDuration,
   curriculumCountLabel,
 }: CourseHeroProps) {
-  const { t } = useTranslation("courses");
+  const { t } = useTranslation(["courses", "common"]);
   const translate = (key: string, options?: Record<string, unknown>) =>
     String(t(key as never, options as never));
+  const translateCommon = (key: string, options?: Record<string, unknown>) =>
+    String(t(`common:${key}` as never, options as never));
   const [failedThumbnailSrc, setFailedThumbnailSrc] = useState<string | null>(
     null,
   );
+
+  const contentLocale = pickCourseContentLocale(course, i18n.language);
+  // Keep this in sync with sidebar language panel; hero only needs fallback notice.
+  const primaryContentLocale = getCoursePrimaryLocale(course);
+  void normalizeCourseLocale(
+    course.i18n?.default_video_primary_locale ?? primaryContentLocale,
+  );
+  const uiLocale = normalizeCourseLocale(i18n.language);
+  const shouldShowContentLocaleNotice = uiLocale !== contentLocale;
+
+  const localeLabel = (loc: "vi" | "en") =>
+    loc === "en"
+      ? translateCommon("language.en")
+      : translateCommon("language.vi");
 
   const courseThumbnailSrc =
     course.thumbnail_url &&
@@ -47,7 +65,7 @@ export function CourseHero({
 
   return (
     <section className="rounded-md border border-border-subtle bg-card shadow-sm">
-      <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.55fr)]">
+      <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)] lg:items-start">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <CourseBadge variant="secondary">
@@ -90,8 +108,8 @@ export function CourseHero({
             </p>
           ) : null}
 
-          <div className="mt-4 grid gap-2 text-sm">
-            <dl className="grid grid-cols-1 gap-2 rounded-md border border-border-subtle bg-background p-3 text-sm sm:grid-cols-2">
+          <div className="mt-6 grid gap-4 text-sm">
+            <dl className="grid grid-cols-1 gap-2 rounded-md bg-muted/30 p-4 text-sm sm:grid-cols-2">
               <div>
                 <dt className="text-muted-foreground">
                   {translate("detail.courseDetail.stats.duration")}
@@ -127,39 +145,52 @@ export function CourseHero({
                 </dd>
               </div>
             </dl>
+
+            {shouldShowContentLocaleNotice ? (
+              <div className="rounded-md border border-warning/25 bg-warning/10 p-4 text-sm text-warning">
+                {translate(
+                  "courses:detail.courseDetail.language.contentFallbackNotice",
+                  {
+                    content: localeLabel(contentLocale),
+                  },
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
 
-        <div className="relative aspect-video overflow-hidden rounded-md border border-border-subtle bg-muted/40 lg:aspect-auto lg:h-full">
-          <img
-            src="/Corelia_Banner_Square.png"
-            alt=""
-            aria-hidden
-            decoding="async"
-            className="absolute inset-0 size-full object-cover opacity-90"
-          />
-
-          {courseThumbnailSrc ? (
+        <div className="overflow-hidden rounded-md border border-border-subtle bg-muted/30">
+          <div className="relative aspect-video">
             <img
-              src={courseThumbnailSrc}
-              alt={course.title}
-              loading="lazy"
+              src="/Corelia_Banner_Square.png"
+              alt=""
+              aria-hidden
               decoding="async"
-              onError={() => setFailedThumbnailSrc(course.thumbnail_url)}
-              className="absolute inset-0 size-full object-cover"
+              className="absolute inset-0 size-full object-cover opacity-90"
             />
-          ) : null}
 
-          {!courseThumbnailSrc ? (
-            <div className="absolute inset-0 grid place-items-center bg-linear-to-br from-transparent via-transparent to-background/10">
-              <div className="flex items-center gap-2 rounded-full bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
-                <BookOpen className="size-4" aria-hidden />
-                {translate("detail.courseDetail.thumbnailFallback", {
-                  defaultValue: "Chưa có hình ảnh khoá học",
-                })}
+            {courseThumbnailSrc ? (
+              <img
+                src={courseThumbnailSrc}
+                alt={course.title}
+                loading="lazy"
+                decoding="async"
+                onError={() => setFailedThumbnailSrc(course.thumbnail_url)}
+                className="absolute inset-0 size-full object-cover"
+              />
+            ) : null}
+
+            {!courseThumbnailSrc ? (
+              <div className="absolute inset-0 grid place-items-center bg-linear-to-br from-transparent via-transparent to-background/10">
+                <div className="flex items-center gap-2 rounded-full bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+                  <BookOpen className="size-4" aria-hidden />
+                  {translate("detail.courseDetail.thumbnailFallback", {
+                    defaultValue: "Chưa có hình ảnh khoá học",
+                  })}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </div>
       </div>
     </section>

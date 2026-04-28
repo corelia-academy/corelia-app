@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import {
   getNextLesson,
   setLessonProgress,
@@ -134,7 +135,7 @@ export default function Learn() {
   const previousLesson =
     currentLessonIndex > 0 ? visibleLessons[currentLessonIndex - 1] : null;
 
-  const lessonIndexForHeader = currentLesson ? currentLessonIndex : null;
+  const lessonIndexForPlayer = currentLesson ? currentLessonIndex : null;
 
   const lessonsBySection = useMemo<CurriculumGroup[]>(
     () =>
@@ -198,16 +199,18 @@ export default function Learn() {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       {!hasFullCourseAccess ? (
-        <div className="mb-4 rounded-xl border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
-          {translate("detail.learn.previewModeNotice")}
+        <div className="mb-4 flex items-center gap-3 rounded-md border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
+          <AlertCircle className="w-4 h-4 shrink-0" aria-hidden />
+          <p>{translate("detail.learn.previewModeNotice")}</p>
         </div>
       ) : null}
 
       {accessModel === "paid_upfront" &&
       access.enrolled &&
       !access.paymentAccess?.full_access_granted ? (
-        <div className="mb-4 rounded-xl border border-success/25 bg-success/10 px-4 py-3 text-sm text-success">
-          {translate("detail.accessPanel.keptAccess")}
+        <div className="mb-4 flex items-center gap-3 rounded-md border border-success/20 bg-success/10 px-4 py-3 text-sm text-success">
+          <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden />
+          <p>{translate("detail.accessPanel.keptAccess")}</p>
         </div>
       ) : null}
 
@@ -215,11 +218,6 @@ export default function Learn() {
         courseId={courseId}
         courseTitle={course.title}
         lessonTitle={currentLesson?.title ?? null}
-        lessonIndex={lessonIndexForHeader}
-        lessonTotal={visibleLessons.length}
-        progressPercent={progress.progressPercent}
-        completedCount={progress.completedIds.size}
-        nextLessonTitle={nextLesson?.title ?? null}
         translate={translate}
       />
 
@@ -227,7 +225,7 @@ export default function Learn() {
         <div className="min-w-0">
           <LessonPlayerCard
             lesson={currentLesson}
-            lessonIndex={lessonIndexForHeader}
+            lessonIndex={lessonIndexForPlayer}
             isDraftLesson={!!currentLesson && isDraftLesson}
             completed={!!currentLesson && progress.completedIds.has(currentLesson.id)}
             hasFullCourseAccess={hasFullCourseAccess}
@@ -264,6 +262,9 @@ export default function Learn() {
           currentLessonId={currentLesson?.id ?? null}
           progressPercent={progress.progressPercent}
           completedIds={progress.completedIds}
+          completedCount={progress.completedIds.size}
+          lessonTotal={visibleLessons.length}
+          nextLessonTitle={nextLesson?.title ?? null}
           hasFullCourseAccess={hasFullCourseAccess}
           translate={translate}
         />
