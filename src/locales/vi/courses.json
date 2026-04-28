@@ -156,7 +156,20 @@
       "stats": {
         "duration": "Thời lượng",
         "curriculum": "Curriculum",
-        "completion": "Hoàn thành"
+        "completion": "Hoàn thành",
+        "contentLanguage": "Ngôn ngữ nội dung",
+        "videoLanguage": "Ngôn ngữ video"
+      },
+      "language": {
+        "supportedLabel": "Hỗ trợ",
+        "contentFallbackNotice": "Nội dung khoá học đang hiển thị theo {{content}} (tuỳ theo cấu hình ngôn ngữ của khoá)."
+      },
+      "languagePanel": {
+        "title": "Ngôn ngữ & phụ đề"
+      },
+      "subtitles": {
+        "note": "Video học sử dụng YouTube. Bạn có thể bật Phụ đề (Subtitles/CC) hoặc Auto-translate trong trình phát nếu cần.",
+        "coverage": "Phụ đề: {{with}}/{{total}} bài"
       },
       "completion": {
         "hasFinalAssignment": "Có bài cuối khoá cần duyệt",

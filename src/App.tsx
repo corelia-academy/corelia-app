@@ -14,7 +14,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
-import Home from "@/pages/Home";
+import Home from "@/pages/home/index";
 import Courses from "@/pages/Courses";
 import CourseDetail from "@/pages/course-details";
 import CheckoutCourse from "@/pages/CheckoutCourse";

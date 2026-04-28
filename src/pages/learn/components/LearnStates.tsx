@@ -11,16 +11,16 @@ export function LearnMissingCourseIdState({
 }) {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
+      <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5 shadow-sm">
         <p className="text-sm font-medium text-destructive">
           {translate("detail.missingCourseId")}
         </p>
         <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
         <Link
           to="/courses"
-          className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
+          className="mt-4 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
         >
-          <ArrowLeft className="size-4" aria-hidden />{" "}
+          <ArrowLeft className="w-4 h-4" aria-hidden />{" "}
           {translate("detail.learn.backToCourses")}
         </Link>
       </div>
@@ -31,8 +31,8 @@ export function LearnMissingCourseIdState({
 export function LearnLoadingState({ translate }: { translate: TranslateFn }) {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border-subtle bg-card p-8 text-center shadow-card">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
+      <div className="flex min-h-96 flex-col items-center justify-center rounded-md border border-border-subtle bg-card p-8 text-center shadow-sm">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" aria-hidden />
         <p className="mt-4 text-sm text-muted-foreground">
           {translate("detail.learn.loadingPage")}
         </p>
@@ -50,18 +50,17 @@ export function LearnErrorState({
 }) {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
+      <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5 shadow-sm">
         <p className="text-sm font-medium text-destructive">{message}</p>
         <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
         <Link
           to="/courses"
-          className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
+          className="mt-4 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
         >
-          <ArrowLeft className="size-4" aria-hidden />{" "}
+          <ArrowLeft className="w-4 h-4" aria-hidden />{" "}
           {translate("detail.learn.backToCourses")}
         </Link>
       </div>
     </div>
   );
 }
-

@@ -59,7 +59,7 @@ export function CourseAccessPanel({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-md border border-border-subtle bg-card shadow-card",
+        "overflow-hidden rounded-md border border-border-subtle bg-card shadow-sm",
         className,
       )}
     >
