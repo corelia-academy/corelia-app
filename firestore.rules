@@ -323,11 +323,30 @@ service cloud.firestore {
         )
       );
 
+      // Localized content documents:
+      // - courses/{courseId}/locales/{locale}
+      // - courses/{courseId}/sections/{sectionId}/locales/{locale}
+      // - courses/{courseId}/lessons/{lessonId}/locales/{locale}
+      match /locales/{localeId} {
+        allow read: if get(/databases/$(database)/documents/courses/$(courseId)).data.published == true ||
+          canTrackProgress(courseId) || (
+            isSignedIn() && (isAdmin() || isSupportStaff() || isInstructor())
+          );
+        allow write: if isSignedIn() && isCourseInstructor(courseId);
+      }
+
       match /sections/{sectionId} {
         allow read: if get(/databases/$(database)/documents/courses/$(courseId)).data.published == true ||
           canTrackProgress(courseId) ||
           (isSignedIn() && isCourseInstructor(courseId));
         allow write: if isSignedIn() && isCourseInstructor(courseId);
+
+        match /locales/{localeId} {
+          allow read: if get(/databases/$(database)/documents/courses/$(courseId)).data.published == true ||
+            canTrackProgress(courseId) ||
+            (isSignedIn() && isCourseInstructor(courseId));
+          allow write: if isSignedIn() && isCourseInstructor(courseId);
+        }
       }
 
       match /lessons/{lessonId} {
@@ -336,6 +355,13 @@ service cloud.firestore {
           canTrackProgress(courseId) ||
           isCourseInstructor(courseId);
         allow write: if isSignedIn() && isCourseInstructor(courseId);
+
+        match /locales/{localeId} {
+          allow read: if get(/databases/$(database)/documents/courses/$(courseId)).data.published == true ||
+            canTrackProgress(courseId) ||
+            isCourseInstructor(courseId);
+          allow write: if isSignedIn() && isCourseInstructor(courseId);
+        }
       }
 
       match /discounts/{discountId} {
