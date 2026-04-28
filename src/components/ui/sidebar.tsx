@@ -253,6 +253,7 @@ function Sidebar({
 }
 
 function SidebarTrigger({
+  children,
   className,
   onClick,
   ...props
@@ -272,7 +273,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <PanelLeft className="size-4" aria-hidden />
+      {children ?? <PanelLeft className="size-4" aria-hidden />}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
@@ -308,7 +309,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
     <main
       data-slot="sidebar-inset"
       className={cn(
-        "relative flex w-full flex-1 flex-col bg-background md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-card md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
+        "relative flex min-w-0 flex-1 flex-col bg-background md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-card md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
         className
       )}
       {...props}

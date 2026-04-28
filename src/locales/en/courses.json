@@ -143,6 +143,14 @@
       "backToCourses": "Back to courses",
       "previewDraftNotice": "Preview mode — this course is a draft (not published)",
       "editCourse": "Edit course",
+      "lessonDraftBadge": "Updating",
+      "learningOutcomes": {
+        "title": "What you'll learn",
+        "subtitle": "This course will help you learn:"
+      },
+      "overview": {
+        "title": "Course overview"
+      },
       "certificateIssued": "Certificate issued",
       "instructorLabel": "Instructor",
       "stats": {
@@ -212,6 +220,11 @@
       "selectLessonToStart": "Select a lesson to start",
       "completedPath": "Path completed",
       "lessonPosition": "Lesson {{index}}/{{total}} in the current path",
+      "lessonAboutTitle": "About this lesson",
+      "lessonResourcesTitle": "Resources",
+      "lessonDraftNoticeTitle": "This lesson is being updated",
+      "lessonDraftNoticeBody": "The video isn't available yet. Please check back later.",
+      "lessonDraftToast": "This lesson is being updated. Redirecting to the nearest available lesson.",
       "certificateFeeMissing": "This course doesn't have a valid certificate fee configured.",
       "sepayCreateFailed": "Unable to create a SePay checkout.",
       "stats": {

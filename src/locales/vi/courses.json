@@ -143,6 +143,14 @@
       "backToCourses": "Quay lại khoá học",
       "previewDraftNotice": "Chế độ xem trước — Khoá học đang nháp (chưa xuất bản)",
       "editCourse": "Chỉnh sửa khoá học",
+      "lessonDraftBadge": "Đang cập nhật",
+      "learningOutcomes": {
+        "title": "Bạn sẽ học được gì",
+        "subtitle": "Khoá học này sẽ giúp bạn:"
+      },
+      "overview": {
+        "title": "Tổng quan khoá học"
+      },
       "certificateIssued": "Đã cấp chứng nhận",
       "instructorLabel": "Giảng viên",
       "stats": {
@@ -208,6 +216,11 @@
       "selectLessonToStart": "Chọn một bài học để bắt đầu",
       "completedPath": "Hoàn thành lộ trình",
       "lessonPosition": "Bài {{index}}/{{total}} trong lộ trình hiện tại",
+      "lessonAboutTitle": "Về bài học này",
+      "lessonResourcesTitle": "Tài liệu",
+      "lessonDraftNoticeTitle": "Bài học đang được cập nhật",
+      "lessonDraftNoticeBody": "Video chưa sẵn sàng. Vui lòng quay lại sau.",
+      "lessonDraftToast": "Bài học đang cập nhật. Đang chuyển sang bài học có thể xem.",
       "certificateFeeMissing": "Khoá học chưa cấu hình phí chứng nhận hợp lệ.",
       "sepayCreateFailed": "Không tạo được thanh toán SePay.",
       "stats": {

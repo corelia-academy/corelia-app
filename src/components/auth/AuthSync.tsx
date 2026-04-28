@@ -41,7 +41,22 @@ export function AuthSync() {
       } else {
         setProfile(null);
         setLoading(false);
-        void i18n.changeLanguage(DEFAULT_LANGUAGE);
+        // Chưa login: ưu tiên ngôn ngữ hệ thống, không dùng cached i18nextLng.
+        try {
+          localStorage.removeItem("i18nextLng");
+        } catch {
+          // ignore
+        }
+
+        const langs =
+          (typeof navigator !== "undefined" && Array.isArray(navigator.languages)
+            ? navigator.languages
+            : typeof navigator !== "undefined" && navigator.language
+              ? [navigator.language]
+              : []) ?? [];
+        const isVi = langs.some((l) => String(l).toLowerCase().startsWith("vi"));
+        const publicLocale: SupportedLanguage = isVi ? "vi" : "en";
+        void i18n.changeLanguage(publicLocale);
       }
     });
 

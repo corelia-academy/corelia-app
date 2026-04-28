@@ -293,6 +293,27 @@
     "searchPlaceholder": "Tìm theo tên hoặc email",
     "emptyLabel": "Không có kết quả phù hợp.",
     "done": "Xong"
+  },
+  "openCampusConnect": {
+    "header": {
+      "ariaLabel": "Kết nối OpenCampus",
+      "logoAlt": "OpenCampus"
+    },
+    "modal": {
+      "logoAlt": "OpenCampus",
+      "title": "Kết nối OpenCampus (OCID)",
+      "description": "Kết nối để dùng OCID và claim/verify thành tích trên Open Campus.",
+      "benefits": {
+        "0": "Liên kết định danh OCID với tài khoản Corelia",
+        "1": "Hỗ trợ claim thành tích thành verifiable credential",
+        "2": "Dễ chia sẻ hồ sơ thành tích trên Open Campus"
+      },
+      "later": "Để sau",
+      "learnMoreLink": "Tìm hiểu thêm",
+      "connect": "Connect OpenCampus",
+      "connecting": "Đang kết nối…",
+      "startFailed": "Không thể bắt đầu kết nối OpenCampus. Vui lòng thử lại."
+    }
   }
 }
 

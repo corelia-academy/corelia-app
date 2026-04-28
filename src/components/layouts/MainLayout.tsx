@@ -9,10 +9,21 @@ import {
 import React from "react";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import AppSidebar from "@/components/base/AppSidebar";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import Header from "./Header";
 
 const MainLayout = () => {
   const { t } = useTranslation("common");
@@ -34,11 +45,12 @@ const MainLayout = () => {
 
   return (
     <SidebarProvider
-      defaultOpen
+      defaultOpen={false}
       style={{ "--app-header-height": "0rem" } as React.CSSProperties}
     >
-      <AppSidebar />
+      <MainSidebarOverlay />
       <SidebarInset className="flex min-h-dvh flex-col">
+        <Header />
         <main className="flex-1 pb-24 md:pb-0">
           <Outlet />
         </main>
@@ -76,7 +88,9 @@ const MainLayout = () => {
                 <button
                   key={item.href}
                   type="button"
-                  onClick={() => navigate("/login", { state: { from: location } })}
+                  onClick={() =>
+                    navigate("/login", { state: { from: location } })
+                  }
                   className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-center text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
                 >
                   <Icon className="size-4 shrink-0" aria-hidden />
@@ -115,6 +129,31 @@ const MainLayout = () => {
 };
 
 export default MainLayout;
+
+function MainSidebarOverlay() {
+  const { isMobile, open, setOpen } = useSidebar();
+
+  if (isMobile) {
+    // Mobile is already rendered as a Sheet by the Sidebar component.
+    return <AppSidebar />;
+  }
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetContent
+        side="left"
+        className="w-76 bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+      >
+        <SheetHeader className="sr-only">
+          <SheetTitle>Sidebar</SheetTitle>
+        </SheetHeader>
+        <div className="h-full">
+          <AppSidebar collapsible="none" showDesktopTrigger={false} />
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
 
 function MobileMenuTab({
   icon: Icon,
