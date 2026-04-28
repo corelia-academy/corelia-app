@@ -4,7 +4,11 @@ import { BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CourseBadge } from "./CourseBadge";
 import i18n from "@/i18n";
-import { getCoursePrimaryLocale, normalizeCourseLocale, pickCourseContentLocale } from "@/lib/courses";
+import {
+  getCoursePrimaryLocale,
+  normalizeCourseLocale,
+  pickCourseContentLocale,
+} from "@/lib/courses";
 import {
   formatDuration,
   getCourseAccessModelLabel,
@@ -81,6 +85,11 @@ export function CourseHero({
                 })}
               </CourseBadge>
             ) : null}
+            {isFreeWithPaidCertificate ? (
+              <CourseBadge variant="secondary">
+                {translate("filters.pricing.certificate")}
+              </CourseBadge>
+            ) : null}
             {enrollment?.certificate_issued_at ? (
               <CourseBadge variant="success">
                 {translate("detail.courseDetail.certificateIssued")}
@@ -124,24 +133,6 @@ export function CourseHero({
                 </dt>
                 <dd className="mt-0.5 font-medium text-foreground">
                   {curriculumCountLabel}
-                </dd>
-              </div>
-              <div className="col-span-2">
-                <dt className="text-muted-foreground">
-                  {translate("detail.courseDetail.stats.completion")}
-                </dt>
-                <dd className="mt-0.5 font-medium text-foreground">
-                  {course.final_assignment_title
-                    ? translate(
-                        "detail.courseDetail.completion.hasFinalAssignment",
-                      )
-                    : isFreeWithPaidCertificate
-                      ? translate(
-                          "detail.courseDetail.completion.certificateFeeRequired",
-                        )
-                      : translate(
-                          "detail.courseDetail.completion.fullLessons",
-                        )}
                 </dd>
               </div>
             </dl>
