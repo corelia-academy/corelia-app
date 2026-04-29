@@ -813,6 +813,7 @@ export async function createCourse(data: CourseInsert): Promise<Course> {
     published: data.published ?? false,
     i18n: data.i18n,
     access_model: data.access_model ?? "free",
+    is_updating: data.is_updating ?? false,
     price_vnd: data.price_vnd ?? null,
     certificate_fee_vnd: data.certificate_fee_vnd ?? null,
     owner_type: data.owner_type ?? "corelia",

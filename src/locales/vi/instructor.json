@@ -427,7 +427,8 @@
       "reviewApprove": "Duyệt"
     },
     "publishing": {
-      "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)"
+      "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
+      "updatingHint": "Khoá học đang được cập nhật (hiện banner cho học viên)"
     },
     "danger": {
       "deleteCourseTitle": "Xoá khoá học?"

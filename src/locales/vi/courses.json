@@ -144,6 +144,10 @@
       "previewDraftNotice": "Chế độ xem trước — Khoá học đang nháp (chưa xuất bản)",
       "editCourse": "Chỉnh sửa khoá học",
       "lessonDraftBadge": "Đang cập nhật",
+      "courseUpdatingNotice": {
+        "title": "Khoá học đang được cập nhật",
+        "body": "Một số nội dung có thể thay đổi trong thời gian tới. Nếu gặp bài chưa sẵn sàng, vui lòng quay lại sau."
+      },
       "learningOutcomes": {
         "title": "Bạn sẽ học được gì",
         "subtitle": "Khoá học này sẽ giúp bạn:"

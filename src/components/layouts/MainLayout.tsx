@@ -1,6 +1,5 @@
 import {
   BookOpen,
-  CalendarDays,
   Home,
   List,
   LogIn,
@@ -36,7 +35,6 @@ const MainLayout = () => {
   const mobilePrimaryNav = [
     { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
     { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
-    { labelKey: "nav.cohorts" as const, href: "/cohorts", icon: CalendarDays },
     { labelKey: "nav.contests" as const, href: "/contests", icon: Trophy },
     isAuthenticated
       ? { labelKey: "tabs.menu" as const, href: "/menu", icon: List }

@@ -85,6 +85,8 @@ export interface Course {
   certificate_name_y_percent?: number;
   /** Mô hình truy cập khoá học */
   access_model?: CourseAccessModel;
+  /** Khoá học vẫn đang được cập nhật nội dung (manual flag) */
+  is_updating?: boolean;
   /** Giá mở toàn bộ khoá học (VND) khi access_model = paid_upfront */
   price_vnd?: number | null;
   /** Giá khuyến mãi (VND) khi access_model = paid_upfront (nếu có) */
@@ -222,6 +224,7 @@ export interface CourseInsert {
   published?: boolean;
   i18n?: CourseI18nConfig;
   access_model?: CourseAccessModel;
+  is_updating?: boolean;
   price_vnd?: number | null;
   promo_price_vnd?: number | null;
   promo_ends_at?: string | null;
@@ -255,6 +258,7 @@ export interface CourseUpdate {
   certificate_name_x_percent?: number | null;
   certificate_name_y_percent?: number | null;
   access_model?: CourseAccessModel;
+  is_updating?: boolean;
   price_vnd?: number | null;
   promo_price_vnd?: number | null;
   promo_ends_at?: string | null;

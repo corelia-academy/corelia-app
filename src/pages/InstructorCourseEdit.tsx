@@ -198,6 +198,7 @@ const InstructorCourseEdit = () => {
     thumbnail_url: "",
     level: "all" as CourseLevel,
     published: false,
+    is_updating: false,
     certificate_template_url: "",
     certificate_template_path: "",
     certificate_name_x_percent: 50,
@@ -326,6 +327,7 @@ const InstructorCourseEdit = () => {
         thumbnail_url: course.thumbnail_url,
         level: course.level,
         published: course.published,
+        is_updating: course.is_updating ?? false,
         certificate_template_url: course.certificate_template_url ?? "",
         certificate_template_path: course.certificate_template_path ?? "",
         certificate_name_x_percent: course.certificate_name_x_percent ?? 50,
@@ -593,6 +595,7 @@ const InstructorCourseEdit = () => {
         thumbnail_url: form.thumbnail_url,
         level: form.level,
         published: form.published,
+        is_updating: form.is_updating,
         i18n: i18nPayload,
         ...(shouldUpdateRootContent && {
           title: contentForm.title.trim() || course.title,
@@ -646,16 +649,17 @@ const InstructorCourseEdit = () => {
               thumbnail_url: form.thumbnail_url,
               level: form.level,
               published: form.published,
-            i18n: i18nPayload,
-            ...(shouldUpdateRootContent && {
-              title: contentForm.title.trim() || prev.title,
-              short_description: contentForm.short_description,
-              description: contentForm.description,
-              learning_outcomes: sanitizedOutcomes,
-              final_assignment_title: contentForm.final_assignment_title,
-              final_assignment_description: contentForm.final_assignment_description,
-              final_assignment_instructions: contentForm.final_assignment_instructions,
-            }),
+              is_updating: form.is_updating,
+              i18n: i18nPayload,
+              ...(shouldUpdateRootContent && {
+                title: contentForm.title.trim() || prev.title,
+                short_description: contentForm.short_description,
+                description: contentForm.description,
+                learning_outcomes: sanitizedOutcomes,
+                final_assignment_title: contentForm.final_assignment_title,
+                final_assignment_description: contentForm.final_assignment_description,
+                final_assignment_instructions: contentForm.final_assignment_instructions,
+              }),
               certificate_template_url: form.certificate_template_url,
               certificate_template_path: form.certificate_template_path,
               certificate_name_x_percent: form.certificate_name_x_percent,
@@ -2039,6 +2043,24 @@ const InstructorCourseEdit = () => {
                     />
                     <span className="text-sm font-medium">
                       {t("courseEdit.publishing.publishedHint")}
+                    </span>
+                  </label>
+                </Field>
+                <Field>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={form.is_updating}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          is_updating: e.target.checked,
+                        }))
+                      }
+                      className="rounded border-input"
+                    />
+                    <span className="text-sm font-medium">
+                      {t("courseEdit.publishing.updatingHint")}
                     </span>
                   </label>
                 </Field>
