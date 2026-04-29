@@ -137,6 +137,21 @@ export function CourseHero({
               </div>
             </dl>
 
+            {course.is_updating ? (
+              <div className="rounded-md border border-warning/25 bg-warning/10 p-4 text-sm text-warning">
+                <p className="font-medium">
+                  {translate(
+                    "detail.courseDetail.courseUpdatingNotice.title",
+                  )}
+                </p>
+                <p className="mt-1 text-warning/90">
+                  {translate(
+                    "detail.courseDetail.courseUpdatingNotice.body",
+                  )}
+                </p>
+              </div>
+            ) : null}
+
             {shouldShowContentLocaleNotice ? (
               <div className="rounded-md border border-warning/25 bg-warning/10 p-4 text-sm text-warning">
                 {translate(

@@ -144,6 +144,10 @@
       "previewDraftNotice": "Preview mode — this course is a draft (not published)",
       "editCourse": "Edit course",
       "lessonDraftBadge": "Updating",
+      "courseUpdatingNotice": {
+        "title": "This course is being updated",
+        "body": "Some content may change over time. If a lesson isn’t ready yet, please check back later."
+      },
       "learningOutcomes": {
         "title": "What you'll learn",
         "subtitle": "This course will help you learn:"
