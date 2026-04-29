@@ -11,7 +11,6 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
-  CalendarDays,
   CreditCard,
   FileText,
   GraduationCap,
@@ -22,7 +21,7 @@ import {
   Video,
 } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
-import { canManageContests, canManageOfflineAcademy } from "@/lib/permissions";
+import { canManageContests } from "@/lib/permissions";
 import { useTranslation } from "react-i18next";
 
 export function InstructorSidebar() {
@@ -33,7 +32,6 @@ export function InstructorSidebar() {
   const isExternalInstructor =
     profile?.role === "instructor" && profile?.instructor_origin === "external";
   const showContests = canManageContests(profile);
-  const showOfflineAcademy = canManageOfflineAcademy(profile);
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
@@ -93,25 +91,6 @@ export function InstructorSidebar() {
                   }
                 />
               </SidebarMenuItem>
-              {showOfflineAcademy && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="rounded-xl"
-                    tooltip={t("sidebar.offlineClasses")}
-                    isActive={pathname.startsWith("/instructor/cohorts")}
-                    render={
-                      <NavLink
-                        to="/instructor/cohorts"
-                        end
-                        className="flex w-full items-center gap-2"
-                      >
-                        <CalendarDays className="size-4" aria-hidden />
-                        <span>{t("sidebar.offlineClasses")}</span>
-                      </NavLink>
-                    }
-                  />
-                </SidebarMenuItem>
-              )}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-xl"

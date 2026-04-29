@@ -427,7 +427,8 @@
       "reviewApprove": "Approve"
     },
     "publishing": {
-      "publishedHint": "Published (visible on the course page)"
+      "publishedHint": "Published (visible on the course page)",
+      "updatingHint": "This course is being updated (show a notice to learners)"
     },
     "danger": {
       "deleteCourseTitle": "Delete course?"

@@ -192,7 +192,6 @@ export function GuestHome({
               {[
                 { label: t("home.allCourses"), to: "/courses" },
                 { label: t("home.guest.quickLinks.contests"), to: "/contests" },
-                { label: t("home.guest.quickLinks.cohorts"), to: "/cohorts" },
               ].map((item) => (
                 <NavLink
                   key={item.to}

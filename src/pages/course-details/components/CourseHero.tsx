@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CourseBadge } from "./CourseBadge";
 import i18n from "@/i18n";
@@ -137,14 +137,45 @@ export function CourseHero({
               </div>
             </dl>
 
+            {course.is_updating ? (
+              <div className="rounded-md border border-border-subtle bg-muted/30 p-4 text-sm">
+                <div className="flex items-start gap-2">
+                  <Info
+                    className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground">
+                  {translate(
+                    "detail.courseDetail.courseUpdatingNotice.title",
+                  )}
+                    </p>
+                    <p className="mt-1 text-muted-foreground">
+                      {translate(
+                        "detail.courseDetail.courseUpdatingNotice.body",
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             {shouldShowContentLocaleNotice ? (
-              <div className="rounded-md border border-warning/25 bg-warning/10 p-4 text-sm text-warning">
-                {translate(
-                  "courses:detail.courseDetail.language.contentFallbackNotice",
-                  {
-                    content: localeLabel(contentLocale),
-                  },
-                )}
+              <div className="rounded-md border border-border-subtle bg-muted/30 p-4 text-sm">
+                <div className="flex items-start gap-2">
+                  <Info
+                    className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <p className="min-w-0 text-muted-foreground">
+                    {translate(
+                      "courses:detail.courseDetail.language.contentFallbackNotice",
+                      {
+                        content: localeLabel(contentLocale),
+                      },
+                    )}
+                  </p>
+                </div>
               </div>
             ) : null}
           </div>
