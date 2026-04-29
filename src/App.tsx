@@ -44,11 +44,6 @@ import InstructorCourseEdit from "@/pages/InstructorCourseEdit";
 import Contests from "@/pages/Contests";
 import ContestNew from "@/pages/ContestNew";
 import ContestDetail from "@/pages/ContestDetail";
-import Cohorts from "@/pages/Cohorts";
-import CohortDetail from "@/pages/CohortDetail";
-import InstructorCohorts from "@/pages/InstructorCohorts";
-import CohortNew from "@/pages/CohortNew";
-import { RequireOfflineAcademyManager } from "@/components/auth/RequireOfflineAcademyManager";
 import { RequireContestManager } from "@/components/auth/RequireContestManager";
 import {
   PartnerContractsPage,
@@ -101,9 +96,9 @@ export default function App() {
             <Route path="/" element={<MainLayout />}>
               <Route index element={<Home />} />
               <Route path="courses" element={<Courses />} />
-              <Route path="cohorts" element={<Cohorts />} />
+              <Route path="cohorts" element={<Navigate to="/courses" replace />} />
               <Route path="courses/:id" element={<CourseDetail />} />
-              <Route path="cohorts/:id" element={<CohortDetail />} />
+              <Route path="cohorts/:id" element={<Navigate to="/courses" replace />} />
               <Route
                 path="checkout/course/:courseId"
                 element={
@@ -200,27 +195,15 @@ export default function App() {
                 <Route path="courses" element={<InstructorCourses />} />
                 <Route
                   path="cohorts"
-                  element={
-                    <RequireOfflineAcademyManager>
-                      <InstructorCohorts />
-                    </RequireOfflineAcademyManager>
-                  }
+                  element={<Navigate to="/instructor/courses" replace />}
                 />
                 <Route
                   path="cohorts/new"
-                  element={
-                    <RequireOfflineAcademyManager>
-                      <CohortNew />
-                    </RequireOfflineAcademyManager>
-                  }
+                  element={<Navigate to="/instructor/courses" replace />}
                 />
                 <Route
                   path="cohorts/:id/manage"
-                  element={
-                    <RequireOfflineAcademyManager>
-                      <CohortDetail />
-                    </RequireOfflineAcademyManager>
-                  }
+                  element={<Navigate to="/instructor/courses" replace />}
                 />
                 <Route path="courses/new" element={<InstructorCourseNew />} />
                 <Route

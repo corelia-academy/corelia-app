@@ -25,7 +25,6 @@ export default function Home() {
   const {
     loading,
     focusCards,
-    offlineCourses,
     issuedCertificates,
     dashboardConfig,
   } = useHomeUserDashboard(user as User | null, t);
@@ -138,21 +137,11 @@ export default function Home() {
           };
         }
 
-        const offlineCourse = offlineCourses.find((entry) => entry.id === item.ref_id);
-        if (!offlineCourse) return null;
-        return {
-          id: item.id,
-          badge: item.badge || t("home.pinned.badges.offlineClass"),
-          title: item.title_override || offlineCourse.title,
-          description: item.description_override || offlineCourse.tagline,
-          to: `/cohorts/${offlineCourse.id}`,
-          cta: item.cta_label || t("home.pinned.cta.viewProgram"),
-          meta: offlineCourse.venue_city || t("home.pinned.offlineCampusFallback"),
-        };
+        return null;
       })
       .filter((item): item is PinnedProgramCard => item != null)
       .slice(0, 1);
-  }, [contests, courseCatalog, dashboardConfig, focusCards, offlineCourses, t]);
+  }, [contests, courseCatalog, dashboardConfig, focusCards, t]);
 
   const activePinnedProgram = pinnedPrograms[0] ?? null;
 

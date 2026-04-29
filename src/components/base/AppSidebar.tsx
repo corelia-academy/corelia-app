@@ -1,7 +1,6 @@
 import { NavLink, useLocation } from "react-router";
 import {
   BookOpen,
-  CalendarDays,
   GraduationCap,
   Home,
   Medal,
@@ -29,7 +28,6 @@ import { useTranslation } from "react-i18next";
 const primaryNav = [
   { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
   { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
-  { labelKey: "nav.cohorts" as const, href: "/cohorts", icon: CalendarDays },
   { labelKey: "nav.contests" as const, href: "/contests", icon: Trophy },
 ] as const;
 
