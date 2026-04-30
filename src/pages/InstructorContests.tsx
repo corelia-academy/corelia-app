@@ -182,7 +182,7 @@ export default function InstructorContests() {
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
               {t("instructor.hero.pillJudging")}
             </span>
-            <Button type="button" onClick={() => navigate("/instructor/contests/new")}>
+            <Button type="button" onClick={() => navigate("/admin/contests/new")}>
               <PlusCircle className="size-4" aria-hidden />
               {t("instructor.hero.create")}
             </Button>
@@ -250,7 +250,7 @@ export default function InstructorContests() {
             <div className="mt-5 flex flex-wrap gap-2">
               <Button
                 type="button"
-                onClick={() => navigate(`/instructor/contests/${featured.id}/manage`)}
+                onClick={() => navigate(`/admin/contests/${featured.id}/manage`)}
               >
                 {t("instructor.featured.openWorkspace")}
               </Button>
@@ -400,7 +400,7 @@ export default function InstructorContests() {
               <Button
                 type="button"
                 size="sm"
-                onClick={() => navigate("/instructor/contests/new")}
+                onClick={() => navigate("/admin/contests/new")}
               >
                 {t("instructor.empty.createFirst")}
               </Button>
@@ -417,7 +417,7 @@ export default function InstructorContests() {
               <button
                 type="button"
                 className="flex flex-1 flex-col p-4 text-left"
-                onClick={() => navigate(`/instructor/contests/${contest.id}/manage`)}
+                onClick={() => navigate(`/admin/contests/${contest.id}/manage`)}
               >
                 <div className="flex flex-wrap gap-2">
                   <span className="inline-flex items-center rounded-full bg-muted/70 px-3 py-1 text-xs font-medium text-foreground">
@@ -478,7 +478,7 @@ export default function InstructorContests() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate(`/instructor/contests/${contest.id}/manage`)}
+                    onClick={() => navigate(`/admin/contests/${contest.id}/manage`)}
                   >
                     {t("instructor.listItem.openWorkspace")}
                   </Button>

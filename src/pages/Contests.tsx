@@ -273,7 +273,7 @@ export default function Contests() {
                 </Button>
                 {isManager && (
                   <Button
-                    render={<NavLink to={`/instructor/contests/${featured.id}/manage`} />}
+                    render={<NavLink to={`/admin/contests/${featured.id}/manage`} />}
                     nativeButton={false}
                     variant="outline"
                   >
@@ -354,7 +354,7 @@ export default function Contests() {
                 </div>
                 {isManager && (
                   <Button
-                    render={<NavLink to="/instructor/contests" />}
+                    render={<NavLink to="/admin/contests" />}
                     nativeButton={false}
                     size="sm"
                     variant="outline"

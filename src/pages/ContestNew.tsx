@@ -74,7 +74,7 @@ export default function ContestNew() {
         max_participants: maxParticipants.trim() ? Number(maxParticipants) : null,
       });
       toast.success(t("instructorNew.toasts.created"));
-      navigate(`/instructor/contests/${contest.id}/manage`);
+      navigate(`/admin/contests/${contest.id}/manage`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("instructorNew.toasts.createFailed"));
     } finally {
@@ -88,7 +88,7 @@ export default function ContestNew() {
         <Button
           variant="ghost"
           className="-ml-2 text-muted-foreground hover:text-foreground"
-          onClick={() => navigate("/instructor/contests")}
+          onClick={() => navigate("/admin/contests")}
         >
           <ArrowLeft className="size-4" aria-hidden />
           {t("instructorNew.back")}
@@ -333,7 +333,7 @@ export default function ContestNew() {
             </FieldGroup>
 
             <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-end">
-              <Button variant="ghost" onClick={() => navigate("/instructor/contests")}>
+              <Button variant="ghost" onClick={() => navigate("/admin/contests")}>
                 {t("instructorNew.actions.back")}
               </Button>
               <Button disabled={!canSubmit || submitting} onClick={handleCreate}>

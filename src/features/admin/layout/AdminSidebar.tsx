@@ -11,7 +11,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { GraduationCap, Pin, Settings, Users } from "lucide-react";
+import { GraduationCap, Pin, Settings, Trophy, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function AdminSidebar() {
@@ -81,6 +81,19 @@ export function AdminSidebar() {
                     <NavLink to="/admin/instructors" className="flex w-full items-center gap-2">
                       <GraduationCap className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.instructors.label")}</span>
+                    </NavLink>
+                  }
+                />
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="rounded-md"
+                  tooltip={t("layout.sidebar.contests.tooltip")}
+                  isActive={pathname.startsWith("/admin/contests")}
+                  render={
+                    <NavLink to="/admin/contests" className="flex w-full items-center gap-2">
+                      <Trophy className="size-4" aria-hidden />
+                      <span>{t("layout.sidebar.contests.label")}</span>
                     </NavLink>
                   }
                 />

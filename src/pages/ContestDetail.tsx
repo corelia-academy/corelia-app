@@ -335,7 +335,7 @@ export default function ContestDetail() {
     try {
       await deleteContest(contest.id);
       toast.success(translate("detail.actions.deleteSuccess"));
-      navigate("/instructor/contests", { replace: true });
+      navigate("/admin/contests", { replace: true });
     } catch (err) {
       const message =
         err instanceof Error ? err.message : translate("detail.actions.deleteErrorFallback");
@@ -820,14 +820,14 @@ export default function ContestDetail() {
 
   async function handleCopyInviteLink(email: string) {
     if (!id) return;
-    const link = `${window.location.origin}/instructor/contests/${id}/manage?invite=${encodeURIComponent(email)}`;
+    const link = `${window.location.origin}/admin/contests/${id}/manage?invite=${encodeURIComponent(email)}`;
     await navigator.clipboard.writeText(link);
     toast.success(translate("detail.toasts.inviteLinkCopied"));
   }
 
   function handleInviteMailTo(invite: ContestAccessInvite) {
     if (!id || !contest) return;
-    const link = `${window.location.origin}/instructor/contests/${id}/manage?invite=${encodeURIComponent(invite.email)}`;
+    const link = `${window.location.origin}/admin/contests/${id}/manage?invite=${encodeURIComponent(invite.email)}`;
     const subject = encodeURIComponent(
       translate("detail.inviteEmail.subjectPrefix", { title: contest.title }),
     );
@@ -1081,7 +1081,7 @@ export default function ContestDetail() {
               {!isManageView && canAccessWorkspace && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Button
-                    render={<NavLink to={`/instructor/contests/${contest.id}/manage`} />}
+                    render={<NavLink to={`/admin/contests/${contest.id}/manage`} />}
                     nativeButton={false}
                     variant="outline"
                   >

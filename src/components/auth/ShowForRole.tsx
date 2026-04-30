@@ -4,7 +4,7 @@ import type { UserRole } from "@/types/database";
 interface ShowForRoleProps {
   children: React.ReactNode;
   /** Chỉ hiển thị khi user có một trong các role này */
-  roles: UserRole[];
+  roles: readonly UserRole[];
   /** Render khi không đủ role (optional) */
   fallback?: React.ReactNode;
 }

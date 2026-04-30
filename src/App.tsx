@@ -7,7 +7,6 @@ import {
   Route,
   Routes,
   useLocation,
-  useParams,
 } from "react-router";
 import MainLayout from "@/components/layouts/MainLayout";
 import { ThemeProvider } from "next-themes";
@@ -44,7 +43,7 @@ import InstructorCourseEdit from "@/pages/InstructorCourseEdit";
 import Contests from "@/pages/Contests";
 import ContestNew from "@/pages/ContestNew";
 import ContestDetail from "@/pages/ContestDetail";
-import { RequireContestManager } from "@/components/auth/RequireContestManager";
+import { ROLE_GROUPS } from "@/config/roles";
 import {
   PartnerContractsPage,
   PartnerInvoicesPage,
@@ -61,18 +60,6 @@ function ScrollToTop() {
   }, [location.pathname, location.search]);
 
   return null;
-}
-
-function LegacyContestManageRedirect() {
-  const { id } = useParams<{ id: string }>();
-  const location = useLocation();
-  if (!id) return <Navigate to="/instructor/contests" replace />;
-  return (
-    <Navigate
-      to={`/instructor/contests/${id}/manage${location.search}`}
-      replace
-    />
-  );
 }
 
 export default function App() {
@@ -143,14 +130,6 @@ export default function App() {
               <Route path="contests" element={<Contests />} />
               <Route path="contests/:id" element={<ContestDetail />} />
               <Route
-                path="contests/:id/manage"
-                element={<LegacyContestManageRedirect />}
-              />
-              <Route
-                path="contests/new"
-                element={<Navigate to="/instructor/contests/new" replace />}
-              />
-              <Route
                 path="account"
                 element={
                   <RequireAuth>
@@ -171,7 +150,7 @@ export default function App() {
               <Route
                 path="admin"
                 element={
-                  <RequireRole roles={["admin", "support_staff"]}>
+                  <RequireRole roles={ROLE_GROUPS.admin}>
                     <AdminLayout />
                   </RequireRole>
                 }
@@ -183,11 +162,14 @@ export default function App() {
                   path="instructors/:id"
                   element={<AdminInstructorDetail />}
                 />
+                <Route path="contests" element={<InstructorContests />} />
+                <Route path="contests/new" element={<ContestNew />} />
+                <Route path="contests/:id/manage" element={<ContestDetail />} />
               </Route>
               <Route
                 path="instructor"
                 element={
-                  <RequireRole roles={["instructor", "support_staff", "admin"]}>
+                  <RequireRole roles={ROLE_GROUPS.instructorWorkspace}>
                     <InstructorLayout />
                   </RequireRole>
                 }
@@ -211,30 +193,6 @@ export default function App() {
                   element={<InstructorCourseEdit />}
                 />
                 <Route
-                  path="contests"
-                  element={
-                    <RequireContestManager>
-                      <InstructorContests />
-                    </RequireContestManager>
-                  }
-                />
-                <Route
-                  path="contests/new"
-                  element={
-                    <RequireContestManager>
-                      <ContestNew />
-                    </RequireContestManager>
-                  }
-                />
-                <Route
-                  path="contests/:id/manage"
-                  element={
-                    <RequireContestManager>
-                      <ContestDetail />
-                    </RequireContestManager>
-                  }
-                />
-                <Route
                   path="profile"
                   element={<InstructorWorkspaceProfileRoute />}
                 />
@@ -244,7 +202,7 @@ export default function App() {
                 <Route
                   path="instructors"
                   element={
-                    <RequireRole roles={["support_staff", "admin"]}>
+                    <RequireRole roles={ROLE_GROUPS.admin}>
                       <Navigate to="/admin/instructors" replace />
                     </RequireRole>
                   }

@@ -5,7 +5,7 @@ import type { UserRole } from "@/types/database";
 interface RequireRoleProps {
   children: React.ReactNode;
   /** Các role được phép truy cập */
-  roles: UserRole[];
+  roles: readonly UserRole[];
   /** Redirect khi chưa đăng nhập (mặc định /login) */
   loginPath?: string;
   /** Redirect khi đã đăng nhập nhưng không đủ role (mặc định /) */

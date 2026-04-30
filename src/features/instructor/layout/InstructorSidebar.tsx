@@ -16,12 +16,10 @@ import {
   GraduationCap,
   PlusCircle,
   Receipt,
-  Trophy,
   UserCircle,
   Video,
 } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
-import { canManageContests } from "@/lib/permissions";
 import { useTranslation } from "react-i18next";
 
 export function InstructorSidebar() {
@@ -31,7 +29,6 @@ export function InstructorSidebar() {
   const { profile } = useAuth();
   const isExternalInstructor =
     profile?.role === "instructor" && profile?.instructor_origin === "external";
-  const showContests = canManageContests(profile);
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
@@ -108,25 +105,6 @@ export function InstructorSidebar() {
                   }
                 />
               </SidebarMenuItem>
-              {showContests && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="rounded-xl"
-                    tooltip={t("sidebar.contests")}
-                    isActive={pathname.startsWith("/instructor/contests")}
-                    render={
-                      <NavLink
-                        to="/instructor/contests"
-                        end
-                        className="flex w-full items-center gap-2"
-                      >
-                        <Trophy className="size-4" aria-hidden />
-                        <span>{t("sidebar.contests")}</span>
-                      </NavLink>
-                    }
-                  />
-                </SidebarMenuItem>
-              )}
               {isExternalInstructor && (
                 <>
                   <SidebarMenuItem>
