@@ -132,19 +132,10 @@ export default function ConnectOCIDCard() {
             variant="destructive"
             onClick={handleDisconnect}
             disabled={loading || !isInitialized}
-            className="h-11 inline-flex items-center justify-center gap-2 border border-border-subtle py-2.5 px-3 text-left text-sm cursor-pointer"
           >
-            <img
-              src="/logo/OC-square-logo.svg"
-              alt="Open Campus"
-              className="h-full rounded-full"
-            />
-
-            {loading ? (
-              t("ocid.card.loadingDisconnect")
-            ) : (
-              <span className="text-white">{t("ocid.card.disconnect")}</span>
-            )}
+            {loading
+              ? t("ocid.card.loadingDisconnect")
+              : t("ocid.card.disconnect")}
           </Button>
         ) : (
           <Button
