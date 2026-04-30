@@ -163,6 +163,14 @@
         "fallbackName": "Giảng viên",
         "websiteLabel": "Website / LinkedIn"
       },
+      "sponsors": {
+        "title": "Sponsor",
+        "websiteLabel": "Xem website"
+      },
+      "partnerBrand": {
+        "title": "Đối tác",
+        "websiteLabel": "Xem website"
+      },
       "stats": {
         "duration": "Thời lượng",
         "curriculum": "Curriculum",

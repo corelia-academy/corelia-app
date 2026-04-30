@@ -75,6 +75,21 @@ service firebase.storage {
       allow write: if isCourseManager(courseId);
     }
 
+    match /course-sponsor-logos/{courseId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isCourseManager(courseId);
+    }
+
+    match /course-partners/{courseId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isCourseManager(courseId);
+    }
+
+    match /course-partner-brand/{courseId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isCourseManager(courseId);
+    }
+
     match /final-assignment-submissions/{courseId}/{userId}/{allPaths=**} {
       allow read: if isSignedIn() && (
         request.auth.uid == userId ||

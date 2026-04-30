@@ -163,6 +163,14 @@
         "fallbackName": "Instructor",
         "websiteLabel": "Website / LinkedIn"
       },
+      "sponsors": {
+        "title": "Sponsors",
+        "websiteLabel": "Visit website"
+      },
+      "partnerBrand": {
+        "title": "Provided by",
+        "websiteLabel": "Visit website"
+      },
       "stats": {
         "duration": "Duration",
         "curriculum": "Curriculum",
