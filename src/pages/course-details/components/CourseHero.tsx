@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router";
 import { BookOpen, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CourseBadge } from "./CourseBadge";
@@ -100,16 +99,6 @@ export function CourseHero({
           <h1 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
             {course.title}
           </h1>
-
-          <p className="mt-1 text-sm text-muted-foreground">
-            {translate("detail.courseDetail.instructorLabel")}{" "}
-            <Link
-              to={`/instructors/${course.instructor_id}`}
-              className="font-medium text-foreground transition-colors duration-150 hover:text-primary"
-            >
-              {course.instructor_name}
-            </Link>
-          </p>
 
           {course.short_description ? (
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">

@@ -43,6 +43,18 @@ service firebase.storage {
       );
     }
 
+    function courseCoInstructorPerms(courseId, uid) {
+      return courseDoc(courseId).data.co_instructor_permissions[uid];
+    }
+
+    function hasCourseCoInstructorPermission(courseId, permKey) {
+      return isSignedIn() &&
+        courseDoc(courseId).data.keys().hasAny(['co_instructor_permissions']) &&
+        courseDoc(courseId).data.co_instructor_permissions.keys().hasAny([request.auth.uid]) &&
+        courseCoInstructorPerms(courseId, request.auth.uid).keys().hasAny([permKey]) &&
+        courseCoInstructorPerms(courseId, request.auth.uid)[permKey] == true;
+    }
+
     function isCourseLearner(courseId) {
       return isSignedIn() && (
         firestore.exists(/databases/(default)/documents/enrollments/$(request.auth.uid + "_" + courseId)) ||
@@ -66,7 +78,8 @@ service firebase.storage {
     match /final-assignment-submissions/{courseId}/{userId}/{allPaths=**} {
       allow read: if isSignedIn() && (
         request.auth.uid == userId ||
-        isCourseManager(courseId)
+        isCourseManager(courseId) ||
+        hasCourseCoInstructorPermission(courseId, 'submissions')
       );
       allow write: if isSignedIn() &&
         request.auth.uid == userId &&
@@ -76,7 +89,8 @@ service firebase.storage {
     match /certificate-templates/{courseId}/{allPaths=**} {
       allow read: if isSignedIn() && (
         isCourseLearner(courseId) ||
-        isCourseManager(courseId)
+        isCourseManager(courseId) ||
+        hasCourseCoInstructorPermission(courseId, 'certificates')
       );
       allow write: if isCourseManager(courseId);
     }

@@ -157,6 +157,12 @@
       },
       "certificateIssued": "Certificate issued",
       "instructorLabel": "Instructor",
+      "coInstructors": {
+        "title": "Co-instructors",
+        "subtitle": "Additional instructors supporting the main instructor in this course.",
+        "fallbackName": "Instructor",
+        "websiteLabel": "Website / LinkedIn"
+      },
       "stats": {
         "duration": "Duration",
         "curriculum": "Curriculum",

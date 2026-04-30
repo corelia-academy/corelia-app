@@ -269,6 +269,24 @@
     "defaults": {
       "lessonTitle": "Lesson"
     },
+    "coInstructors": {
+      "label": "Co-instructors",
+      "hint": "Add co-instructors to display on the course page and optionally grant limited access.",
+      "dialogTitle": "Select co-instructors",
+      "dialogDescription": "Only instructors in the directory can be selected.",
+      "fallbackName": "Instructor",
+      "placeholder": "Select co-instructors…",
+      "searchPlaceholder": "Search by name/email…",
+      "emptyLabel": "No matching instructors.",
+      "loadingDirectory": "Loading instructors…",
+      "permissions": {
+        "students": "View students",
+        "submissions": "Review submissions",
+        "content": "View content",
+        "certificates": "View certificates",
+        "pricing": "View pricing"
+      }
+    },
     "errors": {
       "loadCourseFailed": "Failed to load course",
       "refreshTotalFailed": "Update failed",

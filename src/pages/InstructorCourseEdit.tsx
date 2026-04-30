@@ -29,6 +29,8 @@ import {
   computeProgressPercent,
   checkAndIssueCertificate,
   updateCourse,
+  isCourseCoInstructorWithAnyPermission,
+  toCoInstructorSnapshot,
   applyCourseLessonLocaleContent,
   applyCourseSectionLocaleContent,
   backfillCourseLocaleIndex,
@@ -56,7 +58,11 @@ import {
   getSubmissionsForCourse,
   updateSubmissionStatus,
 } from "@/lib/finalAssignment";
-import { getProfile } from "@/lib/profile";
+import {
+  getAllProfiles,
+  getProfile,
+  listCoreliaInstructorProfiles,
+} from "@/lib/profile";
 import { getYoutubeVideoDuration } from "@/lib/youtube";
 import {
   createCourseDiscount,
@@ -82,6 +88,8 @@ import {
   type CourseAccessModel,
   type CourseLevel,
   type SupportedCourseLocale,
+  type CourseCoInstructorPermissionKey,
+  type CourseCoInstructorPermissions,
 } from "@/types/courses";
 import type {
   Course,
@@ -95,6 +103,10 @@ import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  ProfileCombobox,
+  type ProfileComboboxOption,
+} from "@/components/ui/profile-combobox";
 import {
   Dialog,
   DialogContent,
@@ -125,6 +137,17 @@ const EDIT_SECTION_IDS = [
   "students",
   "danger",
 ] as const;
+
+const CO_INSTRUCTOR_PERMISSION_KEYS: Array<{
+  key: CourseCoInstructorPermissionKey;
+  labelKey: string;
+}> = [
+  { key: "students", labelKey: "courseEdit.coInstructors.permissions.students" },
+  { key: "submissions", labelKey: "courseEdit.coInstructors.permissions.submissions" },
+  { key: "content", labelKey: "courseEdit.coInstructors.permissions.content" },
+  { key: "certificates", labelKey: "courseEdit.coInstructors.permissions.certificates" },
+  { key: "pricing", labelKey: "courseEdit.coInstructors.permissions.pricing" },
+];
 
 type LessonDropPosition = "before" | "after";
 
@@ -215,6 +238,14 @@ const InstructorCourseEdit = () => {
     partner_transfer_info: "",
   });
 
+  const [coInstructorIds, setCoInstructorIds] = useState<string[]>([]);
+  const [coInstructorPermissions, setCoInstructorPermissions] = useState<
+    Record<string, CourseCoInstructorPermissions>
+  >({});
+  const [instructorDirectory, setInstructorDirectory] = useState<Profile[]>([]);
+  const [loadingInstructorDirectory, setLoadingInstructorDirectory] =
+    useState(false);
+
   const [supportedLocales, setSupportedLocales] = useState<SupportedCourseLocale[]>(["vi", "en"]);
   const [primaryContentLocale, setPrimaryContentLocale] = useState<SupportedCourseLocale>("vi");
   const [defaultVideoPrimaryLocale, setDefaultVideoPrimaryLocale] =
@@ -298,11 +329,101 @@ const InstructorCourseEdit = () => {
   const showBusinessSettingsSection =
     canManageBusinessSettings || profile?.instructor_origin !== "external";
   const canEdit =
+    course && (isAdmin || isSupportStaff || course.instructor_id === profile?.id);
+
+  const coInstructorPermsEffective: CourseCoInstructorPermissions =
+    (course &&
+      profile?.id &&
+      course.co_instructor_permissions?.[profile.id]) ||
+    {};
+  const canAccessEditor = Boolean(
     course &&
-    (isAdmin || isSupportStaff || course.instructor_id === profile?.id);
+      (canEdit ||
+        isCourseCoInstructorWithAnyPermission(course, profile?.id)),
+  );
+
+  const canAccessInfo = Boolean(canEdit);
+  const canAccessPricing = Boolean(canEdit || coInstructorPermsEffective.pricing);
+  const canAccessContent = Boolean(canEdit || coInstructorPermsEffective.content);
+  const canAccessAssignments = Boolean(
+    canEdit || coInstructorPermsEffective.submissions,
+  );
+  const canAccessCertificate = Boolean(
+    canEdit || coInstructorPermsEffective.certificates,
+  );
+  const canAccessStudents = Boolean(
+    canEdit || coInstructorPermsEffective.students,
+  );
+  const canAccessDanger = Boolean(canEdit);
 
   useEffect(() => {
-    if (!id || !canEdit) return;
+    const allowed: SectionId[] = [];
+    if (canAccessInfo) allowed.push("info");
+    if (canAccessPricing) allowed.push("pricing");
+    if (canAccessContent) allowed.push("content");
+    if (canAccessAssignments) allowed.push("assignments");
+    if (canAccessCertificate) allowed.push("certificate");
+    if (canAccessStudents) allowed.push("students");
+    if (canAccessDanger) allowed.push("danger");
+    if (allowed.length === 0) return;
+    if (allowed.includes(activeSection)) return;
+    setSection(allowed[0]);
+    // Intentionally use setSection for hash sync.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeSection,
+    canAccessInfo,
+    canAccessPricing,
+    canAccessContent,
+    canAccessAssignments,
+    canAccessCertificate,
+    canAccessStudents,
+    canAccessDanger,
+  ]);
+
+  const canEditCoInstructors = Boolean(
+    course && (isAdmin || isSupportStaff || course.instructor_id === profile?.id),
+  );
+
+  useEffect(() => {
+    if (!course) return;
+    const ids =
+      (course.co_instructors ?? [])
+        .map((c) => String(c.id ?? "").trim())
+        .filter(Boolean) ?? [];
+    const filtered = ids.filter((cid) => cid !== course.instructor_id);
+    setCoInstructorIds(Array.from(new Set(filtered)));
+    setCoInstructorPermissions(course.co_instructor_permissions ?? {});
+  }, [course]);
+
+  useEffect(() => {
+    if (!canEditCoInstructors) return;
+    let cancelled = false;
+    setLoadingInstructorDirectory(true);
+    const load = async () => {
+      if (isAdmin || isSupportStaff) {
+        const all = await getAllProfiles();
+        return all.filter((p) => p.role === "instructor");
+      }
+      return await listCoreliaInstructorProfiles();
+    };
+    void load()
+      .then((rows) => {
+        if (!cancelled) setInstructorDirectory(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setInstructorDirectory([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingInstructorDirectory(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [canEditCoInstructors, isAdmin, isSupportStaff]);
+
+  useEffect(() => {
+    if (!id || !canAccessPricing) return;
     let cancelled = false;
     setLoadingDiscounts(true);
     listCourseDiscounts(id)
@@ -318,7 +439,7 @@ const InstructorCourseEdit = () => {
     return () => {
       cancelled = true;
     };
-  }, [id, canEdit]);
+  }, [id, canAccessPricing]);
 
   useEffect(() => {
     if (course) {
@@ -408,28 +529,53 @@ const InstructorCourseEdit = () => {
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
-    Promise.all([
-      getCourse(id),
-      getCourseSections(id),
-      getCourseLessons(id),
-      getEnrollmentsForCourse(id),
-      getSubmissionsForCourse(id),
-    ])
-      .then(async ([c, secs, less, enrs, subs]) => {
-        if (!cancelled) {
-          setCourse(c ?? null);
-          setSections(secs);
-          setLessons(less);
-          setEnrollments(enrs);
-          setSubmissions(subs);
-          const subByUser: Record<string, FinalAssignmentSubmission> = {};
-          for (const s of subs) subByUser[s.user_id] = s;
-          setSubmissionByUser(subByUser);
+    setLoading(true);
+    setError(null);
+
+    void (async () => {
+      try {
+        const c = await getCourse(id);
+        if (cancelled) return;
+        setCourse(c ?? null);
+        if (!c) return;
+
+        const isOwner = c.instructor_id === profile?.id;
+        const perms = (profile?.id && c.co_instructor_permissions?.[profile.id]) || {};
+        const hasAny = Object.values(perms).some(Boolean);
+        const canAccess = isAdmin || isSupportStaff || isOwner || hasAny;
+        if (!canAccess) return;
+
+        const canContent = isAdmin || isSupportStaff || isOwner || perms.content === true;
+        const canStudents = isAdmin || isSupportStaff || isOwner || perms.students === true;
+        const canSubmissions =
+          isAdmin || isSupportStaff || isOwner || perms.submissions === true;
+
+        const [secs, less] = await Promise.all([
+          canContent ? getCourseSections(id) : Promise.resolve([] as CourseSection[]),
+          canContent ? getCourseLessons(id) : Promise.resolve([] as CourseLesson[]),
+        ]);
+        if (cancelled) return;
+        setSections(secs);
+        setLessons(less);
+
+        const [enrs, subs] = await Promise.all([
+          canStudents ? getEnrollmentsForCourse(id) : Promise.resolve([] as Enrollment[]),
+          canSubmissions
+            ? getSubmissionsForCourse(id)
+            : Promise.resolve([] as FinalAssignmentSubmission[]),
+        ]);
+        if (cancelled) return;
+        setEnrollments(enrs);
+        setSubmissions(subs);
+
+        const subByUser: Record<string, FinalAssignmentSubmission> = {};
+        for (const s of subs) subByUser[s.user_id] = s;
+        setSubmissionByUser(subByUser);
+
+        if (canStudents) {
           const profiles: Record<string, Profile | null> = {};
           const progress: Record<string, number> = {};
           for (const e of enrs) {
-            // Instructors may not have permission to read arbitrary profile docs.
-            // Fallback to null profile instead of failing the whole page.
             const [profileResult, progressResult] = await Promise.allSettled([
               getProfile(e.user_id),
               getLessonProgressForCourse(e.user_id, id),
@@ -447,21 +593,26 @@ const InstructorCourseEdit = () => {
             setStudentProfiles(profiles);
             setStudentProgress(progress);
           }
+        } else {
+          setStudentProfiles({});
+          setStudentProgress({});
         }
-      })
-      .catch((e) => {
+      } catch (e) {
         if (!cancelled)
           setError(
-            e instanceof Error ? e.message : t("courseEdit.errors.loadCourseFailed"),
+            e instanceof Error
+              ? e.message
+              : t("courseEdit.errors.loadCourseFailed"),
           );
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    })();
+
     return () => {
       cancelled = true;
     };
-  }, [id, t]);
+  }, [id, isAdmin, isSupportStaff, profile?.id, t]);
 
   // Backfill tổng thời lượng khi mở trang (để danh sách khoá học bên ngoài hiển thị đúng)
   useEffect(() => {
@@ -590,6 +741,34 @@ const InstructorCourseEdit = () => {
       };
 
       const shouldUpdateRootContent = activeContentLocale === primaryContentLocale;
+
+      const coInstructorSnapshots = (() => {
+        if (!canEditCoInstructors) return undefined;
+        const byId = new Map(instructorDirectory.map((p) => [p.id, p]));
+        const fallbackById = new Map(
+          (course.co_instructors ?? []).map((c) => [c.id, c]),
+        );
+        return coInstructorIds
+          .filter((cid) => cid && cid !== course.instructor_id)
+          .map((cid) => {
+            const prof = byId.get(cid);
+            if (prof) return toCoInstructorSnapshot(prof);
+            const fallback = fallbackById.get(cid);
+            if (fallback) return fallback;
+            return { id: cid, name: cid };
+          });
+      })();
+
+      const coInstructorPermissionsPayload = (() => {
+        if (!canEditCoInstructors) return undefined;
+        const next: Record<string, CourseCoInstructorPermissions> = {};
+        for (const cid of coInstructorIds) {
+          if (!cid || cid === course.instructor_id) continue;
+          next[cid] = coInstructorPermissions[cid] ?? {};
+        }
+        return next;
+      })();
+
       await updateCourse(id, {
         slug: form.slug,
         thumbnail_url: form.thumbnail_url,
@@ -640,6 +819,10 @@ const InstructorCourseEdit = () => {
           form.owner_type === "external_partner"
             ? form.partner_transfer_info.trim() || null
             : null,
+        ...(canEditCoInstructors && {
+          co_instructors: coInstructorSnapshots,
+          co_instructor_permissions: coInstructorPermissionsPayload,
+        }),
       });
       setCourse((prev) =>
         prev
@@ -692,6 +875,11 @@ const InstructorCourseEdit = () => {
                 form.owner_type === "external_partner"
                   ? form.partner_transfer_info.trim() || null
                   : null,
+              ...(canEditCoInstructors && {
+                co_instructors: coInstructorSnapshots ?? prev.co_instructors ?? [],
+                co_instructor_permissions:
+                  coInstructorPermissionsPayload ?? prev.co_instructor_permissions ?? {},
+              }),
               updated_at: new Date().toISOString(),
             }
           : null,
@@ -1391,7 +1579,7 @@ const InstructorCourseEdit = () => {
     );
   }
 
-  if (!course || !canEdit) {
+  if (!course || !canAccessEditor) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-6 lg:px-8">
         <p className="text-muted-foreground">
@@ -1475,6 +1663,7 @@ const InstructorCourseEdit = () => {
             </p>
           </div>
           <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+            {canAccessInfo ? (
             <li>
               <button
                 type="button"
@@ -1490,6 +1679,8 @@ const InstructorCourseEdit = () => {
                 Thông tin chung
               </button>
             </li>
+            ) : null}
+            {canAccessPricing ? (
             <li>
               <button
                 type="button"
@@ -1505,6 +1696,8 @@ const InstructorCourseEdit = () => {
                 Giá & thanh toán
               </button>
             </li>
+            ) : null}
+            {canAccessContent ? (
             <li>
               <button
                 type="button"
@@ -1520,6 +1713,8 @@ const InstructorCourseEdit = () => {
                 Nội dung & bài học
               </button>
             </li>
+            ) : null}
+            {canAccessAssignments ? (
             <li>
               <button
                 type="button"
@@ -1535,6 +1730,8 @@ const InstructorCourseEdit = () => {
                 Bài tập cuối khoá
               </button>
             </li>
+            ) : null}
+            {canAccessCertificate ? (
             <li>
               <button
                 type="button"
@@ -1550,6 +1747,8 @@ const InstructorCourseEdit = () => {
                 Chứng nhận
               </button>
             </li>
+            ) : null}
+            {canAccessStudents ? (
             <li>
               <button
                 type="button"
@@ -1565,6 +1764,8 @@ const InstructorCourseEdit = () => {
                 Quản lý học viên
               </button>
             </li>
+            ) : null}
+            {canAccessDanger ? (
             <li className="mt-2 border-t border-border-subtle pt-2">
               <button
                 type="button"
@@ -1580,12 +1781,13 @@ const InstructorCourseEdit = () => {
                 Xoá khoá học
               </button>
             </li>
+            ) : null}
           </ul>
         </nav>
 
         {/* Nội dung theo section đang chọn */}
         <div className="min-w-0 flex-1">
-          {activeSection === "info" && (
+          {activeSection === "info" && canAccessInfo && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground">
                 Thông tin chung
@@ -1813,6 +2015,189 @@ const InstructorCourseEdit = () => {
                     {t("courseEdit.form.learningOutcomesAdd")}
                   </Button>
                 </Field>
+
+                {course && canEditCoInstructors ? (
+                  <Field>
+                    <FieldLabel>
+                      {String(
+                        t("courseEdit.coInstructors.label" as never, {
+                          defaultValue: "Co-instructors",
+                        } as never),
+                      )}
+                    </FieldLabel>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {String(
+                        t("courseEdit.coInstructors.hint" as never, {
+                          defaultValue:
+                            "Thêm đồng giảng viên để hiển thị trên trang khoá học và cấp một số quyền giới hạn.",
+                        } as never),
+                      )}
+                    </p>
+
+                    <div className="mt-3 space-y-3">
+                      <ProfileCombobox
+                        title={String(
+                          t("courseEdit.coInstructors.dialogTitle" as never, {
+                            defaultValue: "Chọn co-instructors",
+                          } as never),
+                        )}
+                        description={String(
+                          t("courseEdit.coInstructors.dialogDescription" as never, {
+                            defaultValue:
+                              "Chỉ những instructor có trong danh sách mới có thể được chọn.",
+                          } as never),
+                        )}
+                        options={
+                          instructorDirectory
+                            .filter((p) => p.id !== course.instructor_id)
+                            .map(
+                              (p): ProfileComboboxOption => ({
+                                id: p.id,
+                                label:
+                                  p.full_name ??
+                                  p.email ??
+                                  String(
+                                    t("courseEdit.coInstructors.fallbackName" as never, {
+                                      defaultValue: "Instructor",
+                                    } as never),
+                                  ),
+                                description:
+                                  p.instructor_headline ??
+                                  p.instructor_organization ??
+                                  null,
+                              }),
+                            )
+                        }
+                        placeholder={String(
+                          t("courseEdit.coInstructors.placeholder" as never, {
+                            defaultValue: "Chọn co-instructors…",
+                          } as never),
+                        )}
+                        searchPlaceholder={String(
+                          t("courseEdit.coInstructors.searchPlaceholder" as never, {
+                            defaultValue: "Tìm theo tên/email…",
+                          } as never),
+                        )}
+                        emptyLabel={String(
+                          t("courseEdit.coInstructors.emptyLabel" as never, {
+                            defaultValue: "Không có instructor phù hợp.",
+                          } as never),
+                        )}
+                        multiple
+                        value={coInstructorIds}
+                        onChange={(value) => {
+                          const ids = (Array.isArray(value) ? value : [])
+                            .map((v) => String(v).trim())
+                            .filter(Boolean)
+                            .filter((v) => v !== course.instructor_id);
+                          const unique = Array.from(new Set(ids));
+                          setCoInstructorIds(unique);
+                          setCoInstructorPermissions((prev) => {
+                            const next = { ...prev };
+                            for (const id of Object.keys(next)) {
+                              if (!unique.includes(id)) delete next[id];
+                            }
+                            return next;
+                          });
+                        }}
+                      />
+
+                      {loadingInstructorDirectory ? (
+                        <p className="text-xs text-muted-foreground">
+                          {String(
+                            t("courseEdit.coInstructors.loadingDirectory" as never, {
+                              defaultValue: "Đang tải danh sách instructor…",
+                            } as never),
+                          )}
+                        </p>
+                      ) : null}
+
+                      {coInstructorIds.length > 0 ? (
+                        <div className="space-y-3">
+                          {coInstructorIds.map((cid) => {
+                            const display =
+                              instructorDirectory.find((p) => p.id === cid)
+                                ?.full_name ??
+                              instructorDirectory.find((p) => p.id === cid)
+                                ?.email ??
+                              cid;
+                            const perms = coInstructorPermissions[cid] ?? {};
+                            return (
+                              <div
+                                key={cid}
+                                className="rounded-md border border-border-subtle bg-muted/20 p-3"
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <div className="text-sm font-medium text-foreground">
+                                      {display}
+                                    </div>
+                                    <div className="mt-0.5 text-xs text-muted-foreground">
+                                      {cid}
+                                    </div>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 px-2"
+                                    onClick={() => {
+                                      setCoInstructorIds((prev) =>
+                                        prev.filter((id) => id !== cid),
+                                      );
+                                      setCoInstructorPermissions((prev) => {
+                                        const next = { ...prev };
+                                        delete next[cid];
+                                        return next;
+                                      });
+                                    }}
+                                  >
+                                    <XCircle className="size-4" aria-hidden />
+                                  </Button>
+                                </div>
+
+                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                  {CO_INSTRUCTOR_PERMISSION_KEYS.map((item) => {
+                                    const checked = perms[item.key] === true;
+                                    return (
+                                      <label
+                                        key={item.key}
+                                        className="flex items-center gap-2 rounded-md border border-border-subtle bg-background px-3 py-2 text-sm"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={checked}
+                                          onChange={(e) => {
+                                            const nextVal = e.target.checked;
+                                            setCoInstructorPermissions((prev) => ({
+                                              ...prev,
+                                              [cid]: {
+                                                ...(prev[cid] ?? {}),
+                                                [item.key]: nextVal,
+                                              },
+                                            }));
+                                          }}
+                                        />
+                                        <span className="text-foreground">
+                                          {String(
+                                            t(item.labelKey as never, {
+                                              defaultValue: item.key,
+                                            } as never),
+                                          )}
+                                        </span>
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+                    </div>
+                  </Field>
+                ) : null}
+
                 <Field>
                   <FieldLabel>{t("courseEdit.form.thumbnailLabel")}</FieldLabel>
                   <div className="mt-1 flex items-center gap-3">
@@ -2075,7 +2460,7 @@ const InstructorCourseEdit = () => {
             </section>
           )}
 
-          {activeSection === "pricing" && (
+          {activeSection === "pricing" && canAccessPricing && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
                 <DollarSign className="size-5" aria-hidden /> Giá & thanh toán
@@ -2498,14 +2883,14 @@ const InstructorCourseEdit = () => {
                 onClick={() =>
                   void saveCourseInfo(t("courseEdit.labels.savePricing"))
                 }
-                disabled={saving}
+                disabled={saving || !canEdit}
               >
                 {saving ? t("courseEdit.labels.saving") : t("courseEdit.labels.save")}
               </Button>
             </section>
           )}
 
-          {activeSection === "content" && (
+          {activeSection === "content" && canAccessContent && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
@@ -2521,7 +2906,7 @@ const InstructorCourseEdit = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    disabled={refreshingTotal || lessons.length === 0}
+                    disabled={refreshingTotal || lessons.length === 0 || !canEdit}
                     onClick={() => void handleRefreshTotalDuration()}
                   >
                     {refreshingTotal
@@ -3321,7 +3706,7 @@ const InstructorCourseEdit = () => {
             </DialogContent>
           </Dialog>
 
-          {activeSection === "assignments" && (
+          {activeSection === "assignments" && canAccessAssignments && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
                 <FileText className="size-5" /> Bài tập cuối khoá
@@ -3391,7 +3776,7 @@ const InstructorCourseEdit = () => {
                     onClick={() =>
                       void saveCourseInfo(t("courseEdit.labels.saveAssignment"))
                     }
-                    disabled={saving}
+                    disabled={saving || !canEdit}
                   >
                     {saving ? t("courseEdit.labels.saving") : t("courseEdit.labels.saveAssignment")}
                   </Button>
@@ -3536,7 +3921,7 @@ const InstructorCourseEdit = () => {
             </section>
           )}
 
-          {activeSection === "certificate" && (
+          {activeSection === "certificate" && canAccessCertificate && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
                 <Award className="size-5" aria-hidden /> Template
@@ -3625,7 +4010,7 @@ const InstructorCourseEdit = () => {
                   onClick={() =>
                     void saveCourseInfo(t("courseEdit.labels.saveCertificate"))
                   }
-                  disabled={saving}
+                  disabled={saving || !canEdit}
                 >
                   {saving ? t("courseEdit.labels.saving") : t("courseEdit.certificate.saveNamePosition")}
                 </Button>
@@ -3662,7 +4047,7 @@ const InstructorCourseEdit = () => {
             </section>
           )}
 
-          {activeSection === "students" && (
+          {activeSection === "students" && canAccessStudents && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
                 <Users className="size-5" /> Quản lý học viên
@@ -3825,7 +4210,7 @@ const InstructorCourseEdit = () => {
             </section>
           )}
 
-          {activeSection === "danger" && (
+          {activeSection === "danger" && canAccessDanger && (
             <section className="rounded-md border border-destructive/30 bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
                 <AlertTriangle className="size-5" aria-hidden /> Vùng nguy hiểm

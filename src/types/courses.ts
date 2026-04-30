@@ -15,6 +15,27 @@ export type CourseAccessModel =
   | "free_with_paid_certificate";
 export type CourseOwnerType = "corelia" | "external_partner";
 
+export type CourseCoInstructorPermissionKey =
+  | "students"
+  | "submissions"
+  | "content"
+  | "certificates"
+  | "pricing";
+
+export type CourseCoInstructorPermissions = Partial<
+  Record<CourseCoInstructorPermissionKey, boolean>
+>;
+
+export interface CourseCoInstructorSnapshot {
+  id: string;
+  name: string;
+  avatar_url?: string | null;
+  headline?: string | null;
+  organization?: string | null;
+  website?: string | null;
+  bio?: string | null;
+}
+
 export interface CourseI18nConfig {
   /** Khoá học hỗ trợ ngôn ngữ nội dung nào (hiện: vi/en) */
   supported_locales?: SupportedCourseLocale[];
@@ -105,6 +126,11 @@ export interface Course {
   partner_invoice_docs?: PartnerCourseDocument[];
   /** Thông tin chuyển khoản cho đối tác (theo hợp đồng) */
   partner_transfer_info?: string | null;
+
+  /** Đồng giảng viên (chỉ để hiển thị công khai) */
+  co_instructors?: CourseCoInstructorSnapshot[];
+  /** Map quyền theo uid đồng giảng viên (dùng cho scoped access) */
+  co_instructor_permissions?: Record<string, CourseCoInstructorPermissions>;
 }
 
 export interface CourseSection {
@@ -234,6 +260,9 @@ export interface CourseInsert {
   partner_contract_docs?: PartnerCourseDocument[];
   partner_invoice_docs?: PartnerCourseDocument[];
   partner_transfer_info?: string | null;
+
+  co_instructors?: CourseCoInstructorSnapshot[];
+  co_instructor_permissions?: Record<string, CourseCoInstructorPermissions>;
 }
 
 /** Cập nhật một phần thông tin khoá (instructor/admin) */
@@ -268,6 +297,9 @@ export interface CourseUpdate {
   partner_contract_docs?: PartnerCourseDocument[];
   partner_invoice_docs?: PartnerCourseDocument[];
   partner_transfer_info?: string | null;
+
+  co_instructors?: CourseCoInstructorSnapshot[] | null;
+  co_instructor_permissions?: Record<string, CourseCoInstructorPermissions> | null;
 }
 
 export interface CourseSectionInsert {

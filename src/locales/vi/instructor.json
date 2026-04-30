@@ -269,6 +269,24 @@
     "defaults": {
       "lessonTitle": "Bài học"
     },
+    "coInstructors": {
+      "label": "Co-instructors",
+      "hint": "Thêm đồng giảng viên để hiển thị trên trang khoá học và cấp một số quyền giới hạn.",
+      "dialogTitle": "Chọn co-instructors",
+      "dialogDescription": "Chỉ những instructor có trong danh sách mới có thể được chọn.",
+      "fallbackName": "Giảng viên",
+      "placeholder": "Chọn co-instructors…",
+      "searchPlaceholder": "Tìm theo tên/email…",
+      "emptyLabel": "Không có instructor phù hợp.",
+      "loadingDirectory": "Đang tải danh sách instructor…",
+      "permissions": {
+        "students": "Xem học viên",
+        "submissions": "Duyệt bài nộp",
+        "content": "Xem nội dung",
+        "certificates": "Xem chứng nhận",
+        "pricing": "Xem pricing"
+      }
+    },
     "errors": {
       "loadCourseFailed": "Lỗi tải khoá học",
       "refreshTotalFailed": "Lỗi cập nhật",
