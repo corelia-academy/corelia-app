@@ -41,6 +41,42 @@ export async function uploadCourseThumbnail(
   return { url, path };
 }
 
+export async function uploadContestBanner(
+  contestId: string,
+  file: File,
+  previousPath?: string | null,
+): Promise<{ url: string; path: string }> {
+  if (!contestId) throw new Error("Thiếu contestId khi upload banner");
+  await deleteStorageObjectByPath(previousPath ?? undefined);
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const safeExt = /^[a-z0-9]+$/.test(ext) ? ext : "jpg";
+  const path = `contest-banners/${contestId}/${Date.now()}.${safeExt}`;
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file, {
+    contentType: file.type || `image/${safeExt}`,
+  });
+  const url = await getDownloadURL(storageRef);
+  return { url, path };
+}
+
+export async function uploadContestThumbnail(
+  contestId: string,
+  file: File,
+  previousPath?: string | null,
+): Promise<{ url: string; path: string }> {
+  if (!contestId) throw new Error("Thiếu contestId khi upload thumbnail");
+  await deleteStorageObjectByPath(previousPath ?? undefined);
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const safeExt = /^[a-z0-9]+$/.test(ext) ? ext : "jpg";
+  const path = `contest-thumbnails/${contestId}/${Date.now()}.${safeExt}`;
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file, {
+    contentType: file.type || `image/${safeExt}`,
+  });
+  const url = await getDownloadURL(storageRef);
+  return { url, path };
+}
+
 /**
  * Upload file bài tập cuối khoá (học viên nộp).
  * Đường dẫn: final-assignment-submissions/{courseId}/{userId}/{timestamp}.{ext}

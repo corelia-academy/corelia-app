@@ -121,7 +121,9 @@ service cloud.firestore {
     function canTrackProgress(courseId) {
       return isSignedIn() && (
         isEnrolledInCourse(courseId) ||
-        hasFullCoursePaymentAccess(courseId)
+        hasFullCoursePaymentAccess(courseId) ||
+        isCourseInstructor(courseId) ||
+        hasCourseCoInstructorPermission(courseId, 'content')
       );
     }
 
@@ -813,6 +815,9 @@ service cloud.firestore {
           'ends_at',
           'location',
           'cover_image_url',
+          'cover_image_path',
+          'thumbnail_url',
+          'thumbnail_path',
           'registration_deadline',
           'max_participants',
           'judge_emails',
@@ -821,6 +826,10 @@ service cloud.firestore {
           'metrics_snapshot',
           'published_leaderboard',
           'winner_announcements',
+          'prize_pool_summary',
+          'prizes',
+          'faqs',
+          'timeline_milestones',
           'created_by',
           'updated_by',
           'created_at',
@@ -839,6 +848,9 @@ service cloud.firestore {
           'ends_at',
           'location',
           'cover_image_url',
+          'cover_image_path',
+          'thumbnail_url',
+          'thumbnail_path',
           'registration_deadline',
           'max_participants',
           'judge_emails',
@@ -847,6 +859,10 @@ service cloud.firestore {
           'metrics_snapshot',
           'published_leaderboard',
           'winner_announcements',
+          'prize_pool_summary',
+          'prizes',
+          'faqs',
+          'timeline_milestones',
           'updated_by',
           'updated_at'
         ]) &&

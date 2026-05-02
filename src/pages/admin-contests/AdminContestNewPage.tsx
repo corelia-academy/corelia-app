@@ -4,12 +4,7 @@ import { ArrowLeft, Calendar, Gavel, ShieldCheck, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { createContest, updateContest } from "@/lib/contests";
 import { uploadContestBanner, uploadContestThumbnail } from "@/lib/storage";
@@ -22,7 +17,7 @@ function toIsoOrNull(value: string): string | null {
   return new Date(value).toISOString();
 }
 
-export default function ContestNew() {
+export default function AdminContestNewPage() {
   const { t } = useTranslation("contests");
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
@@ -39,7 +34,9 @@ export default function ContestNew() {
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [bannerPreviewUrl, setBannerPreviewUrl] = useState<string | null>(null);
-  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(null);
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(
+    null,
+  );
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -65,6 +62,7 @@ export default function ContestNew() {
   const canSubmit = useMemo(() => {
     return title.trim().length >= 3 && tagline.trim().length >= 8;
   }, [title, tagline]);
+
   const readinessItems = useMemo(
     () => [
       {
@@ -133,7 +131,9 @@ export default function ContestNew() {
       toast.success(t("instructorNew.toasts.created"));
       navigate(`/admin/contests/${contest.id}/manage`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("instructorNew.toasts.createFailed"));
+      toast.error(
+        err instanceof Error ? err.message : t("instructorNew.toasts.createFailed"),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -238,16 +238,16 @@ export default function ContestNew() {
           <CardContent className="p-6">
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="contest-title">{t("instructorNew.form.titleLabel")}</FieldLabel>
+                <FieldLabel htmlFor="contest-title">
+                  {t("instructorNew.form.titleLabel")}
+                </FieldLabel>
                 <Input
                   id="contest-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={t("instructorNew.form.titlePlaceholder")}
                 />
-                <FieldDescription>
-                  {t("instructorNew.form.titleDescription")}
-                </FieldDescription>
+                <FieldDescription>{t("instructorNew.form.titleDescription")}</FieldDescription>
               </Field>
 
               <Field>
@@ -260,9 +260,7 @@ export default function ContestNew() {
                   onChange={(e) => setTagline(e.target.value)}
                   placeholder={t("instructorNew.form.taglinePlaceholder")}
                 />
-                <FieldDescription>
-                  {t("instructorNew.form.taglineDescription")}
-                </FieldDescription>
+                <FieldDescription>{t("instructorNew.form.taglineDescription")}</FieldDescription>
               </Field>
 
               <div className="grid gap-4 lg:grid-cols-2">
@@ -352,9 +350,7 @@ export default function ContestNew() {
                   onChange={(e) => setMaxParticipants(e.target.value)}
                   placeholder={t("instructorNew.form.maxParticipantsPlaceholder")}
                 />
-                <FieldDescription>
-                  {t("instructorNew.form.maxParticipantsDescription")}
-                </FieldDescription>
+                <FieldDescription>{t("instructorNew.form.maxParticipantsDescription")}</FieldDescription>
               </Field>
 
               <div className="grid gap-4 lg:grid-cols-2">
@@ -432,9 +428,7 @@ export default function ContestNew() {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="contest-rules">
-                  {t("instructorNew.form.rulesLabel")}
-                </FieldLabel>
+                <FieldLabel htmlFor="contest-rules">{t("instructorNew.form.rulesLabel")}</FieldLabel>
                 <textarea
                   id="contest-rules"
                   value={rules}
@@ -443,9 +437,7 @@ export default function ContestNew() {
                   className="min-h-36 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                   placeholder={t("instructorNew.form.rulesPlaceholder")}
                 />
-                <FieldDescription>
-                  {t("instructorNew.form.rulesDescription")}
-                </FieldDescription>
+                <FieldDescription>{t("instructorNew.form.rulesDescription")}</FieldDescription>
               </Field>
             </FieldGroup>
 
@@ -500,3 +492,4 @@ export default function ContestNew() {
     </PageContainer>
   );
 }
+

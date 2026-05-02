@@ -91,7 +91,7 @@ function formatDateRange(
   });
 }
 
-export default function InstructorContests() {
+export default function AdminContestsListPage() {
   const { t } = useTranslation("contests");
   const navigate = useNavigate();
   const [items, setItems] = useState<Contest[]>([]);
@@ -108,9 +108,7 @@ export default function InstructorContests() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : t("instructor.loadListFailed"),
-          );
+          setError(err instanceof Error ? err.message : t("instructor.loadListFailed"));
         }
       })
       .finally(() => {
@@ -144,8 +142,7 @@ export default function InstructorContests() {
       setContestToDelete(null);
       toast.success(t("instructor.deleteSuccess"));
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : t("instructor.deleteFailed");
+      const message = err instanceof Error ? err.message : t("instructor.deleteFailed");
       setError(message);
       toast.error(message);
     } finally {
@@ -299,11 +296,7 @@ export default function InstructorContests() {
             icon={<Trophy className="size-6 text-muted-foreground" aria-hidden />}
             title={t("instructor.empty.title")}
             action={
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => navigate("/admin/contests/new")}
-              >
+              <Button type="button" size="sm" onClick={() => navigate("/admin/contests/new")}>
                 {t("instructor.empty.createFirst")}
               </Button>
             }
@@ -314,118 +307,118 @@ export default function InstructorContests() {
           {items.map((contest) => {
             const listImg = contestListImageUrl(contest);
             return (
-            <article
-              key={contest.id}
-              className="group flex h-full flex-col overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="relative aspect-[2/1] w-full bg-gradient-to-br from-primary/10 via-muted to-muted">
-                {listImg ? (
-                  <img
-                    src={listImg}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full min-h-[96px] items-center justify-center">
-                    <Trophy className="size-12 text-primary/35" aria-hidden />
-                  </div>
-                )}
-              </div>
-              <button
-                type="button"
-                className="flex flex-1 flex-col p-4 text-left"
-                onClick={() => navigate(`/admin/contests/${contest.id}/manage`)}
+              <article
+                key={contest.id}
+                className="group flex h-full flex-col overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
               >
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full bg-muted/70 px-3 py-1 text-xs font-medium text-foreground">
-                    {statusLabel(contest.status, t)}
-                  </span>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
-                    {contest.status === "draft" ? (
-                      <>
-                        <EyeOff className="mr-1 size-3.5" aria-hidden />
-                        {t("instructor.listItem.pillPublicDraft")}
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="mr-1 size-3.5" aria-hidden />
-                        {t("instructor.listItem.pillPublicReady")}
-                      </>
-                    )}
-                  </span>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
-                    {locationLabel(contest.location, t)}
-                  </span>
-                </div>
-                <h3 className="mt-4 text-lg font-medium tracking-tight text-foreground">
-                  {contest.title}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {contest.tagline}
-                </p>
-                <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
-                  <div className="rounded-md border border-border-subtle bg-background px-3 py-2">
-                    {formatDateRange(contest.starts_at, contest.ends_at, t)}
-                  </div>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <div className="rounded-md border border-border-subtle bg-background px-3 py-2">
-                      {t("instructor.listItem.metricsRegistrations", {
-                        total: contest.metrics_snapshot.registrations_total,
-                        approved: contest.metrics_snapshot.approved_registrations,
-                      })}
+                <div className="relative aspect-[2/1] w-full bg-gradient-to-br from-primary/10 via-muted to-muted">
+                  {listImg ? (
+                    <img src={listImg} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full min-h-[96px] items-center justify-center">
+                      <Trophy className="size-12 text-primary/35" aria-hidden />
                     </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="flex flex-1 flex-col p-4 text-left"
+                  onClick={() => navigate(`/admin/contests/${contest.id}/manage`)}
+                >
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center rounded-full bg-muted/70 px-3 py-1 text-xs font-medium text-foreground">
+                      {statusLabel(contest.status, t)}
+                    </span>
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
+                      {contest.status === "draft" ? (
+                        <>
+                          <EyeOff className="mr-1 size-3.5" aria-hidden />
+                          {t("instructor.listItem.pillPublicDraft")}
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="mr-1 size-3.5" aria-hidden />
+                          {t("instructor.listItem.pillPublicReady")}
+                        </>
+                      )}
+                    </span>
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
+                      {locationLabel(contest.location, t)}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-lg font-medium tracking-tight text-foreground">
+                    {contest.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {contest.tagline}
+                  </p>
+                  <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
                     <div className="rounded-md border border-border-subtle bg-background px-3 py-2">
-                      {t("instructor.listItem.metricsSubmissions", {
-                        submissions: contest.metrics_snapshot.submissions_total,
-                        winners: contest.metrics_snapshot.published_winners,
-                      })}
+                      {formatDateRange(contest.starts_at, contest.ends_at, t)}
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="rounded-md border border-border-subtle bg-background px-3 py-2">
+                        {t("instructor.listItem.metricsRegistrations", {
+                          total: contest.metrics_snapshot.registrations_total,
+                          approved: contest.metrics_snapshot.approved_registrations,
+                        })}
+                      </div>
+                      <div className="rounded-md border border-border-subtle bg-background px-3 py-2">
+                        {t("instructor.listItem.metricsSubmissions", {
+                          submissions: contest.metrics_snapshot.submissions_total,
+                          winners: contest.metrics_snapshot.published_winners,
+                        })}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </button>
-              <div className="flex items-center justify-between gap-3 border-t border-border-subtle px-4 py-3">
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => navigate(`/contests/${contest.id}/overview`)}
-                  >
-                    {t("instructor.listItem.viewPublic")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate(`/admin/contests/${contest.id}/manage`)}
-                  >
-                    {t("instructor.listItem.openWorkspace")}
-                  </Button>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    aria-label={t("instructor.listItem.moreActions")}
-                    className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  >
-                    <MoreHorizontal className="size-5" aria-hidden />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => navigate(`/admin/contests/${contest.id}/manage`)}>
-                      {t("instructor.listItem.openWorkspace")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => navigate(`/contests/${contest.id}/overview`)}>
-                      {t("instructor.listItem.viewPublic")}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onSelect={() => setContestToDelete(contest)}
+                </button>
+                <div className="flex items-center justify-between gap-3 border-t border-border-subtle px-4 py-3">
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => navigate(`/contests/${contest.id}/overview`)}
                     >
-                      <Trash2 className="mr-2 size-4" aria-hidden />
-                      {t("instructor.listItem.deleteContest")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </article>
+                      {t("instructor.listItem.viewPublic")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => navigate(`/admin/contests/${contest.id}/manage`)}
+                    >
+                      {t("instructor.listItem.openWorkspace")}
+                    </Button>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      aria-label={t("instructor.listItem.moreActions")}
+                      className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      <MoreHorizontal className="size-5" aria-hidden />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onSelect={() => navigate(`/admin/contests/${contest.id}/manage`)}
+                      >
+                        {t("instructor.listItem.openWorkspace")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() => navigate(`/contests/${contest.id}/overview`)}
+                      >
+                        {t("instructor.listItem.viewPublic")}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onSelect={() => setContestToDelete(contest)}
+                      >
+                        <Trash2 className="mr-2 size-4" aria-hidden />
+                        {t("instructor.listItem.deleteContest")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </article>
             );
           })}
         </div>
@@ -445,7 +438,9 @@ export default function InstructorContests() {
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
             {contestToDelete?.title
-              ? t("instructor.deleteDialog.descriptionWithTitle", { title: contestToDelete.title })
+              ? t("instructor.deleteDialog.descriptionWithTitle", {
+                  title: contestToDelete.title,
+                })
               : t("instructor.deleteDialog.description")}
           </p>
           <DialogFooter>
@@ -481,3 +476,4 @@ export default function InstructorContests() {
     </PageContainer>
   );
 }
+

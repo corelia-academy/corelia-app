@@ -75,6 +75,24 @@ service firebase.storage {
       allow write: if isCourseManager(courseId);
     }
 
+    function isCoreliaContestManager() {
+      return isSignedIn() && hasProfile(request.auth.uid) &&
+        (
+          profileDoc(request.auth.uid).data.role == 'admin' ||
+          profileDoc(request.auth.uid).data.role == 'support_staff'
+        );
+    }
+
+    match /contest-banners/{contestId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isCoreliaContestManager();
+    }
+
+    match /contest-thumbnails/{contestId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isCoreliaContestManager();
+    }
+
     match /course-sponsor-logos/{courseId}/{allPaths=**} {
       allow read: if true;
       allow write: if isCourseManager(courseId);

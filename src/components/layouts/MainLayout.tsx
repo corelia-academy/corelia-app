@@ -8,6 +8,7 @@ import {
 import React from "react";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
+import { cn } from "@/lib/utils";
 import {
   SidebarInset,
   SidebarProvider,
@@ -53,18 +54,38 @@ const MainLayout = () => {
           <Outlet />
         </main>
         <footer className="hidden border-t border-border-subtle bg-card/70 md:block">
-          <div className="container-app flex items-center justify-between gap-3 py-3 text-xs text-muted-foreground">
-            <span>
+          <div className="container-app flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 text-xs text-muted-foreground">
+            <span className="min-w-0">
               {t("footer.copyrightPrefix", { year: new Date().getFullYear() })}
             </span>
-            {betaFeedbackUrl ? (
-              <ReportIssueLink
-                compact
-                className="h-7 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground"
-              />
-            ) : (
-              <span>corelia.academy</span>
-            )}
+            <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1">
+              <NavLink
+                to="/roadmap"
+                className={({ isActive }) =>
+                  cn(
+                    "shrink-0 rounded-md px-1.5 py-0.5 transition-colors hover:text-foreground",
+                    isActive
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground underline-offset-2 hover:underline",
+                  )
+                }
+              >
+                {t("footer.roadmap")}
+              </NavLink>
+              <span className="shrink-0 tabular-nums text-muted-foreground/80">
+                {t("footer.version", {
+                  version: import.meta.env.VITE_APP_VERSION,
+                })}
+              </span>
+              {betaFeedbackUrl ? (
+                <ReportIssueLink
+                  compact
+                  className="h-7 shrink-0 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                />
+              ) : (
+                <span className="shrink-0">corelia.academy</span>
+              )}
+            </div>
           </div>
         </footer>
       </SidebarInset>

@@ -40,9 +40,13 @@ import InstructorCourses from "@/pages/InstructorCourses";
 import InstructorContests from "@/pages/InstructorContests";
 import InstructorCourseNew from "@/pages/InstructorCourseNew";
 import InstructorCourseEdit from "@/pages/InstructorCourseEdit";
+import RoadmapPage from "@/pages/roadmap";
 import Contests from "@/pages/Contests";
 import ContestNew from "@/pages/ContestNew";
-import ContestDetail from "@/pages/ContestDetail";
+import ContestPublicLayout from "@/pages/contest-detail/ContestPublicLayout";
+import ContestPublicPage from "@/pages/contest-detail/ContestPublicPage";
+import ContestApplyRedirect from "@/pages/contest-detail/ContestApplyRedirect";
+import ContestWorkspace from "@/pages/admin/ContestWorkspace";
 import { ROLE_GROUPS } from "@/config/roles";
 import {
   PartnerContractsPage,
@@ -127,8 +131,18 @@ export default function App() {
                   </RequireAuth>
                 }
               />
+              <Route path="roadmap" element={<RoadmapPage />} />
               <Route path="contests" element={<Contests />} />
-              <Route path="contests/:id" element={<ContestDetail />} />
+              <Route path="contests/:id" element={<ContestPublicLayout />}>
+                <Route index element={<Navigate to="overview" replace />} />
+                <Route path="overview" element={<ContestPublicPage section="overview" />} />
+                <Route path="timeline" element={<ContestPublicPage section="timeline" />} />
+                <Route path="prizes" element={<ContestPublicPage section="prizes" />} />
+                <Route path="rules" element={<ContestPublicPage section="rules" />} />
+                <Route path="faqs" element={<ContestPublicPage section="faqs" />} />
+                <Route path="projects" element={<ContestPublicPage section="projects" />} />
+                <Route path="apply" element={<ContestApplyRedirect />} />
+              </Route>
               <Route
                 path="account"
                 element={
@@ -164,7 +178,7 @@ export default function App() {
                 />
                 <Route path="contests" element={<InstructorContests />} />
                 <Route path="contests/new" element={<ContestNew />} />
-                <Route path="contests/:id/manage" element={<ContestDetail />} />
+                <Route path="contests/:id/manage" element={<ContestWorkspace />} />
               </Route>
               <Route
                 path="instructor"

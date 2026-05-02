@@ -35,6 +35,28 @@ export interface ContestLeaderboardEntry {
   score_count: number;
   rank: number;
   team_name: string | null;
+  /** Copied from submission when publishing results — public gallery data */
+  demo_url?: string | null;
+  repo_url?: string | null;
+  slide_url?: string | null;
+  summary?: string | null;
+}
+
+export interface ContestPrizeEntry {
+  rank_label: string;
+  title: string;
+  value_display?: string | null;
+  description?: string | null;
+}
+
+export interface ContestFaqEntry {
+  question: string;
+  answer: string;
+}
+
+export interface ContestTimelineMilestone {
+  title: string;
+  at: string;
 }
 
 export interface ContestWinner {
@@ -59,7 +81,13 @@ export interface Contest {
   starts_at: string | null;
   ends_at: string | null;
   location: ContestLocation;
+  /** Wide banner on contest detail (hero) */
   cover_image_url?: string | null;
+  /** Firebase Storage path for banner — used when replacing/deleting */
+  cover_image_path?: string | null;
+  /** Square-ish image for catalog cards & compact surfaces */
+  thumbnail_url?: string | null;
+  thumbnail_path?: string | null;
   registration_deadline: string | null;
   max_participants: number | null;
   judge_emails: string[];
@@ -68,6 +96,10 @@ export interface Contest {
   metrics_snapshot: ContestMetricsSnapshot;
   published_leaderboard: ContestLeaderboardEntry[];
   winner_announcements: ContestWinner[];
+  prize_pool_summary?: string | null;
+  prizes?: ContestPrizeEntry[];
+  faqs?: ContestFaqEntry[];
+  timeline_milestones?: ContestTimelineMilestone[];
   created_by: string;
   updated_by: string;
   created_at: string;
@@ -84,11 +116,18 @@ export interface ContestInsert {
   ends_at?: string | null;
   location?: ContestLocation;
   cover_image_url?: string | null;
+  cover_image_path?: string | null;
+  thumbnail_url?: string | null;
+  thumbnail_path?: string | null;
   registration_deadline?: string | null;
   max_participants?: number | null;
   judge_emails?: string[];
   co_host_viewer_emails?: string[];
   rubric_weights?: ContestRubricWeights;
+  prize_pool_summary?: string | null;
+  prizes?: ContestPrizeEntry[];
+  faqs?: ContestFaqEntry[];
+  timeline_milestones?: ContestTimelineMilestone[];
 }
 
 export interface ContestUpdate {
@@ -101,6 +140,9 @@ export interface ContestUpdate {
   ends_at?: string | null;
   location?: ContestLocation;
   cover_image_url?: string | null;
+  cover_image_path?: string | null;
+  thumbnail_url?: string | null;
+  thumbnail_path?: string | null;
   registration_deadline?: string | null;
   max_participants?: number | null;
   judge_emails?: string[];
@@ -109,6 +151,10 @@ export interface ContestUpdate {
   metrics_snapshot?: ContestMetricsSnapshot;
   published_leaderboard?: ContestLeaderboardEntry[];
   winner_announcements?: ContestWinner[];
+  prize_pool_summary?: string | null;
+  prizes?: ContestPrizeEntry[];
+  faqs?: ContestFaqEntry[];
+  timeline_milestones?: ContestTimelineMilestone[];
 }
 
 export interface ContestRegistration {

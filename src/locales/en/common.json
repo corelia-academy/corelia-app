@@ -21,13 +21,16 @@
     "search": "Search"
   },
   "footer": {
-    "copyrightPrefix": "© {{year}} Corelia Academy. All rights reserved."
+    "copyrightPrefix": "© {{year}} Corelia Academy. All rights reserved.",
+    "version": "Version {{version}}",
+    "roadmap": "Roadmap"
   },
   "nav": {
     "home": "Home",
     "courses": "Courses",
     "cohorts": "Cohorts",
     "contests": "Contests",
+    "roadmap": "Roadmap",
     "achievements": "Achievements",
     "account": "Account",
     "admin": "Admin",
@@ -292,6 +295,37 @@
     "searchPlaceholder": "Search by name or email",
     "emptyLabel": "No matching results.",
     "done": "Done"
+  },
+  "roadmap": {
+    "documentTitle": "Product roadmap",
+    "badge": "Transparency",
+    "title": "Development roadmap",
+    "intro": "We ship in short cycles. Here is a snapshot of what is already live, what we are actively building, and what is next—so you always know where Corelia is headed.",
+    "backHome": "Back to home",
+    "shippedTitle": "Shipped",
+    "inProgressTitle": "In progress",
+    "plannedTitle": "Planned next",
+    "footerNote": "Priorities can shift with partner programs and learner feedback. This page is updated when major milestones land.",
+    "shippedItems": [
+      "Course catalog, checkout, and self-paced learning workspace",
+      "Contests: discovery, public hubs, and participant-facing flows",
+      "Account area: profile, billing basics, and achievements overview",
+      "Instructor workspace: course authoring and partner finance tools",
+      "Admin tools for users, instructors, and platform operations",
+      "Open Campus (OCID) linking for credentials and achievement claims"
+    ],
+    "inProgressItems": [
+      "Contest admin: richer creation, review, and publishing workflows",
+      "Public contest pages: timeline, prizes, rules, FAQs, and polish",
+      "Certificates & badges: smoother issuance and OC claim UX",
+      "Performance, accessibility, and onboarding refinements sitewide"
+    ],
+    "plannedItems": [
+      "Community layer: comments, showcases, and learner highlights",
+      "Stronger analytics for instructors and program owners",
+      "More payment and invoicing options where markets need them",
+      "Mobile-first improvements and optional PWA-style install"
+    ]
   },
   "openCampusConnect": {
     "header": {
