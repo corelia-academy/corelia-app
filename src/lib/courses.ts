@@ -28,6 +28,8 @@ import type {
   CourseSectionLocaleContent,
   CourseLessonLocaleContent,
   SupportedCourseLocale,
+  CourseCoInstructorPermissions,
+  CourseCoInstructorSnapshot,
 } from "@/types/courses";
 
 const COURSES = "courses";
@@ -821,12 +823,46 @@ export async function createCourse(data: CourseInsert): Promise<Course> {
     partner_contract_docs: data.partner_contract_docs ?? [],
     partner_invoice_docs: data.partner_invoice_docs ?? [],
     partner_transfer_info: data.partner_transfer_info ?? null,
+    co_instructors: data.co_instructors ?? [],
+    co_instructor_permissions: data.co_instructor_permissions ?? {},
     created_at: now,
     updated_at: now,
   };
   const payload = removeUndefinedFields(course);
   await setDoc(ref, payload);
   return { id: ref.id, ...payload };
+}
+
+export function isCourseCoInstructorWithAnyPermission(
+  course: Pick<Course, "co_instructor_permissions"> | null | undefined,
+  uid: string | null | undefined,
+): boolean {
+  if (!course || !uid) return false;
+  const perms = course.co_instructor_permissions?.[uid] as
+    | CourseCoInstructorPermissions
+    | undefined;
+  if (!perms) return false;
+  return Object.values(perms).some(Boolean);
+}
+
+export function toCoInstructorSnapshot(profile: {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  instructor_headline?: string | null;
+  instructor_bio?: string | null;
+  instructor_organization?: string | null;
+  instructor_website?: string | null;
+}): CourseCoInstructorSnapshot {
+  return removeUndefinedFields({
+    id: profile.id,
+    name: profile.full_name ?? "",
+    avatar_url: profile.avatar_url ?? null,
+    headline: profile.instructor_headline ?? null,
+    organization: profile.instructor_organization ?? null,
+    website: profile.instructor_website ?? null,
+    bio: profile.instructor_bio ?? null,
+  });
 }
 
 /** Thêm section vào khoá */

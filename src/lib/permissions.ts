@@ -1,15 +1,11 @@
 import type { Profile } from "@/types/database";
 import type { Contest, ContestScopedViewerRole } from "@/types/contests";
 import type { OfflineCohort } from "@/types/offline";
+import { ROLE_GROUPS } from "@/config/roles";
 
 export function canManageContests(profile: Profile | null | undefined): boolean {
   if (!profile) return false;
-  if (profile.role === "admin") return true;
-  if (profile.role === "support_staff") return true;
-  if (profile.role === "instructor" && profile.instructor_origin === "corelia") {
-    return true;
-  }
-  return false;
+  return ROLE_GROUPS.admin.includes(profile.role);
 }
 
 export function canManageOfflineAcademy(profile: Profile | null | undefined): boolean {

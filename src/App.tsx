@@ -7,7 +7,6 @@ import {
   Route,
   Routes,
   useLocation,
-  useParams,
 } from "react-router";
 import MainLayout from "@/components/layouts/MainLayout";
 import { ThemeProvider } from "next-themes";
@@ -41,10 +40,14 @@ import InstructorCourses from "@/pages/InstructorCourses";
 import InstructorContests from "@/pages/InstructorContests";
 import InstructorCourseNew from "@/pages/InstructorCourseNew";
 import InstructorCourseEdit from "@/pages/InstructorCourseEdit";
+import RoadmapPage from "@/pages/roadmap";
 import Contests from "@/pages/Contests";
 import ContestNew from "@/pages/ContestNew";
-import ContestDetail from "@/pages/ContestDetail";
-import { RequireContestManager } from "@/components/auth/RequireContestManager";
+import ContestPublicLayout from "@/pages/contest-detail/ContestPublicLayout";
+import ContestPublicPage from "@/pages/contest-detail/ContestPublicPage";
+import ContestApplyRedirect from "@/pages/contest-detail/ContestApplyRedirect";
+import ContestWorkspace from "@/pages/admin/ContestWorkspace";
+import { ROLE_GROUPS } from "@/config/roles";
 import {
   PartnerContractsPage,
   PartnerInvoicesPage,
@@ -61,18 +64,6 @@ function ScrollToTop() {
   }, [location.pathname, location.search]);
 
   return null;
-}
-
-function LegacyContestManageRedirect() {
-  const { id } = useParams<{ id: string }>();
-  const location = useLocation();
-  if (!id) return <Navigate to="/instructor/contests" replace />;
-  return (
-    <Navigate
-      to={`/instructor/contests/${id}/manage${location.search}`}
-      replace
-    />
-  );
 }
 
 export default function App() {
@@ -140,16 +131,18 @@ export default function App() {
                   </RequireAuth>
                 }
               />
+              <Route path="roadmap" element={<RoadmapPage />} />
               <Route path="contests" element={<Contests />} />
-              <Route path="contests/:id" element={<ContestDetail />} />
-              <Route
-                path="contests/:id/manage"
-                element={<LegacyContestManageRedirect />}
-              />
-              <Route
-                path="contests/new"
-                element={<Navigate to="/instructor/contests/new" replace />}
-              />
+              <Route path="contests/:id" element={<ContestPublicLayout />}>
+                <Route index element={<Navigate to="overview" replace />} />
+                <Route path="overview" element={<ContestPublicPage section="overview" />} />
+                <Route path="timeline" element={<ContestPublicPage section="timeline" />} />
+                <Route path="prizes" element={<ContestPublicPage section="prizes" />} />
+                <Route path="rules" element={<ContestPublicPage section="rules" />} />
+                <Route path="faqs" element={<ContestPublicPage section="faqs" />} />
+                <Route path="projects" element={<ContestPublicPage section="projects" />} />
+                <Route path="apply" element={<ContestApplyRedirect />} />
+              </Route>
               <Route
                 path="account"
                 element={
@@ -171,7 +164,7 @@ export default function App() {
               <Route
                 path="admin"
                 element={
-                  <RequireRole roles={["admin", "support_staff"]}>
+                  <RequireRole roles={ROLE_GROUPS.admin}>
                     <AdminLayout />
                   </RequireRole>
                 }
@@ -183,11 +176,14 @@ export default function App() {
                   path="instructors/:id"
                   element={<AdminInstructorDetail />}
                 />
+                <Route path="contests" element={<InstructorContests />} />
+                <Route path="contests/new" element={<ContestNew />} />
+                <Route path="contests/:id/manage" element={<ContestWorkspace />} />
               </Route>
               <Route
                 path="instructor"
                 element={
-                  <RequireRole roles={["instructor", "support_staff", "admin"]}>
+                  <RequireRole roles={ROLE_GROUPS.instructorWorkspace}>
                     <InstructorLayout />
                   </RequireRole>
                 }
@@ -211,30 +207,6 @@ export default function App() {
                   element={<InstructorCourseEdit />}
                 />
                 <Route
-                  path="contests"
-                  element={
-                    <RequireContestManager>
-                      <InstructorContests />
-                    </RequireContestManager>
-                  }
-                />
-                <Route
-                  path="contests/new"
-                  element={
-                    <RequireContestManager>
-                      <ContestNew />
-                    </RequireContestManager>
-                  }
-                />
-                <Route
-                  path="contests/:id/manage"
-                  element={
-                    <RequireContestManager>
-                      <ContestDetail />
-                    </RequireContestManager>
-                  }
-                />
-                <Route
                   path="profile"
                   element={<InstructorWorkspaceProfileRoute />}
                 />
@@ -244,7 +216,7 @@ export default function App() {
                 <Route
                   path="instructors"
                   element={
-                    <RequireRole roles={["support_staff", "admin"]}>
+                    <RequireRole roles={ROLE_GROUPS.admin}>
                       <Navigate to="/admin/instructors" replace />
                     </RequireRole>
                   }

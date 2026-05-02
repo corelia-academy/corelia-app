@@ -44,7 +44,9 @@
     "registrationDeadlinePrefix": "Hạn đăng ký {{date}}",
     "registrationNoLimit": "Không giới hạn thời gian đăng ký",
     "viewDetails": "Xem chi tiết",
+    "viewContest": "Xem cuộc thi",
     "openWorkspace": "Mở contest workspace",
+    "statsSummary": "{{total}} tổng · {{accepting}} đang nhận hồ sơ · {{running}} đang diễn ra · {{ended}} đã kết thúc",
     "stats": {
       "total": "Tổng cuộc thi",
       "accepting": "Đang nhận hồ sơ",
@@ -67,6 +69,192 @@
     },
     "sidebar": {
       "leaderboardHint": "Judges chấm theo rubric, còn leaderboard và winners chỉ hiện khi được publish."
+    },
+    "listCardImageAlt": "Ảnh đại diện contest — {{title}}"
+  },
+  "previewBar": {
+    "label": "Preview mode",
+    "statusPrefix": "Status: {{status}}",
+    "exit": "Exit preview",
+    "openWorkspace": "Open workspace →",
+    "openOperations": "Open operations →",
+    "catalogTitle": "Contests (public surface)"
+  },
+  "workspace": {
+    "tabs": {
+      "overview": "Overview",
+      "applications": "Applications",
+      "judging": "Judging",
+      "settings": "Settings"
+    },
+    "settings": {
+      "description": "Edit contest settings and protect destructive actions."
+    },
+    "manage": {
+      "backToContests": "Back to contests",
+      "backToContestPage": "Back to contest page",
+      "roleCoreliaOps": "Corelia operations",
+      "roleJudgePanel": "Judge panel",
+      "roleCoHostObserver": "Co-host observer",
+      "heroStart": "Start date",
+      "heroEnd": "End date",
+      "heroFormat": "Format",
+      "heroApprovalLimit": "Approval limit",
+      "overviewApplications": "Applications",
+      "overviewApproved": "Approved",
+      "overviewSubmissions": "Submissions",
+      "overviewScored": "Scored",
+      "overview": {
+        "label": "Overview",
+        "description": "Your role, the operating cadence, and the contest's current status."
+      },
+      "fallback": {
+        "label": "Contest workspace",
+        "description": "Coordinate between Corelia, judges, and co-host partners."
+      },
+      "sections": {
+        "applications": {
+          "label": "Applications",
+          "description": "Review applications and select teams for the next round"
+        },
+        "judging": {
+          "label": "Judging",
+          "description": "Score submissions and save notes"
+        },
+        "results": {
+          "label": "Results",
+          "description": "Leaderboard, winners, and aggregate reporting"
+        }
+      },
+      "operatingModelTitle": "Operating model",
+      "operatingModelDescription": "This contest runs as a multi-party workspace—not a single content editor.",
+      "lanes": {
+        "ops": {
+          "title": "Corelia operations",
+          "description": "Open the contest, review applications, invite collaborators, and publish official results."
+        },
+        "judge": {
+          "title": "Judge panel",
+          "description": "Access submissions, score with a rubric, and leave expert feedback."
+        },
+        "observer": {
+          "title": "Co-host observers",
+          "description": "Track aggregate metrics, leaderboard, and winners without seeing raw applications."
+        }
+      },
+      "phase1Header": "Phase 1",
+      "phase1Title": "Applications",
+      "phase1Body": "Collect applications and review intake.",
+      "phase2Header": "Phase 2",
+      "phase2Title": "Submission flow",
+      "phase2Body": "Enable submissions for approved teams.",
+      "phase3Header": "Phase 3",
+      "phase3Title": "Judge scoring",
+      "phase3Body": "Judges score using the weighted rubric.",
+      "phase4Header": "Phase 4",
+      "phase4Title": "Publish outcomes",
+      "phase4Body": "Publish leaderboard and winners to the public page.",
+      "applicationsReviewTitle": "Application review",
+      "applicationsReviewDescription": "Only Corelia staff review applications. Judges and co-host partners cannot access this area.",
+      "applicationsEmptyTitle": "No applications yet",
+      "applicationsEmptyHint": "When participants submit applications, Corelia's intake queue will appear here.",
+      "teamMembersPrefix": "Members:",
+      "approve": "Approve",
+      "reject": "Reject",
+      "reviewNoteLabel": "Review note",
+      "portfolioLabel": "Portfolio:",
+      "judgingTitle": "Judging panel",
+      "judgingDescription": "Score using four criteria and save scores per submission.",
+      "judgingWeightsLine": "Weights: Product {{product}}% · Technical {{technical}}% · Presentation {{presentation}}% · Impact {{impact}}%",
+      "judgingEmptyTitle": "No submissions yet",
+      "judgingEmptyHint": "Judges will see submissions here once approved teams start updating them.",
+      "rankCurrent": "Current rank #{{rank}}",
+      "averageScores": "Average:",
+      "scoreAttempts": "{{count}} scores",
+      "demoPrefix": "Demo:",
+      "repoPrefix": "Repo:",
+      "slidePrefix": "Slide:",
+      "scoreNoteLabel": "Note",
+      "rawTotal": "Raw total:",
+      "criteriaHint": "Each criterion is scored from 0 to 25.",
+      "criterionProduct": "Product",
+      "criterionTechnical": "Technical",
+      "criterionPresentation": "Presentation",
+      "criterionImpact": "Impact",
+      "outcomesTitle": "Outcomes dashboard",
+      "outcomesDescription": "Co-host observers see aggregate metrics, the published leaderboard, and the award list.",
+      "metricApplications": "Applications",
+      "metricApproved": "Approved",
+      "metricSubmissions": "Submissions",
+      "metricScored": "Scored",
+      "publishResultsHeading": "Publish results",
+      "entryAverageScore": "{{score}} pts",
+      "publishedLeaderboard": "Published leaderboard",
+      "exportCsv": "Export CSV",
+      "leaderboardNotPublishedTitle": "Leaderboard not published yet",
+      "leaderboardNotPublishedHint": "Aggregated results will appear here after Corelia finalizes scores and publishes officially.",
+      "winnersHeading": "Winners",
+      "winnersEmptyTitle": "No awards announced yet",
+      "winnersEmptyHint": "Awards will appear here when organizers publish winners.",
+      "operationsControlsTitle": "Operations controls",
+      "operationsControlsDescription": "Coordinate contest status, rubric, and access for operational participants.",
+      "contestStatusLabel": "Contest status",
+      "statusDraft": "Draft",
+      "statusPublished": "Accepting applications",
+      "statusRunning": "Running",
+      "statusEnded": "Ended",
+      "rubricTitle": "Judge rubric",
+      "rubricDescription": "Adjust weights for four criteria. Total should equal 100 for clearer scoring.",
+      "rubricTotalPrefix": "Current total:",
+      "accessInvitesTitle": "Access & invites",
+      "inviteRoleJudge": "Judge",
+      "inviteRoleCoHost": "Co-host",
+      "invitesEmpty": "No invites yet.",
+      "publicPageContentTitle": "Nội dung trang công khai",
+      "publicPageContentDescription": "Giải thưởng, FAQ, mốc timeline tùy chỉnh và dòng tóm tắt giải trên các URL công khai.",
+      "mediaTitle": "Banner & thumbnail",
+      "mediaDescription": "Banner hiển thị rộng phía trên thẻ contest trên URL công khai. Thumbnail dùng cho danh sách và header dính (nếu trống sẽ dùng banner).",
+      "bannerUploadLabel": "Ảnh banner",
+      "thumbnailUploadLabel": "Ảnh thumbnail",
+      "uploadingBanner": "Đang tải banner…",
+      "uploadingThumbnail": "Đang tải thumbnail…",
+      "prizePoolSummaryLabel": "Tóm tắt tổng giải thưởng",
+      "prizePoolSummaryPlaceholder": "vd: Tổng giải thưởng: 120 triệu VND",
+      "addPrizeRow": "Thêm giải",
+      "removeRow": "Xoá",
+      "addFaqRow": "Thêm FAQ",
+      "addMilestoneRow": "Thêm mốc",
+      "milestoneTitlePlaceholder": "Tên sự kiện",
+      "milestoneAtLabel": "Ngày giờ",
+      "faqQuestionPlaceholder": "Câu hỏi",
+      "faqAnswerPlaceholder": "Trả lời",
+      "prizeRankPlaceholder": "vd: Giải nhất",
+      "prizeTitlePlaceholder": "Tên giải / hạng mục",
+      "prizeValuePlaceholder": "vd: 50 triệu VND",
+      "prizeDescriptionPlaceholder": "Mô tả (tuỳ chọn)",
+      "savePublicPageContent": "Lưu nội dung công khai",
+      "revoke": "Revoke",
+      "copyLink": "Copy link",
+      "openEmail": "Open email",
+      "dangerZoneTitle": "Danger Zone",
+      "dangerZoneDescription": "Deleting a contest removes all registrations, invites, submissions, and scores. This cannot be undone.",
+      "deleteContest": "Delete contest",
+      "inviteCollaborationTitle": "Collaboration invite",
+      "inviteMetaLine": "Role: {{roles}} · Status: {{status}}",
+      "inviteAccept": "Accept invite",
+      "inviteDecline": "Decline",
+      "backToPublicSurfaceTitle": "Back to public page",
+      "backToPublicSurfaceDescription": "The public page is for participants to view the contest and published results.",
+      "viewPublicPage": "View public page",
+      "deleteDialogTitle": "Delete contest?",
+      "deleteTypeToConfirm": "Type “{{title}}” to confirm deletion.",
+      "deleteDialogBodyWithTitle": "Contest \"{{title}}\" and all registrations, invites, submissions, and scores will be deleted. This cannot be undone.",
+      "deleteDialogCancel": "Cancel",
+      "deleteDialogDeleting": "Deleting...",
+      "deleteContestConfirm": "Delete contest",
+      "defaultAwardChampion": "Champion",
+      "defaultAwardRunnerUp": "Runner-up",
+      "defaultAwardBestDemo": "Best Demo"
     }
   },
   "instructor": {
@@ -126,6 +314,7 @@
       "ended": "Đã kết thúc",
       "submissions": "Submissions"
     },
+    "statsSummary": "{{total}} tổng · {{draft}} bản nháp · {{accepting}} đang nhận hồ sơ · {{running}} đang diễn ra · {{ended}} đã kết thúc · {{submissions}} bài nộp",
     "empty": {
       "title": "Chưa có cuộc thi nào trong khu vực này.",
       "createFirst": "Tạo contest đầu tiên"
@@ -137,6 +326,7 @@
       "metricsSubmissions": "{{submissions}} submissions · {{winners}} winners",
       "viewPublic": "Xem trang công khai",
       "openWorkspace": "Mở khu vực vận hành",
+      "moreActions": "More actions",
       "delete": "Xoá",
       "deleteContest": "Xoá contest"
     },
@@ -177,7 +367,8 @@
     },
     "toasts": {
       "created": "Đã tạo cuộc thi.",
-      "createFailed": "Không thể tạo cuộc thi."
+      "createFailed": "Không thể tạo cuộc thi.",
+      "imagesUploadFailed": "Đã tạo contest nhưng không tải được ảnh. Bạn có thể thêm trong phần cài đặt workspace."
     },
     "form": {
       "titleLabel": "Tên cuộc thi",
@@ -209,9 +400,15 @@
       "descriptionPlaceholder": "Mô tả chủ đề, cách thi, mentor đồng hành, quyền lợi và trải nghiệm chính...",
       "rulesLabel": "Yêu cầu và luật chơi",
       "rulesPlaceholder": "Điều kiện tham gia, tiêu chí chấm, cách nộp bài, yêu cầu demo...",
-      "rulesDescription": "Nội dung này sẽ hiển thị ở trang chi tiết để người tham gia chuẩn bị hồ sơ."
-    }
-    ,
+      "rulesDescription": "Nội dung này sẽ hiển thị ở trang chi tiết để người tham gia chuẩn bị hồ sơ.",
+      "prizePoolSummaryLabel": "Tóm tắt tổng giải thưởng (tuỳ chọn)",
+      "prizePoolSummaryPlaceholder": "vd: Tổng giải thưởng: 120 triệu VND",
+      "prizePoolSummaryDescription": "Hiển thị ở phần đầu trang công khai. Thêm giải, FAQ và mốc timeline trong workspace.",
+      "bannerLabel": "Ảnh banner (tuỳ chọn)",
+      "bannerHint": "Ảnh ngang hiển thị đầu trang contest công khai. Gợi ý tỉ lệ khoảng 21:9.",
+      "thumbnailLabel": "Thumbnail (tuỳ chọn)",
+      "thumbnailHint": "Ảnh gần vuông cho danh sách và điều hướng. Nếu bỏ trống sẽ dùng banner."
+    },
     "actions": {
       "back": "Quay lại",
       "create": "Tạo cuộc thi",
@@ -296,6 +493,7 @@
       "deleteErrorFallback": "Không thể xoá cuộc thi lúc này."
     },
     "cta": {
+      "nextStepEyebrow": "Bước tiếp theo",
       "continueSubmission": "Tiếp tục submission",
       "submitSubmission": "Nộp submission",
       "approvedHelper": "Hồ sơ đã được duyệt. Bạn có thể mở khu submission để cập nhật bài nộp.",
@@ -306,6 +504,73 @@
       "trackTimeline": "Theo dõi mốc contest",
       "trackTimelineHelper": "Contest chưa mở đăng ký. Bạn có thể xem timeline và chờ giai đoạn nhận hồ sơ."
     },
+    "visual": {
+      "bannerAlt": "Banner — {{title}}",
+      "thumbnailAlt": "Thumbnail — {{title}}",
+      "listThumbAlt": "Ảnh đại diện contest — {{title}}"
+    },
+    "hero": {
+      "backToContests": "Quay lại cuộc thi",
+      "backToOverview": "Về tổng quan",
+      "start": "Bắt đầu",
+      "end": "Kết thúc",
+      "format": "Hình thức",
+      "participantLimit": "Giới hạn người tham gia",
+      "applicationsLine": "{{total}} hồ sơ đăng ký",
+      "pendingLine": "{{count}} đang chờ duyệt",
+      "approvedLine": "{{count}} đã duyệt",
+      "registrationCountdown": "Hạn đăng ký còn {{time}}",
+      "registrationClosed": "Đã quá hạn đăng ký",
+      "contestEndsCountdown": "Contest kết thúc sau {{time}}",
+      "contestEnded": "Contest đã kết thúc",
+      "countdownDays": "{{count}} ngày",
+      "countdownHours": "{{count}} giờ",
+      "countdownMinutes": "{{count}} phút"
+    },
+    "public": {
+      "nav": {
+        "ariaLabel": "Mục contest",
+        "overview": "Tổng quan",
+        "timeline": "Lịch trình",
+        "prizes": "Giải thưởng",
+        "rules": "Luật & điều kiện",
+        "faqs": "FAQ",
+        "projects": "Dự án",
+        "apply": "Đăng ký"
+      },
+      "infoCards": {
+        "reviewTitle": "Duyệt tham gia",
+        "reviewBody": "Mọi hồ sơ đều được Corelia xét duyệt trước khi vào contest.",
+        "teamSubmitTitle": "Nộp bài theo đội",
+        "teamSubmitBody": "Sau khi được duyệt, đội có thể gửi submission và cập nhật tài nguyên.",
+        "resultsTitle": "Kết quả công bố",
+        "resultsBody": "Leaderboard và winners chỉ hiển thị khi Corelia publish chính thức."
+      },
+      "results": {
+        "cardTitle": "Kết quả contest",
+        "cardDescription": "Những kết quả đã được Corelia công bố sẽ hiển thị tại đây.",
+        "leaderboardHeading": "Leaderboard đã publish",
+        "leaderboardEmptyTitle": "Chưa publish leaderboard",
+        "leaderboardEmptyHint": "Khi contest được chốt điểm, bảng xếp hạng chính thức sẽ xuất hiện tại đây.",
+        "winnersHeading": "Người đoạt giải",
+        "winnersEmptyTitle": "Chưa công bố giải thưởng",
+        "winnersEmptyHint": "Hãy theo dõi trang này để xem winners khi Corelia publish kết quả."
+      }
+    },
+    "participant": {
+      "submissionWorkspaceTitle": "Khu vực nộp bài",
+      "submissionWorkspaceApprovedBody": "Hồ sơ của bạn đã được duyệt. Bạn có thể nộp và cập nhật submission tại đây.",
+      "submissionDirtyWarning": "Bạn có thay đổi chưa lưu. Nếu rời trang lúc này, nội dung mới có thể bị mất.",
+      "submissionFooterHint": "Submission nên có tiêu đề rõ ràng, phần tóm tắt đủ chi tiết và ít nhất một đường dẫn demo hoặc repo nếu đã sẵn sàng.",
+      "applicationCardTitle": "Hồ sơ tham gia",
+      "applicationCardPendingBody": "Bạn chỉ chính thức được tham gia contest sau khi đội ngũ Corelia duyệt.",
+      "sentAt": "Gửi lúc {{datetime}}",
+      "teamPreviewLabel": "Xem trước đội",
+      "extraMembersCount": "{{count}} thành viên bổ sung",
+      "soloMembersHint": "Bạn có thể để trống nếu đăng ký cá nhân.",
+      "postSubmitHint": "Sau khi gửi, hồ sơ sẽ chuyển sang trạng thái chờ duyệt. Bạn chỉ có thể nộp submission khi được Corelia phê duyệt.",
+      "draftNotReadyHint": "Hãy điền email liên hệ và phần động lực đủ rõ trước khi gửi hồ sơ."
+    },
     "errors": {
       "notFound": "Không tìm thấy cuộc thi.",
       "loadFailed": "Không thể tải cuộc thi.",
@@ -314,6 +579,7 @@
       "workspaceAccessDenied": "Bạn không có quyền truy cập khu vực vận hành của cuộc thi này."
     },
     "toasts": {
+      "draftRedirect": "Cuộc thi này chưa mở công khai.",
       "contactEmailRequired": "Hãy nhập email liên hệ để Corelia phản hồi hồ sơ.",
       "applicationMotivationTooShort": "Hãy mô tả động lực và năng lực chi tiết hơn trước khi gửi hồ sơ.",
       "applicationSubmitted": "Đã gửi hồ sơ đăng ký. Corelia sẽ duyệt trước khi bạn được tham gia.",
@@ -345,7 +611,13 @@
       "publishNeedsAward": "Hãy nhập ít nhất một giải thưởng trước khi publish.",
       "resultsPublished": "Đã publish leaderboard và winners.",
       "publishFailed": "Không thể publish kết quả.",
-      "inviteLinkCopied": "Đã copy invite link."
+      "inviteLinkCopied": "Đã copy invite link.",
+      "publicContentSaved": "Đã lưu nội dung trang công khai.",
+      "publicContentSaveFailed": "Không thể lưu nội dung trang công khai.",
+      "contestBannerUpdated": "Đã cập nhật banner.",
+      "contestThumbnailUpdated": "Đã cập nhật thumbnail.",
+      "contestBannerUploadFailed": "Không thể tải banner.",
+      "contestThumbnailUploadFailed": "Không thể tải thumbnail."
     },
     "forms": {
       "awards": {
@@ -381,17 +653,53 @@
     "dialogs": {
       "delete": {
         "title": "Xoá cuộc thi?",
-        "descriptionManager": "Cuộc thi và toàn bộ dữ liệu liên quan sẽ bị xoá. Hành động này không thể hoàn tác."
+        "descriptionManager": "Cuộc thi và toàn bộ dữ liệu liên quan sẽ bị xoá. Hành động này không thể hoàn tác.",
+        "typeToConfirm": "Type “{{title}}” to confirm deletion."
       }
+    },
+    "prizes": {
+      "sectionTitle": "Giải thưởng & vinh danh",
+      "sectionDescription": "Phần thưởng hoặc giá trị nhận được khi tham gia contest.",
+      "empty": "Thông tin giải thưởng sẽ được cập nhật tại đây.",
+      "rankLabel": "Hạng",
+      "titleLabel": "Tên giải",
+      "valueLabel": "Giá trị",
+      "descriptionLabel": "Chi tiết"
+    },
+    "faqs": {
+      "sectionTitle": "Câu hỏi thường gặp",
+      "empty": "FAQ sẽ được bổ sung sớm."
+    },
+    "projects": {
+      "sectionTitle": "Dự án đã nộp",
+      "sectionDescription": "Showcase công khai từ kết quả đã publish.",
+      "emptyTitle": "Chưa có dự án để hiển thị",
+      "emptyHint": "Dự án xuất hiện sau khi contest kết thúc và kết quả được publish.",
+      "viewDemo": "Demo",
+      "viewRepo": "Mã nguồn",
+      "viewSlides": "Slide",
+      "scoreLine": "{{score}} điểm · {{count}} lượt chấm"
+    },
+    "sections": {
+      "timeline": "Lịch trình",
+      "timelineDescription": "Các mốc quan trọng cho hạn đăng ký, khai mạc và kết thúc cuộc thi.",
+      "howToParticipate": "Cách tham gia",
+      "timelineUtcNote": "Thời gian hiển thị theo múi giờ trên thiết bị của bạn.",
+      "addToCalendar": "Thêm vào lịch (.ics)"
+    },
+    "timeline": {
+      "registrationDeadline": "Hạn đăng ký",
+      "kickoff": "Khai mạc",
+      "end": "Kết thúc"
     },
     "labels": {
       "manageArea": "Khu vực vận hành cuộc thi",
       "publicType": "Hackathon",
       "unlimited": "Không giới hạn",
       "contextManage": "Bối cảnh contest",
-      "contextPublic": "Về contest này",
+      "contextPublic": "Giới thiệu",
       "rulesManage": "Rule, format và nguyên tắc vận hành",
-      "rulesPublic": "Rule và yêu cầu",
+      "rulesPublic": "Quy định & yêu cầu",
       "rulesEmpty": "Corelia sẽ cập nhật guideline, tiêu chí chấm và format nộp bài tại đây.",
       "refreshing": "Đang làm mới...",
       "refreshMetrics": "Làm mới metrics",

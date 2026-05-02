@@ -28,14 +28,6 @@ export function buildInstructorCrumbs({
   } else if (pathname.startsWith("/instructor/cohorts/") && pathname.endsWith("/manage")) {
     list.push({ label: translate("layout.crumbs.offlineClasses"), to: "/instructor/cohorts" });
     list.push({ label: translate("layout.crumbs.cohortWorkspace") });
-  } else if (pathname === "/instructor/contests") {
-    list.push({ label: translate("layout.crumbs.contests") });
-  } else if (pathname === "/instructor/contests/new") {
-    list.push({ label: translate("layout.crumbs.contests"), to: "/instructor/contests" });
-    list.push({ label: translate("layout.crumbs.createContest") });
-  } else if (pathname.startsWith("/instructor/contests/") && pathname.endsWith("/manage")) {
-    list.push({ label: translate("layout.crumbs.contests"), to: "/instructor/contests" });
-    list.push({ label: translate("layout.crumbs.contestWorkspace") });
   } else if (pathname === "/instructor/contracts") {
     list.push({ label: translate("layout.crumbs.contracts") });
   } else if (pathname === "/instructor/invoices") {
@@ -85,24 +77,6 @@ export function resolveInstructorShellMeta({
     return {
       title: translate("layout.shell.cohortWorkspace.title"),
       description: translate("layout.shell.cohortWorkspace.description"),
-    };
-  }
-  if (pathname === "/instructor/contests") {
-    return {
-      title: translate("layout.shell.contestsList.title"),
-      description: translate("layout.shell.contestsList.description"),
-    };
-  }
-  if (pathname === "/instructor/contests/new") {
-    return {
-      title: translate("layout.shell.newContest.title"),
-      description: translate("layout.shell.newContest.description"),
-    };
-  }
-  if (pathname.startsWith("/instructor/contests/") && pathname.endsWith("/manage")) {
-    return {
-      title: translate("layout.shell.contestWorkspace.title"),
-      description: translate("layout.shell.contestWorkspace.description"),
     };
   }
   if (pathname === "/instructor/profile") {

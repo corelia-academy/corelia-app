@@ -44,7 +44,9 @@
     "registrationDeadlinePrefix": "Registration deadline {{date}}",
     "registrationNoLimit": "No registration deadline",
     "viewDetails": "View details",
+    "viewContest": "View contest",
     "openWorkspace": "Open contests workspace",
+    "statsSummary": "{{total}} total · {{accepting}} accepting · {{running}} running · {{ended}} ended",
     "stats": {
       "total": "Total contests",
       "accepting": "Accepting applications",
@@ -67,6 +69,192 @@
     },
     "sidebar": {
       "leaderboardHint": "Judges score using a rubric; the leaderboard and winners are shown only after results are published."
+    },
+    "listCardImageAlt": "Contest thumbnail — {{title}}"
+  },
+  "previewBar": {
+    "label": "Preview mode",
+    "statusPrefix": "Status: {{status}}",
+    "exit": "Exit preview",
+    "openWorkspace": "Open workspace →",
+    "openOperations": "Open operations →",
+    "catalogTitle": "Contests (public surface)"
+  },
+  "workspace": {
+    "tabs": {
+      "overview": "Overview",
+      "applications": "Applications",
+      "judging": "Judging",
+      "settings": "Settings"
+    },
+    "settings": {
+      "description": "Edit contest settings and protect destructive actions."
+    },
+    "manage": {
+      "backToContests": "Back to contests",
+      "backToContestPage": "Back to contest page",
+      "roleCoreliaOps": "Corelia operations",
+      "roleJudgePanel": "Judge panel",
+      "roleCoHostObserver": "Co-host observer",
+      "heroStart": "Start date",
+      "heroEnd": "End date",
+      "heroFormat": "Format",
+      "heroApprovalLimit": "Approval limit",
+      "overviewApplications": "Applications",
+      "overviewApproved": "Approved",
+      "overviewSubmissions": "Submissions",
+      "overviewScored": "Scored",
+      "overview": {
+        "label": "Overview",
+        "description": "Your role, the operating cadence, and the contest's current status."
+      },
+      "fallback": {
+        "label": "Contest workspace",
+        "description": "Coordinate between Corelia, judges, and co-host partners."
+      },
+      "sections": {
+        "applications": {
+          "label": "Applications",
+          "description": "Review applications and select teams for the next round"
+        },
+        "judging": {
+          "label": "Judging",
+          "description": "Score submissions and save notes"
+        },
+        "results": {
+          "label": "Results",
+          "description": "Leaderboard, winners, and aggregate reporting"
+        }
+      },
+      "operatingModelTitle": "Operating model",
+      "operatingModelDescription": "This contest runs as a multi-party workspace—not a single content editor.",
+      "lanes": {
+        "ops": {
+          "title": "Corelia operations",
+          "description": "Open the contest, review applications, invite collaborators, and publish official results."
+        },
+        "judge": {
+          "title": "Judge panel",
+          "description": "Access submissions, score with a rubric, and leave expert feedback."
+        },
+        "observer": {
+          "title": "Co-host observers",
+          "description": "Track aggregate metrics, leaderboard, and winners without seeing raw applications."
+        }
+      },
+      "phase1Header": "Phase 1",
+      "phase1Title": "Applications",
+      "phase1Body": "Collect applications and review intake.",
+      "phase2Header": "Phase 2",
+      "phase2Title": "Submission flow",
+      "phase2Body": "Enable submissions for approved teams.",
+      "phase3Header": "Phase 3",
+      "phase3Title": "Judge scoring",
+      "phase3Body": "Judges score using the weighted rubric.",
+      "phase4Header": "Phase 4",
+      "phase4Title": "Publish outcomes",
+      "phase4Body": "Publish leaderboard and winners to the public page.",
+      "applicationsReviewTitle": "Application review",
+      "applicationsReviewDescription": "Only Corelia staff review applications. Judges and co-host partners cannot access this area.",
+      "applicationsEmptyTitle": "No applications yet",
+      "applicationsEmptyHint": "When participants submit applications, Corelia's intake queue will appear here.",
+      "teamMembersPrefix": "Members:",
+      "approve": "Approve",
+      "reject": "Reject",
+      "reviewNoteLabel": "Review note",
+      "portfolioLabel": "Portfolio:",
+      "judgingTitle": "Judging panel",
+      "judgingDescription": "Score using four criteria and save scores per submission.",
+      "judgingWeightsLine": "Weights: Product {{product}}% · Technical {{technical}}% · Presentation {{presentation}}% · Impact {{impact}}%",
+      "judgingEmptyTitle": "No submissions yet",
+      "judgingEmptyHint": "Judges will see submissions here once approved teams start updating them.",
+      "rankCurrent": "Current rank #{{rank}}",
+      "averageScores": "Average:",
+      "scoreAttempts": "{{count}} scores",
+      "demoPrefix": "Demo:",
+      "repoPrefix": "Repo:",
+      "slidePrefix": "Slide:",
+      "scoreNoteLabel": "Note",
+      "rawTotal": "Raw total:",
+      "criteriaHint": "Each criterion is scored from 0 to 25.",
+      "criterionProduct": "Product",
+      "criterionTechnical": "Technical",
+      "criterionPresentation": "Presentation",
+      "criterionImpact": "Impact",
+      "outcomesTitle": "Outcomes dashboard",
+      "outcomesDescription": "Co-host observers see aggregate metrics, the published leaderboard, and the award list.",
+      "metricApplications": "Applications",
+      "metricApproved": "Approved",
+      "metricSubmissions": "Submissions",
+      "metricScored": "Scored",
+      "publishResultsHeading": "Publish results",
+      "entryAverageScore": "{{score}} pts",
+      "publishedLeaderboard": "Published leaderboard",
+      "exportCsv": "Export CSV",
+      "leaderboardNotPublishedTitle": "Leaderboard not published yet",
+      "leaderboardNotPublishedHint": "Aggregated results will appear here after Corelia finalizes scores and publishes officially.",
+      "winnersHeading": "Winners",
+      "winnersEmptyTitle": "No awards announced yet",
+      "winnersEmptyHint": "Awards will appear here when organizers publish winners.",
+      "operationsControlsTitle": "Operations controls",
+      "operationsControlsDescription": "Coordinate contest status, rubric, and access for operational participants.",
+      "contestStatusLabel": "Contest status",
+      "statusDraft": "Draft",
+      "statusPublished": "Accepting applications",
+      "statusRunning": "Running",
+      "statusEnded": "Ended",
+      "rubricTitle": "Judge rubric",
+      "rubricDescription": "Adjust weights for four criteria. Total should equal 100 for clearer scoring.",
+      "rubricTotalPrefix": "Current total:",
+      "accessInvitesTitle": "Access & invites",
+      "inviteRoleJudge": "Judge",
+      "inviteRoleCoHost": "Co-host",
+      "invitesEmpty": "No invites yet.",
+      "publicPageContentTitle": "Public page content",
+      "publicPageContentDescription": "Prizes, FAQs, custom timeline milestones, and prize pool summary on public URLs.",
+      "mediaTitle": "Banner & thumbnail",
+      "mediaDescription": "Banner appears wide at the top of the contest card on public URLs. Thumbnail is used on contest lists and the sticky header (fallbacks to the banner when missing).",
+      "bannerUploadLabel": "Banner image",
+      "thumbnailUploadLabel": "Thumbnail image",
+      "uploadingBanner": "Uploading banner…",
+      "uploadingThumbnail": "Uploading thumbnail…",
+      "prizePoolSummaryLabel": "Prize pool summary",
+      "prizePoolSummaryPlaceholder": "e.g. Total prize pool: $5,000",
+      "addPrizeRow": "Add prize",
+      "removeRow": "Remove",
+      "addFaqRow": "Add FAQ",
+      "addMilestoneRow": "Add milestone",
+      "milestoneTitlePlaceholder": "Event title",
+      "milestoneAtLabel": "Date & time",
+      "faqQuestionPlaceholder": "Question",
+      "faqAnswerPlaceholder": "Answer",
+      "prizeRankPlaceholder": "e.g. 1st place",
+      "prizeTitlePlaceholder": "Award title",
+      "prizeValuePlaceholder": "e.g. $2,000",
+      "prizeDescriptionPlaceholder": "Optional description",
+      "savePublicPageContent": "Save public content",
+      "revoke": "Revoke",
+      "copyLink": "Copy link",
+      "openEmail": "Open email",
+      "dangerZoneTitle": "Danger Zone",
+      "dangerZoneDescription": "Deleting a contest removes all registrations, invites, submissions, and scores. This cannot be undone.",
+      "deleteContest": "Delete contest",
+      "inviteCollaborationTitle": "Collaboration invite",
+      "inviteMetaLine": "Role: {{roles}} · Status: {{status}}",
+      "inviteAccept": "Accept invite",
+      "inviteDecline": "Decline",
+      "backToPublicSurfaceTitle": "Back to public page",
+      "backToPublicSurfaceDescription": "The public page is for participants to view the contest and published results.",
+      "viewPublicPage": "View public page",
+      "deleteDialogTitle": "Delete contest?",
+      "deleteTypeToConfirm": "Type “{{title}}” to confirm deletion.",
+      "deleteDialogBodyWithTitle": "Contest \"{{title}}\" and all registrations, invites, submissions, and scores will be deleted. This cannot be undone.",
+      "deleteDialogCancel": "Cancel",
+      "deleteDialogDeleting": "Deleting...",
+      "deleteContestConfirm": "Delete contest",
+      "defaultAwardChampion": "Champion",
+      "defaultAwardRunnerUp": "Runner-up",
+      "defaultAwardBestDemo": "Best Demo"
     }
   },
   "instructor": {
@@ -126,6 +314,7 @@
       "ended": "Ended",
       "submissions": "Submissions"
     },
+    "statsSummary": "{{total}} total · {{draft}} draft · {{accepting}} accepting · {{running}} running · {{ended}} ended · {{submissions}} submissions",
     "empty": {
       "title": "No contests in this workspace yet.",
       "createFirst": "Create your first contest"
@@ -137,6 +326,7 @@
       "metricsSubmissions": "{{submissions}} submissions · {{winners}} winners",
       "viewPublic": "View public page",
       "openWorkspace": "Open workspace",
+      "moreActions": "More actions",
       "delete": "Delete",
       "deleteContest": "Delete contest"
     },
@@ -177,7 +367,8 @@
     },
     "toasts": {
       "created": "Contest created.",
-      "createFailed": "Unable to create contest."
+      "createFailed": "Unable to create contest.",
+      "imagesUploadFailed": "Contest created, but images could not be uploaded. Add them from workspace settings."
     },
     "form": {
       "titleLabel": "Contest title",
@@ -209,9 +400,15 @@
       "descriptionPlaceholder": "Describe the theme, format, mentors, benefits, and key experience...",
       "rulesLabel": "Requirements and rules",
       "rulesPlaceholder": "Eligibility, judging criteria, submission format, demo requirements...",
-      "rulesDescription": "This will be shown on the detail page for participants to prepare."
-    }
-    ,
+      "rulesDescription": "This will be shown on the detail page for participants to prepare.",
+      "prizePoolSummaryLabel": "Prize pool summary (optional)",
+      "prizePoolSummaryPlaceholder": "e.g. Total prize pool: $5,000",
+      "prizePoolSummaryDescription": "Shown in the public hero. Add prize rows, FAQs, and milestones in the workspace.",
+      "bannerLabel": "Banner image (optional)",
+      "bannerHint": "Wide image shown at the top of the public contest page. Recommended roughly 21:9.",
+      "thumbnailLabel": "Thumbnail (optional)",
+      "thumbnailHint": "Square-ish image for lists and navigation. If omitted, the banner is reused."
+    },
     "actions": {
       "back": "Back",
       "create": "Create contest",
@@ -296,6 +493,7 @@
       "deleteErrorFallback": "Unable to delete the contest right now."
     },
     "cta": {
+      "nextStepEyebrow": "Next step",
       "continueSubmission": "Continue submission",
       "submitSubmission": "Submit submission",
       "approvedHelper": "Your application was approved. You can open the submissions area to update your submission.",
@@ -306,6 +504,73 @@
       "trackTimeline": "Track timeline",
       "trackTimelineHelper": "Applications aren't open yet. You can review the timeline and wait for the application phase."
     },
+    "visual": {
+      "bannerAlt": "Banner — {{title}}",
+      "thumbnailAlt": "Thumbnail — {{title}}",
+      "listThumbAlt": "Contest thumbnail — {{title}}"
+    },
+    "hero": {
+      "backToContests": "Back to contests",
+      "backToOverview": "Back to overview",
+      "start": "Start",
+      "end": "End",
+      "format": "Format",
+      "participantLimit": "Participant limit",
+      "applicationsLine": "{{total}} applications",
+      "pendingLine": "{{count}} pending review",
+      "approvedLine": "{{count}} approved",
+      "registrationCountdown": "Registration closes in {{time}}",
+      "registrationClosed": "Registration closed",
+      "contestEndsCountdown": "Contest ends in {{time}}",
+      "contestEnded": "Contest ended",
+      "countdownDays": "{{count}} days",
+      "countdownHours": "{{count}} hours",
+      "countdownMinutes": "{{count}} minutes"
+    },
+    "public": {
+      "nav": {
+        "ariaLabel": "Contest sections",
+        "overview": "Overview",
+        "timeline": "Timeline",
+        "prizes": "Prizes",
+        "rules": "Rules",
+        "faqs": "FAQs",
+        "projects": "Projects",
+        "apply": "Apply"
+      },
+      "infoCards": {
+        "reviewTitle": "Application review",
+        "reviewBody": "Every application is reviewed by Corelia before joining the contest.",
+        "teamSubmitTitle": "Team submissions",
+        "teamSubmitBody": "After approval, teams can submit and update their submission materials.",
+        "resultsTitle": "Published results",
+        "resultsBody": "Leaderboard and winners appear only after Corelia publishes results officially."
+      },
+      "results": {
+        "cardTitle": "Contest results",
+        "cardDescription": "Published outcomes from Corelia appear here.",
+        "leaderboardHeading": "Published leaderboard",
+        "leaderboardEmptyTitle": "Leaderboard not published yet",
+        "leaderboardEmptyHint": "When scoring is finalized, the official leaderboard will appear here.",
+        "winnersHeading": "Winners",
+        "winnersEmptyTitle": "No awards announced yet",
+        "winnersEmptyHint": "Watch this page for winners when Corelia publishes results."
+      }
+    },
+    "participant": {
+      "submissionWorkspaceTitle": "Submission workspace",
+      "submissionWorkspaceApprovedBody": "Your application was approved. You can submit and update your submission here.",
+      "submissionDirtyWarning": "You have unsaved changes. Leaving now may lose your latest edits.",
+      "submissionFooterHint": "Use a clear title, a detailed summary, and at least one demo or repo link when ready.",
+      "applicationCardTitle": "Your application",
+      "applicationCardPendingBody": "You officially join only after Corelia approves your application.",
+      "sentAt": "Submitted {{datetime}}",
+      "teamPreviewLabel": "Team preview",
+      "extraMembersCount": "{{count}} additional members",
+      "soloMembersHint": "Leave empty if registering solo.",
+      "postSubmitHint": "After submitting, your application will be pending review. You can submit work only after Corelia approves you.",
+      "draftNotReadyHint": "Please add a contact email and a clear motivation before submitting."
+    },
     "errors": {
       "notFound": "Contest not found.",
       "loadFailed": "Unable to load the contest.",
@@ -314,6 +579,7 @@
       "workspaceAccessDenied": "You don't have access to this contest's workspace."
     },
     "toasts": {
+      "draftRedirect": "This contest isn't public yet.",
       "contactEmailRequired": "Please enter a contact email so Corelia can follow up.",
       "applicationMotivationTooShort": "Please describe your motivation and capabilities in more detail before submitting.",
       "applicationSubmitted": "Application submitted. Corelia will review it before granting participation.",
@@ -345,7 +611,13 @@
       "publishNeedsAward": "Please enter at least one award before publishing.",
       "resultsPublished": "Leaderboard and winners published.",
       "publishFailed": "Unable to publish results.",
-      "inviteLinkCopied": "Invite link copied."
+      "inviteLinkCopied": "Invite link copied.",
+      "publicContentSaved": "Public page content saved.",
+      "publicContentSaveFailed": "Unable to save public content.",
+      "contestBannerUpdated": "Banner updated.",
+      "contestThumbnailUpdated": "Thumbnail updated.",
+      "contestBannerUploadFailed": "Unable to upload banner.",
+      "contestThumbnailUploadFailed": "Unable to upload thumbnail."
     },
     "forms": {
       "awards": {
@@ -381,8 +653,44 @@
     "dialogs": {
       "delete": {
         "title": "Delete contest?",
-        "descriptionManager": "This contest and all related data will be deleted. This action cannot be undone."
+        "descriptionManager": "This contest and all related data will be deleted. This action cannot be undone.",
+        "typeToConfirm": "Type “{{title}}” to confirm deletion."
       }
+    },
+    "prizes": {
+      "sectionTitle": "Prizes & recognition",
+      "sectionDescription": "What participants can win or earn in this contest.",
+      "empty": "Prize details will be announced here.",
+      "rankLabel": "Rank",
+      "titleLabel": "Title",
+      "valueLabel": "Value",
+      "descriptionLabel": "Details"
+    },
+    "faqs": {
+      "sectionTitle": "Frequently asked questions",
+      "empty": "FAQs will be added soon."
+    },
+    "projects": {
+      "sectionTitle": "Submitted projects",
+      "sectionDescription": "Public showcase from published results.",
+      "emptyTitle": "No projects to show yet",
+      "emptyHint": "Projects appear here after the contest ends and results are published.",
+      "viewDemo": "Demo",
+      "viewRepo": "Repository",
+      "viewSlides": "Slides",
+      "scoreLine": "{{score}} pts · {{count}} judge scores"
+    },
+    "sections": {
+      "timeline": "Timeline",
+      "timelineDescription": "Key milestones for registration, kickoff, and contest end.",
+      "howToParticipate": "How to participate",
+      "timelineUtcNote": "Times are shown in your local timezone.",
+      "addToCalendar": "Add to calendar (.ics)"
+    },
+    "timeline": {
+      "registrationDeadline": "Registration deadline",
+      "kickoff": "Kickoff",
+      "end": "End"
     },
     "labels": {
       "manageArea": "Contest workspace",

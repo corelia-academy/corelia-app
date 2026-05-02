@@ -1,0 +1,28 @@
+---
+description: Admin-only contest management routing conventions
+globs: src/{App.tsx,pages/**/*.tsx,components/auth/**/*.tsx,components/base/AppSidebar.tsx,features/instructor/layout/**/*.tsx}
+alwaysApply: false
+---
+
+# Contest management routes live under /admin
+
+## Canonical paths
+
+- Contest **management** routes must live under:
+  - `/admin/contests`
+  - `/admin/contests/new`
+  - `/admin/contests/:id/manage`
+- Do **not** add or re-introduce `/instructor/contests/*` routes.
+- Do **not** keep legacy redirects for removed routes unless explicitly requested (prefer hard removal so old links fall through the catch-all).
+
+## Guards & role config
+
+- Use `RequireRole roles={ROLE_GROUPS.admin}` for any `/admin/contests/*` routes.
+- Keep role arrays out of routing files; use `ROLE_GROUPS` from `src/config/roles.ts`.
+
+## Link/CTA updates when routing changes
+
+- Any UI entrypoints (buttons/links/navigate) that open contest workspace must target `/admin/contests/*`.
+  - Example: `navigate("/admin/contests/new")`, `to={\`/admin/contests/${id}/manage\`}`.
+- UI gating should continue using `canManageContests(profile)` (admin + support_staff).
+

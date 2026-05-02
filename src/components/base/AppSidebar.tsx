@@ -24,6 +24,7 @@ import {
 import { ShowForRole } from "@/components/auth/ShowForRole";
 import { ShowForAuth } from "@/components/auth/ShowForAuth";
 import { useTranslation } from "react-i18next";
+import { ROLE_GROUPS } from "@/config/roles";
 
 const primaryNav = [
   { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
@@ -127,7 +128,7 @@ export default function AppSidebar({
         <SidebarGroup>
           <SidebarGroupContent className="px-1">
             <SidebarMenu className="gap-1">
-              <ShowForRole roles={["instructor", "support_staff", "admin"]}>
+              <ShowForRole roles={ROLE_GROUPS.instructorWorkspace}>
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="rounded-md"
@@ -145,7 +146,7 @@ export default function AppSidebar({
                   />
                 </SidebarMenuItem>
               </ShowForRole>
-              <ShowForRole roles={["admin", "support_staff"]}>
+              <ShowForRole roles={ROLE_GROUPS.admin}>
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="rounded-md"

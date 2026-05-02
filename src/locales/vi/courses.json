@@ -157,6 +157,20 @@
       },
       "certificateIssued": "Đã cấp chứng nhận",
       "instructorLabel": "Giảng viên",
+      "coInstructors": {
+        "title": "Đồng giảng viên",
+        "subtitle": "Những người đồng hành cùng giảng viên chính trong khoá học này.",
+        "fallbackName": "Giảng viên",
+        "websiteLabel": "Website / LinkedIn"
+      },
+      "sponsors": {
+        "title": "Sponsor",
+        "websiteLabel": "Xem website"
+      },
+      "partnerBrand": {
+        "title": "Đối tác",
+        "websiteLabel": "Xem website"
+      },
       "stats": {
         "duration": "Thời lượng",
         "curriculum": "Curriculum",

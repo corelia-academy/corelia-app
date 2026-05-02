@@ -269,6 +269,116 @@
     "defaults": {
       "lessonTitle": "Lesson"
     },
+    "coInstructors": {
+      "label": "Co-instructors",
+      "hint": "Add co-instructors to display on the course page and optionally grant limited access.",
+      "dialogTitle": "Select co-instructors",
+      "dialogDescription": "Only instructors in the directory can be selected.",
+      "fallbackName": "Instructor",
+      "placeholder": "Select co-instructors…",
+      "searchPlaceholder": "Search by name/email…",
+      "emptyLabel": "No matching instructors.",
+      "loadingDirectory": "Loading instructors…",
+      "permissions": {
+        "students": "View students",
+        "submissions": "Review submissions",
+        "content": "View content",
+        "certificates": "View certificates",
+        "pricing": "View pricing"
+      }
+    },
+    "sponsors": {
+      "label": "Sponsors",
+      "hint": "Add sponsors to display in the course sidebar (logo, name, website, description).",
+      "countLabel": "{{count}} sponsors",
+      "empty": "No sponsors yet.",
+      "actions": {
+        "add": "Add sponsor",
+        "uploadLogo": "Upload logo",
+        "uploading": "Uploading...",
+        "save": "Save sponsor",
+        "cancel": "Cancel"
+      },
+      "fields": {
+        "logo": "Logo",
+        "name": "Sponsor name",
+        "website": "Website",
+        "description": "Description"
+      },
+      "dialog": {
+        "title": "Sponsor"
+      },
+      "confirm": {
+        "remove": "Remove this sponsor?"
+      },
+      "errors": {
+        "missingName": "Enter sponsor name.",
+        "invalidWebsite": "Website must be a valid URL (https://...).",
+        "uploadLogoFailed": "Failed to upload sponsor logo."
+      },
+      "toasts": {
+        "saved": "Sponsor saved.",
+        "removed": "Sponsor removed.",
+        "logoUploaded": "Logo uploaded."
+      }
+    },
+    "partners": {
+      "label": "Partners",
+      "hint": "Add partners to display in the course sidebar (logo, name, website, description).",
+      "countLabel": "{{count}} partners",
+      "empty": "No partners yet.",
+      "actions": {
+        "add": "Add partner",
+        "uploadLogo": "Upload logo",
+        "uploading": "Uploading...",
+        "save": "Save partner",
+        "cancel": "Cancel"
+      },
+      "fields": {
+        "logo": "Logo",
+        "name": "Partner name",
+        "website": "Website",
+        "description": "Description"
+      },
+      "dialog": {
+        "title": "Partner"
+      },
+      "confirm": {
+        "remove": "Remove this partner?"
+      },
+      "errors": {
+        "missingName": "Enter partner name.",
+        "invalidWebsite": "Website must be a valid URL (https://...).",
+        "uploadLogoFailed": "Failed to upload partner logo."
+      },
+      "toasts": {
+        "saved": "Partner saved.",
+        "removed": "Partner removed.",
+        "logoUploaded": "Logo uploaded."
+      }
+    },
+    "partnerBrand": {
+      "label": "Provided by / Partner",
+      "hint": "This information will be shown in the course sidebar for partner-owned courses.",
+      "actions": {
+        "uploadLogo": "Upload logo",
+        "uploading": "Uploading...",
+        "save": "Save partner info"
+      },
+      "fields": {
+        "name": "Partner name",
+        "website": "Website",
+        "description": "Description"
+      },
+      "errors": {
+        "invalidWebsite": "Website must be a valid URL (https://...).",
+        "uploadLogoFailed": "Failed to upload partner logo."
+      },
+      "toasts": {
+        "saved": "Partner info saved.",
+        "logoUploaded": "Logo uploaded."
+      }
+    },
     "errors": {
       "loadCourseFailed": "Failed to load course",
       "refreshTotalFailed": "Update failed",
