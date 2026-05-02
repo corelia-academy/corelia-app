@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate, NavLink, useLocation } from "react-router-dom";
+import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { MenuIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

@@ -25,6 +25,9 @@ import {
 } from "@/components/ui/sheet";
 import Header from "./Header";
 
+const mobileTabItemClassName =
+  "flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2.5 text-center transition-colors";
+
 const MainLayout = () => {
   const { t } = useTranslation("common");
   const betaFeedbackUrl =
@@ -50,7 +53,7 @@ const MainLayout = () => {
       <MainSidebarOverlay />
       <SidebarInset className="flex min-h-dvh flex-col">
         <Header />
-        <main className="flex-1 pb-24 md:pb-0">
+        <main className="flex-1 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0">
           <Outlet />
         </main>
         <footer className="hidden border-t border-border-subtle bg-card/70 md:block">
@@ -89,7 +92,7 @@ const MainLayout = () => {
           </div>
         </footer>
       </SidebarInset>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-card/95 backdrop-blur-md supports-backdrop-filter:bg-card/90 md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-card/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-md supports-backdrop-filter:bg-card/90 md:hidden">
         <div className="container-app grid grid-cols-5 gap-1 px-2 py-2">
           {mobilePrimaryNav.map((item) => {
             const Icon = item.icon;
@@ -110,7 +113,10 @@ const MainLayout = () => {
                   onClick={() =>
                     navigate("/login", { state: { from: location } })
                   }
-                  className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-center text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                  className={cn(
+                    mobileTabItemClassName,
+                    "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                  )}
                 >
                   <Icon className="size-4 shrink-0" aria-hidden />
                   <span className="line-clamp-1 text-xs leading-4">
@@ -126,12 +132,12 @@ const MainLayout = () => {
                 to={item.href}
                 end={"end" in item ? item.end : undefined}
                 className={({ isActive }) =>
-                  [
-                    "flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-center transition-colors",
+                  cn(
+                    mobileTabItemClassName,
                     isActive
                       ? "bg-primary-container text-on-primary-container"
                       : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-                  ].join(" ")
+                  )
                 }
               >
                 <Icon className="size-4 shrink-0" aria-hidden />
@@ -181,12 +187,17 @@ function MobileMenuTab({
   icon: React.ComponentType<{ className?: string }>;
   label: string;
 }) {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, openMobile } = useSidebar();
   return (
     <button
       type="button"
       onClick={toggleSidebar}
-      className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-center text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+      aria-expanded={openMobile}
+      aria-controls="app-sidebar-mobile"
+      className={cn(
+        mobileTabItemClassName,
+        "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+      )}
     >
       <Icon className="size-4 shrink-0" aria-hidden />
       <span className="line-clamp-1 text-xs leading-4">{label}</span>
