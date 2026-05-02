@@ -131,7 +131,7 @@ export function isAdmin(role: UserRole): boolean {
 }
 
 /** Kiểm tra role có nằm trong danh sách cho phép không. Admin được coi là có cả quyền instructor. */
-export function hasRole(role: UserRole, allowed: UserRole[]): boolean {
+export function hasRole(role: UserRole, allowed: readonly UserRole[]): boolean {
   if (allowed.includes(role)) return true;
   if (role === "admin" && allowed.includes("instructor")) return true;
   return false;

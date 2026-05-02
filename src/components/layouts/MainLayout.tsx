@@ -8,6 +8,7 @@ import {
 import React from "react";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
+import { cn } from "@/lib/utils";
 import {
   SidebarInset,
   SidebarProvider,
@@ -23,6 +24,9 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import Header from "./Header";
+
+const mobileTabItemClassName =
+  "flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2.5 text-center transition-colors";
 
 const MainLayout = () => {
   const { t } = useTranslation("common");
@@ -49,26 +53,46 @@ const MainLayout = () => {
       <MainSidebarOverlay />
       <SidebarInset className="flex min-h-dvh flex-col">
         <Header />
-        <main className="flex-1 pb-24 md:pb-0">
+        <main className="flex-1 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0">
           <Outlet />
         </main>
         <footer className="hidden border-t border-border-subtle bg-card/70 md:block">
-          <div className="container-app flex items-center justify-between gap-3 py-3 text-xs text-muted-foreground">
-            <span>
+          <div className="container-app flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 text-xs text-muted-foreground">
+            <span className="min-w-0">
               {t("footer.copyrightPrefix", { year: new Date().getFullYear() })}
             </span>
-            {betaFeedbackUrl ? (
-              <ReportIssueLink
-                compact
-                className="h-7 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground"
-              />
-            ) : (
-              <span>corelia.academy</span>
-            )}
+            <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1">
+              <NavLink
+                to="/roadmap"
+                className={({ isActive }) =>
+                  cn(
+                    "shrink-0 rounded-md px-1.5 py-0.5 transition-colors hover:text-foreground",
+                    isActive
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground underline-offset-2 hover:underline",
+                  )
+                }
+              >
+                {t("footer.roadmap")}
+              </NavLink>
+              <span className="shrink-0 tabular-nums text-muted-foreground/80">
+                {t("footer.version", {
+                  version: import.meta.env.VITE_APP_VERSION,
+                })}
+              </span>
+              {betaFeedbackUrl ? (
+                <ReportIssueLink
+                  compact
+                  className="h-7 shrink-0 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                />
+              ) : (
+                <span className="shrink-0">corelia.academy</span>
+              )}
+            </div>
           </div>
         </footer>
       </SidebarInset>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-card/95 backdrop-blur-md supports-backdrop-filter:bg-card/90 md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-card/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-md supports-backdrop-filter:bg-card/90 md:hidden">
         <div className="container-app grid grid-cols-5 gap-1 px-2 py-2">
           {mobilePrimaryNav.map((item) => {
             const Icon = item.icon;
@@ -89,7 +113,10 @@ const MainLayout = () => {
                   onClick={() =>
                     navigate("/login", { state: { from: location } })
                   }
-                  className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-center text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                  className={cn(
+                    mobileTabItemClassName,
+                    "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                  )}
                 >
                   <Icon className="size-4 shrink-0" aria-hidden />
                   <span className="line-clamp-1 text-xs leading-4">
@@ -105,12 +132,12 @@ const MainLayout = () => {
                 to={item.href}
                 end={"end" in item ? item.end : undefined}
                 className={({ isActive }) =>
-                  [
-                    "flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-center transition-colors",
+                  cn(
+                    mobileTabItemClassName,
                     isActive
                       ? "bg-primary-container text-on-primary-container"
                       : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-                  ].join(" ")
+                  )
                 }
               >
                 <Icon className="size-4 shrink-0" aria-hidden />
@@ -160,12 +187,17 @@ function MobileMenuTab({
   icon: React.ComponentType<{ className?: string }>;
   label: string;
 }) {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, openMobile } = useSidebar();
   return (
     <button
       type="button"
       onClick={toggleSidebar}
-      className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-center text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+      aria-expanded={openMobile}
+      aria-controls="app-sidebar-mobile"
+      className={cn(
+        mobileTabItemClassName,
+        "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+      )}
     >
       <Icon className="size-4 shrink-0" aria-hidden />
       <span className="line-clamp-1 text-xs leading-4">{label}</span>

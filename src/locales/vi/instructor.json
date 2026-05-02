@@ -269,6 +269,116 @@
     "defaults": {
       "lessonTitle": "Bài học"
     },
+    "coInstructors": {
+      "label": "Co-instructors",
+      "hint": "Thêm đồng giảng viên để hiển thị trên trang khoá học và cấp một số quyền giới hạn.",
+      "dialogTitle": "Chọn co-instructors",
+      "dialogDescription": "Chỉ những instructor có trong danh sách mới có thể được chọn.",
+      "fallbackName": "Giảng viên",
+      "placeholder": "Chọn co-instructors…",
+      "searchPlaceholder": "Tìm theo tên/email…",
+      "emptyLabel": "Không có instructor phù hợp.",
+      "loadingDirectory": "Đang tải danh sách instructor…",
+      "permissions": {
+        "students": "Xem học viên",
+        "submissions": "Duyệt bài nộp",
+        "content": "Xem nội dung",
+        "certificates": "Xem chứng nhận",
+        "pricing": "Xem pricing"
+      }
+    },
+    "sponsors": {
+      "label": "Sponsors",
+      "hint": "Thêm sponsor để hiển thị ở sidebar trang khoá học (logo, tên, website, mô tả).",
+      "countLabel": "{{count}} sponsor",
+      "empty": "Chưa có sponsor nào.",
+      "actions": {
+        "add": "Thêm sponsor",
+        "uploadLogo": "Tải logo lên",
+        "uploading": "Đang tải lên...",
+        "save": "Lưu sponsor",
+        "cancel": "Huỷ"
+      },
+      "fields": {
+        "logo": "Logo",
+        "name": "Tên sponsor",
+        "website": "Website",
+        "description": "Mô tả"
+      },
+      "dialog": {
+        "title": "Sponsor"
+      },
+      "confirm": {
+        "remove": "Xoá sponsor này?"
+      },
+      "errors": {
+        "missingName": "Vui lòng nhập tên sponsor.",
+        "invalidWebsite": "Website phải là URL hợp lệ (https://...).",
+        "uploadLogoFailed": "Không thể tải logo sponsor lên."
+      },
+      "toasts": {
+        "saved": "Đã lưu sponsor.",
+        "removed": "Đã xoá sponsor.",
+        "logoUploaded": "Đã tải logo lên."
+      }
+    },
+    "partners": {
+      "label": "Partners",
+      "hint": "Thêm partner để hiển thị ở sidebar trang khoá học (logo, tên, website, mô tả).",
+      "countLabel": "{{count}} partner",
+      "empty": "Chưa có partner nào.",
+      "actions": {
+        "add": "Thêm partner",
+        "uploadLogo": "Tải logo lên",
+        "uploading": "Đang tải lên...",
+        "save": "Lưu partner",
+        "cancel": "Huỷ"
+      },
+      "fields": {
+        "logo": "Logo",
+        "name": "Tên partner",
+        "website": "Website",
+        "description": "Mô tả"
+      },
+      "dialog": {
+        "title": "Partner"
+      },
+      "confirm": {
+        "remove": "Xoá partner này?"
+      },
+      "errors": {
+        "missingName": "Vui lòng nhập tên partner.",
+        "invalidWebsite": "Website phải là URL hợp lệ (https://...).",
+        "uploadLogoFailed": "Không thể tải logo partner lên."
+      },
+      "toasts": {
+        "saved": "Đã lưu partner.",
+        "removed": "Đã xoá partner.",
+        "logoUploaded": "Đã tải logo lên."
+      }
+    },
+    "partnerBrand": {
+      "label": "Provided by / Đối tác",
+      "hint": "Thông tin này sẽ hiển thị ở sidebar trang khoá học cho khoá đối tác.",
+      "actions": {
+        "uploadLogo": "Tải logo",
+        "uploading": "Đang tải...",
+        "save": "Lưu đối tác"
+      },
+      "fields": {
+        "name": "Tên đối tác",
+        "website": "Website",
+        "description": "Mô tả"
+      },
+      "errors": {
+        "invalidWebsite": "Website phải là URL hợp lệ (https://...).",
+        "uploadLogoFailed": "Không thể tải logo đối tác lên."
+      },
+      "toasts": {
+        "saved": "Đã lưu đối tác.",
+        "logoUploaded": "Đã tải logo lên."
+      }
+    },
     "errors": {
       "loadCourseFailed": "Lỗi tải khoá học",
       "refreshTotalFailed": "Lỗi cập nhật",

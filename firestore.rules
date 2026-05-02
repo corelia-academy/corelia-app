@@ -61,6 +61,31 @@ service cloud.firestore {
       );
     }
 
+    function courseCoInstructorPerms(courseId, uid) {
+      return get(/databases/$(database)/documents/courses/$(courseId)).data.co_instructor_permissions[uid];
+    }
+
+    function hasCourseCoInstructorPermission(courseId, permKey) {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/courses/$(courseId)).data.keys().hasAny(['co_instructor_permissions']) &&
+        get(/databases/$(database)/documents/courses/$(courseId)).data.co_instructor_permissions.keys().hasAny([request.auth.uid]) &&
+        courseCoInstructorPerms(courseId, request.auth.uid).keys().hasAny([permKey]) &&
+        courseCoInstructorPerms(courseId, request.auth.uid)[permKey] == true;
+    }
+
+    function hasAnyCourseCoInstructorPermission(courseId) {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/courses/$(courseId)).data.keys().hasAny(['co_instructor_permissions']) &&
+        get(/databases/$(database)/documents/courses/$(courseId)).data.co_instructor_permissions.keys().hasAny([request.auth.uid]) &&
+        (
+          hasCourseCoInstructorPermission(courseId, 'students') ||
+          hasCourseCoInstructorPermission(courseId, 'submissions') ||
+          hasCourseCoInstructorPermission(courseId, 'content') ||
+          hasCourseCoInstructorPermission(courseId, 'certificates') ||
+          hasCourseCoInstructorPermission(courseId, 'pricing')
+        );
+    }
+
     function enrollmentQuery(userId, courseId) {
       return /databases/$(database)/documents/enrollments/$(userId + "_" + courseId);
     }
@@ -96,7 +121,9 @@ service cloud.firestore {
     function canTrackProgress(courseId) {
       return isSignedIn() && (
         isEnrolledInCourse(courseId) ||
-        hasFullCoursePaymentAccess(courseId)
+        hasFullCoursePaymentAccess(courseId) ||
+        isCourseInstructor(courseId) ||
+        hasCourseCoInstructorPermission(courseId, 'content')
       );
     }
 
@@ -338,7 +365,7 @@ service cloud.firestore {
       match /sections/{sectionId} {
         allow read: if get(/databases/$(database)/documents/courses/$(courseId)).data.published == true ||
           canTrackProgress(courseId) ||
-          (isSignedIn() && isCourseInstructor(courseId));
+          (isSignedIn() && (isCourseInstructor(courseId) || hasCourseCoInstructorPermission(courseId, 'content')));
         allow write: if isSignedIn() && isCourseInstructor(courseId);
 
         match /locales/{localeId} {
@@ -353,7 +380,8 @@ service cloud.firestore {
         allow read: if canReadAllLessons(courseId) ||
           (canReadPreviewLesson(courseId) && resource.data.is_preview_free == true) ||
           canTrackProgress(courseId) ||
-          isCourseInstructor(courseId);
+          isCourseInstructor(courseId) ||
+          hasCourseCoInstructorPermission(courseId, 'content');
         allow write: if isSignedIn() && isCourseInstructor(courseId);
 
         match /locales/{localeId} {
@@ -677,7 +705,8 @@ service cloud.firestore {
     match /enrollments/{enrollmentId} {
       allow read: if isSignedIn() && (
         resource.data.user_id == request.auth.uid ||
-        isCourseInstructor(resource.data.course_id)
+        isCourseInstructor(resource.data.course_id) ||
+        hasCourseCoInstructorPermission(resource.data.course_id, 'students')
       );
       allow create: if isSignedIn() &&
         enrollmentId == request.auth.uid + '_' + request.resource.data.course_id &&
@@ -705,7 +734,8 @@ service cloud.firestore {
     match /lesson_progress/{progressId} {
       allow read: if isSignedIn() && (
         resource.data.user_id == request.auth.uid ||
-        isCourseInstructor(resource.data.course_id)
+        isCourseInstructor(resource.data.course_id) ||
+        hasCourseCoInstructorPermission(resource.data.course_id, 'students')
       );
       allow create: if isSignedIn() &&
         request.resource.data.user_id == request.auth.uid &&
@@ -732,7 +762,8 @@ service cloud.firestore {
     match /final_assignment_submissions/{submissionId} {
       allow read: if isSignedIn() && (
         resource.data.user_id == request.auth.uid ||
-        isCourseInstructor(resource.data.course_id)
+        isCourseInstructor(resource.data.course_id) ||
+        hasCourseCoInstructorPermission(resource.data.course_id, 'submissions')
       );
       allow create: if isSignedIn() &&
         request.resource.data.user_id == request.auth.uid &&
@@ -746,10 +777,20 @@ service cloud.firestore {
           'status'
         ]) &&
         request.resource.data.status == 'pending';
-      allow update: if isSignedIn() &&
-        isCourseInstructor(resource.data.course_id) &&
+      allow update: if isSignedIn() && (
+        isCourseInstructor(resource.data.course_id) ||
+        hasCourseCoInstructorPermission(resource.data.course_id, 'submissions')
+      ) &&
         request.resource.data.user_id == resource.data.user_id &&
-        request.resource.data.course_id == resource.data.course_id;
+        request.resource.data.course_id == resource.data.course_id &&
+        request.resource.data.content == resource.data.content &&
+        request.resource.data.file_urls == resource.data.file_urls &&
+        request.resource.data.submitted_at == resource.data.submitted_at &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'reviewer_comment',
+          'reviewed_at'
+        ]);
       allow delete: if isCoreliaContestManager();
     }
 
@@ -774,6 +815,9 @@ service cloud.firestore {
           'ends_at',
           'location',
           'cover_image_url',
+          'cover_image_path',
+          'thumbnail_url',
+          'thumbnail_path',
           'registration_deadline',
           'max_participants',
           'judge_emails',
@@ -782,6 +826,10 @@ service cloud.firestore {
           'metrics_snapshot',
           'published_leaderboard',
           'winner_announcements',
+          'prize_pool_summary',
+          'prizes',
+          'faqs',
+          'timeline_milestones',
           'created_by',
           'updated_by',
           'created_at',
@@ -800,6 +848,9 @@ service cloud.firestore {
           'ends_at',
           'location',
           'cover_image_url',
+          'cover_image_path',
+          'thumbnail_url',
+          'thumbnail_path',
           'registration_deadline',
           'max_participants',
           'judge_emails',
@@ -808,6 +859,10 @@ service cloud.firestore {
           'metrics_snapshot',
           'published_leaderboard',
           'winner_announcements',
+          'prize_pool_summary',
+          'prizes',
+          'faqs',
+          'timeline_milestones',
           'updated_by',
           'updated_at'
         ]) &&

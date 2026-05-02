@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Calendar, Gavel, ShieldCheck, Trophy } from "lucide-react";
 import { toast } from "sonner";
@@ -11,7 +11,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { createContest } from "@/lib/contests";
+import { createContest, updateContest } from "@/lib/contests";
+import { uploadContestBanner, uploadContestThumbnail } from "@/lib/storage";
 import type { ContestLocation, ContestStatus } from "@/types/contests";
 import { useTranslation } from "react-i18next";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
@@ -34,7 +35,32 @@ export default function ContestNew() {
   const [endsAt, setEndsAt] = useState("");
   const [registrationDeadline, setRegistrationDeadline] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
+  const [prizePoolSummary, setPrizePoolSummary] = useState("");
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [bannerPreviewUrl, setBannerPreviewUrl] = useState<string | null>(null);
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!bannerFile) {
+      setBannerPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(bannerFile);
+    setBannerPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [bannerFile]);
+
+  useEffect(() => {
+    if (!thumbnailFile) {
+      setThumbnailPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(thumbnailFile);
+    setThumbnailPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [thumbnailFile]);
 
   const canSubmit = useMemo(() => {
     return title.trim().length >= 3 && tagline.trim().length >= 8;
@@ -72,9 +98,40 @@ export default function ContestNew() {
         ends_at: toIsoOrNull(endsAt),
         registration_deadline: toIsoOrNull(registrationDeadline),
         max_participants: maxParticipants.trim() ? Number(maxParticipants) : null,
+        prize_pool_summary: prizePoolSummary.trim() || null,
       });
+
+      try {
+        let cover_image_url: string | undefined;
+        let cover_image_path: string | undefined;
+        let thumbnail_url: string | undefined;
+        let thumbnail_path: string | undefined;
+        if (bannerFile) {
+          const uploaded = await uploadContestBanner(contest.id, bannerFile);
+          cover_image_url = uploaded.url;
+          cover_image_path = uploaded.path;
+        }
+        if (thumbnailFile) {
+          const uploaded = await uploadContestThumbnail(contest.id, thumbnailFile);
+          thumbnail_url = uploaded.url;
+          thumbnail_path = uploaded.path;
+        }
+        if (cover_image_url || thumbnail_url) {
+          await updateContest(contest.id, {
+            ...(cover_image_url != null && cover_image_path != null
+              ? { cover_image_url, cover_image_path }
+              : {}),
+            ...(thumbnail_url != null && thumbnail_path != null
+              ? { thumbnail_url, thumbnail_path }
+              : {}),
+          });
+        }
+      } catch {
+        toast.error(t("instructorNew.toasts.imagesUploadFailed"));
+      }
+
       toast.success(t("instructorNew.toasts.created"));
-      navigate(`/instructor/contests/${contest.id}/manage`);
+      navigate(`/admin/contests/${contest.id}/manage`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("instructorNew.toasts.createFailed"));
     } finally {
@@ -88,7 +145,7 @@ export default function ContestNew() {
         <Button
           variant="ghost"
           className="-ml-2 text-muted-foreground hover:text-foreground"
-          onClick={() => navigate("/instructor/contests")}
+          onClick={() => navigate("/admin/contests")}
         >
           <ArrowLeft className="size-4" aria-hidden />
           {t("instructorNew.back")}
@@ -300,6 +357,66 @@ export default function ContestNew() {
                 </FieldDescription>
               </Field>
 
+              <div className="grid gap-4 lg:grid-cols-2">
+                <Field>
+                  <FieldLabel htmlFor="contest-banner-file">
+                    {t("instructorNew.form.bannerLabel")}
+                  </FieldLabel>
+                  <Input
+                    id="contest-banner-file"
+                    type="file"
+                    accept="image/*"
+                    className="cursor-pointer"
+                    onChange={(e) => setBannerFile(e.target.files?.[0] ?? null)}
+                  />
+                  <FieldDescription>{t("instructorNew.form.bannerHint")}</FieldDescription>
+                  {bannerPreviewUrl ? (
+                    <div className="mt-3 overflow-hidden rounded-lg border border-border-subtle">
+                      <img
+                        src={bannerPreviewUrl}
+                        alt=""
+                        className="aspect-[21/9] w-full object-cover"
+                      />
+                    </div>
+                  ) : null}
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="contest-thumbnail-file">
+                    {t("instructorNew.form.thumbnailLabel")}
+                  </FieldLabel>
+                  <Input
+                    id="contest-thumbnail-file"
+                    type="file"
+                    accept="image/*"
+                    className="cursor-pointer"
+                    onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)}
+                  />
+                  <FieldDescription>{t("instructorNew.form.thumbnailHint")}</FieldDescription>
+                  {thumbnailPreviewUrl ? (
+                    <div className="mt-3 overflow-hidden rounded-lg border border-border-subtle">
+                      <img
+                        src={thumbnailPreviewUrl}
+                        alt=""
+                        className="aspect-square max-h-36 w-full max-w-36 object-cover"
+                      />
+                    </div>
+                  ) : null}
+                </Field>
+              </div>
+
+              <Field>
+                <FieldLabel htmlFor="contest-prize-pool-summary">
+                  {t("instructorNew.form.prizePoolSummaryLabel")}
+                </FieldLabel>
+                <Input
+                  id="contest-prize-pool-summary"
+                  value={prizePoolSummary}
+                  onChange={(e) => setPrizePoolSummary(e.target.value)}
+                  placeholder={t("instructorNew.form.prizePoolSummaryPlaceholder")}
+                />
+                <FieldDescription>{t("instructorNew.form.prizePoolSummaryDescription")}</FieldDescription>
+              </Field>
+
               <Field>
                 <FieldLabel htmlFor="contest-description">
                   {t("instructorNew.form.descriptionLabel")}
@@ -333,7 +450,7 @@ export default function ContestNew() {
             </FieldGroup>
 
             <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-end">
-              <Button variant="ghost" onClick={() => navigate("/instructor/contests")}>
+              <Button variant="ghost" onClick={() => navigate("/admin/contests")}>
                 {t("instructorNew.actions.back")}
               </Button>
               <Button disabled={!canSubmit || submitting} onClick={handleCreate}>

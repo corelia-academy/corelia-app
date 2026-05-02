@@ -1,6 +1,16 @@
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { storage } from "@/lib/firebase";
 
+export async function deleteStorageObjectByPath(path?: string | null): Promise<void> {
+  const trimmed = String(path ?? "").trim();
+  if (!trimmed) return;
+  try {
+    await deleteObject(ref(storage, trimmed));
+  } catch {
+    // ignore missing / permission / transient errors
+  }
+}
+
 /**
  * Upload ảnh bìa khoá học lên Firebase Storage.
  * - Nếu có previousPath thì cố gắng xoá ảnh cũ trước.
@@ -16,13 +26,7 @@ export async function uploadCourseThumbnail(
   }
 
   // Xoá ảnh cũ nếu có
-  if (previousPath) {
-    try {
-      await deleteObject(ref(storage, previousPath));
-    } catch {
-      // Bỏ qua nếu file không tồn tại hoặc không xoá được
-    }
-  }
+  await deleteStorageObjectByPath(previousPath);
 
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const safeExt = /^[a-z0-9]+$/.test(ext) ? ext : "jpg";
@@ -33,6 +37,42 @@ export async function uploadCourseThumbnail(
     contentType: file.type || `image/${safeExt}`,
   });
 
+  const url = await getDownloadURL(storageRef);
+  return { url, path };
+}
+
+export async function uploadContestBanner(
+  contestId: string,
+  file: File,
+  previousPath?: string | null,
+): Promise<{ url: string; path: string }> {
+  if (!contestId) throw new Error("Thiếu contestId khi upload banner");
+  await deleteStorageObjectByPath(previousPath ?? undefined);
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const safeExt = /^[a-z0-9]+$/.test(ext) ? ext : "jpg";
+  const path = `contest-banners/${contestId}/${Date.now()}.${safeExt}`;
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file, {
+    contentType: file.type || `image/${safeExt}`,
+  });
+  const url = await getDownloadURL(storageRef);
+  return { url, path };
+}
+
+export async function uploadContestThumbnail(
+  contestId: string,
+  file: File,
+  previousPath?: string | null,
+): Promise<{ url: string; path: string }> {
+  if (!contestId) throw new Error("Thiếu contestId khi upload thumbnail");
+  await deleteStorageObjectByPath(previousPath ?? undefined);
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const safeExt = /^[a-z0-9]+$/.test(ext) ? ext : "jpg";
+  const path = `contest-thumbnails/${contestId}/${Date.now()}.${safeExt}`;
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file, {
+    contentType: file.type || `image/${safeExt}`,
+  });
   const url = await getDownloadURL(storageRef);
   return { url, path };
 }
@@ -70,13 +110,7 @@ export async function uploadCertificateTemplate(
 ): Promise<{ url: string; path: string }> {
   if (!courseId) throw new Error("Thiếu courseId");
 
-  if (previousPath) {
-    try {
-      await deleteObject(ref(storage, previousPath));
-    } catch {
-      // ignore
-    }
-  }
+  await deleteStorageObjectByPath(previousPath);
 
   const ext = file.name.split(".").pop()?.toLowerCase() || "png";
   const safeExt = /^[a-z0-9]+$/.test(ext) ? ext : "png";
@@ -108,6 +142,93 @@ export async function uploadCoursePartnerDocument(
 
   await uploadBytes(storageRef, file, {
     contentType: file.type || "application/octet-stream",
+  });
+
+  const url = await getDownloadURL(storageRef);
+  return { url, path };
+}
+
+/**
+ * Upload logo sponsor cho khoá học (instructor/admin).
+ * Đường dẫn: course-sponsor-logos/{courseId}/{sponsorId}/{timestamp}.{ext}
+ */
+export async function uploadCourseSponsorLogo(
+  courseId: string,
+  sponsorId: string,
+  file: File,
+  previousPath?: string,
+): Promise<{ url: string; path: string }> {
+  const cid = String(courseId ?? "").trim();
+  const sid = String(sponsorId ?? "").trim();
+  if (!cid) throw new Error("Thiếu courseId");
+  if (!sid) throw new Error("Thiếu sponsorId");
+
+  await deleteStorageObjectByPath(previousPath);
+
+  const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+  const safeExt = /^[a-z0-9]+$/.test(ext) ? ext : "png";
+  const path = `course-sponsor-logos/${cid}/${sid}/${Date.now()}.${safeExt}`;
+  const storageRef = ref(storage, path);
+
+  await uploadBytes(storageRef, file, {
+    contentType: file.type || `image/${safeExt}`,
+  });
+
+  const url = await getDownloadURL(storageRef);
+  return { url, path };
+}
+
+/**
+ * Upload logo partner cho khoá học (instructor/admin).
+ * Đường dẫn: course-partners/{courseId}/{partnerId}/{timestamp}.{ext}
+ */
+export async function uploadCoursePartnerLogo(
+  courseId: string,
+  partnerId: string,
+  file: File,
+  previousPath?: string,
+): Promise<{ url: string; path: string }> {
+  const cid = String(courseId ?? "").trim();
+  const pid = String(partnerId ?? "").trim();
+  if (!cid) throw new Error("Thiếu courseId");
+  if (!pid) throw new Error("Thiếu partnerId");
+
+  await deleteStorageObjectByPath(previousPath);
+
+  const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+  const safeExt = /^[a-z0-9]+$/.test(ext) ? ext : "png";
+  const path = `course-partners/${cid}/${pid}/${Date.now()}.${safeExt}`;
+  const storageRef = ref(storage, path);
+
+  await uploadBytes(storageRef, file, {
+    contentType: file.type || `image/${safeExt}`,
+  });
+
+  const url = await getDownloadURL(storageRef);
+  return { url, path };
+}
+
+/**
+ * Upload logo brand cho khoá học đối tác (instructor/admin).
+ * Đường dẫn: course-partner-brand/{courseId}/{timestamp}.{ext}
+ */
+export async function uploadCoursePartnerBrandLogo(
+  courseId: string,
+  file: File,
+  previousPath?: string,
+): Promise<{ url: string; path: string }> {
+  const cid = String(courseId ?? "").trim();
+  if (!cid) throw new Error("Thiếu courseId");
+
+  await deleteStorageObjectByPath(previousPath);
+
+  const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+  const safeExt = /^[a-z0-9]+$/.test(ext) ? ext : "png";
+  const path = `course-partner-brand/${cid}/${Date.now()}.${safeExt}`;
+  const storageRef = ref(storage, path);
+
+  await uploadBytes(storageRef, file, {
+    contentType: file.type || `image/${safeExt}`,
   });
 
   const url = await getDownloadURL(storageRef);

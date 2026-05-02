@@ -19,6 +19,7 @@ import {
   Settings,
   DollarSign,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import {
   getCourse,
@@ -29,6 +30,8 @@ import {
   computeProgressPercent,
   checkAndIssueCertificate,
   updateCourse,
+  isCourseCoInstructorWithAnyPermission,
+  toCoInstructorSnapshot,
   applyCourseLessonLocaleContent,
   applyCourseSectionLocaleContent,
   backfillCourseLocaleIndex,
@@ -56,7 +59,11 @@ import {
   getSubmissionsForCourse,
   updateSubmissionStatus,
 } from "@/lib/finalAssignment";
-import { getProfile } from "@/lib/profile";
+import {
+  getAllProfiles,
+  getProfile,
+  listCoreliaInstructorProfiles,
+} from "@/lib/profile";
 import { getYoutubeVideoDuration } from "@/lib/youtube";
 import {
   createCourseDiscount,
@@ -70,6 +77,9 @@ import {
   uploadCourseThumbnail,
   uploadCoursePartnerDocument,
   uploadCertificateTemplate,
+  uploadCourseSponsorLogo,
+  uploadCoursePartnerLogo,
+  deleteStorageObjectByPath,
 } from "@/lib/storage";
 import {
   getCourseOwnerTypeLabel,
@@ -82,6 +92,10 @@ import {
   type CourseAccessModel,
   type CourseLevel,
   type SupportedCourseLocale,
+  type CourseCoInstructorPermissionKey,
+  type CourseCoInstructorPermissions,
+  type CourseSponsor,
+  type CoursePartner,
 } from "@/types/courses";
 import type {
   Course,
@@ -95,6 +109,10 @@ import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  ProfileCombobox,
+  type ProfileComboboxOption,
+} from "@/components/ui/profile-combobox";
 import {
   Dialog,
   DialogContent,
@@ -126,6 +144,17 @@ const EDIT_SECTION_IDS = [
   "danger",
 ] as const;
 
+const CO_INSTRUCTOR_PERMISSION_KEYS: Array<{
+  key: CourseCoInstructorPermissionKey;
+  labelKey: string;
+}> = [
+  { key: "students", labelKey: "courseEdit.coInstructors.permissions.students" },
+  { key: "submissions", labelKey: "courseEdit.coInstructors.permissions.submissions" },
+  { key: "content", labelKey: "courseEdit.coInstructors.permissions.content" },
+  { key: "certificates", labelKey: "courseEdit.coInstructors.permissions.certificates" },
+  { key: "pricing", labelKey: "courseEdit.coInstructors.permissions.pricing" },
+];
+
 type LessonDropPosition = "before" | "after";
 
 type LessonDropTarget = {
@@ -136,6 +165,26 @@ type LessonDropTarget = {
 
 const getNextOrder = (items: Array<{ order?: number | null }>) =>
   items.reduce((max, item) => Math.max(max, Number(item.order ?? -1)), -1) + 1;
+
+const isValidHttpUrl = (input?: string | null): boolean => {
+  const value = String(input ?? "").trim();
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
+const createSponsorId = (): string => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return String(globalThis.crypto?.randomUUID?.() ?? "").trim() || `${Date.now()}`;
+  } catch {
+    return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  }
+};
 
 const InstructorCourseEdit = () => {
   const { t } = useTranslation("instructor");
@@ -215,6 +264,14 @@ const InstructorCourseEdit = () => {
     partner_transfer_info: "",
   });
 
+  const [coInstructorIds, setCoInstructorIds] = useState<string[]>([]);
+  const [coInstructorPermissions, setCoInstructorPermissions] = useState<
+    Record<string, CourseCoInstructorPermissions>
+  >({});
+  const [instructorDirectory, setInstructorDirectory] = useState<Profile[]>([]);
+  const [loadingInstructorDirectory, setLoadingInstructorDirectory] =
+    useState(false);
+
   const [supportedLocales, setSupportedLocales] = useState<SupportedCourseLocale[]>(["vi", "en"]);
   const [primaryContentLocale, setPrimaryContentLocale] = useState<SupportedCourseLocale>("vi");
   const [defaultVideoPrimaryLocale, setDefaultVideoPrimaryLocale] =
@@ -247,6 +304,42 @@ const InstructorCourseEdit = () => {
   const [uploadingCert, setUploadingCert] = useState(false);
   const [uploadingContractDoc, setUploadingContractDoc] = useState(false);
   const [uploadingInvoiceDoc, setUploadingInvoiceDoc] = useState(false);
+  const [sponsors, setSponsors] = useState<CourseSponsor[]>([]);
+  const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
+  const [activeSponsorId, setActiveSponsorId] = useState<string | null>(null);
+  const [sponsorForm, setSponsorForm] = useState<{
+    name: string;
+    website: string;
+    description: string;
+    logo_url: string;
+    logo_path: string;
+  }>({
+    name: "",
+    website: "",
+    description: "",
+    logo_url: "",
+    logo_path: "",
+  });
+  const sponsorLogoInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingSponsorLogo, setUploadingSponsorLogo] = useState(false);
+  const [partners, setPartners] = useState<CoursePartner[]>([]);
+  const [partnerDialogOpen, setPartnerDialogOpen] = useState(false);
+  const [activePartnerId, setActivePartnerId] = useState<string | null>(null);
+  const [partnerForm, setPartnerForm] = useState<{
+    name: string;
+    website: string;
+    description: string;
+    logo_url: string;
+    logo_path: string;
+  }>({
+    name: "",
+    website: "",
+    description: "",
+    logo_url: "",
+    logo_path: "",
+  });
+  const partnerLogoInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingPartnerLogo, setUploadingPartnerLogo] = useState(false);
   const [discounts, setDiscounts] = useState<CourseDiscount[]>([]);
   const [backfillingLocales, setBackfillingLocales] = useState(false);
   const [loadingDiscounts, setLoadingDiscounts] = useState(false);
@@ -298,11 +391,101 @@ const InstructorCourseEdit = () => {
   const showBusinessSettingsSection =
     canManageBusinessSettings || profile?.instructor_origin !== "external";
   const canEdit =
+    course && (isAdmin || isSupportStaff || course.instructor_id === profile?.id);
+
+  const coInstructorPermsEffective: CourseCoInstructorPermissions =
+    (course &&
+      profile?.id &&
+      course.co_instructor_permissions?.[profile.id]) ||
+    {};
+  const canAccessEditor = Boolean(
     course &&
-    (isAdmin || isSupportStaff || course.instructor_id === profile?.id);
+      (canEdit ||
+        isCourseCoInstructorWithAnyPermission(course, profile?.id)),
+  );
+
+  const canAccessInfo = Boolean(canEdit);
+  const canAccessPricing = Boolean(canEdit || coInstructorPermsEffective.pricing);
+  const canAccessContent = Boolean(canEdit || coInstructorPermsEffective.content);
+  const canAccessAssignments = Boolean(
+    canEdit || coInstructorPermsEffective.submissions,
+  );
+  const canAccessCertificate = Boolean(
+    canEdit || coInstructorPermsEffective.certificates,
+  );
+  const canAccessStudents = Boolean(
+    canEdit || coInstructorPermsEffective.students,
+  );
+  const canAccessDanger = Boolean(canEdit);
 
   useEffect(() => {
-    if (!id || !canEdit) return;
+    const allowed: SectionId[] = [];
+    if (canAccessInfo) allowed.push("info");
+    if (canAccessPricing) allowed.push("pricing");
+    if (canAccessContent) allowed.push("content");
+    if (canAccessAssignments) allowed.push("assignments");
+    if (canAccessCertificate) allowed.push("certificate");
+    if (canAccessStudents) allowed.push("students");
+    if (canAccessDanger) allowed.push("danger");
+    if (allowed.length === 0) return;
+    if (allowed.includes(activeSection)) return;
+    setSection(allowed[0]);
+    // Intentionally use setSection for hash sync.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeSection,
+    canAccessInfo,
+    canAccessPricing,
+    canAccessContent,
+    canAccessAssignments,
+    canAccessCertificate,
+    canAccessStudents,
+    canAccessDanger,
+  ]);
+
+  const canEditCoInstructors = Boolean(
+    course && (isAdmin || isSupportStaff || course.instructor_id === profile?.id),
+  );
+
+  useEffect(() => {
+    if (!course) return;
+    const ids =
+      (course.co_instructors ?? [])
+        .map((c) => String(c.id ?? "").trim())
+        .filter(Boolean) ?? [];
+    const filtered = ids.filter((cid) => cid !== course.instructor_id);
+    setCoInstructorIds(Array.from(new Set(filtered)));
+    setCoInstructorPermissions(course.co_instructor_permissions ?? {});
+  }, [course]);
+
+  useEffect(() => {
+    if (!canEditCoInstructors) return;
+    let cancelled = false;
+    setLoadingInstructorDirectory(true);
+    const load = async () => {
+      if (isAdmin || isSupportStaff) {
+        const all = await getAllProfiles();
+        return all.filter((p) => p.role === "instructor");
+      }
+      return await listCoreliaInstructorProfiles();
+    };
+    void load()
+      .then((rows) => {
+        if (!cancelled) setInstructorDirectory(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setInstructorDirectory([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingInstructorDirectory(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [canEditCoInstructors, isAdmin, isSupportStaff]);
+
+  useEffect(() => {
+    if (!id || !canAccessPricing) return;
     let cancelled = false;
     setLoadingDiscounts(true);
     listCourseDiscounts(id)
@@ -318,7 +501,7 @@ const InstructorCourseEdit = () => {
     return () => {
       cancelled = true;
     };
-  }, [id, canEdit]);
+  }, [id, canAccessPricing]);
 
   useEffect(() => {
     if (course) {
@@ -354,6 +537,28 @@ const InstructorCourseEdit = () => {
         partner_invoice_docs: course.partner_invoice_docs ?? [],
         partner_transfer_info: course.partner_transfer_info ?? "",
       });
+      setSponsors(Array.isArray(course.sponsors) ? course.sponsors : []);
+      const list = Array.isArray(course.partners) ? course.partners : [];
+      if (list.length > 0) {
+        setPartners(list);
+      } else {
+        const legacy = course.partner_brand ?? null;
+        const legacyName = String(legacy?.name ?? "").trim();
+        setPartners(
+          legacyName
+            ? [
+                {
+                  id: "legacy",
+                  name: legacyName,
+                  website: legacy?.website ?? null,
+                  description: legacy?.description ?? null,
+                  logo_url: legacy?.logo_url ?? null,
+                  logo_path: legacy?.logo_path ?? null,
+                },
+              ]
+            : [],
+        );
+      }
 
       const supported = getCourseSupportedLocales(course);
       const primary = getCoursePrimaryLocale(course);
@@ -408,28 +613,53 @@ const InstructorCourseEdit = () => {
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
-    Promise.all([
-      getCourse(id),
-      getCourseSections(id),
-      getCourseLessons(id),
-      getEnrollmentsForCourse(id),
-      getSubmissionsForCourse(id),
-    ])
-      .then(async ([c, secs, less, enrs, subs]) => {
-        if (!cancelled) {
-          setCourse(c ?? null);
-          setSections(secs);
-          setLessons(less);
-          setEnrollments(enrs);
-          setSubmissions(subs);
-          const subByUser: Record<string, FinalAssignmentSubmission> = {};
-          for (const s of subs) subByUser[s.user_id] = s;
-          setSubmissionByUser(subByUser);
+    setLoading(true);
+    setError(null);
+
+    void (async () => {
+      try {
+        const c = await getCourse(id);
+        if (cancelled) return;
+        setCourse(c ?? null);
+        if (!c) return;
+
+        const isOwner = c.instructor_id === profile?.id;
+        const perms = (profile?.id && c.co_instructor_permissions?.[profile.id]) || {};
+        const hasAny = Object.values(perms).some(Boolean);
+        const canAccess = isAdmin || isSupportStaff || isOwner || hasAny;
+        if (!canAccess) return;
+
+        const canContent = isAdmin || isSupportStaff || isOwner || perms.content === true;
+        const canStudents = isAdmin || isSupportStaff || isOwner || perms.students === true;
+        const canSubmissions =
+          isAdmin || isSupportStaff || isOwner || perms.submissions === true;
+
+        const [secs, less] = await Promise.all([
+          canContent ? getCourseSections(id) : Promise.resolve([] as CourseSection[]),
+          canContent ? getCourseLessons(id) : Promise.resolve([] as CourseLesson[]),
+        ]);
+        if (cancelled) return;
+        setSections(secs);
+        setLessons(less);
+
+        const [enrs, subs] = await Promise.all([
+          canStudents ? getEnrollmentsForCourse(id) : Promise.resolve([] as Enrollment[]),
+          canSubmissions
+            ? getSubmissionsForCourse(id)
+            : Promise.resolve([] as FinalAssignmentSubmission[]),
+        ]);
+        if (cancelled) return;
+        setEnrollments(enrs);
+        setSubmissions(subs);
+
+        const subByUser: Record<string, FinalAssignmentSubmission> = {};
+        for (const s of subs) subByUser[s.user_id] = s;
+        setSubmissionByUser(subByUser);
+
+        if (canStudents) {
           const profiles: Record<string, Profile | null> = {};
           const progress: Record<string, number> = {};
           for (const e of enrs) {
-            // Instructors may not have permission to read arbitrary profile docs.
-            // Fallback to null profile instead of failing the whole page.
             const [profileResult, progressResult] = await Promise.allSettled([
               getProfile(e.user_id),
               getLessonProgressForCourse(e.user_id, id),
@@ -447,21 +677,26 @@ const InstructorCourseEdit = () => {
             setStudentProfiles(profiles);
             setStudentProgress(progress);
           }
+        } else {
+          setStudentProfiles({});
+          setStudentProgress({});
         }
-      })
-      .catch((e) => {
+      } catch (e) {
         if (!cancelled)
           setError(
-            e instanceof Error ? e.message : t("courseEdit.errors.loadCourseFailed"),
+            e instanceof Error
+              ? e.message
+              : t("courseEdit.errors.loadCourseFailed"),
           );
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    })();
+
     return () => {
       cancelled = true;
     };
-  }, [id, t]);
+  }, [id, isAdmin, isSupportStaff, profile?.id, t]);
 
   // Backfill tổng thời lượng khi mở trang (để danh sách khoá học bên ngoài hiển thị đúng)
   useEffect(() => {
@@ -590,6 +825,34 @@ const InstructorCourseEdit = () => {
       };
 
       const shouldUpdateRootContent = activeContentLocale === primaryContentLocale;
+
+      const coInstructorSnapshots = (() => {
+        if (!canEditCoInstructors) return undefined;
+        const byId = new Map(instructorDirectory.map((p) => [p.id, p]));
+        const fallbackById = new Map(
+          (course.co_instructors ?? []).map((c) => [c.id, c]),
+        );
+        return coInstructorIds
+          .filter((cid) => cid && cid !== course.instructor_id)
+          .map((cid) => {
+            const prof = byId.get(cid);
+            if (prof) return toCoInstructorSnapshot(prof);
+            const fallback = fallbackById.get(cid);
+            if (fallback) return fallback;
+            return { id: cid, name: cid };
+          });
+      })();
+
+      const coInstructorPermissionsPayload = (() => {
+        if (!canEditCoInstructors) return undefined;
+        const next: Record<string, CourseCoInstructorPermissions> = {};
+        for (const cid of coInstructorIds) {
+          if (!cid || cid === course.instructor_id) continue;
+          next[cid] = coInstructorPermissions[cid] ?? {};
+        }
+        return next;
+      })();
+
       await updateCourse(id, {
         slug: form.slug,
         thumbnail_url: form.thumbnail_url,
@@ -597,6 +860,8 @@ const InstructorCourseEdit = () => {
         published: form.published,
         is_updating: form.is_updating,
         i18n: i18nPayload,
+        sponsors,
+        partners,
         ...(shouldUpdateRootContent && {
           title: contentForm.title.trim() || course.title,
           short_description: contentForm.short_description.trim() || undefined,
@@ -640,6 +905,10 @@ const InstructorCourseEdit = () => {
           form.owner_type === "external_partner"
             ? form.partner_transfer_info.trim() || null
             : null,
+        ...(canEditCoInstructors && {
+          co_instructors: coInstructorSnapshots,
+          co_instructor_permissions: coInstructorPermissionsPayload,
+        }),
       });
       setCourse((prev) =>
         prev
@@ -651,6 +920,8 @@ const InstructorCourseEdit = () => {
               published: form.published,
               is_updating: form.is_updating,
               i18n: i18nPayload,
+              sponsors,
+              partners,
               ...(shouldUpdateRootContent && {
                 title: contentForm.title.trim() || prev.title,
                 short_description: contentForm.short_description,
@@ -692,6 +963,11 @@ const InstructorCourseEdit = () => {
                 form.owner_type === "external_partner"
                   ? form.partner_transfer_info.trim() || null
                   : null,
+              ...(canEditCoInstructors && {
+                co_instructors: coInstructorSnapshots ?? prev.co_instructors ?? [],
+                co_instructor_permissions:
+                  coInstructorPermissionsPayload ?? prev.co_instructor_permissions ?? {},
+              }),
               updated_at: new Date().toISOString(),
             }
           : null,
@@ -792,6 +1068,283 @@ const InstructorCourseEdit = () => {
       setUploadingCert(false);
       e.target.value = "";
     }
+  };
+
+  const persistSponsors = async (
+    nextSponsors: CourseSponsor[],
+    toastKey?: string,
+  ) => {
+    if (!id) return;
+    setSponsors(nextSponsors);
+    setCourse((prev) => (prev ? { ...prev, sponsors: nextSponsors } : prev));
+    try {
+      await updateCourse(id, { sponsors: nextSponsors });
+      if (toastKey) toast.success(String(t(toastKey as never)));
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : String(t("courseEdit.errors.updateFailed")),
+      );
+    }
+  };
+
+  const openAddSponsor = () => {
+    const sid = createSponsorId();
+    setActiveSponsorId(sid);
+    setSponsorForm({
+      name: "",
+      website: "",
+      description: "",
+      logo_url: "",
+      logo_path: "",
+    });
+    setSponsorDialogOpen(true);
+  };
+
+  const openEditSponsor = (s: CourseSponsor) => {
+    setActiveSponsorId(String(s.id ?? "").trim() || null);
+    setSponsorForm({
+      name: String(s.name ?? ""),
+      website: String(s.website ?? ""),
+      description: String(s.description ?? ""),
+      logo_url: String(s.logo_url ?? ""),
+      logo_path: String(s.logo_path ?? ""),
+    });
+    setSponsorDialogOpen(true);
+  };
+
+  const handleSponsorLogoChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    const sid = String(activeSponsorId ?? "").trim();
+    if (!sid) return;
+    setUploadingSponsorLogo(true);
+    try {
+      const result = await uploadCourseSponsorLogo(
+        id,
+        sid,
+        file,
+        sponsorForm.logo_path,
+      );
+      setSponsorForm((p) => ({ ...p, logo_url: result.url, logo_path: result.path }));
+
+      const nextSponsors = (() => {
+        const normalized = sponsors.map((s) => ({ ...s, id: String(s.id ?? "").trim() }));
+        const idx = normalized.findIndex((s) => s.id === sid);
+        if (idx >= 0) {
+          const updated = [...normalized];
+          updated[idx] = { ...updated[idx], logo_url: result.url, logo_path: result.path };
+          return updated;
+        }
+        return [
+          ...normalized,
+          {
+            id: sid,
+            name: sponsorForm.name.trim() || sid,
+            website: sponsorForm.website.trim() || null,
+            description: sponsorForm.description.trim() || null,
+            logo_url: result.url,
+            logo_path: result.path,
+          },
+        ];
+      })();
+
+      await persistSponsors(nextSponsors, "courseEdit.sponsors.toasts.logoUploaded");
+    } catch (e) {
+      toast.error(
+        e instanceof Error
+          ? e.message
+          : String(t("courseEdit.sponsors.errors.uploadLogoFailed" as never)),
+      );
+    } finally {
+      setUploadingSponsorLogo(false);
+      e.target.value = "";
+    }
+  };
+
+  const saveSponsorFromDialog = async () => {
+    const sid = String(activeSponsorId ?? "").trim();
+    if (!sid) return;
+    const name = sponsorForm.name.trim();
+    if (!name) {
+      toast.error(String(t("courseEdit.sponsors.errors.missingName" as never)));
+      return;
+    }
+    const websiteValue = sponsorForm.website.trim();
+    if (websiteValue && !isValidHttpUrl(websiteValue)) {
+      toast.error(String(t("courseEdit.sponsors.errors.invalidWebsite" as never)));
+      return;
+    }
+
+    const nextSponsors = (() => {
+      const normalized = sponsors.map((s) => ({ ...s, id: String(s.id ?? "").trim() }));
+      const idx = normalized.findIndex((s) => s.id === sid);
+      const nextItem: CourseSponsor = {
+        id: sid,
+        name,
+        website: websiteValue || null,
+        description: sponsorForm.description.trim() || null,
+        logo_url: sponsorForm.logo_url.trim() || null,
+        logo_path: sponsorForm.logo_path.trim() || null,
+      };
+      if (idx >= 0) {
+        const updated = [...normalized];
+        updated[idx] = { ...updated[idx], ...nextItem };
+        return updated;
+      }
+      return [...normalized, nextItem];
+    })();
+
+    await persistSponsors(nextSponsors, "courseEdit.sponsors.toasts.saved");
+    setSponsorDialogOpen(false);
+  };
+
+  const removeSponsor = async (s: CourseSponsor) => {
+    const sid = String(s.id ?? "").trim();
+    if (!sid) return;
+    if (!confirm(String(t("courseEdit.sponsors.confirm.remove" as never)))) return;
+    const nextSponsors = sponsors.filter((x) => String(x.id ?? "").trim() !== sid);
+    await persistSponsors(nextSponsors, "courseEdit.sponsors.toasts.removed");
+    await deleteStorageObjectByPath(s.logo_path ?? null);
+  };
+
+  const persistPartners = async (nextPartners: CoursePartner[], toastKey?: string) => {
+    if (!id) return;
+    setPartners(nextPartners);
+    setCourse((prev) => (prev ? { ...prev, partners: nextPartners } : prev));
+    try {
+      await updateCourse(id, { partners: nextPartners });
+      if (toastKey) toast.success(String(t(toastKey as never)));
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : String(t("courseEdit.errors.updateFailed")),
+      );
+    }
+  };
+
+  const openAddPartner = () => {
+    const pid = createSponsorId();
+    setActivePartnerId(pid);
+    setPartnerForm({
+      name: "",
+      website: "",
+      description: "",
+      logo_url: "",
+      logo_path: "",
+    });
+    setPartnerDialogOpen(true);
+  };
+
+  const openEditPartner = (p: CoursePartner) => {
+    setActivePartnerId(String(p.id ?? "").trim() || null);
+    setPartnerForm({
+      name: String(p.name ?? ""),
+      website: String(p.website ?? ""),
+      description: String(p.description ?? ""),
+      logo_url: String(p.logo_url ?? ""),
+      logo_path: String(p.logo_path ?? ""),
+    });
+    setPartnerDialogOpen(true);
+  };
+
+  const handlePartnerLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    const pid = String(activePartnerId ?? "").trim();
+    if (!pid) return;
+    setUploadingPartnerLogo(true);
+    try {
+      const result = await uploadCoursePartnerLogo(
+        id,
+        pid,
+        file,
+        partnerForm.logo_path,
+      );
+      setPartnerForm((p) => ({ ...p, logo_url: result.url, logo_path: result.path }));
+
+      const nextPartners = (() => {
+        const normalized = partners.map((p) => ({ ...p, id: String(p.id ?? "").trim() }));
+        const idx = normalized.findIndex((p) => p.id === pid);
+        if (idx >= 0) {
+          const updated = [...normalized];
+          updated[idx] = {
+            ...updated[idx],
+            logo_url: result.url,
+            logo_path: result.path,
+          };
+          return updated;
+        }
+        return [
+          ...normalized,
+          {
+            id: pid,
+            name: partnerForm.name.trim() || pid,
+            website: partnerForm.website.trim() || null,
+            description: partnerForm.description.trim() || null,
+            logo_url: result.url,
+            logo_path: result.path,
+          },
+        ];
+      })();
+
+      await persistPartners(nextPartners, "courseEdit.partners.toasts.logoUploaded");
+    } catch (e) {
+      toast.error(
+        e instanceof Error
+          ? e.message
+          : String(t("courseEdit.partners.errors.uploadLogoFailed" as never)),
+      );
+    } finally {
+      setUploadingPartnerLogo(false);
+      e.target.value = "";
+    }
+  };
+
+  const savePartnerFromDialog = async () => {
+    const pid = String(activePartnerId ?? "").trim();
+    if (!pid) return;
+    const name = partnerForm.name.trim();
+    if (!name) {
+      toast.error(String(t("courseEdit.partners.errors.missingName" as never)));
+      return;
+    }
+    const websiteValue = partnerForm.website.trim();
+    if (websiteValue && !isValidHttpUrl(websiteValue)) {
+      toast.error(String(t("courseEdit.partners.errors.invalidWebsite" as never)));
+      return;
+    }
+
+    const nextPartners = (() => {
+      const normalized = partners.map((p) => ({ ...p, id: String(p.id ?? "").trim() }));
+      const idx = normalized.findIndex((p) => p.id === pid);
+      const nextItem: CoursePartner = {
+        id: pid,
+        name,
+        website: websiteValue || null,
+        description: partnerForm.description.trim() || null,
+        logo_url: partnerForm.logo_url.trim() || null,
+        logo_path: partnerForm.logo_path.trim() || null,
+      };
+      if (idx >= 0) {
+        const updated = [...normalized];
+        updated[idx] = { ...updated[idx], ...nextItem };
+        return updated;
+      }
+      return [...normalized, nextItem];
+    })();
+
+    await persistPartners(nextPartners, "courseEdit.partners.toasts.saved");
+    setPartnerDialogOpen(false);
+  };
+
+  const removePartner = async (p: CoursePartner) => {
+    const pid = String(p.id ?? "").trim();
+    if (!pid) return;
+    if (!confirm(String(t("courseEdit.partners.confirm.remove" as never)))) return;
+    const nextPartners = partners.filter((x) => String(x.id ?? "").trim() !== pid);
+    await persistPartners(nextPartners, "courseEdit.partners.toasts.removed");
+    await deleteStorageObjectByPath(p.logo_path ?? null);
   };
 
   const handleUploadPartnerDocument = async (
@@ -1391,7 +1944,7 @@ const InstructorCourseEdit = () => {
     );
   }
 
-  if (!course || !canEdit) {
+  if (!course || !canAccessEditor) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-6 lg:px-8">
         <p className="text-muted-foreground">
@@ -1475,6 +2028,7 @@ const InstructorCourseEdit = () => {
             </p>
           </div>
           <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+            {canAccessInfo ? (
             <li>
               <button
                 type="button"
@@ -1490,6 +2044,8 @@ const InstructorCourseEdit = () => {
                 Thông tin chung
               </button>
             </li>
+            ) : null}
+            {canAccessPricing ? (
             <li>
               <button
                 type="button"
@@ -1505,6 +2061,8 @@ const InstructorCourseEdit = () => {
                 Giá & thanh toán
               </button>
             </li>
+            ) : null}
+            {canAccessContent ? (
             <li>
               <button
                 type="button"
@@ -1520,6 +2078,8 @@ const InstructorCourseEdit = () => {
                 Nội dung & bài học
               </button>
             </li>
+            ) : null}
+            {canAccessAssignments ? (
             <li>
               <button
                 type="button"
@@ -1535,6 +2095,8 @@ const InstructorCourseEdit = () => {
                 Bài tập cuối khoá
               </button>
             </li>
+            ) : null}
+            {canAccessCertificate ? (
             <li>
               <button
                 type="button"
@@ -1550,6 +2112,8 @@ const InstructorCourseEdit = () => {
                 Chứng nhận
               </button>
             </li>
+            ) : null}
+            {canAccessStudents ? (
             <li>
               <button
                 type="button"
@@ -1565,6 +2129,8 @@ const InstructorCourseEdit = () => {
                 Quản lý học viên
               </button>
             </li>
+            ) : null}
+            {canAccessDanger ? (
             <li className="mt-2 border-t border-border-subtle pt-2">
               <button
                 type="button"
@@ -1580,12 +2146,13 @@ const InstructorCourseEdit = () => {
                 Xoá khoá học
               </button>
             </li>
+            ) : null}
           </ul>
         </nav>
 
         {/* Nội dung theo section đang chọn */}
         <div className="min-w-0 flex-1">
-          {activeSection === "info" && (
+          {activeSection === "info" && canAccessInfo && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground">
                 Thông tin chung
@@ -1813,6 +2380,743 @@ const InstructorCourseEdit = () => {
                     {t("courseEdit.form.learningOutcomesAdd")}
                   </Button>
                 </Field>
+
+                {course && canEditCoInstructors ? (
+                  <Field>
+                    <FieldLabel>
+                      {String(
+                        t("courseEdit.coInstructors.label" as never, {
+                          defaultValue: "Co-instructors",
+                        } as never),
+                      )}
+                    </FieldLabel>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {String(
+                        t("courseEdit.coInstructors.hint" as never, {
+                          defaultValue:
+                            "Thêm đồng giảng viên để hiển thị trên trang khoá học và cấp một số quyền giới hạn.",
+                        } as never),
+                      )}
+                    </p>
+
+                    <div className="mt-3 space-y-3">
+                      <ProfileCombobox
+                        title={String(
+                          t("courseEdit.coInstructors.dialogTitle" as never, {
+                            defaultValue: "Chọn co-instructors",
+                          } as never),
+                        )}
+                        description={String(
+                          t("courseEdit.coInstructors.dialogDescription" as never, {
+                            defaultValue:
+                              "Chỉ những instructor có trong danh sách mới có thể được chọn.",
+                          } as never),
+                        )}
+                        options={
+                          instructorDirectory
+                            .filter((p) => p.id !== course.instructor_id)
+                            .map(
+                              (p): ProfileComboboxOption => ({
+                                id: p.id,
+                                label:
+                                  p.full_name ??
+                                  p.email ??
+                                  String(
+                                    t("courseEdit.coInstructors.fallbackName" as never, {
+                                      defaultValue: "Instructor",
+                                    } as never),
+                                  ),
+                                description:
+                                  p.instructor_headline ??
+                                  p.instructor_organization ??
+                                  null,
+                              }),
+                            )
+                        }
+                        placeholder={String(
+                          t("courseEdit.coInstructors.placeholder" as never, {
+                            defaultValue: "Chọn co-instructors…",
+                          } as never),
+                        )}
+                        searchPlaceholder={String(
+                          t("courseEdit.coInstructors.searchPlaceholder" as never, {
+                            defaultValue: "Tìm theo tên/email…",
+                          } as never),
+                        )}
+                        emptyLabel={String(
+                          t("courseEdit.coInstructors.emptyLabel" as never, {
+                            defaultValue: "Không có instructor phù hợp.",
+                          } as never),
+                        )}
+                        multiple
+                        value={coInstructorIds}
+                        onChange={(value) => {
+                          const ids = (Array.isArray(value) ? value : [])
+                            .map((v) => String(v).trim())
+                            .filter(Boolean)
+                            .filter((v) => v !== course.instructor_id);
+                          const unique = Array.from(new Set(ids));
+                          setCoInstructorIds(unique);
+                          setCoInstructorPermissions((prev) => {
+                            const next = { ...prev };
+                            for (const id of Object.keys(next)) {
+                              if (!unique.includes(id)) delete next[id];
+                            }
+                            return next;
+                          });
+                        }}
+                      />
+
+                      {loadingInstructorDirectory ? (
+                        <p className="text-xs text-muted-foreground">
+                          {String(
+                            t("courseEdit.coInstructors.loadingDirectory" as never, {
+                              defaultValue: "Đang tải danh sách instructor…",
+                            } as never),
+                          )}
+                        </p>
+                      ) : null}
+
+                      {coInstructorIds.length > 0 ? (
+                        <div className="space-y-3">
+                          {coInstructorIds.map((cid) => {
+                            const display =
+                              instructorDirectory.find((p) => p.id === cid)
+                                ?.full_name ??
+                              instructorDirectory.find((p) => p.id === cid)
+                                ?.email ??
+                              cid;
+                            const perms = coInstructorPermissions[cid] ?? {};
+                            return (
+                              <div
+                                key={cid}
+                                className="rounded-md border border-border-subtle bg-muted/20 p-3"
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <div className="text-sm font-medium text-foreground">
+                                      {display}
+                                    </div>
+                                    <div className="mt-0.5 text-xs text-muted-foreground">
+                                      {cid}
+                                    </div>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 px-2"
+                                    onClick={() => {
+                                      setCoInstructorIds((prev) =>
+                                        prev.filter((id) => id !== cid),
+                                      );
+                                      setCoInstructorPermissions((prev) => {
+                                        const next = { ...prev };
+                                        delete next[cid];
+                                        return next;
+                                      });
+                                    }}
+                                  >
+                                    <XCircle className="size-4" aria-hidden />
+                                  </Button>
+                                </div>
+
+                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                  {CO_INSTRUCTOR_PERMISSION_KEYS.map((item) => {
+                                    const checked = perms[item.key] === true;
+                                    return (
+                                      <label
+                                        key={item.key}
+                                        className="flex items-center gap-2 rounded-md border border-border-subtle bg-background px-3 py-2 text-sm"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={checked}
+                                          onChange={(e) => {
+                                            const nextVal = e.target.checked;
+                                            setCoInstructorPermissions((prev) => ({
+                                              ...prev,
+                                              [cid]: {
+                                                ...(prev[cid] ?? {}),
+                                                [item.key]: nextVal,
+                                              },
+                                            }));
+                                          }}
+                                        />
+                                        <span className="text-foreground">
+                                          {String(
+                                            t(item.labelKey as never, {
+                                              defaultValue: item.key,
+                                            } as never),
+                                          )}
+                                        </span>
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+                    </div>
+                  </Field>
+                ) : null}
+
+                <Field>
+                  <FieldLabel>
+                    {String(
+                      t("courseEdit.sponsors.label" as never, {
+                        defaultValue: "Sponsors",
+                      } as never),
+                    )}
+                  </FieldLabel>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {String(
+                      t("courseEdit.sponsors.hint" as never, {
+                        defaultValue:
+                          "Thêm sponsor để hiển thị ở sidebar trang khoá học (logo, tên, website, mô tả).",
+                      } as never),
+                    )}
+                  </p>
+
+                  <div className="mt-3 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="inline-flex items-center gap-2"
+                        onClick={openAddSponsor}
+                      >
+                        <Plus className="size-4" aria-hidden />
+                        {String(
+                          t("courseEdit.sponsors.actions.add" as never, {
+                            defaultValue: "Thêm sponsor",
+                          } as never),
+                        )}
+                      </Button>
+                      <span className="text-xs text-muted-foreground">
+                        {String(
+                          t("courseEdit.sponsors.countLabel" as never, {
+                            defaultValue: "{{count}} sponsor",
+                            count: sponsors.length,
+                          } as never),
+                        )}
+                      </span>
+                    </div>
+
+                    {sponsors.length > 0 ? (
+                      <div className="space-y-2">
+                        {sponsors.map((s) => {
+                          const sid = String(s.id ?? "").trim();
+                          const name = String(s.name ?? "").trim();
+                          const logoSrc =
+                            s.logo_url && String(s.logo_url).trim()
+                              ? String(s.logo_url)
+                              : null;
+                          const website = isValidHttpUrl(s.website)
+                            ? String(s.website)
+                            : "";
+
+                          return (
+                            <div
+                              key={sid || name}
+                              className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-border-subtle bg-background p-3"
+                            >
+                              <div className="flex min-w-0 items-start gap-3">
+                                {logoSrc ? (
+                                  <img
+                                    src={logoSrc}
+                                    alt={name}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="size-10 shrink-0 rounded-md border border-border-subtle bg-background object-contain"
+                                  />
+                                ) : (
+                                  <div className="grid size-10 shrink-0 place-items-center rounded-md border border-border-subtle bg-muted/30 text-xs font-semibold text-muted-foreground">
+                                    {(name || "?").slice(0, 2).toUpperCase()}
+                                  </div>
+                                )}
+
+                                <div className="min-w-0">
+                                  <div className="text-sm font-semibold text-foreground">
+                                    {name || sid}
+                                  </div>
+                                  {website ? (
+                                    <a
+                                      href={website}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="mt-1 block truncate text-xs text-primary hover:underline"
+                                    >
+                                      {website}
+                                    </a>
+                                  ) : null}
+                                  {s.description ? (
+                                    <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+                                      {s.description}
+                                    </p>
+                                  ) : null}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 px-3"
+                                  onClick={() => openEditSponsor(s)}
+                                >
+                                  <Pencil className="size-4" aria-hidden />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 px-3 text-destructive hover:text-destructive"
+                                  onClick={() => void removeSponsor(s)}
+                                >
+                                  <Trash2 className="size-4" aria-hidden />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        {String(
+                          t("courseEdit.sponsors.empty" as never, {
+                            defaultValue: "Chưa có sponsor nào.",
+                          } as never),
+                        )}
+                      </p>
+                    )}
+                  </div>
+
+                  <Dialog open={sponsorDialogOpen} onOpenChange={setSponsorDialogOpen}>
+                    <DialogContent className="max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle>
+                          {String(
+                            t("courseEdit.sponsors.dialog.title" as never, {
+                              defaultValue: "Sponsor",
+                            } as never),
+                          )}
+                        </DialogTitle>
+                      </DialogHeader>
+
+                      <div className="space-y-4">
+                        <Field>
+                          <FieldLabel>
+                            {String(
+                              t("courseEdit.sponsors.fields.logo" as never, {
+                                defaultValue: "Logo",
+                              } as never),
+                            )}
+                          </FieldLabel>
+                          <div className="mt-2 flex items-center gap-3">
+                            <input
+                              ref={sponsorLogoInputRef}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleSponsorLogoChange}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={uploadingSponsorLogo || !id}
+                              onClick={() => sponsorLogoInputRef.current?.click()}
+                            >
+                              {uploadingSponsorLogo
+                                ? String(
+                                    t("courseEdit.sponsors.actions.uploading" as never, {
+                                      defaultValue: "Đang tải lên...",
+                                    } as never),
+                                  )
+                                : String(
+                                    t("courseEdit.sponsors.actions.uploadLogo" as never, {
+                                      defaultValue: "Tải logo lên",
+                                    } as never),
+                                  )}
+                            </Button>
+                            {sponsorForm.logo_url ? (
+                              <img
+                                src={sponsorForm.logo_url}
+                                alt=""
+                                className="size-10 rounded-md border border-border-subtle bg-background object-contain"
+                              />
+                            ) : null}
+                          </div>
+                        </Field>
+
+                        <Field>
+                          <FieldLabel>
+                            {String(
+                              t("courseEdit.sponsors.fields.name" as never, {
+                                defaultValue: "Tên sponsor",
+                              } as never),
+                            )}
+                          </FieldLabel>
+                          <Input
+                            value={sponsorForm.name}
+                            onChange={(e) =>
+                              setSponsorForm((p) => ({ ...p, name: e.target.value }))
+                            }
+                          />
+                        </Field>
+
+                        <Field>
+                          <FieldLabel>
+                            {String(
+                              t("courseEdit.sponsors.fields.website" as never, {
+                                defaultValue: "Website",
+                              } as never),
+                            )}
+                          </FieldLabel>
+                          <Input
+                            value={sponsorForm.website}
+                            onChange={(e) =>
+                              setSponsorForm((p) => ({
+                                ...p,
+                                website: e.target.value,
+                              }))
+                            }
+                            placeholder="https://..."
+                          />
+                        </Field>
+
+                        <Field>
+                          <FieldLabel>
+                            {String(
+                              t("courseEdit.sponsors.fields.description" as never, {
+                                defaultValue: "Mô tả",
+                              } as never),
+                            )}
+                          </FieldLabel>
+                          <textarea
+                            value={sponsorForm.description}
+                            onChange={(e) =>
+                              setSponsorForm((p) => ({
+                                ...p,
+                                description: e.target.value,
+                              }))
+                            }
+                            className="min-h-[120px] w-full rounded border border-input bg-background px-3 py-2 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            rows={4}
+                          />
+                        </Field>
+                      </div>
+
+                      <DialogFooter className="mt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setSponsorDialogOpen(false)}
+                        >
+                          {String(
+                            t("courseEdit.sponsors.actions.cancel" as never, {
+                              defaultValue: "Huỷ",
+                            } as never),
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => void saveSponsorFromDialog()}
+                          disabled={uploadingSponsorLogo}
+                        >
+                          {String(
+                            t("courseEdit.sponsors.actions.save" as never, {
+                              defaultValue: "Lưu sponsor",
+                            } as never),
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </Field>
+
+                <Field>
+                  <FieldLabel>
+                    {String(
+                      t("courseEdit.partners.label" as never, {
+                        defaultValue: "Partners",
+                      } as never),
+                    )}
+                  </FieldLabel>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {String(
+                      t("courseEdit.partners.hint" as never, {
+                        defaultValue:
+                          "Thêm partner để hiển thị ở sidebar trang khoá học (logo, tên, website, mô tả).",
+                      } as never),
+                    )}
+                  </p>
+
+                  <div className="mt-3 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="inline-flex items-center gap-2"
+                        onClick={openAddPartner}
+                        disabled={!canEdit}
+                      >
+                        <Plus className="size-4" aria-hidden />
+                        {String(
+                          t("courseEdit.partners.actions.add" as never, {
+                            defaultValue: "Thêm partner",
+                          } as never),
+                        )}
+                      </Button>
+                      <span className="text-xs text-muted-foreground">
+                        {String(
+                          t("courseEdit.partners.countLabel" as never, {
+                            defaultValue: "{{count}} partner",
+                            count: partners.length,
+                          } as never),
+                        )}
+                      </span>
+                    </div>
+
+                    {partners.length > 0 ? (
+                      <div className="space-y-2">
+                        {partners.map((p) => {
+                          const pid = String(p.id ?? "").trim();
+                          const name = String(p.name ?? "").trim();
+                          const logoSrc =
+                            p.logo_url && String(p.logo_url).trim()
+                              ? String(p.logo_url)
+                              : null;
+                          const website = isValidHttpUrl(p.website)
+                            ? String(p.website)
+                            : "";
+
+                          return (
+                            <div
+                              key={pid || name}
+                              className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-border-subtle bg-background p-3"
+                            >
+                              <div className="flex min-w-0 items-start gap-3">
+                                {logoSrc ? (
+                                  <img
+                                    src={logoSrc}
+                                    alt={name}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="size-10 shrink-0 rounded-md border border-border-subtle bg-background object-contain"
+                                  />
+                                ) : (
+                                  <div className="grid size-10 shrink-0 place-items-center rounded-md border border-border-subtle bg-muted/30 text-xs font-semibold text-muted-foreground">
+                                    {(name || "?").slice(0, 2).toUpperCase()}
+                                  </div>
+                                )}
+
+                                <div className="min-w-0">
+                                  <div className="text-sm font-semibold text-foreground">
+                                    {name || pid}
+                                  </div>
+                                  {website ? (
+                                    <a
+                                      href={website}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="mt-1 block truncate text-xs text-primary hover:underline"
+                                    >
+                                      {website}
+                                    </a>
+                                  ) : null}
+                                  {p.description ? (
+                                    <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+                                      {p.description}
+                                    </p>
+                                  ) : null}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 px-3"
+                                  onClick={() => openEditPartner(p)}
+                                  disabled={!canEdit}
+                                >
+                                  <Pencil className="size-4" aria-hidden />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 px-3 text-destructive hover:text-destructive"
+                                  onClick={() => void removePartner(p)}
+                                  disabled={!canEdit}
+                                >
+                                  <Trash2 className="size-4" aria-hidden />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        {String(
+                          t("courseEdit.partners.empty" as never, {
+                            defaultValue: "Chưa có partner nào.",
+                          } as never),
+                        )}
+                      </p>
+                    )}
+                  </div>
+
+                  <Dialog open={partnerDialogOpen} onOpenChange={setPartnerDialogOpen}>
+                    <DialogContent className="max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle>
+                          {String(
+                            t("courseEdit.partners.dialog.title" as never, {
+                              defaultValue: "Partner",
+                            } as never),
+                          )}
+                        </DialogTitle>
+                      </DialogHeader>
+
+                      <div className="space-y-4">
+                        <Field>
+                          <FieldLabel>
+                            {String(
+                              t("courseEdit.partners.fields.logo" as never, {
+                                defaultValue: "Logo",
+                              } as never),
+                            )}
+                          </FieldLabel>
+                          <div className="mt-2 flex items-center gap-3">
+                            <input
+                              ref={partnerLogoInputRef}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handlePartnerLogoChange}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={uploadingPartnerLogo || !canEdit}
+                              onClick={() => partnerLogoInputRef.current?.click()}
+                            >
+                              {uploadingPartnerLogo
+                                ? String(
+                                    t("courseEdit.partners.actions.uploading" as never, {
+                                      defaultValue: "Đang tải lên...",
+                                    } as never),
+                                  )
+                                : String(
+                                    t("courseEdit.partners.actions.uploadLogo" as never, {
+                                      defaultValue: "Tải logo lên",
+                                    } as never),
+                                  )}
+                            </Button>
+                            {partnerForm.logo_url ? (
+                              <img
+                                src={partnerForm.logo_url}
+                                alt=""
+                                className="size-10 rounded-md border border-border-subtle bg-background object-contain"
+                              />
+                            ) : null}
+                          </div>
+                        </Field>
+
+                        <Field>
+                          <FieldLabel>
+                            {String(
+                              t("courseEdit.partners.fields.name" as never, {
+                                defaultValue: "Tên partner",
+                              } as never),
+                            )}
+                          </FieldLabel>
+                          <Input
+                            value={partnerForm.name}
+                            onChange={(e) =>
+                              setPartnerForm((p) => ({ ...p, name: e.target.value }))
+                            }
+                          />
+                        </Field>
+
+                        <Field>
+                          <FieldLabel>
+                            {String(
+                              t("courseEdit.partners.fields.website" as never, {
+                                defaultValue: "Website",
+                              } as never),
+                            )}
+                          </FieldLabel>
+                          <Input
+                            value={partnerForm.website}
+                            onChange={(e) =>
+                              setPartnerForm((p) => ({ ...p, website: e.target.value }))
+                            }
+                            placeholder="https://..."
+                          />
+                        </Field>
+
+                        <Field>
+                          <FieldLabel>
+                            {String(
+                              t("courseEdit.partners.fields.description" as never, {
+                                defaultValue: "Mô tả",
+                              } as never),
+                            )}
+                          </FieldLabel>
+                          <textarea
+                            value={partnerForm.description}
+                            onChange={(e) =>
+                              setPartnerForm((p) => ({
+                                ...p,
+                                description: e.target.value,
+                              }))
+                            }
+                            className="min-h-[120px] w-full rounded border border-input bg-background px-3 py-2 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            rows={4}
+                          />
+                        </Field>
+                      </div>
+
+                      <DialogFooter className="mt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setPartnerDialogOpen(false)}
+                        >
+                          {String(
+                            t("courseEdit.partners.actions.cancel" as never, {
+                              defaultValue: "Huỷ",
+                            } as never),
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => void savePartnerFromDialog()}
+                          disabled={uploadingPartnerLogo}
+                        >
+                          {String(
+                            t("courseEdit.partners.actions.save" as never, {
+                              defaultValue: "Lưu partner",
+                            } as never),
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </Field>
+
                 <Field>
                   <FieldLabel>{t("courseEdit.form.thumbnailLabel")}</FieldLabel>
                   <div className="mt-1 flex items-center gap-3">
@@ -2075,7 +3379,7 @@ const InstructorCourseEdit = () => {
             </section>
           )}
 
-          {activeSection === "pricing" && (
+          {activeSection === "pricing" && canAccessPricing && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
                 <DollarSign className="size-5" aria-hidden /> Giá & thanh toán
@@ -2498,14 +3802,14 @@ const InstructorCourseEdit = () => {
                 onClick={() =>
                   void saveCourseInfo(t("courseEdit.labels.savePricing"))
                 }
-                disabled={saving}
+                disabled={saving || !canEdit}
               >
                 {saving ? t("courseEdit.labels.saving") : t("courseEdit.labels.save")}
               </Button>
             </section>
           )}
 
-          {activeSection === "content" && (
+          {activeSection === "content" && canAccessContent && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
@@ -2521,7 +3825,7 @@ const InstructorCourseEdit = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    disabled={refreshingTotal || lessons.length === 0}
+                    disabled={refreshingTotal || lessons.length === 0 || !canEdit}
                     onClick={() => void handleRefreshTotalDuration()}
                   >
                     {refreshingTotal
@@ -3321,7 +4625,7 @@ const InstructorCourseEdit = () => {
             </DialogContent>
           </Dialog>
 
-          {activeSection === "assignments" && (
+          {activeSection === "assignments" && canAccessAssignments && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
                 <FileText className="size-5" /> Bài tập cuối khoá
@@ -3391,7 +4695,7 @@ const InstructorCourseEdit = () => {
                     onClick={() =>
                       void saveCourseInfo(t("courseEdit.labels.saveAssignment"))
                     }
-                    disabled={saving}
+                    disabled={saving || !canEdit}
                   >
                     {saving ? t("courseEdit.labels.saving") : t("courseEdit.labels.saveAssignment")}
                   </Button>
@@ -3536,7 +4840,7 @@ const InstructorCourseEdit = () => {
             </section>
           )}
 
-          {activeSection === "certificate" && (
+          {activeSection === "certificate" && canAccessCertificate && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
                 <Award className="size-5" aria-hidden /> Template
@@ -3625,7 +4929,7 @@ const InstructorCourseEdit = () => {
                   onClick={() =>
                     void saveCourseInfo(t("courseEdit.labels.saveCertificate"))
                   }
-                  disabled={saving}
+                  disabled={saving || !canEdit}
                 >
                   {saving ? t("courseEdit.labels.saving") : t("courseEdit.certificate.saveNamePosition")}
                 </Button>
@@ -3662,7 +4966,7 @@ const InstructorCourseEdit = () => {
             </section>
           )}
 
-          {activeSection === "students" && (
+          {activeSection === "students" && canAccessStudents && (
             <section className="rounded-md border border-border-subtle bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
                 <Users className="size-5" /> Quản lý học viên
@@ -3825,7 +5129,7 @@ const InstructorCourseEdit = () => {
             </section>
           )}
 
-          {activeSection === "danger" && (
+          {activeSection === "danger" && canAccessDanger && (
             <section className="rounded-md border border-destructive/30 bg-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
                 <AlertTriangle className="size-5" aria-hidden /> Vùng nguy hiểm

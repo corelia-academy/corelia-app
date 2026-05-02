@@ -28,6 +28,11 @@ const PAGE_META: Array<{
     titleKey: "layout.pageMeta.instructorDetail.title",
     descriptionKey: "layout.pageMeta.instructorDetail.description",
   },
+  {
+    match: (pathname) => pathname.startsWith("/admin/contests"),
+    titleKey: "layout.pageMeta.contests.title",
+    descriptionKey: "layout.pageMeta.contests.description",
+  },
 ];
 
 export function resolveAdminPageMeta(pathname: string): AdminPageMeta {

@@ -23,6 +23,10 @@
         "title": "Instructor management",
         "description": "Track profiles, instructor types, and partner collaboration data."
       },
+      "contests": {
+        "title": "Contest operations",
+        "description": "Create and manage contests, review applications, score submissions, and publish results."
+      },
       "instructorDetail": {
         "title": "Instructor detail",
         "description": "Update profile, contracts, invoices, and payout information."

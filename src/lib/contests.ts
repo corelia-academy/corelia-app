@@ -11,6 +11,7 @@ import {
   where,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { deleteStorageObjectByPath } from "@/lib/storage";
 import { getCurrentProfile } from "@/lib/profile";
 import {
   canManageContests,
@@ -21,18 +22,21 @@ import type {
   Contest,
   ContestAccessInvite,
   ContestAccessInviteInsert,
+  ContestFaqEntry,
   ContestInsert,
   ContestLeaderboardEntry,
   ContestMetricsSnapshot,
-  ContestRubricWeights,
+  ContestPrizeEntry,
   ContestRegistration,
   ContestRegistrationInsert,
   ContestRegistrationReviewInput,
   ContestRegistrationStatus,
+  ContestRubricWeights,
   ContestScore,
   ContestScoreInput,
   ContestSubmission,
   ContestSubmissionInsert,
+  ContestTimelineMilestone,
   ContestUpdate,
   ContestWinner,
   ContestWinnerInput,
@@ -67,6 +71,42 @@ function sanitizeStringList(values: string[] | undefined): string[] {
   return Array.from(
     new Set(values.map((value) => value.trim()).filter((value) => value.length > 0)),
   );
+}
+
+function sanitizePrizeEntries(values: ContestPrizeEntry[] | undefined): ContestPrizeEntry[] {
+  if (!values?.length) return [];
+  return values
+    .map((p) => ({
+      rank_label: p.rank_label.trim(),
+      title: p.title.trim(),
+      value_display: p.value_display?.trim() || null,
+      description: p.description?.trim() || null,
+    }))
+    .filter((p) => p.rank_label.length > 0 && p.title.length > 0);
+}
+
+function sanitizeFaqEntries(values: ContestFaqEntry[] | undefined): ContestFaqEntry[] {
+  if (!values?.length) return [];
+  return values
+    .map((f) => ({
+      question: f.question.trim(),
+      answer: f.answer.trim(),
+    }))
+    .filter((f) => f.question.length > 0 && f.answer.length > 0);
+}
+
+function sanitizeTimelineMilestones(
+  values: ContestTimelineMilestone[] | undefined,
+): ContestTimelineMilestone[] {
+  if (!values?.length) return [];
+  const cleaned = values
+    .map((m) => ({
+      title: m.title.trim(),
+      at: m.at.trim(),
+    }))
+    .filter((m) => m.title.length > 0 && m.at.length > 0);
+  cleaned.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+  return cleaned;
 }
 
 function contestRegistrationId(contestId: string, userId: string): string {
@@ -116,6 +156,14 @@ function normalizeContest(data: Contest): Contest {
     metrics_snapshot: data.metrics_snapshot ?? emptyMetricsSnapshot(),
     published_leaderboard: data.published_leaderboard ?? [],
     winner_announcements: data.winner_announcements ?? [],
+    cover_image_url: data.cover_image_url?.trim() || null,
+    cover_image_path: data.cover_image_path?.trim() || null,
+    thumbnail_url: data.thumbnail_url?.trim() || null,
+    thumbnail_path: data.thumbnail_path?.trim() || null,
+    prize_pool_summary: data.prize_pool_summary?.trim() || null,
+    prizes: sanitizePrizeEntries(data.prizes),
+    faqs: sanitizeFaqEntries(data.faqs),
+    timeline_milestones: sanitizeTimelineMilestones(data.timeline_milestones ?? []),
   };
 }
 
@@ -220,6 +268,9 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
     ends_at: data.ends_at ?? null,
     location: data.location ?? "hybrid",
     cover_image_url: data.cover_image_url ?? null,
+    cover_image_path: data.cover_image_path ?? null,
+    thumbnail_url: data.thumbnail_url ?? null,
+    thumbnail_path: data.thumbnail_path ?? null,
     registration_deadline: data.registration_deadline ?? null,
     max_participants: data.max_participants ?? null,
     judge_emails: sanitizeEmailList(data.judge_emails),
@@ -228,6 +279,10 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
     metrics_snapshot: emptyMetricsSnapshot(),
     published_leaderboard: [],
     winner_announcements: [],
+    prize_pool_summary: data.prize_pool_summary?.trim() || null,
+    prizes: sanitizePrizeEntries(data.prizes),
+    faqs: sanitizeFaqEntries(data.faqs),
+    timeline_milestones: sanitizeTimelineMilestones(data.timeline_milestones ?? []),
     created_by: uid,
     updated_by: uid,
     created_at: now,
@@ -253,6 +308,9 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
     ends_at: updates.ends_at,
     location: updates.location,
     cover_image_url: updates.cover_image_url,
+    cover_image_path: updates.cover_image_path,
+    thumbnail_url: updates.thumbnail_url,
+    thumbnail_path: updates.thumbnail_path,
     registration_deadline: updates.registration_deadline,
     max_participants: updates.max_participants,
     judge_emails: updates.judge_emails && sanitizeEmailList(updates.judge_emails),
@@ -263,6 +321,16 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
     metrics_snapshot: updates.metrics_snapshot,
     published_leaderboard: updates.published_leaderboard,
     winner_announcements: updates.winner_announcements,
+    prize_pool_summary:
+      updates.prize_pool_summary === undefined
+        ? undefined
+        : updates.prize_pool_summary?.trim() || null,
+    prizes: updates.prizes !== undefined ? sanitizePrizeEntries(updates.prizes) : undefined,
+    faqs: updates.faqs !== undefined ? sanitizeFaqEntries(updates.faqs) : undefined,
+    timeline_milestones:
+      updates.timeline_milestones !== undefined
+        ? sanitizeTimelineMilestones(updates.timeline_milestones)
+        : undefined,
     updated_by: uid,
     updated_at: new Date().toISOString(),
   });
@@ -272,6 +340,10 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
 
 export async function deleteContest(contestId: string): Promise<void> {
   await requireContestManager();
+
+  const existing = await getContest(contestId);
+  await deleteStorageObjectByPath(existing?.cover_image_path);
+  await deleteStorageObjectByPath(existing?.thumbnail_path);
 
   const [registrationsSnap, invitesSnap, submissionsSnap, scoresSnap] = await Promise.all([
     getDocs(query(collection(db, CONTEST_REGISTRATIONS), where("contest_id", "==", contestId))),
@@ -598,7 +670,8 @@ export async function scoreContestSubmission(
   );
 }
 
-function buildLeaderboard(
+/** Workspace judging preview + persisted published leaderboard (includes public showcase URLs). */
+export function buildContestLeaderboard(
   submissions: ContestSubmission[],
   scores: ContestScore[],
 ): ContestLeaderboardEntry[] {
@@ -623,6 +696,10 @@ function buildLeaderboard(
         score_count: relatedScores.length,
         rank: 0,
         team_name: submission.team_name,
+        demo_url: submission.demo_url ?? null,
+        repo_url: submission.repo_url ?? null,
+        slide_url: submission.slide_url ?? null,
+        summary: submission.summary ?? null,
       };
     })
     .sort((a, b) => {
@@ -670,7 +747,7 @@ export async function publishContestResults(
     listContestSubmissions(contestId),
     listContestScores(contestId),
   ]);
-  const leaderboard = buildLeaderboard(submissions, scores);
+  const leaderboard = buildContestLeaderboard(submissions, scores);
   const winnerMap = new Map(leaderboard.map((entry) => [entry.submission_id, entry]));
   const winners: ContestWinner[] = winnerInputs
     .map<ContestWinner | null>((input) => {

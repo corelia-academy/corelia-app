@@ -25,6 +25,8 @@ import {
 import { CourseAccessPanel } from "./components/CourseAccessPanel";
 import { CourseSpotlightSection } from "./components/CourseSpotlightSection";
 import { CourseLanguagePanel } from "./components/CourseLanguagePanel";
+import { CoursePartnerBrandPanel } from "./components/CoursePartnerBrandPanel";
+import { CourseSponsorsPanel } from "./components/CourseSponsorsPanel";
 
 export default function CourseDetail() {
   const { t } = useTranslation("courses");
@@ -257,6 +259,8 @@ export default function CourseDetail() {
           onEnroll={handleEnrollClick}
         />
         <CourseLanguagePanel course={course} lessons={lessons} />
+        <CoursePartnerBrandPanel course={course} />
+        <CourseSponsorsPanel sponsors={course.sponsors} />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
@@ -301,6 +305,8 @@ export default function CourseDetail() {
             onEnroll={handleEnrollClick}
           />
           <CourseLanguagePanel course={course} lessons={lessons} />
+          <CoursePartnerBrandPanel course={course} />
+          <CourseSponsorsPanel sponsors={course.sponsors} />
         </aside>
       </div>
     </div>

@@ -23,6 +23,10 @@
         "title": "Quản lý giảng viên",
         "description": "Theo dõi hồ sơ, loại giảng viên và dữ liệu hợp tác đối tác."
       },
+      "contests": {
+        "title": "Vận hành cuộc thi",
+        "description": "Tạo và quản lý contest, duyệt hồ sơ, chấm điểm và công bố kết quả."
+      },
       "instructorDetail": {
         "title": "Chi tiết giảng viên",
         "description": "Cập nhật hồ sơ, hợp đồng, hoá đơn và thông tin thanh toán."

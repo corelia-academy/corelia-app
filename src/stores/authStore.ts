@@ -68,7 +68,7 @@ export function useAuth() {
 
   const role = profile?.role;
   const isAuthenticated = !!user;
-  const hasRole = (allowed: UserRole[]) =>
+  const hasRole = (allowed: readonly UserRole[]) =>
     role ? checkRole(role, allowed) : false;
 
   return {

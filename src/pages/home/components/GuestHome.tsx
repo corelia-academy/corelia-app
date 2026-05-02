@@ -1,10 +1,11 @@
-import { ArrowRight, BookOpen } from "lucide-react";
+import { ArrowRight, BookOpen, Trophy } from "lucide-react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
 import { intlLocale } from "@/lib/intl";
 import { getCourseLevelLabel } from "@/types/courses";
 import type { Contest } from "@/types/contests";
+import { contestListImageUrl } from "@/lib/contestVisuals";
 import type { Course } from "@/types/courses";
 
 export function GuestHome({
@@ -126,13 +127,28 @@ export function GuestHome({
               </div>
 
               <div className="mt-3 space-y-2">
-                {contests.slice(0, 3).map((contest) => (
+                {contests.slice(0, 3).map((contest) => {
+                  const rowImg = contestListImageUrl(contest);
+                  return (
                   <NavLink
                     key={contest.id}
-                    to={`/contests/${contest.id}`}
+                    to={`/contests/${contest.id}/overview`}
                     className="flex cursor-pointer items-start justify-between gap-3 rounded-md border border-border-subtle bg-background px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                   >
-                    <div className="min-w-0">
+                    <div className="relative size-14 shrink-0 overflow-hidden rounded-lg border border-border-subtle bg-muted">
+                      {rowImg ? (
+                        <img
+                          src={rowImg}
+                          alt=""
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex size-full items-center justify-center bg-primary/10 text-primary/45">
+                          <Trophy className="size-6" aria-hidden />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
                       <div className="line-clamp-1 text-sm font-medium text-foreground">
                         {contest.title}
                       </div>
@@ -149,7 +165,8 @@ export function GuestHome({
                     </div>
                     <ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                   </NavLink>
-                ))}
+                  );
+                })}
               </div>
             </section>
           ) : null}
