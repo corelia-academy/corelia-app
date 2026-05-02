@@ -11,7 +11,7 @@
     "build:staging": "tsc -b && vite build --mode staging",
     "build:prod": "tsc -b && vite build --mode production",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "pnpm run build && wrangler dev",
     "deploy:dev": "pnpm build:dev && firebase use dev && firebase deploy",
     "deploy:staging": "pnpm build:staging && firebase use staging && firebase deploy",
     "deploy:prod": "pnpm build:prod && firebase use prod && firebase deploy",
@@ -20,7 +20,8 @@
     "deploy:functions:prod": "firebase use prod && firebase deploy --only functions",
     "deploy:hosting:dev": "pnpm build:dev && firebase use dev && firebase deploy --only hosting",
     "deploy:hosting:staging": "pnpm build:staging && firebase use staging && firebase deploy --only hosting",
-    "deploy:hosting:prod": "pnpm build:prod && firebase use prod && firebase deploy --only hosting"
+    "deploy:hosting:prod": "pnpm build:prod && firebase use prod && firebase deploy --only hosting",
+    "deploy": "pnpm run build && wrangler deploy"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
@@ -51,6 +52,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.35.0",
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
@@ -64,6 +66,7 @@
     "shadcn": "^4.0.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "wrangler": "^4.87.0"
   }
 }
