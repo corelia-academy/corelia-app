@@ -3,7 +3,6 @@ import {
   BookOpen,
   GraduationCap,
   Home,
-  MapPinned,
   Medal,
   Settings,
   Trophy,
@@ -101,26 +100,6 @@ export default function AppSidebar({
                     );
                   })
                 : null}
-
-              <SidebarMenuItem key="/roadmap">
-                <SidebarMenuButton
-                  className="rounded-md"
-                  tooltip={t("nav.roadmap")}
-                  isActive={
-                    pathname === "/roadmap" ||
-                    pathname.startsWith("/roadmap/")
-                  }
-                  render={
-                    <NavLink
-                      to="/roadmap"
-                      className="flex w-full items-center gap-2"
-                    >
-                      <MapPinned className="size-5 shrink-0" aria-hidden />
-                      <span>{t("nav.roadmap")}</span>
-                    </NavLink>
-                  }
-                />
-              </SidebarMenuItem>
 
               <ShowForAuth>
                 <SidebarMenuItem key="/achievements">

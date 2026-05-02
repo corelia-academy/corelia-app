@@ -5,7 +5,7 @@ import {
   buildDefaultContestTimelineItems,
   ContestTimeline,
   ContestTimelineVertical,
-  type TimelineRow,
+  type ContestTimelineRow,
 } from "@/components/contests/ContestTimeline";
 import { downloadContestCalendarIcs } from "@/lib/contestCalendar";
 import type { Contest } from "@/types/contests";
@@ -14,8 +14,8 @@ export function ContestPublicTimelineSection(props: {
   contest: Contest;
   t: (key: string, opts?: Record<string, unknown>) => string;
   milestonesCustom: boolean;
-  timelineRows: TimelineRow[];
-  formatDateTime: (iso: string) => string;
+  timelineRows: ContestTimelineRow[];
+  formatDateTime: (value: string | null) => string;
 }) {
   const { contest, t, milestonesCustom, timelineRows, formatDateTime } = props;
 
