@@ -9,6 +9,7 @@ import {
 } from "@/pages/contest-detail/components/ContestDetailGateStates";
 import { ContestDetailHeroCard } from "@/pages/contest-detail/components/ContestDetailHeroCard";
 import { ContestDetailJudgingPanel } from "@/pages/contest-detail/components/ContestDetailJudgingPanel";
+import { ContestDetailManageSectionTabs } from "@/pages/contest-detail/components/ContestDetailManageSectionTabs";
 import { ContestDetailMainLayout } from "@/pages/contest-detail/components/ContestDetailMainLayout";
 import { ContestDetailOverviewBlocks } from "@/pages/contest-detail/components/ContestDetailOverviewBlocks";
 import { ContestDetailPublicSectionPage } from "@/pages/contest-detail/components/ContestDetailPublicSectionPage";
@@ -80,6 +81,7 @@ export default function ContestDetail({
       leftColumn={
         <>
           <ContestDetailHeroCard vm={vm} />
+          {vm.isManageView ? <ContestDetailManageSectionTabs vm={vm} /> : null}
           <ContestDetailOverviewBlocks vm={vm} publicSection={publicSection} />
           <ContestDetailApplicationsPanel vm={vm} />
           <ContestDetailJudgingPanel vm={vm} />

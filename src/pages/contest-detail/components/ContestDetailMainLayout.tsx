@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
+import { cn } from "@/lib/utils";
 
 export function ContestDetailMainLayout({
   showBackLink,
@@ -39,9 +40,22 @@ export function ContestDetailMainLayout({
         </div>
       ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.9fr)]">
+      <div
+        className={cn(
+          "gap-4",
+          isManageView
+            ? "flex flex-col"
+            : "grid xl:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.9fr)]",
+        )}
+      >
         <div className="min-w-0 space-y-4">{leftColumn}</div>
-        <div className="min-w-0 space-y-4">{rightColumn}</div>
+        {isManageView ? (
+          rightColumn ? (
+            <div className="min-w-0 space-y-4">{rightColumn}</div>
+          ) : null
+        ) : (
+          <div className="min-w-0 space-y-4">{rightColumn}</div>
+        )}
       </div>
       {afterGrid}
     </PageContainer>
