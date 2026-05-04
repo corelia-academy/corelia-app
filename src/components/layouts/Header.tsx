@@ -75,8 +75,8 @@ export default function Header() {
             <img
               src={
                 isDarkMode
-                  ? "/logo/corelia-logo-white.svg"
-                  : "/logo/corelia-logo-black.svg"
+                  ? "/logo/corelia-full-logo-white.png"
+                  : "/logo/corelia-full-logo-black.png"
               }
               alt="Corelia"
               className="h-9"
