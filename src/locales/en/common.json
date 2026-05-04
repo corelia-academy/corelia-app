@@ -25,6 +25,11 @@
     "version": "Version {{version}}",
     "roadmap": "Roadmap"
   },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page doesn't exist or has been moved.",
+    "backHome": "Back to home"
+  },
   "nav": {
     "home": "Home",
     "courses": "Courses",

@@ -15,7 +15,7 @@ export default function AdminLayout() {
   const location = useLocation();
   const { titleKey, descriptionKey } = resolveAdminPageMeta(location.pathname);
   const metaTitle = t(titleKey as never);
-  const metaDescription = t(descriptionKey as never);
+  void t(descriptionKey as never);
 
   return (
     <SidebarProvider
@@ -30,31 +30,6 @@ export default function AdminLayout() {
             <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
               <ShieldCheck className="size-4 text-primary" aria-hidden />
               <span className="truncate">{metaTitle}</span>
-            </div>
-          </div>
-          <div className="px-3 pb-4 md:px-4">
-            <div className="rounded-lg border border-border-subtle bg-card/85 p-6 shadow-card">
-              <p className="text-xs font-medium text-muted-foreground">
-                {t("layout.hero.eyebrow")}
-              </p>
-              <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                    {metaTitle}
-                  </h1>
-                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-                    {metaDescription}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-xs font-medium text-foreground">
-                    {t("layout.hero.pills.sensitive")}
-                  </span>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-1.5 text-xs font-medium text-foreground">
-                    {t("layout.hero.pills.manualAudit")}
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
         </div>

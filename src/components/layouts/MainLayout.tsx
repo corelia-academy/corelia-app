@@ -46,10 +46,7 @@ const MainLayout = () => {
   ] as const;
 
   return (
-    <SidebarProvider
-      defaultOpen={false}
-      style={{ "--app-header-height": "0rem" } as React.CSSProperties}
-    >
+    <SidebarProvider defaultOpen={false}>
       <MainSidebarOverlay />
       <SidebarInset className="flex min-h-dvh flex-col">
         <Header />
@@ -93,7 +90,7 @@ const MainLayout = () => {
         </footer>
       </SidebarInset>
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-card/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-md supports-backdrop-filter:bg-card/90 md:hidden">
-        <div className="container-app grid grid-cols-5 gap-1 px-2 py-2">
+        <div className="container-app grid grid-cols-4 gap-1 px-2 py-2">
           {mobilePrimaryNav.map((item) => {
             const Icon = item.icon;
             if (item.href === "/menu") {
