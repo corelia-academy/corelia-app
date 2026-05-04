@@ -39,20 +39,28 @@ export function MfaEnrollCard({ user }: { user: User }) {
   const enrolled = hasEnrolledFactors(user);
   const factorsDisplay = getEnrolledFactorsDisplay(user);
 
+  /** Tạo (hoặc tái tạo) RecaptchaVerifier và gán vào ref. */
+  function initRecaptcha() {
+    try { recaptchaRef.current?.clear(); } catch { /* ignore */ }
+    recaptchaRef.current = createRecaptchaVerifier(auth, "mfa-enroll-send-btn", {
+      size: "invisible",
+      // Khi token hết hạn (sau ~2 phút idle), reset verifier để lần gửi tiếp hoạt động.
+      "expired-callback": () => { initRecaptcha(); },
+    });
+  }
+
   useEffect(() => {
     if (step !== "phone") return;
-    const verifier = createRecaptchaVerifier(auth, "mfa-enroll-send-btn", {
-      size: "invisible",
-    });
-    recaptchaRef.current = verifier;
+    initRecaptcha();
     return () => {
       try {
-        verifier.clear();
+        recaptchaRef.current?.clear();
       } catch {
         // ignore
       }
       recaptchaRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   async function onReauth() {
@@ -105,6 +113,8 @@ export function MfaEnrollCard({ user }: { user: User }) {
       setVerificationId(vid);
       setStep("code");
     } catch (err) {
+      // Token reCAPTCHA đã bị consume khi thất bại — phải tạo lại để lần gửi tiếp hoạt động.
+      initRecaptcha();
       setError(
         err instanceof Error ? err.message : t("mfa.errors.sendCodeFailed"),
       );

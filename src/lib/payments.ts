@@ -1,5 +1,5 @@
 import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { auth, db, getAppCheckToken } from "@/lib/firebase";
 import { COL } from "@/lib/collections";
 
 export type PaymentPurpose = "course_purchase" | "certificate_fee";
@@ -70,12 +70,16 @@ export async function createSePayCheckout(
   const endpoint =
     import.meta.env.VITE_SEPAY_CHECKOUT_API || "/api/payments/sepay/checkout";
 
-  const token = await auth.currentUser?.getIdToken().catch(() => null);
+  const [token, appCheckToken] = await Promise.all([
+    auth.currentUser?.getIdToken().catch(() => null),
+    getAppCheckToken(),
+  ]);
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(appCheckToken ? { "X-Firebase-AppCheck": appCheckToken } : {}),
     },
     credentials: "include",
     body: JSON.stringify(payload),
@@ -115,11 +119,15 @@ export function submitSePayCheckoutForm(input: CreateSePayCheckoutResponse) {
 export async function getMyPaymentTransactions(): Promise<PaymentTransaction[]> {
   const endpoint =
     import.meta.env.VITE_SEPAY_TRANSACTIONS_API || "/api/payments/transactions";
-  const token = await auth.currentUser?.getIdToken().catch(() => null);
+  const [token, appCheckToken] = await Promise.all([
+    auth.currentUser?.getIdToken().catch(() => null),
+    getAppCheckToken(),
+  ]);
   const res = await fetch(endpoint, {
     method: "GET",
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(appCheckToken ? { "X-Firebase-AppCheck": appCheckToken } : {}),
     },
     credentials: "include",
   });
@@ -137,12 +145,16 @@ export async function verifySePayPayment(payload: {
   purpose?: PaymentPurpose;
 }): Promise<VerifySePayPaymentResponse> {
   const endpoint = import.meta.env.VITE_SEPAY_VERIFY_API || "/api/payments/sepay/verify";
-  const token = await auth.currentUser?.getIdToken().catch(() => null);
+  const [token, appCheckToken] = await Promise.all([
+    auth.currentUser?.getIdToken().catch(() => null),
+    getAppCheckToken(),
+  ]);
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(appCheckToken ? { "X-Firebase-AppCheck": appCheckToken } : {}),
     },
     credentials: "include",
     body: JSON.stringify(payload),

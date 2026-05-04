@@ -303,6 +303,22 @@ function buildSePaySignature(fields: Record<string, string>, secretKey: string) 
   return base64HmacSha256(signedString, secretKey);
 }
 
+/**
+ * Xác minh App Check token từ header X-Firebase-AppCheck.
+ * Chỉ enforce khi ENFORCE_APP_CHECK=true (production).
+ * Trong dev/staging không có key thì bỏ qua để không block developer.
+ */
+async function verifyAppCheck(req: express.Request): Promise<void> {
+  if (process.env.ENFORCE_APP_CHECK !== "true") return;
+  const appCheckToken = req.header("X-Firebase-AppCheck");
+  if (!appCheckToken) throw new Error("Missing App Check token");
+  try {
+    await admin.appCheck().verifyToken(appCheckToken);
+  } catch {
+    throw new Error("Invalid App Check token");
+  }
+}
+
 async function verifyFirebaseAuth(req: express.Request) {
   const header = req.header("authorization") ?? req.header("Authorization");
   if (!header) throw new Error("Missing Authorization header");
@@ -436,6 +452,7 @@ async function handleCreateOfflineSessionMeetSpace(
   res: express.Response,
 ) {
   try {
+    await verifyAppCheck(req);
     const decoded = await verifyFirebaseAuth(req);
     const body = (req.body ?? {}) as Partial<MeetCreateSpaceRequestBody>;
     const courseId = String(body.courseId ?? "").trim();
@@ -527,7 +544,7 @@ async function handleCreateOfflineSessionMeetSpace(
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
-    if (/Authorization/i.test(message) || /Firebase ID token/i.test(message)) {
+    if (/Authorization/i.test(message) || /Firebase ID token/i.test(message) || /App Check/i.test(message)) {
       return res.status(401).json({ message: "Chưa đăng nhập" });
     }
     logger.error("Create offline session Google Meet space error", e);
@@ -544,6 +561,7 @@ app.use(express.json({ limit: "1mb" }));
 
 async function handleSePayCheckout(req: express.Request, res: express.Response) {
   try {
+    await verifyAppCheck(req);
     const decoded = await verifyFirebaseAuth(req);
     const uid = decoded.uid;
 
@@ -690,7 +708,7 @@ async function handleSePayCheckout(req: express.Request, res: express.Response) 
     logger.error("SePay checkout error", e);
     const message = e instanceof Error ? e.message : "Unknown error";
     // Common auth error:
-    if (/Authorization/i.test(message) || /Firebase ID token/i.test(message))
+    if (/Authorization/i.test(message) || /Firebase ID token/i.test(message) || /App Check/i.test(message))
       return res.status(401).json({ message: "Chưa đăng nhập" });
     return res.status(500).json({ message: "Không tạo được phiên thanh toán SePay." });
   }
@@ -702,6 +720,7 @@ app.post("/api/payments/sepay/checkout", handleSePayCheckout);
 
 async function handleMyPaymentTransactions(req: express.Request, res: express.Response) {
   try {
+    await verifyAppCheck(req);
     const decoded = await verifyFirebaseAuth(req);
     const uid = decoded.uid;
 
@@ -722,7 +741,7 @@ async function handleMyPaymentTransactions(req: express.Request, res: express.Re
     return res.status(200).json({ transactions: rows });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
-    if (/Authorization/i.test(message) || /Firebase ID token/i.test(message))
+    if (/Authorization/i.test(message) || /Firebase ID token/i.test(message) || /App Check/i.test(message))
       return res.status(401).json({ message: "Chưa đăng nhập" });
     logger.error("List transactions error", e);
     return res.status(500).json({ message: "Không lấy được lịch sử thanh toán." });
@@ -734,6 +753,7 @@ app.get("/api/payments/transactions", handleMyPaymentTransactions);
 
 async function handleIssueCertificate(req: express.Request, res: express.Response) {
   try {
+    await verifyAppCheck(req);
     const decoded = await verifyFirebaseAuth(req);
     const body = (req.body ?? {}) as Partial<IssueCertificateRequestBody>;
     const courseId = String(body.courseId ?? "").trim();
@@ -836,7 +856,7 @@ async function handleIssueCertificate(req: express.Request, res: express.Respons
     return res.status(200).json({ issued: true, certificate_issued_at: issuedAt });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
-    if (/Authorization/i.test(message) || /Firebase ID token/i.test(message)) {
+    if (/Authorization/i.test(message) || /Firebase ID token/i.test(message) || /App Check/i.test(message)) {
       return res.status(401).json({ message: "Chưa đăng nhập", issued: false });
     }
     logger.error("Issue certificate error", e);
@@ -852,6 +872,7 @@ app.post("/api/offline/meet/session/create-space", handleCreateOfflineSessionMee
 
 async function handleVerifySePayPayment(req: express.Request, res: express.Response) {
   try {
+    await verifyAppCheck(req);
     const decoded = await verifyFirebaseAuth(req);
     const body = (req.body ?? {}) as VerifyPaymentRequestBody;
     const explicitOrderId = String(body.orderId ?? "").trim();
@@ -962,7 +983,7 @@ async function handleVerifySePayPayment(req: express.Request, res: express.Respo
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
-    if (/Authorization/i.test(message) || /Firebase ID token/i.test(message)) {
+    if (/Authorization/i.test(message) || /Firebase ID token/i.test(message) || /App Check/i.test(message)) {
       return res.status(401).json({ message: "Chưa đăng nhập" });
     }
     logger.error("Verify SePay payment error", e);

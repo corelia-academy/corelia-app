@@ -85,20 +85,28 @@ export function LoginForm({
     return t("login.subtitle.signUp");
   }, [mode, showForgotPassword, mfaResolver, t]);
 
+  /** Tạo (hoặc tái tạo) RecaptchaVerifier cho luồng MFA sign-in. */
+  function initMfaRecaptcha() {
+    try { mfaRecaptchaRef.current?.clear(); } catch { /* ignore */ }
+    mfaRecaptchaRef.current = createRecaptchaVerifier(auth, "mfa-send-code-btn", {
+      size: "invisible",
+      // Khi token hết hạn (sau ~2 phút idle), reset verifier để lần gửi tiếp hoạt động.
+      "expired-callback": () => { initMfaRecaptcha(); },
+    });
+  }
+
   useEffect(() => {
     if (!mfaResolver) return;
-    const verifier = createRecaptchaVerifier(auth, "mfa-send-code-btn", {
-      size: "invisible",
-    });
-    mfaRecaptchaRef.current = verifier;
+    initMfaRecaptcha();
     return () => {
       try {
-        verifier.clear();
+        mfaRecaptchaRef.current?.clear();
       } catch {
         // ignore
       }
       mfaRecaptchaRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mfaResolver]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -190,6 +198,8 @@ export function LoginForm({
       );
       setMfaVerificationId(vid);
     } catch (e: unknown) {
+      // Token reCAPTCHA đã bị consume khi thất bại — phải tạo lại để lần gửi tiếp hoạt động.
+      initMfaRecaptcha();
       setErrorInfo(getAuthErrorInfo(e, translate));
     } finally {
       setLoading(false);

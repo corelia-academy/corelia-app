@@ -13,7 +13,7 @@ import {
   orderBy,
   writeBatch,
 } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { auth, db, getAppCheckToken } from "@/lib/firebase";
 import { COL, SUB } from "@/lib/collections";
 import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
 import type {
@@ -142,7 +142,7 @@ export async function getCourseLocaleContent(
   courseId: string,
   locale: SupportedCourseLocale,
 ): Promise<CourseLocaleContent | null> {
-  const key: CacheKey = `${courseId}:${locale}`;
+  const key = `${courseId}:${locale}`;
   const existing = courseLocaleCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
@@ -181,7 +181,7 @@ export async function getCourseSectionLocaleContent(
   sectionId: string,
   locale: SupportedCourseLocale,
 ): Promise<CourseSectionLocaleContent | null> {
-  const key: CacheKey = `${courseId}:${sectionId}:${locale}`;
+  const key = `${courseId}:${sectionId}:${locale}`;
   const existing = sectionLocaleCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
@@ -223,7 +223,7 @@ export async function getCourseLessonLocaleContent(
   lessonId: string,
   locale: SupportedCourseLocale,
 ): Promise<CourseLessonLocaleContent | null> {
-  const key: CacheKey = `${courseId}:${lessonId}:${locale}`;
+  const key = `${courseId}:${lessonId}:${locale}`;
   const existing = lessonLocaleCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
@@ -264,7 +264,7 @@ export async function getCourseLessonLocaleContentMap(
   courseId: string,
   locale: SupportedCourseLocale,
 ): Promise<Map<string, CourseLessonLocaleContent>> {
-  const key: CacheKey = `${courseId}:${locale}`;
+  const key = `${courseId}:${locale}`;
   const existing = lessonLocaleMapCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
@@ -299,7 +299,7 @@ export async function getCourseSectionLocaleContentMap(
   courseId: string,
   locale: SupportedCourseLocale,
 ): Promise<Map<string, CourseSectionLocaleContent>> {
-  const key: CacheKey = `${courseId}:${locale}`;
+  const key = `${courseId}:${locale}`;
   const existing = sectionLocaleMapCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
@@ -677,7 +677,10 @@ export async function checkAndIssueCertificate(
   userId: string,
   courseId: string
 ): Promise<boolean> {
-  const token = await auth.currentUser?.getIdToken().catch(() => null);
+  const [token, appCheckToken] = await Promise.all([
+    auth.currentUser?.getIdToken().catch(() => null),
+    getAppCheckToken(),
+  ]);
   if (!token) throw new Error("Chưa đăng nhập");
 
   const res = await fetch(CERTIFICATE_API, {
@@ -685,6 +688,7 @@ export async function checkAndIssueCertificate(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      ...(appCheckToken ? { "X-Firebase-AppCheck": appCheckToken } : {}),
     },
     credentials: "include",
     body: JSON.stringify({ userId, courseId }),
