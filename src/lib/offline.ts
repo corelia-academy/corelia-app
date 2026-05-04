@@ -11,6 +11,8 @@ import {
   where,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { COL, SUB } from "@/lib/collections";
+import { removeUndefinedFields } from "@/lib/utils";
 import { getCurrentProfile } from "@/lib/profile";
 import {
   canCoordinateOfflineRoster,
@@ -37,11 +39,6 @@ import type {
   OfflineSessionInsert,
 } from "@/types/offline";
 
-const OFFLINE_COURSES = "offline_courses";
-const OFFLINE_COHORTS = "offline_cohorts";
-const OFFLINE_COHORT_ENROLLMENTS = "offline_cohort_enrollments";
-const OFFLINE_ATTENDANCE = "offline_session_attendance";
-const OFFLINE_ASSIGNMENT_SUBMISSIONS = "offline_assignment_submissions";
 const OFFLINE_MEET_CREATE_SPACE_API =
   import.meta.env.VITE_OFFLINE_MEET_CREATE_SPACE_API ||
   "/api/offline/meet/session/create-space";
@@ -51,14 +48,8 @@ const PUBLIC_COHORT_STATUSES: OfflineCohort["status"][] = [
   "completed",
 ];
 
-function removeUndefinedFields<T extends Record<string, unknown>>(data: T): T {
-  return Object.fromEntries(
-    Object.entries(data).filter(([, value]) => value !== undefined),
-  ) as T;
-}
-
 function sessionCollection(cohortId: string) {
-  return collection(db, OFFLINE_COHORTS, cohortId, "sessions");
+  return collection(db, COL.OFFLINE_COHORTS, cohortId, SUB.SESSIONS);
 }
 
 function emptyCourseMetricsSnapshot(): OfflineCourseMetricsSnapshot {
@@ -141,7 +132,7 @@ async function requireRosterCoordinator() {
 export async function listOfflineCohorts(): Promise<OfflineCohort[]> {
   const profile = await getCurrentProfile().catch(() => null);
   const isManager = canManageOfflineAcademy(profile);
-  const cohortCollection = collection(db, OFFLINE_COHORTS);
+  const cohortCollection = collection(db, COL.OFFLINE_COHORTS);
   const cohortsQuery = isManager
     ? query(cohortCollection, orderBy("updated_at", "desc"))
     : query(
@@ -163,7 +154,7 @@ export async function listOfflineCohorts(): Promise<OfflineCohort[]> {
 export async function listOfflineCourses(): Promise<OfflineCourse[]> {
   const profile = await getCurrentProfile().catch(() => null);
   const isManager = canManageOfflineAcademy(profile);
-  const base = collection(db, OFFLINE_COURSES);
+  const base = collection(db, COL.OFFLINE_COURSES);
   const q = isManager
     ? query(base, orderBy("updated_at", "desc"))
     : query(base, where("published", "==", true), orderBy("updated_at", "desc"));
@@ -178,7 +169,7 @@ export async function listOfflineCourses(): Promise<OfflineCourse[]> {
 }
 
 export async function getOfflineCourse(courseId: string): Promise<OfflineCourse | null> {
-  const ref = doc(db, OFFLINE_COURSES, courseId);
+  const ref = doc(db, COL.OFFLINE_COURSES, courseId);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   return normalizeCourse({
@@ -192,7 +183,7 @@ export async function createOfflineCourse(
   data: OfflineCourseInsert,
 ): Promise<OfflineCourse> {
   const { user } = await requireOfflineManager();
-  const ref = doc(collection(db, OFFLINE_COURSES));
+  const ref = doc(collection(db, COL.OFFLINE_COURSES));
   const now = new Date().toISOString();
   const payload = removeUndefinedFields({
     title: data.title.trim(),
@@ -224,7 +215,7 @@ export async function updateOfflineCourse(
   updates: OfflineCourseUpdate,
 ): Promise<void> {
   const { user } = await requireOfflineManager();
-  const ref = doc(db, OFFLINE_COURSES, courseId);
+  const ref = doc(db, COL.OFFLINE_COURSES, courseId);
   const payload = removeUndefinedFields({
     title: updates.title?.trim(),
     tagline: updates.tagline?.trim(),
@@ -264,7 +255,7 @@ export async function updateOfflineCourse(
 }
 
 export async function getOfflineCohort(cohortId: string): Promise<OfflineCohort | null> {
-  const ref = doc(db, OFFLINE_COHORTS, cohortId);
+  const ref = doc(db, COL.OFFLINE_COHORTS, cohortId);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   return normalizeCohort({
@@ -279,7 +270,7 @@ export async function listOfflineCohortsForCourse(
   courseId: string,
 ): Promise<OfflineCohort[]> {
   const q = query(
-    collection(db, OFFLINE_COHORTS),
+    collection(db, COL.OFFLINE_COHORTS),
     where("offline_course_id", "==", courseId),
     orderBy("updated_at", "desc"),
   );
@@ -298,7 +289,7 @@ export async function createOfflineCohort(
   data: OfflineCohortInsert,
 ): Promise<OfflineCohort> {
   const { user } = await requireOfflineManager();
-  const ref = doc(collection(db, OFFLINE_COHORTS));
+  const ref = doc(collection(db, COL.OFFLINE_COHORTS));
   const now = new Date().toISOString();
   const payload = removeUndefinedFields({
     offline_course_id: data.offline_course_id,
@@ -338,7 +329,7 @@ export async function updateOfflineCohort(
   updates: OfflineCohortUpdate,
 ): Promise<void> {
   const { user } = await requireOfflineManager();
-  const ref = doc(db, OFFLINE_COHORTS, cohortId);
+  const ref = doc(db, COL.OFFLINE_COHORTS, cohortId);
   const payload = removeUndefinedFields({
     offline_course_id: updates.offline_course_id,
     title: updates.title?.trim(),
@@ -442,7 +433,7 @@ export async function saveOfflineSession(
   });
 
   if (sessionId) {
-    const ref = doc(db, OFFLINE_COHORTS, cohortId, "sessions", sessionId);
+    const ref = doc(db, COL.OFFLINE_COHORTS, cohortId, SUB.SESSIONS, sessionId);
     await updateDoc(ref, payload);
     await refreshOfflineCohortMetrics(cohortId).catch(() => undefined);
     const updated = await getDoc(ref);
@@ -517,7 +508,7 @@ export async function getMyOfflineEnrollment(
   cohortId: string,
 ): Promise<OfflineCohortEnrollment | null> {
   const user = await requireCurrentUser();
-  const ref = doc(db, OFFLINE_COHORT_ENROLLMENTS, offlineEnrollmentId(cohortId, user.uid));
+  const ref = doc(db, COL.OFFLINE_COHORT_ENROLLMENTS, offlineEnrollmentId(cohortId, user.uid));
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() } as OfflineCohortEnrollment;
@@ -526,7 +517,7 @@ export async function getMyOfflineEnrollment(
 export async function listMyOfflineEnrollments(): Promise<OfflineCohortEnrollment[]> {
   const user = await requireCurrentUser();
   const q = query(
-    collection(db, OFFLINE_COHORT_ENROLLMENTS),
+    collection(db, COL.OFFLINE_COHORT_ENROLLMENTS),
     where("user_id", "==", user.uid),
     orderBy("updated_at", "desc"),
   );
@@ -541,7 +532,7 @@ export async function listOfflineEnrollments(
 ): Promise<OfflineCohortEnrollment[]> {
   await requireOfflineManager();
   const q = query(
-    collection(db, OFFLINE_COHORT_ENROLLMENTS),
+    collection(db, COL.OFFLINE_COHORT_ENROLLMENTS),
     where("cohort_id", "==", cohortId),
     orderBy("enrolled_at", "desc"),
   );
@@ -558,7 +549,7 @@ export async function createOfflineEnrollment(
   await requireRosterCoordinator();
   const ref = doc(
     db,
-    OFFLINE_COHORT_ENROLLMENTS,
+    COL.OFFLINE_COHORT_ENROLLMENTS,
     offlineEnrollmentId(cohortId, input.user_id.trim()),
   );
   const now = new Date().toISOString();
@@ -592,7 +583,7 @@ export async function updateOfflineEnrollmentRoadmap(
   await requireOfflineManager();
   const ref = doc(
     db,
-    OFFLINE_COHORT_ENROLLMENTS,
+    COL.OFFLINE_COHORT_ENROLLMENTS,
     offlineEnrollmentId(cohortId, userId),
   );
   const payload = removeUndefinedFields({
@@ -629,7 +620,7 @@ export async function listOfflineAttendance(
 ): Promise<OfflineAttendanceRecord[]> {
   await requireOfflineManager();
   const q = query(
-    collection(db, OFFLINE_ATTENDANCE),
+    collection(db, COL.OFFLINE_ATTENDANCE),
     where("cohort_id", "==", cohortId),
     orderBy("updated_at", "desc"),
   );
@@ -644,7 +635,7 @@ export async function listMyOfflineAttendance(
 ): Promise<OfflineAttendanceRecord[]> {
   const user = await requireCurrentUser();
   const q = query(
-    collection(db, OFFLINE_ATTENDANCE),
+    collection(db, COL.OFFLINE_ATTENDANCE),
     where("cohort_id", "==", cohortId),
     where("user_id", "==", user.uid),
   );
@@ -664,7 +655,7 @@ export async function upsertOfflineAttendance(
   const { user } = await requireOfflineManager();
   const ref = doc(
     db,
-    OFFLINE_ATTENDANCE,
+    COL.OFFLINE_ATTENDANCE,
     offlineAttendanceId(sessionId, userId),
   );
   const now = new Date().toISOString();
@@ -690,7 +681,7 @@ export async function listOfflineAssignmentSubmissions(
 ): Promise<OfflineAssignmentSubmission[]> {
   await requireOfflineManager();
   const q = query(
-    collection(db, OFFLINE_ASSIGNMENT_SUBMISSIONS),
+    collection(db, COL.OFFLINE_ASSIGNMENT_SUBMISSIONS),
     where("cohort_id", "==", cohortId),
     orderBy("submitted_at", "desc"),
   );
@@ -705,7 +696,7 @@ export async function listMyOfflineAssignmentSubmissions(
 ): Promise<OfflineAssignmentSubmission[]> {
   const user = await requireCurrentUser();
   const q = query(
-    collection(db, OFFLINE_ASSIGNMENT_SUBMISSIONS),
+    collection(db, COL.OFFLINE_ASSIGNMENT_SUBMISSIONS),
     where("cohort_id", "==", cohortId),
     where("user_id", "==", user.uid),
     orderBy("submitted_at", "desc"),
@@ -725,7 +716,7 @@ export async function upsertOfflineAssignmentSubmission(
   const profile = await getCurrentProfile().catch(() => null);
   const ref = doc(
     db,
-    OFFLINE_ASSIGNMENT_SUBMISSIONS,
+    COL.OFFLINE_ASSIGNMENT_SUBMISSIONS,
     offlineAssignmentSubmissionId(sessionId, user.uid),
   );
   const existing = await getDoc(ref);
@@ -763,7 +754,7 @@ export async function reviewOfflineAssignmentSubmission(
   const { user } = await requireOfflineManager();
   const ref = doc(
     db,
-    OFFLINE_ASSIGNMENT_SUBMISSIONS,
+    COL.OFFLINE_ASSIGNMENT_SUBMISSIONS,
     offlineAssignmentSubmissionId(sessionId, userId),
   );
   await updateDoc(ref, {

@@ -11,10 +11,9 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, db, storage } from "@/lib/firebase";
+import { COL } from "@/lib/collections";
 import type { Profile, ProfileInsert, ProfileUpdate } from "@/types/database";
 import { sortLocale } from "@/lib/intl";
-
-const TABLE = "profiles";
 
 /**
  * Lấy profile của user hiện tại (theo session).
@@ -24,7 +23,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
   const user = auth.currentUser;
   if (!user) return null;
 
-  const docRef = doc(db, TABLE, user.uid);
+  const docRef = doc(db, COL.PROFILES, user.uid);
   try {
     const docSnap = await getDoc(docRef);
 
@@ -84,7 +83,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
  * Lấy profile theo user id (dùng khi có quyền xem user khác, ví dụ admin).
  */
 export async function getProfile(userId: string): Promise<Profile | null> {
-  const docRef = doc(db, TABLE, userId);
+  const docRef = doc(db, COL.PROFILES, userId);
   const docSnap = await getDoc(docRef);
 
   if (!docSnap.exists()) {
@@ -103,7 +102,7 @@ export async function setNewUserProfile(data: {
 }): Promise<void> {
   const user = auth.currentUser;
   if (!user) throw new Error("Chưa đăng nhập");
-  const docRef = doc(db, TABLE, user.uid);
+  const docRef = doc(db, COL.PROFILES, user.uid);
   const now = new Date().toISOString();
   await setDoc(
     docRef,
@@ -124,6 +123,8 @@ export async function setNewUserProfile(data: {
 
 /**
  * Cập nhật profile của user hiện tại.
+ * Đọc doc hiện tại trước khi update để có thể merge và trả về kết quả
+ * mà không cần getDoc thêm lần nữa sau write.
  */
 export async function updateCurrentProfile(
   updates: ProfileUpdate,
@@ -131,7 +132,10 @@ export async function updateCurrentProfile(
   const user = auth.currentUser;
   if (!user) throw new Error("Chưa đăng nhập");
 
-  const docRef = doc(db, TABLE, user.uid);
+  const docRef = doc(db, COL.PROFILES, user.uid);
+  const currentSnap = await getDoc(docRef);
+  const current = (currentSnap.data() as Profile | undefined) ?? ({} as Profile);
+
   const safeUpdates: ProfileUpdate = {
     full_name: updates.full_name,
     avatar_url: updates.avatar_url,
@@ -143,18 +147,17 @@ export async function updateCurrentProfile(
     instructor_organization: updates.instructor_organization,
     instructor_website: updates.instructor_website,
   };
-  const timestampUpdates = {
+  const payload = {
     ...Object.fromEntries(
       Object.entries(safeUpdates).filter(([, value]) => value !== undefined),
     ),
     updated_at: new Date().toISOString(),
   };
-  
-  await updateDoc(docRef, timestampUpdates);
-  
-  // Return updated profile by fetching it again or merging states
-  const updatedSnap = await getDoc(docRef);
-  return updatedSnap.data() as Profile;
+
+  await updateDoc(docRef, payload);
+
+  // Trả về kết quả bằng cách merge client-side — không cần đọc lại Firestore.
+  return { ...current, ...payload } as Profile;
 }
 
 /**
@@ -168,7 +171,7 @@ export async function updateOCIDProfile(input: {
   const user = auth.currentUser;
   if (!user) throw new Error("Chưa đăng nhập");
 
-  const docRef = doc(db, TABLE, user.uid);
+  const docRef = doc(db, COL.PROFILES, user.uid);
   const now = new Date().toISOString();
   const willConnect = Boolean(input.ocid);
 
@@ -185,20 +188,15 @@ export async function updateOCIDProfile(input: {
  * Bảo mật được đảm bảo bởi Firestore Rules và RequireRole ở React Router.
  */
 export async function getAllProfiles(): Promise<Profile[]> {
-  const q = query(collection(db, TABLE), orderBy("created_at", "desc"));
+  const q = query(collection(db, COL.PROFILES), orderBy("created_at", "desc"));
   const querySnapshot = await getDocs(q);
   
-  const profiles: Profile[] = [];
-  querySnapshot.forEach((docSnap) => {
-    profiles.push(docSnap.data() as Profile);
-  });
-  
-  return profiles;
+  return querySnapshot.docs.map((docSnap) => docSnap.data() as Profile);
 }
 
 export async function listCoreliaInstructorProfiles(): Promise<Profile[]> {
   const q = query(
-    collection(db, TABLE),
+    collection(db, COL.PROFILES),
     where("role", "==", "instructor"),
     where("instructor_origin", "==", "corelia"),
   );
@@ -244,7 +242,7 @@ export async function updateProfileAdmin(
   userId: string,
   updates: ProfileUpdate,
 ): Promise<void> {
-  const docRef = doc(db, TABLE, userId);
+  const docRef = doc(db, COL.PROFILES, userId);
   const timestampUpdates = {
     ...updates,
     updated_at: new Date().toISOString(),

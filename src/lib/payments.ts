@@ -1,5 +1,6 @@
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { COL } from "@/lib/collections";
 
 export type PaymentPurpose = "course_purchase" | "certificate_fee";
 
@@ -57,7 +58,7 @@ export async function getCoursePaymentAccess(
   userId: string,
   courseId: string,
 ): Promise<CoursePaymentAccess | null> {
-  const ref = doc(db, "course_payment_access", `${userId}_${courseId}`);
+  const ref = doc(db, COL.COURSE_PAYMENT_ACCESS, `${userId}_${courseId}`);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() } as CoursePaymentAccess;

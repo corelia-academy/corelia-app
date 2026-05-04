@@ -14,6 +14,8 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { COL, SUB } from "@/lib/collections";
+import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
 import type {
   Course,
   CourseSection,
@@ -32,33 +34,16 @@ import type {
   CourseCoInstructorSnapshot,
 } from "@/types/courses";
 
-const COURSES = "courses";
-const ENROLLMENTS = "enrollments";
-const LESSON_PROGRESS = "lesson_progress";
 const CERTIFICATE_API =
   import.meta.env.VITE_CERTIFICATE_ISSUE_API || "/api/certificates/issue";
 
-type CacheKey = string;
-const courseLocaleCache = new Map<CacheKey, Promise<CourseLocaleContent | null>>();
-const sectionLocaleCache = new Map<
-  CacheKey,
-  Promise<CourseSectionLocaleContent | null>
->();
-const lessonLocaleCache = new Map<CacheKey, Promise<CourseLessonLocaleContent | null>>();
-const lessonLocaleMapCache = new Map<
-  CacheKey,
-  Promise<Map<string, CourseLessonLocaleContent>>
->();
-const sectionLocaleMapCache = new Map<
-  CacheKey,
-  Promise<Map<string, CourseSectionLocaleContent>>
->();
-
-function removeUndefinedFields<T extends Record<string, unknown>>(data: T): T {
-  return Object.fromEntries(
-    Object.entries(data).filter(([, value]) => value !== undefined),
-  ) as T;
-}
+// 5 phút TTL — đủ để giảm reads mà không hiển thị data cũ quá lâu
+const LOCALE_CACHE_TTL = 5 * 60 * 1000;
+const courseLocaleCache = makeTTLCache<CourseLocaleContent | null>(LOCALE_CACHE_TTL);
+const sectionLocaleCache = makeTTLCache<CourseSectionLocaleContent | null>(LOCALE_CACHE_TTL);
+const lessonLocaleCache = makeTTLCache<CourseLessonLocaleContent | null>(LOCALE_CACHE_TTL);
+const lessonLocaleMapCache = makeTTLCache<Map<string, CourseLessonLocaleContent>>(LOCALE_CACHE_TTL);
+const sectionLocaleMapCache = makeTTLCache<Map<string, CourseSectionLocaleContent>>(LOCALE_CACHE_TTL);
 
 export function normalizeCourseLocale(input?: string | null): SupportedCourseLocale {
   return input === "en" ? "en" : "vi";
@@ -161,7 +146,7 @@ export async function getCourseLocaleContent(
   const existing = courseLocaleCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
-    const ref = doc(db, COURSES, courseId, "locales", locale);
+    const ref = doc(db, COL.COURSES, courseId, SUB.LOCALES, locale);
     const snap = await getDoc(ref);
     if (!snap.exists()) return null;
     return { ...(snap.data() as Omit<CourseLocaleContent, "locale">), locale };
@@ -180,7 +165,7 @@ export async function setCourseLocaleContent(
   locale: SupportedCourseLocale,
   data: Partial<Omit<CourseLocaleContent, "locale">>,
 ): Promise<void> {
-  const ref = doc(db, COURSES, courseId, "locales", locale);
+  const ref = doc(db, COL.COURSES, courseId, SUB.LOCALES, locale);
   await setDoc(ref, removeUndefinedFields({
     ...data,
     entity: "course",
@@ -200,7 +185,7 @@ export async function getCourseSectionLocaleContent(
   const existing = sectionLocaleCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
-    const ref = doc(db, COURSES, courseId, "sections", sectionId, "locales", locale);
+    const ref = doc(db, COL.COURSES, courseId, SUB.SECTIONS, sectionId, SUB.LOCALES, locale);
     const snap = await getDoc(ref);
     if (!snap.exists()) return null;
     return { ...(snap.data() as Omit<CourseSectionLocaleContent, "locale">), locale };
@@ -220,7 +205,7 @@ export async function setCourseSectionLocaleContent(
   locale: SupportedCourseLocale,
   data: Partial<Omit<CourseSectionLocaleContent, "locale">>,
 ): Promise<void> {
-  const ref = doc(db, COURSES, courseId, "sections", sectionId, "locales", locale);
+  const ref = doc(db, COL.COURSES, courseId, SUB.SECTIONS, sectionId, SUB.LOCALES, locale);
   await setDoc(ref, removeUndefinedFields({
     ...data,
     entity: "section",
@@ -242,7 +227,7 @@ export async function getCourseLessonLocaleContent(
   const existing = lessonLocaleCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
-    const ref = doc(db, COURSES, courseId, "lessons", lessonId, "locales", locale);
+    const ref = doc(db, COL.COURSES, courseId, SUB.LESSONS, lessonId, SUB.LOCALES, locale);
     const snap = await getDoc(ref);
     if (!snap.exists()) return null;
     return { ...(snap.data() as Omit<CourseLessonLocaleContent, "locale">), locale };
@@ -262,7 +247,7 @@ export async function setCourseLessonLocaleContent(
   locale: SupportedCourseLocale,
   data: Partial<Omit<CourseLessonLocaleContent, "locale">>,
 ): Promise<void> {
-  const ref = doc(db, COURSES, courseId, "lessons", lessonId, "locales", locale);
+  const ref = doc(db, COL.COURSES, courseId, SUB.LESSONS, lessonId, SUB.LOCALES, locale);
   await setDoc(ref, removeUndefinedFields({
     ...data,
     entity: "lesson",
@@ -284,7 +269,7 @@ export async function getCourseLessonLocaleContentMap(
   if (existing) return existing;
   const promise = (async () => {
     const q = query(
-      collectionGroup(db, "locales"),
+      collectionGroup(db, SUB.LOCALES),
       where("entity", "==", "lesson"),
       where("course_id", "==", courseId),
       where("locale", "==", locale),
@@ -319,7 +304,7 @@ export async function getCourseSectionLocaleContentMap(
   if (existing) return existing;
   const promise = (async () => {
     const q = query(
-      collectionGroup(db, "locales"),
+      collectionGroup(db, SUB.LOCALES),
       where("entity", "==", "section"),
       where("course_id", "==", courseId),
       where("locale", "==", locale),
@@ -370,7 +355,7 @@ export async function backfillCourseLocaleIndex(
 
   // courses/{courseId}/locales/{locale}
   for (const locale of normalizedLocales) {
-    const ref = doc(db, COURSES, courseId, "locales", locale);
+    const ref = doc(db, COL.COURSES, courseId, SUB.LOCALES, locale);
     const snap = await getDoc(ref).catch(() => null);
     if (!snap?.exists()) continue;
     const data = snap.data() as Record<string, unknown>;
@@ -390,7 +375,7 @@ export async function backfillCourseLocaleIndex(
   // sections/{sectionId}/locales/{locale}
   for (const section of sections) {
     for (const locale of normalizedLocales) {
-      const ref = doc(db, COURSES, courseId, "sections", section.id, "locales", locale);
+      const ref = doc(db, COL.COURSES, courseId, SUB.SECTIONS, section.id, SUB.LOCALES, locale);
       const snap = await getDoc(ref).catch(() => null);
       if (!snap?.exists()) continue;
       const data = snap.data() as Record<string, unknown>;
@@ -414,7 +399,7 @@ export async function backfillCourseLocaleIndex(
   // lessons/{lessonId}/locales/{locale}
   for (const lesson of lessons) {
     for (const locale of normalizedLocales) {
-      const ref = doc(db, COURSES, courseId, "lessons", lesson.id, "locales", locale);
+      const ref = doc(db, COL.COURSES, courseId, SUB.LESSONS, lesson.id, SUB.LOCALES, locale);
       const snap = await getDoc(ref).catch(() => null);
       if (!snap?.exists()) continue;
       const data = snap.data() as Record<string, unknown>;
@@ -450,7 +435,7 @@ export async function backfillCourseLocaleIndex(
 /** Lấy tất cả khoá học (đã publish) */
 export async function getPublishedCourses(): Promise<Course[]> {
   const q = query(
-    collection(db, COURSES),
+    collection(db, COL.COURSES),
     where("published", "==", true),
     orderBy("updated_at", "desc")
   );
@@ -463,7 +448,7 @@ export async function getPublishedCoursesByInstructor(
   instructorId: string,
 ): Promise<Course[]> {
   const q = query(
-    collection(db, COURSES),
+    collection(db, COL.COURSES),
     where("published", "==", true),
     where("instructor_id", "==", instructorId),
     orderBy("updated_at", "desc"),
@@ -474,7 +459,7 @@ export async function getPublishedCoursesByInstructor(
 
 /** Lấy một khoá theo id */
 export async function getCourse(courseId: string): Promise<Course | null> {
-  const ref = doc(db, COURSES, courseId);
+  const ref = doc(db, COL.COURSES, courseId);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() } as Course;
@@ -488,7 +473,7 @@ export async function getCourseBySlug(slug: string): Promise<Course | null> {
   // This avoids Firestore Rules rejecting the whole query when a signed-in student
   // hits a draft course slug (permission-denied -> UI shows "not found").
   const publishedQ = query(
-    collection(db, COURSES),
+    collection(db, COL.COURSES),
     where("slug", "==", normalized),
     where("published", "==", true),
   );
@@ -502,7 +487,7 @@ export async function getCourseBySlug(slug: string): Promise<Course | null> {
   // Students will still be denied by rules; we surface it as null ("not found").
   if (!auth.currentUser) return null;
   try {
-    const draftQ = query(collection(db, COURSES), where("slug", "==", normalized));
+    const draftQ = query(collection(db, COL.COURSES), where("slug", "==", normalized));
     const draftSnap = await getDocs(draftQ);
     if (draftSnap.empty) return null;
     const d = draftSnap.docs[0];
@@ -515,7 +500,7 @@ export async function getCourseBySlug(slug: string): Promise<Course | null> {
 /** Lấy các section của khoá */
 export async function getCourseSections(courseId: string): Promise<CourseSection[]> {
   const q = query(
-    collection(db, COURSES, courseId, "sections"),
+    collection(db, COL.COURSES, courseId, SUB.SECTIONS),
     orderBy("order", "asc")
   );
   const snap = await getDocs(q);
@@ -531,7 +516,7 @@ export async function getCourseLessons(
     ? [where("is_preview_free", "==", true), orderBy("order", "asc")]
     : [orderBy("order", "asc")];
   const q = query(
-    collection(db, COURSES, courseId, "lessons"),
+    collection(db, COL.COURSES, courseId, SUB.LESSONS),
     ...constraints,
   );
   const snap = await getDocs(q);
@@ -543,15 +528,14 @@ export async function getEnrollment(
   userId: string,
   courseId: string
 ): Promise<Enrollment | null> {
-  const enrollmentId = `${userId}_${courseId}`;
-  const directRef = doc(db, ENROLLMENTS, `${userId}_${courseId}`);
+  const directRef = doc(db, COL.ENROLLMENTS, `${userId}_${courseId}`);
   const directSnap = await getDoc(directRef);
   if (directSnap.exists()) {
     return { id: directSnap.id, ...directSnap.data() } as Enrollment;
   }
 
   const q = query(
-    collection(db, ENROLLMENTS),
+    collection(db, COL.ENROLLMENTS),
     where("user_id", "==", userId),
     where("course_id", "==", courseId)
   );
@@ -560,26 +544,13 @@ export async function getEnrollment(
   const d = snap.docs[0];
   const data = d.data() as Enrollment;
 
-  if (d.id !== enrollmentId) {
-    try {
-      await setDoc(doc(db, ENROLLMENTS, enrollmentId), {
-        ...data,
-        user_id: userId,
-        course_id: courseId,
-      }, { merge: true });
-      return { ...data, id: enrollmentId, user_id: userId, course_id: courseId } as Enrollment;
-    } catch {
-      // Keep serving the legacy document if migration cannot run yet.
-    }
-  }
-
   return { ...data, id: d.id } as Enrollment;
 }
 
 /** Lấy tất cả enrollment của user (khoá đang học) */
 export async function getMyEnrollments(userId: string): Promise<Enrollment[]> {
   const q = query(
-    collection(db, ENROLLMENTS),
+    collection(db, COL.ENROLLMENTS),
     where("user_id", "==", userId),
     orderBy("last_accessed_at", "desc")
   );
@@ -601,7 +572,7 @@ export async function getEnrollmentsForCourse(
   courseId: string
 ): Promise<Enrollment[]> {
   const q = query(
-    collection(db, ENROLLMENTS),
+    collection(db, COL.ENROLLMENTS),
     where("course_id", "==", courseId),
     orderBy("enrolled_at", "desc")
   );
@@ -626,7 +597,7 @@ export async function enrollCourse(courseId: string): Promise<Enrollment> {
 
   const now = new Date().toISOString();
   const enrollmentId = `${user.uid}_${courseId}`;
-  await setDoc(doc(db, ENROLLMENTS, enrollmentId), {
+  await setDoc(doc(db, COL.ENROLLMENTS, enrollmentId), {
     user_id: user.uid,
     course_id: courseId,
     enrolled_at: now,
@@ -649,7 +620,7 @@ export async function touchEnrollment(courseId: string): Promise<void> {
   const enr = await getEnrollment(user.uid, courseId);
   if (!enr) return;
 
-  await updateDoc(doc(db, ENROLLMENTS, enr.id), {
+  await updateDoc(doc(db, COL.ENROLLMENTS, enr.id), {
     last_accessed_at: new Date().toISOString(),
   });
 }
@@ -660,7 +631,7 @@ export async function getLessonProgressForCourse(
   courseId: string
 ): Promise<LessonProgress[]> {
   const q = query(
-    collection(db, LESSON_PROGRESS),
+    collection(db, COL.LESSON_PROGRESS),
     where("user_id", "==", userId),
     where("course_id", "==", courseId)
   );
@@ -741,30 +712,17 @@ export async function setLessonProgress(
   const user = auth.currentUser;
   if (!user) throw new Error("Chưa đăng nhập");
 
-  const q = query(
-    collection(db, LESSON_PROGRESS),
-    where("user_id", "==", user.uid),
-    where("lesson_id", "==", lessonId),
-    where("course_id", "==", courseId),
-  );
-  const snap = await getDocs(q);
+  const progressId = `${user.uid}_${courseId}_${lessonId}`;
+  const progressRef = doc(db, COL.LESSON_PROGRESS, progressId);
   const now = new Date().toISOString();
 
-  if (snap.empty) {
-    await addDoc(collection(db, LESSON_PROGRESS), {
-      user_id: user.uid,
-      lesson_id: lessonId,
-      course_id: courseId,
-      completed_at: completed ? now : null,
-      watch_seconds: watchSeconds ?? 0,
-    });
-  } else {
-    const ref = snap.docs[0].ref;
-    await updateDoc(ref, {
-      completed_at: completed ? now : null,
-      ...(watchSeconds != null && { watch_seconds: watchSeconds }),
-    });
-  }
+  await setDoc(progressRef, {
+    user_id: user.uid,
+    lesson_id: lessonId,
+    course_id: courseId,
+    completed_at: completed ? now : null,
+    ...(watchSeconds != null && { watch_seconds: watchSeconds }),
+  }, { merge: true });
 
   if (completed) {
     checkAndIssueCertificate(user.uid, courseId).catch(() => {});
@@ -799,7 +757,7 @@ export async function createCourse(data: CourseInsert): Promise<Course> {
   if (!user) throw new Error("Chưa đăng nhập");
 
   const now = new Date().toISOString();
-  const ref = doc(collection(db, COURSES));
+  const ref = doc(collection(db, COL.COURSES));
   const course: Omit<Course, "id"> = {
     title: data.title,
     slug: data.slug,
@@ -874,7 +832,7 @@ export async function addSection(
     data as unknown as Record<string, unknown>,
   ) as unknown as CourseSectionInsert;
   const ref = await addDoc(
-    collection(db, COURSES, courseId, "sections"),
+    collection(db, COL.COURSES, courseId, SUB.SECTIONS),
     payload
   );
   return { id: ref.id, ...payload } as CourseSection;
@@ -889,7 +847,7 @@ export async function addLesson(
     data as unknown as Record<string, unknown>,
   ) as unknown as CourseLessonInsert;
   const ref = await addDoc(
-    collection(db, COURSES, courseId, "lessons"),
+    collection(db, COL.COURSES, courseId, SUB.LESSONS),
     payload
   );
   return { id: ref.id, ...payload } as CourseLesson;
@@ -902,14 +860,14 @@ export async function getCoursesForManagement(
 ): Promise<Course[]> {
   if (isAdmin) {
     const q = query(
-      collection(db, COURSES),
+      collection(db, COL.COURSES),
       orderBy("updated_at", "desc")
     );
     const snap = await getDocs(q);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Course));
   }
   const q = query(
-    collection(db, COURSES),
+    collection(db, COL.COURSES),
     where("instructor_id", "==", userId),
     orderBy("updated_at", "desc")
   );
@@ -922,7 +880,7 @@ export async function updateCourse(
   courseId: string,
   data: CourseUpdate
 ): Promise<void> {
-  const ref = doc(db, COURSES, courseId);
+  const ref = doc(db, COL.COURSES, courseId);
   await updateDoc(ref, removeUndefinedFields({
     ...data,
     updated_at: new Date().toISOString(),
@@ -943,7 +901,7 @@ export async function updateSection(
   data: Partial<Pick<CourseSection, "title" | "order" | "description">>
 ): Promise<void> {
   await updateDoc(
-    doc(db, COURSES, courseId, "sections", sectionId),
+    doc(db, COL.COURSES, courseId, SUB.SECTIONS, sectionId),
     removeUndefinedFields(data)
   );
 }
@@ -955,7 +913,7 @@ export async function updateLesson(
   data: Partial<CourseLessonInsert>
 ): Promise<void> {
   await updateDoc(
-    doc(db, COURSES, courseId, "lessons", lessonId),
+    doc(db, COL.COURSES, courseId, SUB.LESSONS, lessonId),
     removeUndefinedFields(data)
   );
 }
@@ -969,7 +927,7 @@ export async function reorderCourseLessons(
 
   const batch = writeBatch(db);
   for (const lesson of lessons) {
-    batch.update(doc(db, COURSES, courseId, "lessons", lesson.id), {
+    batch.update(doc(db, COL.COURSES, courseId, SUB.LESSONS, lesson.id), {
       order: lesson.order,
       section_id: lesson.section_id,
     });
@@ -983,11 +941,12 @@ export async function deleteSection(
   sectionId: string,
   lessonIdsInSection: string[]
 ): Promise<void> {
-  const sectionRef = doc(db, COURSES, courseId, "sections", sectionId);
-  await deleteDoc(sectionRef);
+  const batch = writeBatch(db);
+  batch.delete(doc(db, COL.COURSES, courseId, SUB.SECTIONS, sectionId));
   for (const lid of lessonIdsInSection) {
-    await deleteDoc(doc(db, COURSES, courseId, "lessons", lid));
+    batch.delete(doc(db, COL.COURSES, courseId, SUB.LESSONS, lid));
   }
+  await batch.commit();
 }
 
 /** Xoá một lesson */
@@ -995,20 +954,24 @@ export async function deleteLesson(
   courseId: string,
   lessonId: string
 ): Promise<void> {
-  await deleteDoc(doc(db, COURSES, courseId, "lessons", lessonId));
+  await deleteDoc(doc(db, COL.COURSES, courseId, SUB.LESSONS, lessonId));
 }
 
 /** Xoá khoá học (admin/instructor chủ khoá) */
 export async function deleteCourse(courseId: string): Promise<void> {
   const c = await getCourse(courseId);
   if (!c) return;
-  const sections = await getCourseSections(courseId);
-  const lessons = await getCourseLessons(courseId);
+  const [sections, lessons] = await Promise.all([
+    getCourseSections(courseId),
+    getCourseLessons(courseId),
+  ]);
+  const batch = writeBatch(db);
   for (const sec of sections) {
-    await deleteDoc(doc(db, COURSES, courseId, "sections", sec.id));
+    batch.delete(doc(db, COL.COURSES, courseId, SUB.SECTIONS, sec.id));
   }
   for (const les of lessons) {
-    await deleteDoc(doc(db, COURSES, courseId, "lessons", les.id));
+    batch.delete(doc(db, COL.COURSES, courseId, SUB.LESSONS, les.id));
   }
-  await deleteDoc(doc(db, COURSES, courseId));
+  batch.delete(doc(db, COL.COURSES, courseId));
+  await batch.commit();
 }

@@ -11,6 +11,8 @@ import {
   where,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { COL } from "@/lib/collections";
+import { removeUndefinedFields } from "@/lib/utils";
 import { deleteStorageObjectByPath } from "@/lib/storage";
 import { getCurrentProfile } from "@/lib/profile";
 import {
@@ -42,18 +44,7 @@ import type {
   ContestWinnerInput,
 } from "@/types/contests";
 
-const CONTESTS = "contests";
-const CONTEST_REGISTRATIONS = "contest_registrations";
-const CONTEST_ACCESS_INVITES = "contest_access_invites";
-const CONTEST_SUBMISSIONS = "contest_submissions";
-const CONTEST_SCORES = "contest_scores";
 const PUBLIC_CONTEST_STATUSES: Contest["status"][] = ["published", "running", "ended"];
-
-function removeUndefinedFields<T extends Record<string, unknown>>(data: T): T {
-  return Object.fromEntries(
-    Object.entries(data).filter(([, value]) => value !== undefined),
-  ) as T;
-}
 
 function sanitizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -212,7 +203,7 @@ async function requireContestReviewer(contestId: string): Promise<Contest> {
 export async function listContests(): Promise<Contest[]> {
   const profile = await getCurrentProfile().catch(() => null);
   const isManager = canManageContests(profile);
-  const contestCollection = collection(db, CONTESTS);
+  const contestCollection = collection(db, COL.CONTESTS);
 
   const contestsQuery = isManager
     ? query(contestCollection, orderBy("updated_at", "desc"))
@@ -238,7 +229,7 @@ export async function listContests(): Promise<Contest[]> {
 }
 
 export async function getContest(contestId: string): Promise<Contest | null> {
-  const ref = doc(db, CONTESTS, contestId);
+  const ref = doc(db, COL.CONTESTS, contestId);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   return normalizeContest({
@@ -255,7 +246,7 @@ export async function getContest(contestId: string): Promise<Contest | null> {
 
 export async function createContest(data: ContestInsert): Promise<Contest> {
   const { uid } = await requireContestManager();
-  const ref = doc(collection(db, CONTESTS));
+  const ref = doc(collection(db, COL.CONTESTS));
   const now = new Date().toISOString();
 
   const payload = removeUndefinedFields({
@@ -295,7 +286,7 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
 
 export async function updateContest(contestId: string, updates: ContestUpdate): Promise<void> {
   const { uid } = await requireContestManager();
-  const ref = doc(db, CONTESTS, contestId);
+  const ref = doc(db, COL.CONTESTS, contestId);
 
   const payload = removeUndefinedFields({
     title: updates.title?.trim(),
@@ -346,10 +337,10 @@ export async function deleteContest(contestId: string): Promise<void> {
   await deleteStorageObjectByPath(existing?.thumbnail_path);
 
   const [registrationsSnap, invitesSnap, submissionsSnap, scoresSnap] = await Promise.all([
-    getDocs(query(collection(db, CONTEST_REGISTRATIONS), where("contest_id", "==", contestId))),
-    getDocs(query(collection(db, CONTEST_ACCESS_INVITES), where("contest_id", "==", contestId))),
-    getDocs(query(collection(db, CONTEST_SUBMISSIONS), where("contest_id", "==", contestId))),
-    getDocs(query(collection(db, CONTEST_SCORES), where("contest_id", "==", contestId))),
+    getDocs(query(collection(db, COL.CONTEST_REGISTRATIONS), where("contest_id", "==", contestId))),
+    getDocs(query(collection(db, COL.CONTEST_ACCESS_INVITES), where("contest_id", "==", contestId))),
+    getDocs(query(collection(db, COL.CONTEST_SUBMISSIONS), where("contest_id", "==", contestId))),
+    getDocs(query(collection(db, COL.CONTEST_SCORES), where("contest_id", "==", contestId))),
   ]);
 
   for (const registration of registrationsSnap.docs) {
@@ -368,7 +359,7 @@ export async function deleteContest(contestId: string): Promise<void> {
     await deleteDoc(score.ref);
   }
 
-  await deleteDoc(doc(db, CONTESTS, contestId));
+  await deleteDoc(doc(db, COL.CONTESTS, contestId));
 }
 
 export async function getMyContestRegistration(
@@ -377,7 +368,7 @@ export async function getMyContestRegistration(
   const user = auth.currentUser;
   if (!user) return null;
 
-  const ref = doc(db, CONTEST_REGISTRATIONS, contestRegistrationId(contestId, user.uid));
+  const ref = doc(db, COL.CONTEST_REGISTRATIONS, contestRegistrationId(contestId, user.uid));
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   return normalizeRegistration({ id: snap.id, ...snap.data() } as ContestRegistration);
@@ -391,7 +382,7 @@ export async function registerForContest(
   const profile = await getCurrentProfile();
   const now = new Date().toISOString();
   const registrationId = contestRegistrationId(contestId, user.uid);
-  const ref = doc(db, CONTEST_REGISTRATIONS, registrationId);
+  const ref = doc(db, COL.CONTEST_REGISTRATIONS, registrationId);
 
   const payload = removeUndefinedFields({
     contest_id: contestId,
@@ -431,7 +422,7 @@ export async function getContestRegistrations(
         ]
       : [where("contest_id", "==", contestId), orderBy("applied_at", "desc")];
 
-  const snap = await getDocs(query(collection(db, CONTEST_REGISTRATIONS), ...constraints));
+  const snap = await getDocs(query(collection(db, COL.CONTEST_REGISTRATIONS), ...constraints));
   return snap.docs.map((d) =>
     normalizeRegistration({ id: d.id, ...d.data() } as ContestRegistration),
   );
@@ -444,7 +435,7 @@ export async function reviewContestRegistration(
 ): Promise<void> {
   const { uid } = await requireContestManager();
   await requireContestReviewer(contestId);
-  const ref = doc(db, CONTEST_REGISTRATIONS, contestRegistrationId(contestId, userId));
+  const ref = doc(db, COL.CONTEST_REGISTRATIONS, contestRegistrationId(contestId, userId));
   await updateDoc(ref, {
     status: input.status,
     review_note: input.review_note?.trim() || null,
@@ -459,7 +450,7 @@ export async function getMyContestAccessInvite(
 ): Promise<ContestAccessInvite | null> {
   const user = auth.currentUser;
   if (!user?.email) return null;
-  const ref = doc(db, CONTEST_ACCESS_INVITES, contestInviteId(contestId, user.email));
+  const ref = doc(db, COL.CONTEST_ACCESS_INVITES, contestInviteId(contestId, user.email));
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() } as ContestAccessInvite;
@@ -471,7 +462,7 @@ export async function listContestAccessInvites(
   await requireContestManager();
   const snap = await getDocs(
     query(
-      collection(db, CONTEST_ACCESS_INVITES),
+      collection(db, COL.CONTEST_ACCESS_INVITES),
       where("contest_id", "==", contestId),
       orderBy("invited_at", "desc"),
     ),
@@ -491,7 +482,7 @@ export async function createContestAccessInvite(
   if (!email) throw new Error("Email mời không hợp lệ.");
 
   const roles = Array.from(new Set(input.roles));
-  const ref = doc(db, CONTEST_ACCESS_INVITES, contestInviteId(contestId, email));
+  const ref = doc(db, COL.CONTEST_ACCESS_INVITES, contestInviteId(contestId, email));
   const now = new Date().toISOString();
 
   await setDoc(
@@ -527,7 +518,7 @@ export async function respondToContestAccessInvite(
 ): Promise<void> {
   const user = await requireCurrentUser();
   if (!user.email) throw new Error("Tài khoản của bạn chưa có email.");
-  const ref = doc(db, CONTEST_ACCESS_INVITES, contestInviteId(contestId, user.email));
+  const ref = doc(db, COL.CONTEST_ACCESS_INVITES, contestInviteId(contestId, user.email));
   await updateDoc(ref, {
     status,
     responded_at: new Date().toISOString(),
@@ -540,7 +531,7 @@ export async function revokeContestAccessInvite(
 ): Promise<void> {
   await requireContestManager();
   const normalized = sanitizeEmail(email);
-  const ref = doc(db, CONTEST_ACCESS_INVITES, contestInviteId(contestId, normalized));
+  const ref = doc(db, COL.CONTEST_ACCESS_INVITES, contestInviteId(contestId, normalized));
   await updateDoc(ref, {
     status: "revoked",
     responded_at: new Date().toISOString(),
@@ -561,7 +552,7 @@ export async function getMyContestSubmission(
 ): Promise<ContestSubmission | null> {
   const user = auth.currentUser;
   if (!user) return null;
-  const ref = doc(db, CONTEST_SUBMISSIONS, contestSubmissionId(contestId, user.uid));
+  const ref = doc(db, COL.CONTEST_SUBMISSIONS, contestSubmissionId(contestId, user.uid));
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() } as ContestSubmission;
@@ -579,7 +570,7 @@ export async function upsertContestSubmission(
 
   const now = new Date().toISOString();
   const submissionId = contestSubmissionId(contestId, user.uid);
-  const ref = doc(db, CONTEST_SUBMISSIONS, submissionId);
+  const ref = doc(db, COL.CONTEST_SUBMISSIONS, submissionId);
   const payload = removeUndefinedFields({
     contest_id: contestId,
     user_id: user.uid,
@@ -608,7 +599,7 @@ export async function listContestSubmissions(
   if (!contest) throw new Error("Không tìm thấy cuộc thi.");
 
   const canSeeAll = canScoreContest(contest, profile, user.email) || canManageContests(profile);
-  const baseCollection = collection(db, CONTEST_SUBMISSIONS);
+  const baseCollection = collection(db, COL.CONTEST_SUBMISSIONS);
   const submissionsQuery = canSeeAll
     ? query(baseCollection, where("contest_id", "==", contestId), orderBy("updated_at", "desc"))
     : query(
@@ -624,7 +615,7 @@ export async function listContestScores(contestId: string): Promise<ContestScore
   await requireContestScorer(contestId);
   const snap = await getDocs(
     query(
-      collection(db, CONTEST_SCORES),
+      collection(db, COL.CONTEST_SCORES),
       where("contest_id", "==", contestId),
       orderBy("updated_at", "desc"),
     ),
@@ -651,7 +642,7 @@ export async function scoreContestSubmission(
   );
 
   await setDoc(
-    doc(db, CONTEST_SCORES, contestScoreId(submissionId, user.uid)),
+    doc(db, COL.CONTEST_SCORES, contestScoreId(submissionId, user.uid)),
     {
       contest_id: contestId,
       submission_id: submissionId,

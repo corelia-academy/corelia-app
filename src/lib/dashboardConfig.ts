@@ -1,13 +1,11 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { COL, DOC } from "@/lib/collections";
 import { getCurrentProfile } from "@/lib/profile";
 import type {
   DashboardPinnedProgram,
   HomeDashboardConfig,
 } from "@/types/dashboard";
-
-const DASHBOARD_CONFIGS = "dashboard_configs";
-const HOME_DASHBOARD_DOC = "home";
 const DASHBOARD_PINNED_PROGRAM_TYPES = new Set([
   "course",
   "contest",
@@ -25,7 +23,7 @@ function isDashboardPinnedProgramType(value: unknown): value is DashboardPinnedP
 
 function emptyHomeDashboardConfig(): HomeDashboardConfig {
   return {
-    id: HOME_DASHBOARD_DOC,
+    id: DOC.HOME_DASHBOARD,
     pinned_programs: [],
     updated_at: null,
     updated_by: null,
@@ -76,7 +74,7 @@ async function requireDashboardConfigManager() {
 }
 
 export async function getHomeDashboardConfig(): Promise<HomeDashboardConfig> {
-  const ref = doc(db, DASHBOARD_CONFIGS, HOME_DASHBOARD_DOC);
+  const ref = doc(db, COL.DASHBOARD_CONFIGS, DOC.HOME_DASHBOARD);
   const snap = await getDoc(ref);
   if (!snap.exists()) return emptyHomeDashboardConfig();
   return normalizeHomeDashboardConfig({
@@ -89,9 +87,9 @@ export async function updateHomeDashboardConfig(input: {
   pinned_programs: DashboardPinnedProgram[];
 }): Promise<HomeDashboardConfig> {
   const profile = await requireDashboardConfigManager();
-  const ref = doc(db, DASHBOARD_CONFIGS, HOME_DASHBOARD_DOC);
+  const ref = doc(db, COL.DASHBOARD_CONFIGS, DOC.HOME_DASHBOARD);
   const payload = normalizeHomeDashboardConfig({
-    id: HOME_DASHBOARD_DOC,
+    id: DOC.HOME_DASHBOARD,
     pinned_programs: input.pinned_programs,
     updated_at: new Date().toISOString(),
     updated_by: profile.id,

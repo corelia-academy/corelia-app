@@ -11,6 +11,7 @@ import {
   where,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { COL, SUB } from "@/lib/collections";
 
 export type CourseDiscountType = "percent" | "amount_vnd";
 
@@ -46,7 +47,7 @@ function normalizeDiscountCode(code: string) {
 
 export async function listCourseDiscounts(courseId: string): Promise<CourseDiscount[]> {
   const q = query(
-    collection(db, "courses", courseId, "discounts"),
+    collection(db, COL.COURSES, courseId, SUB.DISCOUNTS),
     orderBy("updated_at", "desc"),
   );
   const snap = await getDocs(q);
@@ -80,7 +81,7 @@ export async function createCourseDiscount(
     updated_at_ts: serverTimestamp(),
   };
 
-  const ref = await addDoc(collection(db, "courses", courseId, "discounts"), payload);
+  const ref = await addDoc(collection(db, COL.COURSES, courseId, SUB.DISCOUNTS), payload);
   return { id: ref.id, ...(payload as unknown as Omit<CourseDiscount, "id">) };
 }
 
@@ -91,7 +92,7 @@ export async function setCourseDiscountActive(
 ) {
   const user = auth.currentUser;
   if (!user) throw new Error("Chưa đăng nhập");
-  await updateDoc(doc(db, "courses", courseId, "discounts", discountId), {
+  await updateDoc(doc(db, COL.COURSES, courseId, SUB.DISCOUNTS, discountId), {
     active,
     updated_at: new Date().toISOString(),
     updated_by: user.uid,
@@ -102,7 +103,7 @@ export async function setCourseDiscountActive(
 export async function deleteCourseDiscount(courseId: string, discountId: string) {
   const user = auth.currentUser;
   if (!user) throw new Error("Chưa đăng nhập");
-  await deleteDoc(doc(db, "courses", courseId, "discounts", discountId));
+  await deleteDoc(doc(db, COL.COURSES, courseId, SUB.DISCOUNTS, discountId));
 }
 
 export async function findCourseDiscountByCode(
@@ -111,7 +112,7 @@ export async function findCourseDiscountByCode(
 ): Promise<CourseDiscount | null> {
   const normalized = normalizeDiscountCode(code);
   const q = query(
-    collection(db, "courses", courseId, "discounts"),
+    collection(db, COL.COURSES, courseId, SUB.DISCOUNTS),
     where("code", "==", normalized),
   );
   const snap = await getDocs(q);

@@ -10,12 +10,11 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { COL } from "@/lib/collections";
 import type {
   FinalAssignmentSubmission,
   FinalSubmissionStatus,
 } from "@/types/courses";
-
-const SUBMISSIONS = "final_assignment_submissions";
 
 /** Lấy bài nộp của học viên cho một khoá */
 export async function getSubmission(
@@ -23,7 +22,7 @@ export async function getSubmission(
   courseId: string
 ): Promise<FinalAssignmentSubmission | null> {
   const q = query(
-    collection(db, SUBMISSIONS),
+    collection(db, COL.FINAL_ASSIGNMENT_SUBMISSIONS),
     where("user_id", "==", userId),
     where("course_id", "==", courseId)
   );
@@ -38,7 +37,7 @@ export async function getSubmissionsForCourse(
   courseId: string
 ): Promise<FinalAssignmentSubmission[]> {
   const q = query(
-    collection(db, SUBMISSIONS),
+    collection(db, COL.FINAL_ASSIGNMENT_SUBMISSIONS),
     where("course_id", "==", courseId),
     orderBy("submitted_at", "desc")
   );
@@ -61,7 +60,7 @@ export async function submitFinalAssignment(
   }
 
   const now = new Date().toISOString();
-  const ref = await addDoc(collection(db, SUBMISSIONS), {
+  const ref = await addDoc(collection(db, COL.FINAL_ASSIGNMENT_SUBMISSIONS), {
     user_id: user.uid,
     course_id: courseId,
     content,
@@ -86,7 +85,7 @@ export async function updateSubmissionStatus(
   status: FinalSubmissionStatus,
   reviewerComment?: string | null
 ): Promise<void> {
-  const ref = doc(db, SUBMISSIONS, submissionId);
+  const ref = doc(db, COL.FINAL_ASSIGNMENT_SUBMISSIONS, submissionId);
   const snap = await getDoc(ref);
   if (!snap.exists()) throw new Error("Không tìm thấy bài nộp");
 
