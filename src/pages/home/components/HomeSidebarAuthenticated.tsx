@@ -24,14 +24,21 @@ export function HomeSidebarAuthenticated({
     <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
       <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
         <div className="flex items-start gap-3">
-          <Avatar className="size-10 shrink-0">
-            <AvatarImage src={avatarUrl} alt={displayName} />
+          <Avatar size="lg" className="shrink-0">
+            {avatarUrl ? (
+              <AvatarImage src={avatarUrl} alt={displayName} />
+            ) : null}
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-foreground">{displayName}</div>
+            <div className="text-sm font-medium text-foreground">
+              {displayName}
+            </div>
             {email ? (
-              <div className="mt-1 truncate text-sm text-muted-foreground" title={email}>
+              <div
+                className="mt-1 truncate text-sm text-muted-foreground"
+                title={email}
+              >
                 {email}
               </div>
             ) : null}
@@ -87,4 +94,3 @@ export function HomeSidebarAuthenticated({
     </aside>
   );
 }
-

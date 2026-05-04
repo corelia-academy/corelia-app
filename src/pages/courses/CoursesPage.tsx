@@ -1,15 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
-import { BadgeCheck, BookOpen, Clock, Search } from "lucide-react";
+import { BadgeCheck, BookOpen, Clock } from "lucide-react";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { getPublishedCourses } from "@/lib/courses";
 import {
   formatDuration,
@@ -26,32 +21,47 @@ type PricingFilter = "all" | "free" | "paid" | "certificate";
 type OwnerFilter = "all" | CourseOwnerType;
 type SortMode = "featured" | "recent" | "duration_desc" | "title_asc";
 
-const LEVEL_OPTIONS = [
-  { value: "all" as const, labelKey: "filters.level.all" as const },
-  { value: "beginner" as const, labelKey: "filters.level.beginner" as const },
-  { value: "intermediate" as const, labelKey: "filters.level.intermediate" as const },
-  { value: "advanced" as const, labelKey: "filters.level.advanced" as const },
-] as const satisfies ReadonlyArray<{ value: "all" | CourseLevel; labelKey: string }>;
+// const LEVEL_OPTIONS = [
+//   { value: "all" as const, labelKey: "filters.level.all" as const },
+//   { value: "beginner" as const, labelKey: "filters.level.beginner" as const },
+//   {
+//     value: "intermediate" as const,
+//     labelKey: "filters.level.intermediate" as const,
+//   },
+//   { value: "advanced" as const, labelKey: "filters.level.advanced" as const },
+// ] as const satisfies ReadonlyArray<{
+//   value: "all" | CourseLevel;
+//   labelKey: string;
+// }>;
 
-const PRICING_OPTIONS = [
-  { value: "all" as const, labelKey: "filters.pricing.all" as const },
-  { value: "free" as const, labelKey: "filters.pricing.free" as const },
-  { value: "paid" as const, labelKey: "filters.pricing.paid" as const },
-  { value: "certificate" as const, labelKey: "filters.pricing.certificate" as const },
-] as const satisfies ReadonlyArray<{ value: PricingFilter; labelKey: string }>;
+// const PRICING_OPTIONS = [
+//   { value: "all" as const, labelKey: "filters.pricing.all" as const },
+//   { value: "free" as const, labelKey: "filters.pricing.free" as const },
+//   { value: "paid" as const, labelKey: "filters.pricing.paid" as const },
+//   {
+//     value: "certificate" as const,
+//     labelKey: "filters.pricing.certificate" as const,
+//   },
+// ] as const satisfies ReadonlyArray<{ value: PricingFilter; labelKey: string }>;
 
-const OWNER_OPTIONS = [
-  { value: "all" as const, labelKey: "filters.owner.all" as const },
-  { value: "corelia" as const, labelKey: "filters.owner.corelia" as const },
-  { value: "external_partner" as const, labelKey: "filters.owner.external_partner" as const },
-] as const satisfies ReadonlyArray<{ value: OwnerFilter; labelKey: string }>;
+// const OWNER_OPTIONS = [
+//   { value: "all" as const, labelKey: "filters.owner.all" as const },
+//   { value: "corelia" as const, labelKey: "filters.owner.corelia" as const },
+//   {
+//     value: "external_partner" as const,
+//     labelKey: "filters.owner.external_partner" as const,
+//   },
+// ] as const satisfies ReadonlyArray<{ value: OwnerFilter; labelKey: string }>;
 
-const SORT_OPTIONS = [
-  { value: "featured" as const, labelKey: "filters.sort.featured" as const },
-  { value: "recent" as const, labelKey: "filters.sort.recent" as const },
-  { value: "duration_desc" as const, labelKey: "filters.sort.duration_desc" as const },
-  { value: "title_asc" as const, labelKey: "filters.sort.title_asc" as const },
-] as const satisfies ReadonlyArray<{ value: SortMode; labelKey: string }>;
+// const SORT_OPTIONS = [
+//   { value: "featured" as const, labelKey: "filters.sort.featured" as const },
+//   { value: "recent" as const, labelKey: "filters.sort.recent" as const },
+//   {
+//     value: "duration_desc" as const,
+//     labelKey: "filters.sort.duration_desc" as const,
+//   },
+//   { value: "title_asc" as const, labelKey: "filters.sort.title_asc" as const },
+// ] as const satisfies ReadonlyArray<{ value: SortMode; labelKey: string }>;
 
 function normalizeText(value: string | null | undefined): string {
   return (value ?? "").trim().toLowerCase();
@@ -65,17 +75,23 @@ function matchesPricing(course: Course, filter: PricingFilter): boolean {
   return accessModel === "free_with_paid_certificate";
 }
 
-type Translate = (key: string, options?: { price?: string; count?: number }) => string;
+type Translate = (
+  key: string,
+  options?: { price?: string; count?: number },
+) => string;
 
 function getPrimaryPriceLabel(course: Course, t: Translate): string {
   const accessModel = course.access_model ?? "free";
   if (accessModel === "paid_upfront") {
     const promo = Number(course.promo_price_vnd ?? 0);
-    if (promo > 0) return t("pricing.fromPrice", { price: formatVndPrice(promo) });
+    if (promo > 0)
+      return t("pricing.fromPrice", { price: formatVndPrice(promo) });
     return formatVndPrice(course.price_vnd);
   }
   if (accessModel === "free_with_paid_certificate") {
-    return t("pricing.certificateFee", { price: formatVndPrice(course.certificate_fee_vnd) });
+    return t("pricing.certificateFee", {
+      price: formatVndPrice(course.certificate_fee_vnd),
+    });
   }
   return t("pricing.freeLearning");
 }
@@ -114,34 +130,35 @@ function sortCourses(list: Course[], sort: SortMode): Course[] {
   });
 }
 
-function Pill({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        "inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors",
-        active
-          ? "border-primary/20 bg-primary-container text-on-primary-container"
-          : "border-border-subtle bg-background text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-      ].join(" ")}
-    >
-      {children}
-    </button>
-  );
-}
+// function Pill({
+//   active,
+//   children,
+//   onClick,
+// }: {
+//   active: boolean;
+//   children: React.ReactNode;
+//   onClick: () => void;
+// }) {
+//   return (
+//     <button
+//       type="button"
+//       onClick={onClick}
+//       className={[
+//         "inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors",
+//         active
+//           ? "border-primary/20 bg-primary-container text-on-primary-container"
+//           : "border-border-subtle bg-background text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+//       ].join(" ")}
+//     >
+//       {children}
+//     </button>
+//   );
+// }
 
 export default function CoursesPage() {
   const { t } = useTranslation("courses");
-  const translate: Translate = (key, options) => String(t(key as never, options as never));
+  const translate: Translate = (key, options) =>
+    String(t(key as never, options as never));
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -162,7 +179,9 @@ export default function CoursesPage() {
       })
       .catch((e) => {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : t("catalog.loadErrorFallback"));
+          setError(
+            e instanceof Error ? e.message : t("catalog.loadErrorFallback"),
+          );
         }
       })
       .finally(() => {
@@ -244,7 +263,9 @@ export default function CoursesPage() {
           <p className="text-sm font-medium text-destructive">
             {t("catalog.loadErrorTitle")}
           </p>
-          <p className="mt-2 text-sm leading-relaxed text-destructive/90">{error}</p>
+          <p className="mt-2 text-sm leading-relaxed text-destructive/90">
+            {error}
+          </p>
           <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
         </div>
       </div>
@@ -260,7 +281,9 @@ export default function CoursesPage() {
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {t("catalog.results", { count: filteredOnlineCourses.length })}
-            {hasActiveFilters ? t("catalog.activeFilters", { count: activeFilterCount }) : null}
+            {hasActiveFilters
+              ? t("catalog.activeFilters", { count: activeFilterCount })
+              : null}
           </p>
         </div>
 
@@ -277,7 +300,7 @@ export default function CoursesPage() {
         ) : null}
       </div>
 
-      <section className="rounded-md border border-border-subtle bg-card p-3 shadow-card sm:p-4">
+      {/* <section className="rounded-md border border-border-subtle bg-card p-3 shadow-card sm:p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-1 items-center gap-2 rounded-md border border-border-subtle bg-background px-3 py-2">
             <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
@@ -343,7 +366,7 @@ export default function CoursesPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {filteredOnlineCourses.length === 0 ? (
         <div className="mt-5 flex flex-col items-center gap-3 rounded-md border border-border-subtle bg-card py-16 text-center shadow-card">
@@ -359,11 +382,21 @@ export default function CoursesPage() {
             </p>
           </div>
           {hasActiveFilters ? (
-            <Button type="button" size="sm" variant="outline" onClick={resetFilters}>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={resetFilters}
+            >
               {t("catalog.clearFilters")}
             </Button>
           ) : (
-            <Button render={<Link to="/" />} nativeButton={false} size="sm" variant="outline">
+            <Button
+              render={<Link to="/" />}
+              nativeButton={false}
+              size="sm"
+              variant="outline"
+            >
               {t("catalog.backHome", { defaultValue: "Về trang chủ" })}
             </Button>
           )}
@@ -421,4 +454,3 @@ export default function CoursesPage() {
     </div>
   );
 }
-

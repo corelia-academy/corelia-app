@@ -33,7 +33,7 @@ export default function Home() {
     profile?.full_name?.trim() || user?.displayName || t("home.studentFallback");
   const firstName = displayName.split(" ")[0] || displayName;
   const email = profile?.email || user?.email || "";
-  const avatarUrl = profile?.avatar_url || user?.photoURL || undefined;
+  const avatarUrl = profile?.avatar_url?.trim() || user?.photoURL || undefined;
   const initials =
     displayName
       .split(" ")
