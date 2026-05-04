@@ -25,6 +25,11 @@
     "version": "Phiên bản {{version}}",
     "roadmap": "Lộ trình"
   },
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang này không tồn tại hoặc đã được chuyển đi.",
+    "backHome": "Về trang chủ"
+  },
   "nav": {
     "home": "Trang chủ",
     "courses": "Khóa học",
