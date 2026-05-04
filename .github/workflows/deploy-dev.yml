@@ -43,7 +43,6 @@ jobs:
           VITE_OCID_REDIRECT_URI: ${{ secrets.VITE_OCID_REDIRECT_URI }}
           VITE_YOUTUBE_API_KEY: ${{ secrets.VITE_YOUTUBE_API_KEY }}
           VITE_BETA_FEEDBACK_FORM_URL: ${{ secrets.VITE_BETA_FEEDBACK_FORM_URL }}
-          VITE_APP_TITLE_SUFFIX: ${{ secrets.VITE_APP_TITLE_SUFFIX }}
 
       - name: Auth Firebase (service account)
         env:
