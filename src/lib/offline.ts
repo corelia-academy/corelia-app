@@ -10,7 +10,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { auth, db, getAppCheckToken } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { COL, SUB } from "@/lib/collections";
 import { removeUndefinedFields } from "@/lib/utils";
 import { getCurrentProfile } from "@/lib/profile";
@@ -463,10 +463,7 @@ export async function createGoogleMeetSpaceForOfflineSession(input: {
   cohortId: string;
   sessionId: string;
 }): Promise<CreateOfflineSessionMeetSpaceResponse> {
-  const [token, appCheckToken] = await Promise.all([
-    auth.currentUser?.getIdToken().catch(() => null),
-    getAppCheckToken(),
-  ]);
+  const token = await auth.currentUser?.getIdToken().catch(() => null);
   if (!token) throw new Error("Chưa đăng nhập");
 
   const res = await fetch(OFFLINE_MEET_CREATE_SPACE_API, {
@@ -474,7 +471,6 @@ export async function createGoogleMeetSpaceForOfflineSession(input: {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
-      ...(appCheckToken ? { "X-Firebase-AppCheck": appCheckToken } : {}),
     },
     credentials: "include",
     body: JSON.stringify(input),

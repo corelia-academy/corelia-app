@@ -13,7 +13,7 @@ import {
   orderBy,
   writeBatch,
 } from "firebase/firestore";
-import { auth, db, getAppCheckToken } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { COL, SUB } from "@/lib/collections";
 import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
 import type {
@@ -677,10 +677,7 @@ export async function checkAndIssueCertificate(
   userId: string,
   courseId: string
 ): Promise<boolean> {
-  const [token, appCheckToken] = await Promise.all([
-    auth.currentUser?.getIdToken().catch(() => null),
-    getAppCheckToken(),
-  ]);
+  const token = await auth.currentUser?.getIdToken().catch(() => null);
   if (!token) throw new Error("Chưa đăng nhập");
 
   const res = await fetch(CERTIFICATE_API, {
@@ -688,7 +685,6 @@ export async function checkAndIssueCertificate(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
-      ...(appCheckToken ? { "X-Firebase-AppCheck": appCheckToken } : {}),
     },
     credentials: "include",
     body: JSON.stringify({ userId, courseId }),
