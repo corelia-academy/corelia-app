@@ -31,3 +31,8 @@ functions/lib
 
 # Claude Code local worktrees (never commit as gitlinks/submodules)
 .claude/worktrees/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
