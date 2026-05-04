@@ -28,3 +28,6 @@ functions/lib
 .env*
 !.env.example
 !.env.*.example
+
+# Claude Code local worktrees (never commit as gitlinks/submodules)
+.claude/worktrees/
