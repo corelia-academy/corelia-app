@@ -5,6 +5,8 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 const appVersion = JSON.parse(
   readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf-8'),
 ).version as string
@@ -19,12 +21,9 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
-  plugins: [
-    react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler']],
-      },
-    }),
-    tailwindcss(),
-  ],
+  plugins: [react({
+    babel: {
+      plugins: [['babel-plugin-react-compiler']],
+    },
+  }), tailwindcss(), cloudflare()],
 })
