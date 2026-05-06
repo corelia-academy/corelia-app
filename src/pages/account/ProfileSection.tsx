@@ -8,11 +8,20 @@ import { Label } from "@/components/ui/label";
 
 export function ProfileSection(props: {
   sessionEmail: string;
+  username: string;
   fullName: string;
   phone: string;
   avatarUrl: string;
+  bio: string;
+  website: string;
+  profilePublic: boolean;
+  profileLinkHandle: string;
   setFullName: (v: string) => void;
   setPhone: (v: string) => void;
+  setUsername: (v: string) => void;
+  setBio: (v: string) => void;
+  setWebsite: (v: string) => void;
+  setProfilePublic: (v: boolean) => void;
   saving: boolean;
   uploadingAvatar: boolean;
   onAvatarUpload: (file: File) => Promise<void>;
@@ -22,11 +31,20 @@ export function ProfileSection(props: {
 }) {
   const {
     sessionEmail,
+    username,
     fullName,
     phone,
     avatarUrl,
+    bio,
+    website,
+    profilePublic,
+    profileLinkHandle,
     setFullName,
     setPhone,
+    setUsername,
+    setBio,
+    setWebsite,
+    setProfilePublic,
     saving,
     uploadingAvatar,
     onAvatarUpload,
@@ -50,6 +68,39 @@ export function ProfileSection(props: {
         <div className="grid gap-2">
           <Label className="text-sm font-medium">{t("profile.emailLoginLabel")}</Label>
           <div className="text-sm text-muted-foreground">{sessionEmail}</div>
+        </div>
+
+        <div className="grid gap-2 rounded-md border border-border-subtle bg-background p-3">
+          <div className="text-xs font-medium text-muted-foreground">
+            {t("profile.publicProfile.label")}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-foreground">
+                {profilePublic
+                  ? t("profile.publicProfile.status.public")
+                  : t("profile.publicProfile.status.private")}
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                {t("profile.publicProfile.hint", { handle: profileLinkHandle })}
+              </div>
+            </div>
+            <button
+              type="button"
+              disabled={saving || uploadingAvatar}
+              onClick={() => setProfilePublic(!profilePublic)}
+              className={[
+                "h-9 rounded-full border px-3 text-sm font-medium transition-colors",
+                profilePublic
+                  ? "border-primary/25 bg-primary-container text-on-primary-container shadow-card"
+                  : "border-border-subtle bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+              ].join(" ")}
+            >
+              {profilePublic
+                ? t("profile.publicProfile.actions.makePrivate")
+                : t("profile.publicProfile.actions.makePublic")}
+            </button>
+          </div>
         </div>
 
         <div className="grid gap-3">
@@ -112,6 +163,63 @@ export function ProfileSection(props: {
           />
           <p className="text-xs text-muted-foreground">
             {t("profile.fullName.hint")}
+          </p>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium" htmlFor="username">
+            {t("profile.username.label")}
+          </Label>
+          <Input
+            id="username"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder={t("profile.username.placeholder")}
+            className="rounded"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            inputMode="text"
+          />
+          <p className="text-xs text-muted-foreground">
+            {t("profile.username.hint")}
+          </p>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium" htmlFor="bio">
+            {t("profile.bio.label")}
+          </Label>
+          <textarea
+            id="bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder={t("profile.bio.placeholder")}
+            className="min-h-24 w-full rounded-md border border-border-subtle bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+          />
+          <p className="text-xs text-muted-foreground">
+            {t("profile.bio.hint")}
+          </p>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium" htmlFor="website">
+            {t("profile.website.label")}
+          </Label>
+          <Input
+            id="website"
+            type="url"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            placeholder={t("profile.website.placeholder")}
+            className="rounded"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+          />
+          <p className="text-xs text-muted-foreground">
+            {t("profile.website.hint")}
           </p>
         </div>
 

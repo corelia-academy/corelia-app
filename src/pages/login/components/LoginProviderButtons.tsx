@@ -1,15 +1,15 @@
-import type { AuthProvider } from "firebase/auth";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Field, FieldSeparator } from "@/components/ui/field";
-import { githubProvider, googleProvider } from "@/lib/firebase";
+
+export type OAuthProviderId = "google" | "github";
 
 export function LoginProviderButtons({
   loading,
   onProvider,
 }: {
   loading: boolean;
-  onProvider: (provider: AuthProvider) => void;
+  onProvider: (provider: OAuthProviderId) => void;
 }) {
   const { t } = useTranslation("auth");
   return (
@@ -23,7 +23,7 @@ export function LoginProviderButtons({
           variant="outline"
           type="button"
           disabled={loading}
-          onClick={() => onProvider(googleProvider)}
+          onClick={() => onProvider("google")}
           className="gap-2 rounded-md"
         >
           <svg
@@ -42,7 +42,7 @@ export function LoginProviderButtons({
           variant="outline"
           type="button"
           disabled={loading}
-          onClick={() => onProvider(githubProvider)}
+          onClick={() => onProvider("github")}
           className="gap-2 rounded-md"
         >
           <svg
@@ -61,4 +61,3 @@ export function LoginProviderButtons({
     </>
   );
 }
-

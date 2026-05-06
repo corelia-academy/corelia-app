@@ -1,8 +1,8 @@
 import { Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { buildDefaultContestTimelineItems } from "@/components/contests/contestTimelineBuilders";
 import {
-  buildDefaultContestTimelineItems,
   ContestTimeline,
   ContestTimelineVertical,
   type ContestTimelineRow,

@@ -34,7 +34,6 @@ import {
   toCoInstructorSnapshot,
   applyCourseLessonLocaleContent,
   applyCourseSectionLocaleContent,
-  backfillCourseLocaleIndex,
   getCourseLessonLocaleContent,
   getCourseLocaleContent,
   getCoursePrimaryLocale,
@@ -179,7 +178,6 @@ const isValidHttpUrl = (input?: string | null): boolean => {
 
 const createSponsorId = (): string => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     return String(globalThis.crypto?.randomUUID?.() ?? "").trim() || `${Date.now()}`;
   } catch {
     return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -277,6 +275,19 @@ const InstructorCourseEdit = () => {
   const [defaultVideoPrimaryLocale, setDefaultVideoPrimaryLocale] =
     useState<SupportedCourseLocale>("vi");
   const [activeContentLocale, setActiveContentLocale] = useState<SupportedCourseLocale>("vi");
+
+  // Per-locale draft cache for section & lesson dialogs
+  type SectionDraft = { title: string; description: string };
+  type LessonDraft = {
+    title: string; youtubeUrl: string; videoPrimaryLocale: SupportedCourseLocale;
+    hasSubtitle: boolean; subtitleLocales: SupportedCourseLocale[];
+    shortDescription: string; markdown: string;
+    resources: Array<{ title: string; url: string }>;
+  };
+  const sectionDraftRef = useRef<Map<SupportedCourseLocale, SectionDraft>>(new Map());
+  const lessonDraftRef = useRef<Map<SupportedCourseLocale, LessonDraft>>(new Map());
+  const [dialogSectionLocale, setDialogSectionLocale] = useState<SupportedCourseLocale>("vi");
+  const [dialogLessonLocale, setDialogLessonLocale] = useState<SupportedCourseLocale>("vi");
   const [contentForm, setContentForm] = useState({
     title: "",
     short_description: "",
@@ -341,7 +352,6 @@ const InstructorCourseEdit = () => {
   const partnerLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingPartnerLogo, setUploadingPartnerLogo] = useState(false);
   const [discounts, setDiscounts] = useState<CourseDiscount[]>([]);
-  const [backfillingLocales, setBackfillingLocales] = useState(false);
   const [loadingDiscounts, setLoadingDiscounts] = useState(false);
   const [creatingDiscount, setCreatingDiscount] = useState(false);
   const [discountForm, setDiscountForm] = useState({
@@ -1425,54 +1435,82 @@ const InstructorCourseEdit = () => {
   };
 
   const openEditSection = (section: CourseSection) => {
+    sectionDraftRef.current = new Map();
+    const initLocale = activeContentLocale;
+    setDialogSectionLocale(initLocale);
     setEditingSection(section);
     setEditingSectionTitle(section.title ?? "");
     setEditingSectionDescription(section.description ?? "");
     if (!id) return;
-    if (activeContentLocale === primaryContentLocale) return;
-    void (async () => {
-      const localized = await getCourseSectionLocaleContent(id, section.id, activeContentLocale).catch(() => null);
-      if (!localized) return;
-      setEditingSectionTitle(localized.title ?? section.title ?? "");
-      setEditingSectionDescription(localized.description ?? section.description ?? "");
-    })();
+    // Pre-load all supported locales in the background
+    for (const loc of supportedLocales) {
+      if (loc === primaryContentLocale) {
+        sectionDraftRef.current.set(loc, {
+          title: section.title ?? "",
+          description: section.description ?? "",
+        });
+      } else {
+        void getCourseSectionLocaleContent(id, section.id, loc).catch(() => null).then((localized) => {
+          if (!sectionDraftRef.current.has(loc)) {
+            sectionDraftRef.current.set(loc, {
+              title: localized?.title ?? section.title ?? "",
+              description: localized?.description ?? section.description ?? "",
+            });
+          }
+          if (loc === initLocale) {
+            setEditingSectionTitle(localized?.title ?? section.title ?? "");
+            setEditingSectionDescription(localized?.description ?? section.description ?? "");
+          }
+        });
+      }
+    }
+  };
+
+  const switchDialogSectionLocale = (nextLocale: SupportedCourseLocale) => {
+    // Save current
+    sectionDraftRef.current.set(dialogSectionLocale, {
+      title: editingSectionTitle,
+      description: editingSectionDescription,
+    });
+    // Load next
+    const saved = sectionDraftRef.current.get(nextLocale);
+    setEditingSectionTitle(saved?.title ?? editingSection?.title ?? "");
+    setEditingSectionDescription(saved?.description ?? editingSection?.description ?? "");
+    setDialogSectionLocale(nextLocale);
   };
 
   const handleSaveSectionDetails = async () => {
     if (!id || !editingSection) return;
     try {
-      if (activeContentLocale === primaryContentLocale) {
-        await updateSection(id, editingSection.id, {
-          title: editingSectionTitle.trim() || editingSection.title,
-          description: editingSectionDescription.trim() || undefined,
-        });
-        setSections((prev) =>
-          prev.map((s) =>
-            s.id === editingSection.id
-              ? {
-                  ...s,
-                  title: editingSectionTitle.trim() || s.title,
-                  description: editingSectionDescription.trim() || undefined,
-                }
-              : s,
-          ),
-        );
-      } else {
-        await setCourseSectionLocaleContent(id, editingSection.id, activeContentLocale, {
-          title: editingSectionTitle.trim() || editingSection.title,
-          description: editingSectionDescription.trim() || undefined,
-        });
-        setSections((prev) =>
-          prev.map((s) =>
-            s.id === editingSection.id
-              ? applyCourseSectionLocaleContent(s, {
-                  locale: activeContentLocale,
-                  title: editingSectionTitle.trim() || s.title,
-                  description: editingSectionDescription.trim() || undefined,
-                })
-              : s,
-          ),
-        );
+      // Flush current dialog locale into draft map before saving
+      sectionDraftRef.current.set(dialogSectionLocale, {
+        title: editingSectionTitle,
+        description: editingSectionDescription,
+      });
+
+      // Save each locale that was touched
+      for (const [loc, draft] of sectionDraftRef.current) {
+        const title = draft.title.trim() || editingSection.title;
+        const description = draft.description.trim() || undefined;
+        if (loc === primaryContentLocale) {
+          await updateSection(id, editingSection.id, { title, description });
+          setSections((prev) =>
+            prev.map((s) =>
+              s.id === editingSection.id ? { ...s, title, description } : s,
+            ),
+          );
+        } else {
+          await setCourseSectionLocaleContent(id, editingSection.id, loc, { title, description });
+          if (loc === activeContentLocale) {
+            setSections((prev) =>
+              prev.map((s) =>
+                s.id === editingSection.id
+                  ? applyCourseSectionLocaleContent(s, { locale: loc, title, description })
+                  : s,
+              ),
+            );
+          }
+        }
       }
       setEditingSection(null);
     } catch (e) {
@@ -1556,99 +1594,116 @@ const InstructorCourseEdit = () => {
     }
   };
 
+  const applyLessonDraftToState = (draft: LessonDraft) => {
+    setEditingLessonTitle(draft.title);
+    setEditingLessonYoutubeUrl(draft.youtubeUrl);
+    setEditingLessonVideoPrimaryLocale(draft.videoPrimaryLocale);
+    setEditingLessonHasSubtitle(draft.hasSubtitle);
+    setEditingLessonSubtitleLocales(draft.subtitleLocales);
+    setEditingLessonShortDescription(draft.shortDescription);
+    setEditingLessonMarkdown(draft.markdown);
+    setEditingLessonResources(draft.resources);
+  };
+
+  const captureLessonDraftFromState = (): LessonDraft => ({
+    title: editingLessonTitle,
+    youtubeUrl: editingLessonYoutubeUrl,
+    videoPrimaryLocale: editingLessonVideoPrimaryLocale,
+    hasSubtitle: editingLessonHasSubtitle,
+    subtitleLocales: editingLessonSubtitleLocales,
+    shortDescription: editingLessonShortDescription,
+    markdown: editingLessonMarkdown,
+    resources: editingLessonResources,
+  });
+
+  const lessonToDraft = (lesson: CourseLesson): LessonDraft => ({
+    title: lesson.title ?? "",
+    youtubeUrl: lesson.youtube_url ?? "",
+    videoPrimaryLocale: normalizeCourseLocale(lesson.video_primary_locale ?? defaultVideoPrimaryLocale),
+    hasSubtitle: lesson.has_subtitle ?? false,
+    subtitleLocales: (lesson.subtitle_locales ?? []).map(normalizeCourseLocale),
+    shortDescription: lesson.short_description ?? "",
+    markdown: lesson.description_markdown ?? "",
+    resources: (lesson.resources ?? []).map((r) => ({ title: r.title ?? "", url: r.url ?? "" })),
+  });
+
   const openEditLesson = (lesson: CourseLesson) => {
+    lessonDraftRef.current = new Map();
+    const initLocale = activeContentLocale;
+    setDialogLessonLocale(initLocale);
+    // Primary locale uses the lesson data directly
+    lessonDraftRef.current.set(primaryContentLocale, lessonToDraft(lesson));
     setEditingLesson(lesson);
-    setEditingLessonTitle(lesson.title ?? "");
-    setEditingLessonYoutubeUrl(lesson.youtube_url ?? "");
-    setEditingLessonVideoPrimaryLocale(
-      normalizeCourseLocale(lesson.video_primary_locale ?? defaultVideoPrimaryLocale),
-    );
-    setEditingLessonHasSubtitle(lesson.has_subtitle ?? false);
-    setEditingLessonSubtitleLocales((lesson.subtitle_locales ?? []).map(normalizeCourseLocale));
-    setEditingLessonShortDescription(lesson.short_description ?? "");
-    setEditingLessonMarkdown(lesson.description_markdown ?? "");
-    setEditingLessonResources((lesson.resources ?? []).map((r) => ({ title: r.title ?? "", url: r.url ?? "" })));
+    applyLessonDraftToState(lessonToDraft(lesson));
     if (!id) return;
-    if (activeContentLocale === primaryContentLocale) return;
-    void (async () => {
-      const localized = await getCourseLessonLocaleContent(id, lesson.id, activeContentLocale).catch(() => null);
-      if (!localized) return;
-      setEditingLessonTitle(localized.title ?? lesson.title ?? "");
-      setEditingLessonYoutubeUrl(localized.youtube_url ?? lesson.youtube_url ?? "");
-      setEditingLessonVideoPrimaryLocale(
-        normalizeCourseLocale(localized.video_primary_locale ?? lesson.video_primary_locale ?? defaultVideoPrimaryLocale),
-      );
-      setEditingLessonHasSubtitle(localized.has_subtitle ?? lesson.has_subtitle ?? false);
-      setEditingLessonSubtitleLocales((localized.subtitle_locales ?? lesson.subtitle_locales ?? []).map(normalizeCourseLocale));
-      setEditingLessonShortDescription(localized.short_description ?? lesson.short_description ?? "");
-      setEditingLessonMarkdown(localized.description_markdown ?? lesson.description_markdown ?? "");
-      setEditingLessonResources((localized.resources ?? lesson.resources ?? []).map((r) => ({ title: r.title ?? "", url: r.url ?? "" })));
-    })();
+    // Pre-load non-primary locales in background
+    for (const loc of supportedLocales) {
+      if (loc === primaryContentLocale) continue;
+      void getCourseLessonLocaleContent(id, lesson.id, loc).catch(() => null).then((localized) => {
+        const draft: LessonDraft = {
+          title: localized?.title ?? lesson.title ?? "",
+          youtubeUrl: localized?.youtube_url ?? lesson.youtube_url ?? "",
+          videoPrimaryLocale: normalizeCourseLocale(localized?.video_primary_locale ?? lesson.video_primary_locale ?? defaultVideoPrimaryLocale),
+          hasSubtitle: localized?.has_subtitle ?? lesson.has_subtitle ?? false,
+          subtitleLocales: (localized?.subtitle_locales ?? lesson.subtitle_locales ?? []).map(normalizeCourseLocale),
+          shortDescription: localized?.short_description ?? lesson.short_description ?? "",
+          markdown: localized?.description_markdown ?? lesson.description_markdown ?? "",
+          resources: (localized?.resources ?? lesson.resources ?? []).map((r) => ({ title: r.title ?? "", url: r.url ?? "" })),
+        };
+        if (!lessonDraftRef.current.has(loc)) {
+          lessonDraftRef.current.set(loc, draft);
+        }
+        if (loc === initLocale) applyLessonDraftToState(draft);
+      });
+    }
+  };
+
+  const switchDialogLessonLocale = (nextLocale: SupportedCourseLocale) => {
+    lessonDraftRef.current.set(dialogLessonLocale, captureLessonDraftFromState());
+    const saved = lessonDraftRef.current.get(nextLocale);
+    if (saved) {
+      applyLessonDraftToState(saved);
+    }
+    setDialogLessonLocale(nextLocale);
   };
 
   const handleSaveLessonDetails = async () => {
     if (!id || !editingLesson) return;
-    const sanitizedResources = (editingLessonResources ?? [])
-      .map((r) => ({ title: (r.title ?? "").trim(), url: (r.url ?? "").trim() }))
-      .filter((r) => r.title && r.url);
-
     try {
-      if (activeContentLocale === primaryContentLocale) {
-        await updateLesson(id, editingLesson.id, {
-          title: editingLessonTitle.trim() || editingLesson.title,
-          youtube_url: editingLessonYoutubeUrl.trim() || undefined,
-          video_primary_locale: editingLessonVideoPrimaryLocale,
-          has_subtitle: editingLessonHasSubtitle,
-          subtitle_locales: editingLessonHasSubtitle ? editingLessonSubtitleLocales : [],
-          short_description: editingLessonShortDescription.trim() || undefined,
-          description_markdown: editingLessonMarkdown.trim() || undefined,
+      // Flush current dialog state into draft map
+      lessonDraftRef.current.set(dialogLessonLocale, captureLessonDraftFromState());
+
+      for (const [loc, draft] of lessonDraftRef.current) {
+        const sanitizedResources = (draft.resources ?? [])
+          .map((r) => ({ title: (r.title ?? "").trim(), url: (r.url ?? "").trim() }))
+          .filter((r) => r.title && r.url);
+        const payload = {
+          title: draft.title.trim() || editingLesson.title,
+          youtube_url: draft.youtubeUrl.trim() || undefined,
+          video_primary_locale: draft.videoPrimaryLocale,
+          has_subtitle: draft.hasSubtitle,
+          subtitle_locales: draft.hasSubtitle ? draft.subtitleLocales : [],
+          short_description: draft.shortDescription.trim() || undefined,
+          description_markdown: draft.markdown.trim() || undefined,
           resources: sanitizedResources.length ? sanitizedResources : undefined,
-        });
-        setLessons((prev) =>
-          prev.map((l) =>
-            l.id === editingLesson.id
-              ? {
-                  ...l,
-                  title: editingLessonTitle.trim() || l.title,
-                  youtube_url: editingLessonYoutubeUrl.trim() || undefined,
-                  video_primary_locale: editingLessonVideoPrimaryLocale,
-                  has_subtitle: editingLessonHasSubtitle,
-                  subtitle_locales: editingLessonHasSubtitle ? editingLessonSubtitleLocales : [],
-                  short_description: editingLessonShortDescription.trim() || undefined,
-                  description_markdown: editingLessonMarkdown.trim() || undefined,
-                  resources: sanitizedResources.length ? sanitizedResources : undefined,
-                }
-              : l,
-          ),
-        );
-      } else {
-        await setCourseLessonLocaleContent(id, editingLesson.id, activeContentLocale, {
-          title: editingLessonTitle.trim() || editingLesson.title,
-          youtube_url: editingLessonYoutubeUrl.trim() || undefined,
-          video_primary_locale: editingLessonVideoPrimaryLocale,
-          has_subtitle: editingLessonHasSubtitle,
-          subtitle_locales: editingLessonHasSubtitle ? editingLessonSubtitleLocales : [],
-          short_description: editingLessonShortDescription.trim() || undefined,
-          description_markdown: editingLessonMarkdown.trim() || undefined,
-          resources: sanitizedResources.length ? sanitizedResources : undefined,
-        });
-        setLessons((prev) =>
-          prev.map((l) =>
-            l.id === editingLesson.id
-              ? applyCourseLessonLocaleContent(l, {
-                  locale: activeContentLocale,
-                  title: editingLessonTitle.trim() || l.title,
-                  youtube_url: editingLessonYoutubeUrl.trim() || undefined,
-                  video_primary_locale: editingLessonVideoPrimaryLocale,
-                  has_subtitle: editingLessonHasSubtitle,
-                  subtitle_locales: editingLessonHasSubtitle ? editingLessonSubtitleLocales : [],
-                  short_description: editingLessonShortDescription.trim() || undefined,
-                  description_markdown: editingLessonMarkdown.trim() || undefined,
-                  resources: sanitizedResources.length ? sanitizedResources : undefined,
-                })
-              : l,
-          ),
-        );
+        };
+        if (loc === primaryContentLocale) {
+          await updateLesson(id, editingLesson.id, payload);
+          setLessons((prev) =>
+            prev.map((l) => (l.id === editingLesson.id ? { ...l, ...payload } : l)),
+          );
+        } else {
+          await setCourseLessonLocaleContent(id, editingLesson.id, loc, payload);
+          if (loc === activeContentLocale) {
+            setLessons((prev) =>
+              prev.map((l) =>
+                l.id === editingLesson.id
+                  ? applyCourseLessonLocaleContent(l, { locale: loc, ...payload })
+                  : l,
+              ),
+            );
+          }
+        }
       }
       setEditingLesson(null);
     } catch (e) {
@@ -2019,6 +2074,35 @@ const InstructorCourseEdit = () => {
       <div className="flex flex-col gap-4 xl:flex-row">
         {/* Sidebar inner — điều hướng từng phần */}
         <nav className="h-fit shrink-0 rounded-lg border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24 xl:w-64">
+          {/* Locale switcher — always visible */}
+          <div className="mb-3 rounded-lg border border-border-subtle bg-muted/40 p-2">
+            <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Ngôn ngữ đang chỉnh sửa
+            </p>
+            <div className="flex gap-1">
+              {supportedLocales.map((loc) => (
+                <button
+                  key={loc}
+                  type="button"
+                  onClick={() => setActiveContentLocale(loc)}
+                  className={cn(
+                    "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold transition-colors",
+                    activeContentLocale === loc
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-background hover:text-foreground",
+                  )}
+                >
+                  <span>{loc === "vi" ? "🇻🇳" : "🇬🇧"}</span>
+                  {loc.toUpperCase()}
+                  {loc === primaryContentLocale && (
+                    <span className="rounded bg-primary-foreground/20 px-1 py-0.5 text-[10px] leading-none">
+                      chính
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="mb-3 px-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Điều hướng chỉnh sửa
@@ -2158,9 +2242,10 @@ const InstructorCourseEdit = () => {
                 Thông tin chung
               </h2>
               <FieldGroup className="mt-4">
-                <Field>
-                  <FieldLabel>{t("courseEdit.i18n.supportedLocalesLabel" as never)}</FieldLabel>
-                  <div className="mt-2 flex flex-wrap gap-2">
+                {/* Locale config — advanced, collapsed into a summary row */}
+                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border-subtle bg-muted/30 px-3 py-2">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">Ngôn ngữ hỗ trợ:</span>
                     {(["vi", "en"] as const).map((loc) => {
                       const enabled = supportedLocales.includes(loc);
                       return (
@@ -2173,117 +2258,47 @@ const InstructorCourseEdit = () => {
                               if (next.has(loc)) next.delete(loc);
                               else next.add(loc);
                               const result = Array.from(next);
-                              // ensure at least 1 locale exists
                               if (result.length === 0) return prev;
-                              // keep primary valid
-                              if (!result.includes(primaryContentLocale)) {
-                                setPrimaryContentLocale(result[0] ?? "vi");
-                              }
-                              // keep active valid
-                              if (!result.includes(activeContentLocale)) {
-                                setActiveContentLocale(result[0] ?? "vi");
-                              }
+                              if (!result.includes(primaryContentLocale)) setPrimaryContentLocale(result[0] ?? "vi");
+                              if (!result.includes(activeContentLocale)) setActiveContentLocale(result[0] ?? "vi");
                               return result;
                             })
                           }
                           className={cn(
-                            "rounded-md border px-2 py-1 text-xs font-medium",
-                            enabled
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-border-subtle bg-background text-muted-foreground",
+                            "rounded border px-2 py-0.5 text-xs font-medium transition-colors",
+                            enabled ? "border-primary bg-primary/10 text-primary" : "border-border-subtle bg-background text-muted-foreground",
                           )}
                         >
-                          {loc.toUpperCase()}
+                          {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
                         </button>
                       );
                     })}
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {t("courseEdit.i18n.supportedLocalesHint" as never)}
-                  </p>
-                </Field>
-                <Field>
-                  <FieldLabel>{t("courseEdit.i18n.primaryLocaleLabel" as never)}</FieldLabel>
-                  <select
-                    value={primaryContentLocale}
-                    onChange={(e) =>
-                      setPrimaryContentLocale(normalizeCourseLocale(e.target.value))
-                    }
-                    className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {supportedLocales.map((loc) => (
-                      <option key={loc} value={loc}>
-                        {loc.toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field>
-                  <FieldLabel>{t("courseEdit.i18n.editingLocaleLabel" as never)}</FieldLabel>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {supportedLocales.map((loc) => (
-                      <button
-                        key={loc}
-                        type="button"
-                        onClick={() => setActiveContentLocale(loc)}
-                        className={cn(
-                          "rounded-md border px-2 py-1 text-xs font-medium",
-                          activeContentLocale === loc
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border-subtle bg-background text-muted-foreground",
-                        )}
-                      >
-                        {loc.toUpperCase()}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">Ngôn ngữ chính:</span>
+                    <select
+                      value={primaryContentLocale}
+                      onChange={(e) => setPrimaryContentLocale(normalizeCourseLocale(e.target.value))}
+                      className="rounded border border-input bg-background px-2 py-0.5 text-xs outline-none"
+                    >
+                      {supportedLocales.map((loc) => (
+                        <option key={loc} value={loc}>{loc.toUpperCase()}</option>
+                      ))}
+                    </select>
                   </div>
-                  {activeContentLocale !== primaryContentLocale ? (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {t("courseEdit.i18n.editingNonPrimaryHint" as never)}
-                    </p>
-                  ) : null}
-                </Field>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={!id || backfillingLocales}
-                    onClick={() => {
-                      if (!id) return;
-                      if (!confirm(t("courseEdit.i18n.backfillConfirm" as never))) return;
-                      setBackfillingLocales(true);
-                      void backfillCourseLocaleIndex(id, supportedLocales)
-                        .then((res) => {
-                          toast.success(
-                            String(
-                              t("courseEdit.i18n.backfillDone" as never, {
-                                defaultValue: `Đã backfill ${res.updated} tài liệu locale.`,
-                                count: res.updated,
-                              } as never),
-                            ),
-                          );
-                        })
-                        .catch((e) => {
-                          toast.error(
-                            e instanceof Error
-                              ? e.message
-                              : t("courseEdit.i18n.backfillFailed" as never),
-                          );
-                        })
-                        .finally(() => setBackfillingLocales(false));
-                    }}
-                  >
-                    {backfillingLocales
-                      ? t("courseEdit.i18n.backfilling" as never)
-                      : t("courseEdit.i18n.backfillAction" as never)}
-                  </Button>
-                  <p className="text-xs text-muted-foreground">
-                    {t("courseEdit.i18n.backfillHint" as never)}
-                  </p>
                 </div>
+                {activeContentLocale !== primaryContentLocale && (
+                  <div className="rounded-md border border-warning/20 bg-warning/10 px-3 py-2 text-xs text-warning">
+                    {t("courseEdit.i18n.editingNonPrimaryHint" as never)}
+                  </div>
+                )}
                 <Field>
-                  <FieldLabel>{t("courseEdit.form.titleLabel")}</FieldLabel>
+                  <FieldLabel>
+                    {t("courseEdit.form.titleLabel")}
+                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                      {activeContentLocale.toUpperCase()}
+                    </span>
+                  </FieldLabel>
                   <Input
                     value={contentForm.title}
                     onChange={(e) =>
@@ -2301,7 +2316,12 @@ const InstructorCourseEdit = () => {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>{t("courseEdit.form.shortDescriptionLabel")}</FieldLabel>
+                  <FieldLabel>
+                    {t("courseEdit.form.shortDescriptionLabel")}
+                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                      {activeContentLocale.toUpperCase()}
+                    </span>
+                  </FieldLabel>
                   <Input
                     value={contentForm.short_description}
                     onChange={(e) =>
@@ -2314,7 +2334,12 @@ const InstructorCourseEdit = () => {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>{t("courseEdit.form.descriptionLabel")}</FieldLabel>
+                  <FieldLabel>
+                    {t("courseEdit.form.descriptionLabel")}
+                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                      {activeContentLocale.toUpperCase()}
+                    </span>
+                  </FieldLabel>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {t("courseEdit.form.descriptionMarkdownHint")}
                   </p>
@@ -2328,7 +2353,12 @@ const InstructorCourseEdit = () => {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>{t("courseEdit.form.learningOutcomesLabel")}</FieldLabel>
+                  <FieldLabel>
+                    {t("courseEdit.form.learningOutcomesLabel")}
+                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                      {activeContentLocale.toUpperCase()}
+                    </span>
+                  </FieldLabel>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {t("courseEdit.form.learningOutcomesSubtitle")}
                   </p>
@@ -4138,18 +4168,47 @@ const InstructorCourseEdit = () => {
           <Dialog open={!!editingSection} onOpenChange={(open) => !open && setEditingSection(null)}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{t("courseEdit.sections.editTitle")}</DialogTitle>
+                <div className="flex items-center justify-between gap-3">
+                  <DialogTitle>{t("courseEdit.sections.editTitle")}</DialogTitle>
+                  <div className="flex gap-1 rounded-lg border border-border-subtle bg-muted/50 p-1">
+                    {supportedLocales.map((loc) => (
+                      <button
+                        key={loc}
+                        type="button"
+                        onClick={() => switchDialogSectionLocale(loc)}
+                        className={cn(
+                          "flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
+                          dialogSectionLocale === loc
+                            ? "bg-card text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </DialogHeader>
               <div className="space-y-4">
                 <Field>
-                  <FieldLabel>{t("courseEdit.sections.titleLabel")}</FieldLabel>
+                  <FieldLabel>
+                    {t("courseEdit.sections.titleLabel")}
+                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                      {dialogSectionLocale.toUpperCase()}
+                    </span>
+                  </FieldLabel>
                   <Input
                     value={editingSectionTitle}
                     onChange={(e) => setEditingSectionTitle(e.target.value)}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>{t("courseEdit.sections.descriptionLabel")}</FieldLabel>
+                  <FieldLabel>
+                    {t("courseEdit.sections.descriptionLabel")}
+                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                      {dialogSectionLocale.toUpperCase()}
+                    </span>
+                  </FieldLabel>
                   <textarea
                     value={editingSectionDescription}
                     onChange={(e) => setEditingSectionDescription(e.target.value)}
@@ -4174,7 +4233,26 @@ const InstructorCourseEdit = () => {
             <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden p-0">
               <div className="flex max-h-[85vh] flex-col">
                 <DialogHeader className="sticky top-0 z-10 border-b border-border-subtle bg-background/95 p-4 backdrop-blur">
-                  <DialogTitle>{t("courseEdit.lessons.editTitle")}</DialogTitle>
+                  <div className="flex items-center justify-between gap-3">
+                    <DialogTitle>{t("courseEdit.lessons.editTitle")}</DialogTitle>
+                    <div className="flex gap-1 rounded-lg border border-border-subtle bg-muted/50 p-1">
+                      {supportedLocales.map((loc) => (
+                        <button
+                          key={loc}
+                          type="button"
+                          onClick={() => switchDialogLessonLocale(loc)}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-colors",
+                            dialogLessonLocale === loc
+                              ? "bg-card text-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground",
+                          )}
+                        >
+                          {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </DialogHeader>
                 <div className="flex-1 overflow-y-auto p-4">
                   <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_360px]">
@@ -4188,7 +4266,12 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel>{t("courseEdit.lessons.titleLabel")}</FieldLabel>
+                    <FieldLabel>
+                      {t("courseEdit.lessons.titleLabel")}
+                      <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                        {dialogLessonLocale.toUpperCase()}
+                      </span>
+                    </FieldLabel>
                     <Input
                       value={editingLessonTitle}
                       onChange={(e) => setEditingLessonTitle(e.target.value)}
@@ -4260,7 +4343,12 @@ const InstructorCourseEdit = () => {
                     ) : null}
                   </Field>
                   <Field>
-                    <FieldLabel>{t("courseEdit.lessons.shortDescriptionLabel")}</FieldLabel>
+                    <FieldLabel>
+                      {t("courseEdit.lessons.shortDescriptionLabel")}
+                      <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                        {dialogLessonLocale.toUpperCase()}
+                      </span>
+                    </FieldLabel>
                     <Input
                       value={editingLessonShortDescription}
                       onChange={(e) => setEditingLessonShortDescription(e.target.value)}
@@ -4268,7 +4356,12 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel>{t("courseEdit.lessons.markdownLabel")}</FieldLabel>
+                    <FieldLabel>
+                      {t("courseEdit.lessons.markdownLabel")}
+                      <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                        {dialogLessonLocale.toUpperCase()}
+                      </span>
+                    </FieldLabel>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {t("courseEdit.lessons.markdownHint")}
                     </p>

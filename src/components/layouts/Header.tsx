@@ -1,18 +1,25 @@
 import { useMemo, useState } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { MenuIcon } from "lucide-react";
+import { LogOut, MenuIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
 import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
 import { useTheme } from "next-themes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, profile } = useAuth();
+  const { isAuthenticated, profile, loading, authInitialized, signOut, user } = useAuth();
   const { t } = useTranslation("common");
   const { isInitialized, authState, ocAuth } = useOCAuth();
   const { resolvedTheme } = useTheme();
@@ -21,11 +28,24 @@ export default function Header() {
   const [ocConnectLoading, setOcConnectLoading] = useState(false);
   const [ocConnectError, setOcConnectError] = useState<string | null>(null);
 
+  const metaName =
+    typeof user?.user_metadata?.full_name === "string"
+      ? user.user_metadata.full_name
+      : typeof user?.user_metadata?.name === "string"
+        ? user.user_metadata.name
+        : null;
+  const metaAvatar =
+    typeof user?.user_metadata?.avatar_url === "string"
+      ? user.user_metadata.avatar_url
+      : typeof user?.user_metadata?.picture === "string"
+        ? user.user_metadata.picture
+        : null;
+
   const displayName = profile?.ocid
     ? profile.ocid
-    : (profile?.full_name ??
-      profile?.id?.slice(0, 8) ??
-      t("user.fallbackName"));
+    : (profile?.full_name ?? metaName ?? profile?.id?.slice(0, 8) ?? t("user.fallbackName"));
+  const avatarUrl = profile?.avatar_url ?? metaAvatar ?? undefined;
+  const avatarFallback = (profile?.full_name ?? metaName ?? profile?.id ?? user?.id ?? "U").charAt(0);
   const isOcidConnected = Boolean(profile?.ocid);
 
   const ocConnectDisabled = useMemo(() => {
@@ -85,30 +105,50 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          {isAuthenticated ? (
+          {!authInitialized && loading ? (
+            <div className="h-9 w-28 animate-pulse rounded-full bg-muted md:h-10" />
+          ) : isAuthenticated ? (
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => navigate("/account")}
-                className={`inline-flex h-9 items-center gap-2 rounded-full border border-border-subtle pr-2 text-left text-sm transition-colors hover:bg-muted/50 md:h-10 md:pr-3 ${
-                  isOcidConnected
-                    ? "bg-primary-container text-on-primary-container hover:bg-primary-container"
-                    : "bg-card"
-                } cursor-pointer`}
-              >
-                <Avatar className="size-9 md:size-10">
-                  <AvatarImage
-                    src={profile?.avatar_url ?? undefined}
-                    alt={profile?.full_name ?? profile?.id?.slice(0, 8) ?? ""}
-                  />
-                  <AvatarFallback>
-                    {(profile?.full_name ?? profile?.id ?? "U").charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="hidden max-w-[180px] truncate md:inline">
-                  {displayName}
-                </span>
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      type="button"
+                      className={`inline-flex h-9 items-center gap-2 rounded-full border border-border-subtle pr-2 text-left text-sm transition-colors hover:bg-muted/50 md:h-10 md:pr-3 ${
+                        isOcidConnected
+                          ? "bg-primary-container text-on-primary-container hover:bg-primary-container"
+                          : "bg-card"
+                      } cursor-pointer`}
+                    >
+                      <Avatar className="size-9 md:size-10">
+                        <AvatarImage
+                          src={avatarUrl}
+                          alt={displayName}
+                        />
+                        <AvatarFallback>
+                          {avatarFallback}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-[180px] truncate md:inline">
+                        {displayName}
+                      </span>
+                    </button>
+                  }
+                />
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate("/account")}>
+                    {t("user.accountSettings")}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => void signOut().then(() => navigate("/login", { replace: true }))}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="mr-2 size-4" aria-hidden />
+                    {t("tabs.signOut")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {!isOcidConnected && (
                 <button

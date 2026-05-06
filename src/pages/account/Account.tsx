@@ -60,14 +60,6 @@ export default function Account() {
     },
   ];
 
-  const accountRoleLabel =
-    profile?.role === "instructor"
-      ? t("header.roleLabel.instructor")
-      : profile?.role === "admin"
-        ? t("header.roleLabel.admin")
-        : profile?.role === "support_staff"
-          ? t("header.roleLabel.support_staff")
-          : t("header.roleLabel.student");
   const activeNavItem =
     navItems.find((item) => location.pathname.startsWith(item.to)) ??
     navItems[0];
@@ -75,45 +67,6 @@ export default function Account() {
   // Layout cho khu vực account, nội dung từng tab được render qua nested routes (Outlet)
   return (
     <div className="container-app py-6 sm:py-8">
-      <section className="mb-6 rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-5">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="min-w-0">
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-              {accountRoleLabel}
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              {t("header.subtitle")}
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-md border border-border-subtle bg-background px-4 py-3 sm:col-span-1">
-              <p className="text-xs text-muted-foreground">
-                {t("header.summary.profileLabel")}
-              </p>
-              <p className="mt-1 line-clamp-1 text-sm font-medium text-foreground">
-                {profile?.full_name || t("header.summary.missingDisplayName")}
-              </p>
-            </div>
-            <div className="rounded-md border border-border-subtle bg-background px-4 py-3">
-              <p className="text-xs text-muted-foreground">
-                {t("header.summary.roleLabel")}
-              </p>
-              <p className="mt-1 line-clamp-1 text-sm font-medium text-foreground">
-                {accountRoleLabel}
-              </p>
-            </div>
-            <div className="rounded-md border border-border-subtle bg-background px-4 py-3">
-              <p className="text-xs text-muted-foreground">
-                {t("header.summary.statusLabel")}
-              </p>
-              <p className="mt-1 text-sm font-medium text-foreground">
-                {t("header.summary.statusReady")}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <div className="flex w-full min-w-0 flex-col gap-6 lg:flex-row">
         <div className="w-full lg:w-72 lg:shrink-0">
           <div className="mb-4 hidden text-xs font-semibold uppercase tracking-wide text-muted-foreground lg:block">

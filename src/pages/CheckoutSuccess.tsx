@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ArrowRight, BookOpen, Loader2, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import { verifySePayPayment } from "@/lib/payments";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -13,6 +13,20 @@ type StoredCheckout = {
   purpose?: string;
   createdAt?: number;
 };
+
+async function waitForSupabaseUser(maxMs: number): Promise<boolean> {
+  const started = Date.now();
+  let interval = 100;
+  while (Date.now() - started < maxMs) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session?.user) return true;
+    await new Promise((r) => window.setTimeout(r, interval));
+    interval = Math.min(500, interval + 50);
+  }
+  return false;
+}
 
 export default function CheckoutSuccess() {
   const { t } = useTranslation("courses");
@@ -55,10 +69,10 @@ export default function CheckoutSuccess() {
 
     void (async () => {
       setStatusMessage(t("detail.checkoutSuccess.restoringSession"));
-      await auth.authStateReady();
+      const hasUser = await waitForSupabaseUser(30_000);
       if (cancelled) return;
 
-      if (!auth.currentUser) {
+      if (!hasUser) {
         setVerifying(false);
         setStatusMessage(
           t("detail.checkoutSuccess.sessionNotReady"),

@@ -1,23 +1,20 @@
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { COL, DOC } from "@/lib/collections";
+import { supabase } from "@/lib/supabase";
+import { DOC } from "@/lib/collections";
 import { getCurrentProfile } from "@/lib/profile";
-import type {
-  DashboardPinnedProgram,
-  HomeDashboardConfig,
-} from "@/types/dashboard";
+import type { DashboardPinnedProgram, HomeDashboardConfig } from "@/types/dashboard";
+
+let dashboardConfigCache: { promise: Promise<HomeDashboardConfig>; ts: number } | null = null;
+const DASHBOARD_CONFIG_TTL = 5 * 60 * 1000;
+
 const DASHBOARD_PINNED_PROGRAM_TYPES = new Set([
   "course",
   "contest",
-  "offline_course",
 ] as const);
 
 function isDashboardPinnedProgramType(value: unknown): value is DashboardPinnedProgram["type"] {
   return (
     typeof value === "string" &&
-    DASHBOARD_PINNED_PROGRAM_TYPES.has(
-      value as DashboardPinnedProgram["type"],
-    )
+    DASHBOARD_PINNED_PROGRAM_TYPES.has(value as DashboardPinnedProgram["type"])
   );
 }
 
@@ -74,20 +71,32 @@ async function requireDashboardConfigManager() {
 }
 
 export async function getHomeDashboardConfig(): Promise<HomeDashboardConfig> {
-  const ref = doc(db, COL.DASHBOARD_CONFIGS, DOC.HOME_DASHBOARD);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return emptyHomeDashboardConfig();
-  return normalizeHomeDashboardConfig({
-    id: snap.id,
-    ...snap.data(),
-  } as Partial<HomeDashboardConfig>);
+  if (dashboardConfigCache && Date.now() - dashboardConfigCache.ts < DASHBOARD_CONFIG_TTL) {
+    return dashboardConfigCache.promise;
+  }
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("dashboard_configs")
+      .select("*")
+      .eq("id", DOC.HOME_DASHBOARD)
+      .maybeSingle();
+    if (error || !data?.data) return emptyHomeDashboardConfig();
+    const raw = data.data as Partial<HomeDashboardConfig>;
+    return normalizeHomeDashboardConfig({ id: data.id, ...raw });
+  })();
+  dashboardConfigCache = { promise, ts: Date.now() };
+  promise.catch(() => { dashboardConfigCache = null; });
+  return promise;
+}
+
+export function invalidateDashboardConfigCache() {
+  dashboardConfigCache = null;
 }
 
 export async function updateHomeDashboardConfig(input: {
   pinned_programs: DashboardPinnedProgram[];
 }): Promise<HomeDashboardConfig> {
   const profile = await requireDashboardConfigManager();
-  const ref = doc(db, COL.DASHBOARD_CONFIGS, DOC.HOME_DASHBOARD);
   const payload = normalizeHomeDashboardConfig({
     id: DOC.HOME_DASHBOARD,
     pinned_programs: input.pinned_programs,
@@ -95,6 +104,15 @@ export async function updateHomeDashboardConfig(input: {
     updated_by: profile.id,
   });
 
-  await setDoc(ref, payload, { merge: true });
+  const { error } = await supabase.from("dashboard_configs").upsert(
+    {
+      id: DOC.HOME_DASHBOARD,
+      data: payload as unknown as Record<string, unknown>,
+      updated_at: payload.updated_at,
+      updated_by: profile.id,
+    },
+    { onConflict: "id" },
+  );
+  if (error) throw new Error(error.message);
   return payload;
 }

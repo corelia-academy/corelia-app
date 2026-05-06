@@ -24,12 +24,6 @@ export const COL = {
   CONTEST_SCORES: "contest_scores",
 
   // Khoá học offline
-  OFFLINE_COURSES: "offline_courses",
-  OFFLINE_COHORTS: "offline_cohorts",
-  OFFLINE_COHORT_ENROLLMENTS: "offline_cohort_enrollments",
-  OFFLINE_ATTENDANCE: "offline_session_attendance",
-  OFFLINE_ASSIGNMENT_SUBMISSIONS: "offline_assignment_submissions",
-
   // Dashboard
   DASHBOARD_CONFIGS: "dashboard_configs",
 } as const;

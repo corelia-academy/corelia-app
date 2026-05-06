@@ -83,7 +83,7 @@
       },
       "next": {
         "label": "Mật khẩu mới",
-        "placeholder": "Tối thiểu 6 ký tự"
+        "placeholder": "Tối thiểu 8 ký tự, có hoa, thường, số và ký tự đặc biệt"
       },
       "confirm": {
         "label": "Xác nhận mật khẩu mới",
@@ -98,7 +98,8 @@
     },
     "errors": {
       "confirmMismatch": "Mật khẩu mới và xác nhận không khớp.",
-      "minLength": "Mật khẩu mới tối thiểu 6 ký tự.",
+      "minLength": "Mật khẩu mới phải có ít nhất 8 ký tự.",
+      "policy": "Mật khẩu mới phải có ít nhất 8 ký tự và gồm chữ hoa, chữ thường, số và ký tự đặc biệt.",
       "missingEmail": "Không tìm thấy email. Chỉ tài khoản đăng nhập bằng email mới đổi được mật khẩu.",
       "changeFailed": "Không thể đổi mật khẩu."
     }
@@ -147,7 +148,24 @@
   "profile": {
     "loading": "Đang tải thông tin...",
     "mustLogin": "Bạn cần đăng nhập để xem trang này.",
+    "tabs": {
+      "info": "Hồ sơ",
+      "ocid": "OCID",
+      "security": "Bảo mật"
+    },
     "emailLoginLabel": "Email đăng nhập",
+    "publicProfile": {
+      "label": "Hồ sơ công khai",
+      "status": {
+        "public": "Công khai",
+        "private": "Riêng tư"
+      },
+      "hint": "Link hồ sơ công khai: /{{handle}}",
+      "actions": {
+        "makePrivate": "Đặt riêng tư",
+        "makePublic": "Đặt công khai"
+      }
+    },
     "setupWarning": {
       "title": "Hồ sơ của bạn cần bổ sung thêm thông tin.",
       "body": "Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc học vụ hỗ trợ bạn tốt hơn."
@@ -164,6 +182,21 @@
       "placeholder": "Nguyễn Văn A",
       "hint": "Dùng để hiển thị trên chứng chỉ, bảng điểm và hoá đơn."
     },
+    "username": {
+      "label": "Username",
+      "placeholder": "Ví dụ: terrrancrypt",
+      "hint": "Dùng làm đường dẫn hồ sơ công khai."
+    },
+    "bio": {
+      "label": "Giới thiệu",
+      "placeholder": "Viết vài dòng giới thiệu ngắn…",
+      "hint": "Sẽ hiển thị trên hồ sơ công khai."
+    },
+    "website": {
+      "label": "Website",
+      "placeholder": "https://…",
+      "hint": "Portfolio / LinkedIn / website cá nhân."
+    },
     "phone": {
       "label": "Số điện thoại liên hệ",
       "placeholder": "Ví dụ: 09xxxxxxxx",
@@ -179,8 +212,10 @@
     },
     "errors": {
       "avatarUploadFailed": "Không thể tải ảnh lên.",
-      "updateFailed": "Không thể cập nhật thông tin."
-    }
+      "updateFailed": "Không thể cập nhật thông tin.",
+      "loadFailed": "Không thể tải thông tin tài khoản. Kiểm tra kết nối và thử lại."
+    },
+    "retry": "Thử lại"
   },
   "cv": {
     "title": "Hồ sơ học tập & CV",

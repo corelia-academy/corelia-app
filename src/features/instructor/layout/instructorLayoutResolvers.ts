@@ -20,14 +20,6 @@ export function buildInstructorCrumbs({
 
   if (pathname === "/instructor/courses/new") {
     list.push({ label: translate("layout.crumbs.createCourse") });
-  } else if (pathname === "/instructor/cohorts") {
-    list.push({ label: translate("layout.crumbs.offlineClasses") });
-  } else if (pathname === "/instructor/cohorts/new") {
-    list.push({ label: translate("layout.crumbs.offlineClasses"), to: "/instructor/cohorts" });
-    list.push({ label: translate("layout.crumbs.createCohort") });
-  } else if (pathname.startsWith("/instructor/cohorts/") && pathname.endsWith("/manage")) {
-    list.push({ label: translate("layout.crumbs.offlineClasses"), to: "/instructor/cohorts" });
-    list.push({ label: translate("layout.crumbs.cohortWorkspace") });
   } else if (pathname === "/instructor/contracts") {
     list.push({ label: translate("layout.crumbs.contracts") });
   } else if (pathname === "/instructor/invoices") {
@@ -59,24 +51,6 @@ export function resolveInstructorShellMeta({
     return {
       title: translate("layout.shell.newCourse.title"),
       description: translate("layout.shell.newCourse.description"),
-    };
-  }
-  if (pathname === "/instructor/cohorts") {
-    return {
-      title: translate("layout.shell.offlineList.title"),
-      description: translate("layout.shell.offlineList.description"),
-    };
-  }
-  if (pathname === "/instructor/cohorts/new") {
-    return {
-      title: translate("layout.shell.newCohort.title"),
-      description: translate("layout.shell.newCohort.description"),
-    };
-  }
-  if (pathname.startsWith("/instructor/cohorts/") && pathname.endsWith("/manage")) {
-    return {
-      title: translate("layout.shell.cohortWorkspace.title"),
-      description: translate("layout.shell.cohortWorkspace.description"),
     };
   }
   if (pathname === "/instructor/profile") {

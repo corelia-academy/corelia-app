@@ -1,6 +1,8 @@
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
-import { COL } from "@/lib/collections";
+import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
+import { supabase } from "@/lib/supabase";
+import { makeTTLCache } from "@/lib/utils";
+
+const paymentAccessCache = makeTTLCache<CoursePaymentAccess | null>(60_000);
 
 export type PaymentPurpose = "course_purchase" | "certificate_fee";
 
@@ -58,24 +60,59 @@ export async function getCoursePaymentAccess(
   userId: string,
   courseId: string,
 ): Promise<CoursePaymentAccess | null> {
-  const ref = doc(db, COL.COURSE_PAYMENT_ACCESS, `${userId}_${courseId}`);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return null;
-  return { id: snap.id, ...snap.data() } as CoursePaymentAccess;
+  const key = `${userId}_${courseId}`;
+  const cached = paymentAccessCache.get(key);
+  if (cached) return cached;
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("course_payment_access")
+      .select("*")
+      .eq("id", key)
+      .maybeSingle();
+    if (error || !data) return null;
+    return { id: data.id, ...data } as CoursePaymentAccess;
+  })();
+  paymentAccessCache.set(key, promise);
+  promise.catch(() => paymentAccessCache.delete(key));
+  return promise;
+}
+
+export function invalidatePaymentAccessCache(userId: string, courseId: string) {
+  paymentAccessCache.delete(`${userId}_${courseId}`);
+}
+
+async function getAccessToken(): Promise<string | null> {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    return session?.access_token ?? null;
+  } catch (err) {
+    console.error("[payments] getSession failed:", err);
+    return null;
+  }
+}
+
+const INVALID_SESSION_MESSAGE = "Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.";
+
+function requireAccessToken(token: string | null): asserts token is string {
+  if (!token) throw new Error(INVALID_SESSION_MESSAGE);
 }
 
 export async function createSePayCheckout(
   payload: CreateSePayCheckoutInput,
 ): Promise<CreateSePayCheckoutResponse> {
   const endpoint =
-    import.meta.env.VITE_SEPAY_CHECKOUT_API || "/api/payments/sepay/checkout";
+    import.meta.env.VITE_SEPAY_CHECKOUT_API ||
+    coreliaEdgeUrl("payments.sepay.checkout");
 
-  const token = await auth.currentUser?.getIdToken().catch(() => null);
+  const token = await getAccessToken();
+  requireAccessToken(token);
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...supabaseFunctionHeaders(token),
     },
     credentials: "include",
     body: JSON.stringify(payload),
@@ -114,12 +151,14 @@ export function submitSePayCheckoutForm(input: CreateSePayCheckoutResponse) {
 
 export async function getMyPaymentTransactions(): Promise<PaymentTransaction[]> {
   const endpoint =
-    import.meta.env.VITE_SEPAY_TRANSACTIONS_API || "/api/payments/transactions";
-  const token = await auth.currentUser?.getIdToken().catch(() => null);
+    import.meta.env.VITE_SEPAY_TRANSACTIONS_API ||
+    coreliaEdgeUrl("payments.transactions");
+  const token = await getAccessToken();
+  requireAccessToken(token);
   const res = await fetch(endpoint, {
     method: "GET",
     headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...supabaseFunctionHeaders(token),
     },
     credentials: "include",
   });
@@ -136,13 +175,15 @@ export async function verifySePayPayment(payload: {
   courseId?: string;
   purpose?: PaymentPurpose;
 }): Promise<VerifySePayPaymentResponse> {
-  const endpoint = import.meta.env.VITE_SEPAY_VERIFY_API || "/api/payments/sepay/verify";
-  const token = await auth.currentUser?.getIdToken().catch(() => null);
+  const endpoint =
+    import.meta.env.VITE_SEPAY_VERIFY_API || coreliaEdgeUrl("payments.sepay.verify");
+  const token = await getAccessToken();
+  requireAccessToken(token);
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...supabaseFunctionHeaders(token),
     },
     credentials: "include",
     body: JSON.stringify(payload),

@@ -106,7 +106,7 @@ export interface Course {
   learning_outcomes?: string[];
   short_description?: string;
   thumbnail_url: string;
-  /** Đường dẫn gốc trong Firebase Storage (course-thumbnails/...), dùng để xoá ảnh cũ khi thay */
+  /** Đường dẫn trong Supabase Storage (course-thumbnails/...), dùng để xoá ảnh cũ khi thay */
   thumbnail_path?: string;
   instructor_id: string;
   instructor_name: string;

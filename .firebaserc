@@ -1,8 +1,0 @@
-{
-  "projects": {
-    "dev": "corelia-5d38d",
-    "staging": "corelia-ebaf2",
-    "prod": "corelia-a2e6d",
-    "default": "corelia-5d38d"
-  }
-}

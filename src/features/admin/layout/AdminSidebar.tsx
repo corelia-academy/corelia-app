@@ -39,20 +39,28 @@ export function AdminSidebar() {
         </div>
       </div>
 
-      <SidebarSeparator />
+      <SidebarSeparator className="mx-3 group-data-[collapsible=icon]:mx-1" />
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{t("layout.sidebar.primaryNavigation")}</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            {t("layout.sidebar.primaryNavigation")}
+          </SidebarGroupLabel>
           <SidebarGroupContent className="px-1">
             <SidebarMenu className="gap-2">
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-md"
                   tooltip={t("layout.sidebar.users.tooltip")}
-                  isActive={pathname === "/admin" || pathname.startsWith("/admin/users")}
+                  isActive={
+                    pathname === "/admin" || pathname.startsWith("/admin/users")
+                  }
                   render={
-                    <NavLink to="/admin" end className="flex w-full items-center gap-2">
+                    <NavLink
+                      to="/admin"
+                      end
+                      className="flex w-full items-center gap-2"
+                    >
                       <Users className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.users.label")}</span>
                     </NavLink>
@@ -65,7 +73,10 @@ export function AdminSidebar() {
                   tooltip="Dashboard"
                   isActive={pathname.startsWith("/admin/dashboard")}
                   render={
-                    <NavLink to="/admin/dashboard" className="flex w-full items-center gap-2">
+                    <NavLink
+                      to="/admin/dashboard"
+                      className="flex w-full items-center gap-2"
+                    >
                       <Pin className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.dashboard.label")}</span>
                     </NavLink>
@@ -78,7 +89,10 @@ export function AdminSidebar() {
                   tooltip={t("layout.sidebar.instructors.tooltip")}
                   isActive={pathname.startsWith("/admin/instructors")}
                   render={
-                    <NavLink to="/admin/instructors" className="flex w-full items-center gap-2">
+                    <NavLink
+                      to="/admin/instructors"
+                      className="flex w-full items-center gap-2"
+                    >
                       <GraduationCap className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.instructors.label")}</span>
                     </NavLink>
@@ -91,7 +105,10 @@ export function AdminSidebar() {
                   tooltip={t("layout.sidebar.contests.tooltip")}
                   isActive={pathname.startsWith("/admin/contests")}
                   render={
-                    <NavLink to="/admin/contests" className="flex w-full items-center gap-2">
+                    <NavLink
+                      to="/admin/contests"
+                      className="flex w-full items-center gap-2"
+                    >
                       <Trophy className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.contests.label")}</span>
                     </NavLink>
@@ -107,4 +124,3 @@ export function AdminSidebar() {
     </Sidebar>
   );
 }
-

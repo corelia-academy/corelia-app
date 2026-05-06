@@ -4,7 +4,7 @@ import type { Contest } from "@/types/contests";
 import type { Course } from "@/types/courses";
 import {
   applyCourseLocaleContent,
-  getCourseLocaleContent,
+  getBatchCourseLocaleContent,
   getPublishedCourses,
   pickCourseContentLocale,
 } from "@/lib/courses";
@@ -25,12 +25,13 @@ export function useHomeCatalogAndContests() {
       // Localize only what Home actually shows (avoid N+1 over large catalogs).
       const previewCourses = publishedCourses.slice(0, 8);
       void (async () => {
-        const localizedPreview = await Promise.all(
-          previewCourses.map(async (c) => {
-            const locale = pickCourseContentLocale(c, i18n.language);
-            const loc = await getCourseLocaleContent(c.id, locale).catch(() => null);
-            return applyCourseLocaleContent(c, loc);
-          }),
+        const locale = pickCourseContentLocale(previewCourses[0], i18n.language);
+        const localeMap = await getBatchCourseLocaleContent(
+          previewCourses.map((c) => c.id),
+          locale,
+        ).catch(() => new Map());
+        const localizedPreview = previewCourses.map((c) =>
+          applyCourseLocaleContent(c, localeMap.get(c.id) ?? null),
         );
         if (!cancelled) {
           // keep full catalog for IDs, but use localized preview for display.

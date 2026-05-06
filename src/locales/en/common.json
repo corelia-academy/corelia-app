@@ -33,7 +33,6 @@
   "nav": {
     "home": "Home",
     "courses": "Courses",
-    "cohorts": "Cohorts",
     "contests": "Contests",
     "achievements": "Achievements",
     "account": "Account",
@@ -45,11 +44,56 @@
     "signedInViaEmail": "(signed in via email)"
   },
   "user": {
-    "fallbackName": "User"
+    "fallbackName": "User",
+    "accountSettings": "Account settings"
+  },
+  "userProfile": {
+    "tabs": {
+      "overview": "Overview",
+      "achievements": "Achievements",
+      "courses": "Courses",
+      "contests": "Contests"
+    },
+    "actions": {
+      "editProfile": "Edit profile"
+    },
+    "labels": {
+      "ocid": "OCID: {{ocid}}",
+      "website": "Website",
+      "role": "Role",
+      "memberSince": "Member since"
+    },
+    "errors": {
+      "notFound": "User not found",
+      "loadFailed": "Could not load profile",
+      "tryAnother": "Try a different handle (username or OCID)."
+    },
+    "overview": {
+      "title": "Overview",
+      "quickInfo": "Quick info",
+      "empty": "No public info yet.",
+      "instructorHeadlineFallback": "Instructor"
+    },
+    "achievements": {
+      "selfOnly": "Achievements are only visible to the account owner for now.",
+      "openInAchievementsPage": "Open Achievements to view your certificates and badges.",
+      "cta": "Open Achievements"
+    },
+    "courses": {
+      "privateByDefault": "Courses are private for students by default.",
+      "empty": "No published courses yet.",
+      "updatedAt": "Updated {{date}}"
+    },
+    "contests": {
+      "empty": "No public contests yet.",
+      "fallbackTitle": "Contest",
+      "updatedAt": "Updated {{date}}"
+    }
   },
   "tabs": {
     "menu": "Menu",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "signOut": "Sign out"
   },
   "status": {
     "loading": "Loading…",
@@ -116,7 +160,7 @@
       "quickLinksTitle": "Quick links",
       "quickLinks": {
         "contests": "Contests",
-        "cohorts": "Classes"
+        "courses": "Courses"
       }
     },
     "sections": {

@@ -5,11 +5,9 @@ import { Input } from "@/components/ui/input";
 import { getHomeDashboardConfig, updateHomeDashboardConfig } from "@/lib/dashboardConfig";
 import { getPublishedCourses } from "@/lib/courses";
 import { listContests } from "@/lib/contests";
-import { listOfflineCourses } from "@/lib/offline";
 import type { DashboardPinnedProgram, DashboardPinnedProgramType } from "@/types/dashboard";
 import type { Course } from "@/types/courses";
 import type { Contest } from "@/types/contests";
-import type { OfflineCourse } from "@/types/offline";
 import { useTranslation } from "react-i18next";
 
 type ProgramOption = {
@@ -72,7 +70,6 @@ export default function AdminDashboard() {
   ]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [contests, setContests] = useState<Contest[]>([]);
-  const [offlineCourses, setOfflineCourses] = useState<OfflineCourse[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,12 +78,11 @@ export default function AdminDashboard() {
       setLoading(true);
       setError(null);
       try {
-        const [config, courseRows, contestRows, offlineCourseRows] =
+        const [config, courseRows, contestRows] =
           await Promise.all([
             getHomeDashboardConfig(),
             getPublishedCourses().catch(() => [] as Course[]),
             listContests().catch(() => [] as Contest[]),
-            listOfflineCourses().catch(() => [] as OfflineCourse[]),
           ]);
 
         if (cancelled) return;
@@ -95,7 +91,6 @@ export default function AdminDashboard() {
         setContests(
           contestRows.filter((item) => item.status === "published" || item.status === "running"),
         );
-        setOfflineCourses(offlineCourseRows.filter((item) => item.published));
 
         const normalized = [...config.pinned_programs]
           .sort((a, b) => a.order - b.order)
@@ -135,14 +130,8 @@ export default function AdminDashboard() {
         type: "contest" as const,
         subtitle: t("dashboard.programType.contest"),
       })),
-      ...offlineCourses.map((item) => ({
-        value: item.id,
-        label: item.title,
-        type: "offline_course" as const,
-        subtitle: t("dashboard.programType.offlineCourse"),
-      })),
     ];
-  }, [contests, courses, offlineCourses, t]);
+  }, [contests, courses, t]);
 
   function updateProgram(index: number, patch: Partial<EditablePinnedProgram>) {
     setPrograms((prev) =>
@@ -257,7 +246,6 @@ export default function AdminDashboard() {
                   >
                     <option value="course">{t("dashboard.programType.course")}</option>
                     <option value="contest">{t("dashboard.programType.contest")}</option>
-                    <option value="offline_course">{t("dashboard.programType.offlineCourse")}</option>
                   </select>
                 </div>
 

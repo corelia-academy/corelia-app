@@ -1,5 +1,5 @@
 /**
- * Database types (chuyển sang Firebase/Firestore) – User roles & profiles
+ * Database types — User roles & profiles
  * Roles: học viên (student), giảng viên (instructor), chăm sóc viên (support_staff), admin
  */
 
@@ -23,11 +23,19 @@ export interface PartnerProfileDocument {
 export interface Profile {
   id: string;
   role: UserRole;
+  /** Public handle (GitHub-like), unique (case-insensitive) */
+  username?: string | null;
   full_name: string | null;
   avatar_url: string | null;
   phone: string | null;
-  /** Email đăng nhập (từ Firebase Auth), lưu khi tạo profile */
+  /** Email đăng nhập (từ Supabase Auth), lưu khi tạo profile */
   email: string | null;
+  /** Public bio (GitHub-like) */
+  bio?: string | null;
+  /** Public website/portfolio link */
+  website?: string | null;
+  /** Whether profile is visible publicly */
+  profile_public?: boolean;
   /** Ngôn ngữ UI người dùng chọn (vd: vi/en) */
   locale?: Locale | null;
   /** Open Campus ID (OCID) đã liên kết (nếu có) */
@@ -64,10 +72,14 @@ export interface Profile {
 export interface ProfileInsert {
   id: string;
   role?: UserRole;
+  username?: string | null;
   full_name?: string | null;
   avatar_url?: string | null;
   phone?: string | null;
   email?: string | null;
+  bio?: string | null;
+  website?: string | null;
+  profile_public?: boolean;
   locale?: Locale | null;
   ocid?: string | null;
   ocid_eth_address?: string | null;
@@ -88,10 +100,14 @@ export interface ProfileInsert {
 
 export interface ProfileUpdate {
   role?: UserRole;
+  username?: string | null;
   full_name?: string | null;
   avatar_url?: string | null;
   phone?: string | null;
   email?: string | null;
+  bio?: string | null;
+  website?: string | null;
+  profile_public?: boolean;
   locale?: Locale | null;
   ocid?: string | null;
   ocid_eth_address?: string | null;
@@ -135,4 +151,23 @@ export function hasRole(role: UserRole, allowed: readonly UserRole[]): boolean {
   if (allowed.includes(role)) return true;
   if (role === "admin" && allowed.includes("instructor")) return true;
   return false;
+}
+
+export interface PublicProfile {
+  id: string;
+  username: string | null;
+  ocid: string | null;
+  role: UserRole;
+  full_name: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  website: string | null;
+  instructor_origin: Profile["instructor_origin"] | null;
+  instructor_headline: string | null;
+  instructor_bio: string | null;
+  instructor_organization: string | null;
+  instructor_website: string | null;
+  profile_public: boolean;
+  created_at: string;
+  updated_at: string;
 }
