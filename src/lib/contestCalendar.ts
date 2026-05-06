@@ -122,7 +122,7 @@ export function downloadContestCalendarIcs(contest: Contest): void {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `${contest.title.replace(/[^\w\-]+/g, "-").slice(0, 80) || "contest"}-schedule.ics`;
+  anchor.download = `${contest.title.replace(/[^\w-]+/g, "-").slice(0, 80) || "contest"}-schedule.ics`;
   anchor.click();
   URL.revokeObjectURL(url);
 }

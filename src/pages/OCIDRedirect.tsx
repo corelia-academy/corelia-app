@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { LoginCallBack, useOCAuth } from "@opencampus/ocid-connect-js";
 import { updateOCIDProfile } from "@/lib/profile";
-import { auth } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 
@@ -50,7 +50,10 @@ export default function OCIDRedirect() {
     return {
       successCallback: async () => {
         setError(null);
-        const user = auth.currentUser;
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const user = session?.user;
         if (!user) {
           setError(t("ocid.redirect.mustLoginFirst"));
           navigate("/login", { replace: true });

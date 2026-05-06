@@ -258,13 +258,7 @@
       "supportedLocalesHint": "Bật/tắt ngôn ngữ nội dung của khoá. Tiến độ học không đổi khi đổi ngôn ngữ.",
       "primaryLocaleLabel": "Ngôn ngữ nội dung chính",
       "editingLocaleLabel": "Đang chỉnh nội dung cho ngôn ngữ",
-      "editingNonPrimaryHint": "Bạn đang chỉnh bản dịch. Nội dung ngôn ngữ chính vẫn giữ riêng.",
-      "backfillAction": "Tối ưu locale index",
-      "backfilling": "Đang tối ưu...",
-      "backfillHint": "Dùng 1 lần để tối ưu tốc độ load cho dữ liệu locale cũ (thêm index fields).",
-      "backfillConfirm": "Tối ưu index locale cho khoá này? (Sẽ cập nhật các tài liệu locale hiện có, không đổi nội dung.)",
-      "backfillDone": "Đã tối ưu {{count}} tài liệu locale.",
-      "backfillFailed": "Không thể tối ưu locale index lúc này."
+      "editingNonPrimaryHint": "Bạn đang chỉnh bản dịch. Nội dung ngôn ngữ chính vẫn giữ riêng."
     },
     "defaults": {
       "lessonTitle": "Bài học"

@@ -1,7 +1,6 @@
 export type DashboardPinnedProgramType =
   | "course"
-  | "contest"
-  | "offline_course";
+  | "contest";
 
 export interface DashboardPinnedProgram {
   id: string;

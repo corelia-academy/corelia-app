@@ -83,7 +83,7 @@ export interface Contest {
   location: ContestLocation;
   /** Wide banner on contest detail (hero) */
   cover_image_url?: string | null;
-  /** Firebase Storage path for banner — used when replacing/deleting */
+  /** Storage path for banner — used when replacing/deleting */
   cover_image_path?: string | null;
   /** Square-ish image for catalog cards & compact surfaces */
   thumbnail_url?: string | null;

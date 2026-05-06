@@ -58,7 +58,7 @@ export default function AdminUsers() {
       if (!q) return true;
       const name = (p.full_name ?? "").toLowerCase();
       const email =
-        (p.id === currentUser?.uid ? (currentUser.email ?? "") : p.email ?? "")
+        (p.id === currentUser?.id ? (currentUser.email ?? "") : p.email ?? "")
           .toLowerCase();
       return (
         name.includes(q) ||
@@ -277,7 +277,7 @@ export default function AdminUsers() {
                       {t("users.mobile.emailLabel")}
                     </p>
                     <p className="mt-1 text-sm text-foreground">
-                      {p.id === currentUser?.uid
+                      {p.id === currentUser?.id
                         ? currentUser?.email ?? p.email ?? "—"
                         : p.email ?? "—"}
                     </p>
@@ -437,12 +437,12 @@ export default function AdminUsers() {
                       <span
                         className="block max-w-[240px] truncate text-sm text-foreground"
                         title={
-                          p.id === currentUser?.uid
+                          p.id === currentUser?.id
                             ? currentUser?.email ?? p.email ?? ""
                             : p.email ?? ""
                         }
                       >
-                        {p.id === currentUser?.uid
+                        {p.id === currentUser?.id
                           ? currentUser?.email ?? p.email ?? "—"
                           : p.email ?? "—"}
                       </span>

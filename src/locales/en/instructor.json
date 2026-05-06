@@ -258,13 +258,7 @@
       "supportedLocalesHint": "Enable/disable content languages for this course. Learning progress is shared across languages.",
       "primaryLocaleLabel": "Primary content language",
       "editingLocaleLabel": "Editing content for",
-      "editingNonPrimaryHint": "You are editing a translation. Primary language content remains separate.",
-      "backfillAction": "Optimize locale index",
-      "backfilling": "Optimizing...",
-      "backfillHint": "Run once to speed up loading for legacy locale docs (adds index fields).",
-      "backfillConfirm": "Optimize locale index for this course? (It updates existing locale docs without changing content.)",
-      "backfillDone": "Optimized {{count}} locale documents.",
-      "backfillFailed": "Unable to optimize locale index right now."
+      "editingNonPrimaryHint": "You are editing a translation. Primary language content remains separate."
     },
     "defaults": {
       "lessonTitle": "Lesson"

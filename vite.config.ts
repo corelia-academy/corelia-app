@@ -26,4 +26,19 @@ export default defineConfig({
       plugins: [['babel-plugin-react-compiler']],
     },
   }), tailwindcss(), cloudflare()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router', 'react-router-dom'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-icons': ['lucide-react', '@phosphor-icons/react'],
+          'vendor-i18n': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
+          'vendor-markdown': ['react-markdown', 'remark-gfm', 'rehype-sanitize'],
+          'vendor-ocid': ['@opencampus/ocid-connect-js'],
+          'vendor-ui': ['@base-ui/react', 'next-themes', 'sonner', 'zustand'],
+        },
+      },
+    },
+  },
 })

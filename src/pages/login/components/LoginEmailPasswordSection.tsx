@@ -1,9 +1,10 @@
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import type { AuthErrorInfo } from "@/pages/login/loginErrors";
+import { PASSWORD_MIN_LENGTH } from "@/lib/passwordPolicy";
 
 export type AuthMode = "sign_in" | "sign_up";
 
@@ -17,12 +18,17 @@ export function LoginEmailPasswordSection({
   fullName,
   errorInfo,
   isAccountExistsError,
+  isEmailNotConfirmedError,
+  onResendConfirmation,
+  resendLoading,
+  inlineSuccessMessage,
   onEmailChange,
   onPasswordChange,
   onConfirmPasswordChange,
   onFullNameChange,
   onForgotPassword,
   onToggleMode,
+  beforeSubmit,
 }: {
   mode: AuthMode;
   loading: boolean;
@@ -33,12 +39,17 @@ export function LoginEmailPasswordSection({
   fullName: string;
   errorInfo: AuthErrorInfo | null;
   isAccountExistsError: boolean;
+  isEmailNotConfirmedError: boolean;
+  onResendConfirmation?: () => void | Promise<void>;
+  resendLoading?: boolean;
+  inlineSuccessMessage?: string | null;
   onEmailChange: (email: string) => void;
   onPasswordChange: (password: string) => void;
   onConfirmPasswordChange: (password: string) => void;
   onFullNameChange: (name: string) => void;
   onForgotPassword: () => void;
   onToggleMode: () => void;
+  beforeSubmit?: React.ReactNode;
 }) {
   const { t } = useTranslation("auth");
   return (
@@ -89,11 +100,15 @@ export function LoginEmailPasswordSection({
           id="password"
           type="password"
           autoComplete={mode === "sign_in" ? "current-password" : "new-password"}
-          placeholder={t("login.placeholders.password")}
+          placeholder={
+            mode === "sign_in"
+              ? t("login.placeholders.passwordSignIn")
+              : t("login.placeholders.passwordSignUp")
+          }
           value={password}
           onChange={(e) => onPasswordChange(e.target.value)}
           required
-          minLength={6}
+          {...(mode === "sign_up" ? { minLength: PASSWORD_MIN_LENGTH } : {})}
         />
       </Field>
 
@@ -110,9 +125,17 @@ export function LoginEmailPasswordSection({
             value={confirmPassword}
             onChange={(e) => onConfirmPasswordChange(e.target.value)}
             required
-            minLength={6}
+            minLength={PASSWORD_MIN_LENGTH}
           />
         </Field>
+      ) : null}
+
+      {beforeSubmit}
+
+      {inlineSuccessMessage && mode === "sign_in" ? (
+        <div className="rounded-md border border-success/25 bg-success/10 px-3 py-2 text-sm text-success">
+          {inlineSuccessMessage}
+        </div>
       ) : null}
 
       {errorInfo ? (
@@ -135,6 +158,35 @@ export function LoginEmailPasswordSection({
                 {t("login.hints.accountExistsSuggestionSuffix")}
               </p>
             </div>
+          </div>
+        ) : isEmailNotConfirmedError && mode === "sign_in" ? (
+          <div
+            className="flex flex-col gap-3 rounded-md border border-warning/20 bg-warning/10 p-4"
+            role="alert"
+          >
+            <div className="flex gap-3">
+              <Mail className="size-5 shrink-0 text-warning" aria-hidden />
+              <div className="min-w-0 space-y-1">
+                <p className="text-sm font-medium text-warning">
+                  {t("login.emailConfirmation.title")}
+                </p>
+                <p className="text-sm text-warning">{errorInfo.message}</p>
+                <p className="text-xs text-warning">{t("login.emailConfirmation.hint")}</p>
+              </div>
+            </div>
+            {onResendConfirmation ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-warning/30 bg-background/50"
+                disabled={Boolean(loading || resendLoading)}
+                onClick={() => void onResendConfirmation()}
+              >
+                {resendLoading
+                  ? t("login.emailConfirmation.resending")
+                  : t("login.emailConfirmation.resend")}
+              </Button>
+            ) : null}
           </div>
         ) : (
           <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">

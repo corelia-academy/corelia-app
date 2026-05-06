@@ -3,6 +3,15 @@ name: Deploy Dev
 on:
   push:
     branches: [develop]
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/functions/**"
+      - "supabase/config.toml"
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -13,53 +22,60 @@ jobs:
       contents: read
       checks: write
       statuses: write
+      deployments: write
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install deps (root)
-        run: pnpm install --frozen-lockfile
-
-      - name: Build (dev)
+      - name: Detect Supabase changes
+        id: changes
+        shell: bash
         run: |
-          node -e "const req=['VITE_FIREBASE_API_KEY','VITE_FIREBASE_AUTH_DOMAIN','VITE_FIREBASE_PROJECT_ID','VITE_FIREBASE_STORAGE_BUCKET','VITE_FIREBASE_MESSAGING_SENDER_ID','VITE_FIREBASE_APP_ID']; const missing=req.filter(k=>!(process.env[k]||'').trim()); if(missing.length){console.error('Missing env:', missing.join(', ')); process.exit(1);} console.log('Firebase web config: ok (apiKeyLen=%d, projectId=%s)', String(process.env.VITE_FIREBASE_API_KEY||'').length, process.env.VITE_FIREBASE_PROJECT_ID)"
-          pnpm build
-        env:
-          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          VITE_OCID_CLIENT_ID: ${{ secrets.VITE_OCID_CLIENT_ID }}
-          VITE_OCID_REDIRECT_URI: ${{ secrets.VITE_OCID_REDIRECT_URI }}
-          VITE_YOUTUBE_API_KEY: ${{ secrets.VITE_YOUTUBE_API_KEY }}
-          VITE_BETA_FEEDBACK_FORM_URL: ${{ secrets.VITE_BETA_FEEDBACK_FORM_URL }}
+          set -euo pipefail
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+          if [[ -z "${BEFORE}" || "${BEFORE}" =~ ^0+$ ]]; then
+            BEFORE="$(git rev-parse "${AFTER}^" 2>/dev/null || true)"
+          fi
+          if [[ -z "${BEFORE}" ]]; then
+            echo "migrations_changed=true" >> "$GITHUB_OUTPUT"
+            echo "functions_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-      - name: Auth Firebase (service account)
+          CHANGED="$(git diff --name-only "$BEFORE" "$AFTER")"
+          echo "$CHANGED"
+
+          if echo "$CHANGED" | grep -qE '^supabase/migrations/'; then
+            echo "migrations_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "migrations_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if echo "$CHANGED" | grep -qE '^supabase/functions/'; then
+            echo "functions_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "functions_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Supabase CLI
+        if: steps.changes.outputs.migrations_changed == 'true' || steps.changes.outputs.functions_changed == 'true'
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Apply Supabase migrations
+        if: steps.changes.outputs.migrations_changed == 'true'
         env:
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
-          node -e "const fs=require('fs'); const raw=process.env.FIREBASE_SERVICE_ACCOUNT_JSON||''; const json=JSON.parse(raw); fs.writeFileSync('firebase-service-account.json', JSON.stringify(json)); console.log('service account JSON: ok'); console.log('service account project_id:', json.project_id); console.log('service account client_email:', json.client_email)"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$PWD/firebase-service-account.json" >> "$GITHUB_ENV"
-          echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$PWD/firebase-service-account.json" >> "$GITHUB_ENV"
+          supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          supabase migration up --linked --include-all
 
-      - name: Deploy (hosting + rules + indexes + storage)
-        run: pnpm dlx firebase-tools deploy --project dev --only hosting,firestore:rules,firestore:indexes,storage
-
-      - name: Install deps (functions)
-        run: pnpm -C functions install --frozen-lockfile
-
-      - name: Build (functions)
-        run: pnpm -C functions build
-
-      - name: Deploy (functions)
-        run: pnpm dlx firebase-tools deploy --project dev --only functions --force
+      - name: Deploy Edge Function (corelia-api)
+        if: steps.changes.outputs.functions_changed == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy corelia-api --project-ref "$SUPABASE_PROJECT_REF"

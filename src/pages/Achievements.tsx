@@ -866,7 +866,7 @@ export default function Achievements() {
 
       try {
         setLoading(true);
-        const enrollments = await getMyEnrollments(user.uid).catch(
+        const enrollments = await getMyEnrollments(user.id).catch(
           () => [] as Enrollment[],
         );
 

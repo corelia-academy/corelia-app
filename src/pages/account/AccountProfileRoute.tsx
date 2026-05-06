@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { UserCircle } from "lucide-react";
 import type { Profile } from "@/types/database";
@@ -7,27 +7,38 @@ import { updateCurrentProfile, uploadAvatar } from "@/lib/profile";
 import { Skeleton } from "@/components/ui/skeleton";
 import ConnectOCIDCard from "@/pages/account/ConnectOCIDCard";
 import { ChangePasswordCard } from "./ChangePasswordCard";
-import { MfaEnrollCard } from "./MfaEnrollCard";
 import { ProfileSection } from "./ProfileSection";
 
 function useProfileForm(profile: Profile | null) {
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? "");
+  const [username, setUsername] = useState(profile?.username ?? "");
+  const [bio, setBio] = useState(profile?.bio ?? "");
+  const [website, setWebsite] = useState(profile?.website ?? "");
+  const [profilePublic, setProfilePublic] = useState(profile?.profile_public ?? true);
 
   return {
     fullName,
     phone,
     avatarUrl,
+    username,
+    bio,
+    website,
+    profilePublic,
     setFullName,
     setPhone,
     setAvatarUrl,
+    setUsername,
+    setBio,
+    setWebsite,
+    setProfilePublic,
   };
 }
 
 export function AccountProfileRoute() {
   const { t } = useTranslation("account");
-  const { user, profile, loading, refreshProfile } = useAuth();
+  const { user, profile, loading, authInitialized, refreshProfile } = useAuth();
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +48,36 @@ export function AccountProfileRoute() {
     user && profile && (!profile.full_name || !profile.phone),
   );
 
-  const { fullName, phone, avatarUrl, setFullName, setPhone, setAvatarUrl } =
-    useProfileForm(profile);
+  const {
+    fullName,
+    phone,
+    avatarUrl,
+    username,
+    bio,
+    website,
+    profilePublic,
+    setFullName,
+    setPhone,
+    setAvatarUrl,
+    setUsername,
+    setBio,
+    setWebsite,
+    setProfilePublic,
+  } = useProfileForm(profile);
+
+  // Sync form fields when profile arrives after initial render
+  const profileId = profile?.id;
+  useEffect(() => {
+    if (!profile) return;
+    setFullName(profile.full_name ?? "");
+    setPhone(profile.phone ?? "");
+    setAvatarUrl(profile.avatar_url ?? "");
+    setUsername(profile.username ?? "");
+    setBio(profile.bio ?? "");
+    setWebsite(profile.website ?? "");
+    setProfilePublic(profile.profile_public ?? true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileId]);
 
   async function onAvatarUpload(file: File) {
     setError(null);
@@ -69,9 +108,13 @@ export function AccountProfileRoute() {
 
     try {
       await updateCurrentProfile({
+        username: username.trim() || null,
         full_name: fullName || null,
         phone: phone || null,
         avatar_url: avatarUrl || null,
+        bio: bio.trim() || null,
+        website: website.trim() || null,
+        profile_public: profilePublic,
       });
       await refreshProfile();
       setSuccess(t("profile.success.updated"));
@@ -84,7 +127,7 @@ export function AccountProfileRoute() {
     }
   }
 
-  if (loading && !profile) {
+  if (!authInitialized || (loading && !profile)) {
     return (
       <div className="space-y-4">
         <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
@@ -121,6 +164,7 @@ export function AccountProfileRoute() {
   }
 
   if (!user) {
+
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
         <div className="flex size-12 items-center justify-center rounded-full bg-muted">
@@ -138,36 +182,59 @@ export function AccountProfileRoute() {
     );
   }
 
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-16 text-center">
+        <p className="text-sm text-muted-foreground">
+          {t("profile.errors.loadFailed")}
+        </p>
+        <button
+          type="button"
+          onClick={() => void refreshProfile()}
+          className="rounded-md border border-border-subtle bg-card px-4 py-2 text-sm transition-colors hover:bg-muted"
+        >
+          {t("profile.retry")}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
       {needsProfileSetup ? (
         <div className="rounded-md border border-warning/20 bg-warning/10 p-4 text-sm text-warning">
           <p className="font-medium">{t("profile.setupWarning.title")}</p>
-          <p className="mt-2 leading-relaxed">
-            {t("profile.setupWarning.body")}
-          </p>
+          <p className="mt-2 leading-relaxed">{t("profile.setupWarning.body")}</p>
         </div>
       ) : null}
+
       <ProfileSection
         key={profile.updated_at || profile.id}
-        sessionEmail={user.email ?? user.uid}
+        sessionEmail={user.email ?? user.id}
+        username={username}
         fullName={fullName}
         phone={phone}
         avatarUrl={avatarUrl}
+        bio={bio}
+        website={website}
+        profilePublic={profilePublic}
+        profileLinkHandle={username.trim() || profile.ocid?.trim() || profile.id}
         setFullName={setFullName}
         setPhone={setPhone}
         saving={saving}
         uploadingAvatar={uploadingAvatar}
         onAvatarUpload={onAvatarUpload}
+        setUsername={setUsername}
+        setBio={setBio}
+        setWebsite={setWebsite}
+        setProfilePublic={setProfilePublic}
         error={error}
         success={success}
         onSubmit={onSubmitProfile}
       />
+
       <ConnectOCIDCard />
       <ChangePasswordCard user={user} />
-      <MfaEnrollCard user={user} />
     </div>
   );
 }

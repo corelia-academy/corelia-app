@@ -36,7 +36,7 @@ import type {
 } from "@/types/contests";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
-import { buildContestTimelineRows } from "@/components/contests/ContestTimeline";
+import { buildContestTimelineRows } from "@/components/contests/contestTimelineBuilders";
 import type { ContestPublicSection } from "@/pages/contest-detail/types";
 import {
   datetimeLocalToIso,
@@ -359,7 +359,7 @@ export function useContestDetailOrchestrator({
     if (!user) return new Map<string, ContestScore>();
     return new Map(
       scores
-        .filter((score) => score.judge_uid === user.uid)
+        .filter((score) => score.judge_uid === user.id)
         .map((score) => [score.submission_id, score]),
     );
   }, [scores, user]);

@@ -3,7 +3,7 @@ import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import i18n from "@/i18n";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function HomeSidebarAuthenticated({
   t,
@@ -51,22 +51,22 @@ export function HomeSidebarAuthenticated({
         </div>
 
         <div className="mt-4 flex gap-2">
-          <Button
-            render={<NavLink to="/account" />}
-            nativeButton={false}
-            variant="outline"
-            className="flex-1"
+          <NavLink
+            to="/account"
+            className={cn(
+              "inline-flex flex-1 items-center justify-center rounded-md border border-border-subtle bg-background px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-muted/60 hover:text-foreground",
+            )}
           >
             {t("nav.account")}
-          </Button>
-          <Button
-            render={<NavLink to="/achievements" />}
-            nativeButton={false}
-            variant="secondary"
-            className="flex-1"
+          </NavLink>
+          <NavLink
+            to="/achievements"
+            className={cn(
+              "inline-flex flex-1 items-center justify-center rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/85",
+            )}
           >
             {t("nav.achievements")}
-          </Button>
+          </NavLink>
         </div>
       </section>
 

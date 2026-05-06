@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import {
   BrowserRouter,
   Navigate,
@@ -15,47 +16,77 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
 import Home from "@/pages/home/index";
 import Courses from "@/pages/Courses";
-import CourseDetail from "@/pages/course-details";
-import CheckoutCourse from "@/pages/CheckoutCourse";
-import CheckoutSuccess from "@/pages/CheckoutSuccess";
-import Learn from "@/pages/learn";
-import InstructorDetail from "@/pages/InstructorDetail";
-import Account, {
-  AccountProfileRoute,
-  AccountCvRoute,
-  AccountBillingRoute,
-  AccountInstructorProfileRoute,
-  AccountSettingsRoute,
-  InstructorWorkspaceProfileRoute,
-} from "@/pages/account/Account";
 import Auth from "@/pages/login/Auth";
-import AdminLayout from "@/pages/admin/AdminLayout";
-import AdminUsers from "@/pages/admin/AdminUsers";
-import AdminInstructors from "@/pages/admin/AdminInstructors";
-import AdminInstructorDetail from "@/pages/admin/AdminInstructorDetail";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import Achievements from "@/pages/Achievements";
-import InstructorLayout from "@/pages/instructor/InstructorLayout";
-import InstructorCourses from "@/pages/InstructorCourses";
-import InstructorContests from "@/pages/InstructorContests";
-import InstructorCourseNew from "@/pages/InstructorCourseNew";
-import InstructorCourseEdit from "@/pages/InstructorCourseEdit";
-import RoadmapPage from "@/pages/roadmap";
-import Contests from "@/pages/Contests";
-import ContestNew from "@/pages/ContestNew";
-import ContestPublicLayout from "@/pages/contest-detail/ContestPublicLayout";
-import ContestPublicPage from "@/pages/contest-detail/ContestPublicPage";
-import ContestApplyRedirect from "@/pages/contest-detail/ContestApplyRedirect";
-import ContestWorkspace from "@/pages/admin/ContestWorkspace";
-import { ROLE_GROUPS } from "@/config/roles";
-import {
-  PartnerContractsPage,
-  PartnerInvoicesPage,
-  PartnerPaymentsPage,
-} from "@/pages/instructor/PartnerFinance";
 import OCIDRedirect from "@/pages/OCIDRedirect";
 import NotFound from "@/pages/NotFound";
+import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
+
+// Lazy-load all routes not needed on the initial render
+const CourseDetail = lazy(() => import("@/pages/course-details"));
+const CheckoutCourse = lazy(() => import("@/pages/CheckoutCourse"));
+const CheckoutSuccess = lazy(() => import("@/pages/CheckoutSuccess"));
+const Learn = lazy(() => import("@/pages/learn"));
+const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
+const Achievements = lazy(() => import("@/pages/Achievements"));
+const RoadmapPage = lazy(() => import("@/pages/roadmap"));
+const Contests = lazy(() => import("@/pages/Contests"));
+const ContestNew = lazy(() => import("@/pages/ContestNew"));
+const ContestPublicLayout = lazy(() => import("@/pages/contest-detail/ContestPublicLayout"));
+const ContestPublicPage = lazy(() => import("@/pages/contest-detail/ContestPublicPage"));
+const ContestApplyRedirect = lazy(() => import("@/pages/contest-detail/ContestApplyRedirect"));
+const UserProfileLayout = lazy(() => import("@/pages/users/UserProfilePage"));
+const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
+
+const Account = lazy(() => import("@/pages/account/Account"));
+const AccountProfileRoute = lazy(() =>
+  import("@/pages/account/AccountProfileRoute").then((m) => ({ default: m.AccountProfileRoute })),
+);
+const AccountCvRoute = lazy(() =>
+  import("@/pages/account/AccountCvRoute").then((m) => ({ default: m.AccountCvRoute })),
+);
+const AccountBillingRoute = lazy(() =>
+  import("@/pages/account/AccountBillingRoute").then((m) => ({ default: m.AccountBillingRoute })),
+);
+const AccountSettingsRoute = lazy(() =>
+  import("@/pages/account/AccountSettingsRoute").then((m) => ({ default: m.AccountSettingsRoute })),
+);
+const AccountInstructorProfileRoute = lazy(() =>
+  import("@/pages/account/AccountInstructorRoutes").then((m) => ({
+    default: m.AccountInstructorProfileRoute,
+  })),
+);
+const InstructorWorkspaceProfileRoute = lazy(() =>
+  import("@/pages/account/AccountInstructorRoutes").then((m) => ({
+    default: m.InstructorWorkspaceProfileRoute,
+  })),
+);
+
+const InstructorLayout = lazy(() => import("@/pages/instructor/InstructorLayout"));
+const InstructorCourses = lazy(() => import("@/pages/InstructorCourses"));
+const InstructorContests = lazy(() => import("@/pages/InstructorContests"));
+const InstructorCourseNew = lazy(() => import("@/pages/InstructorCourseNew"));
+const InstructorCourseEdit = lazy(() => import("@/pages/InstructorCourseEdit"));
+const PartnerContractsPage = lazy(() =>
+  import("@/pages/instructor/PartnerFinance").then((m) => ({ default: m.PartnerContractsPage })),
+);
+const PartnerInvoicesPage = lazy(() =>
+  import("@/pages/instructor/PartnerFinance").then((m) => ({ default: m.PartnerInvoicesPage })),
+);
+const PartnerPaymentsPage = lazy(() =>
+  import("@/pages/instructor/PartnerFinance").then((m) => ({ default: m.PartnerPaymentsPage })),
+);
+
+const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
+const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
+const AdminInstructors = lazy(() => import("@/pages/admin/AdminInstructors"));
+const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const ContestWorkspace = lazy(() => import("@/pages/admin/ContestWorkspace"));
+
+const PageFallback = () => (
+  <div className="p-4 text-sm text-muted-foreground">Loading…</div>
+);
 
 function ScrollToTop() {
   const location = useLocation();
@@ -76,6 +107,7 @@ export default function App() {
   }, [i18n.resolvedLanguage, i18n.language]);
 
   return (
+    <ErrorBoundary>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Toaster />
       <AuthSync />
@@ -89,13 +121,22 @@ export default function App() {
               <Route index element={<Home />} />
               <Route path="courses" element={<Courses />} />
               <Route path="cohorts" element={<Navigate to="/courses" replace />} />
-              <Route path="courses/:id" element={<CourseDetail />} />
+              <Route
+                path="courses/:id"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <CourseDetail />
+                  </Suspense>
+                }
+              />
               <Route path="cohorts/:id" element={<Navigate to="/courses" replace />} />
               <Route
                 path="checkout/course/:courseId"
                 element={
                   <RequireAuth>
-                    <CheckoutCourse />
+                    <Suspense fallback={<PageFallback />}>
+                      <CheckoutCourse />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
@@ -103,16 +144,27 @@ export default function App() {
                 path="checkout/success/:purpose/:courseId"
                 element={
                   <RequireAuth>
-                    <CheckoutSuccess />
+                    <Suspense fallback={<PageFallback />}>
+                      <CheckoutSuccess />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
-              <Route path="instructors/:id" element={<InstructorDetail />} />
+              <Route
+                path="instructors/:id"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <InstructorDetail />
+                  </Suspense>
+                }
+              />
               <Route
                 path="learn/:courseId"
                 element={
                   <RequireAuth>
-                    <Learn />
+                    <Suspense fallback={<PageFallback />}>
+                      <Learn />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
@@ -120,7 +172,9 @@ export default function App() {
                 path="learn/:courseId/lesson/:lessonId"
                 element={
                   <RequireAuth>
-                    <Learn />
+                    <Suspense fallback={<PageFallback />}>
+                      <Learn />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
@@ -128,68 +182,239 @@ export default function App() {
                 path="achievements"
                 element={
                   <RequireAuth>
-                    <Achievements />
+                    <Suspense fallback={<PageFallback />}>
+                      <Achievements />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
-              <Route path="roadmap" element={<RoadmapPage />} />
-              <Route path="contests" element={<Contests />} />
-              <Route path="contests/:id" element={<ContestPublicLayout />}>
+              <Route
+                path="roadmap"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <RoadmapPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="contests"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <Contests />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="contests/:id"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <ContestPublicLayout />
+                  </Suspense>
+                }
+              >
                 <Route index element={<Navigate to="overview" replace />} />
-                <Route path="overview" element={<ContestPublicPage section="overview" />} />
-                <Route path="timeline" element={<ContestPublicPage section="timeline" />} />
-                <Route path="prizes" element={<ContestPublicPage section="prizes" />} />
-                <Route path="rules" element={<ContestPublicPage section="rules" />} />
-                <Route path="faqs" element={<ContestPublicPage section="faqs" />} />
-                <Route path="projects" element={<ContestPublicPage section="projects" />} />
-                <Route path="apply" element={<ContestApplyRedirect />} />
+                <Route
+                  path="overview"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestPublicPage section="overview" />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="timeline"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestPublicPage section="timeline" />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="prizes"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestPublicPage section="prizes" />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="rules"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestPublicPage section="rules" />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="faqs"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestPublicPage section="faqs" />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="projects"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestPublicPage section="projects" />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="apply"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestApplyRedirect />
+                    </Suspense>
+                  }
+                />
               </Route>
+              <Route
+                path="u/:handle"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <UserProfileLayout />
+                  </Suspense>
+                }
+              />
               <Route
                 path="account"
                 element={
                   <RequireAuth>
-                    <Account />
+                    <Suspense fallback={<PageFallback />}>
+                      <Account />
+                    </Suspense>
                   </RequireAuth>
                 }
               >
                 <Route index element={<Navigate to="profile" replace />} />
-                <Route path="profile" element={<AccountProfileRoute />} />
-                <Route path="cv" element={<AccountCvRoute />} />
-                <Route path="billing" element={<AccountBillingRoute />} />
-                <Route path="settings" element={<AccountSettingsRoute />} />
+                <Route
+                  path="profile"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountProfileRoute />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="cv"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountCvRoute />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="billing"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountBillingRoute />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="settings"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountSettingsRoute />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="instructor"
-                  element={<AccountInstructorProfileRoute />}
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountInstructorProfileRoute />
+                    </Suspense>
+                  }
                 />
               </Route>
               <Route
                 path="admin"
                 element={
                   <RequireRole roles={ROLE_GROUPS.admin}>
-                    <AdminLayout />
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminLayout />
+                    </Suspense>
                   </RequireRole>
                 }
               >
-                <Route index element={<AdminUsers />} />
-                <Route path="dashboard" element={<AdminDashboard />} />
-                <Route path="instructors" element={<AdminInstructors />} />
+                <Route
+                  index
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminUsers />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="dashboard"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminDashboard />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="instructors"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminInstructors />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="instructors/:id"
-                  element={<AdminInstructorDetail />}
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminInstructorDetail />
+                    </Suspense>
+                  }
                 />
-                <Route path="contests" element={<InstructorContests />} />
-                <Route path="contests/new" element={<ContestNew />} />
-                <Route path="contests/:id/manage" element={<ContestWorkspace />} />
+                <Route
+                  path="contests"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorContests />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="contests/new"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestNew />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="contests/:id/manage"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestWorkspace />
+                    </Suspense>
+                  }
+                />
               </Route>
               <Route
                 path="instructor"
                 element={
                   <RequireRole roles={ROLE_GROUPS.instructorWorkspace}>
-                    <InstructorLayout />
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorLayout />
+                    </Suspense>
                   </RequireRole>
                 }
               >
-                <Route path="courses" element={<InstructorCourses />} />
+                <Route
+                  path="courses"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCourses />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="cohorts"
                   element={<Navigate to="/instructor/courses" replace />}
@@ -202,18 +427,54 @@ export default function App() {
                   path="cohorts/:id/manage"
                   element={<Navigate to="/instructor/courses" replace />}
                 />
-                <Route path="courses/new" element={<InstructorCourseNew />} />
+                <Route
+                  path="courses/new"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCourseNew />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="courses/:id/edit"
-                  element={<InstructorCourseEdit />}
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCourseEdit />
+                    </Suspense>
+                  }
                 />
                 <Route
                   path="profile"
-                  element={<InstructorWorkspaceProfileRoute />}
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorWorkspaceProfileRoute />
+                    </Suspense>
+                  }
                 />
-                <Route path="contracts" element={<PartnerContractsPage />} />
-                <Route path="invoices" element={<PartnerInvoicesPage />} />
-                <Route path="payments" element={<PartnerPaymentsPage />} />
+                <Route
+                  path="contracts"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <PartnerContractsPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="invoices"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <PartnerInvoicesPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="payments"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <PartnerPaymentsPage />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="instructors"
                   element={
@@ -223,11 +484,20 @@ export default function App() {
                   }
                 />
               </Route>
+              <Route
+                path=":handle/*"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <UserHandleRedirect />
+                  </Suspense>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
+    </ErrorBoundary>
   );
 }

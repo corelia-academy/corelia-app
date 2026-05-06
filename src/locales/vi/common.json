@@ -33,7 +33,6 @@
   "nav": {
     "home": "Trang chủ",
     "courses": "Khóa học",
-    "cohorts": "Cohorts",
     "contests": "Cuộc thi",
     "achievements": "Thành tích",
     "account": "Tài khoản",
@@ -45,11 +44,56 @@
     "signedInViaEmail": "(đăng nhập bằng email)"
   },
   "user": {
-    "fallbackName": "Người dùng"
+    "fallbackName": "Người dùng",
+    "accountSettings": "Cài đặt tài khoản"
+  },
+  "userProfile": {
+    "tabs": {
+      "overview": "Tổng quan",
+      "achievements": "Thành tích",
+      "courses": "Khóa học",
+      "contests": "Cuộc thi"
+    },
+    "actions": {
+      "editProfile": "Chỉnh sửa hồ sơ"
+    },
+    "labels": {
+      "ocid": "OCID: {{ocid}}",
+      "website": "Website",
+      "role": "Vai trò",
+      "memberSince": "Tham gia từ"
+    },
+    "errors": {
+      "notFound": "Không tìm thấy người dùng",
+      "loadFailed": "Không thể tải hồ sơ",
+      "tryAnother": "Thử một handle khác (username hoặc OCID)."
+    },
+    "overview": {
+      "title": "Tổng quan",
+      "quickInfo": "Thông tin nhanh",
+      "empty": "Chưa có thông tin công khai.",
+      "instructorHeadlineFallback": "Giảng viên"
+    },
+    "achievements": {
+      "selfOnly": "Thành tích hiện chỉ hiển thị cho chính chủ tài khoản.",
+      "openInAchievementsPage": "Mở trang Thành tích để xem chứng chỉ và huy hiệu của bạn.",
+      "cta": "Mở trang Thành tích"
+    },
+    "courses": {
+      "privateByDefault": "Danh sách khóa học của học viên mặc định là riêng tư.",
+      "empty": "Chưa có khóa học public nào.",
+      "updatedAt": "Cập nhật {{date}}"
+    },
+    "contests": {
+      "empty": "Chưa có cuộc thi public nào.",
+      "fallbackTitle": "Cuộc thi",
+      "updatedAt": "Cập nhật {{date}}"
+    }
   },
   "tabs": {
     "menu": "Menu",
-    "signIn": "Đăng nhập"
+    "signIn": "Đăng nhập",
+    "signOut": "Đăng xuất"
   },
   "status": {
     "loading": "Đang tải…",
@@ -116,7 +160,7 @@
       "quickLinksTitle": "Lối đi nhanh",
       "quickLinks": {
         "contests": "Cuộc thi",
-        "cohorts": "Lớp học"
+        "courses": "Khóa học"
       }
     },
     "sections": {

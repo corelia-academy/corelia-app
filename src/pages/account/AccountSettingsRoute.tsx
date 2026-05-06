@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/stores/authStore";
 import { useTheme } from "next-themes";
@@ -10,10 +11,18 @@ function AccountSettingsSection() {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
 
-  const onSignOut = () => {
-    void signOut();
-    navigate("/");
+  const onSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await signOut();
+    } catch (e) {
+      console.error("[account] signOut:", e);
+    } finally {
+      navigate("/", { replace: true });
+      setSigningOut(false);
+    }
   };
 
   return (
@@ -78,7 +87,12 @@ function AccountSettingsSection() {
               {t("settings.session.signOutDescription")}
             </div>
           </div>
-          <Button type="button" variant="destructive" onClick={onSignOut}>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={signingOut}
+            onClick={() => void onSignOut()}
+          >
             {t("settings.session.signOutButton")}
           </Button>
         </div>

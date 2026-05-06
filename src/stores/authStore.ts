@@ -1,10 +1,25 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 import { getCurrentProfile } from "@/lib/profile";
 import type { Profile, UserRole } from "@/types/database";
 import { hasRole as checkRole } from "@/types/database";
+
+/** Fallback nếu `signOut()` lỗi — xóa session Supabase khỏi localStorage (sb-*-auth-token). */
+function clearSupabaseAuthFromLocalStorage(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const k = window.localStorage.key(i);
+      if (k && k.startsWith("sb-") && k.includes("auth-token")) keys.push(k);
+    }
+    for (const k of keys) window.localStorage.removeItem(k);
+  } catch {
+    // ignore
+  }
+}
 
 interface AuthStore {
   user: User | null;
@@ -33,30 +48,53 @@ export const useAuthStore = create<AuthStore>()(
       setAuthInitialized: (authInitialized) => set({ authInitialized }),
 
       signOut: async () => {
-        await auth.signOut();
-        // Không reset authInitialized khi signOut; nếu không /login sẽ kẹt loader
-        // cho tới khi onAuthStateChanged chạy lại.
-        set({ user: null, profile: null, loading: false, authInitialized: true });
+        const signOutDeadlineMs = 12_000;
+        try {
+          const raced = await Promise.race([
+            supabase.auth.signOut(),
+            new Promise<"timeout">((resolve) => {
+              setTimeout(() => resolve("timeout"), signOutDeadlineMs);
+            }),
+          ]);
+          if (raced === "timeout") {
+            console.warn("[authStore] signOut timed out; clearing local Supabase session keys.");
+            clearSupabaseAuthFromLocalStorage();
+          } else if (raced && typeof raced === "object" && "error" in raced && raced.error) {
+            console.error("[authStore] signOut:", raced.error.message);
+            clearSupabaseAuthFromLocalStorage();
+          }
+        } catch (e) {
+          console.error("[authStore] signOut:", e);
+          clearSupabaseAuthFromLocalStorage();
+        } finally {
+          try {
+            set({ user: null, profile: null, loading: false, authInitialized: true });
+          } catch (e2) {
+            console.error("[authStore] signOut clear state:", e2);
+          }
+        }
       },
 
       refreshProfile: async () => {
-        const profile = await getCurrentProfile();
-        set({ profile });
+        try {
+          const profile = await getCurrentProfile();
+          set({ profile });
+        } catch (err) {
+          console.error("[authStore] refreshProfile failed:", err);
+        }
       },
     }),
     {
       name: "corelia-auth",
-      /** Rehydrate xong coi như đã load → không hiện loading khi reload */
-      partialize: (state) => ({
-        user: state.user,
-        profile: state.profile,
-        loading: false,
-      }),
+      // v2: stop persisting `profile` to avoid mismatch with non-persisted `user`.
+      // We rely on Supabase session persistence + `AuthSync` to load profile.
+      version: 2,
+      migrate: () => ({}),
+      partialize: () => ({}),
     },
   ),
 );
 
-/** Hook giữ API giống useAuth cũ: session, profile, loading, signOut, refreshProfile, isAuthenticated, role, hasRole */
 export function useAuth() {
   const user = useAuthStore((s) => s.user);
   const profile = useAuthStore((s) => s.profile);
