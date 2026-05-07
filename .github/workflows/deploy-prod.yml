@@ -7,6 +7,7 @@ on:
       - "supabase/migrations/**"
       - "supabase/functions/**"
       - "supabase/config.toml"
+      - ".github/workflows/deploy-prod.yml"
   workflow_dispatch: {}
 
 # ─── PRODUCTION GATE ────────────────────────────────────────────────────────

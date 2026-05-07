@@ -7,6 +7,7 @@ on:
       - "supabase/migrations/**"
       - "supabase/functions/**"
       - "supabase/config.toml"
+      - ".github/workflows/deploy-dev.yml"
   workflow_dispatch: {}
 
 concurrency:
