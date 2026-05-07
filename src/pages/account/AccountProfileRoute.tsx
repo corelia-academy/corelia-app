@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { UserCircle } from "lucide-react";
 import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
-import { updateCurrentProfile, uploadAvatar } from "@/lib/profile";
+import { updateProfileForUser, uploadAvatarForUser } from "@/lib/profile";
 import { Skeleton } from "@/components/ui/skeleton";
 import ConnectOCIDCard from "@/pages/account/ConnectOCIDCard";
 import { ChangePasswordCard } from "./ChangePasswordCard";
@@ -80,14 +80,15 @@ export function AccountProfileRoute() {
   }, [profileId]);
 
   async function onAvatarUpload(file: File) {
+    if (!user) return;
     setError(null);
     setSuccess(null);
     setUploadingAvatar(true);
     try {
-      const url = await uploadAvatar(file);
+      const url = await uploadAvatarForUser(user, file);
       setAvatarUrl(url);
-      await updateCurrentProfile({ avatar_url: url });
-      await refreshProfile();
+      await updateProfileForUser(user, { avatar_url: url });
+      await refreshProfile(user);
       setSuccess(t("profile.success.avatarUpdated"));
     } catch (err) {
       const message =
@@ -107,7 +108,8 @@ export function AccountProfileRoute() {
     setSaving(true);
 
     try {
-      await updateCurrentProfile({
+      if (!user) return;
+      await updateProfileForUser(user, {
         username: username.trim() || null,
         full_name: fullName || null,
         phone: phone || null,
@@ -116,7 +118,7 @@ export function AccountProfileRoute() {
         website: website.trim() || null,
         profile_public: profilePublic,
       });
-      await refreshProfile();
+      await refreshProfile(user);
       setSuccess(t("profile.success.updated"));
     } catch (err) {
       const message =

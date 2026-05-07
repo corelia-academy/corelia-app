@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { getCurrentProfile } from "@/lib/profile";
+import { getProfileForUser, invalidateCurrentProfileCache } from "@/lib/profile";
 import { useAuthStore } from "@/stores/authStore";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
+import type { User } from "@supabase/supabase-js";
 
 /**
  * Đồng bộ session + profile từ Supabase vào auth store.
@@ -31,7 +32,7 @@ export function AuthSync() {
         try {
           const PROFILE_TIMEOUT_MS = 10_000;
           const p = await Promise.race([
-            getCurrentProfile(),
+            getProfileForUser(user as User),
             new Promise<null>((resolve) =>
               setTimeout(() => resolve(null), PROFILE_TIMEOUT_MS),
             ),
@@ -48,6 +49,7 @@ export function AuthSync() {
           if (mounted && seq === currentSeq) setLoading(false);
         }
       } else {
+        invalidateCurrentProfileCache();
         setProfile(null);
         setLoading(false);
         try {

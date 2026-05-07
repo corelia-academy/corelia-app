@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import { getCurrentProfile } from "@/lib/profile";
+import { getCurrentProfile, getProfileForUser } from "@/lib/profile";
 import type { Profile, UserRole } from "@/types/database";
 import { hasRole as checkRole } from "@/types/database";
 
@@ -31,7 +31,7 @@ interface AuthStore {
   setLoading: (loading: boolean) => void;
   setAuthInitialized: (authInitialized: boolean) => void;
   signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: (user?: User | null) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -75,9 +75,11 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      refreshProfile: async () => {
+      refreshProfile: async (user?: User | null) => {
         try {
-          const profile = await getCurrentProfile();
+          const profile = user
+            ? await getProfileForUser(user)
+            : await getCurrentProfile();
           set({ profile });
         } catch (err) {
           console.error("[authStore] refreshProfile failed:", err);

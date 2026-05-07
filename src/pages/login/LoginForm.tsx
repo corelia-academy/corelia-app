@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { supabase } from "@/lib/supabase";
-import { setNewUserProfile } from "@/lib/profile";
+import { setNewUserProfileForUser } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { FieldGroup } from "@/components/ui/field";
@@ -207,7 +207,7 @@ export function LoginForm({
         }
 
         if (session && user) {
-          await setNewUserProfile({
+          await setNewUserProfileForUser(user, {
             full_name: name,
             email: user.email ?? undefined,
           });

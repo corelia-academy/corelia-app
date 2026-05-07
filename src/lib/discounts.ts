@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 export type CourseDiscountType = "percent" | "amount_vnd";
 
@@ -65,10 +66,13 @@ export async function listCourseDiscounts(courseId: string): Promise<CourseDisco
 export async function createCourseDiscount(
   courseId: string,
   data: CourseDiscountInsert,
+  viewer?: User | null,
 ): Promise<CourseDiscount> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) throw new Error("Chưa đăng nhập");
 
   const now = new Date().toISOString();
@@ -98,10 +102,13 @@ export async function setCourseDiscountActive(
   courseId: string,
   discountId: string,
   active: boolean,
+  viewer?: User | null,
 ) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) throw new Error("Chưa đăng nhập");
   const { error } = await supabase
     .from("course_discounts")
@@ -115,10 +122,16 @@ export async function setCourseDiscountActive(
   if (error) throw new Error(error.message);
 }
 
-export async function deleteCourseDiscount(courseId: string, discountId: string) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function deleteCourseDiscount(
+  courseId: string,
+  discountId: string,
+  viewer?: User | null,
+) {
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) throw new Error("Chưa đăng nhập");
   const { error } = await supabase.from("course_discounts").delete().eq("course_id", courseId).eq("id", discountId);
   if (error) throw new Error(error.message);

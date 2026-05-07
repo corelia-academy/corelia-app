@@ -83,11 +83,11 @@ export function LoginMfaChallenge({
     setResendEmailSuccess(null);
     try {
       const {
-        data: { user },
-        error: userErr,
-      } = await supabase.auth.getUser();
-      if (userErr) throw userErr;
-      const mail = user?.email?.trim();
+        data: { session },
+        error: sessionErr,
+      } = await supabase.auth.getSession();
+      if (sessionErr) throw sessionErr;
+      const mail = session?.user?.email?.trim();
       if (!mail) {
         setErrorInfo({ message: t("errors.generic") });
         return;

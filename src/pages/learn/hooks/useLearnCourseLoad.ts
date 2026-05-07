@@ -1,3 +1,4 @@
+import type { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import {
   applyCourseLessonLocaleContent,
@@ -18,6 +19,7 @@ import type { Course, CourseLesson, CourseSection } from "@/types/courses";
 interface UseLearnCourseLoadInput {
   courseId: string | undefined;
   loadCourseErrorFallback: string;
+  viewer?: User | null;
 }
 
 interface UseLearnCourseLoadResult {
@@ -32,6 +34,7 @@ interface UseLearnCourseLoadResult {
 export function useLearnCourseLoad({
   courseId,
   loadCourseErrorFallback,
+  viewer,
 }: UseLearnCourseLoadInput): UseLearnCourseLoadResult {
   const [course, setCourse] = useState<Course | null>(null);
   const [sections, setSections] = useState<CourseSection[]>([]);
@@ -42,7 +45,7 @@ export function useLearnCourseLoad({
   useEffect(() => {
     if (!courseId) return;
     let cancelled = false;
-    touchEnrollment(courseId).catch(() => {});
+    touchEnrollment(courseId, viewer).catch(() => {});
 
     Promise.all([getCourse(courseId), getCourseSections(courseId), getCourseLessons(courseId)])
       .then(([courseRow, sectionsRow, lessonsRow]) => {
@@ -95,7 +98,7 @@ export function useLearnCourseLoad({
     return () => {
       cancelled = true;
     };
-  }, [courseId, loadCourseErrorFallback]);
+  }, [courseId, loadCourseErrorFallback, viewer]);
 
   return {
     course,

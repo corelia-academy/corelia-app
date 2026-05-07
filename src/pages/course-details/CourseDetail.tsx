@@ -38,17 +38,19 @@ export default function CourseDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile, isAuthenticated } = useAuth();
+  const { profile, user, isAuthenticated } = useAuth();
 
   const courseLoad = useCourseLoad({
     idOrSlug: id,
     missingIdMessage: translate("detail.missingCourseId"),
     loadCourseErrorFallback: translate("detail.loadCourseErrorFallback"),
+    viewer: user,
   });
 
   const access = useCourseEnrollmentAccess({
     resolvedCourseId: courseLoad.resolvedCourseId,
     profileId: profile?.id,
+    viewer: user,
   });
 
   const accessModelEffective = courseLoad.course?.access_model ?? "free";

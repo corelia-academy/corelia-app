@@ -43,7 +43,7 @@ const formatVndInput = (value: string) =>
 
 const InstructorCourseNew = () => {
   const { t } = useTranslation("instructor");
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [uploadingThumb, setUploadingThumb] = useState(false);
@@ -185,7 +185,7 @@ const InstructorCourseNew = () => {
           form.owner_type === "corelia"
             ? 100
             : Number(form.platform_revenue_share_percent || 0),
-      });
+      }, user ?? undefined);
 
       await setCourseLocaleContent(course.id, form.primary_content_locale, {
         title: form.title.trim(),
