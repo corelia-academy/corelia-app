@@ -4,6 +4,7 @@ import { getProfileForUser, invalidateCurrentProfileCache } from "@/lib/profile"
 import { useAuthStore } from "@/stores/authStore";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
 import type { User } from "@supabase/supabase-js";
+import { timedAsync } from "@/lib/perfTelemetry";
 
 /**
  * Đồng bộ session + profile từ Supabase vào auth store.
@@ -18,7 +19,6 @@ export function AuthSync() {
     let mounted = true;
     let currentSeq = 0;
     let hasInitializedFromEvent = false;
-    let initTimeout: number | undefined;
 
     async function syncFromSession(session: { user?: unknown } | null) {
       if (!mounted) return;
@@ -31,12 +31,17 @@ export function AuthSync() {
         setLoading(true);
         try {
           const PROFILE_TIMEOUT_MS = 10_000;
-          const p = await Promise.race([
-            getProfileForUser(user as User),
-            new Promise<null>((resolve) =>
-              setTimeout(() => resolve(null), PROFILE_TIMEOUT_MS),
-            ),
-          ]);
+          const p = await timedAsync(
+            "auth.profile.getProfileForUser",
+            async () =>
+              Promise.race([
+                getProfileForUser(user as User),
+                new Promise<null>((resolve) =>
+                  setTimeout(() => resolve(null), PROFILE_TIMEOUT_MS),
+                ),
+              ]),
+            { userId: user.id },
+          );
           if (mounted && seq === currentSeq) {
             setProfile(p);
             const locale = (p?.locale ?? DEFAULT_LANGUAGE) as SupportedLanguage;
@@ -70,19 +75,9 @@ export function AuthSync() {
       }
     }
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!hasInitializedFromEvent) {
-        hasInitializedFromEvent = true;
-        if (initTimeout) window.clearTimeout(initTimeout);
-      }
-      await syncFromSession(session);
-    });
-
     // Safety fallback: if the INITIAL_SESSION event doesn't arrive, unblock guards.
     const INIT_TIMEOUT_MS = 4_000;
-    initTimeout = window.setTimeout(() => {
+    const initTimeoutId = window.setTimeout(() => {
       if (!mounted || hasInitializedFromEvent) return;
       hasInitializedFromEvent = true;
       setUser(null);
@@ -91,9 +86,19 @@ export function AuthSync() {
       setAuthInitialized(true);
     }, INIT_TIMEOUT_MS);
 
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!hasInitializedFromEvent) {
+        hasInitializedFromEvent = true;
+        window.clearTimeout(initTimeoutId);
+      }
+      await syncFromSession(session);
+    });
+
     return () => {
       mounted = false;
-      if (initTimeout) window.clearTimeout(initTimeout);
+      window.clearTimeout(initTimeoutId);
       subscription.unsubscribe();
     };
   }, [setUser, setProfile, setLoading, setAuthInitialized]);

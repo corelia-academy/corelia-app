@@ -16,6 +16,7 @@ import {
 import { getHomeDashboardConfig } from "@/lib/dashboardConfig";
 import { intlLocale } from "@/lib/intl";
 import type { FocusCard } from "../utils/homeTypes";
+import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
 import { formatCourseMeta, pickCourseFormat } from "../utils/homeFormat";
 
 export function useHomeUserDashboard(user: User | null, t: TFunction<"common">) {
@@ -33,6 +34,8 @@ export function useHomeUserDashboard(user: User | null, t: TFunction<"common">) 
         if (!cancelled) setLoading(false);
         return;
       }
+
+      perfMeasureStart("home.dashboard_wave");
 
       try {
         const [enrollments, homeConfig] = await Promise.all([
@@ -89,7 +92,10 @@ export function useHomeUserDashboard(user: User | null, t: TFunction<"common">) 
           setDashboardConfig(homeConfig);
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          perfMeasureEnd("home.dashboard_wave", { userId: user.id });
+          setLoading(false);
+        }
       }
     }
 

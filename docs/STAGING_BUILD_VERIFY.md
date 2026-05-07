@@ -31,3 +31,16 @@ After deploying frontend + backend:
 6. **OCID redirect** — callback completes and profile refresh works.
 
 For auth timeline logs during investigation, run the app locally (`pnpm dev`); `installAuthDebugTelemetry` is dev-only.
+
+## Fetch wave timing (`[perf]` markers)
+
+- **Local dev:** `[perf]` timings are logged automatically for major client fetch waves (Home catalog, Contests list, auth profile, spotlight contests, authenticated home dashboard).
+- **Staging/production:** rebuild with **`VITE_PERF_DEBUG=true`** in the environment before `pnpm build:*` so the same markers appear in the browser console — useful when comparing waterfalls before/after performance changes.
+
+Key labels to watch:
+
+- `auth.profile.getProfileForUser`
+- `home.catalog_wave`
+- `home.dashboard_wave`
+- `contests.catalog_wave`
+- `course.spotlight_contests_wave`

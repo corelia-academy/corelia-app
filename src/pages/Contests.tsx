@@ -20,6 +20,7 @@ import type { Contest } from "@/types/contests";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import { AdminPreviewBar } from "@/components/contests/AdminPreviewBar";
+import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
 
 export default function Contests() {
   const { t } = useTranslation("contests");
@@ -28,7 +29,7 @@ export default function Contests() {
       String(t(key as never, options as never)),
     [t],
   );
-  const { profile, user, authInitialized } = useAuth();
+  const { profile, user } = useAuth();
   const [items, setItems] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,9 +58,8 @@ export default function Contests() {
   };
 
   useEffect(() => {
-    if (!authInitialized) return;
-
     let cancelled = false;
+    perfMeasureStart("contests.catalog_wave");
     listContests(user ?? null)
       .then((data) => {
         if (!cancelled) setItems(data);
@@ -70,12 +70,18 @@ export default function Contests() {
         }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          perfMeasureEnd("contests.catalog_wave", {
+            viewer: user?.id ?? "guest",
+          });
+          setLoading(false);
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [authInitialized, translate, user?.id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- translate stable via useCallback; user id gate
+  }, [translate, user?.id]);
 
   const isManager = canManageContests(profile);
 

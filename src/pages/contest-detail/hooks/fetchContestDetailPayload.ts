@@ -12,6 +12,7 @@ import {
   listContestAccessInvites,
   listContestScores,
   listContestSubmissions,
+  type PrefetchedContestActorContext,
 } from "@/lib/contests";
 import type {
   Contest,
@@ -94,6 +95,9 @@ export async function fetchContestDetailPayload({
   const reviewer = canReviewContestApplications(contestData, profile);
   const judge = canScoreContest(contestData, profile, userEmail);
 
+  const actorPrefetch: PrefetchedContestActorContext | undefined =
+    viewer ? { contest: contestData, viewer, profile } : undefined;
+
   let registrations: ContestRegistration[] = [];
   let reviewNotes: Record<string, string> = {};
   let registrationSelf: ContestRegistration | null = null;
@@ -117,7 +121,10 @@ export async function fetchContestDetailPayload({
 
   if (reviewer) {
     tasks.push(
-      getContestRegistrations(id, { status: "all" }).then((items) => {
+      getContestRegistrations(id, {
+        status: "all",
+        prefetch: actorPrefetch,
+      }).then((items) => {
         registrations = items;
         reviewNotes = Object.fromEntries(
           items.map((item) => [item.user_id, item.review_note ?? ""]),
@@ -136,7 +143,7 @@ export async function fetchContestDetailPayload({
 
   if (judge || isManager) {
     tasks.push(
-      listContestSubmissions(id).then((items) => {
+      listContestSubmissions(id, actorPrefetch).then((items) => {
         submissions = items;
         for (const [index, entry] of items.slice(0, 3).entries()) {
           winnerAwards[entry.id] =
@@ -149,7 +156,7 @@ export async function fetchContestDetailPayload({
       }),
     );
     tasks.push(
-      listContestScores(id).then((items) => {
+      listContestScores(id, actorPrefetch).then((items) => {
         scores = items;
       }),
     );
