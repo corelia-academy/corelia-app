@@ -48,6 +48,10 @@ type CourseRow = {
   data: Record<string, unknown> | null;
 };
 
+/** Columns needed for `rowToCourse` (avoid `select("*")` on hot list paths). */
+const COURSE_ROW_SELECT =
+  "id,instructor_id,published,slug,updated_at,created_at,data" as const;
+
 function rowToCourse(row: CourseRow): Course {
   return {
     ...(row.data ?? {}),
@@ -426,7 +430,7 @@ export async function getPublishedCourses(): Promise<Course[]> {
   const promise = (async () => {
     const { data, error } = await supabase
       .from("courses")
-      .select("*")
+      .select(COURSE_ROW_SELECT)
       .eq("published", true)
       .order("updated_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -440,7 +444,7 @@ export async function getPublishedCourses(): Promise<Course[]> {
 export async function getPublishedCoursesByInstructor(instructorId: string): Promise<Course[]> {
   const { data, error } = await supabase
     .from("courses")
-    .select("*")
+    .select(COURSE_ROW_SELECT)
     .eq("published", true)
     .eq("instructor_id", instructorId)
     .order("updated_at", { ascending: false });
@@ -452,7 +456,11 @@ export async function getCourse(courseId: string): Promise<Course | null> {
   const cached = courseByIdCache.get(courseId);
   if (cached) return cached;
   const promise = (async () => {
-    const { data, error } = await supabase.from("courses").select("*").eq("id", courseId).maybeSingle();
+    const { data, error } = await supabase
+      .from("courses")
+      .select(COURSE_ROW_SELECT)
+      .eq("id", courseId)
+      .maybeSingle();
     if (error || !data) return null;
     return rowToCourse(data as CourseRow);
   })();
@@ -472,7 +480,7 @@ export async function getCourseBySlug(slug: string, viewer?: User | null): Promi
 
   const { data: pub } = await supabase
     .from("courses")
-    .select("*")
+    .select(COURSE_ROW_SELECT)
     .eq("slug", normalized)
     .eq("published", true)
     .maybeSingle();
@@ -489,7 +497,7 @@ export async function getCourseBySlug(slug: string, viewer?: User | null): Promi
 
   const { data: draft, error } = await supabase
     .from("courses")
-    .select("*")
+    .select(COURSE_ROW_SELECT)
     .eq("slug", normalized)
     .maybeSingle();
   if (error || !draft) return null;

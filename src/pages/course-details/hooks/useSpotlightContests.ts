@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import { listContests } from "@/lib/contests";
 import type { Contest } from "@/types/contests";
+import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
 import { useAuth } from "@/stores/authStore";
 
 export function useSpotlightContests(): Contest[] {
-  const { authInitialized, user } = useAuth();
+  const { user } = useAuth();
   const [spotlightContests, setSpotlightContests] = useState<Contest[]>([]);
 
   useEffect(() => {
-    if (!authInitialized) return;
-
     let cancelled = false;
-
+    perfMeasureStart("course.spotlight_contests_wave");
     listContests(user ?? null)
       .catch(() => [] as Contest[])
       .then((contestRows) => {
@@ -21,12 +20,20 @@ export function useSpotlightContests(): Contest[] {
             (item) => item.status === "published" || item.status === "running",
           ),
         );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          perfMeasureEnd("course.spotlight_contests_wave", {
+            viewer: user?.id ?? "guest",
+          });
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [authInitialized, user?.id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when user id changes
+  }, [user?.id]);
 
   return spotlightContests;
 }

@@ -31,10 +31,24 @@ import type {
   ContestWinnerInput,
 } from "@/types/contests";
 import type { User } from "@supabase/supabase-js";
+import type { Profile } from "@/types/database";
 
 const PUBLIC_CONTEST_STATUSES: Contest["status"][] = ["published", "running", "ended"];
 
+/** PostgREST row columns needed to build `Contest` via `contestFromRow` (avoids `select("*")`). */
+const CONTEST_ROW_SELECT = "id,status,created_at,updated_at,document" as const;
+
 const contestListCache = makeTTLCache<Contest[]>(2 * 60 * 1000);
+
+/**
+ * When contest detail already resolved `contest` + viewer `profile`, pass this to skip duplicate
+ * `getContest` / `getProfileForUser` inside permission helpers.
+ */
+export type PrefetchedContestActorContext = {
+  contest: Contest;
+  viewer: User;
+  profile: Profile | null;
+};
 
 function sanitizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -210,7 +224,16 @@ async function requireContestManager(): Promise<{ uid: string }> {
   return { uid: user.id };
 }
 
-async function requireContestScorer(contestId: string): Promise<{ contest: Contest; user: User }> {
+async function requireContestScorer(
+  contestId: string,
+  prefetch?: PrefetchedContestActorContext,
+): Promise<{ contest: Contest; user: User }> {
+  if (prefetch && prefetch.contest.id === contestId) {
+    if (!canScoreContest(prefetch.contest, prefetch.profile, prefetch.viewer.email)) {
+      throw new Error("Bạn không có quyền chấm điểm contest này.");
+    }
+    return { contest: prefetch.contest, user: prefetch.viewer };
+  }
   const user = await requireCurrentUser();
   const [profile, contest] = await Promise.all([getProfileForUser(user), getContest(contestId)]);
   if (!contest) throw new Error("Không tìm thấy cuộc thi.");
@@ -220,7 +243,16 @@ async function requireContestScorer(contestId: string): Promise<{ contest: Conte
   return { contest, user };
 }
 
-async function requireContestReviewer(contestId: string): Promise<Contest> {
+async function requireContestReviewer(
+  contestId: string,
+  prefetch?: PrefetchedContestActorContext,
+): Promise<Contest> {
+  if (prefetch && prefetch.contest.id === contestId) {
+    if (!canReviewContestApplications(prefetch.contest, prefetch.profile)) {
+      throw new Error("Bạn không có quyền duyệt hồ sơ contest này.");
+    }
+    return prefetch.contest;
+  }
   const user = await requireCurrentUser();
   const [profile, contest] = await Promise.all([getProfileForUser(user), getContest(contestId)]);
   if (!contest) throw new Error("Không tìm thấy cuộc thi.");
@@ -251,7 +283,10 @@ export async function listContests(viewer?: User | null): Promise<Contest[]> {
   const cached = contestListCache.get(cacheKey);
   if (cached) return cached;
   const promise = (async () => {
-    let q = supabase.from("contests").select("*").order("updated_at", { ascending: false });
+    let q = supabase
+      .from("contests")
+      .select(CONTEST_ROW_SELECT)
+      .order("updated_at", { ascending: false });
     if (!isManager) {
       q = q.in("status", PUBLIC_CONTEST_STATUSES);
     }
@@ -269,7 +304,11 @@ export function invalidateContestListCache() {
 }
 
 export async function getContest(contestId: string): Promise<Contest | null> {
-  const { data, error } = await supabase.from("contests").select("*").eq("id", contestId).maybeSingle();
+  const { data, error } = await supabase
+    .from("contests")
+    .select(CONTEST_ROW_SELECT)
+    .eq("id", contestId)
+    .maybeSingle();
   if (error || !data) return null;
   return contestFromRow(data as Parameters<typeof contestFromRow>[0]);
 }
@@ -455,9 +494,12 @@ export async function registerForContest(
 
 export async function getContestRegistrations(
   contestId: string,
-  options?: { status?: ContestRegistrationStatus | "all" },
+  options?: {
+    status?: ContestRegistrationStatus | "all";
+    prefetch?: PrefetchedContestActorContext;
+  },
 ): Promise<ContestRegistration[]> {
-  await requireContestReviewer(contestId);
+  await requireContestReviewer(contestId, options?.prefetch);
 
   let q = supabase.from("contest_registrations").select("*").eq("contest_id", contestId);
   if (options?.status && options.status !== "all") {
@@ -477,7 +519,7 @@ export async function reviewContestRegistration(
   input: ContestRegistrationReviewInput,
 ): Promise<void> {
   const { uid } = await requireContestManager();
-  await requireContestReviewer(contestId);
+  await requireContestReviewer(contestId, undefined);
   const id = contestRegistrationId(contestId, userId);
   const { data: row, error: fe } = await supabase.from("contest_registrations").select("*").eq("id", id).single();
   if (fe || !row) throw new Error(fe?.message ?? "Không tìm thấy đăng ký");
@@ -681,7 +723,25 @@ export async function upsertContestSubmission(
 
 export async function listContestSubmissions(
   contestId: string,
+  prefetch?: PrefetchedContestActorContext,
 ): Promise<ContestSubmission[]> {
+  if (prefetch && prefetch.contest.id === contestId) {
+    const { viewer: user, contest, profile } = prefetch;
+    const canSeeAll =
+      canScoreContest(contest, profile, user.email ?? undefined) ||
+      canManageContests(profile);
+    let q = supabase.from("contest_submissions").select("*").eq("contest_id", contestId);
+    if (!canSeeAll) q = q.eq("user_id", user.id);
+    const { data, error } = await q;
+    if (error) throw new Error(error.message);
+    return (data ?? [])
+      .map((row) => {
+        const d = row.document as Record<string, unknown>;
+        return { id: row.id, contest_id: row.contest_id, user_id: row.user_id, ...d } as ContestSubmission;
+      })
+      .sort((a, b) => String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")));
+  }
+
   const user = await requireCurrentUser();
   const [profile, contest] = await Promise.all([getProfileForUser(user), getContest(contestId)]);
   if (!contest) throw new Error("Không tìm thấy cuộc thi.");
@@ -699,8 +759,11 @@ export async function listContestSubmissions(
     .sort((a, b) => String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")));
 }
 
-export async function listContestScores(contestId: string): Promise<ContestScore[]> {
-  await requireContestScorer(contestId);
+export async function listContestScores(
+  contestId: string,
+  prefetch?: PrefetchedContestActorContext,
+): Promise<ContestScore[]> {
+  await requireContestScorer(contestId, prefetch);
   const { data, error } = await supabase
     .from("contest_scores")
     .select("*")
@@ -794,11 +857,24 @@ export function buildContestLeaderboard(
 export async function refreshContestMetricsSnapshot(
   contestId: string,
 ): Promise<ContestMetricsSnapshot> {
-  const contest = await requireContestReviewer(contestId);
+  const user = await requireCurrentUser();
+  const [profile, contest] = await Promise.all([
+    getProfileForUser(user),
+    getContest(contestId),
+  ]);
+  if (!contest) throw new Error("Không tìm thấy cuộc thi.");
+  if (!canReviewContestApplications(contest, profile)) {
+    throw new Error("Bạn không có quyền duyệt hồ sơ contest này.");
+  }
+  const prefetch: PrefetchedContestActorContext = {
+    contest,
+    viewer: user,
+    profile,
+  };
   const [registrations, submissions, scores] = await Promise.all([
-    getContestRegistrations(contestId, { status: "all" }),
-    listContestSubmissions(contestId),
-    listContestScores(contestId).catch(() => []),
+    getContestRegistrations(contestId, { status: "all", prefetch }),
+    listContestSubmissions(contestId, prefetch),
+    listContestScores(contestId, prefetch).catch(() => []),
   ]);
 
   const scoredSubmissions = new Set(scores.map((score) => score.submission_id));
