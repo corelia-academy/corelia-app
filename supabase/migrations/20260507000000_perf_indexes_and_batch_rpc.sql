@@ -15,9 +15,23 @@ CREATE INDEX IF NOT EXISTS profiles_role_origin_idx
 --    Query: .or("username.ilike.X,ocid.eq.X")
 --    Both columns already have separate unique indexes; this covering index
 --    lets Postgres satisfy the OR with a single bitmap index scan.
-CREATE INDEX IF NOT EXISTS public_profiles_handle_idx
-  ON public.profiles (lower(username), ocid)
-  WHERE username IS NOT NULL OR ocid IS NOT NULL;
+DO $$
+BEGIN
+  -- `username` was introduced later in 20260606143900_public_user_profiles.sql.
+  -- Make this migration resilient when applied to older DBs.
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'profiles'
+      AND column_name = 'username'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS public_profiles_handle_idx
+      ON public.profiles (lower(username), ocid)
+      WHERE username IS NOT NULL OR ocid IS NOT NULL;
+  END IF;
+END;
+$$;
 
 -- 3. batch_update_lesson_orders: replaces O(n) UPDATE loop with a single statement
 --    Called from reorderCourseLessons() in src/lib/courses.ts
