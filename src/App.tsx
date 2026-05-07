@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import {
   BrowserRouter,
   Navigate,
@@ -84,9 +85,7 @@ const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDe
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const ContestWorkspace = lazy(() => import("@/pages/admin/ContestWorkspace"));
 
-const PageFallback = () => (
-  <div className="p-4 text-sm text-muted-foreground">Loading…</div>
-);
+const PageFallback = () => <AuthGateLoading />;
 
 function ScrollToTop() {
   const location = useLocation();

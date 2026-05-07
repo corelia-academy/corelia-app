@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
+import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import { useAuth } from "@/stores/authStore";
 import type { UserRole } from "@/types/database";
 import { Button } from "@/components/ui/button";
@@ -29,11 +30,7 @@ export function RequireRole({
   const location = useLocation();
 
   if (!authInitialized) {
-    return (
-      <div className="flex min-h-[200px] items-center justify-center">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
+    return <AuthGateLoading />;
   }
 
   if (!isAuthenticated) {
@@ -41,11 +38,7 @@ export function RequireRole({
   }
 
   if (profileLoading) {
-    return (
-      <div className="flex min-h-[200px] items-center justify-center">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
+    return <AuthGateLoading />;
   }
 
   if (!profile && user) {

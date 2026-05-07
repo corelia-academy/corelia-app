@@ -129,6 +129,7 @@ export function AccountProfileRoute() {
     }
   }
 
+  // Skeleton = page data (profile), not the global auth gate (`AuthGateLoading` in RequireAuth / Suspense).
   if (!authInitialized || (profileLoading && !profile)) {
     return (
       <div className="space-y-4">

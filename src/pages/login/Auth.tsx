@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Navigate, NavLink, useLocation } from "react-router";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/authStore";
 import { LoginForm } from "@/pages/login/LoginForm";
@@ -55,22 +56,16 @@ export default function Auth() {
 
   if (!authInitialized) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-auth-page">
-        <Loader2
-          className="size-6 animate-spin text-muted-foreground"
-          aria-hidden
-        />
+      <div className="min-h-svh bg-auth-page">
+        <AuthGateLoading minHeightClass="min-h-svh" />
       </div>
     );
   }
 
   if (user && mfaGate === "unchecked") {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-auth-page">
-        <Loader2
-          className="size-6 animate-spin text-muted-foreground"
-          aria-hidden
-        />
+      <div className="min-h-svh bg-auth-page">
+        <AuthGateLoading minHeightClass="min-h-svh" />
       </div>
     );
   }
