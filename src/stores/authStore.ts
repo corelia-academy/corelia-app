@@ -24,11 +24,12 @@ function clearSupabaseAuthFromLocalStorage(): void {
 interface AuthStore {
   user: User | null;
   profile: Profile | null;
-  loading: boolean;
+  /** True while the signed-in user's profile row is being fetched (not session bootstrap). */
+  profileLoading: boolean;
   authInitialized: boolean;
   setUser: (user: User | null) => void;
   setProfile: (profile: Profile | null) => void;
-  setLoading: (loading: boolean) => void;
+  setProfileLoading: (profileLoading: boolean) => void;
   setAuthInitialized: (authInitialized: boolean) => void;
   signOut: () => Promise<void>;
   refreshProfile: (user?: User | null) => Promise<void>;
@@ -39,12 +40,12 @@ export const useAuthStore = create<AuthStore>()(
     (set) => ({
       user: null,
       profile: null,
-      loading: true,
+      profileLoading: false,
       authInitialized: false,
 
       setUser: (user) => set({ user }),
       setProfile: (profile) => set({ profile }),
-      setLoading: (loading) => set({ loading }),
+      setProfileLoading: (profileLoading) => set({ profileLoading }),
       setAuthInitialized: (authInitialized) => set({ authInitialized }),
 
       signOut: async () => {
@@ -68,7 +69,7 @@ export const useAuthStore = create<AuthStore>()(
           clearSupabaseAuthFromLocalStorage();
         } finally {
           try {
-            set({ user: null, profile: null, loading: false, authInitialized: true });
+            set({ user: null, profile: null, profileLoading: false, authInitialized: true });
           } catch (e2) {
             console.error("[authStore] signOut clear state:", e2);
           }
@@ -100,7 +101,7 @@ export const useAuthStore = create<AuthStore>()(
 export function useAuth() {
   const user = useAuthStore((s) => s.user);
   const profile = useAuthStore((s) => s.profile);
-  const loading = useAuthStore((s) => s.loading);
+  const profileLoading = useAuthStore((s) => s.profileLoading);
   const authInitialized = useAuthStore((s) => s.authInitialized);
   const signOut = useAuthStore((s) => s.signOut);
   const refreshProfile = useAuthStore((s) => s.refreshProfile);
@@ -114,7 +115,9 @@ export function useAuth() {
   return {
     user,
     profile,
-    loading,
+    profileLoading,
+    /** @deprecated Prefer `profileLoading` — same value (profile fetch gate, not session init). */
+    loading: profileLoading,
     authInitialized,
     signOut,
     refreshProfile,

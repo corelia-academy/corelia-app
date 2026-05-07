@@ -40,6 +40,12 @@ const CONTEST_ROW_SELECT = "id,status,created_at,updated_at,document" as const;
 
 const contestListCache = makeTTLCache<Contest[]>(2 * 60 * 1000);
 
+/** Same-bucket concurrent `listContests` calls share one in-flight fetch (race-safe vs TTL cache). */
+const listContestsInFlight = new Map<string, Promise<Contest[]>>();
+
+/** `ContestPublicLayout` + detail payload can overlap; collapse duplicate `getContest` rows. */
+const getContestByIdInFlight = new Map<string, Promise<Contest | null>>();
+
 /**
  * When contest detail already resolved `contest` + viewer `profile`, pass this to skip duplicate
  * `getContest` / `getProfileForUser` inside permission helpers.
@@ -280,8 +286,13 @@ export async function listContests(viewer?: User | null): Promise<Contest[]> {
   const profile = user ? await getProfileForUser(user).catch(() => null) : null;
   const isManager = canManageContests(profile);
   const cacheKey = isManager ? "manager" : "public";
+
+  const inflight = listContestsInFlight.get(cacheKey);
+  if (inflight) return inflight;
+
   const cached = contestListCache.get(cacheKey);
   if (cached) return cached;
+
   const promise = (async () => {
     let q = supabase
       .from("contests")
@@ -294,6 +305,12 @@ export async function listContests(viewer?: User | null): Promise<Contest[]> {
     if (error) throw new Error(error.message);
     return (data ?? []).map((r) => contestFromRow(r as Parameters<typeof contestFromRow>[0]));
   })();
+
+  listContestsInFlight.set(cacheKey, promise);
+  promise.finally(() => {
+    listContestsInFlight.delete(cacheKey);
+  });
+
   contestListCache.set(cacheKey, promise);
   promise.catch(() => contestListCache.delete(cacheKey));
   return promise;
@@ -301,16 +318,31 @@ export async function listContests(viewer?: User | null): Promise<Contest[]> {
 
 export function invalidateContestListCache() {
   contestListCache.clear();
+  listContestsInFlight.clear();
 }
 
 export async function getContest(contestId: string): Promise<Contest | null> {
-  const { data, error } = await supabase
-    .from("contests")
-    .select(CONTEST_ROW_SELECT)
-    .eq("id", contestId)
-    .maybeSingle();
-  if (error || !data) return null;
-  return contestFromRow(data as Parameters<typeof contestFromRow>[0]);
+  const existing = getContestByIdInFlight.get(contestId);
+  if (existing) return existing;
+
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("contests")
+      .select(CONTEST_ROW_SELECT)
+      .eq("id", contestId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return contestFromRow(data as Parameters<typeof contestFromRow>[0]);
+  })();
+
+  getContestByIdInFlight.set(contestId, promise);
+  promise.finally(() => {
+    if (getContestByIdInFlight.get(contestId) === promise) {
+      getContestByIdInFlight.delete(contestId);
+    }
+  });
+
+  return promise;
 }
 
 export async function createContest(data: ContestInsert): Promise<Contest> {

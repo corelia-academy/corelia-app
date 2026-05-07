@@ -487,6 +487,7 @@ export function useContestDetailOrchestrator({
         isManager,
         translate,
         signal: ctrl.signal,
+        prefetchedContest: contest,
       });
       if (loadAbortRef.current !== ctrl) return;
       if (result.status === "aborted") return;
@@ -527,6 +528,7 @@ export function useContestDetailOrchestrator({
     setLoading,
     translate,
     user?.email,
+    contest,
   ]);
 
   useEffect(() => {
