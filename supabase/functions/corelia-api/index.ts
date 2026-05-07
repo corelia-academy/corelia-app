@@ -566,29 +566,19 @@ async function handleIssueCertificate(req: Request, db: SupabaseClient): Promise
       if (payErr) throw new Error(payErr.message);
       if (payAccess?.certificate_fee_paid !== true) return json({ issued: false });
     }
-    const [{ data: lessons, error: lesErr }, { data: progressRows, error: progErr }] = await Promise.all([
-      db.from("course_lessons").select("id").eq("course_id", courseId),
-      db.from("lesson_progress").select("lesson_id, completed_at").eq("user_id", targetUserId).eq(
-        "course_id",
-        courseId,
-      ),
-    ]);
-    if (lesErr) throw new Error(lesErr.message);
-    if (progErr) throw new Error(progErr.message);
-    const lessonIds = (lessons ?? []).map((l) => l.id);
-    if (lessonIds.length === 0) return json({ issued: false });
-    const completedIds = new Set(
-      (progressRows ?? []).filter((row) => !!row.completed_at).map((row) => row.lesson_id),
-    );
-    if (completedIds.size < lessonIds.length) return json({ issued: false });
-    if (course.final_assignment_title) {
-      const { data: subRows, error: subErr } = await db.from("final_assignment_submissions").select("status").eq(
-        "user_id",
-        targetUserId,
-      ).eq("course_id", courseId).limit(1);
-      if (subErr) throw new Error(subErr.message);
-      const submission = subRows?.[0];
-      if (!submission || submission.status !== "approved") return json({ issued: false });
+    const { data: readinessRaw, error: readyErr } = await db.rpc("corelia_certificate_readiness", {
+      p_course_id: courseId,
+      p_user_id: targetUserId,
+    });
+    if (readyErr) throw new Error(readyErr.message);
+    const readiness = readinessRaw as {
+      all_lessons_complete?: boolean;
+      final_assignment_required?: boolean;
+      final_submission_status?: string | null;
+    } | null;
+    if (!readiness?.all_lessons_complete) return json({ issued: false });
+    if (readiness.final_assignment_required && readiness.final_submission_status !== "approved") {
+      return json({ issued: false });
     }
     const issuedAt = nowIso();
     const { error: upErr } = await db.from("enrollments").update({ certificate_issued_at: issuedAt }).eq(
