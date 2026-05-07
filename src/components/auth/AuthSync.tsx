@@ -8,11 +8,12 @@ import { timedAsync } from "@/lib/perfTelemetry";
 
 /**
  * Đồng bộ session + profile từ Supabase vào auth store.
+ * Profile fetch chạy ngoài stack của `onAuthStateChange` để không block session / REST khác.
  */
 export function AuthSync() {
   const setUser = useAuthStore((s) => s.setUser);
   const setProfile = useAuthStore((s) => s.setProfile);
-  const setLoading = useAuthStore((s) => s.setLoading);
+  const setProfileLoading = useAuthStore((s) => s.setProfileLoading);
   const setAuthInitialized = useAuthStore((s) => s.setAuthInitialized);
 
   useEffect(() => {
@@ -20,7 +21,7 @@ export function AuthSync() {
     let currentSeq = 0;
     let hasInitializedFromEvent = false;
 
-    async function syncFromSession(session: { user?: unknown } | null) {
+    function syncFromSession(session: { user?: unknown } | null) {
       if (!mounted) return;
       const seq = ++currentSeq;
       const user = (session as { user?: Parameters<typeof setUser>[0] } | null)?.user ?? null;
@@ -28,35 +29,48 @@ export function AuthSync() {
       setAuthInitialized(true);
 
       if (user) {
-        setLoading(true);
-        try {
-          const PROFILE_TIMEOUT_MS = 10_000;
-          const p = await timedAsync(
-            "auth.profile.getProfileForUser",
-            async () =>
-              Promise.race([
-                getProfileForUser(user as User),
-                new Promise<null>((resolve) =>
-                  setTimeout(() => resolve(null), PROFILE_TIMEOUT_MS),
-                ),
-              ]),
-            { userId: user.id },
-          );
-          if (mounted && seq === currentSeq) {
-            setProfile(p);
-            const locale = (p?.locale ?? DEFAULT_LANGUAGE) as SupportedLanguage;
-            void i18n.changeLanguage(locale);
-          }
-        } catch (error) {
-          console.error("Failed to load profile:", error);
-          if (mounted && seq === currentSeq) setProfile(null);
-        } finally {
-          if (mounted && seq === currentSeq) setLoading(false);
+        const { profile: existingProfile } = useAuthStore.getState();
+        if (existingProfile && existingProfile.id !== user.id) {
+          setProfile(null);
         }
+        const needSpinner = !useAuthStore.getState().profile || useAuthStore.getState().profile?.id !== user.id;
+        if (needSpinner) setProfileLoading(true);
+
+        const runSeq = seq;
+        const u = user as User;
+
+        queueMicrotask(() => {
+          if (!mounted || runSeq !== currentSeq) return;
+          void (async () => {
+            try {
+              const PROFILE_TIMEOUT_MS = 10_000;
+              const p = await timedAsync(
+                "auth.profile.getProfileForUser",
+                async () =>
+                  Promise.race([
+                    getProfileForUser(u),
+                    new Promise<null>((resolve) =>
+                      setTimeout(() => resolve(null), PROFILE_TIMEOUT_MS),
+                    ),
+                  ]),
+                { userId: u.id },
+              );
+              if (!mounted || runSeq !== currentSeq) return;
+              setProfile(p);
+              const locale = (p?.locale ?? DEFAULT_LANGUAGE) as SupportedLanguage;
+              void i18n.changeLanguage(locale);
+            } catch (error) {
+              console.error("Failed to load profile:", error);
+              if (mounted && runSeq === currentSeq) setProfile(null);
+            } finally {
+              if (needSpinner && mounted && runSeq === currentSeq) setProfileLoading(false);
+            }
+          })();
+        });
       } else {
         invalidateCurrentProfileCache();
         setProfile(null);
-        setLoading(false);
+        setProfileLoading(false);
         try {
           localStorage.removeItem("i18nextLng");
         } catch {
@@ -82,18 +96,18 @@ export function AuthSync() {
       hasInitializedFromEvent = true;
       setUser(null);
       setProfile(null);
-      setLoading(false);
+      setProfileLoading(false);
       setAuthInitialized(true);
     }, INIT_TIMEOUT_MS);
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!hasInitializedFromEvent) {
         hasInitializedFromEvent = true;
         window.clearTimeout(initTimeoutId);
       }
-      await syncFromSession(session);
+      syncFromSession(session);
     });
 
     return () => {
@@ -101,7 +115,7 @@ export function AuthSync() {
       window.clearTimeout(initTimeoutId);
       subscription.unsubscribe();
     };
-  }, [setUser, setProfile, setLoading, setAuthInitialized]);
+  }, [setUser, setProfile, setProfileLoading, setAuthInitialized]);
 
   return null;
 }

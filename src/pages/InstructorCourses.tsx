@@ -25,7 +25,7 @@ import { EmptyState, PageContainer, PageSectionCard } from "@/components/layouts
 
 const InstructorCourses = () => {
   const { t } = useTranslation("instructor");
-  const { profile, authInitialized, loading: authLoading, isAuthenticated } = useAuth();
+  const { profile, authInitialized, profileLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +36,7 @@ const InstructorCourses = () => {
 
   useEffect(() => {
     let cancelled = false;
-    if (!authInitialized || authLoading) return () => { cancelled = true; };
+    if (!authInitialized || profileLoading) return () => { cancelled = true; };
     if (!isAuthenticated || !profile?.id) {
       setLoading(false);
       setCourses([]);
@@ -62,7 +62,7 @@ const InstructorCourses = () => {
     return () => {
       cancelled = true;
     };
-  }, [authInitialized, authLoading, isAuthenticated, profile?.id, canViewAll, t]);
+  }, [authInitialized, profileLoading, isAuthenticated, profile?.id, canViewAll, t]);
 
   const stats = useMemo(() => {
     const published = courses.filter((course) => course.published).length;

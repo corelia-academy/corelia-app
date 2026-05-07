@@ -38,7 +38,7 @@ function useProfileForm(profile: Profile | null) {
 
 export function AccountProfileRoute() {
   const { t } = useTranslation("account");
-  const { user, profile, loading, authInitialized, refreshProfile } = useAuth();
+  const { user, profile, profileLoading, authInitialized, refreshProfile } = useAuth();
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -129,7 +129,7 @@ export function AccountProfileRoute() {
     }
   }
 
-  if (!authInitialized || (loading && !profile)) {
+  if (!authInitialized || (profileLoading && !profile)) {
     return (
       <div className="space-y-4">
         <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">

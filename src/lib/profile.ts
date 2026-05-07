@@ -5,6 +5,9 @@ import type { Profile, ProfileInsert, ProfileUpdate, PublicProfile } from "@/typ
 import { sortLocale } from "@/lib/intl";
 import { makeTTLCache } from "@/lib/utils";
 
+/** Per-handle single-flight: concurrent `/u/:handle` mounts dedupe public_profiles. */
+const publicProfileByHandleInFlight = new Map<string, Promise<PublicProfile | null>>();
+
 const instructorProfilesCache = makeTTLCache<Profile[]>(3 * 60 * 1000);
 
 /** Per-user cache so switching accounts cannot reuse another user's in-flight/resolved profile. */
@@ -359,7 +362,7 @@ export async function updateProfileAdmin(userId: string, updates: ProfileUpdate)
   invalidateCurrentProfileCache(userId);
 }
 
-export async function getPublicProfileByHandle(handle: string): Promise<PublicProfile | null> {
+async function fetchPublicProfileByHandleOnce(handle: string): Promise<PublicProfile | null> {
   const h = handle.trim();
   if (!h) return null;
 
@@ -373,4 +376,19 @@ export async function getPublicProfileByHandle(handle: string): Promise<PublicPr
 
   if (error || !data) return null;
   return rowToPublicProfile(data as Record<string, unknown>);
+}
+
+export async function getPublicProfileByHandle(handle: string): Promise<PublicProfile | null> {
+  const key = handle.trim().toLowerCase();
+  if (!key) return null;
+  const inflight = publicProfileByHandleInFlight.get(key);
+  if (inflight) return inflight;
+  const promise = fetchPublicProfileByHandleOnce(handle);
+  publicProfileByHandleInFlight.set(key, promise);
+  promise.finally(() => {
+    if (publicProfileByHandleInFlight.get(key) === promise) {
+      publicProfileByHandleInFlight.delete(key);
+    }
+  });
+  return promise;
 }

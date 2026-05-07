@@ -19,7 +19,7 @@ import {
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, profile, loading, authInitialized, signOut, user } = useAuth();
+  const { isAuthenticated, profile, authInitialized, signOut, user } = useAuth();
   const { t } = useTranslation("common");
   const { isInitialized, authState, ocAuth } = useOCAuth();
   const { resolvedTheme } = useTheme();
@@ -105,7 +105,7 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          {!authInitialized && loading ? (
+          {!authInitialized ? (
             <div className="h-9 w-28 animate-pulse rounded-full bg-muted md:h-10" />
           ) : isAuthenticated ? (
             <div className="flex items-center gap-2">

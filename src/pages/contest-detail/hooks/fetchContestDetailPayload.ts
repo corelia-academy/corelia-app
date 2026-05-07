@@ -64,6 +64,8 @@ export type FetchContestDetailPayloadInput = {
   isManager: boolean;
   translate: (key: string, options?: Record<string, unknown>) => string;
   signal: AbortSignal;
+  /** When `ContestPublicLayout` already loaded the contest row, skip duplicate `getContest`. */
+  prefetchedContest?: Contest | null;
 };
 
 export type FetchContestDetailPayloadResult =
@@ -79,8 +81,12 @@ export async function fetchContestDetailPayload({
   isManager,
   translate,
   signal,
+  prefetchedContest,
 }: FetchContestDetailPayloadInput): Promise<FetchContestDetailPayloadResult> {
-  const contestData = await getContest(id);
+  const contestData =
+    prefetchedContest && prefetchedContest.id === id
+      ? prefetchedContest
+      : await getContest(id);
   if (signal.aborted) return { status: "aborted" };
 
   if (!contestData) {

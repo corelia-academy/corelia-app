@@ -1,6 +1,8 @@
 import { Navigate, useLocation } from "react-router";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/stores/authStore";
 import type { UserRole } from "@/types/database";
+import { Button } from "@/components/ui/button";
 
 interface RequireRoleProps {
   children: React.ReactNode;
@@ -21,10 +23,12 @@ export function RequireRole({
   loginPath = "/login",
   fallbackPath = "/",
 }: RequireRoleProps) {
-  const { isAuthenticated, hasRole, authInitialized, loading } = useAuth();
+  const { t } = useTranslation("common");
+  const { isAuthenticated, hasRole, authInitialized, profileLoading, profile, user, refreshProfile } =
+    useAuth();
   const location = useLocation();
 
-  if (!authInitialized || loading) {
+  if (!authInitialized) {
     return (
       <div className="flex min-h-[200px] items-center justify-center">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -34,6 +38,25 @@ export function RequireRole({
 
   if (!isAuthenticated) {
     return <Navigate to={loginPath} state={{ from: location }} replace />;
+  }
+
+  if (profileLoading) {
+    return (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!profile && user) {
+    return (
+      <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="text-sm text-muted-foreground">{t("userProfile.errors.loadFailed")}</p>
+        <Button type="button" variant="outline" size="sm" onClick={() => void refreshProfile(user)}>
+          {t("actions.retry")}
+        </Button>
+      </div>
+    );
   }
 
   if (!hasRole(roles)) {

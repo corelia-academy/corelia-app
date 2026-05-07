@@ -44,3 +44,13 @@ Key labels to watch:
 - `home.dashboard_wave`
 - `contests.catalog_wave`
 - `course.spotlight_contests_wave`
+
+### Logged-in auth profile latency (no ~10s artificial wait)
+
+After the auth pipeline split (session vs profile):
+
+1. Build staging with `VITE_PERF_DEBUG=true`, sign in, hard‑reload on **Home** or **`/u/:handle`**.
+2. In the console, `auth.profile.getProfileForUser` should track network time only — **not** a flat ~10000ms from blocking the auth callback.
+3. First Supabase REST requests (`profiles`, `contests`, `public_profiles`, etc.) should **start in the same waterfall** as profile (not after a ~10s gap with no network).
+
+If you still see ~10s before any REST activity, confirm the **frontend** bundle on staging matches the expected `window.__CORELIA_BUILD__.version`.
