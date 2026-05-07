@@ -230,10 +230,21 @@ async function requireContestReviewer(contestId: string): Promise<Contest> {
   return contest;
 }
 
-export async function listContests(): Promise<Contest[]> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+/**
+ * List contests visible to the viewer.
+ * @param viewer - When provided (after auth init), skips `getUser()` (reduces auth lock contention).
+ * Pass `null` for anonymous; omit only for legacy callers that must resolve the session internally.
+ */
+export async function listContests(viewer?: User | null): Promise<Contest[]> {
+  let user: User | null = null;
+  if (viewer === undefined) {
+    const {
+      data: { user: u },
+    } = await supabase.auth.getUser();
+    user = u ?? null;
+  } else {
+    user = viewer;
+  }
   const profile = user ? await getProfileForUser(user).catch(() => null) : null;
   const isManager = canManageContests(profile);
   const cacheKey = isManager ? "manager" : "public";
@@ -382,10 +393,17 @@ export async function deleteContest(contestId: string): Promise<void> {
 
 export async function getMyContestRegistration(
   contestId: string,
+  viewer?: User | null,
 ): Promise<ContestRegistration | null> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user: User | null = null;
+  if (viewer === undefined) {
+    const {
+      data: { user: u },
+    } = await supabase.auth.getUser();
+    user = u ?? null;
+  } else {
+    user = viewer;
+  }
   if (!user) return null;
 
   const id = contestRegistrationId(contestId, user.id);
@@ -478,10 +496,17 @@ export async function reviewContestRegistration(
 
 export async function getMyContestAccessInvite(
   contestId: string,
+  viewer?: User | null,
 ): Promise<ContestAccessInvite | null> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user: User | null = null;
+  if (viewer === undefined) {
+    const {
+      data: { user: u },
+    } = await supabase.auth.getUser();
+    user = u ?? null;
+  } else {
+    user = viewer;
+  }
   if (!user?.email) return null;
   const id = contestInviteId(contestId, user.email);
   const { data, error } = await supabase.from("contest_access_invites").select("*").eq("id", id).maybeSingle();
@@ -590,10 +615,17 @@ export async function revokeContestAccessInvite(
 
 export async function getMyContestSubmission(
   contestId: string,
+  viewer?: User | null,
 ): Promise<ContestSubmission | null> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user: User | null = null;
+  if (viewer === undefined) {
+    const {
+      data: { user: u },
+    } = await supabase.auth.getUser();
+    user = u ?? null;
+  } else {
+    user = viewer;
+  }
   if (!user) return null;
   const id = contestSubmissionId(contestId, user.id);
   const { data, error } = await supabase.from("contest_submissions").select("*").eq("id", id).maybeSingle();
@@ -607,7 +639,7 @@ export async function upsertContestSubmission(
   input: ContestSubmissionInsert,
 ): Promise<ContestSubmission> {
   const user = await requireCurrentUser();
-  const registration = await getMyContestRegistration(contestId);
+  const registration = await getMyContestRegistration(contestId, user);
   if (!registration || registration.status !== "approved") {
     throw new Error("Chỉ hồ sơ đã được duyệt mới có thể nộp bài.");
   }

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { LoginCallBack, useOCAuth } from "@opencampus/ocid-connect-js";
 import { updateOCIDProfileForUser } from "@/lib/profile";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 
 type OCAuthStateMaybe = {
@@ -42,7 +42,7 @@ function ErrorView() {
 export default function OCIDRedirect() {
   const { t } = useTranslation("account");
   const navigate = useNavigate();
-  const { refreshProfile } = useAuth();
+  const refreshProfile = useAuthStore((s) => s.refreshProfile);
   const { OCId, ethAddress, ocAuth } = useOCAuth();
   const [error, setError] = useState<string | null>(null);
 
@@ -50,10 +50,13 @@ export default function OCIDRedirect() {
     return {
       successCallback: async () => {
         setError(null);
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const user = session?.user;
+        let user = useAuthStore.getState().user;
+        if (!user) {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          user = session?.user ?? null;
+        }
         if (!user) {
           setError(t("ocid.redirect.mustLoginFirst"));
           navigate("/login", { replace: true });
