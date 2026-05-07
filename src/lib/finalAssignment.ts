@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 import type { FinalAssignmentSubmission, FinalSubmissionStatus } from "@/types/courses";
 
 function rowToSubmission(row: Record<string, unknown>): FinalAssignmentSubmission {
@@ -44,10 +45,13 @@ export async function submitFinalAssignment(
   courseId: string,
   content: string,
   fileUrls?: string[],
+  viewer?: User | null,
 ): Promise<FinalAssignmentSubmission> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) throw new Error("Chưa đăng nhập");
 
   const existing = await getSubmission(user.id, courseId);

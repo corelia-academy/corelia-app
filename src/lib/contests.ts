@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
 import { deleteStorageObjectByPath } from "@/lib/storage";
-import { getCurrentProfile } from "@/lib/profile";
+import { getProfileForUser } from "@/lib/profile";
 import {
   canManageContests,
   canReviewContestApplications,
@@ -30,6 +30,7 @@ import type {
   ContestWinner,
   ContestWinnerInput,
 } from "@/types/contests";
+import type { User } from "@supabase/supabase-js";
 
 const PUBLIC_CONTEST_STATUSES: Contest["status"][] = ["published", "running", "ended"];
 
@@ -202,26 +203,26 @@ async function requireCurrentUser() {
 
 async function requireContestManager(): Promise<{ uid: string }> {
   const user = await requireCurrentUser();
-  const profile = await getCurrentProfile();
+  const profile = await getProfileForUser(user);
   if (!canManageContests(profile)) {
     throw new Error("Bạn không có quyền quản lý cuộc thi.");
   }
   return { uid: user.id };
 }
 
-async function requireContestScorer(contestId: string): Promise<Contest> {
+async function requireContestScorer(contestId: string): Promise<{ contest: Contest; user: User }> {
   const user = await requireCurrentUser();
-  const [profile, contest] = await Promise.all([getCurrentProfile(), getContest(contestId)]);
+  const [profile, contest] = await Promise.all([getProfileForUser(user), getContest(contestId)]);
   if (!contest) throw new Error("Không tìm thấy cuộc thi.");
   if (!canScoreContest(contest, profile, user.email)) {
     throw new Error("Bạn không có quyền chấm điểm contest này.");
   }
-  return contest;
+  return { contest, user };
 }
 
 async function requireContestReviewer(contestId: string): Promise<Contest> {
-  await requireCurrentUser();
-  const [profile, contest] = await Promise.all([getCurrentProfile(), getContest(contestId)]);
+  const user = await requireCurrentUser();
+  const [profile, contest] = await Promise.all([getProfileForUser(user), getContest(contestId)]);
   if (!contest) throw new Error("Không tìm thấy cuộc thi.");
   if (!canReviewContestApplications(contest, profile)) {
     throw new Error("Bạn không có quyền duyệt hồ sơ contest này.");
@@ -230,7 +231,10 @@ async function requireContestReviewer(contestId: string): Promise<Contest> {
 }
 
 export async function listContests(): Promise<Contest[]> {
-  const profile = await getCurrentProfile().catch(() => null);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const profile = user ? await getProfileForUser(user).catch(() => null) : null;
   const isManager = canManageContests(profile);
   const cacheKey = isManager ? "manager" : "public";
   const cached = contestListCache.get(cacheKey);
@@ -395,7 +399,7 @@ export async function registerForContest(
   input: ContestRegistrationInsert,
 ): Promise<ContestRegistration> {
   const user = await requireCurrentUser();
-  const profile = await getCurrentProfile();
+  const profile = await getProfileForUser(user);
   const now = new Date().toISOString();
   const registrationId = contestRegistrationId(contestId, user.id);
 
@@ -647,7 +651,7 @@ export async function listContestSubmissions(
   contestId: string,
 ): Promise<ContestSubmission[]> {
   const user = await requireCurrentUser();
-  const [profile, contest] = await Promise.all([getCurrentProfile(), getContest(contestId)]);
+  const [profile, contest] = await Promise.all([getProfileForUser(user), getContest(contestId)]);
   if (!contest) throw new Error("Không tìm thấy cuộc thi.");
 
   const canSeeAll = canScoreContest(contest, profile, user.email) || canManageContests(profile);
@@ -683,8 +687,7 @@ export async function scoreContestSubmission(
   submissionId: string,
   input: ContestScoreInput,
 ): Promise<void> {
-  const contest = await requireContestScorer(contestId);
-  const user = await requireCurrentUser();
+  const { contest, user } = await requireContestScorer(contestId);
   const now = new Date().toISOString();
   const weights = contest.rubric_weights ?? defaultRubricWeights();
   const totalScore = Number(

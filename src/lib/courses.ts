@@ -18,6 +18,7 @@ import type {
   CourseCoInstructorPermissions,
   CourseCoInstructorSnapshot,
 } from "@/types/courses";
+import type { User } from "@supabase/supabase-js";
 
 const CERTIFICATE_API =
   import.meta.env.VITE_CERTIFICATE_ISSUE_API || coreliaEdgeUrl("certificates.issue");
@@ -465,7 +466,7 @@ export function invalidateCourseCache(courseId?: string) {
   if (courseId) courseByIdCache.delete(courseId);
 }
 
-export async function getCourseBySlug(slug: string): Promise<Course | null> {
+export async function getCourseBySlug(slug: string, viewer?: User | null): Promise<Course | null> {
   const normalized = slug.trim();
   if (!normalized) return null;
 
@@ -477,10 +478,14 @@ export async function getCourseBySlug(slug: string): Promise<Course | null> {
     .maybeSingle();
   if (pub) return rowToCourse(pub as CourseRow);
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  let resolvedViewer = viewer ?? null;
+  if (!resolvedViewer) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    resolvedViewer = user;
+  }
+  if (!resolvedViewer) return null;
 
   const { data: draft, error } = await supabase
     .from("courses")
@@ -585,10 +590,12 @@ export async function getEnrollmentsForCourse(courseId: string): Promise<Enrollm
   return (data ?? []).map((d) => ({ id: d.id, ...d } as Enrollment));
 }
 
-export async function enrollCourse(courseId: string): Promise<Enrollment> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function enrollCourse(courseId: string, viewer?: User | null): Promise<Enrollment> {
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) throw new Error("Chưa đăng nhập");
   const course = await getCourse(courseId);
   if (!course) throw new Error("Không tìm thấy khoá học");
@@ -616,10 +623,12 @@ export async function enrollCourse(courseId: string): Promise<Enrollment> {
   return { id: data.id, ...data } as Enrollment;
 }
 
-export async function touchEnrollment(courseId: string): Promise<void> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function touchEnrollment(courseId: string, viewer?: User | null): Promise<void> {
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) return;
   const enr = await getEnrollment(user.id, courseId);
   if (!enr) return;
@@ -706,10 +715,13 @@ export async function setLessonProgress(
   courseId: string,
   completed: boolean,
   watchSeconds?: number,
+  viewer?: User | null,
 ): Promise<void> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) throw new Error("Chưa đăng nhập");
 
   const progressId = `${user.id}_${courseId}_${lessonId}`;
@@ -745,10 +757,12 @@ export function getNextLesson(lessons: CourseLesson[], progressList: LessonProgr
   return lessons.find((l) => !completedIds.has(l.id)) ?? null;
 }
 
-export async function createCourse(data: CourseInsert): Promise<Course> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function createCourse(data: CourseInsert, viewer?: User | null): Promise<Course> {
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) throw new Error("Chưa đăng nhập");
 
   const now = new Date().toISOString();

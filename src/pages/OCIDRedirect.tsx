@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { LoginCallBack, useOCAuth } from "@opencampus/ocid-connect-js";
-import { updateOCIDProfile } from "@/lib/profile";
+import { updateOCIDProfileForUser } from "@/lib/profile";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
@@ -79,11 +79,11 @@ export default function OCIDRedirect() {
           return;
         }
 
-        await updateOCIDProfile({
+        await updateOCIDProfileForUser(user, {
           ocid: resolvedOCId,
           ocid_eth_address: resolvedEth,
         });
-        await refreshProfile();
+        await refreshProfile(user);
         navigate("/account", { replace: true });
       },
       errorCallback: (e: unknown) => {

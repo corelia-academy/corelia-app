@@ -187,7 +187,7 @@ const createSponsorId = (): string => {
 const InstructorCourseEdit = () => {
   const { t } = useTranslation("instructor");
   const { id } = useParams<{ id: string }>();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [sections, setSections] = useState<CourseSection[]>([]);
   const [lessons, setLessons] = useState<CourseLesson[]>([]);
@@ -3602,6 +3602,7 @@ const InstructorCourseEdit = () => {
                                             id,
                                             d.id,
                                             !d.active,
+                                            user,
                                           );
                                           setDiscounts((prev) =>
                                             prev.map((x) =>
@@ -3626,6 +3627,7 @@ const InstructorCourseEdit = () => {
                                           await deleteCourseDiscountCode(
                                             id,
                                             d.id,
+                                            user,
                                           );
                                           setDiscounts((prev) =>
                                             prev.filter((x) => x.id !== d.id),
@@ -3769,7 +3771,7 @@ const InstructorCourseEdit = () => {
                                     ? Number(discountForm.max_redemptions)
                                     : null,
                                   active: true,
-                                });
+                                }, user);
                                 setDiscounts((prev) => [created, ...prev]);
                                 setDiscountForm({
                                   code: "",

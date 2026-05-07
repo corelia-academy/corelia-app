@@ -9,14 +9,14 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
-import { updateCurrentProfile } from "@/lib/profile";
+import { updateProfileForUser } from "@/lib/profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 function InstructorProfileSection() {
   const { t } = useTranslation("account");
-  const { profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const [headline, setHeadline] = useState(profile?.instructor_headline ?? "");
   const [bio, setBio] = useState(profile?.instructor_bio ?? "");
   const [organization, setOrganization] = useState(
@@ -51,13 +51,14 @@ function InstructorProfileSection() {
     setSuccess(null);
     setSaving(true);
     try {
-      await updateCurrentProfile({
+      if (!user) return;
+      await updateProfileForUser(user, {
         instructor_headline: headline || null,
         instructor_bio: bio || null,
         instructor_organization: organization || null,
         instructor_website: website || null,
       });
-      await refreshProfile();
+      await refreshProfile(user);
       setSuccess(t("instructorProfile.success.updated"));
     } catch (err) {
       const message =

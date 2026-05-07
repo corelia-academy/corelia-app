@@ -1,3 +1,4 @@
+import type { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -17,6 +18,8 @@ interface UseCourseLoadInput {
   idOrSlug: string | undefined;
   missingIdMessage: string;
   loadCourseErrorFallback: string;
+  /** When set, avoids an extra `auth.getUser()` when resolving draft course by slug. */
+  viewer?: User | null;
 }
 
 interface UseCourseLoadResult {
@@ -32,6 +35,7 @@ export function useCourseLoad({
   idOrSlug,
   missingIdMessage,
   loadCourseErrorFallback,
+  viewer,
 }: UseCourseLoadInput): UseCourseLoadResult {
   const navigate = useNavigate();
   const [resolvedCourseId, setResolvedCourseId] = useState<string | null>(null);
@@ -45,7 +49,7 @@ export function useCourseLoad({
     let cancelled = false;
 
     void (async () => {
-      const bySlug = await getCourseBySlug(idOrSlug).catch(() => null);
+      const bySlug = await getCourseBySlug(idOrSlug, viewer).catch(() => null);
       const byId = bySlug ? null : await getCourse(idOrSlug).catch(() => null);
       const courseRow = bySlug ?? byId;
       const contentLocale = courseRow
@@ -97,7 +101,7 @@ export function useCourseLoad({
     return () => {
       cancelled = true;
     };
-  }, [idOrSlug, navigate, loadCourseErrorFallback]);
+  }, [idOrSlug, navigate, loadCourseErrorFallback, viewer]);
 
   const effectiveLoading = idOrSlug ? loading : false;
   const effectiveError = idOrSlug ? error : missingIdMessage;

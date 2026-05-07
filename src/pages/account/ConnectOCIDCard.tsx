@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/stores/authStore";
-import { updateOCIDProfile } from "@/lib/profile";
+import { updateOCIDProfileForUser } from "@/lib/profile";
 import { useTranslation } from "react-i18next";
 
 function truncateMiddle(value: string, head = 6, tail = 4) {
@@ -12,7 +12,7 @@ function truncateMiddle(value: string, head = 6, tail = 4) {
 
 export default function ConnectOCIDCard() {
   const { t } = useTranslation("account");
-  const { profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { isInitialized, authState, ocAuth } = useOCAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,8 +52,9 @@ export default function ConnectOCIDCard() {
     setSuccess(null);
     setLoading(true);
     try {
-      await updateOCIDProfile({ ocid: null, ocid_eth_address: null });
-      await refreshProfile();
+      if (!user) return;
+      await updateOCIDProfileForUser(user, { ocid: null, ocid_eth_address: null });
+      await refreshProfile(user);
       setSuccess(t("ocid.toasts.disconnectSuccess"));
     } catch (e) {
       const message =

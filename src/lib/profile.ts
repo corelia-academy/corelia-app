@@ -1,16 +1,33 @@
 import { supabase } from "@/lib/supabase";
 import { uploadUserAvatar } from "@/lib/storage";
+import type { User } from "@supabase/supabase-js";
 import type { Profile, ProfileInsert, ProfileUpdate, PublicProfile } from "@/types/database";
 import { sortLocale } from "@/lib/intl";
 import { makeTTLCache } from "@/lib/utils";
 
 const instructorProfilesCache = makeTTLCache<Profile[]>(3 * 60 * 1000);
 
-let currentProfileCache: { promise: Promise<Profile | null>; ts: number } | null = null;
+/** Per-user cache so switching accounts cannot reuse another user's in-flight/resolved profile. */
+const profilePromiseCache = new Map<string, { promise: Promise<Profile | null>; ts: number }>();
 const CURRENT_PROFILE_TTL = 30_000;
 
-export function invalidateCurrentProfileCache() {
-  currentProfileCache = null;
+export function invalidateCurrentProfileCache(userId?: string) {
+  if (userId) profilePromiseCache.delete(userId);
+  else profilePromiseCache.clear();
+}
+
+function getCachedProfilePromise(userId: string): Promise<Profile | null> | null {
+  const entry = profilePromiseCache.get(userId);
+  if (entry && Date.now() - entry.ts < CURRENT_PROFILE_TTL) return entry.promise;
+  return null;
+}
+
+function setCachedProfilePromise(userId: string, promise: Promise<Profile | null>) {
+  profilePromiseCache.set(userId, { promise, ts: Date.now() });
+  promise.catch(() => {
+    const cur = profilePromiseCache.get(userId);
+    if (cur?.promise === promise) profilePromiseCache.delete(userId);
+  });
 }
 
 function rowToProfile(row: Record<string, unknown>): Profile {
@@ -67,12 +84,7 @@ function rowToPublicProfile(row: Record<string, unknown>): PublicProfile {
   };
 }
 
-async function _fetchCurrentProfile(): Promise<Profile | null> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
+async function _fetchProfileForUser(user: User): Promise<Profile | null> {
   const { data: row, error } = await supabase
     .from("profiles")
     .select("*")
@@ -81,7 +93,7 @@ async function _fetchCurrentProfile(): Promise<Profile | null> {
 
   if (error) {
     console.warn("Could not read profile:", error);
-    return fallbackProfile(user);
+    return fallbackProfile({ id: user.id, email: user.email ?? null, user_metadata: user.user_metadata ?? {} });
   }
 
   if (!row) {
@@ -104,7 +116,7 @@ async function _fetchCurrentProfile(): Promise<Profile | null> {
       .single();
     if (insErr || !created) {
       console.warn("Profile insert failed:", insErr);
-      return fallbackProfile(user);
+      return fallbackProfile({ id: user.id, email: user.email ?? null, user_metadata: user.user_metadata ?? {} });
     }
     return rowToProfile(created as Record<string, unknown>);
   }
@@ -130,12 +142,24 @@ async function _fetchCurrentProfile(): Promise<Profile | null> {
 }
 
 export function getCurrentProfile(): Promise<Profile | null> {
-  if (currentProfileCache && Date.now() - currentProfileCache.ts < CURRENT_PROFILE_TTL) {
-    return currentProfileCache.promise;
-  }
-  const promise = _fetchCurrentProfile();
-  currentProfileCache = { promise, ts: Date.now() };
-  promise.catch(() => { currentProfileCache = null; });
+  return (async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+    return getProfileForUser(user);
+  })();
+}
+
+/**
+ * Fetch current user's profile using a known `User` object (avoids calling `supabase.auth.getUser()`
+ * during auth initialization / refresh, which can contend on the auth-token lock).
+ */
+export function getProfileForUser(user: User): Promise<Profile | null> {
+  const hit = getCachedProfilePromise(user.id);
+  if (hit) return hit;
+  const promise = _fetchProfileForUser(user);
+  setCachedProfilePromise(user.id, promise);
   return promise;
 }
 
@@ -164,14 +188,13 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return rowToProfile(data as Record<string, unknown>);
 }
 
-export async function setNewUserProfile(data: {
-  full_name?: string | null;
-  email?: string | null;
-}): Promise<void> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Chưa đăng nhập");
+export async function setNewUserProfileForUser(
+  user: User,
+  data: {
+    full_name?: string | null;
+    email?: string | null;
+  },
+): Promise<void> {
   const now = new Date().toISOString();
   const { error } = await supabase.from("profiles").upsert(
     {
@@ -188,15 +211,24 @@ export async function setNewUserProfile(data: {
     { onConflict: "id" },
   );
   if (error) throw new Error(error.message);
-  invalidateCurrentProfileCache();
+  invalidateCurrentProfileCache(user.id);
 }
 
-export async function updateCurrentProfile(updates: ProfileUpdate): Promise<Profile> {
+export async function setNewUserProfile(data: {
+  full_name?: string | null;
+  email?: string | null;
+}): Promise<void> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Chưa đăng nhập");
+  await setNewUserProfileForUser(user, data);
+}
 
+export async function updateProfileForUser(
+  user: User,
+  updates: ProfileUpdate,
+): Promise<Profile> {
   const safeUpdates: Record<string, unknown> = {};
   if (updates.username !== undefined) safeUpdates.username = updates.username;
   if (updates.full_name !== undefined) safeUpdates.full_name = updates.full_name;
@@ -223,18 +255,25 @@ export async function updateCurrentProfile(updates: ProfileUpdate): Promise<Prof
     .select("*")
     .single();
   if (error || !updated) throw new Error(error?.message ?? "Cập nhật profile thất bại");
-  invalidateCurrentProfileCache();
+  invalidateCurrentProfileCache(user.id);
   return rowToProfile(updated as Record<string, unknown>);
 }
 
-export async function updateOCIDProfile(input: {
-  ocid: string | null;
-  ocid_eth_address: string | null;
-}): Promise<void> {
+export async function updateCurrentProfile(updates: ProfileUpdate): Promise<Profile> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Chưa đăng nhập");
+  return updateProfileForUser(user, updates);
+}
+
+export async function updateOCIDProfileForUser(
+  user: User,
+  input: {
+    ocid: string | null;
+    ocid_eth_address: string | null;
+  },
+): Promise<void> {
   const now = new Date().toISOString();
   const willConnect = Boolean(input.ocid);
   const { error } = await supabase
@@ -247,7 +286,18 @@ export async function updateOCIDProfile(input: {
     })
     .eq("id", user.id);
   if (error) throw new Error(error.message);
-  invalidateCurrentProfileCache();
+  invalidateCurrentProfileCache(user.id);
+}
+
+export async function updateOCIDProfile(input: {
+  ocid: string | null;
+  ocid_eth_address: string | null;
+}): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Chưa đăng nhập");
+  await updateOCIDProfileForUser(user, input);
 }
 
 export async function getAllProfiles(): Promise<Profile[]> {
@@ -286,13 +336,17 @@ export function invalidateInstructorProfilesCache() {
   instructorProfilesCache.clear();
 }
 
+export async function uploadAvatarForUser(user: User, file: File): Promise<string> {
+  const { url } = await uploadUserAvatar(user.id, file);
+  return url;
+}
+
 export async function uploadAvatar(file: File): Promise<string> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Chưa đăng nhập");
-  const { url } = await uploadUserAvatar(user.id, file);
-  return url;
+  return uploadAvatarForUser(user, file);
 }
 
 export async function updateProfileAdmin(userId: string, updates: ProfileUpdate): Promise<void> {
@@ -302,6 +356,7 @@ export async function updateProfileAdmin(userId: string, updates: ProfileUpdate)
   });
   const { error } = await supabase.from("profiles").update(payload).eq("id", userId);
   if (error) throw new Error(error.message);
+  invalidateCurrentProfileCache(userId);
 }
 
 export async function getPublicProfileByHandle(handle: string): Promise<PublicProfile | null> {

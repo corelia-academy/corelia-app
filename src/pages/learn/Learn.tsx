@@ -36,10 +36,11 @@ export default function Learn() {
     lessonId?: string;
   }>();
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const courseLoad = useLearnCourseLoad({
     courseId,
     loadCourseErrorFallback: translate("detail.loadCourseErrorFallback"),
+    viewer: user,
   });
 
   const access = useLearnEnrollmentAccess({
@@ -77,6 +78,7 @@ export default function Learn() {
   const submission = useLearnSubmission({
     courseId,
     profileId: profile?.id,
+    viewer: user,
   });
 
   useEffect(() => {
@@ -153,7 +155,7 @@ export default function Learn() {
     if (!currentLesson || !courseId || !access.hasFullCourseAccess) return;
     if (isDraftLesson) return;
     try {
-      await setLessonProgress(currentLesson.id, courseId, true);
+      await setLessonProgress(currentLesson.id, courseId, true, undefined, user);
       progress.setProgressList((prev) => {
         const existing = prev.find((progress) => progress.lesson_id === currentLesson.id);
         const next = prev.filter((progress) => progress.lesson_id !== currentLesson.id);

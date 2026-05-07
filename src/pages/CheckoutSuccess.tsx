@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ArrowRight, BookOpen, Loader2, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
 import { verifySePayPayment } from "@/lib/payments";
 import { toast } from "sonner";
@@ -16,20 +17,21 @@ type StoredCheckout = {
 
 async function waitForSupabaseUser(maxMs: number): Promise<boolean> {
   const started = Date.now();
-  let interval = 100;
+  let interval = 400;
   while (Date.now() - started < maxMs) {
     const {
       data: { session },
     } = await supabase.auth.getSession();
     if (session?.user) return true;
     await new Promise((r) => window.setTimeout(r, interval));
-    interval = Math.min(500, interval + 50);
+    interval = Math.min(2000, Math.round(interval * 1.4));
   }
   return false;
 }
 
 export default function CheckoutSuccess() {
   const { t } = useTranslation("courses");
+  const { user: storeUser } = useAuth();
   const { courseId, purpose } = useParams<{ courseId: string; purpose: string }>();
   const navigate = useNavigate();
   const [seconds, setSeconds] = useState(10);
@@ -69,7 +71,10 @@ export default function CheckoutSuccess() {
 
     void (async () => {
       setStatusMessage(t("detail.checkoutSuccess.restoringSession"));
-      const hasUser = await waitForSupabaseUser(30_000);
+      let hasUser = Boolean(storeUser);
+      if (!hasUser) {
+        hasUser = await waitForSupabaseUser(30_000);
+      }
       if (cancelled) return;
 
       if (!hasUser) {
@@ -126,7 +131,7 @@ export default function CheckoutSuccess() {
     return () => {
       cancelled = true;
     };
-  }, [courseId, purpose, t]);
+  }, [courseId, purpose, storeUser, t]);
 
   useEffect(() => {
     if (verifying || seconds > 0) return;

@@ -1,3 +1,4 @@
+import type { User } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState } from "react";
 import { getSubmission, submitFinalAssignment } from "@/lib/finalAssignment";
 
@@ -6,6 +7,7 @@ type SubmissionRow = Awaited<ReturnType<typeof getSubmission>>;
 interface UseLearnSubmissionInput {
   courseId: string | undefined;
   profileId: string | undefined;
+  viewer?: User | null;
 }
 
 interface UseLearnSubmissionResult {
@@ -21,6 +23,7 @@ interface UseLearnSubmissionResult {
 export function useLearnSubmission({
   courseId,
   profileId,
+  viewer,
 }: UseLearnSubmissionInput): UseLearnSubmissionResult {
   const [submission, setSubmission] = useState<SubmissionRow>(null);
 
@@ -49,11 +52,12 @@ export function useLearnSubmission({
         courseId,
         input.content.trim(),
         input.fileUrls?.length ? input.fileUrls : undefined,
+        viewer,
       );
       setSubmission(row);
       return row;
     },
-    [courseId],
+    [courseId, viewer],
   );
 
   return {
