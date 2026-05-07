@@ -25,6 +25,13 @@ jobs:
       deployments: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Needed for git diff between github.event.before and github.sha
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
       - name: Detect Supabase changes
         id: changes
