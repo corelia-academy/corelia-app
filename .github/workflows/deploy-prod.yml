@@ -62,19 +62,12 @@ jobs:
             BEFORE="$(git rev-parse "${AFTER}^" 2>/dev/null || true)"
           fi
           if [[ -z "${BEFORE}" ]]; then
-            echo "migrations_changed=true" >> "$GITHUB_OUTPUT"
             echo "functions_changed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           CHANGED="$(git diff --name-only "$BEFORE" "$AFTER")"
           echo "$CHANGED"
-
-          if echo "$CHANGED" | grep -qE '^supabase/migrations/'; then
-            echo "migrations_changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "migrations_changed=false" >> "$GITHUB_OUTPUT"
-          fi
 
           if echo "$CHANGED" | grep -qE '^supabase/functions/'; then
             echo "functions_changed=true" >> "$GITHUB_OUTPUT"
@@ -83,13 +76,11 @@ jobs:
           fi
 
       - name: Setup Supabase CLI
-        if: steps.changes.outputs.migrations_changed == 'true' || steps.changes.outputs.functions_changed == 'true'
         uses: supabase/setup-cli@v1
         with:
           version: latest
 
       - name: Apply Supabase migrations
-        if: steps.changes.outputs.migrations_changed == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
