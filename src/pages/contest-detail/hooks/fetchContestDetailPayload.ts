@@ -22,6 +22,7 @@ import type {
   ContestStatus,
 } from "@/types/contests";
 import type { Profile } from "@/types/database";
+import type { User } from "@supabase/supabase-js";
 
 export type RubricWeightsForm = {
   product: string;
@@ -57,6 +58,8 @@ export type FetchContestDetailPayloadInput = {
   id: string;
   profile: Profile | null;
   userEmail: string | undefined;
+  /** Resolved viewer after auth init; avoids redundant `getUser` in parallel contest fetches. */
+  viewer?: User | null;
   isManager: boolean;
   translate: (key: string, options?: Record<string, unknown>) => string;
   signal: AbortSignal;
@@ -71,6 +74,7 @@ export async function fetchContestDetailPayload({
   id,
   profile,
   userEmail,
+  viewer,
   isManager,
   translate,
   signal,
@@ -122,7 +126,7 @@ export async function fetchContestDetailPayload({
     );
   } else {
     tasks.push(
-      getMyContestRegistration(id).then((item) => {
+      getMyContestRegistration(id, viewer).then((item) => {
         registrationSelf = item;
         teamName = item?.team_name ?? "";
         teamMembersText = (item?.team_members ?? []).join("\n");
@@ -151,7 +155,7 @@ export async function fetchContestDetailPayload({
     );
   } else {
     tasks.push(
-      getMyContestSubmission(id).then((item) => {
+      getMyContestSubmission(id, viewer).then((item) => {
         mySubmission = item;
         submissionTitle = item?.title ?? "";
         submissionSummary = item?.summary ?? "";
@@ -170,7 +174,7 @@ export async function fetchContestDetailPayload({
     );
   } else {
     tasks.push(
-      getMyContestAccessInvite(id).then((item) => {
+      getMyContestAccessInvite(id, viewer).then((item) => {
         myInvite = item;
       }),
     );

@@ -40,6 +40,7 @@ import {
   PageContainer,
   PageSectionCard,
 } from "@/components/layouts/PagePrimitives";
+import { useAuth } from "@/stores/authStore";
 
 type ContestsT = TFunction<"contests", undefined>;
 
@@ -92,6 +93,7 @@ function formatDateRange(
 }
 
 export default function AdminContestsListPage() {
+  const { authInitialized, user } = useAuth();
   const { t } = useTranslation("contests");
   const navigate = useNavigate();
   const [items, setItems] = useState<Contest[]>([]);
@@ -101,8 +103,10 @@ export default function AdminContestsListPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!authInitialized) return;
+
     let cancelled = false;
-    listContests()
+    listContests(user ?? null)
       .then((data) => {
         if (!cancelled) setItems(data);
       })
@@ -117,7 +121,7 @@ export default function AdminContestsListPage() {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [authInitialized, t, user?.id]);
 
   const stats = useMemo(() => {
     const total = items.length;

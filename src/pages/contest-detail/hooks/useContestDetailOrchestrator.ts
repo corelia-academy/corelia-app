@@ -77,7 +77,7 @@ export function useContestDetailOrchestrator({
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, user, isAuthenticated } = useAuth();
+  const { profile, user, isAuthenticated, authInitialized } = useAuth();
 
   const contestLoad = useContestLoad({
     contestId: id,
@@ -472,7 +472,7 @@ export function useContestDetailOrchestrator({
   const loadAbortRef = useRef<AbortController | null>(null);
 
   const loadContestData = useCallback(async () => {
-    if (!id) return;
+    if (!id || !authInitialized) return;
     loadAbortRef.current?.abort();
     const ctrl = new AbortController();
     loadAbortRef.current = ctrl;
@@ -483,6 +483,7 @@ export function useContestDetailOrchestrator({
         id,
         profile,
         userEmail: user?.email ?? undefined,
+        viewer: user ?? null,
         isManager,
         translate,
         signal: ctrl.signal,
@@ -519,6 +520,7 @@ export function useContestDetailOrchestrator({
     hydrateRegistrationFromPayload,
     id,
     isManager,
+    authInitialized,
     profile,
     setContest,
     setError,

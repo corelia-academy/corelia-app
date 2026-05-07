@@ -9,17 +9,21 @@ import {
   pickCourseContentLocale,
 } from "@/lib/courses";
 import { listContests } from "@/lib/contests";
+import { useAuth } from "@/stores/authStore";
 
 export function useHomeCatalogAndContests() {
+  const { authInitialized, user } = useAuth();
   const [courseCatalog, setCourseCatalog] = useState<Course[]>([]);
   const [contests, setContests] = useState<Contest[]>([]);
 
   useEffect(() => {
+    if (!authInitialized) return;
+
     let cancelled = false;
 
     void Promise.all([
       getPublishedCourses().catch(() => [] as Course[]),
-      listContests().catch(() => [] as Contest[]),
+      listContests(user ?? null).catch(() => [] as Contest[]),
     ]).then(([publishedCourses, contestList]) => {
       if (cancelled) return;
       // Localize only what Home actually shows (avoid N+1 over large catalogs).
@@ -49,7 +53,7 @@ export function useHomeCatalogAndContests() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authInitialized, user?.id]);
 
   return { courseCatalog, contests };
 }

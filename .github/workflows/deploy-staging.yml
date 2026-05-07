@@ -1,3 +1,6 @@
+# Deploys Supabase (migrations + Edge functions) only.
+# The Vite SPA / Workers frontend is NOT published by this workflow — deploy it separately
+# (e.g. Cloudflare Pages/Workers) or staging may keep serving an older JS bundle.
 name: Deploy Staging
 
 on:

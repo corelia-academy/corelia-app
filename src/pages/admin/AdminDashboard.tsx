@@ -9,6 +9,7 @@ import type { DashboardPinnedProgram, DashboardPinnedProgramType } from "@/types
 import type { Course } from "@/types/courses";
 import type { Contest } from "@/types/contests";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/stores/authStore";
 
 type ProgramOption = {
   value: string;
@@ -58,6 +59,7 @@ function toEditable(item: DashboardPinnedProgram, order: number): EditablePinned
 }
 
 export default function AdminDashboard() {
+  const { authInitialized, user } = useAuth();
   const { t } = useTranslation("admin");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -72,6 +74,8 @@ export default function AdminDashboard() {
   const [contests, setContests] = useState<Contest[]>([]);
 
   useEffect(() => {
+    if (!authInitialized) return;
+
     let cancelled = false;
 
     async function loadPage() {
@@ -82,7 +86,7 @@ export default function AdminDashboard() {
           await Promise.all([
             getHomeDashboardConfig(),
             getPublishedCourses().catch(() => [] as Course[]),
-            listContests().catch(() => [] as Contest[]),
+            listContests(user ?? null).catch(() => [] as Contest[]),
           ]);
 
         if (cancelled) return;
@@ -114,7 +118,7 @@ export default function AdminDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [authInitialized, t, user?.id]);
 
   const programOptions = useMemo<ProgramOption[]>(() => {
     return [

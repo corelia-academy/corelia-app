@@ -3,6 +3,20 @@ import "./styles/globals.css";
 import "./i18n";
 import App from "./App";
 import { OCConnect } from "@opencampus/ocid-connect-js";
+import { supabase } from "@/lib/supabase";
+import { installAuthDebugTelemetry } from "@/lib/authTelemetry";
+
+declare global {
+  interface Window {
+    __CORELIA_BUILD__?: { version: string };
+  }
+}
+
+window.__CORELIA_BUILD__ = {
+  version: import.meta.env.VITE_APP_VERSION,
+};
+
+installAuthDebugTelemetry(supabase);
 
 const ocidOpts = {
   clientId: import.meta.env.VITE_OCID_CLIENT_ID,

@@ -174,10 +174,14 @@ export async function verifySePayPayment(payload: {
   orderId?: string;
   courseId?: string;
   purpose?: PaymentPurpose;
+  /** When set, skips internal `getSession()` (avoids hammering auth during polling). */
+  accessToken?: string;
 }): Promise<VerifySePayPaymentResponse> {
   const endpoint =
     import.meta.env.VITE_SEPAY_VERIFY_API || coreliaEdgeUrl("payments.sepay.verify");
-  const token = await getAccessToken();
+  const { accessToken: accessTokenOverride, ...verifyBody } = payload;
+  const token =
+    accessTokenOverride !== undefined ? accessTokenOverride : await getAccessToken();
   requireAccessToken(token);
   const res = await fetch(endpoint, {
     method: "POST",
@@ -186,7 +190,7 @@ export async function verifySePayPayment(payload: {
       ...supabaseFunctionHeaders(token),
     },
     credentials: "include",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(verifyBody),
   });
 
   const data = (await res.json().catch(() => ({}))) as Partial<

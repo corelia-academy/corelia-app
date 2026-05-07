@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { verifySePayPayment } from "@/lib/payments";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import type { Session } from "@supabase/supabase-js";
 
 type StoredCheckout = {
   orderId?: string;
@@ -15,18 +16,28 @@ type StoredCheckout = {
   createdAt?: number;
 };
 
-async function waitForSupabaseUser(maxMs: number): Promise<boolean> {
-  const started = Date.now();
-  let interval = 400;
-  while (Date.now() - started < maxMs) {
+async function waitForActiveSession(maxMs: number): Promise<Session | null> {
+  const {
+    data: { session: initial },
+  } = await supabase.auth.getSession();
+  if (initial?.user) return initial;
+
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(() => {
+      subscription.unsubscribe();
+      resolve(null);
+    }, maxMs);
+
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.user) return true;
-    await new Promise((r) => window.setTimeout(r, interval));
-    interval = Math.min(2000, Math.round(interval * 1.4));
-  }
-  return false;
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        window.clearTimeout(timer);
+        subscription.unsubscribe();
+        resolve(session);
+      }
+    });
+  });
 }
 
 export default function CheckoutSuccess() {
@@ -71,13 +82,17 @@ export default function CheckoutSuccess() {
 
     void (async () => {
       setStatusMessage(t("detail.checkoutSuccess.restoringSession"));
-      let hasUser = Boolean(storeUser);
-      if (!hasUser) {
-        hasUser = await waitForSupabaseUser(30_000);
+      let session =
+        storeUser != null
+          ? (await supabase.auth.getSession()).data.session
+          : null;
+      if (!session?.user) {
+        session = await waitForActiveSession(30_000);
       }
       if (cancelled) return;
 
-      if (!hasUser) {
+      const accessToken = session?.access_token ?? null;
+      if (!accessToken) {
         setVerifying(false);
         setStatusMessage(
           t("detail.checkoutSuccess.sessionNotReady"),
@@ -93,6 +108,7 @@ export default function CheckoutSuccess() {
             orderId,
             courseId,
             purpose: purpose === "certificate_fee" ? "certificate_fee" : "course_purchase",
+            accessToken,
           });
           if (cancelled) return;
           if (result.full_access_granted || result.certificate_fee_paid) {

@@ -28,7 +28,7 @@ export default function Contests() {
       String(t(key as never, options as never)),
     [t],
   );
-  const { profile } = useAuth();
+  const { profile, user, authInitialized } = useAuth();
   const [items, setItems] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,8 +57,10 @@ export default function Contests() {
   };
 
   useEffect(() => {
+    if (!authInitialized) return;
+
     let cancelled = false;
-    listContests()
+    listContests(user ?? null)
       .then((data) => {
         if (!cancelled) setItems(data);
       })
@@ -73,7 +75,7 @@ export default function Contests() {
     return () => {
       cancelled = true;
     };
-  }, [translate]);
+  }, [authInitialized, translate, user?.id]);
 
   const isManager = canManageContests(profile);
 
