@@ -10,8 +10,8 @@ export function ContestPublicRulesSection(props: {
 
   return (
     <Card>
-      <CardContent className="p-6">
-        <h2 className="text-lg font-medium tracking-tight text-foreground">
+      <CardContent className="p-4">
+        <h2 className="text-lg font-semibold text-foreground">
           {t("detail.labels.rulesPublic")}
         </h2>
         {contest.rules?.trim()

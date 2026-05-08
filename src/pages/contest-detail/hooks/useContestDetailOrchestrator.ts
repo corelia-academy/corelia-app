@@ -3,13 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import {
-  canManageContests,
-  canReviewContestApplications,
-  canScoreContest,
-  canViewContestAggregateMetrics,
-  getContestScopedViewerRoles,
-} from "@/lib/permissions";
-import {
   buildContestLeaderboard,
   createContestAccessInvite,
   deleteContest,
@@ -29,12 +22,11 @@ import { useAuth } from "@/stores/authStore";
 import type {
   Contest,
   ContestAccessInvite,
-  ContestRegistrationStatus,
+  ContestScopedViewerRole,
   ContestScore,
   ContestWinnerInput,
   ContestTimelineMilestone,
 } from "@/types/contests";
-import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import { buildContestTimelineRows } from "@/components/contests/contestTimelineBuilders";
 import type { ContestPublicSection } from "@/pages/contest-detail/types";
@@ -44,13 +36,16 @@ import {
 } from "@/pages/contest-detail/utils/datetime";
 import {
   formatContestCountdown,
-  scrollToElementById,
   downloadTextFile,
 } from "@/pages/contest-detail/utils/contestDetailHelpers";
+import { deriveContestPublicPhase } from "@/pages/contest-detail/utils/contestPhase";
+import { formatContestDate } from "@/pages/contest-detail/utils/formatContestDate";
 import { fetchContestDetailPayload } from "./fetchContestDetailPayload";
+import { deriveContestDetailPermissions } from "./useContestDetailPermissions";
 import { useContestInviteWorkspace } from "./useContestInviteWorkspace";
 import { useContestJudgingWorkspace } from "./useContestJudgingWorkspace";
 import { useContestLoad } from "./useContestLoad";
+import { useContestDetailLabels } from "./useContestDetailLabels";
 import { useContestManagerWorkspace } from "./useContestManagerWorkspace";
 import {
   useContestRegistrationFlow,
@@ -127,6 +122,10 @@ export function useContestDetailOrchestrator({
     setMySubmission,
     savingScoreId,
     setSavingScoreId,
+    selectedTrackId,
+    setSelectedTrackId,
+    selectedRoundId,
+    setSelectedRoundId,
     submissionTitle,
     setSubmissionTitle,
     submissionSummary,
@@ -162,8 +161,8 @@ export function useContestDetailOrchestrator({
     setInviteOrganization,
     inviteNote,
     setInviteNote,
-    inviteRole,
-    setInviteRole,
+    inviteRoles,
+    setInviteRoles,
     inviteActionId,
     setInviteActionId,
     hydrateFromPayload: hydrateInvitesFromPayload,
@@ -179,10 +178,20 @@ export function useContestDetailOrchestrator({
     setRefreshingMetrics,
     savingRubric,
     setSavingRubric,
+    savingTracksRounds,
+    setSavingTracksRounds,
     deletingContest,
     setDeletingContest,
     rubricWeights,
     setRubricWeights,
+    tracksDraft,
+    setTracksDraft,
+    roundsDraft,
+    setRoundsDraft,
+    activeRoundIdDraft,
+    setActiveRoundIdDraft,
+    anonymousJudgingDraft,
+    setAnonymousJudgingDraft,
     deleteDialogOpen,
     setDeleteDialogOpen,
     deleteConfirmText,
@@ -200,43 +209,18 @@ export function useContestDetailOrchestrator({
     hydrateContestMetaFromPayload,
   } = managerWs;
 
-  const statusLabel = useCallback(
-    (status: Contest["status"]): string =>
-      translate(`status.${status}`, {
-        defaultValue: translate("status.unknown"),
-      }),
-    [translate],
-  );
-
-  const registrationStatusLabel = useCallback(
-    (status: ContestRegistrationStatus): string =>
-      translate(`registrationStatus.${status}`, {
-        defaultValue: translate("registrationStatus.unknown"),
-      }),
-    [translate],
-  );
-
-  const locationLabel = useCallback(
-    (loc: Contest["location"]): string =>
-      translate(`location.${loc}`, {
-        defaultValue: translate("location.unknown"),
-      }),
-    [translate],
-  );
+  const { statusLabel, registrationStatusLabel, locationLabel } =
+    useContestDetailLabels(translate);
 
   const formatDateTime = useCallback(
-    (value: string | null): string => {
-      if (!value) return translate("detail.notUpdated");
-      return new Date(value).toLocaleString(intlLocale());
-    },
+    (value: string | null): string =>
+      formatContestDate(value, "long", translate("detail.notUpdated")),
     [translate],
   );
 
   const formatDate = useCallback(
-    (value: string | null): string => {
-      if (!value) return translate("detail.notUpdated");
-      return new Date(value).toLocaleDateString(intlLocale());
-    },
+    (value: string | null): string =>
+      formatContestDate(value, "short", translate("detail.notUpdated")),
     [translate],
   );
 
@@ -244,17 +228,25 @@ export function useContestDetailOrchestrator({
   const [activeManageSection, setActiveManageSection] =
     useState<string>("overview");
 
-  const isManager = canManageContests(profile);
-  const canReview = canReviewContestApplications(contest, profile);
-  const canJudge = canScoreContest(contest, profile, user?.email);
-  const canViewAggregate = canViewContestAggregateMetrics(
-    contest,
-    profile,
-    user?.email,
+  const {
+    isManager,
+    canReview,
+    canJudge,
+    canViewAggregate,
+    viewerRoles,
+    isManageView,
+    canAccessWorkspace,
+  } = useMemo(
+    () =>
+      deriveContestDetailPermissions({
+        contest,
+        profile,
+        userEmail: user?.email,
+        forceManageView,
+        pathname: location.pathname,
+      }),
+    [contest, forceManageView, location.pathname, profile, user?.email],
   );
-  const viewerRoles = getContestScopedViewerRoles(contest, user?.email);
-  const isManageView = forceManageView ?? location.pathname.endsWith("/manage");
-  const canAccessWorkspace = isManager || canJudge || canViewAggregate;
 
   const manageSections = useMemo(
     () =>
@@ -294,8 +286,26 @@ export function useContestDetailOrchestrator({
   );
 
   const leaderboard = useMemo(
-    () => buildContestLeaderboard(submissions, scores),
-    [submissions, scores],
+    () => {
+      const roundId =
+        selectedRoundId ?? contest?.judging?.active_round_id ?? "final";
+      const trackId = selectedTrackId ?? contest?.tracks?.[0]?.id ?? null;
+      const filteredSubmissions = trackId
+        ? submissions.filter((s) => (s.track_id ?? null) === trackId)
+        : submissions;
+      const filteredScores = scores.filter(
+        (s) => (s.round_id ?? "final") === roundId,
+      );
+      return buildContestLeaderboard(filteredSubmissions, filteredScores);
+    },
+    [
+      contest?.judging?.active_round_id,
+      contest?.tracks,
+      scores,
+      selectedRoundId,
+      selectedTrackId,
+      submissions,
+    ],
   );
 
   const activeManageSectionMeta = useMemo(() => {
@@ -357,12 +367,31 @@ export function useContestDetailOrchestrator({
 
   const judgeOwnScores = useMemo(() => {
     if (!user) return new Map<string, ContestScore>();
+    const roundId = selectedRoundId ?? contest?.judging?.active_round_id ?? "final";
     return new Map(
       scores
-        .filter((score) => score.judge_uid === user.id)
+        .filter(
+          (score) =>
+            score.judge_uid === user.id &&
+            (score.round_id ?? "final") === roundId,
+        )
         .map((score) => [score.submission_id, score]),
     );
-  }, [scores, user]);
+  }, [contest?.judging?.active_round_id, scores, selectedRoundId, user]);
+
+  useEffect(() => {
+    if (!contest) return;
+    if (!canJudge || !isManageView) return;
+
+    setSelectedTrackId((prev) => prev ?? contest.tracks?.[0]?.id ?? "general");
+    setSelectedRoundId(
+      (prev) =>
+        prev ??
+        contest.judging?.active_round_id ??
+        contest.rounds?.[0]?.id ??
+        "final",
+    );
+  }, [canJudge, contest, isManageView, setSelectedRoundId, setSelectedTrackId]);
 
   const timelineRows = useMemo(() => {
     if (!contest) return [];
@@ -380,62 +409,173 @@ export function useContestDetailOrchestrator({
     });
   }, [contest, formatDateTime, translate]);
 
-  const registrationCountdownLabel = useMemo(
-    () => {
-      if (!contest?.registration_deadline) return null;
-      const end = new Date(contest.registration_deadline).getTime();
-      const now = Date.now();
-      if (now >= end) return translate("detail.hero.registrationClosed");
-      return translate("detail.hero.registrationCountdown", {
-        time: formatContestCountdown(end - now, translate),
-      });
-    },
-    // countdownTick periodically refreshes hero countdown copy (~30s interval)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- countdownTick intentionally busts memo
-    [contest?.registration_deadline, countdownTick, translate],
+  const contestPublicPhase = useMemo(
+    () => (contest ? deriveContestPublicPhase(contest) : null),
+    [contest],
   );
 
-  const contestEndsLabel = useMemo(
-    () => {
-      if (!contest?.ends_at) return null;
-      const end = new Date(contest.ends_at).getTime();
-      const now = Date.now();
-      if (now >= end) return translate("detail.hero.contestEnded");
-      return translate("detail.hero.contestEndsCountdown", {
-        time: formatContestCountdown(end - now, translate),
-      });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- countdownTick intentionally busts memo
-    [contest?.ends_at, countdownTick, translate],
-  );
+  const publicPhaseBadgeLabel = useMemo(() => {
+    if (!contest || contestPublicPhase == null) return "";
+    switch (contestPublicPhase) {
+      case "ended":
+        return translate("detail.phase.badgeEnded");
+      case "in_progress":
+        return translate("detail.phase.badgeLive");
+      case "registration_open":
+        return translate("detail.phase.badgeRegistrationOpen");
+      case "registration_closed_before_start":
+        return translate("detail.phase.badgeRegClosedBeforeStart");
+      default:
+        return statusLabel(contest.status);
+    }
+  }, [contest, contestPublicPhase, statusLabel, translate]);
+
+  const publicHeroHighlights = useMemo(() => {
+    void countdownTick;
+    if (!contest || isManageView || contestPublicPhase == null) return [];
+
+    const now = Date.now();
+    const total = Number(contest.metrics_snapshot.registrations_total ?? 0);
+    const approved = Number(contest.metrics_snapshot.approved_registrations ?? 0);
+    const lines: string[] = [];
+
+    switch (contestPublicPhase) {
+      case "registration_open": {
+        if (total > 0) {
+          lines.push(
+            translate("detail.phase.hero.registrationsCount", {
+              count: total,
+            }),
+          );
+        } else {
+          lines.push(translate("detail.phase.hero.noApplicationsYet"));
+        }
+        if (contest.registration_deadline) {
+          const end = new Date(contest.registration_deadline).getTime();
+          if (now >= end) {
+            lines.push(translate("detail.hero.registrationClosed"));
+          } else {
+            lines.push(
+              translate("detail.hero.registrationCountdown", {
+                time: formatContestCountdown(end - now, translate),
+              }),
+            );
+          }
+        }
+        break;
+      }
+      case "registration_closed_before_start": {
+        lines.push(translate("detail.phase.hero.registrationWindowClosed"));
+        if (contest.starts_at) {
+          const kickoff = new Date(contest.starts_at).getTime();
+          if (now < kickoff) {
+            lines.push(
+              translate("detail.phase.hero.kickoffCountdown", {
+                time: formatContestCountdown(kickoff - now, translate),
+              }),
+            );
+          }
+        }
+        break;
+      }
+      case "in_progress": {
+        if (approved > 0) {
+          lines.push(
+            translate("detail.phase.hero.approvedTeams", { count: approved }),
+          );
+        } else {
+          lines.push(translate("detail.phase.hero.noApprovedTeamsYet"));
+        }
+        if (contest.ends_at) {
+          const end = new Date(contest.ends_at).getTime();
+          if (now >= end) {
+            lines.push(translate("detail.hero.contestEnded"));
+          } else {
+            lines.push(
+              translate("detail.hero.contestEndsCountdown", {
+                time: formatContestCountdown(end - now, translate),
+              }),
+            );
+          }
+        }
+        break;
+      }
+      case "ended":
+      default: {
+        lines.push(translate("detail.phase.hero.contestConcluded"));
+        if (approved > 0) {
+          lines.push(
+            translate("detail.phase.hero.participatedTeams", {
+              count: approved,
+            }),
+          );
+        }
+      }
+    }
+
+    return lines.slice(0, 3);
+  }, [contest, contestPublicPhase, countdownTick, isManageView, translate]);
 
   const publicCta = useMemo(() => {
-    if (isManageView) return null;
+    if (isManageView || !contest) return null;
+
     if (registration?.status === "approved") {
       return {
         label: mySubmission
           ? translate("detail.cta.continueSubmission")
           : translate("detail.cta.submitSubmission"),
         helper: translate("detail.cta.approvedHelper"),
+        variant: "default" as const,
+        navigateTo: `/contests/${contest.id}/apply`,
       };
     }
     if (registration) {
       return {
         label: translate("detail.cta.viewApplicationStatus"),
         helper: translate("detail.cta.pendingHelper"),
+        variant: "outline" as const,
+        navigateTo: `/contests/${contest.id}/apply`,
       };
     }
-    if (contest?.status === "published") {
-      return {
-        label: translate("detail.cta.register"),
-        helper: translate("detail.cta.registerHelper"),
-      };
+
+    const phase = deriveContestPublicPhase(contest);
+    const showProjects =
+      contest.status === "ended" && contest.published_leaderboard.length > 0;
+
+    switch (phase) {
+      case "ended":
+        return {
+          label: translate("detail.cta.viewResults"),
+          helper: translate("detail.cta.viewResultsHelper"),
+          variant: "outline" as const,
+          navigateTo: showProjects
+            ? `/contests/${contest.id}/projects`
+            : `/contests/${contest.id}/timeline`,
+        };
+      case "in_progress":
+        return {
+          label: translate("detail.cta.followContest"),
+          helper: translate("detail.cta.inProgressVisitorHelper"),
+          variant: "outline" as const,
+          navigateTo: `/contests/${contest.id}/timeline`,
+        };
+      case "registration_open":
+        return {
+          label: translate("detail.cta.register"),
+          helper: translate("detail.cta.registerHelper"),
+          variant: "default" as const,
+          navigateTo: `/contests/${contest.id}/apply`,
+        };
+      case "registration_closed_before_start":
+      default:
+        return {
+          label: translate("detail.cta.viewSchedule"),
+          helper: translate("detail.cta.regClosedBeforeKickoffHelper"),
+          variant: "outline" as const,
+          navigateTo: `/contests/${contest.id}/timeline`,
+        };
     }
-    return {
-      label: translate("detail.cta.trackTimeline"),
-      helper: translate("detail.cta.trackTimelineHelper"),
-    };
-  }, [contest?.status, isManageView, mySubmission, registration, translate]);
+  }, [contest, isManageView, mySubmission, registration, translate]);
 
   const registrationDraftReady = useMemo(() => {
     return contactEmail.trim().length > 0 && motivation.trim().length >= 24;
@@ -527,7 +667,7 @@ export function useContestDetailOrchestrator({
     setError,
     setLoading,
     translate,
-    user?.email,
+    user,
     contest,
   ]);
 
@@ -542,19 +682,6 @@ export function useContestDetailOrchestrator({
     );
     return () => window.clearInterval(idInterval);
   }, []);
-
-  useEffect(() => {
-    if (
-      !window.location.hash ||
-      window.location.hash !== "#participant-workspace"
-    )
-      return;
-    const timer = window.setTimeout(
-      () => scrollToElementById("participant-workspace"),
-      400,
-    );
-    return () => window.clearTimeout(timer);
-  }, [loading, contest?.id]);
 
   useEffect(() => {
     if (
@@ -574,6 +701,11 @@ export function useContestDetailOrchestrator({
         contest.faqs && contest.faqs.length > 0
           ? contest.faqs.map((f) => ({ ...f }))
           : [{ question: "", answer: "" }],
+      registration_deadline_local: contest.registration_deadline
+        ? isoToDatetimeLocal(contest.registration_deadline)
+        : "",
+      starts_at_local: contest.starts_at ? isoToDatetimeLocal(contest.starts_at) : "",
+      ends_at_local: contest.ends_at ? isoToDatetimeLocal(contest.ends_at) : "",
       milestones:
         contest.timeline_milestones && contest.timeline_milestones.length > 0
           ? contest.timeline_milestones.map((m) => ({
@@ -605,12 +737,13 @@ export function useContestDetailOrchestrator({
       "overview",
       ...(canReview ? ["applications"] : []),
       ...(canJudge ? ["judging"] : []),
+      ...(canViewAggregate ? ["analytics"] : []),
       ...(isManager ? ["settings"] : []),
     ];
     setActiveManageSection((prev) =>
       valid.includes(prev) ? prev : (valid[0] ?? "overview"),
     );
-  }, [canJudge, canReview, isManageView, isManager]);
+  }, [canJudge, canReview, canViewAggregate, isManageView, isManager]);
 
   useEffect(() => {
     setScoreDrafts((prev) => {
@@ -648,7 +781,7 @@ export function useContestDetailOrchestrator({
     try {
       await deleteContest(contest.id);
       toast.success(translate("detail.actions.deleteSuccess"));
-      navigate("/admin/contests", { replace: true });
+      navigate("/contests", { replace: true });
     } catch (err) {
       const message =
         err instanceof Error
@@ -791,7 +924,7 @@ export function useContestDetailOrchestrator({
     try {
       await createContestAccessInvite(id, {
         email: inviteEmail,
-        roles: [inviteRole],
+        roles: inviteRoles.length > 0 ? inviteRoles : ["judge"],
         display_name: inviteDisplayName,
         organization_name: inviteOrganization,
         note: inviteNote,
@@ -800,6 +933,7 @@ export function useContestDetailOrchestrator({
       setInviteDisplayName("");
       setInviteOrganization("");
       setInviteNote("");
+      setInviteRoles(["judge"]);
       toast.success(translate("detail.toasts.inviteCreated"));
       await loadContestData();
     } catch (err) {
@@ -817,7 +951,7 @@ export function useContestDetailOrchestrator({
     inviteEmail,
     inviteNote,
     inviteOrganization,
-    inviteRole,
+    inviteRoles,
     isManager,
     loadContestData,
     savingInvite,
@@ -825,9 +959,84 @@ export function useContestDetailOrchestrator({
     setInviteEmail,
     setInviteNote,
     setInviteOrganization,
+    setInviteRoles,
     setSavingInvite,
     translate,
   ]);
+
+  const handleBulkInviteCsv = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+      if (!file || !id || !isManager || savingInvite) return;
+
+      setSavingInvite(true);
+      try {
+        const text = await file.text();
+        const rows = text
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean);
+        if (rows.length === 0) {
+          toast.error(translate("workspace.manage.bulkInviteEmpty"));
+          return;
+        }
+
+        let successCount = 0;
+        let failCount = 0;
+        const allowedRoles: ContestScopedViewerRole[] = [
+          "judge",
+          "co_organizer",
+          "partner_viewer",
+          "mentor",
+          "reviewer",
+          "co_host_viewer",
+        ];
+
+        for (const row of rows) {
+          const cells = row.split(",").map((cell) => cell.trim());
+          const email = cells[0] ?? "";
+          const rolesCell = cells[1] ?? "";
+          if (!email || email.toLowerCase() === "email") continue; // header
+
+          const rawRoles = rolesCell
+            .split(/[|;]/g)
+            .map((r) => r.trim())
+            .filter(Boolean);
+          const roles = rawRoles.filter((role): role is ContestScopedViewerRole =>
+            allowedRoles.includes(role as ContestScopedViewerRole),
+          );
+
+          try {
+            await createContestAccessInvite(id, {
+              email,
+              roles: roles.length > 0 ? roles : ["judge"],
+            });
+            successCount += 1;
+          } catch {
+            failCount += 1;
+          }
+        }
+
+        toast.success(
+          translate("workspace.manage.bulkInviteDone", {
+            success: successCount,
+            failed: failCount,
+          }),
+        );
+        await loadContestData();
+      } catch (err) {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : translate("workspace.manage.bulkInviteFailed"),
+        );
+      } finally {
+        setSavingInvite(false);
+      }
+    },
+    [id, isManager, loadContestData, savingInvite, setSavingInvite, translate],
+  );
 
   const handleInviteResponse = useCallback(
     async (status: "accepted" | "declined") => {
@@ -917,6 +1126,80 @@ export function useContestDetailOrchestrator({
     savingRubric,
     setContest,
     setSavingRubric,
+    translate,
+  ]);
+
+  const handleTracksRoundsSave = useCallback(async () => {
+    if (!id || !contest || !isManager || savingTracksRounds) return;
+    setSavingTracksRounds(true);
+    try {
+      const tracks = (tracksDraft ?? [])
+        .map((t) => ({
+          id: String(t.id ?? "").trim(),
+          name: String(t.name ?? "").trim(),
+          description: t.description ?? null,
+          active: t.active ?? true,
+          rubric: t.rubric,
+        }))
+        .filter((t) => t.id.length > 0 && t.name.length > 0);
+      const rounds = (roundsDraft ?? [])
+        .map((r) => ({
+          id: String(r.id ?? "").trim(),
+          name: String(r.name ?? "").trim(),
+          opens_at: r.opens_at ?? null,
+          closes_at: r.closes_at ?? null,
+          active: r.active ?? true,
+        }))
+        .filter((r) => r.id.length > 0 && r.name.length > 0);
+
+      if (tracks.length === 0) {
+        toast.error(translate("workspace.manage.tracksNeedOne"));
+        return;
+      }
+      if (rounds.length === 0) {
+        toast.error(translate("workspace.manage.roundsNeedOne"));
+        return;
+      }
+
+      const activeRound =
+        activeRoundIdDraft && rounds.some((r) => r.id === activeRoundIdDraft)
+          ? activeRoundIdDraft
+          : rounds[0]!.id;
+
+      await updateContest(id, {
+        tracks,
+        rounds,
+        judging: { active_round_id: activeRound },
+        config: { ...(contest.config ?? {}), anonymous_judging: anonymousJudgingDraft },
+      });
+
+      const fresh = await getContest(id);
+      if (fresh) {
+        setContest(fresh);
+        onContestSynced?.(fresh);
+      }
+      toast.success(translate("workspace.manage.tracksRoundsSaved"));
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : translate("workspace.manage.tracksRoundsSaveFailed"),
+      );
+    } finally {
+      setSavingTracksRounds(false);
+    }
+  }, [
+    activeRoundIdDraft,
+    anonymousJudgingDraft,
+    contest,
+    id,
+    isManager,
+    onContestSynced,
+    roundsDraft,
+    savingTracksRounds,
+    setContest,
+    setSavingTracksRounds,
+    tracksDraft,
     translate,
   ]);
 
@@ -1191,6 +1474,9 @@ export function useContestDetailOrchestrator({
         .map((f) => ({ question: f.question.trim(), answer: f.answer.trim() }))
         .filter((f) => f.question.length > 0 && f.answer.length > 0);
       await updateContest(id, {
+        registration_deadline: datetimeLocalToIso(publicDraft.registration_deadline_local),
+        starts_at: datetimeLocalToIso(publicDraft.starts_at_local),
+        ends_at: datetimeLocalToIso(publicDraft.ends_at_local),
         prize_pool_summary: publicDraft.prize_pool_summary.trim() || null,
         prizes,
         faqs,
@@ -1218,6 +1504,9 @@ export function useContestDetailOrchestrator({
     isManager,
     onContestSynced,
     publicDraft.faqs,
+    publicDraft.registration_deadline_local,
+    publicDraft.starts_at_local,
+    publicDraft.ends_at_local,
     publicDraft.milestones,
     publicDraft.prize_pool_summary,
     publicDraft.prizes,
@@ -1244,7 +1533,7 @@ export function useContestDetailOrchestrator({
   const handleCopyInviteLink = useCallback(
     async (email: string) => {
       if (!id) return;
-      const link = `${window.location.origin}/admin/contests/${id}/manage?invite=${encodeURIComponent(email)}`;
+      const link = `${window.location.origin}/contests/${id}/manage?invite=${encodeURIComponent(email)}`;
       await navigator.clipboard.writeText(link);
       toast.success(translate("detail.toasts.inviteLinkCopied"));
     },
@@ -1254,7 +1543,7 @@ export function useContestDetailOrchestrator({
   const handleInviteMailTo = useCallback(
     (invite: ContestAccessInvite) => {
       if (!id || !contest) return;
-      const link = `${window.location.origin}/admin/contests/${id}/manage?invite=${encodeURIComponent(invite.email)}`;
+      const link = `${window.location.origin}/contests/${id}/manage?invite=${encodeURIComponent(invite.email)}`;
       const subject = encodeURIComponent(
         translate("detail.inviteEmail.subjectPrefix", { title: contest.title }),
       );
@@ -1339,6 +1628,10 @@ export function useContestDetailOrchestrator({
     scores,
     mySubmission,
     savingScoreId,
+    selectedTrackId,
+    setSelectedTrackId,
+    selectedRoundId,
+    setSelectedRoundId,
     submissionTitle,
     setSubmissionTitle,
     submissionSummary,
@@ -1367,17 +1660,26 @@ export function useContestDetailOrchestrator({
     setInviteOrganization,
     inviteNote,
     setInviteNote,
-    inviteRole,
-    setInviteRole,
+    inviteRoles,
+    setInviteRoles,
     inviteActionId,
     managerStatus,
     setManagerStatus,
     savingStatus,
     refreshingMetrics,
     savingRubric,
+    savingTracksRounds,
     deletingContest,
     rubricWeights,
     setRubricWeights,
+    tracksDraft,
+    setTracksDraft,
+    roundsDraft,
+    setRoundsDraft,
+    activeRoundIdDraft,
+    setActiveRoundIdDraft,
+    anonymousJudgingDraft,
+    setAnonymousJudgingDraft,
     deleteDialogOpen,
     setDeleteDialogOpen,
     deleteConfirmText,
@@ -1405,8 +1707,9 @@ export function useContestDetailOrchestrator({
     manageCollaborationLanes,
     judgeOwnScores,
     timelineRows,
-    registrationCountdownLabel,
-    contestEndsLabel,
+    contestPublicPhase,
+    publicPhaseBadgeLabel,
+    publicHeroHighlights,
     publicCta,
     registrationDraftReady,
     submissionDraftDirty,
@@ -1423,9 +1726,11 @@ export function useContestDetailOrchestrator({
     handleReview,
     handleStatusSave,
     handleInviteCreate,
+    handleBulkInviteCsv,
     handleInviteResponse,
     handleInviteRevoke,
     handleRubricSave,
+    handleTracksRoundsSave,
     handleSubmissionSave,
     handleScoreSave,
     handleRefreshMetrics,

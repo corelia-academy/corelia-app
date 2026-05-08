@@ -13,8 +13,9 @@ export function useContestInviteWorkspace() {
   const [inviteDisplayName, setInviteDisplayName] = useState("");
   const [inviteOrganization, setInviteOrganization] = useState("");
   const [inviteNote, setInviteNote] = useState("");
-  const [inviteRole, setInviteRole] =
-    useState<ContestScopedViewerRole>("judge");
+  const [inviteRoles, setInviteRoles] = useState<ContestScopedViewerRole[]>([
+    "judge",
+  ]);
   const [inviteActionId, setInviteActionId] = useState<string | null>(null);
 
   const hydrateFromPayload = useCallback((payload: ContestDetailFetchedPayload) => {
@@ -37,8 +38,8 @@ export function useContestInviteWorkspace() {
     setInviteOrganization,
     inviteNote,
     setInviteNote,
-    inviteRole,
-    setInviteRole,
+    inviteRoles,
+    setInviteRoles,
     inviteActionId,
     setInviteActionId,
     hydrateFromPayload,

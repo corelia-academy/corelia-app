@@ -1,6 +1,3 @@
-import { NavLink } from "react-router";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { AdminPreviewBar } from "@/components/contests/AdminPreviewBar";
 import type { ContestTimelineRow } from "@/components/contests/ContestTimeline";
@@ -11,76 +8,85 @@ import { ContestPublicPrizesSection } from "@/pages/contest-detail/components/Co
 import { ContestPublicRulesSection } from "@/pages/contest-detail/components/ContestPublicRulesSection";
 import { ContestPublicFaqsSection } from "@/pages/contest-detail/components/ContestPublicFaqsSection";
 import { ContestPublicProjectsSection } from "@/pages/contest-detail/components/ContestPublicProjectsSection";
+import { useContestDetailVm } from "@/pages/contest-detail/ContestDetailContext";
+
+type ContestPublicSectionNonOverview = Exclude<ContestPublicSection, "overview">;
 
 export function ContestDetailPublicSectionPage({
-  contest,
   publicSection,
-  translate,
-  formatDateTime,
-  timelineRows,
-  canAccessWorkspace,
-  isManageView,
-  statusLabel,
+  contest: contestProp,
+  translate: translateProp,
+  formatDateTime: formatDateTimeProp,
+  timelineRows: timelineRowsProp,
+  canAccessWorkspace: canAccessWorkspaceProp,
+  isManageView: isManageViewProp,
+  statusLabel: statusLabelProp,
+  embedded = false,
 }: {
-  contest: Contest;
-  publicSection: Exclude<ContestPublicSection, "overview">;
-  translate: (key: string, options?: Record<string, unknown>) => string;
-  formatDateTime: (value: string | null) => string;
-  timelineRows: ContestTimelineRow[];
-  canAccessWorkspace: boolean;
-  isManageView: boolean;
-  statusLabel: (status: Contest["status"]) => string;
+  publicSection: ContestPublicSectionNonOverview;
+  contest?: Contest;
+  translate?: (key: string, options?: Record<string, unknown>) => string;
+  formatDateTime?: (value: string | null) => string;
+  timelineRows?: ContestTimelineRow[];
+  canAccessWorkspace?: boolean;
+  isManageView?: boolean;
+  statusLabel?: (status: Contest["status"]) => string;
+  /** When true, skip outer PageContainer (shell already provides width). */
+  embedded?: boolean;
 }) {
+  const vm = useContestDetailVm();
+  const contest = contestProp ?? vm.contest;
+  const translate = translateProp ?? vm.translate;
+  const formatDateTime = formatDateTimeProp ?? vm.formatDateTime;
+  const timelineRows = timelineRowsProp ?? vm.timelineRows;
+  const canAccessWorkspace = canAccessWorkspaceProp ?? vm.canAccessWorkspace;
+  const isManageView = isManageViewProp ?? vm.isManageView;
+  const statusLabel = statusLabelProp ?? vm.statusLabel;
+
   const milestonesCustom = (contest.timeline_milestones ?? []).length > 0;
 
-  return (
-    <PageContainer>
-      <div className="mb-4">
-        <Button
-          render={<NavLink to={`/contests/${contest.id}/overview`} />}
-          nativeButton={false}
-          variant="ghost"
-          className="-ml-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          {translate("detail.hero.backToOverview")}
-        </Button>
-      </div>
+  const inner = (
+    <>
       {!isManageView && canAccessWorkspace ? (
         <AdminPreviewBar
           statusLabel={statusLabel(contest.status)}
           primaryAction={{
             label: translate("previewBar.openWorkspace"),
-            to: `/admin/contests/${contest.id}/manage`,
+            to: `/contests/${contest.id}/manage`,
           }}
         />
       ) : null}
 
-      {publicSection === "timeline" ? (
-        <ContestPublicTimelineSection
-          contest={contest}
-          t={translate}
-          milestonesCustom={milestonesCustom}
-          timelineRows={timelineRows}
-          formatDateTime={formatDateTime}
-        />
-      ) : null}
-
-      {publicSection === "prizes" ? (
-        <ContestPublicPrizesSection contest={contest} t={translate} />
-      ) : null}
-
-      {publicSection === "rules" ? (
-        <ContestPublicRulesSection contest={contest} t={translate} />
-      ) : null}
-
-      {publicSection === "faqs" ? (
-        <ContestPublicFaqsSection contest={contest} t={translate} />
-      ) : null}
-
-      {publicSection === "projects" ? (
-        <ContestPublicProjectsSection contest={contest} t={translate} />
-      ) : null}
-    </PageContainer>
+      {(() => {
+        switch (publicSection) {
+          case "timeline":
+            return (
+              <ContestPublicTimelineSection
+                contest={contest}
+                t={translate}
+                milestonesCustom={milestonesCustom}
+                timelineRows={timelineRows}
+                formatDateTime={formatDateTime}
+              />
+            );
+          case "prizes":
+            return <ContestPublicPrizesSection contest={contest} t={translate} />;
+          case "rules":
+            return <ContestPublicRulesSection contest={contest} t={translate} />;
+          case "faqs":
+            return <ContestPublicFaqsSection contest={contest} t={translate} />;
+          case "projects":
+            return <ContestPublicProjectsSection contest={contest} t={translate} />;
+          default:
+            return null;
+        }
+      })()}
+    </>
   );
+
+  if (embedded) {
+    return <div className="space-y-6">{inner}</div>;
+  }
+
+  return <PageContainer width="default">{inner}</PageContainer>;
 }

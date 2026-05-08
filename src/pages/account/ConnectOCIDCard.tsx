@@ -69,7 +69,7 @@ export default function ConnectOCIDCard() {
     <section className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-base font-medium">{t("ocid.card.title")}</h2>
+          <h2 className="text-lg font-semibold">{t("ocid.card.title")}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {t("ocid.card.description")}
           </p>
@@ -143,7 +143,7 @@ export default function ConnectOCIDCard() {
             type="button"
             onClick={handleConnect}
             disabled={loading || !isInitialized}
-            className="bg-[#141bec] text-white hover:bg-[#141bec]/90 h-11 inline-flex items-center justify-center gap-2 border border-border-subtle py-2.5 px-3 text-left text-sm cursor-pointer"
+            className="h-11 cursor-pointer border border-border-subtle bg-primary px-3 py-2.5 text-left text-sm text-primary-foreground hover:bg-primary/90"
           >
             <img
               src="/logo/OC-square-logo.svg"
@@ -154,7 +154,7 @@ export default function ConnectOCIDCard() {
             {loading ? (
               t("ocid.card.loadingConnect")
             ) : (
-              <span className="text-white">{t("ocid.card.connect")}</span>
+              <span>{t("ocid.card.connect")}</span>
             )}
           </Button>
         )}

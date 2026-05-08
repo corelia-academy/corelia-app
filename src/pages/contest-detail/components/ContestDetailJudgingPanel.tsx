@@ -13,6 +13,8 @@ export function ContestDetailJudgingPanel({
     translate,
     isManageView,
     canJudge,
+    isManager,
+    viewerRoles,
     activeManageSection,
     submissions,
     leaderboard,
@@ -21,19 +23,34 @@ export function ContestDetailJudgingPanel({
     scoreDraftTotal,
     savingScoreId,
     handleScoreSave,
+    selectedTrackId,
+    setSelectedTrackId,
+    selectedRoundId,
+    setSelectedRoundId,
   } = vm;
 
   if (!isManageView || !canJudge || activeManageSection !== "judging") {
     return null;
   }
 
+  const trackId = selectedTrackId ?? contest.tracks?.[0]?.id ?? null;
+  const roundId = selectedRoundId ?? contest.judging?.active_round_id ?? "final";
+  const hideIdentity =
+    Boolean(contest.config?.anonymous_judging) &&
+    !isManager &&
+    !viewerRoles.includes("co_organizer");
+
+  const visibleSubmissions = trackId
+    ? submissions.filter((s) => (s.track_id ?? null) === trackId)
+    : submissions;
+
   return (
     <Card id="judging">
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         <div className="flex items-center gap-3">
           <Gavel className="size-5 text-primary" aria-hidden />
           <div>
-            <h2 className="text-lg font-medium tracking-tight text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
               {translate("workspace.manage.judgingTitle")}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -50,8 +67,43 @@ export function ContestDetailJudgingPanel({
           </div>
         </div>
 
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="text-sm font-medium text-foreground">
+              {translate("workspace.manage.judgingTrackLabel")}
+            </label>
+            <select
+              className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+              value={trackId ?? ""}
+              onChange={(e) => setSelectedTrackId(e.target.value || null)}
+            >
+              {(contest.tracks ?? []).map((track) => (
+                <option key={track.id} value={track.id}>
+                  {track.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground">
+              {translate("workspace.manage.judgingRoundLabel")}
+            </label>
+            <select
+              className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+              value={roundId ?? "final"}
+              onChange={(e) => setSelectedRoundId(e.target.value || null)}
+            >
+              {(contest.rounds ?? []).map((round) => (
+                <option key={round.id} value={round.id}>
+                  {round.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div className="mt-5 space-y-4">
-          {submissions.length === 0 ? (
+          {visibleSubmissions.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <div className="flex size-12 items-center justify-center rounded-full bg-muted">
                 <Trophy
@@ -69,7 +121,7 @@ export function ContestDetailJudgingPanel({
               </div>
             </div>
           ) : (
-            submissions.map((submission) => {
+            visibleSubmissions.map((submission) => {
               const draft = scoreDrafts[submission.id] ?? {
                 product: "0",
                 technical: "0",
@@ -83,11 +135,11 @@ export function ContestDetailJudgingPanel({
               return (
                 <div
                   key={submission.id}
-                  className="rounded-2xl border border-border-subtle bg-background p-4"
+                  className="rounded-md border border-border-subtle bg-background p-4"
                 >
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                      <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                         {translate("workspace.manage.rankCurrent", {
                           rank: boardEntry?.rank ?? "—",
                         })}
@@ -96,8 +148,14 @@ export function ContestDetailJudgingPanel({
                         {submission.title}
                       </div>
                       <div className="mt-1 text-sm text-muted-foreground">
-                        {submission.contestant_name || submission.user_id}
-                        {submission.team_name
+                        {hideIdentity
+                          ? translate("workspace.manage.anonymousSubmissionLabel", {
+                              id:
+                                submission.display_id ??
+                                submission.id.slice(0, 6).toUpperCase(),
+                            })
+                          : submission.contestant_name || submission.user_id}
+                        {!hideIdentity && submission.team_name
                           ? ` · ${submission.team_name}`
                           : ""}
                       </div>
@@ -115,7 +173,7 @@ export function ContestDetailJudgingPanel({
                   </div>
 
                   {submission.summary && (
-                    <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+                    <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
                       {submission.summary}
                     </p>
                   )}
@@ -170,7 +228,7 @@ export function ContestDetailJudgingPanel({
                               },
                             }))
                           }
-                          className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                          className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
                         />
                       </div>
                     ))}
@@ -192,7 +250,7 @@ export function ContestDetailJudgingPanel({
                           },
                         }))
                       }
-                      className="mt-2 min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                      className="mt-2 min-h-24 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
                     />
                   </div>
 

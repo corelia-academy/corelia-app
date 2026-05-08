@@ -1,0 +1,33 @@
+{
+  "list": {
+    "title": "Career tracks",
+    "subtitle": "Pick a track to learn step-by-step with a curated set of courses.",
+    "emptyTitle": "No tracks yet",
+    "emptyDescription": "There are no published career tracks yet.",
+    "browseCourses": "Browse courses"
+  },
+  "detail": {
+    "whatYoullLearn": "What you'll learn",
+    "includedCourses": "Included courses",
+    "prerequisites": "Prerequisites",
+    "nextSteps": "Next steps",
+    "emptyWhatYoullLearn": "No information yet.",
+    "emptyPrerequisites": "No prerequisites."
+  },
+  "labels": {
+    "certificate": "Certificate",
+    "certificateIncluded": "Certificate included",
+    "certificateNotIncluded": "No certificate",
+    "coursesCount": "{{count}} course",
+    "coursesCount_plural": "{{count}} courses"
+  },
+  "actions": {
+    "browseCourses": "Browse courses",
+    "backToList": "Back to list"
+  },
+  "errors": {
+    "loadErrorTitle": "Could not load track",
+    "loadFailed": "Could not load data."
+  }
+}
+

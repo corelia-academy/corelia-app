@@ -33,7 +33,9 @@
   "nav": {
     "home": "Home",
     "courses": "Courses",
+    "career": "Career",
     "contests": "Contests",
+    "projects": "Projects",
     "achievements": "Achievements",
     "account": "Account",
     "admin": "Admin",
@@ -46,6 +48,9 @@
   "user": {
     "fallbackName": "User",
     "accountSettings": "Account settings"
+  },
+  "header": {
+    "publicProfile": "Public profile"
   },
   "userProfile": {
     "tabs": {
@@ -86,8 +91,57 @@
     },
     "contests": {
       "empty": "No public contests yet.",
+      "organizedTitle": "Organized contests",
+      "participatedTitle": "Participated contests",
+      "participatedEmpty": "No participations yet.",
       "fallbackTitle": "Contest",
       "updatedAt": "Updated {{date}}"
+    },
+    "projects": {
+      "empty": "No public projects yet.",
+      "viewSource": "View source",
+      "demo": "Demo",
+      "repo": "Repo",
+      "slides": "Slides"
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "description": "A public gallery of projects across the Corelia ecosystem.",
+    "empty": "No projects yet.",
+    "byPrefix": "By",
+    "viewSource": "View source",
+    "demo": "Demo",
+    "repo": "Repo",
+    "slides": "Slides",
+    "errors": {
+      "loadFailed": "Could not load projects"
+    }
+  },
+  "search": {
+    "placeholder": "Search public content...",
+    "title": "Search",
+    "queryLine": "Results for “{{query}}”",
+    "enterQueryHint": "Type a keyword in the header search to discover public content.",
+    "suggest": {
+      "recent": "Recent searches",
+      "trending": "Trending",
+      "suggestions": "Quick results",
+      "searchFor": "Search for “{{query}}”",
+      "enterToSeeAll": "Press Enter to see all results",
+      "viewAllResults": "View all results",
+      "noQuickResults": "No quick results."
+    },
+    "empty": "No results found.",
+    "errors": {
+      "loadFailed": "Could not load search results"
+    },
+    "group": {
+      "project": "Project",
+      "contest": "Contest",
+      "course": "Course",
+      "career_track": "Career track",
+      "profile": "Profile"
     }
   },
   "tabs": {

@@ -23,7 +23,7 @@
   "footer": {
     "copyrightPrefix": "© {{year}} Corelia Academy. Tất cả quyền được bảo lưu.",
     "version": "Phiên bản {{version}}",
-    "roadmap": "Lộ trình"
+    "roadmap": "Roadmap sản phẩm"
   },
   "notFound": {
     "title": "Không tìm thấy trang",
@@ -33,7 +33,9 @@
   "nav": {
     "home": "Trang chủ",
     "courses": "Khóa học",
+    "career": "Lộ trình",
     "contests": "Cuộc thi",
+    "projects": "Dự án",
     "achievements": "Thành tích",
     "account": "Tài khoản",
     "admin": "Admin",
@@ -46,6 +48,9 @@
   "user": {
     "fallbackName": "Người dùng",
     "accountSettings": "Cài đặt tài khoản"
+  },
+  "header": {
+    "publicProfile": "Hồ sơ công khai"
   },
   "userProfile": {
     "tabs": {
@@ -86,8 +91,57 @@
     },
     "contests": {
       "empty": "Chưa có cuộc thi public nào.",
+      "organizedTitle": "Cuộc thi đã tổ chức",
+      "participatedTitle": "Cuộc thi đã tham gia",
+      "participatedEmpty": "Bạn chưa tham gia cuộc thi nào.",
       "fallbackTitle": "Cuộc thi",
       "updatedAt": "Cập nhật {{date}}"
+    },
+    "projects": {
+      "empty": "Chưa có dự án public nào.",
+      "viewSource": "Xem nguồn",
+      "demo": "Demo",
+      "repo": "Repo",
+      "slides": "Slides"
+    }
+  },
+  "projects": {
+    "title": "Dự án",
+    "description": "Trang tổng hợp dự án public của toàn bộ cộng đồng Corelia.",
+    "empty": "Chưa có dự án nào.",
+    "byPrefix": "Bởi",
+    "viewSource": "Xem nguồn",
+    "demo": "Demo",
+    "repo": "Repo",
+    "slides": "Slides",
+    "errors": {
+      "loadFailed": "Không tải được danh sách dự án"
+    }
+  },
+  "search": {
+    "placeholder": "Tìm kiếm nội dung public...",
+    "title": "Tìm kiếm",
+    "queryLine": "Kết quả cho “{{query}}”",
+    "enterQueryHint": "Nhập từ khoá ở ô search trên header để khám phá nội dung public.",
+    "suggest": {
+      "recent": "Tìm kiếm gần đây",
+      "trending": "Xu hướng",
+      "suggestions": "Kết quả nhanh",
+      "searchFor": "Tìm “{{query}}”",
+      "enterToSeeAll": "Nhấn Enter để xem tất cả kết quả",
+      "viewAllResults": "Xem tất cả kết quả",
+      "noQuickResults": "Chưa có kết quả nhanh."
+    },
+    "empty": "Không tìm thấy kết quả phù hợp.",
+    "errors": {
+      "loadFailed": "Không tải được kết quả tìm kiếm"
+    },
+    "group": {
+      "project": "Dự án",
+      "contest": "Cuộc thi",
+      "course": "Khoá học",
+      "career_track": "Lộ trình",
+      "profile": "Hồ sơ"
     }
   },
   "tabs": {

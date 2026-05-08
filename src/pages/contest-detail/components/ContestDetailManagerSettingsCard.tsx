@@ -20,10 +20,20 @@ export function ContestDetailManagerSettingsCard({
     setRubricWeights,
     savingRubric,
     handleRubricSave,
+    savingTracksRounds,
+    tracksDraft,
+    setTracksDraft,
+    roundsDraft,
+    setRoundsDraft,
+    activeRoundIdDraft,
+    setActiveRoundIdDraft,
+    anonymousJudgingDraft,
+    setAnonymousJudgingDraft,
+    handleTracksRoundsSave,
     inviteEmail,
     setInviteEmail,
-    inviteRole,
-    setInviteRole,
+    inviteRoles,
+    setInviteRoles,
     inviteDisplayName,
     setInviteDisplayName,
     inviteOrganization,
@@ -32,6 +42,7 @@ export function ContestDetailManagerSettingsCard({
     setInviteNote,
     savingInvite,
     handleInviteCreate,
+    handleBulkInviteCsv,
     invites,
     inviteActionId,
     handleInviteRevoke,
@@ -170,6 +181,193 @@ export function ContestDetailManagerSettingsCard({
 
                 <div className="mt-4 border-t border-border-subtle pt-4">
                   <h3 className="text-base font-medium text-foreground">
+                    {translate("workspace.manage.tracksRoundsTitle")}
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {translate("workspace.manage.tracksRoundsDescription")}
+                  </p>
+
+                  <div className="mt-4 rounded-xl border border-border-subtle bg-background p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-medium text-foreground">
+                          {translate("workspace.manage.anonymousJudgingTitle")}
+                        </div>
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          {translate("workspace.manage.anonymousJudgingHint")}
+                        </div>
+                      </div>
+                      <label className="flex items-center gap-2 text-sm text-foreground">
+                        <input
+                          type="checkbox"
+                          checked={anonymousJudgingDraft}
+                          onChange={(e) => setAnonymousJudgingDraft(e.target.checked)}
+                        />
+                        {translate("workspace.manage.anonymousJudgingToggle")}
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="text-sm font-medium text-foreground">
+                      {translate("workspace.manage.tracksTitle")}
+                    </div>
+                    <div className="mt-3 space-y-3">
+                      {(tracksDraft ?? []).map((track, index) => (
+                        <div
+                          key={`track-${index}`}
+                          className="grid gap-3 rounded-xl border border-border-subtle bg-background p-4 sm:grid-cols-2"
+                        >
+                          <input
+                            value={track.id}
+                            onChange={(e) =>
+                              setTracksDraft((prev) =>
+                                prev.map((t, i) =>
+                                  i === index ? { ...t, id: e.target.value } : t,
+                                ),
+                              )
+                            }
+                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            placeholder={translate("workspace.manage.trackIdPlaceholder")}
+                          />
+                          <input
+                            value={track.name}
+                            onChange={(e) =>
+                              setTracksDraft((prev) =>
+                                prev.map((t, i) =>
+                                  i === index ? { ...t, name: e.target.value } : t,
+                                ),
+                              )
+                            }
+                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            placeholder={translate("workspace.manage.trackNamePlaceholder")}
+                          />
+                          <div className="sm:col-span-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                setTracksDraft((prev) => prev.filter((_, i) => i !== index))
+                              }
+                            >
+                              {translate("workspace.manage.removeRow")}
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setTracksDraft((prev) => [
+                            ...prev,
+                            { id: "", name: "", active: true },
+                          ])
+                        }
+                      >
+                        {translate("workspace.manage.addTrackRow")}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <div className="text-sm font-medium text-foreground">
+                      {translate("workspace.manage.roundsTitle")}
+                    </div>
+                    <div className="mt-3 space-y-3">
+                      {(roundsDraft ?? []).map((round, index) => (
+                        <div
+                          key={`round-${index}`}
+                          className="grid gap-3 rounded-xl border border-border-subtle bg-background p-4 sm:grid-cols-2"
+                        >
+                          <input
+                            value={round.id}
+                            onChange={(e) =>
+                              setRoundsDraft((prev) =>
+                                prev.map((r, i) =>
+                                  i === index ? { ...r, id: e.target.value } : r,
+                                ),
+                              )
+                            }
+                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            placeholder={translate("workspace.manage.roundIdPlaceholder")}
+                          />
+                          <input
+                            value={round.name}
+                            onChange={(e) =>
+                              setRoundsDraft((prev) =>
+                                prev.map((r, i) =>
+                                  i === index ? { ...r, name: e.target.value } : r,
+                                ),
+                              )
+                            }
+                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            placeholder={translate("workspace.manage.roundNamePlaceholder")}
+                          />
+                          <div className="sm:col-span-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                setRoundsDraft((prev) => prev.filter((_, i) => i !== index))
+                              }
+                            >
+                              {translate("workspace.manage.removeRow")}
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setRoundsDraft((prev) => [
+                            ...prev,
+                            { id: "", name: "", active: true },
+                          ])
+                        }
+                      >
+                        {translate("workspace.manage.addRoundRow")}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <label className="text-sm font-medium text-foreground">
+                      {translate("workspace.manage.activeRoundLabel")}
+                    </label>
+                    <select
+                      className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                      value={activeRoundIdDraft}
+                      onChange={(e) => setActiveRoundIdDraft(e.target.value)}
+                    >
+                      {(roundsDraft ?? []).map((round) => (
+                        <option key={round.id} value={round.id}>
+                          {round.name || round.id}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <Button
+                    type="button"
+                    className="mt-4 w-full"
+                    variant="outline"
+                    disabled={savingTracksRounds}
+                    onClick={() => void handleTracksRoundsSave()}
+                  >
+                    {savingTracksRounds
+                      ? translate("detail.labels.saving")
+                      : translate("workspace.manage.saveTracksRounds")}
+                  </Button>
+                </div>
+
+                <div className="mt-4 border-t border-border-subtle pt-4">
+                  <h3 className="text-base font-medium text-foreground">
                     {translate("workspace.manage.accessInvitesTitle")}
                   </h3>
                   <div className="mt-4 space-y-3">
@@ -182,22 +380,57 @@ export function ContestDetailManagerSettingsCard({
                       )}
                     />
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <select
-                        value={inviteRole}
-                        onChange={(e) =>
-                          setInviteRole(
-                            e.target.value as ContestScopedViewerRole,
-                          )
-                        }
-                        className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <option value="judge">
-                          {translate("workspace.manage.inviteRoleJudge")}
-                        </option>
-                        <option value="co_host_viewer">
-                          {translate("workspace.manage.inviteRoleCoHost")}
-                        </option>
-                      </select>
+                      <div className="rounded-lg border border-border bg-background px-3 py-2 text-sm">
+                        <div className="text-xs font-medium text-muted-foreground">
+                          {translate("workspace.manage.inviteRolesLabel")}
+                        </div>
+                        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                          {(
+                            [
+                              ["judge", "workspace.manage.inviteRoleJudge"],
+                              [
+                                "co_organizer",
+                                "workspace.manage.inviteRoleCoOrganizer",
+                              ],
+                              [
+                                "partner_viewer",
+                                "workspace.manage.inviteRolePartnerViewer",
+                              ],
+                              ["mentor", "workspace.manage.inviteRoleMentor"],
+                              [
+                                "reviewer",
+                                "workspace.manage.inviteRoleReviewer",
+                              ],
+                              [
+                                "co_host_viewer",
+                                "workspace.manage.inviteRoleCoHost",
+                              ],
+                            ] as const
+                          ).map(([role, labelKey]) => {
+                            const checked = inviteRoles.includes(
+                              role as ContestScopedViewerRole,
+                            );
+                            return (
+                              <label
+                                key={role}
+                                className="flex items-center gap-2 text-sm text-foreground"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={(e) => {
+                                    const next = e.target.checked
+                                      ? Array.from(new Set([...inviteRoles, role]))
+                                      : inviteRoles.filter((r) => r !== role);
+                                    setInviteRoles(next as ContestScopedViewerRole[]);
+                                  }}
+                                />
+                                {translate(labelKey)}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
                       <input
                         value={inviteDisplayName}
                         onChange={(e) => setInviteDisplayName(e.target.value)}
@@ -234,6 +467,21 @@ export function ContestDetailManagerSettingsCard({
                         ? translate("detail.labels.creating")
                         : translate("detail.labels.sendInvite")}
                     </Button>
+                    <div className="rounded-2xl border border-border-subtle bg-background px-4 py-4">
+                      <div className="text-sm font-medium text-foreground">
+                        {translate("workspace.manage.bulkInviteTitle")}
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {translate("workspace.manage.bulkInviteHint")}
+                      </p>
+                      <input
+                        type="file"
+                        accept=".csv,text/csv"
+                        disabled={savingInvite}
+                        onChange={(e) => void handleBulkInviteCsv(e)}
+                        className="mt-3 block w-full cursor-pointer text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border-subtle file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-60"
+                      />
+                    </div>
                   </div>
 
                   <div className="mt-5 space-y-3">
@@ -322,6 +570,9 @@ export function ContestDetailManagerSettingsCard({
                         >
                           {translate("workspace.manage.bannerUploadLabel")}
                         </label>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {translate("workspace.manage.bannerUploadHint")}
+                        </p>
                         <input
                           id="contest-settings-banner"
                           type="file"
@@ -348,7 +599,7 @@ export function ContestDetailManagerSettingsCard({
                               alt={translate("detail.visual.bannerAlt", {
                                 title: contest.title,
                               })}
-                              className="aspect-[21/9] w-full object-cover"
+                              className="aspect-21/9 w-full object-cover"
                             />
                           </div>
                         ) : null}
@@ -360,6 +611,9 @@ export function ContestDetailManagerSettingsCard({
                         >
                           {translate("workspace.manage.thumbnailUploadLabel")}
                         </label>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {translate("workspace.manage.thumbnailUploadHint")}
+                        </p>
                         <input
                           id="contest-settings-thumbnail"
                           type="file"
@@ -386,7 +640,7 @@ export function ContestDetailManagerSettingsCard({
                               alt={translate("detail.visual.thumbnailAlt", {
                                 title: contest.title,
                               })}
-                              className="aspect-square max-h-36 w-full max-w-36 object-cover"
+                              className="aspect-video w-full object-cover"
                             />
                           </div>
                         ) : null}
@@ -614,6 +868,58 @@ export function ContestDetailManagerSettingsCard({
                   <div className="mt-6">
                     <div className="text-sm font-medium text-foreground">
                       {translate("detail.sections.timeline")}
+                    </div>
+                    <div className="mt-3 grid gap-3 rounded-xl border border-border-subtle bg-background p-4">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-muted-foreground">
+                            {translate("instructorNew.form.registrationDeadlineLabel")}
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={publicDraft.registration_deadline_local}
+                            onChange={(e) =>
+                              setPublicDraft((prev) => ({
+                                ...prev,
+                                registration_deadline_local: e.target.value,
+                              }))
+                            }
+                            className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-muted-foreground">
+                            {translate("instructorNew.form.startsAtLabel")}
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={publicDraft.starts_at_local}
+                            onChange={(e) =>
+                              setPublicDraft((prev) => ({
+                                ...prev,
+                                starts_at_local: e.target.value,
+                              }))
+                            }
+                            className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                          />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                          <label className="text-xs font-medium text-muted-foreground">
+                            {translate("instructorNew.form.endsAtLabel")}
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={publicDraft.ends_at_local}
+                            onChange={(e) =>
+                              setPublicDraft((prev) => ({
+                                ...prev,
+                                ends_at_local: e.target.value,
+                              }))
+                            }
+                            className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="mt-3 space-y-4">
                       {publicDraft.milestones.map((milestone, index) => (

@@ -9,6 +9,7 @@ import contests_vi from "@/locales/vi/contests.json";
 import account_vi from "@/locales/vi/account.json";
 import instructor_vi from "@/locales/vi/instructor.json";
 import admin_vi from "@/locales/vi/admin.json";
+import career_vi from "@/locales/vi/career.json";
 
 import common_en from "@/locales/en/common.json";
 import auth_en from "@/locales/en/auth.json";
@@ -17,6 +18,7 @@ import contests_en from "@/locales/en/contests.json";
 import account_en from "@/locales/en/account.json";
 import instructor_en from "@/locales/en/instructor.json";
 import admin_en from "@/locales/en/admin.json";
+import career_en from "@/locales/en/career.json";
 
 export const SUPPORTED_LANGUAGES = ["vi", "en"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
@@ -34,6 +36,7 @@ void i18n
       "common",
       "auth",
       "courses",
+      "career",
       "contests",
       "account",
       "instructor",
@@ -44,6 +47,7 @@ void i18n
         common: common_vi,
         auth: auth_vi,
         courses: courses_vi,
+        career: career_vi,
         contests: contests_vi,
         account: account_vi,
         instructor: instructor_vi,
@@ -53,6 +57,7 @@ void i18n
         common: common_en,
         auth: auth_en,
         courses: courses_en,
+        career: career_en,
         contests: contests_en,
         account: account_en,
         instructor: instructor_en,

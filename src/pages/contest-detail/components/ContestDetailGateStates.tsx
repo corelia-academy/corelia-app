@@ -11,9 +11,9 @@ export function ContestDetailLoadingCard({
   translate: (key: string, options?: Record<string, unknown>) => string;
 }) {
   return (
-    <PageContainer>
+    <PageContainer width="default">
       <Card>
-        <CardContent className="flex min-h-[320px] flex-col items-center justify-center p-8 text-center">
+        <CardContent className="flex min-h-80 flex-col items-center justify-center p-8 text-center">
           <div className="rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {translate("detail.loading.eyebrow")}
           </div>
@@ -24,17 +24,17 @@ export function ContestDetailLoadingCard({
             {translate("detail.loading.description")}
           </div>
           <div className="mt-4 grid w-full max-w-3xl gap-3 md:grid-cols-3">
-            <div className="rounded-2xl border border-border-subtle bg-background p-4 text-left">
+            <div className="rounded-md border border-border-subtle bg-background p-4 text-left">
               <Skeleton className="h-3 w-24 rounded-full" />
               <Skeleton className="mt-3 h-4 w-3/4 rounded-full" />
               <Skeleton className="mt-2 h-4 w-2/3 rounded-full" />
             </div>
-            <div className="rounded-2xl border border-border-subtle bg-background p-4 text-left">
+            <div className="rounded-md border border-border-subtle bg-background p-4 text-left">
               <Skeleton className="h-3 w-20 rounded-full" />
               <Skeleton className="mt-3 h-4 w-4/5 rounded-full" />
               <Skeleton className="mt-2 h-4 w-1/2 rounded-full" />
             </div>
-            <div className="rounded-2xl border border-border-subtle bg-background p-4 text-left">
+            <div className="rounded-md border border-border-subtle bg-background p-4 text-left">
               <Skeleton className="h-3 w-28 rounded-full" />
               <Skeleton className="mt-3 h-4 w-2/3 rounded-full" />
               <Skeleton className="mt-2 h-4 w-3/5 rounded-full" />
@@ -54,9 +54,9 @@ export function ContestDetailErrorCard({
   error: string | null;
 }) {
   return (
-    <PageContainer>
+    <PageContainer width="default">
       <Card>
-        <CardContent className="flex min-h-[280px] flex-col items-center justify-center p-8 text-center">
+        <CardContent className="flex min-h-72 flex-col items-center justify-center p-8 text-center">
           <div className="rounded-full border border-destructive/20 bg-destructive/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-destructive">
             {translate("detail.errors.deleteAccessDeniedTitle")}
           </div>
@@ -89,9 +89,9 @@ export function ContestDetailWorkspaceAccessDenied({
   contestId: string;
 }) {
   return (
-    <PageContainer>
+    <PageContainer width="default">
       <Card>
-        <CardContent className="flex min-h-[280px] flex-col items-center justify-center p-8 text-center">
+        <CardContent className="flex min-h-72 flex-col items-center justify-center p-8 text-center">
           <div className="text-base font-medium text-foreground">
             {translate("detail.errors.workspaceAccessDenied")}
           </div>

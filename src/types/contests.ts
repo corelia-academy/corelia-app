@@ -4,7 +4,13 @@ export type ContestLocation = "online" | "offline" | "hybrid";
 
 export type ContestRegistrationStatus = "pending" | "approved" | "rejected";
 
-export type ContestScopedViewerRole = "judge" | "co_host_viewer";
+export type ContestScopedViewerRole =
+  | "judge"
+  | "co_host_viewer"
+  | "co_organizer"
+  | "partner_viewer"
+  | "mentor"
+  | "reviewer";
 
 export type ContestInviteStatus = "pending" | "accepted" | "declined" | "revoked";
 
@@ -13,6 +19,34 @@ export interface ContestRubricWeights {
   technical: number;
   presentation: number;
   impact: number;
+}
+
+export interface ContestTrack {
+  id: string;
+  name: string;
+  description?: string | null;
+  active?: boolean;
+  /**
+   * Optional rubric definition (Phase 2+).
+   * Current judging UI uses `rubric_weights` (4-criterion) and can ignore this for now.
+   */
+  rubric?: unknown;
+}
+
+export interface ContestRound {
+  id: string;
+  name: string;
+  opens_at?: string | null;
+  closes_at?: string | null;
+  active?: boolean;
+}
+
+export interface ContestConfig {
+  anonymous_judging?: boolean;
+}
+
+export interface ContestJudgingConfig {
+  active_round_id?: string | null;
 }
 
 export interface ContestMetricsSnapshot {
@@ -91,7 +125,15 @@ export interface Contest {
   registration_deadline: string | null;
   max_participants: number | null;
   judge_emails: string[];
+  co_organizer_emails?: string[];
   co_host_viewer_emails: string[];
+  partner_viewer_emails?: string[];
+  mentor_emails?: string[];
+  reviewer_emails?: string[];
+  config?: ContestConfig;
+  tracks?: ContestTrack[];
+  rounds?: ContestRound[];
+  judging?: ContestJudgingConfig;
   rubric_weights: ContestRubricWeights;
   metrics_snapshot: ContestMetricsSnapshot;
   published_leaderboard: ContestLeaderboardEntry[];
@@ -122,7 +164,15 @@ export interface ContestInsert {
   registration_deadline?: string | null;
   max_participants?: number | null;
   judge_emails?: string[];
+  co_organizer_emails?: string[];
   co_host_viewer_emails?: string[];
+  partner_viewer_emails?: string[];
+  mentor_emails?: string[];
+  reviewer_emails?: string[];
+  config?: ContestConfig;
+  tracks?: ContestTrack[];
+  rounds?: ContestRound[];
+  judging?: ContestJudgingConfig;
   rubric_weights?: ContestRubricWeights;
   prize_pool_summary?: string | null;
   prizes?: ContestPrizeEntry[];
@@ -146,7 +196,15 @@ export interface ContestUpdate {
   registration_deadline?: string | null;
   max_participants?: number | null;
   judge_emails?: string[];
+  co_organizer_emails?: string[];
   co_host_viewer_emails?: string[];
+  partner_viewer_emails?: string[];
+  mentor_emails?: string[];
+  reviewer_emails?: string[];
+  config?: ContestConfig;
+  tracks?: ContestTrack[];
+  rounds?: ContestRound[];
+  judging?: ContestJudgingConfig;
   rubric_weights?: ContestRubricWeights;
   metrics_snapshot?: ContestMetricsSnapshot;
   published_leaderboard?: ContestLeaderboardEntry[];
@@ -221,6 +279,10 @@ export interface ContestSubmission {
   team_name: string | null;
   team_members: string[];
   contestant_name: string | null;
+  /** Track the submission belongs to (Phase 2 multi-track). */
+  track_id?: string | null;
+  /** Stable display id for anonymous judging UI (Phase 2). */
+  display_id?: string | null;
   title: string;
   summary: string | null;
   demo_url: string | null;
@@ -242,6 +304,8 @@ export interface ContestScore {
   id: string;
   contest_id: string;
   submission_id: string;
+  /** Which judging round this score belongs to (Phase 2 multi-round). */
+  round_id?: string | null;
   judge_uid: string;
   judge_email: string | null;
   product_score: number;

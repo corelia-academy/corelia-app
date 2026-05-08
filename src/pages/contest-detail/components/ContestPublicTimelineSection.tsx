@@ -21,10 +21,10 @@ export function ContestPublicTimelineSection(props: {
 
   return (
     <Card id="timeline">
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-lg font-medium tracking-tight text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
               {t("detail.sections.timeline")}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">

@@ -1,63 +1,48 @@
-import { NavLink } from "react-router";
-import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { cn } from "@/lib/utils";
 
 export function ContestDetailMainLayout({
-  showBackLink,
   isManageView,
-  translate,
+  heroCard,
   leftColumn,
   rightColumn,
   afterGrid,
 }: {
-  showBackLink: boolean;
   isManageView: boolean;
-  translate: (key: string, options?: Record<string, unknown>) => string;
+  heroCard: ReactNode;
   leftColumn: ReactNode;
   rightColumn: ReactNode;
   afterGrid?: ReactNode;
 }) {
   return (
-    <PageContainer>
-      {showBackLink ? (
-        <div className="mb-4">
-          <Button
-            render={
-              <NavLink to={isManageView ? "/admin/contests" : "/contests"} />
-            }
-            nativeButton={false}
-            variant="ghost"
-            className="-ml-2 text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" />
-            {isManageView
-              ? translate("workspace.manage.backToContests")
-              : translate("detail.hero.backToContests")}
-          </Button>
-        </div>
-      ) : null}
-
+    <PageContainer width="default">
+      <div className="mb-6 sm:mb-8">{heroCard}</div>
       <div
         className={cn(
-          "gap-4",
+          "gap-6",
           isManageView
             ? "flex flex-col"
-            : "grid xl:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.9fr)]",
+            : "grid xl:grid-cols-[minmax(0,1fr)_minmax(320px,360px)] xl:gap-8",
         )}
       >
-        <div className="min-w-0 space-y-4">{leftColumn}</div>
+        <div
+          className={cn(
+            "min-w-0",
+            isManageView ? "space-y-6" : "space-y-6 sm:space-y-8",
+          )}
+        >
+          {leftColumn}
+        </div>
         {isManageView ? (
           rightColumn ? (
-            <div className="min-w-0 space-y-4">{rightColumn}</div>
+            <div className="min-w-0 space-y-6 sm:space-y-8">{rightColumn}</div>
           ) : null
         ) : (
-          <div className="min-w-0 space-y-4">{rightColumn}</div>
+          <div className="min-w-0 space-y-6 sm:space-y-8">{rightColumn}</div>
         )}
       </div>
-      {afterGrid}
+      {afterGrid ? <div className="mt-6">{afterGrid}</div> : null}
     </PageContainer>
   );
 }

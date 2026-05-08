@@ -69,7 +69,7 @@ export default function Account() {
     <div className="container-app py-6 sm:py-8">
       <div className="flex w-full min-w-0 flex-col gap-6 lg:flex-row">
         <div className="w-full lg:w-72 lg:shrink-0">
-          <div className="mb-4 hidden text-xs font-semibold uppercase tracking-wide text-muted-foreground lg:block">
+          <div className="mb-4 hidden text-xs font-semibold uppercase tracking-widest text-muted-foreground lg:block">
             {t("nav.sectionTitle")}
           </div>
           <div className="-mx-4 overflow-x-auto px-4 lg:hidden">
@@ -81,7 +81,7 @@ export default function Account() {
                   end={"end" in item ? item.end : undefined}
                   className={({ isActive }) =>
                     cn(
-                      "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition",
+                      "inline-flex min-h-11 items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                       isActive
                         ? "border-primary/25 bg-primary-container text-on-primary-container shadow-card"
                         : "border-border-subtle bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground",

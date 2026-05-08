@@ -90,7 +90,7 @@ export function ProfileSection(props: {
               disabled={saving || uploadingAvatar}
               onClick={() => setProfilePublic(!profilePublic)}
               className={[
-                "h-9 rounded-full border px-3 text-sm font-medium transition-colors",
+                "min-h-11 rounded-full border px-3 py-1 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                 profilePublic
                   ? "border-primary/25 bg-primary-container text-on-primary-container shadow-card"
                   : "border-border-subtle bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground",
@@ -196,7 +196,7 @@ export function ProfileSection(props: {
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             placeholder={t("profile.bio.placeholder")}
-            className="min-h-24 w-full rounded-md border border-border-subtle bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+            className="min-h-24 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
           />
           <p className="text-xs text-muted-foreground">
             {t("profile.bio.hint")}

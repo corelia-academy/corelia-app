@@ -12,6 +12,8 @@ export function useContestJudgingWorkspace() {
     null,
   );
   const [savingScoreId, setSavingScoreId] = useState<string | null>(null);
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
 
   const [submissionTitle, setSubmissionTitle] = useState("");
   const [submissionSummary, setSubmissionSummary] = useState("");
@@ -57,6 +59,10 @@ export function useContestJudgingWorkspace() {
     setMySubmission,
     savingScoreId,
     setSavingScoreId,
+    selectedTrackId,
+    setSelectedTrackId,
+    selectedRoundId,
+    setSelectedRoundId,
     submissionTitle,
     setSubmissionTitle,
     submissionSummary,

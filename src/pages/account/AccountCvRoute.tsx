@@ -5,7 +5,7 @@ function CvSection() {
   return (
     <div className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div>
-        <h2 className="text-base font-semibold">{t("cv.title")}</h2>
+        <h2 className="text-lg font-semibold">{t("cv.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {t("cv.subtitle")}
         </p>

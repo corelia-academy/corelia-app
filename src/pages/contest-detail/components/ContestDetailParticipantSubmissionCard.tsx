@@ -28,84 +28,84 @@ export function ContestDetailParticipantSubmissionCard({
 
   return (
     <Card id="participant-workspace">
-      <CardContent className="p-6">
-    <div className="flex items-center gap-3">
-      <CheckCheck className="size-5 text-primary" aria-hidden />
-      <div>
-        <h2 className="text-lg font-medium tracking-tight text-foreground">
-          {translate("detail.participant.submissionWorkspaceTitle")}
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {translate(
-            "detail.participant.submissionWorkspaceApprovedBody",
-          )}
-        </p>
-      </div>
-    </div>
-
-    <div className="mt-4 space-y-4">
-      <input
-        value={submissionTitle}
-        onChange={(e) => setSubmissionTitle(e.target.value)}
-        className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-        placeholder={translate(
-          "detail.forms.submission.titlePlaceholder",
-        )}
-      />
-      <textarea
-        rows={5}
-        value={submissionSummary}
-        onChange={(e) => setSubmissionSummary(e.target.value)}
-        className="min-h-32 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-        placeholder={translate(
-          "detail.forms.submission.summaryPlaceholder",
-        )}
-      />
-      <input
-        value={submissionDemoUrl}
-        onChange={(e) => setSubmissionDemoUrl(e.target.value)}
-        className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-        placeholder={translate(
-          "detail.forms.submission.demoUrlPlaceholder",
-        )}
-      />
-      <input
-        value={submissionRepoUrl}
-        onChange={(e) => setSubmissionRepoUrl(e.target.value)}
-        className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-        placeholder={translate(
-          "detail.forms.submission.repoUrlPlaceholder",
-        )}
-      />
-      <input
-        value={submissionSlideUrl}
-        onChange={(e) => setSubmissionSlideUrl(e.target.value)}
-        className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-        placeholder={translate(
-          "detail.forms.submission.slideUrlPlaceholder",
-        )}
-      />
-      {submissionDraftDirty && (
-        <div className="rounded-2xl border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
-          {translate("detail.participant.submissionDirtyWarning")}
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3">
+          <CheckCheck className="size-5 text-primary" aria-hidden />
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              {translate("detail.participant.submissionWorkspaceTitle")}
+            </h2>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              {translate(
+                "detail.participant.submissionWorkspaceApprovedBody",
+              )}
+            </p>
+          </div>
         </div>
-      )}
-      <Button
-        type="button"
-        className="w-full"
-        disabled={savingSubmission || !submissionTitle.trim()}
-        onClick={() => void handleSubmissionSave()}
-      >
-        {savingSubmission
-          ? translate("common:status.loading")
-          : mySubmission
-            ? translate("detail.forms.submission.updateLabel")
-            : translate("detail.forms.submission.submitLabel")}
-      </Button>
-      <p className="text-xs leading-5 text-muted-foreground">
-        {translate("detail.participant.submissionFooterHint")}
-      </p>
-    </div>
+
+        <div className="mt-4 space-y-4">
+          <input
+            value={submissionTitle}
+            onChange={(e) => setSubmissionTitle(e.target.value)}
+            className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            placeholder={translate(
+              "detail.forms.submission.titlePlaceholder",
+            )}
+          />
+          <textarea
+            rows={5}
+            value={submissionSummary}
+            onChange={(e) => setSubmissionSummary(e.target.value)}
+            className="min-h-32 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            placeholder={translate(
+              "detail.forms.submission.summaryPlaceholder",
+            )}
+          />
+          <input
+            value={submissionDemoUrl}
+            onChange={(e) => setSubmissionDemoUrl(e.target.value)}
+            className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            placeholder={translate(
+              "detail.forms.submission.demoUrlPlaceholder",
+            )}
+          />
+          <input
+            value={submissionRepoUrl}
+            onChange={(e) => setSubmissionRepoUrl(e.target.value)}
+            className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            placeholder={translate(
+              "detail.forms.submission.repoUrlPlaceholder",
+            )}
+          />
+          <input
+            value={submissionSlideUrl}
+            onChange={(e) => setSubmissionSlideUrl(e.target.value)}
+            className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            placeholder={translate(
+              "detail.forms.submission.slideUrlPlaceholder",
+            )}
+          />
+          {submissionDraftDirty && (
+            <div className="rounded-md border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
+              {translate("detail.participant.submissionDirtyWarning")}
+            </div>
+          )}
+          <Button
+            type="button"
+            className="w-full min-h-11"
+            disabled={savingSubmission || !submissionTitle.trim()}
+            onClick={() => void handleSubmissionSave()}
+          >
+            {savingSubmission
+              ? translate("common:status.loading")
+              : mySubmission
+                ? translate("detail.forms.submission.updateLabel")
+                : translate("detail.forms.submission.submitLabel")}
+          </Button>
+          <p className="text-xs leading-5 text-muted-foreground">
+            {translate("detail.participant.submissionFooterHint")}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

@@ -33,10 +33,10 @@ export function ContestDetailApplicationsPanel({
 
   return (
     <Card id="applications">
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-lg font-medium tracking-tight text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
               {translate("workspace.manage.applicationsReviewTitle")}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -76,11 +76,11 @@ export function ContestDetailApplicationsPanel({
             registrations.map((item) => (
               <div
                 key={item.id}
-                className="rounded-2xl border border-border-subtle bg-background p-4"
+                className="rounded-md border border-border-subtle bg-background p-4"
               >
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
-                    <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                       {registrationStatusLabel(item.status)}
                     </div>
                     <div className="mt-1 text-lg font-medium text-foreground">
@@ -130,7 +130,7 @@ export function ContestDetailApplicationsPanel({
                 </div>
 
                 {item.motivation && (
-                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
                     {item.motivation}
                   </p>
                 )}
@@ -172,7 +172,7 @@ export function ContestDetailApplicationsPanel({
                         [item.user_id]: e.target.value,
                       }))
                     }
-                    className="mt-2 min-h-24 w-full rounded border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                    className="mt-2 min-h-24 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
                   />
                 </div>
               </div>

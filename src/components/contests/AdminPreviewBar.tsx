@@ -25,7 +25,7 @@ export function AdminPreviewBar({ title, statusLabel, primaryAction }: AdminPrev
   if (!isPublicContestSurface || dismissed) return null;
 
   return (
-    <div className="sticky top-0 z-50 -mx-4 mb-4 border-b border-border-subtle bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+    <div className="sticky top-0 z-30 -mx-4 mb-4 border-b border-border-subtle bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
       <div className="mx-auto flex w-full max-w-[1990px] flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">

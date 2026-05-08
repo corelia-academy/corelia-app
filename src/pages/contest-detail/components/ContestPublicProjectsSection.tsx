@@ -11,15 +11,15 @@ export function ContestPublicProjectsSection(props: {
 
   return (
     <Card>
-      <CardContent className="p-6">
-        <h2 className="text-lg font-medium tracking-tight text-foreground">
+      <CardContent className="p-4">
+        <h2 className="text-lg font-semibold text-foreground">
           {t("detail.projects.sectionTitle")}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
           {t("detail.projects.sectionDescription")}
         </p>
         {contest.status !== "ended" || contest.published_leaderboard.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-8 text-center">
+          <div className="mt-6 rounded-md border border-dashed border-border-subtle bg-background px-4 py-8 text-center">
             <div className="text-sm font-medium text-foreground">
               {t("detail.projects.emptyTitle")}
             </div>
@@ -32,7 +32,7 @@ export function ContestPublicProjectsSection(props: {
             {contest.published_leaderboard.map((entry) => (
               <div
                 key={entry.submission_id}
-                className="flex flex-col rounded-2xl border border-border-subtle bg-background p-4"
+                className="flex flex-col rounded-md border border-border-subtle bg-background p-4"
               >
                 <div className="text-xs text-muted-foreground">#{entry.rank}</div>
                 <div className="mt-1 text-sm font-semibold text-foreground">

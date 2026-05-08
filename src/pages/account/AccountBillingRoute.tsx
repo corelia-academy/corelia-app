@@ -35,7 +35,7 @@ export function BillingSection() {
   return (
     <div className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div>
-        <h2 className="text-base font-semibold">{t("billing.title")}</h2>
+        <h2 className="text-lg font-semibold">{t("billing.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {t("billing.subtitle")}
         </p>
@@ -55,7 +55,7 @@ export function BillingSection() {
           {error}
         </div>
       ) : transactionRows.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-12 text-center">
+        <div className="flex flex-col items-center gap-3 py-16 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-muted">
             <CreditCard className="size-6 text-muted-foreground" aria-hidden />
           </div>
@@ -65,8 +65,8 @@ export function BillingSection() {
           </div>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-border-subtle">
-          <div className="divide-y divide-border-subtle md:hidden">
+        <div className="overflow-hidden rounded-md border border-border">
+          <div className="divide-y divide-border md:hidden">
             {transactionRows.map((tx) => (
               <div key={tx.id} className="space-y-3 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -99,26 +99,26 @@ export function BillingSection() {
 
           <table className="hidden w-full text-left text-sm md:table">
             <thead>
-              <tr className="border-b border-border-subtle bg-muted/40">
-                <th className="px-4 py-3 font-medium text-foreground">
+              <tr className="bg-muted">
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                   {t("billing.table.time")}
                 </th>
-                <th className="px-4 py-3 font-medium text-foreground">
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                   {t("billing.table.content")}
                 </th>
-                <th className="px-4 py-3 font-medium text-foreground">
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                   {t("billing.table.amount")}
                 </th>
-                <th className="px-4 py-3 font-medium text-foreground">
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                   {t("billing.table.status")}
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border">
               {transactionRows.map((tx) => (
                 <tr
                   key={tx.id}
-                  className="border-b border-border-subtle last:border-b-0 hover:bg-muted/30"
+                  className="transition-colors duration-150 hover:bg-muted/50"
                 >
                   <td className="px-4 py-3 text-muted-foreground">
                     {new Date(tx.created_at).toLocaleString(intlLocale())}

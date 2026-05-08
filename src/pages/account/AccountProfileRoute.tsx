@@ -135,7 +135,7 @@ export function AccountProfileRoute() {
       <div className="space-y-4">
         <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
           <Skeleton className="h-6 w-56 rounded" />
-          <Skeleton className="mt-2 h-4 w-full max-w-[520px] rounded" />
+          <Skeleton className="mt-2 h-4 w-full max-w-xl rounded" />
         </div>
         <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
           <div className="flex items-center gap-4">

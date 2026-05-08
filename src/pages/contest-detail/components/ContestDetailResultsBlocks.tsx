@@ -31,11 +31,11 @@ export function ContestDetailResultsBlocks({
         canViewAggregate &&
         activeManageSection === "overview" && (
           <Card id="results">
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <Trophy className="size-5 text-primary" aria-hidden />
                 <div>
-                  <h2 className="text-lg font-medium tracking-tight text-foreground">
+                  <h2 className="text-lg font-semibold text-foreground">
                     {translate("workspace.manage.outcomesTitle")}
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -45,8 +45,8 @@ export function ContestDetailResultsBlocks({
               </div>
 
               <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                <div className="rounded-md border border-border-subtle bg-background p-4">
+                  <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     {translate("workspace.manage.metricApplications")}
                   </div>
                   <div className="mt-2 text-3xl font-semibold text-foreground">
@@ -55,8 +55,8 @@ export function ContestDetailResultsBlocks({
                     )}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                <div className="rounded-md border border-border-subtle bg-background p-4">
+                  <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     {translate("workspace.manage.metricApproved")}
                   </div>
                   <div className="mt-2 text-3xl font-semibold text-foreground">
@@ -65,8 +65,8 @@ export function ContestDetailResultsBlocks({
                     )}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                <div className="rounded-md border border-border-subtle bg-background p-4">
+                  <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     {translate("workspace.manage.metricSubmissions")}
                   </div>
                   <div className="mt-2 text-3xl font-semibold text-foreground">
@@ -75,8 +75,8 @@ export function ContestDetailResultsBlocks({
                     )}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                <div className="rounded-md border border-border-subtle bg-background p-4">
+                  <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     {translate("workspace.manage.metricScored")}
                   </div>
                   <div className="mt-2 text-3xl font-semibold text-foreground">
@@ -88,7 +88,7 @@ export function ContestDetailResultsBlocks({
               </div>
 
               {isManager && leaderboard.length > 0 && (
-                <div className="mt-4 rounded-2xl border border-border-subtle bg-background p-4">
+                <div className="mt-4 rounded-md border border-border-subtle bg-background p-4">
                   <h3 className="text-base font-medium text-foreground">
                     {translate("workspace.manage.publishResultsHeading")}
                   </h3>
@@ -96,7 +96,7 @@ export function ContestDetailResultsBlocks({
                     {leaderboard.slice(0, 5).map((entry) => (
                       <div
                         key={entry.submission_id}
-                        className="rounded-xl border border-border-subtle bg-card p-3"
+                        className="rounded-md border border-border-subtle bg-card p-3"
                       >
                         <div className="text-sm font-medium text-foreground">
                           #{entry.rank} · {entry.submission_title}
@@ -120,7 +120,7 @@ export function ContestDetailResultsBlocks({
                                 [entry.submission_id]: e.target.value,
                               }))
                             }
-                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-11 rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
                             placeholder={translate(
                               "detail.forms.awards.awardPlaceholder",
                             )}
@@ -135,7 +135,7 @@ export function ContestDetailResultsBlocks({
                                 [entry.submission_id]: e.target.value,
                               }))
                             }
-                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-11 rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
                             placeholder={translate(
                               "detail.forms.awards.notePlaceholder",
                             )}
@@ -175,7 +175,7 @@ export function ContestDetailResultsBlocks({
                 </div>
                 <div className="mt-3 space-y-3">
                   {contest.published_leaderboard.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-5">
+                    <div className="rounded-md border border-dashed border-border-subtle bg-background px-4 py-5">
                       <div className="text-sm font-medium text-foreground">
                         {translate(
                           "workspace.manage.leaderboardNotPublishedTitle",
@@ -193,7 +193,7 @@ export function ContestDetailResultsBlocks({
                       .map((entry) => (
                         <div
                           key={entry.submission_id}
-                          className="rounded-2xl border border-border-subtle bg-background px-4 py-3"
+                          className="rounded-md border border-border-subtle bg-background px-4 py-3"
                         >
                           <div className="flex items-center justify-between gap-3">
                             <div>
@@ -221,7 +221,7 @@ export function ContestDetailResultsBlocks({
                 </h3>
                 <div className="mt-3 space-y-3">
                   {contest.winner_announcements.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-5">
+                    <div className="rounded-md border border-dashed border-border-subtle bg-background px-4 py-5">
                       <div className="text-sm font-medium text-foreground">
                         {translate("workspace.manage.winnersEmptyTitle")}
                       </div>
@@ -233,7 +233,7 @@ export function ContestDetailResultsBlocks({
                     contest.winner_announcements.map((winner) => (
                       <div
                         key={winner.submission_id}
-                        className="rounded-2xl border border-border-subtle bg-background px-4 py-3"
+                        className="rounded-md border border-border-subtle bg-background px-4 py-3"
                       >
                         <div className="text-sm font-medium text-foreground">
                           {winner.award_title}
@@ -262,11 +262,11 @@ export function ContestDetailResultsBlocks({
         (contest.published_leaderboard.length > 0 ||
           contest.winner_announcements.length > 0) && (
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <Trophy className="size-5 text-primary" aria-hidden />
                 <div>
-                  <h2 className="text-lg font-medium tracking-tight text-foreground">
+                  <h2 className="text-lg font-semibold text-foreground">
                     {translate("detail.public.results.cardTitle")}
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -281,7 +281,7 @@ export function ContestDetailResultsBlocks({
                 </h3>
                 <div className="mt-3 space-y-3">
                   {contest.published_leaderboard.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-5">
+                    <div className="rounded-md border border-dashed border-border-subtle bg-background px-4 py-5">
                       <div className="text-sm font-medium text-foreground">
                         {translate(
                           "detail.public.results.leaderboardEmptyTitle",
@@ -299,7 +299,7 @@ export function ContestDetailResultsBlocks({
                       .map((entry) => (
                         <div
                           key={entry.submission_id}
-                          className="rounded-2xl border border-border-subtle bg-background px-4 py-3"
+                          className="rounded-md border border-border-subtle bg-background px-4 py-3"
                         >
                           <div className="flex items-center justify-between gap-3">
                             <div>
@@ -327,7 +327,7 @@ export function ContestDetailResultsBlocks({
                 </h3>
                 <div className="mt-3 space-y-3">
                   {contest.winner_announcements.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-5">
+                    <div className="rounded-md border border-dashed border-border-subtle bg-background px-4 py-5">
                       <div className="text-sm font-medium text-foreground">
                         {translate(
                           "detail.public.results.winnersEmptyTitle",
@@ -343,7 +343,7 @@ export function ContestDetailResultsBlocks({
                     contest.winner_announcements.map((winner) => (
                       <div
                         key={winner.submission_id}
-                        className="rounded-2xl border border-border-subtle bg-background px-4 py-3"
+                        className="rounded-md border border-border-subtle bg-background px-4 py-3"
                       >
                         <div className="text-sm font-medium text-foreground">
                           {winner.award_title}

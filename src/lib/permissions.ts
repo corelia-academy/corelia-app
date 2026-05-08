@@ -20,11 +20,35 @@ export function getContestScopedViewerRoles(
     roles.push("judge");
   }
   if (
+    (contest.co_organizer_emails ?? []).some(
+      (item) => item.toLowerCase() === normalized,
+    )
+  ) {
+    roles.push("co_organizer");
+  }
+  if (
     (contest.co_host_viewer_emails ?? []).some(
       (item) => item.toLowerCase() === normalized,
     )
   ) {
     roles.push("co_host_viewer");
+  }
+  if (
+    (contest.partner_viewer_emails ?? []).some(
+      (item) => item.toLowerCase() === normalized,
+    )
+  ) {
+    roles.push("partner_viewer");
+  }
+  if ((contest.mentor_emails ?? []).some((item) => item.toLowerCase() === normalized)) {
+    roles.push("mentor");
+  }
+  if (
+    (contest.reviewer_emails ?? []).some(
+      (item) => item.toLowerCase() === normalized,
+    )
+  ) {
+    roles.push("reviewer");
   }
   return roles;
 }
@@ -33,7 +57,10 @@ export function canReviewContestApplications(
   contest: Contest | null | undefined,
   profile: Profile | null | undefined,
 ): boolean {
-  return contest != null && canManageContests(profile);
+  if (!contest) return false;
+  if (canManageContests(profile)) return true;
+  if (!profile?.email) return false;
+  return getContestScopedViewerRoles(contest, profile.email).includes("reviewer");
 }
 
 export function canScoreContest(
@@ -43,7 +70,9 @@ export function canScoreContest(
 ): boolean {
   return (
     canManageContests(profile) ||
-    getContestScopedViewerRoles(contest, email).includes("judge")
+    getContestScopedViewerRoles(contest, email).some((role) =>
+      ["judge", "co_organizer"].includes(role),
+    )
   );
 }
 

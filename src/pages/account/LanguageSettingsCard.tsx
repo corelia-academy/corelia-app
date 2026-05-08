@@ -23,9 +23,9 @@ export function LanguageSettingsCard() {
           type="button"
           onClick={() => void setLanguage("vi")}
           className={cn(
-            "flex items-center justify-between rounded-md border px-3 py-3 text-left transition-colors duration-150",
+            "flex min-h-11 items-center justify-between rounded-md border px-3 py-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
             language === "vi"
-              ? "border-primary bg-primary/10"
+              ? "border-primary/20 bg-primary/10 text-primary"
               : "border-border-subtle bg-background hover:bg-muted/30",
           )}
         >
@@ -48,9 +48,9 @@ export function LanguageSettingsCard() {
           type="button"
           onClick={() => void setLanguage("en")}
           className={cn(
-            "flex items-center justify-between rounded-md border px-3 py-3 text-left transition-colors duration-150",
+            "flex min-h-11 items-center justify-between rounded-md border px-3 py-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
             language === "en"
-              ? "border-primary bg-primary/10"
+              ? "border-primary/20 bg-primary/10 text-primary"
               : "border-border-subtle bg-background hover:bg-muted/30",
           )}
         >

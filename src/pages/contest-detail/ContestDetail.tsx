@@ -9,13 +9,16 @@ import {
 } from "@/pages/contest-detail/components/ContestDetailGateStates";
 import { ContestDetailHeroCard } from "@/pages/contest-detail/components/ContestDetailHeroCard";
 import { ContestDetailJudgingPanel } from "@/pages/contest-detail/components/ContestDetailJudgingPanel";
+import { ContestDetailAnalyticsPanel } from "@/pages/contest-detail/components/ContestDetailAnalyticsPanel";
 import { ContestDetailManageSectionTabs } from "@/pages/contest-detail/components/ContestDetailManageSectionTabs";
 import { ContestDetailMainLayout } from "@/pages/contest-detail/components/ContestDetailMainLayout";
 import { ContestDetailOverviewBlocks } from "@/pages/contest-detail/components/ContestDetailOverviewBlocks";
 import { ContestDetailPublicSectionPage } from "@/pages/contest-detail/components/ContestDetailPublicSectionPage";
 import { ContestDetailResultsBlocks } from "@/pages/contest-detail/components/ContestDetailResultsBlocks";
 import { ContestDetailRightColumn } from "@/pages/contest-detail/components/ContestDetailRightColumn";
-import { useContestDetailOrchestrator } from "@/pages/contest-detail/hooks/useContestDetailOrchestrator";
+import { ContestPublicNav } from "@/pages/contest-detail/ContestPublicNav";
+import { ContestDetailProvider } from "@/pages/contest-detail/ContestDetailContext";
+import { useContestDetail } from "@/pages/contest-detail/hooks/useContestDetail";
 import { narrowContestDetailView } from "@/pages/contest-detail/viewModel";
 
 export default function ContestDetail({
@@ -30,7 +33,7 @@ export default function ContestDetail({
   /** Keeps parent layouts (e.g. public sticky header) in sync after image uploads. */
   onContestSynced?: (next: Contest) => void;
 } = {}) {
-  const ctx = useContestDetailOrchestrator({
+  const ctx = useContestDetail({
     forceManageView,
     prefetchedContest,
     publicSection,
@@ -60,33 +63,55 @@ export default function ContestDetail({
 
   if (!vm.isManageView && publicSection && publicSection !== "overview") {
     return (
-      <ContestDetailPublicSectionPage
-        contest={vm.contest}
-        publicSection={publicSection}
-        translate={vm.translate}
-        formatDateTime={vm.formatDateTime}
-        timelineRows={vm.timelineRows}
-        canAccessWorkspace={vm.canAccessWorkspace}
-        isManageView={vm.isManageView}
-        statusLabel={vm.statusLabel}
+      <ContestDetailMainLayout
+        isManageView={false}
+        heroCard={
+          <ContestDetailProvider vm={vm}>
+            <ContestDetailHeroCard
+              vm={vm}
+              titleAs="h1"
+              publicSection={publicSection}
+            />
+          </ContestDetailProvider>
+        }
+        leftColumn={
+          <ContestDetailProvider vm={vm}>
+            <ContestPublicNav contestId={vm.contest.id} contest={vm.contest} />
+            <ContestDetailPublicSectionPage
+              embedded
+              publicSection={publicSection}
+            />
+          </ContestDetailProvider>
+        }
+        rightColumn={<ContestDetailRightColumn vm={vm} />}
       />
     );
   }
 
   return (
     <ContestDetailMainLayout
-      showBackLink={!(publicSection === "overview" && !vm.isManageView)}
       isManageView={vm.isManageView}
-      translate={vm.translate}
+      heroCard={
+        <ContestDetailProvider vm={vm}>
+          <ContestDetailHeroCard
+            vm={vm}
+            titleAs="h1"
+            publicSection={publicSection}
+          />
+        </ContestDetailProvider>
+      }
       leftColumn={
-        <>
-          <ContestDetailHeroCard vm={vm} />
+        <ContestDetailProvider vm={vm}>
+          {!vm.isManageView ? (
+            <ContestPublicNav contestId={vm.contest.id} contest={vm.contest} />
+          ) : null}
           {vm.isManageView ? <ContestDetailManageSectionTabs vm={vm} /> : null}
           <ContestDetailOverviewBlocks vm={vm} publicSection={publicSection} />
           <ContestDetailApplicationsPanel vm={vm} />
           <ContestDetailJudgingPanel vm={vm} />
+          <ContestDetailAnalyticsPanel vm={vm} />
           <ContestDetailResultsBlocks vm={vm} />
-        </>
+        </ContestDetailProvider>
       }
       rightColumn={<ContestDetailRightColumn vm={vm} />}
       afterGrid={
@@ -103,4 +128,9 @@ export default function ContestDetail({
       }
     />
   );
+}
+
+/** Manage route `/contests/:id/manage` — avoids a separate wrapper module. */
+export function ContestDetailManagePage() {
+  return <ContestDetail forceManageView />;
 }

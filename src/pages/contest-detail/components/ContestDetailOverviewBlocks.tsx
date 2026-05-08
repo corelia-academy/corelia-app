@@ -1,5 +1,4 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { ContestDetailPublicOverviewExtras } from "@/pages/contest-detail/components/ContestDetailPublicOverviewExtras";
 import type { ContestPublicSection } from "@/pages/contest-detail/types";
 import type { ContestDetailViewModel } from "@/pages/contest-detail/viewModel";
 import { renderTextAsList } from "@/pages/contest-detail/utils/text";
@@ -11,30 +10,22 @@ export function ContestDetailOverviewBlocks({
   vm: ContestDetailViewModel;
   publicSection?: ContestPublicSection;
 }) {
-  const {
-    contest,
-    translate,
-    isManageView,
-    activeManageSection,
-    formatDate,
-    timelineRows,
-    publicJourney,
-    manageCollaborationLanes,
-  } = vm;
+  const { contest, translate, isManageView, activeManageSection, manageCollaborationLanes } =
+    vm;
 
   return (
     <>
       {(!isManageView || activeManageSection === "overview") &&
-        contest.description &&
+        contest.description?.trim() &&
         (!publicSection || publicSection === "overview") && (
           <Card>
-            <CardContent className="p-6">
-              <h2 className="text-lg font-medium tracking-tight text-foreground">
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold text-foreground">
                 {isManageView
                   ? translate("detail.labels.contextManage")
                   : translate("detail.labels.contextPublic")}
               </h2>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
                 {contest.description}
               </p>
             </CardContent>
@@ -42,37 +33,30 @@ export function ContestDetailOverviewBlocks({
         )}
 
       {(!isManageView || activeManageSection === "overview") &&
-        (!publicSection || publicSection === "overview") && (
+        (!publicSection || publicSection === "overview") &&
+        (isManageView || contest.rules?.trim()) && (
           <Card>
-            <CardContent className="p-6">
-              <h2 className="text-lg font-medium tracking-tight text-foreground">
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold text-foreground">
                 {isManageView
                   ? translate("detail.labels.rulesManage")
                   : translate("detail.labels.rulesPublic")}
               </h2>
-              {contest.rules?.trim()
-                ? renderTextAsList(contest.rules)
-                : renderTextAsList(translate("detail.labels.rulesEmpty"))}
+              {isManageView
+                ? contest.rules?.trim()
+                  ? renderTextAsList(contest.rules)
+                  : renderTextAsList(translate("detail.labels.rulesEmpty"))
+                : renderTextAsList(contest.rules ?? "")}
             </CardContent>
           </Card>
         )}
 
-      {!isManageView && (!publicSection || publicSection === "overview") ? (
-        <ContestDetailPublicOverviewExtras
-          contest={contest}
-          translate={translate}
-          formatDate={formatDate}
-          timelineRows={timelineRows}
-          publicJourney={publicJourney}
-        />
-      ) : null}
-
       {vm.isManageView && vm.activeManageSection === "overview" && (
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h2 className="text-lg font-medium tracking-tight text-foreground">
+                <h2 className="text-lg font-semibold text-foreground">
                   {translate("workspace.manage.operatingModelTitle")}
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -85,12 +69,12 @@ export function ContestDetailOverviewBlocks({
               {manageCollaborationLanes.map((lane) => (
                 <div
                   key={lane.title}
-                  className="rounded-2xl border border-border-subtle bg-background p-4"
+                  className="rounded-md border border-border-subtle bg-background p-4"
                 >
                   <div className="text-sm font-medium text-foreground">
                     {lane.title}
                   </div>
-                  <div className="mt-2 text-sm leading-6 text-muted-foreground">
+                  <div className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     {lane.description}
                   </div>
                 </div>
@@ -98,8 +82,8 @@ export function ContestDetailOverviewBlocks({
             </div>
 
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-background p-4">
+                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {translate("workspace.manage.phase1Header")}
                 </div>
                 <div className="mt-2 text-sm font-medium text-foreground">
@@ -109,8 +93,8 @@ export function ContestDetailOverviewBlocks({
                   {translate("workspace.manage.phase1Body")}
                 </div>
               </div>
-              <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-background p-4">
+                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {translate("workspace.manage.phase2Header")}
                 </div>
                 <div className="mt-2 text-sm font-medium text-foreground">
@@ -120,8 +104,8 @@ export function ContestDetailOverviewBlocks({
                   {translate("workspace.manage.phase2Body")}
                 </div>
               </div>
-              <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-background p-4">
+                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {translate("workspace.manage.phase3Header")}
                 </div>
                 <div className="mt-2 text-sm font-medium text-foreground">
@@ -131,8 +115,8 @@ export function ContestDetailOverviewBlocks({
                   {translate("workspace.manage.phase3Body")}
                 </div>
               </div>
-              <div className="rounded-2xl border border-border-subtle bg-background p-4">
-                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-background p-4">
+                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {translate("workspace.manage.phase4Header")}
                 </div>
                 <div className="mt-2 text-sm font-medium text-foreground">

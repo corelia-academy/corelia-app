@@ -25,6 +25,8 @@ import type {
   ContestScoreInput,
   ContestSubmission,
   ContestSubmissionInsert,
+  ContestTrack,
+  ContestRound,
   ContestTimelineMilestone,
   ContestUpdate,
   ContestWinner,
@@ -126,6 +128,12 @@ function contestScoreId(submissionId: string, judgeUid: string): string {
   return `${submissionId}_${judgeUid}`;
 }
 
+function generateDisplayId(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(4));
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+}
+
 function emptyMetricsSnapshot(): ContestMetricsSnapshot {
   return {
     registrations_total: 0,
@@ -148,11 +156,61 @@ function defaultRubricWeights(): ContestRubricWeights {
   };
 }
 
+function defaultTracks(): ContestTrack[] {
+  return [{ id: "general", name: "General", active: true }];
+}
+
+function defaultRounds(): ContestRound[] {
+  return [{ id: "final", name: "Final", active: true }];
+}
+
+function normalizeTracks(tracks: ContestTrack[] | undefined): ContestTrack[] {
+  const list = Array.isArray(tracks) ? tracks : [];
+  const cleaned = list
+    .map((t) => ({
+      id: String(t.id ?? "").trim(),
+      name: String(t.name ?? "").trim(),
+      description: t.description ?? null,
+      active: t.active ?? true,
+      rubric: t.rubric,
+    }))
+    .filter((t) => t.id.length > 0 && t.name.length > 0);
+  return cleaned.length > 0 ? cleaned : defaultTracks();
+}
+
+function normalizeRounds(rounds: ContestRound[] | undefined): ContestRound[] {
+  const list = Array.isArray(rounds) ? rounds : [];
+  const cleaned = list
+    .map((r) => ({
+      id: String(r.id ?? "").trim(),
+      name: String(r.name ?? "").trim(),
+      opens_at: r.opens_at ?? null,
+      closes_at: r.closes_at ?? null,
+      active: r.active ?? true,
+    }))
+    .filter((r) => r.id.length > 0 && r.name.length > 0);
+  return cleaned.length > 0 ? cleaned : defaultRounds();
+}
+
 function normalizeContest(data: Contest): Contest {
+  const rounds = normalizeRounds(data.rounds);
+  const judgingActiveRoundId =
+    data.judging?.active_round_id && rounds.some((r) => r.id === data.judging?.active_round_id)
+      ? data.judging.active_round_id
+      : rounds[0]?.id ?? "final";
+
   return {
     ...data,
     judge_emails: sanitizeEmailList(data.judge_emails),
+    co_organizer_emails: sanitizeEmailList(data.co_organizer_emails),
     co_host_viewer_emails: sanitizeEmailList(data.co_host_viewer_emails),
+    partner_viewer_emails: sanitizeEmailList(data.partner_viewer_emails),
+    mentor_emails: sanitizeEmailList(data.mentor_emails),
+    reviewer_emails: sanitizeEmailList(data.reviewer_emails),
+    config: { anonymous_judging: false, ...(data.config ?? {}) },
+    tracks: normalizeTracks(data.tracks),
+    rounds,
+    judging: { ...(data.judging ?? {}), active_round_id: judgingActiveRoundId },
     rubric_weights: data.rubric_weights ?? defaultRubricWeights(),
     metrics_snapshot: data.metrics_snapshot ?? emptyMetricsSnapshot(),
     published_leaderboard: data.published_leaderboard ?? [],
@@ -186,7 +244,11 @@ function contestFromRow(row: {
   return normalizeContest({
     id: row.id,
     judge_emails: [],
+    co_organizer_emails: [],
     co_host_viewer_emails: [],
+    partner_viewer_emails: [],
+    mentor_emails: [],
+    reviewer_emails: [],
     metrics_snapshot: emptyMetricsSnapshot(),
     rubric_weights: defaultRubricWeights(),
     published_leaderboard: [],
@@ -365,7 +427,11 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
     registration_deadline: data.registration_deadline ?? null,
     max_participants: data.max_participants ?? null,
     judge_emails: sanitizeEmailList(data.judge_emails),
+    co_organizer_emails: sanitizeEmailList(data.co_organizer_emails),
     co_host_viewer_emails: sanitizeEmailList(data.co_host_viewer_emails),
+    partner_viewer_emails: sanitizeEmailList(data.partner_viewer_emails),
+    mentor_emails: sanitizeEmailList(data.mentor_emails),
+    reviewer_emails: sanitizeEmailList(data.reviewer_emails),
     rubric_weights: data.rubric_weights ?? defaultRubricWeights(),
     metrics_snapshot: emptyMetricsSnapshot(),
     published_leaderboard: [],
@@ -420,9 +486,18 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
     registration_deadline: updates.registration_deadline,
     max_participants: updates.max_participants,
     judge_emails: updates.judge_emails && sanitizeEmailList(updates.judge_emails),
+    co_organizer_emails:
+      updates.co_organizer_emails &&
+      sanitizeEmailList(updates.co_organizer_emails),
     co_host_viewer_emails:
       updates.co_host_viewer_emails &&
       sanitizeEmailList(updates.co_host_viewer_emails),
+    partner_viewer_emails:
+      updates.partner_viewer_emails &&
+      sanitizeEmailList(updates.partner_viewer_emails),
+    mentor_emails: updates.mentor_emails && sanitizeEmailList(updates.mentor_emails),
+    reviewer_emails:
+      updates.reviewer_emails && sanitizeEmailList(updates.reviewer_emails),
     rubric_weights: updates.rubric_weights,
     metrics_snapshot: updates.metrics_snapshot,
     published_leaderboard: updates.published_leaderboard,
@@ -638,13 +713,32 @@ export async function createContestAccessInvite(
     { onConflict: "id" },
   );
 
+  const nextJudgeEmails = roles.includes("judge")
+    ? Array.from(new Set([...contest.judge_emails, email]))
+    : contest.judge_emails.filter((item) => item !== email);
+  const nextCoOrganizerEmails = roles.includes("co_organizer")
+    ? Array.from(new Set([...(contest.co_organizer_emails ?? []), email]))
+    : (contest.co_organizer_emails ?? []).filter((item) => item !== email);
+  const nextCoHostViewerEmails = roles.includes("co_host_viewer")
+    ? Array.from(new Set([...contest.co_host_viewer_emails, email]))
+    : contest.co_host_viewer_emails.filter((item) => item !== email);
+  const nextPartnerViewerEmails = roles.includes("partner_viewer")
+    ? Array.from(new Set([...(contest.partner_viewer_emails ?? []), email]))
+    : (contest.partner_viewer_emails ?? []).filter((item) => item !== email);
+  const nextMentorEmails = roles.includes("mentor")
+    ? Array.from(new Set([...(contest.mentor_emails ?? []), email]))
+    : (contest.mentor_emails ?? []).filter((item) => item !== email);
+  const nextReviewerEmails = roles.includes("reviewer")
+    ? Array.from(new Set([...(contest.reviewer_emails ?? []), email]))
+    : (contest.reviewer_emails ?? []).filter((item) => item !== email);
+
   await updateContest(contestId, {
-    judge_emails: roles.includes("judge")
-      ? Array.from(new Set([...contest.judge_emails, email]))
-      : contest.judge_emails.filter((item) => item !== email),
-    co_host_viewer_emails: roles.includes("co_host_viewer")
-      ? Array.from(new Set([...contest.co_host_viewer_emails, email]))
-      : contest.co_host_viewer_emails.filter((item) => item !== email),
+    judge_emails: nextJudgeEmails,
+    co_organizer_emails: nextCoOrganizerEmails,
+    co_host_viewer_emails: nextCoHostViewerEmails,
+    partner_viewer_emails: nextPartnerViewerEmails,
+    mentor_emails: nextMentorEmails,
+    reviewer_emails: nextReviewerEmails,
   });
 }
 
@@ -681,9 +775,15 @@ export async function revokeContestAccessInvite(
   if (!contest) return;
   await updateContest(contestId, {
     judge_emails: contest.judge_emails.filter((item) => item !== normalized),
+    co_organizer_emails: (contest.co_organizer_emails ?? []).filter((item) => item !== normalized),
     co_host_viewer_emails: contest.co_host_viewer_emails.filter(
       (item) => item !== normalized,
     ),
+    partner_viewer_emails: (contest.partner_viewer_emails ?? []).filter(
+      (item) => item !== normalized,
+    ),
+    mentor_emails: (contest.mentor_emails ?? []).filter((item) => item !== normalized),
+    reviewer_emails: (contest.reviewer_emails ?? []).filter((item) => item !== normalized),
   });
 }
 
@@ -713,19 +813,26 @@ export async function upsertContestSubmission(
   input: ContestSubmissionInsert,
 ): Promise<ContestSubmission> {
   const user = await requireCurrentUser();
+  const contest = await getContest(contestId);
+  if (!contest) throw new Error("Không tìm thấy cuộc thi.");
   const registration = await getMyContestRegistration(contestId, user);
   if (!registration || registration.status !== "approved") {
     throw new Error("Chỉ hồ sơ đã được duyệt mới có thể nộp bài.");
   }
 
+  const existing = await getMyContestSubmission(contestId, user);
   const now = new Date().toISOString();
   const submissionId = contestSubmissionId(contestId, user.id);
+  const trackId = contest.tracks?.[0]?.id ?? "general";
+  const displayId = existing?.display_id ?? generateDisplayId();
   const document = removeUndefinedFields({
     registration_id: registration.id,
     team_name: registration.team_name ?? null,
     team_members: registration.team_members ?? [],
     contestant_name:
       registration.user_full_name ?? (user.user_metadata?.full_name as string) ?? null,
+    track_id: existing?.track_id ?? trackId,
+    display_id: displayId,
     title: input.title.trim(),
     summary: input.summary?.trim() || null,
     demo_url: input.demo_url?.trim() || null,
@@ -817,6 +924,7 @@ export async function scoreContestSubmission(
   const { contest, user } = await requireContestScorer(contestId);
   const now = new Date().toISOString();
   const weights = contest.rubric_weights ?? defaultRubricWeights();
+  const roundId = contest.judging?.active_round_id ?? "final";
   const totalScore = Number(
     (
       (input.product_score / 25) * weights.product +
@@ -829,6 +937,7 @@ export async function scoreContestSubmission(
   const scoreId = contestScoreId(submissionId, user.id);
   const document = {
     submission_id: submissionId,
+    round_id: roundId,
     judge_uid: user.id,
     judge_email: user.email ?? null,
     product_score: input.product_score,

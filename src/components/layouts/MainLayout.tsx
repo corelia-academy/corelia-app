@@ -1,10 +1,4 @@
-import {
-  BookOpen,
-  Home,
-  List,
-  LogIn,
-  Trophy,
-} from "lucide-react";
+import { Briefcase, BookOpen, Home, List, LogIn, Trophy } from "lucide-react";
 import React from "react";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
@@ -39,6 +33,7 @@ const MainLayout = () => {
   const mobilePrimaryNav = [
     { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
     { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
+    { labelKey: "nav.career" as const, href: "/career", icon: Briefcase },
     { labelKey: "nav.contests" as const, href: "/contests", icon: Trophy },
     isAuthenticated
       ? { labelKey: "tabs.menu" as const, href: "/menu", icon: List }
@@ -63,20 +58,16 @@ const MainLayout = () => {
                 to="/roadmap"
                 className={({ isActive }) =>
                   cn(
-                    "shrink-0 rounded-md px-1.5 py-0.5 transition-colors hover:text-foreground",
+                    "inline-flex h-7 shrink-0 items-center justify-center rounded-full px-2.5 text-xs font-medium transition-colors outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                     isActive
-                      ? "font-medium text-foreground"
-                      : "text-muted-foreground underline-offset-2 hover:underline",
+                      ? "bg-muted text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )
                 }
               >
                 {t("footer.roadmap")}
               </NavLink>
-              <span className="shrink-0 tabular-nums text-muted-foreground/80">
-                {t("footer.version", {
-                  version: import.meta.env.VITE_APP_VERSION,
-                })}
-              </span>
+
               {betaFeedbackUrl ? (
                 <ReportIssueLink
                   compact
@@ -85,12 +76,18 @@ const MainLayout = () => {
               ) : (
                 <span className="shrink-0">corelia.academy</span>
               )}
+
+              <span className="shrink-0 tabular-nums text-muted-foreground/80">
+                {t("footer.version", {
+                  version: import.meta.env.VITE_APP_VERSION,
+                })}
+              </span>
             </div>
           </div>
         </footer>
       </SidebarInset>
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-card/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-md supports-backdrop-filter:bg-card/90 md:hidden">
-        <div className="container-app grid grid-cols-4 gap-1 px-2 py-2">
+        <div className="container-app grid grid-cols-5 gap-1 px-2 py-2">
           {mobilePrimaryNav.map((item) => {
             const Icon = item.icon;
             if (item.href === "/menu") {

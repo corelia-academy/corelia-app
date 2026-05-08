@@ -72,7 +72,7 @@ export function ChangePasswordCard({ user }: { user: User }) {
   return (
     <div className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
       <div>
-        <h2 className="text-base font-medium">{t("password.title")}</h2>
+        <h2 className="text-lg font-semibold">{t("password.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {t("password.subtitle")}
         </p>

@@ -7,6 +7,7 @@ import contests from "@/locales/vi/contests.json";
 import account from "@/locales/vi/account.json";
 import instructor from "@/locales/vi/instructor.json";
 import admin from "@/locales/vi/admin.json";
+import career from "@/locales/vi/career.json";
 
 declare module "i18next" {
   interface CustomTypeOptions {
@@ -15,6 +16,7 @@ declare module "i18next" {
       common: typeof common;
       auth: typeof auth;
       courses: typeof courses;
+      career: typeof career;
       contests: typeof contests;
       account: typeof account;
       instructor: typeof instructor;

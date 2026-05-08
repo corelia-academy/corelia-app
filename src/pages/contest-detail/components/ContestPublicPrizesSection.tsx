@@ -9,8 +9,8 @@ export function ContestPublicPrizesSection(props: {
 
   return (
     <Card>
-      <CardContent className="p-6">
-        <h2 className="text-lg font-medium tracking-tight text-foreground">
+      <CardContent className="p-4">
+        <h2 className="text-lg font-semibold text-foreground">
           {t("detail.prizes.sectionTitle")}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -23,9 +23,9 @@ export function ContestPublicPrizesSection(props: {
             {(contest.prizes ?? []).map((prize, index) => (
               <div
                 key={`${prize.rank_label}-${prize.title}-${index}`}
-                className="rounded-2xl border border-border-subtle bg-muted/15 p-5"
+                className="rounded-md border border-border-subtle bg-muted/15 p-4"
               >
-                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {prize.rank_label}
                 </div>
                 <div className="mt-2 text-base font-semibold text-foreground">{prize.title}</div>
@@ -35,7 +35,7 @@ export function ContestPublicPrizesSection(props: {
                   </div>
                 ) : null}
                 {prize.description ? (
-                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                     {prize.description}
                   </p>
                 ) : null}

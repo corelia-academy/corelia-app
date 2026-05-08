@@ -88,7 +88,7 @@ function InstructorProfileSection() {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-lg font-medium text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
               {t("instructorProfile.title")}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -102,7 +102,7 @@ function InstructorProfileSection() {
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {t("instructorProfile.cards.originLabel")}
             </p>
             <p className="mt-2 text-sm font-medium text-foreground">
@@ -110,7 +110,7 @@ function InstructorProfileSection() {
             </p>
           </div>
           <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {t("instructorProfile.cards.organizationLabel")}
             </p>
             <p className="mt-2 text-sm font-medium text-foreground">
@@ -118,7 +118,7 @@ function InstructorProfileSection() {
             </p>
           </div>
           <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {t("instructorProfile.cards.headlineLabel")}
             </p>
             <p className="mt-2 text-sm font-medium text-foreground">
@@ -126,7 +126,7 @@ function InstructorProfileSection() {
             </p>
           </div>
           <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {t("instructorProfile.cards.websiteLabel")}
             </p>
             <p className="mt-2 text-sm font-medium text-foreground">
@@ -171,7 +171,7 @@ function InstructorProfileSection() {
           <Label className="text-sm font-medium" htmlFor="instructor_origin">
             {t("instructorProfile.fields.origin.label")}
           </Label>
-          <div className="rounded border border-input bg-muted/40 px-3 py-2 text-sm">
+          <div className="rounded border border-border bg-muted/40 px-3 py-2 text-sm">
             {originLabel}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -213,7 +213,7 @@ function InstructorProfileSection() {
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={5}
-          className="min-h-[120px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="min-h-32 w-full rounded border border-border bg-background px-3 py-2 text-sm outline-none transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
           placeholder={t("instructorProfile.fields.bio.placeholder")}
         />
       </div>

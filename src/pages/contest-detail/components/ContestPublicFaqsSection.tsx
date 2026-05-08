@@ -9,8 +9,8 @@ export function ContestPublicFaqsSection(props: {
 
   return (
     <Card>
-      <CardContent className="p-6">
-        <h2 className="text-lg font-medium tracking-tight text-foreground">
+      <CardContent className="p-4">
+        <h2 className="text-lg font-semibold text-foreground">
           {t("detail.faqs.sectionTitle")}
         </h2>
         {(contest.faqs ?? []).length === 0 ? (
@@ -20,7 +20,7 @@ export function ContestPublicFaqsSection(props: {
             {(contest.faqs ?? []).map((faq, index) => (
               <details
                 key={`${faq.question}-${index}`}
-                className="group rounded-2xl border border-border-subtle bg-background px-4 py-3"
+                className="group rounded-md border border-border-subtle bg-background px-4 py-3"
               >
                 <summary className="cursor-pointer list-none text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
                   <span className="flex items-center justify-between gap-2">
@@ -30,7 +30,7 @@ export function ContestPublicFaqsSection(props: {
                     </span>
                   </span>
                 </summary>
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
                   {faq.answer}
                 </p>
               </details>

@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { ContestDetailViewModel } from "@/pages/contest-detail/viewModel";
 
 export function ContestDetailManageSectionTabs({
@@ -12,55 +12,51 @@ export function ContestDetailManageSectionTabs({
     setActiveManageSection,
     canReview,
     canJudge,
+    canViewAggregate,
     isManager,
   } = vm;
 
+  const keys = [
+    "overview",
+    ...(canReview ? (["applications"] as const) : []),
+    ...(canJudge ? (["judging"] as const) : []),
+    ...(canViewAggregate ? (["analytics"] as const) : []),
+    ...(isManager ? (["settings"] as const) : []),
+  ] as const;
+
   return (
-    <div className="-mx-1 flex gap-2 overflow-x-auto rounded-lg border border-border-subtle bg-muted/25 px-3 py-3">
-      <Button
-        type="button"
-        size="sm"
-        className="shrink-0"
-        variant={activeManageSection === "overview" ? "default" : "outline"}
-        onClick={() => setActiveManageSection("overview")}
-      >
-        {translate("workspace.tabs.overview")}
-      </Button>
-      {canReview ? (
-        <Button
-          type="button"
-          size="sm"
-          className="shrink-0"
-          variant={
-            activeManageSection === "applications" ? "default" : "outline"
-          }
-          onClick={() => setActiveManageSection("applications")}
-        >
-          {translate("workspace.tabs.applications")}
-        </Button>
-      ) : null}
-      {canJudge ? (
-        <Button
-          type="button"
-          size="sm"
-          className="shrink-0"
-          variant={activeManageSection === "judging" ? "default" : "outline"}
-          onClick={() => setActiveManageSection("judging")}
-        >
-          {translate("workspace.tabs.judging")}
-        </Button>
-      ) : null}
-      {isManager ? (
-        <Button
-          type="button"
-          size="sm"
-          className="shrink-0"
-          variant={activeManageSection === "settings" ? "default" : "outline"}
-          onClick={() => setActiveManageSection("settings")}
-        >
-          {translate("workspace.tabs.settings")}
-        </Button>
-      ) : null}
-    </div>
+    <nav
+      className="-mx-1 mb-6 border-b border-border-subtle sm:mb-8"
+      aria-label={translate("workspace.manage.tabs.ariaLabel", {
+        defaultValue: "Workspace sections",
+      })}
+    >
+      <div className="-mb-px flex gap-0 overflow-x-auto overscroll-x-contain px-1 pb-px sm:gap-1">
+        {keys.map((key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setActiveManageSection(key)}
+            className={cn(
+              "inline-flex min-h-11 shrink-0 items-center border-b-2 px-3 py-2.5 text-sm font-medium transition-colors duration-150",
+              "rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              activeManageSection === key
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
+            )}
+          >
+            {key === "overview"
+              ? translate("workspace.tabs.overview")
+              : key === "applications"
+                ? translate("workspace.tabs.applications")
+                : key === "judging"
+                  ? translate("workspace.tabs.judging")
+                  : key === "analytics"
+                    ? translate("workspace.tabs.analytics")
+                    : translate("workspace.tabs.settings")}
+          </button>
+        ))}
+      </div>
+    </nav>
   );
 }

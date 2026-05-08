@@ -38,6 +38,9 @@
     "dateStartPrefix": "Bắt đầu {{date}}",
     "dateEndPrefix": "Kết thúc {{date}}",
     "loadErrorFallback": "Không thể tải cuộc thi.",
+    "errorTitle": "Không tải được danh sách cuộc thi",
+    "errorDescription": "Hãy kiểm tra kết nối và thử lại.",
+    "retry": "Thử lại",
     "emptyTitle": "Chưa có cuộc thi nào.",
     "emptyDescriptionManager": "Chưa có contest public nào. Hãy tạo và vận hành contest trong instructor workspace trước khi nó xuất hiện tại đây.",
     "emptyDescriptionUser": "Khi Corelia công bố contest mới, bạn sẽ thấy lịch và yêu cầu đăng ký tại đây.",
@@ -68,23 +71,24 @@
       "submissionsCount": "{{count}} bài nộp"
     },
     "sidebar": {
-      "leaderboardHint": "Judges chấm theo rubric, còn leaderboard và winners chỉ hiện khi được publish."
+      "leaderboardHint": "Ban giám khảo chấm theo rubric; bảng xếp hạng và danh sách người thắng chỉ hiện sau khi được công bố chính thức."
     },
     "listCardImageAlt": "Ảnh đại diện contest — {{title}}"
   },
   "previewBar": {
-    "label": "Preview mode",
-    "statusPrefix": "Status: {{status}}",
-    "exit": "Exit preview",
-    "openWorkspace": "Open workspace →",
-    "openOperations": "Open operations →",
-    "catalogTitle": "Contests (public surface)"
+    "label": "Chế độ xem trước",
+    "statusPrefix": "Trạng thái: {{status}}",
+    "exit": "Thoát xem trước",
+    "openWorkspace": "Mở workspace →",
+    "openOperations": "Mở vận hành →",
+    "catalogTitle": "Contests (giao diện công khai)"
   },
   "workspace": {
     "tabs": {
       "overview": "Overview",
       "applications": "Applications",
       "judging": "Judging",
+      "analytics": "Analytics",
       "settings": "Settings"
     },
     "settings": {
@@ -166,6 +170,8 @@
       "judgingTitle": "Judging panel",
       "judgingDescription": "Score using four criteria and save scores per submission.",
       "judgingWeightsLine": "Weights: Product {{product}}% · Technical {{technical}}% · Presentation {{presentation}}% · Impact {{impact}}%",
+      "judgingTrackLabel": "Track",
+      "judgingRoundLabel": "Round",
       "judgingEmptyTitle": "No submissions yet",
       "judgingEmptyHint": "Judges will see submissions here once approved teams start updating them.",
       "rankCurrent": "Current rank #{{rank}}",
@@ -183,6 +189,8 @@
       "criterionImpact": "Impact",
       "outcomesTitle": "Outcomes dashboard",
       "outcomesDescription": "Co-host observers see aggregate metrics, the published leaderboard, and the award list.",
+      "analyticsTitle": "Sponsor analytics",
+      "analyticsDescription": "Metric tổng hợp, leaderboard đã publish và winners (không hiển thị hồ sơ thô).",
       "metricApplications": "Applications",
       "metricApproved": "Approved",
       "metricSubmissions": "Submissions",
@@ -206,16 +214,48 @@
       "rubricTitle": "Judge rubric",
       "rubricDescription": "Adjust weights for four criteria. Total should equal 100 for clearer scoring.",
       "rubricTotalPrefix": "Current total:",
+      "tracksRoundsTitle": "Tracks & rounds",
+      "tracksRoundsDescription": "Cấu hình track, vòng chấm và vòng đang active để chấm điểm.",
+      "tracksTitle": "Tracks",
+      "roundsTitle": "Rounds",
+      "trackIdPlaceholder": "Track id (vd: ai)",
+      "trackNamePlaceholder": "Track name (vd: AI)",
+      "roundIdPlaceholder": "Round id (vd: final)",
+      "roundNamePlaceholder": "Round name (vd: Final)",
+      "addTrackRow": "Thêm track",
+      "addRoundRow": "Thêm round",
+      "activeRoundLabel": "Active round",
+      "saveTracksRounds": "Lưu tracks & rounds",
+      "tracksNeedOne": "Cần ít nhất 1 track.",
+      "roundsNeedOne": "Cần ít nhất 1 round.",
+      "tracksRoundsSaved": "Đã lưu tracks & rounds.",
+      "tracksRoundsSaveFailed": "Không lưu được tracks/rounds.",
+      "anonymousJudgingTitle": "Anonymous judging (UI-level)",
+      "anonymousJudgingHint": "Bật để judge chỉ thấy display ID thay vì tên trong panel chấm.",
+      "anonymousJudgingToggle": "Bật",
+      "anonymousSubmissionLabel": "Submission ID {{id}}",
       "accessInvitesTitle": "Access & invites",
+      "inviteRolesLabel": "Vai trò",
       "inviteRoleJudge": "Judge",
+      "inviteRoleCoOrganizer": "Co-organizer",
+      "inviteRolePartnerViewer": "Partner viewer",
+      "inviteRoleMentor": "Mentor",
+      "inviteRoleReviewer": "Reviewer",
       "inviteRoleCoHost": "Co-host",
+      "bulkInviteTitle": "Bulk invite (CSV)",
+      "bulkInviteHint": "Upload CSV với format: email, role(s). Có thể nhiều role, ngăn bởi | hoặc ;. Ví dụ: person@domain.com, judge|mentor",
+      "bulkInviteEmpty": "File CSV rỗng.",
+      "bulkInviteFailed": "Bulk invite thất bại.",
+      "bulkInviteDone": "Bulk invite xong: {{success}} thành công · {{failed}} lỗi",
       "invitesEmpty": "No invites yet.",
       "publicPageContentTitle": "Nội dung trang công khai",
       "publicPageContentDescription": "Giải thưởng, FAQ, mốc timeline tùy chỉnh và dòng tóm tắt giải trên các URL công khai.",
       "mediaTitle": "Banner & thumbnail",
       "mediaDescription": "Banner hiển thị rộng phía trên thẻ contest trên URL công khai. Thumbnail dùng cho danh sách và header dính (nếu trống sẽ dùng banner).",
       "bannerUploadLabel": "Ảnh banner",
+      "bannerUploadHint": "Khuyến nghị: tỉ lệ 21:9, tối thiểu 1680x720 (PNG/JPG/WebP), dưới 5MB.",
       "thumbnailUploadLabel": "Ảnh thumbnail",
+      "thumbnailUploadHint": "Khuyến nghị (chuẩn YouTube): tỉ lệ 16:9, 1280x720 (PNG/JPG/WebP), dưới 2MB.",
       "uploadingBanner": "Đang tải banner…",
       "uploadingThumbnail": "Đang tải thumbnail…",
       "prizePoolSummaryLabel": "Tóm tắt tổng giải thưởng",
@@ -370,6 +410,10 @@
       "createFailed": "Không thể tạo cuộc thi.",
       "imagesUploadFailed": "Đã tạo contest nhưng không tải được ảnh. Bạn có thể thêm trong phần cài đặt workspace."
     },
+    "validation": {
+      "startsInPast": "Ngày bắt đầu không được trước hôm nay.",
+      "endsNotAfterStart": "Ngày kết thúc phải sau ngày bắt đầu."
+    },
     "form": {
       "titleLabel": "Tên cuộc thi",
       "titlePlaceholder": "Ví dụ: Corelia Hackathon: AI for Education",
@@ -492,6 +536,22 @@
       "deleteSuccess": "Đã xoá cuộc thi.",
       "deleteErrorFallback": "Không thể xoá cuộc thi lúc này."
     },
+    "phase": {
+      "badgeEnded": "Đã kết thúc",
+      "badgeLive": "Đang diễn ra",
+      "badgeRegistrationOpen": "Đang nhận hồ sơ",
+      "badgeRegClosedBeforeStart": "Đã đóng đăng ký · Sắp khai mạc",
+      "hero": {
+        "registrationsCount": "{{count}} hồ sơ đã nộp",
+        "noApplicationsYet": "Chưa có hồ sơ",
+        "registrationWindowClosed": "Đã hết thời hạn đăng ký",
+        "kickoffCountdown": "Khai mạc sau {{time}}",
+        "approvedTeams": "{{count}} đội đã được duyệt",
+        "noApprovedTeamsYet": "Đội tham gia sẽ hiển thị sau khi duyệt hồ sơ",
+        "contestConcluded": "Contest đã kết thúc",
+        "participatedTeams": "{{count}} đội đã tham gia"
+      }
+    },
     "cta": {
       "nextStepEyebrow": "Bước tiếp theo",
       "continueSubmission": "Tiếp tục submission",
@@ -502,7 +562,13 @@
       "register": "Đăng ký tham gia",
       "registerHelper": "Contest đang mở nhận hồ sơ. Gửi đăng ký để được Corelia xét duyệt.",
       "trackTimeline": "Theo dõi mốc contest",
-      "trackTimelineHelper": "Contest chưa mở đăng ký. Bạn có thể xem timeline và chờ giai đoạn nhận hồ sơ."
+      "trackTimelineHelper": "Contest chưa mở đăng ký. Bạn có thể xem timeline và chờ giai đoạn nhận hồ sơ.",
+      "viewResults": "Xem kết quả",
+      "viewResultsHelper": "Xem mốc thời gian hoặc kết quả đã công bố (nếu có).",
+      "followContest": "Xem lịch trình",
+      "inProgressVisitorHelper": "Theo dõi các mốc để nắm hạn chót và cập nhật.",
+      "viewSchedule": "Xem lịch trình",
+      "regClosedBeforeKickoffHelper": "Đợt đăng ký đã đóng. Xem lịch trình để biết thời điểm khai mạc và các mốc tiếp theo."
     },
     "visual": {
       "bannerAlt": "Banner — {{title}}",
@@ -525,7 +591,10 @@
       "contestEnded": "Contest đã kết thúc",
       "countdownDays": "{{count}} ngày",
       "countdownHours": "{{count}} giờ",
-      "countdownMinutes": "{{count}} phút"
+      "countdownMinutes": "{{count}} phút",
+      "slotsFilled": "{{approved}} / {{max}} slot",
+      "slotsUnlimited": "Không giới hạn số đội được duyệt",
+      "implausibleStartWarning": "Ngày bắt đầu sớm hơn thời điểm tạo contest — hãy kiểm tra lại lịch trong dữ liệu."
     },
     "public": {
       "nav": {
@@ -546,6 +615,21 @@
         "resultsTitle": "Kết quả công bố",
         "resultsBody": "Leaderboard và winners chỉ hiển thị khi Corelia publish chính thức."
       },
+      "overviewTeasers": {
+        "sectionTitle": "Khám phá thêm",
+        "sectionDescription": "Nội dung chi tiết nằm ở từng mục — mở khi bạn cần.",
+        "prizesTitle": "Giải thưởng",
+        "prizesBody_one": "Đã công bố {{count}} hạng giải.",
+        "prizesBody_other": "Đã công bố {{count}} hạng giải.",
+        "faqsTitle": "FAQ",
+        "faqsBody_one": "{{count}} câu hỏi thường gặp.",
+        "faqsBody_other": "{{count}} câu hỏi thường gặp.",
+        "timelineTitle": "Lịch trình",
+        "timelineBody": "Mốc thời gian, hạn chót và xuất lịch.",
+        "journeyTitle": "Cách tham gia",
+        "journeyBody": "Từ nộp hồ sơ đến bài nộp cuối cùng.",
+        "linkLabel": "Mở mục"
+      },
       "results": {
         "cardTitle": "Kết quả contest",
         "cardDescription": "Những kết quả đã được Corelia công bố sẽ hiển thị tại đây.",
@@ -564,6 +648,8 @@
       "submissionFooterHint": "Submission nên có tiêu đề rõ ràng, phần tóm tắt đủ chi tiết và ít nhất một đường dẫn demo hoặc repo nếu đã sẵn sàng.",
       "applicationCardTitle": "Hồ sơ tham gia",
       "applicationCardPendingBody": "Bạn chỉ chính thức được tham gia contest sau khi đội ngũ Corelia duyệt.",
+      "registrationLockedTitle": "Đăng ký chưa mở",
+      "registrationLockedBody": "Hồ sơ cần Corelia duyệt. Form sẽ xuất hiện khi contest chuyển sang “Đang nhận hồ sơ”. Trước mắt hãy xem lịch trình các mốc.",
       "sentAt": "Gửi lúc {{datetime}}",
       "teamPreviewLabel": "Xem trước đội",
       "extraMembersCount": "{{count}} thành viên bổ sung",

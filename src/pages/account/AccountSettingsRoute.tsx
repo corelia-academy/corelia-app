@@ -31,7 +31,7 @@ function AccountSettingsSection() {
       <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-base font-medium text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
               {t("settings.appearance.title")}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -51,7 +51,7 @@ function AccountSettingsSection() {
                 type="button"
                 onClick={() => setTheme(themeOption)}
                 className={[
-                  "h-9 rounded-full border px-3 text-sm font-medium transition-colors",
+                  "min-h-11 rounded-full border px-3 py-1 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                   (theme ?? "system") === themeOption
                     ? "border-primary/25 bg-primary-container text-on-primary-container shadow-card"
                     : "border-border-subtle bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground",
@@ -70,7 +70,7 @@ function AccountSettingsSection() {
 
       <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
         <div className="min-w-0">
-          <h2 className="text-base font-medium text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
             {t("settings.session.title")}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">

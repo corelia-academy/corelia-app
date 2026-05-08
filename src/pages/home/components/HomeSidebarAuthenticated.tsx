@@ -59,14 +59,6 @@ export function HomeSidebarAuthenticated({
           >
             {t("nav.account")}
           </NavLink>
-          <NavLink
-            to="/achievements"
-            className={cn(
-              "inline-flex flex-1 items-center justify-center rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/85",
-            )}
-          >
-            {t("nav.achievements")}
-          </NavLink>
         </div>
       </section>
 

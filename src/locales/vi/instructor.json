@@ -4,6 +4,7 @@
     "subtitle": "Quản lý khoá học, hồ sơ và các tác vụ vận hành trong một nơi.",
     "createCourse": "Tạo khoá học",
     "courseList": "Danh sách khoá học",
+    "careerTracks": "Lộ trình học",
     "offlineClasses": "Lớp học trực tiếp",
     "profile": "Hồ sơ giảng viên",
     "contests": "Cuộc thi",
@@ -86,6 +87,8 @@
       "home": "Home",
       "teaching": "Quản lý giảng dạy",
       "createCourse": "Tạo khoá học",
+      "careerTracks": "Lộ trình học",
+      "createCareerTrack": "Tạo lộ trình",
       "offlineClasses": "Lớp học trực tiếp",
       "createCohort": "Tạo cohort",
       "cohortWorkspace": "Khu vực vận hành cohort",
@@ -103,6 +106,18 @@
       "newCourse": {
         "title": "Tạo khoá học mới",
         "description": "Khởi tạo nội dung, mô hình giá và hành trình học ngay từ đầu."
+      },
+      "careerTracks": {
+        "title": "Quản lý lộ trình học",
+        "description": "Tạo và xuất bản lộ trình học dựa trên các khoá học bạn xây dựng."
+      },
+      "careerTracksNew": {
+        "title": "Tạo lộ trình học",
+        "description": "Tạo lộ trình (draft/published) và sắp xếp các khoá học theo thứ tự."
+      },
+      "careerTracksEdit": {
+        "title": "Chỉnh sửa lộ trình học",
+        "description": "Cập nhật nội dung lộ trình và danh sách khoá học kèm theo."
       },
       "offlineList": {
         "title": "Danh sách lớp trực tiếp",
@@ -161,6 +176,67 @@
       "coreliaInstructor": "Giảng viên Corelia",
       "adminMode": "Chế độ quản trị",
       "teachingMode": "Tác vụ giảng dạy"
+    }
+  },
+  "careerTracks": {
+    "list": {
+      "title": "Lộ trình học",
+      "subtitle": "Tổng {{total}} · Đã xuất bản {{published}} · Bản nháp {{drafts}}",
+      "emptyTitle": "Chưa có lộ trình nào",
+      "emptyDescription": "Tạo lộ trình đầu tiên của bạn dựa trên các khoá học bạn đã tạo."
+    },
+    "editor": {
+      "newTitle": "Tạo lộ trình",
+      "editTitle": "Chỉnh sửa lộ trình",
+      "subtitle": "Thiết lập nội dung và sắp xếp khoá học theo thứ tự học."
+    },
+    "sections": {
+      "learning": "Nội dung",
+      "includedCourses": "Khoá học trong lộ trình"
+    },
+    "fields": {
+      "title": "Tiêu đề",
+      "slug": "Slug",
+      "description": "Mô tả",
+      "whatYoullLearn": "Bạn sẽ học được gì",
+      "prerequisites": "Yêu cầu trước khi học",
+      "settings": "Thiết lập",
+      "hasCertificate": "Có certificate",
+      "published": "Xuất bản",
+      "addCourse": "Thêm khoá học"
+    },
+    "placeholders": {
+      "title": "Ví dụ: Frontend Engineer",
+      "description": "Mô tả ngắn về lộ trình…",
+      "whatYoullLearn": "Mỗi dòng là một mục…",
+      "prerequisites": "Mỗi dòng là một mục…",
+      "pickCourse": "Chọn một khoá học"
+    },
+    "hints": {
+      "slug": "Dùng chữ thường, số và dấu gạch ngang. Ví dụ: frontend-engineer",
+      "lines": "Mỗi dòng tương ứng một item."
+    },
+    "labels": {
+      "loading": "Đang tải…",
+      "draft": "Draft",
+      "published": "Published",
+      "noCourses": "Chưa có khoá học nào trong lộ trình.",
+      "courseCount": "{{count}} khoá học"
+    },
+    "actions": {
+      "create": "Tạo lộ trình",
+      "edit": "Chỉnh sửa",
+      "publish": "Xuất bản",
+      "unpublish": "Gỡ xuất bản",
+      "back": "Quay lại",
+      "save": "Lưu",
+      "saving": "Đang lưu…"
+    },
+    "errors": {
+      "loadFailed": "Không thể tải dữ liệu lộ trình.",
+      "saveFailed": "Không thể lưu lộ trình.",
+      "missingRequired": "Vui lòng nhập tiêu đề và slug.",
+      "notFound": "Không tìm thấy lộ trình."
     }
   },
   "courseNew": {
