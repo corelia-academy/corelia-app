@@ -38,7 +38,7 @@ export default function InstructorCareerTrackEditorPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
-  const [_track, setTrack] = useState<CareerTrackDetail | null>(null);
+  const [, setTrack] = useState<CareerTrackDetail | null>(null);
   const [form, setForm] = useState({
     title: "",
     slug: "",

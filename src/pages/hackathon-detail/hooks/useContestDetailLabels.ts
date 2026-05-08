@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { Contest, ContestRegistrationStatus } from "@/types/contests";
+import type { Contest, ContestRegistrationStatus } from "@/types/hackathons";
 
 export function useContestDetailLabels(translate: (key: string, options?: Record<string, unknown>) => string) {
   const statusLabel = useCallback(

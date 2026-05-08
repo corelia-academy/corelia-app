@@ -435,7 +435,11 @@ export async function setInstructorCareerTrackCourses(
     .eq("track_id", trackId);
   if (existingError) throw new Error(existingError.message);
 
-  const existingIds = new Set((existing ?? []).map((r) => String((r as any).course_id)));
+  const existingIds = new Set(
+    (existing ?? [])
+      .map((r) => (r && typeof r === "object" ? (r as Record<string, unknown>).course_id : null))
+      .filter((v): v is string => typeof v === "string" && v.trim().length > 0),
+  );
   const desiredIds = new Set(deduped);
   const toDelete = Array.from(existingIds).filter((id) => !desiredIds.has(id));
 

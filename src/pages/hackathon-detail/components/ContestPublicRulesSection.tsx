@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
-import type { Contest } from "@/types/contests";
-import { renderTextAsList } from "@/pages/contest-detail/utils/text";
+import type { Contest } from "@/types/hackathons";
+import { renderTextAsList } from "@/pages/hackathon-detail/utils/text";
 
 export function ContestPublicRulesSection(props: {
   contest: Contest;

@@ -4,8 +4,8 @@ import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
 import { intlLocale } from "@/lib/intl";
 import { getCourseLevelLabel } from "@/types/courses";
-import type { Contest } from "@/types/contests";
-import { contestListImageUrl } from "@/lib/contestVisuals";
+import type { Contest } from "@/types/hackathons";
+import { contestListImageUrl } from "@/lib/hackathonVisuals";
 import type { Course } from "@/types/courses";
 
 export function GuestHome({
@@ -115,7 +115,7 @@ export function GuestHome({
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-sm font-medium text-foreground">{t("home.guest.openContestsTitle")}</h2>
                 <Button
-                  render={<NavLink to="/contests" />}
+                  render={<NavLink to="/hackathons" />}
                   nativeButton={false}
                   variant="ghost"
                   size="sm"
@@ -132,7 +132,7 @@ export function GuestHome({
                   return (
                   <NavLink
                     key={contest.id}
-                    to={`/contests/${contest.id}/overview`}
+                    to={`/hackathons/${contest.id}/overview`}
                     className="flex cursor-pointer items-start justify-between gap-3 rounded-md border border-border-subtle bg-background px-3 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                   >
                     <div className="relative size-14 shrink-0 overflow-hidden rounded-lg border border-border-subtle bg-muted">
@@ -208,7 +208,7 @@ export function GuestHome({
             <div className="mt-4 space-y-2">
               {[
                 { label: t("home.allCourses"), to: "/courses" },
-                { label: t("home.guest.quickLinks.contests"), to: "/contests" },
+                { label: t("home.guest.quickLinks.contests"), to: "/hackathons" },
               ].map((item) => (
                 <NavLink
                   key={item.to}

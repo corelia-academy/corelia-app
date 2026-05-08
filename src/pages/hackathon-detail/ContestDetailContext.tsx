@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
-import type { ContestDetailViewModel } from "@/pages/contest-detail/viewModel";
+import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 
+/* eslint-disable react-refresh/only-export-components -- context + hook live alongside provider */
 type ContestDetailContextValue = {
   vm: ContestDetailViewModel;
 };

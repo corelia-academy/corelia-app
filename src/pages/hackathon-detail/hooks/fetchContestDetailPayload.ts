@@ -13,7 +13,7 @@ import {
   listContestScores,
   listContestSubmissions,
   type PrefetchedContestActorContext,
-} from "@/lib/contests";
+} from "@/lib/hackathons";
 import type {
   Contest,
   ContestAccessInvite,
@@ -21,7 +21,7 @@ import type {
   ContestScore,
   ContestSubmission,
   ContestStatus,
-} from "@/types/contests";
+} from "@/types/hackathons";
 import type { Profile } from "@/types/database";
 import type { User } from "@supabase/supabase-js";
 

@@ -11,14 +11,6 @@ import { useAchievementsPage } from "@/pages/achievements/hooks/useAchievementsP
 export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) {
   const { t } = useTranslation("common");
 
-  if (!isSelf) {
-    return (
-      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
-        {t("userProfile.achievements.selfOnly")}
-      </div>
-    );
-  }
-
   const {
     certificates,
     badges,
@@ -30,6 +22,14 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
     openModal,
     handleClaim,
   } = useAchievementsPage();
+
+  if (!isSelf) {
+    return (
+      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+        {t("userProfile.achievements.selfOnly")}
+      </div>
+    );
+  }
 
   const earnedBadges = badges.filter((b) => !b.locked);
   const recentCertificates = certificates.slice(0, 6);

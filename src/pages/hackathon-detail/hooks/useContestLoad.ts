@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 
 export function useContestLoad({
   contestId,

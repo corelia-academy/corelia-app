@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 
 export function ContestDetailDeleteContestDialog({
   translate,

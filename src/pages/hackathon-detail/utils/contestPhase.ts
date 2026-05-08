@@ -1,4 +1,4 @@
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 
 /** Derived lifecycle phase for public contest surfaces — single source for badge, stats, and CTA copy. */
 export type ContestPublicPhase =

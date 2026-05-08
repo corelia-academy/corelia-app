@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
 import type { PublicProfile } from "@/types/database";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 
 import { contestFromRow } from "../utils/contestFromRow";
 
@@ -142,7 +142,7 @@ export function UserProfileContestsSection({
               return (
                 <NavLink
                   key={id}
-                  to={`/contests/${id}/overview`}
+                  to={`/hackathons/${id}/overview`}
                   className="block rounded-md border border-border-subtle bg-card p-4 shadow-card transition hover:bg-muted/40"
                 >
                   <div className="min-w-0">
@@ -185,7 +185,7 @@ export function UserProfileContestsSection({
                 return (
                   <NavLink
                     key={`p-${id}`}
-                    to={`/contests/${id}/overview`}
+                    to={`/hackathons/${id}/overview`}
                     className="block rounded-md border border-border-subtle bg-card p-4 shadow-card transition hover:bg-muted/40"
                   >
                     <div className="min-w-0">

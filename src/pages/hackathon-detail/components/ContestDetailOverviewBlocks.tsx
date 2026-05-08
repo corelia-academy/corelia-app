@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
-import type { ContestPublicSection } from "@/pages/contest-detail/types";
-import type { ContestDetailViewModel } from "@/pages/contest-detail/viewModel";
-import { renderTextAsList } from "@/pages/contest-detail/utils/text";
+import type { ContestPublicSection } from "@/pages/hackathon-detail/types";
+import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
+import { renderTextAsList } from "@/pages/hackathon-detail/utils/text";
 
 export function ContestDetailOverviewBlocks({
   vm,

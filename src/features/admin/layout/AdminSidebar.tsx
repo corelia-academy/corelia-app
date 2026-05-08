@@ -103,10 +103,10 @@ export function AdminSidebar() {
                 <SidebarMenuButton
                   className="rounded-md"
                   tooltip={t("layout.sidebar.contests.tooltip")}
-                  isActive={pathname.startsWith("/admin/contests")}
+                  isActive={pathname.startsWith("/admin/hackathons")}
                   render={
                     <NavLink
-                      to="/admin/contests"
+                      to="/admin/hackathons"
                       className="flex w-full items-center gap-2"
                     >
                       <Trophy className="size-4" aria-hidden />

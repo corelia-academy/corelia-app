@@ -1,2 +1,2 @@
-export * from "@/pages/contest-detail/utils/contestListFormatters";
+export * from "@/pages/hackathon-detail/utils/contestListFormatters";
 

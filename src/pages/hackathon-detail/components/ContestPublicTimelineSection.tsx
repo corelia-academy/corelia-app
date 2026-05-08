@@ -1,14 +1,14 @@
 import { Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { buildDefaultContestTimelineItems } from "@/components/contests/contestTimelineBuilders";
+import { buildDefaultContestTimelineItems } from "@/components/hackathons/contestTimelineBuilders";
 import {
   ContestTimeline,
   ContestTimelineVertical,
   type ContestTimelineRow,
-} from "@/components/contests/ContestTimeline";
-import { downloadContestCalendarIcs } from "@/lib/contestCalendar";
-import type { Contest } from "@/types/contests";
+} from "@/components/hackathons/ContestTimeline";
+import { downloadContestCalendarIcs } from "@/lib/hackathonCalendar";
+import type { Contest } from "@/types/hackathons";
 
 export function ContestPublicTimelineSection(props: {
   contest: Contest;

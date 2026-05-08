@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import type {
   ContestAccessInvite,
   ContestScopedViewerRole,
-} from "@/types/contests";
+} from "@/types/hackathons";
 import type { ContestDetailFetchedPayload } from "./fetchContestDetailPayload";
 
 export function useContestInviteWorkspace() {

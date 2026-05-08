@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { listContests } from "@/lib/contests";
-import type { Contest } from "@/types/contests";
+import { listContests } from "@/lib/hackathons";
+import type { Contest } from "@/types/hackathons";
 import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
 import { useAuth } from "@/stores/authStore";
 

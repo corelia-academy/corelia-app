@@ -1,6 +1,6 @@
-import type { Contest } from "@/types/contests";
-import type { ContestPublicSection } from "@/pages/contest-detail/types";
-import { useContestDetailOrchestrator } from "@/pages/contest-detail/hooks/useContestDetailOrchestrator";
+import type { Contest } from "@/types/hackathons";
+import type { ContestPublicSection } from "@/pages/hackathon-detail/types";
+import { useContestDetailOrchestrator } from "@/pages/hackathon-detail/hooks/useContestDetailOrchestrator";
 
 export type UseContestDetailOptions = {
   forceManageView?: boolean;

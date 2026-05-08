@@ -28,13 +28,19 @@ export function useCareerTrackDetail(
       !normalizedSlug ||
       (params.owner_scope === "instructor" && !normalizedHandle)
     ) {
-      setTrack(null);
-      setLoading(false);
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setTrack(null);
+        setLoading(false);
+      });
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setLoading(true);
+      setError(null);
+    });
 
     getCareerTrackBySlug(
       params.owner_scope === "corelia"
@@ -57,7 +63,7 @@ export function useCareerTrackDetail(
     return () => {
       cancelled = true;
     };
-  }, [params.owner_scope, params.slug, params.owner_scope === "instructor" ? params.handle : "", t]);
+  }, [params.owner_scope, params.slug, params.handle, t]);
 
   return { track, loading, error };
 }

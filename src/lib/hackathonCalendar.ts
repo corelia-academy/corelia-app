@@ -1,4 +1,4 @@
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 
 function pad2(n: number): string {
   return String(n).padStart(2, "0");
@@ -51,7 +51,7 @@ function buildVevent(input: ContestCalendarEventInput): string[] {
   const endDate = new Date(new Date(input.startIso).getTime() + duration);
   const end = toIcsUtc(endDate.toISOString());
   if (!end) return [];
-  const uid = `corelia-contest-${input.uidSuffix}@corelia`;
+  const uid = `corelia-hackathon-${input.uidSuffix}@corelia`;
   const stamp = toIcsUtc(new Date().toISOString());
   const lines = [
     "BEGIN:VEVENT",

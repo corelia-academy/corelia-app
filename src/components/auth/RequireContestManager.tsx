@@ -9,7 +9,7 @@ interface RequireContestManagerProps {
   children: React.ReactNode;
   /** Redirect khi chưa đăng nhập (mặc định /login) */
   loginPath?: string;
-  /** Redirect khi không đủ quyền (mặc định /contests) */
+  /** Redirect khi không đủ quyền (mặc định /hackathons) */
   fallbackPath?: string;
 }
 
@@ -19,7 +19,7 @@ interface RequireContestManagerProps {
 export function RequireContestManager({
   children,
   loginPath = "/login",
-  fallbackPath = "/contests",
+  fallbackPath = "/hackathons",
 }: RequireContestManagerProps) {
   const { t } = useTranslation("common");
   const { isAuthenticated, authInitialized, profileLoading, profile, user, refreshProfile } =

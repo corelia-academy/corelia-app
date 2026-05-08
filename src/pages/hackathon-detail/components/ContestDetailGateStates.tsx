@@ -68,7 +68,7 @@ export function ContestDetailErrorCard({
           </div>
           <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-muted-foreground hover:text-foreground" />
           <Button
-            render={<NavLink to="/contests" />}
+            render={<NavLink to="/hackathons" />}
             nativeButton={false}
             variant="ghost"
             className="mt-4"
@@ -96,7 +96,7 @@ export function ContestDetailWorkspaceAccessDenied({
             {translate("detail.errors.workspaceAccessDenied")}
           </div>
           <Button
-            render={<NavLink to={`/contests/${contestId}/overview`} />}
+            render={<NavLink to={`/hackathons/${contestId}/overview`} />}
             nativeButton={false}
             variant="ghost"
             className="mt-4"

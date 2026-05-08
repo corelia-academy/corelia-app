@@ -2,9 +2,9 @@ import { useCallback, useMemo, useState } from "react";
 import type {
   ContestRegistration,
   ContestRegistrationStatus,
-} from "@/types/contests";
+} from "@/types/hackathons";
 import type { ContestDetailFetchedPayload } from "./fetchContestDetailPayload";
-import { parseLineList } from "@/pages/contest-detail/utils/parse";
+import { parseLineList } from "@/pages/hackathon-detail/utils/parse";
 
 export function useContestRegistrationFlow() {
   const [registration, setRegistration] = useState<ContestRegistration | null>(

@@ -1,8 +1,8 @@
-import { ContestDetailManagerSettingsCard } from "@/pages/contest-detail/components/ContestDetailManagerSettingsCard";
-import { ContestDetailParticipantApplicationCard } from "@/pages/contest-detail/components/ContestDetailParticipantApplicationCard";
-import { ContestDetailParticipantSubmissionCard } from "@/pages/contest-detail/components/ContestDetailParticipantSubmissionCard";
-import { ContestDetailSettingsInviteCard } from "@/pages/contest-detail/components/ContestDetailSettingsInviteCard";
-import type { ContestDetailViewModel } from "@/pages/contest-detail/viewModel";
+import { ContestDetailManagerSettingsCard } from "@/pages/hackathon-detail/components/ContestDetailManagerSettingsCard";
+import { ContestDetailParticipantApplicationCard } from "@/pages/hackathon-detail/components/ContestDetailParticipantApplicationCard";
+import { ContestDetailParticipantSubmissionCard } from "@/pages/hackathon-detail/components/ContestDetailParticipantSubmissionCard";
+import { ContestDetailSettingsInviteCard } from "@/pages/hackathon-detail/components/ContestDetailSettingsInviteCard";
+import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 
 export function ContestDetailRightColumn({
   vm,

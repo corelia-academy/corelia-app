@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 
 type SearchEntityType =
   | "project"
-  | "contest"
+  | "hackathon"
   | "course"
   | "career_track"
   | "profile";

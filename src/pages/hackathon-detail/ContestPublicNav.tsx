@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
 
@@ -35,7 +35,7 @@ export function ContestPublicNav({
         {NAV_KEYS.filter((key) => (key === "projects" ? showProjects : true)).map((key) => (
           <NavLink
             key={key}
-            to={`/contests/${contestId}/${key}`}
+            to={`/hackathons/${contestId}/${key}`}
             className={({ isActive }) =>
               cn(
                 "inline-flex min-h-11 shrink-0 items-center border-b-2 px-3 py-2.5 text-sm font-medium transition-colors duration-150",

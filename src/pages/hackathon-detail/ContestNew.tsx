@@ -11,13 +11,13 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { createContest, updateContest } from "@/lib/contests";
-import { validateContestScheduleInputs } from "@/lib/contestScheduleValidation";
+import { createContest, updateContest } from "@/lib/hackathons";
+import { validateContestScheduleInputs } from "@/lib/hackathonScheduleValidation";
 import { uploadContestBanner, uploadContestThumbnail } from "@/lib/storage";
-import type { ContestLocation, ContestStatus } from "@/types/contests";
+import type { ContestLocation, ContestStatus } from "@/types/hackathons";
 import { useTranslation } from "react-i18next";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
-import { datetimeLocalToIso } from "@/pages/contest-detail/utils/datetime";
+import { datetimeLocalToIso } from "@/pages/hackathon-detail/utils/datetime";
 
 export default function ContestNew() {
   const { t } = useTranslation("contests");
@@ -142,7 +142,7 @@ export default function ContestNew() {
       }
 
       toast.success(t("instructorNew.toasts.created"));
-      navigate(`/contests/${contest.id}/manage`);
+      navigate(`/hackathons/${contest.id}/manage`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("instructorNew.toasts.createFailed"));
     } finally {
@@ -156,7 +156,7 @@ export default function ContestNew() {
         <Button
           variant="ghost"
           className="-ml-2 text-muted-foreground hover:text-foreground"
-          onClick={() => navigate("/admin/contests")}
+          onClick={() => navigate("/admin/hackathons")}
         >
           <ArrowLeft className="size-4" aria-hidden />
           {t("instructorNew.back")}
@@ -461,7 +461,7 @@ export default function ContestNew() {
             </FieldGroup>
 
             <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-end">
-              <Button variant="ghost" onClick={() => navigate("/admin/contests")}>
+              <Button variant="ghost" onClick={() => navigate("/admin/hackathons")}>
                 {t("instructorNew.actions.back")}
               </Button>
               <Button disabled={!canSubmit || submitting} onClick={handleCreate}>

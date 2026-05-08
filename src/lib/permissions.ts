@@ -1,5 +1,5 @@
 import type { Profile } from "@/types/database";
-import type { Contest, ContestScopedViewerRole } from "@/types/contests";
+import type { Contest, ContestScopedViewerRole } from "@/types/hackathons";
 import { ROLE_GROUPS } from "@/config/roles";
 
 export function canManageContests(profile: Profile | null | undefined): boolean {

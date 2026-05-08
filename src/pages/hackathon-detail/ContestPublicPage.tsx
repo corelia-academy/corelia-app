@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { ContestPublicSection } from "@/pages/contest-detail/types";
-import ContestDetail from "@/pages/contest-detail/ContestDetail";
-import type { Contest } from "@/types/contests";
+import type { ContestPublicSection } from "@/pages/hackathon-detail/types";
+import ContestDetail from "@/pages/hackathon-detail/ContestDetail";
+import type { Contest } from "@/types/hackathons";
 import { useOutletContext, useParams } from "react-router";
 
 export default function ContestPublicPage({ section }: { section: ContestPublicSection }) {

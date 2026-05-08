@@ -3,8 +3,8 @@ import { NavLink, Outlet, useParams } from "react-router";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
-import { getContest } from "@/lib/contests";
-import type { Contest } from "@/types/contests";
+import { getContest } from "@/lib/hackathons";
+import type { Contest } from "@/types/hackathons";
 import { useTranslation } from "react-i18next";
 
 const PUBLIC_STATUSES: Contest["status"][] = ["published", "running", "ended"];
@@ -80,7 +80,7 @@ export default function ContestPublicLayout() {
             {error ?? translate("detail.errors.notFound")}
           </p>
           <Button
-            render={<NavLink to="/contests" />}
+            render={<NavLink to="/hackathons" />}
             nativeButton={false}
             variant="outline"
             className="min-h-11"

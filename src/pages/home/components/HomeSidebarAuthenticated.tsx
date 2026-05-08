@@ -70,7 +70,7 @@ export function HomeSidebarAuthenticated({
         <div className="mt-4 space-y-2">
           {[
             { label: t("home.allCourses"), to: "/courses" },
-            { label: t("nav.contests"), to: "/contests" },
+            { label: t("nav.contests"), to: "/hackathons" },
           ].map((item) => (
             <NavLink
               key={item.to}

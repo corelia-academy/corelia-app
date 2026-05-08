@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 
 export function ContestPublicPrizesSection(props: {
   contest: Contest;

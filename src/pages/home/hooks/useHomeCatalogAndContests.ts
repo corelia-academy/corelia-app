@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import i18n from "@/i18n";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 import type { Course } from "@/types/courses";
 import {
   applyCourseLocaleContent,
@@ -8,7 +8,7 @@ import {
   getPublishedCourses,
   pickCourseContentLocale,
 } from "@/lib/courses";
-import { listContests } from "@/lib/contests";
+import { listContests } from "@/lib/hackathons";
 import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
 import { useAuth } from "@/stores/authStore";
 

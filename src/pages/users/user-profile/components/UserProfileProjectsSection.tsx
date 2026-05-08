@@ -11,7 +11,7 @@ import type { Project } from "@/types/projects";
 
 function sourceLink(project: Project): string | null {
   if (project.source_type === "contest" && project.source_id) {
-    return `/contests/${project.source_id}/overview`;
+    return `/hackathons/${project.source_id}/overview`;
   }
   if (project.source_type === "course" && project.source_id) {
     return `/courses/${project.source_id}`;

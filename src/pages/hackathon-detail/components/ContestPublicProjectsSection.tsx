@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 
 export function ContestPublicProjectsSection(props: {
   contest: Contest;

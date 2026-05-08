@@ -32,15 +32,15 @@ const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
 const RoadmapPage = lazy(() => import("@/pages/roadmap"));
 const CareerList = lazy(() => import("@/pages/career"));
 const CareerDetail = lazy(() => import("@/pages/career/CareerDetailPage"));
-const Contests = lazy(() => import("@/pages/contest-detail/Contests"));
-const ContestNew = lazy(() => import("@/pages/contest-detail/ContestNew"));
-const ContestPublicLayout = lazy(() => import("@/pages/contest-detail/ContestPublicLayout"));
-const ContestPublicPage = lazy(() => import("@/pages/contest-detail/ContestPublicPage"));
-const ContestApplyRedirect = lazy(() => import("@/pages/contest-detail/ContestApplyRedirect"));
+const Contests = lazy(() => import("@/pages/hackathon-detail/Contests"));
+const ContestNew = lazy(() => import("@/pages/hackathon-detail/ContestNew"));
+const ContestPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
+const ContestPublicPage = lazy(() => import("@/pages/hackathon-detail/ContestPublicPage"));
+const ContestApplyRedirect = lazy(() => import("@/pages/hackathon-detail/ContestApplyRedirect"));
 const Projects = lazy(() => import("@/pages/projects"));
 const SearchPage = lazy(() => import("@/pages/search"));
 const ContestWorkspacePublicRoute = lazy(() =>
-  import("@/pages/contest-detail/ContestDetail").then((m) => ({
+  import("@/pages/hackathon-detail/ContestDetail").then((m) => ({
     default: m.ContestDetailManagePage,
   })),
 );
@@ -73,7 +73,7 @@ const InstructorWorkspaceProfileRoute = lazy(() =>
 
 const InstructorLayout = lazy(() => import("@/pages/instructor/InstructorLayout"));
 const InstructorCourses = lazy(() => import("@/pages/InstructorCourses"));
-const InstructorContests = lazy(() => import("@/pages/contest-detail/InstructorContests"));
+const InstructorContests = lazy(() => import("@/pages/hackathon-detail/InstructorContests"));
 const InstructorCourseNew = lazy(() => import("@/pages/instructor-course-new"));
 const InstructorCourseEdit = lazy(() => import("@/pages/instructor-course-edit"));
 const InstructorCareerTracks = lazy(() => import("@/pages/instructor-career-tracks"));
@@ -96,7 +96,7 @@ const AdminInstructors = lazy(() => import("@/pages/admin/AdminInstructors"));
 const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const ContestWorkspace = lazy(() =>
-  import("@/pages/contest-detail/ContestDetail").then((m) => ({
+  import("@/pages/hackathon-detail/ContestDetail").then((m) => ({
     default: m.ContestDetailManagePage,
   })),
 );
@@ -227,7 +227,7 @@ export default function App() {
                 }
               />
               <Route
-                path="contests"
+                path="hackathons"
                 element={
                   <Suspense fallback={<PageFallback />}>
                     <Contests />
@@ -251,7 +251,7 @@ export default function App() {
                 }
               />
               <Route
-                path="contests/:id/manage"
+                path="hackathons/:id/manage"
                 element={
                   <RequireAuth>
                     <Suspense fallback={<PageFallback />}>
@@ -261,7 +261,7 @@ export default function App() {
                 }
               />
               <Route
-                path="contests/:id"
+                path="hackathons/:id"
                 element={
                   <Suspense fallback={<PageFallback />}>
                     <ContestPublicLayout />
@@ -429,7 +429,7 @@ export default function App() {
                   }
                 />
                 <Route
-                  path="contests"
+                  path="hackathons"
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <InstructorContests />
@@ -437,7 +437,7 @@ export default function App() {
                   }
                 />
                 <Route
-                  path="contests/new"
+                  path="hackathons/new"
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <ContestNew />
@@ -445,7 +445,7 @@ export default function App() {
                   }
                 />
                 <Route
-                  path="contests/:id/manage"
+                  path="hackathons/:id/manage"
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <ContestWorkspace />

@@ -20,8 +20,11 @@ export default function InstructorCareerTracksPage() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setLoading(true);
+      setError(null);
+    });
     listCareerTracksForInstructor()
       .then((rows) => {
         if (!cancelled) setTracks(rows);

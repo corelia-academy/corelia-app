@@ -34,7 +34,7 @@
     "home": "Home",
     "courses": "Courses",
     "career": "Career",
-    "contests": "Contests",
+    "contests": "Hackathons",
     "projects": "Projects",
     "achievements": "Achievements",
     "account": "Account",
@@ -57,7 +57,7 @@
       "overview": "Overview",
       "achievements": "Achievements",
       "courses": "Courses",
-      "contests": "Contests"
+      "contests": "Hackathons"
     },
     "actions": {
       "editProfile": "Edit profile"
@@ -90,11 +90,11 @@
       "updatedAt": "Updated {{date}}"
     },
     "contests": {
-      "empty": "No public contests yet.",
-      "organizedTitle": "Organized contests",
-      "participatedTitle": "Participated contests",
+      "empty": "No public hackathons yet.",
+      "organizedTitle": "Organized hackathons",
+      "participatedTitle": "Participated hackathons",
       "participatedEmpty": "No participations yet.",
-      "fallbackTitle": "Contest",
+      "fallbackTitle": "Hackathon",
       "updatedAt": "Updated {{date}}"
     },
     "projects": {
@@ -138,7 +138,7 @@
     },
     "group": {
       "project": "Project",
-      "contest": "Contest",
+      "contest": "Hackathon",
       "course": "Course",
       "career_track": "Career track",
       "profile": "Profile"
@@ -177,9 +177,9 @@
         "emptyNote": "No courses being tracked yet"
       },
       "contests": {
-        "label": "Open contests",
-        "note": "Hackathon · mini contest · ecosystem activities",
-        "emptyNote": "No new contests"
+        "label": "Open hackathons",
+        "note": "Hackathon · ecosystem activities",
+        "emptyNote": "No new hackathons"
       },
       "certificates": {
         "label": "Certificates issued",
@@ -196,7 +196,7 @@
       "cta": {
         "viewCourse": "View course",
         "viewProgram": "View program",
-        "viewContest": "View contest"
+        "viewContest": "View hackathon"
       },
       "contest": {
         "registrationDeadline": "Registration deadline {{date}}",
@@ -206,20 +206,20 @@
     },
     "guest": {
       "heroTitle": "Start your Web3 learning journey with Corelia",
-      "heroSubtitle": "Explore courses, programs, and open contests. When you want to save progress or enroll, just sign in.",
+      "heroSubtitle": "Explore courses, programs, and open hackathons. When you want to save progress or enroll, just sign in.",
       "signIn": "Sign in",
-      "openContestsTitle": "Open contests",
+      "openContestsTitle": "Open hackathons",
       "startLearningTitle": "Start learning",
-      "startLearningSubtitle": "Sign in to save progress, track certificates, and submit contest applications.",
+      "startLearningSubtitle": "Sign in to save progress, track certificates, and submit hackathon applications.",
       "quickLinksTitle": "Quick links",
       "quickLinks": {
-        "contests": "Contests",
+        "contests": "Hackathons",
         "courses": "Courses"
       }
     },
     "sections": {
       "greeting": "Hi, {{name}}",
-      "greetingSubtitle": "Track courses, contests, and achievements in one place.",
+      "greetingSubtitle": "Track courses, hackathons, and achievements in one place.",
       "featuredOnline": "Learning now",
       "featuredOffline": "Following now",
       "progress": "Progress",
@@ -410,15 +410,15 @@
     "footerNote": "Priorities can shift with partner programs and learner feedback. This page is updated when major milestones land.",
     "shippedItems": [
       "Course catalog, checkout, and self-paced learning workspace",
-      "Contests: discovery, public hubs, and participant-facing flows",
+      "Hackathons: discovery, public hubs, and participant-facing flows",
       "Account area: profile, billing basics, and achievements overview",
       "Instructor workspace: course authoring and partner finance tools",
       "Admin tools for users, instructors, and platform operations",
       "Open Campus (OCID) linking for credentials and achievement claims"
     ],
     "inProgressItems": [
-      "Contest admin: richer creation, review, and publishing workflows",
-      "Public contest pages: timeline, prizes, rules, FAQs, and polish",
+      "Hackathon admin: richer creation, review, and publishing workflows",
+      "Public hackathon pages: timeline, prizes, rules, FAQs, and polish",
       "Certificates & badges: smoother issuance and OC claim UX",
       "Performance, accessibility, and onboarding refinements sitewide"
     ],

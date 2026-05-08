@@ -1,4 +1,4 @@
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 
 /** Image for catalog rows / compact chips (falls back to banner if no thumbnail). */
 export function contestListImageUrl(contest: Contest): string | null {

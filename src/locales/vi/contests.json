@@ -19,16 +19,16 @@
     "unknown": "—"
   },
   "catalog": {
-    "heroEyebrow": "Cuộc thi & hoạt động hệ sinh thái",
-    "heroTitle": "Không gian cuộc thi của Corelia",
-    "heroDescription": "Khám phá hackathon, mini contest và các hoạt động nhiều vòng đang được Corelia mở cho cộng đồng. Hồ sơ chỉ được tham gia chính thức sau khi đội ngũ Corelia xét duyệt.",
+    "heroEyebrow": "Hackathon & hoạt động hệ sinh thái",
+    "heroTitle": "Hackathon của Corelia",
+    "heroDescription": "Khám phá hackathon và các hoạt động nhiều vòng đang được Corelia mở cho cộng đồng. Hồ sơ chỉ được tham gia chính thức sau khi đội ngũ Corelia xét duyệt.",
     "pillReviewed": "Corelia xét duyệt đầu vào",
     "pillTeamBased": "Bài nộp theo đội",
-    "sectionWhyTitle": "Cuộc thi không chỉ để thi, mà còn để học, xây dựng và va chạm thực tế",
-    "loadingTitle": "Đang tải danh sách cuộc thi...",
-    "loadingDescription": "Các chương trình hackathon và contest sẽ xuất hiện ngay khi đồng bộ xong.",
-    "howItWorksEyebrow": "Cách Corelia vận hành cuộc thi",
-    "howItWorksDescription": "Mỗi cuộc thi tại Corelia được thiết kế như một lớp trải nghiệm thực chiến: có vòng duyệt đầu vào, có mentor hoặc ban giám khảo, có bài nộp rõ ràng và có kết quả đủ tốt để bạn mang vào portfolio, workshop hoặc demo day sau đó.",
+    "sectionWhyTitle": "Hackathon không chỉ để thi, mà còn để học, xây dựng và va chạm thực tế",
+    "loadingTitle": "Đang tải danh sách hackathon...",
+    "loadingDescription": "Các chương trình hackathon sẽ xuất hiện ngay khi đồng bộ xong.",
+    "howItWorksEyebrow": "Cách Corelia vận hành hackathon",
+    "howItWorksDescription": "Mỗi hackathon tại Corelia được thiết kế như một lớp trải nghiệm thực chiến: có vòng duyệt đầu vào, có mentor hoặc ban giám khảo, có bài nộp rõ ràng và có kết quả đủ tốt để bạn mang vào portfolio, workshop hoặc demo day sau đó.",
     "whyBullets": {
       "reviewFirst": "Hồ sơ được duyệt trước khi tham gia chính thức",
       "realJourney": "Bài nộp và kết quả gắn với hành trình học thật",
@@ -37,21 +37,21 @@
     "dateRangeUnknown": "Chưa công bố lịch thi",
     "dateStartPrefix": "Bắt đầu {{date}}",
     "dateEndPrefix": "Kết thúc {{date}}",
-    "loadErrorFallback": "Không thể tải cuộc thi.",
-    "errorTitle": "Không tải được danh sách cuộc thi",
+    "loadErrorFallback": "Không thể tải hackathon.",
+    "errorTitle": "Không tải được danh sách hackathon",
     "errorDescription": "Hãy kiểm tra kết nối và thử lại.",
     "retry": "Thử lại",
-    "emptyTitle": "Chưa có cuộc thi nào.",
-    "emptyDescriptionManager": "Chưa có contest public nào. Hãy tạo và vận hành contest trong instructor workspace trước khi nó xuất hiện tại đây.",
-    "emptyDescriptionUser": "Khi Corelia công bố contest mới, bạn sẽ thấy lịch và yêu cầu đăng ký tại đây.",
+    "emptyTitle": "Chưa có hackathon nào.",
+    "emptyDescriptionManager": "Chưa có hackathon public nào. Hãy tạo và vận hành hackathon trong instructor workspace trước khi nó xuất hiện tại đây.",
+    "emptyDescriptionUser": "Khi Corelia công bố hackathon mới, bạn sẽ thấy lịch và yêu cầu đăng ký tại đây.",
     "registrationDeadlinePrefix": "Hạn đăng ký {{date}}",
     "registrationNoLimit": "Không giới hạn thời gian đăng ký",
     "viewDetails": "Xem chi tiết",
-    "viewContest": "Xem cuộc thi",
-    "openWorkspace": "Mở contest workspace",
+    "viewContest": "Xem hackathon",
+    "openWorkspace": "Mở hackathon workspace",
     "statsSummary": "{{total}} tổng · {{accepting}} đang nhận hồ sơ · {{running}} đang diễn ra · {{ended}} đã kết thúc",
     "stats": {
-      "total": "Tổng cuộc thi",
+      "total": "Tổng hackathon",
       "accepting": "Đang nhận hồ sơ",
       "running": "Đang diễn ra",
       "ended": "Đã kết thúc"
@@ -81,7 +81,7 @@
     "exit": "Thoát xem trước",
     "openWorkspace": "Mở workspace →",
     "openOperations": "Mở vận hành →",
-    "catalogTitle": "Contests (giao diện công khai)"
+    "catalogTitle": "Hackathons (giao diện công khai)"
   },
   "workspace": {
     "tabs": {
@@ -95,8 +95,8 @@
       "description": "Edit contest settings and protect destructive actions."
     },
     "manage": {
-      "backToContests": "Back to contests",
-      "backToContestPage": "Back to contest page",
+      "backToContests": "Quay lại danh sách hackathon",
+      "backToContestPage": "Quay lại trang hackathon",
       "roleCoreliaOps": "Corelia operations",
       "roleJudgePanel": "Judge panel",
       "roleCoHostObserver": "Co-host observer",
@@ -113,7 +113,7 @@
         "description": "Your role, the operating cadence, and the contest's current status."
       },
       "fallback": {
-        "label": "Contest workspace",
+        "label": "Hackathon workspace",
         "description": "Coordinate between Corelia, judges, and co-host partners."
       },
       "sections": {
@@ -206,7 +206,7 @@
       "winnersEmptyHint": "Awards will appear here when organizers publish winners.",
       "operationsControlsTitle": "Operations controls",
       "operationsControlsDescription": "Coordinate contest status, rubric, and access for operational participants.",
-      "contestStatusLabel": "Contest status",
+      "contestStatusLabel": "Hackathon status",
       "statusDraft": "Draft",
       "statusPublished": "Accepting applications",
       "statusRunning": "Running",
@@ -277,8 +277,8 @@
       "copyLink": "Copy link",
       "openEmail": "Open email",
       "dangerZoneTitle": "Danger Zone",
-      "dangerZoneDescription": "Deleting a contest removes all registrations, invites, submissions, and scores. This cannot be undone.",
-      "deleteContest": "Delete contest",
+      "dangerZoneDescription": "Deleting a hackathon removes all registrations, invites, submissions, and scores. This cannot be undone.",
+      "deleteContest": "Delete hackathon",
       "inviteCollaborationTitle": "Collaboration invite",
       "inviteMetaLine": "Role: {{roles}} · Status: {{status}}",
       "inviteAccept": "Accept invite",
@@ -286,12 +286,12 @@
       "backToPublicSurfaceTitle": "Back to public page",
       "backToPublicSurfaceDescription": "The public page is for participants to view the contest and published results.",
       "viewPublicPage": "View public page",
-      "deleteDialogTitle": "Delete contest?",
+      "deleteDialogTitle": "Delete hackathon?",
       "deleteTypeToConfirm": "Type “{{title}}” to confirm deletion.",
-      "deleteDialogBodyWithTitle": "Contest \"{{title}}\" and all registrations, invites, submissions, and scores will be deleted. This cannot be undone.",
+      "deleteDialogBodyWithTitle": "Hackathon \"{{title}}\" and all registrations, invites, submissions, and scores will be deleted. This cannot be undone.",
       "deleteDialogCancel": "Cancel",
       "deleteDialogDeleting": "Deleting...",
-      "deleteContestConfirm": "Delete contest",
+      "deleteContestConfirm": "Delete hackathon",
       "defaultAwardChampion": "Champion",
       "defaultAwardRunnerUp": "Runner-up",
       "defaultAwardBestDemo": "Best Demo"
@@ -478,7 +478,7 @@
     },
     "errorState": {
       "description": "Liên kết có thể đã thay đổi, cuộc thi chưa được công bố, hoặc bạn đang truy cập một bề mặt không còn tồn tại.",
-      "backToList": "Quay lại danh sách cuộc thi"
+      "backToList": "Quay lại danh sách hackathon"
     },
     "manage": {
       "sections": {
@@ -500,8 +500,8 @@
         "description": "Vai trò tham gia, nhịp vận hành và tình trạng hiện tại của contest."
       },
       "fallback": {
-        "label": "Contest workspace",
-        "description": "Điều phối contest giữa Corelia, judges và đơn vị đồng tổ chức."
+        "label": "Hackathon workspace",
+        "description": "Điều phối hackathon giữa Corelia, judges và đơn vị đồng tổ chức."
       }
     },
     "journey": {
@@ -576,7 +576,7 @@
       "listThumbAlt": "Ảnh đại diện contest — {{title}}"
     },
     "hero": {
-      "backToContests": "Quay lại cuộc thi",
+      "backToContests": "Quay lại hackathon",
       "backToOverview": "Về tổng quan",
       "start": "Bắt đầu",
       "end": "Kết thúc",
@@ -779,7 +779,7 @@
       "end": "Kết thúc"
     },
     "labels": {
-      "manageArea": "Khu vực vận hành cuộc thi",
+      "manageArea": "Khu vực vận hành hackathon",
       "publicType": "Hackathon",
       "unlimited": "Không giới hạn",
       "contextManage": "Bối cảnh contest",

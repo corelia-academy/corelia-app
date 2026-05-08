@@ -2,7 +2,7 @@ import { CheckCheck, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { intlLocale } from "@/lib/intl";
-import type { ContestDetailViewModel } from "@/pages/contest-detail/viewModel";
+import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 
 export function ContestDetailParticipantApplicationCard({
   vm,
@@ -85,7 +85,7 @@ export function ContestDetailParticipantApplicationCard({
               variant="outline"
               className="mt-4 min-h-11 w-full sm:w-auto"
               onClick={() =>
-                navigate(`/contests/${contest.id}/timeline`)
+                navigate(`/hackathons/${contest.id}/timeline`)
               }
             >
               {translate("detail.cta.viewSchedule")}

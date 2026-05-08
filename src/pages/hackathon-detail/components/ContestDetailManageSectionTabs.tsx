@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { ContestDetailViewModel } from "@/pages/contest-detail/viewModel";
+import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 
 export function ContestDetailManageSectionTabs({
   vm,

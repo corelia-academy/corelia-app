@@ -38,16 +38,22 @@ const InstructorCourses = () => {
     let cancelled = false;
     if (!authInitialized || profileLoading) return () => { cancelled = true; };
     if (!isAuthenticated || !profile?.id) {
-      setLoading(false);
-      setCourses([]);
-      setError(t("courseListPage.errors.loadFailed"));
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setLoading(false);
+        setCourses([]);
+        setError(t("courseListPage.errors.loadFailed"));
+      });
       return () => {
         cancelled = true;
       };
     }
 
-    setLoading(true);
-    setError(null);
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setLoading(true);
+      setError(null);
+    });
     getCoursesForManagement(profile.id, canViewAll)
       .then((data) => {
         if (!cancelled) setCourses(data);

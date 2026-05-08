@@ -1,14 +1,14 @@
 import { PageContainer } from "@/components/layouts/PagePrimitives";
-import { AdminPreviewBar } from "@/components/contests/AdminPreviewBar";
-import type { ContestTimelineRow } from "@/components/contests/ContestTimeline";
-import type { ContestPublicSection } from "@/pages/contest-detail/types";
-import type { Contest } from "@/types/contests";
-import { ContestPublicTimelineSection } from "@/pages/contest-detail/components/ContestPublicTimelineSection";
-import { ContestPublicPrizesSection } from "@/pages/contest-detail/components/ContestPublicPrizesSection";
-import { ContestPublicRulesSection } from "@/pages/contest-detail/components/ContestPublicRulesSection";
-import { ContestPublicFaqsSection } from "@/pages/contest-detail/components/ContestPublicFaqsSection";
-import { ContestPublicProjectsSection } from "@/pages/contest-detail/components/ContestPublicProjectsSection";
-import { useContestDetailVm } from "@/pages/contest-detail/ContestDetailContext";
+import { AdminPreviewBar } from "@/components/hackathons/AdminPreviewBar";
+import type { ContestTimelineRow } from "@/components/hackathons/ContestTimeline";
+import type { ContestPublicSection } from "@/pages/hackathon-detail/types";
+import type { Contest } from "@/types/hackathons";
+import { ContestPublicTimelineSection } from "@/pages/hackathon-detail/components/ContestPublicTimelineSection";
+import { ContestPublicPrizesSection } from "@/pages/hackathon-detail/components/ContestPublicPrizesSection";
+import { ContestPublicRulesSection } from "@/pages/hackathon-detail/components/ContestPublicRulesSection";
+import { ContestPublicFaqsSection } from "@/pages/hackathon-detail/components/ContestPublicFaqsSection";
+import { ContestPublicProjectsSection } from "@/pages/hackathon-detail/components/ContestPublicProjectsSection";
+import { useContestDetailVm } from "@/pages/hackathon-detail/ContestDetailContext";
 
 type ContestPublicSectionNonOverview = Exclude<ContestPublicSection, "overview">;
 
@@ -52,7 +52,7 @@ export function ContestDetailPublicSectionPage({
           statusLabel={statusLabel(contest.status)}
           primaryAction={{
             label: translate("previewBar.openWorkspace"),
-            to: `/contests/${contest.id}/manage`,
+            to: `/hackathons/${contest.id}/manage`,
           }}
         />
       ) : null}

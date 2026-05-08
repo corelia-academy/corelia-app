@@ -42,11 +42,11 @@ $$;
 CREATE INDEX IF NOT EXISTS courses_data_title_trgm_idx
   ON public.courses USING gin ((data->>'title') gin_trgm_ops);
 
--- Contests: expression indexes for jsonb `document->>'title'` and `tagline'`
-CREATE INDEX IF NOT EXISTS contests_document_title_trgm_idx
-  ON public.contests USING gin ((document->>'title') gin_trgm_ops);
-CREATE INDEX IF NOT EXISTS contests_document_tagline_trgm_idx
-  ON public.contests USING gin ((document->>'tagline') gin_trgm_ops);
+-- Hackathons: expression indexes for jsonb `document->>'title'` and `tagline'`
+CREATE INDEX IF NOT EXISTS hackathons_document_title_trgm_idx
+  ON public.hackathons USING gin ((document->>'title') gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS hackathons_document_tagline_trgm_idx
+  ON public.hackathons USING gin ((document->>'tagline') gin_trgm_ops);
 
 -- -----------------------------------------------------------------------------
 -- RPC
@@ -98,21 +98,21 @@ BEGIN
       WHERE p.visibility = 'public'
         AND (lower(p.title) LIKE ('%' || q.query || '%') OR lower(coalesce(p.summary, '')) LIKE ('%' || q.query || '%'))
     ),
-    contests_res AS (
+    hackathons_res AS (
       SELECT
-        'contest'::text AS entity_type,
-        c.id::text AS entity_id,
-        coalesce(nullif(c.document->>'title',''), c.id)::text AS title,
-        nullif(c.document->>'tagline','')::text AS subtitle,
-        ('/contests/' || c.id || '/overview')::text AS href,
-        (similarity(lower(coalesce(c.document->>'title','')), q.query)
-          + CASE WHEN lower(coalesce(c.document->>'title','')) LIKE (q.query || '%') THEN 1 ELSE 0 END)::numeric AS rank,
-        c.updated_at AS updated_at
-      FROM public.contests c, q
-      WHERE c.status IN ('published','running','ended')
+        'hackathon'::text AS entity_type,
+        h.id::text AS entity_id,
+        coalesce(nullif(h.document->>'title',''), h.id)::text AS title,
+        nullif(h.document->>'tagline','')::text AS subtitle,
+        ('/hackathons/' || h.id || '/overview')::text AS href,
+        (similarity(lower(coalesce(h.document->>'title','')), q.query)
+          + CASE WHEN lower(coalesce(h.document->>'title','')) LIKE (q.query || '%') THEN 1 ELSE 0 END)::numeric AS rank,
+        h.updated_at AS updated_at
+      FROM public.hackathons h, q
+      WHERE h.status IN ('published','running','ended')
         AND (
-          lower(coalesce(c.document->>'title','')) LIKE ('%' || q.query || '%')
-          OR lower(coalesce(c.document->>'tagline','')) LIKE ('%' || q.query || '%')
+          lower(coalesce(h.document->>'title','')) LIKE ('%' || q.query || '%')
+          OR lower(coalesce(h.document->>'tagline','')) LIKE ('%' || q.query || '%')
         )
     ),
     courses_res AS (
@@ -199,7 +199,7 @@ BEGIN
     ,
     unioned AS (
       SELECT * FROM projects_res
-      UNION ALL SELECT * FROM contests_res
+      UNION ALL SELECT * FROM hackathons_res
       UNION ALL SELECT * FROM courses_res
       UNION ALL SELECT * FROM career_tracks_res
   $SQL$;

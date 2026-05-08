@@ -34,7 +34,7 @@
     "home": "Trang chủ",
     "courses": "Khóa học",
     "career": "Lộ trình",
-    "contests": "Cuộc thi",
+    "contests": "Hackathon",
     "projects": "Dự án",
     "achievements": "Thành tích",
     "account": "Tài khoản",
@@ -57,7 +57,7 @@
       "overview": "Tổng quan",
       "achievements": "Thành tích",
       "courses": "Khóa học",
-      "contests": "Cuộc thi"
+      "contests": "Hackathon"
     },
     "actions": {
       "editProfile": "Chỉnh sửa hồ sơ"
@@ -90,11 +90,11 @@
       "updatedAt": "Cập nhật {{date}}"
     },
     "contests": {
-      "empty": "Chưa có cuộc thi public nào.",
-      "organizedTitle": "Cuộc thi đã tổ chức",
-      "participatedTitle": "Cuộc thi đã tham gia",
-      "participatedEmpty": "Bạn chưa tham gia cuộc thi nào.",
-      "fallbackTitle": "Cuộc thi",
+      "empty": "Chưa có hackathon public nào.",
+      "organizedTitle": "Hackathon đã tổ chức",
+      "participatedTitle": "Hackathon đã tham gia",
+      "participatedEmpty": "Bạn chưa tham gia hackathon nào.",
+      "fallbackTitle": "Hackathon",
       "updatedAt": "Cập nhật {{date}}"
     },
     "projects": {
@@ -138,7 +138,7 @@
     },
     "group": {
       "project": "Dự án",
-      "contest": "Cuộc thi",
+      "contest": "Hackathon",
       "course": "Khoá học",
       "career_track": "Lộ trình",
       "profile": "Hồ sơ"
@@ -177,9 +177,9 @@
         "emptyNote": "Chưa có khóa nào đang theo dõi"
       },
       "contests": {
-        "label": "Contest đang mở",
-        "note": "Hackathon · mini contest · hoạt động hệ sinh thái",
-        "emptyNote": "Chưa có contest mới"
+        "label": "Hackathon đang mở",
+        "note": "Hackathon · hoạt động hệ sinh thái",
+        "emptyNote": "Chưa có hackathon mới"
       },
       "certificates": {
         "label": "Chứng chỉ đã cấp",
@@ -196,7 +196,7 @@
       "cta": {
         "viewCourse": "Xem khoá học",
         "viewProgram": "Xem chương trình",
-        "viewContest": "Xem contest"
+        "viewContest": "Xem hackathon"
       },
       "contest": {
         "registrationDeadline": "Hạn đăng ký {{date}}",
@@ -206,20 +206,20 @@
     },
     "guest": {
       "heroTitle": "Bắt đầu hành trình học Web3 cùng Corelia",
-      "heroSubtitle": "Khám phá khoá học, chương trình và contest đang mở. Khi cần lưu tiến độ hoặc đăng ký, bạn chỉ cần đăng nhập.",
+      "heroSubtitle": "Khám phá khoá học, chương trình và hackathon đang mở. Khi cần lưu tiến độ hoặc đăng ký, bạn chỉ cần đăng nhập.",
       "signIn": "Đăng nhập",
-      "openContestsTitle": "Cuộc thi đang mở",
+      "openContestsTitle": "Hackathon đang mở",
       "startLearningTitle": "Bắt đầu hành trình học tập",
-      "startLearningSubtitle": "Đăng nhập để lưu tiến độ, theo dõi chứng chỉ và gửi hồ sơ tham gia contest.",
+      "startLearningSubtitle": "Đăng nhập để lưu tiến độ, theo dõi chứng chỉ và gửi hồ sơ tham gia hackathon.",
       "quickLinksTitle": "Lối đi nhanh",
       "quickLinks": {
-        "contests": "Cuộc thi",
+        "contests": "Hackathon",
         "courses": "Khóa học"
       }
     },
     "sections": {
       "greeting": "Xin chào, {{name}}",
-      "greetingSubtitle": "Theo dõi khoá học, contest và thành tích trong một nơi.",
+      "greetingSubtitle": "Theo dõi khoá học, hackathon và thành tích trong một nơi.",
       "featuredOnline": "Khoá đang học",
       "featuredOffline": "Lớp đang theo",
       "progress": "Tiến độ",
@@ -411,15 +411,15 @@
     "footerNote": "Ưu tiên có thể thay đổi theo chương trình đối tác và phản hồi học viên. Trang sẽ được cập nhật khi các mốc lớn hoàn thành.",
     "shippedItems": [
       "Danh mục khóa học, thanh toán và không gian học tự học",
-      "Contest: khám phá, trang công khai và luồng dành cho thí sinh",
+      "Hackathon: khám phá, trang công khai và luồng dành cho thí sinh",
       "Khu vực tài khoản: hồ sơ, thanh toán cơ bản và tổng quan thành tích",
       "Không gian giảng viên: biên soạn khóa và công cụ tài chính đối tác",
       "Công cụ admin cho người dùng, giảng viên và vận hành nền tảng",
       "Liên kết Open Campus (OCID) cho chứng chỉ và xác nhận thành tích"
     ],
     "inProgressItems": [
-      "Quản trị contest: tạo nội dung, duyệt và xuất bản mượt hơn",
-      "Trang contest công khai: timeline, giải thưởng, luật, FAQ và hoàn thiện UI",
+      "Quản trị hackathon: tạo nội dung, duyệt và xuất bản mượt hơn",
+      "Trang hackathon công khai: timeline, giải thưởng, luật, FAQ và hoàn thiện UI",
       "Chứng chỉ & huy hiệu: cấp phát và trải nghiệm claim OC ổn định hơn",
       "Tối ưu hiệu năng, accessibility và onboarding trên toàn site"
     ],

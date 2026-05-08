@@ -137,7 +137,7 @@ export default function Home() {
             badge: item.badge || t("home.pinned.badges.ecosystemPlayground"),
             title: item.title_override || contest.title,
             description: item.description_override || contest.tagline,
-            to: `/contests/${contest.id}`,
+            to: `/hackathons/${contest.id}`,
             cta: item.cta_label || t("home.pinned.cta.viewContest"),
             meta:
               contest.registration_deadline != null

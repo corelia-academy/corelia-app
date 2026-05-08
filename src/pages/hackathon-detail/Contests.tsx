@@ -11,23 +11,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { listContests } from "@/lib/contests";
-import { contestListImageUrl } from "@/lib/contestVisuals";
+import { listContests } from "@/lib/hackathons";
+import { contestListImageUrl } from "@/lib/hackathonVisuals";
 import { canManageContests } from "@/lib/permissions";
 import { useAuth } from "@/stores/authStore";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import {
   contestListLocationLabel,
   contestListStatusLabel,
   formatContestListDateRange,
-} from "@/features/contests/list/contestListFormatters";
+} from "@/features/hackathons/list/contestListFormatters";
 import {
   ContestListCardDateRowCatalog,
   ContestListCardThumbnail,
   ContestListMetricCellCatalog,
-} from "@/features/contests/list/ContestListCardPrimitives";
+} from "@/features/hackathons/list/ContestListCardPrimitives";
 import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
 
 function CatalogStatSkeleton() {
@@ -137,51 +137,49 @@ export default function Contests() {
   const showError = !loading && Boolean(error);
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-7xl px-3 py-6 sm:px-5 sm:py-8 lg:px-6">
-      <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div className="min-w-0 max-w-3xl">
-            <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {t("catalog.heroEyebrow")}
-            </div>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+    <div className="container-app py-6 sm:py-8">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <Trophy className="size-5 text-primary" aria-hidden />
+            <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
               {t("catalog.heroTitle")}
             </h1>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {t("catalog.heroDescription")}
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {t("catalog.heroDescription")}
+          </p>
+          {showGrid ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t("catalog.statsSummary", {
+                total: stats.total,
+                accepting: stats.accepting,
+                running: stats.running,
+                ended: stats.ended,
+              })}
             </p>
-            {showGrid ? (
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {t("catalog.statsSummary", {
-                  total: stats.total,
-                  accepting: stats.accepting,
-                  running: stats.running,
-                  ended: stats.ended,
-                })}
-              </p>
-            ) : null}
-            {showEmpty ? (
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {t("catalog.statsSummary", {
-                  total: 0,
-                  accepting: 0,
-                  running: 0,
-                  ended: 0,
-                })}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <span className="inline-flex min-h-11 items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
-              {t("catalog.pillReviewed")}
-            </span>
-            <span className="inline-flex min-h-11 items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
-              {t("catalog.pillTeamBased")}
-            </span>
-          </div>
+          ) : null}
+          {showEmpty ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t("catalog.statsSummary", {
+                total: 0,
+                accepting: 0,
+                running: 0,
+                ended: 0,
+              })}
+            </p>
+          ) : null}
         </div>
-      </section>
+
+        <div className="flex flex-wrap gap-2">
+          <span className="inline-flex min-h-11 items-center rounded-full border border-border-subtle bg-card px-3 py-2 text-xs font-medium text-foreground shadow-card">
+            {t("catalog.pillReviewed")}
+          </span>
+          <span className="inline-flex min-h-11 items-center rounded-full border border-border-subtle bg-card px-3 py-2 text-xs font-medium text-foreground shadow-card">
+            {t("catalog.pillTeamBased")}
+          </span>
+        </div>
+      </div>
 
       {showError ? null : (
         <div
@@ -324,7 +322,7 @@ export default function Contests() {
                 </div>
                 {isManager ? (
                   <Button
-                    render={<NavLink to="/admin/contests" />}
+                    render={<NavLink to="/admin/hackathons" />}
                     nativeButton={false}
                     size="sm"
                     variant="outline"
@@ -342,7 +340,7 @@ export default function Contests() {
             return (
               <NavLink
                 key={contest.id}
-                to={`/contests/${contest.id}/overview`}
+                to={`/hackathons/${contest.id}/overview`}
                 className="group block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 aria-label={`${t("catalog.viewContest")}: ${contest.title}`}
               >

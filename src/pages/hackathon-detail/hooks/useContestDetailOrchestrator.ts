@@ -16,7 +16,7 @@ import {
   scoreContestSubmission,
   updateContest,
   upsertContestSubmission,
-} from "@/lib/contests";
+} from "@/lib/hackathons";
 import { uploadContestBanner, uploadContestThumbnail } from "@/lib/storage";
 import { useAuth } from "@/stores/authStore";
 import type {
@@ -26,20 +26,20 @@ import type {
   ContestScore,
   ContestWinnerInput,
   ContestTimelineMilestone,
-} from "@/types/contests";
+} from "@/types/hackathons";
 import { useTranslation } from "react-i18next";
-import { buildContestTimelineRows } from "@/components/contests/contestTimelineBuilders";
-import type { ContestPublicSection } from "@/pages/contest-detail/types";
+import { buildContestTimelineRows } from "@/components/hackathons/contestTimelineBuilders";
+import type { ContestPublicSection } from "@/pages/hackathon-detail/types";
 import {
   datetimeLocalToIso,
   isoToDatetimeLocal,
-} from "@/pages/contest-detail/utils/datetime";
+} from "@/pages/hackathon-detail/utils/datetime";
 import {
   formatContestCountdown,
   downloadTextFile,
-} from "@/pages/contest-detail/utils/contestDetailHelpers";
-import { deriveContestPublicPhase } from "@/pages/contest-detail/utils/contestPhase";
-import { formatContestDate } from "@/pages/contest-detail/utils/formatContestDate";
+} from "@/pages/hackathon-detail/utils/contestDetailHelpers";
+import { deriveContestPublicPhase } from "@/pages/hackathon-detail/utils/contestPhase";
+import { formatContestDate } from "@/pages/hackathon-detail/utils/formatContestDate";
 import { fetchContestDetailPayload } from "./fetchContestDetailPayload";
 import { deriveContestDetailPermissions } from "./useContestDetailPermissions";
 import { useContestInviteWorkspace } from "./useContestInviteWorkspace";
@@ -526,7 +526,7 @@ export function useContestDetailOrchestrator({
           : translate("detail.cta.submitSubmission"),
         helper: translate("detail.cta.approvedHelper"),
         variant: "default" as const,
-        navigateTo: `/contests/${contest.id}/apply`,
+        navigateTo: `/hackathons/${contest.id}/apply`,
       };
     }
     if (registration) {
@@ -534,7 +534,7 @@ export function useContestDetailOrchestrator({
         label: translate("detail.cta.viewApplicationStatus"),
         helper: translate("detail.cta.pendingHelper"),
         variant: "outline" as const,
-        navigateTo: `/contests/${contest.id}/apply`,
+        navigateTo: `/hackathons/${contest.id}/apply`,
       };
     }
 
@@ -549,22 +549,22 @@ export function useContestDetailOrchestrator({
           helper: translate("detail.cta.viewResultsHelper"),
           variant: "outline" as const,
           navigateTo: showProjects
-            ? `/contests/${contest.id}/projects`
-            : `/contests/${contest.id}/timeline`,
+            ? `/hackathons/${contest.id}/projects`
+            : `/hackathons/${contest.id}/timeline`,
         };
       case "in_progress":
         return {
           label: translate("detail.cta.followContest"),
           helper: translate("detail.cta.inProgressVisitorHelper"),
           variant: "outline" as const,
-          navigateTo: `/contests/${contest.id}/timeline`,
+          navigateTo: `/hackathons/${contest.id}/timeline`,
         };
       case "registration_open":
         return {
           label: translate("detail.cta.register"),
           helper: translate("detail.cta.registerHelper"),
           variant: "default" as const,
-          navigateTo: `/contests/${contest.id}/apply`,
+          navigateTo: `/hackathons/${contest.id}/apply`,
         };
       case "registration_closed_before_start":
       default:
@@ -572,7 +572,7 @@ export function useContestDetailOrchestrator({
           label: translate("detail.cta.viewSchedule"),
           helper: translate("detail.cta.regClosedBeforeKickoffHelper"),
           variant: "outline" as const,
-          navigateTo: `/contests/${contest.id}/timeline`,
+          navigateTo: `/hackathons/${contest.id}/timeline`,
         };
     }
   }, [contest, isManageView, mySubmission, registration, translate]);
@@ -723,7 +723,7 @@ export function useContestDetailOrchestrator({
     if (contest.status !== "draft") return;
     if (canAccessWorkspace) return;
     toast.message(translate("detail.toasts.draftRedirect"));
-    navigate("/contests", { replace: true });
+    navigate("/hackathons", { replace: true });
   }, [canAccessWorkspace, contest, isManageView, loading, navigate, translate]);
 
   useEffect(() => {
@@ -781,7 +781,7 @@ export function useContestDetailOrchestrator({
     try {
       await deleteContest(contest.id);
       toast.success(translate("detail.actions.deleteSuccess"));
-      navigate("/contests", { replace: true });
+      navigate("/hackathons", { replace: true });
     } catch (err) {
       const message =
         err instanceof Error
@@ -1533,7 +1533,7 @@ export function useContestDetailOrchestrator({
   const handleCopyInviteLink = useCallback(
     async (email: string) => {
       if (!id) return;
-      const link = `${window.location.origin}/contests/${id}/manage?invite=${encodeURIComponent(email)}`;
+      const link = `${window.location.origin}/hackathons/${id}/manage?invite=${encodeURIComponent(email)}`;
       await navigator.clipboard.writeText(link);
       toast.success(translate("detail.toasts.inviteLinkCopied"));
     },
@@ -1543,7 +1543,7 @@ export function useContestDetailOrchestrator({
   const handleInviteMailTo = useCallback(
     (invite: ContestAccessInvite) => {
       if (!id || !contest) return;
-      const link = `${window.location.origin}/contests/${id}/manage?invite=${encodeURIComponent(invite.email)}`;
+      const link = `${window.location.origin}/hackathons/${id}/manage?invite=${encodeURIComponent(invite.email)}`;
       const subject = encodeURIComponent(
         translate("detail.inviteEmail.subjectPrefix", { title: contest.title }),
       );

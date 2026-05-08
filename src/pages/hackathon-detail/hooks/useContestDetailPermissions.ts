@@ -5,7 +5,7 @@ import {
   canViewContestAggregateMetrics,
   getContestScopedViewerRoles,
 } from "@/lib/permissions";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 import type { Profile } from "@/types/database";
 
 export type ContestDetailPermissions = {

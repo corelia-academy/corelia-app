@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getHomeDashboardConfig, updateHomeDashboardConfig } from "@/lib/dashboardConfig";
 import { getPublishedCourses } from "@/lib/courses";
-import { listContests } from "@/lib/contests";
+import { listContests } from "@/lib/hackathons";
 import type { DashboardPinnedProgram, DashboardPinnedProgramType } from "@/types/dashboard";
 import type { Course } from "@/types/courses";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/stores/authStore";
 
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [authInitialized, t, user?.id]);
+  }, [authInitialized, t, user]);
 
   const programOptions = useMemo<ProgramOption[]>(() => {
     return [

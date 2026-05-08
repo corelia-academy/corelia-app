@@ -1,4 +1,4 @@
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 
 export function contestFromRow(
   row: {

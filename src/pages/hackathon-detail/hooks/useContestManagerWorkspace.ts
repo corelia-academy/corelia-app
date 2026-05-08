@@ -5,7 +5,7 @@ import type {
   ContestRound,
   ContestStatus,
   ContestTrack,
-} from "@/types/contests";
+} from "@/types/hackathons";
 import type { ContestDetailFetchedPayload } from "./fetchContestDetailPayload";
 
 export function useContestManagerWorkspace() {

@@ -1,25 +1,25 @@
-import type { ContestPublicSection } from "@/pages/contest-detail/types";
-import type { Contest } from "@/types/contests";
-import { ContestDetailApplicationsPanel } from "@/pages/contest-detail/components/ContestDetailApplicationsPanel";
-import { ContestDetailDeleteContestDialog } from "@/pages/contest-detail/components/ContestDetailDeleteContestDialog";
+import type { ContestPublicSection } from "@/pages/hackathon-detail/types";
+import type { Contest } from "@/types/hackathons";
+import { ContestDetailApplicationsPanel } from "@/pages/hackathon-detail/components/ContestDetailApplicationsPanel";
+import { ContestDetailDeleteContestDialog } from "@/pages/hackathon-detail/components/ContestDetailDeleteContestDialog";
 import {
   ContestDetailErrorCard,
   ContestDetailLoadingCard,
   ContestDetailWorkspaceAccessDenied,
-} from "@/pages/contest-detail/components/ContestDetailGateStates";
-import { ContestDetailHeroCard } from "@/pages/contest-detail/components/ContestDetailHeroCard";
-import { ContestDetailJudgingPanel } from "@/pages/contest-detail/components/ContestDetailJudgingPanel";
-import { ContestDetailAnalyticsPanel } from "@/pages/contest-detail/components/ContestDetailAnalyticsPanel";
-import { ContestDetailManageSectionTabs } from "@/pages/contest-detail/components/ContestDetailManageSectionTabs";
-import { ContestDetailMainLayout } from "@/pages/contest-detail/components/ContestDetailMainLayout";
-import { ContestDetailOverviewBlocks } from "@/pages/contest-detail/components/ContestDetailOverviewBlocks";
-import { ContestDetailPublicSectionPage } from "@/pages/contest-detail/components/ContestDetailPublicSectionPage";
-import { ContestDetailResultsBlocks } from "@/pages/contest-detail/components/ContestDetailResultsBlocks";
-import { ContestDetailRightColumn } from "@/pages/contest-detail/components/ContestDetailRightColumn";
-import { ContestPublicNav } from "@/pages/contest-detail/ContestPublicNav";
-import { ContestDetailProvider } from "@/pages/contest-detail/ContestDetailContext";
-import { useContestDetail } from "@/pages/contest-detail/hooks/useContestDetail";
-import { narrowContestDetailView } from "@/pages/contest-detail/viewModel";
+} from "@/pages/hackathon-detail/components/ContestDetailGateStates";
+import { ContestDetailHeroCard } from "@/pages/hackathon-detail/components/ContestDetailHeroCard";
+import { ContestDetailJudgingPanel } from "@/pages/hackathon-detail/components/ContestDetailJudgingPanel";
+import { ContestDetailAnalyticsPanel } from "@/pages/hackathon-detail/components/ContestDetailAnalyticsPanel";
+import { ContestDetailManageSectionTabs } from "@/pages/hackathon-detail/components/ContestDetailManageSectionTabs";
+import { ContestDetailMainLayout } from "@/pages/hackathon-detail/components/ContestDetailMainLayout";
+import { ContestDetailOverviewBlocks } from "@/pages/hackathon-detail/components/ContestDetailOverviewBlocks";
+import { ContestDetailPublicSectionPage } from "@/pages/hackathon-detail/components/ContestDetailPublicSectionPage";
+import { ContestDetailResultsBlocks } from "@/pages/hackathon-detail/components/ContestDetailResultsBlocks";
+import { ContestDetailRightColumn } from "@/pages/hackathon-detail/components/ContestDetailRightColumn";
+import { ContestPublicNav } from "@/pages/hackathon-detail/ContestPublicNav";
+import { ContestDetailProvider } from "@/pages/hackathon-detail/ContestDetailContext";
+import { useContestDetail } from "@/pages/hackathon-detail/hooks/useContestDetail";
+import { narrowContestDetailView } from "@/pages/hackathon-detail/viewModel";
 
 export default function ContestDetail({
   forceManageView,
@@ -130,7 +130,7 @@ export default function ContestDetail({
   );
 }
 
-/** Manage route `/contests/:id/manage` — avoids a separate wrapper module. */
+/** Manage route `/hackathons/:id/manage` — avoids a separate wrapper module. */
 export function ContestDetailManagePage() {
   return <ContestDetail forceManageView />;
 }

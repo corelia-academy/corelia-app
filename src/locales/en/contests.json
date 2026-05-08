@@ -19,16 +19,16 @@
     "unknown": "—"
   },
   "catalog": {
-    "heroEyebrow": "Contests & ecosystem activities",
-    "heroTitle": "Corelia contests space",
-    "heroDescription": "Explore hackathons, mini contests, and multi-round activities open to the community. Participation is official only after Corelia reviews and approves your application.",
+    "heroEyebrow": "Hackathons & ecosystem activities",
+    "heroTitle": "Corelia hackathons",
+    "heroDescription": "Explore hackathons and multi-round activities open to the community. Participation is official only after Corelia reviews and approves your application.",
     "pillReviewed": "Corelia-reviewed entry",
     "pillTeamBased": "Team submissions",
-    "sectionWhyTitle": "Contests aren't just for winning — they're for learning and building in the real world",
-    "loadingTitle": "Loading contests...",
-    "loadingDescription": "Hackathons and contests will appear here once syncing is complete.",
-    "howItWorksEyebrow": "How Corelia runs contests",
-    "howItWorksDescription": "Each Corelia contest is designed like a hands-on real-world experience: an entry review round, mentors or judges, clear submission requirements, and outcomes strong enough to turn into a portfolio piece, workshop, or demo day.",
+    "sectionWhyTitle": "Hackathons aren't just for winning — they're for learning and building in the real world",
+    "loadingTitle": "Loading hackathons...",
+    "loadingDescription": "Hackathons will appear here once syncing is complete.",
+    "howItWorksEyebrow": "How Corelia runs hackathons",
+    "howItWorksDescription": "Each Corelia hackathon is designed like a hands-on real-world experience: an entry review round, mentors or judges, clear submission requirements, and outcomes strong enough to turn into a portfolio piece, workshop, or demo day.",
     "whyBullets": {
       "reviewFirst": "Applications are reviewed before official participation",
       "realJourney": "Submissions and results reflect real learning progress",
@@ -37,21 +37,21 @@
     "dateRangeUnknown": "Schedule not announced yet",
     "dateStartPrefix": "Starts {{date}}",
     "dateEndPrefix": "Ends {{date}}",
-    "loadErrorFallback": "Unable to load contests.",
-    "errorTitle": "We couldn’t load contests",
+    "loadErrorFallback": "Unable to load hackathons.",
+    "errorTitle": "We couldn’t load hackathons",
     "errorDescription": "Check your connection and try again.",
     "retry": "Retry",
-    "emptyTitle": "No contests yet.",
-    "emptyDescriptionManager": "No public contests yet. Create and run contests in the instructor workspace before they appear here.",
-    "emptyDescriptionUser": "When Corelia announces new contests, you'll see the schedule and application requirements here.",
+    "emptyTitle": "No hackathons yet.",
+    "emptyDescriptionManager": "No public hackathons yet. Create and run hackathons in the instructor workspace before they appear here.",
+    "emptyDescriptionUser": "When Corelia announces new hackathons, you'll see the schedule and application requirements here.",
     "registrationDeadlinePrefix": "Registration deadline {{date}}",
     "registrationNoLimit": "No registration deadline",
     "viewDetails": "View details",
-    "viewContest": "View contest",
-    "openWorkspace": "Open contests workspace",
+    "viewContest": "View hackathon",
+    "openWorkspace": "Open hackathons workspace",
     "statsSummary": "{{total}} total · {{accepting}} accepting · {{running}} running · {{ended}} ended",
     "stats": {
-      "total": "Total contests",
+      "total": "Total hackathons",
       "accepting": "Accepting applications",
       "running": "Running",
       "ended": "Ended"
@@ -81,7 +81,7 @@
     "exit": "Exit preview",
     "openWorkspace": "Open workspace →",
     "openOperations": "Open operations →",
-    "catalogTitle": "Contests (public surface)"
+    "catalogTitle": "Hackathons (public surface)"
   },
   "workspace": {
     "tabs": {
@@ -95,8 +95,8 @@
       "description": "Edit contest settings and protect destructive actions."
     },
     "manage": {
-      "backToContests": "Back to contests",
-      "backToContestPage": "Back to contest page",
+      "backToContests": "Back to hackathons",
+      "backToContestPage": "Back to hackathon page",
       "roleCoreliaOps": "Corelia operations",
       "roleJudgePanel": "Judge panel",
       "roleCoHostObserver": "Co-host observer",
@@ -113,7 +113,7 @@
         "description": "Your role, the operating cadence, and the contest's current status."
       },
       "fallback": {
-        "label": "Contest workspace",
+        "label": "Hackathon workspace",
         "description": "Coordinate between Corelia, judges, and co-host partners."
       },
       "sections": {
@@ -206,7 +206,7 @@
       "winnersEmptyHint": "Awards will appear here when organizers publish winners.",
       "operationsControlsTitle": "Operations controls",
       "operationsControlsDescription": "Coordinate contest status, rubric, and access for operational participants.",
-      "contestStatusLabel": "Contest status",
+      "contestStatusLabel": "Hackathon status",
       "statusDraft": "Draft",
       "statusPublished": "Accepting applications",
       "statusRunning": "Running",
@@ -277,8 +277,8 @@
       "copyLink": "Copy link",
       "openEmail": "Open email",
       "dangerZoneTitle": "Danger Zone",
-      "dangerZoneDescription": "Deleting a contest removes all registrations, invites, submissions, and scores. This cannot be undone.",
-      "deleteContest": "Delete contest",
+      "dangerZoneDescription": "Deleting a hackathon removes all registrations, invites, submissions, and scores. This cannot be undone.",
+      "deleteContest": "Delete hackathon",
       "inviteCollaborationTitle": "Collaboration invite",
       "inviteMetaLine": "Role: {{roles}} · Status: {{status}}",
       "inviteAccept": "Accept invite",
@@ -286,12 +286,12 @@
       "backToPublicSurfaceTitle": "Back to public page",
       "backToPublicSurfaceDescription": "The public page is for participants to view the contest and published results.",
       "viewPublicPage": "View public page",
-      "deleteDialogTitle": "Delete contest?",
+      "deleteDialogTitle": "Delete hackathon?",
       "deleteTypeToConfirm": "Type “{{title}}” to confirm deletion.",
-      "deleteDialogBodyWithTitle": "Contest \"{{title}}\" and all registrations, invites, submissions, and scores will be deleted. This cannot be undone.",
+      "deleteDialogBodyWithTitle": "Hackathon \"{{title}}\" and all registrations, invites, submissions, and scores will be deleted. This cannot be undone.",
       "deleteDialogCancel": "Cancel",
       "deleteDialogDeleting": "Deleting...",
-      "deleteContestConfirm": "Delete contest",
+      "deleteContestConfirm": "Delete hackathon",
       "defaultAwardChampion": "Champion",
       "defaultAwardRunnerUp": "Runner-up",
       "defaultAwardBestDemo": "Best Demo"
@@ -478,7 +478,7 @@
     },
     "errorState": {
       "description": "The link may have changed, the contest may not be published yet, or you're accessing a surface that no longer exists.",
-      "backToList": "Back to contests"
+      "backToList": "Back to hackathons"
     },
     "manage": {
       "sections": {
@@ -500,7 +500,7 @@
         "description": "Your role, the operating cadence, and the contest's current status."
       },
       "fallback": {
-        "label": "Contest workspace",
+        "label": "Hackathon workspace",
         "description": "Coordinate between Corelia, judges, and co-host partners."
       }
     },
@@ -576,7 +576,7 @@
       "listThumbAlt": "Contest thumbnail — {{title}}"
     },
     "hero": {
-      "backToContests": "Back to contests",
+      "backToContests": "Back to hackathons",
       "backToOverview": "Back to overview",
       "start": "Start",
       "end": "End",
@@ -779,7 +779,7 @@
       "end": "End"
     },
     "labels": {
-      "manageArea": "Contest workspace",
+      "manageArea": "Hackathon workspace",
       "publicType": "Hackathon",
       "unlimited": "Unlimited",
       "contextManage": "Contest context",

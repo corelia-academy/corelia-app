@@ -1,5 +1,5 @@
-import type { Contest } from "@/types/contests";
-import type { ContestDetailOrchestrator } from "@/pages/contest-detail/hooks/useContestDetailOrchestrator";
+import type { Contest } from "@/types/hackathons";
+import type { ContestDetailOrchestrator } from "@/pages/hackathon-detail/hooks/useContestDetailOrchestrator";
 
 /** Orchestrator state after guards guarantee `contest` is loaded. */
 export type ContestDetailViewModel = ContestDetailOrchestrator & {

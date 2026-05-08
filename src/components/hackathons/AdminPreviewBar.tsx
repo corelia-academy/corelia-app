@@ -19,7 +19,7 @@ export function AdminPreviewBar({ title, statusLabel, primaryAction }: AdminPrev
 
   const isPublicContestSurface = useMemo(() => {
     const pathname = location.pathname;
-    return pathname === "/contests" || pathname.startsWith("/contests/");
+    return pathname === "/hackathons" || pathname.startsWith("/hackathons/");
   }, [location.pathname]);
 
   if (!isPublicContestSurface || dismissed) return null;

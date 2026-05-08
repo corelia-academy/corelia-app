@@ -17,15 +17,10 @@ export function UserProfileCoursesSection({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  if (profile.role !== "instructor") {
-    return (
-      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
-        {t("userProfile.courses.privateByDefault")}
-      </div>
-    );
-  }
+  const canShow = profile.role === "instructor";
 
   useEffect(() => {
+    if (!canShow) return;
     let cancelled = false;
     async function load() {
       setLoading(true);
@@ -47,7 +42,15 @@ export function UserProfileCoursesSection({
     return () => {
       cancelled = true;
     };
-  }, [profile.id, t]);
+  }, [canShow, profile.id, t]);
+
+  if (!canShow) {
+    return (
+      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+        {t("userProfile.courses.privateByDefault")}
+      </div>
+    );
+  }
 
   if (loading) {
     return (

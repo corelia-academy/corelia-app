@@ -7,13 +7,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { AdminPreviewBar } from "@/components/contests/AdminPreviewBar";
-import type { ContestPublicSection } from "@/pages/contest-detail/types";
-import type { ContestDetailViewModel } from "@/pages/contest-detail/viewModel";
+import { AdminPreviewBar } from "@/components/hackathons/AdminPreviewBar";
+import type { ContestPublicSection } from "@/pages/hackathon-detail/types";
+import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 import {
   contestPhaseBadgeClassName,
   deriveContestPublicPhase,
-} from "@/pages/contest-detail/utils/contestPhase";
+} from "@/pages/hackathon-detail/utils/contestPhase";
 import { cn } from "@/lib/utils";
 
 export function ContestDetailHeroCard({
@@ -186,7 +186,7 @@ export function ContestDetailHeroCard({
             statusLabel={vm.statusLabel(contest.status)}
             primaryAction={{
               label: translate("previewBar.openWorkspace"),
-              to: `/contests/${contest.id}/manage`,
+              to: `/hackathons/${contest.id}/manage`,
             }}
           />
         ) : null}

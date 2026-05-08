@@ -1,8 +1,8 @@
 import { Loader2, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { ContestScopedViewerRole, ContestStatus } from "@/types/contests";
-import type { ContestDetailViewModel } from "@/pages/contest-detail/viewModel";
+import type { ContestScopedViewerRole, ContestStatus } from "@/types/hackathons";
+import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 
 export function ContestDetailManagerSettingsCard({
   vm,

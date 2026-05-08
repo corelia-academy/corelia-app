@@ -6,7 +6,7 @@ import {
   type CoreliaSpotlightItem,
 } from "@/components/spotlight/CoreliaSpotlight";
 import { intlLocale } from "@/lib/intl";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 import type { CourseLesson } from "@/types/courses";
 
 interface CourseSpotlightSectionProps {
@@ -78,7 +78,7 @@ export function CourseSpotlightSection({
             : translate("detail.spotlight.newContestBadge"),
         title: liveContest.title,
         description: liveContest.tagline,
-        href: `/contests/${liveContest.id}`,
+        href: `/hackathons/${liveContest.id}`,
         ctaLabel: translate("detail.spotlight.exploreContest"),
         meta: registrationDeadlineText
           ? translate("detail.spotlight.contestDeadlineMeta", {

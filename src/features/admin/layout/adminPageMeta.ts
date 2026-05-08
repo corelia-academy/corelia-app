@@ -29,7 +29,7 @@ const PAGE_META: Array<{
     descriptionKey: "layout.pageMeta.instructorDetail.description",
   },
   {
-    match: (pathname) => pathname.startsWith("/admin/contests"),
+    match: (pathname) => pathname.startsWith("/admin/hackathons"),
     titleKey: "layout.pageMeta.contests.title",
     descriptionKey: "layout.pageMeta.contests.description",
   },

@@ -31,7 +31,7 @@ import type {
   ContestUpdate,
   ContestWinner,
   ContestWinnerInput,
-} from "@/types/contests";
+} from "@/types/hackathons";
 import type { User } from "@supabase/supabase-js";
 import type { Profile } from "@/types/database";
 
@@ -47,6 +47,11 @@ const listContestsInFlight = new Map<string, Promise<Contest[]>>();
 
 /** `ContestPublicLayout` + detail payload can overlap; collapse duplicate `getContest` rows. */
 const getContestByIdInFlight = new Map<string, Promise<Contest | null>>();
+
+function getHackathonIdFromRow(row: Record<string, unknown>): string | null {
+  const v = row.hackathon_id ?? row.contest_id;
+  return typeof v === "string" && v.trim().length > 0 ? v : null;
+}
 
 /**
  * When contest detail already resolved `contest` + viewer `profile`, pass this to skip duplicate
@@ -357,7 +362,7 @@ export async function listContests(viewer?: User | null): Promise<Contest[]> {
 
   const promise = (async () => {
     let q = supabase
-      .from("contests")
+      .from("hackathons")
       .select(CONTEST_ROW_SELECT)
       .order("updated_at", { ascending: false });
     if (!isManager) {
@@ -389,7 +394,7 @@ export async function getContest(contestId: string): Promise<Contest | null> {
 
   const promise = (async () => {
     const { data, error } = await supabase
-      .from("contests")
+      .from("hackathons")
       .select(CONTEST_ROW_SELECT)
       .eq("id", contestId)
       .maybeSingle();
@@ -447,7 +452,7 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
   }) as Record<string, unknown>;
 
   const status = (data.status ?? "draft") as Contest["status"];
-  const { error } = await supabase.from("contests").insert({
+  const { error } = await supabase.from("hackathons").insert({
     id,
     status,
     created_at: now,
@@ -463,7 +468,7 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
 export async function updateContest(contestId: string, updates: ContestUpdate): Promise<void> {
   const { uid } = await requireContestManager();
   const { data: row, error: fetchErr } = await supabase
-    .from("contests")
+    .from("hackathons")
     .select("*")
     .eq("id", contestId)
     .single();
@@ -520,7 +525,7 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
   const nextStatus = updates.status ?? (row.status as string);
   const now = new Date().toISOString();
   const { error } = await supabase
-    .from("contests")
+    .from("hackathons")
     .update({ status: nextStatus, document: nextDoc, updated_at: now })
     .eq("id", contestId);
   if (error) throw new Error(error.message);
@@ -533,7 +538,7 @@ export async function deleteContest(contestId: string): Promise<void> {
   await deleteStorageObjectByPath(existing?.cover_image_path);
   await deleteStorageObjectByPath(existing?.thumbnail_path);
 
-  const { error } = await supabase.from("contests").delete().eq("id", contestId);
+  const { error } = await supabase.from("hackathons").delete().eq("id", contestId);
   if (error) throw new Error(error.message);
 }
 
@@ -553,7 +558,11 @@ export async function getMyContestRegistration(
   if (!user) return null;
 
   const id = contestRegistrationId(contestId, user.id);
-  const { data, error } = await supabase.from("contest_registrations").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("hackathon_registrations")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error || !data) return null;
   return registrationFromRow(data as Parameters<typeof registrationFromRow>[0]);
 }
@@ -584,9 +593,9 @@ export async function registerForContest(
     updated_at: now,
   }) as Record<string, unknown>;
 
-  const { error } = await supabase.from("contest_registrations").insert({
+  const { error } = await supabase.from("hackathon_registrations").insert({
     id: registrationId,
-    contest_id: contestId,
+    hackathon_id: contestId,
     user_id: user.id,
     document,
   });
@@ -608,7 +617,10 @@ export async function getContestRegistrations(
 ): Promise<ContestRegistration[]> {
   await requireContestReviewer(contestId, options?.prefetch);
 
-  let q = supabase.from("contest_registrations").select("*").eq("contest_id", contestId);
+  let q = supabase
+    .from("hackathon_registrations")
+    .select("*")
+    .eq("hackathon_id", contestId);
   if (options?.status && options.status !== "all") {
     q = q.filter("document->>status", "eq", options.status);
   }
@@ -628,7 +640,11 @@ export async function reviewContestRegistration(
   const { uid } = await requireContestManager();
   await requireContestReviewer(contestId, undefined);
   const id = contestRegistrationId(contestId, userId);
-  const { data: row, error: fe } = await supabase.from("contest_registrations").select("*").eq("id", id).single();
+  const { data: row, error: fe } = await supabase
+    .from("hackathon_registrations")
+    .select("*")
+    .eq("id", id)
+    .single();
   if (fe || !row) throw new Error(fe?.message ?? "Không tìm thấy đăng ký");
   const doc = (row.document ?? {}) as Record<string, unknown>;
   const next = {
@@ -639,7 +655,10 @@ export async function reviewContestRegistration(
     reviewed_by: uid,
     updated_at: new Date().toISOString(),
   };
-  const { error } = await supabase.from("contest_registrations").update({ document: next }).eq("id", id);
+  const { error } = await supabase
+    .from("hackathon_registrations")
+    .update({ document: next })
+    .eq("id", id);
   if (error) throw new Error(error.message);
 }
 
@@ -658,10 +677,16 @@ export async function getMyContestAccessInvite(
   }
   if (!user?.email) return null;
   const id = contestInviteId(contestId, user.email);
-  const { data, error } = await supabase.from("contest_access_invites").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("hackathon_access_invites")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error || !data) return null;
   const d = data.document as Record<string, unknown>;
-  return { id: data.id, contest_id: data.contest_id, ...d } as ContestAccessInvite;
+  const hackathonId = getHackathonIdFromRow(data as unknown as Record<string, unknown>);
+  if (!hackathonId) return null;
+  return { id: data.id, contest_id: hackathonId, ...d } as ContestAccessInvite;
 }
 
 export async function listContestAccessInvites(
@@ -669,14 +694,19 @@ export async function listContestAccessInvites(
 ): Promise<ContestAccessInvite[]> {
   await requireContestManager();
   const { data, error } = await supabase
-    .from("contest_access_invites")
+    .from("hackathon_access_invites")
     .select("*")
-    .eq("contest_id", contestId);
+    .eq("hackathon_id", contestId);
   if (error) throw new Error(error.message);
   return (data ?? [])
     .map((row) => {
       const d = row.document as Record<string, unknown>;
-      return { id: row.id, contest_id: row.contest_id, ...d } as ContestAccessInvite;
+      const hackathonId = getHackathonIdFromRow(row as unknown as Record<string, unknown>);
+      return {
+        id: row.id,
+        contest_id: hackathonId ?? contestId,
+        ...d,
+      } as ContestAccessInvite;
     })
     .sort((a, b) => String(b.invited_at ?? "").localeCompare(String(a.invited_at ?? "")));
 }
@@ -708,8 +738,8 @@ export async function createContestAccessInvite(
     responded_at: null,
   };
 
-  await supabase.from("contest_access_invites").upsert(
-    { id: inviteId, contest_id: contestId, document },
+  await supabase.from("hackathon_access_invites").upsert(
+    { id: inviteId, hackathon_id: contestId, document },
     { onConflict: "id" },
   );
 
@@ -749,11 +779,18 @@ export async function respondToContestAccessInvite(
   const user = await requireCurrentUser();
   if (!user.email) throw new Error("Tài khoản của bạn chưa có email.");
   const id = contestInviteId(contestId, user.email);
-  const { data: row, error: fe } = await supabase.from("contest_access_invites").select("*").eq("id", id).single();
+  const { data: row, error: fe } = await supabase
+    .from("hackathon_access_invites")
+    .select("*")
+    .eq("id", id)
+    .single();
   if (fe || !row) throw new Error(fe?.message ?? "Không tìm thấy lời mời");
   const doc = (row.document ?? {}) as Record<string, unknown>;
   const next = { ...doc, status, responded_at: new Date().toISOString() };
-  const { error } = await supabase.from("contest_access_invites").update({ document: next }).eq("id", id);
+  const { error } = await supabase
+    .from("hackathon_access_invites")
+    .update({ document: next })
+    .eq("id", id);
   if (error) throw new Error(error.message);
 }
 
@@ -764,11 +801,18 @@ export async function revokeContestAccessInvite(
   await requireContestManager();
   const normalized = sanitizeEmail(email);
   const id = contestInviteId(contestId, normalized);
-  const { data: row, error: fe } = await supabase.from("contest_access_invites").select("*").eq("id", id).single();
+  const { data: row, error: fe } = await supabase
+    .from("hackathon_access_invites")
+    .select("*")
+    .eq("id", id)
+    .single();
   if (!fe && row) {
     const doc = (row.document ?? {}) as Record<string, unknown>;
     const next = { ...doc, status: "revoked", responded_at: new Date().toISOString() };
-    await supabase.from("contest_access_invites").update({ document: next }).eq("id", id);
+    await supabase
+      .from("hackathon_access_invites")
+      .update({ document: next })
+      .eq("id", id);
   }
 
   const contest = await getContest(contestId);
@@ -802,10 +846,21 @@ export async function getMyContestSubmission(
   }
   if (!user) return null;
   const id = contestSubmissionId(contestId, user.id);
-  const { data, error } = await supabase.from("contest_submissions").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("hackathon_submissions")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error || !data) return null;
   const d = data.document as Record<string, unknown>;
-  return { id: data.id, contest_id: data.contest_id, user_id: data.user_id, ...d } as ContestSubmission;
+  const hackathonId = getHackathonIdFromRow(data as unknown as Record<string, unknown>);
+  if (!hackathonId) return null;
+  return {
+    id: data.id,
+    contest_id: hackathonId,
+    user_id: data.user_id,
+    ...d,
+  } as ContestSubmission;
 }
 
 export async function upsertContestSubmission(
@@ -842,10 +897,10 @@ export async function upsertContestSubmission(
     updated_at: now,
   }) as Record<string, unknown>;
 
-  const { error } = await supabase.from("contest_submissions").upsert(
+  const { error } = await supabase.from("hackathon_submissions").upsert(
     {
       id: submissionId,
-      contest_id: contestId,
+      hackathon_id: contestId,
       user_id: user.id,
       document,
     },
@@ -869,7 +924,10 @@ export async function listContestSubmissions(
     const canSeeAll =
       canScoreContest(contest, profile, user.email ?? undefined) ||
       canManageContests(profile);
-    let q = supabase.from("contest_submissions").select("*").eq("contest_id", contestId);
+    let q = supabase
+      .from("hackathon_submissions")
+      .select("*")
+      .eq("hackathon_id", contestId);
     if (!canSeeAll) q = q.eq("user_id", user.id);
     const { data, error } = await q;
     if (error) throw new Error(error.message);
@@ -886,7 +944,10 @@ export async function listContestSubmissions(
   if (!contest) throw new Error("Không tìm thấy cuộc thi.");
 
   const canSeeAll = canScoreContest(contest, profile, user.email) || canManageContests(profile);
-  let q = supabase.from("contest_submissions").select("*").eq("contest_id", contestId);
+    let q = supabase
+      .from("hackathon_submissions")
+      .select("*")
+      .eq("hackathon_id", contestId);
   if (!canSeeAll) q = q.eq("user_id", user.id);
   const { data, error } = await q;
   if (error) throw new Error(error.message);
@@ -904,14 +965,19 @@ export async function listContestScores(
 ): Promise<ContestScore[]> {
   await requireContestScorer(contestId, prefetch);
   const { data, error } = await supabase
-    .from("contest_scores")
+    .from("hackathon_scores")
     .select("*")
-    .eq("contest_id", contestId);
+    .eq("hackathon_id", contestId);
   if (error) throw new Error(error.message);
   return (data ?? [])
     .map((row) => {
       const d = row.document as Record<string, unknown>;
-      return { id: row.id, contest_id: row.contest_id, ...d } as ContestScore;
+      const hackathonId = getHackathonIdFromRow(row as unknown as Record<string, unknown>);
+      return {
+        id: row.id,
+        contest_id: hackathonId ?? contestId,
+        ...d,
+      } as ContestScore;
     })
     .sort((a, b) => String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")));
 }
@@ -949,8 +1015,8 @@ export async function scoreContestSubmission(
     created_at: now,
     updated_at: now,
   };
-  const { error } = await supabase.from("contest_scores").upsert(
-    { id: scoreId, contest_id: contestId, document },
+  const { error } = await supabase.from("hackathon_scores").upsert(
+    { id: scoreId, hackathon_id: contestId, document },
     { onConflict: "id" },
   );
   if (error) throw new Error(error.message);

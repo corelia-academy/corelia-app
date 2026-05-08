@@ -34,7 +34,7 @@ const MainLayout = () => {
     { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
     { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
     { labelKey: "nav.career" as const, href: "/career", icon: Briefcase },
-    { labelKey: "nav.contests" as const, href: "/contests", icon: Trophy },
+    { labelKey: "nav.contests" as const, href: "/hackathons", icon: Trophy },
     isAuthenticated
       ? { labelKey: "tabs.menu" as const, href: "/menu", icon: List }
       : { labelKey: "tabs.signIn" as const, href: "/login", icon: LogIn },

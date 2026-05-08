@@ -1,5 +1,5 @@
 import { intlLocale } from "@/lib/intl";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 
 /** Shared formatters for `Contests` (catalog) vs `InstructorContests` (ops list). */
 export type ContestListCopyBundle = "catalog" | "instructor";

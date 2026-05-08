@@ -28,21 +28,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { deleteContest, listContests } from "@/lib/contests";
-import { contestListImageUrl } from "@/lib/contestVisuals";
-import type { Contest } from "@/types/contests";
+import { deleteContest, listContests } from "@/lib/hackathons";
+import { contestListImageUrl } from "@/lib/hackathonVisuals";
+import type { Contest } from "@/types/hackathons";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
   contestListLocationLabel,
   contestListStatusLabel,
   formatContestListDateRange,
-} from "@/features/contests/list/contestListFormatters";
+} from "@/features/hackathons/list/contestListFormatters";
 import {
   ContestListCardDateRowInstructor,
   ContestListCardThumbnail,
   ContestListMetricCellInstructor,
-} from "@/features/contests/list/ContestListCardPrimitives";
+} from "@/features/hackathons/list/ContestListCardPrimitives";
 import {
   EmptyState,
   PageContainer,
@@ -167,7 +167,7 @@ export default function InstructorContests() {
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
               {t("instructor.hero.pillJudging")}
             </span>
-            <Button type="button" onClick={() => navigate("/admin/contests/new")}>
+            <Button type="button" onClick={() => navigate("/admin/hackathons/new")}>
               <PlusCircle className="size-4" aria-hidden />
               {t("instructor.hero.create")}
             </Button>
@@ -269,7 +269,7 @@ export default function InstructorContests() {
               <Button
                 type="button"
                 size="sm"
-                onClick={() => navigate("/admin/contests/new")}
+                onClick={() => navigate("/admin/hackathons/new")}
               >
                 {t("instructor.empty.createFirst")}
               </Button>
@@ -295,7 +295,7 @@ export default function InstructorContests() {
               <button
                 type="button"
                 className="flex flex-1 flex-col p-4 text-left"
-                onClick={() => navigate(`/contests/${contest.id}/manage`)}
+                onClick={() => navigate(`/hackathons/${contest.id}/manage`)}
               >
                 <div className="flex flex-wrap gap-2">
                   <span className="inline-flex items-center rounded-full bg-muted/70 px-3 py-1 text-xs font-medium text-foreground">
@@ -362,14 +362,14 @@ export default function InstructorContests() {
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => navigate(`/contests/${contest.id}/overview`)}
+                    onClick={() => navigate(`/hackathons/${contest.id}/overview`)}
                   >
                     {t("instructor.listItem.viewPublic")}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate(`/contests/${contest.id}/manage`)}
+                    onClick={() => navigate(`/hackathons/${contest.id}/manage`)}
                   >
                     {t("instructor.listItem.openWorkspace")}
                   </Button>
@@ -382,10 +382,10 @@ export default function InstructorContests() {
                     <MoreHorizontal className="size-5" aria-hidden />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => navigate(`/contests/${contest.id}/manage`)}>
+                    <DropdownMenuItem onSelect={() => navigate(`/hackathons/${contest.id}/manage`)}>
                       {t("instructor.listItem.openWorkspace")}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => navigate(`/contests/${contest.id}/overview`)}>
+                    <DropdownMenuItem onSelect={() => navigate(`/hackathons/${contest.id}/overview`)}>
                       {t("instructor.listItem.viewPublic")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />

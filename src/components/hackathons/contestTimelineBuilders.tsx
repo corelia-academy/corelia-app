@@ -1,6 +1,6 @@
 import { Calendar, Flag, Timer } from "lucide-react";
 import type { ReactNode } from "react";
-import type { ContestTimelineMilestone } from "@/types/contests";
+import type { ContestTimelineMilestone } from "@/types/hackathons";
 import type { ContestTimelineRow } from "./ContestTimeline";
 
 type TimelineItem = {
