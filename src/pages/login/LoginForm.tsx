@@ -186,6 +186,7 @@ export function LoginForm({
           email: email.trim(),
           password,
           options: {
+            emailRedirectTo: `${window.location.origin}/auth/signup-verified`,
             data: {
               full_name: name,
               locale: authMetadataLocaleFromUiLanguage(i18n.resolvedLanguage ?? i18n.language),

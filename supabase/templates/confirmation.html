@@ -343,9 +343,15 @@
           hours. If you didn't create this account, you can safely ignore this
           email.{{ end }}
         </p>
+        {{ if .Token }}
+        <p style="margin-top:14px;font-size:12px;line-height:1.6;color:#5c6478;">
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Nếu nút không hoạt động (ví dụ do quét link an toàn), bạn có thể nhập mã một lần sau khi mở trang đăng nhập / xác nhận của Corelia: <strong style="color:#1e2440;">{{ .Token }}</strong>{{ else }}If the button fails (for example due to safe-link scanners), you can enter this one-time code after opening Corelia’s confirmation flow: <strong style="color:#1e2440;">{{ .Token }}</strong>{{ end }}
+        </p>
+        {{ end }}
       </div>
       <div class="e-cta-wrap">
-        <a href="{{ .ConfirmationURL }}" class="e-btn e-btn-teal"
+        <!-- Opens app first (anti-prefetch); confirm URL is built on the page from token + redirect_to — avoids raw ConfirmationURL & breaking query strings in mail clients. -->
+        <a href="{{ .SiteURL }}/confirm-signup?token={{ .TokenHash }}&type=signup&redirect_to={{ .RedirectTo }}" class="e-btn e-btn-teal"
           >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Xác nhận email
           →{{ else }}Confirm Email →{{ end }}</a
         >
