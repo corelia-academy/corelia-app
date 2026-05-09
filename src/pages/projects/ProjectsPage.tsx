@@ -84,7 +84,7 @@ export default function ProjectsPage() {
 
   return (
     <div className="container-app py-6 sm:py-8">
-      <div className="flex items-start justify-between gap-4">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Package className="size-5 text-primary" aria-hidden />
@@ -92,7 +92,7 @@ export default function ProjectsPage() {
               {t("projects.title")}
             </h1>
           </div>
-          <p className="mt-2 text-sm text-foreground-muted">
+          <p className="mt-1 text-sm text-foreground-muted">
             {t("projects.description")}
           </p>
         </div>

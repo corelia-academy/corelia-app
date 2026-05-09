@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { BadgeCheck, Clock, Layers } from "lucide-react";
+import { BadgeCheck, Briefcase, Clock, Layers } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
@@ -16,9 +16,12 @@ export default function CareerListPage() {
   if (loading) {
     return (
       <div className="container-app py-6 sm:py-8">
-        <div className="mb-4 space-y-2">
-          <Skeleton className="h-8 w-56 rounded-md" />
-          <Skeleton className="h-4 w-72 max-w-full rounded" />
+        <div className="mb-4">
+          <div className="flex items-center gap-2">
+            <Skeleton className="size-5 shrink-0 rounded-sm" />
+            <Skeleton className="h-8 w-56 max-w-[70%] rounded-md" />
+          </div>
+          <Skeleton className="mt-1 h-4 w-72 max-w-full rounded" />
         </div>
         <Skeleton className="h-40 w-full rounded-md border border-border-subtle" />
         <div className="mt-5 grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -49,12 +52,17 @@ export default function CareerListPage() {
   return (
     <div className="container-app py-6 sm:py-8">
       <div className="mb-4">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          {t("list.title")}
-        </h1>
-        <p className="mt-1 text-sm text-foreground-muted">
-          {t("list.subtitle")}
-        </p>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <Briefcase className="size-5 text-primary" aria-hidden />
+            <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
+              {t("list.title")}
+            </h1>
+          </div>
+          <p className="mt-1 text-sm text-foreground-muted">
+            {t("list.subtitle")}
+          </p>
+        </div>
       </div>
 
       {!hasTracks ? (

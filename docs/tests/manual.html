@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Corelia QA — Staging checklist</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4d;
+      --text: #e7eef8;
+      --muted: #8b9cae;
+      --accent: #5b9fd4;
+      --accent-dim: #3d7aad;
+      --ok: #6bcf7f;
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      font-size: 15px;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(200px, 260px) 1fr;
+      min-height: 100vh;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { position: relative !important; max-height: none !important; border-right: none; border-bottom: 1px solid var(--border); }
+    }
+    aside {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      max-height: 100vh;
+      overflow-y: auto;
+      padding: 1rem 1rem 2rem;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+    }
+    aside h2 {
+      margin: 0 0 0.75rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    aside nav a {
+      display: block;
+      padding: 0.35rem 0.5rem;
+      border-radius: 6px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    aside nav a:hover { background: rgba(91, 159, 212, 0.12); color: var(--accent); }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      padding: 0.45rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    button:hover { border-color: var(--accent-dim); color: var(--accent); }
+    button.primary { background: var(--accent-dim); border-color: var(--accent); color: #fff; }
+    button.primary:hover { filter: brightness(1.08); }
+    .progress-wrap {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .progress-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      margin-top: 0.35rem;
+      overflow: hidden;
+    }
+    .progress-bar > span {
+      display: block;
+      height: 100%;
+      background: var(--ok);
+      border-radius: 99px;
+      transition: width 0.2s ease;
+    }
+    main { padding: 1.5rem 2rem 4rem; max-width: 920px; }
+    main h1 {
+      margin: 0 0 1rem;
+      font-size: 1.65rem;
+      font-weight: 650;
+    }
+    article.section {
+      margin-bottom: 3rem;
+      scroll-margin-top: 1rem;
+    }
+    article.section h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+    article.section h3 {
+      margin: 1.25rem 0 0.5rem;
+      font-size: 1rem;
+      color: var(--accent);
+    }
+    .muted { color: var(--muted); font-size: 0.92rem; margin: 0.25rem 0 1rem; }
+    .check-item {
+      display: flex;
+      gap: 0.65rem;
+      align-items: flex-start;
+      margin: 0.5rem 0;
+      padding: 0.5rem 0.65rem;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid transparent;
+    }
+    .check-item:hover { border-color: var(--border); }
+    .check-item input { margin-top: 0.35rem; accent-color: var(--accent-dim); }
+    .check-item label { flex: 1; cursor: pointer; }
+    pre, code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.82rem;
+    }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 0.75rem 0;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+    }
+    th { background: var(--surface); color: var(--muted); font-weight: 600; }
+    .notes {
+      width: 100%;
+      min-height: 72px;
+      margin-top: 1rem;
+      padding: 0.65rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      resize: vertical;
+    }
+    .section-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin: 0.5rem 0 1rem;
+    }
+    hr.sep { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+    .pill {
+      display: inline-block;
+      font-size: 0.72rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      vertical-align: middle;
+      margin-left: 0.35rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <h2>Mục lục</h2>
+      <nav id="nav"></nav>
+      <div class="progress-wrap">
+        Tiến độ checklist
+        <div class="progress-bar"><span id="progressFill" style="width:0%"></span></div>
+        <span id="progressText">0 / 0</span>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="primary" id="btnExport">Export JSON</button>
+        <button type="button" id="btnImport">Import JSON</button>
+        <button type="button" id="btnReset">Xóa tiến độ</button>
+      </div>
+      <p style="font-size:0.75rem;color:var(--muted);margin-top:0.75rem;">
+        Dữ liệu lưu tại <code id="storageKeyLabel"></code> (localStorage).
+      </p>
+    </aside>
+    <main id="main"></main>
+  </div>
+  <input type="file" id="importFile" accept="application/json" hidden />
+
+  <script>
+(function () {
+  var STORAGE_KEY = "corelia_docs_tests_qa_v1";
+  document.getElementById("storageKeyLabel").textContent = STORAGE_KEY;
+
+  /** @type {{ sections: Array<{ id: string, title: string, intro?: string[], blocks?: Array<{ title?: string, items: Array<{ id: string, text: string }> }>, staticHtml?: string }> }} */
+  var MANUAL = {
+    sections: [
+      {
+        id: "hub",
+        title: "Hub — Staging & tài khoản",
+        intro: [
+          "Tài liệu checklist cho tester trên <strong>staging</strong>. Phiên bản Markdown: <code>README.md</code> cùng thư mục.",
+          "<strong>URL staging</strong>: lấy từ team / DevOps (repo không cố định URL).",
+          "<strong>Backend staging</strong>: workflow CI Deploy Staging chỉ áp dụng Supabase (migrations + Edge Functions khi đổi). File: <code>.github/workflows/deploy-staging.yml</code>.",
+          "<strong>Frontend staging</strong>: deploy riêng. Nếu API mới mà UI cũ → verify bundle (mục dưới).",
+        ],
+        blocks: [
+          {
+            title: "Chuẩn bị trình duyệt",
+            items: [
+              { id: "hub-prep-1", text: "Dùng cửa sổ ẩn danh hoặc profile sạch khi cần tránh cache/extension." },
+              { id: "hub-prep-2", text: "Sau mỗi lần deploy frontend: hard reload (Cmd+Shift+R / Ctrl+Shift+R)." },
+              { id: "hub-prep-3", text: "Mở DevTools → Console để xem lỗi JS và verify build." },
+            ],
+          },
+          {
+            title: "Verify phiên bản build",
+            items: [
+              { id: "hub-ver-1", text: "Mở staging, DevTools → Console." },
+              { id: "hub-ver-2", text: "Chạy: window.__CORELIA_BUILD__" },
+              { id: "hub-ver-3", text: "Đối chiếu version với package.json của release mong đợi." },
+              { id: "hub-ver-4", text: "Đọc thêm docs/STAGING_BUILD_VERIFY.md (auth lock, perf markers)." },
+            ],
+          },
+          {
+            title: "Biến môi trường (tham khảo)",
+            items: [
+              { id: "hub-env-1", text: "Client cần VITE_SUPABASE_URL + VITE_SUPABASE_PUBLISHABLE_KEY hoặc VITE_SUPABASE_ANON_KEY (.env.example)." },
+            ],
+          },
+        ],
+        staticHtml:
+          '<h3>Role & gate</h3><table><thead><tr><th>profiles.role</th><th>/admin/*</th><th>/instructor/*</th><th>Hackathon manager</th></tr></thead><tbody>' +
+          "<tr><td><code>student</code></td><td>Không</td><td>Không</td><td>Chỉ khi email trong co_organizer_emails (scoped)</td></tr>" +
+          "<tr><td><code>instructor</code></td><td>Không</td><td>Có</td><td>Có</td></tr>" +
+          "<tr><td><code>support_staff</code></td><td>Có</td><td>Có</td><td>Có</td></tr>" +
+          "<tr><td><code>admin</code></td><td>Có</td><td>Có</td><td>Có</td></tr>" +
+          '</tbody></table><p class="muted">admin và support_staff đều vào /admin và /instructor. So sánh hai account nếu policy audit khác nhau.</p>' +
+          '<h3>Ma trận tài khoản</h3><table><thead><tr><th>ID</th><th>Mục đích</th><th>role</th><th>Setup</th></tr></thead><tbody>' +
+          "<tr><td><strong>Student_1</strong></td><td>Luồng học viên</td><td>student</td><td>Đăng ký UI staging</td></tr>" +
+          "<tr><td><strong>Student_2</strong></td><td>Invite / đa user</td><td>student</td><td>Tuỳ chọn</td></tr>" +
+          "<tr><td><strong>Instructor_1</strong></td><td>Instructor + hackathon manager</td><td>instructor</td><td>Gán profiles.role staging</td></tr>" +
+          "<tr><td><strong>Admin_1</strong> / <strong>Support_1</strong></td><td>Admin + instructor workspace</td><td>admin hoặc support_staff</td><td>Hai account nếu cần so sánh</td></tr>" +
+          "<tr><td><strong>Scoped_coorganizer</strong></td><td>Vào /hackathons/manage không cần instructor</td><td>student+</td><td>Email trong co_organizer_emails contest seed</td></tr>" +
+          '</tbody></table><p class="muted">Không chỉnh production. Báo lỗi: docs/GOOGLE_FORM_BUG_REPORT.md</p>',
+      },
+      {
+        id: "s01",
+        title: "01 — Auth, phiên, OCID",
+        intro: [
+          "Mục tiêu: đăng ký, đăng nhập, logout, session, /ocid-redirect.",
+          "Tiền đề: URL staging + verify bundle. OCID chỉ khi team bật VITE_OCID_* trên staging.",
+          "Tài khoản: Student_1 (đăng ký); Instructor_1 cho OCID nếu cần.",
+        ],
+        blocks: [
+          {
+            title: "Đăng ký & đăng nhập",
+            items: [
+              { id: "s01-a1", text: "Ẩn danh: vào /login." },
+              { id: "s01-a2", text: "Đăng ký email mới (hoặc provider team cho phép)." },
+              { id: "s01-a3", text: "Xác nhận email nếu Supabase yêu cầu (theo hướng dẫn staging)." },
+              { id: "s01-a4", text: "Đăng nhập sau khi tài khoản hoạt động." },
+              { id: "s01-a5", text: "Refresh: vẫn đăng nhập, không redirect vòng /login." },
+            ],
+          },
+          {
+            title: "Đăng xuất & deep link",
+            items: [
+              { id: "s01-b1", text: "Đăng nhập, mở /account/profile." },
+              { id: "s01-b2", text: "Đăng xuất từ header/menu." },
+              { id: "s01-b3", text: "/account/profile khi logout → chặn / redirect login." },
+              { id: "s01-b4", text: "/login sau logout hiển thị form bình thường." },
+            ],
+          },
+          {
+            title: "OCID (nếu bật staging)",
+            items: [
+              { id: "s01-c1", text: "Mở UI kết nối OCID (Account hoặc dialog header)." },
+              { id: "s01-c2", text: "Hoàn tất OAuth nhà cung cấp." },
+              { id: "s01-c3", text: "/ocid-redirect không trắng; profile cập nhật khi thành công." },
+              { id: "s01-c4", text: "Reload /account/profile: trạng thái OCID nhất quán." },
+            ],
+          },
+          {
+            title: "Regression",
+            items: [
+              { id: "s01-d1", text: "Home (guest/login): không spam lỗi auth/token console lần paint đầu (STAGING_BUILD_VERIFY)." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "s02",
+        title: "02 — Trang chủ & khám phá",
+        intro: [
+          "Mục tiêu: / ẩn danh vs đã login.",
+          "Tiền đề: bundle verified; có seed khóa học/contest public.",
+          "Tài khoản: khách + Student_1.",
+        ],
+        blocks: [
+          {
+            items: [
+              { id: "s02-1", text: "Ẩn danh: / load không blank lâu; hero/catalog không lỗi user-visible." },
+              { id: "s02-2", text: "Ẩn danh: click khóa public → /courses/:id hợp lệ." },
+              { id: "s02-3", text: "Student_1: / — dashboard/de xuất (nếu có) không crash." },
+              { id: "s02-4", text: "Đổi vi/en: Home không vỡ layout." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "s03",
+        title: "03 — Khóa học, checkout, học",
+        intro: [
+          "Routes: /courses, /courses/:id, /checkout/course/:id, /checkout/success/..., /learn/...",
+          "Thanh toán chỉ test mode (Stripe/SePay). Tham chiếu docs/COURSE_OWNERSHIP_REVENUE_SEPAY.md, COURSE_ACCESS_MODELS.md.",
+          "Tài khoản: Student_1.",
+        ],
+        blocks: [
+          {
+            title: "Catalog & chi tiết",
+            items: [
+              { id: "s03-1", text: "Ẩn danh: /courses danh sách load." },
+              { id: "s03-2", text: "/courses/:id hợp lệ — chi tiết + CTA." },
+            ],
+          },
+          {
+            title: "Checkout & success",
+            items: [
+              { id: "s03-3", text: "Student_1: vào khóa cần thanh toán (seed)." },
+              { id: "s03-4", text: "/checkout/course/:courseId không crash." },
+              { id: "s03-5", text: "Hoàn tất hoặc simulate return URL (theo dev staging)." },
+              { id: "s03-6", text: "/checkout/success/... không spam refresh session." },
+            ],
+          },
+          {
+            title: "Learn",
+            items: [
+              { id: "s03-7", text: "Khóa đã có quyền: /learn/:courseId load." },
+              { id: "s03-8", text: "/learn/:courseId/lesson/:lessonId — content/player load." },
+              { id: "s03-9", text: "Không quyền: URL learn trực tiếp — chặn/redirect ghi nhận spec." },
+            ],
+          },
+          {
+            title: "Legacy",
+            items: [{ id: "s03-10", text: "/cohorts và /cohorts/:id redirect /courses (không 404)." }],
+          },
+        ],
+      },
+      {
+        id: "s04",
+        title: "04 — Career & Roadmap",
+        intro: ["Tài khoản: khách + Student_1.", "Tiền đề: seed career slug Corelia và tuỳ chọn /career/:handle/:slug."],
+        blocks: [
+          {
+            items: [
+              { id: "s04-1", text: "/career — list + filter/tab nếu có." },
+              { id: "s04-2", text: "/career/corelia/:slug (slug tồn tại staging)." },
+              { id: "s04-3", text: "/career/:handle/:slug nếu có seed." },
+              { id: "s04-4", text: "/roadmap load đầy đủ." },
+              { id: "s04-5", text: "Link career → instructor/khóa không 404 khi có seed." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "s05",
+        title: "05 — Projects, invite, Search",
+        intro: ["Token invite hợp lệ do dev seed (không commit). Student_1; Student_2 tuỳ chọn."],
+        blocks: [
+          {
+            title: "Projects",
+            items: [
+              { id: "s05-1", text: "/projects — list hoặc empty state hợp lý." },
+              { id: "s05-2", text: "Tạo/chỉnh project (nếu có UI) — lưu hiển thị lại." },
+            ],
+          },
+          {
+            title: "Invite",
+            items: [
+              { id: "s05-3", text: "/invites/project/:token hợp lệ — flow accept/join." },
+              { id: "s05-4", text: "Token sai — thông báo rõ, không crash." },
+            ],
+          },
+          {
+            title: "Search",
+            items: [
+              { id: "s05-5", text: "/search — query và empty state." },
+              { id: "s05-6", text: "Click kết quả → đúng entity." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "s06",
+        title: "06 — Hồ sơ công khai",
+        intro: ["Biết handle public. Khách + Student_1/Instructor_1.", "Perf: không đơ ~10s chờ auth (STAGING_BUILD_VERIFY)."],
+        blocks: [
+          {
+            items: [
+              { id: "s06-1", text: "Ẩn danh: /u/<handle> layout load." },
+              { id: "s06-2", text: "Handle không tồn tại — 404/empty theo spec." },
+              { id: "s06-3", text: "Short URL /:handle/* nếu team dùng — smoke." },
+              { id: "s06-4", text: "Chính chủ login: field private không lộ guest." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "s07",
+        title: "07 — Account hub (/account/*)",
+        intro: ["Student_1 hầu hết tab; Instructor_1 cho tab instructor.", "Tiền đề: auth ổn (mục 01)."],
+        blocks: [
+          {
+            items: [
+              { id: "s07-1", text: "/account → redirect /account/profile." },
+              { id: "s07-2", text: "/account/profile — cập nhật tên/avatar, reload giữ." },
+              { id: "s07-3", text: "/account/cv — chỉnh/lưu không crash." },
+              { id: "s07-4", text: "/account/billing — không hard fail khi empty." },
+              { id: "s07-5", text: "/account/settings — locale/email/password + OCID nếu bật." },
+              { id: "s07-6", text: "/account/projects nhất quán /projects." },
+              { id: "s07-7a", text: "Student_1: /account/instructor empty/upsell/redirect (ghi nhận spec)." },
+              { id: "s07-7b", text: "Instructor_1: /account/instructor form lưu được." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "s08",
+        title: "08 — Hackathons (công khai)",
+        intro: ["Contest published có slug seed. Khách + Student_1."],
+        blocks: [
+          {
+            items: [
+              { id: "s08-1", text: "/hackathons — list; draft chỉ manager khi đúng policy." },
+              { id: "s08-2", text: "/hackathons/<slug>/overview." },
+              { id: "s08-3", text: "Tabs timeline, prizes, rules, faqs, projects — shell không 404." },
+              { id: "s08-4", text: "/hackathons/<slug> redirect overview (hoặc hành vi hiện tại)." },
+              { id: "s08-5", text: "Student_1: CTA đăng ký / participant workspace (ghi nhận)." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "s09",
+        title: "09 — Hackathons quản lý & workspace",
+        intro: [
+          "Gate: RequireContestManager — instructorWorkspace HOẶC email trong co_organizer_emails.",
+          "src/components/auth/RequireContestManager.tsx, src/config/roles.ts, src/lib/permissions.ts",
+          "Contest slug seed; Scoped_coorganizer có email trong contest.",
+        ],
+        blocks: [
+          {
+            title: "Catalog",
+            items: [
+              { id: "s09-1", text: "Instructor_1: /hackathons/manage danh sách quản lý." },
+              { id: "s09-2", text: "Scoped_coorganizer (student): /hackathons/manage được vào." },
+              { id: "s09-3", text: "Student_1 không scoped: /hackathons/manage → redirect /hackathons." },
+            ],
+          },
+          {
+            title: "Tạo contest",
+            items: [
+              { id: "s09-4", text: "Instructor_1: /hackathons/new form tối thiểu submit/draft." },
+              { id: "s09-5", text: "Scoped_coorganizer: /hackathons/new — quyền hoặc chặn RLS (ghi nhận backend)." },
+            ],
+          },
+          {
+            title: "Workspace",
+            items: [
+              { id: "s09-6", text: "/hackathons/<slug>/manage/<section> shell + tab không crash." },
+              { id: "s09-7", text: "Judge/mentor scoped email — quyền đọc một phần (permissions)." },
+              { id: "s09-8", text: "Tuỳ chọn: reviewer_emails — review applications nếu có UI." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "s10",
+        title: "10 — Instructor workspace (/instructor/*)",
+        intro: ["Gate: instructor, support_staff, admin. Student redirect /.", "Instructor_1 chính; Admin/Support smoke; Student_1 negative."],
+        blocks: [
+          {
+            title: "Negative & courses",
+            items: [
+              { id: "s10-1", text: "Student_1: /instructor/courses → redirect /." },
+              { id: "s10-2", text: "Instructor_1: /instructor/courses danh sách." },
+              { id: "s10-3", text: "/instructor/courses/new — tạo khóa." },
+              { id: "s10-4", text: "/instructor/courses/:id/edit seed — lưu." },
+            ],
+          },
+          {
+            title: "Career & finance",
+            items: [
+              { id: "s10-5", text: "/instructor/career-tracks — list." },
+              { id: "s10-6", text: "/instructor/career-tracks/new và .../:id/edit — CRUD cơ bản." },
+              { id: "s10-7", text: "/instructor/contracts, invoices, payments — load." },
+              { id: "s10-8", text: "/instructor/profile đồng bộ account." },
+              { id: "s10-9", text: "/instructor/cohorts* → /instructor/courses." },
+              { id: "s10-10", text: "Admin/Support: /instructor/instructors → redirect /admin/instructors (smoke)." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "s11",
+        title: "11 — Admin (/admin/*)",
+        intro: [
+          "ROLE_GROUPS.admin = admin + support_staff. Cả hai vào /admin.",
+          "Smoke một hoặc hai role tùy policy audit.",
+        ],
+        blocks: [
+          {
+            title: "Negative",
+            items: [
+              { id: "s11-1", text: "Student_1: /admin → redirect /." },
+              { id: "s11-2", text: "Instructor_1 (không admin/support): /admin bị chặn." },
+            ],
+          },
+          {
+            title: "Positive",
+            items: [
+              { id: "s11-3", text: "Admin_1 hoặc Support_1: /admin users load." },
+              { id: "s11-4", text: "/admin/dashboard pinned programs không lỗi profile." },
+              { id: "s11-5", text: "/admin/instructors list." },
+              { id: "s11-6", text: "/admin/instructors/:id chi tiết seed." },
+              { id: "s11-7", text: "Đổi role user test staging — gate đúng sau đổi." },
+            ],
+          },
+        ],
+      },
+      {
+        id: "s12",
+        title: "12 — i18n, theme, 404, mạng",
+        intro: ["Student_1 đủ. Bundle verified."],
+        blocks: [
+          {
+            title: "i18n",
+            items: [
+              { id: "s12-1", text: "Đổi en: Home + /account/settings không sót vi rõ ràng." },
+              { id: "s12-2", text: "Đổi vi — nhất quán." },
+              { id: "s12-3", text: "Tuỳ chọn: document.documentElement.lang khớp locale." },
+            ],
+          },
+          {
+            title: "Theme & 404",
+            items: [
+              { id: "s12-4", text: "dark/light/system: contrast OK Home + /courses." },
+              { id: "s12-5", text: "Path không tồn tại — NotFound/message rõ." },
+              { id: "s12-6", text: "/admin/hackathons/* smoke NotFound nếu applicable." },
+            ],
+          },
+          {
+            title: "Mạng",
+            items: [
+              { id: "s12-7", text: "DevTools Offline: reload public — error/retry hoặc splash." },
+              { id: "s12-8", text: "Bật lại online — recover (ghi nhận nếu cần hard refresh)." },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function collectAllIds() {
+    var ids = [];
+    MANUAL.sections.forEach(function (sec) {
+      (sec.blocks || []).forEach(function (blk) {
+        (blk.items || []).forEach(function (it) {
+          ids.push(it.id);
+        });
+      });
+    });
+    return ids;
+  }
+
+  function renderNav() {
+    var nav = document.getElementById("nav");
+    nav.innerHTML = "";
+    MANUAL.sections.forEach(function (s) {
+      var a = document.createElement("a");
+      a.href = "#" + s.id;
+      a.textContent = s.title;
+      nav.appendChild(a);
+    });
+  }
+
+  function renderMain() {
+    var main = document.getElementById("main");
+    main.innerHTML =
+      "<h1>Corelia QA — Staging checklist</h1>" +
+      MANUAL.sections
+        .map(function (sec) {
+          var parts = [];
+          parts.push('<article class="section" id="' + sec.id + '">');
+          parts.push("<h2>" + escapeHtml(sec.title) + "</h2>");
+          (sec.intro || []).forEach(function (line) {
+            parts.push('<p class="muted">' + line + "</p>");
+          });
+          parts.push('<div class="section-actions">');
+          parts.push('<button type="button" class="btn-section-all" data-section="' + sec.id + '">Đánh dấu hết section</button>');
+          parts.push('<button type="button" class="btn-section-none" data-section="' + sec.id + '">Bỏ hết section</button>');
+          parts.push("</div>");
+          if (sec.staticHtml) parts.push(sec.staticHtml);
+          (sec.blocks || []).forEach(function (blk) {
+            if (blk.title) parts.push("<h3>" + escapeHtml(blk.title) + "</h3>");
+            (blk.items || []).forEach(function (it) {
+              parts.push(
+                '<div class="check-item" data-check-wrap="' +
+                  escapeHtml(it.id) +
+                  '"><input type="checkbox" id="' +
+                  escapeHtml(it.id) +
+                  '" data-check="' +
+                  escapeHtml(it.id) +
+                  '" /><label for="' +
+                  escapeHtml(it.id) +
+                  '">' +
+                  escapeHtml(it.text) +
+                  "</label></div>"
+              );
+            });
+          });
+          parts.push("<hr class=\"sep\" />");
+          parts.push("<label class=\"muted\" for=\"notes-" + sec.id + "\">Ghi chú / bug (lưu local)</label>");
+          parts.push('<textarea class="notes" id="notes-' + sec.id + '" data-notes="' + sec.id + '" placeholder="ID case, bước, mong đợi, thực tế..."></textarea>');
+          parts.push("</article>");
+          return parts.join("");
+        })
+        .join("");
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  var state = loadState();
+
+  function applyChecksFromState() {
+    collectAllIds().forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.checked = !!state.checks && !!state.checks[id];
+    });
+    MANUAL.sections.forEach(function (sec) {
+      var ta = document.getElementById("notes-" + sec.id);
+      if (ta && state.notes) ta.value = state.notes[sec.id] || "";
+    });
+    updateProgress();
+  }
+
+  function updateProgress() {
+    var ids = collectAllIds();
+    var done = ids.filter(function (id) {
+      return state.checks && state.checks[id];
+    }).length;
+    var pct = ids.length ? Math.round((done / ids.length) * 100) : 0;
+    document.getElementById("progressFill").style.width = pct + "%";
+    document.getElementById("progressText").textContent = done + " / " + ids.length + " (" + pct + "%)";
+  }
+
+  function persistChecks() {
+    saveState(state);
+    updateProgress();
+  }
+
+  renderNav();
+  renderMain();
+  if (!state.checks) state.checks = {};
+  if (!state.notes) state.notes = {};
+  applyChecksFromState();
+
+  document.getElementById("main").addEventListener("change", function (e) {
+    var t = e.target;
+    if (t && t.matches && t.matches("input[data-check]")) {
+      var id = t.getAttribute("data-check");
+      state.checks[id] = t.checked;
+      persistChecks();
+    }
+  });
+
+  document.getElementById("main").addEventListener("input", function (e) {
+    var t = e.target;
+    if (t && t.matches && t.matches("textarea[data-notes]")) {
+      var sid = t.getAttribute("data-notes");
+      state.notes[sid] = t.value;
+      saveState(state);
+    }
+  });
+
+  document.getElementById("main").addEventListener("click", function (e) {
+    var btn = e.target.closest(".btn-section-all, .btn-section-none");
+    if (!btn) return;
+    var sectionId = btn.getAttribute("data-section");
+    var sec = MANUAL.sections.find(function (s) {
+      return s.id === sectionId;
+    });
+    if (!sec) return;
+    var val = btn.classList.contains("btn-section-all");
+    (sec.blocks || []).forEach(function (blk) {
+      (blk.items || []).forEach(function (it) {
+        state.checks[it.id] = val;
+        var el = document.getElementById(it.id);
+        if (el) el.checked = val;
+      });
+    });
+    persistChecks();
+  });
+
+  document.getElementById("btnReset").addEventListener("click", function () {
+    if (!confirm("Xóa toàn bộ checkbox và ghi chú đã lưu trong trình duyệt này?")) return;
+    state = { checks: {}, notes: {} };
+    saveState(state);
+    collectAllIds().forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.checked = false;
+    });
+    MANUAL.sections.forEach(function (sec) {
+      var ta = document.getElementById("notes-" + sec.id);
+      if (ta) ta.value = "";
+    });
+    updateProgress();
+  });
+
+  document.getElementById("btnExport").addEventListener("click", function () {
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "corelia-qa-checklist-export.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  document.getElementById("btnImport").addEventListener("click", function () {
+    document.getElementById("importFile").click();
+  });
+
+  document.getElementById("importFile").addEventListener("change", function (ev) {
+    var f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var imported = JSON.parse(reader.result);
+        if (!imported.checks) imported.checks = {};
+        if (!imported.notes) imported.notes = {};
+        state = imported;
+        saveState(state);
+        applyChecksFromState();
+      } catch (err) {
+        alert("File JSON không hợp lệ.");
+      }
+      ev.target.value = "";
+    };
+    reader.readAsText(f);
+  });
+})();
+  </script>
+</body>
+</html>

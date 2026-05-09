@@ -7,7 +7,7 @@ BEGIN;
 -- -----------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS public.hackathon_locales (
-  hackathon_id uuid NOT NULL REFERENCES public.hackathons (id) ON DELETE CASCADE,
+  hackathon_id text NOT NULL REFERENCES public.hackathons (id) ON DELETE CASCADE,
   locale text NOT NULL CHECK (locale IN ('vi', 'en')),
   data jsonb NOT NULL DEFAULT '{}'::jsonb,
   updated_at timestamptz NOT NULL DEFAULT now(),

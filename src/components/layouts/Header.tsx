@@ -575,7 +575,7 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={handleOcLogoClick}
-                  className="hidden h-10 items-center justify-center gap-2 rounded-full border border-border bg-primary px-2.5 py-2 text-left text-sm cursor-pointer text-primary-foreground transition-colors duration-150 hover:opacity-90 md:inline-flex"
+                  className="hidden h-10 items-center justify-center gap-2 rounded-full border border-border bg-ocid-blue px-2.5 py-2 text-left text-sm cursor-pointer text-primary-foreground transition-colors duration-150 hover:opacity-90 md:inline-flex"
                   aria-label={t("openCampusConnect.header.ariaLabel")}
                 >
                   <img

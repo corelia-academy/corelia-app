@@ -53,7 +53,10 @@ export default function ConnectOCIDCard() {
     setLoading(true);
     try {
       if (!user) return;
-      await updateOCIDProfileForUser(user, { ocid: null, ocid_eth_address: null });
+      await updateOCIDProfileForUser(user, {
+        ocid: null,
+        ocid_eth_address: null,
+      });
       await refreshProfile(user);
       setSuccess(t("ocid.toasts.disconnectSuccess"));
     } catch (e) {
@@ -143,7 +146,7 @@ export default function ConnectOCIDCard() {
             type="button"
             onClick={handleConnect}
             disabled={loading || !isInitialized}
-            className="h-11 cursor-pointer border border-border-subtle bg-primary px-3 py-2.5 text-left text-sm text-primary-foreground hover:opacity-90 active:opacity-80"
+            className="h-11 cursor-pointer border border-border-subtle bg-ocid-blue text-white px-3 py-2.5 text-left text-sm hover:opacity-90 active:opacity-80"
           >
             <img
               src="/logo/OC-square-logo.svg"

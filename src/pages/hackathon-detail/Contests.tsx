@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router";
-import {
-  Trophy,
-  Calendar,
-  CheckCheck,
-  Rocket,
-  Timer,
-  Users,
-} from "lucide-react";
+import { Trophy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,20 +23,6 @@ import {
   ContestListMetricCellCatalog,
 } from "@/features/hackathons/list/ContestListCardPrimitives";
 import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
-
-function CatalogStatSkeleton() {
-  return (
-    <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0 flex-1 space-y-2">
-          <Skeleton className="h-3 w-24 rounded-sm" />
-          <Skeleton className="h-8 w-16 rounded-sm" />
-        </div>
-        <Skeleton className="size-11 shrink-0 rounded-md" />
-      </div>
-    </div>
-  );
-}
 
 function CatalogGridSkeleton() {
   return (
@@ -178,8 +157,8 @@ export default function Contests() {
             {showEmpty && null}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {canManageCatalogScoped ? (
+        {canManageCatalogScoped ? (
+          <div className="flex flex-wrap gap-2">
             <Button
               render={<NavLink to="/hackathons/manage" />}
               nativeButton={false}
@@ -189,94 +168,9 @@ export default function Contests() {
             >
               {t("catalog.openWorkspace")}
             </Button>
-          ) : null}
-          <span className="inline-flex min-h-11 items-center rounded-full border border-border-subtle bg-surface-base px-3 py-2 text-xs font-medium text-foreground">
-            {t("catalog.pillReviewed")}
-          </span>
-          <span className="inline-flex min-h-11 items-center rounded-full border border-border-subtle bg-surface-base px-3 py-2 text-xs font-medium text-foreground">
-            {t("catalog.pillTeamBased")}
-          </span>
-        </div>
+          </div>
+        ) : null}
       </div>
-
-      {showError ? null : (
-        <div
-          className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
-          aria-hidden={loading ? true : undefined}
-        >
-          {loading ? (
-            <>
-              <CatalogStatSkeleton />
-              <CatalogStatSkeleton />
-              <CatalogStatSkeleton />
-              <CatalogStatSkeleton />
-            </>
-          ) : (
-            <>
-              <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-                      {t("catalog.stats.total")}
-                    </p>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">
-                      {stats.total}
-                    </p>
-                  </div>
-                  <div className="flex size-11 items-center justify-center rounded-md bg-primary-muted text-primary">
-                    <Rocket className="size-5" aria-hidden />
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-                      {t("catalog.stats.accepting")}
-                    </p>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">
-                      {stats.accepting}
-                    </p>
-                  </div>
-                  <div className="flex size-11 items-center justify-center rounded-md bg-primary-muted text-primary">
-                    <CheckCheck className="size-5" aria-hidden />
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-                      {t("catalog.stats.running")}
-                    </p>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">
-                      {stats.running}
-                    </p>
-                  </div>
-                  <div className="flex size-11 items-center justify-center rounded-md bg-primary-muted text-primary">
-                    <Timer className="size-5" aria-hidden />
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-                      {t("catalog.stats.ended")}
-                    </p>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">
-                      {stats.ended}
-                    </p>
-                  </div>
-                  <div className="flex size-11 items-center justify-center rounded-md bg-primary-muted text-primary">
-                    <Calendar className="size-5" aria-hidden />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      )}
 
       {showError ? (
         <div
