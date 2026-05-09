@@ -1,0 +1,31 @@
+{
+  "checks": {
+    "hub-prep-1": true,
+    "hub-prep-3": true,
+    "hub-ver-1": true,
+    "hub-ver-2": true,
+    "hub-ver-3": true,
+    "s01-a1": true,
+    "s01-b3": true,
+    "s01-b4": true,
+    "s01-d1": true,
+    "s02-1": true,
+    "s03-1": true,
+    "s04-1": true,
+    "s04-4": true,
+    "s05-1": true,
+    "s05-5": true,
+    "s08-1": true,
+    "s12-5": true
+  },
+  "notes": {
+    "hub": "Guest smoke on staging 2026-05-09 21:29-21:33 GMT+7. Build observed: window.__CORELIA_BUILD__ = { version: \"0.2.1\" }. Browser: Chrome headless clean profile.",
+    "s01": "Unauth /login loads form. /account/profile redirects to /login. No console/log errors captured.",
+    "s02": "Home guest loads hero/catalog shell. No user-visible error. Public course click/detail not covered because /courses has 0 results.",
+    "s03": "Guest /courses loads empty state: 0 results / No courses match the current filters. /courses/:id not covered because no public course seed found.",
+    "s04": "Guest /career loads empty state: No tracks yet. /roadmap loads content. Detail slug not covered because no public track seed found.",
+    "s05": "Guest /projects loads empty public gallery state. /search loads instruction empty state.",
+    "s08": "Guest /hackathons loads empty state: 0 total / 0 accepting / 0 running / 0 ended. Detail tabs not covered because no public hackathon seed found.",
+    "s12": "Unknown /not-a-real-path-qa redirects to /u/not-a-real-path-qa and shows User not found. Message is clear for handle fallback behavior."
+  }
+}
