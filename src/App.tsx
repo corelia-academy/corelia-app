@@ -48,6 +48,8 @@ const ContestWorkspacePublicRoute = lazy(() =>
     default: m.ContestDetailManagePage,
   })),
 );
+const ConfirmSignup = lazy(() => import("@/pages/auth/ConfirmSignup"));
+const SignupVerified = lazy(() => import("@/pages/auth/SignupVerified"));
 const UserProfileLayout = lazy(() => import("@/pages/users/user-profile"));
 const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
 
@@ -147,6 +149,22 @@ export default function App() {
           <ScrollToTop />
           <Routes>
             <Route path="/login" element={<Auth />} />
+            <Route
+              path="/confirm-signup"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <ConfirmSignup />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/auth/signup-verified"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <SignupVerified />
+                </Suspense>
+              }
+            />
             <Route path="/ocid-redirect" element={<OCIDRedirect />} />
             <Route path="/" element={<MainLayout />}>
               <Route index element={<Home />} />
