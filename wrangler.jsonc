@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "corelia-app",
+  "name": "corelia-staging",
   "compatibility_date": "2026-05-02",
   "observability": {
     "enabled": true
