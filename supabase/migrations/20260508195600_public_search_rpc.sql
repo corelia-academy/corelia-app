@@ -1,7 +1,7 @@
 -- Public search RPC (Phase: global discoverability)
 -- Provides `public.search_public(p_query, p_limit, p_offset)` to search across:
 -- - projects (public only)
--- - contests (published/running/ended)
+-- - hackathons (published/running/ended)
 -- - courses (published)
 -- - career_tracks (published)
 -- - public_profiles (profile_public=true) including OCID
