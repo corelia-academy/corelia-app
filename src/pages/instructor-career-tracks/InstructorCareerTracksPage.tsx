@@ -61,7 +61,7 @@ export default function InstructorCareerTracksPage() {
   if (loading) {
     return (
       <div className="flex min-h-80 items-center justify-center">
-        <div className="text-sm text-muted-foreground">{t("careerTracks.labels.loading")}</div>
+        <div className="text-sm text-foreground-muted">{t("careerTracks.labels.loading")}</div>
       </div>
     );
   }
@@ -80,7 +80,7 @@ export default function InstructorCareerTracksPage() {
             <h1 className="text-lg font-semibold text-foreground">
               {t("careerTracks.list.title")}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {t("careerTracks.list.subtitle", { total: stats.total, published: stats.published, drafts: stats.drafts })}
             </p>
           </div>
@@ -98,7 +98,7 @@ export default function InstructorCareerTracksPage() {
       {tracks.length === 0 ? (
         <PageSectionCard>
           <EmptyState
-            icon={<Layers className="size-5 text-muted-foreground" aria-hidden />}
+            icon={<Layers className="size-5 text-foreground-subtle" aria-hidden />}
             title={t("careerTracks.list.emptyTitle")}
             description={t("careerTracks.list.emptyDescription")}
             action={
@@ -120,14 +120,14 @@ export default function InstructorCareerTracksPage() {
                   <div className="text-sm font-semibold text-foreground">
                     {track.title}
                   </div>
-                  <div className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                  <div className="mt-1 line-clamp-2 text-sm text-foreground-muted">
                     {track.description}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
                       {track.published ? t("careerTracks.labels.published") : t("careerTracks.labels.draft")}
                     </span>
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
                       {t("careerTracks.labels.courseCount", { count: track.courseCount })}
                     </span>
                   </div>

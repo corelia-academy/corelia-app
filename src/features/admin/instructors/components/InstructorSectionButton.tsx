@@ -25,7 +25,7 @@ export function InstructorSectionButton({
         "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
         active
           ? "bg-sidebar-accent text-sidebar-accent-foreground"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
         disabled && "cursor-not-allowed opacity-50 hover:bg-transparent",
       )}
     >

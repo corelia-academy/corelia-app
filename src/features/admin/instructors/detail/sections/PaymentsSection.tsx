@@ -30,9 +30,9 @@ export function PaymentsSection({
   onSave: () => void;
 }) {
   return (
-    <section className="rounded-2xl border border-border-subtle bg-card p-6 shadow-card">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base p-6">
       {!isExternal ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-foreground-muted">
           {t("instructorDetailPage.payments.externalOnly")}
         </p>
       ) : (
@@ -41,14 +41,14 @@ export function PaymentsSection({
             <h2 className="text-lg font-medium text-foreground">
               {t("instructorDetailPage.payments.title")}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {t("instructorDetailPage.payments.description")}
             </p>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
                 {t("instructorDetailPage.payments.stats.profileType")}
               </p>
               <p className="mt-2 text-sm font-medium text-foreground">
@@ -57,8 +57,8 @@ export function PaymentsSection({
                   : t("instructorDetailPage.payments.profileType.internal")}
               </p>
             </div>
-            <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
                 {t("instructorDetailPage.payments.stats.bankAccount")}
               </p>
               <p className="mt-2 text-sm font-medium text-foreground">
@@ -66,8 +66,8 @@ export function PaymentsSection({
                   t("instructorDetailPage.common.notUpdated")}
               </p>
             </div>
-            <div className="rounded-2xl border border-border-subtle bg-muted/25 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
                 {t("instructorDetailPage.payments.stats.accountHolder")}
               </p>
               <p className="mt-2 text-sm font-medium text-foreground">
@@ -150,7 +150,7 @@ export function PaymentsSection({
               rows={6}
               value={transferInfo}
               onChange={(e) => setTransferInfo(e.target.value)}
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
               placeholder={t("instructorDetailPage.payments.fields.extraNotesPlaceholder")}
             />
           </div>

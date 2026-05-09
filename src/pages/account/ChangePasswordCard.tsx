@@ -70,10 +70,10 @@ export function ChangePasswordCard({ user }: { user: User }) {
   if (!hasPasswordProvider) return null;
 
   return (
-    <div className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
+    <div className="space-y-4 rounded-lg border border-border-subtle bg-surface-base p-4">
       <div>
         <h2 className="text-lg font-semibold">{t("password.title")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-foreground-muted">
           {t("password.subtitle")}
         </p>
       </div>
@@ -126,12 +126,12 @@ export function ChangePasswordCard({ user }: { user: User }) {
           />
         </div>
         {error ? (
-          <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <div className="rounded-md border border-destructive/20 bg-destructive-muted px-3 py-2 text-sm text-destructive">
             {error}
           </div>
         ) : null}
         {success ? (
-          <div className="rounded-md border border-success/25 bg-success/10 px-3 py-2 text-sm text-success">
+          <div className="rounded-md border border-success/25 bg-success-muted px-3 py-2 text-sm text-success">
             {success}
           </div>
         ) : null}

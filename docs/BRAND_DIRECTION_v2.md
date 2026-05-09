@@ -402,7 +402,7 @@ Mọi trang pillar top-level (`/courses`, `/cohorts`, `/contests`) bắt đầu 
 ```tsx
 <div aria-hidden className="h-1 w-full bg-cohort" />
 <header className="mx-auto max-w-[1990px] px-4 pt-10 pb-6 sm:px-6">
-  <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+  <p className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
     Offline · Cohort
   </p>
   <h1 className="mt-2 font-display text-5xl tracking-tight text-foreground">
@@ -421,7 +421,7 @@ Mọi trang pillar top-level (`/courses`, `/cohorts`, `/contests`) bắt đầu 
 **5.2.3 Cohort Schedule Card**
 
 - Grid tuần (Mon–Sun) chạy ngang, mỗi ô là một buổi.
-- Buổi đã xong → `bg-card-elevated` + tick success.
+- Buổi đã xong → `bg-surface-raised` + tick success.
 - Buổi sắp tới → `border-cohort border-l-2` + countdown `font-mono`.
 - Buổi đang diễn ra → `bg-cohort-container text-on-cohort-container` + LIVE dot animated.
 - Có nút "Thêm vào Google Calendar" (icon + hover).

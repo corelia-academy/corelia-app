@@ -47,6 +47,19 @@ const listContestsInFlight = new Map<string, Promise<Contest[]>>();
 
 /** `ContestPublicLayout` + detail payload can overlap; collapse duplicate `getContest` rows. */
 const getContestByIdInFlight = new Map<string, Promise<Contest | null>>();
+const getContestBySlugInFlight = new Map<string, Promise<Contest | null>>();
+
+function sanitizeSlug(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const lowered = value.trim().toLowerCase();
+  if (!lowered) return null;
+  const cleaned = lowered
+    .replace(/[_\s]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return cleaned.length > 0 ? cleaned : null;
+}
 
 function getHackathonIdFromRow(row: Record<string, unknown>): string | null {
   const v = row.hackathon_id ?? row.contest_id;
@@ -206,6 +219,7 @@ function normalizeContest(data: Contest): Contest {
 
   return {
     ...data,
+    slug: sanitizeSlug(data.slug),
     judge_emails: sanitizeEmailList(data.judge_emails),
     co_organizer_emails: sanitizeEmailList(data.co_organizer_emails),
     co_host_viewer_emails: sanitizeEmailList(data.co_host_viewer_emails),
@@ -388,6 +402,22 @@ export function invalidateContestListCache() {
   listContestsInFlight.clear();
 }
 
+export async function hasHackathonCoOrganizerAccess(email: string): Promise<boolean> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return false;
+
+  // Best-effort: check if any hackathon lists this email as co_organizer.
+  // Stored inside `document` JSON; we query via PostgREST JSON contains filter.
+  const { data, error } = await supabase
+    .from("hackathons")
+    .select("id")
+    .filter("document->co_organizer_emails", "cs", JSON.stringify([normalized]))
+    .limit(1);
+
+  if (error) return false;
+  return Array.isArray(data) && data.length > 0;
+}
+
 export async function getContest(contestId: string): Promise<Contest | null> {
   const existing = getContestByIdInFlight.get(contestId);
   if (existing) return existing;
@@ -412,12 +442,40 @@ export async function getContest(contestId: string): Promise<Contest | null> {
   return promise;
 }
 
+export async function getContestBySlug(slug: string): Promise<Contest | null> {
+  const normalized = sanitizeSlug(slug);
+  if (!normalized) return null;
+
+  const existing = getContestBySlugInFlight.get(normalized);
+  if (existing) return existing;
+
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("hackathons")
+      .select(CONTEST_ROW_SELECT)
+      .eq("document->>slug", normalized)
+      .maybeSingle();
+    if (error || !data) return null;
+    return contestFromRow(data as Parameters<typeof contestFromRow>[0]);
+  })();
+
+  getContestBySlugInFlight.set(normalized, promise);
+  promise.finally(() => {
+    if (getContestBySlugInFlight.get(normalized) === promise) {
+      getContestBySlugInFlight.delete(normalized);
+    }
+  });
+
+  return promise;
+}
+
 export async function createContest(data: ContestInsert): Promise<Contest> {
   const { uid } = await requireContestManager();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
   const document = removeUndefinedFields({
+    slug: sanitizeSlug(data.slug),
     title: data.title.trim(),
     tagline: data.tagline.trim(),
     description: data.description?.trim() || null,
@@ -476,6 +534,7 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
 
   const prevDoc = (row.document ?? {}) as Record<string, unknown>;
   const payload = removeUndefinedFields({
+    slug: updates.slug === undefined ? undefined : sanitizeSlug(updates.slug),
     title: updates.title?.trim(),
     tagline: updates.tagline?.trim(),
     description:

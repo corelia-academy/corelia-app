@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/authStore";
 import { LoginForm } from "@/pages/login/LoginForm";
 import { LoginMfaChallenge } from "@/pages/login/components/LoginMfaChallenge";
+import { useTranslation } from "react-i18next";
 
 /**
  * `unchecked` = đang chờ getAuthenticatorAssuranceLevel hoặc chưa có user.
@@ -16,6 +17,7 @@ type MfaGateState = "unchecked" | "mfa" | "clear";
 export default function Auth() {
   const { user, authInitialized, signOut } = useAuth();
   const location = useLocation();
+  const { t } = useTranslation("common");
   const from =
     (location.state as { from?: { pathname: string } })?.from?.pathname ?? "/";
 
@@ -77,10 +79,10 @@ export default function Auth() {
           <div className="mb-4 flex items-center justify-between">
             <NavLink
               to="/"
-              className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+              className="inline-flex items-center gap-1 text-sm font-medium text-foreground-muted transition-colors duration-150 hover:text-foreground"
             >
               <ArrowLeft className="size-4" aria-hidden />
-              <span>Về trang chủ</span>
+              <span>{t("notFound.backHome")}</span>
             </NavLink>
           </div>
           <LoginMfaChallenge
@@ -105,10 +107,10 @@ export default function Auth() {
         <div className="mb-4 flex items-center justify-between">
           <NavLink
             to="/"
-            className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-1 text-sm font-medium text-foreground-muted transition-colors duration-150 hover:text-foreground"
           >
             <ArrowLeft className="size-4" aria-hidden />
-            <span>Về trang chủ</span>
+            <span>{t("notFound.backHome")}</span>
           </NavLink>
         </div>
         <LoginForm />

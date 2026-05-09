@@ -41,7 +41,7 @@ export function OcClaimBadge({ status }: { status: ClaimStatus }) {
     );
   }
   return (
-    <span className={cn(base, "bg-muted font-medium text-muted-foreground")}>
+    <span className={cn(base, "bg-surface-raised font-medium text-foreground-muted")}>
       <img
         src="/open-campus-edu-logo.png"
         alt="OC"

@@ -32,14 +32,14 @@ function CurriculumList({
   if (groups.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <div className="flex w-12 h-12 items-center justify-center rounded-full bg-muted">
-          <List className="w-6 h-6 text-muted-foreground" aria-hidden />
+        <div className="flex w-12 h-12 items-center justify-center rounded-full bg-surface-raised">
+          <List className="w-6 h-6 text-foreground-subtle" aria-hidden />
         </div>
         <div>
           <p className="text-sm font-medium text-foreground">
             {translate("detail.learn.emptyCurriculumTitle")}
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="mt-0.5 text-xs text-foreground-muted">
             {translate("detail.learn.emptyCurriculumDescription")}
           </p>
         </div>
@@ -59,7 +59,7 @@ function CurriculumList({
     <div className={cn(scrollClassName)}>
       {groups.map(({ section, lessons: sectionLessons }) => (
         <div key={section.id}>
-          <div className="bg-muted/25 px-4 py-2 text-xs font-medium text-foreground">
+          <div className="bg-surface-raised px-4 py-2 text-xs font-medium text-foreground">
             {section.title}
           </div>
           {sectionLessons.map((lesson) => {
@@ -71,18 +71,18 @@ function CurriculumList({
                 key={lesson.id}
                 className={cn(
                   "border-t border-border-subtle px-4 py-3 transition-colors duration-150",
-                  active && "bg-primary-container/85",
-                  !locked && "hover:bg-muted/40",
+                  active && "bg-primary-muted text-primary",
+                  !locked && "hover:bg-surface-raised",
                   locked && "opacity-75",
                 )}
               >
                 {locked ? (
                   <div className="flex items-start gap-3">
                     <Lock
-                      className="mt-0.5 w-4 h-4 shrink-0 text-muted-foreground"
+                      className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted"
                       aria-hidden
                     />
-                    <span className="min-w-0 flex-1 line-clamp-2 text-sm leading-5 text-muted-foreground">
+                    <span className="min-w-0 flex-1 line-clamp-2 text-sm leading-5 text-foreground-muted">
                       {lesson.title}
                     </span>
                     <span className="shrink-0 text-xs text-warning">
@@ -100,24 +100,24 @@ function CurriculumList({
                         aria-hidden
                       />
                     ) : (
-                      <PlayCircle className="mt-0.5 w-4 h-4 shrink-0 text-muted-foreground sm:mt-0" />
+                      <PlayCircle className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" />
                     )}
                     <div className="min-w-0 flex-1">
                       <span
                         className={cn(
                           "block line-clamp-2 text-sm leading-5 sm:line-clamp-1",
                           active
-                            ? "font-medium text-on-primary-container"
+                            ? "font-medium text-primary"
                             : "text-foreground",
                         )}
                       >
                         {lesson.title}
                       </span>
-                      <span className="mt-1 block text-xs text-muted-foreground sm:hidden">
+                      <span className="mt-1 block text-xs text-foreground-muted sm:hidden">
                         {formatDuration(lesson.duration_seconds)}
                       </span>
                     </div>
-                    <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
+                    <span className="hidden shrink-0 text-xs text-foreground-muted sm:inline">
                       {formatDuration(lesson.duration_seconds)}
                     </span>
                   </Link>
@@ -169,14 +169,14 @@ export function LessonCurriculum({
 
   return (
     <>
-      <details className="mb-6 overflow-hidden rounded-md border border-border-subtle bg-card shadow-sm lg:hidden [&_summary::-webkit-details-marker]:hidden">
+      <details className="mb-6 overflow-hidden rounded-md border border-border-subtle bg-surface-base lg:hidden [&_summary::-webkit-details-marker]:hidden">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <List className="w-4 h-4" />
               {translate("detail.learn.lessonList.title")}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-foreground-muted">
               {hasFullCourseAccess
                 ? translate("detail.learn.lessonList.metaFullAccess", {
                     sections: visibleSectionCount,
@@ -190,14 +190,14 @@ export function LessonCurriculum({
             <p className="mt-1 line-clamp-1 text-sm text-foreground">
               {currentLessonTitle ?? translate("detail.learn.selectLessonToStart")}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-foreground-muted">
               {completedLabel}
             </p>
-            <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+            <p className="mt-0.5 line-clamp-1 text-xs text-foreground-muted">
               {nextUpLabel}
             </p>
           </div>
-          <div className="inline-flex shrink-0 items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+          <div className="inline-flex shrink-0 items-center gap-2 rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
             {progressPercent}%
             <ChevronDown className="w-3 h-3" aria-hidden />
           </div>
@@ -216,27 +216,27 @@ export function LessonCurriculum({
       </details>
 
       <aside className="hidden lg:sticky lg:top-20 lg:block lg:self-start">
-        <div className="overflow-hidden rounded-md border border-border-subtle bg-card shadow-sm">
-          <div className="border-b border-border-subtle bg-muted/40 px-4 py-3">
+        <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-base">
+          <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
             <div className="flex items-center justify-between gap-3">
               <span className="flex items-center gap-2 text-sm font-medium text-foreground">
                 <List className="w-4 h-4" />{" "}
                 {translate("detail.learn.curriculumTitle")}
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-foreground-muted">
                 {progressPercent}%
               </span>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-background">
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-base">
               <div
                 className="h-full rounded-full bg-success"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-2 text-xs text-foreground-muted">
               {completedLabel}
             </p>
-            <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+            <p className="mt-0.5 line-clamp-1 text-xs text-foreground-muted">
               {nextUpLabel}
             </p>
           </div>

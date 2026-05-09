@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { ContestScopedViewerRole, ContestStatus } from "@/types/hackathons";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
+import { normalizeSlug } from "@/pages/hackathon-detail/utils/slug";
 
 export function ContestDetailManagerSettingsCard({
   vm,
@@ -16,6 +17,10 @@ export function ContestDetailManagerSettingsCard({
     setManagerStatus,
     savingStatus,
     handleStatusSave,
+    slugDraft,
+    setSlugDraft,
+    savingSlug,
+    handleSlugSave,
     rubricWeights,
     setRubricWeights,
     savingRubric,
@@ -68,7 +73,7 @@ export function ContestDetailManagerSettingsCard({
                     <h2 className="text-lg font-medium tracking-tight text-foreground">
                       {translate("workspace.manage.operationsControlsTitle")}
                     </h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 text-sm text-foreground-muted">
                       {translate(
                         "workspace.manage.operationsControlsDescription",
                       )}
@@ -81,7 +86,7 @@ export function ContestDetailManagerSettingsCard({
                     {translate("workspace.manage.contestStatusLabel")}
                   </label>
                   <select
-                    className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                    className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     value={managerStatus}
                     onChange={(e) =>
                       setManagerStatus(e.target.value as ContestStatus)
@@ -115,9 +120,49 @@ export function ContestDetailManagerSettingsCard({
 
                 <div className="mt-4 border-t border-border-subtle pt-4">
                   <h3 className="text-base font-medium text-foreground">
+                    {translate("workspace.manage.slugTitle")}
+                  </h3>
+                  <p className="mt-2 text-sm text-foreground-muted">
+                    {translate("workspace.manage.slugDescription")}
+                  </p>
+                  <div className="mt-3">
+                    <label className="text-sm font-medium text-foreground">
+                      {translate("workspace.manage.slugLabel")}
+                    </label>
+                    <input
+                      value={slugDraft}
+                      onChange={(e) => setSlugDraft(e.target.value)}
+                      className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                      placeholder={translate("workspace.manage.slugPlaceholder")}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      inputMode="url"
+                    />
+                    <div className="mt-2 text-xs text-foreground-muted">
+                      {translate("workspace.manage.slugHint", {
+                        slug: normalizeSlug(slugDraft || ""),
+                      })}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    className="mt-4 w-full"
+                    variant="outline"
+                    disabled={savingSlug}
+                    onClick={() => void handleSlugSave()}
+                  >
+                    {savingSlug
+                      ? translate("detail.labels.saving")
+                      : translate("workspace.manage.saveSlug")}
+                  </Button>
+                </div>
+
+                <div className="mt-4 border-t border-border-subtle pt-4">
+                  <h3 className="text-base font-medium text-foreground">
                     {translate("workspace.manage.rubricTitle")}
                   </h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <p className="mt-2 text-sm text-foreground-muted">
                     {translate("workspace.manage.rubricDescription")}
                   </p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -149,12 +194,12 @@ export function ContestDetailManagerSettingsCard({
                               [key]: e.target.value,
                             }))
                           }
-                          className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                          className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                         />
                       </div>
                     ))}
                   </div>
-                  <div className="mt-3 rounded-xl border border-border-subtle bg-background px-3 py-2 text-sm text-muted-foreground">
+                  <div className="mt-3 rounded-xl border border-border-subtle bg-surface-base px-3 py-2 text-sm text-foreground-muted">
                     {translate("workspace.manage.rubricTotalPrefix")}{" "}
                     <span className="font-medium text-foreground">
                       {[
@@ -183,17 +228,17 @@ export function ContestDetailManagerSettingsCard({
                   <h3 className="text-base font-medium text-foreground">
                     {translate("workspace.manage.tracksRoundsTitle")}
                   </h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <p className="mt-2 text-sm text-foreground-muted">
                     {translate("workspace.manage.tracksRoundsDescription")}
                   </p>
 
-                  <div className="mt-4 rounded-xl border border-border-subtle bg-background p-4">
+                  <div className="mt-4 rounded-xl border border-border-subtle bg-surface-base p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <div className="text-sm font-medium text-foreground">
                           {translate("workspace.manage.anonymousJudgingTitle")}
                         </div>
-                        <div className="mt-1 text-xs text-muted-foreground">
+                        <div className="mt-1 text-xs text-foreground-muted">
                           {translate("workspace.manage.anonymousJudgingHint")}
                         </div>
                       </div>
@@ -216,7 +261,7 @@ export function ContestDetailManagerSettingsCard({
                       {(tracksDraft ?? []).map((track, index) => (
                         <div
                           key={`track-${index}`}
-                          className="grid gap-3 rounded-xl border border-border-subtle bg-background p-4 sm:grid-cols-2"
+                          className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
                         >
                           <input
                             value={track.id}
@@ -227,7 +272,7 @@ export function ContestDetailManagerSettingsCard({
                                 ),
                               )
                             }
-                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                             placeholder={translate("workspace.manage.trackIdPlaceholder")}
                           />
                           <input
@@ -239,7 +284,7 @@ export function ContestDetailManagerSettingsCard({
                                 ),
                               )
                             }
-                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                             placeholder={translate("workspace.manage.trackNamePlaceholder")}
                           />
                           <div className="sm:col-span-2">
@@ -280,7 +325,7 @@ export function ContestDetailManagerSettingsCard({
                       {(roundsDraft ?? []).map((round, index) => (
                         <div
                           key={`round-${index}`}
-                          className="grid gap-3 rounded-xl border border-border-subtle bg-background p-4 sm:grid-cols-2"
+                          className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
                         >
                           <input
                             value={round.id}
@@ -291,7 +336,7 @@ export function ContestDetailManagerSettingsCard({
                                 ),
                               )
                             }
-                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                             placeholder={translate("workspace.manage.roundIdPlaceholder")}
                           />
                           <input
@@ -303,7 +348,7 @@ export function ContestDetailManagerSettingsCard({
                                 ),
                               )
                             }
-                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                             placeholder={translate("workspace.manage.roundNamePlaceholder")}
                           />
                           <div className="sm:col-span-2">
@@ -341,7 +386,7 @@ export function ContestDetailManagerSettingsCard({
                       {translate("workspace.manage.activeRoundLabel")}
                     </label>
                     <select
-                      className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                      className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       value={activeRoundIdDraft}
                       onChange={(e) => setActiveRoundIdDraft(e.target.value)}
                     >
@@ -374,14 +419,14 @@ export function ContestDetailManagerSettingsCard({
                     <input
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
-                      className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       placeholder={translate(
                         "detail.forms.invite.emailPlaceholder",
                       )}
                     />
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-lg border border-border bg-background px-3 py-2 text-sm">
-                        <div className="text-xs font-medium text-muted-foreground">
+                      <div className="rounded-lg border border-border bg-surface-base px-3 py-2 text-sm">
+                        <div className="text-xs font-medium text-foreground-muted">
                           {translate("workspace.manage.inviteRolesLabel")}
                         </div>
                         <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -434,7 +479,7 @@ export function ContestDetailManagerSettingsCard({
                       <input
                         value={inviteDisplayName}
                         onChange={(e) => setInviteDisplayName(e.target.value)}
-                        className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                        className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                         placeholder={translate(
                           "detail.forms.invite.displayNamePlaceholder",
                         )}
@@ -443,7 +488,7 @@ export function ContestDetailManagerSettingsCard({
                     <input
                       value={inviteOrganization}
                       onChange={(e) => setInviteOrganization(e.target.value)}
-                      className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       placeholder={translate(
                         "detail.forms.invite.organizationPlaceholder",
                       )}
@@ -452,7 +497,7 @@ export function ContestDetailManagerSettingsCard({
                       rows={3}
                       value={inviteNote}
                       onChange={(e) => setInviteNote(e.target.value)}
-                      className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                      className="min-h-24 w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       placeholder={translate(
                         "detail.forms.invite.notePlaceholder",
                       )}
@@ -467,11 +512,11 @@ export function ContestDetailManagerSettingsCard({
                         ? translate("detail.labels.creating")
                         : translate("detail.labels.sendInvite")}
                     </Button>
-                    <div className="rounded-2xl border border-border-subtle bg-background px-4 py-4">
+                    <div className="rounded-2xl border border-border-subtle bg-surface-base px-4 py-4">
                       <div className="text-sm font-medium text-foreground">
                         {translate("workspace.manage.bulkInviteTitle")}
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-xs text-foreground-muted">
                         {translate("workspace.manage.bulkInviteHint")}
                       </p>
                       <input
@@ -479,31 +524,31 @@ export function ContestDetailManagerSettingsCard({
                         accept=".csv,text/csv"
                         disabled={savingInvite}
                         onChange={(e) => void handleBulkInviteCsv(e)}
-                        className="mt-3 block w-full cursor-pointer text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border-subtle file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="mt-3 block w-full cursor-pointer text-sm text-foreground-muted file:mr-3 file:rounded-md file:border file:border-border-subtle file:bg-surface-base file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60"
                       />
                     </div>
                   </div>
 
                   <div className="mt-5 space-y-3">
                     {invites.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-5 text-sm text-muted-foreground">
+                      <div className="rounded-2xl border border-dashed border-border-subtle bg-surface-base px-4 py-5 text-sm text-foreground-muted">
                         {translate("workspace.manage.invitesEmpty")}
                       </div>
                     ) : (
                       invites.map((invite) => (
                         <div
                           key={invite.id}
-                          className="rounded-2xl border border-border-subtle bg-background p-4"
+                          className="rounded-2xl border border-border-subtle bg-surface-base p-4"
                         >
                           <div className="text-sm font-medium text-foreground">
                             {invite.display_name || invite.email}
                           </div>
-                          <div className="mt-1 text-sm text-muted-foreground">
+                          <div className="mt-1 text-sm text-foreground-muted">
                             {invite.email} · {invite.roles.join(", ")} ·{" "}
                             {invite.status}
                           </div>
                           {invite.organization_name && (
-                            <div className="mt-1 text-sm text-muted-foreground">
+                            <div className="mt-1 text-sm text-foreground-muted">
                               {invite.organization_name}
                             </div>
                           )}
@@ -551,15 +596,15 @@ export function ContestDetailManagerSettingsCard({
                   <h3 className="text-base font-medium text-foreground">
                     {translate("workspace.manage.publicPageContentTitle")}
                   </h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <p className="mt-2 text-sm text-foreground-muted">
                     {translate("workspace.manage.publicPageContentDescription")}
                   </p>
 
-                  <div className="mt-6 rounded-xl border border-border-subtle bg-muted/30 p-4">
+                  <div className="mt-6 rounded-xl border border-border-subtle bg-surface-raised p-4">
                     <div className="text-sm font-medium text-foreground">
                       {translate("workspace.manage.mediaTitle")}
                     </div>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground-muted">
                       {translate("workspace.manage.mediaDescription")}
                     </p>
                     <div className="mt-4 grid gap-5 sm:grid-cols-2">
@@ -570,7 +615,7 @@ export function ContestDetailManagerSettingsCard({
                         >
                           {translate("workspace.manage.bannerUploadLabel")}
                         </label>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-foreground-muted">
                           {translate("workspace.manage.bannerUploadHint")}
                         </p>
                         <input
@@ -579,9 +624,9 @@ export function ContestDetailManagerSettingsCard({
                           accept="image/*"
                           disabled={bannerUploading}
                           onChange={(e) => void handleContestBannerChange(e)}
-                          className="mt-2 block w-full cursor-pointer text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border-subtle file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="mt-2 block w-full cursor-pointer text-sm text-foreground-muted file:mr-3 file:rounded-md file:border file:border-border-subtle file:bg-surface-base file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60"
                         />
-                        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                        <div className="mt-2 flex items-center gap-2 text-xs text-foreground-muted">
                           {bannerUploading ? (
                             <>
                               <Loader2
@@ -593,7 +638,7 @@ export function ContestDetailManagerSettingsCard({
                           ) : null}
                         </div>
                         {contest.cover_image_url?.trim() ? (
-                          <div className="mt-3 overflow-hidden rounded-lg border border-border-subtle bg-background">
+                          <div className="mt-3 overflow-hidden rounded-lg border border-border-subtle bg-surface-base">
                             <img
                               src={contest.cover_image_url.trim()}
                               alt={translate("detail.visual.bannerAlt", {
@@ -611,7 +656,7 @@ export function ContestDetailManagerSettingsCard({
                         >
                           {translate("workspace.manage.thumbnailUploadLabel")}
                         </label>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-foreground-muted">
                           {translate("workspace.manage.thumbnailUploadHint")}
                         </p>
                         <input
@@ -620,9 +665,9 @@ export function ContestDetailManagerSettingsCard({
                           accept="image/*"
                           disabled={thumbnailUploading}
                           onChange={(e) => void handleContestThumbnailChange(e)}
-                          className="mt-2 block w-full cursor-pointer text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border-subtle file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="mt-2 block w-full cursor-pointer text-sm text-foreground-muted file:mr-3 file:rounded-md file:border file:border-border-subtle file:bg-surface-base file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60"
                         />
-                        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                        <div className="mt-2 flex items-center gap-2 text-xs text-foreground-muted">
                           {thumbnailUploading ? (
                             <>
                               <Loader2
@@ -634,7 +679,7 @@ export function ContestDetailManagerSettingsCard({
                           ) : null}
                         </div>
                         {contest.thumbnail_url?.trim() ? (
-                          <div className="mt-3 overflow-hidden rounded-lg border border-border-subtle bg-background">
+                          <div className="mt-3 overflow-hidden rounded-lg border border-border-subtle bg-surface-base">
                             <img
                               src={contest.thumbnail_url.trim()}
                               alt={translate("detail.visual.thumbnailAlt", {
@@ -659,7 +704,7 @@ export function ContestDetailManagerSettingsCard({
                         prize_pool_summary: e.target.value,
                       }))
                     }
-                    className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                    className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     placeholder={translate(
                       "workspace.manage.prizePoolSummaryPlaceholder",
                     )}
@@ -673,7 +718,7 @@ export function ContestDetailManagerSettingsCard({
                       {publicDraft.prizes.map((prize, index) => (
                         <div
                           key={`prize-${index}`}
-                          className="grid gap-3 rounded-xl border border-border-subtle bg-background p-4 sm:grid-cols-2"
+                          className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
                         >
                           <input
                             value={prize.rank_label}
@@ -687,7 +732,7 @@ export function ContestDetailManagerSettingsCard({
                                 ),
                               }))
                             }
-                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring sm:col-span-2"
+                            className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 sm:col-span-2"
                             placeholder={translate(
                               "workspace.manage.prizeRankPlaceholder",
                             )}
@@ -704,7 +749,7 @@ export function ContestDetailManagerSettingsCard({
                                 ),
                               }))
                             }
-                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring sm:col-span-2"
+                            className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 sm:col-span-2"
                             placeholder={translate(
                               "workspace.manage.prizeTitlePlaceholder",
                             )}
@@ -721,7 +766,7 @@ export function ContestDetailManagerSettingsCard({
                                 ),
                               }))
                             }
-                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                             placeholder={translate(
                               "workspace.manage.prizeValuePlaceholder",
                             )}
@@ -739,7 +784,7 @@ export function ContestDetailManagerSettingsCard({
                                 ),
                               }))
                             }
-                            className="min-h-16 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring sm:col-span-2"
+                            className="min-h-16 rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 sm:col-span-2"
                             placeholder={translate(
                               "workspace.manage.prizeDescriptionPlaceholder",
                             )}
@@ -796,7 +841,7 @@ export function ContestDetailManagerSettingsCard({
                       {publicDraft.faqs.map((faq, index) => (
                         <div
                           key={`faq-${index}`}
-                          className="space-y-3 rounded-xl border border-border-subtle bg-background p-4"
+                          className="space-y-3 rounded-xl border border-border-subtle bg-surface-base p-4"
                         >
                           <input
                             value={faq.question}
@@ -810,7 +855,7 @@ export function ContestDetailManagerSettingsCard({
                                 ),
                               }))
                             }
-                            className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                             placeholder={translate(
                               "workspace.manage.faqQuestionPlaceholder",
                             )}
@@ -828,7 +873,7 @@ export function ContestDetailManagerSettingsCard({
                                 ),
                               }))
                             }
-                            className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="min-h-24 w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                             placeholder={translate(
                               "workspace.manage.faqAnswerPlaceholder",
                             )}
@@ -869,10 +914,10 @@ export function ContestDetailManagerSettingsCard({
                     <div className="text-sm font-medium text-foreground">
                       {translate("detail.sections.timeline")}
                     </div>
-                    <div className="mt-3 grid gap-3 rounded-xl border border-border-subtle bg-background p-4">
+                    <div className="mt-3 grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4">
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-muted-foreground">
+                          <label className="text-xs font-medium text-foreground-muted">
                             {translate("instructorNew.form.registrationDeadlineLabel")}
                           </label>
                           <input
@@ -884,11 +929,11 @@ export function ContestDetailManagerSettingsCard({
                                 registration_deadline_local: e.target.value,
                               }))
                             }
-                            className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-muted-foreground">
+                          <label className="text-xs font-medium text-foreground-muted">
                             {translate("instructorNew.form.startsAtLabel")}
                           </label>
                           <input
@@ -900,11 +945,11 @@ export function ContestDetailManagerSettingsCard({
                                 starts_at_local: e.target.value,
                               }))
                             }
-                            className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                           />
                         </div>
                         <div className="space-y-2 sm:col-span-2">
-                          <label className="text-xs font-medium text-muted-foreground">
+                          <label className="text-xs font-medium text-foreground-muted">
                             {translate("instructorNew.form.endsAtLabel")}
                           </label>
                           <input
@@ -916,7 +961,7 @@ export function ContestDetailManagerSettingsCard({
                                 ends_at_local: e.target.value,
                               }))
                             }
-                            className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                           />
                         </div>
                       </div>
@@ -925,7 +970,7 @@ export function ContestDetailManagerSettingsCard({
                       {publicDraft.milestones.map((milestone, index) => (
                         <div
                           key={`ms-${index}`}
-                          className="grid gap-3 rounded-xl border border-border-subtle bg-background p-4 sm:grid-cols-2"
+                          className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
                         >
                           <input
                             value={milestone.title}
@@ -939,13 +984,13 @@ export function ContestDetailManagerSettingsCard({
                                 ),
                               }))
                             }
-                            className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring sm:col-span-2"
+                            className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 sm:col-span-2"
                             placeholder={translate(
                               "workspace.manage.milestoneTitlePlaceholder",
                             )}
                           />
                           <div className="sm:col-span-2">
-                            <label className="text-xs font-medium text-muted-foreground">
+                            <label className="text-xs font-medium text-foreground-muted">
                               {translate("workspace.manage.milestoneAtLabel")}
                             </label>
                             <input
@@ -961,7 +1006,7 @@ export function ContestDetailManagerSettingsCard({
                                   ),
                                 }))
                               }
-                              className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                              className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                             />
                           </div>
                           <div className="sm:col-span-2">
@@ -1019,7 +1064,7 @@ export function ContestDetailManagerSettingsCard({
                   <h3 className="text-base font-medium text-foreground">
                     {translate("workspace.manage.dangerZoneTitle")}
                   </h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <p className="mt-2 text-sm text-foreground-muted">
                     {translate("workspace.manage.dangerZoneDescription")}
                   </p>
                   <Button

@@ -9,8 +9,8 @@ export default function ContestPublicPage({ section }: { section: ContestPublicS
     contest: Contest | null;
     setContest: Dispatch<SetStateAction<Contest | null>>;
   }>();
-  const { id } = useParams<{ id: string }>();
-  if (!contest || !id || contest.id !== id) return null;
+  const { slug } = useParams<{ slug: string }>();
+  if (!contest || !slug || contest.slug !== slug) return null;
   return (
     <ContestDetail
       prefetchedContest={contest}

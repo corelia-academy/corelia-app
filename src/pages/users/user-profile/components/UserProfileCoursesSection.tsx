@@ -46,7 +46,7 @@ export function UserProfileCoursesSection({
 
   if (!canShow) {
     return (
-      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+      <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
         {t("userProfile.courses.privateByDefault")}
       </div>
     );
@@ -63,7 +63,7 @@ export function UserProfileCoursesSection({
 
   if (error) {
     return (
-      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+      <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
         {error}
       </div>
     );
@@ -71,7 +71,7 @@ export function UserProfileCoursesSection({
 
   if (courses.length === 0) {
     return (
-      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+      <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
         {t("userProfile.courses.empty")}
       </div>
     );
@@ -83,13 +83,13 @@ export function UserProfileCoursesSection({
         <NavLink
           key={c.id}
           to={`/courses/${c.id}`}
-          className="block rounded-md border border-border-subtle bg-card p-4 shadow-card transition hover:bg-muted/40"
+          className="block rounded-md border border-border-subtle bg-surface-base p-4 transition-colors duration-150 hover:bg-surface-raised"
         >
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold text-foreground">
               {c.title}
             </div>
-            <div className="mt-1 text-xs text-muted-foreground">
+            <div className="mt-1 text-xs text-foreground-muted">
               {t("userProfile.courses.updatedAt", {
                 date: new Date(c.updated_at).toLocaleDateString(),
               })}

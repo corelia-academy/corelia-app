@@ -68,7 +68,7 @@ export default function ProjectsPage() {
               {t("projects.title")}
             </h1>
           </div>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-foreground-muted">
             {t("projects.description")}
           </p>
         </div>
@@ -82,15 +82,15 @@ export default function ProjectsPage() {
           </div>
         ) : error ? (
           <div className="flex flex-col items-center gap-3 py-14 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-              <ShieldAlert className="size-6 text-muted-foreground" aria-hidden />
+            <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+              <ShieldAlert className="size-6 text-foreground-subtle" aria-hidden />
             </div>
             <div className="max-w-lg">
               <p className="text-sm font-medium text-foreground">{error}</p>
             </div>
           </div>
         ) : items.length === 0 ? (
-          <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+          <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
             {t("projects.empty")}
           </div>
         ) : (
@@ -100,14 +100,14 @@ export default function ProjectsPage() {
               return (
                 <div
                   key={project.id}
-                  className="rounded-md border border-border-subtle bg-card p-4 shadow-card"
+                  className="rounded-md border border-border-subtle bg-surface-base p-4"
                 >
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold text-foreground">
                       {project.title}
                     </div>
                     {ownerHandle ? (
-                      <div className="mt-1 text-xs text-muted-foreground">
+                      <div className="mt-1 text-xs text-foreground-muted">
                         {t("projects.byPrefix")}{" "}
                         <NavLink
                           className="font-medium text-foreground underline underline-offset-4 hover:no-underline"
@@ -118,7 +118,7 @@ export default function ProjectsPage() {
                       </div>
                     ) : null}
                     {project.summary ? (
-                      <div className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                      <div className="mt-1 line-clamp-2 text-sm text-foreground-muted">
                         {project.summary}
                       </div>
                     ) : null}

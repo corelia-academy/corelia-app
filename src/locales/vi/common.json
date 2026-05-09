@@ -193,6 +193,7 @@
         "ecosystemPlayground": "Sân chơi hệ sinh thái",
         "offlineClass": "Lớp trực tiếp"
       },
+      "courseFallbackDescription": "Ưu tiên cho giai đoạn này của dashboard. {{nextStep}}",
       "cta": {
         "viewCourse": "Xem khoá học",
         "viewProgram": "Xem chương trình",
@@ -207,11 +208,26 @@
     "guest": {
       "heroTitle": "Bắt đầu hành trình học Web3 cùng Corelia",
       "heroSubtitle": "Khám phá khoá học, chương trình và hackathon đang mở. Khi cần lưu tiến độ hoặc đăng ký, bạn chỉ cần đăng nhập.",
+      "featuredCoursesTitle": "Khóa học nổi bật",
       "signIn": "Đăng nhập",
       "openContestsTitle": "Hackathon đang mở",
       "startLearningTitle": "Bắt đầu hành trình học tập",
       "startLearningSubtitle": "Đăng nhập để lưu tiến độ, theo dõi chứng chỉ và gửi hồ sơ tham gia hackathon.",
       "quickLinksTitle": "Lối đi nhanh",
+      "valueProps": {
+        "learn": {
+          "label": "Học nền tảng",
+          "note": "Khoá học và lộ trình được thiết kế để bạn học chắc từng bước."
+        },
+        "build": {
+          "label": "Thực chiến",
+          "note": "Hackathon và dự án cộng đồng giúp bạn luyện kỹ năng triển khai."
+        },
+        "ship": {
+          "label": "Ra sản phẩm",
+          "note": "Từ portfolio đến cơ hội cộng tác trong hệ sinh thái Corelia."
+        }
+      },
       "quickLinks": {
         "contests": "Hackathon",
         "courses": "Khóa học"

@@ -13,19 +13,19 @@ export function ContestPublicPrizesSection(props: {
         <h2 className="text-lg font-semibold text-foreground">
           {t("detail.prizes.sectionTitle")}
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-foreground-muted">
           {t("detail.prizes.sectionDescription")}
         </p>
         {(contest.prizes ?? []).length === 0 ? (
-          <p className="mt-4 text-sm text-muted-foreground">{t("detail.prizes.empty")}</p>
+          <p className="mt-4 text-sm text-foreground-muted">{t("detail.prizes.empty")}</p>
         ) : (
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {(contest.prizes ?? []).map((prize, index) => (
               <div
                 key={`${prize.rank_label}-${prize.title}-${index}`}
-                className="rounded-md border border-border-subtle bg-muted/15 p-4"
+                className="rounded-md border border-border-subtle bg-surface-raised p-4"
               >
-                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                   {prize.rank_label}
                 </div>
                 <div className="mt-2 text-base font-semibold text-foreground">{prize.title}</div>
@@ -35,7 +35,7 @@ export function ContestPublicPrizesSection(props: {
                   </div>
                 ) : null}
                 {prize.description ? (
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-3 text-sm leading-relaxed text-foreground-muted">
                     {prize.description}
                   </p>
                 ) : null}

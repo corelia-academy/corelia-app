@@ -12,7 +12,7 @@ export function renderTextAsList(text: string) {
       .map((line) => line.replace(/^(-\s+|•\s+)/, "").trim())
       .filter(Boolean);
     return (
-      <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground">
+      <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-foreground-muted">
         {items.map((item) => (
           <li key={item}>{item}</li>
         ))}
@@ -21,7 +21,7 @@ export function renderTextAsList(text: string) {
   }
 
   return (
-    <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
+    <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-foreground-muted">
       {text}
     </p>
   );

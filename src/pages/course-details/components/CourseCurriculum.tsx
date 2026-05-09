@@ -41,7 +41,7 @@ export function CourseCurriculum({
             <BookOpen className="size-5 shrink-0" aria-hidden />{" "}
             {translate("detail.courseDetail.curriculum.title")}
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-foreground-muted">
             {isPreviewOnlyCurriculum
               ? translate(
                   "detail.courseDetail.curriculum.previewDescription",
@@ -52,7 +52,7 @@ export function CourseCurriculum({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+          <div className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
             {translate("detail.courseDetail.sectionCount", {
               count: visibleLessonGroups.length,
             })}
@@ -89,7 +89,7 @@ export function CourseCurriculum({
             return (
               <div
                 key={section.id}
-                className="overflow-hidden rounded-md border border-border-subtle bg-card shadow-sm"
+                className="overflow-hidden rounded-md border border-border-subtle bg-surface-base"
               >
                 <button
                   type="button"
@@ -101,10 +101,10 @@ export function CourseCurriculum({
                       return next;
                     })
                   }
-                  className="flex w-full flex-col gap-2 border-b border-border-subtle bg-muted/40 px-4 py-3 text-left transition-colors duration-150 hover:bg-muted/60 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex w-full flex-col gap-2 border-b border-border-subtle bg-surface-raised px-4 py-3 text-left transition-colors duration-150 hover:bg-surface-overlay sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                       {translate("detail.courseDetail.sectionLabel", {
                         index: sectionIndex + 1,
                       })}
@@ -113,12 +113,12 @@ export function CourseCurriculum({
                       {section.title}
                     </p>
                     {section.description?.trim() ? (
-                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                      <p className="mt-1 line-clamp-2 text-xs text-foreground-muted">
                         {section.description}
                       </p>
                     ) : null}
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-foreground-muted">
                     <span>
                       {translate("detail.courseDetail.lessonCountShort", {
                         count: sectionLessons.length,
@@ -140,7 +140,7 @@ export function CourseCurriculum({
                         key={lesson.id}
                         className="flex items-start gap-3 px-4 py-3 sm:items-center"
                       >
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-raised text-xs font-medium text-foreground-muted">
                           {lessonIndex + 1}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -148,11 +148,11 @@ export function CourseCurriculum({
                             {lesson.title}
                           </p>
                           {lesson.short_description?.trim() ? (
-                            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                            <p className="mt-1 line-clamp-2 text-xs text-foreground-muted">
                               {lesson.short_description}
                             </p>
                           ) : null}
-                          <p className="mt-0.5 text-xs text-muted-foreground">
+                          <p className="mt-0.5 text-xs text-foreground-muted">
                             {formatDuration(lesson.duration_seconds)}
                           </p>
                         </div>

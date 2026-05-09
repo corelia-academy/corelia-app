@@ -69,13 +69,13 @@ export function useContestDetailOrchestrator({
       String(t(key as never, options as never)),
     [t],
   );
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, user, isAuthenticated, authInitialized } = useAuth();
 
   const contestLoad = useContestLoad({
-    contestId: id,
+    contestSlug: slug,
     prefetchedContest,
   });
   const {
@@ -86,6 +86,7 @@ export function useContestDetailOrchestrator({
     error,
     setError,
   } = contestLoad;
+  const id = contest?.id;
 
   const registrationFlow = useContestRegistrationFlow();
   const {
@@ -174,6 +175,10 @@ export function useContestDetailOrchestrator({
     setManagerStatus,
     savingStatus,
     setSavingStatus,
+    slugDraft,
+    setSlugDraft,
+    savingSlug,
+    setSavingSlug,
     refreshingMetrics,
     setRefreshingMetrics,
     savingRubric,
@@ -518,6 +523,7 @@ export function useContestDetailOrchestrator({
 
   const publicCta = useMemo(() => {
     if (isManageView || !contest) return null;
+    const hrefSlug = contest.slug?.trim() || null;
 
     if (registration?.status === "approved") {
       return {
@@ -526,7 +532,7 @@ export function useContestDetailOrchestrator({
           : translate("detail.cta.submitSubmission"),
         helper: translate("detail.cta.approvedHelper"),
         variant: "default" as const,
-        navigateTo: `/hackathons/${contest.id}/apply`,
+        navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/apply` : "/hackathons",
       };
     }
     if (registration) {
@@ -534,7 +540,7 @@ export function useContestDetailOrchestrator({
         label: translate("detail.cta.viewApplicationStatus"),
         helper: translate("detail.cta.pendingHelper"),
         variant: "outline" as const,
-        navigateTo: `/hackathons/${contest.id}/apply`,
+        navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/apply` : "/hackathons",
       };
     }
 
@@ -549,22 +555,26 @@ export function useContestDetailOrchestrator({
           helper: translate("detail.cta.viewResultsHelper"),
           variant: "outline" as const,
           navigateTo: showProjects
-            ? `/hackathons/${contest.id}/projects`
-            : `/hackathons/${contest.id}/timeline`,
+            ? hrefSlug
+              ? `/hackathons/${hrefSlug}/projects`
+              : "/hackathons"
+            : hrefSlug
+              ? `/hackathons/${hrefSlug}/timeline`
+              : "/hackathons",
         };
       case "in_progress":
         return {
           label: translate("detail.cta.followContest"),
           helper: translate("detail.cta.inProgressVisitorHelper"),
           variant: "outline" as const,
-          navigateTo: `/hackathons/${contest.id}/timeline`,
+          navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/timeline` : "/hackathons",
         };
       case "registration_open":
         return {
           label: translate("detail.cta.register"),
           helper: translate("detail.cta.registerHelper"),
           variant: "default" as const,
-          navigateTo: `/hackathons/${contest.id}/apply`,
+          navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/apply` : "/hackathons",
         };
       case "registration_closed_before_start":
       default:
@@ -572,7 +582,7 @@ export function useContestDetailOrchestrator({
           label: translate("detail.cta.viewSchedule"),
           helper: translate("detail.cta.regClosedBeforeKickoffHelper"),
           variant: "outline" as const,
-          navigateTo: `/hackathons/${contest.id}/timeline`,
+          navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/timeline` : "/hackathons",
         };
     }
   }, [contest, isManageView, mySubmission, registration, translate]);
@@ -612,7 +622,7 @@ export function useContestDetailOrchestrator({
   const loadAbortRef = useRef<AbortController | null>(null);
 
   const loadContestData = useCallback(async () => {
-    if (!id || !authInitialized) return;
+    if (!slug || !authInitialized) return;
     loadAbortRef.current?.abort();
     const ctrl = new AbortController();
     loadAbortRef.current = ctrl;
@@ -620,7 +630,7 @@ export function useContestDetailOrchestrator({
     setError(null);
     try {
       const result = await fetchContestDetailPayload({
-        id,
+        slug,
         profile,
         userEmail: user?.email ?? undefined,
         viewer: user ?? null,
@@ -659,7 +669,7 @@ export function useContestDetailOrchestrator({
     hydrateInvitesFromPayload,
     hydrateJudgingFromPayload,
     hydrateRegistrationFromPayload,
-    id,
+    slug,
     isManager,
     authInitialized,
     profile,
@@ -915,6 +925,46 @@ export function useContestDetailOrchestrator({
     savingStatus,
     setContest,
     setSavingStatus,
+    translate,
+  ]);
+
+  const handleSlugSave = useCallback(async () => {
+    if (!id || !contest || !isManager || savingSlug) return;
+    const nextSlug = slugDraft.trim();
+    if (nextSlug === (contest.slug ?? "")) return;
+    setSavingSlug(true);
+    try {
+      await updateContest(id, { slug: nextSlug });
+      const fresh = await getContest(id);
+      if (fresh) {
+        setContest(fresh);
+        onContestSynced?.(fresh);
+        if (fresh.slug && slug && fresh.slug !== slug) {
+          const rest = location.pathname.split("/").slice(3).join("/");
+          const target = rest.length > 0 ? `/hackathons/${fresh.slug}/${rest}` : `/hackathons/${fresh.slug}`;
+          navigate(target, { replace: true });
+        }
+      }
+      toast.success(translate("detail.toasts.publicContentUpdated"));
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : translate("detail.toasts.publicContentUpdateFailed"),
+      );
+    } finally {
+      setSavingSlug(false);
+    }
+  }, [
+    contest,
+    id,
+    isManager,
+    location.pathname,
+    navigate,
+    onContestSynced,
+    savingSlug,
+    setContest,
+    setSavingSlug,
+    slug,
+    slugDraft,
     translate,
   ]);
 
@@ -1725,6 +1775,10 @@ export function useContestDetailOrchestrator({
     handleApply,
     handleReview,
     handleStatusSave,
+    slugDraft,
+    setSlugDraft,
+    savingSlug,
+    handleSlugSave,
     handleInviteCreate,
     handleBulkInviteCsv,
     handleInviteResponse,

@@ -1927,7 +1927,7 @@ const InstructorCourseEdit = () => {
   if (loading) {
     return (
       <div className="flex min-h-80 items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
+        <Loader2 className="size-8 animate-spin text-foreground-muted" aria-hidden />
       </div>
     );
   }
@@ -1949,7 +1949,7 @@ const InstructorCourseEdit = () => {
   if (!course || !canAccessEditor) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-6 lg:px-8">
-        <p className="text-muted-foreground">
+        <p className="text-foreground-muted">
           {t("courseEdit.access.noPermission")}
         </p>
         <Link
@@ -1971,18 +1971,18 @@ const InstructorCourseEdit = () => {
 
   return (
     <PageContainer>
-      <div className="mb-4 rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+      <div className="mb-4 rounded-lg border border-border-subtle bg-surface-base p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
               {course.published
                 ? t("courseEdit.labels.published")
                 : t("courseEdit.labels.draft")}
             </span>
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
               {getCourseAccessModelLabel(course.access_model)}
             </span>
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
               {getCourseLevelLabel(course.level)}
             </span>
           </div>
@@ -1992,10 +1992,10 @@ const InstructorCourseEdit = () => {
           {editorStats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div key={stat.label} className="rounded-lg border border-border-subtle bg-muted/25 p-4">
+              <div key={stat.label} className="rounded-lg border border-border-subtle bg-surface-base p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                       {stat.label}
                     </p>
                     <p className="mt-2 text-xl font-semibold text-foreground">
@@ -2020,10 +2020,10 @@ const InstructorCourseEdit = () => {
 
       <div className="flex flex-col gap-4 xl:flex-row">
         {/* Sidebar inner — điều hướng từng phần */}
-        <nav className="h-fit shrink-0 rounded-lg border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24 xl:w-64">
+        <nav className="h-fit shrink-0 rounded-lg border border-border-subtle bg-surface-base p-3 xl:sticky xl:top-24 xl:w-64">
           {/* Locale switcher — always visible */}
-          <div className="mb-3 rounded-lg border border-border-subtle bg-muted/40 p-2">
-            <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="mb-3 rounded-lg border border-border-subtle bg-surface-raised p-2">
+            <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-foreground-muted">
               Ngôn ngữ đang chỉnh sửa
             </p>
             <div className="flex gap-1">
@@ -2036,7 +2036,7 @@ const InstructorCourseEdit = () => {
                     "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold transition-colors",
                     activeContentLocale === loc
                       ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-background hover:text-foreground",
+                      : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                   )}
                 >
                   <span>{loc === "vi" ? "🇻🇳" : "🇬🇧"}</span>
@@ -2051,10 +2051,10 @@ const InstructorCourseEdit = () => {
             </div>
           </div>
           <div className="mb-3 px-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
               Điều hướng chỉnh sửa
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               Đi qua từng nhóm cấu hình để hoàn thiện khoá học trước khi xuất bản.
             </p>
           </div>
@@ -2068,7 +2068,7 @@ const InstructorCourseEdit = () => {
                   "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "info"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                 )}
               >
                 <Settings className="size-4 shrink-0" aria-hidden />
@@ -2085,7 +2085,7 @@ const InstructorCourseEdit = () => {
                   "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "pricing"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                 )}
               >
                 <DollarSign className="size-4 shrink-0" aria-hidden />
@@ -2102,7 +2102,7 @@ const InstructorCourseEdit = () => {
                   "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "content"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                 )}
               >
                 <List className="size-4 shrink-0" aria-hidden />
@@ -2119,7 +2119,7 @@ const InstructorCourseEdit = () => {
                   "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "assignments"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                 )}
               >
                 <FileText className="size-4 shrink-0" aria-hidden />
@@ -2136,7 +2136,7 @@ const InstructorCourseEdit = () => {
                   "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "certificate"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                 )}
               >
                 <Award className="size-4 shrink-0" aria-hidden />
@@ -2153,7 +2153,7 @@ const InstructorCourseEdit = () => {
                   "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "students"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                 )}
               >
                 <Users className="size-4 shrink-0" aria-hidden />
@@ -2170,7 +2170,7 @@ const InstructorCourseEdit = () => {
                   "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "danger"
                     ? "bg-destructive/10 text-destructive"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                 )}
               >
                 <AlertTriangle className="size-4 shrink-0" aria-hidden />
@@ -2184,14 +2184,14 @@ const InstructorCourseEdit = () => {
         {/* Nội dung theo section đang chọn */}
         <div className="min-w-0 flex-1">
           {activeSection === "info" && canAccessInfo && (
-            <section className="rounded-md border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground">
                 Thông tin chung
               </h2>
               <FieldGroup className="mt-4">
                 {/* Locale config — advanced, collapsed into a summary row */}
-                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border-subtle bg-muted/30 px-3 py-2">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2">
+                  <div className="flex items-center gap-2 text-xs text-foreground-muted">
                     <span className="font-medium text-foreground">Ngôn ngữ hỗ trợ:</span>
                     {(["vi", "en"] as const).map((loc) => {
                       const enabled = supportedLocales.includes(loc);
@@ -2213,7 +2213,9 @@ const InstructorCourseEdit = () => {
                           }
                           className={cn(
                             "rounded border px-2 py-0.5 text-xs font-medium transition-colors",
-                            enabled ? "border-primary bg-primary/10 text-primary" : "border-border-subtle bg-background text-muted-foreground",
+                            enabled
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border-subtle bg-surface-base text-foreground-muted",
                           )}
                         >
                           {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
@@ -2221,12 +2223,12 @@ const InstructorCourseEdit = () => {
                       );
                     })}
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-foreground-muted">
                     <span className="font-medium text-foreground">Ngôn ngữ chính:</span>
                     <select
                       value={primaryContentLocale}
                       onChange={(e) => setPrimaryContentLocale(normalizeCourseLocale(e.target.value))}
-                      className="rounded border border-input bg-background px-2 py-0.5 text-xs outline-none"
+                      className="rounded border border-border bg-surface-base px-2 py-0.5 text-xs outline-none"
                     >
                       {supportedLocales.map((loc) => (
                         <option key={loc} value={loc}>{loc.toUpperCase()}</option>
@@ -2242,7 +2244,7 @@ const InstructorCourseEdit = () => {
                 <Field>
                   <FieldLabel>
                     {t("courseEdit.form.titleLabel")}
-                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                    <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                       {activeContentLocale.toUpperCase()}
                     </span>
                   </FieldLabel>
@@ -2265,7 +2267,7 @@ const InstructorCourseEdit = () => {
                 <Field>
                   <FieldLabel>
                     {t("courseEdit.form.shortDescriptionLabel")}
-                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                    <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                       {activeContentLocale.toUpperCase()}
                     </span>
                   </FieldLabel>
@@ -2283,11 +2285,11 @@ const InstructorCourseEdit = () => {
                 <Field>
                   <FieldLabel>
                     {t("courseEdit.form.descriptionLabel")}
-                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                    <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                       {activeContentLocale.toUpperCase()}
                     </span>
                   </FieldLabel>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-foreground-muted">
                     {t("courseEdit.form.descriptionMarkdownHint")}
                   </p>
                   <textarea
@@ -2295,18 +2297,18 @@ const InstructorCourseEdit = () => {
                     onChange={(e) =>
                       setContentForm((p) => ({ ...p, description: e.target.value }))
                     }
-                    className="min-h-[140px] w-full rounded border border-input bg-background px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-[140px] w-full rounded border border-border bg-surface-base px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     rows={4}
                   />
                 </Field>
                 <Field>
                   <FieldLabel>
                     {t("courseEdit.form.learningOutcomesLabel")}
-                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                    <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                       {activeContentLocale.toUpperCase()}
                     </span>
                   </FieldLabel>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-foreground-muted">
                     {t("courseEdit.form.learningOutcomesSubtitle")}
                   </p>
                   <div className="mt-3 space-y-2">
@@ -2367,7 +2369,7 @@ const InstructorCourseEdit = () => {
                         } as never),
                       )}
                     </FieldLabel>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground-muted">
                       {String(
                         t("courseEdit.coInstructors.hint" as never, {
                           defaultValue:
@@ -2445,7 +2447,7 @@ const InstructorCourseEdit = () => {
                       />
 
                       {loadingInstructorDirectory ? (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-foreground-muted">
                           {String(
                             t("courseEdit.coInstructors.loadingDirectory" as never, {
                               defaultValue: "Đang tải danh sách instructor…",
@@ -2467,14 +2469,14 @@ const InstructorCourseEdit = () => {
                             return (
                               <div
                                 key={cid}
-                                className="rounded-md border border-border-subtle bg-muted/20 p-3"
+                                className="rounded-md border border-border-subtle bg-surface-raised p-3"
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="min-w-0">
                                     <div className="text-sm font-medium text-foreground">
                                       {display}
                                     </div>
-                                    <div className="mt-0.5 text-xs text-muted-foreground">
+                                    <div className="mt-0.5 text-xs text-foreground-muted">
                                       {cid}
                                     </div>
                                   </div>
@@ -2504,7 +2506,7 @@ const InstructorCourseEdit = () => {
                                     return (
                                       <label
                                         key={item.key}
-                                        className="flex items-center gap-2 rounded-md border border-border-subtle bg-background px-3 py-2 text-sm"
+                                        className="flex items-center gap-2 rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm"
                                       >
                                         <input
                                           type="checkbox"
@@ -2548,7 +2550,7 @@ const InstructorCourseEdit = () => {
                       } as never),
                     )}
                   </FieldLabel>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-foreground-muted">
                     {String(
                       t("courseEdit.sponsors.hint" as never, {
                         defaultValue:
@@ -2573,7 +2575,7 @@ const InstructorCourseEdit = () => {
                           } as never),
                         )}
                       </Button>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-foreground-muted">
                         {String(
                           t("courseEdit.sponsors.countLabel" as never, {
                             defaultValue: "{{count}} sponsor",
@@ -2599,7 +2601,7 @@ const InstructorCourseEdit = () => {
                           return (
                             <div
                               key={sid || name}
-                              className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-border-subtle bg-background p-3"
+                              className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-border-subtle bg-surface-base p-3"
                             >
                               <div className="flex min-w-0 items-start gap-3">
                                 {logoSrc ? (
@@ -2608,10 +2610,10 @@ const InstructorCourseEdit = () => {
                                     alt={name}
                                     loading="lazy"
                                     decoding="async"
-                                    className="size-10 shrink-0 rounded-md border border-border-subtle bg-background object-contain"
+                                    className="size-10 shrink-0 rounded-md border border-border-subtle bg-surface-base object-contain"
                                   />
                                 ) : (
-                                  <div className="grid size-10 shrink-0 place-items-center rounded-md border border-border-subtle bg-muted/30 text-xs font-semibold text-muted-foreground">
+                                  <div className="grid size-10 shrink-0 place-items-center rounded-md border border-border-subtle bg-surface-raised text-xs font-semibold text-foreground-muted">
                                     {(name || "?").slice(0, 2).toUpperCase()}
                                   </div>
                                 )}
@@ -2631,7 +2633,7 @@ const InstructorCourseEdit = () => {
                                     </a>
                                   ) : null}
                                   {s.description ? (
-                                    <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+                                    <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-foreground-muted">
                                       {s.description}
                                     </p>
                                   ) : null}
@@ -2663,7 +2665,7 @@ const InstructorCourseEdit = () => {
                         })}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-foreground-muted">
                         {String(
                           t("courseEdit.sponsors.empty" as never, {
                             defaultValue: "Chưa có sponsor nào.",
@@ -2725,7 +2727,7 @@ const InstructorCourseEdit = () => {
                               <img
                                 src={sponsorForm.logo_url}
                                 alt=""
-                                className="size-10 rounded-md border border-border-subtle bg-background object-contain"
+                                className="size-10 rounded-md border border-border-subtle bg-surface-base object-contain"
                               />
                             ) : null}
                           </div>
@@ -2783,7 +2785,7 @@ const InstructorCourseEdit = () => {
                                 description: e.target.value,
                               }))
                             }
-                            className="min-h-[120px] w-full rounded border border-input bg-background px-3 py-2 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="min-h-[120px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                             rows={4}
                           />
                         </Field>
@@ -2825,7 +2827,7 @@ const InstructorCourseEdit = () => {
                       } as never),
                     )}
                   </FieldLabel>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-foreground-muted">
                     {String(
                       t("courseEdit.partners.hint" as never, {
                         defaultValue:
@@ -2851,7 +2853,7 @@ const InstructorCourseEdit = () => {
                           } as never),
                         )}
                       </Button>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-foreground-muted">
                         {String(
                           t("courseEdit.partners.countLabel" as never, {
                             defaultValue: "{{count}} partner",
@@ -2877,7 +2879,7 @@ const InstructorCourseEdit = () => {
                           return (
                             <div
                               key={pid || name}
-                              className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-border-subtle bg-background p-3"
+                              className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-border-subtle bg-surface-base p-3"
                             >
                               <div className="flex min-w-0 items-start gap-3">
                                 {logoSrc ? (
@@ -2886,10 +2888,10 @@ const InstructorCourseEdit = () => {
                                     alt={name}
                                     loading="lazy"
                                     decoding="async"
-                                    className="size-10 shrink-0 rounded-md border border-border-subtle bg-background object-contain"
+                                    className="size-10 shrink-0 rounded-md border border-border-subtle bg-surface-base object-contain"
                                   />
                                 ) : (
-                                  <div className="grid size-10 shrink-0 place-items-center rounded-md border border-border-subtle bg-muted/30 text-xs font-semibold text-muted-foreground">
+                                  <div className="grid size-10 shrink-0 place-items-center rounded-md border border-border-subtle bg-surface-raised text-xs font-semibold text-foreground-muted">
                                     {(name || "?").slice(0, 2).toUpperCase()}
                                   </div>
                                 )}
@@ -2909,7 +2911,7 @@ const InstructorCourseEdit = () => {
                                     </a>
                                   ) : null}
                                   {p.description ? (
-                                    <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+                                    <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-foreground-muted">
                                       {p.description}
                                     </p>
                                   ) : null}
@@ -2943,7 +2945,7 @@ const InstructorCourseEdit = () => {
                         })}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-foreground-muted">
                         {String(
                           t("courseEdit.partners.empty" as never, {
                             defaultValue: "Chưa có partner nào.",
@@ -3005,7 +3007,7 @@ const InstructorCourseEdit = () => {
                               <img
                                 src={partnerForm.logo_url}
                                 alt=""
-                                className="size-10 rounded-md border border-border-subtle bg-background object-contain"
+                                className="size-10 rounded-md border border-border-subtle bg-surface-base object-contain"
                               />
                             ) : null}
                           </div>
@@ -3060,7 +3062,7 @@ const InstructorCourseEdit = () => {
                                 description: e.target.value,
                               }))
                             }
-                            className="min-h-[120px] w-full rounded border border-input bg-background px-3 py-2 text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="min-h-[120px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                             rows={4}
                           />
                         </Field>
@@ -3139,7 +3141,7 @@ const InstructorCourseEdit = () => {
                           }))
                         }
                         disabled={!canManageBusinessSettings}
-                        className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                        className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:opacity-60"
                       >
                         {(
                           [
@@ -3153,12 +3155,12 @@ const InstructorCourseEdit = () => {
                         ))}
                       </select>
                       {!canManageBusinessSettings && (
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-foreground-muted">
                           Chỉ học vụ/admin được cập nhật phần sở hữu và doanh
                           thu.
                         </p>
                       )}
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-xs text-foreground-muted">
                         Hiện tại: {getCourseOwnerTypeLabel(form.owner_type)}.
                       </p>
                     </Field>
@@ -3179,7 +3181,7 @@ const InstructorCourseEdit = () => {
                               }))
                             }
                           />
-                          <p className="mt-1 text-xs text-muted-foreground">
+                          <p className="mt-1 text-xs text-foreground-muted">
                             Giảng viên nhận{" "}
                             {100 -
                               Number(form.platform_revenue_share_percent || 0)}
@@ -3200,10 +3202,10 @@ const InstructorCourseEdit = () => {
                             }
                             disabled={!canManageBusinessSettings}
                             rows={4}
-                            className="min-h-[90px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                            className="min-h-[90px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:opacity-60"
                             placeholder={t("courseEdit.form.partnerTransferPlaceholder")}
                           />
-                          <p className="mt-1 text-xs text-muted-foreground">
+                          <p className="mt-1 text-xs text-foreground-muted">
                             Hiển thị cho giảng viên đối tác trong mục Hoá đơn &
                             thanh toán.
                           </p>
@@ -3240,7 +3242,7 @@ const InstructorCourseEdit = () => {
                               ))}
                             </div>
                           ) : (
-                            <p className="mt-1 text-xs text-muted-foreground">
+                            <p className="mt-1 text-xs text-foreground-muted">
                               Chưa có tài liệu hợp đồng.
                             </p>
                           )}
@@ -3277,7 +3279,7 @@ const InstructorCourseEdit = () => {
                               ))}
                             </div>
                           ) : (
-                            <p className="mt-1 text-xs text-muted-foreground">
+                            <p className="mt-1 text-xs text-foreground-muted">
                               Chưa có tài liệu hoá đơn.
                             </p>
                           )}
@@ -3296,7 +3298,7 @@ const InstructorCourseEdit = () => {
                         level: e.target.value as CourseLevel,
                       }))
                     }
-                    className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   >
                     {(
                       [
@@ -3320,7 +3322,7 @@ const InstructorCourseEdit = () => {
                       onChange={(e) =>
                         setForm((p) => ({ ...p, published: e.target.checked }))
                       }
-                      className="rounded border-input"
+                      className="rounded border-border"
                     />
                     <span className="text-sm font-medium">
                       {t("courseEdit.publishing.publishedHint")}
@@ -3338,7 +3340,7 @@ const InstructorCourseEdit = () => {
                           is_updating: e.target.checked,
                         }))
                       }
-                      className="rounded border-input"
+                      className="rounded border-border"
                     />
                     <span className="text-sm font-medium">
                       {t("courseEdit.publishing.updatingHint")}
@@ -3357,11 +3359,11 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "pricing" && canAccessPricing && (
-            <section className="rounded-md border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
                 <DollarSign className="size-5" aria-hidden /> Giá & thanh toán
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-foreground-muted">
                 Thiết lập mô hình truy cập, giá khoá học, phí chứng nhận và mã
                 giảm giá.
               </p>
@@ -3377,7 +3379,7 @@ const InstructorCourseEdit = () => {
                         access_model: e.target.value as CourseAccessModel,
                       }))
                     }
-                    className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   >
                     {(
                       [
@@ -3411,7 +3413,7 @@ const InstructorCourseEdit = () => {
                           }))
                         }
                       />
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-xs text-foreground-muted">
                         Học viên chưa thanh toán chỉ xem được bài có bật "Học
                         thử miễn phí".
                       </p>
@@ -3431,7 +3433,7 @@ const InstructorCourseEdit = () => {
                         }
                         placeholder={t("courseEdit.pricing.promoPricePlaceholder")}
                       />
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-xs text-foreground-muted">
                         Giá khuyến mãi phải nhỏ hơn giá gốc.
                       </p>
                     </Field>
@@ -3448,18 +3450,18 @@ const InstructorCourseEdit = () => {
                         }
                         placeholder="2026-03-31T23:59:59.000Z"
                       />
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-xs text-foreground-muted">
                         Để trống nếu không hẹn giờ.
                       </p>
                     </Field>
 
-                    <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
+                    <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="text-sm font-medium text-foreground">
                             Mã giảm giá & khuyến mãi
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-foreground-muted">
                             {t("courseEdit.discounts.createTitle")}
                             thời gian/lượt dùng.
                           </p>
@@ -3484,14 +3486,14 @@ const InstructorCourseEdit = () => {
                       </div>
 
                       {discounts.length === 0 ? (
-                        <p className="mt-3 text-xs text-muted-foreground">
+                        <p className="mt-3 text-xs text-foreground-muted">
                           Chưa có mã giảm giá nào.
                         </p>
                       ) : (
-                        <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-background">
+                        <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-surface-base">
                           <table className="w-full text-left text-xs">
                             <thead>
-                              <tr className="border-b border-border-subtle bg-muted/40">
+                              <tr className="border-b border-border-subtle bg-surface-raised">
                                 <th className="px-3 py-2 font-medium text-foreground">
                                   Code
                                 </th>
@@ -3518,7 +3520,7 @@ const InstructorCourseEdit = () => {
                                   <td className="px-3 py-2 font-mono text-foreground">
                                     {d.code}
                                   </td>
-                                  <td className="px-3 py-2 text-muted-foreground">
+                                  <td className="px-3 py-2 text-foreground-muted">
                                     {d.type === "percent" ? "%" : "VND"}
                                   </td>
                                   <td className="px-3 py-2 text-foreground">
@@ -3532,7 +3534,7 @@ const InstructorCourseEdit = () => {
                                         Active
                                       </span>
                                     ) : (
-                                      <span className="text-muted-foreground text-xs">
+                                      <span className="text-foreground-muted text-xs">
                                         Off
                                       </span>
                                     )}
@@ -3594,7 +3596,7 @@ const InstructorCourseEdit = () => {
 
                       <div className="mt-4 grid gap-3 md:grid-cols-2">
                         <div>
-                          <label className="block text-xs font-medium text-muted-foreground mb-1">
+                          <label className="mb-1 block text-xs font-medium text-foreground-muted">
                             Code
                           </label>
                           <Input
@@ -3610,7 +3612,7 @@ const InstructorCourseEdit = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-xs font-medium text-muted-foreground mb-1">
+                            <label className="mb-1 block text-xs font-medium text-foreground-muted">
                               Loại
                             </label>
                             <select
@@ -3621,14 +3623,14 @@ const InstructorCourseEdit = () => {
                                   type: e.target.value as CourseDiscountType,
                                 }))
                               }
-                              className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                             >
                               <option value="percent">%</option>
                               <option value="amount_vnd">VND</option>
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-muted-foreground mb-1">
+                            <label className="mb-1 block text-xs font-medium text-foreground-muted">
                               Giá trị
                             </label>
                             <Input
@@ -3647,7 +3649,7 @@ const InstructorCourseEdit = () => {
                           </div>
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-muted-foreground mb-1">
+                          <label className="mb-1 block text-xs font-medium text-foreground-muted">
                             Bắt đầu (ISO, tuỳ chọn)
                           </label>
                           <Input
@@ -3662,7 +3664,7 @@ const InstructorCourseEdit = () => {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-muted-foreground mb-1">
+                          <label className="mb-1 block text-xs font-medium text-foreground-muted">
                             Kết thúc (ISO, tuỳ chọn)
                           </label>
                           <Input
@@ -3677,7 +3679,7 @@ const InstructorCourseEdit = () => {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-muted-foreground mb-1">
+                          <label className="mb-1 block text-xs font-medium text-foreground-muted">
                             Giới hạn lượt dùng (tuỳ chọn)
                           </label>
                           <Input
@@ -3768,7 +3770,7 @@ const InstructorCourseEdit = () => {
                         }))
                       }
                     />
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground-muted">
                       Toàn bộ bài học vẫn miễn phí; khoản phí này áp dụng khi
                       học viên muốn nộp bài thu hoạch để xét chứng nhận.
                     </p>
@@ -3789,14 +3791,14 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "content" && canAccessContent && (
-            <section className="rounded-md border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
                   <List className="size-5" /> Nội dung khoá học
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   {reorderingLessons && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-foreground-muted">
                       Đang lưu thứ tự bài học...
                     </span>
                   )}
@@ -3813,7 +3815,7 @@ const InstructorCourseEdit = () => {
                   </Button>
                 </div>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">
+              <p className="mt-2 text-xs text-foreground-muted">
                 Kéo biểu tượng chấm để đổi thứ tự bài trong từng chương, hoặc
                 dùng mũi tên lên/xuống khi cần.
               </p>
@@ -3828,15 +3830,15 @@ const InstructorCourseEdit = () => {
                 {lessonsBySection.map(({ section, lessons: secLessons }) => (
                   <div
                     key={section.id}
-                    className="overflow-hidden rounded-md border border-border-subtle bg-card"
+                    className="overflow-hidden rounded-md border border-border-subtle bg-surface-base"
                   >
-                    <div className="flex items-center justify-between border-b border-border-subtle bg-muted/40 px-4 py-2">
+                    <div className="flex items-center justify-between border-b border-border-subtle bg-surface-raised px-4 py-2">
                       <div className="min-w-0">
                         <span className="font-medium text-foreground">
                           {section.title}
                         </span>
                         {section.description?.trim() ? (
-                          <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                          <p className="mt-1 line-clamp-2 text-xs text-foreground-muted">
                             {section.description}
                           </p>
                         ) : null}
@@ -3905,11 +3907,11 @@ const InstructorCourseEdit = () => {
                                 onDragEnd={clearLessonDragState}
                                 aria-label={`Kéo để đổi thứ tự bài ${lesson.title}`}
                                 title={t("courseEdit.tooltips.dragReorder")}
-                                className="flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-muted-foreground transition hover:border-border-subtle hover:bg-muted hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-foreground-muted transition hover:border-border-subtle hover:bg-surface-raised hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 <GripVertical className="size-4" aria-hidden />
                               </button>
-                              <PlayCircle className="size-4 shrink-0 text-muted-foreground" />
+                              <PlayCircle className="size-4 shrink-0 text-foreground-muted" />
                               <span className="text-sm text-foreground truncate">
                                 {lesson.title}
                               </span>
@@ -3924,27 +3926,27 @@ const InstructorCourseEdit = () => {
                                   {t("courseEdit.lessons.draftBadge")}
                                 </span>
                               ) : null}
-                              <span className="text-xs text-muted-foreground shrink-0">
+                              <span className="shrink-0 text-xs text-foreground-muted">
                                 {formatDuration(lesson.duration_seconds)}
                               </span>
                               </div>
                               {lesson.short_description?.trim() ? (
-                                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                <p className="mt-1 line-clamp-2 text-xs text-foreground-muted">
                                   {lesson.short_description}
                                 </p>
                               ) : null}
 
                               {expandedLessonIds.has(lesson.id) ? (
-                                <div className="mt-3 rounded-md border border-border-subtle bg-muted/20 p-3">
+                                <div className="mt-3 rounded-md border border-border-subtle bg-surface-raised p-3">
                                   {lesson.description_markdown?.trim() ? (
                                     <Markdown content={lesson.description_markdown} />
                                   ) : null}
                                   {lesson.resources?.length ? (
                                     <div className="mt-3">
-                                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                      <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                                         {t("courseEdit.lessons.resourcesLabel")}
                                       </p>
-                                      <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                                      <ul className="mt-2 space-y-1 text-sm text-foreground-muted">
                                         {lesson.resources
                                           .map((r) => ({
                                             title: (r.title ?? "").trim(),
@@ -4029,7 +4031,7 @@ const InstructorCourseEdit = () => {
                                 <ArrowDownToLine className="size-4" aria-hidden />
                               </Button>
                               {form.access_model === "paid_upfront" && (
-                                <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                                <label className="inline-flex items-center gap-2 text-xs text-foreground-muted">
                                   <input
                                     type="checkbox"
                                     checked={!!lesson.is_preview_free}
@@ -4040,7 +4042,7 @@ const InstructorCourseEdit = () => {
                                         e.target.checked,
                                       )
                                     }
-                                    className="rounded border-input"
+                                    className="rounded border-border"
                                   />
                                   Học thử miễn phí
                                 </label>
@@ -4084,7 +4086,7 @@ const InstructorCourseEdit = () => {
               </div>
 
               <div className="mt-4 rounded-md border border-dashed border-border-subtle p-4">
-                <p className="text-sm text-muted-foreground mb-2">
+                <p className="text-sm text-foreground-muted mb-2">
                   Thêm chương mới
                 </p>
                 <div className="grid gap-2">
@@ -4098,7 +4100,7 @@ const InstructorCourseEdit = () => {
                     value={newSectionDescription}
                     onChange={(e) => setNewSectionDescription(e.target.value)}
                     placeholder={t("courseEdit.sections.descriptionPlaceholder")}
-                    className="min-h-[72px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-[72px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     rows={3}
                   />
                   <Button
@@ -4119,7 +4121,7 @@ const InstructorCourseEdit = () => {
               <DialogHeader>
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle>{t("courseEdit.sections.editTitle")}</DialogTitle>
-                  <div className="flex gap-1 rounded-lg border border-border-subtle bg-muted/50 p-1">
+                  <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
                     {supportedLocales.map((loc) => (
                       <button
                         key={loc}
@@ -4128,8 +4130,8 @@ const InstructorCourseEdit = () => {
                         className={cn(
                           "flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
                           dialogSectionLocale === loc
-                            ? "bg-card text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground",
+                            ? "bg-surface-base text-foreground"
+                            : "text-foreground-muted hover:text-foreground",
                         )}
                       >
                         {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
@@ -4142,7 +4144,7 @@ const InstructorCourseEdit = () => {
                 <Field>
                   <FieldLabel>
                     {t("courseEdit.sections.titleLabel")}
-                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                    <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                       {dialogSectionLocale.toUpperCase()}
                     </span>
                   </FieldLabel>
@@ -4154,7 +4156,7 @@ const InstructorCourseEdit = () => {
                 <Field>
                   <FieldLabel>
                     {t("courseEdit.sections.descriptionLabel")}
-                    <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                    <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                       {dialogSectionLocale.toUpperCase()}
                     </span>
                   </FieldLabel>
@@ -4162,7 +4164,7 @@ const InstructorCourseEdit = () => {
                     value={editingSectionDescription}
                     onChange={(e) => setEditingSectionDescription(e.target.value)}
                     placeholder={t("courseEdit.sections.descriptionPlaceholder")}
-                    className="min-h-[100px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-[100px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     rows={4}
                   />
                 </Field>
@@ -4181,10 +4183,10 @@ const InstructorCourseEdit = () => {
           <Dialog open={!!editingLesson} onOpenChange={(open) => !open && setEditingLesson(null)}>
             <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden p-0">
               <div className="flex max-h-[85vh] flex-col">
-                <DialogHeader className="sticky top-0 z-10 border-b border-border-subtle bg-background/95 p-4 backdrop-blur">
+                <DialogHeader className="sticky top-0 z-10 border-b border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
                   <div className="flex items-center justify-between gap-3">
                     <DialogTitle>{t("courseEdit.lessons.editTitle")}</DialogTitle>
-                    <div className="flex gap-1 rounded-lg border border-border-subtle bg-muted/50 p-1">
+                    <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
                       {supportedLocales.map((loc) => (
                         <button
                           key={loc}
@@ -4193,8 +4195,8 @@ const InstructorCourseEdit = () => {
                           className={cn(
                             "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-colors",
                             dialogLessonLocale === loc
-                              ? "bg-card text-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground",
+                              ? "bg-surface-base text-foreground"
+                              : "text-foreground-muted hover:text-foreground",
                           )}
                         >
                           {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
@@ -4217,7 +4219,7 @@ const InstructorCourseEdit = () => {
                   <Field>
                     <FieldLabel>
                       {t("courseEdit.lessons.titleLabel")}
-                      <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                      <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {dialogLessonLocale.toUpperCase()}
                       </span>
                     </FieldLabel>
@@ -4236,7 +4238,7 @@ const InstructorCourseEdit = () => {
                           normalizeCourseLocale(e.target.value),
                         )
                       }
-                      className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     >
                       {(["vi", "en"] as const).map((loc) => (
                         <option key={loc} value={loc}>
@@ -4244,7 +4246,7 @@ const InstructorCourseEdit = () => {
                         </option>
                       ))}
                     </select>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground-muted">
                       {t("courseEdit.lessons.videoPrimaryLocaleHint" as never)}
                     </p>
                   </Field>
@@ -4254,11 +4256,11 @@ const InstructorCourseEdit = () => {
                         type="checkbox"
                         checked={editingLessonHasSubtitle}
                         onChange={(e) => setEditingLessonHasSubtitle(e.target.checked)}
-                        className="rounded border-input"
+                        className="rounded border-border"
                       />
                       <span>{t("courseEdit.lessons.hasSubtitleLabel" as never)}</span>
                     </label>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground-muted">
                       {t("courseEdit.lessons.subtitleHint" as never)}
                     </p>
                     {editingLessonHasSubtitle ? (
@@ -4281,7 +4283,7 @@ const InstructorCourseEdit = () => {
                                 "rounded-md border px-2 py-1 text-xs font-medium",
                                 active
                                   ? "border-primary bg-primary/10 text-primary"
-                                  : "border-border-subtle bg-background text-muted-foreground",
+                                  : "border-border-subtle bg-surface-base text-foreground-muted",
                               )}
                             >
                               {loc.toUpperCase()}
@@ -4294,7 +4296,7 @@ const InstructorCourseEdit = () => {
                   <Field>
                     <FieldLabel>
                       {t("courseEdit.lessons.shortDescriptionLabel")}
-                      <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                      <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {dialogLessonLocale.toUpperCase()}
                       </span>
                     </FieldLabel>
@@ -4307,17 +4309,17 @@ const InstructorCourseEdit = () => {
                   <Field>
                     <FieldLabel>
                       {t("courseEdit.lessons.markdownLabel")}
-                      <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                      <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {dialogLessonLocale.toUpperCase()}
                       </span>
                     </FieldLabel>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground-muted">
                       {t("courseEdit.lessons.markdownHint")}
                     </p>
                     <textarea
                       value={editingLessonMarkdown}
                       onChange={(e) => setEditingLessonMarkdown(e.target.value)}
-                      className="min-h-[220px] w-full rounded border border-input bg-background px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="min-h-[220px] w-full rounded border border-border bg-surface-base px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       rows={10}
                     />
                   </Field>
@@ -4381,12 +4383,12 @@ const InstructorCourseEdit = () => {
                   </Field>
                 </div>
                 <div className="space-y-4 md:sticky md:top-4 md:self-start">
-                  <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
+                    <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                       {t("courseEdit.lessons.previewTitle")}
                     </p>
                     {editingLessonShortDescription.trim() ? (
-                      <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-foreground-muted">
                         {editingLessonShortDescription.trim()}
                       </p>
                     ) : null}
@@ -4395,7 +4397,7 @@ const InstructorCourseEdit = () => {
                         <Markdown content={editingLessonMarkdown} />
                       </div>
                     ) : (
-                      <p className="mt-3 text-sm text-muted-foreground">
+                      <p className="mt-3 text-sm text-foreground-muted">
                         {t("courseEdit.lessons.previewEmpty")}
                       </p>
                     )}
@@ -4406,7 +4408,7 @@ const InstructorCourseEdit = () => {
                         <p className="text-sm font-medium text-foreground">
                           {t("courseEdit.lessons.resourcesLabel")}
                         </p>
-                        <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                        <ul className="mt-2 space-y-1 text-sm text-foreground-muted">
                           {editingLessonResources
                             .map((r) => ({ title: r.title.trim(), url: r.url.trim() }))
                             .filter((r) => r.title && r.url)
@@ -4429,7 +4431,7 @@ const InstructorCourseEdit = () => {
                 </div>
                   </div>
                 </div>
-                <DialogFooter className="sticky bottom-0 z-10 border-t border-border-subtle bg-background/95 p-4 backdrop-blur">
+                <DialogFooter className="sticky bottom-0 z-10 border-t border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
                   <Button type="button" variant="outline" onClick={() => setEditingLesson(null)}>
                     {t("courseEdit.lessons.cancel")}
                   </Button>
@@ -4447,7 +4449,7 @@ const InstructorCourseEdit = () => {
           >
             <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden p-0">
               <div className="flex max-h-[85vh] flex-col">
-                <DialogHeader className="sticky top-0 z-10 border-b border-border-subtle bg-background/95 p-4 backdrop-blur">
+                <DialogHeader className="sticky top-0 z-10 border-b border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
                   <DialogTitle>{t("courseEdit.lessons.createTitle")}</DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 overflow-y-auto p-4">
@@ -4468,7 +4470,7 @@ const InstructorCourseEdit = () => {
                       onChange={(e) =>
                         setDefaultVideoPrimaryLocale(normalizeCourseLocale(e.target.value))
                       }
-                      className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     >
                       {(["vi", "en"] as const).map((loc) => (
                         <option key={loc} value={loc}>
@@ -4476,7 +4478,7 @@ const InstructorCourseEdit = () => {
                         </option>
                       ))}
                     </select>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground-muted">
                       {t("courseEdit.lessons.videoPrimaryLocaleHint" as never)}
                     </p>
                   </Field>
@@ -4510,30 +4512,30 @@ const InstructorCourseEdit = () => {
                       }}
                       placeholder={t("courseEdit.content.lessonMinutesPlaceholder")}
                     />
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground-muted">
                       {t("courseEdit.lessons.durationHint")}
                     </p>
                   </Field>
                   {form.access_model === "paid_upfront" && (
-                    <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                    <label className="inline-flex items-center gap-2 text-xs text-foreground-muted">
                       <input
                         type="checkbox"
                         checked={newLessonIsPreviewFree}
                         onChange={(e) => setNewLessonIsPreviewFree(e.target.checked)}
-                        className="rounded border-input"
+                        className="rounded border-border"
                       />
                       {t("courseEdit.lessons.previewFreeLabel")}
                     </label>
                   )}
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.markdownLabel")}</FieldLabel>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground-muted">
                       {t("courseEdit.lessons.markdownHint")}
                     </p>
                     <textarea
                       value={newLessonMarkdown}
                       onChange={(e) => setNewLessonMarkdown(e.target.value)}
-                      className="min-h-[220px] w-full rounded border border-input bg-background px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="min-h-[220px] w-full rounded border border-border bg-surface-base px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       rows={10}
                     />
                   </Field>
@@ -4597,12 +4599,12 @@ const InstructorCourseEdit = () => {
                   </Field>
                 </div>
                 <div className="space-y-4 md:sticky md:top-4 md:self-start">
-                  <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
+                    <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                       {t("courseEdit.lessons.previewTitle")}
                     </p>
                     {newLessonShortDescription.trim() ? (
-                      <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-foreground-muted">
                         {newLessonShortDescription.trim()}
                       </p>
                     ) : null}
@@ -4611,7 +4613,7 @@ const InstructorCourseEdit = () => {
                         <Markdown content={newLessonMarkdown} />
                       </div>
                     ) : (
-                      <p className="mt-3 text-sm text-muted-foreground">
+                      <p className="mt-3 text-sm text-foreground-muted">
                         {t("courseEdit.lessons.previewEmpty")}
                       </p>
                     )}
@@ -4622,7 +4624,7 @@ const InstructorCourseEdit = () => {
                         <p className="text-sm font-medium text-foreground">
                           {t("courseEdit.lessons.resourcesLabel")}
                         </p>
-                        <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                        <ul className="mt-2 space-y-1 text-sm text-foreground-muted">
                           {newLessonResources
                             .map((r) => ({ title: r.title.trim(), url: r.url.trim() }))
                             .filter((r) => r.title && r.url)
@@ -4645,7 +4647,7 @@ const InstructorCourseEdit = () => {
                 </div>
                   </div>
                 </div>
-                <DialogFooter className="sticky bottom-0 z-10 border-t border-border-subtle bg-background/95 p-4 backdrop-blur">
+                <DialogFooter className="sticky bottom-0 z-10 border-t border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
                   <Button
                     type="button"
                     variant="outline"
@@ -4668,7 +4670,7 @@ const InstructorCourseEdit = () => {
           </Dialog>
 
           {activeSection === "assignments" && canAccessAssignments && (
-            <section className="rounded-md border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
                 <FileText className="size-5" /> Bài tập cuối khoá
               </h2>
@@ -4680,12 +4682,12 @@ const InstructorCourseEdit = () => {
                   tích hợp sau).
                 </p>
               )}
-              <p className="mb-4 text-sm text-muted-foreground">
+              <p className="mb-4 text-sm text-foreground-muted">
                 Nếu có, học viên phải nộp và được duyệt mới đủ điều kiện nhận
                 chứng nhận.
               </p>
 
-              <div className="mb-8 rounded-md border border-border-subtle bg-muted/20 p-4">
+              <div className="mb-8 rounded-md border border-border-subtle bg-surface-raised p-4">
                 <h3 className="text-sm font-medium text-foreground mb-3">
                   Cấu hình bài tập
                 </h3>
@@ -4714,7 +4716,7 @@ const InstructorCourseEdit = () => {
                           final_assignment_description: e.target.value,
                         }))
                       }
-                      className="min-h-[80px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="min-h-[80px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       rows={3}
                     />
                   </Field>
@@ -4729,7 +4731,7 @@ const InstructorCourseEdit = () => {
                           final_assignment_instructions: e.target.value,
                         }))
                       }
-                      className="min-h-[60px] w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="min-h-[60px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       rows={2}
                     />
                   </Field>
@@ -4750,14 +4752,14 @@ const InstructorCourseEdit = () => {
               {(contentForm.final_assignment_title || course.final_assignment_title) ? (
                 <>
                   {submissions.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4">
+                    <p className="text-sm text-foreground-muted py-4">
                       Chưa có bài nộp nào.
                     </p>
                   ) : (
                     <div className="overflow-hidden rounded-md border border-border-subtle">
                       <table className="w-full text-left text-sm">
                         <thead>
-                          <tr className="border-b border-border-subtle bg-muted/40">
+                          <tr className="border-b border-border-subtle bg-surface-raised">
                             <th className="px-4 py-3 font-medium text-foreground">
                               Học viên
                             </th>
@@ -4782,29 +4784,29 @@ const InstructorCourseEdit = () => {
                             return (
                               <tr
                                 key={sub.id}
-                                className="border-b border-border-subtle last:border-b-0 hover:bg-muted/30"
+                                className="border-b border-border-subtle last:border-b-0 hover:bg-surface-raised"
                               >
                                 <td className="px-4 py-3">
                                   <div>
                                     <span className="font-medium text-foreground">
                                       {profile?.full_name || "—"}
                                     </span>
-                                    <span className="block text-xs text-muted-foreground">
+                                    <span className="block text-xs text-foreground-muted">
                                       {prog}% bài học
                                     </span>
                                   </div>
                                 </td>
                                 <td className="px-4 py-3 max-w-[200px]">
-                                  <p className="line-clamp-2 text-muted-foreground">
+                                  <p className="line-clamp-2 text-foreground-muted">
                                     {sub.content || "—"}
                                   </p>
                                   {sub.file_urls?.length ? (
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-foreground-muted">
                                       {sub.file_urls.length} file đính kèm
                                     </span>
                                   ) : null}
                                 </td>
-                                <td className="px-4 py-3 text-muted-foreground">
+                                <td className="px-4 py-3 text-foreground-muted">
                                   {new Date(
                                     sub.submitted_at,
                                   ).toLocaleDateString(intlLocale())}
@@ -4874,7 +4876,7 @@ const InstructorCourseEdit = () => {
                   )}
                 </>
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-foreground-muted">
                   Chưa có bài nộp nào. Thêm tiêu đề bài tập ở mục "Cấu hình bài
                   tập" phía trên và lưu để bật yêu cầu nộp bài.
                 </p>
@@ -4883,12 +4885,12 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "certificate" && canAccessCertificate && (
-            <section className="rounded-md border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
                 <Award className="size-5" aria-hidden /> Template
                 chứng nhận
               </h2>
-              <p className="mb-4 text-sm text-muted-foreground">
+              <p className="mb-4 text-sm text-foreground-muted">
                 Tải lên ảnh template chứng nhận (PNG/JPG). Tên học viên sẽ được
                 hiển thị tại vị trí bạn chọn (theo % từ trái và từ trên).
               </p>
@@ -4977,11 +4979,11 @@ const InstructorCourseEdit = () => {
                 </Button>
               </div>
 
-              <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
+              <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
                 <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
                   <FileText className="size-4" /> Hướng dẫn tạo template
                 </h3>
-                <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
+                <ul className="list-inside list-disc space-y-1 text-sm text-foreground-muted">
                   <li>
                     Kích thước khuyến nghị: 1200×800 px (tỉ lệ 3:2) hoặc A4.
                   </li>
@@ -4999,7 +5001,7 @@ const InstructorCourseEdit = () => {
                   <a
                     href="/certificate-template-sample.svg"
                     download="certificate-template-sample.svg"
-                    className="inline-flex items-center gap-2 rounded-md border border-border-subtle bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                    className="inline-flex items-center gap-2 rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-raised"
                   >
                     <Download className="size-4" aria-hidden /> Tải template mẫu (SVG)
                   </a>
@@ -5009,19 +5011,19 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "students" && canAccessStudents && (
-            <section className="rounded-md border border-border-subtle bg-card p-6">
+            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
                 <Users className="size-5" /> Quản lý học viên
               </h2>
               {enrollments.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4">
+                <p className="text-sm text-foreground-muted py-4">
                   Chưa có học viên nào ghi danh vào khoá học này.
                 </p>
               ) : (
                 <div className="overflow-hidden rounded-md border border-border-subtle">
                   <table className="w-full text-left text-sm">
                     <thead>
-                      <tr className="border-b border-border-subtle bg-muted/40">
+                      <tr className="border-b border-border-subtle bg-surface-raised">
                         <th className="px-4 py-3 font-medium text-foreground">
                           Học viên
                         </th>
@@ -5059,7 +5061,7 @@ const InstructorCourseEdit = () => {
                         return (
                           <tr
                             key={e.id}
-                            className="border-b border-border-subtle last:border-b-0 hover:bg-muted/30"
+                            className="border-b border-border-subtle last:border-b-0 hover:bg-surface-raised"
                           >
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
@@ -5070,7 +5072,7 @@ const InstructorCourseEdit = () => {
                                     className="h-8 w-8 rounded-full object-cover"
                                   />
                                 ) : (
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium">
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-raised text-foreground-muted text-xs font-medium">
                                     {(profile?.full_name || e.user_id)
                                       .charAt(0)
                                       .toUpperCase()}
@@ -5081,7 +5083,7 @@ const InstructorCourseEdit = () => {
                                 </span>
                               </div>
                             </td>
-                            <td className="px-4 py-3 text-muted-foreground">
+                            <td className="px-4 py-3 text-foreground-muted">
                               {profile?.email || "—"}
                             </td>
                             <td className="px-4 py-3">
@@ -5104,12 +5106,12 @@ const InstructorCourseEdit = () => {
                                     </span>
                                   )
                                 ) : (
-                                  <span className="text-muted-foreground text-xs">
+                                  <span className="text-foreground-muted text-xs">
                                     Chưa nộp
                                   </span>
                                 )
                               ) : (
-                                <span className="text-muted-foreground text-xs">
+                                <span className="text-foreground-muted text-xs">
                                   —
                                 </span>
                               )}
@@ -5120,7 +5122,7 @@ const InstructorCourseEdit = () => {
                                   <CheckCircle2 className="size-3.5" aria-hidden /> Đã cấp
                                 </span>
                               ) : (
-                                <span className="text-muted-foreground text-xs">
+                                <span className="text-foreground-muted text-xs">
                                   Chưa đủ điều kiện
                                 </span>
                               )}
@@ -5132,7 +5134,7 @@ const InstructorCourseEdit = () => {
                                     Trả phí ·{" "}
                                     {formatVndPrice(e.paid_amount_vnd)}
                                   </div>
-                                  <div className="text-xs text-muted-foreground">
+                                  <div className="text-xs text-foreground-muted">
                                     {e.paid_provider
                                       ? `Provider: ${e.paid_provider}`
                                       : "Provider: —"}
@@ -5142,19 +5144,19 @@ const InstructorCourseEdit = () => {
                                   </div>
                                 </div>
                               ) : (
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-foreground-muted">
                                   Miễn phí / chưa ghi nhận
                                 </span>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-muted-foreground">
+                            <td className="px-4 py-3 text-foreground-muted">
                               {e.enrolled_at
                                 ? new Date(e.enrolled_at).toLocaleDateString(
                                     "vi-VN",
                                   )
                                 : "—"}
                             </td>
-                            <td className="px-4 py-3 text-muted-foreground">
+                            <td className="px-4 py-3 text-foreground-muted">
                               {e.last_accessed_at
                                 ? new Date(
                                     e.last_accessed_at,
@@ -5172,11 +5174,11 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "danger" && canAccessDanger && (
-            <section className="rounded-md border border-destructive/30 bg-card p-6">
+            <section className="rounded-md border border-destructive/30 bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
                 <AlertTriangle className="size-5" aria-hidden /> Vùng nguy hiểm
               </h2>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="text-sm text-foreground-muted mb-4">
                 Xoá khoá học sẽ xoá toàn bộ nội dung (chương, bài học). Hành
                 động này không thể hoàn tác.
               </p>
@@ -5196,7 +5198,7 @@ const InstructorCourseEdit = () => {
                   <DialogHeader>
                     <DialogTitle>{t("courseEdit.danger.deleteCourseTitle")}</DialogTitle>
                   </DialogHeader>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-foreground-muted">
                     Toàn bộ nội dung (chương, bài học) sẽ bị xoá. Hành động này
                     không thể hoàn tác.
                   </p>

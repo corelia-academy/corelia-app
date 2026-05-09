@@ -81,7 +81,7 @@ export function LoginForgotPasswordSection({
         <button
           type="button"
           onClick={onBackArrow}
-          className="font-medium underline underline-offset-2 text-muted-foreground hover:text-foreground"
+          className="font-medium underline underline-offset-2 text-foreground-muted transition-colors duration-150 hover:text-foreground"
         >
           {t("login.forgotPassword.backArrow")}
         </button>

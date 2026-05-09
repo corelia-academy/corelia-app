@@ -24,24 +24,28 @@
 
 ---
 
-## 1. Color Tokens
+## 1. Color Tokens (Corelia DS v2)
 
-| Use case                               | Token                                            |
-| -------------------------------------- | ------------------------------------------------ |
-| Page bg                                | `bg-background`                                  |
-| Card bg                                | `bg-card`                                        |
-| Text chính                             | `text-foreground`                                |
-| Text phụ / hint                        | `text-muted-foreground`                          |
-| Primary CTA                            | `bg-primary text-primary-foreground`             |
-| Primary container (nhẹ)                | `bg-primary-container text-on-primary-container` |
-| Border default                         | `border-border`                                  |
-| Border nhẹ (divider trong content dày) | `border-border-subtle`                           |
-| Error                                  | `text-destructive` / `bg-destructive`            |
-| Success                                | `text-success` / `bg-success`                    |
-| Warning                                | `text-warning` / `bg-warning`                    |
+| Use case | Token |
+| --- | --- |
+| Page bg | `bg-surface-base` |
+| Raised surface | `bg-surface-raised` |
+| Overlay surface | `bg-surface-overlay` |
+| Float surface (modal/sheet/dropdown) | `bg-surface-float` |
+| Text chính | `text-foreground` |
+| Text phụ / hint | `text-foreground-muted` |
+| Text subtle | `text-foreground-subtle` |
+| Primary CTA | `bg-primary text-primary-foreground` |
+| Primary muted / tonal | `bg-primary-muted text-primary` |
+| Border default | `border-border` |
+| Border nhẹ | `border-border-subtle` |
+| Border mạnh | `border-border-strong` |
+| Error | `text-destructive` / `bg-destructive` / `bg-destructive-muted` |
+| Success | `text-success` / `bg-success` / `bg-success-muted` |
+| Warning | `text-warning` / `bg-warning` / `bg-warning-muted` |
 
-**Depth scale (dark mode tăng dần độ sáng):**
-`bg-background` → `bg-card` → `bg-muted` → `bg-secondary`
+**Depth scale (DS v2):**
+`bg-surface-base` → `bg-surface-raised` → `bg-surface-overlay` → `bg-surface-float`
 
 ---
 
@@ -53,8 +57,8 @@
 | H2      | `text-lg font-semibold`                                                 | Section / card title |
 | Label   | `text-sm font-medium`                                                   | Field label          |
 | Body    | `text-sm leading-relaxed`                                               | Nội dung             |
-| Caption | `text-xs text-muted-foreground`                                         | Metadata, hint       |
-| Eyebrow | `text-xs font-semibold uppercase tracking-widest text-muted-foreground` | Nhãn nhỏ trên H1/H2  |
+| Caption | `text-xs text-foreground-muted`                                         | Metadata, hint       |
+| Eyebrow | `text-xs font-semibold uppercase tracking-widest text-foreground-muted` | Nhãn nhỏ trên H1/H2  |
 
 - Tối đa 2 font-weight / màn hình.
 - ALL CAPS chỉ dùng cho Eyebrow.
@@ -87,14 +91,9 @@
 
 ---
 
-## 5. Shadow
+## 5. Shadow (DS v2)
 
-| Class         | Dùng cho                           |
-| ------------- | ---------------------------------- |
-| `shadow-none` | Card lồng card (phân cấp bằng màu) |
-| `shadow-sm`   | Card default trên page             |
-| `shadow-md`   | Card hover, floating element       |
-| `shadow-lg`   | Modal, popover, dropdown           |
+DS v2 ưu tiên **surface elevation** thay vì shadow. Dùng `bg-surface-*` + border.
 
 ---
 
@@ -119,7 +118,7 @@
 | 640–1024px | 2 cột             | `px-6`  |
 | >1024px    | Sidebar + content | `px-8`  |
 
-- Container: `max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8`
+- Container: `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8`
 - Grid list: `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4`
 - Mobile touch target ≥ 44×44px.
 
@@ -169,13 +168,13 @@ Reduced-motion handled ở global CSS — không animate ở component nếu use
 ### Filter Pill (interactive, multi-select)
 - Luôn `rounded-full px-3 py-1 text-sm font-medium transition-colors duration-150`.
 - Active: `bg-primary/10 text-primary border border-primary/20`
-- Default: `bg-transparent text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground`
+- Default: `bg-transparent text-foreground-muted border border-border hover:border-primary/40 hover:text-foreground`
 
 ### Tabs (chuyển view, exclusive — KHÁC Filter Pill)
 - Pattern underline, không phải pill.
 - Container: `flex gap-6 border-b border-border`.
 - Active: `text-foreground border-b-2 border-primary pb-2 font-medium`
-- Default: `text-muted-foreground border-b-2 border-transparent pb-2 hover:text-foreground`
+- Default: `text-foreground-muted border-b-2 border-transparent pb-2 hover:text-foreground`
 
 ### Tooltip
 - Style: `px-2 py-1 text-xs bg-foreground text-background rounded shadow-md`.
@@ -183,13 +182,13 @@ Reduced-motion handled ở global CSS — không animate ở component nếu use
 - Bắt buộc cho icon-only action không có visible label.
 
 ### Breadcrumb
-- Wrapper: `flex items-center gap-1 text-xs text-muted-foreground`.
+- Wrapper: `flex items-center gap-1 text-xs text-foreground-muted`.
 - Separator: `<ChevronRight className="w-3 h-3" />`.
 - Level hiện tại: `text-foreground font-medium`. Cấp cha không in đậm.
 - Đặt phía trên `<h1>`.
 
 ### Form Field
-- Cấu trúc: Label → Input → helper (`text-xs text-muted-foreground`) → error (`text-xs text-destructive`).
+- Cấu trúc: Label → Input → helper (`text-xs text-foreground-muted`) → error (`text-xs text-destructive`).
 - Wrapper: `space-y-1.5`. Required: `<span className="text-destructive">*</span>` sau label.
 - Placeholder = gợi ý format, KHÔNG thay thế label.
 
@@ -200,13 +199,13 @@ Reduced-motion handled ở global CSS — không animate ở component nếu use
 | Default  | `border-border`                                 |
 | Focus    | `border-primary ring-2 ring-primary/20`         |
 | Error    | `border-destructive ring-2 ring-destructive/20` |
-| Disabled | `opacity-50 cursor-not-allowed bg-muted`        |
-| Readonly | `bg-muted cursor-default`                       |
+| Disabled | `opacity-40 cursor-not-allowed bg-surface-raised`        |
+| Readonly | `bg-surface-raised cursor-default`                       |
 
 ### Empty State (bắt buộc)
 - Wrapper: `flex flex-col items-center gap-3 py-16 text-center`.
-- Icon: `w-6 h-6 text-muted-foreground` trong vòng tròn `w-12 h-12 rounded-full bg-muted`.
-- Title `text-sm font-medium` + subtitle `text-xs text-muted-foreground`.
+- Icon: `w-6 h-6 text-foreground-subtle` trong vòng tròn `w-12 h-12 rounded-full bg-surface-raised`.
+- Title `text-sm font-medium` + subtitle `text-xs text-foreground-muted`.
 - 1 CTA `size="sm"`.
 
 ### Loading State
@@ -230,16 +229,16 @@ Reduced-motion handled ở global CSS — không animate ở component nếu use
 
 ### Table
 - Wrapper: `rounded-md border border-border overflow-hidden`.
-- Head: `bg-muted`. `th` = `px-4 py-3 text-left text-sm font-medium text-muted-foreground`.
-- Body: `divide-y divide-border`. Row hover: `hover:bg-muted/50 transition-colors duration-150`.
-- Empty row: `<td colSpan={n} className="py-16 text-center text-sm text-muted-foreground">`.
+- Head: `bg-surface-raised`. `th` = `px-4 py-3 text-left text-sm font-medium text-foreground-muted`.
+- Body: `divide-y divide-border`. Row hover: `hover:bg-surface-raised transition-colors duration-150`.
+- Empty row: `<td colSpan={n} className="py-16 text-center text-sm text-foreground-muted">`.
 
 ### Clickable Card
 - `cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`.
 
 ### Avatar / Image
-- Avatar: `w-10 h-10 rounded-full bg-muted overflow-hidden shrink-0`, `<img>` dùng `object-cover`, có `onError` fallback.
-- Course thumbnail: `aspect-video w-full rounded-md bg-muted overflow-hidden` (16:9).
+- Avatar: `w-10 h-10 rounded-full bg-surface-raised overflow-hidden shrink-0`, `<img>` dùng `object-cover`, có `onError` fallback.
+- Course thumbnail: `aspect-video w-full rounded-md bg-surface-raised overflow-hidden` (16:9).
 - Card banner: `aspect-[3/1]`.
 
 ---
@@ -247,7 +246,7 @@ Reduced-motion handled ở global CSS — không animate ở component nếu use
 ## 11. Course Card (Corelia-specific)
 
 - Cấu trúc: Thumbnail (`aspect-video`) → Body (`p-4 space-y-2`).
-- Body order: Level Badge → Title (`text-sm font-semibold line-clamp-2`) → Instructor (`text-xs text-muted-foreground`) → Footer (`flex justify-between text-xs` cho price + duration).
+- Body order: Level Badge → Title (`text-sm font-semibold line-clamp-2`) → Instructor (`text-xs text-foreground-muted`) → Footer (`flex justify-between text-xs` cho price + duration).
 - Hover: dùng Clickable Card pattern.
 - Nếu enrolled: Progress Bar `h-1` ngay dưới thumbnail (sát mép trên body).
 
@@ -256,7 +255,7 @@ Reduced-motion handled ở global CSS — không animate ở component nếu use
 ## 12. Progress
 
 ### Progress Bar
-- Track: `relative h-2 w-full rounded-full bg-muted overflow-hidden`.
+- Track: `relative h-2 w-full rounded-full bg-surface-raised overflow-hidden`.
 - Fill: `h-full bg-primary transition-all duration-300` + `style={{ width: '${pct}%' }}`.
 - Variant mỏng (trên course card): track `h-1`.
 
@@ -274,7 +273,7 @@ Reduced-motion handled ở global CSS — không animate ở component nếu use
 | ---------------- | --------------------------------------------------------------- |
 | Body text        | `text-primary underline underline-offset-4 hover:opacity-80`    |
 | Navigation       | `text-foreground hover:text-primary transition-colors`          |
-| Phụ / breadcrumb | `text-muted-foreground hover:text-foreground transition-colors` |
+| Phụ / breadcrumb | `text-foreground-muted hover:text-foreground transition-colors` |
 
 Không bao giờ dùng `#0000ff`. Luôn `text-primary`.
 

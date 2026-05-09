@@ -24,10 +24,10 @@ export default function AdminLayout() {
     >
       <AdminSidebar />
       <SidebarInset>
-        <div className="sticky top-0 z-30 border-b border-border-subtle bg-background/90 backdrop-blur supports-backdrop-filter:bg-background/70">
+        <div className="sticky top-0 z-30 border-b border-border-subtle bg-surface-raised/90 backdrop-blur supports-backdrop-filter:bg-surface-raised/70">
           <div className="flex h-11 items-center gap-2 px-3 md:px-4">
             <SidebarTrigger />
-            <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex min-w-0 items-center gap-2 text-sm text-foreground-muted">
               <ShieldCheck className="size-4 text-primary" aria-hidden />
               <span className="truncate">{metaTitle}</span>
             </div>

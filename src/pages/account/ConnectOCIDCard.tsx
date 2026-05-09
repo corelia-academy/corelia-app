@@ -66,15 +66,15 @@ export default function ConnectOCIDCard() {
   }
 
   return (
-    <section className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
+    <section className="space-y-4 rounded-lg border border-border-subtle bg-surface-base p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-lg font-semibold">{t("ocid.card.title")}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-foreground-muted">
             {t("ocid.card.description")}
           </p>
         </div>
-        <span className="shrink-0 rounded-full border border-border-subtle bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground">
+        <span className="shrink-0 rounded-full border border-border bg-surface-raised px-2.5 py-1 text-xs text-foreground-muted">
           {connected
             ? t("ocid.card.statusConnected")
             : t("ocid.card.statusDisconnected")}
@@ -82,7 +82,7 @@ export default function ConnectOCIDCard() {
       </div>
 
       {!isInitialized ? (
-        <div className="rounded-md border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
+        <div className="rounded-md border border-border-subtle bg-surface-raised p-3 text-sm text-foreground-muted">
           {t("ocid.card.initializing")}
         </div>
       ) : authState.error ? (
@@ -90,9 +90,9 @@ export default function ConnectOCIDCard() {
           {authState.error.message}
         </div>
       ) : connected ? (
-        <div className="grid gap-3 rounded-md border border-border-subtle bg-background p-3 text-sm">
+        <div className="grid gap-3 rounded-md border border-border-subtle bg-surface-base p-3 text-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-muted-foreground">
+            <div className="text-foreground-muted">
               {t("ocid.card.ocidLabel")}
             </div>
             <div className="font-mono text-foreground">
@@ -100,7 +100,7 @@ export default function ConnectOCIDCard() {
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-muted-foreground">
+            <div className="text-foreground-muted">
               {t("ocid.card.ethAddressLabel")}
             </div>
             <div className="font-mono text-foreground">
@@ -109,7 +109,7 @@ export default function ConnectOCIDCard() {
           </div>
         </div>
       ) : (
-        <div className="rounded-md border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
+        <div className="rounded-md border border-border-subtle bg-surface-raised p-3 text-sm text-foreground-muted">
           {t("ocid.card.connectHint")}
         </div>
       )}
@@ -143,7 +143,7 @@ export default function ConnectOCIDCard() {
             type="button"
             onClick={handleConnect}
             disabled={loading || !isInitialized}
-            className="h-11 cursor-pointer border border-border-subtle bg-primary px-3 py-2.5 text-left text-sm text-primary-foreground hover:bg-primary/90"
+            className="h-11 cursor-pointer border border-border-subtle bg-primary px-3 py-2.5 text-left text-sm text-primary-foreground hover:opacity-90 active:opacity-80"
           >
             <img
               src="/logo/OC-square-logo.svg"

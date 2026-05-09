@@ -107,7 +107,7 @@ export function UserProfileContestsSection({
 
   if (error) {
     return (
-      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+      <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
         {error}
       </div>
     );
@@ -115,7 +115,7 @@ export function UserProfileContestsSection({
 
   if (contests.length === 0 && (!isSelf || participations.length === 0)) {
     return (
-      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+      <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
         {t("userProfile.contests.empty")}
       </div>
     );
@@ -128,7 +128,7 @@ export function UserProfileContestsSection({
           {t("userProfile.contests.organizedTitle")}
         </div>
         {contests.length === 0 ? (
-          <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+          <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
             {t("userProfile.contests.empty")}
           </div>
         ) : (
@@ -143,14 +143,14 @@ export function UserProfileContestsSection({
                 <NavLink
                   key={id}
                   to={`/hackathons/${id}/overview`}
-                  className="block rounded-md border border-border-subtle bg-card p-4 shadow-card transition hover:bg-muted/40"
+                  className="block rounded-md border border-border-subtle bg-surface-base p-4 transition-colors duration-150 hover:bg-surface-raised"
                 >
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold text-foreground">
                       {title}
                     </div>
                     {updatedAt ? (
-                      <div className="mt-1 text-xs text-muted-foreground">
+                      <div className="mt-1 text-xs text-foreground-muted">
                         {t("userProfile.contests.updatedAt", {
                           date: new Date(updatedAt).toLocaleDateString(),
                         })}
@@ -170,7 +170,7 @@ export function UserProfileContestsSection({
             {t("userProfile.contests.participatedTitle")}
           </div>
           {participations.length === 0 ? (
-            <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+            <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
               {t("userProfile.contests.participatedEmpty")}
             </div>
           ) : (
@@ -186,14 +186,14 @@ export function UserProfileContestsSection({
                   <NavLink
                     key={`p-${id}`}
                     to={`/hackathons/${id}/overview`}
-                    className="block rounded-md border border-border-subtle bg-card p-4 shadow-card transition hover:bg-muted/40"
+                    className="block rounded-md border border-border-subtle bg-surface-base p-4 transition-colors duration-150 hover:bg-surface-raised"
                   >
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold text-foreground">
                         {title}
                       </div>
                       {updatedAt ? (
-                        <div className="mt-1 text-xs text-muted-foreground">
+                        <div className="mt-1 text-xs text-foreground-muted">
                           {t("userProfile.contests.updatedAt", {
                             date: new Date(updatedAt).toLocaleDateString(),
                           })}

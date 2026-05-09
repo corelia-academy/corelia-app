@@ -23,7 +23,7 @@ export function StatsBar({
         {
           label: t("achievements.stats.certificates"),
           value: certificates.length,
-          icon: <Award className="size-5 text-muted-foreground" aria-hidden />,
+          icon: <Award className="size-5 text-foreground-muted" aria-hidden />,
         },
         {
           label: t("achievements.stats.badges"),
@@ -49,14 +49,14 @@ export function StatsBar({
       ].map((stat) => (
         <div
           key={stat.label}
-          className="flex flex-col items-center gap-2 rounded-md border border-border-subtle bg-card p-3 shadow-card sm:flex-row sm:gap-3 sm:p-4"
+          className="flex flex-col items-center gap-2 rounded-md border border-border-subtle bg-surface-base p-3 sm:flex-row sm:gap-3 sm:p-4"
         >
-          <div className="shrink-0 rounded-md bg-muted/50 p-2">{stat.icon}</div>
+          <div className="shrink-0 rounded-md bg-surface-raised p-2">{stat.icon}</div>
           <div className="min-w-0 text-center sm:text-left">
             <p className="text-xl font-medium tabular-nums leading-none text-foreground sm:text-2xl">
               {stat.value}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
+            <p className="mt-1 text-xs text-foreground-muted">{stat.label}</p>
           </div>
         </div>
       ))}

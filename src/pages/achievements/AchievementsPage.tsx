@@ -51,7 +51,7 @@ export default function AchievementsPage() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <section className="mb-6 overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card">
+      <section className="mb-6 overflow-hidden rounded-lg border border-border-subtle bg-surface-base">
         <div className="relative p-4 sm:p-6">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--primary)_15%,transparent),transparent_38%),linear-gradient(180deg,color-mix(in_oklch,var(--primary-container)_58%,transparent),transparent_72%)]" />
           <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
@@ -62,7 +62,7 @@ export default function AchievementsPage() {
               <h1 className="mt-3 text-3xl font-normal tracking-tight text-foreground sm:text-4xl">
                 {t("achievements.hero.title")}
               </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-foreground-muted sm:text-base">
                 {t("achievements.hero.subtitlePrefix")}{" "}
                 <a
                   href="https://opencampus.xyz"
@@ -75,15 +75,15 @@ export default function AchievementsPage() {
                 {t("achievements.hero.subtitleSuffix")}
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
-                <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-2 text-sm text-foreground">
+                <div className="rounded-full border border-border-subtle bg-surface-base/85 px-3 py-2 text-sm text-foreground">
                   {t("achievements.hero.certCount", { count: certificates.length })}
                 </div>
-                <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-2 text-sm text-foreground">
+                <div className="rounded-full border border-border-subtle bg-surface-base/85 px-3 py-2 text-sm text-foreground">
                   {t("achievements.hero.badgeUnlockedCount", {
                     count: earnedBadges.length,
                   })}
                 </div>
-                <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-2 text-sm text-foreground">
+                <div className="rounded-full border border-border-subtle bg-surface-base/85 px-3 py-2 text-sm text-foreground">
                   {t("achievements.hero.readyToClaimCount", {
                     count: unclaimedCount,
                   })}
@@ -92,37 +92,37 @@ export default function AchievementsPage() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-md border border-border-subtle bg-background/85 p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-surface-base/85 p-4">
+                <p className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
                   {t("achievements.hero.claimedOnOc.title")}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-foreground">
                   {claimedCount}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                <p className="mt-1 text-sm leading-6 text-foreground-muted">
                   {t("achievements.hero.claimedOnOc.description")}
                 </p>
               </div>
-              <div className="rounded-md border border-border-subtle bg-background/85 p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-surface-base/85 p-4">
+                <p className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
                   {t("achievements.hero.pending.title")}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-foreground">
                   {pendingCount}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                <p className="mt-1 text-sm leading-6 text-foreground-muted">
                   {t("achievements.hero.pending.description")}
                 </p>
               </div>
-              <div className="rounded-md border border-border-subtle bg-background/85 p-4 sm:col-span-2">
-                <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-surface-base/85 p-4 sm:col-span-2">
+                <p className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
                   {t("achievements.hero.nextMilestone")}
                 </p>
                 <p className="mt-2 text-lg font-medium text-foreground">
                   {nextMilestones[0]?.title ??
                     t("achievements.milestones.next.titleFallback")}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                <p className="mt-1 text-sm leading-6 text-foreground-muted">
                   {nextMilestones[0]?.description ??
                     t("achievements.milestones.next.descriptionFallback")}
                 </p>
@@ -137,56 +137,56 @@ export default function AchievementsPage() {
       </div>
 
       <section className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
-          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+          <div className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
             {t("achievements.meaning.title")}
           </div>
-          <div className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
+          <div className="mt-4 space-y-3 text-sm leading-6 text-foreground-muted">
             <p>{t("achievements.meaning.p1")}</p>
             <p>{t("achievements.meaning.p2")}</p>
           </div>
         </div>
 
-        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
-          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+          <div className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
             {t("achievements.useCases.title")}
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {[0, 1, 2, 3, 4].map((idx) => (
               <span
                 key={idx}
-                className="rounded-full border border-border-subtle bg-background px-3 py-2 text-sm text-foreground"
+                className="rounded-full border border-border-subtle bg-surface-base px-3 py-2 text-sm text-foreground"
               >
                 {t(`achievements.useCases.items.${idx}` as never)}
               </span>
             ))}
           </div>
-          <p className="mt-4 text-sm leading-6 text-muted-foreground">
+          <p className="mt-4 text-sm leading-6 text-foreground-muted">
             {t("achievements.useCases.note")}
           </p>
         </div>
       </section>
 
       <section className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-foreground-muted">
             <CheckCircle2 className="size-4" aria-hidden />
             {t("achievements.recent.title")}
           </div>
           {loading ? (
-            <div className="mt-5 flex min-h-44 flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border-subtle bg-muted/20 text-center">
+            <div className="mt-5 flex min-h-44 flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border-subtle bg-surface-raised text-center">
               <Loader2
-                className="size-10 animate-spin text-muted-foreground/60"
+                className="size-10 animate-spin text-foreground-subtle"
                 aria-hidden
               />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-foreground-muted">
                 {t("achievements.recent.loading")}
               </p>
             </div>
           ) : recentBadges.length === 0 && recentCertificates.length === 0 ? (
             <div className="mt-5 flex flex-col items-center gap-3 py-12 text-center">
-              <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-                <Trophy className="size-6 text-muted-foreground" aria-hidden />
+              <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+                <Trophy className="size-6 text-foreground-subtle" aria-hidden />
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">
@@ -202,7 +202,7 @@ export default function AchievementsPage() {
                   type="button"
                   variant="ghost"
                   onClick={() => openModal({ kind: "cert", data: cert })}
-                  className="h-auto w-full justify-start rounded-md border border-border-subtle bg-background p-4 text-left hover:bg-muted/40"
+                  className="h-auto w-full justify-start rounded-md border border-border-subtle bg-surface-base p-4 text-left hover:bg-surface-raised"
                 >
                   <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
                     <Award className="size-5" aria-hidden />
@@ -211,7 +211,7 @@ export default function AchievementsPage() {
                     <div className="text-sm font-medium text-foreground">
                       {cert.course}
                     </div>
-                    <div className="mt-1 text-sm leading-6 text-muted-foreground">
+                    <div className="mt-1 text-sm leading-6 text-foreground-muted">
                       {cert.title} · {cert.issuedAt}
                     </div>
                   </div>
@@ -224,7 +224,7 @@ export default function AchievementsPage() {
                   type="button"
                   variant="ghost"
                   onClick={() => openModal({ kind: "badge", data: badge })}
-                  className="h-auto w-full justify-start rounded-md border border-border-subtle bg-background p-4 text-left hover:bg-muted/40"
+                  className="h-auto w-full justify-start rounded-md border border-border-subtle bg-surface-base p-4 text-left hover:bg-surface-raised"
                 >
                   <div
                     className={cn(
@@ -239,7 +239,7 @@ export default function AchievementsPage() {
                     <div className="text-sm font-medium text-foreground">
                       {badge.title}
                     </div>
-                    <div className="mt-1 text-sm leading-6 text-muted-foreground">
+                    <div className="mt-1 text-sm leading-6 text-foreground-muted">
                       {badge.description}
                     </div>
                   </div>
@@ -250,8 +250,8 @@ export default function AchievementsPage() {
           )}
         </div>
 
-        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-foreground-muted">
             <Lock className="size-4" aria-hidden />
             Sắp mở khóa
           </div>
@@ -260,17 +260,17 @@ export default function AchievementsPage() {
               nextMilestones.map((badge) => (
                 <div
                   key={badge.id}
-                  className="rounded-md border border-border-subtle bg-muted/20 p-4"
+                  className="rounded-md border border-border-subtle bg-surface-raised p-4"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-surface-base text-foreground-muted">
                       {badge.icon}
                     </div>
                     <div className="min-w-0">
                       <div className="text-sm font-medium text-foreground">
                         {badge.title}
                       </div>
-                      <div className="mt-1 text-sm leading-6 text-muted-foreground">
+                      <div className="mt-1 text-sm leading-6 text-foreground-muted">
                         {badge.description}
                       </div>
                     </div>
@@ -278,7 +278,7 @@ export default function AchievementsPage() {
                 </div>
               ))
             ) : (
-              <div className="rounded-md border border-border-subtle bg-background p-4 text-sm leading-6 text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm leading-6 text-foreground-muted">
                 {t("achievements.vaults.nextUnlock.allUnlockedNote")}
               </div>
             )}
@@ -286,17 +286,17 @@ export default function AchievementsPage() {
         </div>
       </section>
 
-      <section className="mb-6 rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
+      <section className="mb-6 rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
             <h2 className="text-lg font-medium text-foreground">
               {t("achievements.vaults.certificates.title")}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {t("achievements.vaults.certificates.subtitle")}
             </p>
           </div>
-          <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+          <div className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
             {t("achievements.vaults.certificates.countLabel", {
               count: certificates.length,
             })}
@@ -304,9 +304,9 @@ export default function AchievementsPage() {
         </div>
         {loading ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+            <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
               <Loader2
-                className="size-6 animate-spin text-muted-foreground"
+                className="size-6 animate-spin text-foreground-muted"
                 aria-hidden
               />
             </div>
@@ -318,8 +318,8 @@ export default function AchievementsPage() {
           </div>
         ) : certificates.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-              <Award className="size-6 text-muted-foreground" aria-hidden />
+            <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+              <Award className="size-6 text-foreground-muted" aria-hidden />
             </div>
             <div>
               <p className="text-sm font-medium text-foreground">
@@ -340,17 +340,17 @@ export default function AchievementsPage() {
         )}
       </section>
 
-      <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
+      <section className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
             <h2 className="text-lg font-medium text-foreground">
               {t("achievements.vaults.badges.title")}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {t("achievements.vaults.badges.subtitle")}
             </p>
           </div>
-          <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+          <div className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
             {t("achievements.vaults.badges.summaryUnlocked", {
               earned: earnedBadges.length,
               total: badges.length,
@@ -360,9 +360,9 @@ export default function AchievementsPage() {
 
         {loading ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+            <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
               <Loader2
-                className="size-6 animate-spin text-muted-foreground"
+                className="size-6 animate-spin text-foreground-muted"
                 aria-hidden
               />
             </div>
@@ -379,10 +379,10 @@ export default function AchievementsPage() {
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <CheckCircle2
-                      className="size-5 shrink-0 text-muted-foreground"
+                      className="size-5 shrink-0 text-foreground-muted"
                       aria-hidden
                     />
-                    <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                    <h3 className="text-sm font-medium uppercase tracking-wide text-foreground-muted">
                       {t("achievements.vaults.badges.earnedSectionTitle", {
                         count: earnedBadges.length,
                       })}
@@ -409,14 +409,14 @@ export default function AchievementsPage() {
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <Lock
-                      className="size-5 shrink-0 text-muted-foreground"
+                      className="size-5 shrink-0 text-foreground-muted"
                       aria-hidden
                     />
-                    <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                    <h3 className="text-sm font-medium uppercase tracking-wide text-foreground-muted">
                       Chưa mở khóa ({lockedBadges.length})
                     </h3>
                   </div>
-                  <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+                  <div className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
                     Tiếp tục học để mở thêm
                   </div>
                 </div>

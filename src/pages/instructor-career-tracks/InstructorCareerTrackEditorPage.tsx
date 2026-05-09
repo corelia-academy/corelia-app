@@ -173,7 +173,7 @@ export default function InstructorCareerTrackEditorPage() {
   if (loading) {
     return (
       <div className="flex min-h-80 items-center justify-center">
-        <div className="text-sm text-muted-foreground">{t("careerTracks.labels.loading")}</div>
+        <div className="text-sm text-foreground-muted">{t("careerTracks.labels.loading")}</div>
       </div>
     );
   }
@@ -192,7 +192,7 @@ export default function InstructorCareerTrackEditorPage() {
             <h1 className="text-lg font-semibold text-foreground">
               {isNew ? t("careerTracks.editor.newTitle") : t("careerTracks.editor.editTitle")}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {t("careerTracks.editor.subtitle")}
             </p>
           </div>
@@ -239,7 +239,7 @@ export default function InstructorCareerTrackEditorPage() {
                 value={form.description}
                 onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                 rows={5}
-                className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                 placeholder={t("careerTracks.placeholders.description")}
               />
             </Field>
@@ -253,7 +253,7 @@ export default function InstructorCareerTrackEditorPage() {
                 value={form.whatYoullLearnText}
                 onChange={(e) => setForm((p) => ({ ...p, whatYoullLearnText: e.target.value }))}
                 rows={6}
-                className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                 placeholder={t("careerTracks.placeholders.whatYoullLearn")}
               />
             </Field>
@@ -265,7 +265,7 @@ export default function InstructorCareerTrackEditorPage() {
                 value={form.prerequisitesText}
                 onChange={(e) => setForm((p) => ({ ...p, prerequisitesText: e.target.value }))}
                 rows={5}
-                className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                 placeholder={t("careerTracks.placeholders.prerequisites")}
               />
             </Field>
@@ -276,7 +276,7 @@ export default function InstructorCareerTrackEditorPage() {
           <FieldGroup>
             <Field>
               <FieldLabel>{t("careerTracks.fields.settings")}</FieldLabel>
-              <div className="flex flex-col gap-3 rounded-md border border-border-subtle bg-muted/20 p-3">
+              <div className="flex flex-col gap-3 rounded-md border border-border-subtle bg-surface-raised p-3">
                 <label className="flex items-center gap-2 text-sm text-foreground">
                   <input
                     type="checkbox"
@@ -304,7 +304,7 @@ export default function InstructorCareerTrackEditorPage() {
                 <select
                   value={courseToAdd}
                   onChange={(e) => setCourseToAdd(e.target.value)}
-                  className="h-9 w-full rounded border border-input bg-background px-3 text-sm"
+                  className="h-9 w-full rounded border border-border bg-surface-base px-3 text-sm"
                 >
                   <option value="">{t("careerTracks.placeholders.pickCourse")}</option>
                   {availableCourses
@@ -323,14 +323,14 @@ export default function InstructorCareerTrackEditorPage() {
 
             <div className="space-y-2">
               {orderedCourses.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-foreground-muted">
                   {t("careerTracks.labels.noCourses")}
                 </p>
               ) : (
                 orderedCourses.map((course, idx) => (
                   <div
                     key={course.id}
-                    className="flex items-center justify-between gap-2 rounded-md border border-border-subtle bg-card px-3 py-2"
+                    className="flex items-center justify-between gap-2 rounded-md border border-border-subtle bg-surface-base px-3 py-2"
                   >
                     <div className="min-w-0">
                       <div className="line-clamp-2 text-sm font-medium text-foreground">

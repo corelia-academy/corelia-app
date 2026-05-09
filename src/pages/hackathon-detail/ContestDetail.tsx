@@ -76,7 +76,7 @@ export default function ContestDetail({
         }
         leftColumn={
           <ContestDetailProvider vm={vm}>
-            <ContestPublicNav contestId={vm.contest.id} contest={vm.contest} />
+            <ContestPublicNav contest={vm.contest} />
             <ContestDetailPublicSectionPage
               embedded
               publicSection={publicSection}
@@ -103,7 +103,7 @@ export default function ContestDetail({
       leftColumn={
         <ContestDetailProvider vm={vm}>
           {!vm.isManageView ? (
-            <ContestPublicNav contestId={vm.contest.id} contest={vm.contest} />
+            <ContestPublicNav contest={vm.contest} />
           ) : null}
           {vm.isManageView ? <ContestDetailManageSectionTabs vm={vm} /> : null}
           <ContestDetailOverviewBlocks vm={vm} publicSection={publicSection} />

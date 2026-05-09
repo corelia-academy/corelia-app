@@ -3,14 +3,14 @@ import { NavLink, Outlet, useParams } from "react-router";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
-import { getContest } from "@/lib/hackathons";
+import { getContestBySlug } from "@/lib/hackathons";
 import type { Contest } from "@/types/hackathons";
 import { useTranslation } from "react-i18next";
 
 const PUBLIC_STATUSES: Contest["status"][] = ["published", "running", "ended"];
 
 export default function ContestPublicLayout() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const { t } = useTranslation("contests");
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
@@ -22,15 +22,15 @@ export default function ContestPublicLayout() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!slug) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
     void (async () => {
       try {
-        const data = await getContest(id);
+        const data = await getContestBySlug(slug);
         if (cancelled) return;
-        if (!data || !PUBLIC_STATUSES.includes(data.status)) {
+        if (!data || !data.slug || data.slug !== slug || !PUBLIC_STATUSES.includes(data.status)) {
           setContest(null);
           setError(translate("detail.errors.notFound"));
           return;
@@ -45,7 +45,7 @@ export default function ContestPublicLayout() {
     return () => {
       cancelled = true;
     };
-  }, [id, translate]);
+  }, [slug, translate]);
 
   if (loading) {
     return (
@@ -57,10 +57,10 @@ export default function ContestPublicLayout() {
           aria-busy="true"
         >
           <Loader2
-            className="size-8 animate-spin text-muted-foreground"
+            className="size-8 animate-spin text-foreground-muted"
             aria-hidden
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground-muted">
             {translate("detail.loading.title")}
           </p>
         </div>
@@ -68,7 +68,7 @@ export default function ContestPublicLayout() {
     );
   }
 
-  if (error || !contest || !id) {
+  if (error || !contest || !slug) {
     return (
       <PageContainer width="default">
         <div

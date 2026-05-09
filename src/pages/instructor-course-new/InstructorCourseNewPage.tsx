@@ -49,15 +49,15 @@ export default function InstructorCourseNewPage() {
       <PageSectionCard className="mb-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
-            <p className="max-w-3xl text-sm text-muted-foreground sm:text-sm">
+            <p className="max-w-3xl text-sm text-foreground-muted sm:text-sm">
               Thiết lập nhanh cấu hình khởi tạo trước khi chuyển sang màn chỉnh sửa chi tiết.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
               Bước 1: Khởi tạo
             </span>
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
               {profile?.instructor_origin === "external"
                 ? t("courseNew.labels.originExternal")
                 : t("courseNew.labels.originCorelia")}
@@ -66,32 +66,32 @@ export default function InstructorCourseNewPage() {
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-lg border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               Trạng thái
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
               {t("courseNew.labels.draft")}
             </p>
           </div>
-          <div className="rounded-lg border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               Loại truy cập
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
               {getCourseAccessModelLabel(form.access_model)}
             </p>
           </div>
-          <div className="rounded-lg border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               Sở hữu doanh thu
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
               {getCourseOwnerTypeLabel(form.owner_type)}
             </p>
           </div>
-          <div className="rounded-lg border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               Cấp độ
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
@@ -108,12 +108,12 @@ export default function InstructorCourseNewPage() {
       )}
 
       <div className="grid gap-4 xl:grid-cols-[260px_1fr]">
-        <nav className="h-fit rounded-lg border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24">
+        <nav className="h-fit rounded-lg border border-border-subtle bg-surface-base p-3 xl:sticky xl:top-24">
           <div className="mb-3 px-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
               Lộ trình thiết lập
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               Sau bước khởi tạo này, bạn sẽ tiếp tục hoàn thiện nội dung và cấu hình nâng cao.
               
             </p>
@@ -132,7 +132,7 @@ export default function InstructorCourseNewPage() {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground-muted opacity-60"
               >
                 <List className="size-4 shrink-0" aria-hidden />
                 Nội dung & bài học
@@ -142,7 +142,7 @@ export default function InstructorCourseNewPage() {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground-muted opacity-60"
               >
                 <FileText className="size-4 shrink-0" aria-hidden />
                 Bài tập cuối khoá
@@ -152,7 +152,7 @@ export default function InstructorCourseNewPage() {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground-muted opacity-60"
               >
                 <Award className="size-4 shrink-0" aria-hidden />
                 Chứng nhận
@@ -162,7 +162,7 @@ export default function InstructorCourseNewPage() {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground-muted opacity-60"
               >
                 <Users className="size-4 shrink-0" aria-hidden />
                 Quản lý học viên
@@ -172,7 +172,7 @@ export default function InstructorCourseNewPage() {
               <button
                 type="button"
                 disabled
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground opacity-60"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground-muted opacity-60"
               >
                 <AlertTriangle className="size-4 shrink-0" aria-hidden />
                 Xoá khoá học
@@ -180,11 +180,11 @@ export default function InstructorCourseNewPage() {
             </li>
           </ul>
 
-          <div className="mt-4 rounded-lg border border-border-subtle bg-muted/25 p-4">
+          <div className="mt-4 rounded-lg border border-border-subtle bg-surface-raised p-4">
             <p className="text-xs font-medium text-foreground">
               Mẹo khởi tạo nhanh
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               Tên, slug, ảnh bìa và mô hình giá là 4 trường nên chốt sớm để bước chỉnh sửa sau nhanh hơn.
             </p>
           </div>
@@ -197,12 +197,12 @@ export default function InstructorCourseNewPage() {
                 <h2 className="text-lg font-medium text-foreground">
                   Thông tin chung
                 </h2>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2 text-sm text-foreground-muted">
                   Điền thông tin cơ bản. Sau khi tạo, bạn sẽ được chuyển sang trang
                   chỉnh sửa để thêm chương, bài học và các cấu hình nâng cao.
                 </p>
               </div>
-              <div className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+              <div className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
                 Bước bắt đầu
               </div>
             </div>
@@ -235,7 +235,7 @@ export default function InstructorCourseNewPage() {
                           className={`rounded-md border px-2 py-1 text-xs font-medium ${
                             enabled
                               ? "border-primary bg-primary/10 text-primary"
-                              : "border-border-subtle bg-background text-muted-foreground"
+                              : "border-border-subtle bg-surface-base text-foreground-muted"
                           }`}
                         >
                           {loc.toUpperCase()}
@@ -243,7 +243,7 @@ export default function InstructorCourseNewPage() {
                       );
                     })}
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-foreground-muted">
                     {t("courseNew.labels.contentLocalesHint" as never)}
                   </p>
                 </Field>
@@ -257,7 +257,7 @@ export default function InstructorCourseNewPage() {
                         primary_content_locale: normalizeCourseLocale(e.target.value),
                       }))
                     }
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   >
                     {form.supported_locales.map((loc) => (
                       <option key={loc} value={loc}>
@@ -276,7 +276,7 @@ export default function InstructorCourseNewPage() {
                         default_video_primary_locale: normalizeCourseLocale(e.target.value),
                       }))
                     }
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   >
                     {(["vi", "en"] as const).map((loc) => (
                       <option key={loc} value={loc}>
@@ -322,7 +322,7 @@ export default function InstructorCourseNewPage() {
                 </Field>
                 <Field>
                   <FieldLabel>{t("courseNew.labels.description")}</FieldLabel>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-foreground-muted">
                     {t("courseNew.labels.descriptionMarkdownHint")}
                   </p>
                   <textarea
@@ -330,14 +330,14 @@ export default function InstructorCourseNewPage() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, description: e.target.value }))
                     }
-                    className="min-h-[140px] w-full rounded-lg border border-input bg-background px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-h-[140px] w-full rounded-lg border border-border bg-surface-base px-3 py-2 font-mono text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     rows={4}
                     placeholder={t("courseNew.placeholders.description")}
                   />
                 </Field>
                 <Field>
                   <FieldLabel>{t("courseNew.labels.learningOutcomes")}</FieldLabel>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-foreground-muted">
                     {t("courseNew.labels.learningOutcomesSubtitle")}
                   </p>
                   <div className="mt-3 space-y-2">
@@ -429,7 +429,7 @@ export default function InstructorCourseNewPage() {
                           }))
                         }
                         disabled={!canManageBusinessSettings}
-                        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                        className="w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:opacity-60"
                       >
                         {(
                           [
@@ -443,7 +443,7 @@ export default function InstructorCourseNewPage() {
                         ))}
                       </select>
                       {!canManageBusinessSettings && (
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-foreground-muted">
                           Chỉ học vụ/admin được đổi cấu hình sở hữu doanh thu.
                         </p>
                       )}
@@ -464,7 +464,7 @@ export default function InstructorCourseNewPage() {
                             }))
                           }
                         />
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-foreground-muted">
                           Phần còn lại thuộc giảng viên đối tác.
                         </p>
                       </Field>
@@ -481,7 +481,7 @@ export default function InstructorCourseNewPage() {
                         access_model: e.target.value as CourseAccessModel,
                       }))
                     }
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   >
                     {(
                       [
@@ -514,7 +514,7 @@ export default function InstructorCourseNewPage() {
                       }
                       placeholder={t("courseNew.placeholders.priceVnd")}
                     />
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground-muted">
                       Đơn vị VND (đ), tự động định dạng khi nhập.
                     </p>
                   </Field>
@@ -536,7 +536,7 @@ export default function InstructorCourseNewPage() {
                       }
                       placeholder={t("courseNew.placeholders.certificateFeeVnd")}
                     />
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground-muted">
                       Đơn vị VND (đ), tự động định dạng khi nhập.
                     </p>
                   </Field>
@@ -551,7 +551,7 @@ export default function InstructorCourseNewPage() {
                         level: e.target.value as CourseLevel,
                       }))
                     }
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   >
                     {(
                       [
@@ -578,7 +578,7 @@ export default function InstructorCourseNewPage() {
                           published: e.target.checked,
                         }))
                       }
-                      className="rounded border-input"
+                      className="rounded border-border"
                     />
                     <span className="text-sm font-medium text-foreground">
                       Đã xuất bản (hiển thị trên trang Khoá học)

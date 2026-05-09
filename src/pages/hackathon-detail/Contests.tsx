@@ -11,13 +11,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { listContests } from "@/lib/hackathons";
+import { hasHackathonCoOrganizerAccess, listContests } from "@/lib/hackathons";
 import { contestListImageUrl } from "@/lib/hackathonVisuals";
-import { canManageContests } from "@/lib/permissions";
+import { canAccessContestManagementCatalog, canManageContests } from "@/lib/permissions";
 import { useAuth } from "@/stores/authStore";
 import type { Contest } from "@/types/hackathons";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import {
   contestListLocationLabel,
   contestListStatusLabel,
@@ -32,7 +33,7 @@ import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
 
 function CatalogStatSkeleton() {
   return (
-    <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+    <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-2">
           <Skeleton className="h-3 w-24 rounded-sm" />
@@ -120,6 +121,26 @@ export default function Contests() {
   }, [translate, user?.id, retryToken]);
 
   const isManager = canManageContests(profile);
+  const canManageCatalog = canAccessContestManagementCatalog(profile);
+  const [canManageCatalogScoped, setCanManageCatalogScoped] = useState(false);
+
+  useEffect(() => {
+    if (!profile?.email) {
+      setCanManageCatalogScoped(false);
+      return;
+    }
+    if (canManageCatalog) {
+      setCanManageCatalogScoped(true);
+      return;
+    }
+    let cancelled = false;
+    void hasHackathonCoOrganizerAccess(profile.email).then((ok) => {
+      if (!cancelled) setCanManageCatalogScoped(ok);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [canManageCatalog, profile?.email]);
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -138,7 +159,7 @@ export default function Contests() {
 
   return (
     <div className="container-app py-6 sm:py-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Trophy className="size-5 text-primary" aria-hidden />
@@ -146,36 +167,33 @@ export default function Contests() {
               {t("catalog.heroTitle")}
             </h1>
           </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {t("catalog.heroDescription")}
+          <p className="mt-1 text-sm text-foreground-muted">
+            {t("catalog.statsSummary", {
+              total: stats.total,
+              accepting: stats.accepting,
+              running: stats.running,
+              ended: stats.ended,
+            })}
+            {showGrid && null}
+            {showEmpty && null}
           </p>
-          {showGrid ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t("catalog.statsSummary", {
-                total: stats.total,
-                accepting: stats.accepting,
-                running: stats.running,
-                ended: stats.ended,
-              })}
-            </p>
-          ) : null}
-          {showEmpty ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t("catalog.statsSummary", {
-                total: 0,
-                accepting: 0,
-                running: 0,
-                ended: 0,
-              })}
-            </p>
-          ) : null}
         </div>
-
         <div className="flex flex-wrap gap-2">
-          <span className="inline-flex min-h-11 items-center rounded-full border border-border-subtle bg-card px-3 py-2 text-xs font-medium text-foreground shadow-card">
+          {canManageCatalogScoped ? (
+            <Button
+              render={<NavLink to="/hackathons/manage" />}
+              nativeButton={false}
+              size="sm"
+              variant="outline"
+              className="min-h-11"
+            >
+              {t("catalog.openWorkspace")}
+            </Button>
+          ) : null}
+          <span className="inline-flex min-h-11 items-center rounded-full border border-border-subtle bg-surface-base px-3 py-2 text-xs font-medium text-foreground">
             {t("catalog.pillReviewed")}
           </span>
-          <span className="inline-flex min-h-11 items-center rounded-full border border-border-subtle bg-card px-3 py-2 text-xs font-medium text-foreground shadow-card">
+          <span className="inline-flex min-h-11 items-center rounded-full border border-border-subtle bg-surface-base px-3 py-2 text-xs font-medium text-foreground">
             {t("catalog.pillTeamBased")}
           </span>
         </div>
@@ -195,62 +213,62 @@ export default function Contests() {
             </>
           ) : (
             <>
-              <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+              <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                       {t("catalog.stats.total")}
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-foreground">
                       {stats.total}
                     </p>
                   </div>
-                  <div className="flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <div className="flex size-11 items-center justify-center rounded-md bg-primary-muted text-primary">
                     <Rocket className="size-5" aria-hidden />
                   </div>
                 </div>
               </div>
-              <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+              <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                       {t("catalog.stats.accepting")}
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-foreground">
                       {stats.accepting}
                     </p>
                   </div>
-                  <div className="flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <div className="flex size-11 items-center justify-center rounded-md bg-primary-muted text-primary">
                     <CheckCheck className="size-5" aria-hidden />
                   </div>
                 </div>
               </div>
-              <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+              <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                       {t("catalog.stats.running")}
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-foreground">
                       {stats.running}
                     </p>
                   </div>
-                  <div className="flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <div className="flex size-11 items-center justify-center rounded-md bg-primary-muted text-primary">
                     <Timer className="size-5" aria-hidden />
                   </div>
                 </div>
               </div>
-              <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+              <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                       {t("catalog.stats.ended")}
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-foreground">
                       {stats.ended}
                     </p>
                   </div>
-                  <div className="flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <div className="flex size-11 items-center justify-center rounded-md bg-primary-muted text-primary">
                     <Calendar className="size-5" aria-hidden />
                   </div>
                 </div>
@@ -262,14 +280,14 @@ export default function Contests() {
 
       {showError ? (
         <div
-          className="mt-6 rounded-md border border-destructive/25 bg-destructive/10 p-6 shadow-card"
+          className="mt-6 rounded-lg border border-destructive/25 bg-destructive-muted p-6"
           role="alert"
           aria-live="assertive"
         >
           <p className="text-sm font-semibold text-foreground">
             {t("catalog.errorTitle")}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-foreground-muted">
             {t("catalog.errorDescription")}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
@@ -281,7 +299,7 @@ export default function Contests() {
               {t("catalog.retry")}
             </Button>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">{error}</p>
+          <p className="mt-3 text-xs text-foreground-muted">{error}</p>
         </div>
       ) : null}
 
@@ -304,9 +322,9 @@ export default function Contests() {
           <Card className="sm:col-span-2 xl:col-span-3">
             <CardContent className="p-8 text-center">
               <div className="flex flex-col items-center gap-3 py-8 text-center">
-                <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
                   <Trophy
-                    className="size-6 text-muted-foreground"
+                    className="size-6 text-foreground-subtle"
                     aria-hidden
                   />
                 </div>
@@ -314,7 +332,7 @@ export default function Contests() {
                   <p className="text-sm font-medium text-foreground">
                     {t("catalog.emptyTitle")}
                   </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
+                  <p className="mt-0.5 text-xs text-foreground-muted">
                     {isManager
                       ? t("catalog.emptyDescriptionManager")
                       : t("catalog.emptyDescriptionUser")}
@@ -322,7 +340,7 @@ export default function Contests() {
                 </div>
                 {isManager ? (
                   <Button
-                    render={<NavLink to="/admin/hackathons" />}
+                    render={<NavLink to="/hackathons/manage" />}
                     nativeButton={false}
                     size="sm"
                     variant="outline"
@@ -337,26 +355,32 @@ export default function Contests() {
         ) : (
           items.map((contest) => {
             const listImageUrl = contestListImageUrl(contest);
+            const contestSlug = contest.slug?.trim() || null;
             return (
               <NavLink
                 key={contest.id}
-                to={`/hackathons/${contest.id}/overview`}
+                to={contestSlug ? `/hackathons/${contestSlug}/overview` : "/hackathons"}
+                onClick={(e) => {
+                  if (contestSlug) return;
+                  e.preventDefault();
+                  toast.error(t("catalog.missingSlug"));
+                }}
                 className="group block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 aria-label={`${t("catalog.viewContest")}: ${contest.title}`}
               >
-                <Card className="h-full overflow-hidden border-border-subtle transition-shadow duration-200 group-hover:border-border group-hover:shadow-md">
+                <Card className="h-full overflow-hidden border-border-subtle transition-all duration-200 ease-out group-hover:border-border group-hover:bg-surface-raised group-hover:-translate-y-0.5">
                   <ContestListCardThumbnail
                     src={listImageUrl}
                     alt=""
                     aspectClassName="aspect-video"
-                    surfaceClassName="bg-linear-to-br from-primary/12 via-muted to-muted"
+                    surfaceClassName="bg-linear-to-br from-primary/12 via-surface-raised to-surface-raised"
                     emptyMinHeightClassName="min-h-28"
                     trophyIconClassName="size-14 text-primary/40"
                   />
                   <CardContent className="flex h-full flex-col p-4 sm:p-6">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-foreground-muted">
                           {contestListStatusLabel(
                             contest.status,
                             translate,
@@ -367,7 +391,7 @@ export default function Contests() {
                           {contest.title}
                         </div>
                       </div>
-                      <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                      <span className="shrink-0 rounded-md bg-surface-raised px-2 py-0.5 text-xs font-medium text-foreground-muted">
                         {contestListLocationLabel(
                           contest.location,
                           translate,
@@ -376,17 +400,17 @@ export default function Contests() {
                       </span>
                     </div>
 
-                    <div className="mt-2 text-sm text-muted-foreground">
+                    <div className="mt-2 text-sm text-foreground-muted">
                       {contest.tagline}
                     </div>
 
                     {contest.description ? (
-                      <div className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                      <div className="mt-3 line-clamp-3 text-sm leading-relaxed text-foreground-muted">
                         {contest.description}
                       </div>
                     ) : null}
 
-                    <div className="mt-4 grid gap-2 text-xs text-muted-foreground">
+                    <div className="mt-4 grid gap-2 text-xs text-foreground-muted">
                       <ContestListCardDateRowCatalog>
                         {formatContestListDateRange(
                           contest.starts_at,
@@ -410,7 +434,7 @@ export default function Contests() {
                     </div>
 
                     <div className="mt-5 flex min-h-11 flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-foreground-muted">
                         {contest.registration_deadline
                           ? t("catalog.registrationDeadlinePrefix", {
                               date: new Date(

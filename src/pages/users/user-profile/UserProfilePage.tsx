@@ -34,7 +34,7 @@ export default function UserProfileLayout() {
 
   return (
     <div className="container-app py-6 sm:py-8">
-      <section className="overflow-hidden rounded-md border border-border-subtle bg-card shadow-card">
+      <section className="overflow-hidden rounded-md border border-border-subtle bg-surface-base">
         <div className="relative p-4 sm:p-6">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--primary)_14%,transparent),transparent_40%),linear-gradient(180deg,color-mix(in_oklch,var(--primary-container)_48%,transparent),transparent_70%)]" />
 
@@ -62,11 +62,11 @@ export default function UserProfileLayout() {
                     <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
                       {profileTitle(profile)}
                     </h1>
-                    <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                    <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-foreground-muted">
                       {headerHandle ? (
                         <span className="truncate">{headerHandle}</span>
                       ) : null}
-                      <span className="rounded-full border border-border-subtle bg-background/70 px-2 py-0.5 text-xs font-medium text-foreground">
+                      <span className="rounded-full border border-border-subtle bg-surface-base/70 px-2 py-0.5 text-xs font-medium text-foreground">
                         {getRoleLabel(profile.role)}
                       </span>
                       {profile.ocid ? (
@@ -77,7 +77,7 @@ export default function UserProfileLayout() {
                     </div>
                   </>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-foreground-muted">
                     {t("userProfile.errors.notFound")}
                   </p>
                 )}
@@ -85,7 +85,7 @@ export default function UserProfileLayout() {
                 {!loading && profile ? (
                   <div className="mt-3 space-y-2">
                     {bio ? (
-                      <p className="text-sm leading-6 text-muted-foreground">{bio}</p>
+                      <p className="text-sm leading-6 text-foreground-muted">{bio}</p>
                     ) : null}
 
                     {website && isValidHttpUrl(website) ? (
@@ -126,12 +126,12 @@ export default function UserProfileLayout() {
           </div>
         ) : error ? (
           <div className="flex flex-col items-center gap-3 py-14 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-              <ShieldAlert className="size-6 text-muted-foreground" aria-hidden />
+            <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+              <ShieldAlert className="size-6 text-foreground-subtle" aria-hidden />
             </div>
             <div className="max-w-lg">
               <p className="text-sm font-medium text-foreground">{error}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs text-foreground-muted">
                 {t("userProfile.errors.tryAnother")}
               </p>
             </div>

@@ -69,7 +69,7 @@ export default function Account() {
     <div className="container-app py-6 sm:py-8">
       <div className="flex w-full min-w-0 flex-col gap-6 lg:flex-row">
         <div className="w-full lg:w-72 lg:shrink-0">
-          <div className="mb-4 hidden text-xs font-semibold uppercase tracking-widest text-muted-foreground lg:block">
+          <div className="mb-4 hidden text-xs font-semibold uppercase tracking-widest text-foreground-muted lg:block">
             {t("nav.sectionTitle")}
           </div>
           <div className="-mx-4 overflow-x-auto px-4 lg:hidden">
@@ -83,8 +83,8 @@ export default function Account() {
                     cn(
                       "inline-flex min-h-11 items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                       isActive
-                        ? "border-primary/25 bg-primary-container text-on-primary-container shadow-card"
-                        : "border-border-subtle bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                        ? "border-primary/30 bg-primary-muted text-primary"
+                        : "border-border-subtle bg-surface-base text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                     )
                   }
                 >
@@ -95,7 +95,7 @@ export default function Account() {
             </div>
           </div>
 
-          <div className="hidden rounded-md border border-border-subtle bg-card p-2 shadow-card lg:block">
+          <div className="hidden rounded-lg border border-border-subtle bg-surface-base p-2 lg:block">
             <div className="grid gap-2">
               {navItems.map((item) => (
                 <NavLink
@@ -106,8 +106,8 @@ export default function Account() {
                     cn(
                       "rounded-md px-3 py-3 text-left transition-colors duration-150",
                       isActive
-                        ? "bg-primary-container text-on-primary-container shadow-card"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                        ? "bg-primary-muted text-primary"
+                        : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                     )
                   }
                 >
@@ -117,7 +117,7 @@ export default function Account() {
                     </div>
                     <div className="min-w-0">
                       <div className="text-sm font-medium">{item.title}</div>
-                      <div className="mt-0.5 text-xs text-muted-foreground">
+                      <div className="mt-0.5 text-xs text-foreground-muted">
                         {item.description}
                       </div>
                     </div>
@@ -129,19 +129,19 @@ export default function Account() {
         </div>
 
         <div className="flex w-full min-w-0 flex-col gap-4">
-          <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card lg:hidden">
+          <section className="rounded-lg border border-border-subtle bg-surface-base p-4 lg:hidden">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 shrink-0 text-primary">
                 {activeNavItem.icon}
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                   {t("nav.currentSectionLabel")}
                 </p>
                 <h2 className="mt-1 text-lg font-semibold text-foreground">
                   {activeNavItem.title}
                 </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-sm text-foreground-muted">
                   {activeNavItem.description}
                 </p>
               </div>

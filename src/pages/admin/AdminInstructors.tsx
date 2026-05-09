@@ -123,13 +123,13 @@ export default function AdminInstructors() {
         />
       </div>
 
-      <div className="mt-6 rounded-lg border border-border-subtle bg-card p-6 shadow-card">
+      <div className="mt-6 rounded-lg border border-border-subtle bg-surface-base p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">
               {t("instructors.hero.title")}
             </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground-muted">
               {t("instructors.hero.description")}
             </p>
           </div>
@@ -146,7 +146,7 @@ export default function AdminInstructors() {
               onChange={(e) =>
                 setOriginFilter(e.target.value as InstructorOrigin | "all")
               }
-              className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-10 rounded-md border border-border bg-surface-base px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
             >
               <option value="all">{t("instructors.filters.originOptions.all")}</option>
               <option value="corelia">{t("instructors.filters.originOptions.corelia")}</option>
@@ -160,7 +160,7 @@ export default function AdminInstructors() {
               disabled={loading}
               variant="ghost"
               size="sm"
-              className="text-muted-foreground hover:text-foreground"
+              className="text-foreground-muted hover:text-foreground"
             >
               {t("instructors.actions.refresh")}
             </Button>
@@ -209,9 +209,9 @@ export default function AdminInstructors() {
 
       {error ? <AdminErrorBanner message={error} /> : null}
 
-      <div className="mt-6 overflow-hidden rounded-lg border border-border-subtle bg-card text-card-foreground shadow-card">
-        <div className="border-b border-border-subtle bg-muted/35 px-4 py-3">
-          <p className="text-sm text-muted-foreground">
+      <div className="mt-6 overflow-hidden rounded-lg border border-border-subtle bg-surface-base text-foreground">
+        <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
+          <p className="text-sm text-foreground-muted">
             {loading
               ? t("instructors.list.syncing")
               : `${t("instructors.list.showing", {
@@ -231,11 +231,11 @@ export default function AdminInstructors() {
         </div>
         <div className="divide-y divide-border-subtle md:hidden">
           {loading ? (
-            <div className="p-6 text-center text-sm text-muted-foreground">
+            <div className="p-6 text-center text-sm text-foreground-muted">
               {t("instructors.list.loading")}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="p-10 text-center text-sm text-muted-foreground">
+            <div className="p-10 text-center text-sm text-foreground-muted">
               {t("instructors.list.empty")}
             </div>
           ) : (
@@ -252,10 +252,10 @@ export default function AdminInstructors() {
                       <img
                         src={p.avatar_url}
                         alt=""
-                        className="size-10 rounded-full bg-muted/60 object-cover"
+                      className="size-10 rounded-full bg-surface-raised object-cover"
                       />
                     ) : (
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted/60 text-sm font-medium text-muted-foreground">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-raised text-sm font-medium text-foreground-muted">
                         {(p.full_name || "I")[0]}
                       </div>
                     )}
@@ -263,14 +263,14 @@ export default function AdminInstructors() {
                       <p className="truncate text-sm font-medium text-foreground">
                         {p.full_name || t("instructors.list.notUpdated")}
                       </p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    <p className="mt-0.5 truncate text-xs text-foreground-muted">
                         UID: {p.id.substring(0, 8)}…
                       </p>
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-foreground-muted">
                         Email
                       </p>
                       <p className="mt-1 text-sm text-foreground">
@@ -278,11 +278,11 @@ export default function AdminInstructors() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-foreground-muted">
                         Phân loại
                       </p>
                       <p className="mt-1">
-                        <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
                           {p.instructor_origin
                             ? t(`instructors.originLabel.${p.instructor_origin}` as never)
                             : t("instructors.originLabel.unclassified")}
@@ -290,10 +290,10 @@ export default function AdminInstructors() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-foreground-muted">
                         Khoá học
                       </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 text-sm text-foreground-muted">
                         {loadingCourses ? "..." : courseCountByInstructor[p.id] ?? 0}
                       </p>
                     </div>
@@ -342,21 +342,21 @@ export default function AdminInstructors() {
         </div>
         <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-left">
-            <thead className="border-b border-border-subtle bg-muted/50">
+            <thead className="border-b border-border-subtle bg-surface-raised">
               <tr>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   Giảng viên
                 </th>
-                <th className="min-w-[180px] px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="min-w-[180px] px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   Email
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   Phân loại
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   Khoá học
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   Tác vụ
                 </th>
               </tr>
@@ -366,7 +366,7 @@ export default function AdminInstructors() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="p-6 text-center text-sm text-muted-foreground"
+                    className="p-6 text-center text-sm text-foreground-muted"
                   >
                     Đang tải danh sách...
                   </td>
@@ -375,7 +375,7 @@ export default function AdminInstructors() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="p-10 text-center text-sm text-muted-foreground"
+                    className="p-10 text-center text-sm text-foreground-muted"
                   >
                     Chưa có giảng viên nào khớp bộ lọc hiện tại.
                   </td>
@@ -386,7 +386,7 @@ export default function AdminInstructors() {
                   return (
                     <tr
                       key={p.id}
-                      className="cursor-pointer transition-colors hover:bg-muted/40"
+                      className="cursor-pointer transition-colors hover:bg-surface-raised"
                       onClick={() => navigate(`/admin/instructors/${p.id}`)}
                     >
                       <td className="px-4 py-3">
@@ -395,10 +395,10 @@ export default function AdminInstructors() {
                             <img
                               src={p.avatar_url}
                               alt=""
-                              className="size-9 rounded-full bg-muted/60 object-cover"
+                              className="size-9 rounded-full bg-surface-raised object-cover"
                             />
                           ) : (
-                            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted/60 text-sm font-medium text-muted-foreground">
+                            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-raised text-sm font-medium text-foreground-muted">
                               {(p.full_name || "I")[0]}
                             </div>
                           )}
@@ -407,7 +407,7 @@ export default function AdminInstructors() {
                               {p.full_name || t("instructors.list.notUpdated")}
                             </p>
                             <p
-                              className="mt-0.5 truncate text-xs text-muted-foreground"
+                              className="mt-0.5 truncate text-xs text-foreground-muted"
                               title={p.id}
                             >
                               UID: {p.id.substring(0, 8)}…
@@ -421,13 +421,13 @@ export default function AdminInstructors() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
+                        <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
                           {p.instructor_origin
                             ? t(`instructors.originLabel.${p.instructor_origin}` as never)
                             : t("instructors.originLabel.unclassified")}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                      <td className="px-4 py-3 text-sm text-foreground-muted">
                         {loadingCourses ? "..." : courseCountByInstructor[p.id] ?? 0}
                       </td>
                       <td className="px-4 py-3">

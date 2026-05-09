@@ -30,7 +30,7 @@ export function ContestDetailSettingsInviteCard({
             <h2 className="text-lg font-medium tracking-tight text-foreground">
               {translate("workspace.manage.inviteCollaborationTitle")}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {translate("workspace.manage.inviteMetaLine", {
                 roles: myInvite.roles.join(", "),
                 status: myInvite.status,
@@ -39,7 +39,7 @@ export function ContestDetailSettingsInviteCard({
           </div>
         </div>
         {myInvite.note && (
-          <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+          <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-foreground-muted">
             {myInvite.note}
           </p>
         )}

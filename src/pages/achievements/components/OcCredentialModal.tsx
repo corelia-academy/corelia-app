@@ -58,7 +58,7 @@ export function OcCredentialModal({
         <div className="min-w-0 p-4 sm:p-6">
           <DialogHeader className="mb-4">
             <div className="flex items-start gap-3">
-              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted border border-border-subtle sm:size-14">
+              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-raised border border-border-subtle sm:size-14">
                 <img
                   src={
                     item.data.imageUrl ||
@@ -79,9 +79,9 @@ export function OcCredentialModal({
             </div>
           </DialogHeader>
 
-          <div className="mb-4 space-y-3 rounded-md border border-border-subtle bg-muted/40 p-3 sm:p-4">
+          <div className="mb-4 space-y-3 rounded-md border border-border-subtle bg-surface-raised p-3 sm:p-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:text-sm">
+              <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted sm:text-sm">
                 {item.kind === "cert"
                   ? t("achievements.oc.modal.kind.cert")
                   : t("achievements.oc.modal.kind.badge")}
@@ -92,7 +92,7 @@ export function OcCredentialModal({
             </div>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <p className="text-xs text-muted-foreground sm:text-sm">
+                <p className="text-xs text-foreground-muted sm:text-sm">
                   {item.kind === "cert"
                     ? t("achievements.oc.modal.date.issued")
                     : t("achievements.oc.modal.date.earned")}
@@ -100,7 +100,7 @@ export function OcCredentialModal({
                 <p className="font-medium">{issued}</p>
               </div>
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground sm:text-sm">
+                <p className="text-xs text-foreground-muted sm:text-sm">
                   Credential ID
                 </p>
                 <p className="font-mono text-xs font-medium truncate sm:text-sm">
@@ -110,7 +110,7 @@ export function OcCredentialModal({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs text-muted-foreground sm:text-sm">
+              <p className="text-xs text-foreground-muted sm:text-sm">
                 {t("achievements.oc.modal.statusLabel")}
               </p>
               <OcClaimBadge status={d.ocClaimStatus} />
@@ -119,7 +119,7 @@ export function OcCredentialModal({
             {isClaimed && d.ocTransactionHash && (
               <div className="space-y-2 border-t border-border pt-3">
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground sm:text-sm">
+                  <p className="text-xs text-foreground-muted sm:text-sm">
                     Transaction Hash
                   </p>
                   <div className="mt-0.5 flex items-center gap-2">
@@ -131,7 +131,7 @@ export function OcCredentialModal({
                       href={`https://opencampus-codex.blockscout.com/tx/${d.ocTransactionHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="shrink-0 rounded p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                      className="shrink-0 rounded p-0.5 text-foreground-muted transition hover:bg-surface-raised hover:text-foreground"
                       title={t("achievements.oc.modal.explorerTooltip")}
                     >
                       <ExternalLink className="size-4" aria-hidden />
@@ -140,7 +140,7 @@ export function OcCredentialModal({
                 </div>
                 {(d as CertificateItem).ocHolderOcId && (
                   <div>
-                    <p className="text-xs text-muted-foreground">OCID</p>
+                    <p className="text-xs text-foreground-muted">OCID</p>
                     <p className="text-sm font-medium text-foreground">
                       {(d as CertificateItem).ocHolderOcId}
                     </p>
@@ -167,19 +167,19 @@ export function OcCredentialModal({
                   <p className="truncate text-sm font-semibold text-foreground sm:text-base">
                     {t("achievements.oc.modal.dashboardCtaTitle")}
                   </p>
-                  <p className="text-xs text-muted-foreground sm:text-sm">
+                  <p className="text-xs text-foreground-muted sm:text-sm">
                     {t("achievements.oc.modal.dashboardCtaSubtitle")}
                   </p>
                 </div>
               </div>
               <ExternalLink
-                className="size-4 shrink-0 text-muted-foreground"
+                className="size-4 shrink-0 text-foreground-muted"
                 aria-hidden
               />
             </a>
           )}
 
-          <p className="mb-4 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+          <p className="mb-4 text-xs leading-relaxed text-foreground-muted sm:text-sm">
             {t("achievements.oc.modal.standardsNote")}
           </p>
 
@@ -253,7 +253,7 @@ export function OcCredentialModal({
               href="https://devdocs.educhain.xyz/start-building/open-campus-achievements-badges/introduction"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+              className="flex items-center justify-center gap-2 py-2 text-sm text-foreground-muted underline underline-offset-4 transition-colors hover:text-foreground"
             >
               {t("achievements.oc.modal.learnMore")}
               <ExternalLink className="size-4 shrink-0" aria-hidden />

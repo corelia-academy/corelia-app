@@ -21,11 +21,11 @@ export function BadgeCard({
       className={cn(
         "group relative flex min-w-0 flex-col items-center gap-2 rounded-md border p-3 text-center transition-all duration-200 sm:gap-3 sm:p-4",
         badge.locked
-          ? "border-border bg-muted/30 opacity-60 grayscale"
+          ? "border-border bg-surface-raised opacity-60 grayscale"
           : cn(
               badge.bgColor,
               badge.borderColor,
-              "cursor-pointer hover:shadow-md hover:-translate-y-0.5",
+              "cursor-pointer hover:-translate-y-0.5",
             ),
       )}
       onClick={() =>
@@ -34,7 +34,7 @@ export function BadgeCard({
     >
       {badge.locked && (
         <div className="absolute right-2 top-2 sm:right-3 sm:top-3">
-          <Lock className="size-4 text-muted-foreground sm:size-5" />
+          <Lock className="size-4 text-foreground-muted sm:size-5" />
         </div>
       )}
 
@@ -63,7 +63,7 @@ export function BadgeCard({
         className={cn(
           "relative size-14 overflow-hidden rounded-md border-2 sm:size-20",
           badge.locked
-            ? "border-border bg-muted"
+            ? "border-border bg-surface-raised"
             : cn("border-2", badge.borderColor, badge.bgColor),
         )}
       >
@@ -76,7 +76,7 @@ export function BadgeCard({
           )}
         />
         {badge.locked && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface-raised/70">
             {badge.icon}
           </div>
         )}
@@ -86,12 +86,12 @@ export function BadgeCard({
         <p
           className={cn(
             "text-xs font-semibold sm:text-sm",
-            badge.locked ? "text-muted-foreground" : "text-foreground",
+            badge.locked ? "text-foreground-muted" : "text-foreground",
           )}
         >
           {badge.title}
         </p>
-        <p className="line-clamp-2 text-xs text-muted-foreground">
+        <p className="line-clamp-2 text-xs text-foreground-muted">
           {badge.description}
         </p>
         {!badge.locked && badge.earnedAt && (
@@ -100,7 +100,7 @@ export function BadgeCard({
           </p>
         )}
         {badge.locked && (
-          <span className="inline-block rounded-full border border-border bg-background px-2 py-0.5 text-xs text-muted-foreground">
+          <span className="inline-block rounded-full border border-border bg-surface-base px-2 py-0.5 text-xs text-foreground-muted">
             {t("achievements.badges.locked")}
           </span>
         )}

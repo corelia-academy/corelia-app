@@ -35,7 +35,7 @@ export function ContestDetailParticipantSubmissionCard({
             <h2 className="text-lg font-semibold text-foreground">
               {translate("detail.participant.submissionWorkspaceTitle")}
             </h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
               {translate(
                 "detail.participant.submissionWorkspaceApprovedBody",
               )}
@@ -47,7 +47,7 @@ export function ContestDetailParticipantSubmissionCard({
           <input
             value={submissionTitle}
             onChange={(e) => setSubmissionTitle(e.target.value)}
-            className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
             placeholder={translate(
               "detail.forms.submission.titlePlaceholder",
             )}
@@ -56,7 +56,7 @@ export function ContestDetailParticipantSubmissionCard({
             rows={5}
             value={submissionSummary}
             onChange={(e) => setSubmissionSummary(e.target.value)}
-            className="min-h-32 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="min-h-32 w-full rounded-md border border-border bg-surface-base px-3 py-2 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
             placeholder={translate(
               "detail.forms.submission.summaryPlaceholder",
             )}
@@ -64,7 +64,7 @@ export function ContestDetailParticipantSubmissionCard({
           <input
             value={submissionDemoUrl}
             onChange={(e) => setSubmissionDemoUrl(e.target.value)}
-            className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
             placeholder={translate(
               "detail.forms.submission.demoUrlPlaceholder",
             )}
@@ -72,7 +72,7 @@ export function ContestDetailParticipantSubmissionCard({
           <input
             value={submissionRepoUrl}
             onChange={(e) => setSubmissionRepoUrl(e.target.value)}
-            className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
             placeholder={translate(
               "detail.forms.submission.repoUrlPlaceholder",
             )}
@@ -80,7 +80,7 @@ export function ContestDetailParticipantSubmissionCard({
           <input
             value={submissionSlideUrl}
             onChange={(e) => setSubmissionSlideUrl(e.target.value)}
-            className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
             placeholder={translate(
               "detail.forms.submission.slideUrlPlaceholder",
             )}
@@ -102,7 +102,7 @@ export function ContestDetailParticipantSubmissionCard({
                 ? translate("detail.forms.submission.updateLabel")
                 : translate("detail.forms.submission.submitLabel")}
           </Button>
-          <p className="text-xs leading-5 text-muted-foreground">
+          <p className="text-xs leading-5 text-foreground-muted">
             {translate("detail.participant.submissionFooterHint")}
           </p>
         </div>

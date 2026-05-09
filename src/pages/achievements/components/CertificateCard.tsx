@@ -25,7 +25,7 @@ export function CertificateCard({
   const { t } = useTranslation("common");
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   return (
-    <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-md border border-border-subtle bg-card shadow-card transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+    <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-md border border-border-subtle bg-surface-base transition-all duration-200 hover:-translate-y-0.5">
       <div
         className={cn(
           "h-1.5 w-full shrink-0",
@@ -35,7 +35,7 @@ export function CertificateCard({
         )}
       />
 
-      <div className="relative h-32 w-full shrink-0 overflow-hidden bg-muted/50 sm:h-36">
+      <div className="relative h-32 w-full shrink-0 overflow-hidden bg-surface-raised sm:h-36">
         <img
           src={imageUrl}
           alt=""
@@ -51,7 +51,7 @@ export function CertificateCard({
                 "flex size-9 shrink-0 items-center justify-center rounded-md sm:size-10",
                 cert.type === "online"
                   ? "bg-primary/10 text-primary"
-                  : "bg-primary-container text-on-primary-container dark:text-primary",
+                  : "bg-primary-muted text-primary",
               )}
             >
               <Award className="size-4 sm:size-5" aria-hidden />
@@ -62,14 +62,14 @@ export function CertificateCard({
                   "inline-block rounded-full px-2 py-0.5 text-xs font-medium",
                   cert.type === "online"
                     ? "bg-primary/10 text-primary"
-                    : "bg-primary-container text-on-primary-container dark:text-primary",
+                    : "bg-primary-muted text-primary",
                 )}
               >
                 {cert.type === "online"
                   ? t("achievements.certificates.type.online")
                   : t("achievements.certificates.type.offline")}
               </span>
-              <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+              <p className="mt-0.5 line-clamp-1 text-xs text-foreground-muted">
                 {cert.title}
               </p>
             </div>
@@ -84,7 +84,7 @@ export function CertificateCard({
           {cert.course}
         </h3>
 
-        <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+        <div className="mt-2 space-y-1 text-sm text-foreground-muted">
           <div className="flex items-center gap-2">
             <GraduationCap className="size-3.5 shrink-0" aria-hidden />
             <span className="truncate">{cert.instructor}</span>
@@ -118,7 +118,7 @@ export function CertificateCard({
             className={cn(
               cert.ocClaimStatus === "claimed"
                 ? "border-success/20 bg-success/10 text-success hover:bg-success/15"
-                : "border-border bg-background hover:bg-muted",
+                : "border-border bg-surface-base hover:bg-surface-raised",
             )}
           >
             <img

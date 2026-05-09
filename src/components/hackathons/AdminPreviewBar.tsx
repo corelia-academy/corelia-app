@@ -25,16 +25,16 @@ export function AdminPreviewBar({ title, statusLabel, primaryAction }: AdminPrev
   if (!isPublicContestSurface || dismissed) return null;
 
   return (
-    <div className="sticky top-0 z-30 -mx-4 mb-4 border-b border-border-subtle bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+    <div className="sticky top-0 z-30 -mx-4 mb-4 border-b border-border-subtle bg-surface-raised px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
       <div className="mx-auto flex w-full max-w-[1990px] flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-overlay px-3 py-1 text-xs font-medium text-foreground">
               <Eye className="size-3.5" aria-hidden />
               {t("previewBar.label")}
             </span>
             {statusLabel ? (
-              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/20 px-3 py-1 text-xs font-medium text-foreground">
+              <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-overlay px-3 py-1 text-xs font-medium text-foreground">
                 {t("previewBar.statusPrefix", { status: statusLabel })}
               </span>
             ) : null}

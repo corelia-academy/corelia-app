@@ -25,7 +25,7 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
 
   if (!isSelf) {
     return (
-      <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+      <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
         {t("userProfile.achievements.selfOnly")}
       </div>
     );
@@ -37,7 +37,7 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
+      <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
         {loading ? (
           <div className="space-y-3">
             <Skeleton className="h-10 w-full rounded-md" />
@@ -48,11 +48,11 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
         )}
       </div>
 
-      <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
+      <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
         <div className="text-sm font-medium text-foreground">
           {t("achievements.vaults.certificates.title")}
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-foreground-muted">
           {t("achievements.vaults.certificates.subtitle")}
         </p>
 
@@ -64,7 +64,7 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
               <Skeleton className="h-28 w-full rounded-md" />
             </div>
           ) : recentCertificates.length === 0 ? (
-            <div className="rounded-md border border-border-subtle bg-background p-4 text-sm text-muted-foreground">
+            <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted">
               {t("achievements.vaults.certificates.empty")}
             </div>
           ) : (
@@ -81,11 +81,11 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
         </div>
       </div>
 
-      <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-6">
+      <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
         <div className="text-sm font-medium text-foreground">
           {t("achievements.vaults.badges.title")}
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-foreground-muted">
           {t("achievements.vaults.badges.subtitle")}
         </p>
 
@@ -98,7 +98,7 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
               <Skeleton className="h-32 w-full rounded-md" />
             </div>
           ) : recentBadges.length === 0 ? (
-            <div className="rounded-md border border-border-subtle bg-background p-4 text-sm text-muted-foreground">
+            <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted">
               {t("achievements.vaults.badges.loading")}
             </div>
           ) : (

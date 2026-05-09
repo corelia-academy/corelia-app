@@ -18,10 +18,14 @@ export function HomeHeader({
   activePinnedProgram: PinnedProgramCard | null;
   featuredFocus: FocusCard | null;
 }) {
+  const featuredWrapperClassName = activePinnedProgram
+    ? "rounded-lg border border-primary/20 transition-colors duration-300 hover:border-primary/50 [box-shadow:0_0_0_1px_oklch(68%_0.20_255_/_0.08)] hover:[box-shadow:0_0_0_1px_oklch(68%_0.20_255_/_0.20)]"
+    : "rounded-lg border border-border-subtle";
+
   return (
-    <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-5">
+    <section className="rounded-lg border border-border-subtle bg-surface-base p-4 sm:p-5">
       <div className="flex flex-col gap-2">
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
           {loading ? t("home.syncing") : t("home.dashboard")}
         </div>
         {loading ? (
@@ -34,14 +38,14 @@ export function HomeHeader({
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               {t("home.sections.greeting", { name: firstName })}
             </h1>
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="text-sm leading-relaxed text-foreground-muted">
               {t("home.sections.greetingSubtitle")}
             </p>
           </>
         )}
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         {loading ? (
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-4 w-32 rounded-full" />
@@ -49,40 +53,47 @@ export function HomeHeader({
             <Skeleton className="h-4 w-full max-w-md rounded" />
           </div>
         ) : activePinnedProgram ? (
-          <div className="min-w-0">
-            <div className="inline-flex items-center rounded-full border border-border-subtle bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-              {activePinnedProgram.badge}
-            </div>
-            <div className="mt-2 line-clamp-2 text-sm font-medium text-foreground">
-              {activePinnedProgram.title}
-            </div>
-            <div className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-              {activePinnedProgram.description}
+          <div className={featuredWrapperClassName}>
+            <div className="p-4">
+              <div className="inline-flex items-center rounded-full border border-border bg-primary-muted px-3 py-1 text-xs font-medium text-primary">
+                {activePinnedProgram.badge}
+              </div>
+              <div className="mt-2 line-clamp-2 text-sm font-medium text-foreground">
+                {activePinnedProgram.title}
+              </div>
+              <div className="mt-1 line-clamp-2 text-sm leading-relaxed text-foreground-muted">
+                {activePinnedProgram.description}
+              </div>
+              <div className="mt-3 text-xs text-foreground-muted">
+                {activePinnedProgram.meta}
+              </div>
             </div>
           </div>
         ) : featuredFocus ? (
-          <div className="min-w-0">
-            <div className="inline-flex items-center rounded-full border border-border-subtle bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-              {featuredFocus.format === "online"
-                ? t("home.sections.featuredOnline")
-                : t("home.sections.featuredOffline")}
-            </div>
-            <div className="mt-2 line-clamp-2 text-sm font-medium text-foreground">
-              {featuredFocus.title}
-            </div>
-            <div className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-              {featuredFocus.nextStep}
-            </div>
-            <div className="mt-3">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{t("home.sections.progress")}</span>
-                <span>{featuredFocus.progress}%</span>
+          <div className={featuredWrapperClassName}>
+            <div className="p-4">
+              <div className="inline-flex items-center rounded-full border border-border bg-surface-raised px-3 py-1 text-xs font-medium text-foreground-muted">
+                {featuredFocus.format === "online"
+                  ? t("home.sections.featuredOnline")
+                  : t("home.sections.featuredOffline")}
               </div>
-                <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${featuredFocus.progress}%` }}
-                />
+              <div className="mt-2 line-clamp-2 text-sm font-medium text-foreground">
+                {featuredFocus.title}
+              </div>
+              <div className="mt-1 line-clamp-2 text-sm leading-relaxed text-foreground-muted">
+                {featuredFocus.nextStep}
+              </div>
+              <div className="mt-3">
+                <div className="flex items-center justify-between text-xs text-foreground-muted">
+                  <span>{t("home.sections.progress")}</span>
+                  <span>{featuredFocus.progress}%</span>
+                </div>
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-raised">
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${featuredFocus.progress}%` }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -91,13 +102,13 @@ export function HomeHeader({
             <div className="text-sm font-medium text-foreground">
               {t("home.sections.startFromCatalogTitle")}
             </div>
-            <div className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            <div className="mt-1 text-sm leading-relaxed text-foreground-muted">
               {t("home.sections.startFromCatalogSubtitle")}
             </div>
           </div>
         )}
 
-        <div className="flex shrink-0 gap-2">
+        <div className="flex shrink-0 gap-2 sm:justify-end">
           {!loading ? (
             <>
               <Button

@@ -90,7 +90,7 @@ export function LoginEmailPasswordSection({
             <button
               type="button"
               onClick={onForgotPassword}
-              className="ml-auto text-sm text-muted-foreground underline-offset-2 hover:underline"
+              className="ml-auto text-sm text-foreground-muted underline-offset-2 hover:underline"
             >
               {t("login.actions.forgotPassword")}
             </button>
@@ -178,7 +178,7 @@ export function LoginEmailPasswordSection({
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-warning/30 bg-background/50"
+            className="w-full border-warning/30 bg-surface-base"
                 disabled={Boolean(loading || resendLoading)}
                 onClick={() => void onResendConfirmation()}
               >

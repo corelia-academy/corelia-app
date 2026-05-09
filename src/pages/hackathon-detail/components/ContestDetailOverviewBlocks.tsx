@@ -25,7 +25,7 @@ export function ContestDetailOverviewBlocks({
                   ? translate("detail.labels.contextManage")
                   : translate("detail.labels.contextPublic")}
               </h2>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
                 {contest.description}
               </p>
             </CardContent>
@@ -59,7 +59,7 @@ export function ContestDetailOverviewBlocks({
                 <h2 className="text-lg font-semibold text-foreground">
                   {translate("workspace.manage.operatingModelTitle")}
                 </h2>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2 text-sm text-foreground-muted">
                   {translate("workspace.manage.operatingModelDescription")}
                 </p>
               </div>
@@ -69,12 +69,12 @@ export function ContestDetailOverviewBlocks({
               {manageCollaborationLanes.map((lane) => (
                 <div
                   key={lane.title}
-                  className="rounded-md border border-border-subtle bg-background p-4"
+                  className="rounded-md border border-border-subtle bg-surface-base p-4"
                 >
                   <div className="text-sm font-medium text-foreground">
                     {lane.title}
                   </div>
-                  <div className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  <div className="mt-2 text-sm leading-relaxed text-foreground-muted">
                     {lane.description}
                   </div>
                 </div>
@@ -82,47 +82,47 @@ export function ContestDetailOverviewBlocks({
             </div>
 
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-md border border-border-subtle bg-background p-4">
-                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+                <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                   {translate("workspace.manage.phase1Header")}
                 </div>
                 <div className="mt-2 text-sm font-medium text-foreground">
                   {translate("workspace.manage.phase1Title")}
                 </div>
-                <div className="mt-1 text-sm text-muted-foreground">
+                <div className="mt-1 text-sm text-foreground-muted">
                   {translate("workspace.manage.phase1Body")}
                 </div>
               </div>
-              <div className="rounded-md border border-border-subtle bg-background p-4">
-                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+                <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                   {translate("workspace.manage.phase2Header")}
                 </div>
                 <div className="mt-2 text-sm font-medium text-foreground">
                   {translate("workspace.manage.phase2Title")}
                 </div>
-                <div className="mt-1 text-sm text-muted-foreground">
+                <div className="mt-1 text-sm text-foreground-muted">
                   {translate("workspace.manage.phase2Body")}
                 </div>
               </div>
-              <div className="rounded-md border border-border-subtle bg-background p-4">
-                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+                <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                   {translate("workspace.manage.phase3Header")}
                 </div>
                 <div className="mt-2 text-sm font-medium text-foreground">
                   {translate("workspace.manage.phase3Title")}
                 </div>
-                <div className="mt-1 text-sm text-muted-foreground">
+                <div className="mt-1 text-sm text-foreground-muted">
                   {translate("workspace.manage.phase3Body")}
                 </div>
               </div>
-              <div className="rounded-md border border-border-subtle bg-background p-4">
-                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+                <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                   {translate("workspace.manage.phase4Header")}
                 </div>
                 <div className="mt-2 text-sm font-medium text-foreground">
                   {translate("workspace.manage.phase4Title")}
                 </div>
-                <div className="mt-1 text-sm text-muted-foreground">
+                <div className="mt-1 text-sm text-foreground-muted">
                   {translate("workspace.manage.phase4Body")}
                 </div>
               </div>

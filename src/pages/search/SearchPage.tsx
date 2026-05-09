@@ -81,7 +81,7 @@ export default function SearchPage() {
           <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
             {t("search.title")}
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-foreground-muted">
             {q
               ? t("search.queryLine", { query: q })
               : t("search.enterQueryHint")}
@@ -98,9 +98,9 @@ export default function SearchPage() {
           </div>
         ) : error ? (
           <div className="flex flex-col items-center gap-3 py-14 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+            <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
               <ShieldAlert
-                className="size-6 text-muted-foreground"
+                className="size-6 text-foreground-subtle"
                 aria-hidden
               />
             </div>
@@ -109,7 +109,7 @@ export default function SearchPage() {
             </div>
           </div>
         ) : !q ? null : items.length === 0 ? (
-          <div className="rounded-md border border-border-subtle bg-card p-4 text-sm text-muted-foreground shadow-card sm:p-6">
+          <div className="rounded-lg border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
             {t("search.empty")}
           </div>
         ) : (
@@ -118,14 +118,14 @@ export default function SearchPage() {
               <NavLink
                 key={`${item.entity_type}:${item.entity_id}`}
                 to={item.href}
-                className="block rounded-md border border-border-subtle bg-card p-4 shadow-card transition hover:bg-muted/40"
+                className="block rounded-lg border border-border-subtle bg-surface-base p-4 transition-colors duration-150 hover:bg-surface-raised"
               >
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold text-foreground">
                     {item.title}
                   </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                    <span className="rounded-full border border-border-subtle bg-background/60 px-2 py-0.5">
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground-muted">
+                    <span className="rounded-full border border-border bg-surface-raised px-2 py-0.5">
                       {t(`search.group.${item.entity_type}` as never, {
                         defaultValue: item.entity_type,
                       })}

@@ -12,7 +12,7 @@ export function InstructorDocumentList({
   renderMeta: (doc: PartnerProfileDocument) => React.ReactNode;
 }) {
   if (docs.length === 0) {
-    return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
+    return <p className="text-sm text-foreground-muted">{emptyLabel}</p>;
   }
 
   return (
@@ -23,7 +23,7 @@ export function InstructorDocumentList({
         .map((doc) => (
           <li
             key={doc.path}
-            className="flex items-center justify-between gap-3 rounded-xl border border-border-subtle bg-muted/25 px-3 py-3"
+            className="flex items-center justify-between gap-3 rounded-xl border border-border-subtle bg-surface-base px-3 py-3"
           >
             <div className="min-w-0">
               <a
@@ -35,9 +35,9 @@ export function InstructorDocumentList({
               >
                 {doc.name}
               </a>
-              <div className="text-xs text-muted-foreground">{renderMeta(doc)}</div>
+              <div className="text-xs text-foreground-muted">{renderMeta(doc)}</div>
             </div>
-            <span className="shrink-0 text-xs text-muted-foreground">
+            <span className="shrink-0 text-xs text-foreground-muted">
               {new Date(doc.uploaded_at).toLocaleDateString(intlLocale())}
             </span>
           </li>

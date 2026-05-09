@@ -107,6 +107,7 @@ export interface ContestWinner {
 
 export interface Contest {
   id: string;
+  slug?: string | null;
   title: string;
   tagline: string;
   description: string | null;
@@ -149,6 +150,7 @@ export interface Contest {
 }
 
 export interface ContestInsert {
+  slug?: string | null;
   title: string;
   tagline: string;
   description?: string | null;
@@ -181,6 +183,7 @@ export interface ContestInsert {
 }
 
 export interface ContestUpdate {
+  slug?: string | null;
   title?: string;
   tagline?: string;
   description?: string | null;

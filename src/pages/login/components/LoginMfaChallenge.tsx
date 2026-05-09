@@ -169,7 +169,7 @@ export function LoginMfaChallenge({
   if (loadingFactors) {
     return (
       <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-8">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
+        <Loader2 className="size-8 animate-spin text-foreground-muted" aria-hidden />
       </div>
     );
   }
@@ -180,14 +180,14 @@ export function LoginMfaChallenge({
         <h1 className="text-2xl font-normal tracking-tight text-foreground">
           {t("login.title.mfa")}
         </h1>
-        <p className="text-balance text-sm text-muted-foreground">{subtitle}</p>
+        <p className="text-balance text-sm text-foreground-muted">{subtitle}</p>
         {factor?.kind === "phone" && factor.phone ? (
-          <p className="text-xs text-muted-foreground">{factor.phone}</p>
+          <p className="text-xs text-foreground-muted">{factor.phone}</p>
         ) : null}
       </div>
 
       {factor?.kind === "totp" ? (
-        <p className="text-center text-sm text-muted-foreground">{t("login.mfa.totpHint")}</p>
+        <p className="text-center text-sm text-foreground-muted">{t("login.mfa.totpHint")}</p>
       ) : null}
 
       {resendEmailSuccess ? (
@@ -213,9 +213,9 @@ export function LoginMfaChallenge({
                   : t("login.mfa.sendCode")}
             </Button>
             {challengeId ? (
-              <p className="text-center text-xs text-muted-foreground">{t("login.mfa.sentHint")}</p>
+              <p className="text-center text-xs text-foreground-muted">{t("login.mfa.sentHint")}</p>
             ) : (
-              <p className="text-center text-xs text-muted-foreground">{t("login.mfa.sendCodeHint")}</p>
+              <p className="text-center text-xs text-foreground-muted">{t("login.mfa.sendCodeHint")}</p>
             )}
           </div>
         ) : null}
@@ -256,7 +256,7 @@ export function LoginMfaChallenge({
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-warning/30 bg-background/50"
+                    className="w-full border-warning/30 bg-surface-base"
                     disabled={busy || resendEmailBusy}
                     onClick={() => void handleResendConfirmationEmail()}
                   >
@@ -295,7 +295,7 @@ export function LoginMfaChallenge({
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-warning/30 bg-background/50"
+                className="w-full border-warning/30 bg-surface-base"
                 disabled={busy || resendEmailBusy}
                 onClick={() => void handleResendConfirmationEmail()}
               >
@@ -314,7 +314,7 @@ export function LoginMfaChallenge({
         <Button
           type="button"
           variant="ghost"
-          className="w-full text-muted-foreground"
+          className="w-full text-foreground-muted"
           disabled={busy}
           onClick={() => void onCancel()}
         >

@@ -81,17 +81,18 @@ function addRecentSearch(query: string) {
   const q = query.trim();
   if (!q) return;
   const curr = readRecentSearches();
-  const next = [q, ...curr.filter((x) => x.toLowerCase() !== q.toLowerCase())].slice(
-    0,
-    MAX_RECENT_SEARCHES,
-  );
+  const next = [
+    q,
+    ...curr.filter((x) => x.toLowerCase() !== q.toLowerCase()),
+  ].slice(0, MAX_RECENT_SEARCHES);
   writeRecentSearches(next);
 }
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, profile, authInitialized, signOut, user } = useAuth();
+  const { isAuthenticated, profile, authInitialized, signOut, user } =
+    useAuth();
   const { t } = useTranslation("common");
   const { t: tAccount } = useTranslation("account");
   const { isInitialized, authState, ocAuth } = useOCAuth();
@@ -106,7 +107,9 @@ export default function Header() {
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
   const [trending, setTrending] = useState<TrendingSearchRow[]>([]);
-  const [recentSearches, setRecentSearches] = useState<string[]>(() => readRecentSearches());
+  const [recentSearches, setRecentSearches] = useState<string[]>(() =>
+    readRecentSearches(),
+  );
   const searchWrapRef = useRef<HTMLDivElement | null>(null);
   const latestReqIdRef = useRef(0);
 
@@ -125,9 +128,18 @@ export default function Header() {
 
   const displayName = profile?.ocid
     ? profile.ocid
-    : (profile?.full_name ?? metaName ?? profile?.id?.slice(0, 8) ?? t("user.fallbackName"));
+    : (profile?.full_name ??
+      metaName ??
+      profile?.id?.slice(0, 8) ??
+      t("user.fallbackName"));
   const avatarUrl = profile?.avatar_url ?? metaAvatar ?? undefined;
-  const avatarFallback = (profile?.full_name ?? metaName ?? profile?.id ?? user?.id ?? "U").charAt(0);
+  const avatarFallback = (
+    profile?.full_name ??
+    metaName ??
+    profile?.id ??
+    user?.id ??
+    "U"
+  ).charAt(0);
   const isOcidConnected = Boolean(profile?.ocid);
 
   const accountDropdownItems = useMemo(
@@ -271,7 +283,9 @@ export default function Header() {
       } catch (e) {
         if (latestReqIdRef.current !== reqId) return;
         setSuggestions([]);
-        setSuggestionsError(e instanceof Error ? e.message : t("search.errors.loadFailed"));
+        setSuggestionsError(
+          e instanceof Error ? e.message : t("search.errors.loadFailed"),
+        );
       } finally {
         if (latestReqIdRef.current === reqId) setSuggestionsLoading(false);
       }
@@ -295,7 +309,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex w-full border-b border-border-subtle bg-card/95 backdrop-blur-md supports-backdrop-filter:bg-card/90">
+    <header className="sticky top-0 z-40 flex w-full border-b border-border-subtle bg-surface-raised">
       <div className="mx-auto flex h-14 w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="shrink-0 size-7">
@@ -326,7 +340,7 @@ export default function Header() {
         >
           <div ref={searchWrapRef} className="relative w-full max-w-xl">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-muted"
               aria-hidden
             />
             <input
@@ -344,7 +358,7 @@ export default function Header() {
                   setSearchOpen(false);
                 }
               }}
-              className="h-10 w-full rounded-full border border-border bg-background pl-9 pr-3 text-sm outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-10 w-full rounded-full border border-border bg-surface-base pl-9 pr-3 text-sm text-foreground outline-hidden transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
               placeholder={t("search.placeholder")}
               aria-label={t("search.placeholder")}
             />
@@ -354,23 +368,28 @@ export default function Header() {
               recentSearches.length > 0 ||
               trending.length > 0 ||
               suggestionsLoading) ? (
-              <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-xl border border-border-subtle bg-card shadow-lg">
+              <div className="absolute left-0 right-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-xl border border-border bg-surface-overlay">
                 <div className="max-h-[60vh] overflow-auto p-2">
                   {searchText.trim() ? (
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted/40"
+                      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
                       onClick={() => void handleSearchSubmit(searchText)}
                     >
                       <div className="min-w-0">
                         <div className="truncate font-medium text-foreground">
-                          {t("search.suggest.searchFor", { query: searchText.trim() })}
+                          {t("search.suggest.searchFor", {
+                            query: searchText.trim(),
+                          })}
                         </div>
-                        <div className="mt-0.5 text-xs text-muted-foreground">
+                        <div className="mt-0.5 text-xs text-foreground-muted">
                           {t("search.suggest.enterToSeeAll")}
                         </div>
                       </div>
-                      <Search className="size-4 text-muted-foreground" aria-hidden />
+                      <Search
+                        className="size-4 text-foreground-muted"
+                        aria-hidden
+                      />
                     </button>
                   ) : null}
 
@@ -378,7 +397,7 @@ export default function Header() {
                     <div className="grid gap-3 p-1">
                       {recentSearches.length ? (
                         <div>
-                          <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                          <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
                             {t("search.suggest.recent")}
                           </div>
                           <div className="grid">
@@ -386,11 +405,16 @@ export default function Header() {
                               <button
                                 key={`recent:${q}`}
                                 type="button"
-                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted/40"
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
                                 onClick={() => void handleSearchSubmit(q)}
                               >
-                                <Search className="size-4 text-muted-foreground" aria-hidden />
-                                <span className="truncate text-foreground">{q}</span>
+                                <Search
+                                  className="size-4 text-foreground-muted"
+                                  aria-hidden
+                                />
+                                <span className="truncate text-foreground">
+                                  {q}
+                                </span>
                               </button>
                             ))}
                           </div>
@@ -399,7 +423,7 @@ export default function Header() {
 
                       {trending.length ? (
                         <div>
-                          <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                          <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
                             {t("search.suggest.trending")}
                           </div>
                           <div className="grid">
@@ -407,11 +431,18 @@ export default function Header() {
                               <button
                                 key={`trend:${row.query}`}
                                 type="button"
-                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted/40"
-                                onClick={() => void handleSearchSubmit(row.query)}
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised"
+                                onClick={() =>
+                                  void handleSearchSubmit(row.query)
+                                }
                               >
-                                <Search className="size-4 text-muted-foreground" aria-hidden />
-                                <span className="truncate text-foreground">{row.query}</span>
+                                <Search
+                                  className="size-4 text-foreground-muted"
+                                  aria-hidden
+                                />
+                                <span className="truncate text-foreground">
+                                  {row.query}
+                                </span>
                               </button>
                             ))}
                           </div>
@@ -419,23 +450,23 @@ export default function Header() {
                       ) : null}
                     </div>
                   ) : suggestionsLoading ? (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                    <div className="px-3 py-2 text-sm text-foreground-muted">
                       {t("status.loading")}
                     </div>
                   ) : suggestionsError ? (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                    <div className="px-3 py-2 text-sm text-foreground-muted">
                       {suggestionsError}
                     </div>
                   ) : suggestions.length ? (
                     <div className="mt-1 grid">
-                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                      <div className="px-2 py-1 text-xs font-medium text-foreground-muted">
                         {t("search.suggest.suggestions")}
                       </div>
                       {suggestions.map((item) => (
                         <button
                           key={`${item.entity_type}:${item.entity_id}`}
                           type="button"
-                          className="flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left hover:bg-muted/40"
+                          className="flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left transition-colors duration-150 hover:bg-surface-raised"
                           onClick={() => {
                             addRecentSearch(searchText.trim());
                             setRecentSearches(readRecentSearches());
@@ -447,14 +478,19 @@ export default function Header() {
                             <div className="truncate text-sm font-medium text-foreground">
                               {item.title}
                             </div>
-                            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                              <span className="rounded-full border border-border-subtle bg-background/60 px-2 py-0.5">
-                                {t(`search.group.${item.entity_type}` as never, {
-                                  defaultValue: item.entity_type,
-                                })}
+                            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground-muted">
+                              <span className="rounded-full border border-border bg-surface-base px-2 py-0.5">
+                                {t(
+                                  `search.group.${item.entity_type}` as never,
+                                  {
+                                    defaultValue: item.entity_type,
+                                  },
+                                )}
                               </span>
                               {item.subtitle ? (
-                                <span className="truncate">{item.subtitle}</span>
+                                <span className="truncate">
+                                  {item.subtitle}
+                                </span>
                               ) : null}
                             </div>
                           </div>
@@ -463,14 +499,14 @@ export default function Header() {
 
                       <button
                         type="button"
-                        className="mt-1 flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted/40"
+                        className="mt-1 flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm text-foreground-muted transition-colors duration-150 hover:bg-surface-raised"
                         onClick={() => void handleSearchSubmit(searchText)}
                       >
                         {t("search.suggest.viewAllResults")}
                       </button>
                     </div>
                   ) : (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                    <div className="px-3 py-2 text-sm text-foreground-muted">
                       {t("search.suggest.noQuickResults")}
                     </div>
                   )}
@@ -482,7 +518,7 @@ export default function Header() {
 
         <div className="flex items-center gap-2">
           {!authInitialized ? (
-            <div className="h-9 w-28 animate-pulse rounded-full bg-muted md:h-10" />
+            <div className="h-9 w-28 animate-pulse rounded-full bg-surface-raised md:h-10" />
           ) : isAuthenticated ? (
             <div className="flex items-center gap-2">
               <DropdownMenu>
@@ -490,20 +526,15 @@ export default function Header() {
                   render={
                     <button
                       type="button"
-                      className={`inline-flex h-11 items-center gap-2 rounded-full border border-border-subtle pr-2 text-left text-sm transition-colors duration-150 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:pr-3 ${
+                      className={`inline-flex h-10 items-center gap-2 rounded-full border border-border pr-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:pr-3 ${
                         isOcidConnected
-                          ? "bg-primary-container text-on-primary-container hover:bg-primary-container"
-                          : "bg-card"
+                          ? "bg-primary-muted text-primary hover:bg-primary-muted"
+                          : "bg-surface-base"
                       } cursor-pointer`}
                     >
-                      <Avatar className="size-9">
-                        <AvatarImage
-                          src={avatarUrl}
-                          alt={displayName}
-                        />
-                        <AvatarFallback>
-                          {avatarFallback}
-                        </AvatarFallback>
+                      <Avatar className="size-10">
+                        <AvatarImage src={avatarUrl} alt={displayName} />
+                        <AvatarFallback>{avatarFallback}</AvatarFallback>
                       </Avatar>
                       <span className="hidden max-w-48 truncate md:inline">
                         {displayName}
@@ -511,10 +542,7 @@ export default function Header() {
                     </button>
                   }
                 />
-                <DropdownMenuContent
-                  align="end"
-                  className="z-20 min-w-56 rounded-md border-border shadow-lg"
-                >
+                <DropdownMenuContent align="end" className="z-20 min-w-56">
                   {accountDropdownItems.map((item) => (
                     <DropdownMenuItem
                       key={item.to}
@@ -527,7 +555,11 @@ export default function Header() {
                   ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => void signOut().then(() => navigate("/login", { replace: true }))}
+                    onClick={() =>
+                      void signOut().then(() =>
+                        navigate("/login", { replace: true }),
+                      )
+                    }
                     variant="destructive"
                     className="min-h-11 text-sm leading-relaxed"
                   >
@@ -541,7 +573,7 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={handleOcLogoClick}
-                  className="hidden h-10 items-center justify-center gap-2 rounded-full border border-border-subtle bg-[#141bec] px-2.5 py-2 text-left text-sm cursor-pointer md:inline-flex"
+                  className="hidden h-10 items-center justify-center gap-2 rounded-full border border-border bg-primary px-2.5 py-2 text-left text-sm cursor-pointer text-primary-foreground transition-colors duration-150 hover:opacity-90 md:inline-flex"
                   aria-label={t("openCampusConnect.header.ariaLabel")}
                 >
                   <img
@@ -568,7 +600,7 @@ export default function Header() {
             <NavLink
               to="/login"
               state={{ from: location }}
-              className="inline-flex items-center rounded-full border border-border-subtle bg-card/70 px-3 py-1.5 text-sm text-foreground shadow-card transition-colors hover:bg-card"
+              className="inline-flex items-center rounded-full border border-border bg-surface-base px-3 py-1.5 text-sm text-foreground transition-colors duration-150 hover:bg-surface-raised"
             >
               {t("tabs.signIn")}
             </NavLink>

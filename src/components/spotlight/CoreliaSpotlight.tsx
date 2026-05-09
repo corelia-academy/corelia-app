@@ -54,15 +54,15 @@ export function CoreliaSpotlight({
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-md border border-border-subtle bg-card p-5 shadow-card sm:p-6">
+    <section className="rounded-lg border border-border-subtle bg-surface-base p-5 sm:p-6">
       <div className="flex flex-col gap-2">
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
           {eyebrow}
         </div>
         <h2 className="text-lg font-semibold tracking-tight text-foreground">
           {title}
         </h2>
-        <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
+        <p className="max-w-3xl text-sm leading-relaxed text-foreground-muted">
           {description}
         </p>
       </div>
@@ -80,12 +80,12 @@ export function CoreliaSpotlight({
               key={item.id}
               to={item.href}
               className={cn(
-                "group cursor-pointer overflow-hidden rounded-md border border-border-subtle p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md",
+                "group cursor-pointer overflow-hidden rounded-lg border border-border-subtle p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised",
                 accent.shell,
               )}
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="rounded-full border border-border-subtle bg-background/85 px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <div className="rounded-full border border-border bg-surface-base px-3 py-1 text-xs font-medium uppercase tracking-widest text-foreground-muted">
                   {item.badge}
                 </div>
                 {item.icon ? (
@@ -103,12 +103,12 @@ export function CoreliaSpotlight({
               <div className="mt-4 text-lg font-semibold leading-snug text-foreground">
                 {item.title}
               </div>
-              <div className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              <div className="mt-2 text-sm leading-relaxed text-foreground-muted">
                 {item.description}
               </div>
 
               {item.meta ? (
-                <div className="mt-4 rounded-md border border-border-subtle bg-background/80 px-3 py-2 text-xs text-muted-foreground">
+                <div className="mt-4 rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-xs text-foreground-muted">
                   {item.meta}
                 </div>
               ) : null}

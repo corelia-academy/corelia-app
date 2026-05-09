@@ -41,7 +41,7 @@ export default function CareerDetailPage() {
   if (error) {
     return (
       <div className="container-app py-6 sm:py-8">
-        <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5 shadow-card">
+        <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5">
           <p className="text-sm font-medium text-destructive">
             {t("errors.loadErrorTitle")}
           </p>
@@ -63,25 +63,25 @@ export default function CareerDetailPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {track.title}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">{track.description}</p>
+          <p className="mt-1 text-sm text-foreground-muted">{track.description}</p>
         </div>
 
         <div className="flex flex-wrap gap-2 sm:justify-end">
-          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-1 text-xs text-foreground-muted">
             <BookOpen className="size-3 shrink-0" aria-hidden />
             {t("labels.coursesCount", { count: track.courseCount })}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-1 text-xs text-foreground-muted">
             <Clock className="size-3 shrink-0" aria-hidden />
             {formatDuration(track.totalDurationSeconds)}
           </span>
           {track.has_certificate ? (
-            <span className="inline-flex items-center gap-1 rounded-md bg-primary-container px-2 py-1 text-xs font-medium text-on-primary-container">
+            <span className="inline-flex items-center gap-1 rounded-md bg-primary-muted px-2 py-1 text-xs font-medium text-primary">
               <BadgeCheck className="size-3 shrink-0" aria-hidden />
               {t("labels.certificateIncluded")}
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-1 text-xs text-foreground-muted">
               <BadgeCheck className="size-3 shrink-0" aria-hidden />
               {t("labels.certificateNotIncluded")}
             </span>
@@ -91,7 +91,7 @@ export default function CareerDetailPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-7">
-          <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+          <section className="rounded-md border border-border-subtle bg-surface-base p-4">
             <h2 className="text-sm font-semibold text-foreground">
               {t("detail.whatYoullLearn")}
             </h2>
@@ -100,19 +100,19 @@ export default function CareerDetailPage() {
               <ul className="space-y-2 text-sm text-foreground">
                 {track.what_youll_learn.map((item, idx) => (
                   <li key={idx} className="flex gap-2">
-                    <Dot className="mt-0.5 size-4 text-muted-foreground" aria-hidden />
+                    <Dot className="mt-0.5 size-4 text-foreground-muted" aria-hidden />
                     <span className="leading-relaxed">{item}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-foreground-muted">
                 {t("detail.emptyWhatYoullLearn")}
               </p>
             )}
           </section>
 
-          <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+          <section className="rounded-md border border-border-subtle bg-surface-base p-4">
             <h2 className="text-sm font-semibold text-foreground">
               {t("detail.includedCourses")}
             </h2>
@@ -122,9 +122,9 @@ export default function CareerDetailPage() {
                 <Link
                   key={item.course.id}
                   to={`/courses/${item.course.slug || item.course.id}`}
-                  className="group flex items-center gap-3 rounded-md border border-border-subtle bg-card px-3 py-2 transition-colors hover:bg-muted/40"
+                  className="group flex items-center gap-3 rounded-md border border-border-subtle bg-surface-base px-3 py-2 transition-colors duration-150 hover:bg-surface-raised"
                 >
-                  <div className="size-12 shrink-0 overflow-hidden rounded-md bg-muted/50">
+                  <div className="size-12 shrink-0 overflow-hidden rounded-md bg-surface-raised">
                     <img
                       src={item.course.thumbnail_url}
                       alt={item.course.title}
@@ -135,7 +135,7 @@ export default function CareerDetailPage() {
                     <div className="line-clamp-2 text-sm font-medium text-foreground">
                       {item.course.title}
                     </div>
-                    <div className="mt-1 text-xs text-muted-foreground">
+                    <div className="mt-1 text-xs text-foreground-muted">
                       {formatDuration(Number(item.course.total_duration_seconds) || 0)}
                     </div>
                   </div>
@@ -146,7 +146,7 @@ export default function CareerDetailPage() {
         </div>
 
         <div className="space-y-6 lg:col-span-5">
-          <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+          <section className="rounded-md border border-border-subtle bg-surface-base p-4">
             <h2 className="text-sm font-semibold text-foreground">
               {t("detail.prerequisites")}
             </h2>
@@ -155,19 +155,19 @@ export default function CareerDetailPage() {
               <ul className="space-y-2 text-sm text-foreground">
                 {track.prerequisites.map((item, idx) => (
                   <li key={idx} className="flex gap-2">
-                    <Dot className="mt-0.5 size-4 text-muted-foreground" aria-hidden />
+                    <Dot className="mt-0.5 size-4 text-foreground-muted" aria-hidden />
                     <span className="leading-relaxed">{item}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-foreground-muted">
                 {t("detail.emptyPrerequisites")}
               </p>
             )}
           </section>
 
-          <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+          <section className="rounded-md border border-border-subtle bg-surface-base p-4">
             <h2 className="text-sm font-semibold text-foreground">
               {t("detail.nextSteps")}
             </h2>

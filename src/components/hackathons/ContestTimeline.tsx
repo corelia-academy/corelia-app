@@ -23,14 +23,14 @@ export function ContestTimeline({
       {items.map((item) => (
         <div
           key={item.key}
-          className="rounded-2xl border border-border-subtle bg-background p-4"
+          className="rounded-lg border border-border-subtle bg-surface-base p-4"
         >
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-primary-muted text-primary">
               {item.icon}
             </div>
             <div className="min-w-0">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                 {item.label}
               </div>
               <div className="mt-1 truncate text-sm font-medium text-foreground">
@@ -50,11 +50,11 @@ export function ContestTimelineVertical({ rows }: { rows: ContestTimelineRow[] }
       {rows.map((row) => (
         <li key={row.key} className="relative pb-8 last:pb-0">
           <span
-            className="absolute -left-[21px] mt-1.5 size-2.5 rounded-full border-2 border-primary bg-background"
+            className="absolute -left-[21px] mt-1.5 size-2.5 rounded-full border-2 border-primary bg-surface-base"
             aria-hidden
           />
           <div className="text-sm font-medium text-foreground">{row.title}</div>
-          <div className="mt-1 text-sm text-muted-foreground">{row.datetimeLabel}</div>
+          <div className="mt-1 text-sm text-foreground-muted">{row.datetimeLabel}</div>
         </li>
       ))}
     </ul>

@@ -27,10 +27,10 @@ export function ContestPublicTimelineSection(props: {
             <h2 className="text-lg font-semibold text-foreground">
               {t("detail.sections.timeline")}
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-foreground-muted">
               {t("detail.sections.timelineDescription")}
             </p>
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-2 text-xs text-foreground-muted">
               {t("detail.sections.timelineUtcNote")}
             </p>
           </div>

@@ -122,7 +122,7 @@ export default function InstructorContests() {
 
   if (loading) {
     return (
-      <div className="flex min-h-80 items-center justify-center gap-3 text-sm text-muted-foreground">
+      <div className="flex min-h-80 items-center justify-center gap-3 text-sm text-foreground-muted">
         <Loader2 className="size-4 animate-spin" aria-hidden />
         {t("instructor.loadingWorkspace")}
       </div>
@@ -140,16 +140,16 @@ export default function InstructorContests() {
       <PageSectionCard className="mb-4">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
               {t("instructor.hero.eyebrow")}
             </p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
               {t("instructor.hero.title")}
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground sm:text-sm">
+            <p className="mt-2 text-sm text-foreground-muted sm:text-sm">
               {t("instructor.hero.description")}
             </p>
-            <p className="mt-2 text-sm text-muted-foreground sm:text-sm">
+            <p className="mt-2 text-sm text-foreground-muted sm:text-sm">
               {t("instructor.statsSummary", {
                 total: stats.total,
                 draft: stats.draft,
@@ -161,13 +161,13 @@ export default function InstructorContests() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
               {t("instructor.hero.pillApplications")}
             </span>
-            <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
+            <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
               {t("instructor.hero.pillJudging")}
             </span>
-            <Button type="button" onClick={() => navigate("/admin/hackathons/new")}>
+            <Button type="button" onClick={() => navigate("/hackathons/new")}>
               <PlusCircle className="size-4" aria-hidden />
               {t("instructor.hero.create")}
             </Button>
@@ -176,10 +176,10 @@ export default function InstructorContests() {
       </PageSectionCard>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("instructor.stats.total")}
               </p>
               <p className="mt-2 text-2xl font-semibold text-foreground">{stats.total}</p>
@@ -189,10 +189,10 @@ export default function InstructorContests() {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("instructor.stats.draft")}
               </p>
               <p className="mt-2 text-2xl font-semibold text-foreground">{stats.draft}</p>
@@ -202,10 +202,10 @@ export default function InstructorContests() {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("instructor.stats.accepting")}
               </p>
               <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -217,10 +217,10 @@ export default function InstructorContests() {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("instructor.stats.running")}
               </p>
               <p className="mt-2 text-2xl font-semibold text-foreground">{stats.running}</p>
@@ -230,10 +230,10 @@ export default function InstructorContests() {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("instructor.stats.ended")}
               </p>
               <p className="mt-2 text-2xl font-semibold text-foreground">{stats.ended}</p>
@@ -243,10 +243,10 @@ export default function InstructorContests() {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("instructor.stats.submissions")}
               </p>
               <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -261,15 +261,15 @@ export default function InstructorContests() {
       </div>
 
       {items.length === 0 ? (
-        <div className="mt-4 rounded-lg border border-border-subtle bg-card shadow-card">
+        <div className="mt-4 rounded-lg border border-border-subtle bg-surface-base">
           <EmptyState
-            icon={<Trophy className="size-6 text-muted-foreground" aria-hidden />}
+            icon={<Trophy className="size-6 text-foreground-subtle" aria-hidden />}
             title={t("instructor.empty.title")}
             action={
               <Button
                 type="button"
                 size="sm"
-                onClick={() => navigate("/admin/hackathons/new")}
+                onClick={() => navigate("/hackathons/new")}
               >
                 {t("instructor.empty.createFirst")}
               </Button>
@@ -280,32 +280,35 @@ export default function InstructorContests() {
         <div className="mt-4 grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
           {items.map((contest) => {
             const listImg = contestListImageUrl(contest);
+            const contestSlug = contest.slug?.trim() || null;
             return (
             <article
               key={contest.id}
-              className="group flex h-full flex-col overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+              className="group flex h-full flex-col overflow-hidden rounded-lg border border-border-subtle bg-surface-base transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-surface-raised"
             >
               <ContestListCardThumbnail
                 src={listImg}
                 aspectClassName="aspect-[2/1]"
-                surfaceClassName="bg-gradient-to-br from-primary/10 via-muted to-muted"
+                surfaceClassName="bg-linear-to-br from-primary/10 via-surface-raised to-surface-raised"
                 emptyMinHeightClassName="min-h-[96px]"
                 trophyIconClassName="size-12 text-primary/35"
               />
               <button
                 type="button"
                 className="flex flex-1 flex-col p-4 text-left"
-                onClick={() => navigate(`/hackathons/${contest.id}/manage`)}
+                onClick={() =>
+                  navigate(contestSlug ? `/hackathons/${contestSlug}/manage` : "/hackathons/manage")
+                }
               >
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full bg-muted/70 px-3 py-1 text-xs font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
                     {contestListStatusLabel(
                       contest.status,
                       translate,
                       "instructor",
                     )}
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
                     {contest.status === "draft" ? (
                       <>
                         <EyeOff className="mr-1 size-3.5" aria-hidden />
@@ -318,7 +321,7 @@ export default function InstructorContests() {
                       </>
                     )}
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
+                  <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
                     {contestListLocationLabel(
                       contest.location,
                       translate,
@@ -329,10 +332,10 @@ export default function InstructorContests() {
                 <h3 className="mt-4 text-lg font-medium tracking-tight text-foreground">
                   {contest.title}
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                <p className="mt-2 text-sm leading-6 text-foreground-muted">
                   {contest.tagline}
                 </p>
-                <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
+                <div className="mt-4 grid gap-2 text-sm text-foreground-muted">
                   <ContestListCardDateRowInstructor>
                     {formatContestListDateRange(
                       contest.starts_at,
@@ -362,14 +365,20 @@ export default function InstructorContests() {
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => navigate(`/hackathons/${contest.id}/overview`)}
+                    onClick={() =>
+                      navigate(
+                        contestSlug ? `/hackathons/${contestSlug}/overview` : "/hackathons",
+                      )
+                    }
                   >
                     {t("instructor.listItem.viewPublic")}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate(`/hackathons/${contest.id}/manage`)}
+                    onClick={() =>
+                      navigate(contestSlug ? `/hackathons/${contestSlug}/manage` : "/hackathons/manage")
+                    }
                   >
                     {t("instructor.listItem.openWorkspace")}
                   </Button>
@@ -377,15 +386,27 @@ export default function InstructorContests() {
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     aria-label={t("instructor.listItem.moreActions")}
-                    className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    className="inline-flex size-9 items-center justify-center rounded-md text-foreground-muted transition-colors hover:bg-surface-raised hover:text-foreground"
                   >
                     <MoreHorizontal className="size-5" aria-hidden />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => navigate(`/hackathons/${contest.id}/manage`)}>
+                    <DropdownMenuItem
+                      onSelect={() =>
+                        navigate(
+                          contestSlug ? `/hackathons/${contestSlug}/manage` : "/hackathons/manage",
+                        )
+                      }
+                    >
                       {t("instructor.listItem.openWorkspace")}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => navigate(`/hackathons/${contest.id}/overview`)}>
+                    <DropdownMenuItem
+                      onSelect={() =>
+                        navigate(
+                          contestSlug ? `/hackathons/${contestSlug}/overview` : "/hackathons",
+                        )
+                      }
+                    >
                       {t("instructor.listItem.viewPublic")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -417,7 +438,7 @@ export default function InstructorContests() {
           <DialogHeader>
             <DialogTitle>{t("instructor.deleteDialog.title")}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground-muted">
             {contestToDelete?.title
               ? t("instructor.deleteDialog.descriptionWithTitle", { title: contestToDelete.title })
               : t("instructor.deleteDialog.description")}

@@ -15,15 +15,15 @@ export function ContestPublicProjectsSection(props: {
         <h2 className="text-lg font-semibold text-foreground">
           {t("detail.projects.sectionTitle")}
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-foreground-muted">
           {t("detail.projects.sectionDescription")}
         </p>
         {contest.status !== "ended" || contest.published_leaderboard.length === 0 ? (
-          <div className="mt-6 rounded-md border border-dashed border-border-subtle bg-background px-4 py-8 text-center">
+          <div className="mt-6 rounded-md border border-dashed border-border-subtle bg-surface-base px-4 py-8 text-center">
             <div className="text-sm font-medium text-foreground">
               {t("detail.projects.emptyTitle")}
             </div>
-            <div className="mt-2 text-sm text-muted-foreground">
+            <div className="mt-2 text-sm text-foreground-muted">
               {t("detail.projects.emptyHint")}
             </div>
           </div>
@@ -32,13 +32,13 @@ export function ContestPublicProjectsSection(props: {
             {contest.published_leaderboard.map((entry) => (
               <div
                 key={entry.submission_id}
-                className="flex flex-col rounded-md border border-border-subtle bg-background p-4"
+                className="flex flex-col rounded-md border border-border-subtle bg-surface-base p-4"
               >
-                <div className="text-xs text-muted-foreground">#{entry.rank}</div>
+                <div className="text-xs text-foreground-muted">#{entry.rank}</div>
                 <div className="mt-1 text-sm font-semibold text-foreground">
                   {entry.submission_title}
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">
+                <div className="mt-1 text-xs text-foreground-muted">
                   {entry.team_name || entry.contestant_name || entry.contestant_user_id}
                 </div>
                 <div className="mt-2 text-sm font-medium text-foreground">
@@ -48,7 +48,7 @@ export function ContestPublicProjectsSection(props: {
                   })}
                 </div>
                 {entry.summary ? (
-                  <p className="mt-3 line-clamp-4 text-xs leading-5 text-muted-foreground">
+                  <p className="mt-3 line-clamp-4 text-xs leading-5 text-foreground-muted">
                     {entry.summary}
                   </p>
                 ) : null}

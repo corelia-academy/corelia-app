@@ -14,27 +14,27 @@ export function ContestDetailLoadingCard({
     <PageContainer width="default">
       <Card>
         <CardContent className="flex min-h-80 flex-col items-center justify-center p-8 text-center">
-          <div className="rounded-full border border-border-subtle bg-muted/40 px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground-muted">
             {translate("detail.loading.eyebrow")}
           </div>
           <div className="mt-4 text-sm font-medium text-foreground">
             {translate("detail.loading.title")}
           </div>
-          <div className="mt-2 text-sm text-muted-foreground">
+          <div className="mt-2 text-sm text-foreground-muted">
             {translate("detail.loading.description")}
           </div>
           <div className="mt-4 grid w-full max-w-3xl gap-3 md:grid-cols-3">
-            <div className="rounded-md border border-border-subtle bg-background p-4 text-left">
+            <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-left">
               <Skeleton className="h-3 w-24 rounded-full" />
               <Skeleton className="mt-3 h-4 w-3/4 rounded-full" />
               <Skeleton className="mt-2 h-4 w-2/3 rounded-full" />
             </div>
-            <div className="rounded-md border border-border-subtle bg-background p-4 text-left">
+            <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-left">
               <Skeleton className="h-3 w-20 rounded-full" />
               <Skeleton className="mt-3 h-4 w-4/5 rounded-full" />
               <Skeleton className="mt-2 h-4 w-1/2 rounded-full" />
             </div>
-            <div className="rounded-md border border-border-subtle bg-background p-4 text-left">
+            <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-left">
               <Skeleton className="h-3 w-28 rounded-full" />
               <Skeleton className="mt-3 h-4 w-2/3 rounded-full" />
               <Skeleton className="mt-2 h-4 w-3/5 rounded-full" />
@@ -63,10 +63,10 @@ export function ContestDetailErrorCard({
           <div className="text-base font-medium text-foreground">
             {error || translate("detail.errors.deleteAccessDeniedFallback")}
           </div>
-          <div className="mt-2 max-w-xl text-sm text-muted-foreground">
+          <div className="mt-2 max-w-xl text-sm text-foreground-muted">
             {translate("detail.errorState.description")}
           </div>
-          <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-muted-foreground hover:text-foreground" />
+          <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-foreground-muted hover:text-foreground" />
           <Button
             render={<NavLink to="/hackathons" />}
             nativeButton={false}

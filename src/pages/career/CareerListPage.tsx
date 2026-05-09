@@ -33,7 +33,7 @@ export default function CareerListPage() {
   if (error) {
     return (
       <div className="container-app py-6 sm:py-8">
-        <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5 shadow-card">
+        <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5">
           <p className="text-sm font-medium text-destructive">
             {t("errors.loadErrorTitle")}
           </p>
@@ -52,21 +52,21 @@ export default function CareerListPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           {t("list.title")}
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-foreground-muted">
           {t("list.subtitle")}
         </p>
       </div>
 
       {!hasTracks ? (
-        <div className="mt-5 flex flex-col items-center gap-3 rounded-md border border-border-subtle bg-card py-16 text-center shadow-card">
-          <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-            <Layers className="size-6 text-muted-foreground" aria-hidden />
+        <div className="mt-5 flex flex-col items-center gap-3 rounded-md border border-border-subtle bg-surface-base py-16 text-center">
+          <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+            <Layers className="size-6 text-foreground-subtle" aria-hidden />
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">
               {t("list.emptyTitle")}
             </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+            <p className="mt-0.5 text-xs text-foreground-muted">
               {t("list.emptyDescription")}
             </p>
           </div>
@@ -89,7 +89,7 @@ export default function CareerListPage() {
                   ? `/career/${encodeURIComponent(track.instructorHandle)}/${track.slug}`
                   : `/career/corelia/${track.slug}`
               }
-              className="group cursor-pointer overflow-hidden rounded-md border border-border-subtle bg-card text-card-foreground shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
+              className="group cursor-pointer overflow-hidden rounded-md border border-border-subtle bg-surface-base text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
             >
               <div className="p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -97,13 +97,13 @@ export default function CareerListPage() {
                     <div className="line-clamp-2 text-sm font-semibold leading-relaxed text-foreground">
                       {track.title}
                     </div>
-                    <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                    <div className="mt-1 line-clamp-2 text-xs text-foreground-muted">
                       {track.description}
                     </div>
                   </div>
 
                   {track.has_certificate ? (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-container px-2 py-1 text-[11px] font-medium text-on-primary-container">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-muted px-2 py-1 text-[11px] font-medium text-primary">
                       <BadgeCheck className="size-3 shrink-0" aria-hidden />
                       {t("labels.certificate")}
                     </span>
@@ -111,11 +111,11 @@ export default function CareerListPage() {
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-1 text-xs text-foreground-muted">
                     <Layers className="size-3 shrink-0" aria-hidden />
                     {t("labels.coursesCount", { count: track.courseCount })}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-1 text-xs text-foreground-muted">
                     <Clock className="size-3 shrink-0" aria-hidden />
                     {formatDuration(track.totalDurationSeconds)}
                   </span>

@@ -7,6 +7,11 @@ export function canManageContests(profile: Profile | null | undefined): boolean 
   return ROLE_GROUPS.admin.includes(profile.role);
 }
 
+export function canAccessContestManagementCatalog(profile: Profile | null | undefined): boolean {
+  if (!profile) return false;
+  return ROLE_GROUPS.instructorWorkspace.includes(profile.role);
+}
+
 export function getContestScopedViewerRoles(
   contest: Contest | null | undefined,
   email: string | null | undefined,

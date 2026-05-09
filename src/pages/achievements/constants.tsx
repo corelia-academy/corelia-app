@@ -33,8 +33,8 @@ export const BADGE_STYLES: Array<
   },
   {
     icon: <GraduationCap className="size-7" aria-hidden />,
-    color: "text-on-primary-container dark:text-primary",
-    bgColor: "bg-primary-container",
+    color: "text-primary",
+    bgColor: "bg-primary-muted",
     borderColor: "border-primary/20",
     category: "milestone",
   },

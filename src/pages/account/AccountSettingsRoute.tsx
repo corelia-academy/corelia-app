@@ -28,20 +28,20 @@ function AccountSettingsSection() {
   return (
     <div className="space-y-4">
       <LanguageSettingsCard />
-      <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+      <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-lg font-semibold text-foreground">
               {t("settings.appearance.title")}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {t("settings.appearance.description")}
             </p>
           </div>
         </div>
 
-        <div className="mt-4 rounded-md border border-border-subtle bg-background p-3">
-          <div className="text-xs font-medium text-muted-foreground">
+        <div className="mt-4 rounded-md border border-border-subtle bg-surface-base p-3">
+          <div className="text-xs font-medium text-foreground-muted">
             {t("settings.appearance.themeLabel")}
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -53,8 +53,8 @@ function AccountSettingsSection() {
                 className={[
                   "min-h-11 rounded-full border px-3 py-1 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                   (theme ?? "system") === themeOption
-                    ? "border-primary/25 bg-primary-container text-on-primary-container shadow-card"
-                    : "border-border-subtle bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                    ? "border-primary/30 bg-primary-muted text-primary"
+                    : "border-border-subtle bg-surface-base text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                 ].join(" ")}
               >
                 {themeOption === "light"
@@ -68,22 +68,22 @@ function AccountSettingsSection() {
         </div>
       </section>
 
-      <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+      <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
         <div className="min-w-0">
             <h2 className="text-lg font-semibold text-foreground">
             {t("settings.session.title")}
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-foreground-muted">
             {t("settings.session.description")}
           </p>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border-subtle bg-background p-3">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface-base p-3">
           <div className="min-w-0">
             <div className="text-sm font-medium text-foreground">
               {t("settings.session.signOutTitle")}
             </div>
-            <div className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            <div className="mt-1 text-sm leading-relaxed text-foreground-muted">
               {t("settings.session.signOutDescription")}
             </div>
           </div>

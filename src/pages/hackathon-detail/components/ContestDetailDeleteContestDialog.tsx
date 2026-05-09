@@ -44,7 +44,7 @@ export function ContestDetailDeleteContestDialog({
             {translate("workspace.manage.deleteDialogTitle")}
           </DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-foreground-muted">
           {contest?.title
             ? translate("workspace.manage.deleteDialogBodyWithTitle", {
                 title: contest.title,
@@ -61,7 +61,7 @@ export function ContestDetailDeleteContestDialog({
             <input
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
-              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
               placeholder={contest.title}
             />
           </div>

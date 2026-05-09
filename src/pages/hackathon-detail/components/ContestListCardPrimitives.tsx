@@ -47,7 +47,7 @@ export function ContestListCardDateRowCatalog({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border-subtle bg-background px-3 py-2">
+    <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border-subtle bg-surface-base px-3 py-2">
       <Calendar className="size-4 shrink-0" aria-hidden />
       <span>{children}</span>
     </div>
@@ -60,7 +60,7 @@ export function ContestListCardDateRowInstructor({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-md border border-border-subtle bg-background px-3 py-2">
+    <div className="rounded-md border border-border-subtle bg-surface-base px-3 py-2">
       {children}
     </div>
   );
@@ -74,7 +74,7 @@ export function ContestListMetricCellCatalog({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border-subtle bg-background px-3 py-2">
+    <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border-subtle bg-surface-base px-3 py-2">
       <Icon className="size-4 shrink-0" aria-hidden />
       <span>{children}</span>
     </div>
@@ -87,7 +87,7 @@ export function ContestListMetricCellInstructor({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-md border border-border-subtle bg-background px-3 py-2">
+    <div className="rounded-md border border-border-subtle bg-surface-base px-3 py-2">
       {children}
     </div>
   );

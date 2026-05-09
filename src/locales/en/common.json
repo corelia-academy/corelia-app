@@ -193,6 +193,7 @@
         "ecosystemPlayground": "Ecosystem playground",
         "offlineClass": "Offline class"
       },
+      "courseFallbackDescription": "Prioritized for this stage of your dashboard. {{nextStep}}",
       "cta": {
         "viewCourse": "View course",
         "viewProgram": "View program",
@@ -207,11 +208,26 @@
     "guest": {
       "heroTitle": "Start your Web3 learning journey with Corelia",
       "heroSubtitle": "Explore courses, programs, and open hackathons. When you want to save progress or enroll, just sign in.",
+      "featuredCoursesTitle": "Featured courses",
       "signIn": "Sign in",
       "openContestsTitle": "Open hackathons",
       "startLearningTitle": "Start learning",
       "startLearningSubtitle": "Sign in to save progress, track certificates, and submit hackathon applications.",
       "quickLinksTitle": "Quick links",
+      "valueProps": {
+        "learn": {
+          "label": "Learn the fundamentals",
+          "note": "Courses and paths designed to help you build momentum step by step."
+        },
+        "build": {
+          "label": "Build with practice",
+          "note": "Hackathons and community projects help you sharpen real-world skills."
+        },
+        "ship": {
+          "label": "Ship your work",
+          "note": "From portfolio to collaboration opportunities in the Corelia ecosystem."
+        }
+      },
       "quickLinks": {
         "contests": "Hackathons",
         "courses": "Courses"

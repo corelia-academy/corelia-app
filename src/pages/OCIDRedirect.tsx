@@ -15,10 +15,10 @@ function Loading() {
   const { t } = useTranslation("account");
   return (
     <div className="container-app py-10">
-      <div className="rounded-2xl border border-border-subtle bg-card p-6 shadow-card">
+      <div className="rounded-lg border border-border-subtle bg-surface-base p-6">
         <div className="flex items-center gap-3">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-foreground-muted">
             {t("ocid.redirect.finishing")}
           </div>
         </div>

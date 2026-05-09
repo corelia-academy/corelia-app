@@ -39,10 +39,10 @@ export function ContestDetailManageSectionTabs({
             onClick={() => setActiveManageSection(key)}
             className={cn(
               "inline-flex min-h-11 shrink-0 items-center border-b-2 px-3 py-2.5 text-sm font-medium transition-colors duration-150",
-              "rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              "rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base",
               activeManageSection === key
                 ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
+                : "border-transparent text-foreground-muted hover:border-border hover:text-foreground",
             )}
           >
             {key === "overview"

@@ -12,10 +12,10 @@ export function AdminStatsCard({
   iconClassName?: string;
 }) {
   return (
-    <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+    <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="text-xs text-foreground-muted">{label}</p>
           <p className="mt-2 text-3xl font-semibold text-foreground">{value}</p>
         </div>
         <div

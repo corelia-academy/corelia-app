@@ -9,7 +9,7 @@ const Card = React.forwardRef<
     ref={ref}
     data-slot="card"
     className={cn(
-      "rounded-md border border-border-subtle bg-card text-card-foreground shadow-card",
+      "rounded-lg border border-border-subtle bg-surface-base text-foreground",
       className
     )}
     {...props}

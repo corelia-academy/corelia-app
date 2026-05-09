@@ -18,11 +18,14 @@ import type { ContestLocation, ContestStatus } from "@/types/hackathons";
 import { useTranslation } from "react-i18next";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { datetimeLocalToIso } from "@/pages/hackathon-detail/utils/datetime";
+import { normalizeSlug, slugifyTitle } from "@/pages/hackathon-detail/utils/slug";
 
 export default function ContestNew() {
   const { t } = useTranslation("contests");
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [slugTouched, setSlugTouched] = useState(false);
   const [tagline, setTagline] = useState("");
   const [description, setDescription] = useState("");
   const [rules, setRules] = useState("");
@@ -59,9 +62,20 @@ export default function ContestNew() {
     return () => URL.revokeObjectURL(url);
   }, [thumbnailFile]);
 
+  useEffect(() => {
+    if (slugTouched) return;
+    setSlug(slugifyTitle(title));
+  }, [slugTouched, title]);
+
   const canSubmit = useMemo(() => {
-    return title.trim().length >= 3 && tagline.trim().length >= 8;
-  }, [title, tagline]);
+    const normalized = normalizeSlug(slug);
+    return (
+      title.trim().length >= 3 &&
+      tagline.trim().length >= 8 &&
+      normalized.length >= 3 &&
+      normalized.length <= 80
+    );
+  }, [slug, tagline, title]);
   const readinessItems = useMemo(
     () => [
       {
@@ -99,6 +113,7 @@ export default function ContestNew() {
     setSubmitting(true);
     try {
       const contest = await createContest({
+        slug,
         title,
         tagline,
         description,
@@ -142,7 +157,12 @@ export default function ContestNew() {
       }
 
       toast.success(t("instructorNew.toasts.created"));
-      navigate(`/hackathons/${contest.id}/manage`);
+      if (!contest.slug) {
+        navigate("/hackathons/manage");
+        toast.error(t("instructorNew.toasts.slugMissing"));
+        return;
+      }
+      navigate(`/hackathons/${contest.slug}/manage`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("instructorNew.toasts.createFailed"));
     } finally {
@@ -155,8 +175,8 @@ export default function ContestNew() {
       <div className="mb-4">
         <Button
           variant="ghost"
-          className="-ml-2 text-muted-foreground hover:text-foreground"
-          onClick={() => navigate("/admin/hackathons")}
+          className="-ml-2 text-foreground-muted hover:text-foreground"
+          onClick={() => navigate("/hackathons/manage")}
         >
           <ArrowLeft className="size-4" aria-hidden />
           {t("instructorNew.back")}
@@ -167,32 +187,32 @@ export default function ContestNew() {
         <CardContent className="p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <div className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("instructorNew.hero.eyebrow")}
               </div>
               <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 {t("instructorNew.hero.title")}
               </h1>
-              <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+              <p className="mt-2 max-w-3xl text-sm text-foreground-muted">
                 {t("instructorNew.hero.description")}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
+              <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
                 {t("instructorNew.hero.pillMultiParty")}
               </span>
-              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/60 px-3 py-2 text-xs font-medium text-foreground">
+              <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
                 {t("instructorNew.hero.pillPublicOps")}
               </span>
             </div>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-lg border border-border-subtle bg-background p-4">
+            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
               <div className="flex items-center gap-3">
                 <Trophy className="size-5 text-primary" aria-hidden />
                 <div>
-                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                     {t("instructorNew.pillCards.publicSurfaceTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
@@ -201,11 +221,11 @@ export default function ContestNew() {
                 </div>
               </div>
             </div>
-            <div className="rounded-lg border border-border-subtle bg-background p-4">
+            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="size-5 text-primary" aria-hidden />
                 <div>
-                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                     {t("instructorNew.pillCards.applicationsTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
@@ -214,11 +234,11 @@ export default function ContestNew() {
                 </div>
               </div>
             </div>
-            <div className="rounded-lg border border-border-subtle bg-background p-4">
+            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
               <div className="flex items-center gap-3">
                 <Gavel className="size-5 text-primary" aria-hidden />
                 <div>
-                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                     {t("instructorNew.pillCards.judgingTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
@@ -227,11 +247,11 @@ export default function ContestNew() {
                 </div>
               </div>
             </div>
-            <div className="rounded-lg border border-border-subtle bg-background p-4">
+            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
               <div className="flex items-center gap-3">
                 <Calendar className="size-5 text-primary" aria-hidden />
                 <div>
-                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                     {t("instructorNew.pillCards.timelineTitle")}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
@@ -262,6 +282,26 @@ export default function ContestNew() {
               </Field>
 
               <Field>
+                <FieldLabel htmlFor="contest-slug">{t("instructorNew.form.slugLabel")}</FieldLabel>
+                <Input
+                  id="contest-slug"
+                  value={slug}
+                  onChange={(e) => {
+                    setSlugTouched(true);
+                    setSlug(e.target.value);
+                  }}
+                  placeholder={t("instructorNew.form.slugPlaceholder")}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  inputMode="url"
+                />
+                <FieldDescription>
+                  {t("instructorNew.form.slugDescription", { slug: normalizeSlug(slug) })}
+                </FieldDescription>
+              </Field>
+
+              <Field>
                 <FieldLabel htmlFor="contest-tagline">
                   {t("instructorNew.form.taglineLabel")}
                 </FieldLabel>
@@ -283,7 +323,7 @@ export default function ContestNew() {
                   </FieldLabel>
                   <select
                     id="contest-status"
-                    className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     value={status}
                     onChange={(e) => setStatus(e.target.value as ContestStatus)}
                   >
@@ -302,7 +342,7 @@ export default function ContestNew() {
                   </FieldLabel>
                   <select
                     id="contest-location"
-                    className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     value={location}
                     onChange={(e) => setLocation(e.target.value as ContestLocation)}
                   >
@@ -386,7 +426,7 @@ export default function ContestNew() {
                       <img
                         src={bannerPreviewUrl}
                         alt=""
-                        className="aspect-[21/9] w-full object-cover"
+                        className="aspect-21/9 w-full object-cover"
                       />
                     </div>
                   ) : null}
@@ -437,7 +477,7 @@ export default function ContestNew() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={5}
-                  className="min-h-32 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-32 w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   placeholder={t("instructorNew.form.descriptionPlaceholder")}
                 />
               </Field>
@@ -451,7 +491,7 @@ export default function ContestNew() {
                   value={rules}
                   onChange={(e) => setRules(e.target.value)}
                   rows={6}
-                  className="min-h-36 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-36 w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   placeholder={t("instructorNew.form.rulesPlaceholder")}
                 />
                 <FieldDescription>
@@ -461,7 +501,7 @@ export default function ContestNew() {
             </FieldGroup>
 
             <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-end">
-              <Button variant="ghost" onClick={() => navigate("/admin/hackathons")}>
+              <Button variant="ghost" onClick={() => navigate("/hackathons/manage")}>
                 {t("instructorNew.actions.back")}
               </Button>
               <Button disabled={!canSubmit || submitting} onClick={handleCreate}>
@@ -474,17 +514,17 @@ export default function ContestNew() {
         <div className="space-y-4">
           <Card>
             <CardContent className="p-6">
-              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <div className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("instructorNew.afterCreateChecklist.eyebrow")}
               </div>
               <div className="mt-4 space-y-3">
                 {readinessItems.map((item) => (
                   <div
                     key={item.title}
-                    className="rounded-lg border border-border-subtle bg-background p-4"
+                    className="rounded-lg border border-border-subtle bg-surface-base p-4"
                   >
                     <div className="text-sm font-medium text-foreground">{item.title}</div>
-                    <div className="mt-2 text-sm leading-6 text-muted-foreground">
+                    <div className="mt-2 text-sm leading-6 text-foreground-muted">
                       {item.description}
                     </div>
                   </div>
@@ -495,10 +535,10 @@ export default function ContestNew() {
 
           <Card>
             <CardContent className="p-6">
-              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <div className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("instructorNew.nextSteps.eyebrow")}
               </div>
-              <div className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
+              <div className="mt-4 space-y-3 text-sm leading-6 text-foreground-muted">
                 <p>{t("instructorNew.nextSteps.intro")}</p>
                 <p>{t("instructorNew.nextSteps.step1")}</p>
                 <p>{t("instructorNew.nextSteps.step2")}</p>

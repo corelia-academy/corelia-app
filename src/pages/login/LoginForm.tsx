@@ -262,7 +262,7 @@ export function LoginForm({
                 <h1 className="text-2xl font-normal tracking-tight text-foreground">
                   {title}
                 </h1>
-                <p className="text-balance text-sm text-muted-foreground">
+                <p className="text-balance text-sm text-foreground-muted">
                   {subtitle}
                 </p>
               </div>

@@ -53,10 +53,10 @@ export function ContestDetailJudgingPanel({
             <h2 className="text-lg font-semibold text-foreground">
               {translate("workspace.manage.judgingTitle")}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {translate("workspace.manage.judgingDescription")}
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {translate("workspace.manage.judgingWeightsLine", {
                 product: contest.rubric_weights.product,
                 technical: contest.rubric_weights.technical,
@@ -73,7 +73,7 @@ export function ContestDetailJudgingPanel({
               {translate("workspace.manage.judgingTrackLabel")}
             </label>
             <select
-              className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+              className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
               value={trackId ?? ""}
               onChange={(e) => setSelectedTrackId(e.target.value || null)}
             >
@@ -89,7 +89,7 @@ export function ContestDetailJudgingPanel({
               {translate("workspace.manage.judgingRoundLabel")}
             </label>
             <select
-              className="mt-2 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+              className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
               value={roundId ?? "final"}
               onChange={(e) => setSelectedRoundId(e.target.value || null)}
             >
@@ -105,9 +105,9 @@ export function ContestDetailJudgingPanel({
         <div className="mt-5 space-y-4">
           {visibleSubmissions.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+              <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
                 <Trophy
-                  className="size-6 text-muted-foreground"
+                  className="size-6 text-foreground-subtle"
                   aria-hidden
                 />
               </div>
@@ -115,7 +115,7 @@ export function ContestDetailJudgingPanel({
                 <p className="text-sm font-medium text-foreground">
                   {translate("workspace.manage.judgingEmptyTitle")}
                 </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
+                <p className="mt-0.5 text-xs text-foreground-muted">
                   {translate("workspace.manage.judgingEmptyHint")}
                 </p>
               </div>
@@ -135,11 +135,11 @@ export function ContestDetailJudgingPanel({
               return (
                 <div
                   key={submission.id}
-                  className="rounded-md border border-border-subtle bg-background p-4"
+                  className="rounded-md border border-border-subtle bg-surface-base p-4"
                 >
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                         {translate("workspace.manage.rankCurrent", {
                           rank: boardEntry?.rank ?? "—",
                         })}
@@ -147,7 +147,7 @@ export function ContestDetailJudgingPanel({
                       <div className="mt-1 text-lg font-medium text-foreground">
                         {submission.title}
                       </div>
-                      <div className="mt-1 text-sm text-muted-foreground">
+                      <div className="mt-1 text-sm text-foreground-muted">
                         {hideIdentity
                           ? translate("workspace.manage.anonymousSubmissionLabel", {
                               id:
@@ -160,7 +160,7 @@ export function ContestDetailJudgingPanel({
                           : ""}
                       </div>
                     </div>
-                    <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
+                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("workspace.manage.averageScores")}{" "}
                       <span className="font-medium text-foreground">
                         {boardEntry?.average_score ?? 0}
@@ -173,23 +173,23 @@ export function ContestDetailJudgingPanel({
                   </div>
 
                   {submission.summary && (
-                    <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+                    <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
                       {submission.summary}
                     </p>
                   )}
 
                   <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
+                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("workspace.manage.demoPrefix")}{" "}
                       {submission.demo_url ||
                         translate("detail.labels.noDemo")}
                     </div>
-                    <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
+                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("workspace.manage.repoPrefix")}{" "}
                       {submission.repo_url ||
                         translate("detail.labels.noDemo")}
                     </div>
-                    <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
+                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("workspace.manage.slidePrefix")}{" "}
                       {submission.slide_url ||
                         translate("detail.labels.noDemo")}
@@ -228,7 +228,7 @@ export function ContestDetailJudgingPanel({
                               },
                             }))
                           }
-                          className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                          className="mt-2 h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                         />
                       </div>
                     ))}
@@ -250,11 +250,11 @@ export function ContestDetailJudgingPanel({
                           },
                         }))
                       }
-                      className="mt-2 min-h-24 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                      className="mt-2 min-h-24 w-full rounded-md border border-border bg-surface-base px-3 py-2 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     />
                   </div>
 
-                  <div className="mt-4 flex flex-col gap-2 rounded-xl border border-border-subtle bg-card px-3 py-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                  <div className="mt-4 flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-raised px-3 py-3 text-sm text-foreground-muted sm:flex-row sm:items-center sm:justify-between">
                     <span>
                       {translate("workspace.manage.rawTotal")}{" "}
                       <span className="font-medium text-foreground">

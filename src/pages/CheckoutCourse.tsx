@@ -127,9 +127,9 @@ export default function CheckoutCourse() {
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-[960px] px-4 py-8">
-        <div className="rounded-md border border-border-subtle bg-card p-6">
+        <div className="rounded-md border border-border-subtle bg-surface-base p-6">
           <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <Loader2 className="size-10 animate-spin text-muted-foreground/60" aria-hidden />
+            <Loader2 className="size-10 animate-spin text-foreground-subtle" aria-hidden />
             <div>
               <p className="text-sm font-medium text-foreground">
                 {t("detail.checkout.loadingPaymentInfo")}
@@ -137,12 +137,12 @@ export default function CheckoutCourse() {
             </div>
           </div>
           <div className="mt-6 grid gap-3 md:grid-cols-2">
-            <div className="space-y-3 rounded-md border border-border-subtle bg-background p-4">
+            <div className="space-y-3 rounded-md border border-border-subtle bg-surface-base p-4">
               <Skeleton className="h-4 w-40 rounded-full" />
               <Skeleton className="h-4 w-3/4 rounded-full" />
               <Skeleton className="h-4 w-2/3 rounded-full" />
             </div>
-            <div className="space-y-3 rounded-md border border-border-subtle bg-background p-4">
+            <div className="space-y-3 rounded-md border border-border-subtle bg-surface-base p-4">
               <Skeleton className="h-4 w-32 rounded-full" />
               <Skeleton className="h-4 w-2/3 rounded-full" />
               <Skeleton className="h-4 w-1/2 rounded-full" />
@@ -174,30 +174,30 @@ export default function CheckoutCourse() {
       <div className="mb-6">
         <Link
           to={`/courses/${courseId}`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-2 text-sm text-foreground-muted hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden /> {t("detail.checkout.backToCourse")}
         </Link>
         <h1 className="mt-3 text-2xl font-normal tracking-tight text-foreground">
           {t("detail.checkout.title")}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-foreground-muted">
           {t("detail.checkout.subtitle")}
         </p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
-        <section className="rounded-md border border-border-subtle bg-card p-6">
+        <section className="rounded-md border border-border-subtle bg-surface-base p-6">
           <h2 className="text-sm font-medium text-foreground">{t("detail.checkout.courseSectionTitle")}</h2>
           <p className="mt-2 text-base text-foreground">{course.title}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-foreground-muted">
             {t("detail.checkout.paymentMethodLabel")}: {t("accessModel.paid_upfront")}
           </p>
 
-          <div className="mt-4 rounded-md border border-border-subtle bg-muted/20 p-4">
+          <div className="mt-4 rounded-md border border-border-subtle bg-surface-raised p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase text-muted-foreground">
+                <p className="text-xs font-semibold uppercase text-foreground-muted">
                   {t("detail.checkout.paymentAmountLabel")}
                 </p>
                 {pricing?.promoActive ? (
@@ -205,7 +205,7 @@ export default function CheckoutCourse() {
                     <div className="mt-1 text-xl font-semibold text-foreground">
                       {formatVndPrice(pricing.displayAmount)}
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-foreground-muted">
                       <span className="line-through">
                         {formatVndPrice(pricing.base)}
                       </span>
@@ -226,13 +226,13 @@ export default function CheckoutCourse() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs text-foreground-muted">
                 <ShieldCheck className="size-4" aria-hidden /> {t("detail.checkout.sepayQr")}
               </div>
             </div>
 
             <div className="mt-4">
-              <label className="block text-xs font-medium text-muted-foreground mb-1">
+              <label className="block text-xs font-medium text-foreground-muted mb-1">
                 {t("detail.checkout.discount.label")}
               </label>
               <Input
@@ -240,16 +240,16 @@ export default function CheckoutCourse() {
                 onChange={(e) => setDiscountCode(e.target.value)}
                 placeholder={t("detail.checkout.discount.placeholder")}
               />
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs text-foreground-muted">
                 {t("detail.checkout.discount.hint")}
               </p>
             </div>
           </div>
         </section>
 
-        <aside className="rounded-md border border-border-subtle bg-card p-6">
+        <aside className="rounded-md border border-border-subtle bg-surface-base p-6">
           <h2 className="text-sm font-medium text-foreground">{t("detail.checkout.paymentAsideTitle")}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-foreground-muted">
             {t("detail.checkout.paymentAsideBodyPrefix")}{" "}
             <span className="font-medium text-foreground">
               {t("detail.checkout.paymentAsideBodyEmphasis")}
@@ -272,7 +272,7 @@ export default function CheckoutCourse() {
             </p>
           ) : null}
 
-          <p className="mt-3 text-xs text-muted-foreground">
+          <p className="mt-3 text-xs text-foreground-muted">
             {t("detail.checkout.postPayHint")}
           </p>
         </aside>

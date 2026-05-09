@@ -15,6 +15,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
+import { RequireContestManager } from "@/components/auth/RequireContestManager";
 import Home from "@/pages/home/index";
 import Courses from "@/pages/courses";
 import Auth from "@/pages/login/Auth";
@@ -95,11 +96,6 @@ const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
 const AdminInstructors = lazy(() => import("@/pages/admin/AdminInstructors"));
 const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
-const ContestWorkspace = lazy(() =>
-  import("@/pages/hackathon-detail/ContestDetail").then((m) => ({
-    default: m.ContestDetailManagePage,
-  })),
-);
 
 const PageFallback = () => <AuthGateLoading />;
 
@@ -235,6 +231,30 @@ export default function App() {
                 }
               />
               <Route
+                path="hackathons/manage"
+                element={
+                  <RequireAuth>
+                    <RequireContestManager>
+                      <Suspense fallback={<PageFallback />}>
+                        <InstructorContests />
+                      </Suspense>
+                    </RequireContestManager>
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="hackathons/new"
+                element={
+                  <RequireAuth>
+                    <RequireContestManager>
+                      <Suspense fallback={<PageFallback />}>
+                        <ContestNew />
+                      </Suspense>
+                    </RequireContestManager>
+                  </RequireAuth>
+                }
+              />
+              <Route
                 path="projects"
                 element={
                   <Suspense fallback={<PageFallback />}>
@@ -251,7 +271,7 @@ export default function App() {
                 }
               />
               <Route
-                path="hackathons/:id/manage"
+                path="hackathons/:slug/manage"
                 element={
                   <RequireAuth>
                     <Suspense fallback={<PageFallback />}>
@@ -261,7 +281,7 @@ export default function App() {
                 }
               />
               <Route
-                path="hackathons/:id"
+                path="hackathons/:slug"
                 element={
                   <Suspense fallback={<PageFallback />}>
                     <ContestPublicLayout />
@@ -429,28 +449,8 @@ export default function App() {
                   }
                 />
                 <Route
-                  path="hackathons"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <InstructorContests />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="hackathons/new"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestNew />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="hackathons/:id/manage"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestWorkspace />
-                    </Suspense>
-                  }
+                  path="hackathons/*"
+                  element={<NotFound />}
                 />
               </Route>
               <Route

@@ -48,7 +48,7 @@ export default function CoursesPage() {
   if (error) {
     return (
       <div className="container-app py-6 sm:py-8">
-        <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5 shadow-card">
+        <div className="rounded-lg border border-destructive/20 bg-destructive-muted p-5">
           <p className="text-sm font-medium text-destructive">
             {t("catalog.loadErrorTitle")}
           </p>
@@ -68,7 +68,7 @@ export default function CoursesPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {t("catalog.title")}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-foreground-muted">
             {t("catalog.results", { count: filteredOnlineCourses.length })}
             {hasActiveFilters
               ? t("catalog.activeFilters", { count: activeFilterCount })
@@ -90,15 +90,15 @@ export default function CoursesPage() {
       </div>
 
       {filteredOnlineCourses.length === 0 ? (
-        <div className="mt-5 flex flex-col items-center gap-3 rounded-md border border-border-subtle bg-card py-16 text-center shadow-card">
-          <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-            <BookOpen className="size-6 text-muted-foreground" aria-hidden />
+        <div className="mt-5 flex flex-col items-center gap-3 rounded-lg border border-border-subtle bg-surface-base py-16 text-center">
+          <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+            <BookOpen className="size-6 text-foreground-subtle" aria-hidden />
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">
               {t("catalog.emptyTitle")}
             </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+            <p className="mt-0.5 text-xs text-foreground-muted">
               {t("catalog.emptyDescription")}
             </p>
           </div>
@@ -128,9 +128,9 @@ export default function CoursesPage() {
             <Link
               key={course.id}
               to={`/courses/${course.slug || course.id}`}
-              className="group cursor-pointer overflow-hidden rounded-md border border-border-subtle bg-card text-card-foreground shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
+              className="group cursor-pointer overflow-hidden rounded-lg border border-border-subtle bg-surface-base text-foreground transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
             >
-              <div className="relative aspect-video overflow-hidden bg-muted/50">
+              <div className="relative aspect-video overflow-hidden bg-surface-raised">
                 <img
                   src={course.thumbnail_url}
                   alt={course.title}
@@ -138,23 +138,23 @@ export default function CoursesPage() {
                 />
               </div>
               <div className="p-3">
-                <div className="line-clamp-2 text-sm font-medium leading-relaxed text-foreground">
+                <div className="line-clamp-2 text-sm font-semibold leading-snug tracking-tight text-foreground">
                   {course.title}
                 </div>
-                <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                <div className="mt-1 line-clamp-1 text-xs text-foreground-muted">
                   {course.instructor_name}
                 </div>
 
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-1 text-xs text-foreground-muted">
                     <Clock className="size-3 shrink-0" aria-hidden />
                     {formatDuration(Number(course.total_duration_seconds) || 0)}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-1 text-xs text-foreground-muted">
                     <BadgeCheck className="size-3 shrink-0" aria-hidden />
                     {getCourseAccessModelLabel(course.access_model)}
                   </span>
-                  <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center rounded-md bg-surface-raised px-2 py-1 text-xs text-foreground-muted">
                     {getCourseLevelLabel(course.level)}
                   </span>
                 </div>
@@ -163,7 +163,7 @@ export default function CoursesPage() {
                   <div className="text-sm font-semibold text-foreground">
                     {getPrimaryPriceLabel(course, translate)}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-foreground-muted">
                     {getCourseOwnerTypeLabel(course.owner_type)}
                   </div>
                 </div>

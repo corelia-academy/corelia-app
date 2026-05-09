@@ -14,15 +14,14 @@ const NAV_KEYS = [
 ] as const;
 
 export function ContestPublicNav({
-  contestId,
   contest,
 }: {
-  contestId: string;
   contest: Contest;
 }) {
   const { t } = useTranslation("contests");
   const showProjects =
     contest.status === "ended" && contest.published_leaderboard.length > 0;
+  const contestSlug = contest.slug?.trim() || "";
 
   return (
     <nav
@@ -35,14 +34,14 @@ export function ContestPublicNav({
         {NAV_KEYS.filter((key) => (key === "projects" ? showProjects : true)).map((key) => (
           <NavLink
             key={key}
-            to={`/hackathons/${contestId}/${key}`}
+            to={contestSlug ? `/hackathons/${contestSlug}/${key}` : "/hackathons"}
             className={({ isActive }) =>
               cn(
                 "inline-flex min-h-11 shrink-0 items-center border-b-2 px-3 py-2.5 text-sm font-medium transition-colors duration-150",
-                "rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base",
                 isActive
                   ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
+                  : "border-transparent text-foreground-muted hover:border-border hover:text-foreground",
               )
             }
           >

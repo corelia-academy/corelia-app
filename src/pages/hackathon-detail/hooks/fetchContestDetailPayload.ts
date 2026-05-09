@@ -4,7 +4,7 @@ import {
   canViewContestAggregateMetrics,
 } from "@/lib/permissions";
 import {
-  getContest,
+  getContestBySlug,
   getContestRegistrations,
   getMyContestAccessInvite,
   getMyContestRegistration,
@@ -56,7 +56,7 @@ export type ContestDetailFetchedPayload = {
 };
 
 export type FetchContestDetailPayloadInput = {
-  id: string;
+  slug: string;
   profile: Profile | null;
   userEmail: string | undefined;
   /** Resolved viewer after auth init; avoids redundant `getUser` in parallel contest fetches. */
@@ -74,7 +74,7 @@ export type FetchContestDetailPayloadResult =
   | { status: "ok"; payload: ContestDetailFetchedPayload };
 
 export async function fetchContestDetailPayload({
-  id,
+  slug,
   profile,
   userEmail,
   viewer,
@@ -84,14 +84,16 @@ export async function fetchContestDetailPayload({
   prefetchedContest,
 }: FetchContestDetailPayloadInput): Promise<FetchContestDetailPayloadResult> {
   const contestData =
-    prefetchedContest && prefetchedContest.id === id
+    prefetchedContest && prefetchedContest.slug === slug
       ? prefetchedContest
-      : await getContest(id);
+      : await getContestBySlug(slug);
   if (signal.aborted) return { status: "aborted" };
 
   if (!contestData) {
     return { status: "error", errorMessage: translate("detail.errors.notFound") };
   }
+
+  const contestId = contestData.id;
 
   const aggregateViewer = canViewContestAggregateMetrics(
     contestData,
@@ -127,7 +129,7 @@ export async function fetchContestDetailPayload({
 
   if (reviewer) {
     tasks.push(
-      getContestRegistrations(id, {
+      getContestRegistrations(contestId, {
         status: "all",
         prefetch: actorPrefetch,
       }).then((items) => {
@@ -139,7 +141,7 @@ export async function fetchContestDetailPayload({
     );
   } else {
     tasks.push(
-      getMyContestRegistration(id, viewer).then((item) => {
+      getMyContestRegistration(contestId, viewer).then((item) => {
         registrationSelf = item;
         teamName = item?.team_name ?? "";
         teamMembersText = (item?.team_members ?? []).join("\n");
@@ -149,7 +151,7 @@ export async function fetchContestDetailPayload({
 
   if (judge || isManager) {
     tasks.push(
-      listContestSubmissions(id, actorPrefetch).then((items) => {
+      listContestSubmissions(contestId, actorPrefetch).then((items) => {
         submissions = items;
         for (const [index, entry] of items.slice(0, 3).entries()) {
           winnerAwards[entry.id] =
@@ -162,13 +164,13 @@ export async function fetchContestDetailPayload({
       }),
     );
     tasks.push(
-      listContestScores(id, actorPrefetch).then((items) => {
+      listContestScores(contestId, actorPrefetch).then((items) => {
         scores = items;
       }),
     );
   } else {
     tasks.push(
-      getMyContestSubmission(id, viewer).then((item) => {
+      getMyContestSubmission(contestId, viewer).then((item) => {
         mySubmission = item;
         submissionTitle = item?.title ?? "";
         submissionSummary = item?.summary ?? "";
@@ -181,13 +183,13 @@ export async function fetchContestDetailPayload({
 
   if (isManager) {
     tasks.push(
-      listContestAccessInvites(id).then((items) => {
+      listContestAccessInvites(contestId).then((items) => {
         invites = items;
       }),
     );
   } else {
     tasks.push(
-      getMyContestAccessInvite(id, viewer).then((item) => {
+      getMyContestAccessInvite(contestId, viewer).then((item) => {
         myInvite = item;
       }),
     );

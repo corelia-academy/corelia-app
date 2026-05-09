@@ -30,14 +30,14 @@ function InstructorProfileSection() {
   if (!profile || profile.role !== "instructor") {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-          <GraduationCap className="size-6 text-muted-foreground" aria-hidden />
+        <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+          <GraduationCap className="size-6 text-foreground-subtle" aria-hidden />
         </div>
         <div>
           <p className="text-sm font-medium text-foreground">
             {t("instructorProfile.onlyInstructors")}
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="mt-0.5 text-xs text-foreground-muted">
             {t("nav.instructor.description")}
           </p>
         </div>
@@ -83,7 +83,7 @@ function InstructorProfileSection() {
   return (
     <form
       onSubmit={(e) => void onSubmitInstructorProfile(e)}
-      className="space-y-5 rounded-md border border-border-subtle bg-card p-4 shadow-card sm:p-5"
+      className="space-y-5 rounded-lg border border-border-subtle bg-surface-base p-4 sm:p-5"
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -91,42 +91,42 @@ function InstructorProfileSection() {
             <h2 className="text-lg font-semibold text-foreground">
               {t("instructorProfile.title")}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {t("instructorProfile.subtitle")}
             </p>
           </div>
-          <div className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+          <div className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
             <ShieldCheck className="mr-2 size-4 shrink-0 text-primary" aria-hidden />
             {t("instructorProfile.completion", { percent: completionPercent })}
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {t("instructorProfile.cards.originLabel")}
             </p>
             <p className="mt-2 text-sm font-medium text-foreground">
               {originLabel}
             </p>
           </div>
-          <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {t("instructorProfile.cards.organizationLabel")}
             </p>
             <p className="mt-2 text-sm font-medium text-foreground">
               {organization.trim() || t("instructorProfile.common.notUpdated")}
             </p>
           </div>
-          <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {t("instructorProfile.cards.headlineLabel")}
             </p>
             <p className="mt-2 text-sm font-medium text-foreground">
               {headline.trim() || t("instructorProfile.common.notUpdated")}
             </p>
           </div>
-          <div className="rounded-md border border-border-subtle bg-muted/25 p-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {t("instructorProfile.cards.websiteLabel")}
             </p>
             <p className="mt-2 text-sm font-medium text-foreground">
@@ -137,30 +137,30 @@ function InstructorProfileSection() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
+        <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
           <div className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
             <Building2 className="size-4 shrink-0 text-primary" aria-hidden />
             {t("instructorProfile.tips.organization.title")}
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground-muted">
             {t("instructorProfile.tips.organization.body")}
           </p>
         </div>
-        <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
+        <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
           <div className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
             <FilePenLine className="size-4 shrink-0 text-primary" aria-hidden />
             {t("instructorProfile.tips.intro.title")}
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground-muted">
             {t("instructorProfile.tips.intro.body")}
           </p>
         </div>
-        <div className="rounded-md border border-border-subtle bg-muted/20 p-4">
+        <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
           <div className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
             <Link2 className="size-4 shrink-0 text-primary" aria-hidden />
             {t("instructorProfile.tips.externalProfile.title")}
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground-muted">
             {t("instructorProfile.tips.externalProfile.body")}
           </p>
         </div>
@@ -171,10 +171,10 @@ function InstructorProfileSection() {
           <Label className="text-sm font-medium" htmlFor="instructor_origin">
             {t("instructorProfile.fields.origin.label")}
           </Label>
-          <div className="rounded border border-border bg-muted/40 px-3 py-2 text-sm">
+          <div className="rounded border border-border bg-surface-raised px-3 py-2 text-sm">
             {originLabel}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground-muted">
             {t("instructorProfile.fields.origin.hint")}
           </p>
         </div>
@@ -213,7 +213,7 @@ function InstructorProfileSection() {
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={5}
-          className="min-h-32 w-full rounded border border-border bg-background px-3 py-2 text-sm outline-none transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+          className="min-h-32 w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
           placeholder={t("instructorProfile.fields.bio.placeholder")}
         />
       </div>

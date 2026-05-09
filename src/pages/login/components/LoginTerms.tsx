@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 export function LoginTerms() {
   const { t } = useTranslation("auth");
   return (
-    <p className="px-2 text-center text-xs text-muted-foreground">
+    <p className="px-2 text-center text-xs text-foreground-muted">
       {t("login.terms.prefix")}
       <a
         href="https://corelia.academy/terms"

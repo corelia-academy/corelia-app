@@ -56,13 +56,13 @@ export function contestPhaseBadgeClassName(
 ): string {
   switch (phase) {
     case "registration_open":
-      return "bg-success text-success-foreground shadow-sm";
+      return "bg-success text-success-foreground";
     case "registration_closed_before_start":
-      return "bg-primary-container text-on-primary-container shadow-sm";
+      return "bg-primary-muted text-primary";
     case "in_progress":
-      return "bg-warning text-warning-foreground shadow-sm";
+      return "bg-warning text-warning-foreground";
     case "ended":
     default:
-      return "border border-border-subtle bg-muted text-foreground";
+      return "border border-border-subtle bg-surface-raised text-foreground";
   }
 }

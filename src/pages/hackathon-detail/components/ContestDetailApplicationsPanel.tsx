@@ -39,7 +39,7 @@ export function ContestDetailApplicationsPanel({
             <h2 className="text-lg font-semibold text-foreground">
               {translate("workspace.manage.applicationsReviewTitle")}
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-foreground-muted">
               {translate("workspace.manage.applicationsReviewDescription")}
             </p>
           </div>
@@ -57,9 +57,9 @@ export function ContestDetailApplicationsPanel({
         <div className="mt-5 space-y-4">
           {registrations.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+              <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
                 <Users
-                  className="size-6 text-muted-foreground"
+                  className="size-6 text-foreground-subtle"
                   aria-hidden
                 />
               </div>
@@ -67,7 +67,7 @@ export function ContestDetailApplicationsPanel({
                 <p className="text-sm font-medium text-foreground">
                   {translate("workspace.manage.applicationsEmptyTitle")}
                 </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
+                <p className="mt-0.5 text-xs text-foreground-muted">
                   {translate("workspace.manage.applicationsEmptyHint")}
                 </p>
               </div>
@@ -76,22 +76,22 @@ export function ContestDetailApplicationsPanel({
             registrations.map((item) => (
               <div
                 key={item.id}
-                className="rounded-md border border-border-subtle bg-background p-4"
+                className="rounded-md border border-border-subtle bg-surface-base p-4"
               >
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                       {registrationStatusLabel(item.status)}
                     </div>
                     <div className="mt-1 text-lg font-medium text-foreground">
                       {item.user_full_name || item.user_id}
                     </div>
-                    <div className="mt-1 text-sm text-muted-foreground">
+                    <div className="mt-1 text-sm text-foreground-muted">
                       {item.team_name ||
                         translate("detail.labels.defaultSoloRegistration")}
                     </div>
                     {item.team_members.length > 0 && (
-                      <div className="mt-1 text-sm text-muted-foreground">
+                      <div className="mt-1 text-sm text-foreground-muted">
                         {translate("workspace.manage.teamMembersPrefix")}{" "}
                         {item.team_members.join(", ")}
                       </div>
@@ -130,13 +130,13 @@ export function ContestDetailApplicationsPanel({
                 </div>
 
                 {item.motivation && (
-                  <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
                     {item.motivation}
                   </p>
                 )}
 
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
+                  <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                     <span className="font-medium text-foreground">
                       {translate("detail.labels.contact")}
                     </span>{" "}
@@ -146,7 +146,7 @@ export function ContestDetailApplicationsPanel({
                     {item.contact_phone ||
                       translate("detail.labels.noDataDash")}
                   </div>
-                  <div className="rounded-xl border border-border-subtle bg-card px-3 py-2 text-sm text-muted-foreground">
+                  <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                     <span className="font-medium text-foreground">
                       {translate("workspace.manage.portfolioLabel")}
                     </span>{" "}
@@ -172,7 +172,7 @@ export function ContestDetailApplicationsPanel({
                         [item.user_id]: e.target.value,
                       }))
                     }
-                    className="mt-2 min-h-24 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                    className="mt-2 min-h-24 w-full rounded-md border border-border bg-surface-base px-3 py-2 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   />
                 </div>
               </div>
