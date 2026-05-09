@@ -7,12 +7,12 @@ export function CourseDetailLoading() {
   const { t } = useTranslation("courses");
   return (
     <div className="container-app py-6 sm:py-8">
-      <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-md border border-border-subtle bg-card p-8 text-center shadow-sm">
+      <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-md border border-border-subtle bg-surface-base p-8 text-center">
         <Loader2
-          className="size-8 animate-spin text-muted-foreground"
+          className="size-8 animate-spin text-foreground-muted"
           aria-hidden
         />
-        <p className="mt-4 text-sm text-muted-foreground">
+        <p className="mt-4 text-sm text-foreground-muted">
           {String(t("detail.loadingCourse"))}
         </p>
       </div>

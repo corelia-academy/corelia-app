@@ -4,6 +4,7 @@
     "subtitle": "Manage courses, profile, and operations in one place.",
     "createCourse": "Create course",
     "courseList": "Course list",
+    "careerTracks": "Career tracks",
     "offlineClasses": "Offline classes",
     "profile": "Instructor profile",
     "contests": "Contests",
@@ -86,6 +87,8 @@
       "home": "Home",
       "teaching": "Teaching",
       "createCourse": "Create course",
+      "careerTracks": "Career tracks",
+      "createCareerTrack": "Create track",
       "offlineClasses": "Offline classes",
       "createCohort": "Create cohort",
       "cohortWorkspace": "Cohort workspace",
@@ -103,6 +106,18 @@
       "newCourse": {
         "title": "Create a new course",
         "description": "Set up content, pricing, and the learning journey from scratch."
+      },
+      "careerTracks": {
+        "title": "Manage career tracks",
+        "description": "Create and publish learning tracks based on the courses you build."
+      },
+      "careerTracksNew": {
+        "title": "Create a career track",
+        "description": "Create a draft/published track and order the included courses."
+      },
+      "careerTracksEdit": {
+        "title": "Edit a career track",
+        "description": "Update track content and the included course list."
       },
       "offlineList": {
         "title": "Offline classes",
@@ -161,6 +176,68 @@
       "coreliaInstructor": "Corelia instructor",
       "adminMode": "Admin mode",
       "teachingMode": "Teaching tasks"
+    }
+  },
+  "careerTracks": {
+    "list": {
+      "title": "Career tracks",
+      "subtitle": "Total {{total}} · Published {{published}} · Drafts {{drafts}}",
+      "emptyTitle": "No tracks yet",
+      "emptyDescription": "Create your first track from the courses you’ve created."
+    },
+    "editor": {
+      "newTitle": "Create track",
+      "editTitle": "Edit track",
+      "subtitle": "Set up content and order the courses in the learning path."
+    },
+    "sections": {
+      "learning": "Content",
+      "includedCourses": "Included courses"
+    },
+    "fields": {
+      "title": "Title",
+      "slug": "Slug",
+      "description": "Description",
+      "whatYoullLearn": "What you'll learn",
+      "prerequisites": "Prerequisites",
+      "settings": "Settings",
+      "hasCertificate": "Certificate available",
+      "published": "Published",
+      "addCourse": "Add course"
+    },
+    "placeholders": {
+      "title": "e.g. Frontend Engineer",
+      "description": "A short description of the track…",
+      "whatYoullLearn": "One item per line…",
+      "prerequisites": "One item per line…",
+      "pickCourse": "Pick a course"
+    },
+    "hints": {
+      "slug": "Use lowercase letters, numbers, and hyphens. Example: frontend-engineer",
+      "lines": "One line equals one item."
+    },
+    "labels": {
+      "loading": "Loading…",
+      "draft": "Draft",
+      "published": "Published",
+      "noCourses": "No courses included yet.",
+      "courseCount": "{{count}} course",
+      "courseCount_plural": "{{count}} courses"
+    },
+    "actions": {
+      "create": "Create track",
+      "edit": "Edit",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "back": "Back",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "errors": {
+      "loadFailed": "Could not load tracks.",
+      "saveFailed": "Could not save track.",
+      "missingRequired": "Please enter a title and slug.",
+      "notFound": "Track not found."
     }
   },
   "courseNew": {

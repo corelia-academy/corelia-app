@@ -36,7 +36,7 @@ export function LanguageSwitcher() {
           >
             <span className="flex-1">{opt.label}</span>
             {language === opt.value ? (
-              <span className="text-xs text-muted-foreground">✓</span>
+              <span className="text-xs text-foreground-muted">✓</span>
             ) : null}
           </DropdownMenuItem>
         ))}

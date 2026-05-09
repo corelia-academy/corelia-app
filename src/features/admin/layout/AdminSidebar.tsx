@@ -11,7 +11,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { GraduationCap, Pin, Settings, Trophy, Users } from "lucide-react";
+import { GraduationCap, Pin, Settings, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function AdminSidebar() {
@@ -24,7 +24,7 @@ export function AdminSidebar() {
       <div className="px-3 pb-2 pt-3 transition-[padding] duration-200 ease-linear group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:pb-1">
         <div className="rounded-lg border border-sidebar-border/70 bg-sidebar-accent/45 p-4 transition-[padding,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:rounded-md group-data-[collapsible=icon]:p-1">
           <div className="flex items-start gap-3 transition-[gap] duration-200 ease-linear group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground shadow-sm transition-[width,height,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:size-8">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground transition-[width,height,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:size-8">
               <Settings className="size-5" aria-hidden />
             </div>
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
@@ -99,22 +99,7 @@ export function AdminSidebar() {
                   }
                 />
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  className="rounded-md"
-                  tooltip={t("layout.sidebar.contests.tooltip")}
-                  isActive={pathname.startsWith("/admin/contests")}
-                  render={
-                    <NavLink
-                      to="/admin/contests"
-                      className="flex w-full items-center gap-2"
-                    >
-                      <Trophy className="size-4" aria-hidden />
-                      <span>{t("layout.sidebar.contests.label")}</span>
-                    </NavLink>
-                  }
-                />
-              </SidebarMenuItem>
+              {/* Hackathon management is no longer under /admin/* */}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

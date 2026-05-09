@@ -59,11 +59,11 @@ export function CourseAccessPanel({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-md border border-border-subtle bg-card shadow-sm",
+        "overflow-hidden rounded-md border border-border-subtle bg-surface-base",
         className,
       )}
     >
-      <div className="border-b border-border-subtle bg-muted/30 px-4 py-3">
+      <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
         <h3 className="text-sm font-medium text-foreground">
           {hasFullCourseAccess
             ? translate("detail.accessPanel.ready")
@@ -73,7 +73,7 @@ export function CourseAccessPanel({
       <div className="p-4">
         {hasFullCourseAccess ? (
           <>
-            <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+            <p className="mb-3 text-sm leading-relaxed text-foreground-muted">
               {translate("detail.accessPanel.enterToLearn")}
             </p>
             {isPaidUpfront &&
@@ -90,18 +90,18 @@ export function CourseAccessPanel({
                 {translate("detail.accessPanel.keptAccess")}
               </div>
             ) : null}
-            <div className="mb-4 rounded-md bg-muted/40 p-3">
-              <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+            <div className="mb-4 rounded-md bg-surface-raised p-3">
+              <div className="flex items-center justify-between gap-3 text-xs text-foreground-muted">
                 <span>{translate("detail.accessPanel.currentProgress")}</span>
                 <span>{progressPercent}%</span>
               </div>
-              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-background">
+              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-surface-base">
                 <div
                   className="h-full rounded-full bg-success"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
-              <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-foreground-muted">
                 {nextLesson
                   ? translate("detail.accessPanel.nextLessonLabel", {
                       title: nextLesson.title,
@@ -124,15 +124,15 @@ export function CourseAccessPanel({
           </>
         ) : isPaidUpfront ? (
           <>
-            <div className="mb-4 rounded-md bg-muted/40 p-3">
-              <div className="text-xs text-muted-foreground">
+            <div className="mb-4 rounded-md bg-surface-raised p-3">
+              <div className="text-xs text-foreground-muted">
                 {translate("detail.accessPanel.priceLabel")}
               </div>
               <div className="mt-1 text-lg font-semibold text-foreground">
                 {formatVndPrice(pricing.display)}
               </div>
               {pricing.promoActive ? (
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
                   <span className="line-through">
                     {formatVndPrice(pricing.base)}
                   </span>
@@ -149,7 +149,7 @@ export function CourseAccessPanel({
                 </p>
               ) : null}
             </div>
-            <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            <p className="mb-4 text-sm leading-relaxed text-foreground-muted">
               {translate("detail.accessPanel.paidUpfrontCopy")}
               {previewLessons.length > 0
                 ? translate("detail.accessPanel.previewAvailable", {
@@ -181,7 +181,7 @@ export function CourseAccessPanel({
           </>
         ) : (
           <>
-            <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            <p className="mb-4 text-sm leading-relaxed text-foreground-muted">
               {translate("detail.accessPanel.freeEnrollCopy")}
               {isFreeWithPaidCertificate
                 ? translate("detail.accessPanel.certificateFeeSuffix", {

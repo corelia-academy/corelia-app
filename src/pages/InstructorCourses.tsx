@@ -38,16 +38,22 @@ const InstructorCourses = () => {
     let cancelled = false;
     if (!authInitialized || profileLoading) return () => { cancelled = true; };
     if (!isAuthenticated || !profile?.id) {
-      setLoading(false);
-      setCourses([]);
-      setError(t("courseListPage.errors.loadFailed"));
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setLoading(false);
+        setCourses([]);
+        setError(t("courseListPage.errors.loadFailed"));
+      });
       return () => {
         cancelled = true;
       };
     }
 
-    setLoading(true);
-    setError(null);
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setLoading(true);
+      setError(null);
+    });
     getCoursesForManagement(profile.id, canViewAll)
       .then((data) => {
         if (!cancelled) setCourses(data);
@@ -75,7 +81,7 @@ const InstructorCourses = () => {
   if (loading) {
     return (
       <div className="flex min-h-80 items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" aria-hidden />
+        <Loader2 className="size-8 animate-spin text-foreground-muted" aria-hidden />
       </div>
     );
   }
@@ -89,10 +95,10 @@ const InstructorCourses = () => {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("courseListPage.stats.total")}
               </p>
               <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -104,10 +110,10 @@ const InstructorCourses = () => {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("courseListPage.stats.published")}
               </p>
               <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -119,10 +125,10 @@ const InstructorCourses = () => {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("courseListPage.stats.drafts")}
               </p>
               <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -134,10 +140,10 @@ const InstructorCourses = () => {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("courseListPage.stats.paidUpfront")}
               </p>
               <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -149,10 +155,10 @@ const InstructorCourses = () => {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("courseListPage.stats.free")}
               </p>
               <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -172,7 +178,7 @@ const InstructorCourses = () => {
             <h2 className="text-lg font-semibold text-foreground">
               {t("courseListPage.hero.title")}
             </h2>
-            <p className="mt-2 max-w-3xl text-sm text-muted-foreground sm:text-sm">
+            <p className="mt-2 max-w-3xl text-sm text-foreground-muted sm:text-sm">
               {t("courseListPage.hero.description")}
             </p>
           </div>
@@ -188,9 +194,9 @@ const InstructorCourses = () => {
       </PageSectionCard>
 
       {courses.length === 0 ? (
-        <div className="mt-4 rounded-lg border border-border-subtle bg-card shadow-card">
+        <div className="mt-4 rounded-lg border border-border-subtle bg-surface-base">
           <EmptyState
-            icon={<BookOpen className="size-6 text-muted-foreground" aria-hidden />}
+            icon={<BookOpen className="size-6 text-foreground-subtle" aria-hidden />}
             title={t("courseListPage.empty.title")}
             description={
               t("courseListPage.empty.description", { defaultValue: "" }) || undefined
@@ -212,48 +218,48 @@ const InstructorCourses = () => {
           {courses.map((course) => (
             <article
               key={course.id}
-              className="group flex h-full flex-col overflow-hidden rounded-lg border border-border-subtle bg-card shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+              className="group flex h-full flex-col overflow-hidden rounded-lg border border-border-subtle bg-surface-base transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-raised"
             >
               <button
                 type="button"
-                className="w-full text-left hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                className="w-full text-left hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 onClick={() => navigate(`/instructor/courses/${course.id}/edit`)}
               >
-                <div className="relative aspect-video overflow-hidden border-b border-border-subtle bg-muted/50">
+                <div className="relative aspect-video overflow-hidden border-b border-border-subtle bg-surface-raised">
                   <img
                     src={course.thumbnail_url}
                     alt=""
                     className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-95"
                   />
                   <div className="absolute inset-x-0 bottom-0 flex flex-wrap gap-2 p-3">
-                    <span className="inline-flex items-center rounded-full bg-background/90 px-3 py-1 text-xs font-medium text-foreground shadow-sm">
+                    <span className="inline-flex items-center rounded-full bg-surface-base/90 px-3 py-1 text-xs font-medium text-foreground">
                       {course.published
                         ? t("courseListPage.coursePills.published")
                         : t("courseListPage.coursePills.draft")}
                     </span>
-                    <span className="inline-flex items-center rounded-full bg-background/90 px-3 py-1 text-xs font-medium text-foreground shadow-sm">
+                    <span className="inline-flex items-center rounded-full bg-surface-base/90 px-3 py-1 text-xs font-medium text-foreground">
                       {getCourseLevelLabel(course.level)}
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-1 flex-col p-4">
                   <div className="flex flex-wrap gap-2">
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
                       {getCourseAccessModelLabel(course.access_model)}
                     </span>
-                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
+                    <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
                       {getCourseOwnerTypeLabel(course.owner_type)}
                     </span>
                   </div>
                   <h3 className="mt-3 line-clamp-2 text-lg font-medium tracking-tight text-foreground">
                     {course.title}
                   </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1 text-sm text-foreground-muted">
                     {course.slug}
                   </p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-md border border-border-subtle bg-muted/30 p-3">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <div className="rounded-md border border-border-subtle bg-surface-base p-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                         {t("courseListPage.courseCards.pricingLabel")}
                       </p>
                       <p className="mt-1 text-sm font-medium text-foreground">
@@ -266,8 +272,8 @@ const InstructorCourses = () => {
                             : t("courseListPage.courseCards.free")}
                       </p>
                     </div>
-                    <div className="rounded-md border border-border-subtle bg-muted/30 p-3">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <div className="rounded-md border border-border-subtle bg-surface-base p-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                         {t("courseListPage.courseCards.instructorLabel")}
                       </p>
                       <p className="mt-1 line-clamp-1 text-sm font-medium text-foreground">

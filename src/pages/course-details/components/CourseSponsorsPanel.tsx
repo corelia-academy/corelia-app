@@ -50,7 +50,7 @@ export function CourseSponsorsPanel({
             return (
               <div
                 key={s.id}
-                className="flex items-start gap-3 rounded-md border border-border-subtle bg-background p-3"
+                className="flex items-start gap-3 rounded-md border border-border-subtle bg-surface-base p-3"
               >
                 <div className="shrink-0">
                   {logoSrc ? (
@@ -59,10 +59,10 @@ export function CourseSponsorsPanel({
                       alt={s.name}
                       loading="lazy"
                       decoding="async"
-                      className="size-10 rounded-md border border-border-subtle bg-background object-contain"
+                      className="size-10 rounded-md border border-border-subtle bg-surface-base object-contain"
                     />
                   ) : (
-                    <div className="grid size-10 place-items-center rounded-md border border-border-subtle bg-muted/30 text-xs font-semibold text-muted-foreground">
+                    <div className="grid size-10 place-items-center rounded-md border border-border-subtle bg-surface-raised text-xs font-semibold text-foreground-muted">
                       {s.name.slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -85,7 +85,7 @@ export function CourseSponsorsPanel({
                   </div>
 
                   {hasDescription ? (
-                    <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+                    <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
                       {s.description}
                     </p>
                   ) : null}

@@ -1,10 +1,12 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import {
   BrowserRouter,
   Navigate,
+  Outlet,
   Route,
   Routes,
   useLocation,
@@ -14,8 +16,9 @@ import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
+import { RequireContestManager } from "@/components/auth/RequireContestManager";
 import Home from "@/pages/home/index";
-import Courses from "@/pages/Courses";
+import Courses from "@/pages/courses";
 import Auth from "@/pages/login/Auth";
 import OCIDRedirect from "@/pages/OCIDRedirect";
 import NotFound from "@/pages/NotFound";
@@ -28,14 +31,24 @@ const CheckoutCourse = lazy(() => import("@/pages/CheckoutCourse"));
 const CheckoutSuccess = lazy(() => import("@/pages/CheckoutSuccess"));
 const Learn = lazy(() => import("@/pages/learn"));
 const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
-const Achievements = lazy(() => import("@/pages/Achievements"));
 const RoadmapPage = lazy(() => import("@/pages/roadmap"));
-const Contests = lazy(() => import("@/pages/Contests"));
-const ContestNew = lazy(() => import("@/pages/ContestNew"));
-const ContestPublicLayout = lazy(() => import("@/pages/contest-detail/ContestPublicLayout"));
-const ContestPublicPage = lazy(() => import("@/pages/contest-detail/ContestPublicPage"));
-const ContestApplyRedirect = lazy(() => import("@/pages/contest-detail/ContestApplyRedirect"));
-const UserProfileLayout = lazy(() => import("@/pages/users/UserProfilePage"));
+const CareerList = lazy(() => import("@/pages/career"));
+const CareerDetail = lazy(() => import("@/pages/career/CareerDetailPage"));
+const Contests = lazy(() => import("@/pages/hackathon-detail/Contests"));
+const ContestNew = lazy(() => import("@/pages/hackathon-detail/ContestNew"));
+const ContestPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
+const ContestPublicPage = lazy(() => import("@/pages/hackathon-detail/ContestPublicPage"));
+const Projects = lazy(() => import("@/pages/projects"));
+const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
+const SearchPage = lazy(() => import("@/pages/search"));
+import { ContestManageIndexRedirect } from "@/pages/hackathon-detail/ContestManageIndexRedirect";
+
+const ContestWorkspacePublicRoute = lazy(() =>
+  import("@/pages/hackathon-detail/ContestDetail").then((m) => ({
+    default: m.ContestDetailManagePage,
+  })),
+);
+const UserProfileLayout = lazy(() => import("@/pages/users/user-profile"));
 const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
 
 const Account = lazy(() => import("@/pages/account/Account"));
@@ -51,6 +64,9 @@ const AccountBillingRoute = lazy(() =>
 const AccountSettingsRoute = lazy(() =>
   import("@/pages/account/AccountSettingsRoute").then((m) => ({ default: m.AccountSettingsRoute })),
 );
+const AccountProjectsRoute = lazy(() =>
+  import("@/pages/account/AccountProjectsRoute").then((m) => ({ default: m.AccountProjectsRoute })),
+);
 const AccountInstructorProfileRoute = lazy(() =>
   import("@/pages/account/AccountInstructorRoutes").then((m) => ({
     default: m.AccountInstructorProfileRoute,
@@ -64,9 +80,13 @@ const InstructorWorkspaceProfileRoute = lazy(() =>
 
 const InstructorLayout = lazy(() => import("@/pages/instructor/InstructorLayout"));
 const InstructorCourses = lazy(() => import("@/pages/InstructorCourses"));
-const InstructorContests = lazy(() => import("@/pages/InstructorContests"));
-const InstructorCourseNew = lazy(() => import("@/pages/InstructorCourseNew"));
-const InstructorCourseEdit = lazy(() => import("@/pages/InstructorCourseEdit"));
+const InstructorContests = lazy(() => import("@/pages/hackathon-detail/InstructorContests"));
+const InstructorCourseNew = lazy(() => import("@/pages/instructor-course-new"));
+const InstructorCourseEdit = lazy(() => import("@/pages/instructor-course-edit"));
+const InstructorCareerTracks = lazy(() => import("@/pages/instructor-career-tracks"));
+const InstructorCareerTrackEditor = lazy(
+  () => import("@/pages/instructor-career-tracks/InstructorCareerTrackEditorPage"),
+);
 const PartnerContractsPage = lazy(() =>
   import("@/pages/instructor/PartnerFinance").then((m) => ({ default: m.PartnerContractsPage })),
 );
@@ -82,16 +102,27 @@ const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
 const AdminInstructors = lazy(() => import("@/pages/admin/AdminInstructors"));
 const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
-const ContestWorkspace = lazy(() => import("@/pages/admin/ContestWorkspace"));
 
-const PageFallback = () => (
-  <div className="p-4 text-sm text-muted-foreground">Loading…</div>
-);
+const PageFallback = () => <AuthGateLoading />;
 
 function ScrollToTop() {
   const location = useLocation();
+  const prevPathRef = useRef<string | null>(null);
 
   useEffect(() => {
+    const prev = prevPathRef.current;
+    prevPathRef.current = location.pathname;
+    const manageBaseRe = /^\/hackathons\/([^/]+)\/manage(?:\/|$)/;
+    const prevMatch = prev?.match(manageBaseRe);
+    const nextMatch = location.pathname.match(manageBaseRe);
+    if (
+      prevMatch &&
+      nextMatch &&
+      prevMatch[1] === nextMatch[1] &&
+      prev !== location.pathname
+    ) {
+      return;
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [location.pathname, location.search]);
 
@@ -120,7 +151,39 @@ export default function App() {
             <Route path="/" element={<MainLayout />}>
               <Route index element={<Home />} />
               <Route path="courses" element={<Courses />} />
+              <Route
+                path="invites/project/:token"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <ProjectInvitePage />
+                  </Suspense>
+                }
+              />
               <Route path="cohorts" element={<Navigate to="/courses" replace />} />
+              <Route
+                path="career"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <CareerList />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="career/corelia/:slug"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <CareerDetail />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="career/:handle/:slug"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <CareerDetail />
+                  </Suspense>
+                }
+              />
               <Route
                 path="courses/:id"
                 element={
@@ -178,16 +241,7 @@ export default function App() {
                   </RequireAuth>
                 }
               />
-              <Route
-                path="achievements"
-                element={
-                  <RequireAuth>
-                    <Suspense fallback={<PageFallback />}>
-                      <Achievements />
-                    </Suspense>
-                  </RequireAuth>
-                }
-              />
+              <Route path="achievements" element={<Navigate to="/account" replace />} />
               <Route
                 path="roadmap"
                 element={
@@ -197,7 +251,7 @@ export default function App() {
                 }
               />
               <Route
-                path="contests"
+                path="hackathons"
                 element={
                   <Suspense fallback={<PageFallback />}>
                     <Contests />
@@ -205,7 +259,65 @@ export default function App() {
                 }
               />
               <Route
-                path="contests/:id"
+                path="hackathons/manage"
+                element={
+                  <RequireAuth>
+                    <RequireContestManager>
+                      <Suspense fallback={<PageFallback />}>
+                        <InstructorContests />
+                      </Suspense>
+                    </RequireContestManager>
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="hackathons/new"
+                element={
+                  <RequireAuth>
+                    <RequireContestManager>
+                      <Suspense fallback={<PageFallback />}>
+                        <ContestNew />
+                      </Suspense>
+                    </RequireContestManager>
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="projects"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <Projects />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="search"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <SearchPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="hackathons/:slug/manage"
+                element={
+                  <RequireAuth>
+                    <Outlet />
+                  </RequireAuth>
+                }
+              >
+                <Route index element={<ContestManageIndexRedirect />} />
+                <Route
+                  path=":section"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestWorkspacePublicRoute />
+                    </Suspense>
+                  }
+                />
+              </Route>
+              <Route
+                path="hackathons/:slug"
                 element={
                   <Suspense fallback={<PageFallback />}>
                     <ContestPublicLayout />
@@ -258,14 +370,6 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <ContestPublicPage section="projects" />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="apply"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestApplyRedirect />
                     </Suspense>
                   }
                 />
@@ -322,6 +426,14 @@ export default function App() {
                   }
                 />
                 <Route
+                  path="projects"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountProjectsRoute />
+                    </Suspense>
+                  }
+                />
+                <Route
                   path="instructor"
                   element={
                     <Suspense fallback={<PageFallback />}>
@@ -373,28 +485,8 @@ export default function App() {
                   }
                 />
                 <Route
-                  path="contests"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <InstructorContests />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="contests/new"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestNew />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="contests/:id/manage"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestWorkspace />
-                    </Suspense>
-                  }
+                  path="hackathons/*"
+                  element={<NotFound />}
                 />
               </Route>
               <Route
@@ -412,6 +504,30 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <InstructorCourses />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="career-tracks"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCareerTracks />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="career-tracks/new"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCareerTrackEditor />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="career-tracks/:id/edit"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCareerTrackEditor />
                     </Suspense>
                   }
                 />

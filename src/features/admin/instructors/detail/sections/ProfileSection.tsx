@@ -35,17 +35,17 @@ export function ProfileSection({
   onSave: () => void;
 }) {
   return (
-    <section className="rounded-2xl border border-border-subtle bg-card p-6 shadow-card">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-lg font-medium text-foreground">
             {t("instructorDetailPage.profile.title")}
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-foreground-muted">
             {t("instructorDetailPage.profile.description")}
           </p>
         </div>
-        <div className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+        <div className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
           <ShieldCheck className="mr-2 size-4 text-primary" aria-hidden />
           {t("instructorDetailPage.profile.completionLabel", {
             percent: profileCompletionPercent,
@@ -65,7 +65,7 @@ export function ProfileSection({
                 prev ? { ...prev, role: e.target.value as Profile["role"] } : prev,
               )
             }
-            className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 rounded-lg border border-border bg-surface-base px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
           >
             <option value="instructor">
               {t("instructorDetailPage.profile.roleOptions.instructor")}
@@ -96,7 +96,7 @@ export function ProfileSection({
                   : prev,
               )
             }
-            className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 rounded-lg border border-border bg-surface-base px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
           >
             <option value="corelia">Corelia</option>
             <option value="external">
@@ -187,7 +187,7 @@ export function ProfileSection({
               )
             }
             rows={5}
-            className="min-h-[120px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-h-[120px] w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
           />
         </div>
 

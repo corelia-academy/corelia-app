@@ -21,9 +21,9 @@ export function ContractsSection({
   onUpload: (file: File) => void;
 }) {
   return (
-    <section className="rounded-2xl border border-border-subtle bg-card p-6 shadow-card">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base p-6">
       {!isExternal ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-foreground-muted">
           {t("instructorDetailPage.contracts.externalOnly")}
         </p>
       ) : (
@@ -33,11 +33,11 @@ export function ContractsSection({
               <h2 className="text-lg font-medium text-foreground">
                 {t("instructorDetailPage.contracts.title")}
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-foreground-muted">
                 {t("instructorDetailPage.contracts.description")}
               </p>
             </div>
-            <span className="rounded-full border border-border-subtle bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+            <span className="rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs text-foreground-muted">
               {t("instructorDetailPage.contracts.countLabel", {
                 count: contractDocs.length,
               })}

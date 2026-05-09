@@ -28,11 +28,11 @@ export function CourseCoInstructorsSection({
   if (!coInstructors || coInstructors.length === 0) return null;
 
   return (
-    <section className="rounded-md border border-border-subtle bg-card p-4 shadow-sm sm:p-6">
+    <section className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
       <h2 className="text-base font-semibold text-foreground">
         {translate("detail.courseDetail.coInstructors.title")}
       </h2>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <p className="mt-1 text-sm text-foreground-muted">
         {translate("detail.courseDetail.coInstructors.subtitle")}
       </p>
 
@@ -47,7 +47,7 @@ export function CourseCoInstructorsSection({
           return (
             <div
               key={p.id}
-              className="rounded-md border border-border-subtle bg-background p-4"
+              className="rounded-md border border-border-subtle bg-surface-base p-4"
             >
               <div className="flex items-start gap-3">
                 <Avatar className="mt-0.5 size-10 rounded-full border border-border-subtle">
@@ -65,7 +65,7 @@ export function CourseCoInstructorsSection({
                     </Link>
                   </div>
                   {meta ? (
-                    <div className="mt-0.5 text-sm text-muted-foreground">
+                    <div className="mt-0.5 text-sm text-foreground-muted">
                       {meta}
                     </div>
                   ) : null}

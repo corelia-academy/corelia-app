@@ -14,7 +14,7 @@ export function LoginProviderButtons({
   const { t } = useTranslation("auth");
   return (
     <>
-      <FieldSeparator className="**:data-[slot=field-separator-content]:bg-card">
+      <FieldSeparator className="**:data-[slot=field-separator-content]:bg-surface-base">
         {t("login.actions.orContinueWith")}
       </FieldSeparator>
 

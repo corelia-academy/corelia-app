@@ -1,0 +1,32 @@
+{
+  "list": {
+    "title": "Lộ trình học",
+    "subtitle": "Chọn một lộ trình để học theo từng bước, bao gồm nhiều khóa học liên quan.",
+    "emptyTitle": "Chưa có lộ trình nào",
+    "emptyDescription": "Hiện chưa có lộ trình học được công bố.",
+    "browseCourses": "Xem khóa học"
+  },
+  "detail": {
+    "whatYoullLearn": "Bạn sẽ học được gì",
+    "includedCourses": "Các khóa học trong lộ trình",
+    "prerequisites": "Yêu cầu trước khi học",
+    "nextSteps": "Bước tiếp theo",
+    "emptyWhatYoullLearn": "Chưa có thông tin.",
+    "emptyPrerequisites": "Không có yêu cầu đặc biệt."
+  },
+  "labels": {
+    "certificate": "Certificate",
+    "certificateIncluded": "Có certificate",
+    "certificateNotIncluded": "Không có certificate",
+    "coursesCount": "{{count}} khóa học"
+  },
+  "actions": {
+    "browseCourses": "Xem khóa học",
+    "backToList": "Quay lại danh sách"
+  },
+  "errors": {
+    "loadErrorTitle": "Không thể tải lộ trình",
+    "loadFailed": "Không thể tải dữ liệu."
+  }
+}
+

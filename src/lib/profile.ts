@@ -125,9 +125,14 @@ async function _fetchProfileForUser(user: User): Promise<Profile | null> {
   }
 
   const p = rowToProfile(row as Record<string, unknown>);
+  const ensured = await ensureUsernameForUser(user, p);
+  const pWithUsername = ensured ?? p;
   const updates: Record<string, unknown> = {};
-  if ((p.email == null || p.email === "") && user.email) updates.email = user.email;
-  if ((p.full_name == null || p.full_name === "") && user.user_metadata?.full_name) {
+  if ((pWithUsername.email == null || pWithUsername.email === "") && user.email) updates.email = user.email;
+  if (
+    (pWithUsername.full_name == null || pWithUsername.full_name === "") &&
+    user.user_metadata?.full_name
+  ) {
     updates.full_name = String(user.user_metadata.full_name);
   }
   if (Object.keys(updates).length > 0) {
@@ -139,9 +144,69 @@ async function _fetchProfileForUser(user: User): Promise<Profile | null> {
       .select("*")
       .single();
     if (upd) return rowToProfile(upd as Record<string, unknown>);
-    return { ...p, ...updates } as Profile;
+    return { ...pWithUsername, ...updates } as Profile;
   }
-  return p;
+  return pWithUsername;
+}
+
+function normalizeHandleBase(input: string): string {
+  const s = input
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 24);
+  return s || "user";
+}
+
+function randomSuffix(len = 4): string {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let out = "";
+  for (let i = 0; i < len; i++) out += alphabet[Math.floor(Math.random() * alphabet.length)];
+  return out;
+}
+
+async function trySetUsername(userId: string, username: string): Promise<Profile | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ username, updated_at: new Date().toISOString() })
+    .eq("id", userId)
+    .select("*")
+    .single();
+
+  if (error) {
+    const code = (error as unknown as { code?: string }).code;
+    if (code === "23505") return null; // unique violation
+    throw new Error(error.message);
+  }
+  return rowToProfile(data as Record<string, unknown>);
+}
+
+export async function ensureUsernameForUser(
+  user: User,
+  profile: Profile,
+): Promise<Profile | null> {
+  if (profile.username && profile.username.trim()) return profile;
+
+  const base = normalizeHandleBase(
+    String(profile.ocid ?? profile.full_name ?? user.user_metadata?.full_name ?? user.email ?? user.id),
+  );
+
+  // Try deterministic base first, then add suffixes until unique.
+  const candidates = [
+    base,
+    `${base}_${user.id.slice(0, 4).toLowerCase()}`,
+    `${base}_${randomSuffix(4)}`,
+    `${base}_${randomSuffix(5)}`,
+  ];
+
+  for (const candidate of candidates) {
+    const updated = await trySetUsername(user.id, candidate);
+    if (updated) return updated;
+  }
+
+  // Final fallback: user_<8chars>
+  return await trySetUsername(user.id, `user_${user.id.slice(0, 8).toLowerCase()}`);
 }
 
 export function getCurrentProfile(): Promise<Profile | null> {

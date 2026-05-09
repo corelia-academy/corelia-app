@@ -1,10 +1,4 @@
-import {
-  BookOpen,
-  Home,
-  List,
-  LogIn,
-  Trophy,
-} from "lucide-react";
+import { Briefcase, BookOpen, Home, List, LogIn, Trophy } from "lucide-react";
 import React from "react";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
@@ -39,7 +33,8 @@ const MainLayout = () => {
   const mobilePrimaryNav = [
     { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
     { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
-    { labelKey: "nav.contests" as const, href: "/contests", icon: Trophy },
+    { labelKey: "nav.career" as const, href: "/career", icon: Briefcase },
+    { labelKey: "nav.contests" as const, href: "/hackathons", icon: Trophy },
     isAuthenticated
       ? { labelKey: "tabs.menu" as const, href: "/menu", icon: List }
       : { labelKey: "tabs.signIn" as const, href: "/login", icon: LogIn },
@@ -53,8 +48,8 @@ const MainLayout = () => {
         <main className="flex-1 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0">
           <Outlet />
         </main>
-        <footer className="hidden border-t border-border-subtle bg-card/70 md:block">
-          <div className="container-app flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 text-xs text-muted-foreground">
+        <footer className="hidden border-t border-border-subtle bg-surface-raised md:block">
+          <div className="container-app flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 text-xs text-foreground-muted">
             <span className="min-w-0">
               {t("footer.copyrightPrefix", { year: new Date().getFullYear() })}
             </span>
@@ -63,34 +58,36 @@ const MainLayout = () => {
                 to="/roadmap"
                 className={({ isActive }) =>
                   cn(
-                    "shrink-0 rounded-md px-1.5 py-0.5 transition-colors hover:text-foreground",
+                    "inline-flex h-7 shrink-0 items-center justify-center rounded-full px-2.5 text-xs font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                     isActive
-                      ? "font-medium text-foreground"
-                      : "text-muted-foreground underline-offset-2 hover:underline",
+                      ? "bg-surface-overlay text-foreground"
+                      : "text-foreground-muted hover:bg-surface-overlay hover:text-foreground",
                   )
                 }
               >
                 {t("footer.roadmap")}
               </NavLink>
-              <span className="shrink-0 tabular-nums text-muted-foreground/80">
-                {t("footer.version", {
-                  version: import.meta.env.VITE_APP_VERSION,
-                })}
-              </span>
+
               {betaFeedbackUrl ? (
                 <ReportIssueLink
                   compact
-                  className="h-7 shrink-0 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                  className="h-7 shrink-0 rounded-full px-2.5 text-xs text-foreground-muted hover:text-foreground"
                 />
               ) : (
                 <span className="shrink-0">corelia.academy</span>
               )}
+
+              <span className="shrink-0 tabular-nums text-foreground-muted">
+                {t("footer.version", {
+                  version: import.meta.env.VITE_APP_VERSION,
+                })}
+              </span>
             </div>
           </div>
         </footer>
       </SidebarInset>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-card/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-md supports-backdrop-filter:bg-card/90 md:hidden">
-        <div className="container-app grid grid-cols-4 gap-1 px-2 py-2">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface-float pb-[env(safe-area-inset-bottom,0px)] md:hidden">
+        <div className="container-app grid grid-cols-5 gap-1 px-2 py-2">
           {mobilePrimaryNav.map((item) => {
             const Icon = item.icon;
             if (item.href === "/menu") {
@@ -112,7 +109,7 @@ const MainLayout = () => {
                   }
                   className={cn(
                     mobileTabItemClassName,
-                    "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                    "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                   )}
                 >
                   <Icon className="size-4 shrink-0" aria-hidden />
@@ -132,8 +129,8 @@ const MainLayout = () => {
                   cn(
                     mobileTabItemClassName,
                     isActive
-                      ? "bg-primary-container text-on-primary-container"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                      ? "bg-primary-muted text-primary"
+                      : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                   )
                 }
               >
@@ -193,7 +190,7 @@ function MobileMenuTab({
       aria-controls="app-sidebar-mobile"
       className={cn(
         mobileTabItemClassName,
-        "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+        "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
       )}
     >
       <Icon className="size-4 shrink-0" aria-hidden />

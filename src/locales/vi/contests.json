@@ -19,16 +19,17 @@
     "unknown": "—"
   },
   "catalog": {
-    "heroEyebrow": "Cuộc thi & hoạt động hệ sinh thái",
-    "heroTitle": "Không gian cuộc thi của Corelia",
-    "heroDescription": "Khám phá hackathon, mini contest và các hoạt động nhiều vòng đang được Corelia mở cho cộng đồng. Hồ sơ chỉ được tham gia chính thức sau khi đội ngũ Corelia xét duyệt.",
+    "heroEyebrow": "Hackathon & hoạt động hệ sinh thái",
+    "heroTitle": "Hackathon của Corelia",
+    "heroDescription": "Khám phá hackathon và các hoạt động nhiều vòng đang được Corelia mở cho cộng đồng. Hồ sơ chỉ được tham gia chính thức sau khi đội ngũ Corelia xét duyệt.",
+    "missingSlug": "Hackathon này chưa có slug. Hãy chạy migration backfill slug hoặc set slug trong workspace settings.",
     "pillReviewed": "Corelia xét duyệt đầu vào",
     "pillTeamBased": "Bài nộp theo đội",
-    "sectionWhyTitle": "Cuộc thi không chỉ để thi, mà còn để học, xây dựng và va chạm thực tế",
-    "loadingTitle": "Đang tải danh sách cuộc thi...",
-    "loadingDescription": "Các chương trình hackathon và contest sẽ xuất hiện ngay khi đồng bộ xong.",
-    "howItWorksEyebrow": "Cách Corelia vận hành cuộc thi",
-    "howItWorksDescription": "Mỗi cuộc thi tại Corelia được thiết kế như một lớp trải nghiệm thực chiến: có vòng duyệt đầu vào, có mentor hoặc ban giám khảo, có bài nộp rõ ràng và có kết quả đủ tốt để bạn mang vào portfolio, workshop hoặc demo day sau đó.",
+    "sectionWhyTitle": "Hackathon không chỉ để thi, mà còn để học, xây dựng và va chạm thực tế",
+    "loadingTitle": "Đang tải danh sách hackathon...",
+    "loadingDescription": "Các chương trình hackathon sẽ xuất hiện ngay khi đồng bộ xong.",
+    "howItWorksEyebrow": "Cách Corelia vận hành hackathon",
+    "howItWorksDescription": "Mỗi hackathon tại Corelia được thiết kế như một lớp trải nghiệm thực chiến: có vòng duyệt đầu vào, có mentor hoặc ban giám khảo, có bài nộp rõ ràng và có kết quả đủ tốt để bạn mang vào portfolio, workshop hoặc demo day sau đó.",
     "whyBullets": {
       "reviewFirst": "Hồ sơ được duyệt trước khi tham gia chính thức",
       "realJourney": "Bài nộp và kết quả gắn với hành trình học thật",
@@ -37,18 +38,21 @@
     "dateRangeUnknown": "Chưa công bố lịch thi",
     "dateStartPrefix": "Bắt đầu {{date}}",
     "dateEndPrefix": "Kết thúc {{date}}",
-    "loadErrorFallback": "Không thể tải cuộc thi.",
-    "emptyTitle": "Chưa có cuộc thi nào.",
-    "emptyDescriptionManager": "Chưa có contest public nào. Hãy tạo và vận hành contest trong instructor workspace trước khi nó xuất hiện tại đây.",
-    "emptyDescriptionUser": "Khi Corelia công bố contest mới, bạn sẽ thấy lịch và yêu cầu đăng ký tại đây.",
+    "loadErrorFallback": "Không thể tải hackathon.",
+    "errorTitle": "Không tải được danh sách hackathon",
+    "errorDescription": "Hãy kiểm tra kết nối và thử lại.",
+    "retry": "Thử lại",
+    "emptyTitle": "Chưa có hackathon nào.",
+    "emptyDescriptionManager": "Chưa có hackathon public nào. Hãy tạo và vận hành hackathon trong instructor workspace trước khi nó xuất hiện tại đây.",
+    "emptyDescriptionUser": "Khi Corelia công bố hackathon mới, bạn sẽ thấy lịch và yêu cầu đăng ký tại đây.",
     "registrationDeadlinePrefix": "Hạn đăng ký {{date}}",
     "registrationNoLimit": "Không giới hạn thời gian đăng ký",
     "viewDetails": "Xem chi tiết",
-    "viewContest": "Xem cuộc thi",
-    "openWorkspace": "Mở contest workspace",
+    "viewContest": "Xem hackathon",
+    "openWorkspace": "Mở hackathon workspace",
     "statsSummary": "{{total}} tổng · {{accepting}} đang nhận hồ sơ · {{running}} đang diễn ra · {{ended}} đã kết thúc",
     "stats": {
-      "total": "Tổng cuộc thi",
+      "total": "Tổng hackathon",
       "accepting": "Đang nhận hồ sơ",
       "running": "Đang diễn ra",
       "ended": "Đã kết thúc"
@@ -68,34 +72,41 @@
       "submissionsCount": "{{count}} bài nộp"
     },
     "sidebar": {
-      "leaderboardHint": "Judges chấm theo rubric, còn leaderboard và winners chỉ hiện khi được publish."
+      "leaderboardHint": "Ban giám khảo chấm theo rubric; bảng xếp hạng và danh sách người thắng chỉ hiện sau khi được công bố chính thức."
     },
     "listCardImageAlt": "Ảnh đại diện contest — {{title}}"
   },
   "previewBar": {
-    "label": "Preview mode",
-    "statusPrefix": "Status: {{status}}",
-    "exit": "Exit preview",
-    "openWorkspace": "Open workspace →",
-    "openOperations": "Open operations →",
-    "catalogTitle": "Contests (public surface)"
+    "label": "Chế độ xem trước",
+    "statusPrefix": "Trạng thái: {{status}}",
+    "exit": "Thoát xem trước",
+    "openWorkspace": "Mở workspace →",
+    "openOperations": "Mở vận hành →",
+    "catalogTitle": "Hackathons (giao diện công khai)"
   },
   "workspace": {
     "tabs": {
       "overview": "Overview",
       "applications": "Applications",
       "judging": "Judging",
+      "analytics": "Analytics",
       "settings": "Settings"
     },
     "settings": {
       "description": "Edit contest settings and protect destructive actions."
     },
     "manage": {
-      "backToContests": "Back to contests",
-      "backToContestPage": "Back to contest page",
+      "backToContests": "Quay lại danh sách hackathon",
+      "backToContestPage": "Quay lại trang hackathon",
       "roleCoreliaOps": "Corelia operations",
       "roleJudgePanel": "Judge panel",
       "roleCoHostObserver": "Co-host observer",
+      "slugTitle": "URL công khai",
+      "slugDescription": "Thiết lập slug cho URL công khai của hackathon.",
+      "slugLabel": "Slug",
+      "slugPlaceholder": "vd: corelia-ai-edu-2026",
+      "slugHint": "URL: /hackathons/{{slug}}",
+      "saveSlug": "Lưu slug",
       "heroStart": "Start date",
       "heroEnd": "End date",
       "heroFormat": "Format",
@@ -109,7 +120,7 @@
         "description": "Your role, the operating cadence, and the contest's current status."
       },
       "fallback": {
-        "label": "Contest workspace",
+        "label": "Hackathon workspace",
         "description": "Coordinate between Corelia, judges, and co-host partners."
       },
       "sections": {
@@ -166,6 +177,8 @@
       "judgingTitle": "Judging panel",
       "judgingDescription": "Score using four criteria and save scores per submission.",
       "judgingWeightsLine": "Weights: Product {{product}}% · Technical {{technical}}% · Presentation {{presentation}}% · Impact {{impact}}%",
+      "judgingTrackLabel": "Track",
+      "judgingRoundLabel": "Round",
       "judgingEmptyTitle": "No submissions yet",
       "judgingEmptyHint": "Judges will see submissions here once approved teams start updating them.",
       "rankCurrent": "Current rank #{{rank}}",
@@ -183,6 +196,8 @@
       "criterionImpact": "Impact",
       "outcomesTitle": "Outcomes dashboard",
       "outcomesDescription": "Co-host observers see aggregate metrics, the published leaderboard, and the award list.",
+      "analyticsTitle": "Sponsor analytics",
+      "analyticsDescription": "Metric tổng hợp, leaderboard đã publish và winners (không hiển thị hồ sơ thô).",
       "metricApplications": "Applications",
       "metricApproved": "Approved",
       "metricSubmissions": "Submissions",
@@ -198,7 +213,7 @@
       "winnersEmptyHint": "Awards will appear here when organizers publish winners.",
       "operationsControlsTitle": "Operations controls",
       "operationsControlsDescription": "Coordinate contest status, rubric, and access for operational participants.",
-      "contestStatusLabel": "Contest status",
+      "contestStatusLabel": "Hackathon status",
       "statusDraft": "Draft",
       "statusPublished": "Accepting applications",
       "statusRunning": "Running",
@@ -206,16 +221,48 @@
       "rubricTitle": "Judge rubric",
       "rubricDescription": "Adjust weights for four criteria. Total should equal 100 for clearer scoring.",
       "rubricTotalPrefix": "Current total:",
+      "tracksRoundsTitle": "Tracks & rounds",
+      "tracksRoundsDescription": "Cấu hình track, vòng chấm và vòng đang active để chấm điểm.",
+      "tracksTitle": "Tracks",
+      "roundsTitle": "Rounds",
+      "trackIdPlaceholder": "Track id (vd: ai)",
+      "trackNamePlaceholder": "Track name (vd: AI)",
+      "roundIdPlaceholder": "Round id (vd: final)",
+      "roundNamePlaceholder": "Round name (vd: Final)",
+      "addTrackRow": "Thêm track",
+      "addRoundRow": "Thêm round",
+      "activeRoundLabel": "Active round",
+      "saveTracksRounds": "Lưu tracks & rounds",
+      "tracksNeedOne": "Cần ít nhất 1 track.",
+      "roundsNeedOne": "Cần ít nhất 1 round.",
+      "tracksRoundsSaved": "Đã lưu tracks & rounds.",
+      "tracksRoundsSaveFailed": "Không lưu được tracks/rounds.",
+      "anonymousJudgingTitle": "Anonymous judging (UI-level)",
+      "anonymousJudgingHint": "Bật để judge chỉ thấy display ID thay vì tên trong panel chấm.",
+      "anonymousJudgingToggle": "Bật",
+      "anonymousSubmissionLabel": "Submission ID {{id}}",
       "accessInvitesTitle": "Access & invites",
+      "inviteRolesLabel": "Vai trò",
       "inviteRoleJudge": "Judge",
+      "inviteRoleCoOrganizer": "Co-organizer",
+      "inviteRolePartnerViewer": "Partner viewer",
+      "inviteRoleMentor": "Mentor",
+      "inviteRoleReviewer": "Reviewer",
       "inviteRoleCoHost": "Co-host",
+      "bulkInviteTitle": "Bulk invite (CSV)",
+      "bulkInviteHint": "Upload CSV với format: email, role(s). Có thể nhiều role, ngăn bởi | hoặc ;. Ví dụ: person@domain.com, judge|mentor",
+      "bulkInviteEmpty": "File CSV rỗng.",
+      "bulkInviteFailed": "Bulk invite thất bại.",
+      "bulkInviteDone": "Bulk invite xong: {{success}} thành công · {{failed}} lỗi",
       "invitesEmpty": "No invites yet.",
       "publicPageContentTitle": "Nội dung trang công khai",
       "publicPageContentDescription": "Giải thưởng, FAQ, mốc timeline tùy chỉnh và dòng tóm tắt giải trên các URL công khai.",
       "mediaTitle": "Banner & thumbnail",
       "mediaDescription": "Banner hiển thị rộng phía trên thẻ contest trên URL công khai. Thumbnail dùng cho danh sách và header dính (nếu trống sẽ dùng banner).",
       "bannerUploadLabel": "Ảnh banner",
+      "bannerUploadHint": "Khuyến nghị: tỉ lệ 21:9, tối thiểu 1680x720 (PNG/JPG/WebP), dưới 5MB.",
       "thumbnailUploadLabel": "Ảnh thumbnail",
+      "thumbnailUploadHint": "Khuyến nghị (chuẩn YouTube): tỉ lệ 16:9, 1280x720 (PNG/JPG/WebP), dưới 2MB.",
       "uploadingBanner": "Đang tải banner…",
       "uploadingThumbnail": "Đang tải thumbnail…",
       "prizePoolSummaryLabel": "Tóm tắt tổng giải thưởng",
@@ -226,6 +273,8 @@
       "addMilestoneRow": "Thêm mốc",
       "milestoneTitlePlaceholder": "Tên sự kiện",
       "milestoneAtLabel": "Ngày giờ",
+      "submissionDeadlineLabel": "Hạn chót nộp bài",
+      "submissionDeadlineHint": "Thời điểm cuối cùng người tham gia được tạo hoặc chỉnh submission (đồng bộ ra thẻ dự án công khai). Để trống thì dùng thời điểm kết thúc contest.",
       "faqQuestionPlaceholder": "Câu hỏi",
       "faqAnswerPlaceholder": "Trả lời",
       "prizeRankPlaceholder": "vd: Giải nhất",
@@ -237,21 +286,21 @@
       "copyLink": "Copy link",
       "openEmail": "Open email",
       "dangerZoneTitle": "Danger Zone",
-      "dangerZoneDescription": "Deleting a contest removes all registrations, invites, submissions, and scores. This cannot be undone.",
-      "deleteContest": "Delete contest",
+      "dangerZoneDescription": "Deleting a hackathon removes all registrations, invites, submissions, and scores. This cannot be undone.",
+      "deleteContest": "Delete hackathon",
       "inviteCollaborationTitle": "Collaboration invite",
       "inviteMetaLine": "Role: {{roles}} · Status: {{status}}",
       "inviteAccept": "Accept invite",
       "inviteDecline": "Decline",
       "backToPublicSurfaceTitle": "Back to public page",
       "backToPublicSurfaceDescription": "The public page is for participants to view the contest and published results.",
-      "viewPublicPage": "View public page",
-      "deleteDialogTitle": "Delete contest?",
+      "viewPublicPage": "Xem trang công khai",
+      "deleteDialogTitle": "Delete hackathon?",
       "deleteTypeToConfirm": "Type “{{title}}” to confirm deletion.",
-      "deleteDialogBodyWithTitle": "Contest \"{{title}}\" and all registrations, invites, submissions, and scores will be deleted. This cannot be undone.",
+      "deleteDialogBodyWithTitle": "Hackathon \"{{title}}\" and all registrations, invites, submissions, and scores will be deleted. This cannot be undone.",
       "deleteDialogCancel": "Cancel",
       "deleteDialogDeleting": "Deleting...",
-      "deleteContestConfirm": "Delete contest",
+      "deleteContestConfirm": "Delete hackathon",
       "defaultAwardChampion": "Champion",
       "defaultAwardRunnerUp": "Runner-up",
       "defaultAwardBestDemo": "Best Demo"
@@ -367,13 +416,21 @@
     },
     "toasts": {
       "created": "Đã tạo cuộc thi.",
+      "slugMissing": "Đã tạo cuộc thi nhưng chưa có slug. Hãy set slug trong phần cài đặt workspace để dùng URL công khai.",
       "createFailed": "Không thể tạo cuộc thi.",
       "imagesUploadFailed": "Đã tạo contest nhưng không tải được ảnh. Bạn có thể thêm trong phần cài đặt workspace."
+    },
+    "validation": {
+      "startsInPast": "Ngày bắt đầu không được trước hôm nay.",
+      "endsNotAfterStart": "Ngày kết thúc phải sau ngày bắt đầu."
     },
     "form": {
       "titleLabel": "Tên cuộc thi",
       "titlePlaceholder": "Ví dụ: Corelia Hackathon: AI for Education",
       "titleDescription": "Tên hiển thị trong danh sách và trang chi tiết cuộc thi.",
+      "slugLabel": "Slug (URL)",
+      "slugPlaceholder": "vd: corelia-ai-edu-2026",
+      "slugDescription": "URL công khai: /hackathons/{{slug}}",
       "taglineLabel": "Dòng mô tả ngắn",
       "taglinePlaceholder": "Ví dụ: Build trong 48h • Có mentor đồng hành • Demo Day",
       "taglineDescription": "Mô tả ngắn xuất hiện ở card và phần mở đầu của cuộc thi.",
@@ -393,6 +450,8 @@
       "startsAtLabel": "Bắt đầu",
       "endsAtLabel": "Kết thúc",
       "registrationDeadlineLabel": "Hạn đăng ký",
+      "submissionDeadlineLabel": "Hạn chót nộp bài (tuỳ chọn)",
+      "submissionDeadlineDescription": "Thời điểm khóa submission đối với người tham gia. Để trống thì khóa khi contest kết thúc.",
       "maxParticipantsLabel": "Giới hạn số hồ sơ được duyệt",
       "maxParticipantsPlaceholder": "Để trống nếu không giới hạn",
       "maxParticipantsDescription": "Nếu cần kiểm soát số đội/người tham gia, nhập giới hạn tại đây.",
@@ -434,7 +493,7 @@
     },
     "errorState": {
       "description": "Liên kết có thể đã thay đổi, cuộc thi chưa được công bố, hoặc bạn đang truy cập một bề mặt không còn tồn tại.",
-      "backToList": "Quay lại danh sách cuộc thi"
+      "backToList": "Quay lại danh sách hackathon"
     },
     "manage": {
       "sections": {
@@ -456,8 +515,8 @@
         "description": "Vai trò tham gia, nhịp vận hành và tình trạng hiện tại của contest."
       },
       "fallback": {
-        "label": "Contest workspace",
-        "description": "Điều phối contest giữa Corelia, judges và đơn vị đồng tổ chức."
+        "label": "Hackathon workspace",
+        "description": "Điều phối hackathon giữa Corelia, judges và đơn vị đồng tổ chức."
       }
     },
     "journey": {
@@ -492,6 +551,22 @@
       "deleteSuccess": "Đã xoá cuộc thi.",
       "deleteErrorFallback": "Không thể xoá cuộc thi lúc này."
     },
+    "phase": {
+      "badgeEnded": "Đã kết thúc",
+      "badgeLive": "Đang diễn ra",
+      "badgeRegistrationOpen": "Đang nhận hồ sơ",
+      "badgeRegClosedBeforeStart": "Đã đóng đăng ký · Sắp khai mạc",
+      "hero": {
+        "registrationsCount": "{{count}} hồ sơ đã nộp",
+        "noApplicationsYet": "Chưa có hồ sơ",
+        "registrationWindowClosed": "Đã hết thời hạn đăng ký",
+        "kickoffCountdown": "Khai mạc sau {{time}}",
+        "approvedTeams": "{{count}} đội đã được duyệt",
+        "noApprovedTeamsYet": "Đội tham gia sẽ hiển thị sau khi duyệt hồ sơ",
+        "contestConcluded": "Contest đã kết thúc",
+        "participatedTeams": "{{count}} đội đã tham gia"
+      }
+    },
     "cta": {
       "nextStepEyebrow": "Bước tiếp theo",
       "continueSubmission": "Tiếp tục submission",
@@ -502,7 +577,13 @@
       "register": "Đăng ký tham gia",
       "registerHelper": "Contest đang mở nhận hồ sơ. Gửi đăng ký để được Corelia xét duyệt.",
       "trackTimeline": "Theo dõi mốc contest",
-      "trackTimelineHelper": "Contest chưa mở đăng ký. Bạn có thể xem timeline và chờ giai đoạn nhận hồ sơ."
+      "trackTimelineHelper": "Contest chưa mở đăng ký. Bạn có thể xem timeline và chờ giai đoạn nhận hồ sơ.",
+      "viewResults": "Xem kết quả",
+      "viewResultsHelper": "Xem mốc thời gian hoặc kết quả đã công bố (nếu có).",
+      "followContest": "Xem lịch trình",
+      "inProgressVisitorHelper": "Theo dõi các mốc để nắm hạn chót và cập nhật.",
+      "viewSchedule": "Xem lịch trình",
+      "regClosedBeforeKickoffHelper": "Đợt đăng ký đã đóng. Xem lịch trình để biết thời điểm khai mạc và các mốc tiếp theo."
     },
     "visual": {
       "bannerAlt": "Banner — {{title}}",
@@ -510,7 +591,7 @@
       "listThumbAlt": "Ảnh đại diện contest — {{title}}"
     },
     "hero": {
-      "backToContests": "Quay lại cuộc thi",
+      "backToContests": "Quay lại hackathon",
       "backToOverview": "Về tổng quan",
       "start": "Bắt đầu",
       "end": "Kết thúc",
@@ -525,7 +606,10 @@
       "contestEnded": "Contest đã kết thúc",
       "countdownDays": "{{count}} ngày",
       "countdownHours": "{{count}} giờ",
-      "countdownMinutes": "{{count}} phút"
+      "countdownMinutes": "{{count}} phút",
+      "slotsFilled": "{{approved}} / {{max}} slot",
+      "slotsUnlimited": "Không giới hạn số đội được duyệt",
+      "implausibleStartWarning": "Ngày bắt đầu sớm hơn thời điểm tạo contest — hãy kiểm tra lại lịch trong dữ liệu."
     },
     "public": {
       "nav": {
@@ -535,8 +619,7 @@
         "prizes": "Giải thưởng",
         "rules": "Luật & điều kiện",
         "faqs": "FAQ",
-        "projects": "Dự án",
-        "apply": "Đăng ký"
+        "projects": "Dự án"
       },
       "infoCards": {
         "reviewTitle": "Duyệt tham gia",
@@ -545,6 +628,21 @@
         "teamSubmitBody": "Sau khi được duyệt, đội có thể gửi submission và cập nhật tài nguyên.",
         "resultsTitle": "Kết quả công bố",
         "resultsBody": "Leaderboard và winners chỉ hiển thị khi Corelia publish chính thức."
+      },
+      "overviewTeasers": {
+        "sectionTitle": "Khám phá thêm",
+        "sectionDescription": "Nội dung chi tiết nằm ở từng mục — mở khi bạn cần.",
+        "prizesTitle": "Giải thưởng",
+        "prizesBody_one": "Đã công bố {{count}} hạng giải.",
+        "prizesBody_other": "Đã công bố {{count}} hạng giải.",
+        "faqsTitle": "FAQ",
+        "faqsBody_one": "{{count}} câu hỏi thường gặp.",
+        "faqsBody_other": "{{count}} câu hỏi thường gặp.",
+        "timelineTitle": "Lịch trình",
+        "timelineBody": "Mốc thời gian, hạn chót và xuất lịch.",
+        "journeyTitle": "Cách tham gia",
+        "journeyBody": "Từ nộp hồ sơ đến bài nộp cuối cùng.",
+        "linkLabel": "Mở mục"
       },
       "results": {
         "cardTitle": "Kết quả contest",
@@ -560,16 +658,57 @@
     "participant": {
       "submissionWorkspaceTitle": "Khu vực nộp bài",
       "submissionWorkspaceApprovedBody": "Hồ sơ của bạn đã được duyệt. Bạn có thể nộp và cập nhật submission tại đây.",
+      "submissionDeadlineLockedBanner": "Đã quá hạn nộp/chỉnh submission. Submission và thẻ dự án liên kết chỉ xem, không chỉnh được.",
       "submissionDirtyWarning": "Bạn có thay đổi chưa lưu. Nếu rời trang lúc này, nội dung mới có thể bị mất.",
       "submissionFooterHint": "Submission nên có tiêu đề rõ ràng, phần tóm tắt đủ chi tiết và ít nhất một đường dẫn demo hoặc repo nếu đã sẵn sàng.",
       "applicationCardTitle": "Hồ sơ tham gia",
       "applicationCardPendingBody": "Bạn chỉ chính thức được tham gia contest sau khi đội ngũ Corelia duyệt.",
+      "registrationLockedTitle": "Đăng ký chưa mở",
+      "registrationLockedBody": "Hồ sơ cần Corelia duyệt. Form sẽ xuất hiện khi contest chuyển sang “Đang nhận hồ sơ”. Trước mắt hãy xem lịch trình các mốc.",
       "sentAt": "Gửi lúc {{datetime}}",
       "teamPreviewLabel": "Xem trước đội",
       "extraMembersCount": "{{count}} thành viên bổ sung",
       "soloMembersHint": "Bạn có thể để trống nếu đăng ký cá nhân.",
       "postSubmitHint": "Sau khi gửi, hồ sơ sẽ chuyển sang trạng thái chờ duyệt. Bạn chỉ có thể nộp submission khi được Corelia phê duyệt.",
-      "draftNotReadyHint": "Hãy điền email liên hệ và phần động lực đủ rõ trước khi gửi hồ sơ."
+      "quickRegisterIntro": "Một lần bấm là gửi hồ sơ Corelia của bạn cho hackathon này để ban tổ chức xét duyệt (đang đăng nhập {{email}}), giống đăng ký khóa học.",
+      "profileAttachedHint": "Email, SĐT và link portfolio lấy từ hồ sơ tài khoản. Cập nhật trong cài đặt nếu cần.",
+      "quickRegisterNeedsEmail": "Tài khoản cần có email trước khi đăng ký. Hãy thêm email trong cài đặt tài khoản hoặc đăng nhập bằng nhà cung cấp có chia sẻ email.",
+      "quickRegisterNameLine": "Tên hiển thị trong hồ sơ: {{name}}",
+      "registerOneClickCta": "Đăng ký bằng hồ sơ của tôi",
+      "optionalNoteSummary": "Tuỳ chọn: ghi chú cho người duyệt",
+      "draftNotReadyHint": "Chưa thấy email trên tài khoản. Thêm email trong cài đặt tài khoản rồi thử lại.",
+      "teamViaInvitesHint": "Mỗi thành viên cần tự đăng ký và được duyệt. Sau khi bạn lưu submission, hãy mời người đã được duyệt trong khu vực nộp bài — họ chấp nhận qua thông báo hoặc link mời."
+    },
+    "inviteProject": {
+      "title": "Lời mời dự án",
+      "description": "Chấp nhận để tham gia nhóm trong dự án hackathon này.",
+      "loginRequired": "Hãy đăng nhập để phản hồi lời mời.",
+      "invalid": "Lời mời không hợp lệ hoặc đã hết hạn.",
+      "accepted": "Bạn đã tham gia dự án.",
+      "declined": "Bạn đã từ chối lời mời.",
+      "errorFallback": "Đã có lỗi xảy ra.",
+      "ctaLogin": "Đăng nhập",
+      "ctaAccept": "Chấp nhận",
+      "ctaDecline": "Từ chối"
+    },
+    "collaboration": {
+      "sectionTitle": "Mời thành viên nhóm",
+      "sectionBody": "Chỉ người đã đăng ký hackathon và được duyệt mới có thể được mời. Họ phải chấp nhận lời mời để tham gia dự án.",
+      "leadLine": "Bạn là chủ submission / trưởng nhóm cho bài nộp này.",
+      "saveSubmissionFirst": "Hãy lưu submission một lần để tạo dự án, sau đó bạn có thể mời đồng đội.",
+      "searchLabel": "Tìm người đã được duyệt",
+      "searchPlaceholder": "Tìm theo tên hoặc username",
+      "pickTitle": "Mời đồng đội",
+      "pickDescription": "Chọn người đã được duyệt tham gia hackathon này. Link mời sẽ được copy vào clipboard để bạn gửi.",
+      "pickPlaceholder": "Mở danh sách…",
+      "pickSearchPlaceholder": "Lọc trong danh sách",
+      "pickEmpty": "Không có người phù hợp.",
+      "unnamedUser": "Người tham gia",
+      "pendingInvites": "Lời mời đang chờ",
+      "revokeInvite": "Thu hồi",
+      "members": "Thành viên đã tham gia",
+      "removeMember": "Gỡ",
+      "youContributor": "Bạn"
     },
     "errors": {
       "notFound": "Không tìm thấy cuộc thi.",
@@ -580,7 +719,7 @@
     },
     "toasts": {
       "draftRedirect": "Cuộc thi này chưa mở công khai.",
-      "contactEmailRequired": "Hãy nhập email liên hệ để Corelia phản hồi hồ sơ.",
+      "contactEmailRequired": "Hãy thêm email vào tài khoản Corelia trước khi đăng ký.",
       "applicationMotivationTooShort": "Hãy mô tả động lực và năng lực chi tiết hơn trước khi gửi hồ sơ.",
       "applicationSubmitted": "Đã gửi hồ sơ đăng ký. Corelia sẽ duyệt trước khi bạn được tham gia.",
       "applicationSubmitFailed": "Không thể gửi đăng ký.",
@@ -602,6 +741,7 @@
       "submissionSummaryTooShort": "Hãy viết tóm tắt submission rõ hơn trước khi lưu.",
       "submissionSaved": "Đã lưu bài nộp.",
       "submissionSaveFailed": "Không thể lưu bài nộp.",
+      "submissionDeadlinePassed": "Đã quá hạn nộp bài; không còn nhận thay đổi.",
       "scoreCriterionOutOfRange": "Mỗi tiêu chí cần nằm trong khoảng 0 đến 25.",
       "scoreSaved": "Đã lưu điểm chấm.",
       "scoreSaveFailed": "Không thể lưu điểm.",
@@ -617,7 +757,13 @@
       "contestBannerUpdated": "Đã cập nhật banner.",
       "contestThumbnailUpdated": "Đã cập nhật thumbnail.",
       "contestBannerUploadFailed": "Không thể tải banner.",
-      "contestThumbnailUploadFailed": "Không thể tải thumbnail."
+      "contestThumbnailUploadFailed": "Không thể tải thumbnail.",
+      "collabInviteLinkCopied": "Đã copy link mời. Gửi cho đồng đội của bạn.",
+      "collabInviteFailed": "Không thể gửi lời mời.",
+      "collabInviteRevoked": "Đã thu hồi lời mời.",
+      "collabRevokeFailed": "Không thể thu hồi lời mời.",
+      "collaboratorRemoved": "Đã gỡ thành viên.",
+      "collaboratorRemoveFailed": "Không thể gỡ thành viên."
     },
     "forms": {
       "awards": {
@@ -646,7 +792,7 @@
         "contactEmailPlaceholder": "Email liên hệ",
         "contactPhonePlaceholder": "Số điện thoại liên hệ",
         "portfolioPlaceholder": "Portfolio / GitHub / LinkedIn",
-        "motivationPlaceholder": "Giới thiệu năng lực, động lực và ý tưởng dự định mang vào contest...",
+        "motivationPlaceholder": "Ghi chú tuỳ chọn cho người duyệt (kỹ năng, ý tưởng, link)",
         "submitLabel": "Gửi hồ sơ đăng ký"
       }
     },
@@ -672,13 +818,15 @@
     },
     "projects": {
       "sectionTitle": "Dự án đã nộp",
-      "sectionDescription": "Showcase công khai từ kết quả đã publish.",
+      "sectionDescription": "Thẻ dự án công khai từ bài nộp. Thứ hạng và điểm chấm hiển thị sau khi Corelia công bố kết quả.",
       "emptyTitle": "Chưa có dự án để hiển thị",
-      "emptyHint": "Dự án xuất hiện sau khi contest kết thúc và kết quả được publish.",
+      "emptyHint": "Khi các đội được duyệt lưu bài nộp, thẻ dự án công khai sẽ hiển thị tại đây.",
+      "emptyHintSyncing": "Đã có bài nộp nhưng thẻ dự án đang đồng bộ — thử tải lại trang sau ít phút.",
       "viewDemo": "Demo",
       "viewRepo": "Mã nguồn",
       "viewSlides": "Slide",
-      "scoreLine": "{{score}} điểm · {{count}} lượt chấm"
+      "scoreLine": "{{score}} điểm · {{count}} lượt chấm",
+      "teamLine": "Nhóm: {{names}}"
     },
     "sections": {
       "timeline": "Lịch trình",
@@ -693,7 +841,7 @@
       "end": "Kết thúc"
     },
     "labels": {
-      "manageArea": "Khu vực vận hành cuộc thi",
+      "manageArea": "Khu vực vận hành hackathon",
       "publicType": "Hackathon",
       "unlimited": "Không giới hạn",
       "contextManage": "Bối cảnh contest",

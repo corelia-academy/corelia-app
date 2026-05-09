@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import i18n, { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 import { updateProfileForUser } from "@/lib/profile";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/authStore";
 
 function isSupportedLanguage(value: string): value is SupportedLanguage {
@@ -28,6 +29,12 @@ export function useLocale() {
           await refreshProfile(user);
         } catch {
           // If Firestore update fails, keep local preference (localStorage via i18next).
+        }
+        try {
+          const { error } = await supabase.auth.updateUser({ data: { locale: lng } });
+          if (error) console.warn("[useLocale] updateUser locale:", error.message);
+        } catch {
+          // Auth metadata is best-effort for email template personalization.
         }
       }
     },

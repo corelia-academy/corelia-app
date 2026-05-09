@@ -129,14 +129,15 @@ export function AccountProfileRoute() {
     }
   }
 
+  // Skeleton = page data (profile), not the global auth gate (`AuthGateLoading` in RequireAuth / Suspense).
   if (!authInitialized || (profileLoading && !profile)) {
     return (
       <div className="space-y-4">
-        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <Skeleton className="h-6 w-56 rounded" />
-          <Skeleton className="mt-2 h-4 w-full max-w-[520px] rounded" />
+          <Skeleton className="mt-2 h-4 w-full max-w-xl rounded" />
         </div>
-        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center gap-4">
             <Skeleton className="size-20 rounded-full" />
             <div className="min-w-0 flex-1 space-y-2">
@@ -169,14 +170,14 @@ export function AccountProfileRoute() {
 
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-          <UserCircle className="size-6 text-muted-foreground" aria-hidden />
+        <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+          <UserCircle className="size-6 text-foreground-subtle" aria-hidden />
         </div>
         <div>
           <p className="text-sm font-medium text-foreground">
             {t("profile.mustLogin")}
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="mt-0.5 text-xs text-foreground-muted">
             {t("header.subtitle")}
           </p>
         </div>
@@ -187,13 +188,13 @@ export function AccountProfileRoute() {
   if (!profile) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-foreground-muted">
           {t("profile.errors.loadFailed")}
         </p>
         <button
           type="button"
           onClick={() => void refreshProfile(user)}
-          className="rounded-md border border-border-subtle bg-card px-4 py-2 text-sm transition-colors hover:bg-muted"
+          className="rounded-md border border-border-subtle bg-surface-base px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
         >
           {t("profile.retry")}
         </button>

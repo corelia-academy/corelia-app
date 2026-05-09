@@ -1,2 +1,2 @@
-export { default } from "./CoursesPage";
+export { default } from "./courses-page/CoursesPage";
 

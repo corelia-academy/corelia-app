@@ -156,11 +156,11 @@ export default function CheckoutSuccess() {
 
   return (
     <div className="mx-auto w-full max-w-[960px] px-4 py-10">
-      <div className="rounded-md border border-border-subtle bg-card p-6">
+      <div className="rounded-md border border-border-subtle bg-surface-base p-6">
         <h1 className="text-2xl font-normal tracking-tight text-foreground">
           {t("detail.checkoutSuccess.title")}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-foreground-muted">
           {statusMessage}{" "}
           {!verifying ? (
             <>
@@ -172,7 +172,7 @@ export default function CheckoutSuccess() {
 
         {verifying ? (
           <div className="mt-6 flex items-center justify-center">
-            <Loader2 className="size-10 animate-spin text-muted-foreground/60" aria-hidden />
+            <Loader2 className="size-10 animate-spin text-foreground-subtle" aria-hidden />
           </div>
         ) : null}
 
@@ -194,7 +194,7 @@ export default function CheckoutSuccess() {
           </Button>
         </div>
 
-        <div className="mt-6 text-xs text-muted-foreground">
+        <div className="mt-6 text-xs text-foreground-muted">
           <Link to={targetPath} className="inline-flex items-center gap-1 hover:underline">
             {t("detail.checkoutSuccess.skipNow")} <ArrowRight className="size-3.5" aria-hidden />
           </Link>

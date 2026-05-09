@@ -1,538 +1,331 @@
-# Corelia Design System — Cheatsheet
+# Corelia Design System
 
-> Mở file này khi code UI. Mọi quyết định design đều tra ở đây trước.
-
----
-
-## Colors — dùng token, không hardcode
-
-### Semantic tokens (copy-paste trực tiếp)
-
-| Dùng cho                 | Token                                            |
-| ------------------------ | ------------------------------------------------ |
-| Nền trang                | `bg-background`                                  |
-| Nền card / panel         | `bg-card`                                        |
-| Text chính               | `text-foreground`                                |
-| Text phụ (hint, caption) | `text-muted-foreground`                          |
-| Nút primary, link active | `bg-primary text-primary-foreground`             |
-| Nút container nhẹ        | `bg-primary-container text-on-primary-container` |
-| Viền input, divider      | `border-border`                                  |
-| Divider rất nhẹ          | `border-border-subtle`                           |
-| Trạng thái lỗi           | `text-destructive` / `bg-destructive`            |
-| Trạng thái thành công    | `text-success` / `bg-success`                    |
-| Trạng thái cảnh báo      | `text-warning` / `bg-warning`                    |
-
-> **Quy tắc số 1:** Không bao giờ viết `color: #xxx` hay `bg-[#xxx]` trong component.  
-> Dark mode tự hoạt động nếu dùng đúng token.
-
-### Màu nền theo độ sâu (dark mode)
-
-```
-Trang nền     → bg-background          (tối nhất)
-Card lv1      → bg-card                (+4% sáng hơn)
-Card lv2      → bg-muted               (+3% sáng hơn)
-Popover/menu  → bg-secondary           (sáng nhất)
-```
+> Rules-only cheatsheet. AI và dev tra trước khi viết UI. Mọi class string trong file này copy được trực tiếp.
 
 ---
 
-## Typography — 5 cấp, không hơn
+## 0. AI Rules — Đọc trước
 
-```tsx
-// Tiêu đề trang
-<h1 className="text-2xl font-semibold tracking-tight">
-
-// Tiêu đề section / card
-<h2 className="text-lg font-semibold">
-
-// Label, tên field
-<p className="text-sm font-medium">
-
-// Body text
-<p className="text-sm leading-relaxed">
-
-// Caption, hint, metadata
-<p className="text-xs text-muted-foreground">
-```
-
-> Không dùng quá 2 font-weight trên 1 màn hình.  
-> Không viết `text-[15px]` — chỉ dùng scale mặc định của Tailwind.
-
-### Eyebrow / Section Label (bổ sung)
-
-Dùng cho các label nhỏ phía trên tiêu đề lớn (ví dụ: "CUỘC THI & HOẠT ĐỘNG HỆ SINH THÁI").
-
-```tsx
-<p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-  Eyebrow label
-</p>
-```
-
-> Chỉ dùng ALL CAPS cho eyebrow text. **Không dùng cho bất kỳ element nào khác.**
+- KHÔNG hardcode màu: `#xxx`, `bg-[#xxx]`, `rgb()`. Luôn dùng token mục 1.
+- KHÔNG hardcode spacing lẻ: `p-[15px]`, `mt-[22px]`. Chỉ scale Tailwind mặc định.
+- KHÔNG hardcode font-size: `text-[15px]`. Chỉ 6 cấp ở mục 2.
+- KHÔNG hardcode z-index: `z-[999]`. Chỉ scale 0–50 ở mục 6.
+- KHÔNG mix icon library. Chỉ `lucide-react`.
+- KHÔNG có 2 Primary button trong cùng viewport.
+- KHÔNG trộn Anh-Việt trong cùng 1 page (trừ tên riêng / thuật ngữ kỹ thuật).
+- KHÔNG animate `width / height / padding`. Chỉ animate `transform / opacity / color`.
+- KHÔNG xoá focus ring của interactive elements.
+- KHÔNG dùng `<Badge>` cho filter — Badge không có interactive state.
+- Mọi list / grid PHẢI có empty state + loading state.
+- Mọi icon-only button PHẢI có `aria-label`.
+- Mọi input PHẢI hỗ trợ 5 states: default, focus, error, disabled, readonly.
+- Mọi touch target trên mobile ≥ 44×44px.
+- Test 375px trước khi ship.
 
 ---
 
-## Spacing — bội số 4px, không dùng số lẻ
+## 1. Color Tokens (Corelia DS v2)
 
-| Vị trí                        | Class                |
-| ----------------------------- | -------------------- |
-| Gap icon trong nút            | `gap-1` (4px)        |
-| Padding nội bộ nút            | `px-3 py-1.5`        |
-| Padding card                  | `p-4` hoặc `p-6`     |
-| Gap giữa các items trong list | `gap-3`              |
-| Gap giữa các section          | `gap-6` hoặc `gap-8` |
-| Khoảng giữa label & input     | `space-y-1.5`        |
-| Khoảng giữa các form field    | `space-y-4`          |
+| Use case | Token |
+| --- | --- |
+| Page bg | `bg-surface-base` |
+| Raised surface | `bg-surface-raised` |
+| Overlay surface | `bg-surface-overlay` |
+| Float surface (modal/sheet/dropdown) | `bg-surface-float` |
+| Text chính | `text-foreground` |
+| Text phụ / hint | `text-foreground-muted` |
+| Text subtle | `text-foreground-subtle` |
+| Primary CTA | `bg-primary text-primary-foreground` |
+| Primary muted / tonal | `bg-primary-muted text-primary` |
+| Border default | `border-border` |
+| Border nhẹ | `border-border-subtle` |
+| Border mạnh | `border-border-strong` |
+| Error | `text-destructive` / `bg-destructive` / `bg-destructive-muted` |
+| Success | `text-success` / `bg-success` / `bg-success-muted` |
+| Warning | `text-warning` / `bg-warning` / `bg-warning-muted` |
 
-> **Sai:** `mt-[22px]` `p-[15px]`  
-> **Đúng:** `mt-6` `p-4`
-
----
-
-## Z-index Scale — không hardcode số
-
-| Layer                    | Class  | Giá trị |
-| ------------------------ | ------ | ------- |
-| Nội dung trang           | `z-0`  | 0       |
-| Sticky header / sidebar  | `z-10` | 10      |
-| Dropdown / popover       | `z-20` | 20      |
-| Modal overlay (backdrop) | `z-30` | 30      |
-| Modal content            | `z-40` | 40      |
-| Toast / notification     | `z-50` | 50      |
-
-> Không dùng `z-[999]` hay `z-[9999]`. Mọi element đều phải nằm trong scale này.
+**Depth scale (DS v2):**
+`bg-surface-base` → `bg-surface-raised` → `bg-surface-overlay` → `bg-surface-float`
 
 ---
 
-## Shadow Scale
+## 2. Typography (6 cấp duy nhất)
 
-| Dùng cho                           | Class         |
-| ---------------------------------- | ------------- |
-| Card trên card (phân cấp bằng màu) | `shadow-none` |
-| Card mặc định trên nền trang       | `shadow-sm`   |
-| Card đang hover / floating element | `shadow-md`   |
-| Modal, popover, dropdown           | `shadow-lg`   |
+| Cấp     | Class                                                                   | Dùng cho             |
+| ------- | ----------------------------------------------------------------------- | -------------------- |
+| H1      | `text-2xl font-semibold tracking-tight`                                 | Tiêu đề trang        |
+| H2      | `text-lg font-semibold`                                                 | Section / card title |
+| Label   | `text-sm font-medium`                                                   | Field label          |
+| Body    | `text-sm leading-relaxed`                                               | Nội dung             |
+| Caption | `text-xs text-foreground-muted`                                         | Metadata, hint       |
+| Eyebrow | `text-xs font-semibold uppercase tracking-widest text-foreground-muted` | Nhãn nhỏ trên H1/H2  |
 
----
-
-## Responsive / Breakpoints
-
-| Breakpoint        | Layout chính           | Padding ngang |
-| ----------------- | ---------------------- | ------------- |
-| Mobile <640px     | 1 cột, stack dọc       | `px-4`        |
-| Tablet 640–1024px | 2 cột                  | `px-6`        |
-| Desktop >1024px   | Sidebar + content area | `px-8`        |
-
-```tsx
-// Grid chuẩn cho card list
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-
-// Container chuẩn
-<div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-```
-
-> **Checklist:** Test 375px trước khi ship. Không có layout nào được vỡ ở 375px.
+- Tối đa 2 font-weight / màn hình.
+- ALL CAPS chỉ dùng cho Eyebrow.
+- Không tạo size mới.
 
 ---
 
-## Components — dùng đúng variant
+## 3. Spacing (bội số 4px)
+
+| Vị trí            | Class                         |
+| ----------------- | ----------------------------- |
+| Icon trong button | `gap-2`                       |
+| Padding button    | `px-3 py-1.5`                 |
+| Padding card      | `p-4` (default) / `p-6` (lớn) |
+| List item gap     | `gap-3`                       |
+| Section gap       | `gap-6` / `gap-8`             |
+| Label ↔ input     | `space-y-1.5`                 |
+| Form field gap    | `space-y-4`                   |
+
+---
+
+## 4. Border Radius
+
+| Class               | Dùng cho                          |
+| ------------------- | --------------------------------- |
+| `rounded` (4px)     | Input, badge nhỏ                  |
+| `rounded-md` (8px)  | Button, card default              |
+| `rounded-lg` (12px) | Modal, large card                 |
+| `rounded-full`      | Avatar, chip, filter pill, toggle |
+
+---
+
+## 5. Shadow (DS v2)
+
+DS v2 ưu tiên **surface elevation** thay vì shadow. Dùng `bg-surface-*` + border.
+
+---
+
+## 6. Z-index Scale
+
+| Class  | Layer                        |
+| ------ | ---------------------------- |
+| `z-0`  | Content                      |
+| `z-10` | Sticky header / sidebar      |
+| `z-20` | Dropdown / popover / tooltip |
+| `z-30` | Modal backdrop               |
+| `z-40` | Modal content                |
+| `z-50` | Toast / notification         |
+
+---
+
+## 7. Responsive
+
+| Range      | Layout            | Padding |
+| ---------- | ----------------- | ------- |
+| <640px     | 1 cột stack       | `px-4`  |
+| 640–1024px | 2 cột             | `px-6`  |
+| >1024px    | Sidebar + content | `px-8`  |
+
+- Container: `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8`
+- Grid list: `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4`
+- Mobile touch target ≥ 44×44px.
+
+---
+
+## 8. Icons (lucide-react)
+
+| Vị trí                  | Size      |
+| ----------------------- | --------- |
+| Inline text, breadcrumb | `w-3 h-3` |
+| Trong button            | `w-4 h-4` |
+| Sidebar, icon button    | `w-5 h-5` |
+| Empty state hero        | `w-8 h-8` |
+
+---
+
+## 9. Animation
+
+| Class                                                                | Use                 |
+| -------------------------------------------------------------------- | ------------------- |
+| `transition-colors duration-150`                                     | Hover/focus default |
+| `transition-all duration-200 hover:shadow-md hover:-translate-y-0.5` | Card hover          |
+| `animate-in fade-in duration-200`                                    | Fade in             |
+| `animate-in slide-in-from-bottom-4 duration-300`                     | Modal slide up      |
+| `animate-in slide-in-from-left-4 duration-300`                       | Sidebar drawer      |
+
+Reduced-motion handled ở global CSS — không animate ở component nếu user opt-out.
+
+---
+
+## 10. Components
 
 ### Button
+- Variants: default (Primary) / `secondary` / `outline` / `ghost` / `destructive`.
+- Sizes: `sm` / `default` / `lg` / `icon`.
+- 1 Primary / viewport. Icon-only PHẢI có `aria-label`.
+- Không đặt 2 Outline cạnh nhau mà thiếu Primary — mất hierarchy.
 
-```tsx
-<Button>                        {/* Primary — CTA chính */}
-<Button variant="secondary">    {/* Hành động phụ */}
-<Button variant="outline">      {/* Ít quan trọng */}
-<Button variant="ghost">        {/* Trong toolbar, icon action */}
-<Button variant="destructive">  {/* Xoá, hành động nguy hiểm */}
+### Badge
+- Variants: default / `secondary` / `outline`.
+- Course level:
+  - Beginner: `bg-success/10 text-success border-success/20 border`
+  - Intermediate: `bg-warning/10 text-warning border-warning/20 border`
+  - Advanced: `bg-destructive/10 text-destructive border-destructive/20 border`
+- Không dùng cho filter — dùng Filter Pill.
 
-// Size
-<Button size="lg">       {/* Hero section */}
-<Button size="default">  {/* Mặc định */}
-<Button size="sm">       {/* Trong table, compact */}
-<Button size="icon">     {/* Icon-only */}
-```
+### Filter Pill (interactive, multi-select)
+- Luôn `rounded-full px-3 py-1 text-sm font-medium transition-colors duration-150`.
+- Active: `bg-primary/10 text-primary border border-primary/20`
+- Default: `bg-transparent text-foreground-muted border border-border hover:border-primary/40 hover:text-foreground`
 
-**Rules:**
-- Mỗi page/section chỉ có **1 Primary button**.
-- Không đặt 2 nút Outline cạnh nhau mà không có nút Primary — mất hierarchy.
-- Trong 1 viewport không được có 2 Primary button xuất hiện cùng lúc (kể cả ở các section khác nhau nếu cùng nhìn thấy).
+### Tabs (chuyển view, exclusive — KHÁC Filter Pill)
+- Pattern underline, không phải pill.
+- Container: `flex gap-6 border-b border-border`.
+- Active: `text-foreground border-b-2 border-primary pb-2 font-medium`
+- Default: `text-foreground-muted border-b-2 border-transparent pb-2 hover:text-foreground`
 
----
-
-### Badge / Tag
-
-```tsx
-<Badge>                         {/* Primary — nổi bật */}
-<Badge variant="secondary">     {/* Trung tính */}
-<Badge variant="outline">       {/* Nhẹ nhất */}
-
-// Level khoá học
-<Badge className="bg-success/10 text-success border-success/20 border">Beginner</Badge>
-<Badge className="bg-warning/10 text-warning border-warning/20 border">Intermediate</Badge>
-<Badge className="bg-destructive/10 text-destructive border-destructive/20 border">Advanced</Badge>
-```
-
----
-
-### Filter Pill / Tab Pills
-
-Dùng cho bộ lọc dạng chip (ví dụ: filter khoá học theo cấp độ, giá).
-
-```tsx
-{/* Active */}
-<button className="rounded-full px-3 py-1 text-sm font-medium
-  bg-primary/10 text-primary border border-primary/20 transition-colors duration-150">
-  Mọi cấp độ
-</button>
-
-{/* Default */}
-<button className="rounded-full px-3 py-1 text-sm font-medium
-  bg-transparent text-muted-foreground border border-border
-  hover:border-primary/40 hover:text-foreground transition-colors duration-150">
-  Cơ bản
-</button>
-```
-
-> Không dùng `Badge` cho filter pill — Badge không có interactive state.  
-> Filter pills luôn dùng `rounded-full`, không phải `rounded-md`.
-
----
+### Tooltip
+- Style: `px-2 py-1 text-xs bg-foreground text-background rounded shadow-md`.
+- Z-index: `z-20`. Delay 200ms.
+- Bắt buộc cho icon-only action không có visible label.
 
 ### Breadcrumb
+- Wrapper: `flex items-center gap-1 text-xs text-foreground-muted`.
+- Separator: `<ChevronRight className="w-3 h-3" />`.
+- Level hiện tại: `text-foreground font-medium`. Cấp cha không in đậm.
+- Đặt phía trên `<h1>`.
 
-```tsx
-<nav className="flex items-center gap-1 text-xs text-muted-foreground">
-  <a href="/dashboard" className="hover:text-foreground transition-colors duration-150">
-    Dashboard
-  </a>
-  <ChevronRight className="w-3 h-3" />
-  <span className="text-foreground font-medium">Tên trang hiện tại</span>
-</nav>
-```
-
-> Breadcrumb luôn nằm phía trên `<h1>` của trang.  
-> Không in đậm các cấp cha, chỉ in đậm level hiện tại.
-
----
-
-### Form Field — cấu trúc chuẩn
-
-```tsx
-<div className="space-y-1.5">
-  <Label htmlFor="field">Tên field <span className="text-destructive">*</span></Label>
-  <Input id="field" placeholder="Gợi ý format..." />
-  <p className="text-xs text-muted-foreground">Helper text nếu cần</p>
-  {error && <p className="text-xs text-destructive">{error}</p>}
-</div>
-```
-
-> Placeholder = gợi ý format, **không** phải thay thế label.
+### Form Field
+- Cấu trúc: Label → Input → helper (`text-xs text-foreground-muted`) → error (`text-xs text-destructive`).
+- Wrapper: `space-y-1.5`. Required: `<span className="text-destructive">*</span>` sau label.
+- Placeholder = gợi ý format, KHÔNG thay thế label.
 
 ### Input States
 
-| Trạng thái | Style                                           |
-| ---------- | ----------------------------------------------- |
-| Default    | `border-border`                                 |
-| Focus      | `border-primary ring-2 ring-primary/20`         |
-| Error      | `border-destructive ring-2 ring-destructive/20` |
-| Disabled   | `opacity-50 cursor-not-allowed bg-muted`        |
-| Read-only  | `bg-muted cursor-default`                       |
+| State    | Class                                           |
+| -------- | ----------------------------------------------- |
+| Default  | `border-border`                                 |
+| Focus    | `border-primary ring-2 ring-primary/20`         |
+| Error    | `border-destructive ring-2 ring-destructive/20` |
+| Disabled | `opacity-40 cursor-not-allowed bg-surface-raised`        |
+| Readonly | `bg-surface-raised cursor-default`                       |
 
----
-
-### Empty State — bắt buộc với mọi list/grid
-
-```tsx
-<div className="flex flex-col items-center gap-3 py-16 text-center">
-  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-    <Icon className="w-6 h-6 text-muted-foreground" />
-  </div>
-  <div>
-    <p className="text-sm font-medium">Chưa có dữ liệu</p>
-    <p className="text-xs text-muted-foreground mt-0.5">Mô tả ngắn hướng dẫn tiếp theo</p>
-  </div>
-  <Button size="sm">Hành động chính</Button>
-</div>
-```
-
----
+### Empty State (bắt buộc)
+- Wrapper: `flex flex-col items-center gap-3 py-16 text-center`.
+- Icon: `w-6 h-6 text-foreground-subtle` trong vòng tròn `w-12 h-12 rounded-full bg-surface-raised`.
+- Title `text-sm font-medium` + subtitle `text-xs text-foreground-muted`.
+- 1 CTA `size="sm"`.
 
 ### Loading State
+- Biết layout → `<Skeleton>` (ưu tiên).
+- Không biết layout / action inline → `<Loader2 className="w-4 h-4 animate-spin" />`.
 
-```tsx
-// Biết layout trước → Skeleton (luôn ưu tiên)
-<Skeleton className="h-5 w-40 rounded" />       // Text
-<Skeleton className="h-40 w-full rounded-xl" />  // Card/image
+### Toast / Feedback
 
-// Không biết layout (action inline) → Spinner
-<Loader2 className="w-4 h-4 animate-spin" />
-```
-
----
-
-### Toast / Notification
-
-| Tình huống               | Dùng gì                               |
-| ------------------------ | ------------------------------------- |
-| Action thành công        | Toast bottom-right, auto-dismiss 3s   |
-| Lỗi inline (form, field) | Error text đỏ ngay dưới field         |
-| Lỗi page-level           | Alert banner phía trên content        |
-| Hành động destructive    | Dialog xác nhận, **không phải toast** |
-| Info hệ thống            | Banner cố định top, dismissable       |
-
-```tsx
-// Alert banner page-level
-<div className="flex items-center gap-3 px-4 py-3 rounded-md
-  bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-  <AlertCircle className="w-4 h-4 shrink-0" />
-  <p>Nội dung thông báo lỗi</p>
-</div>
-```
-
----
+| Tình huống          | Pattern                             |
+| ------------------- | ----------------------------------- |
+| Success action      | Toast bottom-right, auto-dismiss 3s |
+| Error inline (form) | Error text dưới field               |
+| Error page-level    | Alert banner phía trên content      |
+| Destructive action  | Dialog xác nhận (KHÔNG toast)       |
+| System info         | Banner top, dismissable             |
 
 ### Dialog / Modal
-
-```tsx
-<Dialog>
-  <DialogContent className="rounded-lg max-w-md w-full">
-    {/* Header */}
-    <div className="flex items-start justify-between gap-4 p-6 pb-0">
-      <div>
-        <DialogTitle className="text-lg font-semibold">Tiêu đề</DialogTitle>
-        <DialogDescription className="text-sm text-muted-foreground mt-1">
-          Mô tả ngắn nếu cần
-        </DialogDescription>
-      </div>
-      <Button size="icon" variant="ghost" aria-label="Đóng dialog">
-        <X className="w-4 h-4" />
-      </Button>
-    </div>
-
-    {/* Body */}
-    <div className="p-6 space-y-4">
-      {/* content */}
-    </div>
-
-    {/* Footer */}
-    <div className="flex justify-end gap-2 p-6 pt-0">
-      <Button variant="outline">Huỷ</Button>
-      <Button>Xác nhận</Button>
-    </div>
-  </DialogContent>
-</Dialog>
-```
-
-**Modal width chuẩn:**
-- Nhỏ (confirm): `max-w-sm`
-- Mặc định (form): `max-w-md`
-- Lớn (nội dung phức tạp): `max-w-2xl`
-- Fullscreen: `max-w-screen-lg`
-
----
+- Width: `max-w-sm` confirm / `max-w-md` form / `max-w-2xl` complex / `max-w-screen-lg` fullscreen.
+- Cấu trúc: Header `p-6 pb-0` → Body `p-6 space-y-4` → Footer `p-6 pt-0 flex justify-end gap-2`.
+- Close: `<Button size="icon" variant="ghost" aria-label="Đóng dialog">`.
 
 ### Table
-
-```tsx
-<div className="rounded-md border border-border overflow-hidden">
-  <table className="w-full text-sm">
-    <thead className="bg-muted">
-      <tr>
-        <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-          Tên cột
-        </th>
-      </tr>
-    </thead>
-    <tbody className="divide-y divide-border">
-      <tr className="hover:bg-muted/50 transition-colors duration-150">
-        <td className="px-4 py-3 text-foreground">Dữ liệu</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-// Row empty state
-<tr>
-  <td colSpan={n} className="py-16 text-center text-sm text-muted-foreground">
-    Chưa có dữ liệu
-  </td>
-</tr>
-```
-
----
+- Wrapper: `rounded-md border border-border overflow-hidden`.
+- Head: `bg-surface-raised`. `th` = `px-4 py-3 text-left text-sm font-medium text-foreground-muted`.
+- Body: `divide-y divide-border`. Row hover: `hover:bg-surface-raised transition-colors duration-150`.
+- Empty row: `<td colSpan={n} className="py-16 text-center text-sm text-foreground-muted">`.
 
 ### Clickable Card
-
-```tsx
-<Card className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-```
-
----
+- `cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`.
 
 ### Avatar / Image
-
-```tsx
-// Avatar với fallback
-<div className="w-10 h-10 rounded-full bg-muted overflow-hidden shrink-0">
-  <img
-    src={avatarUrl}
-    alt={name}
-    className="w-full h-full object-cover"
-    onError={(e) => { e.currentTarget.src = '/placeholder-avatar.png' }}
-  />
-</div>
-
-// Course thumbnail
-<div className="aspect-video w-full rounded-md bg-muted overflow-hidden">
-  <img src={thumbnail} alt={title} className="w-full h-full object-cover" />
-</div>
-```
-
-**Aspect ratio chuẩn:**
-- Avatar: `rounded-full` — 1:1
-- Course thumbnail: `aspect-video` — 16:9
-- Card banner: `aspect-[3/1]` — 3:1
+- Avatar: `w-10 h-10 rounded-full bg-surface-raised overflow-hidden shrink-0`, `<img>` dùng `object-cover`, có `onError` fallback.
+- Course thumbnail: `aspect-video w-full rounded-md bg-surface-raised overflow-hidden` (16:9).
+- Card banner: `aspect-[3/1]`.
 
 ---
 
-## Border Radius
+## 11. Course Card (Corelia-specific)
 
-| Dùng cho               | Class               |
-| ---------------------- | ------------------- |
-| Input, badge nhỏ       | `rounded` (4px)     |
-| Button, card, mặc định | `rounded-md` (8px)  |
-| Modal, large card      | `rounded-lg` (12px) |
-| Avatar, chip, toggle   | `rounded-full`      |
-| Filter pill            | `rounded-full`      |
+- Cấu trúc: Thumbnail (`aspect-video`) → Body (`p-4 space-y-2`).
+- Body order: Level Badge → Title (`text-sm font-semibold line-clamp-2`) → Instructor (`text-xs text-foreground-muted`) → Footer (`flex justify-between text-xs` cho price + duration).
+- Hover: dùng Clickable Card pattern.
+- Nếu enrolled: Progress Bar `h-1` ngay dưới thumbnail (sát mép trên body).
 
 ---
 
-## Icons (lucide-react)
+## 12. Progress
 
-| Vị trí                    | Size      |
-| ------------------------- | --------- |
-| Inline text / badge       | `w-3 h-3` |
-| Breadcrumb separator      | `w-3 h-3` |
-| Trong nút, inline action  | `w-4 h-4` |
-| Sidebar, icon-only button | `w-5 h-5` |
-| Empty state / hero        | `w-8 h-8` |
+### Progress Bar
+- Track: `relative h-2 w-full rounded-full bg-surface-raised overflow-hidden`.
+- Fill: `h-full bg-primary transition-all duration-300` + `style={{ width: '${pct}%' }}`.
+- Variant mỏng (trên course card): track `h-1`.
 
-> Không mix nhiều icon library. Chỉ dùng `lucide-react`.
-
----
-
-## Animation
-
-```tsx
-// Hover/focus mặc định
-className="transition-colors duration-150"
-
-// Card hover
-className="transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
-
-// Fade in
-className="animate-in fade-in duration-200"
-
-// Modal / slide panel
-className="animate-in slide-in-from-bottom-4 duration-300"
-
-// Sidebar drawer
-className="animate-in slide-in-from-left-4 duration-300"
-```
-
-> Không animate `width`, `height`, `padding` — gây jank.
+### Progress Ring
+- SVG 2 circle: background `stroke-muted`, foreground `stroke-primary`.
+- Sizes: `w-8 h-8` inline / `w-16 h-16` card / `w-24 h-24` hero.
+- Fill bằng `strokeDasharray` + `strokeDashoffset`. Stroke width 8% của diameter.
+- Center text: `text-sm font-semibold` (size theo ring).
 
 ---
 
-## Link Style
+## 13. Link
 
-| Vị trí                  | Style                                                           |
-| ----------------------- | --------------------------------------------------------------- |
-| Link trong body text    | `text-primary underline underline-offset-4 hover:opacity-80`    |
-| Link navigation / label | `text-foreground hover:text-primary transition-colors`          |
-| Link phụ / breadcrumb   | `text-muted-foreground hover:text-foreground transition-colors` |
+| Vị trí           | Class                                                           |
+| ---------------- | --------------------------------------------------------------- |
+| Body text        | `text-primary underline underline-offset-4 hover:opacity-80`    |
+| Navigation       | `text-foreground hover:text-primary transition-colors`          |
+| Phụ / breadcrumb | `text-foreground-muted hover:text-foreground transition-colors` |
 
-> Không bao giờ dùng màu xanh dương thuần (#0000ff). Luôn dùng `text-primary`.
+Không bao giờ dùng `#0000ff`. Luôn `text-primary`.
 
 ---
 
-## Ngôn ngữ & Thuật ngữ UI
-
-> **Quy tắc:** Toàn bộ UI phải **nhất quán tiếng Việt**. Không trộn lẫn Anh-Việt trong cùng 1 trang.
+## 14. Ngôn ngữ UI (tiếng Việt nhất quán)
 
 | Nên dùng           | Không dùng                |
 | ------------------ | ------------------------- |
-| Tổng quan khoá học | Overview Description      |
+| Tổng quan khoá học | Overview / Description    |
 | Đối tượng học viên | Target Audience           |
 | Chương trình học   | Curriculum                |
 | Tiếp tục học       | Continue Learning         |
-| Đăng ký            | Register / Sign up (trộn) |
+| Đăng ký            | Sign up / Register (trộn) |
 
-**Ngoại lệ:** Tên riêng, brand name, thuật ngữ kỹ thuật không có bản dịch chuẩn (blockchain, XLM, SDK...) được giữ nguyên tiếng Anh.
-
----
-
-## Scrollbar
-
-```css
-/* Áp dụng cho overflow containers */
-.scrollbar-thin {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--border)) transparent;
-}
-
-/* Ẩn scrollbar nhưng vẫn scroll được */
-.scrollbar-hidden {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hidden::-webkit-scrollbar {
-  display: none;
-}
-```
-
-> Sidebar và modal body dùng `scrollbar-thin`. Horizontal scroll chips dùng `scrollbar-hidden`.
+Ngoại lệ: tên riêng, brand, thuật ngữ kỹ thuật không có bản dịch chuẩn (blockchain, SDK, XLM...).
 
 ---
 
-## Accessibility — bắt buộc
+## 15. Scrollbar
 
-```tsx
-// 1. Icon-only button phải có aria-label
-<Button size="icon" aria-label="Đóng dialog">
-  <X className="w-4 h-4" />
-</Button>
-
-// 2. Không xoá focus ring của interactive elements
-
-// 3. Contrast: text thường ≥ 4.5:1, text lớn ≥ 3:1
-// Kiểm tra: webaim.org/resources/contrastchecker
-
-// 4. Link phải có text mô tả, không dùng "Xem thêm" / "Click here" đơn lẻ
-<a href="/courses">Xem tất cả khoá học</a>  {/* ✓ */}
-<a href="/courses">Xem thêm</a>              {/* ✗ */}
-```
+- Sidebar, modal body: `scrollbar-thin`.
+- Horizontal chip scroller: `scrollbar-hidden`.
 
 ---
 
-## Checklist nhanh trước khi ship
+## 16. Accessibility
 
-```
-□ Dùng token màu, không hardcode
-□ Spacing bội số 4px
-□ Chỉ 1 Primary button trên viewport
-□ Có empty state + loading state cho mọi list/grid
-□ Input có đủ 5 states (default, focus, error, disabled, readonly)
-□ Test dark mode
-□ Mobile 375px không vỡ layout
-□ Icon-only button có aria-label
-□ Ngôn ngữ UI nhất quán tiếng Việt
-□ Không mix icon library
-□ Z-index nằm trong scale (0–50)
-□ Thumbnail/avatar có fallback khi ảnh lỗi
-```
+- Contrast text thường ≥ 4.5:1, text lớn ≥ 3:1.
+- Link phải có text mô tả — KHÔNG dùng "Xem thêm" / "Click here" đơn lẻ.
+- Focus ring không xoá.
+- Touch target mobile ≥ 44×44px.
+- Tab order tự nhiên top-to-bottom, left-to-right.
 
 ---
 
-*[Material Design 3](https://m3.material.io/) · [Lucide Icons](https://lucide.dev/) · [OKLCH Picker](https://oklch.com/) · [Contrast Checker](https://webaim.org/resources/contrastchecker/)*
+## 17. Pre-ship Checklist
+
+- [ ] Token màu, không hardcode
+- [ ] Spacing bội số 4px
+- [ ] Chỉ 1 Primary button / viewport
+- [ ] Empty + loading state cho list/grid
+- [ ] Input đủ 5 states
+- [ ] Dark mode test
+- [ ] 375px không vỡ
+- [ ] Icon-only button có `aria-label`
+- [ ] Touch target ≥ 44px (mobile)
+- [ ] UI tiếng Việt nhất quán
+- [ ] Z-index trong scale 0–50
+- [ ] Avatar / thumbnail có fallback ảnh
+- [ ] Không mix icon library
+
+---
+
+*Material Design 3 · Lucide Icons · OKLCH · WebAIM Contrast Checker*

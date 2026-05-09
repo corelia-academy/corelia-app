@@ -106,7 +106,7 @@ export default function Home() {
               title: item.title_override || enrolledCourse.title,
               description:
                 item.description_override ||
-                `Ưu tiên cho giai đoạn này của dashboard. ${enrolledCourse.nextStep}`,
+                t("home.pinned.courseFallbackDescription", { nextStep: enrolledCourse.nextStep }),
               to: `/courses/${enrolledCourse.id}`,
               cta: item.cta_label || t("home.pinned.cta.viewCourse"),
               meta: enrolledCourse.meta,
@@ -137,7 +137,7 @@ export default function Home() {
             badge: item.badge || t("home.pinned.badges.ecosystemPlayground"),
             title: item.title_override || contest.title,
             description: item.description_override || contest.tagline,
-            to: `/contests/${contest.id}`,
+            to: contest.slug ? `/hackathons/${contest.slug}` : "/hackathons",
             cta: item.cta_label || t("home.pinned.cta.viewContest"),
             meta:
               contest.registration_deadline != null
@@ -161,7 +161,7 @@ export default function Home() {
   }
 
   return (
-    <div className="container-app w-full min-w-0 py-6 sm:py-8">
+    <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-6">
           <HomeHeader

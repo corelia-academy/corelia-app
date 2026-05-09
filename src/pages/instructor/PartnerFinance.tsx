@@ -17,7 +17,7 @@ function ExternalOnlyHint() {
   const { t } = useTranslation("instructor");
   return (
     <PageContainer>
-      <PageSectionCard className="text-sm text-muted-foreground">
+      <PageSectionCard className="text-sm text-foreground-muted">
         {t("finance.externalOnlyHint")}
       </PageSectionCard>
     </PageContainer>
@@ -44,11 +44,11 @@ function DocumentPanel({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-          <p className="mt-2 text-sm text-muted-foreground sm:text-sm">
+          <p className="mt-2 text-sm text-foreground-muted sm:text-sm">
             {description}
           </p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+        <div className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
           <Icon className="size-4 text-primary" aria-hidden />
           {countLabel}
         </div>
@@ -69,7 +69,7 @@ function DocumentList({
 }) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border-subtle bg-muted/20 p-4 text-sm text-muted-foreground">
+      <div className="rounded-lg border border-dashed border-border-subtle bg-surface-raised p-4 text-sm text-foreground-muted">
         {emptyLabel}
       </div>
     );
@@ -80,7 +80,7 @@ function DocumentList({
       {rows.map((doc) => (
         <article
           key={doc.path}
-          className="flex flex-col gap-3 rounded-lg border border-border-subtle bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-col gap-3 rounded-lg border border-border-subtle bg-surface-raised p-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div className="min-w-0">
             <a
@@ -93,12 +93,12 @@ function DocumentList({
               {doc.name}
             </a>
             {renderMeta ? (
-              <div className="mt-1 text-sm text-muted-foreground">
+              <div className="mt-1 text-sm text-foreground-muted">
                 {renderMeta(doc)}
               </div>
             ) : null}
           </div>
-          <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="inline-flex items-center gap-2 text-xs text-foreground-muted">
             <CalendarDays className="size-4" aria-hidden />
             {new Date(doc.uploaded_at).toLocaleDateString(intlLocale())}
           </div>
@@ -120,7 +120,7 @@ export function PartnerContractsPage() {
       <div className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <PageSectionCard>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               {t("partnerFinance.contracts.stats.totalDocuments")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -128,7 +128,7 @@ export function PartnerContractsPage() {
             </p>
           </PageSectionCard>
           <PageSectionCard>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               {t("partnerFinance.contracts.stats.source")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -136,7 +136,7 @@ export function PartnerContractsPage() {
             </p>
           </PageSectionCard>
           <PageSectionCard>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               {t("partnerFinance.contracts.stats.status")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -188,7 +188,7 @@ export function PartnerInvoicesPage() {
       <div className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <PageSectionCard>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               {t("partnerFinance.invoices.stats.currentMonth")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -196,7 +196,7 @@ export function PartnerInvoicesPage() {
             </p>
           </PageSectionCard>
           <PageSectionCard>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               {t("partnerFinance.invoices.stats.total")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -204,7 +204,7 @@ export function PartnerInvoicesPage() {
             </p>
           </PageSectionCard>
           <PageSectionCard>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               {t("partnerFinance.invoices.stats.status")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -264,7 +264,7 @@ export function PartnerPaymentsPage() {
       <div className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <PageSectionCard>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               {t("partnerFinance.payments.stats.bankAccount")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -272,7 +272,7 @@ export function PartnerPaymentsPage() {
             </p>
           </PageSectionCard>
           <PageSectionCard>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               {t("partnerFinance.payments.stats.accountHolder")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -280,7 +280,7 @@ export function PartnerPaymentsPage() {
             </p>
           </PageSectionCard>
           <PageSectionCard>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               {t("partnerFinance.payments.stats.payoutGuide")}
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -303,7 +303,7 @@ export function PartnerPaymentsPage() {
       >
         {hasBankInfo ? (
           <div className="grid gap-3 lg:grid-cols-2">
-            <div className="rounded-lg border border-border-subtle bg-muted/20 p-4">
+            <div className="rounded-lg border border-border-subtle bg-surface-raised p-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
                 <Landmark className="size-4 text-primary" aria-hidden />
                 {t("partnerFinance.payments.sections.transferInfo")}
@@ -311,7 +311,7 @@ export function PartnerPaymentsPage() {
               <div className="grid gap-2 text-sm">
                 {bankName ? (
                   <div>
-                    <span className="text-muted-foreground">
+                    <span className="text-foreground-muted">
                       {t("partnerFinance.payments.fields.bankName")}
                     </span>{" "}
                     <span className="font-medium text-foreground">{bankName}</span>
@@ -319,7 +319,7 @@ export function PartnerPaymentsPage() {
                 ) : null}
                 {bankAccount ? (
                   <div>
-                    <span className="text-muted-foreground">
+                    <span className="text-foreground-muted">
                       {t("partnerFinance.payments.fields.accountNumber")}
                     </span>{" "}
                     <span className="font-medium text-foreground">{bankAccount}</span>
@@ -327,7 +327,7 @@ export function PartnerPaymentsPage() {
                 ) : null}
                 {bankHolder ? (
                   <div>
-                    <span className="text-muted-foreground">
+                    <span className="text-foreground-muted">
                       {t("partnerFinance.payments.fields.accountHolder")}
                     </span>{" "}
                     <span className="font-medium text-foreground">{bankHolder}</span>
@@ -335,7 +335,7 @@ export function PartnerPaymentsPage() {
                 ) : null}
                 {bankNote ? (
                   <div>
-                    <span className="text-muted-foreground">
+                    <span className="text-foreground-muted">
                       {t("partnerFinance.payments.fields.transferNote")}
                     </span>{" "}
                     <span className="text-foreground">{bankNote}</span>
@@ -343,24 +343,24 @@ export function PartnerPaymentsPage() {
                 ) : null}
               </div>
             </div>
-            <div className="rounded-lg border border-border-subtle bg-muted/20 p-4">
+            <div className="rounded-lg border border-border-subtle bg-surface-raised p-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
                 <CreditCard className="size-4 text-primary" aria-hidden />
                 {t("partnerFinance.payments.sections.extraNotes")}
               </div>
               {transferInfo ? (
-                <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                <p className="whitespace-pre-wrap text-sm text-foreground-muted">
                   {transferInfo}
                 </p>
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-foreground-muted">
                   {t("partnerFinance.payments.emptyExtraNotes")}
                 </p>
               )}
             </div>
           </div>
         ) : (
-          <div className="rounded-lg border border-dashed border-border-subtle bg-muted/20 p-4 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-dashed border-border-subtle bg-surface-raised p-4 text-sm text-foreground-muted">
             {t("partnerFinance.payments.empty")}
           </div>
         )}

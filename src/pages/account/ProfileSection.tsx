@@ -64,14 +64,14 @@ export function ProfileSection(props: {
 
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="space-y-5">
-      <div className="grid gap-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
+      <div className="grid gap-4 rounded-lg border border-border-subtle bg-surface-base p-4">
         <div className="grid gap-2">
           <Label className="text-sm font-medium">{t("profile.emailLoginLabel")}</Label>
-          <div className="text-sm text-muted-foreground">{sessionEmail}</div>
+          <div className="text-sm text-foreground-muted">{sessionEmail}</div>
         </div>
 
-        <div className="grid gap-2 rounded-md border border-border-subtle bg-background p-3">
-          <div className="text-xs font-medium text-muted-foreground">
+        <div className="grid gap-2 rounded-md border border-border-subtle bg-surface-base p-3">
+          <div className="text-xs font-medium text-foreground-muted">
             {t("profile.publicProfile.label")}
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -81,7 +81,7 @@ export function ProfileSection(props: {
                   ? t("profile.publicProfile.status.public")
                   : t("profile.publicProfile.status.private")}
               </div>
-              <div className="mt-1 text-xs text-muted-foreground">
+              <div className="mt-1 text-xs text-foreground-muted">
                 {t("profile.publicProfile.hint", { handle: profileLinkHandle })}
               </div>
             </div>
@@ -90,10 +90,10 @@ export function ProfileSection(props: {
               disabled={saving || uploadingAvatar}
               onClick={() => setProfilePublic(!profilePublic)}
               className={[
-                "h-9 rounded-full border px-3 text-sm font-medium transition-colors",
+                "min-h-11 rounded-full border px-3 py-1 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                 profilePublic
-                  ? "border-primary/25 bg-primary-container text-on-primary-container shadow-card"
-                  : "border-border-subtle bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                  ? "border-primary/30 bg-primary-muted text-primary"
+                  : "border-border-subtle bg-surface-base text-foreground-muted hover:bg-surface-raised hover:text-foreground",
               ].join(" ")}
             >
               {profilePublic
@@ -142,7 +142,7 @@ export function ProfileSection(props: {
                   </>
                 )}
               </Button>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-foreground-muted">
                 {t("profile.avatar.hint")}
               </p>
             </div>
@@ -161,7 +161,7 @@ export function ProfileSection(props: {
             placeholder={t("profile.fullName.placeholder")}
             className="rounded"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground-muted">
             {t("profile.fullName.hint")}
           </p>
         </div>
@@ -182,7 +182,7 @@ export function ProfileSection(props: {
             spellCheck={false}
             inputMode="text"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground-muted">
             {t("profile.username.hint")}
           </p>
         </div>
@@ -196,9 +196,9 @@ export function ProfileSection(props: {
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             placeholder={t("profile.bio.placeholder")}
-            className="min-h-24 w-full rounded-md border border-border-subtle bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+            className="min-h-24 w-full rounded-md border border-border bg-surface-base px-3 py-2 text-sm text-foreground outline-none transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground-muted">
             {t("profile.bio.hint")}
           </p>
         </div>
@@ -218,7 +218,7 @@ export function ProfileSection(props: {
             autoCorrect="off"
             spellCheck={false}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground-muted">
             {t("profile.website.hint")}
           </p>
         </div>
@@ -235,7 +235,7 @@ export function ProfileSection(props: {
             placeholder={t("profile.phone.placeholder")}
             className="rounded"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground-muted">
             {t("profile.phone.hint")}
           </p>
         </div>

@@ -13,7 +13,7 @@ export function ExploreCoursesSection({
   courseCatalog: Course[];
 }) {
   return (
-    <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+    <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-medium text-foreground">{t("home.sections.exploreTitle")}</h2>
         <Button
@@ -30,12 +30,12 @@ export function ExploreCoursesSection({
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {(courseCatalog ?? []).length === 0 ? (
           <div className="col-span-full flex flex-col items-center gap-3 py-12 text-center sm:py-16">
-            <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-              <BookOpen className="size-6 text-muted-foreground" aria-hidden />
+            <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+              <BookOpen className="size-6 text-foreground-subtle" aria-hidden />
             </div>
             <div>
               <p className="text-sm font-medium text-foreground">{t("home.sections.exploreTitle")}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
+              <p className="mt-0.5 text-xs text-foreground-muted">
                 {t("home.sections.startFromCatalogSubtitle")}
               </p>
             </div>
@@ -48,9 +48,9 @@ export function ExploreCoursesSection({
             <NavLink
               key={course.id}
               to={`/courses/${course.slug || course.id}`}
-              className="group cursor-pointer overflow-hidden rounded-md border border-border-subtle bg-background transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+              className="group cursor-pointer overflow-hidden rounded-lg border border-border-subtle bg-surface-base transition-all duration-200 ease-out hover:bg-surface-raised hover:-translate-y-0.5 hover:border-border"
             >
-              <div className="relative aspect-video bg-muted/40">
+              <div className="relative aspect-video bg-surface-raised">
                 {course.thumbnail_url ? (
                   <img
                     src={course.thumbnail_url}
@@ -60,10 +60,10 @@ export function ExploreCoursesSection({
                 ) : null}
               </div>
               <div className="p-3">
-                <div className="line-clamp-2 text-sm font-medium leading-relaxed text-foreground">
+                <div className="line-clamp-2 text-sm font-semibold leading-snug tracking-tight text-foreground">
                   {course.title}
                 </div>
-                <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                <div className="mt-1 line-clamp-1 text-xs text-foreground-muted">
                   {getCourseLevelLabel(course.level)}
                 </div>
               </div>

@@ -1,0 +1,71 @@
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { getCareerTrackBySlug } from "@/lib/careerTracks";
+import type { CareerTrackDetail } from "@/types/career";
+
+export function useCareerTrackDetail(
+  params:
+    | { owner_scope: "corelia"; slug: string | undefined; handle?: never }
+    | {
+        owner_scope: "instructor";
+        handle: string | undefined;
+        slug: string | undefined;
+      },
+) {
+  const { t, i18n } = useTranslation("career");
+  const [track, setTrack] = useState<CareerTrackDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const normalizedSlug = params.slug?.trim() ?? "";
+    const normalizedHandle =
+      params.owner_scope === "instructor" ? params.handle?.trim() ?? "" : "";
+
+    if (
+      !normalizedSlug ||
+      (params.owner_scope === "instructor" && !normalizedHandle)
+    ) {
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setTrack(null);
+        setLoading(false);
+      });
+      return;
+    }
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setLoading(true);
+      setError(null);
+    });
+
+    getCareerTrackBySlug(
+      params.owner_scope === "corelia"
+        ? { owner_scope: "corelia", slug: normalizedSlug }
+        : { owner_scope: "instructor", handle: normalizedHandle, slug: normalizedSlug },
+      i18n.language,
+    )
+      .then((row) => {
+        if (cancelled) return;
+        setTrack(row);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : t("errors.loadFailed"));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [params.owner_scope, params.slug, params.handle, t, i18n.language]);
+
+  return { track, loading, error };
+}
+
