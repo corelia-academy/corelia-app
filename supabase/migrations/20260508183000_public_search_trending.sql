@@ -2,6 +2,8 @@
 -- - Log search submissions (authenticated only) to reduce spam.
 -- - Provide RPC to list trending queries in last 7 days.
 
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 CREATE TABLE IF NOT EXISTS public.search_query_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
