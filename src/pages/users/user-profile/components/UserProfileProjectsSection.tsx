@@ -3,11 +3,17 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { ExternalLink } from "lucide-react";
 
+import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
+import { applyProjectLocaleContent, getBatchProjectLocaleContent } from "@/lib/projects";
+import { listMyProjectHeartIds } from "@/lib/projectSocial";
+import { pickContentLocale } from "@/lib/entityLocales";
 import type { PublicProfile } from "@/types/database";
 import type { Project } from "@/types/projects";
+import { projectSourceLabelKey } from "@/lib/projectSource";
+import { useAuth } from "@/stores/authStore";
 
 function sourceLink(project: Project): string | null {
   if (project.source_type === "contest" && project.source_id) {
@@ -24,10 +30,12 @@ export function UserProfileProjectsSection({
 }: {
   profile: PublicProfile;
 }) {
-  const { t } = useTranslation("common");
+  const { user } = useAuth();
+  const { t, i18n } = useTranslation("common");
   const [items, setItems] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [heartedByProjectId, setHeartedByProjectId] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -36,7 +44,7 @@ export function UserProfileProjectsSection({
       setError(null);
       try {
         const select =
-          "id,owner_id,title,summary,demo_url,repo_url,slide_url,visibility,source_type,source_id,source_submission_id,created_at,updated_at" as const;
+          "id,owner_id,title,summary,demo_url,repo_url,slide_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
 
         const [{ data: owned, error: ownedErr }, { data: collabRows, error: collabErr }] =
           await Promise.all([
@@ -76,11 +84,32 @@ export function UserProfileProjectsSection({
         const merged = [...((owned ?? []) as Project[]), ...collaboratorProjects];
         const byId = new Map<string, Project>();
         for (const item of merged) byId.set(item.id, item);
-        const result = Array.from(byId.values()).sort((a, b) =>
+        const baseList = Array.from(byId.values()).sort((a, b) =>
           String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")),
         );
 
-        setItems(result);
+        const preferred = i18n.language;
+        const idsByLocale = new Map<"vi" | "en", string[]>();
+        for (const p of baseList) {
+          const desired = pickContentLocale(p.i18n ?? null, preferred);
+          const ids = idsByLocale.get(desired) ?? [];
+          ids.push(p.id);
+          idsByLocale.set(desired, ids);
+        }
+        const localeMaps = new Map<"vi" | "en", Map<string, { title?: string; summary?: string | null }>>();
+        await Promise.all(
+          Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
+            localeMaps.set(locale, await getBatchProjectLocaleContent(ids, locale));
+          }),
+        );
+
+        setItems(
+          baseList.map((p) => {
+            const desired = pickContentLocale(p.i18n ?? null, preferred);
+            const localized = localeMaps.get(desired)?.get(p.id) ?? null;
+            return applyProjectLocaleContent(p, localized);
+          }),
+        );
       } catch (e) {
         if (cancelled) return;
         setError(
@@ -94,7 +123,25 @@ export function UserProfileProjectsSection({
     return () => {
       cancelled = true;
     };
-  }, [profile.id, t]);
+  }, [profile.id, t, i18n.language]);
+
+  useEffect(() => {
+    const ids = items.map((p) => p.id).filter(Boolean);
+    if (ids.length === 0 || !user) {
+      queueMicrotask(() => setHeartedByProjectId({}));
+      return;
+    }
+    let cancelled = false;
+    void listMyProjectHeartIds(ids).then((set) => {
+      if (cancelled) return;
+      const next: Record<string, boolean> = {};
+      for (const id of ids) next[id] = set.has(id);
+      setHeartedByProjectId(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [items, user]);
 
   if (loading) {
     return (
@@ -131,8 +178,13 @@ export function UserProfileProjectsSection({
             className="rounded-md border border-border-subtle bg-surface-base p-4"
           >
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold text-foreground">
-                {project.title}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="truncate text-sm font-semibold text-foreground">
+                  {project.title}
+                </div>
+                <span className="shrink-0 rounded-full border border-border-subtle bg-surface-raised px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-foreground-muted">
+                  {t(projectSourceLabelKey(project.source_type))}
+                </span>
               </div>
               {project.summary ? (
                 <div className="mt-1 line-clamp-2 text-sm text-foreground-muted">
@@ -193,6 +245,14 @@ export function UserProfileProjectsSection({
                   </Button>
                 ) : null}
               </div>
+              <ProjectSocialBlock
+                projectId={project.id}
+                ownerId={project.owner_id}
+                likeCount={Number(project.like_count ?? 0)}
+                hearted={heartedByProjectId[project.id] ?? false}
+                variant="default"
+                className="mt-3"
+              />
             </div>
           </div>
         );

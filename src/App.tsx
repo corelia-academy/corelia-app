@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -6,6 +6,7 @@ import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import {
   BrowserRouter,
   Navigate,
+  Outlet,
   Route,
   Routes,
   useLocation,
@@ -37,9 +38,11 @@ const Contests = lazy(() => import("@/pages/hackathon-detail/Contests"));
 const ContestNew = lazy(() => import("@/pages/hackathon-detail/ContestNew"));
 const ContestPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
 const ContestPublicPage = lazy(() => import("@/pages/hackathon-detail/ContestPublicPage"));
-const ContestApplyRedirect = lazy(() => import("@/pages/hackathon-detail/ContestApplyRedirect"));
 const Projects = lazy(() => import("@/pages/projects"));
+const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
 const SearchPage = lazy(() => import("@/pages/search"));
+import { ContestManageIndexRedirect } from "@/pages/hackathon-detail/ContestManageIndexRedirect";
+
 const ContestWorkspacePublicRoute = lazy(() =>
   import("@/pages/hackathon-detail/ContestDetail").then((m) => ({
     default: m.ContestDetailManagePage,
@@ -60,6 +63,9 @@ const AccountBillingRoute = lazy(() =>
 );
 const AccountSettingsRoute = lazy(() =>
   import("@/pages/account/AccountSettingsRoute").then((m) => ({ default: m.AccountSettingsRoute })),
+);
+const AccountProjectsRoute = lazy(() =>
+  import("@/pages/account/AccountProjectsRoute").then((m) => ({ default: m.AccountProjectsRoute })),
 );
 const AccountInstructorProfileRoute = lazy(() =>
   import("@/pages/account/AccountInstructorRoutes").then((m) => ({
@@ -101,8 +107,22 @@ const PageFallback = () => <AuthGateLoading />;
 
 function ScrollToTop() {
   const location = useLocation();
+  const prevPathRef = useRef<string | null>(null);
 
   useEffect(() => {
+    const prev = prevPathRef.current;
+    prevPathRef.current = location.pathname;
+    const manageBaseRe = /^\/hackathons\/([^/]+)\/manage(?:\/|$)/;
+    const prevMatch = prev?.match(manageBaseRe);
+    const nextMatch = location.pathname.match(manageBaseRe);
+    if (
+      prevMatch &&
+      nextMatch &&
+      prevMatch[1] === nextMatch[1] &&
+      prev !== location.pathname
+    ) {
+      return;
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [location.pathname, location.search]);
 
@@ -131,6 +151,14 @@ export default function App() {
             <Route path="/" element={<MainLayout />}>
               <Route index element={<Home />} />
               <Route path="courses" element={<Courses />} />
+              <Route
+                path="invites/project/:token"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <ProjectInvitePage />
+                  </Suspense>
+                }
+              />
               <Route path="cohorts" element={<Navigate to="/courses" replace />} />
               <Route
                 path="career"
@@ -274,12 +302,20 @@ export default function App() {
                 path="hackathons/:slug/manage"
                 element={
                   <RequireAuth>
+                    <Outlet />
+                  </RequireAuth>
+                }
+              >
+                <Route index element={<ContestManageIndexRedirect />} />
+                <Route
+                  path=":section"
+                  element={
                     <Suspense fallback={<PageFallback />}>
                       <ContestWorkspacePublicRoute />
                     </Suspense>
-                  </RequireAuth>
-                }
-              />
+                  }
+                />
+              </Route>
               <Route
                 path="hackathons/:slug"
                 element={
@@ -337,14 +373,6 @@ export default function App() {
                     </Suspense>
                   }
                 />
-                <Route
-                  path="apply"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestApplyRedirect />
-                    </Suspense>
-                  }
-                />
               </Route>
               <Route
                 path="u/:handle"
@@ -394,6 +422,14 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <AccountSettingsRoute />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="projects"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountProjectsRoute />
                     </Suspense>
                   }
                 />

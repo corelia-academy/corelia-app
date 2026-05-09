@@ -5,7 +5,7 @@ import { listCareerTracks } from "@/lib/careerTracks";
 import type { CareerTrackDetail } from "@/types/career";
 
 export function useCareerTracksCatalog() {
-  const { t } = useTranslation("career");
+  const { t, i18n } = useTranslation("career");
   const [tracks, setTracks] = useState<CareerTrackDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -13,7 +13,7 @@ export function useCareerTracksCatalog() {
   useEffect(() => {
     let cancelled = false;
 
-    listCareerTracks()
+    listCareerTracks(i18n.language)
       .then((rows) => {
         if (cancelled) return;
         setTracks(rows);
@@ -30,7 +30,7 @@ export function useCareerTracksCatalog() {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [t, i18n.language]);
 
   const hasTracks = useMemo(() => tracks.length > 0, [tracks.length]);
 

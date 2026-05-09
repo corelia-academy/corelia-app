@@ -13,7 +13,7 @@ export function useCareerTrackDetail(
         slug: string | undefined;
       },
 ) {
-  const { t } = useTranslation("career");
+  const { t, i18n } = useTranslation("career");
   const [track, setTrack] = useState<CareerTrackDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +46,7 @@ export function useCareerTrackDetail(
       params.owner_scope === "corelia"
         ? { owner_scope: "corelia", slug: normalizedSlug }
         : { owner_scope: "instructor", handle: normalizedHandle, slug: normalizedSlug },
+      i18n.language,
     )
       .then((row) => {
         if (cancelled) return;
@@ -63,7 +64,7 @@ export function useCareerTrackDetail(
     return () => {
       cancelled = true;
     };
-  }, [params.owner_scope, params.slug, params.handle, t]);
+  }, [params.owner_scope, params.slug, params.handle, t, i18n.language]);
 
   return { track, loading, error };
 }

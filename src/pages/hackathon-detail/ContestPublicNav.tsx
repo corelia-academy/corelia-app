@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { Contest } from "@/types/hackathons";
+import { contestPublicShowcaseProjectsNavVisible } from "@/pages/hackathon-detail/utils/contestShowcase";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
 
@@ -10,7 +11,6 @@ const NAV_KEYS = [
   "rules",
   "faqs",
   "projects",
-  "apply",
 ] as const;
 
 export function ContestPublicNav({
@@ -19,8 +19,7 @@ export function ContestPublicNav({
   contest: Contest;
 }) {
   const { t } = useTranslation("contests");
-  const showProjects =
-    contest.status === "ended" && contest.published_leaderboard.length > 0;
+  const showProjects = contestPublicShowcaseProjectsNavVisible(contest);
   const contestSlug = contest.slug?.trim() || "";
 
   return (

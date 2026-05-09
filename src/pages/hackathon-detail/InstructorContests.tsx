@@ -52,7 +52,7 @@ import { useAuth } from "@/stores/authStore";
 
 export default function InstructorContests() {
   const { authInitialized, user } = useAuth();
-  const { t } = useTranslation("contests");
+  const { t, i18n } = useTranslation("contests");
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
       String(t(key as never, options as never)),
@@ -86,7 +86,7 @@ export default function InstructorContests() {
     return () => {
       cancelled = true;
     };
-  }, [authInitialized, t, user]);
+  }, [authInitialized, t, user, i18n.language]);
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -297,7 +297,7 @@ export default function InstructorContests() {
                 type="button"
                 className="flex flex-1 flex-col p-4 text-left"
                 onClick={() =>
-                  navigate(contestSlug ? `/hackathons/${contestSlug}/manage` : "/hackathons/manage")
+                  navigate(contestSlug ? `/hackathons/${contestSlug}/manage/overview` : "/hackathons/manage")
                 }
               >
                 <div className="flex flex-wrap gap-2">
@@ -377,7 +377,7 @@ export default function InstructorContests() {
                     type="button"
                     variant="outline"
                     onClick={() =>
-                      navigate(contestSlug ? `/hackathons/${contestSlug}/manage` : "/hackathons/manage")
+                      navigate(contestSlug ? `/hackathons/${contestSlug}/manage/overview` : "/hackathons/manage")
                     }
                   >
                     {t("instructor.listItem.openWorkspace")}
@@ -394,7 +394,7 @@ export default function InstructorContests() {
                     <DropdownMenuItem
                       onSelect={() =>
                         navigate(
-                          contestSlug ? `/hackathons/${contestSlug}/manage` : "/hackathons/manage",
+                          contestSlug ? `/hackathons/${contestSlug}/manage/overview` : "/hackathons/manage",
                         )
                       }
                     >

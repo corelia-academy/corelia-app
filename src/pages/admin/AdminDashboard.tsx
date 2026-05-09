@@ -60,7 +60,7 @@ function toEditable(item: DashboardPinnedProgram, order: number): EditablePinned
 
 export default function AdminDashboard() {
   const { authInitialized, user } = useAuth();
-  const { t } = useTranslation("admin");
+  const { t, i18n } = useTranslation("admin");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [authInitialized, t, user]);
+  }, [authInitialized, t, user, i18n.language]);
 
   const programOptions = useMemo<ProgramOption[]>(() => {
     return [

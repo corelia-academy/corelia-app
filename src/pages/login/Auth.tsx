@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/authStore";
 import { LoginForm } from "@/pages/login/LoginForm";
 import { LoginMfaChallenge } from "@/pages/login/components/LoginMfaChallenge";
+import { LanguageSwitcher } from "@/components/base/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
 
 /**
@@ -76,7 +77,7 @@ export default function Auth() {
     return (
       <div className="flex min-h-svh flex-col items-center justify-center bg-auth-page p-6 md:p-10">
         <div className="w-full max-w-sm md:max-w-md">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between gap-3">
             <NavLink
               to="/"
               className="inline-flex items-center gap-1 text-sm font-medium text-foreground-muted transition-colors duration-150 hover:text-foreground"
@@ -84,6 +85,7 @@ export default function Auth() {
               <ArrowLeft className="size-4" aria-hidden />
               <span>{t("notFound.backHome")}</span>
             </NavLink>
+            <LanguageSwitcher />
           </div>
           <LoginMfaChallenge
             onSuccess={() => setMfaGate("clear")}
@@ -104,7 +106,7 @@ export default function Auth() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-auth-page p-6 md:p-10">
       <div className="w-full max-w-sm md:max-w-4xl">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between gap-3">
           <NavLink
             to="/"
             className="inline-flex items-center gap-1 text-sm font-medium text-foreground-muted transition-colors duration-150 hover:text-foreground"
@@ -112,6 +114,7 @@ export default function Auth() {
             <ArrowLeft className="size-4" aria-hidden />
             <span>{t("notFound.backHome")}</span>
           </NavLink>
+          <LanguageSwitcher />
         </div>
         <LoginForm />
       </div>

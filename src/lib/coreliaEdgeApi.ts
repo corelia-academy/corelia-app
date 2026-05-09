@@ -1,4 +1,4 @@
-import { supabasePublicClientKey } from "@/lib/supabase";
+import { supabase, supabasePublicClientKey } from "@/lib/supabase";
 
 /**
  * Corelia backend on Supabase Edge Functions (single function `corelia-api`).
@@ -27,4 +27,27 @@ export function supabaseFunctionHeaders(accessToken?: string | null): Record<str
   if (apikey) headers.apikey = apikey;
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
   return headers;
+}
+
+/** Fire-and-forget Edge call (e.g. transactional email); failures are ignored. */
+export async function invokeCoreliaApi(op: string, body: Record<string, unknown>): Promise<void> {
+  const url = coreliaEdgeUrl(op);
+  if (!url) return;
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) return;
+  try {
+    await fetch(url, {
+      method: "POST",
+      headers: {
+        ...supabaseFunctionHeaders(token),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    /* non-blocking */
+  }
 }

@@ -50,7 +50,31 @@
     "accountSettings": "Cài đặt tài khoản"
   },
   "header": {
-    "publicProfile": "Hồ sơ công khai"
+    "publicProfile": "Hồ sơ công khai",
+    "notifications": "Thông báo",
+    "notificationsAria": "Mở thông báo",
+    "noNotifications": "Chưa có thông báo.",
+    "accept": "Chấp nhận",
+    "decline": "Từ chối"
+  },
+  "notifications": {
+    "projectInviteTitle": "Lời mời nhóm dự án",
+    "projectInviteBody": "Bạn được mời tham gia một dự án hackathon.",
+    "projectInviteProjectLabel": "Dự án: {{title}}",
+    "projectInviteHackathonLabel": "Hackathon: {{title}}",
+    "openHackathon": "Mở hackathon",
+    "inviteResolved": "Đã xử lý",
+    "inviteAccepted": "Bạn đã tham gia dự án.",
+    "inviteDeclined": "Đã từ chối lời mời.",
+    "inviteAcceptFailed": "Không thể chấp nhận lời mời.",
+    "inviteDeclineFailed": "Không thể từ chối lời mời.",
+    "hackathonRegistrationApprovedTitle": "Đã duyệt hồ sơ",
+    "hackathonRegistrationApprovedBody": "Hồ sơ đăng ký hackathon {{hackathonTitle}} của bạn đã được duyệt.",
+    "hackathonRegistrationRejectedTitle": "Hồ sơ chưa được duyệt",
+    "hackathonRegistrationRejectedBody": "Hồ sơ đăng ký hackathon {{hackathonTitle}} của bạn chưa được duyệt.",
+    "hackathonRegistrationReviewNote": "Ghi chú từ ban tổ chức: {{note}}",
+    "hackathonRegistrationFallbackTitle": "Hackathon",
+    "viewHackathon": "Xem hackathon"
   },
   "userProfile": {
     "tabs": {
@@ -114,6 +138,28 @@
     "demo": "Demo",
     "repo": "Repo",
     "slides": "Slides",
+    "sourceHackathon": "Hackathon",
+    "sourceCourse": "Khóa học",
+    "sourceShowcase": "Showcase",
+    "social": {
+      "heart": "Thả tim",
+      "unheart": "Bỏ tim",
+      "commentsHeading": "Bình luận",
+      "commentsToggle": "Bình luận ({{count}})",
+      "placeholder": "Viết bình luận…",
+      "submit": "Gửi",
+      "loginToInteract": "Đăng nhập để thả tim hoặc bình luận.",
+      "emptyComments": "Chưa có bình luận.",
+      "loadingComments": "Đang tải bình luận…",
+      "delete": "Xóa bình luận",
+      "commentRemoved": "Đã xóa bình luận.",
+      "commentEmpty": "Nội dung bình luận không được để trống.",
+      "commentTooLong": "Bình luận quá dài.",
+      "postFailed": "Không gửi được bình luận.",
+      "heartFailed": "Không cập nhật được tim.",
+      "loadCommentsFailed": "Không tải được bình luận.",
+      "deleteFailed": "Không xóa được bình luận."
+    },
     "errors": {
       "loadFailed": "Không tải được danh sách dự án"
     }

@@ -16,8 +16,22 @@ import {
   scoreContestSubmission,
   updateContest,
   upsertContestSubmission,
+  isPastContestSubmissionDeadline,
 } from "@/lib/hackathons";
+import {
+  createProjectCollaborationInvite,
+  fetchHackathonProjectForOwnerSubmission,
+  listInvitableHackathonUsers,
+  listProjectCollaborationInvites,
+  listProjectCollaborators,
+  removeProjectCollaborator,
+  revokeProjectCollaborationInvite,
+  type InvitableUserRow,
+  type ProjectCollaborationInviteRow,
+  type ProjectCollaboratorRow,
+} from "@/lib/projectCollaboration";
 import { uploadContestBanner, uploadContestThumbnail } from "@/lib/storage";
+import type { Project } from "@/types/projects";
 import { useAuth } from "@/stores/authStore";
 import type {
   Contest,
@@ -38,6 +52,7 @@ import {
   formatContestCountdown,
   downloadTextFile,
 } from "@/pages/hackathon-detail/utils/contestDetailHelpers";
+import { contestPublicShowcaseProjectsNavVisible } from "@/pages/hackathon-detail/utils/contestShowcase";
 import { deriveContestPublicPhase } from "@/pages/hackathon-detail/utils/contestPhase";
 import { formatContestDate } from "@/pages/hackathon-detail/utils/formatContestDate";
 import { fetchContestDetailPayload } from "./fetchContestDetailPayload";
@@ -63,13 +78,16 @@ export function useContestDetailOrchestrator({
   publicSection?: ContestPublicSection;
   onContestSynced?: (next: Contest) => void;
 } = {}) {
-  const { t } = useTranslation("contests");
+  const { t, i18n } = useTranslation("contests");
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
       String(t(key as never, options as never)),
     [t],
   );
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, section: manageSectionParam } = useParams<{
+    slug: string;
+    section?: string;
+  }>();
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, user, isAuthenticated, authInitialized } = useAuth();
@@ -97,22 +115,11 @@ export function useContestDetailOrchestrator({
     setReviewNotes,
     savingReviewId,
     setSavingReviewId,
-    teamName,
-    setTeamName,
-    teamMembers,
-    setTeamMembers,
-    contactEmail,
-    setContactEmail,
-    contactPhone,
-    setContactPhone,
-    portfolioUrl,
-    setPortfolioUrl,
     motivation,
     setMotivation,
     applying,
     setApplying,
     hydrateFromPayload: hydrateRegistrationFromPayload,
-    parsedTeamMembers,
   } = registrationFlow;
 
   const judging = useContestJudgingWorkspace();
@@ -147,6 +154,17 @@ export function useContestDetailOrchestrator({
     setScoreDrafts,
     hydrateFromPayload: hydrateJudgingFromPayload,
   } = judging;
+
+  const [collabProject, setCollabProject] = useState<Project | null>(null);
+  const [collabMembers, setCollabMembers] = useState<ProjectCollaboratorRow[]>([]);
+  const [collabInvites, setCollabInvites] = useState<ProjectCollaborationInviteRow[]>(
+    [],
+  );
+  const [collabLoading, setCollabLoading] = useState(false);
+  const [collabInviteeQuery, setCollabInviteeQuery] = useState("");
+  const [invitableUsers, setInvitableUsers] = useState<InvitableUserRow[]>([]);
+  const [invitableLoading, setInvitableLoading] = useState(false);
+  const [inviteSendingUserId, setInviteSendingUserId] = useState<string | null>(null);
 
   const invitesWs = useContestInviteWorkspace();
   const {
@@ -230,8 +248,6 @@ export function useContestDetailOrchestrator({
   );
 
   const [countdownTick, setCountdownTick] = useState(0);
-  const [activeManageSection, setActiveManageSection] =
-    useState<string>("overview");
 
   const {
     isManager,
@@ -252,6 +268,24 @@ export function useContestDetailOrchestrator({
       }),
     [contest, forceManageView, location.pathname, profile, user?.email],
   );
+
+  const allowedManageSectionIds = useMemo(() => {
+    const ids = [
+      "overview",
+      ...(canReview ? ["applications"] : []),
+      ...(canJudge ? ["judging"] : []),
+      ...(canViewAggregate ? ["analytics"] : []),
+      ...(isManager ? ["translations", "settings"] : []),
+    ];
+    return ids;
+  }, [canJudge, canReview, canViewAggregate, isManager]);
+
+  const activeManageSection = useMemo(() => {
+    if (!isManageView) return "overview";
+    const raw = manageSectionParam ?? "overview";
+    if (allowedManageSectionIds.includes(raw)) return raw;
+    return allowedManageSectionIds[0] ?? "overview";
+  }, [allowedManageSectionIds, isManageView, manageSectionParam]);
 
   const manageSections = useMemo(
     () =>
@@ -276,7 +310,7 @@ export function useContestDetailOrchestrator({
           : null,
         canViewAggregate
           ? {
-              id: "results",
+              id: "analytics",
               label: translate("workspace.manage.sections.results.label"),
               description: translate(
                 "workspace.manage.sections.results.description",
@@ -318,6 +352,16 @@ export function useContestDetailOrchestrator({
       return {
         label: translate("workspace.manage.overview.label"),
         description: translate("workspace.manage.overview.description"),
+      };
+    }
+    if (activeManageSection === "translations") {
+      return {
+        label: translate("workspace.manage.translations.label", {
+          defaultValue: "Translations",
+        }),
+        description: translate("workspace.manage.translations.description", {
+          defaultValue: "Maintain localized versions of the public hackathon content.",
+        }),
       };
     }
     if (activeManageSection === "settings") {
@@ -532,7 +576,7 @@ export function useContestDetailOrchestrator({
           : translate("detail.cta.submitSubmission"),
         helper: translate("detail.cta.approvedHelper"),
         variant: "default" as const,
-        navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/apply` : "/hackathons",
+        navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/overview` : "/hackathons",
       };
     }
     if (registration) {
@@ -540,13 +584,12 @@ export function useContestDetailOrchestrator({
         label: translate("detail.cta.viewApplicationStatus"),
         helper: translate("detail.cta.pendingHelper"),
         variant: "outline" as const,
-        navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/apply` : "/hackathons",
+        navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/overview` : "/hackathons",
       };
     }
 
     const phase = deriveContestPublicPhase(contest);
-    const showProjects =
-      contest.status === "ended" && contest.published_leaderboard.length > 0;
+    const showProjects = contestPublicShowcaseProjectsNavVisible(contest);
 
     switch (phase) {
       case "ended":
@@ -567,14 +610,19 @@ export function useContestDetailOrchestrator({
           label: translate("detail.cta.followContest"),
           helper: translate("detail.cta.inProgressVisitorHelper"),
           variant: "outline" as const,
-          navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/timeline` : "/hackathons",
+          navigateTo:
+            showProjects && hrefSlug
+              ? `/hackathons/${hrefSlug}/projects`
+              : hrefSlug
+                ? `/hackathons/${hrefSlug}/timeline`
+                : "/hackathons",
         };
       case "registration_open":
         return {
           label: translate("detail.cta.register"),
           helper: translate("detail.cta.registerHelper"),
           variant: "default" as const,
-          navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/apply` : "/hackathons",
+          navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/overview` : "/hackathons",
         };
       case "registration_closed_before_start":
       default:
@@ -588,8 +636,16 @@ export function useContestDetailOrchestrator({
   }, [contest, isManageView, mySubmission, registration, translate]);
 
   const registrationDraftReady = useMemo(() => {
-    return contactEmail.trim().length > 0 && motivation.trim().length >= 24;
-  }, [contactEmail, motivation]);
+    if (!isAuthenticated || !authInitialized) return false;
+    const email = profile?.email?.trim() || user?.email?.trim() || "";
+    return email.length > 0;
+  }, [authInitialized, isAuthenticated, profile?.email, user?.email]);
+
+  const submissionWorkspaceEditable = useMemo(() => {
+    void countdownTick;
+    if (!contest || registration?.status !== "approved") return false;
+    return !isPastContestSubmissionDeadline(contest);
+  }, [contest, countdownTick, registration?.status]);
 
   const submissionDraftDirty = useMemo(
     () =>
@@ -621,50 +677,60 @@ export function useContestDetailOrchestrator({
 
   const loadAbortRef = useRef<AbortController | null>(null);
 
-  const loadContestData = useCallback(async () => {
-    if (!slug || !authInitialized) return;
-    loadAbortRef.current?.abort();
-    const ctrl = new AbortController();
-    loadAbortRef.current = ctrl;
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await fetchContestDetailPayload({
-        slug,
-        profile,
-        userEmail: user?.email ?? undefined,
-        viewer: user ?? null,
-        isManager,
-        translate,
-        signal: ctrl.signal,
-        prefetchedContest: contest,
-      });
-      if (loadAbortRef.current !== ctrl) return;
-      if (result.status === "aborted") return;
-      if (result.status === "error") {
-        setContest(null);
-        setError(result.errorMessage);
-        return;
+  const loadContestData = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      if (!slug || !authInitialized) return;
+      loadAbortRef.current?.abort();
+      const ctrl = new AbortController();
+      loadAbortRef.current = ctrl;
+      const silent = Boolean(opts?.silent);
+      if (!silent) {
+        setLoading(true);
+        setError(null);
       }
-      const p = result.payload;
-      setContest(p.contest);
-      hydrateContestMetaFromPayload(p);
-      hydrateRegistrationFromPayload(p);
-      hydrateJudgingFromPayload(p);
-      hydrateInvitesFromPayload(p);
-    } catch (err) {
-      if (loadAbortRef.current !== ctrl) return;
-      setError(
-        err instanceof Error
-          ? err.message
-          : translate("detail.errors.loadFailed"),
-      );
-    } finally {
-      if (loadAbortRef.current === ctrl) {
-        setLoading(false);
+      try {
+        const result = await fetchContestDetailPayload({
+          slug,
+          profile,
+          userEmail: user?.email ?? undefined,
+          uiLocale: i18n.language,
+          viewer: user ?? null,
+          isManager,
+          translate,
+          signal: ctrl.signal,
+          prefetchedContest: contest,
+        });
+        if (loadAbortRef.current !== ctrl) return;
+        if (result.status === "aborted") return;
+        if (result.status === "error") {
+          if (!silent) {
+            setContest(null);
+            setError(result.errorMessage);
+          }
+          return;
+        }
+        const p = result.payload;
+        setContest(p.contest);
+        hydrateContestMetaFromPayload(p);
+        hydrateRegistrationFromPayload(p);
+        hydrateJudgingFromPayload(p);
+        hydrateInvitesFromPayload(p);
+      } catch (err) {
+        if (loadAbortRef.current !== ctrl) return;
+        if (!silent) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : translate("detail.errors.loadFailed"),
+          );
+        }
+      } finally {
+        if (loadAbortRef.current === ctrl && !silent) {
+          setLoading(false);
+        }
       }
-    }
-  }, [
+    },
+    [
     hydrateContestMetaFromPayload,
     hydrateInvitesFromPayload,
     hydrateJudgingFromPayload,
@@ -674,12 +740,64 @@ export function useContestDetailOrchestrator({
     authInitialized,
     profile,
     setContest,
+    i18n.language,
     setError,
     setLoading,
     translate,
     user,
     contest,
-  ]);
+    ],
+  );
+
+  const loadCollaboration = useCallback(async () => {
+    if (!id || !user?.id || registration?.status !== "approved" || !mySubmission) {
+      setCollabProject(null);
+      setCollabMembers([]);
+      setCollabInvites([]);
+      return;
+    }
+    setCollabLoading(true);
+    try {
+      const proj = await fetchHackathonProjectForOwnerSubmission(id, user.id);
+      setCollabProject(proj);
+      if (proj) {
+        const [mem, inv] = await Promise.all([
+          listProjectCollaborators(proj.id),
+          listProjectCollaborationInvites(proj.id),
+        ]);
+        setCollabMembers(mem);
+        setCollabInvites(inv);
+      } else {
+        setCollabMembers([]);
+        setCollabInvites([]);
+      }
+    } catch {
+      setCollabProject(null);
+      setCollabMembers([]);
+      setCollabInvites([]);
+    } finally {
+      setCollabLoading(false);
+    }
+  }, [id, user?.id, registration?.status, mySubmission]);
+
+  useEffect(() => {
+    void loadCollaboration();
+  }, [loadCollaboration]);
+
+  useEffect(() => {
+    if (!collabProject?.id) {
+      setInvitableUsers([]);
+      return;
+    }
+    const handle = window.setTimeout(() => {
+      setInvitableLoading(true);
+      void listInvitableHackathonUsers(collabProject.id, collabInviteeQuery)
+        .then(setInvitableUsers)
+        .catch(() => setInvitableUsers([]))
+        .finally(() => setInvitableLoading(false));
+    }, 320);
+    return () => window.clearTimeout(handle);
+  }, [collabProject?.id, collabInviteeQuery]);
 
   useEffect(() => {
     void loadContestData();
@@ -714,6 +832,9 @@ export function useContestDetailOrchestrator({
       registration_deadline_local: contest.registration_deadline
         ? isoToDatetimeLocal(contest.registration_deadline)
         : "",
+      submission_deadline_local: contest.submission_deadline
+        ? isoToDatetimeLocal(contest.submission_deadline)
+        : "",
       starts_at_local: contest.starts_at ? isoToDatetimeLocal(contest.starts_at) : "",
       ends_at_local: contest.ends_at ? isoToDatetimeLocal(contest.ends_at) : "",
       milestones:
@@ -737,23 +858,26 @@ export function useContestDetailOrchestrator({
   }, [canAccessWorkspace, contest, isManageView, loading, navigate, translate]);
 
   useEffect(() => {
-    setContactEmail(profile?.email ?? "");
-    setContactPhone(profile?.phone ?? "");
-  }, [profile?.email, profile?.phone, setContactEmail, setContactPhone]);
+    if (!id) return;
+    setMotivation("");
+  }, [id, setMotivation]);
 
   useEffect(() => {
-    if (!isManageView) return;
-    const valid = [
-      "overview",
-      ...(canReview ? ["applications"] : []),
-      ...(canJudge ? ["judging"] : []),
-      ...(canViewAggregate ? ["analytics"] : []),
-      ...(isManager ? ["settings"] : []),
-    ];
-    setActiveManageSection((prev) =>
-      valid.includes(prev) ? prev : (valid[0] ?? "overview"),
-    );
-  }, [canJudge, canReview, canViewAggregate, isManageView, isManager]);
+    if (!isManageView || !canAccessWorkspace || !slug) return;
+    const raw = manageSectionParam ?? "overview";
+    if (allowedManageSectionIds.includes(raw)) return;
+    const fallback = allowedManageSectionIds[0] ?? "overview";
+    navigate(`/hackathons/${slug}/manage/${fallback}`, {
+      replace: true,
+    });
+  }, [
+    allowedManageSectionIds,
+    canAccessWorkspace,
+    slug,
+    isManageView,
+    manageSectionParam,
+    navigate,
+  ]);
 
   useEffect(() => {
     setScoreDrafts((prev) => {
@@ -809,23 +933,21 @@ export function useContestDetailOrchestrator({
       navigate("/login", { state: { from: location } });
       return;
     }
-    if (!contactEmail.trim()) {
+    const resolvedEmail = profile?.email?.trim() || user?.email?.trim() || "";
+    if (!resolvedEmail) {
       toast.error(translate("detail.toasts.contactEmailRequired"));
       return;
     }
-    if (motivation.trim().length < 24) {
-      toast.error(translate("detail.toasts.applicationMotivationTooShort"));
-      return;
-    }
+    const resolvedPhone = profile?.phone?.trim() || "";
+    const resolvedPortfolio =
+      profile?.website?.trim() || profile?.instructor_website?.trim() || "";
     setApplying(true);
     try {
       const result = await registerForContest(id, {
-        team_name: teamName,
-        team_members: parsedTeamMembers,
-        contact_email: contactEmail,
-        contact_phone: contactPhone,
-        portfolio_url: portfolioUrl,
-        motivation,
+        contact_email: resolvedEmail,
+        contact_phone: resolvedPhone || undefined,
+        portfolio_url: resolvedPortfolio || undefined,
+        motivation: motivation.trim() || undefined,
         user_full_name: profile?.full_name ?? undefined,
       });
       setRegistration(result);
@@ -841,20 +963,20 @@ export function useContestDetailOrchestrator({
     }
   }, [
     applying,
-    contactEmail,
-    contactPhone,
     id,
     isAuthenticated,
     location,
     motivation,
     navigate,
-    parsedTeamMembers,
-    portfolioUrl,
+    profile?.email,
     profile?.full_name,
+    profile?.instructor_website,
+    profile?.phone,
+    profile?.website,
     setApplying,
     setRegistration,
-    teamName,
     translate,
+    user?.email,
   ]);
 
   const handleReview = useCallback(
@@ -871,7 +993,7 @@ export function useContestDetailOrchestrator({
             ? translate("detail.toasts.applicationReviewedApproved")
             : translate("detail.toasts.applicationReviewedRejected"),
         );
-        await loadContestData();
+        await loadContestData({ silent: true });
       } catch (err) {
         toast.error(
           err instanceof Error
@@ -985,7 +1107,7 @@ export function useContestDetailOrchestrator({
       setInviteNote("");
       setInviteRoles(["judge"]);
       toast.success(translate("detail.toasts.inviteCreated"));
-      await loadContestData();
+      await loadContestData({ silent: true });
     } catch (err) {
       toast.error(
         err instanceof Error
@@ -1074,7 +1196,7 @@ export function useContestDetailOrchestrator({
             failed: failCount,
           }),
         );
-        await loadContestData();
+        await loadContestData({ silent: true });
       } catch (err) {
         toast.error(
           err instanceof Error
@@ -1099,7 +1221,7 @@ export function useContestDetailOrchestrator({
             ? translate("detail.toasts.inviteAccepted")
             : translate("detail.toasts.inviteDeclined"),
         );
-        await loadContestData();
+        await loadContestData({ silent: true });
       } catch (err) {
         toast.error(
           err instanceof Error
@@ -1120,7 +1242,7 @@ export function useContestDetailOrchestrator({
       try {
         await revokeContestAccessInvite(id, email);
         toast.success(translate("detail.toasts.inviteRevoked"));
-        await loadContestData();
+        await loadContestData({ silent: true });
       } catch (err) {
         toast.error(
           err instanceof Error
@@ -1253,8 +1375,73 @@ export function useContestDetailOrchestrator({
     translate,
   ]);
 
+  const handleSendCollaborationInvite = useCallback(
+    async (inviteeUserId: string) => {
+      if (!collabProject) return;
+      setInviteSendingUserId(inviteeUserId);
+      try {
+        const { token } = await createProjectCollaborationInvite(
+          collabProject.id,
+          inviteeUserId,
+        );
+        const link = `${window.location.origin}/invites/project/${token}`;
+        await navigator.clipboard.writeText(link);
+        toast.success(translate("detail.toasts.collabInviteLinkCopied"));
+        await loadCollaboration();
+      } catch (err) {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : translate("detail.toasts.collabInviteFailed"),
+        );
+      } finally {
+        setInviteSendingUserId(null);
+      }
+    },
+    [collabProject, loadCollaboration, translate],
+  );
+
+  const handleRevokeCollabInvite = useCallback(
+    async (inviteId: string) => {
+      try {
+        await revokeProjectCollaborationInvite(inviteId);
+        toast.success(translate("detail.toasts.collabInviteRevoked"));
+        await loadCollaboration();
+      } catch (err) {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : translate("detail.toasts.collabRevokeFailed"),
+        );
+      }
+    },
+    [loadCollaboration, translate],
+  );
+
+  const handleRemoveCollaborator = useCallback(
+    async (memberUserId: string) => {
+      if (!collabProject) return;
+      try {
+        await removeProjectCollaborator(collabProject.id, memberUserId);
+        toast.success(translate("detail.toasts.collaboratorRemoved"));
+        await loadCollaboration();
+      } catch (err) {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : translate("detail.toasts.collaboratorRemoveFailed"),
+        );
+      }
+    },
+    [collabProject, loadCollaboration, translate],
+  );
+
   const handleSubmissionSave = useCallback(async () => {
     if (!id || savingSubmission || !submissionTitle.trim()) return;
+    if (!submissionWorkspaceEditable) {
+      toast.error(translate("detail.toasts.submissionDeadlinePassed"));
+      return;
+    }
     if (submissionSummary.trim().length < 32) {
       toast.error(translate("detail.toasts.submissionSummaryTooShort"));
       return;
@@ -1269,6 +1456,7 @@ export function useContestDetailOrchestrator({
         slide_url: submissionSlideUrl,
       });
       setMySubmission(saved);
+      await loadCollaboration();
       toast.success(translate("detail.toasts.submissionSaved"));
     } catch (err) {
       toast.error(
@@ -1290,6 +1478,8 @@ export function useContestDetailOrchestrator({
     submissionSummary,
     submissionTitle,
     translate,
+    loadCollaboration,
+    submissionWorkspaceEditable,
   ]);
 
   const handleScoreSave = useCallback(
@@ -1316,7 +1506,7 @@ export function useContestDetailOrchestrator({
           note: draft.note,
         });
         toast.success(translate("detail.toasts.scoreSaved"));
-        await loadContestData();
+        await loadContestData({ silent: true });
       } catch (err) {
         toast.error(
           err instanceof Error
@@ -1525,6 +1715,7 @@ export function useContestDetailOrchestrator({
         .filter((f) => f.question.length > 0 && f.answer.length > 0);
       await updateContest(id, {
         registration_deadline: datetimeLocalToIso(publicDraft.registration_deadline_local),
+        submission_deadline: datetimeLocalToIso(publicDraft.submission_deadline_local),
         starts_at: datetimeLocalToIso(publicDraft.starts_at_local),
         ends_at: datetimeLocalToIso(publicDraft.ends_at_local),
         prize_pool_summary: publicDraft.prize_pool_summary.trim() || null,
@@ -1555,6 +1746,7 @@ export function useContestDetailOrchestrator({
     onContestSynced,
     publicDraft.faqs,
     publicDraft.registration_deadline_local,
+    publicDraft.submission_deadline_local,
     publicDraft.starts_at_local,
     publicDraft.ends_at_local,
     publicDraft.milestones,
@@ -1583,17 +1775,19 @@ export function useContestDetailOrchestrator({
   const handleCopyInviteLink = useCallback(
     async (email: string) => {
       if (!id) return;
-      const link = `${window.location.origin}/hackathons/${id}/manage?invite=${encodeURIComponent(email)}`;
+      const pathSlug = contest?.slug ?? slug ?? id;
+      const link = `${window.location.origin}/hackathons/${pathSlug}/manage/overview?invite=${encodeURIComponent(email)}`;
       await navigator.clipboard.writeText(link);
       toast.success(translate("detail.toasts.inviteLinkCopied"));
     },
-    [id, translate],
+    [contest?.slug, id, slug, translate],
   );
 
   const handleInviteMailTo = useCallback(
     (invite: ContestAccessInvite) => {
       if (!id || !contest) return;
-      const link = `${window.location.origin}/hackathons/${id}/manage?invite=${encodeURIComponent(invite.email)}`;
+      const pathSlug = contest.slug ?? slug ?? id;
+      const link = `${window.location.origin}/hackathons/${pathSlug}/manage/overview?invite=${encodeURIComponent(invite.email)}`;
       const subject = encodeURIComponent(
         translate("detail.inviteEmail.subjectPrefix", { title: contest.title }),
       );
@@ -1614,7 +1808,7 @@ export function useContestDetailOrchestrator({
         "_blank",
       );
     },
-    [contest, id, translate],
+    [contest, id, slug, translate],
   );
 
   const handleExportLeaderboardCsv = useCallback(() => {
@@ -1661,16 +1855,6 @@ export function useContestDetailOrchestrator({
     reviewNotes,
     setReviewNotes,
     savingReviewId,
-    teamName,
-    setTeamName,
-    teamMembers,
-    setTeamMembers,
-    contactEmail,
-    setContactEmail,
-    contactPhone,
-    setContactPhone,
-    portfolioUrl,
-    setPortfolioUrl,
     motivation,
     setMotivation,
     applying,
@@ -1741,7 +1925,6 @@ export function useContestDetailOrchestrator({
     publicDraft,
     setPublicDraft,
     activeManageSection,
-    setActiveManageSection,
     countdownTick,
     isManager,
     canReview,
@@ -1762,6 +1945,19 @@ export function useContestDetailOrchestrator({
     publicHeroHighlights,
     publicCta,
     registrationDraftReady,
+    submissionWorkspaceEditable,
+    collabProject,
+    collabMembers,
+    collabInvites,
+    collabLoading,
+    collabInviteeQuery,
+    setCollabInviteeQuery,
+    invitableUsers,
+    invitableLoading,
+    inviteSendingUserId,
+    handleSendCollaborationInvite,
+    handleRevokeCollabInvite,
+    handleRemoveCollaborator,
     submissionDraftDirty,
     leaderboardReadyForPublish,
     statusLabel,
@@ -1770,7 +1966,6 @@ export function useContestDetailOrchestrator({
     formatDateTime,
     formatDate,
     publicSection,
-    parsedTeamMembers,
     handleDeleteContest,
     handleApply,
     handleReview,

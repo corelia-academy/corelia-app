@@ -93,6 +93,19 @@ export interface ContestTimelineMilestone {
   at: string;
 }
 
+export interface ContestI18nContent {
+  title?: string;
+  tagline?: string;
+  description?: string | null;
+  rules?: string | null;
+  prize_pool_summary?: string | null;
+  faqs?: ContestFaqEntry[];
+  timeline_milestones?: ContestTimelineMilestone[];
+  tracks?: Array<Pick<ContestTrack, "id" | "name" | "description" | "active">>;
+  rounds?: Array<Pick<ContestRound, "id" | "name" | "active">>;
+  updated_at?: string;
+}
+
 export interface ContestWinner {
   submission_id: string;
   contestant_user_id: string;
@@ -124,6 +137,8 @@ export interface Contest {
   thumbnail_url?: string | null;
   thumbnail_path?: string | null;
   registration_deadline: string | null;
+  /** Last moment participants may create/update contest submission (mirrors to projects). Empty = use `ends_at`. */
+  submission_deadline: string | null;
   max_participants: number | null;
   judge_emails: string[];
   co_organizer_emails?: string[];
@@ -143,6 +158,8 @@ export interface Contest {
   prizes?: ContestPrizeEntry[];
   faqs?: ContestFaqEntry[];
   timeline_milestones?: ContestTimelineMilestone[];
+  /** Text-only content localization config */
+  i18n?: import("@/types/entityLocales").EntityI18nConfig;
   created_by: string;
   updated_by: string;
   created_at: string;
@@ -164,6 +181,7 @@ export interface ContestInsert {
   thumbnail_url?: string | null;
   thumbnail_path?: string | null;
   registration_deadline?: string | null;
+  submission_deadline?: string | null;
   max_participants?: number | null;
   judge_emails?: string[];
   co_organizer_emails?: string[];
@@ -197,6 +215,7 @@ export interface ContestUpdate {
   thumbnail_url?: string | null;
   thumbnail_path?: string | null;
   registration_deadline?: string | null;
+  submission_deadline?: string | null;
   max_participants?: number | null;
   judge_emails?: string[];
   co_organizer_emails?: string[];
@@ -216,6 +235,8 @@ export interface ContestUpdate {
   prizes?: ContestPrizeEntry[];
   faqs?: ContestFaqEntry[];
   timeline_milestones?: ContestTimelineMilestone[];
+  /** Text-only content localization config */
+  i18n?: import("@/types/entityLocales").EntityI18nConfig;
 }
 
 export interface ContestRegistration {

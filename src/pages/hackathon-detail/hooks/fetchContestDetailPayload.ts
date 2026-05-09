@@ -39,8 +39,6 @@ export type ContestDetailFetchedPayload = {
   registrations: ContestRegistration[];
   reviewNotes: Record<string, string>;
   registrationSelf: ContestRegistration | null;
-  teamName: string;
-  teamMembersText: string;
   submissions: ContestSubmission[];
   scores: ContestScore[];
   mySubmission: ContestSubmission | null;
@@ -59,6 +57,7 @@ export type FetchContestDetailPayloadInput = {
   slug: string;
   profile: Profile | null;
   userEmail: string | undefined;
+  uiLocale?: string | null;
   /** Resolved viewer after auth init; avoids redundant `getUser` in parallel contest fetches. */
   viewer?: User | null;
   isManager: boolean;
@@ -77,6 +76,7 @@ export async function fetchContestDetailPayload({
   slug,
   profile,
   userEmail,
+  uiLocale,
   viewer,
   isManager,
   translate,
@@ -86,7 +86,7 @@ export async function fetchContestDetailPayload({
   const contestData =
     prefetchedContest && prefetchedContest.slug === slug
       ? prefetchedContest
-      : await getContestBySlug(slug);
+      : await getContestBySlug(slug, uiLocale ?? null);
   if (signal.aborted) return { status: "aborted" };
 
   if (!contestData) {
@@ -109,9 +109,6 @@ export async function fetchContestDetailPayload({
   let registrations: ContestRegistration[] = [];
   let reviewNotes: Record<string, string> = {};
   let registrationSelf: ContestRegistration | null = null;
-  let teamName = "";
-  let teamMembersText = "";
-
   let submissions: ContestSubmission[] = [];
   let scores: ContestScore[] = [];
   let mySubmission: ContestSubmission | null = null;
@@ -143,8 +140,6 @@ export async function fetchContestDetailPayload({
     tasks.push(
       getMyContestRegistration(contestId, viewer).then((item) => {
         registrationSelf = item;
-        teamName = item?.team_name ?? "";
-        teamMembersText = (item?.team_members ?? []).join("\n");
       }),
     );
   }
@@ -213,8 +208,6 @@ export async function fetchContestDetailPayload({
     registrations,
     reviewNotes,
     registrationSelf,
-    teamName,
-    teamMembersText,
     submissions,
     scores,
     mySubmission,

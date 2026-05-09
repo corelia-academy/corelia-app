@@ -26,6 +26,7 @@ export function contestFromRow(
     thumbnail_url: (doc.thumbnail_url as string | null) ?? null,
     thumbnail_path: (doc.thumbnail_path as string | null) ?? null,
     registration_deadline: (doc.registration_deadline as string | null) ?? null,
+    submission_deadline: (doc.submission_deadline as string | null) ?? null,
     max_participants: (doc.max_participants as number | null) ?? null,
     judge_emails: Array.isArray(doc.judge_emails) ? (doc.judge_emails as string[]) : [],
     co_host_viewer_emails: Array.isArray(doc.co_host_viewer_emails)

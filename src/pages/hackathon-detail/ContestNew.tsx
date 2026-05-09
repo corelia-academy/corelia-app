@@ -34,6 +34,7 @@ export default function ContestNew() {
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
   const [registrationDeadline, setRegistrationDeadline] = useState("");
+  const [submissionDeadline, setSubmissionDeadline] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
   const [prizePoolSummary, setPrizePoolSummary] = useState("");
   const [bannerFile, setBannerFile] = useState<File | null>(null);
@@ -123,6 +124,7 @@ export default function ContestNew() {
         starts_at: datetimeLocalToIso(startsAt),
         ends_at: datetimeLocalToIso(endsAt),
         registration_deadline: datetimeLocalToIso(registrationDeadline),
+        submission_deadline: datetimeLocalToIso(submissionDeadline),
         max_participants: maxParticipants.trim() ? Number(maxParticipants) : null,
         prize_pool_summary: prizePoolSummary.trim() || null,
       });
@@ -162,7 +164,7 @@ export default function ContestNew() {
         toast.error(t("instructorNew.toasts.slugMissing"));
         return;
       }
-      navigate(`/hackathons/${contest.slug}/manage`);
+      navigate(`/hackathons/${contest.slug}/manage/overview`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("instructorNew.toasts.createFailed"));
     } finally {
@@ -353,7 +355,7 @@ export default function ContestNew() {
                 </Field>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-3">
+              <div className="grid gap-4 lg:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="contest-starts-at">
                     {t("instructorNew.form.startsAtLabel")}
@@ -388,6 +390,21 @@ export default function ContestNew() {
                     value={registrationDeadline}
                     onChange={(e) => setRegistrationDeadline(e.target.value)}
                   />
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="contest-submission-deadline">
+                    {t("instructorNew.form.submissionDeadlineLabel")}
+                  </FieldLabel>
+                  <Input
+                    id="contest-submission-deadline"
+                    type="datetime-local"
+                    value={submissionDeadline}
+                    onChange={(e) => setSubmissionDeadline(e.target.value)}
+                  />
+                  <FieldDescription>
+                    {t("instructorNew.form.submissionDeadlineDescription")}
+                  </FieldDescription>
                 </Field>
               </div>
 

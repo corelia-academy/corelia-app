@@ -50,7 +50,31 @@
     "accountSettings": "Account settings"
   },
   "header": {
-    "publicProfile": "Public profile"
+    "publicProfile": "Public profile",
+    "notifications": "Notifications",
+    "notificationsAria": "Open notifications",
+    "noNotifications": "No notifications yet.",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+  "notifications": {
+    "projectInviteTitle": "Team invite",
+    "projectInviteBody": "You were invited to join a hackathon project.",
+    "projectInviteProjectLabel": "Project: {{title}}",
+    "projectInviteHackathonLabel": "Hackathon: {{title}}",
+    "openHackathon": "Open hackathon",
+    "inviteResolved": "Resolved",
+    "inviteAccepted": "You joined the project.",
+    "inviteDeclined": "Invite declined.",
+    "inviteAcceptFailed": "Could not accept invite.",
+    "inviteDeclineFailed": "Could not decline invite.",
+    "hackathonRegistrationApprovedTitle": "Registration approved",
+    "hackathonRegistrationApprovedBody": "Your application for {{hackathonTitle}} was approved.",
+    "hackathonRegistrationRejectedTitle": "Registration not approved",
+    "hackathonRegistrationRejectedBody": "Your application for {{hackathonTitle}} was not approved.",
+    "hackathonRegistrationReviewNote": "Note from reviewer: {{note}}",
+    "hackathonRegistrationFallbackTitle": "Hackathon",
+    "viewHackathon": "View hackathon"
   },
   "userProfile": {
     "tabs": {
@@ -114,6 +138,28 @@
     "demo": "Demo",
     "repo": "Repo",
     "slides": "Slides",
+    "sourceHackathon": "Hackathon",
+    "sourceCourse": "Course",
+    "sourceShowcase": "Showcase",
+    "social": {
+      "heart": "Like",
+      "unheart": "Unlike",
+      "commentsHeading": "Comments",
+      "commentsToggle": "Comments ({{count}})",
+      "placeholder": "Write a comment…",
+      "submit": "Post",
+      "loginToInteract": "Sign in to like or comment.",
+      "emptyComments": "No comments yet.",
+      "loadingComments": "Loading comments…",
+      "delete": "Remove comment",
+      "commentRemoved": "Comment removed.",
+      "commentEmpty": "Comment cannot be empty.",
+      "commentTooLong": "Comment is too long.",
+      "postFailed": "Could not post comment.",
+      "heartFailed": "Could not update like.",
+      "loadCommentsFailed": "Could not load comments.",
+      "deleteFailed": "Could not remove comment."
+    },
     "errors": {
       "loadFailed": "Could not load projects"
     }

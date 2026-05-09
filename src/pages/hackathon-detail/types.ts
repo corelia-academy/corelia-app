@@ -4,5 +4,4 @@ export type ContestPublicSection =
   | "prizes"
   | "rules"
   | "faqs"
-  | "projects"
-  | "apply";
+  | "projects";

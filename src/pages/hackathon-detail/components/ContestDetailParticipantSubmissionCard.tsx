@@ -2,6 +2,7 @@ import { CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
+import { ContestDetailSubmissionCollaboration } from "@/pages/hackathon-detail/components/ContestDetailSubmissionCollaboration";
 
 export function ContestDetailParticipantSubmissionCard({
   vm,
@@ -24,6 +25,7 @@ export function ContestDetailParticipantSubmissionCard({
     savingSubmission,
     handleSubmissionSave,
     mySubmission,
+    submissionWorkspaceEditable,
   } = vm;
 
   return (
@@ -44,10 +46,16 @@ export function ContestDetailParticipantSubmissionCard({
         </div>
 
         <div className="mt-4 space-y-4">
+          {!submissionWorkspaceEditable ? (
+            <div className="rounded-md border border-border-subtle bg-surface-raised px-4 py-3 text-sm text-foreground-muted">
+              {translate("detail.participant.submissionDeadlineLockedBanner")}
+            </div>
+          ) : null}
           <input
             value={submissionTitle}
             onChange={(e) => setSubmissionTitle(e.target.value)}
-            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+            disabled={!submissionWorkspaceEditable}
+            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
             placeholder={translate(
               "detail.forms.submission.titlePlaceholder",
             )}
@@ -56,7 +64,8 @@ export function ContestDetailParticipantSubmissionCard({
             rows={5}
             value={submissionSummary}
             onChange={(e) => setSubmissionSummary(e.target.value)}
-            className="min-h-32 w-full rounded-md border border-border bg-surface-base px-3 py-2 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+            disabled={!submissionWorkspaceEditable}
+            className="min-h-32 w-full rounded-md border border-border bg-surface-base px-3 py-2 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
             placeholder={translate(
               "detail.forms.submission.summaryPlaceholder",
             )}
@@ -64,7 +73,8 @@ export function ContestDetailParticipantSubmissionCard({
           <input
             value={submissionDemoUrl}
             onChange={(e) => setSubmissionDemoUrl(e.target.value)}
-            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+            disabled={!submissionWorkspaceEditable}
+            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
             placeholder={translate(
               "detail.forms.submission.demoUrlPlaceholder",
             )}
@@ -72,7 +82,8 @@ export function ContestDetailParticipantSubmissionCard({
           <input
             value={submissionRepoUrl}
             onChange={(e) => setSubmissionRepoUrl(e.target.value)}
-            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+            disabled={!submissionWorkspaceEditable}
+            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
             placeholder={translate(
               "detail.forms.submission.repoUrlPlaceholder",
             )}
@@ -80,7 +91,8 @@ export function ContestDetailParticipantSubmissionCard({
           <input
             value={submissionSlideUrl}
             onChange={(e) => setSubmissionSlideUrl(e.target.value)}
-            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+            disabled={!submissionWorkspaceEditable}
+            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
             placeholder={translate(
               "detail.forms.submission.slideUrlPlaceholder",
             )}
@@ -93,7 +105,11 @@ export function ContestDetailParticipantSubmissionCard({
           <Button
             type="button"
             className="w-full min-h-11"
-            disabled={savingSubmission || !submissionTitle.trim()}
+            disabled={
+              savingSubmission ||
+              !submissionWorkspaceEditable ||
+              !submissionTitle.trim()
+            }
             onClick={() => void handleSubmissionSave()}
           >
             {savingSubmission
@@ -105,6 +121,9 @@ export function ContestDetailParticipantSubmissionCard({
           <p className="text-xs leading-5 text-foreground-muted">
             {translate("detail.participant.submissionFooterHint")}
           </p>
+          <div className="mt-6 border-t border-border-subtle pt-6">
+            <ContestDetailSubmissionCollaboration vm={vm} />
+          </div>
         </div>
       </CardContent>
     </Card>

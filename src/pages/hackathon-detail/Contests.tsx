@@ -72,7 +72,7 @@ function CatalogGridSkeleton() {
 }
 
 export default function Contests() {
-  const { t } = useTranslation("contests");
+  const { t, i18n } = useTranslation("contests");
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
       String(t(key as never, options as never)),
@@ -118,7 +118,7 @@ export default function Contests() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- listContests gates on user; avoid object identity churn
-  }, [translate, user?.id, retryToken]);
+  }, [translate, user?.id, retryToken, i18n.language]);
 
   const isManager = canManageContests(profile);
   const canManageCatalog = canAccessContestManagementCatalog(profile);

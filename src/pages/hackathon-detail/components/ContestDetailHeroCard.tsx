@@ -162,7 +162,21 @@ export function ContestDetailHeroCard({
         ) : null}
 
         {isManageView && (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11"
+              onClick={() =>
+                navigate(
+                  contest.slug?.trim()
+                    ? `/hackathons/${contest.slug.trim()}/overview`
+                    : "/hackathons",
+                )
+              }
+            >
+              {translate("workspace.manage.viewPublicPage")}
+            </Button>
             {isManager && (
               <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
                 {translate("workspace.manage.roleCoreliaOps")}
@@ -187,7 +201,7 @@ export function ContestDetailHeroCard({
               statusLabel={vm.statusLabel(contest.status)}
               primaryAction={{
                 label: translate("previewBar.openWorkspace"),
-                to: contest.slug ? `/hackathons/${contest.slug}/manage` : "/hackathons/manage",
+                to: contest.slug ? `/hackathons/${contest.slug}/manage/overview` : "/hackathons/manage",
               }}
             />
             <Button
@@ -196,7 +210,7 @@ export function ContestDetailHeroCard({
               variant="outline"
               onClick={() =>
                 navigate(
-                  contest.slug ? `/hackathons/${contest.slug}/manage` : "/hackathons/manage",
+                  contest.slug ? `/hackathons/${contest.slug}/manage/overview` : "/hackathons/manage",
                 )
               }
             >

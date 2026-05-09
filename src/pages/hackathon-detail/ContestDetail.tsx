@@ -13,6 +13,7 @@ import { ContestDetailAnalyticsPanel } from "@/pages/hackathon-detail/components
 import { ContestDetailManageSectionTabs } from "@/pages/hackathon-detail/components/ContestDetailManageSectionTabs";
 import { ContestDetailMainLayout } from "@/pages/hackathon-detail/components/ContestDetailMainLayout";
 import { ContestDetailOverviewBlocks } from "@/pages/hackathon-detail/components/ContestDetailOverviewBlocks";
+import { ContestDetailTranslationsPanel } from "@/pages/hackathon-detail/components/ContestDetailTranslationsPanel";
 import { ContestDetailPublicSectionPage } from "@/pages/hackathon-detail/components/ContestDetailPublicSectionPage";
 import { ContestDetailResultsBlocks } from "@/pages/hackathon-detail/components/ContestDetailResultsBlocks";
 import { ContestDetailRightColumn } from "@/pages/hackathon-detail/components/ContestDetailRightColumn";
@@ -110,6 +111,7 @@ export default function ContestDetail({
           <ContestDetailApplicationsPanel vm={vm} />
           <ContestDetailJudgingPanel vm={vm} />
           <ContestDetailAnalyticsPanel vm={vm} />
+          <ContestDetailTranslationsPanel vm={vm} />
           <ContestDetailResultsBlocks vm={vm} />
         </ContestDetailProvider>
       }
@@ -130,7 +132,7 @@ export default function ContestDetail({
   );
 }
 
-/** Manage route `/hackathons/:id/manage` — avoids a separate wrapper module. */
+/** Manage route `/hackathons/:slug/manage/:section` — avoids a separate wrapper module. */
 export function ContestDetailManagePage() {
   return <ContestDetail forceManageView />;
 }

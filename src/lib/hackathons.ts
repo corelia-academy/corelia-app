@@ -1,7 +1,10 @@
+import { invokeCoreliaApi } from "@/lib/coreliaEdgeApi";
+import i18n from "@/i18n";
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
 import { deleteStorageObjectByPath } from "@/lib/storage";
 import { getProfileForUser } from "@/lib/profile";
+import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import {
   canManageContests,
   canReviewContestApplications,
@@ -12,6 +15,7 @@ import type {
   ContestAccessInvite,
   ContestAccessInviteInsert,
   ContestFaqEntry,
+  ContestI18nContent,
   ContestInsert,
   ContestLeaderboardEntry,
   ContestMetricsSnapshot,
@@ -33,7 +37,7 @@ import type {
   ContestWinnerInput,
 } from "@/types/hackathons";
 import type { User } from "@supabase/supabase-js";
-import type { Profile } from "@/types/database";
+import type { Locale, Profile } from "@/types/database";
 
 const PUBLIC_CONTEST_STATUSES: Contest["status"][] = ["published", "running", "ended"];
 
@@ -48,6 +52,9 @@ const listContestsInFlight = new Map<string, Promise<Contest[]>>();
 /** `ContestPublicLayout` + detail payload can overlap; collapse duplicate `getContest` rows. */
 const getContestByIdInFlight = new Map<string, Promise<Contest | null>>();
 const getContestBySlugInFlight = new Map<string, Promise<Contest | null>>();
+
+const LOCALE_CACHE_TTL = 5 * 60 * 1000;
+const hackathonLocaleCache = makeTTLCache<ContestI18nContent | null>(LOCALE_CACHE_TTL);
 
 function sanitizeSlug(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -75,6 +82,106 @@ export type PrefetchedContestActorContext = {
   viewer: User;
   profile: Profile | null;
 };
+
+function applyContestLocaleContent(contest: Contest, localized: ContestI18nContent | null): Contest {
+  if (!localized) return contest;
+  return {
+    ...contest,
+    title: localized.title ?? contest.title,
+    tagline: localized.tagline ?? contest.tagline,
+    description: localized.description ?? contest.description,
+    rules: localized.rules ?? contest.rules,
+    prize_pool_summary: localized.prize_pool_summary ?? contest.prize_pool_summary,
+    faqs: localized.faqs ?? contest.faqs,
+    timeline_milestones: localized.timeline_milestones ?? contest.timeline_milestones,
+    tracks: localized.tracks ? (localized.tracks as Contest["tracks"]) : contest.tracks,
+    rounds: localized.rounds ? (localized.rounds as Contest["rounds"]) : contest.rounds,
+  };
+}
+
+export async function getHackathonLocaleContent(
+  contestId: string,
+  locale: Locale,
+): Promise<ContestI18nContent | null> {
+  const normalized = normalizeContentLocale(locale);
+  const key = `${contestId}:${normalized}`;
+  const existing = hackathonLocaleCache.get(key);
+  if (existing) return existing;
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("hackathon_locales")
+      .select("data")
+      .eq("hackathon_id", contestId)
+      .eq("locale", normalized)
+      .maybeSingle();
+    if (error || !data?.data) return null;
+    return { ...(data.data as ContestI18nContent), updated_at: (data.data as ContestI18nContent).updated_at };
+  })();
+  hackathonLocaleCache.set(key, promise);
+  try {
+    return await promise;
+  } catch (e) {
+    hackathonLocaleCache.delete(key);
+    throw e;
+  }
+}
+
+export async function getBatchHackathonLocaleContent(
+  contestIds: string[],
+  locale: Locale,
+): Promise<Map<string, ContestI18nContent>> {
+  const normalized = normalizeContentLocale(locale);
+  const result = new Map<string, ContestI18nContent>();
+  const ids = Array.from(new Set(contestIds.map((v) => v.trim()).filter(Boolean)));
+  if (ids.length === 0) return result;
+
+  const uncachedIds: string[] = [];
+  for (const id of ids) {
+    const cached = hackathonLocaleCache.get(`${id}:${normalized}`);
+    if (cached) {
+      const content = await cached;
+      if (content) result.set(id, content);
+    } else {
+      uncachedIds.push(id);
+    }
+  }
+  if (uncachedIds.length === 0) return result;
+
+  const { data, error } = await supabase
+    .from("hackathon_locales")
+    .select("hackathon_id,data")
+    .in("hackathon_id", uncachedIds)
+    .eq("locale", normalized);
+
+  if (!error && data) {
+    for (const row of data as Array<{ hackathon_id: string; data: unknown }>) {
+      if (!row.data) continue;
+      const content = row.data as ContestI18nContent;
+      hackathonLocaleCache.set(`${row.hackathon_id}:${normalized}`, Promise.resolve(content));
+      result.set(row.hackathon_id, content);
+    }
+  }
+
+  return result;
+}
+
+export async function setHackathonLocaleContent(
+  contestId: string,
+  locale: Locale,
+  data: Partial<ContestI18nContent>,
+): Promise<void> {
+  const normalized = normalizeContentLocale(locale);
+  const payload = removeUndefinedFields({
+    ...data,
+    updated_at: new Date().toISOString(),
+  }) as Record<string, unknown>;
+  const { error } = await supabase.from("hackathon_locales").upsert(
+    { hackathon_id: contestId, locale: normalized, data: payload },
+    { onConflict: "hackathon_id,locale" },
+  );
+  if (error) throw new Error(error.message);
+  hackathonLocaleCache.delete(`${contestId}:${normalized}`);
+}
 
 function sanitizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -138,7 +245,7 @@ function contestInviteId(contestId: string, email: string): string {
   return `${contestId}_${sanitizeEmail(email)}`;
 }
 
-function contestSubmissionId(contestId: string, userId: string): string {
+export function contestSubmissionId(contestId: string, userId: string): string {
   return `${contestId}_${userId}`;
 }
 
@@ -210,6 +317,26 @@ function normalizeRounds(rounds: ContestRound[] | undefined): ContestRound[] {
   return cleaned.length > 0 ? cleaned : defaultRounds();
 }
 
+/** Effective ISO deadline for locking submissions; explicit `submission_deadline` or fallback `ends_at`. */
+export function getEffectiveContestSubmissionDeadline(
+  contest: Pick<Contest, "submission_deadline" | "ends_at">,
+): string | null {
+  const explicit = contest.submission_deadline?.trim();
+  if (explicit) return explicit;
+  const end = contest.ends_at?.trim();
+  return end || null;
+}
+
+export function isPastContestSubmissionDeadline(
+  contest: Pick<Contest, "submission_deadline" | "ends_at">,
+): boolean {
+  const iso = getEffectiveContestSubmissionDeadline(contest);
+  if (!iso) return false;
+  const ms = new Date(iso).getTime();
+  if (!Number.isFinite(ms)) return false;
+  return Date.now() > ms;
+}
+
 function normalizeContest(data: Contest): Contest {
   const rounds = normalizeRounds(data.rounds);
   const judgingActiveRoundId =
@@ -242,6 +369,7 @@ function normalizeContest(data: Contest): Contest {
     prizes: sanitizePrizeEntries(data.prizes),
     faqs: sanitizeFaqEntries(data.faqs),
     timeline_milestones: sanitizeTimelineMilestones(data.timeline_milestones ?? []),
+    submission_deadline: data.submission_deadline?.trim() || null,
   };
 }
 
@@ -281,14 +409,16 @@ function contestFromRow(row: {
 
 function registrationFromRow(row: {
   id: string;
-  contest_id: string;
+  hackathon_id?: string;
+  contest_id?: string;
   user_id: string;
   document: Record<string, unknown> | null;
 }): ContestRegistration {
   const d = row.document ?? {};
+  const contest_id = String(row.hackathon_id ?? row.contest_id ?? "");
   return normalizeRegistration({
     id: row.id,
-    contest_id: row.contest_id,
+    contest_id,
     user_id: row.user_id,
     ...d,
   } as ContestRegistration);
@@ -354,7 +484,14 @@ async function requireContestReviewer(
  * @param viewer - When provided (after auth init), skips `getUser()` (reduces auth lock contention).
  * Pass `null` for anonymous; omit only for legacy callers that must resolve the session internally.
  */
-export async function listContests(viewer?: User | null): Promise<Contest[]> {
+export async function listContests(viewer?: User | null): Promise<Contest[]>;
+export async function listContests(viewer: User | null, uiLocale: string | null): Promise<Contest[]>;
+export async function listContests(
+  viewer?: User | null,
+  uiLocale?: string | null,
+): Promise<Contest[]> {
+  const normalizedUiLocale = normalizeContentLocale(uiLocale ?? i18n.resolvedLanguage ?? i18n.language);
+
   let user: User | null = null;
   if (viewer === undefined) {
     const {
@@ -366,7 +503,7 @@ export async function listContests(viewer?: User | null): Promise<Contest[]> {
   }
   const profile = user ? await getProfileForUser(user).catch(() => null) : null;
   const isManager = canManageContests(profile);
-  const cacheKey = isManager ? "manager" : "public";
+  const cacheKey = `${isManager ? "manager" : "public"}:${normalizedUiLocale}`;
 
   const inflight = listContestsInFlight.get(cacheKey);
   if (inflight) return inflight;
@@ -384,7 +521,30 @@ export async function listContests(viewer?: User | null): Promise<Contest[]> {
     }
     const { data, error } = await q;
     if (error) throw new Error(error.message);
-    return (data ?? []).map((r) => contestFromRow(r as Parameters<typeof contestFromRow>[0]));
+    const contests = (data ?? []).map((r) =>
+      contestFromRow(r as Parameters<typeof contestFromRow>[0]),
+    );
+
+    const idsByLocale = new Map<Locale, string[]>();
+    for (const contest of contests) {
+      const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
+      const list = idsByLocale.get(desired) ?? [];
+      list.push(contest.id);
+      idsByLocale.set(desired, list);
+    }
+
+    const localeMaps = new Map<Locale, Map<string, ContestI18nContent>>();
+    await Promise.all(
+      Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
+        localeMaps.set(locale, await getBatchHackathonLocaleContent(ids, locale));
+      }),
+    );
+
+    return contests.map((contest) => {
+      const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
+      const localized = localeMaps.get(desired)?.get(contest.id) ?? null;
+      return applyContestLocaleContent(contest, localized);
+    });
   })();
 
   listContestsInFlight.set(cacheKey, promise);
@@ -418,8 +578,11 @@ export async function hasHackathonCoOrganizerAccess(email: string): Promise<bool
   return Array.isArray(data) && data.length > 0;
 }
 
-export async function getContest(contestId: string): Promise<Contest | null> {
-  const existing = getContestByIdInFlight.get(contestId);
+export async function getContest(contestId: string, uiLocale?: string | null): Promise<Contest | null> {
+  const normalizedUiLocale = normalizeContentLocale(uiLocale ?? i18n.resolvedLanguage ?? i18n.language);
+  const inflightKey = `${contestId}:${normalizedUiLocale}`;
+
+  const existing = getContestByIdInFlight.get(inflightKey);
   if (existing) return existing;
 
   const promise = (async () => {
@@ -429,24 +592,30 @@ export async function getContest(contestId: string): Promise<Contest | null> {
       .eq("id", contestId)
       .maybeSingle();
     if (error || !data) return null;
-    return contestFromRow(data as Parameters<typeof contestFromRow>[0]);
+    const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
+    const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
+    const localized = await getHackathonLocaleContent(contest.id, desired);
+    return applyContestLocaleContent(contest, localized);
   })();
 
-  getContestByIdInFlight.set(contestId, promise);
+  getContestByIdInFlight.set(inflightKey, promise);
   promise.finally(() => {
-    if (getContestByIdInFlight.get(contestId) === promise) {
-      getContestByIdInFlight.delete(contestId);
+    if (getContestByIdInFlight.get(inflightKey) === promise) {
+      getContestByIdInFlight.delete(inflightKey);
     }
   });
 
   return promise;
 }
 
-export async function getContestBySlug(slug: string): Promise<Contest | null> {
+export async function getContestBySlug(slug: string, uiLocale?: string | null): Promise<Contest | null> {
+  const normalizedUiLocale = normalizeContentLocale(uiLocale ?? i18n.resolvedLanguage ?? i18n.language);
+
   const normalized = sanitizeSlug(slug);
   if (!normalized) return null;
 
-  const existing = getContestBySlugInFlight.get(normalized);
+  const inflightKey = `${normalized}:${normalizedUiLocale}`;
+  const existing = getContestBySlugInFlight.get(inflightKey);
   if (existing) return existing;
 
   const promise = (async () => {
@@ -456,13 +625,16 @@ export async function getContestBySlug(slug: string): Promise<Contest | null> {
       .eq("document->>slug", normalized)
       .maybeSingle();
     if (error || !data) return null;
-    return contestFromRow(data as Parameters<typeof contestFromRow>[0]);
+    const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
+    const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
+    const localized = await getHackathonLocaleContent(contest.id, desired);
+    return applyContestLocaleContent(contest, localized);
   })();
 
-  getContestBySlugInFlight.set(normalized, promise);
+  getContestBySlugInFlight.set(inflightKey, promise);
   promise.finally(() => {
-    if (getContestBySlugInFlight.get(normalized) === promise) {
-      getContestBySlugInFlight.delete(normalized);
+    if (getContestBySlugInFlight.get(inflightKey) === promise) {
+      getContestBySlugInFlight.delete(inflightKey);
     }
   });
 
@@ -488,6 +660,7 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
     thumbnail_url: data.thumbnail_url ?? null,
     thumbnail_path: data.thumbnail_path ?? null,
     registration_deadline: data.registration_deadline ?? null,
+    submission_deadline: data.submission_deadline ?? null,
     max_participants: data.max_participants ?? null,
     judge_emails: sanitizeEmailList(data.judge_emails),
     co_organizer_emails: sanitizeEmailList(data.co_organizer_emails),
@@ -548,6 +721,7 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
     thumbnail_url: updates.thumbnail_url,
     thumbnail_path: updates.thumbnail_path,
     registration_deadline: updates.registration_deadline,
+    submission_deadline: updates.submission_deadline,
     max_participants: updates.max_participants,
     judge_emails: updates.judge_emails && sanitizeEmailList(updates.judge_emails),
     co_organizer_emails:
@@ -576,6 +750,7 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
       updates.timeline_milestones !== undefined
         ? sanitizeTimelineMilestones(updates.timeline_milestones)
         : undefined,
+    i18n: updates.i18n,
     updated_by: uid,
     updated_at: new Date().toISOString(),
   }) as Record<string, unknown>;
@@ -638,8 +813,6 @@ export async function registerForContest(
   const document = removeUndefinedFields({
     status: "pending" as const,
     motivation: input.motivation?.trim() || null,
-    team_name: input.team_name?.trim() || null,
-    team_members: sanitizeStringList(input.team_members),
     contact_email: input.contact_email?.trim() || user.email || profile?.email || null,
     contact_phone: input.contact_phone?.trim() || profile?.phone || null,
     portfolio_url: input.portfolio_url?.trim() || null,
@@ -696,7 +869,7 @@ export async function reviewContestRegistration(
   userId: string,
   input: ContestRegistrationReviewInput,
 ): Promise<void> {
-  const { uid } = await requireContestManager();
+  const user = await requireCurrentUser();
   await requireContestReviewer(contestId, undefined);
   const id = contestRegistrationId(contestId, userId);
   const { data: row, error: fe } = await supabase
@@ -711,7 +884,7 @@ export async function reviewContestRegistration(
     status: input.status,
     review_note: input.review_note?.trim() || null,
     reviewed_at: new Date().toISOString(),
-    reviewed_by: uid,
+    reviewed_by: user.id,
     updated_at: new Date().toISOString(),
   };
   const { error } = await supabase
@@ -719,6 +892,12 @@ export async function reviewContestRegistration(
     .update({ document: next })
     .eq("id", id);
   if (error) throw new Error(error.message);
+  if (input.status === "approved" || input.status === "rejected") {
+    void invokeCoreliaApi("hackathons.notifyRegistrationReview", {
+      hackathon_id: contestId,
+      applicant_user_id: userId,
+    });
+  }
 }
 
 export async function getMyContestAccessInvite(
@@ -934,6 +1113,10 @@ export async function upsertContestSubmission(
     throw new Error("Chỉ hồ sơ đã được duyệt mới có thể nộp bài.");
   }
 
+  if (isPastContestSubmissionDeadline(contest)) {
+    throw new Error("Đã quá hạn nộp và chỉnh sửa bài (submission deadline).");
+  }
+
   const existing = await getMyContestSubmission(contestId, user);
   const now = new Date().toISOString();
   const submissionId = contestSubmissionId(contestId, user.id);
@@ -941,8 +1124,8 @@ export async function upsertContestSubmission(
   const displayId = existing?.display_id ?? generateDisplayId();
   const document = removeUndefinedFields({
     registration_id: registration.id,
-    team_name: registration.team_name ?? null,
-    team_members: registration.team_members ?? [],
+    team_name: existing?.team_name ?? null,
+    team_members: Array.isArray(existing?.team_members) ? existing.team_members : [],
     contestant_name:
       registration.user_full_name ?? (user.user_metadata?.full_name as string) ?? null,
     track_id: existing?.track_id ?? trackId,
@@ -993,7 +1176,13 @@ export async function listContestSubmissions(
     return (data ?? [])
       .map((row) => {
         const d = row.document as Record<string, unknown>;
-        return { id: row.id, contest_id: row.contest_id, user_id: row.user_id, ...d } as ContestSubmission;
+        const hid = getHackathonIdFromRow(row as unknown as Record<string, unknown>);
+        return {
+          id: row.id,
+          contest_id: hid ?? contestId,
+          user_id: row.user_id,
+          ...d,
+        } as ContestSubmission;
       })
       .sort((a, b) => String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")));
   }
@@ -1013,7 +1202,13 @@ export async function listContestSubmissions(
   return (data ?? [])
     .map((row) => {
       const d = row.document as Record<string, unknown>;
-      return { id: row.id, contest_id: row.contest_id, user_id: row.user_id, ...d } as ContestSubmission;
+      const hid = getHackathonIdFromRow(row as unknown as Record<string, unknown>);
+      return {
+        id: row.id,
+        contest_id: hid ?? contestId,
+        user_id: row.user_id,
+        ...d,
+      } as ContestSubmission;
     })
     .sort((a, b) => String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")));
 }

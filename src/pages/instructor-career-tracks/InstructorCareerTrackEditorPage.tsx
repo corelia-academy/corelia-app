@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { ArrowDown, ArrowUp, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, Plus, Save, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
@@ -13,11 +13,35 @@ import type { Course } from "@/types/courses";
 import type { CareerTrackDetail } from "@/types/career";
 import {
   createInstructorCareerTrack,
+  getCareerTrackLocaleContent,
   listCareerTracksForInstructor,
   setInstructorCareerTrackCourses,
+  setCareerTrackLocaleContent,
   updateInstructorCareerTrack,
   type CareerTrackUpsertInput,
 } from "@/lib/careerTracks";
+import type { Locale } from "@/types/database";
+import type { EntityI18nConfig } from "@/types/entityLocales";
+
+function normalizeLocale(value: string | null | undefined): Locale {
+  return value === "en" ? "en" : "vi";
+}
+
+function defaultI18nConfig(): EntityI18nConfig {
+  return { supported_locales: ["vi", "en"], primary_content_locale: "vi" };
+}
+
+function configSupportedLocales(config: EntityI18nConfig | null | undefined): Locale[] {
+  const list = config?.supported_locales;
+  const fallback: Locale[] = ["vi", "en"];
+  const supported =
+    Array.isArray(list) && list.length ? list.map(normalizeLocale) : fallback;
+  return Array.from(new Set<Locale>(supported));
+}
+
+function configPrimaryLocale(config: EntityI18nConfig | null | undefined): Locale {
+  return normalizeLocale(config?.primary_content_locale);
+}
 
 function splitLines(value: string): string[] {
   return value
@@ -38,7 +62,7 @@ export default function InstructorCareerTrackEditorPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
-  const [, setTrack] = useState<CareerTrackDetail | null>(null);
+  const [track, setTrack] = useState<CareerTrackDetail | null>(null);
   const [form, setForm] = useState({
     title: "",
     slug: "",
@@ -50,6 +74,22 @@ export default function InstructorCareerTrackEditorPage() {
   });
   const [courseIds, setCourseIds] = useState<string[]>([]);
   const [courseToAdd, setCourseToAdd] = useState<string>("");
+
+  // Localization settings (phase 2)
+  const [i18nConfigDraft, setI18nConfigDraft] = useState<EntityI18nConfig>(defaultI18nConfig());
+  const [savingI18nConfig, setSavingI18nConfig] = useState(false);
+  const [targetLocale, setTargetLocale] = useState<Locale>("en");
+  const [translationDraft, setTranslationDraft] = useState({
+    title: "",
+    description: "",
+    whatYoullLearnText: "",
+    prerequisitesText: "",
+  });
+  const [translationLoadedAt, setTranslationLoadedAt] = useState<string | null>(null);
+  const [savingTranslation, setSavingTranslation] = useState(false);
+  const [translationError, setTranslationError] = useState<string | null>(null);
+  const translationInitialRef = useRef<string>("");
+  const [translationDirty, setTranslationDirty] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,6 +117,15 @@ export default function InstructorCareerTrackEditorPage() {
           setError(t("careerTracks.errors.notFound"));
           return;
         }
+        const config = (found.i18n ?? defaultI18nConfig()) as EntityI18nConfig;
+        const normalizedConfig: EntityI18nConfig = {
+          supported_locales: configSupportedLocales(config),
+          primary_content_locale: configPrimaryLocale(config),
+        };
+        setI18nConfigDraft(normalizedConfig);
+        const primary = configPrimaryLocale(normalizedConfig);
+        setTargetLocale(primary === "vi" ? "en" : "vi");
+
         setForm({
           title: found.title ?? "",
           slug: found.slug ?? "",
@@ -98,6 +147,84 @@ export default function InstructorCareerTrackEditorPage() {
       cancelled = true;
     };
   }, [id, isNew, profile?.id, t]);
+
+  const primaryLocale = useMemo(
+    () => configPrimaryLocale(i18nConfigDraft),
+    [i18nConfigDraft],
+  );
+  const supportedLocales = useMemo(
+    () => configSupportedLocales(i18nConfigDraft),
+    [i18nConfigDraft],
+  );
+  const targetSupported = supportedLocales.includes(targetLocale);
+
+  const primarySnapshot = useMemo(() => {
+    // For instructor-owned tracks, the base columns act as the primary content.
+    return {
+      title: form.title,
+      description: form.description,
+      whatYoullLearnText: form.whatYoullLearnText,
+      prerequisitesText: form.prerequisitesText,
+    };
+  }, [form]);
+
+  useEffect(() => {
+    if (!track?.id) return;
+    if (targetLocale === primaryLocale) {
+      // Editing primary content already happens in the main form.
+      setTranslationDraft({
+        title: primarySnapshot.title,
+        description: primarySnapshot.description,
+        whatYoullLearnText: primarySnapshot.whatYoullLearnText,
+        prerequisitesText: primarySnapshot.prerequisitesText,
+      });
+      setTranslationLoadedAt(null);
+      translationInitialRef.current = JSON.stringify({
+        title: primarySnapshot.title,
+        description: primarySnapshot.description,
+        whatYoullLearnText: primarySnapshot.whatYoullLearnText,
+        prerequisitesText: primarySnapshot.prerequisitesText,
+      });
+      setTranslationDirty(false);
+      setTranslationError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setTranslationError(null);
+    setTranslationDirty(false);
+    void (async () => {
+      try {
+        const content = await getCareerTrackLocaleContent(track.id, targetLocale);
+        if (cancelled) return;
+        const next = {
+          title: String(content?.title ?? ""),
+          description: String(content?.description ?? ""),
+          whatYoullLearnText: Array.isArray(content?.what_youll_learn)
+            ? (content?.what_youll_learn ?? []).join("\n")
+            : "",
+          prerequisitesText: Array.isArray(content?.prerequisites)
+            ? (content?.prerequisites ?? []).join("\n")
+            : "",
+        };
+        setTranslationDraft(next);
+        translationInitialRef.current = JSON.stringify(next);
+        setTranslationLoadedAt((content as { updated_at?: string } | null)?.updated_at ?? null);
+      } catch (e) {
+        if (!cancelled) {
+          setTranslationError(e instanceof Error ? e.message : t("careerTracks.errors.loadFailed"));
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [primaryLocale, primarySnapshot, t, targetLocale, track?.id]);
+
+  useEffect(() => {
+    const next = JSON.stringify(translationDraft);
+    setTranslationDirty(next !== translationInitialRef.current);
+  }, [translationDraft]);
 
   const availableById = useMemo(() => {
     const map = new Map<string, Course>();
@@ -147,6 +274,7 @@ export default function InstructorCareerTrackEditorPage() {
         prerequisites: splitLines(form.prerequisitesText),
         has_certificate: form.hasCertificate,
         published: form.published,
+        i18n: i18nConfigDraft,
       };
       if (!payload.title || !payload.slug) {
         throw new Error(t("careerTracks.errors.missingRequired"));
@@ -168,6 +296,56 @@ export default function InstructorCareerTrackEditorPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleSaveLocalizationSettings() {
+    if (!id) return;
+    setSavingI18nConfig(true);
+    setError(null);
+    try {
+      const normalized: EntityI18nConfig = {
+        supported_locales: configSupportedLocales(i18nConfigDraft),
+        primary_content_locale: configPrimaryLocale(i18nConfigDraft),
+      };
+      await updateInstructorCareerTrack(id, { i18n: normalized });
+      setI18nConfigDraft(normalized);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("careerTracks.errors.saveFailed"));
+    } finally {
+      setSavingI18nConfig(false);
+    }
+  }
+
+  async function handleSaveTranslation() {
+    if (!track?.id) return;
+    if (!targetSupported) return;
+    if (targetLocale === primaryLocale) return;
+    setSavingTranslation(true);
+    setTranslationError(null);
+    try {
+      await setCareerTrackLocaleContent(track.id, targetLocale, {
+        title: translationDraft.title.trim() || undefined,
+        description: translationDraft.description.trim() || undefined,
+        what_youll_learn: splitLines(translationDraft.whatYoullLearnText),
+        prerequisites: splitLines(translationDraft.prerequisitesText),
+      });
+      translationInitialRef.current = JSON.stringify(translationDraft);
+      setTranslationDirty(false);
+      setTranslationLoadedAt(new Date().toISOString());
+    } catch (e) {
+      setTranslationError(e instanceof Error ? e.message : t("careerTracks.errors.saveFailed"));
+    } finally {
+      setSavingTranslation(false);
+    }
+  }
+
+  function copyAllFromPrimary() {
+    setTranslationDraft({
+      title: primarySnapshot.title,
+      description: primarySnapshot.description,
+      whatYoullLearnText: primarySnapshot.whatYoullLearnText,
+      prerequisitesText: primarySnapshot.prerequisitesText,
+    });
   }
 
   if (loading) {
@@ -296,6 +474,64 @@ export default function InstructorCareerTrackEditorPage() {
               </div>
             </Field>
 
+            {!isNew && id ? (
+              <>
+                <FieldSeparator>Localization</FieldSeparator>
+                <Field>
+                  <FieldLabel>Primary content locale</FieldLabel>
+                  <FieldDescription>
+                    Used as fallback when a translation is missing.
+                  </FieldDescription>
+                  <select
+                    className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    value={primaryLocale}
+                    onChange={(e) =>
+                      setI18nConfigDraft((p) => ({
+                        ...p,
+                        primary_content_locale: normalizeLocale(e.target.value),
+                      }))
+                    }
+                  >
+                    <option value="vi">vi</option>
+                    <option value="en">en</option>
+                  </select>
+                </Field>
+
+                <Field>
+                  <FieldLabel>Supported locales</FieldLabel>
+                  <div className="mt-2 flex flex-wrap gap-3 rounded-md border border-border-subtle bg-surface-raised p-3 text-sm">
+                    {(["vi", "en"] as const).map((lng) => (
+                      <label key={lng} className="inline-flex items-center gap-2 text-foreground">
+                        <input
+                          type="checkbox"
+                          checked={supportedLocales.includes(lng)}
+                          onChange={(e) => {
+                            setI18nConfigDraft((prev) => {
+                              const next = new Set(configSupportedLocales(prev));
+                              if (e.target.checked) next.add(lng);
+                              else next.delete(lng);
+                              return { ...prev, supported_locales: Array.from(next) };
+                            });
+                          }}
+                        />
+                        {lng}
+                      </label>
+                    ))}
+                  </div>
+                </Field>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={savingI18nConfig}
+                  onClick={() => void handleSaveLocalizationSettings()}
+                >
+                  {savingI18nConfig ? t("careerTracks.actions.saving") : "Save localization settings"}
+                </Button>
+              </>
+            ) : null}
+
             <FieldSeparator>{t("careerTracks.sections.includedCourses")}</FieldSeparator>
 
             <Field>
@@ -372,6 +608,142 @@ export default function InstructorCareerTrackEditorPage() {
           </FieldGroup>
         </PageSectionCard>
       </div>
+
+      {!isNew && id && track ? (
+        <PageSectionCard className="mt-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Translations</h2>
+              <p className="mt-1 text-sm text-foreground-muted">
+                Translate your career track content. Empty fields fall back to the primary locale ({primaryLocale}).
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <select
+                className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                value={targetLocale}
+                onChange={(e) => setTargetLocale(normalizeLocale(e.target.value))}
+              >
+                <option value="vi">vi</option>
+                <option value="en">en</option>
+              </select>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={targetLocale === primaryLocale}
+                onClick={copyAllFromPrimary}
+              >
+                <Copy className="size-4" aria-hidden />
+                Copy from primary
+              </Button>
+              <Button
+                type="button"
+                disabled={!targetSupported || targetLocale === primaryLocale || savingTranslation || !translationDirty}
+                onClick={() => void handleSaveTranslation()}
+              >
+                <Save className="size-4" aria-hidden />
+                {savingTranslation ? "Saving…" : "Save translation"}
+              </Button>
+            </div>
+          </div>
+
+          {!targetSupported ? (
+            <div className="mt-3 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+              Target locale <b>{targetLocale}</b> is not enabled in supported locales.
+            </div>
+          ) : null}
+          {translationError ? (
+            <div className="mt-3 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+              {translationError}
+            </div>
+          ) : null}
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <div className="rounded-lg border border-border-subtle bg-surface-raised p-4">
+              <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
+                Primary ({primaryLocale})
+              </div>
+              <div className="mt-3 space-y-3 text-sm">
+                <div>
+                  <div className="text-xs font-medium text-foreground-muted">Title</div>
+                  <div className="mt-1 whitespace-pre-wrap text-foreground">{primarySnapshot.title || "—"}</div>
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-foreground-muted">Description</div>
+                  <div className="mt-1 whitespace-pre-wrap text-foreground-muted">{primarySnapshot.description || "—"}</div>
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-foreground-muted">What you’ll learn</div>
+                  <div className="mt-1 whitespace-pre-wrap text-foreground-muted">{primarySnapshot.whatYoullLearnText || "—"}</div>
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-foreground-muted">Prerequisites</div>
+                  <div className="mt-1 whitespace-pre-wrap text-foreground-muted">{primarySnapshot.prerequisitesText || "—"}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
+                  Translation ({targetLocale})
+                </div>
+                <div className="text-xs text-foreground-muted">
+                  {translationLoadedAt ? `Updated: ${new Date(translationLoadedAt).toLocaleString()}` : null}
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <div>
+                  <div className="text-xs font-medium text-foreground-muted">Title</div>
+                  <Input
+                    value={translationDraft.title}
+                    onChange={(e) => setTranslationDraft((p) => ({ ...p, title: e.target.value }))}
+                    placeholder={primarySnapshot.title ? `Fallback: ${primarySnapshot.title}` : "Enter title"}
+                    disabled={!targetSupported || targetLocale === primaryLocale}
+                  />
+                </div>
+
+                <div>
+                  <div className="text-xs font-medium text-foreground-muted">Description</div>
+                  <textarea
+                    value={translationDraft.description}
+                    onChange={(e) => setTranslationDraft((p) => ({ ...p, description: e.target.value }))}
+                    rows={5}
+                    className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    placeholder={primarySnapshot.description ? "Fallback to primary if empty" : "Enter description"}
+                    disabled={!targetSupported || targetLocale === primaryLocale}
+                  />
+                </div>
+
+                <div>
+                  <div className="text-xs font-medium text-foreground-muted">What you’ll learn (one per line)</div>
+                  <textarea
+                    value={translationDraft.whatYoullLearnText}
+                    onChange={(e) => setTranslationDraft((p) => ({ ...p, whatYoullLearnText: e.target.value }))}
+                    rows={6}
+                    className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    placeholder="Fallback to primary if empty"
+                    disabled={!targetSupported || targetLocale === primaryLocale}
+                  />
+                </div>
+
+                <div>
+                  <div className="text-xs font-medium text-foreground-muted">Prerequisites (one per line)</div>
+                  <textarea
+                    value={translationDraft.prerequisitesText}
+                    onChange={(e) => setTranslationDraft((p) => ({ ...p, prerequisitesText: e.target.value }))}
+                    rows={5}
+                    className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    placeholder="Fallback to primary if empty"
+                    disabled={!targetSupported || targetLocale === primaryLocale}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </PageSectionCard>
+      ) : null}
     </PageContainer>
   );
 }

@@ -36,8 +36,10 @@ export function deriveContestDetailPermissions({
   const canJudge = canScoreContest(contest, profile, userEmail);
   const canViewAggregate = canViewContestAggregateMetrics(contest, profile, userEmail);
   const viewerRoles = getContestScopedViewerRoles(contest, userEmail);
-  const isManageView = forceManageView ?? pathname.endsWith("/manage");
-  const canAccessWorkspace = isManager || canJudge || canViewAggregate;
+  const isHackathonManagePath = /^\/hackathons\/[^/]+\/manage(?:\/|$)/.test(pathname);
+  const isManageView = forceManageView ?? isHackathonManagePath;
+  const canAccessWorkspace =
+    isManager || canJudge || canViewAggregate || canReview;
 
   return {
     isManager,

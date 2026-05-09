@@ -10,6 +10,8 @@ export type CareerTrack = {
   what_youll_learn: string[];
   prerequisites: string[];
   has_certificate: boolean;
+  /** Text-only content localization config */
+  i18n?: import("@/types/entityLocales").EntityI18nConfig;
   published?: boolean;
   created_at?: string;
   updated_at?: string;

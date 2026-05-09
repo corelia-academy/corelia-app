@@ -1,17 +1,21 @@
 import { supabase } from "@/lib/supabase";
 import { makeTTLCache } from "@/lib/utils";
 import { getPublicProfileByHandle } from "@/lib/profile";
+import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import type {
   CareerTrack,
   CareerTrackDetail,
   CareerTrackIncludedCourse,
 } from "@/types/career";
 import type { Course } from "@/types/courses";
-import type { PublicProfile } from "@/types/database";
+import type { Locale, PublicProfile } from "@/types/database";
 
 const CATALOG_CACHE_TTL = 3 * 60 * 1000;
 const tracksListCache = makeTTLCache<CareerTrackDetail[]>(CATALOG_CACHE_TTL);
 const trackBySlugCache = makeTTLCache<CareerTrackDetail | null>(CATALOG_CACHE_TTL);
+
+const LOCALE_CACHE_TTL = 5 * 60 * 1000;
+const careerTrackLocaleCache = makeTTLCache<Partial<CareerTrack> | null>(LOCALE_CACHE_TTL);
 
 type CareerTrackRow = CareerTrack;
 type CareerTrackCourseRow = {
@@ -135,8 +139,109 @@ async function computeDetail(
   };
 }
 
-export async function listCareerTracks(): Promise<CareerTrackDetail[]> {
-  const cached = tracksListCache.get("all");
+function applyCareerTrackLocaleContent(
+  track: CareerTrackDetail,
+  localized: Partial<Pick<CareerTrack, "title" | "description" | "what_youll_learn" | "prerequisites">> | null,
+): CareerTrackDetail {
+  if (!localized) return track;
+  return {
+    ...track,
+    title: localized.title ?? track.title,
+    description: localized.description ?? track.description,
+    what_youll_learn: localized.what_youll_learn ?? track.what_youll_learn,
+    prerequisites: localized.prerequisites ?? track.prerequisites,
+  };
+}
+
+export async function getCareerTrackLocaleContent(
+  trackId: string,
+  locale: Locale,
+): Promise<Partial<CareerTrack> | null> {
+  const normalized = normalizeContentLocale(locale);
+  const key = `${trackId}:${normalized}`;
+  const existing = careerTrackLocaleCache.get(key);
+  if (existing) return existing;
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("career_track_locales")
+      .select("data")
+      .eq("career_track_id", trackId)
+      .eq("locale", normalized)
+      .maybeSingle();
+    if (error || !data?.data) return null;
+    return data.data as Partial<CareerTrack>;
+  })();
+  careerTrackLocaleCache.set(key, promise);
+  try {
+    return await promise;
+  } catch (e) {
+    careerTrackLocaleCache.delete(key);
+    throw e;
+  }
+}
+
+export async function getBatchCareerTrackLocaleContent(
+  trackIds: string[],
+  locale: Locale,
+): Promise<Map<string, Partial<CareerTrack>>> {
+  const normalized = normalizeContentLocale(locale);
+  const result = new Map<string, Partial<CareerTrack>>();
+  const ids = Array.from(new Set(trackIds.map((v) => v.trim()).filter(Boolean)));
+  if (ids.length === 0) return result;
+
+  const uncachedIds: string[] = [];
+  for (const id of ids) {
+    const cached = careerTrackLocaleCache.get(`${id}:${normalized}`);
+    if (cached) {
+      const content = await cached;
+      if (content) result.set(id, content);
+    } else {
+      uncachedIds.push(id);
+    }
+  }
+  if (uncachedIds.length === 0) return result;
+
+  const { data, error } = await supabase
+    .from("career_track_locales")
+    .select("career_track_id,data")
+    .in("career_track_id", uncachedIds)
+    .eq("locale", normalized);
+
+  if (!error && data) {
+    for (const row of data as Array<{ career_track_id: string; data: unknown }>) {
+      if (!row.data) continue;
+      const content = row.data as Partial<CareerTrack>;
+      careerTrackLocaleCache.set(`${row.career_track_id}:${normalized}`, Promise.resolve(content));
+      result.set(row.career_track_id, content);
+    }
+  }
+
+  return result;
+}
+
+export async function setCareerTrackLocaleContent(
+  trackId: string,
+  locale: Locale,
+  data: Partial<Pick<CareerTrack, "title" | "description" | "what_youll_learn" | "prerequisites">>,
+): Promise<void> {
+  const normalized = normalizeContentLocale(locale);
+  const payload = {
+    ...data,
+    updated_at: new Date().toISOString(),
+  } as Record<string, unknown>;
+  const { error } = await supabase.from("career_track_locales").upsert(
+    { career_track_id: trackId, locale: normalized, data: payload },
+    { onConflict: "career_track_id,locale" },
+  );
+  if (error) throw new Error(error.message);
+  careerTrackLocaleCache.delete(`${trackId}:${normalized}`);
+}
+
+export async function listCareerTracks(uiLocale?: string | null): Promise<CareerTrackDetail[]> {
+  const normalizedUiLocale = normalizeContentLocale(uiLocale);
+  const cacheKey = `all:${normalizedUiLocale}`;
+
+  const cached = tracksListCache.get(cacheKey);
   if (cached) return cached;
 
   const promise = (async () => {
@@ -148,6 +253,7 @@ export async function listCareerTracks(): Promise<CareerTrackDetail[]> {
           owner_scope,
           instructor_id,
           published,
+          i18n,
           slug,
           title,
           description,
@@ -189,23 +295,46 @@ export async function listCareerTracks(): Promise<CareerTrackDetail[]> {
     );
   })();
 
-  tracksListCache.set("all", promise);
-  promise.catch(() => tracksListCache.delete("all"));
-  return promise;
+  tracksListCache.set(cacheKey, promise);
+  promise.catch(() => tracksListCache.delete(cacheKey));
+  const list = await promise;
+
+  // Apply localized content (preferred UI locale) if available.
+  const idsByLocale = new Map<Locale, string[]>();
+  for (const track of list) {
+    const desired = pickContentLocale(track.i18n ?? null, normalizedUiLocale);
+    const ids = idsByLocale.get(desired) ?? [];
+    ids.push(track.id);
+    idsByLocale.set(desired, ids);
+  }
+  const localeMaps = new Map<Locale, Map<string, Partial<CareerTrack>>>();
+  await Promise.all(
+    Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
+      localeMaps.set(locale, await getBatchCareerTrackLocaleContent(ids, locale));
+    }),
+  );
+  return list.map((track) => {
+    const desired = pickContentLocale(track.i18n ?? null, normalizedUiLocale);
+    const localized = localeMaps.get(desired)?.get(track.id) ?? null;
+    return applyCareerTrackLocaleContent(track, localized);
+  });
 }
 
 export async function getCareerTrackBySlug(
   opts:
     | { owner_scope: "corelia"; slug: string }
     | { owner_scope: "instructor"; handle: string; slug: string },
+  uiLocale?: string | null,
 ): Promise<CareerTrackDetail | null> {
+  const normalizedUiLocale = normalizeContentLocale(uiLocale);
+
   const normalizedSlug = opts.slug.trim();
   if (!normalizedSlug) return null;
 
   const cacheKey =
     opts.owner_scope === "corelia"
-      ? `corelia:${normalizedSlug}`
-      : `instructor:${opts.handle.trim().toLowerCase()}:${normalizedSlug}`;
+      ? `corelia:${normalizedSlug}:${normalizedUiLocale}`
+      : `instructor:${opts.handle.trim().toLowerCase()}:${normalizedSlug}:${normalizedUiLocale}`;
 
   const cached = trackBySlugCache.get(cacheKey);
   if (cached) return cached;
@@ -228,6 +357,7 @@ export async function getCareerTrackBySlug(
           owner_scope,
           instructor_id,
           published,
+          i18n,
           slug,
           title,
           description,
@@ -255,11 +385,14 @@ export async function getCareerTrackBySlug(
     };
     const { career_track_courses, ...track } = row;
     const detail = await computeDetail(track, career_track_courses ?? []);
-    return {
+    const resolved: CareerTrackDetail = {
       ...detail,
       instructorHandle:
         detail.owner_scope === "instructor" ? instructorHandle : null,
     };
+    const desired = pickContentLocale(resolved.i18n ?? null, normalizedUiLocale);
+    const localized = await getCareerTrackLocaleContent(resolved.id, desired);
+    return applyCareerTrackLocaleContent(resolved, localized);
   })();
 
   trackBySlugCache.set(cacheKey, promise);
@@ -285,6 +418,7 @@ export type CareerTrackUpsertInput = Pick<
   | "what_youll_learn"
   | "prerequisites"
   | "has_certificate"
+  | "i18n"
 > & { published?: boolean };
 
 export async function listCareerTracksForInstructor(): Promise<CareerTrackDetail[]> {
@@ -297,6 +431,7 @@ export async function listCareerTracksForInstructor(): Promise<CareerTrackDetail
         owner_scope,
         instructor_id,
         published,
+        i18n,
         slug,
         title,
         description,
@@ -344,6 +479,7 @@ export async function createInstructorCareerTrack(
     what_youll_learn: input.what_youll_learn ?? [],
     prerequisites: input.prerequisites ?? [],
     has_certificate: Boolean(input.has_certificate),
+    i18n: input.i18n ?? null,
     updated_at: new Date().toISOString(),
   };
 
@@ -356,6 +492,7 @@ export async function createInstructorCareerTrack(
         owner_scope,
         instructor_id,
         published,
+        i18n,
         slug,
         title,
         description,
@@ -389,6 +526,7 @@ export async function updateInstructorCareerTrack(
   if (Array.isArray(patch.prerequisites)) updates.prerequisites = patch.prerequisites;
   if (typeof patch.has_certificate === "boolean") updates.has_certificate = patch.has_certificate;
   if (typeof patch.published === "boolean") updates.published = patch.published;
+  if (patch.i18n !== undefined) updates.i18n = patch.i18n;
 
   const { error } = await supabase
     .from("career_tracks")

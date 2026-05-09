@@ -58,8 +58,8 @@ export function useHomeCatalogAndContests() {
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when user id changes
-  }, [user?.id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when user id or ui locale changes
+  }, [user?.id, i18n.language]);
 
   return { courseCatalog, contests };
 }

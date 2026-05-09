@@ -273,6 +273,8 @@
       "addMilestoneRow": "Add milestone",
       "milestoneTitlePlaceholder": "Event title",
       "milestoneAtLabel": "Date & time",
+      "submissionDeadlineLabel": "Submission deadline",
+      "submissionDeadlineHint": "Last moment participants can create or edit their submission (mirrored to the public project showcase). Leave empty to use the contest end time.",
       "faqQuestionPlaceholder": "Question",
       "faqAnswerPlaceholder": "Answer",
       "prizeRankPlaceholder": "e.g. 1st place",
@@ -448,6 +450,8 @@
       "startsAtLabel": "Starts",
       "endsAtLabel": "Ends",
       "registrationDeadlineLabel": "Registration deadline",
+      "submissionDeadlineLabel": "Submission deadline (optional)",
+      "submissionDeadlineDescription": "When submissions lock for participants. If empty, locks at contest end time.",
       "maxParticipantsLabel": "Approved applications limit",
       "maxParticipantsPlaceholder": "Leave blank for no limit",
       "maxParticipantsDescription": "If you need to cap participants/teams, set a limit here.",
@@ -615,8 +619,7 @@
         "prizes": "Prizes",
         "rules": "Rules",
         "faqs": "FAQs",
-        "projects": "Projects",
-        "apply": "Apply"
+        "projects": "Projects"
       },
       "infoCards": {
         "reviewTitle": "Application review",
@@ -655,6 +658,7 @@
     "participant": {
       "submissionWorkspaceTitle": "Submission workspace",
       "submissionWorkspaceApprovedBody": "Your application was approved. You can submit and update your submission here.",
+      "submissionDeadlineLockedBanner": "The submission deadline has passed. Your submission and linked project card are read-only.",
       "submissionDirtyWarning": "You have unsaved changes. Leaving now may lose your latest edits.",
       "submissionFooterHint": "Use a clear title, a detailed summary, and at least one demo or repo link when ready.",
       "applicationCardTitle": "Your application",
@@ -666,7 +670,45 @@
       "extraMembersCount": "{{count}} additional members",
       "soloMembersHint": "Leave empty if registering solo.",
       "postSubmitHint": "After submitting, your application will be pending review. You can submit work only after Corelia approves you.",
-      "draftNotReadyHint": "Please add a contact email and a clear motivation before submitting."
+      "quickRegisterIntro": "One tap sends your Corelia profile to this hackathon for review (signed in as {{email}}), similar to enrolling in a course.",
+      "profileAttachedHint": "Contact email, phone, and portfolio links come from your account profile. Update them in account settings if needed.",
+      "quickRegisterNeedsEmail": "Your account needs an email address before you can register. Add one in account settings or sign in with a provider that shares email.",
+      "quickRegisterNameLine": "Profile name on file: {{name}}",
+      "registerOneClickCta": "Register with my profile",
+      "optionalNoteSummary": "Optional: note for reviewers",
+      "draftNotReadyHint": "We could not find an email on your account. Add one under account settings, then try again.",
+      "teamViaInvitesHint": "Teammates must each apply and be approved. After you save a submission, invite approved participants from your submission workspace — they accept via notifications or your invite link."
+    },
+    "inviteProject": {
+      "title": "Project invitation",
+      "description": "Accept to join the team on this hackathon project.",
+      "loginRequired": "Please sign in to respond to this invite.",
+      "invalid": "This invite is invalid or has expired.",
+      "accepted": "You have joined the project.",
+      "declined": "You declined the invite.",
+      "errorFallback": "Something went wrong.",
+      "ctaLogin": "Sign in",
+      "ctaAccept": "Accept",
+      "ctaDecline": "Decline"
+    },
+    "collaboration": {
+      "sectionTitle": "Team invitations",
+      "sectionBody": "Only hackathon participants with an approved application can be invited. They must accept the invite to join your project.",
+      "leadLine": "You are the project owner for this submission.",
+      "saveSubmissionFirst": "Save your submission once to create the project, then you can invite teammates.",
+      "searchLabel": "Find approved participants",
+      "searchPlaceholder": "Search by name or username",
+      "pickTitle": "Invite a teammate",
+      "pickDescription": "Choose someone who is approved for this hackathon. An invite link will be copied to your clipboard to share.",
+      "pickPlaceholder": "Open directory…",
+      "pickSearchPlaceholder": "Filter in directory",
+      "pickEmpty": "No matching approved participants.",
+      "unnamedUser": "Participant",
+      "pendingInvites": "Pending invites",
+      "revokeInvite": "Revoke",
+      "members": "Accepted teammates",
+      "removeMember": "Remove",
+      "youContributor": "You"
     },
     "errors": {
       "notFound": "Contest not found.",
@@ -677,7 +719,7 @@
     },
     "toasts": {
       "draftRedirect": "This contest isn't public yet.",
-      "contactEmailRequired": "Please enter a contact email so Corelia can follow up.",
+      "contactEmailRequired": "Add an email to your Corelia account before registering.",
       "applicationMotivationTooShort": "Please describe your motivation and capabilities in more detail before submitting.",
       "applicationSubmitted": "Application submitted. Corelia will review it before granting participation.",
       "applicationSubmitFailed": "Unable to submit your application.",
@@ -699,6 +741,7 @@
       "submissionSummaryTooShort": "Please write a clearer submission summary before saving.",
       "submissionSaved": "Submission saved.",
       "submissionSaveFailed": "Unable to save the submission.",
+      "submissionDeadlinePassed": "The submission deadline has passed; changes are no longer accepted.",
       "scoreCriterionOutOfRange": "Each criterion must be between 0 and 25.",
       "scoreSaved": "Scores saved.",
       "scoreSaveFailed": "Unable to save scores.",
@@ -714,7 +757,13 @@
       "contestBannerUpdated": "Banner updated.",
       "contestThumbnailUpdated": "Thumbnail updated.",
       "contestBannerUploadFailed": "Unable to upload banner.",
-      "contestThumbnailUploadFailed": "Unable to upload thumbnail."
+      "contestThumbnailUploadFailed": "Unable to upload thumbnail.",
+      "collabInviteLinkCopied": "Invite link copied. Share it with your teammate.",
+      "collabInviteFailed": "Could not send invite.",
+      "collabInviteRevoked": "Invite revoked.",
+      "collabRevokeFailed": "Could not revoke invite.",
+      "collaboratorRemoved": "Teammate removed.",
+      "collaboratorRemoveFailed": "Could not remove teammate."
     },
     "forms": {
       "awards": {
@@ -743,7 +792,7 @@
         "contactEmailPlaceholder": "Contact email",
         "contactPhonePlaceholder": "Contact phone",
         "portfolioPlaceholder": "Portfolio / GitHub / LinkedIn",
-        "motivationPlaceholder": "Describe your capabilities, motivation, and the idea you plan to bring to the contest...",
+        "motivationPlaceholder": "Optional note for reviewers (skills, idea, links)",
         "submitLabel": "Submit application"
       }
     },
@@ -769,13 +818,15 @@
     },
     "projects": {
       "sectionTitle": "Submitted projects",
-      "sectionDescription": "Public showcase from published results.",
+      "sectionDescription": "Public project cards from contest submissions. Rankings and judge scores appear after Corelia publishes results.",
       "emptyTitle": "No projects to show yet",
-      "emptyHint": "Projects appear here after the contest ends and results are published.",
+      "emptyHint": "When approved teams save a submission, their public project card appears here.",
+      "emptyHintSyncing": "Submissions exist but project cards are still syncing—try refreshing in a moment.",
       "viewDemo": "Demo",
       "viewRepo": "Repository",
       "viewSlides": "Slides",
-      "scoreLine": "{{score}} pts · {{count}} judge scores"
+      "scoreLine": "{{score}} pts · {{count}} judge scores",
+      "teamLine": "Team: {{names}}"
     },
     "sections": {
       "timeline": "Timeline",

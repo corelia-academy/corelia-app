@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import i18n from "@/i18n";
 import { listContests } from "@/lib/hackathons";
 import type { Contest } from "@/types/hackathons";
 import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
@@ -32,8 +33,8 @@ export function useSpotlightContests(): Contest[] {
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when user id changes
-  }, [user?.id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when user id or ui locale changes
+  }, [user?.id, i18n.language]);
 
   return spotlightContests;
 }

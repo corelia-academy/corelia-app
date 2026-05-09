@@ -52,7 +52,7 @@ export function ContestDetailPublicSectionPage({
           statusLabel={statusLabel(contest.status)}
           primaryAction={{
             label: translate("previewBar.openWorkspace"),
-            to: contest.slug ? `/hackathons/${contest.slug}/manage` : "/hackathons/manage",
+            to: contest.slug ? `/hackathons/${contest.slug}/manage/overview` : "/hackathons/manage",
           }}
         />
       ) : null}

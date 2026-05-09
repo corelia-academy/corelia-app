@@ -39,6 +39,7 @@ export function useContestManagerWorkspace() {
     prizes: ContestPrizeEntry[];
     faqs: ContestFaqEntry[];
     registration_deadline_local: string;
+    submission_deadline_local: string;
     starts_at_local: string;
     ends_at_local: string;
     milestones: { title: string; atLocal: string }[];
@@ -47,6 +48,7 @@ export function useContestManagerWorkspace() {
     prizes: [],
     faqs: [],
     registration_deadline_local: "",
+    submission_deadline_local: "",
     starts_at_local: "",
     ends_at_local: "",
     milestones: [],

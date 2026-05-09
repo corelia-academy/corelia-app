@@ -22,6 +22,7 @@ import { LoginTerms } from "@/pages/login/components/LoginTerms";
 import { passwordPolicyFailureReason } from "@/lib/passwordPolicy";
 import { LoginHcaptcha } from "@/components/auth/LoginHcaptcha";
 import { hcaptchaSiteKey, isHcaptchaConfigured } from "@/lib/hcaptchaConfig";
+import { authMetadataLocaleFromUiLanguage } from "@/lib/intl";
 
 type Translate = (key: string, options?: { defaultValue?: string }) => string;
 
@@ -29,7 +30,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { t } = useTranslation("auth");
+  const { t, i18n } = useTranslation("auth");
   const translate = useCallback<Translate>(
     (key, options) => String(t(key as never, options as never)),
     [t],
@@ -185,7 +186,10 @@ export function LoginForm({
           email: email.trim(),
           password,
           options: {
-            data: { full_name: name },
+            data: {
+              full_name: name,
+              locale: authMetadataLocaleFromUiLanguage(i18n.resolvedLanguage ?? i18n.language),
+            },
             ...captchaOpts,
           },
         });

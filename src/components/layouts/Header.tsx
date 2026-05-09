@@ -16,6 +16,7 @@ import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
 import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
+import { NotificationBell } from "@/components/layouts/NotificationBell";
 import { useTheme } from "next-themes";
 import {
   DropdownMenu,
@@ -520,7 +521,8 @@ export default function Header() {
           {!authInitialized ? (
             <div className="h-9 w-28 animate-pulse rounded-full bg-surface-raised md:h-10" />
           ) : isAuthenticated ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
@@ -532,7 +534,7 @@ export default function Header() {
                           : "bg-surface-base"
                       } cursor-pointer`}
                     >
-                      <Avatar className="size-10">
+                      <Avatar className="size-10 -ml-1">
                         <AvatarImage src={avatarUrl} alt={displayName} />
                         <AvatarFallback>{avatarFallback}</AvatarFallback>
                       </Avatar>
