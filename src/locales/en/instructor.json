@@ -635,6 +635,8 @@
     },
     "longVideo": {
       "title": "Long YouTube video",
+      "editReplaceTitle": "Long video — replace this lesson?",
+      "editReplaceIntro": "You switched to a different video (about {{duration}}). Keep this as one lesson, split from description chapters, or define segments manually. Splitting removes the current lesson and inserts new ones in the same place.",
       "intro": "This video runs about {{duration}}. Keep one lesson, split automatically from description timestamps, or define segments manually.",
       "foundChapters": "Timestamps found in the video description:",
       "noChapters": "No timestamp chapters were found in the description. Split manually or keep a single lesson.",

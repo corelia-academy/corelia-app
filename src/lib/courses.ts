@@ -1000,6 +1000,7 @@ export async function updateLesson(
   courseId: string,
   lessonId: string,
   data: Partial<CourseLessonInsert>,
+  options?: { clearYoutubeSegments?: boolean },
 ): Promise<void> {
   const { data: row, error } = await supabase
     .from("course_lessons")
@@ -1013,6 +1014,10 @@ export async function updateLesson(
   delete patch.order;
   delete patch.section_id;
   const next = { ...prev, ...patch };
+  if (options?.clearYoutubeSegments) {
+    delete next.youtube_start_seconds;
+    delete next.youtube_end_seconds;
+  }
   const updates: Record<string, unknown> = { data: next };
   if (data.order != null) updates.sort_order = Number(data.order);
   if (data.section_id != null) updates.section_id = data.section_id;

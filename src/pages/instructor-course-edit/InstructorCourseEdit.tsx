@@ -203,6 +203,10 @@ const InstructorCourseEdit = () => {
     videoDurationSeconds: number;
     chapterStarts: ParsedChapterStart[];
     autoSegments: LessonSegmentFromYoutube[];
+    replaceContext?: {
+      replaceLessonId: string;
+      orderedSectionLessonIds: string[];
+    };
   } | null>(null);
   const [longVideoSplitUiMode, setLongVideoSplitUiMode] = useState<"choose" | "manual">("choose");
   const [manualSegmentRows, setManualSegmentRows] = useState<
@@ -215,6 +219,9 @@ const InstructorCourseEdit = () => {
     resources: Array<{ title: string; url: string }>;
     minutes: number | "";
     isPreviewFree: boolean;
+    videoPrimaryLocale?: SupportedCourseLocale;
+    hasSubtitle?: boolean;
+    subtitleLocales?: SupportedCourseLocale[];
   } | null>(null);
   const suppressLongVideoDismissRestoreRef = useRef(false);
   const [editingLessonYoutubeStartLabel, setEditingLessonYoutubeStartLabel] = useState("0:00");
@@ -1531,6 +1538,9 @@ const InstructorCourseEdit = () => {
     resources: Array<{ title: string; url: string }>;
     minutes: number | "";
     isPreviewFree: boolean;
+    videoPrimaryLocale?: SupportedCourseLocale;
+    hasSubtitle?: boolean;
+    subtitleLocales?: SupportedCourseLocale[];
   };
 
   const insertLessonIntoCourse = async (
@@ -1586,6 +1596,11 @@ const InstructorCourseEdit = () => {
     const lessonTitle =
       (opts.title ?? snap.title).trim() || t("courseEdit.defaults.lessonTitle");
 
+    const vidLocale = snap.videoPrimaryLocale ?? defaultVideoPrimaryLocale;
+    const subOn = snap.hasSubtitle ?? false;
+    const subLocales =
+      subOn && (snap.subtitleLocales?.length ?? 0) > 0 ? snap.subtitleLocales! : [];
+
     const les = await addLesson(id, {
       section_id: sectionId,
       title: lessonTitle,
@@ -1595,9 +1610,9 @@ const InstructorCourseEdit = () => {
       youtube_end_seconds: ytEnd,
       description_markdown: snap.markdown.trim() || undefined,
       resources: sanitizedResources.length ? sanitizedResources : undefined,
-      video_primary_locale: defaultVideoPrimaryLocale,
-      has_subtitle: false,
-      subtitle_locales: [],
+      video_primary_locale: vidLocale,
+      has_subtitle: subOn,
+      subtitle_locales: subLocales,
       duration_seconds: Math.max(0, Math.floor(durationSeconds || 0)),
       order: getNextOrder(secSubset),
       is_preview_free:
@@ -1611,9 +1626,9 @@ const InstructorCourseEdit = () => {
         youtube_url: youtubeUrl || undefined,
         description_markdown: snap.markdown.trim() || undefined,
         resources: sanitizedResources.length ? sanitizedResources : undefined,
-        video_primary_locale: defaultVideoPrimaryLocale,
-        has_subtitle: false,
-        subtitle_locales: [],
+        video_primary_locale: vidLocale,
+        has_subtitle: subOn,
+        subtitle_locales: subLocales,
       });
       setLessons((prev) => [
         ...prev,
@@ -1624,9 +1639,9 @@ const InstructorCourseEdit = () => {
           youtube_url: youtubeUrl || undefined,
           description_markdown: snap.markdown.trim() || undefined,
           resources: sanitizedResources.length ? sanitizedResources : undefined,
-          video_primary_locale: defaultVideoPrimaryLocale,
-          has_subtitle: false,
-          subtitle_locales: [],
+          video_primary_locale: vidLocale,
+          has_subtitle: subOn,
+          subtitle_locales: subLocales,
         }),
       ]);
     } else {
@@ -1634,6 +1649,129 @@ const InstructorCourseEdit = () => {
     }
 
     return les;
+  };
+
+  const executeReplaceLessonWithSegments = async (
+    pv: NonNullable<typeof longVideoSplitPayload>,
+    segments: LessonSegmentFromYoutube[],
+    snap: PendingNewLessonSnap,
+  ) => {
+    const rc = pv.replaceContext;
+    if (!id || !rc || segments.length === 0) return;
+
+    const { replaceLessonId, orderedSectionLessonIds } = rc;
+    const idx = orderedSectionLessonIds.indexOf(replaceLessonId);
+    if (idx === -1) throw new Error(t("courseEdit.errors.reorderLessonsFailed"));
+
+    const idsBefore = orderedSectionLessonIds.slice(0, idx);
+    const idsAfter = orderedSectionLessonIds.slice(idx + 1);
+
+    /** Insert new lessons first (keep the lesson being replaced until reorder + delete succeed). */
+    let acc = (await getCourseLessons(id))
+      .filter((l) => l.section_id === pv.sectionId)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+    const createdIds: string[] = [];
+    for (const seg of segments) {
+      const ytEnd =
+        seg.endSeconds >= pv.videoDurationSeconds ? undefined : seg.endSeconds;
+      const les = await insertLessonIntoCourse(pv.sectionId, snap, {
+        youtubeUrl: pv.youtubeUrl,
+        title: seg.title,
+        youtube_start_seconds: seg.startSeconds,
+        youtube_end_seconds: ytEnd ?? undefined,
+        explicit_duration_seconds: Math.max(1, seg.endSeconds - seg.startSeconds),
+        lessonAccumulator: acc,
+      });
+      createdIds.push(les.id);
+      acc = [...acc, les].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    }
+
+    const mergedIds = [...idsBefore, ...createdIds, ...idsAfter];
+    /** Place the old lesson last so sort_orders stay unique, then delete it. */
+    const tempOrderIds = [...mergedIds, replaceLessonId];
+
+    let allLessons = await getCourseLessons(id);
+    let byId = new Map(allLessons.map((l) => [l.id, l]));
+
+    const rebuiltTemp = tempOrderIds.map((lid, order) => {
+      const l = byId.get(lid);
+      if (!l) throw new Error(t("courseEdit.errors.reorderLessonsFailed"));
+      return { id: l.id, order, section_id: pv.sectionId };
+    });
+    await reorderCourseLessons(id, rebuiltTemp);
+
+    await deleteLesson(id, replaceLessonId);
+
+    allLessons = await getCourseLessons(id);
+    byId = new Map(allLessons.map((l) => [l.id, l]));
+
+    const rebuiltFinal = mergedIds.map((lid, order) => {
+      const l = byId.get(lid);
+      if (!l) throw new Error(t("courseEdit.errors.reorderLessonsFailed"));
+      return { id: l.id, order, section_id: pv.sectionId };
+    });
+    await reorderCourseLessons(id, rebuiltFinal);
+
+    const freshLessons = await getCourseLessons(id);
+    setLessons(freshLessons);
+    await refreshCourseTotalDuration(id);
+    const refreshedCourse = await getCourse(id);
+    if (refreshedCourse) setCourse(refreshedCourse);
+    void getLessonDistinctLearnerCountsForCourse(id)
+      .then(setLessonLearnerCounts)
+      .catch(() => {});
+  };
+
+  const finalizeReplaceKeepSingleLesson = async (
+    pv: NonNullable<typeof longVideoSplitPayload>,
+    lessonBeingEdited: CourseLesson,
+  ) => {
+    if (!id) return;
+
+    const lessonId = lessonBeingEdited.id;
+    const ytTrim = pv.youtubeUrl.trim();
+    const fullDur = await getYoutubeVideoDuration(ytTrim);
+
+    for (const [loc, draft] of lessonDraftRef.current) {
+      const sanitizedResources = (draft.resources ?? [])
+        .map((r) => ({ title: (r.title ?? "").trim(), url: (r.url ?? "").trim() }))
+        .filter((r) => r.title && r.url);
+      const payload = {
+        title: draft.title.trim() || lessonBeingEdited.title,
+        youtube_url: ytTrim || undefined,
+        video_primary_locale: draft.videoPrimaryLocale,
+        has_subtitle: draft.hasSubtitle,
+        subtitle_locales: draft.hasSubtitle ? draft.subtitleLocales : [],
+        short_description: draft.shortDescription.trim() || undefined,
+        description_markdown: draft.markdown.trim() || undefined,
+        resources: sanitizedResources.length ? sanitizedResources : undefined,
+      };
+      if (loc === primaryContentLocale) {
+        await updateLesson(
+          id,
+          lessonId,
+          {
+            ...payload,
+            ...(fullDur > 0
+              ? { duration_seconds: Math.max(1, Math.floor(fullDur)) }
+              : {}),
+          },
+          { clearYoutubeSegments: true },
+        );
+      } else {
+        await setCourseLessonLocaleContent(id, lessonId, loc, payload);
+      }
+    }
+
+    const freshLessons = await getCourseLessons(id);
+    setLessons(freshLessons);
+    await refreshCourseTotalDuration(id);
+    const refreshedCourse = await getCourse(id);
+    if (refreshedCourse) setCourse(refreshedCourse);
+    void getLessonDistinctLearnerCountsForCourse(id)
+      .then(setLessonLearnerCounts)
+      .catch(() => {});
   };
 
   const resetNewLessonFormFields = () => {
@@ -1661,7 +1799,7 @@ const InstructorCourseEdit = () => {
     setLongVideoSplitPayload(null);
     setLongVideoSplitUiMode("choose");
     setManualSegmentRows([{ start: "0:00", end: "", title: "" }]);
-    if (payload && snap) {
+    if (payload && snap && !payload.replaceContext) {
       setAddingLessonDraftSectionId(payload.sectionId);
       setNewLessonTitle(snap.title);
       setNewLessonShortDescription(snap.shortDescription);
@@ -1677,6 +1815,28 @@ const InstructorCourseEdit = () => {
     const pv = longVideoSplitPayload;
     const snap = pendingNewLessonSnapRef.current;
     if (!pv || !snap || !id) return;
+
+    if (pv.replaceContext && editingLesson?.id === pv.replaceContext.replaceLessonId) {
+      setAddingLessonInProgress(true);
+      try {
+        await finalizeReplaceKeepSingleLesson(pv, editingLesson);
+        suppressLongVideoDismissRestoreRef.current = true;
+        resetNewLessonFormFields();
+        setLongVideoSplitPayload(null);
+        setLongVideoSplitOpen(false);
+        setEditingLesson(null);
+        lessonDraftRef.current = new Map();
+        toast.success(t("courseEdit.toasts.saved"));
+      } catch (e) {
+        setError(
+          e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"),
+        );
+      } finally {
+        setAddingLessonInProgress(false);
+      }
+      return;
+    }
+
     setAddingLessonInProgress(true);
     try {
       const acc = lessons.filter((l) => l.section_id === pv.sectionId);
@@ -1700,6 +1860,28 @@ const InstructorCourseEdit = () => {
     const pv = longVideoSplitPayload;
     const snap = pendingNewLessonSnapRef.current;
     if (!pv || !snap || !id || pv.autoSegments.length < 2) return;
+
+    if (pv.replaceContext && editingLesson?.id === pv.replaceContext.replaceLessonId) {
+      setAddingLessonInProgress(true);
+      try {
+        await executeReplaceLessonWithSegments(pv, pv.autoSegments, snap);
+        suppressLongVideoDismissRestoreRef.current = true;
+        resetNewLessonFormFields();
+        setLongVideoSplitPayload(null);
+        setLongVideoSplitOpen(false);
+        setEditingLesson(null);
+        lessonDraftRef.current = new Map();
+        toast.success(t("courseEdit.toasts.saved"));
+      } catch (e) {
+        setError(
+          e instanceof Error ? e.message : t("courseEdit.errors.addLessonFailed"),
+        );
+      } finally {
+        setAddingLessonInProgress(false);
+      }
+      return;
+    }
+
     setAddingLessonInProgress(true);
     try {
       let acc = lessons.filter((l) => l.section_id === pv.sectionId);
@@ -1785,6 +1967,19 @@ const InstructorCourseEdit = () => {
 
     setAddingLessonInProgress(true);
     try {
+      if (pv.replaceContext && editingLesson?.id === pv.replaceContext.replaceLessonId) {
+        await executeReplaceLessonWithSegments(pv, built, snap);
+        suppressLongVideoDismissRestoreRef.current = true;
+        resetNewLessonFormFields();
+        setLongVideoSplitPayload(null);
+        setManualSegmentRows([{ start: "0:00", end: "", title: "" }]);
+        setLongVideoSplitOpen(false);
+        setEditingLesson(null);
+        lessonDraftRef.current = new Map();
+        toast.success(t("courseEdit.toasts.saved"));
+        return;
+      }
+
       let acc = lessons.filter((l) => l.section_id === pv.sectionId);
       for (const seg of built) {
         const ytEnd =
@@ -1990,6 +2185,73 @@ const InstructorCourseEdit = () => {
         }
       }
 
+      const prevVid = getYoutubeVideoId(editingLesson.youtube_url ?? "");
+      const nextVid = getYoutubeVideoId(ytUrlTrimmedMaster);
+      if (
+        learnerCount === 0 &&
+        ytUrlTrimmedMaster &&
+        nextVid &&
+        prevVid !== nextVid
+      ) {
+        const meta = await fetchYoutubeVideoMetadata(ytUrlTrimmedMaster);
+        const fromApi =
+          meta?.durationSeconds ??
+          (await getYoutubeVideoDuration(ytUrlTrimmedMaster));
+        const durationGuess = fromApi;
+
+        if (durationGuess > LONG_VIDEO_SPLIT_SECONDS) {
+          const primaryDraft =
+            lessonDraftRef.current.get(primaryContentLocale) ??
+            captureLessonDraftFromState();
+
+          pendingNewLessonSnapRef.current = {
+            title: primaryDraft.title,
+            shortDescription: primaryDraft.shortDescription,
+            markdown: primaryDraft.markdown,
+            resources: [...primaryDraft.resources],
+            minutes: "",
+            isPreviewFree: !!editingLesson.is_preview_free,
+            videoPrimaryLocale: primaryDraft.videoPrimaryLocale,
+            hasSubtitle: primaryDraft.hasSubtitle,
+            subtitleLocales: [...primaryDraft.subtitleLocales],
+          };
+
+          const videoDur = meta?.durationSeconds ?? durationGuess;
+          const description = meta?.description ?? "";
+          const chapterStarts = parseChaptersFromDescription(description, videoDur);
+          const autoSegments =
+            chapterStarts.length >= 2
+              ? buildSegmentsFromChapterStarts(chapterStarts, videoDur)
+              : [];
+
+          const secSorted = lessons
+            .filter((l) => l.section_id === editingLesson.section_id)
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+          setLongVideoSplitPayload({
+            sectionId: editingLesson.section_id,
+            youtubeUrl: ytUrlTrimmedMaster,
+            videoDurationSeconds: videoDur,
+            chapterStarts,
+            autoSegments,
+            replaceContext: {
+              replaceLessonId: editingLesson.id,
+              orderedSectionLessonIds: secSorted.map((l) => l.id),
+            },
+          });
+          setLongVideoSplitUiMode(autoSegments.length >= 2 ? "choose" : "manual");
+          setManualSegmentRows([
+            {
+              start: "0:00",
+              end: formatSecondsToTimestamp(videoDur),
+              title: "",
+            },
+          ]);
+          setLongVideoSplitOpen(true);
+          return;
+        }
+      }
+
       let youtube_start_seconds: number | undefined;
       let youtube_end_seconds: number | null | undefined;
       if (ytUrlTrimmedMaster) {
@@ -2010,12 +2272,37 @@ const InstructorCourseEdit = () => {
         }
       }
 
+      let segmentDurationSeconds: number | undefined;
+      if (ytUrlTrimmedMaster) {
+        const effectiveStart = youtube_start_seconds ?? 0;
+        if (
+          youtube_end_seconds != null &&
+          typeof youtube_end_seconds === "number"
+        ) {
+          segmentDurationSeconds = Math.max(
+            0,
+            Math.floor(youtube_end_seconds - effectiveStart),
+          );
+        } else {
+          const vidDur = await getYoutubeVideoDuration(ytUrlTrimmedMaster);
+          if (vidDur > 0) {
+            segmentDurationSeconds = Math.max(
+              0,
+              Math.floor(vidDur - effectiveStart),
+            );
+          }
+        }
+      }
+
       const segmentPrimaryPatch =
         ytUrlTrimmedMaster
           ? {
               youtube_start_seconds,
               youtube_end_seconds:
                 youtube_end_seconds === undefined ? undefined : youtube_end_seconds,
+              ...(segmentDurationSeconds != null && segmentDurationSeconds > 0
+                ? { duration_seconds: Math.max(1, segmentDurationSeconds) }
+                : {}),
             }
           : {};
 
@@ -2052,6 +2339,12 @@ const InstructorCourseEdit = () => {
           }
         }
       }
+      await refreshCourseTotalDuration(id);
+      const refreshedCourse = await getCourse(id);
+      if (refreshedCourse) setCourse(refreshedCourse);
+      void getLessonDistinctLearnerCountsForCourse(id)
+        .then(setLessonLearnerCounts)
+        .catch(() => {});
       setEditingLesson(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
@@ -4921,14 +5214,24 @@ const InstructorCourseEdit = () => {
           >
             <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>{t("courseEdit.longVideo.title")}</DialogTitle>
+                <DialogTitle>
+                  {longVideoSplitPayload?.replaceContext
+                    ? t("courseEdit.longVideo.editReplaceTitle")
+                    : t("courseEdit.longVideo.title")}
+                </DialogTitle>
                 <DialogDescription>
                   {longVideoSplitPayload
-                    ? t("courseEdit.longVideo.intro", {
-                        duration: formatHumanVideoDuration(
-                          longVideoSplitPayload.videoDurationSeconds,
-                        ),
-                      })
+                    ? longVideoSplitPayload.replaceContext
+                      ? t("courseEdit.longVideo.editReplaceIntro", {
+                          duration: formatHumanVideoDuration(
+                            longVideoSplitPayload.videoDurationSeconds,
+                          ),
+                        })
+                      : t("courseEdit.longVideo.intro", {
+                          duration: formatHumanVideoDuration(
+                            longVideoSplitPayload.videoDurationSeconds,
+                          ),
+                        })
                     : null}
                 </DialogDescription>
               </DialogHeader>

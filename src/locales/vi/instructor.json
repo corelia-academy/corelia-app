@@ -634,6 +634,8 @@
     },
     "longVideo": {
       "title": "Video YouTube dài",
+      "editReplaceTitle": "Video dài — thay thế bài học này?",
+      "editReplaceIntro": "Bạn đã đổi sang video khác (khoảng {{duration}}). Giữ một bài học, tách theo chapter trong mô tả, hoặc nhập đoạn thủ công. Nếu tách: bài hiện tại bị xóa và các bài mới được chèn đúng vị trí đó.",
       "intro": "Video này khoảng {{duration}}. Giữ một bài học, tự tách theo timestamp trong mô tả, hoặc tự nhập các đoạn.",
       "foundChapters": "Tìm thấy timestamp trong mô tả video:",
       "noChapters": "Không thấy chapter dạng timestamp trong mô tả. Hãy tách thủ công hoặc giữ một bài học.",
