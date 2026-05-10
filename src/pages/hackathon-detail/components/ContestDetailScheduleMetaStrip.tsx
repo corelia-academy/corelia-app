@@ -1,8 +1,8 @@
-import { Calendar, MapPin, Timer, Users } from "lucide-react";
+import { Calendar, MapPin, Timer, Upload } from "lucide-react";
 import type { Contest } from "@/types/hackathons";
 import { cn } from "@/lib/utils";
 
-/** Horizontal schedule summary: start → end, format, participant cap — matches public hackathon quick-stats / hero meta layout. */
+/** Horizontal schedule summary: start → end, optional submission deadline, format/location. */
 export function ContestDetailScheduleMetaStrip(props: {
   contest: Contest;
   translate: (key: string, options?: Record<string, unknown>) => string;
@@ -20,15 +20,6 @@ export function ContestDetailScheduleMetaStrip(props: {
     className,
   } = props;
 
-  const maxParticipants = contest.max_participants;
-  const approvedCount = Number(
-    contest.metrics_snapshot.approved_registrations ?? 0,
-  );
-  const slotRatio =
-    maxParticipants != null && maxParticipants > 0
-      ? approvedCount / maxParticipants
-      : null;
-
   const startLabel =
     labelsMode === "manage"
       ? translate("workspace.manage.heroStart")
@@ -41,10 +32,12 @@ export function ContestDetailScheduleMetaStrip(props: {
     labelsMode === "manage"
       ? translate("workspace.manage.heroFormat")
       : translate("detail.hero.format");
-  const limitLabel =
+  const submissionDeadlineLabel =
     labelsMode === "manage"
-      ? translate("workspace.manage.heroApprovalLimit")
-      : translate("detail.hero.participantLimit");
+      ? translate("workspace.manage.submissionDeadlineLabel")
+      : translate("detail.hero.submissionDeadline");
+
+  const submissionDeadlineIso = contest.submission_deadline?.trim() ?? "";
 
   return (
     <div
@@ -73,9 +66,27 @@ export function ContestDetailScheduleMetaStrip(props: {
           <span className="mt-1 block font-medium">
             {formatDateTime(contest.ends_at)}
           </span>
+          {!submissionDeadlineIso && contest.ends_at?.trim() ? (
+            <span className="mt-1 block text-xs leading-snug text-foreground-muted">
+              {translate("detail.hero.submissionsLockAtEndHint")}
+            </span>
+          ) : null}
         </span>
       </span>
-      <span className="inline-flex min-w-0 items-start gap-2">
+      {submissionDeadlineIso ? (
+        <span className="col-span-2 inline-flex min-w-0 items-start gap-2 border-t border-border-subtle pt-4">
+          <Upload className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+          <span className="min-w-0 text-foreground">
+            <span className="block text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+              {submissionDeadlineLabel}
+            </span>
+            <span className="mt-1 block font-medium">
+              {formatDateTime(contest.submission_deadline)}
+            </span>
+          </span>
+        </span>
+      ) : null}
+      <span className="col-span-2 inline-flex min-w-0 items-start gap-2 border-t border-border-subtle pt-4">
         <MapPin className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
         <span className="min-w-0 text-foreground">
           <span className="block text-xs font-semibold uppercase tracking-widest text-foreground-muted">
@@ -85,53 +96,6 @@ export function ContestDetailScheduleMetaStrip(props: {
             {locationLabel(contest.location)}
           </span>
         </span>
-      </span>
-      <span className="flex min-w-[min(100%,220px)] flex-col gap-1.5">
-        <span className="inline-flex items-center gap-2 text-foreground">
-          <Users className="size-5 shrink-0 text-primary" aria-hidden />
-          <span className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-            {limitLabel}
-          </span>
-        </span>
-        {maxParticipants != null ? (
-          <>
-            <span className="text-sm font-medium tabular-nums text-foreground">
-              {translate("detail.hero.slotsFilled", {
-                approved: approvedCount,
-                max: maxParticipants,
-              })}
-            </span>
-            <div
-              className="h-2 w-full overflow-hidden rounded-full bg-surface-raised"
-              role="progressbar"
-              aria-valuenow={approvedCount}
-              aria-valuemin={0}
-              aria-valuemax={maxParticipants}
-              aria-label={translate("detail.hero.slotsFilled", {
-                approved: approvedCount,
-                max: maxParticipants,
-              })}
-            >
-              <div
-                className={cn(
-                  "h-full rounded-full transition-colors",
-                  slotRatio != null && slotRatio >= 1
-                    ? "bg-destructive"
-                    : slotRatio != null && slotRatio >= 0.8
-                      ? "bg-warning"
-                      : "bg-primary",
-                )}
-                style={{
-                  width: `${Math.min(100, (slotRatio ?? 0) * 100)}%`,
-                }}
-              />
-            </div>
-          </>
-        ) : (
-          <span className="text-sm text-foreground-muted">
-            {translate("detail.hero.slotsUnlimited")}
-          </span>
-        )}
       </span>
     </div>
   );

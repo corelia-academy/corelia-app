@@ -755,6 +755,9 @@
       "countdownMinutes": "{{count}} phút",
       "slotsFilled": "{{approved}} / {{max}} slot",
       "slotsUnlimited": "Không giới hạn số đội được duyệt",
+      "submissionDeadline": "Hạn chót nộp bài",
+      "submissionsLockAtEndHint":
+        "Nếu không cấu hình hạn riêng, bài nộp sẽ khóa khi cuộc thi kết thúc (cùng mốc “Kết thúc” phía trên).",
       "implausibleStartWarning": "Ngày bắt đầu sớm hơn thời điểm tạo contest — hãy kiểm tra lại lịch trong dữ liệu.",
       "share": "Chia sẻ",
       "shareCopyLink": "Sao chép liên kết",
@@ -1007,7 +1010,7 @@
     },
     "sections": {
       "timeline": "Lịch trình",
-      "timelineDescription": "Các mốc quan trọng cho hạn đăng ký, khai mạc và kết thúc cuộc thi.",
+      "timelineDescription": "Các mốc quan trọng: hạn đăng ký, khai mạc, hạn chót nộp bài và kết thúc cuộc thi.",
       "howToParticipate": "Cách tham gia",
       "timelineUtcNote": "Thời gian hiển thị theo múi giờ trên thiết bị của bạn.",
       "addToCalendar": "Thêm vào lịch (.ics)"
@@ -1015,6 +1018,7 @@
     "timeline": {
       "registrationDeadline": "Hạn đăng ký",
       "kickoff": "Khai mạc",
+      "submissionDeadline": "Hạn chót nộp bài",
       "end": "Kết thúc"
     },
     "labels": {

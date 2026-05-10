@@ -457,11 +457,13 @@ export function useContestDetailOrchestrator({
       milestones: contest.timeline_milestones ?? [],
       registrationDeadline: contest.registration_deadline,
       startsAt: contest.starts_at,
+      submissionDeadline: contest.submission_deadline,
       endsAt: contest.ends_at,
       formatDateTime,
       defaultLabels: {
         registrationDeadline: translate("detail.timeline.registrationDeadline"),
         kickoff: translate("detail.timeline.kickoff"),
+        submissionDeadline: translate("detail.timeline.submissionDeadline"),
         end: translate("detail.timeline.end"),
       },
     });

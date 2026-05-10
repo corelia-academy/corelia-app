@@ -755,6 +755,9 @@
       "countdownMinutes": "{{count}} minutes",
       "slotsFilled": "{{approved}} / {{max}} slots",
       "slotsUnlimited": "No fixed capacity limit",
+      "submissionDeadline": "Submission deadline",
+      "submissionsLockAtEndHint":
+        "Unless a separate deadline is set, submissions lock when the contest ends.",
       "implausibleStartWarning": "Start date is earlier than the contest record creation date — check schedule data.",
       "share": "Share",
       "shareCopyLink": "Copy link",
@@ -1007,7 +1010,7 @@
     },
     "sections": {
       "timeline": "Timeline",
-      "timelineDescription": "Key milestones for registration, kickoff, and contest end.",
+      "timelineDescription": "Key milestones for registration, kickoff, submission deadline, and contest end.",
       "howToParticipate": "How to participate",
       "timelineUtcNote": "Times are shown in your local timezone.",
       "addToCalendar": "Add to calendar (.ics)"
@@ -1015,6 +1018,7 @@
     "timeline": {
       "registrationDeadline": "Registration deadline",
       "kickoff": "Kickoff",
+      "submissionDeadline": "Submission deadline",
       "end": "End"
     },
     "labels": {
