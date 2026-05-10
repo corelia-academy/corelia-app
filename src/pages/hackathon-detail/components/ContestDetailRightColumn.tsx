@@ -1,36 +1,12 @@
-import { ContestDetailManagerSettingsCard } from "@/pages/hackathon-detail/components/ContestDetailManagerSettingsCard";
-import { ContestDetailParticipantApplicationCard } from "@/pages/hackathon-detail/components/ContestDetailParticipantApplicationCard";
-import { ContestDetailParticipantSubmissionCard } from "@/pages/hackathon-detail/components/ContestDetailParticipantSubmissionCard";
-import { ContestDetailSettingsInviteCard } from "@/pages/hackathon-detail/components/ContestDetailSettingsInviteCard";
-import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
+import { ContestDetailParticipantWorkspaceTabs } from "@/pages/hackathon-detail/components/ContestDetailParticipantWorkspaceTabs";
+import { useContestDetailVm } from "@/pages/hackathon-detail/ContestDetailContext";
 
-export function ContestDetailRightColumn({
-  vm,
-}: {
-  vm: ContestDetailViewModel;
-}) {
-  const {
-    isManageView,
-    isManager,
-    activeManageSection,
-    myInvite,
-    registration,
-  } = vm;
+/** Public only: participant workspace rail. Manage settings live in the main column (`ContestDetailLeftColumn`). */
+export function ContestDetailRightColumn() {
+  const vm = useContestDetailVm();
 
-  if (isManageView && isManager && activeManageSection === "settings") {
-    return <ContestDetailManagerSettingsCard vm={vm} />;
-  }
-
-  if (isManageView && activeManageSection === "settings" && myInvite) {
-    return <ContestDetailSettingsInviteCard vm={vm} />;
-  }
-
-  if (!isManageView && registration?.status === "approved") {
-    return <ContestDetailParticipantSubmissionCard vm={vm} />;
-  }
-
-  if (!isManageView) {
-    return <ContestDetailParticipantApplicationCard vm={vm} />;
+  if (!vm.isManageView) {
+    return <ContestDetailParticipantWorkspaceTabs vm={vm} />;
   }
 
   return null;

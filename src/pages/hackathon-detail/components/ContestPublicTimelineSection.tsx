@@ -9,6 +9,7 @@ import {
 } from "@/components/hackathons/ContestTimeline";
 import { downloadContestCalendarIcs } from "@/lib/hackathonCalendar";
 import type { Contest } from "@/types/hackathons";
+import { cn } from "@/lib/utils";
 
 export function ContestPublicTimelineSection(props: {
   contest: Contest;
@@ -20,7 +21,7 @@ export function ContestPublicTimelineSection(props: {
   const { contest, t, milestonesCustom, timelineRows, formatDateTime } = props;
 
   return (
-    <Card id="timeline">
+    <Card id="timeline" className={cn("scroll-mt-36")}>
       <CardContent className="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>

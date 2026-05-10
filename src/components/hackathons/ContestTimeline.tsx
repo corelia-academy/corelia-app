@@ -46,7 +46,7 @@ export function ContestTimeline({
 
 export function ContestTimelineVertical({ rows }: { rows: ContestTimelineRow[] }) {
   return (
-    <ul className="relative m-0 list-none space-y-0 border-l border-border-subtle pl-6">
+    <ol className="relative m-0 list-none space-y-0 border-l border-border-subtle pl-6">
       {rows.map((row) => (
         <li key={row.key} className="relative pb-8 last:pb-0">
           <span
@@ -57,6 +57,6 @@ export function ContestTimelineVertical({ rows }: { rows: ContestTimelineRow[] }
           <div className="mt-1 text-sm text-foreground-muted">{row.datetimeLabel}</div>
         </li>
       ))}
-    </ul>
+    </ol>
   );
 }

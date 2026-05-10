@@ -96,7 +96,7 @@ export function ContestDetailWorkspaceAccessDenied({
             {translate("detail.errors.workspaceAccessDenied")}
           </div>
           <Button
-            render={<NavLink to={`/hackathons/${contestId}/overview`} />}
+            render={<NavLink to={`/hackathons/${contestId}`} />}
             nativeButton={false}
             variant="ghost"
             className="mt-4"

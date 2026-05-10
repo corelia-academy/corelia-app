@@ -30,16 +30,18 @@ export function ContestDetailManageSectionTabs({
 
   return (
     <nav
-      className="-mx-1 mb-6 border-b border-border-subtle sm:mb-8"
-      aria-label={translate("workspace.manage.tabs.ariaLabel", {
-        defaultValue: "Workspace sections",
-      })}
+      className={cn(
+        "-mx-1 sticky top-14 z-30 mb-6 border-b border-border-subtle bg-background/95 pb-0 backdrop-blur-md sm:mb-8",
+        "supports-[backdrop-filter]:bg-background/85",
+      )}
+      aria-label={translate("workspace.manage.tabs.ariaLabel")}
     >
-      <div className="-mb-px flex gap-0 overflow-x-auto overscroll-x-contain px-1 pb-px sm:gap-1">
+      <div className="-mb-px flex gap-0 overflow-x-auto overscroll-x-contain px-1 pb-px [scrollbar-width:none] sm:gap-1 [&::-webkit-scrollbar]:hidden">
         {keys.map((key) => (
           <NavLink
             key={key}
             to={contest.slug ? `${base}/${key}` : base}
+            end={key === "overview"}
             className={({ isActive }) =>
               cn(
                 "inline-flex min-h-11 shrink-0 items-center border-b-2 px-3 py-2.5 text-sm font-medium transition-colors duration-150",
@@ -59,7 +61,7 @@ export function ContestDetailManageSectionTabs({
                   : key === "analytics"
                     ? translate("workspace.tabs.analytics")
                     : key === "translations"
-                      ? translate("workspace.tabs.translations", { defaultValue: "Translations" })
+                      ? translate("workspace.tabs.translations")
                       : translate("workspace.tabs.settings")}
           </NavLink>
         ))}

@@ -72,6 +72,24 @@ export function uploadContestThumbnail(
   return uploadToPath(`contest-thumbnails/${contestId}/${Date.now()}.${ext}`, file, previousPath);
 }
 
+export function uploadContestOrganizationalPartnerLogo(
+  contestId: string,
+  partnerId: string,
+  file: File,
+  previousPath?: string | null,
+): Promise<{ url: string; path: string }> {
+  const cid = String(contestId ?? "").trim();
+  const pid = String(partnerId ?? "").trim();
+  if (!cid) throw new Error("Thiếu contestId");
+  if (!pid) throw new Error("Thiếu partnerId");
+  const ext = buildSafeExt(file.name, "png");
+  return uploadToPath(
+    `contest-org-partner-logos/${cid}/${pid}/${Date.now()}.${ext}`,
+    file,
+    previousPath,
+  );
+}
+
 export function uploadFinalAssignmentFile(
   courseId: string,
   userId: string,

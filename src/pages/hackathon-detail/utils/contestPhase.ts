@@ -1,56 +1,32 @@
 import type { Contest } from "@/types/hackathons";
+import { deriveHackathonLifecycle } from "@/pages/hackathon-detail/utils/contestLifecycle";
 
-/** Derived lifecycle phase for public contest surfaces — single source for badge, stats, and CTA copy. */
+/** @deprecated Prefer HackathonLifecycle from contestLifecycle.ts */
 export type ContestPublicPhase =
   | "ended"
   | "in_progress"
   | "registration_open"
   | "registration_closed_before_start";
 
+/** @deprecated Prefer deriveHackathonLifecycle — maps new lifecycle to legacy phase for gradual migration */
 export function deriveContestPublicPhase(contest: Contest): ContestPublicPhase {
-  const now = Date.now();
-  const endsTs = contest.ends_at ? new Date(contest.ends_at).getTime() : NaN;
-  const startsTs = contest.starts_at
-    ? new Date(contest.starts_at).getTime()
-    : NaN;
-  const regEndTs = contest.registration_deadline
-    ? new Date(contest.registration_deadline).getTime()
-    : NaN;
-
-  const endedByTime =
-    Number.isFinite(endsTs) && now >= endsTs;
-  if (contest.status === "ended" || endedByTime) {
-    return "ended";
-  }
-
-  const startedByTime = Number.isFinite(startsTs) && now >= startsTs;
-  const notEndedByTime = !Number.isFinite(endsTs) || now < endsTs;
-
-  if (
-    contest.status === "running" ||
-    (startedByTime && notEndedByTime)
-  ) {
-    return "in_progress";
-  }
-
-  if (contest.status === "published") {
-    const regStillOpen =
-      !Number.isFinite(regEndTs) || now <= regEndTs;
-    if (regStillOpen) {
-      return "registration_open";
-    }
-    if (Number.isFinite(startsTs) && now < startsTs) {
+  const life = deriveHackathonLifecycle(contest);
+  switch (life) {
+    case "draft":
+    case "upcoming":
       return "registration_closed_before_start";
-    }
-    if (Number.isFinite(endsTs) && now < endsTs) {
+    case "registration_open":
+      return "registration_open";
+    case "in_progress":
+    case "judging":
       return "in_progress";
-    }
-    return "ended";
+    case "ended":
+    default:
+      return "ended";
   }
-
-  return "registration_closed_before_start";
 }
 
+/** @deprecated Prefer hackathonLifecycleBadgeClassName */
 export function contestPhaseBadgeClassName(
   phase: ContestPublicPhase,
 ): string {

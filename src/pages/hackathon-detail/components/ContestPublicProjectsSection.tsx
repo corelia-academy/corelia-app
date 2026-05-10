@@ -13,6 +13,7 @@ import {
   type ContestShowcaseDisplayRow,
 } from "@/pages/hackathon-detail/utils/contestShowcase";
 import { useAuth } from "@/stores/authStore";
+import { cn } from "@/lib/utils";
 
 export function ContestPublicProjectsSection(props: {
   contest: Contest;
@@ -130,7 +131,7 @@ export function ContestPublicProjectsSection(props: {
   const submissionsTotal = Number(contest.metrics_snapshot?.submissions_total ?? 0);
 
   return (
-    <Card>
+    <Card id="projects" className={cn("scroll-mt-36")}>
       <CardContent className="p-4">
         <h2 className="text-lg font-semibold text-foreground">
           {t("detail.projects.sectionTitle")}

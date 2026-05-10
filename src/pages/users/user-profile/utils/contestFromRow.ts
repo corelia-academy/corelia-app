@@ -60,6 +60,9 @@ export function contestFromRow(
     timeline_milestones: Array.isArray(doc.timeline_milestones)
       ? (doc.timeline_milestones as Contest["timeline_milestones"])
       : [],
+    organizational_partners: Array.isArray(doc.organizational_partners)
+      ? (doc.organizational_partners as Contest["organizational_partners"])
+      : undefined,
     created_by: String(doc.created_by ?? profileId),
     updated_by: String(doc.updated_by ?? profileId),
     created_at: String(doc.created_at ?? row.created_at),

@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import type { Contest } from "@/types/hackathons";
+import { cn } from "@/lib/utils";
 
 export function ContestPublicPrizesSection(props: {
   contest: Contest;
@@ -8,7 +9,7 @@ export function ContestPublicPrizesSection(props: {
   const { contest, t } = props;
 
   return (
-    <Card>
+    <Card id="prizes" className={cn("scroll-mt-36")}>
       <CardContent className="p-4">
         <h2 className="text-lg font-semibold text-foreground">
           {t("detail.prizes.sectionTitle")}

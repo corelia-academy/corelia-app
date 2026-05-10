@@ -1,13 +1,17 @@
-import { CheckCheck, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { intlLocale } from "@/lib/intl";
+import { cn } from "@/lib/utils";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 
 export function ContestDetailParticipantApplicationCard({
   vm,
+  embedded,
 }: {
   vm: ContestDetailViewModel;
+  /** Render inside participant workspace tabs (no outer card / duplicate title). */
+  embedded?: boolean;
 }) {
   const {
     translate,
@@ -24,18 +28,16 @@ export function ContestDetailParticipantApplicationCard({
     user,
   } = vm;
 
-  const previewEmail =
-    profile?.email?.trim() || user?.email?.trim() || "";
+  const previewEmail = profile?.email?.trim() || user?.email?.trim() || "";
 
-  return (
-    <Card id="participant-workspace">
-      <CardContent className="p-4">
-        {registration ? (
-          <>
+  const inner = (
+    <>
+      {registration ? (
+        <>
+          {!embedded ? (
             <div className="flex items-center gap-3">
-              <CheckCheck className="size-5 text-primary" aria-hidden />
               <div>
-                <h2 className="text-lg font-semibold text-foreground">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
                   {translate("detail.participant.applicationCardTitle")}
                 </h2>
                 <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
@@ -43,15 +45,21 @@ export function ContestDetailParticipantApplicationCard({
                 </p>
               </div>
             </div>
-            <div className="mt-4 rounded-md border border-border-subtle bg-surface-base p-4">
+          ) : null}
+          <div
+            className={cn(
+              "rounded-md border border-border-subtle bg-surface-base p-4",
+              embedded ? "mt-0" : "mt-4",
+            )}
+          >
               <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                 {registrationStatusLabel(registration.status)}
               </div>
               <div className="mt-2 text-sm text-foreground-muted">
                 {translate("detail.participant.sentAt", {
-                  datetime: new Date(
-                    registration.applied_at,
-                  ).toLocaleString(intlLocale()),
+                  datetime: new Date(registration.applied_at).toLocaleString(
+                    intlLocale(),
+                  ),
                 })}
               </div>
               {registration.review_note ? (
@@ -63,15 +71,22 @@ export function ContestDetailParticipantApplicationCard({
           </>
         ) : contest.status !== "published" ? (
           <>
-            <div className="flex items-center gap-3">
-              <Lock className="size-5 text-primary" aria-hidden />
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">
-                  {translate("detail.participant.registrationLockedTitle")}
-                </h2>
+            {!embedded ? (
+              <div className="flex items-center gap-3">
+                <Lock className="size-5 text-primary" aria-hidden />
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                    {translate("detail.participant.registrationLockedTitle")}
+                  </h2>
+                </div>
               </div>
-            </div>
-            <p className="mt-4 text-sm leading-relaxed text-foreground-muted">
+            ) : null}
+            <p
+              className={cn(
+                "text-sm leading-relaxed text-foreground-muted",
+                embedded ? "mt-0" : "mt-4",
+              )}
+            >
               {translate("detail.participant.registrationLockedBody")}
             </p>
             <Button
@@ -79,7 +94,11 @@ export function ContestDetailParticipantApplicationCard({
               variant="outline"
               className="mt-4 min-h-11 w-full sm:w-auto"
               onClick={() =>
-                navigate(contest.slug ? `/hackathons/${contest.slug}/timeline` : "/hackathons")
+                navigate(
+                  contest.slug
+                    ? `/hackathons/${contest.slug}/timeline`
+                    : "/hackathons",
+                )
               }
             >
               {translate("detail.cta.viewSchedule")}
@@ -87,18 +106,19 @@ export function ContestDetailParticipantApplicationCard({
           </>
         ) : (
           <>
-            <div className="flex items-center gap-3">
-              <CheckCheck className="size-5 text-primary" aria-hidden />
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">
-                  {translate("detail.participant.applicationCardTitle")}
-                </h2>
-                <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
-                  {translate("detail.participant.applicationCardPendingBody")}
-                </p>
+            {!embedded ? (
+              <div className="flex items-center gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                    {translate("detail.participant.applicationCardTitle")}
+                  </h2>
+                  <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
+                    {translate("detail.participant.applicationCardPendingBody")}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="mt-4 space-y-4">
+            ) : null}
+            <div className={cn("space-y-4", embedded ? "mt-0" : "mt-4")}>
               {previewEmail ? (
                 <>
                   <p className="text-sm leading-relaxed text-foreground-muted">
@@ -161,7 +181,16 @@ export function ContestDetailParticipantApplicationCard({
             </div>
           </>
         )}
-      </CardContent>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="pt-4">{inner}</div>;
+  }
+
+  return (
+    <Card id="participant-workspace">
+      <CardContent className="p-4">{inner}</CardContent>
     </Card>
   );
 }
