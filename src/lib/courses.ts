@@ -180,6 +180,10 @@ export function applyCourseLessonLocaleContent(
     description_markdown: localized.description_markdown ?? lesson.description_markdown,
     resources: localized.resources ?? lesson.resources,
     youtube_url: localized.youtube_url ?? lesson.youtube_url,
+    youtube_start_seconds:
+      localized.youtube_start_seconds ?? lesson.youtube_start_seconds,
+    youtube_end_seconds:
+      localized.youtube_end_seconds ?? lesson.youtube_end_seconds,
     video_primary_locale: localized.video_primary_locale ?? lesson.video_primary_locale,
     has_subtitle: localized.has_subtitle ?? lesson.has_subtitle,
     subtitle_locales: localized.subtitle_locales ?? lesson.subtitle_locales,
@@ -645,6 +649,35 @@ export async function touchEnrollment(courseId: string, viewer?: User | null): P
     .from("enrollments")
     .update({ last_accessed_at: new Date().toISOString() })
     .eq("id", enr.id);
+}
+
+const LESSON_LEARNER_COUNT_PAGE = 1000;
+
+/** Distinct learner count per lesson_id for a course (any lesson_progress row). */
+export async function getLessonDistinctLearnerCountsForCourse(
+  courseId: string,
+): Promise<Record<string, number>> {
+  const byLesson = new Map<string, Set<string>>();
+  let from = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("lesson_progress")
+      .select("lesson_id, user_id")
+      .eq("course_id", courseId)
+      .range(from, from + LESSON_LEARNER_COUNT_PAGE - 1);
+    if (error) throw new Error(error.message);
+    const rows = data ?? [];
+    for (const row of rows) {
+      const lid = String((row as { lesson_id?: string }).lesson_id ?? "");
+      const uid = String((row as { user_id?: string }).user_id ?? "");
+      if (!lid || !uid) continue;
+      if (!byLesson.has(lid)) byLesson.set(lid, new Set());
+      byLesson.get(lid)!.add(uid);
+    }
+    if (rows.length < LESSON_LEARNER_COUNT_PAGE) break;
+    from += LESSON_LEARNER_COUNT_PAGE;
+  }
+  return Object.fromEntries([...byLesson.entries()].map(([k, v]) => [k, v.size]));
 }
 
 export async function getLessonProgressForCourse(

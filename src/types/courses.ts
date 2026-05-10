@@ -202,6 +202,10 @@ export interface CourseLesson {
   resources?: LessonResource[];
   /** URL YouTube (embed hoặc watch), ví dụ https://www.youtube.com/watch?v=VIDEO_ID */
   youtube_url?: string;
+  /** Giây bắt đầu clip trong video (optional; mặc định 0) */
+  youtube_start_seconds?: number;
+  /** Giây kết thúc clip (optional; không set = xem đến hết video) */
+  youtube_end_seconds?: number | null;
   /** Ngôn ngữ chính của video (có thể khác ngôn ngữ nội dung) */
   video_primary_locale?: SupportedCourseLocale;
   /** Flag subtitle theo locale nội dung (không kiểm tra YouTube API) */
@@ -222,6 +226,8 @@ export interface CourseLessonLocaleContent {
   description_markdown?: string;
   resources?: LessonResource[];
   youtube_url?: string;
+  youtube_start_seconds?: number;
+  youtube_end_seconds?: number | null;
   video_primary_locale?: SupportedCourseLocale;
   has_subtitle?: boolean;
   subtitle_locales?: SupportedCourseLocale[];
@@ -364,6 +370,8 @@ export interface CourseLessonInsert {
   description_markdown?: string;
   resources?: LessonResource[];
   youtube_url?: string;
+  youtube_start_seconds?: number;
+  youtube_end_seconds?: number | null;
   video_primary_locale?: SupportedCourseLocale;
   has_subtitle?: boolean;
   subtitle_locales?: SupportedCourseLocale[];
@@ -431,6 +439,27 @@ export function getYoutubeVideoId(url: string): string | null {
 export function getYoutubeEmbedUrl(url: string): string | null {
   const id = getYoutubeVideoId(url);
   return id ? `https://www.youtube.com/embed/${id}?rel=0` : null;
+}
+
+/** Embed iframe với segment start/end (giây). Chỉ áp dụng khi có youtube_url hợp lệ. */
+export function getYoutubeEmbedUrlForLesson(lesson: Pick<CourseLesson, "youtube_url" | "youtube_start_seconds" | "youtube_end_seconds">): string | null {
+  const base = getYoutubeEmbedUrl(lesson.youtube_url ?? "");
+  if (!base) return null;
+  const startRaw = lesson.youtube_start_seconds;
+  const start =
+    typeof startRaw === "number" && Number.isFinite(startRaw) && startRaw > 0
+      ? Math.floor(startRaw)
+      : 0;
+  const endRaw = lesson.youtube_end_seconds;
+  const end =
+    endRaw != null && typeof endRaw === "number" && Number.isFinite(endRaw) && endRaw > start
+      ? Math.floor(endRaw)
+      : null;
+
+  const u = new URL(base);
+  if (start > 0) u.searchParams.set("start", String(start));
+  if (end != null) u.searchParams.set("end", String(end));
+  return u.toString();
 }
 
 /** Format thời lượng (giây) sang text. Trả về "—" khi 0 hoặc không hợp lệ (tránh "0 phút"). */

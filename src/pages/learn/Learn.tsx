@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, List, Sparkles } from "lucide-react";
 import {
   getNextLesson,
   setLessonProgress,
@@ -23,6 +23,8 @@ import { useLearnEnrollmentAccess } from "./hooks/useLearnEnrollmentAccess";
 import { useLearnPaymentReturnFlow } from "./hooks/useLearnPaymentReturnFlow";
 import { useLearnProgress } from "./hooks/useLearnProgress";
 import { useLearnSubmission } from "./hooks/useLearnSubmission";
+import { BinarySidebarTabs } from "@/components/course-ai/BinarySidebarTabs";
+import { CourseAiTutorPanel } from "@/components/course-ai/CourseAiTutorPanel";
 
 export default function Learn() {
   const { t } = useTranslation("courses");
@@ -31,6 +33,7 @@ export default function Learn() {
       String(t(key as never, options as never)),
     [t],
   );
+  const [learnSidebarTab, setLearnSidebarTab] = useState<"lessons" | "tutor">("lessons");
   const { courseId, lessonId } = useParams<{
     courseId: string;
     lessonId?: string;
@@ -223,7 +226,7 @@ export default function Learn() {
         translate={translate}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)]">
         <div className="min-w-0">
           <LessonPlayerCard
             lesson={currentLesson}
@@ -254,22 +257,49 @@ export default function Learn() {
           ) : null}
         </div>
 
-        <LessonCurriculum
-          courseId={courseId}
-          groups={lessonsBySection}
-          visibleSectionCount={visibleSectionCount}
-          visibleLessonsCount={visibleLessons.length}
-          sortedLessonsCount={sortedLessons.length}
-          currentLessonTitle={currentLesson?.title ?? null}
-          currentLessonId={currentLesson?.id ?? null}
-          progressPercent={progress.progressPercent}
-          completedIds={progress.completedIds}
-          completedCount={progress.completedIds.size}
-          lessonTotal={visibleLessons.length}
-          nextLessonTitle={nextLesson?.title ?? null}
-          hasFullCourseAccess={hasFullCourseAccess}
-          translate={translate}
-        />
+        <div className="flex min-h-0 flex-col gap-3 lg:sticky lg:top-20 lg:self-start">
+          <BinarySidebarTabs
+            active={learnSidebarTab}
+            onChange={setLearnSidebarTab}
+            ariaLabel={String(t("detail.aiTutor.sidebarTablistAria"))}
+            options={[
+              {
+                value: "lessons",
+                label: String(t("detail.learn.lessonList.title")),
+                Icon: List,
+              },
+              {
+                value: "tutor",
+                label: String(t("detail.aiTutor.tabLabel")),
+                Icon: Sparkles,
+              },
+            ]}
+          />
+          {learnSidebarTab === "lessons" ? (
+            <LessonCurriculum
+              variant="tabPanel"
+              courseId={courseId}
+              groups={lessonsBySection}
+              visibleSectionCount={visibleSectionCount}
+              visibleLessonsCount={visibleLessons.length}
+              sortedLessonsCount={sortedLessons.length}
+              currentLessonTitle={currentLesson?.title ?? null}
+              currentLessonId={currentLesson?.id ?? null}
+              progressPercent={progress.progressPercent}
+              completedIds={progress.completedIds}
+              completedCount={progress.completedIds.size}
+              lessonTotal={visibleLessons.length}
+              nextLessonTitle={nextLesson?.title ?? null}
+              hasFullCourseAccess={hasFullCourseAccess}
+              translate={translate}
+            />
+          ) : (
+            <CourseAiTutorPanel
+              courseTitle={course.title ?? ""}
+              lessonTitle={currentLesson?.title ?? null}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

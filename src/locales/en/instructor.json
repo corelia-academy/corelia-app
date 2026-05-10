@@ -620,7 +620,41 @@
       "previewTitle": "Preview",
       "previewEmpty": "No long description yet.",
       "cancel": "Cancel",
-      "save": "Save"
+      "save": "Save",
+      "segmentStartLabel": "Segment start",
+      "segmentEndLabel": "Segment end",
+      "segmentStartPlaceholder": "e.g. 0:00",
+      "segmentEndPlaceholder": "e.g. 15:30 (leave blank for end of video)",
+      "segmentHint": "Timestamps define this lesson's slice of the same YouTube video (M:SS or H:MM:SS).",
+      "progressLockBanner": "{{count}} learner(s) already have progress on this lesson. You can edit text and segment timestamps, but you cannot switch to a different video or delete this lesson.",
+      "youtubeLockedHint": "YouTube link is locked because learners have progress on this lesson.",
+      "cannotChangeVideoWithProgress": "Cannot switch to a different YouTube video while learners have progress on this lesson.",
+      "segmentEndInvalid": "Segment end must be a valid timestamp after the start time.",
+      "deleteBlockedHasProgress": "Cannot delete this lesson — {{count}} learner(s) already have progress.",
+      "deleteLockedTooltip": "{{count}} learner(s) have progress — delete disabled"
+    },
+    "longVideo": {
+      "title": "Long YouTube video",
+      "intro": "This video runs about {{duration}}. Keep one lesson, split automatically from description timestamps, or define segments manually.",
+      "foundChapters": "Timestamps found in the video description:",
+      "noChapters": "No timestamp chapters were found in the description. Split manually or keep a single lesson.",
+      "keepSingle": "Keep one lesson",
+      "autoSplit": "Create lessons from chapters",
+      "manualSplit": "Split manually",
+      "manualTitle": "Define segments",
+      "manualAddRow": "Add segment",
+      "manualConfirm": "Create lessons",
+      "manualStartPlaceholder": "Start (e.g. 0:00)",
+      "manualEndPlaceholder": "End (optional)",
+      "back": "Back",
+      "dismiss": "Cancel",
+      "manual": {
+        "invalidTimestamp": "Enter valid timestamps like 15:30 or 1:20:00.",
+        "invalidEnd": "End time must be after start.",
+        "invalidRange": "Each segment needs a valid length.",
+        "overlap": "Segments must not overlap.",
+        "needRow": "Add at least one segment."
+      }
     },
     "assignments": {
       "titleLabel": "Assignment title",

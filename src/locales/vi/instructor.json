@@ -619,7 +619,41 @@
       "previewTitle": "Xem trước",
       "previewEmpty": "Chưa có mô tả chi tiết.",
       "cancel": "Huỷ",
-      "save": "Lưu"
+      "save": "Lưu",
+      "segmentStartLabel": "Đoạn — thời điểm bắt đầu",
+      "segmentEndLabel": "Đoạn — thời điểm kết thúc",
+      "segmentStartPlaceholder": "VD: 0:00",
+      "segmentEndPlaceholder": "VD: 15:30 (để trống = đến hết video)",
+      "segmentHint": "Mốc thời gian áp cho đoạn video YouTube của bài học này (M:SS hoặc G:MM:SS).",
+      "progressLockBanner": "Đã có {{count}} học viên có tiến độ trên bài học này. Bạn có thể sửa nội dung chữ và mốc đoạn video, nhưng không đổi sang video khác và không xóa bài học.",
+      "youtubeLockedHint": "Link YouTube bị khóa vì đã có học viên có tiến độ trên bài học này.",
+      "cannotChangeVideoWithProgress": "Không thể đổi sang video YouTube khác khi đã có học viên có tiến độ trên bài học này.",
+      "segmentEndInvalid": "Thời điểm kết thúc phải là timestamp hợp lệ và sau thời điểm bắt đầu.",
+      "deleteBlockedHasProgress": "Không thể xóa bài học — đã có {{count}} học viên có tiến độ.",
+      "deleteLockedTooltip": "{{count}} học viên có tiến độ — không cho xóa"
+    },
+    "longVideo": {
+      "title": "Video YouTube dài",
+      "intro": "Video này khoảng {{duration}}. Giữ một bài học, tự tách theo timestamp trong mô tả, hoặc tự nhập các đoạn.",
+      "foundChapters": "Tìm thấy timestamp trong mô tả video:",
+      "noChapters": "Không thấy chapter dạng timestamp trong mô tả. Hãy tách thủ công hoặc giữ một bài học.",
+      "keepSingle": "Giữ một bài học",
+      "autoSplit": "Tạo bài theo chapter",
+      "manualSplit": "Tách thủ công",
+      "manualTitle": "Khai báo các đoạn",
+      "manualAddRow": "Thêm đoạn",
+      "manualConfirm": "Tạo các bài học",
+      "manualStartPlaceholder": "Bắt đầu (VD: 0:00)",
+      "manualEndPlaceholder": "Kết thúc (tuỳ chọn)",
+      "back": "Quay lại",
+      "dismiss": "Huỷ",
+      "manual": {
+        "invalidTimestamp": "Nhập timestamp hợp lệ như 15:30 hoặc 1:20:00.",
+        "invalidEnd": "Thời điểm kết thúc phải sau thời điểm bắt đầu.",
+        "invalidRange": "Mỗi đoạn cần có độ dài hợp lệ.",
+        "overlap": "Các đoạn không được chồng lấn.",
+        "needRow": "Thêm ít nhất một đoạn."
+      }
     },
     "assignments": {
       "titleLabel": "Tiêu đề bài tập",

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/markdown/Markdown";
 import { cn } from "@/lib/utils";
-import { formatDuration, getYoutubeEmbedUrl } from "@/types/courses";
+import { formatDuration, getYoutubeEmbedUrlForLesson } from "@/types/courses";
 import type { CourseLesson } from "@/types/courses";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { LearnBadge } from "./LearnBadge";
@@ -32,7 +32,7 @@ export function LessonPlayerCard({
   onNavigateToLesson: (lessonId: string) => void;
 }) {
   const embedUrl =
-    lesson?.youtube_url?.trim() ? getYoutubeEmbedUrl(lesson.youtube_url) : null;
+    lesson?.youtube_url?.trim() ? getYoutubeEmbedUrlForLesson(lesson) : null;
 
   return (
     <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-base">
