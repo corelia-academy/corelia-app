@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { AlertCircle, CheckCircle2, List, Sparkles } from "lucide-react";
+import { AlertCircle, CheckCircle2, List } from "lucide-react";
 import {
   getNextLesson,
   setLessonProgress,
@@ -24,6 +24,7 @@ import { useLearnPaymentReturnFlow } from "./hooks/useLearnPaymentReturnFlow";
 import { useLearnProgress } from "./hooks/useLearnProgress";
 import { useLearnSubmission } from "./hooks/useLearnSubmission";
 import { BinarySidebarTabs } from "@/components/course-ai/BinarySidebarTabs";
+import { CORA_AI_TUTOR_LOGO_SRC } from "@/components/course-ai/constants";
 import { CourseAiTutorPanel } from "@/components/course-ai/CourseAiTutorPanel";
 
 export default function Learn() {
@@ -271,7 +272,7 @@ export default function Learn() {
               {
                 value: "tutor",
                 label: String(t("detail.aiTutor.tabLabel")),
-                Icon: Sparkles,
+                iconImgSrc: CORA_AI_TUTOR_LOGO_SRC,
               },
             ]}
           />

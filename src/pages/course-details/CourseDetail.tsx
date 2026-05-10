@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Sparkles } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
 import { sortLessonsByCurriculum } from "@/lib/courses";
 import { useCourseLoad } from "./hooks/useCourseLoad";
@@ -29,6 +29,7 @@ import { CourseLanguagePanel } from "./components/CourseLanguagePanel";
 import { CoursePartnerBrandPanel } from "./components/CoursePartnerBrandPanel";
 import { CourseSponsorsPanel } from "./components/CourseSponsorsPanel";
 import { BinarySidebarTabs } from "@/components/course-ai/BinarySidebarTabs";
+import { CORA_AI_TUTOR_LOGO_SRC } from "@/components/course-ai/constants";
 import { CourseAiTutorPanel } from "@/components/course-ai/CourseAiTutorPanel";
 
 export default function CourseDetail() {
@@ -258,7 +259,7 @@ export default function CourseDetail() {
             {
               value: "tutor",
               label: String(t("detail.aiTutor.tabLabel")),
-              Icon: Sparkles,
+              iconImgSrc: CORA_AI_TUTOR_LOGO_SRC,
             },
           ]}
         />
@@ -327,7 +328,7 @@ export default function CourseDetail() {
               {
                 value: "tutor",
                 label: String(t("detail.aiTutor.tabLabel")),
-                Icon: Sparkles,
+                iconImgSrc: CORA_AI_TUTOR_LOGO_SRC,
               },
             ]}
           />

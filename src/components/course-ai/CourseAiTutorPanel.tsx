@@ -5,6 +5,8 @@ import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 
+import { CORA_AI_TUTOR_LOGO_SRC } from "@/components/course-ai/constants";
+
 export function CourseAiTutorPanel(props: {
   courseTitle: string;
   lessonTitle?: string | null;
@@ -30,8 +32,13 @@ export function CourseAiTutorPanel(props: {
       )}
     >
       <div className="border-border-subtle shrink-0 border-b px-3 py-2.5 sm:px-4">
-        <h2 className="text-sm font-semibold text-foreground">{t("detail.aiTutor.sheetTitle")}</h2>
-        <p className="mt-0.5 text-xs leading-snug text-foreground-muted">
+        <img
+          src={CORA_AI_TUTOR_LOGO_SRC}
+          alt={String(t("detail.aiTutor.sheetTitle"))}
+          className="h-12 w-auto max-w-[min(100%,280px)] object-contain object-left sm:h-14 sm:max-w-[320px]"
+          draggable={false}
+        />
+        <p className="mt-2 text-xs leading-snug text-foreground-muted">
           {t("detail.aiTutor.sheetDescription")}
         </p>
       </div>
