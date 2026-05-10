@@ -37,7 +37,9 @@ import {
   uploadContestThumbnail,
 } from "@/lib/storage";
 import type { Project } from "@/types/projects";
+import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
+import type { User } from "@supabase/supabase-js";
 import type {
   Contest,
   ContestAccessInvite,
@@ -284,7 +286,7 @@ export function useContestDetailOrchestrator({
       ...(canReview ? ["applications"] : []),
       ...(canJudge ? ["judging"] : []),
       ...(canViewAggregate ? ["analytics"] : []),
-      ...(isManager ? ["translations", "settings"] : []),
+      ...(isManager ? ["translations", "awards", "settings"] : []),
     ];
     return ids;
   }, [canJudge, canReview, canViewAggregate, isManager]);
@@ -370,6 +372,14 @@ export function useContestDetailOrchestrator({
         }),
         description: translate("workspace.manage.translations.description", {
           defaultValue: "Maintain localized versions of the public hackathon content.",
+        }),
+      };
+    }
+    if (activeManageSection === "awards") {
+      return {
+        label: translate("workspace.awards.heroTitle", { defaultValue: "Open Campus awards" }),
+        description: translate("workspace.awards.heroDescription", {
+          defaultValue: "Configure award templates and mint on-chain credentials for winners.",
         }),
       };
     }
@@ -766,6 +776,13 @@ export function useContestDetailOrchestrator({
   );
 
   const loadAbortRef = useRef<AbortController | null>(null);
+  /** Latest viewer + contest for fetch; avoids churning `loadContestData` identity on token-only updates / contest merges. */
+  const contestDetailFetchInputsRef = useRef<{
+    user: User | null;
+    profile: Profile | null;
+    contest: Contest | null;
+  }>({ user: null, profile: null, contest: null });
+  contestDetailFetchInputsRef.current = { user, profile, contest };
 
   const loadContestData = useCallback(
     async (opts?: { silent?: boolean }) => {
@@ -778,17 +795,19 @@ export function useContestDetailOrchestrator({
         setLoading(true);
         setError(null);
       }
+      const { user: viewer, profile: viewerProfile, contest: prefetchContest } =
+        contestDetailFetchInputsRef.current;
       try {
         const result = await fetchContestDetailPayload({
           slug,
-          profile,
-          userEmail: user?.email ?? undefined,
+          profile: viewerProfile,
+          userEmail: viewer?.email ?? undefined,
           uiLocale: i18n.language,
-          viewer: user ?? null,
+          viewer: viewer ?? null,
           isManager,
           translate,
           signal: ctrl.signal,
-          prefetchedContest: contest,
+          prefetchedContest: prefetchContest,
         });
         if (loadAbortRef.current !== ctrl) return;
         if (result.status === "aborted") return;
@@ -828,14 +847,11 @@ export function useContestDetailOrchestrator({
     slug,
     isManager,
     authInitialized,
-    profile,
     setContest,
     i18n.language,
     setError,
     setLoading,
     translate,
-    user,
-    contest,
     ],
   );
 

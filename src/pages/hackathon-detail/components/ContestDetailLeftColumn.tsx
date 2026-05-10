@@ -1,6 +1,7 @@
 import { ContestDetailManageSectionTabs } from "@/pages/hackathon-detail/components/ContestDetailManageSectionTabs";
 import { ContestDetailManagerSettingsCard } from "@/pages/hackathon-detail/components/ContestDetailManagerSettingsCard";
 import { ContestDetailOverviewBlocks } from "@/pages/hackathon-detail/components/ContestDetailOverviewBlocks";
+import { ContestDetailAwardsPanel } from "@/pages/hackathon-detail/components/ContestDetailAwardsPanel";
 import { ContestDetailManageWorkspacePanels } from "@/pages/hackathon-detail/components/ContestDetailManageWorkspacePanels";
 import { ContestDetailSettingsInviteCard } from "@/pages/hackathon-detail/components/ContestDetailSettingsInviteCard";
 import { ContestDetailPublicFullSections } from "@/pages/hackathon-detail/components/ContestDetailPublicFullSections";
@@ -25,6 +26,9 @@ export function ContestDetailLeftColumn() {
         <ContestDetailManageSectionTabs vm={vm} />
         <ContestDetailOverviewBlocks vm={vm} />
         <ContestDetailManageWorkspacePanels />
+        {vm.isManager && vm.activeManageSection === "awards" ? (
+          <ContestDetailAwardsPanel vm={vm} />
+        ) : null}
         {settingsBody}
       </div>
     );

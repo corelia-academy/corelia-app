@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+  fetchMintedCredentialIssuancesForUser,
+  issuanceToBadgeItem,
+} from "@/lib/credentialIssuances";
 import { getCourse, getMyEnrollments } from "@/lib/courses";
 import { useAuth } from "@/stores/authStore";
 import type { Enrollment } from "@/types/courses";
@@ -11,10 +15,7 @@ import type {
   ClaimStatus,
   ModalItem,
 } from "../types";
-import {
-  buildCourseCertificates,
-  buildMilestoneBadges,
-} from "../utils/buildAchievementsData";
+import { buildCourseCertificates } from "../utils/buildAchievementsData";
 
 export function useAchievementsPage() {
   const { user, isAuthenticated } = useAuth();
@@ -29,32 +30,11 @@ export function useAchievementsPage() {
   useEffect(() => {
     let cancelled = false;
 
-    const milestonesBlock = {
-      milestones: {
-        courseFirst: {
-          title: t("achievements.milestones.courseFirst.title"),
-          description: t("achievements.milestones.courseFirst.description"),
-        },
-        courseThree: {
-          title: t("achievements.milestones.courseThree.title"),
-          description: t("achievements.milestones.courseThree.description"),
-        },
-        firstCertificate: {
-          title: t("achievements.milestones.firstCertificate.title"),
-          description: t("achievements.milestones.firstCertificate.description"),
-        },
-        threeCertificates: {
-          title: t("achievements.milestones.threeCertificates.title"),
-          description: t("achievements.milestones.threeCertificates.description"),
-        },
-      },
-    };
-
     async function loadAchievements() {
       if (!user || !isAuthenticated) {
         if (!cancelled) {
           setCertificates([]);
-          setBadges(buildMilestoneBadges([], milestonesBlock));
+          setBadges([]);
           setLoading(false);
         }
         return;
@@ -75,6 +55,14 @@ export function useAchievementsPage() {
             async (courseId) => [courseId, await getCourse(courseId)] as const,
           ),
         );
+
+        let ocBadges: BadgeItem[] = [];
+        try {
+          const ocRows = await fetchMintedCredentialIssuancesForUser(user.id);
+          ocBadges = ocRows.map(issuanceToBadgeItem);
+        } catch {
+          ocBadges = [];
+        }
 
         if (cancelled) return;
 
@@ -98,10 +86,9 @@ export function useAchievementsPage() {
           const bDate = b.issuedAt.split("/").reverse().join("-");
           return bDate.localeCompare(aDate);
         });
-        const nextBadges = buildMilestoneBadges(enrollments, milestonesBlock);
 
         setCertificates(nextCertificates);
-        setBadges(nextBadges);
+        setBadges(ocBadges);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -143,6 +130,11 @@ export function useAchievementsPage() {
       }
     };
 
+    if (kind === "badge") {
+      setClaiming(false);
+      return;
+    }
+
     setPending("pending");
     await new Promise((res) => setTimeout(res, 2500));
 
@@ -152,40 +144,22 @@ export function useAchievementsPage() {
     const mockOcUrl =
       "https://id.opencampus.xyz/public/credentials?username=student.edu";
 
-    if (kind === "cert") {
-      setCertificates((prev) => {
-        const next = prev.map((c) =>
-          c.id === id
-            ? {
-                ...c,
-                ocClaimStatus: "claimed" as ClaimStatus,
-                ocTransactionHash: mockTxHash,
-                ocCredentialUrl: mockOcUrl,
-                ocHolderOcId: "student.edu",
-              }
-            : c,
-        );
-        const updated = next.find((c) => c.id === id);
-        if (updated) setModalItem({ kind: "cert", data: updated });
-        return next;
-      });
-    } else {
-      setBadges((prev) => {
-        const next = prev.map((b) =>
-          b.id === id
-            ? {
-                ...b,
-                ocClaimStatus: "claimed" as ClaimStatus,
-                ocTransactionHash: mockTxHash,
-                ocCredentialUrl: mockOcUrl,
-              }
-            : b,
-        );
-        const updated = next.find((b) => b.id === id);
-        if (updated) setModalItem({ kind: "badge", data: updated });
-        return next;
-      });
-    }
+    setCertificates((prev) => {
+      const next = prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              ocClaimStatus: "claimed" as ClaimStatus,
+              ocTransactionHash: mockTxHash,
+              ocCredentialUrl: mockOcUrl,
+              ocHolderOcId: "student.edu",
+            }
+          : c,
+      );
+      const updated = next.find((c) => c.id === id);
+      if (updated) setModalItem({ kind: "cert", data: updated });
+      return next;
+    });
 
     setClaiming(false);
   };

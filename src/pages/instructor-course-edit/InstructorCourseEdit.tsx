@@ -126,6 +126,7 @@ import { useTranslation } from "react-i18next";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { Markdown } from "@/components/markdown/Markdown";
 
+import { CourseOcbCredentialSection } from "@/pages/instructor-course-edit/components/CourseOcbCredentialSection";
 import { CO_INSTRUCTOR_PERMISSION_KEYS, EDIT_SECTION_IDS } from "./constants";
 import type { LessonDropPosition, LessonDropTarget } from "./types";
 import { formatVndInput, normalizeVndDigits } from "./utils/currency";
@@ -5007,6 +5008,14 @@ const InstructorCourseEdit = () => {
                   </a>
                 </div>
               </div>
+
+              {id ? (
+                <CourseOcbCredentialSection
+                  courseId={id}
+                  courseSlug={(form.slug || course.slug || "").trim()}
+                  canEdit={Boolean(canEdit)}
+                />
+              ) : null}
             </section>
           )}
 

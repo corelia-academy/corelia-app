@@ -48,7 +48,10 @@ export function OcCredentialModal({
       ? item.data.issuedAt
       : (item.data as BadgeItem).earnedAt ?? "—";
   const credId =
-    item.kind === "cert" ? item.data.credentialId : `CRL-BADGE-${item.data.id}`;
+    item.kind === "cert"
+      ? item.data.credentialId
+      : item.data.mintCredentialId?.trim() ||
+        `CRL-BADGE-${item.data.id}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

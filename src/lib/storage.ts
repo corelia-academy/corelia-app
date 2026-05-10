@@ -72,6 +72,26 @@ export function uploadContestThumbnail(
   return uploadToPath(`contest-thumbnails/${contestId}/${Date.now()}.${ext}`, file, previousPath);
 }
 
+export function uploadHackathonCredentialBadgeImage(
+  hackathonId: string,
+  file: File,
+  previousPath?: string | null,
+): Promise<{ url: string; path: string }> {
+  if (!hackathonId) throw new Error("Thiếu hackathonId");
+  const ext = buildSafeExt(file.name, "png");
+  return uploadToPath(
+    `hackathon-credential-badges/${hackathonId}/${Date.now()}.${ext}`,
+    file,
+    previousPath,
+  );
+}
+
+export function uploadActivityMilestoneBadgeImage(file: File): Promise<{ url: string; path: string }> {
+  const ext = buildSafeExt(file.name, "png");
+  const id = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+  return uploadToPath(`activity-milestone-badges/${id}.${ext}`, file);
+}
+
 export function uploadContestOrganizationalPartnerLogo(
   contestId: string,
   partnerId: string,
@@ -110,6 +130,17 @@ export function uploadCertificateTemplate(
   if (!courseId) throw new Error("Thiếu courseId");
   const ext = buildSafeExt(file.name, "png");
   return uploadToPath(`certificate-templates/${courseId}/${Date.now()}.${ext}`, file, previousPath);
+}
+
+/** Image for Open Campus badge (OCB) tied to a course template. */
+export function uploadCourseCredentialBadgeImage(
+  courseId: string,
+  file: File,
+  previousPath?: string | null,
+): Promise<{ url: string; path: string }> {
+  if (!courseId) throw new Error("Thiếu courseId");
+  const ext = buildSafeExt(file.name, "png");
+  return uploadToPath(`course-credential-badges/${courseId}/${Date.now()}.${ext}`, file, previousPath);
 }
 
 export function uploadCoursePartnerDocument(

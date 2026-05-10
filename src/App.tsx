@@ -105,6 +105,7 @@ const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
 const AdminInstructors = lazy(() => import("@/pages/admin/AdminInstructors"));
 const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMilestones"));
 
 const PageFallback = () => <AuthGateLoading />;
 
@@ -518,6 +519,14 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <AdminInstructorDetail />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="activity-milestones"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminActivityMilestones />
                     </Suspense>
                   }
                 />

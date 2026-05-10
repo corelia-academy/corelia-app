@@ -25,6 +25,17 @@ function isCoInstructor(courseData: Record<string, unknown>, userId: string): bo
   return Object.prototype.hasOwnProperty.call(perms as object, userId);
 }
 
+export async function canManageHackathon(db: SupabaseClient, uid: string, hackathonId: string): Promise<boolean> {
+  const role = await getUserRole(db, uid);
+  if (role === "admin" || role === "support_staff") return true;
+  const { data, error } = await db.from("hackathons").select("document").eq("id", hackathonId).maybeSingle();
+  if (error) throw new Error(error.message);
+  const createdBy = data?.document != null && typeof data.document === "object"
+    ? String((data.document as Record<string, unknown>).created_by ?? "")
+    : "";
+  return createdBy === uid;
+}
+
 export async function canManageCourse(db: SupabaseClient, uid: string, courseId: string): Promise<boolean> {
   const [role, courseRes] = await Promise.all([
     getUserRole(db, uid),

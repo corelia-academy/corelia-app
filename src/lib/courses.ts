@@ -1,3 +1,4 @@
+import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
@@ -750,6 +751,7 @@ export async function setLessonProgress(
 
   if (completed) {
     checkAndIssueCertificate(user.id, courseId).catch(() => {});
+    invokeCheckCourseCredential(courseId).catch(() => {});
   }
 }
 

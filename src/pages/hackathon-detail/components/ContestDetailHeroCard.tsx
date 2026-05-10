@@ -73,7 +73,6 @@ export function ContestDetailHeroCard({
     canJudge,
     viewerRoles,
     canAccessWorkspace,
-    publicCta,
     activeManageSection,
   } = vm;
 
