@@ -1,12 +1,42 @@
-import { Loader2, ShieldCheck, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  AlertTriangle,
+  Globe,
+  Gavel,
+  Loader2,
+  Settings,
+  ShieldCheck,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import type {
   ContestScopedViewerRole,
   ContestStatus,
 } from "@/types/hackathons";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 import { normalizeSlug } from "@/pages/hackathon-detail/utils/slug";
+import { cn } from "@/lib/utils";
+
+const MANAGER_SETTINGS_SECTION_IDS = [
+  "general",
+  "judging",
+  "access",
+  "public",
+  "danger",
+] as const;
+
+type ManagerSettingsSectionId =
+  (typeof MANAGER_SETTINGS_SECTION_IDS)[number];
+
+function parseManagerSettingsHash(
+  raw: string,
+): ManagerSettingsSectionId | null {
+  const h = raw.replace(/^#/, "").trim();
+  return MANAGER_SETTINGS_SECTION_IDS.includes(h as ManagerSettingsSectionId)
+    ? (h as ManagerSettingsSectionId)
+    : null;
+}
 
 export function ContestDetailManagerSettingsCard({
   vm,
@@ -70,13 +100,140 @@ export function ContestDetailManagerSettingsCard({
     setDeleteDialogOpen,
   } = vm;
 
+  const [activeSection, setActiveSection] =
+    useState<ManagerSettingsSectionId>(() => {
+      if (typeof window === "undefined") return "general";
+      return parseManagerSettingsHash(window.location.hash) ?? "general";
+    });
+
+  useEffect(() => {
+    const onHash = () => {
+      const next = parseManagerSettingsHash(window.location.hash);
+      if (next) setActiveSection(next);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  const setSettingsSection = useCallback((id: ManagerSettingsSectionId) => {
+    setActiveSection(id);
+    if (typeof window === "undefined") return;
+    const base = `${window.location.pathname}${window.location.search}`;
+    window.history.replaceState(null, "", `${base}#${id}`);
+  }, []);
+
   return (
-    <Card>
-      <CardContent className="p-6">
+    <div className="flex flex-col gap-4 xl:flex-row">
+      <nav
+        className="h-fit shrink-0 rounded-lg border border-border-subtle bg-surface-base p-3 xl:sticky xl:top-24 xl:w-64"
+        aria-label={translate("workspace.manage.settingsLayoutNavAria")}
+      >
+        <div className="mb-3 px-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
+            {translate("workspace.manage.settingsLayoutNavTitle")}
+          </p>
+          <p className="mt-1 text-sm text-foreground-muted">
+            {translate("workspace.manage.settingsLayoutNavDescription")}
+          </p>
+        </div>
+        <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+          <li>
+            <button
+              type="button"
+              onClick={() => setSettingsSection("general")}
+              aria-current={activeSection === "general" ? "true" : undefined}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                activeSection === "general"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+              )}
+            >
+              <Settings className="size-4 shrink-0" aria-hidden />
+              {translate("workspace.manage.settingsSectionGeneral")}
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              onClick={() => setSettingsSection("judging")}
+              aria-current={activeSection === "judging" ? "true" : undefined}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                activeSection === "judging"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+              )}
+            >
+              <Gavel className="size-4 shrink-0" aria-hidden />
+              {translate("workspace.manage.settingsSectionJudging")}
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              onClick={() => setSettingsSection("access")}
+              aria-current={activeSection === "access" ? "true" : undefined}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                activeSection === "access"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+              )}
+            >
+              <Users className="size-4 shrink-0" aria-hidden />
+              {translate("workspace.manage.settingsSectionAccess")}
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              onClick={() => setSettingsSection("public")}
+              aria-current={activeSection === "public" ? "true" : undefined}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                activeSection === "public"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+              )}
+            >
+              <Globe className="size-4 shrink-0" aria-hidden />
+              {translate("workspace.manage.settingsSectionPublic")}
+            </button>
+          </li>
+          <li className="mt-2 border-t border-border-subtle pt-2 sm:col-span-2 xl:col-span-1">
+            <button
+              type="button"
+              onClick={() => setSettingsSection("danger")}
+              aria-current={activeSection === "danger" ? "true" : undefined}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                activeSection === "danger"
+                  ? "bg-destructive/10 text-destructive"
+                  : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+              )}
+            >
+              <AlertTriangle className="size-4 shrink-0" aria-hidden />
+              {translate("workspace.manage.settingsSectionDanger")}
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <div className="min-w-0 flex-1 space-y-6">
+        {activeSection === "general" ? (
+          <section
+            id="contest-settings-general"
+            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+            aria-labelledby="contest-settings-general-heading"
+          >
         <div className="flex items-center gap-3">
           <ShieldCheck className="size-5 text-primary" aria-hidden />
           <div>
-            <h2 className="text-lg font-medium tracking-tight text-foreground">
+            <h2
+              id="contest-settings-general-heading"
+              className="text-lg font-medium tracking-tight text-foreground"
+            >
               {translate("workspace.manage.operationsControlsTitle")}
             </h2>
             <p className="mt-1 text-sm text-foreground-muted">
@@ -156,11 +313,17 @@ export function ContestDetailManagerSettingsCard({
           >
             {savingSlug
               ? translate("detail.labels.saving")
-              : translate("workspace.manage.saveSlug")}
-          </Button>
+            : translate("workspace.manage.saveSlug")}
+        </Button>
         </div>
-
-        <div className="mt-4 border-t border-border-subtle pt-4">
+          </section>
+        ) : null}
+        {activeSection === "judging" ? (
+          <section
+            id="contest-settings-judging"
+            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+          >
+        <div>
           <h3 className="text-base font-medium text-foreground">
             {translate("workspace.manage.rubricTitle")}
           </h3>
@@ -419,8 +582,14 @@ export function ContestDetailManagerSettingsCard({
               : translate("workspace.manage.saveTracksRounds")}
           </Button>
         </div>
-
-        <div className="mt-4 border-t border-border-subtle pt-4">
+          </section>
+        ) : null}
+        {activeSection === "access" ? (
+          <section
+            id="contest-settings-access"
+            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+          >
+        <div>
           <h3 className="text-base font-medium text-foreground">
             {translate("workspace.manage.accessInvitesTitle")}
           </h3>
@@ -585,8 +754,14 @@ export function ContestDetailManagerSettingsCard({
             )}
           </div>
         </div>
-
-        <div className="mt-4 border-t border-border-subtle pt-4">
+          </section>
+        ) : null}
+        {activeSection === "public" ? (
+          <section
+            id="contest-settings-public"
+            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+          >
+        <div>
           <h3 className="text-base font-medium text-foreground">
             {translate("workspace.manage.publicPageContentTitle")}
           </h3>
@@ -1242,9 +1417,18 @@ export function ContestDetailManagerSettingsCard({
               : translate("workspace.manage.savePublicPageContent")}
           </Button>
         </div>
-
-        <div className="mt-4 border-t border-destructive/20 pt-4">
-          <h3 className="text-base font-medium text-foreground">
+          </section>
+        ) : null}
+        {activeSection === "danger" ? (
+          <section
+            id="contest-settings-danger"
+            className="scroll-mt-28 rounded-md border border-destructive/25 bg-surface-base p-6 sm:scroll-mt-32"
+            aria-labelledby="contest-settings-danger-heading"
+          >
+          <h3
+            id="contest-settings-danger-heading"
+            className="text-base font-medium text-foreground"
+          >
             {translate("workspace.manage.dangerZoneTitle")}
           </h3>
           <p className="mt-2 text-sm text-foreground-muted">
@@ -1259,8 +1443,9 @@ export function ContestDetailManagerSettingsCard({
             <Trash2 className="size-4" aria-hidden />
             {translate("workspace.manage.deleteContest")}
           </Button>
-        </div>
-      </CardContent>
-    </Card>
+          </section>
+        ) : null}
+      </div>
+    </div>
   );
 }

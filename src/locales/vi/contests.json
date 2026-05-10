@@ -313,6 +313,14 @@
       "openEmail": "Open email",
       "dangerZoneTitle": "Danger Zone",
       "dangerZoneDescription": "Deleting a hackathon removes all registrations, invites, submissions, and scores. This cannot be undone.",
+      "settingsLayoutNavAria": "Các nhóm cài đặt hackathon",
+      "settingsLayoutNavTitle": "Nhóm cài đặt",
+      "settingsLayoutNavDescription": "Chuyển giữa từng nhóm thay vì kéo một form dài—giống giao diện chỉnh sửa khóa học.",
+      "settingsSectionGeneral": "Trạng thái & URL",
+      "settingsSectionJudging": "Thiết lập chấm điểm",
+      "settingsSectionAccess": "Quyền truy cập & lời mời",
+      "settingsSectionPublic": "Nội dung trang công khai",
+      "settingsSectionDanger": "Xóa hackathon",
       "deleteContest": "Delete hackathon",
       "inviteCollaborationTitle": "Collaboration invite",
       "inviteMetaLine": "Role: {{roles}} · Status: {{status}}",
@@ -1046,4 +1054,3 @@
     }
   }
 }
-
