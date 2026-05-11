@@ -5420,7 +5420,12 @@ const InstructorCourseEdit = () => {
             <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden p-0">
               <div className="flex max-h-[85vh] flex-col">
                 <DialogHeader className="sticky top-0 z-10 border-b border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
-                  <DialogTitle>{t("courseEdit.lessons.createTitle")}</DialogTitle>
+                  <div className="flex items-center justify-between gap-3">
+                    <DialogTitle>{t("courseEdit.lessons.createTitle")}</DialogTitle>
+                    <span className="rounded bg-surface-raised px-2 py-1 text-xs font-semibold text-foreground">
+                      {activeContentLocale.toUpperCase()}
+                    </span>
+                  </div>
                 </DialogHeader>
                 <div className="flex-1 overflow-y-auto p-4">
                   <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_360px]">
@@ -5453,7 +5458,12 @@ const InstructorCourseEdit = () => {
                     </p>
                   </Field>
                   <Field>
-                    <FieldLabel>{t("courseEdit.lessons.titleLabel")}</FieldLabel>
+                    <FieldLabel>
+                      {t("courseEdit.lessons.titleLabel")}
+                      <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
+                        {activeContentLocale.toUpperCase()}
+                      </span>
+                    </FieldLabel>
                     <Input
                       value={newLessonTitle}
                       onChange={(e) => setNewLessonTitle(e.target.value)}
@@ -5461,7 +5471,12 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel>{t("courseEdit.lessons.shortDescriptionLabel")}</FieldLabel>
+                    <FieldLabel>
+                      {t("courseEdit.lessons.shortDescriptionLabel")}
+                      <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
+                        {activeContentLocale.toUpperCase()}
+                      </span>
+                    </FieldLabel>
                     <Input
                       value={newLessonShortDescription}
                       onChange={(e) => setNewLessonShortDescription(e.target.value)}
@@ -5498,7 +5513,12 @@ const InstructorCourseEdit = () => {
                     </label>
                   )}
                   <Field>
-                    <FieldLabel>{t("courseEdit.lessons.markdownLabel")}</FieldLabel>
+                    <FieldLabel>
+                      {t("courseEdit.lessons.markdownLabel")}
+                      <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
+                        {activeContentLocale.toUpperCase()}
+                      </span>
+                    </FieldLabel>
                     <p className="mt-1 text-xs text-foreground-muted">
                       {t("courseEdit.lessons.markdownHint")}
                     </p>
@@ -5641,9 +5661,14 @@ const InstructorCourseEdit = () => {
 
           {activeSection === "assignments" && canAccessAssignments && (
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
-              <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
-                <FileText className="size-5" /> Bài tập cuối khoá
-              </h2>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <h2 className="flex items-center gap-2 text-lg font-medium text-foreground">
+                  <FileText className="size-5" aria-hidden /> Bài tập cuối khoá
+                </h2>
+                <span className="rounded bg-surface-raised px-2 py-1 text-xs font-semibold text-foreground">
+                  {activeContentLocale.toUpperCase()}
+                </span>
+              </div>
               {form.access_model === "free_with_paid_certificate" && (
                 <p className="mb-3 text-sm text-primary">
                   Học viên cần thanh toán{" "}
@@ -5663,7 +5688,12 @@ const InstructorCourseEdit = () => {
                 </h3>
                 <FieldGroup>
                   <Field>
-                    <FieldLabel>{t("courseEdit.assignments.titleLabel")}</FieldLabel>
+                    <FieldLabel>
+                      {t("courseEdit.assignments.titleLabel")}
+                      <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
+                        {activeContentLocale.toUpperCase()}
+                      </span>
+                    </FieldLabel>
                     <Input
                       placeholder={t("courseEdit.assignments.titlePlaceholder")}
                     value={contentForm.final_assignment_title}
@@ -5676,7 +5706,12 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel>{t("courseEdit.assignments.descriptionLabel")}</FieldLabel>
+                    <FieldLabel>
+                      {t("courseEdit.assignments.descriptionLabel")}
+                      <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
+                        {activeContentLocale.toUpperCase()}
+                      </span>
+                    </FieldLabel>
                     <textarea
                       placeholder={t("courseEdit.assignments.descriptionPlaceholder")}
                     value={contentForm.final_assignment_description}
@@ -5691,7 +5726,12 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel>{t("courseEdit.assignments.instructionsLabel")}</FieldLabel>
+                    <FieldLabel>
+                      {t("courseEdit.assignments.instructionsLabel")}
+                      <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
+                        {activeContentLocale.toUpperCase()}
+                      </span>
+                    </FieldLabel>
                     <textarea
                       placeholder={t("courseEdit.assignments.instructionsPlaceholder")}
                     value={contentForm.final_assignment_instructions}
