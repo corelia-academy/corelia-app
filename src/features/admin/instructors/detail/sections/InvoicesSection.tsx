@@ -25,9 +25,9 @@ export function InvoicesSection({
   onUpload: (file: File) => void;
 }) {
   return (
-    <section className="rounded-2xl border border-border-subtle bg-card p-6 shadow-card">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base p-6">
       {!isExternal ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-foreground-muted">
           {t("instructorDetailPage.invoices.externalOnly")}
         </p>
       ) : (
@@ -37,11 +37,11 @@ export function InvoicesSection({
               <h2 className="text-lg font-medium text-foreground">
                 {t("instructorDetailPage.invoices.title")}
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-foreground-muted">
                 {t("instructorDetailPage.invoices.description")}
               </p>
             </div>
-            <span className="rounded-full border border-border-subtle bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+            <span className="rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs text-foreground-muted">
               {t("instructorDetailPage.invoices.countLabel", {
                 count: invoiceDocs.length,
               })}

@@ -8,7 +8,7 @@ export function Breadcrumb({
   return (
     <nav
       aria-label="Breadcrumb"
-      className={cn("text-xs text-muted-foreground", className)}
+      className={cn("flex items-center gap-1 text-xs text-foreground-muted", className)}
       {...props}
     />
   );
@@ -45,7 +45,7 @@ export function BreadcrumbSeparator({
 }: React.ComponentProps<"span">) {
   return (
     <span
-      className={cn("text-muted-foreground/70", className)}
+      className={cn("text-foreground-muted", className)}
       {...props}
     >
       {children ?? "/"}
@@ -61,7 +61,7 @@ export function BreadcrumbLink({
   return (
     <span
       className={cn(
-        "hover:text-foreground transition-colors",
+        "text-foreground-muted hover:text-foreground transition-colors duration-150",
         className,
       )}
       {...props}

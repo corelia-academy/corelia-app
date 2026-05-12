@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { LoginCallBack, useOCAuth } from "@opencampus/ocid-connect-js";
-import { updateOCIDProfile } from "@/lib/profile";
-import { auth } from "@/lib/firebase";
-import { useAuth } from "@/stores/authStore";
+import { updateOCIDProfileForUser } from "@/lib/profile";
+import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 
 type OCAuthStateMaybe = {
@@ -15,10 +15,10 @@ function Loading() {
   const { t } = useTranslation("account");
   return (
     <div className="container-app py-10">
-      <div className="rounded-2xl border border-border-subtle bg-card p-6 shadow-card">
+      <div className="rounded-lg border border-border-subtle bg-surface-base p-6">
         <div className="flex items-center gap-3">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-foreground-muted">
             {t("ocid.redirect.finishing")}
           </div>
         </div>
@@ -42,7 +42,7 @@ function ErrorView() {
 export default function OCIDRedirect() {
   const { t } = useTranslation("account");
   const navigate = useNavigate();
-  const { refreshProfile } = useAuth();
+  const refreshProfile = useAuthStore((s) => s.refreshProfile);
   const { OCId, ethAddress, ocAuth } = useOCAuth();
   const [error, setError] = useState<string | null>(null);
 
@@ -50,7 +50,13 @@ export default function OCIDRedirect() {
     return {
       successCallback: async () => {
         setError(null);
-        const user = auth.currentUser;
+        let user = useAuthStore.getState().user;
+        if (!user) {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          user = session?.user ?? null;
+        }
         if (!user) {
           setError(t("ocid.redirect.mustLoginFirst"));
           navigate("/login", { replace: true });
@@ -76,11 +82,11 @@ export default function OCIDRedirect() {
           return;
         }
 
-        await updateOCIDProfile({
+        await updateOCIDProfileForUser(user, {
           ocid: resolvedOCId,
           ocid_eth_address: resolvedEth,
         });
-        await refreshProfile();
+        await refreshProfile(user);
         navigate("/account", { replace: true });
       },
       errorCallback: (e: unknown) => {

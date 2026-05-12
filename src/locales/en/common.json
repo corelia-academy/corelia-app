@@ -33,8 +33,9 @@
   "nav": {
     "home": "Home",
     "courses": "Courses",
-    "cohorts": "Cohorts",
-    "contests": "Contests",
+    "career": "Career",
+    "contests": "Hackathons",
+    "projects": "Projects",
     "achievements": "Achievements",
     "account": "Account",
     "admin": "Admin",
@@ -45,11 +46,154 @@
     "signedInViaEmail": "(signed in via email)"
   },
   "user": {
-    "fallbackName": "User"
+    "fallbackName": "User",
+    "accountSettings": "Account settings"
+  },
+  "header": {
+    "publicProfile": "Public profile",
+    "notifications": "Notifications",
+    "notificationsAria": "Open notifications",
+    "noNotifications": "No notifications yet.",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+  "notifications": {
+    "projectInviteTitle": "Team invite",
+    "projectInviteBody": "You were invited to join a hackathon project.",
+    "projectInviteProjectLabel": "Project: {{title}}",
+    "projectInviteHackathonLabel": "Hackathon: {{title}}",
+    "openHackathon": "Open hackathon",
+    "inviteResolved": "Resolved",
+    "inviteAccepted": "You joined the project.",
+    "inviteDeclined": "Invite declined.",
+    "inviteAcceptFailed": "Could not accept invite.",
+    "inviteDeclineFailed": "Could not decline invite.",
+    "hackathonRegistrationApprovedTitle": "Registration approved",
+    "hackathonRegistrationApprovedBody": "Your application for {{hackathonTitle}} was approved.",
+    "hackathonRegistrationRejectedTitle": "Registration not approved",
+    "hackathonRegistrationRejectedBody": "Your application for {{hackathonTitle}} was not approved.",
+    "hackathonRegistrationReviewNote": "Note from reviewer: {{note}}",
+    "hackathonRegistrationFallbackTitle": "Hackathon",
+    "viewHackathon": "View hackathon"
+  },
+  "userProfile": {
+    "tabs": {
+      "overview": "Overview",
+      "achievements": "Achievements",
+      "courses": "Courses",
+      "contests": "Hackathons"
+    },
+    "actions": {
+      "editProfile": "Edit profile"
+    },
+    "labels": {
+      "ocid": "OCID: {{ocid}}",
+      "website": "Website",
+      "role": "Role",
+      "memberSince": "Member since"
+    },
+    "errors": {
+      "notFound": "User not found",
+      "loadFailed": "Could not load profile",
+      "tryAnother": "Try a different handle (username or OCID)."
+    },
+    "overview": {
+      "title": "Overview",
+      "quickInfo": "Quick info",
+      "empty": "No public info yet.",
+      "instructorHeadlineFallback": "Instructor"
+    },
+    "achievements": {
+      "selfOnly": "Achievements are only visible to the account owner for now.",
+      "openInAchievementsPage": "Open Achievements to view your certificates and badges.",
+      "cta": "Open Achievements"
+    },
+    "courses": {
+      "privateByDefault": "Courses are private for students by default.",
+      "empty": "No published courses yet.",
+      "updatedAt": "Updated {{date}}"
+    },
+    "contests": {
+      "empty": "No public hackathons yet.",
+      "organizedTitle": "Organized hackathons",
+      "participatedTitle": "Participated hackathons",
+      "participatedEmpty": "No participations yet.",
+      "fallbackTitle": "Hackathon",
+      "updatedAt": "Updated {{date}}"
+    },
+    "projects": {
+      "empty": "No public projects yet.",
+      "viewSource": "View source",
+      "demo": "Demo",
+      "repo": "Repo",
+      "slides": "Slides"
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "description": "A public gallery of projects across the Corelia ecosystem.",
+    "empty": "No projects yet.",
+    "byPrefix": "By",
+    "viewSource": "View source",
+    "demo": "Demo",
+    "repo": "Repo",
+    "slides": "Slides",
+    "sourceHackathon": "Hackathon",
+    "sourceCourse": "Course",
+    "sourceShowcase": "Showcase",
+    "social": {
+      "heart": "Like",
+      "unheart": "Unlike",
+      "commentsHeading": "Comments",
+      "commentsToggle": "Comments ({{count}})",
+      "placeholder": "Write a comment…",
+      "submit": "Post",
+      "loginToInteract": "Sign in to like or comment.",
+      "emptyComments": "No comments yet.",
+      "loadingComments": "Loading comments…",
+      "delete": "Remove comment",
+      "commentRemoved": "Comment removed.",
+      "commentEmpty": "Comment cannot be empty.",
+      "commentTooLong": "Comment is too long.",
+      "postFailed": "Could not post comment.",
+      "heartFailed": "Could not update like.",
+      "loadCommentsFailed": "Could not load comments.",
+      "deleteFailed": "Could not remove comment."
+    },
+    "errors": {
+      "loadFailed": "Could not load projects"
+    }
+  },
+  "search": {
+    "placeholder": "Search public content...",
+    "title": "Search",
+    "queryLine": "Results for “{{query}}”",
+    "enterQueryHint": "Type a keyword in the header search to discover public content.",
+    "suggest": {
+      "recent": "Recent searches",
+      "trending": "Trending",
+      "suggestions": "Quick results",
+      "searchFor": "Search for “{{query}}”",
+      "enterToSeeAll": "Press Enter to see all results",
+      "viewAllResults": "View all results",
+      "noQuickResults": "No quick results."
+    },
+    "empty": "No results found.",
+    "errors": {
+      "loadFailed": "Could not load search results"
+    },
+    "group": {
+      "project": "Project",
+      "contest": "Hackathon",
+      "course": "Course",
+      "career_track": "Career track",
+      "profile": "Profile"
+    }
   },
   "tabs": {
     "menu": "Menu",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "signOut": "Sign out"
   },
   "status": {
     "loading": "Loading…",
@@ -79,9 +223,9 @@
         "emptyNote": "No courses being tracked yet"
       },
       "contests": {
-        "label": "Open contests",
-        "note": "Hackathon · mini contest · ecosystem activities",
-        "emptyNote": "No new contests"
+        "label": "Open hackathons",
+        "note": "Hackathon · ecosystem activities",
+        "emptyNote": "No new hackathons"
       },
       "certificates": {
         "label": "Certificates issued",
@@ -95,10 +239,11 @@
         "ecosystemPlayground": "Ecosystem playground",
         "offlineClass": "Offline class"
       },
+      "courseFallbackDescription": "Prioritized for this stage of your dashboard. {{nextStep}}",
       "cta": {
         "viewCourse": "View course",
         "viewProgram": "View program",
-        "viewContest": "View contest"
+        "viewContest": "View hackathon"
       },
       "contest": {
         "registrationDeadline": "Registration deadline {{date}}",
@@ -108,20 +253,35 @@
     },
     "guest": {
       "heroTitle": "Start your Web3 learning journey with Corelia",
-      "heroSubtitle": "Explore courses, programs, and open contests. When you want to save progress or enroll, just sign in.",
+      "heroSubtitle": "Explore courses, programs, and open hackathons. When you want to save progress or enroll, just sign in.",
+      "featuredCoursesTitle": "Featured courses",
       "signIn": "Sign in",
-      "openContestsTitle": "Open contests",
+      "openContestsTitle": "Open hackathons",
       "startLearningTitle": "Start learning",
-      "startLearningSubtitle": "Sign in to save progress, track certificates, and submit contest applications.",
+      "startLearningSubtitle": "Sign in to save progress, track certificates, and submit hackathon applications.",
       "quickLinksTitle": "Quick links",
+      "valueProps": {
+        "learn": {
+          "label": "Learn the fundamentals",
+          "note": "Courses and paths designed to help you build momentum step by step."
+        },
+        "build": {
+          "label": "Build with practice",
+          "note": "Hackathons and community projects help you sharpen real-world skills."
+        },
+        "ship": {
+          "label": "Ship your work",
+          "note": "From portfolio to collaboration opportunities in the Corelia ecosystem."
+        }
+      },
       "quickLinks": {
-        "contests": "Contests",
-        "cohorts": "Classes"
+        "contests": "Hackathons",
+        "courses": "Courses"
       }
     },
     "sections": {
       "greeting": "Hi, {{name}}",
-      "greetingSubtitle": "Track courses, contests, and achievements in one place.",
+      "greetingSubtitle": "Track courses, hackathons, and achievements in one place.",
       "featuredOnline": "Learning now",
       "featuredOffline": "Following now",
       "progress": "Progress",
@@ -312,15 +472,15 @@
     "footerNote": "Priorities can shift with partner programs and learner feedback. This page is updated when major milestones land.",
     "shippedItems": [
       "Course catalog, checkout, and self-paced learning workspace",
-      "Contests: discovery, public hubs, and participant-facing flows",
+      "Hackathons: discovery, public hubs, and participant-facing flows",
       "Account area: profile, billing basics, and achievements overview",
       "Instructor workspace: course authoring and partner finance tools",
       "Admin tools for users, instructors, and platform operations",
       "Open Campus (OCID) linking for credentials and achievement claims"
     ],
     "inProgressItems": [
-      "Contest admin: richer creation, review, and publishing workflows",
-      "Public contest pages: timeline, prizes, rules, FAQs, and polish",
+      "Hackathon admin: richer creation, review, and publishing workflows",
+      "Public hackathon pages: timeline, prizes, rules, FAQs, and polish",
       "Certificates & badges: smoother issuance and OC claim UX",
       "Performance, accessibility, and onboarding refinements sitewide"
     ],

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/markdown/Markdown";
 import { cn } from "@/lib/utils";
-import { formatDuration, getYoutubeEmbedUrl } from "@/types/courses";
+import { formatDuration, getYoutubeEmbedUrlForLesson } from "@/types/courses";
 import type { CourseLesson } from "@/types/courses";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { LearnBadge } from "./LearnBadge";
@@ -32,14 +32,14 @@ export function LessonPlayerCard({
   onNavigateToLesson: (lessonId: string) => void;
 }) {
   const embedUrl =
-    lesson?.youtube_url?.trim() ? getYoutubeEmbedUrl(lesson.youtube_url) : null;
+    lesson?.youtube_url?.trim() ? getYoutubeEmbedUrlForLesson(lesson) : null;
 
   return (
-    <div className="overflow-hidden rounded-md border border-border-subtle bg-card shadow-sm">
-      <div className="border-b border-border-subtle bg-muted/30 px-4 py-3 sm:px-5">
+    <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-base">
+      <div className="border-b border-border-subtle bg-surface-raised px-4 py-3 sm:px-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {translate("detail.learn.currentLesson.label")}
             </p>
             <p className="mt-1 text-sm font-medium text-foreground">
@@ -48,7 +48,7 @@ export function LessonPlayerCard({
             </p>
           </div>
           {lesson ? (
-            <div className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+            <div className="rounded-full bg-surface-base px-3 py-1 text-xs text-foreground-muted">
               {formatDuration(lesson.duration_seconds)}
             </div>
           ) : null}
@@ -66,18 +66,18 @@ export function LessonPlayerCard({
           />
         </div>
       ) : (
-        <div className="flex aspect-video items-center justify-center bg-muted/50">
+        <div className="flex aspect-video items-center justify-center bg-surface-raised">
           {lesson && isDraftLesson ? (
             <div className="max-w-md px-6 text-center">
               <p className="text-sm font-medium text-foreground">
                 {translate("detail.learn.lessonDraftNoticeTitle")}
               </p>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 text-sm text-foreground-muted">
                 {translate("detail.learn.lessonDraftNoticeBody")}
               </p>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-foreground-muted">
               {translate("detail.learn.currentLesson.selectAside")}
             </p>
           )}
@@ -102,16 +102,16 @@ export function LessonPlayerCard({
             <h2 className="mt-3 text-lg font-semibold text-foreground">
               {lesson.title}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {translate("detail.learn.lessonHint")}
             </p>
             {lesson.short_description?.trim() ? (
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
                 {lesson.short_description}
               </p>
             ) : null}
             {lesson.description_markdown?.trim() ? (
-              <div className="mt-4 rounded-md border border-border-subtle bg-muted/20 p-4">
+              <div className="mt-4 rounded-md border border-border-subtle bg-surface-raised p-4">
                 <p className="text-sm font-medium text-foreground">
                   {translate("detail.learn.lessonAboutTitle")}
                 </p>
@@ -121,7 +121,7 @@ export function LessonPlayerCard({
               </div>
             ) : null}
             {lesson.resources?.length ? (
-              <div className="mt-4 rounded-md border border-border-subtle bg-card p-4">
+              <div className="mt-4 rounded-md border border-border-subtle bg-surface-base p-4">
                 <p className="text-sm font-medium text-foreground">
                   {translate("detail.learn.lessonResourcesTitle")}
                 </p>

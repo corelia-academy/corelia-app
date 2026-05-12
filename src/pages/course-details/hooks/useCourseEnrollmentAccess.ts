@@ -1,3 +1,4 @@
+import type { User } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState } from "react";
 import { enrollCourse, getEnrollment } from "@/lib/courses";
 import {
@@ -9,6 +10,8 @@ import type { Enrollment } from "@/types/courses";
 interface UseCourseEnrollmentAccessInput {
   resolvedCourseId: string | null;
   profileId: string | undefined;
+  /** Forwarded to `enrollCourse` to avoid a redundant `auth.getUser()`. */
+  viewer?: User | null;
 }
 
 interface UseCourseEnrollmentAccessResult {
@@ -25,6 +28,7 @@ interface UseCourseEnrollmentAccessResult {
 export function useCourseEnrollmentAccess({
   resolvedCourseId,
   profileId,
+  viewer,
 }: UseCourseEnrollmentAccessInput): UseCourseEnrollmentAccessResult {
   const [enrolled, setEnrolled] = useState(false);
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
@@ -67,14 +71,14 @@ export function useCourseEnrollmentAccess({
     if (!resolvedCourseId) return null;
     setEnrolling(true);
     try {
-      const row = await enrollCourse(resolvedCourseId);
+      const row = await enrollCourse(resolvedCourseId, viewer);
       setEnrolled(true);
       setEnrollment(row);
       return row;
     } finally {
       setEnrolling(false);
     }
-  }, [resolvedCourseId]);
+  }, [resolvedCourseId, viewer]);
 
   return {
     enrolled,

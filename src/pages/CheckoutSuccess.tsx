@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ArrowRight, BookOpen, Loader2, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/firebase";
+import { useAuth } from "@/stores/authStore";
+import { supabase } from "@/lib/supabase";
 import { verifySePayPayment } from "@/lib/payments";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import type { Session } from "@supabase/supabase-js";
 
 type StoredCheckout = {
   orderId?: string;
@@ -14,8 +16,33 @@ type StoredCheckout = {
   createdAt?: number;
 };
 
+async function waitForActiveSession(maxMs: number): Promise<Session | null> {
+  const {
+    data: { session: initial },
+  } = await supabase.auth.getSession();
+  if (initial?.user) return initial;
+
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(() => {
+      subscription.unsubscribe();
+      resolve(null);
+    }, maxMs);
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        window.clearTimeout(timer);
+        subscription.unsubscribe();
+        resolve(session);
+      }
+    });
+  });
+}
+
 export default function CheckoutSuccess() {
   const { t } = useTranslation("courses");
+  const { user: storeUser } = useAuth();
   const { courseId, purpose } = useParams<{ courseId: string; purpose: string }>();
   const navigate = useNavigate();
   const [seconds, setSeconds] = useState(10);
@@ -55,10 +82,17 @@ export default function CheckoutSuccess() {
 
     void (async () => {
       setStatusMessage(t("detail.checkoutSuccess.restoringSession"));
-      await auth.authStateReady();
+      let session =
+        storeUser != null
+          ? (await supabase.auth.getSession()).data.session
+          : null;
+      if (!session?.user) {
+        session = await waitForActiveSession(30_000);
+      }
       if (cancelled) return;
 
-      if (!auth.currentUser) {
+      const accessToken = session?.access_token ?? null;
+      if (!accessToken) {
         setVerifying(false);
         setStatusMessage(
           t("detail.checkoutSuccess.sessionNotReady"),
@@ -74,6 +108,7 @@ export default function CheckoutSuccess() {
             orderId,
             courseId,
             purpose: purpose === "certificate_fee" ? "certificate_fee" : "course_purchase",
+            accessToken,
           });
           if (cancelled) return;
           if (result.full_access_granted || result.certificate_fee_paid) {
@@ -112,7 +147,7 @@ export default function CheckoutSuccess() {
     return () => {
       cancelled = true;
     };
-  }, [courseId, purpose, t]);
+  }, [courseId, purpose, storeUser, t]);
 
   useEffect(() => {
     if (verifying || seconds > 0) return;
@@ -121,11 +156,11 @@ export default function CheckoutSuccess() {
 
   return (
     <div className="mx-auto w-full max-w-[960px] px-4 py-10">
-      <div className="rounded-md border border-border-subtle bg-card p-6">
+      <div className="rounded-md border border-border-subtle bg-surface-base p-6">
         <h1 className="text-2xl font-normal tracking-tight text-foreground">
           {t("detail.checkoutSuccess.title")}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-foreground-muted">
           {statusMessage}{" "}
           {!verifying ? (
             <>
@@ -137,7 +172,7 @@ export default function CheckoutSuccess() {
 
         {verifying ? (
           <div className="mt-6 flex items-center justify-center">
-            <Loader2 className="size-10 animate-spin text-muted-foreground/60" aria-hidden />
+            <Loader2 className="size-10 animate-spin text-foreground-subtle" aria-hidden />
           </div>
         ) : null}
 
@@ -159,7 +194,7 @@ export default function CheckoutSuccess() {
           </Button>
         </div>
 
-        <div className="mt-6 text-xs text-muted-foreground">
+        <div className="mt-6 text-xs text-foreground-muted">
           <Link to={targetPath} className="inline-flex items-center gap-1 hover:underline">
             {t("detail.checkoutSuccess.skipNow")} <ArrowRight className="size-3.5" aria-hidden />
           </Link>

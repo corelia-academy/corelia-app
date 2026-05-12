@@ -23,7 +23,7 @@
   "footer": {
     "copyrightPrefix": "© {{year}} Corelia Academy. Tất cả quyền được bảo lưu.",
     "version": "Phiên bản {{version}}",
-    "roadmap": "Lộ trình"
+    "roadmap": "Roadmap sản phẩm"
   },
   "notFound": {
     "title": "Không tìm thấy trang",
@@ -33,8 +33,9 @@
   "nav": {
     "home": "Trang chủ",
     "courses": "Khóa học",
-    "cohorts": "Cohorts",
-    "contests": "Cuộc thi",
+    "career": "Lộ trình",
+    "contests": "Hackathon",
+    "projects": "Dự án",
     "achievements": "Thành tích",
     "account": "Tài khoản",
     "admin": "Admin",
@@ -45,11 +46,154 @@
     "signedInViaEmail": "(đăng nhập bằng email)"
   },
   "user": {
-    "fallbackName": "Người dùng"
+    "fallbackName": "Người dùng",
+    "accountSettings": "Cài đặt tài khoản"
+  },
+  "header": {
+    "publicProfile": "Hồ sơ công khai",
+    "notifications": "Thông báo",
+    "notificationsAria": "Mở thông báo",
+    "noNotifications": "Chưa có thông báo.",
+    "accept": "Chấp nhận",
+    "decline": "Từ chối"
+  },
+  "notifications": {
+    "projectInviteTitle": "Lời mời nhóm dự án",
+    "projectInviteBody": "Bạn được mời tham gia một dự án hackathon.",
+    "projectInviteProjectLabel": "Dự án: {{title}}",
+    "projectInviteHackathonLabel": "Hackathon: {{title}}",
+    "openHackathon": "Mở hackathon",
+    "inviteResolved": "Đã xử lý",
+    "inviteAccepted": "Bạn đã tham gia dự án.",
+    "inviteDeclined": "Đã từ chối lời mời.",
+    "inviteAcceptFailed": "Không thể chấp nhận lời mời.",
+    "inviteDeclineFailed": "Không thể từ chối lời mời.",
+    "hackathonRegistrationApprovedTitle": "Đã duyệt hồ sơ",
+    "hackathonRegistrationApprovedBody": "Hồ sơ đăng ký hackathon {{hackathonTitle}} của bạn đã được duyệt.",
+    "hackathonRegistrationRejectedTitle": "Hồ sơ chưa được duyệt",
+    "hackathonRegistrationRejectedBody": "Hồ sơ đăng ký hackathon {{hackathonTitle}} của bạn chưa được duyệt.",
+    "hackathonRegistrationReviewNote": "Ghi chú từ ban tổ chức: {{note}}",
+    "hackathonRegistrationFallbackTitle": "Hackathon",
+    "viewHackathon": "Xem hackathon"
+  },
+  "userProfile": {
+    "tabs": {
+      "overview": "Tổng quan",
+      "achievements": "Thành tích",
+      "courses": "Khóa học",
+      "contests": "Hackathon"
+    },
+    "actions": {
+      "editProfile": "Chỉnh sửa hồ sơ"
+    },
+    "labels": {
+      "ocid": "OCID: {{ocid}}",
+      "website": "Website",
+      "role": "Vai trò",
+      "memberSince": "Tham gia từ"
+    },
+    "errors": {
+      "notFound": "Không tìm thấy người dùng",
+      "loadFailed": "Không thể tải hồ sơ",
+      "tryAnother": "Thử một handle khác (username hoặc OCID)."
+    },
+    "overview": {
+      "title": "Tổng quan",
+      "quickInfo": "Thông tin nhanh",
+      "empty": "Chưa có thông tin công khai.",
+      "instructorHeadlineFallback": "Giảng viên"
+    },
+    "achievements": {
+      "selfOnly": "Thành tích hiện chỉ hiển thị cho chính chủ tài khoản.",
+      "openInAchievementsPage": "Mở trang Thành tích để xem chứng chỉ và huy hiệu của bạn.",
+      "cta": "Mở trang Thành tích"
+    },
+    "courses": {
+      "privateByDefault": "Danh sách khóa học của học viên mặc định là riêng tư.",
+      "empty": "Chưa có khóa học public nào.",
+      "updatedAt": "Cập nhật {{date}}"
+    },
+    "contests": {
+      "empty": "Chưa có hackathon public nào.",
+      "organizedTitle": "Hackathon đã tổ chức",
+      "participatedTitle": "Hackathon đã tham gia",
+      "participatedEmpty": "Bạn chưa tham gia hackathon nào.",
+      "fallbackTitle": "Hackathon",
+      "updatedAt": "Cập nhật {{date}}"
+    },
+    "projects": {
+      "empty": "Chưa có dự án public nào.",
+      "viewSource": "Xem nguồn",
+      "demo": "Demo",
+      "repo": "Repo",
+      "slides": "Slides"
+    }
+  },
+  "projects": {
+    "title": "Dự án",
+    "description": "Trang tổng hợp dự án public của toàn bộ cộng đồng Corelia.",
+    "empty": "Chưa có dự án nào.",
+    "byPrefix": "Bởi",
+    "viewSource": "Xem nguồn",
+    "demo": "Demo",
+    "repo": "Repo",
+    "slides": "Slides",
+    "sourceHackathon": "Hackathon",
+    "sourceCourse": "Khóa học",
+    "sourceShowcase": "Showcase",
+    "social": {
+      "heart": "Thả tim",
+      "unheart": "Bỏ tim",
+      "commentsHeading": "Bình luận",
+      "commentsToggle": "Bình luận ({{count}})",
+      "placeholder": "Viết bình luận…",
+      "submit": "Gửi",
+      "loginToInteract": "Đăng nhập để thả tim hoặc bình luận.",
+      "emptyComments": "Chưa có bình luận.",
+      "loadingComments": "Đang tải bình luận…",
+      "delete": "Xóa bình luận",
+      "commentRemoved": "Đã xóa bình luận.",
+      "commentEmpty": "Nội dung bình luận không được để trống.",
+      "commentTooLong": "Bình luận quá dài.",
+      "postFailed": "Không gửi được bình luận.",
+      "heartFailed": "Không cập nhật được tim.",
+      "loadCommentsFailed": "Không tải được bình luận.",
+      "deleteFailed": "Không xóa được bình luận."
+    },
+    "errors": {
+      "loadFailed": "Không tải được danh sách dự án"
+    }
+  },
+  "search": {
+    "placeholder": "Tìm kiếm nội dung public...",
+    "title": "Tìm kiếm",
+    "queryLine": "Kết quả cho “{{query}}”",
+    "enterQueryHint": "Nhập từ khoá ở ô search trên header để khám phá nội dung public.",
+    "suggest": {
+      "recent": "Tìm kiếm gần đây",
+      "trending": "Xu hướng",
+      "suggestions": "Kết quả nhanh",
+      "searchFor": "Tìm “{{query}}”",
+      "enterToSeeAll": "Nhấn Enter để xem tất cả kết quả",
+      "viewAllResults": "Xem tất cả kết quả",
+      "noQuickResults": "Chưa có kết quả nhanh."
+    },
+    "empty": "Không tìm thấy kết quả phù hợp.",
+    "errors": {
+      "loadFailed": "Không tải được kết quả tìm kiếm"
+    },
+    "group": {
+      "project": "Dự án",
+      "contest": "Hackathon",
+      "course": "Khoá học",
+      "career_track": "Lộ trình",
+      "profile": "Hồ sơ"
+    }
   },
   "tabs": {
     "menu": "Menu",
-    "signIn": "Đăng nhập"
+    "signIn": "Đăng nhập",
+    "signOut": "Đăng xuất"
   },
   "status": {
     "loading": "Đang tải…",
@@ -79,9 +223,9 @@
         "emptyNote": "Chưa có khóa nào đang theo dõi"
       },
       "contests": {
-        "label": "Contest đang mở",
-        "note": "Hackathon · mini contest · hoạt động hệ sinh thái",
-        "emptyNote": "Chưa có contest mới"
+        "label": "Hackathon đang mở",
+        "note": "Hackathon · hoạt động hệ sinh thái",
+        "emptyNote": "Chưa có hackathon mới"
       },
       "certificates": {
         "label": "Chứng chỉ đã cấp",
@@ -95,10 +239,11 @@
         "ecosystemPlayground": "Sân chơi hệ sinh thái",
         "offlineClass": "Lớp trực tiếp"
       },
+      "courseFallbackDescription": "Ưu tiên cho giai đoạn này của dashboard. {{nextStep}}",
       "cta": {
         "viewCourse": "Xem khoá học",
         "viewProgram": "Xem chương trình",
-        "viewContest": "Xem contest"
+        "viewContest": "Xem hackathon"
       },
       "contest": {
         "registrationDeadline": "Hạn đăng ký {{date}}",
@@ -108,20 +253,35 @@
     },
     "guest": {
       "heroTitle": "Bắt đầu hành trình học Web3 cùng Corelia",
-      "heroSubtitle": "Khám phá khoá học, chương trình và contest đang mở. Khi cần lưu tiến độ hoặc đăng ký, bạn chỉ cần đăng nhập.",
+      "heroSubtitle": "Khám phá khoá học, chương trình và hackathon đang mở. Khi cần lưu tiến độ hoặc đăng ký, bạn chỉ cần đăng nhập.",
+      "featuredCoursesTitle": "Khóa học nổi bật",
       "signIn": "Đăng nhập",
-      "openContestsTitle": "Cuộc thi đang mở",
+      "openContestsTitle": "Hackathon đang mở",
       "startLearningTitle": "Bắt đầu hành trình học tập",
-      "startLearningSubtitle": "Đăng nhập để lưu tiến độ, theo dõi chứng chỉ và gửi hồ sơ tham gia contest.",
+      "startLearningSubtitle": "Đăng nhập để lưu tiến độ, theo dõi chứng chỉ và gửi hồ sơ tham gia hackathon.",
       "quickLinksTitle": "Lối đi nhanh",
+      "valueProps": {
+        "learn": {
+          "label": "Học nền tảng",
+          "note": "Khoá học và lộ trình được thiết kế để bạn học chắc từng bước."
+        },
+        "build": {
+          "label": "Thực chiến",
+          "note": "Hackathon và dự án cộng đồng giúp bạn luyện kỹ năng triển khai."
+        },
+        "ship": {
+          "label": "Ra sản phẩm",
+          "note": "Từ portfolio đến cơ hội cộng tác trong hệ sinh thái Corelia."
+        }
+      },
       "quickLinks": {
-        "contests": "Cuộc thi",
-        "cohorts": "Lớp học"
+        "contests": "Hackathon",
+        "courses": "Khóa học"
       }
     },
     "sections": {
       "greeting": "Xin chào, {{name}}",
-      "greetingSubtitle": "Theo dõi khoá học, contest và thành tích trong một nơi.",
+      "greetingSubtitle": "Theo dõi khoá học, hackathon và thành tích trong một nơi.",
       "featuredOnline": "Khoá đang học",
       "featuredOffline": "Lớp đang theo",
       "progress": "Tiến độ",
@@ -313,15 +473,15 @@
     "footerNote": "Ưu tiên có thể thay đổi theo chương trình đối tác và phản hồi học viên. Trang sẽ được cập nhật khi các mốc lớn hoàn thành.",
     "shippedItems": [
       "Danh mục khóa học, thanh toán và không gian học tự học",
-      "Contest: khám phá, trang công khai và luồng dành cho thí sinh",
+      "Hackathon: khám phá, trang công khai và luồng dành cho thí sinh",
       "Khu vực tài khoản: hồ sơ, thanh toán cơ bản và tổng quan thành tích",
       "Không gian giảng viên: biên soạn khóa và công cụ tài chính đối tác",
       "Công cụ admin cho người dùng, giảng viên và vận hành nền tảng",
       "Liên kết Open Campus (OCID) cho chứng chỉ và xác nhận thành tích"
     ],
     "inProgressItems": [
-      "Quản trị contest: tạo nội dung, duyệt và xuất bản mượt hơn",
-      "Trang contest công khai: timeline, giải thưởng, luật, FAQ và hoàn thiện UI",
+      "Quản trị hackathon: tạo nội dung, duyệt và xuất bản mượt hơn",
+      "Trang hackathon công khai: timeline, giải thưởng, luật, FAQ và hoàn thiện UI",
       "Chứng chỉ & huy hiệu: cấp phát và trải nghiệm claim OC ổn định hơn",
       "Tối ưu hiệu năng, accessibility và onboarding trên toàn site"
     ],

@@ -19,8 +19,8 @@ export function CourseBadge({
   const base =
     "inline-flex items-center rounded px-2 py-1 text-xs font-medium";
   const variants: Record<CourseBadgeVariant, string> = {
-    secondary: "bg-muted text-muted-foreground",
-    outline: "bg-transparent text-muted-foreground border border-border",
+    secondary: "bg-surface-raised text-foreground-muted",
+    outline: "bg-transparent text-foreground-muted border border-border",
     success: "bg-success/10 text-success border border-success/20",
     warning: "bg-warning/10 text-warning border border-warning/20",
   };

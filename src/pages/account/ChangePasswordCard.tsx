@@ -1,11 +1,8 @@
 import { useState } from "react";
-import {
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updatePassword,
-  type User,
-} from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
+import { PASSWORD_MIN_LENGTH, passwordMeetsProjectPolicy } from "@/lib/passwordPolicy";
+import { getAuthErrorInfo } from "@/pages/login/loginErrors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +10,7 @@ import { useTranslation } from "react-i18next";
 
 export function ChangePasswordCard({ user }: { user: User }) {
   const { t } = useTranslation("account");
+  const { t: tAuth } = useTranslation("auth");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,9 +18,8 @@ export function ChangePasswordCard({ user }: { user: User }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const hasPasswordProvider = user.providerData?.some(
-    (p) => p.providerId === "password",
-  );
+  const hasPasswordProvider =
+    user.identities?.some((i) => i.provider === "email") ?? false;
 
   async function onSubmitPasswordChange(e: React.FormEvent) {
     e.preventDefault();
@@ -33,8 +30,8 @@ export function ChangePasswordCard({ user }: { user: User }) {
       setError(t("password.errors.confirmMismatch"));
       return;
     }
-    if (newPassword.length < 6) {
-      setError(t("password.errors.minLength"));
+    if (!passwordMeetsProjectPolicy(newPassword)) {
+      setError(t("password.errors.policy"));
       return;
     }
     const email = user.email;
@@ -45,19 +42,26 @@ export function ChangePasswordCard({ user }: { user: User }) {
 
     setLoading(true);
     try {
-      const credential = EmailAuthProvider.credential(email, currentPassword);
-      const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error(t("errors.notLoggedIn"));
-      await reauthenticateWithCredential(currentUser, credential);
-      await updatePassword(currentUser, newPassword);
+      const { error: reauthError } = await supabase.auth.signInWithPassword({
+        email,
+        password: currentPassword,
+      });
+      if (reauthError) throw reauthError;
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (updateError) throw updateError;
+
       setSuccess(t("password.success.changed"));
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : t("password.errors.changeFailed");
-      setError(msg);
+      const info = getAuthErrorInfo(err, (key, opts) =>
+        String(tAuth(key as never, opts as never)),
+      );
+      setError(info.message || t("password.errors.changeFailed"));
     } finally {
       setLoading(false);
     }
@@ -66,10 +70,10 @@ export function ChangePasswordCard({ user }: { user: User }) {
   if (!hasPasswordProvider) return null;
 
   return (
-    <div className="space-y-4 rounded-md border border-border-subtle bg-card p-4 shadow-card">
+    <div className="space-y-4 rounded-lg border border-border-subtle bg-surface-base p-4">
       <div>
-        <h2 className="text-base font-medium">{t("password.title")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className="text-lg font-semibold">{t("password.title")}</h2>
+        <p className="mt-1 text-sm text-foreground-muted">
           {t("password.subtitle")}
         </p>
       </div>
@@ -101,7 +105,7 @@ export function ChangePasswordCard({ user }: { user: User }) {
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder={t("password.fields.next.placeholder")}
             required
-            minLength={6}
+            minLength={PASSWORD_MIN_LENGTH}
             className="rounded"
           />
         </div>
@@ -117,17 +121,17 @@ export function ChangePasswordCard({ user }: { user: User }) {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder={t("password.fields.confirm.placeholder")}
             required
-            minLength={6}
+            minLength={PASSWORD_MIN_LENGTH}
             className="rounded"
           />
         </div>
         {error ? (
-          <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <div className="rounded-md border border-destructive/20 bg-destructive-muted px-3 py-2 text-sm text-destructive">
             {error}
           </div>
         ) : null}
         {success ? (
-          <div className="rounded-md border border-success/25 bg-success/10 px-3 py-2 text-sm text-success">
+          <div className="rounded-md border border-success/25 bg-success-muted px-3 py-2 text-sm text-success">
             {success}
           </div>
         ) : null}
@@ -140,4 +144,3 @@ export function ChangePasswordCard({ user }: { user: User }) {
     </div>
   );
 }
-

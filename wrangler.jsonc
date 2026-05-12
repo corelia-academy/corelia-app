@@ -5,6 +5,11 @@
   "observability": {
     "enabled": true
   },
+  "env": {
+    "staging": {
+      "name": "corelia-staging"
+    }
+  },
   "assets": {
     "not_found_handling": "single-page-application"
   },

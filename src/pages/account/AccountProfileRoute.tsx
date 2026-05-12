@@ -1,33 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { UserCircle } from "lucide-react";
 import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
-import { updateCurrentProfile, uploadAvatar } from "@/lib/profile";
+import { updateProfileForUser, uploadAvatarForUser } from "@/lib/profile";
 import { Skeleton } from "@/components/ui/skeleton";
 import ConnectOCIDCard from "@/pages/account/ConnectOCIDCard";
 import { ChangePasswordCard } from "./ChangePasswordCard";
-import { MfaEnrollCard } from "./MfaEnrollCard";
 import { ProfileSection } from "./ProfileSection";
 
 function useProfileForm(profile: Profile | null) {
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? "");
+  const [username, setUsername] = useState(profile?.username ?? "");
+  const [bio, setBio] = useState(profile?.bio ?? "");
+  const [website, setWebsite] = useState(profile?.website ?? "");
+  const [profilePublic, setProfilePublic] = useState(profile?.profile_public ?? true);
 
   return {
     fullName,
     phone,
     avatarUrl,
+    username,
+    bio,
+    website,
+    profilePublic,
     setFullName,
     setPhone,
     setAvatarUrl,
+    setUsername,
+    setBio,
+    setWebsite,
+    setProfilePublic,
   };
 }
 
 export function AccountProfileRoute() {
   const { t } = useTranslation("account");
-  const { user, profile, loading, refreshProfile } = useAuth();
+  const { user, profile, profileLoading, authInitialized, refreshProfile } = useAuth();
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,18 +48,47 @@ export function AccountProfileRoute() {
     user && profile && (!profile.full_name || !profile.phone),
   );
 
-  const { fullName, phone, avatarUrl, setFullName, setPhone, setAvatarUrl } =
-    useProfileForm(profile);
+  const {
+    fullName,
+    phone,
+    avatarUrl,
+    username,
+    bio,
+    website,
+    profilePublic,
+    setFullName,
+    setPhone,
+    setAvatarUrl,
+    setUsername,
+    setBio,
+    setWebsite,
+    setProfilePublic,
+  } = useProfileForm(profile);
+
+  // Sync form fields when profile arrives after initial render
+  const profileId = profile?.id;
+  useEffect(() => {
+    if (!profile) return;
+    setFullName(profile.full_name ?? "");
+    setPhone(profile.phone ?? "");
+    setAvatarUrl(profile.avatar_url ?? "");
+    setUsername(profile.username ?? "");
+    setBio(profile.bio ?? "");
+    setWebsite(profile.website ?? "");
+    setProfilePublic(profile.profile_public ?? true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileId]);
 
   async function onAvatarUpload(file: File) {
+    if (!user) return;
     setError(null);
     setSuccess(null);
     setUploadingAvatar(true);
     try {
-      const url = await uploadAvatar(file);
+      const url = await uploadAvatarForUser(user, file);
       setAvatarUrl(url);
-      await updateCurrentProfile({ avatar_url: url });
-      await refreshProfile();
+      await updateProfileForUser(user, { avatar_url: url });
+      await refreshProfile(user);
       setSuccess(t("profile.success.avatarUpdated"));
     } catch (err) {
       const message =
@@ -68,12 +108,17 @@ export function AccountProfileRoute() {
     setSaving(true);
 
     try {
-      await updateCurrentProfile({
+      if (!user) return;
+      await updateProfileForUser(user, {
+        username: username.trim() || null,
         full_name: fullName || null,
         phone: phone || null,
         avatar_url: avatarUrl || null,
+        bio: bio.trim() || null,
+        website: website.trim() || null,
+        profile_public: profilePublic,
       });
-      await refreshProfile();
+      await refreshProfile(user);
       setSuccess(t("profile.success.updated"));
     } catch (err) {
       const message =
@@ -84,14 +129,15 @@ export function AccountProfileRoute() {
     }
   }
 
-  if (loading && !profile) {
+  // Skeleton = page data (profile), not the global auth gate (`AuthGateLoading` in RequireAuth / Suspense).
+  if (!authInitialized || (profileLoading && !profile)) {
     return (
       <div className="space-y-4">
-        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <Skeleton className="h-6 w-56 rounded" />
-          <Skeleton className="mt-2 h-4 w-full max-w-[520px] rounded" />
+          <Skeleton className="mt-2 h-4 w-full max-w-xl rounded" />
         </div>
-        <div className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
           <div className="flex items-center gap-4">
             <Skeleton className="size-20 rounded-full" />
             <div className="min-w-0 flex-1 space-y-2">
@@ -121,16 +167,17 @@ export function AccountProfileRoute() {
   }
 
   if (!user) {
+
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-          <UserCircle className="size-6 text-muted-foreground" aria-hidden />
+        <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+          <UserCircle className="size-6 text-foreground-subtle" aria-hidden />
         </div>
         <div>
           <p className="text-sm font-medium text-foreground">
             {t("profile.mustLogin")}
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="mt-0.5 text-xs text-foreground-muted">
             {t("header.subtitle")}
           </p>
         </div>
@@ -138,36 +185,59 @@ export function AccountProfileRoute() {
     );
   }
 
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-16 text-center">
+        <p className="text-sm text-foreground-muted">
+          {t("profile.errors.loadFailed")}
+        </p>
+        <button
+          type="button"
+          onClick={() => void refreshProfile(user)}
+          className="rounded-md border border-border-subtle bg-surface-base px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
+        >
+          {t("profile.retry")}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
       {needsProfileSetup ? (
         <div className="rounded-md border border-warning/20 bg-warning/10 p-4 text-sm text-warning">
           <p className="font-medium">{t("profile.setupWarning.title")}</p>
-          <p className="mt-2 leading-relaxed">
-            {t("profile.setupWarning.body")}
-          </p>
+          <p className="mt-2 leading-relaxed">{t("profile.setupWarning.body")}</p>
         </div>
       ) : null}
+
       <ProfileSection
         key={profile.updated_at || profile.id}
-        sessionEmail={user.email ?? user.uid}
+        sessionEmail={user.email ?? user.id}
+        username={username}
         fullName={fullName}
         phone={phone}
         avatarUrl={avatarUrl}
+        bio={bio}
+        website={website}
+        profilePublic={profilePublic}
+        profileLinkHandle={username.trim() || profile.ocid?.trim() || profile.id}
         setFullName={setFullName}
         setPhone={setPhone}
         saving={saving}
         uploadingAvatar={uploadingAvatar}
         onAvatarUpload={onAvatarUpload}
+        setUsername={setUsername}
+        setBio={setBio}
+        setWebsite={setWebsite}
+        setProfilePublic={setProfilePublic}
         error={error}
         success={success}
         onSubmit={onSubmitProfile}
       />
+
       <ConnectOCIDCard />
       <ChangePasswordCard user={user} />
-      <MfaEnrollCard user={user} />
     </div>
   );
 }

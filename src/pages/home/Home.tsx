@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import type { User } from "firebase/auth";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/stores/authStore";
 import { Award, PlaySquare, Trophy } from "lucide-react";
@@ -27,13 +26,25 @@ export default function Home() {
     focusCards,
     issuedCertificates,
     dashboardConfig,
-  } = useHomeUserDashboard(user as User | null, t);
+  } = useHomeUserDashboard(user, t);
 
+  const oauthDisplayName =
+    typeof user?.user_metadata?.full_name === "string"
+      ? user.user_metadata.full_name
+      : typeof user?.user_metadata?.name === "string"
+        ? user.user_metadata.name
+        : undefined;
   const displayName =
-    profile?.full_name?.trim() || user?.displayName || t("home.studentFallback");
+    profile?.full_name?.trim() || oauthDisplayName || t("home.studentFallback");
   const firstName = displayName.split(" ")[0] || displayName;
   const email = profile?.email || user?.email || "";
-  const avatarUrl = profile?.avatar_url?.trim() || user?.photoURL || undefined;
+  const oauthAvatar =
+    typeof user?.user_metadata?.avatar_url === "string"
+      ? user.user_metadata.avatar_url
+      : typeof user?.user_metadata?.picture === "string"
+        ? user.user_metadata.picture
+        : undefined;
+  const avatarUrl = profile?.avatar_url?.trim() || oauthAvatar || undefined;
   const initials =
     displayName
       .split(" ")
@@ -95,7 +106,7 @@ export default function Home() {
               title: item.title_override || enrolledCourse.title,
               description:
                 item.description_override ||
-                `Ưu tiên cho giai đoạn này của dashboard. ${enrolledCourse.nextStep}`,
+                t("home.pinned.courseFallbackDescription", { nextStep: enrolledCourse.nextStep }),
               to: `/courses/${enrolledCourse.id}`,
               cta: item.cta_label || t("home.pinned.cta.viewCourse"),
               meta: enrolledCourse.meta,
@@ -126,7 +137,7 @@ export default function Home() {
             badge: item.badge || t("home.pinned.badges.ecosystemPlayground"),
             title: item.title_override || contest.title,
             description: item.description_override || contest.tagline,
-            to: `/contests/${contest.id}`,
+            to: contest.slug ? `/hackathons/${contest.slug}` : "/hackathons",
             cta: item.cta_label || t("home.pinned.cta.viewContest"),
             meta:
               contest.registration_deadline != null
@@ -150,7 +161,7 @@ export default function Home() {
   }
 
   return (
-    <div className="container-app w-full min-w-0 py-6 sm:py-8">
+    <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-6">
           <HomeHeader

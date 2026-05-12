@@ -67,10 +67,10 @@ export function CourseHero({
       : null;
 
   return (
-    <section className="rounded-md border border-border-subtle bg-card shadow-sm">
+    <section className="rounded-md border border-border-subtle bg-surface-base">
       <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)] lg:items-start">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
             <CourseBadge variant="secondary">
               {getCourseLevelLabel(course.level)}
             </CourseBadge>
@@ -89,6 +89,9 @@ export function CourseHero({
                 {translate("filters.pricing.certificate")}
               </CourseBadge>
             ) : null}
+            {course.is_external_aggregated ? (
+              <CourseBadge variant="outline">External Source</CourseBadge>
+            ) : null}
             {enrollment?.certificate_issued_at ? (
               <CourseBadge variant="success">
                 {translate("detail.courseDetail.certificateIssued")}
@@ -101,15 +104,15 @@ export function CourseHero({
           </h1>
 
           {course.short_description ? (
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-3 text-sm leading-relaxed text-foreground-muted">
               {course.short_description}
             </p>
           ) : null}
 
           <div className="mt-6 grid gap-4 text-sm">
-            <dl className="grid grid-cols-1 gap-2 rounded-md bg-muted/30 p-4 text-sm sm:grid-cols-2">
+            <dl className="grid grid-cols-1 gap-2 rounded-md bg-surface-raised p-4 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-muted-foreground">
+                <dt className="text-foreground-muted">
                   {translate("detail.courseDetail.stats.duration")}
                 </dt>
                 <dd className="mt-0.5 font-medium text-foreground">
@@ -117,7 +120,7 @@ export function CourseHero({
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">
+                <dt className="text-foreground-muted">
                   {translate("detail.courseDetail.stats.curriculum")}
                 </dt>
                 <dd className="mt-0.5 font-medium text-foreground">
@@ -127,10 +130,10 @@ export function CourseHero({
             </dl>
 
             {course.is_updating ? (
-              <div className="rounded-md border border-border-subtle bg-muted/30 p-4 text-sm">
+              <div className="rounded-md border border-border-subtle bg-surface-raised p-4 text-sm">
                 <div className="flex items-start gap-2">
                   <Info
-                    className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                    className="mt-0.5 size-4 shrink-0 text-foreground-muted"
                     aria-hidden
                   />
                   <div className="min-w-0">
@@ -139,7 +142,7 @@ export function CourseHero({
                     "detail.courseDetail.courseUpdatingNotice.title",
                   )}
                     </p>
-                    <p className="mt-1 text-muted-foreground">
+                    <p className="mt-1 text-foreground-muted">
                       {translate(
                         "detail.courseDetail.courseUpdatingNotice.body",
                       )}
@@ -150,13 +153,13 @@ export function CourseHero({
             ) : null}
 
             {shouldShowContentLocaleNotice ? (
-              <div className="rounded-md border border-border-subtle bg-muted/30 p-4 text-sm">
+              <div className="rounded-md border border-border-subtle bg-surface-raised p-4 text-sm">
                 <div className="flex items-start gap-2">
                   <Info
-                    className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                    className="mt-0.5 size-4 shrink-0 text-foreground-muted"
                     aria-hidden
                   />
-                  <p className="min-w-0 text-muted-foreground">
+                  <p className="min-w-0 text-foreground-muted">
                     {translate(
                       "courses:detail.courseDetail.language.contentFallbackNotice",
                       {
@@ -170,7 +173,7 @@ export function CourseHero({
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-md border border-border-subtle bg-muted/30">
+        <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
           <div className="relative aspect-video">
             <img
               src="/Corelia_Banner_Square.png"
@@ -193,7 +196,7 @@ export function CourseHero({
 
             {!courseThumbnailSrc ? (
               <div className="absolute inset-0 grid place-items-center bg-linear-to-br from-transparent via-transparent to-background/10">
-                <div className="flex items-center gap-2 rounded-full bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+                <div className="flex items-center gap-2 rounded-full bg-surface-base/70 px-3 py-1 text-xs font-medium text-foreground-muted backdrop-blur">
                   <BookOpen className="size-4" aria-hidden />
                   {translate("detail.courseDetail.thumbnailFallback", {
                     defaultValue: "Chưa có hình ảnh khoá học",

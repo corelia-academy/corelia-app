@@ -91,13 +91,13 @@ export function ProfileCombobox({
       >
         <div className="min-w-0">
           {selectedLabels.length === 0 ? (
-            <div className="text-sm text-muted-foreground">{placeholder}</div>
+            <div className="text-sm text-foreground-subtle">{placeholder}</div>
           ) : multiple ? (
             <div className="flex flex-wrap gap-2">
               {selectedLabels.map((label) => (
                 <span
                   key={label}
-                  className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-2.5 py-1 text-xs font-medium text-foreground"
+                  className="inline-flex items-center rounded-full border border-border bg-surface-raised px-2.5 py-1 text-xs font-medium text-foreground"
                 >
                   {label}
                 </span>
@@ -107,11 +107,11 @@ export function ProfileCombobox({
             <div className="text-sm text-foreground">{selectedLabels[0]}</div>
           )}
         </div>
-        <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+        <ChevronDown className="size-4 shrink-0 text-foreground-muted" aria-hidden />
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-xl rounded-3xl p-0">
+        <DialogContent className="max-w-xl p-0">
           <DialogHeader className="border-b border-border-subtle px-5 py-4">
             <DialogTitle>{title}</DialogTitle>
             {description ? <DialogDescription>{description}</DialogDescription> : null}
@@ -121,13 +121,13 @@ export function ProfileCombobox({
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm"
+              className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm text-foreground placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 outline-none"
               placeholder={searchPlaceholder ?? t("combobox.searchPlaceholder")}
             />
 
             <div className="mt-4 max-h-[min(60vh,28rem)] space-y-2 overflow-y-auto pr-1">
               {filtered.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border-subtle bg-background px-4 py-5 text-sm text-muted-foreground">
+                <div className="rounded-lg border border-dashed border-border-subtle bg-surface-base px-4 py-5 text-sm text-foreground-muted">
                   {emptyLabel ?? t("combobox.emptyLabel")}
                 </div>
               ) : (
@@ -138,10 +138,10 @@ export function ProfileCombobox({
                       key={option.id}
                       type="button"
                       onClick={() => toggleOption(option.id)}
-                      className={`flex w-full items-start justify-between gap-4 rounded-2xl border px-4 py-3 text-left transition ${
+                      className={`flex w-full items-start justify-between gap-4 rounded-lg border px-4 py-3 text-left transition-all duration-200 ease-out ${
                         checked
-                          ? "border-primary bg-primary/5"
-                          : "border-border-subtle bg-background hover:border-border"
+                          ? "border-primary bg-primary-muted"
+                          : "border-border-subtle bg-surface-base hover:bg-surface-raised hover:border-border"
                       }`}
                     >
                       <div className="min-w-0">
@@ -149,7 +149,7 @@ export function ProfileCombobox({
                           {option.label}
                         </div>
                         {option.description ? (
-                          <div className="mt-1 text-sm leading-5 text-muted-foreground">
+                          <div className="mt-1 text-sm leading-5 text-foreground-muted">
                             {option.description}
                           </div>
                         ) : null}

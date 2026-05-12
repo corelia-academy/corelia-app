@@ -14,7 +14,7 @@
 | Variant system | **class-variance-authority (CVA)** |
 | Font chính | **Google Sans Variable** → `font-sans` |
 | Font mono | **JetBrains Mono Variable** → `font-mono` |
-| Icon library | **@phosphor-icons/react** (chính) + `lucide-react` (phụ) |
+| Icon library | **lucide-react** |
 | Dark mode | Class-based: `<html class="dark">` — dùng `next-themes` |
 | Color space | **oklch()** cho toàn bộ token màu |
 | Theme provider | `<ThemeProvider attribute="class" defaultTheme="system" enableSystem>` |
@@ -83,20 +83,20 @@
 > 1. **Không dùng #000 hay #FFF thuần** — Light: blue-50 bg + white card. Dark: deep navy bg + card navy. Chưa bao giờ đen/trắng thuần.
 > 2. **Dark mode: navy layering** — `#0D1B2E` bg → `#162032` card → `#1F2E42` elevated. Tạo depth bằng lightness increment, không phải shadow.
 > 3. **Semantic màu nhất quán** — `success` = emerald, `warning` = amber, `destructive` = red. Không tự chọn màu khác.
-> 4. **M3 Tonal Container** — Dùng `bg-primary-container text-on-primary-container` cho active state (lesson đang xem, selection). Không hardcode `bg-blue-100` hay `bg-primary/10`.
+> 4. **Tonal (DS v2)** — Dùng `bg-primary-muted text-primary` cho active/selected state. Không hardcode `bg-blue-100` hay `bg-primary/10`.
 
-### 2.4 Quy tắc sử dụng màu
+### 2.4 Quy tắc sử dụng màu (Corelia DS v2)
 
 - **KHÔNG dùng** màu hardcode (`gray-700`, `slate-200`, `indigo-600` trực tiếp). **PHẢI dùng** token semantic
 - Primary button CTA: `bg-primary text-primary-foreground` → tự ra Indigo
-- Active lesson / selected item: `bg-primary-container text-on-primary-container` (M3 tonal)
+- Active lesson / selected item: `bg-primary-muted text-primary`
 - Progress bar fill: `bg-success` hoặc `bg-primary` (không còn dùng `bg-foreground/80`)
 - Badge success: `bg-success/15 text-success` (cả 2 mode)
 - Badge warning: `bg-warning/15 text-warning` (cả 2 mode)
 - Trạng thái cảnh báo inline: vẫn dùng amber Tailwind class nếu cần fine-grained: `border-amber-200/80 bg-amber-50/90 text-amber-900 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-100`
 - Trạng thái thành công inline: `bg-success/10 text-success` hoặc `bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300`
 - Badge label trên thumbnail: `bg-foreground/80 text-background` (vẫn giữ)
-- Nền muted section: `bg-muted/50` hoặc `bg-muted/40`
+- Nền muted section: `bg-surface-raised` (hoặc `bg-surface-overlay` khi cần nổi hơn)
 - Icon active/highlight: `text-primary`
 
 ---
@@ -117,11 +117,11 @@
 | Page title (H1) | `text-2xl font-normal tracking-tight text-foreground sm:text-3xl` | Nhẹ, không bold |
 | Page title bold | `text-2xl font-semibold tracking-tight text-foreground sm:text-3xl` | Dùng cho trang detail |
 | Section heading | `text-lg font-medium text-foreground` | |
-| Section label | `text-sm font-medium uppercase tracking-wide text-muted-foreground` | Với icon duotone size-5 |
+| Section label | `text-sm font-medium uppercase tracking-wide text-foreground-muted` | |
 | Card title (H2/H3) | `text-[15px] font-medium leading-snug text-foreground` | |
-| Body / mô tả | `text-[15px] text-muted-foreground` | |
-| Meta / label nhỏ | `text-[13px] text-muted-foreground` | |
-| Caption / badge | `text-[12px] text-muted-foreground` | |
+| Body / mô tả | `text-[15px] text-foreground-muted` | |
+| Meta / label nhỏ | `text-[13px] text-foreground-muted` | |
+| Caption / badge | `text-[12px] text-foreground-muted` | |
 | Micro tag | `text-[11px] font-medium` | Badge trên thumbnail |
 | Số thống kê lớn | `text-xl font-medium tabular-nums text-foreground` | |
 | Nav link | `text-[13px] font-medium` | |
@@ -146,7 +146,7 @@
 
 > `max-w-[1990px]` — ultra-wide support. `min-w-0` — tránh overflow trong flex/grid.
 
-> **⛔ KHÔNG được bọc thêm wrapper ngoài** với `min-h-screen` hay `bg-background` — body đã có `bg-background`, và wrapper trên đã xử lý height. Thêm wrapper ngoài → double container = spacing thừa.
+> **⛔ KHÔNG được bọc thêm wrapper ngoài** với `min-h-screen` hay `bg-surface-base` — body đã có background, và wrapper trên đã xử lý height. Thêm wrapper ngoài → double container = spacing thừa.
 
 ### 4.2 Trang có sidebar 2 cột
 
@@ -188,7 +188,7 @@
 | Section đầu tiên trong page wrapper | `mt-6` (double với `py-6`) | Không có `mt-*`, để wrapper `py` tự xử lý |
 | Hero section sau page wrapper | `mt-6 mb-10` | `mb-10` (bỏ `mt-*`) |
 | Wrapper có sẵn `space-y-5` | `<div className="mt-0 ...">` bọc ngoài | Đặt element trực tiếp vào `space-y-*` |
-| Outer div bọc page | `min-h-screen bg-background` | Bỏ outer div; `body` đã có `bg-background` |
+| Outer div bọc page | `min-h-screen bg-surface-base` | Bỏ outer div; `body` đã có background |
 | Conditional element trong aside | Bọc trong `div` khi conditional `false` | Render trực tiếp với `{condition && <Comp />}` |
 
 ---
@@ -227,24 +227,12 @@
 
 ---
 
-## 6. Shadows & Elevation
+## 6. Shadows & Elevation (Corelia DS v2)
 
-Dùng token, không dùng hardcode Tailwind shadow. Hệ thống 4 mức theo M3:
+Corelia DS v2 **không dựa vào shadow để tạo elevation** (đặc biệt trong dark mode). Thay vào đó, dùng **surface tokens** + border subtle/strong để phân tầng:
 
-```tsx
-shadow-card         // base card — resting state
-shadow-elevation-1  // subtle lift — hover light
-shadow-elevation-2  // elevated — hover card, dropdown
-shadow-elevation-3  // floating — modal, dialog, toast
-```
-
-### Hover elevation pattern (chuẩn):
-
-```tsx
-className="... shadow-card transition-[box-shadow,border-color] hover:border-border hover:shadow-elevation-2"
-```
-
-> **M3 Elevation Tiers:** `elevation-1` = barely perceptible (tonal), `elevation-2` = noticeable lift (4dp), `elevation-3` = clear float (8dp). Dark mode shadows cần chroma cao hơn (0.3 vs 0.08) để visible trên dark surface.
+- Surface: `bg-surface-base` → `bg-surface-raised` → `bg-surface-overlay` → `bg-surface-float`
+- Border: `border-border-subtle` (resting) / `border-border` hoặc `border-border-strong` (overlay/float)
 
 ---
 
@@ -277,12 +265,12 @@ className="... shadow-card transition-[box-shadow,border-color] hover:border-bor
 
 ```tsx
 // Ghost action cuối card (inline-left):
-<Button variant="ghost" size="sm" className="mt-3 w-fit -ml-2 text-foreground hover:bg-muted">
+<Button variant="ghost" size="sm" className="mt-3 w-fit -ml-2 text-foreground hover:bg-surface-raised">
   Xem chi tiết <ArrowRight className="size-4" />
 </Button>
 
 // Ghost full-width trong sidebar card:
-<Button variant="ghost" size="sm" className="mt-4 w-full justify-center text-foreground hover:bg-muted">
+<Button variant="ghost" size="sm" className="mt-4 w-full justify-center text-foreground hover:bg-surface-raised">
   Xem hồ sơ
 </Button>
 
@@ -297,12 +285,12 @@ className="... shadow-card transition-[box-shadow,border-color] hover:border-bor
 
 ---
 
-## 8. Card Component
+## 8. Card Component (Corelia DS v2)
 
 ### Card chuẩn
 
 ```tsx
-<div className="rounded-lg border border-border-subtle bg-card text-card-foreground shadow-card">
+<div className="rounded-lg border border-border-subtle bg-surface-base text-foreground">
   <div className="p-4">...</div>
 </div>
 ```
@@ -310,7 +298,7 @@ className="... shadow-card transition-[box-shadow,border-color] hover:border-bor
 ### Card có hover (clickable):
 
 ```tsx
-<article className="group overflow-hidden rounded-lg border border-border-subtle bg-card text-card-foreground shadow-card transition-[box-shadow,border-color] hover:border-border hover:shadow-elevation-2">
+<article className="group overflow-hidden rounded-lg border border-border-subtle bg-surface-base text-foreground transition-colors duration-150 hover:border-border hover:bg-surface-raised">
 ```
 
 ### Image hover scale:
@@ -331,7 +319,7 @@ className="... shadow-card transition-[box-shadow,border-color] hover:border-bor
 
 ```tsx
 <aside className="lg:sticky lg:top-20 lg:self-start space-y-5">
-  <div className="rounded-lg border border-border-subtle bg-card p-5">
+  <div className="rounded-lg border border-border-subtle bg-surface-base p-5">
 ```
 
 ---
@@ -339,13 +327,13 @@ className="... shadow-card transition-[box-shadow,border-color] hover:border-bor
 ## 9. Header
 
 ```tsx
-<header className="sticky top-0 z-40 w-full border-b border-border-subtle bg-card/95 backdrop-blur-md supports-backdrop-filter:bg-card/90">
+<header className="sticky top-0 z-40 w-full border-b border-border-subtle bg-surface-raised/90 backdrop-blur-md">
   <div className="mx-auto flex h-14 w-full max-w-[1990px] items-center justify-between px-4 sm:px-6">
 ```
 
 - Nav links: `rounded-lg px-3 py-2 text-[13px] font-medium transition-colors`
-- Active: `bg-muted/80 text-foreground`
-- Inactive: `text-muted-foreground hover:bg-muted/50 hover:text-foreground`
+- Active: `bg-surface-raised text-foreground`
+- Inactive: `text-foreground-muted hover:bg-surface-overlay hover:text-foreground`
 
 ---
 
@@ -369,8 +357,8 @@ Dùng ngay sau wrapper, trước nội dung chính:
 
 ```tsx
 <div className="mb-4 flex items-center gap-2">
-  <IconName className="size-5 shrink-0 text-muted-foreground" weight="duotone" />
-  <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+  <IconName className="size-5 shrink-0 text-foreground-subtle" />
+  <h2 className="text-sm font-medium uppercase tracking-wide text-foreground-muted">
     Tiêu đề section
   </h2>
 </div>
@@ -391,7 +379,7 @@ Dùng ngay sau wrapper, trước nội dung chính:
 ## 13. Progress Bar
 
 ```tsx
-<div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
+<div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-surface-raised">
   <div
     className="h-full rounded-full bg-success transition-all"
     style={{ width: `${progress}%` }}
@@ -411,7 +399,7 @@ Dùng `h-1` (compact) hoặc `h-2` (nổi bật hơn trong sidebar).
 <div className="flex flex-col gap-2">
   <label className="text-sm font-medium text-foreground">Label</label>
   <Input className="h-9 rounded-lg" />
-  <p className="text-[13px] text-muted-foreground">Mô tả / lỗi</p>
+  <p className="text-[13px] text-foreground-muted">Mô tả / lỗi</p>
 </div>
 ```
 
@@ -421,7 +409,7 @@ Dùng `h-1` (compact) hoặc `h-2` (nổi bật hơn trong sidebar).
 
 ```tsx
 <div className="flex min-h-[40vh] items-center justify-center">
-  <Spinner className="size-8 animate-spin text-muted-foreground" />
+  <Spinner className="size-8 animate-spin text-foreground-muted" />
 </div>
 ```
 
@@ -430,9 +418,9 @@ Dùng `h-1` (compact) hoặc `h-2` (nổi bật hơn trong sidebar).
 ## 16. Empty State
 
 ```tsx
-<div className="rounded-lg border border-border-subtle bg-card p-8 text-center">
-  <IconName className="mx-auto size-12 text-muted-foreground" />
-  <p className="mt-4 text-muted-foreground">Không có dữ liệu.</p>
+<div className="rounded-lg border border-border-subtle bg-surface-base p-8 text-center">
+  <IconName className="mx-auto size-12 text-foreground-subtle" />
+  <p className="mt-4 text-foreground-muted">Không có dữ liệu.</p>
 </div>
 ```
 
@@ -507,8 +495,8 @@ M3 Expressive là bộ nguyên tắc của Google giúp thiết kế **cảm xú
 
 ### Tactic 2: Màu giàu có, có hierarchy (M3 Color Roles)
 
-- Surface chính: `bg-background` → `bg-card` → `bg-muted/50` (tạo depth 3 tầng)
-- **M3 Tonal Container**: `bg-primary-container text-on-primary-container` — dùng cho active lesson, selection state, tonal chip. Không dùng `bg-primary/10` hardcode.
+- Surface chính: `bg-surface-base` → `bg-surface-raised` → `bg-surface-overlay` (tạo depth 3 tầng)
+- **Tonal (DS v2)**: `bg-primary-muted text-primary` — dùng cho active lesson, selection state, tonal chip. Không dùng `bg-primary/10` hardcode.
 - Action CTA: `bg-primary text-primary-foreground` → nổi bật trên mọi nền
 - Hero section: dark gradient + emerald accent → tương phản cực cao
 - Tránh dùng quá nhiều màu sắc — chỉ dùng accent màu khi thực sự cần nhấn mạnh
@@ -518,10 +506,10 @@ M3 Expressive là bộ nguyên tắc của Google giúp thiết kế **cảm xú
 | Vai trò | Token | Kết quả visual |
 |---|---|---|
 | Brand CTA | `bg-primary text-primary-foreground` | Blue-700 button (light) / Blue-400 (dark) |
-| Active/selected | `bg-primary-container text-on-primary-container` | Blue-100 tint (light) / Deep blue (dark) |
+| Active/selected | `bg-primary-muted text-primary` | Tonal primary (muted) |
 | Achievement | `bg-success/15 text-success` | Emerald tint |
 | Caution | `bg-warning/15 text-warning` | Amber tint |
-| Neutral surface | `bg-muted/50` | Blue-tinted neutral |
+| Neutral surface | `bg-surface-raised` | Raised surface |
 
 > **Hero section dark**: Giữ `from-slate-950 via-slate-900 to-slate-950` + emerald accent — contrast tốt với nền navy.
 
@@ -529,14 +517,14 @@ M3 Expressive là bộ nguyên tắc của Google giúp thiết kế **cảm xú
 
 - H1 trang: `font-normal` — nhẹ nhàng, không aggressive
 - Số thống kê: `font-medium tabular-nums text-xl` — rõ ràng
-- Section labels: `uppercase tracking-wide text-sm font-medium text-muted-foreground` — phân cấp rõ
+- Section labels: `uppercase tracking-wide text-sm font-medium text-foreground-muted` — phân cấp rõ
 - CTA text quan trọng: `font-semibold` với màu tương phản
 
 ### Tactic 4: Containment — nhóm nội dung
 
-- Mỗi section có card riêng với `border border-border-subtle bg-card rounded-lg`
-- Thống kê nhỏ trong sidebar: `bg-muted/50 rounded-lg p-3` (nested container)
-- Section muted background: `bg-muted/40 px-4 py-2.5` (group header)
+- Mỗi section có card riêng với `border border-border-subtle bg-surface-base rounded-lg`
+- Thống kê nhỏ trong sidebar: `bg-surface-raised rounded-lg p-3` (nested container)
+- Section muted background: `bg-surface-raised px-4 py-2.5` (group header)
 
 ### Tactic 5: Motion tự nhiên
 
@@ -553,8 +541,8 @@ M3 Expressive là bộ nguyên tắc của Google giúp thiết kế **cảm xú
 
 ### Accessibility
 
-- Luôn đảm bảo contrast WCAG AA: `text-foreground` trên `bg-card` ✓
-- Focus visible: `focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50` (built-in button)
+- Luôn đảm bảo contrast WCAG AA: `text-foreground` trên `bg-surface-base` ✓
+- Focus visible: `focus-visible:ring-2 focus-visible:ring-primary/40`
 - Tap targets tối thiểu 44px (button `lg` = h-9 ≈ 36px; hero button = h-10 = 40px)
 - Icon-only buttons luôn có `aria-label`
 
@@ -564,12 +552,12 @@ M3 Expressive là bộ nguyên tắc của Google giúp thiết kế **cảm xú
 
 | ❌ Sai | ✅ Đúng |
 |---|---|
-| `text-gray-600` | `text-muted-foreground` |
-| `bg-white` | `bg-card` hoặc `bg-background` |
+| `text-gray-600` | `text-foreground-muted` |
+| `bg-white` | `bg-surface-base` |
 | `border-gray-200` | `border-border-subtle` |
-| `shadow-md` | `shadow-card` hoặc `shadow-elevation-2` |
+| `shadow-md` | Dùng **surface elevation** (`bg-surface-raised/overlay/float`) |
 | `text-black` | `text-foreground` |
-| `bg-gray-100` | `bg-muted` hoặc `bg-muted/50` |
+| `bg-gray-100` | `bg-surface-raised` |
 | Inline style cho màu | CSS variable / Tailwind token |
 | Tailwind config v3 (`theme.extend`) | `@theme inline` trong `globals.css` |
 | `import "tailwindcss/base"` | `@import "tailwindcss"` (v4) |
@@ -580,7 +568,7 @@ M3 Expressive là bộ nguyên tắc của Google giúp thiết kế **cảm xú
 
 **Layout & Spacing:**
 - [ ] Wrapper trang có `mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10`
-- [ ] **Không** bọc thêm outer div với `min-h-screen bg-background` (body đã xử lý)
+- [ ] **Không** bọc thêm outer div với `min-h-screen bg-surface-base` (body đã xử lý)
 - [ ] Section đầu tiên trong page wrapper **không có** `mt-*` (đã có `py-*` từ wrapper)
 - [ ] Hero section chuẩn: `mb-10` (không có `mt-6`)
 - [ ] Conditional elements trong `space-y-*`: render trực tiếp, không bọc `div` vô nghĩa
@@ -589,20 +577,20 @@ M3 Expressive là bộ nguyên tắc của Google giúp thiết kế **cảm xú
 
 **Typography & Màu:**
 - [ ] H1 dùng đúng size: `text-2xl font-normal tracking-tight sm:text-3xl` (hoặc semibold nếu detail)
-- [ ] Màu text: `text-foreground` / `text-muted-foreground` (không hardcode)
-- [ ] Active/selected state: `bg-primary-container text-on-primary-container` (không dùng `bg-primary/10`)
+- [ ] Màu text: `text-foreground` / `text-foreground-muted` (không hardcode)
+- [ ] Active/selected state: `bg-primary-muted text-primary`
 
 **Components:**
-- [ ] Cards dùng `border-border-subtle bg-card shadow-card rounded-lg`
-- [ ] Hover card có `transition-[box-shadow,border-color] hover:border-border hover:shadow-elevation-2`
+- [ ] Cards dùng `border-border-subtle bg-surface-base rounded-lg`
+- [ ] Hover card có `transition-colors duration-150 hover:border-border hover:bg-surface-raised`
 - [ ] Buttons dùng đúng variant + size
 - [ ] Icon dùng `@phosphor-icons/react`, `weight="duotone"` mặc định, `shrink-0`
-- [ ] Loading state: Spinner `animate-spin text-muted-foreground`
+- [ ] Loading state: Spinner `animate-spin text-foreground-muted`
 - [ ] Empty state: icon lớn + text muted trong card
 
 **Quality:**
 - [ ] Dark mode test: tất cả token tự đảo, không cần class đặc biệt (trừ hardcode màu)
-- [ ] Elevation dùng đúng mức: `shadow-card` → `shadow-elevation-2` (hover) → `shadow-elevation-3` (float)
+- [ ] Elevation dùng đúng surface: `bg-surface-base` → `bg-surface-raised/overlay/float`
 
 ---
 

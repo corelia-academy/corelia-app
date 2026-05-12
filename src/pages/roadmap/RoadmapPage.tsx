@@ -32,20 +32,20 @@ function RoadmapColumn({
     tone === "done"
       ? "border-emerald-500/25 bg-emerald-500/5"
       : tone === "active"
-        ? "border-primary/30 bg-primary-container/40"
-        : "border-border-subtle bg-card";
+        ? "border-primary/30 bg-primary-muted/40"
+        : "border-border-subtle bg-surface-base";
 
   const iconClass =
     tone === "done"
       ? "text-emerald-600 dark:text-emerald-400"
       : tone === "active"
         ? "text-primary"
-        : "text-muted-foreground";
+        : "text-foreground-muted";
 
   return (
     <section
       className={cn(
-        "rounded-lg border p-4 shadow-card sm:p-5",
+        "rounded-lg border p-4 sm:p-5",
         toneClass,
       )}
     >
@@ -53,7 +53,7 @@ function RoadmapColumn({
         <Icon className={cn("size-5 shrink-0", iconClass)} aria-hidden />
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
       </div>
-      <ul className="mt-3 space-y-2.5 text-sm leading-relaxed text-muted-foreground">
+      <ul className="mt-3 space-y-2.5 text-sm leading-relaxed text-foreground-muted">
         {items.map((line) => (
           <li key={line} className="flex gap-2">
             <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-current opacity-60" />
@@ -91,14 +91,14 @@ export default function RoadmapPage() {
       <div className="mx-auto max-w-5xl space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 space-y-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-muted/40 px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-surface-raised px-2.5 py-0.5 text-xs font-medium text-foreground-muted">
               <Sparkles className="size-3.5 shrink-0" aria-hidden />
               {t("roadmap.badge")}
             </div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               {t("roadmap.title")}
             </h1>
-            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            <p className="max-w-2xl text-sm leading-relaxed text-foreground-muted sm:text-base">
               {t("roadmap.intro")}
             </p>
           </div>
@@ -135,7 +135,7 @@ export default function RoadmapPage() {
           />
         </div>
 
-        <p className="text-center text-xs leading-relaxed text-muted-foreground">
+        <p className="text-center text-xs leading-relaxed text-foreground-muted">
           {t("roadmap.footerNote")}
         </p>
       </div>

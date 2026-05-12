@@ -8,12 +8,12 @@ export function LanguageSettingsCard() {
   const { language, setLanguage } = useLocale();
 
   return (
-    <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+    <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
       <div className="min-w-0">
         <h2 className="text-lg font-semibold text-foreground">
           {t("settings.language.title")}
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-foreground-muted">
           {t("settings.language.description")}
         </p>
       </div>
@@ -23,17 +23,17 @@ export function LanguageSettingsCard() {
           type="button"
           onClick={() => void setLanguage("vi")}
           className={cn(
-            "flex items-center justify-between rounded-md border px-3 py-3 text-left transition-colors duration-150",
+            "flex min-h-11 items-center justify-between rounded-md border px-3 py-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
             language === "vi"
-              ? "border-primary bg-primary/10"
-              : "border-border-subtle bg-background hover:bg-muted/30",
+              ? "border-primary/20 bg-primary/10 text-primary"
+              : "border-border-subtle bg-surface-base hover:bg-surface-raised",
           )}
         >
           <div className="min-w-0">
             <div className="text-sm font-medium text-foreground">
               {tCommon("language.vi")}
             </div>
-            <div className="mt-0.5 text-xs text-muted-foreground">
+            <div className="mt-0.5 text-xs text-foreground-muted">
               {t("settings.language.viMeta")}
             </div>
           </div>
@@ -48,17 +48,17 @@ export function LanguageSettingsCard() {
           type="button"
           onClick={() => void setLanguage("en")}
           className={cn(
-            "flex items-center justify-between rounded-md border px-3 py-3 text-left transition-colors duration-150",
+            "flex min-h-11 items-center justify-between rounded-md border px-3 py-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
             language === "en"
-              ? "border-primary bg-primary/10"
-              : "border-border-subtle bg-background hover:bg-muted/30",
+              ? "border-primary/20 bg-primary/10 text-primary"
+              : "border-border-subtle bg-surface-base hover:bg-surface-raised",
           )}
         >
           <div className="min-w-0">
             <div className="text-sm font-medium text-foreground">
               {tCommon("language.en")}
             </div>
-            <div className="mt-0.5 text-xs text-muted-foreground">
+            <div className="mt-0.5 text-xs text-foreground-muted">
               {t("settings.language.enMeta")}
             </div>
           </div>

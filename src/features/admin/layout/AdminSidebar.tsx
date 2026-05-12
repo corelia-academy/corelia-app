@@ -11,7 +11,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { GraduationCap, Pin, Settings, Trophy, Users } from "lucide-react";
+import { GraduationCap, Medal, Pin, Settings, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function AdminSidebar() {
@@ -24,7 +24,7 @@ export function AdminSidebar() {
       <div className="px-3 pb-2 pt-3 transition-[padding] duration-200 ease-linear group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:pb-1">
         <div className="rounded-lg border border-sidebar-border/70 bg-sidebar-accent/45 p-4 transition-[padding,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:rounded-md group-data-[collapsible=icon]:p-1">
           <div className="flex items-start gap-3 transition-[gap] duration-200 ease-linear group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground shadow-sm transition-[width,height,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:size-8">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground transition-[width,height,border-radius] duration-200 ease-linear group-data-[collapsible=icon]:size-8">
               <Settings className="size-5" aria-hidden />
             </div>
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
@@ -39,20 +39,28 @@ export function AdminSidebar() {
         </div>
       </div>
 
-      <SidebarSeparator />
+      <SidebarSeparator className="mx-3 group-data-[collapsible=icon]:mx-1" />
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{t("layout.sidebar.primaryNavigation")}</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            {t("layout.sidebar.primaryNavigation")}
+          </SidebarGroupLabel>
           <SidebarGroupContent className="px-1">
             <SidebarMenu className="gap-2">
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-md"
                   tooltip={t("layout.sidebar.users.tooltip")}
-                  isActive={pathname === "/admin" || pathname.startsWith("/admin/users")}
+                  isActive={
+                    pathname === "/admin" || pathname.startsWith("/admin/users")
+                  }
                   render={
-                    <NavLink to="/admin" end className="flex w-full items-center gap-2">
+                    <NavLink
+                      to="/admin"
+                      end
+                      className="flex w-full items-center gap-2"
+                    >
                       <Users className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.users.label")}</span>
                     </NavLink>
@@ -65,7 +73,10 @@ export function AdminSidebar() {
                   tooltip="Dashboard"
                   isActive={pathname.startsWith("/admin/dashboard")}
                   render={
-                    <NavLink to="/admin/dashboard" className="flex w-full items-center gap-2">
+                    <NavLink
+                      to="/admin/dashboard"
+                      className="flex w-full items-center gap-2"
+                    >
                       <Pin className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.dashboard.label")}</span>
                     </NavLink>
@@ -78,7 +89,10 @@ export function AdminSidebar() {
                   tooltip={t("layout.sidebar.instructors.tooltip")}
                   isActive={pathname.startsWith("/admin/instructors")}
                   render={
-                    <NavLink to="/admin/instructors" className="flex w-full items-center gap-2">
+                    <NavLink
+                      to="/admin/instructors"
+                      className="flex w-full items-center gap-2"
+                    >
                       <GraduationCap className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.instructors.label")}</span>
                     </NavLink>
@@ -88,16 +102,20 @@ export function AdminSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-md"
-                  tooltip={t("layout.sidebar.contests.tooltip")}
-                  isActive={pathname.startsWith("/admin/contests")}
+                  tooltip={t("layout.sidebar.activityMilestones.tooltip")}
+                  isActive={pathname.startsWith("/admin/activity-milestones")}
                   render={
-                    <NavLink to="/admin/contests" className="flex w-full items-center gap-2">
-                      <Trophy className="size-4" aria-hidden />
-                      <span>{t("layout.sidebar.contests.label")}</span>
+                    <NavLink
+                      to="/admin/activity-milestones"
+                      className="flex w-full items-center gap-2"
+                    >
+                      <Medal className="size-4" aria-hidden />
+                      <span>{t("layout.sidebar.activityMilestones.label")}</span>
                     </NavLink>
                   }
                 />
               </SidebarMenuItem>
+              {/* Hackathon management is no longer under /admin/* */}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -107,4 +125,3 @@ export function AdminSidebar() {
     </Sidebar>
   );
 }
-

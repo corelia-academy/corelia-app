@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang='{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}vi{{ else }}en{{ end }}'>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ── Reset ── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* ── Container ── */
+      .e-container {
+        max-width: 520px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #ddd7cf;
+        font-family:
+          "Google Sans", "Google Sans Text", Roboto, Arial, sans-serif;
+      }
+
+      /* ── Header ── */
+      .e-header {
+        background: #1e2440;
+        padding: 20px 30px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .e-brand-text {
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        color: #f5f0eb;
+        text-transform: uppercase;
+        line-height: 1.4;
+      }
+
+      /* ── Hero ── */
+      .e-hero {
+        background: #f5f0eb;
+        padding: 30px 30px 22px;
+        border-bottom: 1px solid #ddd7cf;
+      }
+      .e-hero-tag {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #2ab89e;
+        background: rgba(62, 207, 180, 0.1);
+        padding: 3px 11px;
+        border-radius: 100px;
+        margin-bottom: 13px;
+      }
+      .e-hero h2 {
+        font-family: "Lora", Georgia, serif;
+        font-size: 25px;
+        font-weight: 400;
+        font-style: italic;
+        line-height: 1.25;
+        color: #1e2440;
+        margin-bottom: 9px;
+      }
+      .e-hero p {
+        font-size: 13px;
+        line-height: 1.75;
+        color: #3d4566;
+      }
+      .e-hero-dark {
+        background: linear-gradient(135deg, #1e2440, #2d3358);
+      }
+      .e-hero-dark h2 {
+        color: #f5f0eb;
+      }
+      .e-hero-dark p {
+        color: #a0a5c0;
+      }
+
+      /* ── Body ── */
+      .e-body {
+        padding: 22px 30px;
+      }
+      .e-body p {
+        font-size: 13px;
+        line-height: 1.8;
+        color: #3d4566;
+        margin-bottom: 12px;
+      }
+      .e-body p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* ── CTA ── */
+      .e-cta-wrap {
+        padding: 4px 30px 22px;
+      }
+      .e-btn {
+        display: inline-block;
+        background: #1e2440;
+        color: #ffffff;
+        font-family:
+          "Google Sans", "Google Sans Text", Roboto, Arial, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 12px 28px;
+        border-radius: 8px;
+        text-decoration: none;
+      }
+      .e-btn-teal {
+        background: linear-gradient(135deg, #3ecfb4, #2ab89e);
+        color: #1e2440;
+      }
+
+      /* ── Info card ── */
+      .e-info-card {
+        margin: 0 30px 20px;
+        background: #f5f0eb;
+        border: 1px solid #ddd7cf;
+        border-radius: 10px;
+        padding: 15px 18px;
+      }
+      .e-info-card-label {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: #8a8fa8;
+        margin-bottom: 10px;
+      }
+      .e-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 7px 0;
+        border-bottom: 1px solid #ddd7cf;
+        font-size: 12px;
+      }
+      .e-info-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      .e-info-key {
+        color: #8a8fa8;
+      }
+      .e-info-val {
+        font-weight: 600;
+        color: #1e2440;
+      }
+
+      /* ── Tracks ── */
+      .e-tracks {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+        margin: 0 30px 20px;
+      }
+      .e-track-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 500;
+        border: 1px solid #ddd7cf;
+        background: #f5f0eb;
+        color: #1e2440;
+      }
+      .chip-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: inline-block;
+      }
+
+      /* ── Divider ── */
+      .e-divider {
+        height: 1px;
+        background: #ddd7cf;
+        margin: 0 30px 20px;
+      }
+
+      /* ── Alert ── */
+      .e-alert {
+        margin: 0 30px 20px;
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .e-alert-warn {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+      }
+      .e-alert-info {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+      }
+      .e-alert-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .e-alert-text {
+        font-size: 12px;
+        line-height: 1.65;
+        color: #3d4566;
+      }
+      .e-alert-text strong {
+        color: #1e2440;
+      }
+
+      /* ── OTP ── */
+      .e-otp {
+        margin: 0 30px 20px;
+        text-align: center;
+      }
+      .e-otp-code {
+        display: inline-block;
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        color: #1e2440;
+        background: #f5f0eb;
+        border: 1px solid #ddd7cf;
+        border-radius: 10px;
+        padding: 16px 28px;
+      }
+      .e-otp-hint {
+        margin-top: 8px;
+        font-size: 11px;
+        color: #8a8fa8;
+      }
+
+      /* ── Badge ── */
+      .e-badge-visual {
+        margin: 0 30px 20px;
+        background: linear-gradient(135deg, #1e2440, #2d3358);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .badge-circle {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3ecfb4, #5b9ef4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 22px;
+      }
+      .badge-info h3 {
+        font-family: "Lora", Georgia, serif;
+        font-size: 16px;
+        font-style: italic;
+        color: #f5f0eb;
+        margin-bottom: 3px;
+      }
+      .badge-info p {
+        font-size: 11px;
+        color: #8a8fa8;
+      }
+
+      /* ── Footer ── */
+      .e-footer {
+        background: #ede7df;
+        padding: 16px 30px;
+        text-align: center;
+        border-top: 1px solid #ddd7cf;
+      }
+      .e-footer p {
+        font-size: 11px;
+        color: #8a8fa8;
+        line-height: 1.7;
+        margin-bottom: 3px;
+      }
+      .e-footer a {
+        color: #8a8fa8;
+      }
+    </style>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 28px 14px;
+      background: #f5f0eb;
+      font-family:
+        &quot;Google Sans&quot;, &quot;Google Sans Text&quot;, Roboto, Arial,
+        sans-serif;
+    "
+  >
+    <div class="e-container">
+      <div class="e-header">
+        <img
+          src="https://lawhkvyyoznwygzsycan.supabase.co/storage/v1/object/public/public_files/Corelia_Logo_White.png"
+          alt="Corelia Academy"
+          height="36"
+          style="display: block; height: 36px; width: auto"
+        />
+      </div>
+      <div class="e-hero">
+        <span class="e-hero-tag"
+          >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Xác nhận
+          tài khoản{{ else }}Account Confirmation{{ end }}</span
+        >
+        <h2>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Xác nhận
+          email của bạn ✉️{{ else }}Confirm your email ✉️{{ end }}
+        </h2>
+        <p>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Cảm ơn bạn đã đăng ký Corelia Academy.
+          Nhấn vào nút bên dưới để xác nhận địa chỉ email và kích hoạt tài
+          khoản.{{ else }}Thanks for signing up for Corelia
+          Academy. Click the button below to confirm your email address and
+          activate your account.{{ end }}
+        </p>
+      </div>
+      <div class="e-body">
+        <p>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Link xác nhận sẽ hết hạn sau 24 giờ. Nếu bạn không
+          đăng ký tài khoản này, hãy bỏ qua email.{{ else }}The confirmation link expires in 24
+          hours. If you didn't create this account, you can safely ignore this
+          email.{{ end }}
+        </p>
+        {{ if .Token }}
+        <p style="margin-top:14px;font-size:12px;line-height:1.6;color:#5c6478;">
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Nếu nút không hoạt động (ví dụ do quét link an toàn), bạn có thể nhập mã một lần sau khi mở trang đăng nhập / xác nhận của Corelia: <strong style="color:#1e2440;">{{ .Token }}</strong>{{ else }}If the button fails (for example due to safe-link scanners), you can enter this one-time code after opening Corelia’s confirmation flow: <strong style="color:#1e2440;">{{ .Token }}</strong>{{ end }}
+        </p>
+        {{ end }}
+      </div>
+      <div class="e-cta-wrap">
+        <!-- Opens app first (anti-prefetch); confirm URL is built on the page from token + redirect_to — avoids raw ConfirmationURL & breaking query strings in mail clients. -->
+        <a href="{{ .SiteURL }}/confirm-signup?token={{ .TokenHash }}&type=signup&redirect_to={{ .RedirectTo }}" class="e-btn e-btn-teal"
+          >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Xác nhận email
+          →{{ else }}Confirm Email →{{ end }}</a
+        >
+      </div>
+      <div class="e-divider"></div>
+      <div class="e-footer">
+        <p>
+          {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Bạn nhận email này vì vừa đăng
+          ký tài khoản tại app.corelia.academy{{ else }}You received this because an account was
+          created at app.corelia.academy{{ end }}
+        </p>
+        <p>
+          <a href="#"
+            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Chính sách bảo
+            mật{{ else }}Privacy Policy{{ end }}</a
+          >
+          ·
+          <a href="#"
+            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Liên hệ{{ else }}Contact{{ end }}</a
+          >
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/stores/authStore";
 import { useTheme } from "next-themes";
@@ -10,29 +11,37 @@ function AccountSettingsSection() {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
 
-  const onSignOut = () => {
-    void signOut();
-    navigate("/");
+  const onSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await signOut();
+    } catch (e) {
+      console.error("[account] signOut:", e);
+    } finally {
+      navigate("/", { replace: true });
+      setSigningOut(false);
+    }
   };
 
   return (
     <div className="space-y-4">
       <LanguageSettingsCard />
-      <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+      <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-base font-medium text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
               {t("settings.appearance.title")}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {t("settings.appearance.description")}
             </p>
           </div>
         </div>
 
-        <div className="mt-4 rounded-md border border-border-subtle bg-background p-3">
-          <div className="text-xs font-medium text-muted-foreground">
+        <div className="mt-4 rounded-md border border-border-subtle bg-surface-base p-3">
+          <div className="text-xs font-medium text-foreground-muted">
             {t("settings.appearance.themeLabel")}
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -42,10 +51,10 @@ function AccountSettingsSection() {
                 type="button"
                 onClick={() => setTheme(themeOption)}
                 className={[
-                  "h-9 rounded-full border px-3 text-sm font-medium transition-colors",
+                  "min-h-11 rounded-full border px-3 py-1 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                   (theme ?? "system") === themeOption
-                    ? "border-primary/25 bg-primary-container text-on-primary-container shadow-card"
-                    : "border-border-subtle bg-card text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                    ? "border-primary/30 bg-primary-muted text-primary"
+                    : "border-border-subtle bg-surface-base text-foreground-muted hover:bg-surface-raised hover:text-foreground",
                 ].join(" ")}
               >
                 {themeOption === "light"
@@ -59,26 +68,31 @@ function AccountSettingsSection() {
         </div>
       </section>
 
-      <section className="rounded-md border border-border-subtle bg-card p-4 shadow-card">
+      <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
         <div className="min-w-0">
-          <h2 className="text-base font-medium text-foreground">
+            <h2 className="text-lg font-semibold text-foreground">
             {t("settings.session.title")}
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-foreground-muted">
             {t("settings.session.description")}
           </p>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border-subtle bg-background p-3">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface-base p-3">
           <div className="min-w-0">
             <div className="text-sm font-medium text-foreground">
               {t("settings.session.signOutTitle")}
             </div>
-            <div className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            <div className="mt-1 text-sm leading-relaxed text-foreground-muted">
               {t("settings.session.signOutDescription")}
             </div>
           </div>
-          <Button type="button" variant="destructive" onClick={onSignOut}>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={signingOut}
+            onClick={() => void onSignOut()}
+          >
             {t("settings.session.signOutButton")}
           </Button>
         </div>

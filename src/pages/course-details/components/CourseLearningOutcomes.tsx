@@ -18,10 +18,10 @@ export function CourseLearningOutcomes({
         <h2 className="text-lg font-semibold text-foreground">
           {String(t("detail.courseDetail.learningOutcomes.title"))}
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-foreground-muted">
           {String(t("detail.courseDetail.learningOutcomes.subtitle"))}
         </p>
-        <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+        <ul className="mt-4 space-y-2 text-sm text-foreground-muted">
           {items.map((item, idx) => (
             <li key={`${idx}-${item}`} className="flex items-start gap-3">
               <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-foreground/50" />

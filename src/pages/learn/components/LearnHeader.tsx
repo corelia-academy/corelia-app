@@ -26,7 +26,7 @@ export function LearnHeader({
     <>
       <Link
         to={`/courses/${courseId}`}
-        className="mb-3 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground sm:hidden"
+        className="mb-3 inline-flex items-center gap-2 text-sm text-foreground-muted transition-colors duration-150 hover:text-foreground sm:hidden"
       >
         <ArrowLeft className="w-4 h-4" aria-hidden />
         {translate("detail.learn.backToCourse")}

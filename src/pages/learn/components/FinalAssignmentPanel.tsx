@@ -110,7 +110,7 @@ export function FinalAssignmentPanel({
   if (!course.final_assignment_title) return null;
 
   return (
-    <div className="mt-6 rounded-md border border-border-subtle bg-card p-5 shadow-sm sm:p-6">
+    <div className="mt-6 rounded-md border border-border-subtle bg-surface-base p-5 sm:p-6">
       <div className="flex items-center gap-2">
         <FileText className="w-5 h-5 text-primary" aria-hidden />
         <h2 className="text-lg font-semibold text-foreground">
@@ -118,12 +118,12 @@ export function FinalAssignmentPanel({
         </h2>
       </div>
       {course.final_assignment_description ? (
-        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
           {course.final_assignment_description}
         </p>
       ) : null}
       {course.final_assignment_instructions ? (
-        <div className="mt-3 rounded-md bg-muted/40 p-4 text-sm leading-relaxed text-muted-foreground">
+        <div className="mt-3 rounded-md bg-surface-raised p-4 text-sm leading-relaxed text-foreground-muted">
           <p className="whitespace-pre-wrap">
             {course.final_assignment_instructions}
           </p>
@@ -131,7 +131,7 @@ export function FinalAssignmentPanel({
       ) : null}
 
       {submission ? (
-        <div className="mt-4 rounded-md bg-muted/40 p-4">
+        <div className="mt-4 rounded-md bg-surface-raised p-4">
           <p className="text-sm font-medium text-foreground">
             {submission.status === "approved"
               ? translate("detail.learn.finalAssignment.status.approved")
@@ -140,7 +140,7 @@ export function FinalAssignmentPanel({
                 : translate("detail.learn.finalAssignment.status.pending")}
           </p>
           {submission.reviewer_comment ? (
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-foreground-muted">
               {submission.reviewer_comment}
             </p>
           ) : null}
@@ -185,7 +185,7 @@ export function FinalAssignmentPanel({
               )}
               value={submitContent}
               onChange={(e) => setSubmitContent(e.target.value)}
-              className="min-h-36 w-full rounded-md border border-border bg-background px-3 py-2 text-sm leading-relaxed outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="min-h-36 w-full rounded-md border border-border bg-surface-base px-3 py-2 text-sm leading-relaxed outline-none transition-colors duration-150 placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
               rows={6}
             />
           </div>
@@ -198,7 +198,7 @@ export function FinalAssignmentPanel({
               type="file"
               multiple
               accept=".pdf,.doc,.docx,.zip"
-              className="block w-full rounded-md border border-border bg-background text-sm text-muted-foreground transition-colors duration-150 file:mr-4 file:rounded-none file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="block w-full rounded-md border border-border bg-surface-base text-sm text-foreground-muted transition-colors duration-150 file:mr-4 file:rounded-none file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:opacity-90 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/15"
               onChange={(e) => setSubmitFiles(Array.from(e.target.files ?? []))}
             />
           </div>

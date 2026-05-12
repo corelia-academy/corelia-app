@@ -1,20 +1,6 @@
-import {
-  collection,
-  collectionGroup,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  orderBy,
-  writeBatch,
-} from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
-import { COL, SUB } from "@/lib/collections";
+import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
+import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
+import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
 import type {
   Course,
@@ -33,17 +19,82 @@ import type {
   CourseCoInstructorPermissions,
   CourseCoInstructorSnapshot,
 } from "@/types/courses";
+import type { User } from "@supabase/supabase-js";
 
 const CERTIFICATE_API =
-  import.meta.env.VITE_CERTIFICATE_ISSUE_API || "/api/certificates/issue";
+  import.meta.env.VITE_CERTIFICATE_ISSUE_API || coreliaEdgeUrl("certificates.issue");
 
-// 5 phút TTL — đủ để giảm reads mà không hiển thị data cũ quá lâu
 const LOCALE_CACHE_TTL = 5 * 60 * 1000;
 const courseLocaleCache = makeTTLCache<CourseLocaleContent | null>(LOCALE_CACHE_TTL);
 const sectionLocaleCache = makeTTLCache<CourseSectionLocaleContent | null>(LOCALE_CACHE_TTL);
 const lessonLocaleCache = makeTTLCache<CourseLessonLocaleContent | null>(LOCALE_CACHE_TTL);
 const lessonLocaleMapCache = makeTTLCache<Map<string, CourseLessonLocaleContent>>(LOCALE_CACHE_TTL);
 const sectionLocaleMapCache = makeTTLCache<Map<string, CourseSectionLocaleContent>>(LOCALE_CACHE_TTL);
+
+const CATALOG_CACHE_TTL = 3 * 60 * 1000;
+const publishedCoursesCache = makeTTLCache<Course[]>(CATALOG_CACHE_TTL);
+const courseByIdCache = makeTTLCache<Course | null>(CATALOG_CACHE_TTL);
+const enrollmentsCache = makeTTLCache<Enrollment[]>(30_000);
+const sectionsCache = makeTTLCache<CourseSection[]>(2 * 60 * 1000);
+const lessonsCache = makeTTLCache<CourseLesson[]>(2 * 60 * 1000);
+const lessonProgressCache = makeTTLCache<LessonProgress[]>(30_000);
+
+type CourseRow = {
+  id: string;
+  instructor_id: string;
+  published: boolean;
+  slug: string;
+  updated_at: string;
+  created_at: string;
+  data: Record<string, unknown> | null;
+};
+
+/** Columns needed for `rowToCourse` (avoid `select("*")` on hot list paths). */
+const COURSE_ROW_SELECT =
+  "id,instructor_id,published,slug,updated_at,created_at,data" as const;
+
+function rowToCourse(row: CourseRow): Course {
+  return {
+    ...(row.data ?? {}),
+    id: row.id,
+    instructor_id: row.instructor_id,
+    published: row.published,
+    slug: row.slug,
+    updated_at: row.updated_at,
+    created_at: row.created_at,
+  } as Course;
+}
+
+function sectionRowToSection(
+  _courseId: string,
+  row: { id: string; sort_order: number; data: Record<string, unknown> | null },
+): CourseSection {
+  const d = row.data ?? {};
+  return {
+    ...d,
+    id: row.id,
+    order: row.sort_order,
+    title: (d.title as string) ?? "",
+  } as CourseSection;
+}
+
+function lessonRowToLesson(
+  row: {
+    id: string;
+    section_id: string;
+    sort_order: number;
+    data: Record<string, unknown> | null;
+  },
+): CourseLesson {
+  const d = row.data ?? {};
+  return {
+    ...d,
+    id: row.id,
+    section_id: row.section_id,
+    order: row.sort_order,
+    title: (d.title as string) ?? "",
+  } as CourseLesson;
+}
 
 export function normalizeCourseLocale(input?: string | null): SupportedCourseLocale {
   return input === "en" ? "en" : "vi";
@@ -99,12 +150,9 @@ export function applyCourseLocaleContent(course: Course, localized: CourseLocale
     description: localized.description ?? course.description,
     short_description: localized.short_description ?? course.short_description,
     learning_outcomes: localized.learning_outcomes ?? course.learning_outcomes,
-    final_assignment_title:
-      localized.final_assignment_title ?? course.final_assignment_title,
-    final_assignment_description:
-      localized.final_assignment_description ?? course.final_assignment_description,
-    final_assignment_instructions:
-      localized.final_assignment_instructions ?? course.final_assignment_instructions,
+    final_assignment_title: localized.final_assignment_title ?? course.final_assignment_title,
+    final_assignment_description: localized.final_assignment_description ?? course.final_assignment_description,
+    final_assignment_instructions: localized.final_assignment_instructions ?? course.final_assignment_instructions,
   };
 }
 
@@ -132,6 +180,10 @@ export function applyCourseLessonLocaleContent(
     description_markdown: localized.description_markdown ?? lesson.description_markdown,
     resources: localized.resources ?? lesson.resources,
     youtube_url: localized.youtube_url ?? lesson.youtube_url,
+    youtube_start_seconds:
+      localized.youtube_start_seconds ?? lesson.youtube_start_seconds,
+    youtube_end_seconds:
+      localized.youtube_end_seconds ?? lesson.youtube_end_seconds,
     video_primary_locale: localized.video_primary_locale ?? lesson.video_primary_locale,
     has_subtitle: localized.has_subtitle ?? lesson.has_subtitle,
     subtitle_locales: localized.subtitle_locales ?? lesson.subtitle_locales,
@@ -146,10 +198,14 @@ export async function getCourseLocaleContent(
   const existing = courseLocaleCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
-    const ref = doc(db, COL.COURSES, courseId, SUB.LOCALES, locale);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return null;
-    return { ...(snap.data() as Omit<CourseLocaleContent, "locale">), locale };
+    const { data, error } = await supabase
+      .from("course_locales")
+      .select("data")
+      .eq("course_id", courseId)
+      .eq("locale", locale)
+      .maybeSingle();
+    if (error || !data?.data) return null;
+    return { ...(data.data as Omit<CourseLocaleContent, "locale">), locale };
   })();
   courseLocaleCache.set(key, promise);
   try {
@@ -160,19 +216,58 @@ export async function getCourseLocaleContent(
   }
 }
 
+export async function getBatchCourseLocaleContent(
+  courseIds: string[],
+  locale: SupportedCourseLocale,
+): Promise<Map<string, CourseLocaleContent>> {
+  const result = new Map<string, CourseLocaleContent>();
+  if (courseIds.length === 0) return result;
+
+  const uncachedIds: string[] = [];
+  for (const id of courseIds) {
+    const cached = courseLocaleCache.get(`${id}:${locale}`);
+    if (cached) {
+      const content = await cached;
+      if (content) result.set(id, content);
+    } else {
+      uncachedIds.push(id);
+    }
+  }
+
+  if (uncachedIds.length === 0) return result;
+
+  const { data, error } = await supabase
+    .from("course_locales")
+    .select("course_id,data")
+    .in("course_id", uncachedIds)
+    .eq("locale", locale);
+
+  if (!error && data) {
+    for (const row of data) {
+      if (!row.data) continue;
+      const content = { ...(row.data as Omit<CourseLocaleContent, "locale">), locale };
+      courseLocaleCache.set(`${row.course_id}:${locale}`, Promise.resolve(content));
+      result.set(row.course_id, content);
+    }
+  }
+
+  return result;
+}
+
 export async function setCourseLocaleContent(
   courseId: string,
   locale: SupportedCourseLocale,
   data: Partial<Omit<CourseLocaleContent, "locale">>,
 ): Promise<void> {
-  const ref = doc(db, COL.COURSES, courseId, SUB.LOCALES, locale);
-  await setDoc(ref, removeUndefinedFields({
+  const payload = removeUndefinedFields({
     ...data,
-    entity: "course",
-    course_id: courseId,
-    locale,
     updated_at: new Date().toISOString(),
-  }) as Record<string, unknown>, { merge: true });
+  }) as Record<string, unknown>;
+  const { error } = await supabase.from("course_locales").upsert(
+    { course_id: courseId, locale, data: payload },
+    { onConflict: "course_id,locale" },
+  );
+  if (error) throw new Error(error.message);
   courseLocaleCache.delete(`${courseId}:${locale}`);
 }
 
@@ -185,10 +280,15 @@ export async function getCourseSectionLocaleContent(
   const existing = sectionLocaleCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
-    const ref = doc(db, COL.COURSES, courseId, SUB.SECTIONS, sectionId, SUB.LOCALES, locale);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return null;
-    return { ...(snap.data() as Omit<CourseSectionLocaleContent, "locale">), locale };
+    const { data, error } = await supabase
+      .from("course_section_locales")
+      .select("data")
+      .eq("course_id", courseId)
+      .eq("section_id", sectionId)
+      .eq("locale", locale)
+      .maybeSingle();
+    if (error || !data?.data) return null;
+    return { ...(data.data as Omit<CourseSectionLocaleContent, "locale">), locale };
   })();
   sectionLocaleCache.set(key, promise);
   try {
@@ -205,15 +305,15 @@ export async function setCourseSectionLocaleContent(
   locale: SupportedCourseLocale,
   data: Partial<Omit<CourseSectionLocaleContent, "locale">>,
 ): Promise<void> {
-  const ref = doc(db, COL.COURSES, courseId, SUB.SECTIONS, sectionId, SUB.LOCALES, locale);
-  await setDoc(ref, removeUndefinedFields({
+  const payload = removeUndefinedFields({
     ...data,
-    entity: "section",
-    course_id: courseId,
-    section_id: sectionId,
-    locale,
     updated_at: new Date().toISOString(),
-  }) as Record<string, unknown>, { merge: true });
+  }) as Record<string, unknown>;
+  const { error } = await supabase.from("course_section_locales").upsert(
+    { course_id: courseId, section_id: sectionId, locale, data: payload },
+    { onConflict: "course_id,section_id,locale" },
+  );
+  if (error) throw new Error(error.message);
   sectionLocaleCache.delete(`${courseId}:${sectionId}:${locale}`);
   sectionLocaleMapCache.delete(`${courseId}:${locale}`);
 }
@@ -227,10 +327,15 @@ export async function getCourseLessonLocaleContent(
   const existing = lessonLocaleCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
-    const ref = doc(db, COL.COURSES, courseId, SUB.LESSONS, lessonId, SUB.LOCALES, locale);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return null;
-    return { ...(snap.data() as Omit<CourseLessonLocaleContent, "locale">), locale };
+    const { data, error } = await supabase
+      .from("course_lesson_locales")
+      .select("data")
+      .eq("course_id", courseId)
+      .eq("lesson_id", lessonId)
+      .eq("locale", locale)
+      .maybeSingle();
+    if (error || !data?.data) return null;
+    return { ...(data.data as Omit<CourseLessonLocaleContent, "locale">), locale };
   })();
   lessonLocaleCache.set(key, promise);
   try {
@@ -247,15 +352,15 @@ export async function setCourseLessonLocaleContent(
   locale: SupportedCourseLocale,
   data: Partial<Omit<CourseLessonLocaleContent, "locale">>,
 ): Promise<void> {
-  const ref = doc(db, COL.COURSES, courseId, SUB.LESSONS, lessonId, SUB.LOCALES, locale);
-  await setDoc(ref, removeUndefinedFields({
+  const payload = removeUndefinedFields({
     ...data,
-    entity: "lesson",
-    course_id: courseId,
-    lesson_id: lessonId,
-    locale,
     updated_at: new Date().toISOString(),
-  }) as Record<string, unknown>, { merge: true });
+  }) as Record<string, unknown>;
+  const { error } = await supabase.from("course_lesson_locales").upsert(
+    { course_id: courseId, lesson_id: lessonId, locale, data: payload },
+    { onConflict: "course_id,lesson_id,locale" },
+  );
+  if (error) throw new Error(error.message);
   lessonLocaleCache.delete(`${courseId}:${lessonId}:${locale}`);
   lessonLocaleMapCache.delete(`${courseId}:${locale}`);
 }
@@ -268,19 +373,16 @@ export async function getCourseLessonLocaleContentMap(
   const existing = lessonLocaleMapCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
-    const q = query(
-      collectionGroup(db, SUB.LOCALES),
-      where("entity", "==", "lesson"),
-      where("course_id", "==", courseId),
-      where("locale", "==", locale),
-    );
-    const snap = await getDocs(q);
+    const { data, error } = await supabase
+      .from("course_lesson_locales")
+      .select("lesson_id, data")
+      .eq("course_id", courseId)
+      .eq("locale", locale);
+    if (error) throw new Error(error.message);
     const map = new Map<string, CourseLessonLocaleContent>();
-    for (const d of snap.docs) {
-      const raw = d.data() as Partial<CourseLessonLocaleContent> & {
-        lesson_id?: string;
-      };
-      const lessonId = String(raw.lesson_id ?? "").trim();
+    for (const row of data ?? []) {
+      const raw = row.data as Partial<CourseLessonLocaleContent> & { lesson_id?: string };
+      const lessonId = String(row.lesson_id ?? raw.lesson_id ?? "").trim();
       if (!lessonId) continue;
       map.set(lessonId, { ...(raw as CourseLessonLocaleContent), locale });
     }
@@ -303,19 +405,16 @@ export async function getCourseSectionLocaleContentMap(
   const existing = sectionLocaleMapCache.get(key);
   if (existing) return existing;
   const promise = (async () => {
-    const q = query(
-      collectionGroup(db, SUB.LOCALES),
-      where("entity", "==", "section"),
-      where("course_id", "==", courseId),
-      where("locale", "==", locale),
-    );
-    const snap = await getDocs(q);
+    const { data, error } = await supabase
+      .from("course_section_locales")
+      .select("section_id, data")
+      .eq("course_id", courseId)
+      .eq("locale", locale);
+    if (error) throw new Error(error.message);
     const map = new Map<string, CourseSectionLocaleContent>();
-    for (const d of snap.docs) {
-      const raw = d.data() as Partial<CourseSectionLocaleContent> & {
-        section_id?: string;
-      };
-      const sectionId = String(raw.section_id ?? "").trim();
+    for (const row of data ?? []) {
+      const raw = row.data as Partial<CourseSectionLocaleContent> & { section_id?: string };
+      const sectionId = String(row.section_id ?? raw.section_id ?? "").trim();
       if (!sectionId) continue;
       map.set(sectionId, { ...(raw as CourseSectionLocaleContent), locale });
     }
@@ -330,340 +429,301 @@ export async function getCourseSectionLocaleContentMap(
   }
 }
 
-export async function backfillCourseLocaleIndex(
-  courseId: string,
-  locales: SupportedCourseLocale[] = ["vi", "en"],
-): Promise<{ updated: number }> {
-  const normalizedLocales = Array.from(
-    new Set(locales.map((l) => normalizeCourseLocale(l))),
-  );
-  const [sections, lessons] = await Promise.all([
-    getCourseSections(courseId).catch(() => [] as CourseSection[]),
-    getCourseLessons(courseId).catch(() => [] as CourseLesson[]),
-  ]);
-
-  let updated = 0;
-  let batch = writeBatch(db);
-  let ops = 0;
-  const commitIfNeeded = async (force = false) => {
-    if (ops === 0) return;
-    if (!force && ops < 400) return;
-    await batch.commit();
-    batch = writeBatch(db);
-    ops = 0;
-  };
-
-  // courses/{courseId}/locales/{locale}
-  for (const locale of normalizedLocales) {
-    const ref = doc(db, COL.COURSES, courseId, SUB.LOCALES, locale);
-    const snap = await getDoc(ref).catch(() => null);
-    if (!snap?.exists()) continue;
-    const data = snap.data() as Record<string, unknown>;
-    const needs =
-      data.entity !== "course" || data.course_id !== courseId || data.locale !== locale;
-    if (!needs) continue;
-    batch.set(
-      ref,
-      { entity: "course", course_id: courseId, locale },
-      { merge: true },
-    );
-    updated += 1;
-    ops += 1;
-    await commitIfNeeded();
-  }
-
-  // sections/{sectionId}/locales/{locale}
-  for (const section of sections) {
-    for (const locale of normalizedLocales) {
-      const ref = doc(db, COL.COURSES, courseId, SUB.SECTIONS, section.id, SUB.LOCALES, locale);
-      const snap = await getDoc(ref).catch(() => null);
-      if (!snap?.exists()) continue;
-      const data = snap.data() as Record<string, unknown>;
-      const needs =
-        data.entity !== "section" ||
-        data.course_id !== courseId ||
-        data.section_id !== section.id ||
-        data.locale !== locale;
-      if (!needs) continue;
-      batch.set(
-        ref,
-        { entity: "section", course_id: courseId, section_id: section.id, locale },
-        { merge: true },
-      );
-      updated += 1;
-      ops += 1;
-      await commitIfNeeded();
-    }
-  }
-
-  // lessons/{lessonId}/locales/{locale}
-  for (const lesson of lessons) {
-    for (const locale of normalizedLocales) {
-      const ref = doc(db, COL.COURSES, courseId, SUB.LESSONS, lesson.id, SUB.LOCALES, locale);
-      const snap = await getDoc(ref).catch(() => null);
-      if (!snap?.exists()) continue;
-      const data = snap.data() as Record<string, unknown>;
-      const needs =
-        data.entity !== "lesson" ||
-        data.course_id !== courseId ||
-        data.lesson_id !== lesson.id ||
-        data.locale !== locale;
-      if (!needs) continue;
-      batch.set(
-        ref,
-        { entity: "lesson", course_id: courseId, lesson_id: lesson.id, locale },
-        { merge: true },
-      );
-      updated += 1;
-      ops += 1;
-      await commitIfNeeded();
-    }
-  }
-
-  await commitIfNeeded(true);
-
-  // Invalidate caches so UI uses bulk-query immediately.
-  clearCourseLocaleCaches(courseId);
-  lessonLocaleMapCache.delete(`${courseId}:vi`);
-  lessonLocaleMapCache.delete(`${courseId}:en`);
-  sectionLocaleMapCache.delete(`${courseId}:vi`);
-  sectionLocaleMapCache.delete(`${courseId}:en`);
-
-  return { updated };
-}
-
-/** Lấy tất cả khoá học (đã publish) */
 export async function getPublishedCourses(): Promise<Course[]> {
-  const q = query(
-    collection(db, COL.COURSES),
-    where("published", "==", true),
-    orderBy("updated_at", "desc")
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Course));
+  const cached = publishedCoursesCache.get("all");
+  if (cached) return cached;
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("courses")
+      .select(COURSE_ROW_SELECT)
+      .eq("published", true)
+      .order("updated_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r) => rowToCourse(r as CourseRow));
+  })();
+  publishedCoursesCache.set("all", promise);
+  promise.catch(() => publishedCoursesCache.delete("all"));
+  return promise;
 }
 
-/** Lấy các khoá học (đã publish) của một giảng viên cụ thể */
-export async function getPublishedCoursesByInstructor(
-  instructorId: string,
-): Promise<Course[]> {
-  const q = query(
-    collection(db, COL.COURSES),
-    where("published", "==", true),
-    where("instructor_id", "==", instructorId),
-    orderBy("updated_at", "desc"),
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Course));
+export async function getPublishedCoursesByInstructor(instructorId: string): Promise<Course[]> {
+  const { data, error } = await supabase
+    .from("courses")
+    .select(COURSE_ROW_SELECT)
+    .eq("published", true)
+    .eq("instructor_id", instructorId)
+    .order("updated_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => rowToCourse(r as CourseRow));
 }
 
-/** Lấy một khoá theo id */
 export async function getCourse(courseId: string): Promise<Course | null> {
-  const ref = doc(db, COL.COURSES, courseId);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return null;
-  return { id: snap.id, ...snap.data() } as Course;
+  const cached = courseByIdCache.get(courseId);
+  if (cached) return cached;
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("courses")
+      .select(COURSE_ROW_SELECT)
+      .eq("id", courseId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return rowToCourse(data as CourseRow);
+  })();
+  courseByIdCache.set(courseId, promise);
+  promise.catch(() => courseByIdCache.delete(courseId));
+  return promise;
 }
 
-/** Lấy một khoá theo slug */
-export async function getCourseBySlug(slug: string): Promise<Course | null> {
+export function invalidateCourseCache(courseId?: string) {
+  publishedCoursesCache.delete("all");
+  if (courseId) courseByIdCache.delete(courseId);
+}
+
+export async function getCourseBySlug(slug: string, viewer?: User | null): Promise<Course | null> {
   const normalized = slug.trim();
   if (!normalized) return null;
-  // Always prefer a "published-only" query first.
-  // This avoids Firestore Rules rejecting the whole query when a signed-in student
-  // hits a draft course slug (permission-denied -> UI shows "not found").
-  const publishedQ = query(
-    collection(db, COL.COURSES),
-    where("slug", "==", normalized),
-    where("published", "==", true),
-  );
-  const publishedSnap = await getDocs(publishedQ);
-  if (!publishedSnap.empty) {
-    const d = publishedSnap.docs[0];
-    return { id: d.id, ...d.data() } as Course;
-  }
 
-  // If signed in, allow privileged users (admin/support/instructor) to resolve drafts.
-  // Students will still be denied by rules; we surface it as null ("not found").
-  if (!auth.currentUser) return null;
-  try {
-    const draftQ = query(collection(db, COL.COURSES), where("slug", "==", normalized));
-    const draftSnap = await getDocs(draftQ);
-    if (draftSnap.empty) return null;
-    const d = draftSnap.docs[0];
-    return { id: d.id, ...d.data() } as Course;
-  } catch {
-    return null;
+  const { data: pub } = await supabase
+    .from("courses")
+    .select(COURSE_ROW_SELECT)
+    .eq("slug", normalized)
+    .eq("published", true)
+    .maybeSingle();
+  if (pub) return rowToCourse(pub as CourseRow);
+
+  let resolvedViewer = viewer ?? null;
+  if (!resolvedViewer) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    resolvedViewer = user;
   }
+  if (!resolvedViewer) return null;
+
+  const { data: draft, error } = await supabase
+    .from("courses")
+    .select(COURSE_ROW_SELECT)
+    .eq("slug", normalized)
+    .maybeSingle();
+  if (error || !draft) return null;
+  return rowToCourse(draft as CourseRow);
 }
 
-/** Lấy các section của khoá */
 export async function getCourseSections(courseId: string): Promise<CourseSection[]> {
-  const q = query(
-    collection(db, COL.COURSES, courseId, SUB.SECTIONS),
-    orderBy("order", "asc")
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as CourseSection));
+  const cached = sectionsCache.get(courseId);
+  if (cached) return cached;
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("course_sections")
+      .select("*")
+      .eq("course_id", courseId)
+      .order("sort_order", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r) => sectionRowToSection(courseId, r as CourseRow & { sort_order: number }));
+  })();
+  sectionsCache.set(courseId, promise);
+  promise.catch(() => sectionsCache.delete(courseId));
+  return promise;
 }
 
-/** Lấy tất cả lesson của khoá (theo section) */
 export async function getCourseLessons(
   courseId: string,
   options?: { previewOnly?: boolean },
 ): Promise<CourseLesson[]> {
-  const constraints = options?.previewOnly
-    ? [where("is_preview_free", "==", true), orderBy("order", "asc")]
-    : [orderBy("order", "asc")];
-  const q = query(
-    collection(db, COL.COURSES, courseId, SUB.LESSONS),
-    ...constraints,
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as CourseLesson));
+  const cached = lessonsCache.get(courseId);
+  if (cached) return cached;
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("course_lessons")
+      .select("*")
+      .eq("course_id", courseId)
+      .order("sort_order", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r) => lessonRowToLesson(r as CourseRow & { section_id: string; sort_order: number }));
+  })();
+  lessonsCache.set(courseId, promise);
+  promise.catch(() => lessonsCache.delete(courseId));
+  const rows = await promise;
+  if (options?.previewOnly) return rows.filter((l) => l.is_preview_free === true);
+  return rows;
 }
 
-/** Lấy enrollment của user cho một khoá */
-export async function getEnrollment(
-  userId: string,
-  courseId: string
-): Promise<Enrollment | null> {
-  const directRef = doc(db, COL.ENROLLMENTS, `${userId}_${courseId}`);
-  const directSnap = await getDoc(directRef);
-  if (directSnap.exists()) {
-    return { id: directSnap.id, ...directSnap.data() } as Enrollment;
+export async function getEnrollment(userId: string, courseId: string): Promise<Enrollment | null> {
+  const id = `${userId}_${courseId}`;
+  const { data, error } = await supabase.from("enrollments").select("*").eq("id", id).maybeSingle();
+  if (!error && data) {
+    return { id: data.id, ...(data as Omit<Enrollment, "id">) } as Enrollment;
   }
-
-  const q = query(
-    collection(db, COL.ENROLLMENTS),
-    where("user_id", "==", userId),
-    where("course_id", "==", courseId)
-  );
-  const snap = await getDocs(q);
-  if (snap.empty) return null;
-  const d = snap.docs[0];
-  const data = d.data() as Enrollment;
-
-  return { ...data, id: d.id } as Enrollment;
+  const { data: rows } = await supabase
+    .from("enrollments")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("course_id", courseId)
+    .limit(1);
+  const row = rows?.[0];
+  if (!row) return null;
+  return { id: row.id, ...(row as Omit<Enrollment, "id">) } as Enrollment;
 }
 
-/** Lấy tất cả enrollment của user (khoá đang học) */
 export async function getMyEnrollments(userId: string): Promise<Enrollment[]> {
-  const q = query(
-    collection(db, COL.ENROLLMENTS),
-    where("user_id", "==", userId),
-    orderBy("last_accessed_at", "desc")
-  );
-  const snap = await getDocs(q);
-  const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Enrollment));
-  // Defensive: legacy/migrated data can produce duplicates for same course_id.
-  // Keep the most recently accessed one (query is already desc by last_accessed_at).
-  const seen = new Set<string>();
-  return rows.filter((e) => {
-    if (!e.course_id) return false;
-    if (seen.has(e.course_id)) return false;
-    seen.add(e.course_id);
-    return true;
-  });
+  const cached = enrollmentsCache.get(userId);
+  if (cached) return cached;
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("enrollments")
+      .select("*")
+      .eq("user_id", userId)
+      .order("last_accessed_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    const list = (data ?? []).map((d) => ({ id: d.id, ...d } as Enrollment));
+    const seen = new Set<string>();
+    return list.filter((e) => {
+      if (!e.course_id) return false;
+      if (seen.has(e.course_id)) return false;
+      seen.add(e.course_id);
+      return true;
+    });
+  })();
+  enrollmentsCache.set(userId, promise);
+  promise.catch(() => enrollmentsCache.delete(userId));
+  return promise;
 }
 
-/** Lấy tất cả enrollment của một khoá (instructor/admin quản lý học viên) */
-export async function getEnrollmentsForCourse(
-  courseId: string
-): Promise<Enrollment[]> {
-  const q = query(
-    collection(db, COL.ENROLLMENTS),
-    where("course_id", "==", courseId),
-    orderBy("enrolled_at", "desc")
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Enrollment));
+export function invalidateEnrollmentsCache(userId: string) {
+  enrollmentsCache.delete(userId);
 }
 
-/** Ghi danh vào khoá */
-export async function enrollCourse(courseId: string): Promise<Enrollment> {
-  const user = auth.currentUser;
+export async function getEnrollmentsForCourse(courseId: string): Promise<Enrollment[]> {
+  const { data, error } = await supabase
+    .from("enrollments")
+    .select("*")
+    .eq("course_id", courseId)
+    .order("enrolled_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((d) => ({ id: d.id, ...d } as Enrollment));
+}
+
+export async function enrollCourse(courseId: string, viewer?: User | null): Promise<Enrollment> {
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) throw new Error("Chưa đăng nhập");
   const course = await getCourse(courseId);
   if (!course) throw new Error("Không tìm thấy khoá học");
   if (course.access_model === "paid_upfront") {
-    throw new Error(
-      "Khoá học này yêu cầu thanh toán trước khi mở toàn bộ nội dung.",
-    );
+    throw new Error("Khoá học này yêu cầu thanh toán trước khi mở toàn bộ nội dung.");
   }
 
-  const existing = await getEnrollment(user.uid, courseId);
+  const existing = await getEnrollment(user.id, courseId);
   if (existing) return existing;
 
   const now = new Date().toISOString();
-  const enrollmentId = `${user.uid}_${courseId}`;
-  await setDoc(doc(db, COL.ENROLLMENTS, enrollmentId), {
-    user_id: user.uid,
-    course_id: courseId,
-    enrolled_at: now,
-    last_accessed_at: now,
-  });
-  return {
-    id: enrollmentId,
-    user_id: user.uid,
-    course_id: courseId,
-    enrolled_at: now,
-    last_accessed_at: now,
-  };
+  const enrollmentId = `${user.id}_${courseId}`;
+  const { data, error } = await supabase
+    .from("enrollments")
+    .insert({
+      id: enrollmentId,
+      user_id: user.id,
+      course_id: courseId,
+      enrolled_at: now,
+      last_accessed_at: now,
+    })
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return { id: data.id, ...data } as Enrollment;
 }
 
-/** Cập nhật last_accessed khi vào trang học */
-export async function touchEnrollment(courseId: string): Promise<void> {
-  const user = auth.currentUser;
+export async function touchEnrollment(courseId: string, viewer?: User | null): Promise<void> {
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) return;
-
-  const enr = await getEnrollment(user.uid, courseId);
+  const enr = await getEnrollment(user.id, courseId);
   if (!enr) return;
-
-  await updateDoc(doc(db, COL.ENROLLMENTS, enr.id), {
-    last_accessed_at: new Date().toISOString(),
-  });
+  await supabase
+    .from("enrollments")
+    .update({ last_accessed_at: new Date().toISOString() })
+    .eq("id", enr.id);
 }
 
-/** Lấy tiến độ bài học của user trong một khoá */
+const LESSON_LEARNER_COUNT_PAGE = 1000;
+
+/** Distinct learner count per lesson_id for a course (any lesson_progress row). */
+export async function getLessonDistinctLearnerCountsForCourse(
+  courseId: string,
+): Promise<Record<string, number>> {
+  const byLesson = new Map<string, Set<string>>();
+  let from = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("lesson_progress")
+      .select("lesson_id, user_id")
+      .eq("course_id", courseId)
+      .range(from, from + LESSON_LEARNER_COUNT_PAGE - 1);
+    if (error) throw new Error(error.message);
+    const rows = data ?? [];
+    for (const row of rows) {
+      const lid = String((row as { lesson_id?: string }).lesson_id ?? "");
+      const uid = String((row as { user_id?: string }).user_id ?? "");
+      if (!lid || !uid) continue;
+      if (!byLesson.has(lid)) byLesson.set(lid, new Set());
+      byLesson.get(lid)!.add(uid);
+    }
+    if (rows.length < LESSON_LEARNER_COUNT_PAGE) break;
+    from += LESSON_LEARNER_COUNT_PAGE;
+  }
+  return Object.fromEntries([...byLesson.entries()].map(([k, v]) => [k, v.size]));
+}
+
 export async function getLessonProgressForCourse(
   userId: string,
-  courseId: string
+  courseId: string,
 ): Promise<LessonProgress[]> {
-  const q = query(
-    collection(db, COL.LESSON_PROGRESS),
-    where("user_id", "==", userId),
-    where("course_id", "==", courseId)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as LessonProgress));
+  const key = `${userId}_${courseId}`;
+  const cached = lessonProgressCache.get(key);
+  if (cached) return cached;
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("lesson_progress")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("course_id", courseId);
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((d) => ({ id: d.id, ...d } as LessonProgress));
+  })();
+  lessonProgressCache.set(key, promise);
+  promise.catch(() => lessonProgressCache.delete(key));
+  return promise;
 }
 
-export function sortLessonsByCurriculum(
-  lessons: CourseLesson[],
-  sections: CourseSection[],
-): CourseLesson[] {
-  const sectionOrderMap = new Map(
-    sections.map((section, index) => [section.id, Number(section.order ?? index)]),
-  );
+export function invalidateLessonProgressCache(userId: string, courseId: string) {
+  lessonProgressCache.delete(`${userId}_${courseId}`);
+}
 
+export function invalidateSectionsCache(courseId: string) {
+  sectionsCache.delete(courseId);
+  lessonsCache.delete(courseId);
+}
+
+export function sortLessonsByCurriculum(lessons: CourseLesson[], sections: CourseSection[]): CourseLesson[] {
+  const sectionOrderMap = new Map(sections.map((section, index) => [section.id, Number(section.order ?? index)]));
   return [...lessons].sort((a, b) => {
     const sectionDiff =
       (sectionOrderMap.get(a.section_id) ?? Number.MAX_SAFE_INTEGER) -
       (sectionOrderMap.get(b.section_id) ?? Number.MAX_SAFE_INTEGER);
     if (sectionDiff !== 0) return sectionDiff;
-
     const lessonDiff = Number(a.order ?? 0) - Number(b.order ?? 0);
     if (lessonDiff !== 0) return lessonDiff;
-
     return a.id.localeCompare(b.id);
   });
 }
 
-export function getCompletedLessonIds(
-  lessons: CourseLesson[],
-  progressList: LessonProgress[],
-): Set<string> {
+export function getCompletedLessonIds(lessons: CourseLesson[], progressList: LessonProgress[]): Set<string> {
   const lessonIds = new Set(lessons.map((lesson) => lesson.id));
   return new Set(
     progressList
@@ -672,108 +732,102 @@ export function getCompletedLessonIds(
   );
 }
 
-/** Kiểm tra và cấp chứng nhận nếu đủ điều kiện: 100% bài học + (không có bài tập cuối HOẶC đã nộp và được duyệt) */
-export async function checkAndIssueCertificate(
-  userId: string,
-  courseId: string
-): Promise<boolean> {
-  const token = await auth.currentUser?.getIdToken().catch(() => null);
+export async function checkAndIssueCertificate(userId: string, courseId: string): Promise<boolean> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
   if (!token) throw new Error("Chưa đăng nhập");
 
   const res = await fetch(CERTIFICATE_API, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      ...supabaseFunctionHeaders(token),
     },
     credentials: "include",
     body: JSON.stringify({ userId, courseId }),
   });
 
-  const data = (await res.json().catch(() => ({}))) as Partial<{
-    issued: boolean;
-    message: string;
-  }>;
-
-  if (!res.ok) {
-    throw new Error(data.message || "Không thể cấp chứng nhận lúc này.");
-  }
-
-  return data.issued === true;
+  const body = (await res.json().catch(() => ({}))) as Partial<{ issued: boolean; message: string }>;
+  if (!res.ok) throw new Error(body.message || "Không thể cấp chứng nhận lúc này.");
+  return body.issued === true;
 }
 
-/** Đánh dấu bài học đã hoàn thành (hoặc cập nhật watch_seconds) */
 export async function setLessonProgress(
   lessonId: string,
   courseId: string,
   completed: boolean,
-  watchSeconds?: number
+  watchSeconds?: number,
+  viewer?: User | null,
 ): Promise<void> {
-  const user = auth.currentUser;
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) throw new Error("Chưa đăng nhập");
 
-  const progressId = `${user.uid}_${courseId}_${lessonId}`;
-  const progressRef = doc(db, COL.LESSON_PROGRESS, progressId);
+  const progressId = `${user.id}_${courseId}_${lessonId}`;
   const now = new Date().toISOString();
-
-  await setDoc(progressRef, {
-    user_id: user.uid,
+  const row = removeUndefinedFields({
+    id: progressId,
+    user_id: user.id,
     lesson_id: lessonId,
     course_id: courseId,
     completed_at: completed ? now : null,
-    ...(watchSeconds != null && { watch_seconds: watchSeconds }),
-  }, { merge: true });
+    watch_seconds: watchSeconds,
+  }) as Record<string, unknown>;
+
+  const { error } = await supabase.from("lesson_progress").upsert(row, { onConflict: "id" });
+  if (error) throw new Error(error.message);
+
+  invalidateLessonProgressCache(user.id, courseId);
 
   if (completed) {
-    checkAndIssueCertificate(user.uid, courseId).catch(() => {});
+    checkAndIssueCertificate(user.id, courseId).catch(() => {});
+    invokeCheckCourseCredential(courseId).catch(() => {});
   }
 }
 
-/** Tính % hoàn thành khoá (số bài đã completed / tổng số bài) */
-export function computeProgressPercent(
-  lessons: CourseLesson[],
-  progressList: LessonProgress[]
-): number {
+export function computeProgressPercent(lessons: CourseLesson[], progressList: LessonProgress[]): number {
   if (lessons.length === 0) return 0;
   const completedIds = getCompletedLessonIds(lessons, progressList);
   const completed = lessons.filter((l) => completedIds.has(l.id)).length;
   return Math.round((completed / lessons.length) * 100);
 }
 
-/** Bài tiếp theo chưa hoàn thành */
-export function getNextLesson(
-  lessons: CourseLesson[],
-  progressList: LessonProgress[]
-): CourseLesson | null {
+export function getNextLesson(lessons: CourseLesson[], progressList: LessonProgress[]): CourseLesson | null {
   const completedIds = getCompletedLessonIds(lessons, progressList);
   return lessons.find((l) => !completedIds.has(l.id)) ?? null;
 }
 
-// --------------- Admin / Instructor: tạo khoá, section, lesson ---------------
-
-/** Tạo khoá mới (instructor/admin) */
-export async function createCourse(data: CourseInsert): Promise<Course> {
-  const user = auth.currentUser;
+export async function createCourse(data: CourseInsert, viewer?: User | null): Promise<Course> {
+  const user =
+    viewer ??
+    (
+      await supabase.auth.getUser()
+    ).data.user;
   if (!user) throw new Error("Chưa đăng nhập");
 
   const now = new Date().toISOString();
-  const ref = doc(collection(db, COL.COURSES));
-  const course: Omit<Course, "id"> = {
+  const id = crypto.randomUUID();
+  const instructorId = data.instructor_id || user.id;
+
+  const dataDoc = removeUndefinedFields({
     title: data.title,
-    slug: data.slug,
     description: data.description,
     learning_outcomes: data.learning_outcomes ?? [],
     short_description: data.short_description ?? "",
     thumbnail_url: data.thumbnail_url,
     thumbnail_path: data.thumbnail_path,
-    instructor_id: data.instructor_id || user.uid,
     instructor_name: data.instructor_name,
     level: data.level ?? "all",
     total_duration_seconds: data.total_duration_seconds ?? 0,
-    published: data.published ?? false,
     i18n: data.i18n,
     access_model: data.access_model ?? "free",
     is_updating: data.is_updating ?? false,
+    is_external_aggregated: data.is_external_aggregated ?? false,
+    external_source_urls: data.external_source_urls ?? [],
+    external_source_attribution_note: data.external_source_attribution_note ?? null,
     price_vnd: data.price_vnd ?? null,
     certificate_fee_vnd: data.certificate_fee_vnd ?? null,
     owner_type: data.owner_type ?? "corelia",
@@ -783,12 +837,23 @@ export async function createCourse(data: CourseInsert): Promise<Course> {
     partner_transfer_info: data.partner_transfer_info ?? null,
     co_instructors: data.co_instructors ?? [],
     co_instructor_permissions: data.co_instructor_permissions ?? {},
-    created_at: now,
-    updated_at: now,
-  };
-  const payload = removeUndefinedFields(course);
-  await setDoc(ref, payload);
-  return { id: ref.id, ...payload };
+  }) as Record<string, unknown>;
+
+  const { data: inserted, error } = await supabase
+    .from("courses")
+    .insert({
+      id,
+      instructor_id: instructorId,
+      published: data.published ?? false,
+      slug: data.slug,
+      created_at: now,
+      updated_at: now,
+      data: dataDoc,
+    })
+    .select("*")
+    .single();
+  if (error || !inserted) throw new Error(error?.message ?? "Tạo khoá học thất bại");
+  return rowToCourse(inserted as CourseRow);
 }
 
 export function isCourseCoInstructorWithAnyPermission(
@@ -796,9 +861,7 @@ export function isCourseCoInstructorWithAnyPermission(
   uid: string | null | undefined,
 ): boolean {
   if (!course || !uid) return false;
-  const perms = course.co_instructor_permissions?.[uid] as
-    | CourseCoInstructorPermissions
-    | undefined;
+  const perms = course.co_instructor_permissions?.[uid] as CourseCoInstructorPermissions | undefined;
   if (!perms) return false;
   return Object.values(perms).some(Boolean);
 }
@@ -823,155 +886,185 @@ export function toCoInstructorSnapshot(profile: {
   });
 }
 
-/** Thêm section vào khoá */
-export async function addSection(
-  courseId: string,
-  data: CourseSectionInsert
-): Promise<CourseSection> {
-  const payload = removeUndefinedFields(
-    data as unknown as Record<string, unknown>,
-  ) as unknown as CourseSectionInsert;
-  const ref = await addDoc(
-    collection(db, COL.COURSES, courseId, SUB.SECTIONS),
-    payload
-  );
-  return { id: ref.id, ...payload } as CourseSection;
+export async function addSection(courseId: string, data: CourseSectionInsert): Promise<CourseSection> {
+  const payload = removeUndefinedFields(data as unknown as Record<string, unknown>) as unknown as CourseSectionInsert;
+  const id = crypto.randomUUID();
+  const sortOrder = Number(payload.order ?? 0);
+  const sectionRest = { ...(payload as CourseSectionInsert & { id?: string }) };
+  delete (sectionRest as { order?: unknown }).order;
+  delete (sectionRest as { id?: unknown }).id;
+  const dataDoc = removeUndefinedFields(sectionRest as unknown as Record<string, unknown>);
+  const { error } = await supabase.from("course_sections").insert({
+    course_id: courseId,
+    id,
+    sort_order: sortOrder,
+    data: dataDoc,
+  });
+  if (error) throw new Error(error.message);
+  return { id, ...payload } as CourseSection;
 }
 
-/** Thêm lesson vào khoá */
-export async function addLesson(
-  courseId: string,
-  data: CourseLessonInsert
-): Promise<CourseLesson> {
-  const payload = removeUndefinedFields(
-    data as unknown as Record<string, unknown>,
-  ) as unknown as CourseLessonInsert;
-  const ref = await addDoc(
-    collection(db, COL.COURSES, courseId, SUB.LESSONS),
-    payload
-  );
-  return { id: ref.id, ...payload } as CourseLesson;
+export async function addLesson(courseId: string, data: CourseLessonInsert): Promise<CourseLesson> {
+  const payload = removeUndefinedFields(data as unknown as Record<string, unknown>) as unknown as CourseLessonInsert;
+  const id = crypto.randomUUID();
+  const sortOrder = Number(payload.order ?? 0);
+  const lessonRest = { ...(payload as CourseLessonInsert & { id?: string }) };
+  const { section_id } = lessonRest;
+  delete (lessonRest as { order?: unknown }).order;
+  delete (lessonRest as { id?: unknown }).id;
+  delete (lessonRest as { section_id?: unknown }).section_id;
+  const dataDoc = removeUndefinedFields(lessonRest as unknown as Record<string, unknown>);
+  const { error } = await supabase.from("course_lessons").insert({
+    course_id: courseId,
+    id,
+    section_id,
+    sort_order: sortOrder,
+    data: dataDoc,
+  });
+  if (error) throw new Error(error.message);
+  return { id, ...payload } as CourseLesson;
 }
 
-/** Lấy khoá học do giảng viên tạo (instructor) hoặc tất cả (admin) */
-export async function getCoursesForManagement(
-  userId: string,
-  isAdmin: boolean
-): Promise<Course[]> {
+export async function getCoursesForManagement(userId: string, isAdmin: boolean): Promise<Course[]> {
   if (isAdmin) {
-    const q = query(
-      collection(db, COL.COURSES),
-      orderBy("updated_at", "desc")
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Course));
+    const { data, error } = await supabase.from("courses").select("*").order("updated_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r) => rowToCourse(r as CourseRow));
   }
-  const q = query(
-    collection(db, COL.COURSES),
-    where("instructor_id", "==", userId),
-    orderBy("updated_at", "desc")
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Course));
+  const { data, error } = await supabase
+    .from("courses")
+    .select("*")
+    .eq("instructor_id", userId)
+    .order("updated_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => rowToCourse(r as CourseRow));
 }
 
-/** Cập nhật khoá học (instructor/admin) */
-export async function updateCourse(
-  courseId: string,
-  data: CourseUpdate
-): Promise<void> {
-  const ref = doc(db, COL.COURSES, courseId);
-  await updateDoc(ref, removeUndefinedFields({
-    ...data,
+function splitCourseUpdate(updates: CourseUpdate): {
+  top: { slug?: string; published?: boolean; updated_at: string };
+  dataPatch: Record<string, unknown>;
+} {
+  const top: { slug?: string; published?: boolean; updated_at: string } = {
     updated_at: new Date().toISOString(),
-  }));
+  };
+  const dataPatch: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(updates)) {
+    if (v === undefined) continue;
+    if (k === "slug") top.slug = v as string;
+    else if (k === "published") top.published = v as boolean;
+    else dataPatch[k] = v;
+  }
+  return { top, dataPatch };
 }
 
-/** Cập nhật tổng thời lượng khoá = tổng duration_seconds của tất cả bài học (để hiển thị đúng bên ngoài trang khoá học). */
+export async function updateCourse(courseId: string, data: CourseUpdate): Promise<void> {
+  const { data: row, error: fetchErr } = await supabase.from("courses").select("*").eq("id", courseId).single();
+  if (fetchErr || !row) throw new Error(fetchErr?.message ?? "Không tìm thấy khoá học");
+  const prevData = ((row as CourseRow).data ?? {}) as Record<string, unknown>;
+  const { top, dataPatch } = splitCourseUpdate(data);
+  const nextData = { ...prevData, ...dataPatch };
+  const { error } = await supabase
+    .from("courses")
+    .update({ ...top, data: nextData })
+    .eq("id", courseId);
+  if (error) throw new Error(error.message);
+}
+
 export async function refreshCourseTotalDuration(courseId: string): Promise<void> {
   const lessons = await getCourseLessons(courseId);
   const total = lessons.reduce((s, l) => s + (l.duration_seconds || 0), 0);
   await updateCourse(courseId, { total_duration_seconds: total });
 }
 
-/** Cập nhật section */
 export async function updateSection(
   courseId: string,
   sectionId: string,
-  data: Partial<Pick<CourseSection, "title" | "order" | "description">>
+  data: Partial<Pick<CourseSection, "title" | "order" | "description">>,
 ): Promise<void> {
-  await updateDoc(
-    doc(db, COL.COURSES, courseId, SUB.SECTIONS, sectionId),
-    removeUndefinedFields(data)
-  );
+  const { data: row, error } = await supabase
+    .from("course_sections")
+    .select("*")
+    .eq("course_id", courseId)
+    .eq("id", sectionId)
+    .single();
+  if (error || !row) throw new Error(error?.message ?? "Không tìm thấy section");
+  const prev = (row.data ?? {}) as Record<string, unknown>;
+  const next = { ...prev, ...removeUndefinedFields(data as Record<string, unknown>) };
+  const sortOrder = data.order != null ? Number(data.order) : row.sort_order;
+  const { error: upErr } = await supabase
+    .from("course_sections")
+    .update({ data: next, sort_order: sortOrder })
+    .eq("course_id", courseId)
+    .eq("id", sectionId);
+  if (upErr) throw new Error(upErr.message);
 }
 
-/** Cập nhật lesson */
 export async function updateLesson(
   courseId: string,
   lessonId: string,
-  data: Partial<CourseLessonInsert>
+  data: Partial<CourseLessonInsert>,
+  options?: { clearYoutubeSegments?: boolean },
 ): Promise<void> {
-  await updateDoc(
-    doc(db, COL.COURSES, courseId, SUB.LESSONS, lessonId),
-    removeUndefinedFields(data)
-  );
+  const { data: row, error } = await supabase
+    .from("course_lessons")
+    .select("*")
+    .eq("course_id", courseId)
+    .eq("id", lessonId)
+    .single();
+  if (error || !row) throw new Error(error?.message ?? "Không tìm thấy lesson");
+  const prev = (row.data ?? {}) as Record<string, unknown>;
+  const patch = removeUndefinedFields(data as Record<string, unknown>);
+  delete patch.order;
+  delete patch.section_id;
+  const next = { ...prev, ...patch };
+  if (options?.clearYoutubeSegments) {
+    delete next.youtube_start_seconds;
+    delete next.youtube_end_seconds;
+  }
+  const updates: Record<string, unknown> = { data: next };
+  if (data.order != null) updates.sort_order = Number(data.order);
+  if (data.section_id != null) updates.section_id = data.section_id;
+  const { error: upErr } = await supabase
+    .from("course_lessons")
+    .update(updates)
+    .eq("course_id", courseId)
+    .eq("id", lessonId);
+  if (upErr) throw new Error(upErr.message);
 }
 
-/** Cập nhật lại thứ tự các lesson trong khoá */
 export async function reorderCourseLessons(
   courseId: string,
   lessons: Array<Pick<CourseLesson, "id" | "order" | "section_id">>,
 ): Promise<void> {
   if (lessons.length === 0) return;
-
-  const batch = writeBatch(db);
-  for (const lesson of lessons) {
-    batch.update(doc(db, COL.COURSES, courseId, SUB.LESSONS, lesson.id), {
-      order: lesson.order,
-      section_id: lesson.section_id,
-    });
-  }
-  await batch.commit();
+  const { error } = await supabase.rpc("batch_update_lesson_orders", {
+    p_course_id: courseId,
+    p_updates: lessons.map((l) => ({ id: l.id, sort_order: l.order, section_id: l.section_id })),
+  });
+  if (error) throw new Error(error.message);
 }
 
-/** Xoá section và các lesson thuộc section đó */
 export async function deleteSection(
   courseId: string,
   sectionId: string,
-  lessonIdsInSection: string[]
+  lessonIdsInSection: string[],
 ): Promise<void> {
-  const batch = writeBatch(db);
-  batch.delete(doc(db, COL.COURSES, courseId, SUB.SECTIONS, sectionId));
-  for (const lid of lessonIdsInSection) {
-    batch.delete(doc(db, COL.COURSES, courseId, SUB.LESSONS, lid));
+  await supabase.from("course_sections").delete().eq("course_id", courseId).eq("id", sectionId);
+  if (lessonIdsInSection.length > 0) {
+    await supabase
+      .from("course_lessons")
+      .delete()
+      .eq("course_id", courseId)
+      .in("id", lessonIdsInSection);
   }
-  await batch.commit();
 }
 
-/** Xoá một lesson */
-export async function deleteLesson(
-  courseId: string,
-  lessonId: string
-): Promise<void> {
-  await deleteDoc(doc(db, COL.COURSES, courseId, SUB.LESSONS, lessonId));
+export async function deleteLesson(courseId: string, lessonId: string): Promise<void> {
+  const { error } = await supabase.from("course_lessons").delete().eq("course_id", courseId).eq("id", lessonId);
+  if (error) throw new Error(error.message);
 }
 
-/** Xoá khoá học (admin/instructor chủ khoá) */
 export async function deleteCourse(courseId: string): Promise<void> {
-  const c = await getCourse(courseId);
-  if (!c) return;
-  const [sections, lessons] = await Promise.all([
-    getCourseSections(courseId),
-    getCourseLessons(courseId),
-  ]);
-  const batch = writeBatch(db);
-  for (const sec of sections) {
-    batch.delete(doc(db, COL.COURSES, courseId, SUB.SECTIONS, sec.id));
-  }
-  for (const les of lessons) {
-    batch.delete(doc(db, COL.COURSES, courseId, SUB.LESSONS, les.id));
-  }
-  batch.delete(doc(db, COL.COURSES, courseId));
-  await batch.commit();
+  const { error } = await supabase.from("courses").delete().eq("id", courseId);
+  if (error) throw new Error(error.message);
 }

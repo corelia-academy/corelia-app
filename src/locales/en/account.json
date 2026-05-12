@@ -83,7 +83,7 @@
       },
       "next": {
         "label": "New password",
-        "placeholder": "At least 6 characters"
+        "placeholder": "8+ characters with upper, lower, number & symbol"
       },
       "confirm": {
         "label": "Confirm new password",
@@ -98,7 +98,8 @@
     },
     "errors": {
       "confirmMismatch": "New password and confirmation do not match.",
-      "minLength": "New password must be at least 6 characters.",
+      "minLength": "New password must be at least 8 characters.",
+      "policy": "New password must be at least 8 characters and include uppercase, lowercase, a number, and a symbol.",
       "missingEmail": "Email not found. Only email-based accounts can change the password.",
       "changeFailed": "Unable to change password."
     }
@@ -147,7 +148,24 @@
   "profile": {
     "loading": "Loading profile…",
     "mustLogin": "You need to sign in to view this page.",
+    "tabs": {
+      "info": "Profile",
+      "ocid": "OCID",
+      "security": "Security"
+    },
     "emailLoginLabel": "Sign-in email",
+    "publicProfile": {
+      "label": "Public profile",
+      "status": {
+        "public": "Public",
+        "private": "Private"
+      },
+      "hint": "Your public profile link: /{{handle}}",
+      "actions": {
+        "makePrivate": "Make private",
+        "makePublic": "Make public"
+      }
+    },
     "setupWarning": {
       "title": "Your profile needs a bit more information.",
       "body": "Please update your full name and phone number so Corelia, instructors, or support staff can help you better."
@@ -164,6 +182,21 @@
       "placeholder": "Nguyen Van A",
       "hint": "Used for certificates, transcripts, and invoices."
     },
+    "username": {
+      "label": "Username",
+      "placeholder": "e.g. terrrancrypt",
+      "hint": "Used for your public profile URL."
+    },
+    "bio": {
+      "label": "Bio",
+      "placeholder": "A short intro about you…",
+      "hint": "This will be shown on your public profile."
+    },
+    "website": {
+      "label": "Website",
+      "placeholder": "https://…",
+      "hint": "Portfolio / LinkedIn / personal website."
+    },
     "phone": {
       "label": "Contact phone",
       "placeholder": "e.g. 09xxxxxxxx",
@@ -179,8 +212,10 @@
     },
     "errors": {
       "avatarUploadFailed": "Unable to upload image.",
-      "updateFailed": "Unable to update information."
-    }
+      "updateFailed": "Unable to update information.",
+      "loadFailed": "Could not load your profile. Please check your connection."
+    },
+    "retry": "Try again"
   },
   "cv": {
     "title": "Learning profile & CV",

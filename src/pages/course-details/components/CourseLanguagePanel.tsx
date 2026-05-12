@@ -59,7 +59,7 @@ export function CourseLanguagePanel({
 
         <dl className="mt-3 grid grid-cols-1 gap-3 text-sm">
           <div className="flex items-start justify-between gap-3">
-            <dt className="text-muted-foreground">
+            <dt className="text-foreground-muted">
               {translate("detail.courseDetail.stats.contentLanguage")}
             </dt>
             <dd className="font-medium text-foreground">
@@ -67,7 +67,7 @@ export function CourseLanguagePanel({
             </dd>
           </div>
           <div className="flex items-start justify-between gap-3">
-            <dt className="text-muted-foreground">
+            <dt className="text-foreground-muted">
               {translate("detail.courseDetail.stats.videoLanguage")}
             </dt>
             <dd className="font-medium text-foreground">
@@ -76,7 +76,7 @@ export function CourseLanguagePanel({
           </div>
         </dl>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
           <span className="mr-1">
             {translate("detail.courseDetail.language.supportedLabel")}
           </span>
@@ -88,7 +88,7 @@ export function CourseLanguagePanel({
         </div>
 
         {subtitlesCoverage.total > 0 ? (
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-md bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-md bg-surface-raised px-3 py-2 text-xs text-foreground-muted">
             <span>
               {translate("detail.courseDetail.subtitles.coverage", {
                 with: subtitlesCoverage.withSubtitles,
@@ -104,7 +104,7 @@ export function CourseLanguagePanel({
         ) : null}
 
         {course.i18n?.subtitle_note_policy !== "none" ? (
-          <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-3 text-xs leading-relaxed text-foreground-muted">
             {translate("detail.courseDetail.subtitles.note")}
           </p>
         ) : null}

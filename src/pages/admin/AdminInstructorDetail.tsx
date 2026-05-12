@@ -267,7 +267,7 @@ export default function AdminInstructorDetail() {
 
   if (loading) {
     return (
-      <div className="mx-auto w-full max-w-[1990px] px-4 py-8 text-sm text-muted-foreground">
+      <div className="mx-auto w-full max-w-[1990px] px-4 py-8 text-sm text-foreground-muted">
         {t("instructorDetailPage.loading")}
       </div>
     );
@@ -276,7 +276,7 @@ export default function AdminInstructorDetail() {
   if (!instructor || !editForm) {
     return (
       <div className="mx-auto w-full max-w-[1990px] px-4 py-8">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-foreground-muted">
           {t("instructorDetailPage.empty.notFound")}
         </p>
         <Link
@@ -335,46 +335,46 @@ export default function AdminInstructorDetail() {
         >
           {t("instructorDetailPage.actions.backToInstructors")}
         </Link>
-        <div className="mt-4 rounded-2xl border border-border-subtle bg-card p-5 shadow-card">
+        <div className="mt-4 rounded-2xl border border-border-subtle bg-surface-base p-5">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div className="flex min-w-0 items-start gap-4">
               {instructor.avatar_url ? (
                 <img
                   src={instructor.avatar_url}
                   alt=""
-                  className="size-16 shrink-0 rounded-2xl border border-border-subtle bg-muted/60 object-cover"
+                  className="size-16 shrink-0 rounded-2xl border border-border-subtle bg-surface-raised object-cover"
                 />
               ) : (
-                <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-muted/60 text-xl font-medium text-muted-foreground">
+                <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-border-subtle bg-surface-raised text-xl font-medium text-foreground-muted">
                   {(displayName || "I")[0]}
                 </div>
               )}
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground-muted">
                   {t("instructorDetailPage.hero.eyebrow")}
                 </p>
                 <h1 className="mt-2 truncate text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
                   {displayName}
                 </h1>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-sm text-foreground-muted">
                   UID: <span className="font-mono">{instructor.id}</span>
                 </p>
-                <p className="mt-2 max-w-3xl text-sm text-muted-foreground sm:text-sm">
+                <p className="mt-2 max-w-3xl text-sm text-foreground-muted sm:text-sm">
                   {t("instructorDetailPage.hero.description")}
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+              <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
                 {t("instructorDetailPage.hero.rolePrefix", { role: editForm.role })}
               </span>
-              <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+              <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
                 {isExternal
                   ? t("instructorDetailPage.hero.partnerInstructor")
                   : t("instructorDetailPage.hero.coreliaInstructor")}
               </span>
               {editForm.instructor_organization ? (
-                <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-2 text-xs font-medium text-foreground">
+                <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
                   {editForm.instructor_organization}
                 </span>
               ) : null}
@@ -387,11 +387,11 @@ export default function AdminInstructorDetail() {
               return (
                 <div
                   key={card.label}
-                  className="rounded-2xl border border-border-subtle bg-muted/25 p-4"
+                  className="rounded-2xl border border-border-subtle bg-surface-base p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                      <p className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
                         {card.label}
                       </p>
                       <p className="mt-2 text-xl font-semibold text-foreground">
@@ -416,12 +416,12 @@ export default function AdminInstructorDetail() {
       )}
 
       <div className="flex flex-col gap-6 xl:flex-row">
-        <nav className="h-fit shrink-0 rounded-2xl border border-border-subtle bg-card p-3 shadow-card xl:sticky xl:top-24 xl:w-72">
+        <nav className="h-fit shrink-0 rounded-2xl border border-border-subtle bg-surface-base p-3 xl:sticky xl:top-24 xl:w-72">
           <div className="mb-3 px-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground-muted">
               {t("instructorDetailPage.nav.title")}
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {t("instructorDetailPage.nav.subtitle")}
             </p>
           </div>
@@ -436,7 +436,7 @@ export default function AdminInstructorDetail() {
               />
             </li>
             <li className="mt-2 border-t border-border-subtle pt-2">
-              <div className="px-3 pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <div className="px-3 pb-1 text-xs font-semibold uppercase tracking-[0.14em] text-foreground-muted">
                 {t("instructorDetailPage.sections.partnerGroup")}
               </div>
             </li>
@@ -469,13 +469,13 @@ export default function AdminInstructorDetail() {
             </li>
           </ul>
 
-          <div className="mt-4 rounded-2xl border border-border-subtle bg-muted/25 p-4">
+          <div className="mt-4 rounded-2xl border border-border-subtle bg-surface-base p-4">
             <p className="text-xs font-medium text-foreground">
               {isExternal
                 ? t("instructorDetailPage.partnerMode.titleOn")
                 : t("instructorDetailPage.partnerMode.titleOff")}
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-foreground-muted">
               {isExternal
                 ? t("instructorDetailPage.partnerMode.descriptionOn")
                 : t("instructorDetailPage.partnerMode.descriptionOff")}

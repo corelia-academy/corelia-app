@@ -1,55 +1,65 @@
 import { useEffect, useState } from "react";
 import i18n from "@/i18n";
-import type { Contest } from "@/types/contests";
+import type { Contest } from "@/types/hackathons";
 import type { Course } from "@/types/courses";
 import {
   applyCourseLocaleContent,
-  getCourseLocaleContent,
+  getBatchCourseLocaleContent,
   getPublishedCourses,
   pickCourseContentLocale,
 } from "@/lib/courses";
-import { listContests } from "@/lib/contests";
+import { listContests } from "@/lib/hackathons";
+import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
+import { useAuth } from "@/stores/authStore";
 
 export function useHomeCatalogAndContests() {
+  const { user } = useAuth();
   const [courseCatalog, setCourseCatalog] = useState<Course[]>([]);
   const [contests, setContests] = useState<Contest[]>([]);
 
   useEffect(() => {
     let cancelled = false;
-
+    perfMeasureStart("home.catalog_wave");
     void Promise.all([
       getPublishedCourses().catch(() => [] as Course[]),
-      listContests().catch(() => [] as Contest[]),
-    ]).then(([publishedCourses, contestList]) => {
-      if (cancelled) return;
-      // Localize only what Home actually shows (avoid N+1 over large catalogs).
-      const previewCourses = publishedCourses.slice(0, 8);
-      void (async () => {
-        const localizedPreview = await Promise.all(
-          previewCourses.map(async (c) => {
-            const locale = pickCourseContentLocale(c, i18n.language);
-            const loc = await getCourseLocaleContent(c.id, locale).catch(() => null);
-            return applyCourseLocaleContent(c, loc);
-          }),
+      listContests(user ?? null).catch(() => [] as Contest[]),
+    ])
+      .then(([publishedCourses, contestList]) => {
+        if (cancelled) return;
+        const previewCourses = publishedCourses.slice(0, 8);
+        void (async () => {
+          const locale = pickCourseContentLocale(previewCourses[0], i18n.language);
+          const localeMap = await getBatchCourseLocaleContent(
+            previewCourses.map((c) => c.id),
+            locale,
+          ).catch(() => new Map());
+          const localizedPreview = previewCourses.map((c) =>
+            applyCourseLocaleContent(c, localeMap.get(c.id) ?? null),
+          );
+          if (!cancelled) {
+            const localizedMap = new Map(localizedPreview.map((c) => [c.id, c]));
+            setCourseCatalog(publishedCourses.map((c) => localizedMap.get(c.id) ?? c));
+          }
+        })();
+        setContests(
+          contestList.filter(
+            (item) => item.status === "published" || item.status === "running",
+          ),
         );
+      })
+      .finally(() => {
         if (!cancelled) {
-          // keep full catalog for IDs, but use localized preview for display.
-          const localizedMap = new Map(localizedPreview.map((c) => [c.id, c]));
-          setCourseCatalog(publishedCourses.map((c) => localizedMap.get(c.id) ?? c));
+          perfMeasureEnd("home.catalog_wave", {
+            viewer: user?.id ?? "guest",
+          });
         }
-      })();
-      setContests(
-        contestList.filter(
-          (item) => item.status === "published" || item.status === "running",
-        ),
-      );
-    });
+      });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when user id or ui locale changes
+  }, [user?.id, i18n.language]);
 
   return { courseCatalog, contests };
 }
-

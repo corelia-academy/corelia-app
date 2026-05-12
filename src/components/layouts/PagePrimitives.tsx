@@ -21,7 +21,7 @@ export function PageContainer({
   return (
     <div
       className={cn(
-        "mx-auto w-full min-w-0 px-3 py-4 sm:px-5 sm:py-5 lg:px-6",
+        "mx-auto w-full min-w-0 px-4 py-4 sm:px-6 sm:py-5 lg:px-8",
         WIDTH_CLASS[width],
         className,
       )}
@@ -41,7 +41,7 @@ export function PageSectionCard({
   return (
     <section
       className={cn(
-        "rounded-lg border border-border-subtle bg-card p-4 shadow-card",
+        "rounded-lg border border-border-subtle bg-surface-base p-4",
         className,
       )}
     >
@@ -70,13 +70,13 @@ export function EmptyState({
         className,
       )}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-raised">
         {icon}
       </div>
       <div>
         <p className="text-sm font-medium text-foreground">{title}</p>
         {description ? (
-          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+          <p className="mt-0.5 text-xs text-foreground-muted">{description}</p>
         ) : null}
       </div>
       {action}

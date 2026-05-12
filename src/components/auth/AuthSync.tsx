@@ -1,47 +1,76 @@
 import { useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { getCurrentProfile } from "@/lib/profile";
+import { supabase } from "@/lib/supabase";
+import { getProfileForUser, invalidateCurrentProfileCache } from "@/lib/profile";
 import { useAuthStore } from "@/stores/authStore";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
+import type { AuthChangeEvent, User } from "@supabase/supabase-js";
+import { timedAsync } from "@/lib/perfTelemetry";
 
 /**
- * Đồng bộ session + profile từ Firebase vào auth store.
- * Mount 1 lần ở gốc app (thay AuthProvider).
+ * Đồng bộ session + profile từ Supabase vào auth store.
+ * Profile fetch chạy ngoài stack của `onAuthStateChange` để không block session / REST khác.
  */
 export function AuthSync() {
   const setUser = useAuthStore((s) => s.setUser);
   const setProfile = useAuthStore((s) => s.setProfile);
-  const setLoading = useAuthStore((s) => s.setLoading);
+  const setProfileLoading = useAuthStore((s) => s.setProfileLoading);
   const setAuthInitialized = useAuthStore((s) => s.setAuthInitialized);
 
   useEffect(() => {
     let mounted = true;
+    let currentSeq = 0;
+    let hasInitializedFromEvent = false;
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    function syncFromSession(session: { user?: unknown } | null) {
       if (!mounted) return;
+      const seq = ++currentSeq;
+      const user = (session as { user?: Parameters<typeof setUser>[0] } | null)?.user ?? null;
       setUser(user);
       setAuthInitialized(true);
 
       if (user) {
-        setLoading(true);
-        try {
-          const p = await getCurrentProfile();
-          if (mounted) {
-            setProfile(p);
-            const locale = (p?.locale ?? DEFAULT_LANGUAGE) as SupportedLanguage;
-            void i18n.changeLanguage(locale);
-          }
-        } catch (error) {
-          console.error("Failed to load profile:", error);
-          if (mounted) setProfile(null);
-        } finally {
-          if (mounted) setLoading(false);
+        const { profile: existingProfile } = useAuthStore.getState();
+        if (existingProfile && existingProfile.id !== user.id) {
+          setProfile(null);
         }
+        const needSpinner = !useAuthStore.getState().profile || useAuthStore.getState().profile?.id !== user.id;
+        if (needSpinner) setProfileLoading(true);
+
+        const runSeq = seq;
+        const u = user as User;
+
+        queueMicrotask(() => {
+          if (!mounted || runSeq !== currentSeq) return;
+          void (async () => {
+            try {
+              const PROFILE_TIMEOUT_MS = 10_000;
+              const p = await timedAsync(
+                "auth.profile.getProfileForUser",
+                async () =>
+                  Promise.race([
+                    getProfileForUser(u),
+                    new Promise<null>((resolve) =>
+                      setTimeout(() => resolve(null), PROFILE_TIMEOUT_MS),
+                    ),
+                  ]),
+                { userId: u.id },
+              );
+              if (!mounted || runSeq !== currentSeq) return;
+              setProfile(p);
+              const locale = (p?.locale ?? DEFAULT_LANGUAGE) as SupportedLanguage;
+              void i18n.changeLanguage(locale);
+            } catch (error) {
+              console.error("Failed to load profile:", error);
+              if (mounted && runSeq === currentSeq) setProfile(null);
+            } finally {
+              if (needSpinner && mounted && runSeq === currentSeq) setProfileLoading(false);
+            }
+          })();
+        });
       } else {
+        invalidateCurrentProfileCache();
         setProfile(null);
-        setLoading(false);
-        // Chưa login: ưu tiên ngôn ngữ hệ thống, không dùng cached i18nextLng.
+        setProfileLoading(false);
         try {
           localStorage.removeItem("i18nextLng");
         } catch {
@@ -58,13 +87,50 @@ export function AuthSync() {
         const publicLocale: SupportedLanguage = isVi ? "vi" : "en";
         void i18n.changeLanguage(publicLocale);
       }
+    }
+
+    // Safety fallback: if the INITIAL_SESSION event doesn't arrive, unblock guards.
+    const INIT_TIMEOUT_MS = 4_000;
+    const initTimeoutId = window.setTimeout(() => {
+      if (!mounted || hasInitializedFromEvent) return;
+      hasInitializedFromEvent = true;
+      setUser(null);
+      setProfile(null);
+      setProfileLoading(false);
+      setAuthInitialized(true);
+    }, INIT_TIMEOUT_MS);
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
+      if (!hasInitializedFromEvent) {
+        hasInitializedFromEvent = true;
+        window.clearTimeout(initTimeoutId);
+      }
+
+      if (import.meta.env.DEV) {
+        console.debug("[AuthSync] onAuthStateChange", event);
+      }
+
+      // Tab visibility sometimes emits TOKEN_REFRESHED and/or SIGNED_IN again with the same user.
+      // Syncing a new `user` reference into Zustand retriggers profile fetch + downstream refetches.
+      if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
+        const prevUser = useAuthStore.getState().user;
+        const nextUser = session?.user ?? null;
+        if (prevUser?.id != null && nextUser?.id === prevUser.id) {
+          return;
+        }
+      }
+
+      syncFromSession(session);
     });
 
     return () => {
       mounted = false;
-      unsubscribe();
+      window.clearTimeout(initTimeoutId);
+      subscription.unsubscribe();
     };
-  }, [setUser, setProfile, setLoading, setAuthInitialized]);
+  }, [setUser, setProfile, setProfileLoading, setAuthInitialized]);
 
   return null;
 }

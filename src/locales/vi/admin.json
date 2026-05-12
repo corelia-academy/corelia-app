@@ -7,6 +7,10 @@
       "users": { "label": "Tài khoản", "tooltip": "Tài khoản" },
       "dashboard": { "label": "Dashboard" },
       "instructors": { "label": "Giảng viên", "tooltip": "Giảng viên" },
+      "activityMilestones": {
+        "label": "Milestone hoạt động",
+        "tooltip": "Huy hiệu milestone Open Campus toàn cục"
+      },
       "offlineClasses": { "label": "Lớp học trực tiếp", "tooltip": "Lớp học trực tiếp" },
       "contests": { "label": "Cuộc thi", "tooltip": "Cuộc thi" }
     },
@@ -22,6 +26,10 @@
       "instructors": {
         "title": "Quản lý giảng viên",
         "description": "Theo dõi hồ sơ, loại giảng viên và dữ liệu hợp tác đối tác."
+      },
+      "activityMilestones": {
+        "title": "Milestone hoạt động",
+        "description": "Cấu hình huy hiệu Open Campus tự động hoặc cấp tay, không gắn một khóa học cố định."
       },
       "contests": {
         "title": "Vận hành cuộc thi",
@@ -310,6 +318,65 @@
       "changeRole": "Thay đổi vai trò",
       "notUpdated": "Chưa cập nhật",
       "dash": "—"
+    }
+  },
+  "activityMilestones": {
+    "heading": "Milestone hoạt động",
+    "subheading": "Huy hiệu toàn cục mint qua Open Campus (OCB).",
+    "add": "Thêm milestone",
+    "loading": "Đang tải…",
+    "loadFailed": "Không tải được milestone.",
+    "empty": "Chưa có milestone.",
+    "saved": "Đã lưu.",
+    "saveFailed": "Lưu thất bại.",
+    "edit": "Sửa",
+    "grant": "Cấp",
+    "createTitle": "Milestone mới",
+    "editTitle": "Sửa milestone",
+    "cancel": "Huỷ",
+    "save": "Lưu",
+    "saving": "Đang lưu…",
+    "grantTitle": "Cấp milestone",
+    "grantUsersLabel": "UUID học viên (phân cách bằng dấu phẩy hoặc xuống dòng)",
+    "grantReasonLabel": "Lý do (tuỳ chọn)",
+    "grantNeedUsers": "Nhập ít nhất một user ID.",
+    "grantOk": "Đã xử lý cấp.",
+    "grantFailed": "Cấp thất bại.",
+    "granting": "Đang cấp…",
+    "grantSubmit": "Cấp & mint",
+    "col": {
+      "name": "Tên",
+      "rule": "Quy tắc",
+      "trigger": "Trigger",
+      "issued": "Đã cấp",
+      "active": "Kích hoạt",
+      "actions": "Thao tác"
+    },
+    "field": {
+      "name": "Tiêu đề",
+      "description": "Mô tả",
+      "image": "Ảnh huy hiệu",
+      "prefix": "Tiền tố identifier",
+      "triggerAuto": "Tự động",
+      "triggerManual": "Thủ công (admin cấp)",
+      "event": "Sự kiện",
+      "days": "Số ngày",
+      "count": "Số lượng",
+      "track": "Slug learning track",
+      "active": "Kích hoạt"
+    },
+    "event": {
+      "loginStreak": "Chuỗi đăng nhập",
+      "coursesCompleted": "Hoàn thành khóa học",
+      "trackCourses": "Hoàn thành khóa trong track",
+      "projects": "Nộp project"
+    },
+    "rule": {
+      "manual": "Cấp thủ công",
+      "loginStreak": "Chuỗi đăng nhập {{days}} ngày",
+      "coursesCompleted": "Hoàn thành {{count}} khóa học",
+      "trackCourses": "{{count}} khóa trong track “{{track}}”",
+      "projects": "{{count}} project đã nộp"
     }
   }
 }

@@ -4,10 +4,10 @@ import common from "@/locales/vi/common.json";
 import auth from "@/locales/vi/auth.json";
 import courses from "@/locales/vi/courses.json";
 import contests from "@/locales/vi/contests.json";
-import cohorts from "@/locales/vi/cohorts.json";
 import account from "@/locales/vi/account.json";
 import instructor from "@/locales/vi/instructor.json";
 import admin from "@/locales/vi/admin.json";
+import career from "@/locales/vi/career.json";
 
 declare module "i18next" {
   interface CustomTypeOptions {
@@ -16,8 +16,8 @@ declare module "i18next" {
       common: typeof common;
       auth: typeof auth;
       courses: typeof courses;
+      career: typeof career;
       contests: typeof contests;
-      cohorts: typeof cohorts;
       account: typeof account;
       instructor: typeof instructor;
       admin: typeof admin;

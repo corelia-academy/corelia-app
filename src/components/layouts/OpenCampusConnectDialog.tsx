@@ -27,7 +27,7 @@ export default function OpenCampusConnectDialog(props: Props) {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <div className="flex items-start gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/40 overflow-hidden">
+            <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-surface-raised">
               <img
                 src="/logo/OC-square-logo.svg"
                 alt={t("openCampusConnect.modal.logoAlt")}
@@ -51,7 +51,7 @@ export default function OpenCampusConnectDialog(props: Props) {
           </div>
         </DialogHeader>
 
-        <div className="rounded-md border border-border-subtle bg-muted/20 p-3 text-sm text-muted-foreground">
+        <div className="rounded-md border border-border-subtle bg-surface-raised p-3 text-sm text-foreground-muted">
           <ul className="list-disc space-y-1 pl-4">
             <li>{t("openCampusConnect.modal.benefits.0")}</li>
             <li>{t("openCampusConnect.modal.benefits.1")}</li>
@@ -79,7 +79,7 @@ export default function OpenCampusConnectDialog(props: Props) {
             type="button"
             onClick={onConnect}
             disabled={disabled || loading}
-            className="bg-[#141bec] text-white hover:bg-[#141bec]/90 h-11 inline-flex items-center justify-center gap-2 border border-border-subtle py-2.5 px-3 text-left text-sm cursor-pointer"
+            className="h-11 inline-flex items-center justify-center gap-2 border border-border-subtle bg-ocid-blue text-white px-3 py-2.5 text-left text-sm cursor-pointer hover:opacity-90 active:opacity-80"
           >
             <img
               src="/logo/OC-square-logo.svg"
@@ -90,7 +90,7 @@ export default function OpenCampusConnectDialog(props: Props) {
             {loading ? (
               t("openCampusConnect.modal.connecting")
             ) : (
-              <span className="text-white">
+              <span>
                 Link <span className="font-bold">OCID</span>
               </span>
             )}

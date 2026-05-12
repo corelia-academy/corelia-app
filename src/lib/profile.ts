@@ -1,252 +1,459 @@
-import {
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  updateDoc,
-  collection,
-  query,
-  orderBy,
-  where,
-} from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { auth, db, storage } from "@/lib/firebase";
-import { COL } from "@/lib/collections";
-import type { Profile, ProfileInsert, ProfileUpdate } from "@/types/database";
+import { supabase } from "@/lib/supabase";
+import { uploadUserAvatar } from "@/lib/storage";
+import type { User } from "@supabase/supabase-js";
+import type { Profile, ProfileInsert, ProfileUpdate, PublicProfile } from "@/types/database";
 import { sortLocale } from "@/lib/intl";
+import { makeTTLCache } from "@/lib/utils";
 
-/**
- * Lấy profile của user hiện tại (theo session).
- * Profile được tạo tự động khi chưa có.
- */
-export async function getCurrentProfile(): Promise<Profile | null> {
-  const user = auth.currentUser;
-  if (!user) return null;
+/** Per-handle single-flight: concurrent `/u/:handle` mounts dedupe public_profiles. */
+const publicProfileByHandleInFlight = new Map<string, Promise<PublicProfile | null>>();
 
-  const docRef = doc(db, COL.PROFILES, user.uid);
-  try {
-    const docSnap = await getDoc(docRef);
+const instructorProfilesCache = makeTTLCache<Profile[]>(3 * 60 * 1000);
 
-    if (!docSnap.exists()) {
-      const newProfile: ProfileInsert = {
-        id: user.uid,
-        role: "student",
-        locale: "vi",
-      };
-      
-      const profileData = {
-        ...newProfile,
-        full_name: user.displayName || null,
-        avatar_url: user.photoURL || null,
-        phone: user.phoneNumber || null,
-        email: user.email || null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+/** Per-user cache so switching accounts cannot reuse another user's in-flight/resolved profile. */
+const profilePromiseCache = new Map<string, { promise: Promise<Profile | null>; ts: number }>();
+const CURRENT_PROFILE_TTL = 30_000;
 
-      await setDoc(docRef, profileData);
-      return profileData as Profile;
-    }
+export function invalidateCurrentProfileCache(userId?: string) {
+  if (userId) profilePromiseCache.delete(userId);
+  else profilePromiseCache.clear();
+}
 
-    const data = docSnap.data() as Profile;
-    const updates: Partial<Profile> = {};
-    // Backfill email cho profile cũ chưa có (để Admin hiển thị)
-    if ((data.email == null || data.email === "") && user.email) {
-      updates.email = user.email;
-    }
-    // Backfill full_name từ Auth displayName (ví dụ đăng ký xong profile đã tạo trước khi set displayName)
-    if ((data.full_name == null || data.full_name === "") && user.displayName) {
-      updates.full_name = user.displayName;
-    }
-    if (Object.keys(updates).length > 0) {
-      const updated = new Date().toISOString();
-      await updateDoc(docRef, { ...updates, updated_at: updated });
-      return { ...data, ...updates, updated_at: updated };
-    }
-    return data;
-  } catch (err) {
-    console.warn("Could not read/write from Firestore. Returning fallback profile.", err);
-    return {
-      id: user.uid,
+function getCachedProfilePromise(userId: string): Promise<Profile | null> | null {
+  const entry = profilePromiseCache.get(userId);
+  if (entry && Date.now() - entry.ts < CURRENT_PROFILE_TTL) return entry.promise;
+  return null;
+}
+
+function setCachedProfilePromise(userId: string, promise: Promise<Profile | null>) {
+  profilePromiseCache.set(userId, { promise, ts: Date.now() });
+  promise.catch(() => {
+    const cur = profilePromiseCache.get(userId);
+    if (cur?.promise === promise) profilePromiseCache.delete(userId);
+  });
+}
+
+function rowToProfile(row: Record<string, unknown>): Profile {
+  return {
+    id: String(row.id),
+    role: row.role as Profile["role"],
+    username: (row.username as string | null) ?? null,
+    full_name: (row.full_name as string | null) ?? null,
+    avatar_url: (row.avatar_url as string | null) ?? null,
+    phone: (row.phone as string | null) ?? null,
+    email: (row.email as string | null) ?? null,
+    bio: (row.bio as string | null) ?? null,
+    website: (row.website as string | null) ?? null,
+    profile_public: (row.profile_public as boolean | null) ?? true,
+    locale: (row.locale as Profile["locale"]) ?? null,
+    ocid: (row.ocid as string | null) ?? null,
+    ocid_eth_address: (row.ocid_eth_address as string | null) ?? null,
+    ocid_connected_at: (row.ocid_connected_at as string | null) ?? null,
+    instructor_origin: row.instructor_origin as Profile["instructor_origin"],
+    instructor_headline: (row.instructor_headline as string | null) ?? null,
+    instructor_bio: (row.instructor_bio as string | null) ?? null,
+    instructor_organization: (row.instructor_organization as string | null) ?? null,
+    instructor_website: (row.instructor_website as string | null) ?? null,
+    partner_contract_docs: (row.partner_contract_docs as Profile["partner_contract_docs"]) ?? [],
+    partner_invoice_docs: (row.partner_invoice_docs as Profile["partner_invoice_docs"]) ?? [],
+    partner_transfer_info: (row.partner_transfer_info as string | null) ?? null,
+    partner_bank_name: (row.partner_bank_name as string | null) ?? null,
+    partner_bank_account_number: (row.partner_bank_account_number as string | null) ?? null,
+    partner_bank_account_holder: (row.partner_bank_account_holder as string | null) ?? null,
+    partner_bank_transfer_note: (row.partner_bank_transfer_note as string | null) ?? null,
+    created_at: row.created_at as string,
+    updated_at: row.updated_at as string,
+  };
+}
+
+function rowToPublicProfile(row: Record<string, unknown>): PublicProfile {
+  return {
+    id: String(row.id),
+    username: (row.username as string | null) ?? null,
+    ocid: (row.ocid as string | null) ?? null,
+    role: row.role as PublicProfile["role"],
+    full_name: (row.full_name as string | null) ?? null,
+    avatar_url: (row.avatar_url as string | null) ?? null,
+    bio: (row.bio as string | null) ?? null,
+    website: (row.website as string | null) ?? null,
+    instructor_origin: (row.instructor_origin as PublicProfile["instructor_origin"]) ?? null,
+    instructor_headline: (row.instructor_headline as string | null) ?? null,
+    instructor_bio: (row.instructor_bio as string | null) ?? null,
+    instructor_organization: (row.instructor_organization as string | null) ?? null,
+    instructor_website: (row.instructor_website as string | null) ?? null,
+    profile_public: (row.profile_public as boolean | null) ?? true,
+    created_at: row.created_at as string,
+    updated_at: row.updated_at as string,
+  };
+}
+
+async function _fetchProfileForUser(user: User): Promise<Profile | null> {
+  const { data: row, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.warn("Could not read profile:", error);
+    return fallbackProfile({ id: user.id, email: user.email ?? null, user_metadata: user.user_metadata ?? {} });
+  }
+
+  if (!row) {
+    const insert: ProfileInsert & { created_at: string; updated_at: string } = {
+      id: user.id,
       role: "student",
-      full_name: user.displayName || null,
-      avatar_url: user.photoURL || null,
-      phone: user.phoneNumber || null,
-      email: user.email || null,
+      locale: "vi",
+      profile_public: true,
+      full_name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? null,
+      avatar_url: user.user_metadata?.avatar_url ?? null,
+      phone: user.phone ?? null,
+      email: user.email ?? null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    } as Profile;
+    };
+    const { data: created, error: insErr } = await supabase
+      .from("profiles")
+      .insert(insert)
+      .select("*")
+      .single();
+    if (insErr || !created) {
+      console.warn("Profile insert failed:", insErr);
+      return fallbackProfile({ id: user.id, email: user.email ?? null, user_metadata: user.user_metadata ?? {} });
+    }
+    return rowToProfile(created as Record<string, unknown>);
   }
+
+  const p = rowToProfile(row as Record<string, unknown>);
+  const ensured = await ensureUsernameForUser(user, p);
+  const pWithUsername = ensured ?? p;
+  const updates: Record<string, unknown> = {};
+  if ((pWithUsername.email == null || pWithUsername.email === "") && user.email) updates.email = user.email;
+  if (
+    (pWithUsername.full_name == null || pWithUsername.full_name === "") &&
+    user.user_metadata?.full_name
+  ) {
+    updates.full_name = String(user.user_metadata.full_name);
+  }
+  if (Object.keys(updates).length > 0) {
+    updates.updated_at = new Date().toISOString();
+    const { data: upd } = await supabase
+      .from("profiles")
+      .update(updates)
+      .eq("id", user.id)
+      .select("*")
+      .single();
+    if (upd) return rowToProfile(upd as Record<string, unknown>);
+    return { ...pWithUsername, ...updates } as Profile;
+  }
+  return pWithUsername;
+}
+
+function normalizeHandleBase(input: string): string {
+  const s = input
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 24);
+  return s || "user";
+}
+
+function randomSuffix(len = 4): string {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let out = "";
+  for (let i = 0; i < len; i++) out += alphabet[Math.floor(Math.random() * alphabet.length)];
+  return out;
+}
+
+async function trySetUsername(userId: string, username: string): Promise<Profile | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ username, updated_at: new Date().toISOString() })
+    .eq("id", userId)
+    .select("*")
+    .single();
+
+  if (error) {
+    const code = (error as unknown as { code?: string }).code;
+    if (code === "23505") return null; // unique violation
+    throw new Error(error.message);
+  }
+  return rowToProfile(data as Record<string, unknown>);
+}
+
+export async function ensureUsernameForUser(
+  user: User,
+  profile: Profile,
+): Promise<Profile | null> {
+  if (profile.username && profile.username.trim()) return profile;
+
+  const base = normalizeHandleBase(
+    String(profile.ocid ?? profile.full_name ?? user.user_metadata?.full_name ?? user.email ?? user.id),
+  );
+
+  // Try deterministic base first, then add suffixes until unique.
+  const candidates = [
+    base,
+    `${base}_${user.id.slice(0, 4).toLowerCase()}`,
+    `${base}_${randomSuffix(4)}`,
+    `${base}_${randomSuffix(5)}`,
+  ];
+
+  for (const candidate of candidates) {
+    const updated = await trySetUsername(user.id, candidate);
+    if (updated) return updated;
+  }
+
+  // Final fallback: user_<8chars>
+  return await trySetUsername(user.id, `user_${user.id.slice(0, 8).toLowerCase()}`);
+}
+
+export function getCurrentProfile(): Promise<Profile | null> {
+  return (async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+    return getProfileForUser(user);
+  })();
 }
 
 /**
- * Lấy profile theo user id (dùng khi có quyền xem user khác, ví dụ admin).
+ * Fetch current user's profile using a known `User` object (avoids calling `supabase.auth.getUser()`
+ * during auth initialization / refresh, which can contend on the auth-token lock).
  */
+export function getProfileForUser(user: User): Promise<Profile | null> {
+  const hit = getCachedProfilePromise(user.id);
+  if (hit) return hit;
+  const promise = _fetchProfileForUser(user);
+  setCachedProfilePromise(user.id, promise);
+  return promise;
+}
+
+function fallbackProfile(user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }): Profile {
+  const now = new Date().toISOString();
+  return {
+    id: user.id,
+    role: "student",
+    username: null,
+    full_name: (user.user_metadata?.full_name as string) ?? null,
+    avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
+    phone: null,
+    email: user.email ?? null,
+    bio: null,
+    website: null,
+    profile_public: true,
+    locale: "vi",
+    created_at: now,
+    updated_at: now,
+  };
+}
+
 export async function getProfile(userId: string): Promise<Profile | null> {
-  const docRef = doc(db, COL.PROFILES, userId);
-  const docSnap = await getDoc(docRef);
-
-  if (!docSnap.exists()) {
-    return null;
-  }
-  return docSnap.data() as Profile;
+  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  if (error || !data) return null;
+  return rowToProfile(data as Record<string, unknown>);
 }
 
-/**
- * Tạo/cập nhật profile ngay sau khi user mới đăng ký (tránh race với AuthSync).
- * Dùng setDoc(merge: true) để có full_name ngay cả khi doc chưa tồn tại hoặc vừa được tạo với full_name null.
- */
+export async function setNewUserProfileForUser(
+  user: User,
+  data: {
+    full_name?: string | null;
+    email?: string | null;
+  },
+): Promise<void> {
+  const now = new Date().toISOString();
+  const { error } = await supabase.from("profiles").upsert(
+    {
+      id: user.id,
+      role: "student",
+      locale: "vi",
+      full_name: data.full_name ?? (user.user_metadata?.full_name as string) ?? null,
+      email: data.email ?? user.email ?? null,
+      avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
+      phone: user.phone ?? null,
+      created_at: now,
+      updated_at: now,
+    },
+    { onConflict: "id" },
+  );
+  if (error) throw new Error(error.message);
+  invalidateCurrentProfileCache(user.id);
+}
+
 export async function setNewUserProfile(data: {
   full_name?: string | null;
   email?: string | null;
 }): Promise<void> {
-  const user = auth.currentUser;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) throw new Error("Chưa đăng nhập");
-  const docRef = doc(db, COL.PROFILES, user.uid);
-  const now = new Date().toISOString();
-  await setDoc(
-    docRef,
-    {
-      id: user.uid,
-      role: "student",
-      locale: "vi",
-      full_name: data.full_name ?? user.displayName ?? null,
-      email: data.email ?? user.email ?? null,
-      avatar_url: user.photoURL ?? null,
-      phone: user.phoneNumber ?? null,
-      created_at: now,
-      updated_at: now,
-    },
-    { merge: true }
-  );
+  await setNewUserProfileForUser(user, data);
 }
 
-/**
- * Cập nhật profile của user hiện tại.
- * Đọc doc hiện tại trước khi update để có thể merge và trả về kết quả
- * mà không cần getDoc thêm lần nữa sau write.
- */
-export async function updateCurrentProfile(
+export async function updateProfileForUser(
+  user: User,
   updates: ProfileUpdate,
 ): Promise<Profile> {
-  const user = auth.currentUser;
-  if (!user) throw new Error("Chưa đăng nhập");
+  const safeUpdates: Record<string, unknown> = {};
+  if (updates.username !== undefined) safeUpdates.username = updates.username;
+  if (updates.full_name !== undefined) safeUpdates.full_name = updates.full_name;
+  if (updates.avatar_url !== undefined) safeUpdates.avatar_url = updates.avatar_url;
+  if (updates.phone !== undefined) safeUpdates.phone = updates.phone;
+  if (updates.email !== undefined) safeUpdates.email = updates.email;
+  if (updates.bio !== undefined) safeUpdates.bio = updates.bio;
+  if (updates.website !== undefined) safeUpdates.website = updates.website;
+  if (updates.profile_public !== undefined) safeUpdates.profile_public = updates.profile_public;
+  if (updates.locale !== undefined) safeUpdates.locale = updates.locale;
+  if (updates.instructor_headline !== undefined) safeUpdates.instructor_headline = updates.instructor_headline;
+  if (updates.instructor_bio !== undefined) safeUpdates.instructor_bio = updates.instructor_bio;
+  if (updates.instructor_organization !== undefined) {
+    safeUpdates.instructor_organization = updates.instructor_organization;
+  }
+  if (updates.instructor_website !== undefined) safeUpdates.instructor_website = updates.instructor_website;
 
-  const docRef = doc(db, COL.PROFILES, user.uid);
-  const currentSnap = await getDoc(docRef);
-  const current = (currentSnap.data() as Profile | undefined) ?? ({} as Profile);
+  safeUpdates.updated_at = new Date().toISOString();
 
-  const safeUpdates: ProfileUpdate = {
-    full_name: updates.full_name,
-    avatar_url: updates.avatar_url,
-    phone: updates.phone,
-    email: updates.email,
-    locale: updates.locale,
-    instructor_headline: updates.instructor_headline,
-    instructor_bio: updates.instructor_bio,
-    instructor_organization: updates.instructor_organization,
-    instructor_website: updates.instructor_website,
-  };
-  const payload = {
-    ...Object.fromEntries(
-      Object.entries(safeUpdates).filter(([, value]) => value !== undefined),
-    ),
-    updated_at: new Date().toISOString(),
-  };
-
-  await updateDoc(docRef, payload);
-
-  // Trả về kết quả bằng cách merge client-side — không cần đọc lại Firestore.
-  return { ...current, ...payload } as Profile;
+  const { data: updated, error } = await supabase
+    .from("profiles")
+    .update(safeUpdates)
+    .eq("id", user.id)
+    .select("*")
+    .single();
+  if (error || !updated) throw new Error(error?.message ?? "Cập nhật profile thất bại");
+  invalidateCurrentProfileCache(user.id);
+  return rowToProfile(updated as Record<string, unknown>);
 }
 
-/**
- * Liên kết (hoặc huỷ liên kết) OCID với profile hiện tại.
- * Lưu vào profiles/{uid}.
- */
+export async function updateCurrentProfile(updates: ProfileUpdate): Promise<Profile> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Chưa đăng nhập");
+  return updateProfileForUser(user, updates);
+}
+
+export async function updateOCIDProfileForUser(
+  user: User,
+  input: {
+    ocid: string | null;
+    ocid_eth_address: string | null;
+  },
+): Promise<void> {
+  const now = new Date().toISOString();
+  const willConnect = Boolean(input.ocid);
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      ocid: input.ocid,
+      ocid_eth_address: input.ocid_eth_address,
+      ocid_connected_at: willConnect ? now : null,
+      updated_at: now,
+    })
+    .eq("id", user.id);
+  if (error) throw new Error(error.message);
+  invalidateCurrentProfileCache(user.id);
+}
+
 export async function updateOCIDProfile(input: {
   ocid: string | null;
   ocid_eth_address: string | null;
 }): Promise<void> {
-  const user = auth.currentUser;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) throw new Error("Chưa đăng nhập");
-
-  const docRef = doc(db, COL.PROFILES, user.uid);
-  const now = new Date().toISOString();
-  const willConnect = Boolean(input.ocid);
-
-  await updateDoc(docRef, {
-    ocid: input.ocid,
-    ocid_eth_address: input.ocid_eth_address,
-    ocid_connected_at: willConnect ? now : null,
-    updated_at: now,
-  });
+  await updateOCIDProfileForUser(user, input);
 }
 
-/**
- * [ADMIN] Lấy tất cả profiles.
- * Bảo mật được đảm bảo bởi Firestore Rules và RequireRole ở React Router.
- */
 export async function getAllProfiles(): Promise<Profile[]> {
-  const q = query(collection(db, COL.PROFILES), orderBy("created_at", "desc"));
-  const querySnapshot = await getDocs(q);
-  
-  return querySnapshot.docs.map((docSnap) => docSnap.data() as Profile);
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => rowToProfile(r as Record<string, unknown>));
 }
 
 export async function listCoreliaInstructorProfiles(): Promise<Profile[]> {
-  const q = query(
-    collection(db, COL.PROFILES),
-    where("role", "==", "instructor"),
-    where("instructor_origin", "==", "corelia"),
-  );
-  const querySnapshot = await getDocs(q);
-
-  return querySnapshot.docs
-    .map((docSnap) => docSnap.data() as Profile)
-    .sort((a, b) => {
-      const nameA = (a.full_name ?? a.email ?? a.id).toLowerCase();
-      const nameB = (b.full_name ?? b.email ?? b.id).toLowerCase();
-      return nameA.localeCompare(nameB, sortLocale());
-    });
+  const cached = instructorProfilesCache.get("all");
+  if (cached) return cached;
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("role", "instructor")
+      .eq("instructor_origin", "corelia");
+    if (error) throw new Error(error.message);
+    return (data ?? [])
+      .map((r) => rowToProfile(r as Record<string, unknown>))
+      .sort((a, b) => {
+        const nameA = (a.full_name ?? a.email ?? a.id).toLowerCase();
+        const nameB = (b.full_name ?? b.email ?? b.id).toLowerCase();
+        return nameA.localeCompare(nameB, sortLocale());
+      });
+  })();
+  instructorProfilesCache.set("all", promise);
+  promise.catch(() => instructorProfilesCache.delete("all"));
+  return promise;
 }
 
-/**
- * Upload ảnh đại diện lên Firebase Storage và trả về URL công khai.
- * Đường dẫn: avatars/{userId}/{timestamp}.{ext}
- * Cần Firestore Storage rules cho phép user ghi vào avatars/{userId}/*
- */
+export function invalidateInstructorProfilesCache() {
+  instructorProfilesCache.clear();
+}
+
+export async function uploadAvatarForUser(user: User, file: File): Promise<string> {
+  const { url } = await uploadUserAvatar(user.id, file);
+  return url;
+}
+
 export async function uploadAvatar(file: File): Promise<string> {
-  const user = auth.currentUser;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) throw new Error("Chưa đăng nhập");
-
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const safeExt = /^[a-z0-9]+$/.test(ext) ? ext : "jpg";
-  const path = `avatars/${user.uid}/${Date.now()}.${safeExt}`;
-  const storageRef = ref(storage, path);
-
-  await uploadBytes(storageRef, file, {
-    contentType: file.type || `image/${safeExt}`,
-    customMetadata: { uploadedBy: user.uid },
-  });
-
-  const downloadUrl = await getDownloadURL(storageRef);
-  return downloadUrl;
+  return uploadAvatarForUser(user, file);
 }
 
-/**
- * [ADMIN] Cập nhật role cho một user (hoặc các field khác).
- * Bảo mật được đảm bảo bởi Firestore Rules và RequireRole ở React Router.
- */
-export async function updateProfileAdmin(
-  userId: string,
-  updates: ProfileUpdate,
-): Promise<void> {
-  const docRef = doc(db, COL.PROFILES, userId);
-  const timestampUpdates = {
-    ...updates,
-    updated_at: new Date().toISOString(),
-  };
-  
-  await updateDoc(docRef, timestampUpdates);
+export async function updateProfileAdmin(userId: string, updates: ProfileUpdate): Promise<void> {
+  const payload: Record<string, unknown> = { ...updates, updated_at: new Date().toISOString() };
+  Object.keys(payload).forEach((k) => {
+    if (payload[k] === undefined) delete payload[k];
+  });
+  const { error } = await supabase.from("profiles").update(payload).eq("id", userId);
+  if (error) throw new Error(error.message);
+  invalidateCurrentProfileCache(userId);
+}
+
+async function fetchPublicProfileByHandleOnce(handle: string): Promise<PublicProfile | null> {
+  const h = handle.trim();
+  if (!h) return null;
+
+  // Single query: match lower(username) OR exact ocid
+  const { data, error } = await supabase
+    .from("public_profiles")
+    .select("*")
+    .or(`username.ilike.${h},ocid.eq.${h}`)
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return rowToPublicProfile(data as Record<string, unknown>);
+}
+
+export async function getPublicProfileByHandle(handle: string): Promise<PublicProfile | null> {
+  const key = handle.trim().toLowerCase();
+  if (!key) return null;
+  const inflight = publicProfileByHandleInFlight.get(key);
+  if (inflight) return inflight;
+  const promise = fetchPublicProfileByHandleOnce(handle);
+  publicProfileByHandleInFlight.set(key, promise);
+  promise.finally(() => {
+    if (publicProfileByHandleInFlight.get(key) === promise) {
+      publicProfileByHandleInFlight.delete(key);
+    }
+  });
+  return promise;
 }

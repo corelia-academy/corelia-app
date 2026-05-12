@@ -12,6 +12,7 @@ export function LoginForgotPasswordSection({
   onEmailChange,
   onBackToSignIn,
   onBackArrow,
+  beforeSubmit,
 }: {
   email: string;
   loading: boolean;
@@ -20,6 +21,7 @@ export function LoginForgotPasswordSection({
   onEmailChange: (email: string) => void;
   onBackToSignIn: () => void;
   onBackArrow: () => void;
+  beforeSubmit?: React.ReactNode;
 }) {
   const { t } = useTranslation("auth");
   return (
@@ -50,6 +52,8 @@ export function LoginForgotPasswordSection({
         </div>
       ) : null}
 
+      {successMessage ? null : beforeSubmit}
+
       <Field>
         {successMessage ? (
           <Button
@@ -77,7 +81,7 @@ export function LoginForgotPasswordSection({
         <button
           type="button"
           onClick={onBackArrow}
-          className="font-medium underline underline-offset-2 text-muted-foreground hover:text-foreground"
+          className="font-medium underline underline-offset-2 text-foreground-muted transition-colors duration-150 hover:text-foreground"
         >
           {t("login.forgotPassword.backArrow")}
         </button>

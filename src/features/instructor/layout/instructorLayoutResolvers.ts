@@ -20,14 +20,14 @@ export function buildInstructorCrumbs({
 
   if (pathname === "/instructor/courses/new") {
     list.push({ label: translate("layout.crumbs.createCourse") });
-  } else if (pathname === "/instructor/cohorts") {
-    list.push({ label: translate("layout.crumbs.offlineClasses") });
-  } else if (pathname === "/instructor/cohorts/new") {
-    list.push({ label: translate("layout.crumbs.offlineClasses"), to: "/instructor/cohorts" });
-    list.push({ label: translate("layout.crumbs.createCohort") });
-  } else if (pathname.startsWith("/instructor/cohorts/") && pathname.endsWith("/manage")) {
-    list.push({ label: translate("layout.crumbs.offlineClasses"), to: "/instructor/cohorts" });
-    list.push({ label: translate("layout.crumbs.cohortWorkspace") });
+  } else if (pathname === "/instructor/career-tracks") {
+    list.push({ label: translate("layout.crumbs.careerTracks") });
+  } else if (pathname === "/instructor/career-tracks/new") {
+    list.push({ label: translate("layout.crumbs.careerTracks"), to: "/instructor/career-tracks" });
+    list.push({ label: translate("layout.crumbs.createCareerTrack") });
+  } else if (pathname.startsWith("/instructor/career-tracks/") && pathname.endsWith("/edit")) {
+    list.push({ label: translate("layout.crumbs.careerTracks"), to: "/instructor/career-tracks" });
+    list.push({ label: translate("layout.crumbs.edit") });
   } else if (pathname === "/instructor/contracts") {
     list.push({ label: translate("layout.crumbs.contracts") });
   } else if (pathname === "/instructor/invoices") {
@@ -61,22 +61,22 @@ export function resolveInstructorShellMeta({
       description: translate("layout.shell.newCourse.description"),
     };
   }
-  if (pathname === "/instructor/cohorts") {
+  if (pathname === "/instructor/career-tracks") {
     return {
-      title: translate("layout.shell.offlineList.title"),
-      description: translate("layout.shell.offlineList.description"),
+      title: translate("layout.shell.careerTracks.title"),
+      description: translate("layout.shell.careerTracks.description"),
     };
   }
-  if (pathname === "/instructor/cohorts/new") {
+  if (pathname === "/instructor/career-tracks/new") {
     return {
-      title: translate("layout.shell.newCohort.title"),
-      description: translate("layout.shell.newCohort.description"),
+      title: translate("layout.shell.careerTracksNew.title"),
+      description: translate("layout.shell.careerTracksNew.description"),
     };
   }
-  if (pathname.startsWith("/instructor/cohorts/") && pathname.endsWith("/manage")) {
+  if (pathname.startsWith("/instructor/career-tracks/") && pathname.endsWith("/edit")) {
     return {
-      title: translate("layout.shell.cohortWorkspace.title"),
-      description: translate("layout.shell.cohortWorkspace.description"),
+      title: translate("layout.shell.careerTracksEdit.title"),
+      description: translate("layout.shell.careerTracksEdit.description"),
     };
   }
   if (pathname === "/instructor/profile") {

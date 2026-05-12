@@ -1,0 +1,1451 @@
+import { useCallback, useEffect, useState } from "react";
+import {
+  AlertTriangle,
+  Globe,
+  Gavel,
+  Loader2,
+  Settings,
+  ShieldCheck,
+  Trash2,
+  Users,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type {
+  ContestScopedViewerRole,
+  ContestStatus,
+} from "@/types/hackathons";
+import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
+import { normalizeSlug } from "@/pages/hackathon-detail/utils/slug";
+import { cn } from "@/lib/utils";
+
+const MANAGER_SETTINGS_SECTION_IDS = [
+  "general",
+  "judging",
+  "access",
+  "public",
+  "danger",
+] as const;
+
+type ManagerSettingsSectionId =
+  (typeof MANAGER_SETTINGS_SECTION_IDS)[number];
+
+function parseManagerSettingsHash(
+  raw: string,
+): ManagerSettingsSectionId | null {
+  const h = raw.replace(/^#/, "").trim();
+  return MANAGER_SETTINGS_SECTION_IDS.includes(h as ManagerSettingsSectionId)
+    ? (h as ManagerSettingsSectionId)
+    : null;
+}
+
+export function ContestDetailManagerSettingsCard({
+  vm,
+}: {
+  vm: ContestDetailViewModel;
+}) {
+  const {
+    contest,
+    translate,
+    managerStatus,
+    setManagerStatus,
+    savingStatus,
+    handleStatusSave,
+    slugDraft,
+    setSlugDraft,
+    savingSlug,
+    handleSlugSave,
+    rubricWeights,
+    setRubricWeights,
+    savingRubric,
+    handleRubricSave,
+    savingTracksRounds,
+    tracksDraft,
+    setTracksDraft,
+    roundsDraft,
+    setRoundsDraft,
+    activeRoundIdDraft,
+    setActiveRoundIdDraft,
+    anonymousJudgingDraft,
+    setAnonymousJudgingDraft,
+    handleTracksRoundsSave,
+    inviteEmail,
+    setInviteEmail,
+    inviteRoles,
+    setInviteRoles,
+    inviteDisplayName,
+    setInviteDisplayName,
+    inviteOrganization,
+    setInviteOrganization,
+    inviteNote,
+    setInviteNote,
+    savingInvite,
+    handleInviteCreate,
+    handleBulkInviteCsv,
+    invites,
+    inviteActionId,
+    handleInviteRevoke,
+    handleCopyInviteLink,
+    handleInviteMailTo,
+    publicDraft,
+    setPublicDraft,
+    bannerUploading,
+    thumbnailUploading,
+    partnerLogoUploadingIndex,
+    handleContestBannerChange,
+    handleContestThumbnailChange,
+    handleOrganizationalPartnerLogoChange,
+    handleOrganizationalPartnerLogoRemove,
+    savingPublicContent,
+    handleSavePublicContent,
+    setDeleteDialogOpen,
+  } = vm;
+
+  const [activeSection, setActiveSection] =
+    useState<ManagerSettingsSectionId>(() => {
+      if (typeof window === "undefined") return "general";
+      return parseManagerSettingsHash(window.location.hash) ?? "general";
+    });
+
+  useEffect(() => {
+    const onHash = () => {
+      const next = parseManagerSettingsHash(window.location.hash);
+      if (next) setActiveSection(next);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  const setSettingsSection = useCallback((id: ManagerSettingsSectionId) => {
+    setActiveSection(id);
+    if (typeof window === "undefined") return;
+    const base = `${window.location.pathname}${window.location.search}`;
+    window.history.replaceState(null, "", `${base}#${id}`);
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-4 xl:flex-row">
+      <nav
+        className="h-fit shrink-0 rounded-lg border border-border-subtle bg-surface-base p-3 xl:sticky xl:top-24 xl:w-64"
+        aria-label={translate("workspace.manage.settingsLayoutNavAria")}
+      >
+        <div className="mb-3 px-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
+            {translate("workspace.manage.settingsLayoutNavTitle")}
+          </p>
+          <p className="mt-1 text-sm text-foreground-muted">
+            {translate("workspace.manage.settingsLayoutNavDescription")}
+          </p>
+        </div>
+        <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+          <li>
+            <button
+              type="button"
+              onClick={() => setSettingsSection("general")}
+              aria-current={activeSection === "general" ? "true" : undefined}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                activeSection === "general"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+              )}
+            >
+              <Settings className="size-4 shrink-0" aria-hidden />
+              {translate("workspace.manage.settingsSectionGeneral")}
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              onClick={() => setSettingsSection("judging")}
+              aria-current={activeSection === "judging" ? "true" : undefined}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                activeSection === "judging"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+              )}
+            >
+              <Gavel className="size-4 shrink-0" aria-hidden />
+              {translate("workspace.manage.settingsSectionJudging")}
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              onClick={() => setSettingsSection("access")}
+              aria-current={activeSection === "access" ? "true" : undefined}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                activeSection === "access"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+              )}
+            >
+              <Users className="size-4 shrink-0" aria-hidden />
+              {translate("workspace.manage.settingsSectionAccess")}
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              onClick={() => setSettingsSection("public")}
+              aria-current={activeSection === "public" ? "true" : undefined}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                activeSection === "public"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+              )}
+            >
+              <Globe className="size-4 shrink-0" aria-hidden />
+              {translate("workspace.manage.settingsSectionPublic")}
+            </button>
+          </li>
+          <li className="mt-2 border-t border-border-subtle pt-2 sm:col-span-2 xl:col-span-1">
+            <button
+              type="button"
+              onClick={() => setSettingsSection("danger")}
+              aria-current={activeSection === "danger" ? "true" : undefined}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                activeSection === "danger"
+                  ? "bg-destructive/10 text-destructive"
+                  : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+              )}
+            >
+              <AlertTriangle className="size-4 shrink-0" aria-hidden />
+              {translate("workspace.manage.settingsSectionDanger")}
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <div className="min-w-0 flex-1 space-y-6">
+        {activeSection === "general" ? (
+          <section
+            id="contest-settings-general"
+            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+            aria-labelledby="contest-settings-general-heading"
+          >
+        <div className="flex items-center gap-3">
+          <ShieldCheck className="size-5 text-primary" aria-hidden />
+          <div>
+            <h2
+              id="contest-settings-general-heading"
+              className="text-lg font-medium tracking-tight text-foreground"
+            >
+              {translate("workspace.manage.operationsControlsTitle")}
+            </h2>
+            <p className="mt-1 text-sm text-foreground-muted">
+              {translate("workspace.manage.operationsControlsDescription")}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="text-sm font-medium text-foreground">
+            {translate("workspace.manage.contestStatusLabel")}
+          </label>
+          <select
+            className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+            value={managerStatus}
+            onChange={(e) => setManagerStatus(e.target.value as ContestStatus)}
+          >
+            <option value="draft">
+              {translate("workspace.manage.statusDraft")}
+            </option>
+            <option value="published">
+              {translate("workspace.manage.statusPublished")}
+            </option>
+            <option value="running">
+              {translate("workspace.manage.statusRunning")}
+            </option>
+            <option value="ended">
+              {translate("workspace.manage.statusEnded")}
+            </option>
+          </select>
+        </div>
+
+        <Button
+          type="button"
+          className="mt-4 w-full"
+          disabled={savingStatus || managerStatus === contest.status}
+          onClick={() => void handleStatusSave()}
+        >
+          {savingStatus
+            ? translate("detail.labels.saving")
+            : translate("detail.labels.saveStatus")}
+        </Button>
+
+        <div className="mt-4 border-t border-border-subtle pt-4">
+          <h3 className="text-base font-medium text-foreground">
+            {translate("workspace.manage.slugTitle")}
+          </h3>
+          <p className="mt-2 text-sm text-foreground-muted">
+            {translate("workspace.manage.slugDescription")}
+          </p>
+          <div className="mt-3">
+            <label className="text-sm font-medium text-foreground">
+              {translate("workspace.manage.slugLabel")}
+            </label>
+            <input
+              value={slugDraft}
+              onChange={(e) => setSlugDraft(e.target.value)}
+              className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+              placeholder={translate("workspace.manage.slugPlaceholder")}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              inputMode="url"
+            />
+            <div className="mt-2 text-xs text-foreground-muted">
+              {translate("workspace.manage.slugHint", {
+                slug: normalizeSlug(slugDraft || ""),
+              })}
+            </div>
+          </div>
+          <Button
+            type="button"
+            className="mt-4 w-full"
+            variant="outline"
+            disabled={savingSlug}
+            onClick={() => void handleSlugSave()}
+          >
+            {savingSlug
+              ? translate("detail.labels.saving")
+            : translate("workspace.manage.saveSlug")}
+        </Button>
+        </div>
+          </section>
+        ) : null}
+        {activeSection === "judging" ? (
+          <section
+            id="contest-settings-judging"
+            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+          >
+        <div>
+          <h3 className="text-base font-medium text-foreground">
+            {translate("workspace.manage.rubricTitle")}
+          </h3>
+          <p className="mt-2 text-sm text-foreground-muted">
+            {translate("workspace.manage.rubricDescription")}
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                ["product", "workspace.manage.criterionProduct"],
+                ["technical", "workspace.manage.criterionTechnical"],
+                ["presentation", "workspace.manage.criterionPresentation"],
+                ["impact", "workspace.manage.criterionImpact"],
+              ] as const
+            ).map(([key, labelKey]) => (
+              <div key={key}>
+                <label className="text-sm font-medium text-foreground">
+                  {translate(labelKey)}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={rubricWeights[key as keyof typeof rubricWeights]}
+                  onChange={(e) =>
+                    setRubricWeights((prev) => ({
+                      ...prev,
+                      [key]: e.target.value,
+                    }))
+                  }
+                  className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 rounded-xl border border-border-subtle bg-surface-base px-3 py-2 text-sm text-foreground-muted">
+            {translate("workspace.manage.rubricTotalPrefix")}{" "}
+            <span className="font-medium text-foreground">
+              {[
+                Number(rubricWeights.product) || 0,
+                Number(rubricWeights.technical) || 0,
+                Number(rubricWeights.presentation) || 0,
+                Number(rubricWeights.impact) || 0,
+              ].reduce((sum, value) => sum + value, 0)}
+            </span>
+            /100
+          </div>
+          <Button
+            type="button"
+            className="mt-4 w-full"
+            variant="outline"
+            disabled={savingRubric}
+            onClick={() => void handleRubricSave()}
+          >
+            {savingRubric
+              ? translate("detail.labels.saving")
+              : translate("detail.labels.saveRubric")}
+          </Button>
+        </div>
+
+        <div className="mt-4 border-t border-border-subtle pt-4">
+          <h3 className="text-base font-medium text-foreground">
+            {translate("workspace.manage.tracksRoundsTitle")}
+          </h3>
+          <p className="mt-2 text-sm text-foreground-muted">
+            {translate("workspace.manage.tracksRoundsDescription")}
+          </p>
+
+          <div className="mt-4 rounded-xl border border-border-subtle bg-surface-base p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-medium text-foreground">
+                  {translate("workspace.manage.anonymousJudgingTitle")}
+                </div>
+                <div className="mt-1 text-xs text-foreground-muted">
+                  {translate("workspace.manage.anonymousJudgingHint")}
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={anonymousJudgingDraft}
+                  onChange={(e) => setAnonymousJudgingDraft(e.target.checked)}
+                />
+                {translate("workspace.manage.anonymousJudgingToggle")}
+              </label>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <div className="text-sm font-medium text-foreground">
+              {translate("workspace.manage.tracksTitle")}
+            </div>
+            <div className="mt-3 space-y-3">
+              {(tracksDraft ?? []).map((track, index) => (
+                <div
+                  key={`track-${index}`}
+                  className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                >
+                  <input
+                    value={track.id}
+                    onChange={(e) =>
+                      setTracksDraft((prev) =>
+                        prev.map((t, i) =>
+                          i === index ? { ...t, id: e.target.value } : t,
+                        ),
+                      )
+                    }
+                    className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    placeholder={translate(
+                      "workspace.manage.trackIdPlaceholder",
+                    )}
+                  />
+                  <input
+                    value={track.name}
+                    onChange={(e) =>
+                      setTracksDraft((prev) =>
+                        prev.map((t, i) =>
+                          i === index ? { ...t, name: e.target.value } : t,
+                        ),
+                      )
+                    }
+                    className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    placeholder={translate(
+                      "workspace.manage.trackNamePlaceholder",
+                    )}
+                  />
+                  <div className="sm:col-span-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setTracksDraft((prev) =>
+                          prev.filter((_, i) => i !== index),
+                        )
+                      }
+                    >
+                      {translate("workspace.manage.removeRow")}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setTracksDraft((prev) => [
+                    ...prev,
+                    { id: "", name: "", active: true },
+                  ])
+                }
+              >
+                {translate("workspace.manage.addTrackRow")}
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <div className="text-sm font-medium text-foreground">
+              {translate("workspace.manage.roundsTitle")}
+            </div>
+            <div className="mt-3 space-y-3">
+              {(roundsDraft ?? []).map((round, index) => (
+                <div
+                  key={`round-${index}`}
+                  className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                >
+                  <input
+                    value={round.id}
+                    onChange={(e) =>
+                      setRoundsDraft((prev) =>
+                        prev.map((r, i) =>
+                          i === index ? { ...r, id: e.target.value } : r,
+                        ),
+                      )
+                    }
+                    className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    placeholder={translate(
+                      "workspace.manage.roundIdPlaceholder",
+                    )}
+                  />
+                  <input
+                    value={round.name}
+                    onChange={(e) =>
+                      setRoundsDraft((prev) =>
+                        prev.map((r, i) =>
+                          i === index ? { ...r, name: e.target.value } : r,
+                        ),
+                      )
+                    }
+                    className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    placeholder={translate(
+                      "workspace.manage.roundNamePlaceholder",
+                    )}
+                  />
+                  <div className="sm:col-span-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setRoundsDraft((prev) =>
+                          prev.filter((_, i) => i !== index),
+                        )
+                      }
+                    >
+                      {translate("workspace.manage.removeRow")}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setRoundsDraft((prev) => [
+                    ...prev,
+                    { id: "", name: "", active: true },
+                  ])
+                }
+              >
+                {translate("workspace.manage.addRoundRow")}
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="text-sm font-medium text-foreground">
+              {translate("workspace.manage.activeRoundLabel")}
+            </label>
+            <select
+              className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+              value={activeRoundIdDraft}
+              onChange={(e) => setActiveRoundIdDraft(e.target.value)}
+            >
+              {(roundsDraft ?? []).map((round) => (
+                <option key={round.id} value={round.id}>
+                  {round.name || round.id}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <Button
+            type="button"
+            className="mt-4 w-full"
+            variant="outline"
+            disabled={savingTracksRounds}
+            onClick={() => void handleTracksRoundsSave()}
+          >
+            {savingTracksRounds
+              ? translate("detail.labels.saving")
+              : translate("workspace.manage.saveTracksRounds")}
+          </Button>
+        </div>
+          </section>
+        ) : null}
+        {activeSection === "access" ? (
+          <section
+            id="contest-settings-access"
+            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+          >
+        <div>
+          <h3 className="text-base font-medium text-foreground">
+            {translate("workspace.manage.accessInvitesTitle")}
+          </h3>
+          <div className="mt-4 space-y-3">
+            <input
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+              placeholder={translate("detail.forms.invite.emailPlaceholder")}
+            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-border bg-surface-base px-3 py-2 text-sm">
+                <div className="text-xs font-medium text-foreground-muted">
+                  {translate("workspace.manage.inviteRolesLabel")}
+                </div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {(
+                    [
+                      ["judge", "workspace.manage.inviteRoleJudge"],
+                      [
+                        "co_organizer",
+                        "workspace.manage.inviteRoleCoOrganizer",
+                      ],
+                      [
+                        "partner_viewer",
+                        "workspace.manage.inviteRolePartnerViewer",
+                      ],
+                      ["mentor", "workspace.manage.inviteRoleMentor"],
+                      ["reviewer", "workspace.manage.inviteRoleReviewer"],
+                      ["co_host_viewer", "workspace.manage.inviteRoleCoHost"],
+                    ] as const
+                  ).map(([role, labelKey]) => {
+                    const checked = inviteRoles.includes(
+                      role as ContestScopedViewerRole,
+                    );
+                    return (
+                      <label
+                        key={role}
+                        className="flex items-center gap-2 text-sm text-foreground"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            const next = e.target.checked
+                              ? Array.from(new Set([...inviteRoles, role]))
+                              : inviteRoles.filter((r) => r !== role);
+                            setInviteRoles(next as ContestScopedViewerRole[]);
+                          }}
+                        />
+                        {translate(labelKey)}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+              <input
+                value={inviteDisplayName}
+                onChange={(e) => setInviteDisplayName(e.target.value)}
+                className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                placeholder={translate(
+                  "detail.forms.invite.displayNamePlaceholder",
+                )}
+              />
+            </div>
+            <input
+              value={inviteOrganization}
+              onChange={(e) => setInviteOrganization(e.target.value)}
+              className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+              placeholder={translate(
+                "detail.forms.invite.organizationPlaceholder",
+              )}
+            />
+            <textarea
+              rows={3}
+              value={inviteNote}
+              onChange={(e) => setInviteNote(e.target.value)}
+              className="min-h-24 w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+              placeholder={translate("detail.forms.invite.notePlaceholder")}
+            />
+            <Button
+              type="button"
+              className="w-full"
+              disabled={savingInvite || !inviteEmail.trim()}
+              onClick={() => void handleInviteCreate()}
+            >
+              {savingInvite
+                ? translate("detail.labels.creating")
+                : translate("detail.labels.sendInvite")}
+            </Button>
+            <div className="rounded-2xl border border-border-subtle bg-surface-base px-4 py-4">
+              <div className="text-sm font-medium text-foreground">
+                {translate("workspace.manage.bulkInviteTitle")}
+              </div>
+              <p className="mt-1 text-xs text-foreground-muted">
+                {translate("workspace.manage.bulkInviteHint")}
+              </p>
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                disabled={savingInvite}
+                onChange={(e) => void handleBulkInviteCsv(e)}
+                className="mt-3 block w-full cursor-pointer text-sm text-foreground-muted file:mr-3 file:rounded-md file:border file:border-border-subtle file:bg-surface-base file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {invites.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-border-subtle bg-surface-base px-4 py-5 text-sm text-foreground-muted">
+                {translate("workspace.manage.invitesEmpty")}
+              </div>
+            ) : (
+              invites.map((invite) => (
+                <div
+                  key={invite.id}
+                  className="rounded-2xl border border-border-subtle bg-surface-base p-4"
+                >
+                  <div className="text-sm font-medium text-foreground">
+                    {invite.display_name || invite.email}
+                  </div>
+                  <div className="mt-1 text-sm text-foreground-muted">
+                    {invite.email} · {invite.roles.join(", ")} · {invite.status}
+                  </div>
+                  {invite.organization_name && (
+                    <div className="mt-1 text-sm text-foreground-muted">
+                      {invite.organization_name}
+                    </div>
+                  )}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="mt-3"
+                    disabled={inviteActionId === invite.email}
+                    onClick={() => void handleInviteRevoke(invite.email)}
+                  >
+                    {translate("workspace.manage.revoke")}
+                  </Button>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={inviteActionId === invite.email}
+                      onClick={() => void handleCopyInviteLink(invite.email)}
+                    >
+                      {translate("workspace.manage.copyLink")}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={inviteActionId === invite.email}
+                      onClick={() => handleInviteMailTo(invite)}
+                    >
+                      {translate("workspace.manage.openEmail")}
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+          </section>
+        ) : null}
+        {activeSection === "public" ? (
+          <section
+            id="contest-settings-public"
+            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+          >
+        <div>
+          <h3 className="text-base font-medium text-foreground">
+            {translate("workspace.manage.publicPageContentTitle")}
+          </h3>
+          <p className="mt-2 text-sm text-foreground-muted">
+            {translate("workspace.manage.publicPageContentDescription")}
+          </p>
+
+          <div className="mt-6 rounded-xl border border-border-subtle bg-surface-raised p-4">
+            <div className="text-sm font-medium text-foreground">
+              {translate("workspace.manage.mediaTitle")}
+            </div>
+            <p className="mt-1 text-xs text-foreground-muted">
+              {translate("workspace.manage.mediaDescription")}
+            </p>
+            <div className="mt-4 grid gap-6 lg:grid-cols-2 lg:gap-8">
+              <div className="min-w-0">
+                <label
+                  className="block text-sm font-medium text-foreground"
+                  htmlFor="contest-settings-banner"
+                >
+                  {translate("workspace.manage.bannerUploadLabel")}
+                </label>
+                <p className="mt-1 text-xs text-foreground-muted">
+                  {translate("workspace.manage.bannerUploadHint")}
+                </p>
+                <input
+                  id="contest-settings-banner"
+                  type="file"
+                  accept="image/*"
+                  disabled={bannerUploading}
+                  onChange={(e) => void handleContestBannerChange(e)}
+                  className="mt-2 block w-full cursor-pointer text-sm text-foreground-muted file:mr-3 file:rounded-md file:border file:border-border-subtle file:bg-surface-base file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60"
+                />
+                <div className="mt-2 flex items-center gap-2 text-xs text-foreground-muted">
+                  {bannerUploading ? (
+                    <>
+                      <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                      {translate("workspace.manage.uploadingBanner")}
+                    </>
+                  ) : null}
+                </div>
+                {contest.cover_image_url?.trim() ? (
+                  <div className="relative mt-3 h-36 max-w-3xl overflow-hidden rounded-lg border border-border-subtle bg-surface-base sm:h-40 lg:h-44">
+                    <img
+                      src={contest.cover_image_url.trim()}
+                      alt={translate("detail.visual.bannerAlt", {
+                        title: contest.title,
+                      })}
+                      className="absolute inset-0 size-full object-cover object-center"
+                    />
+                  </div>
+                ) : null}
+              </div>
+              <div className="min-w-0">
+                <label
+                  className="block text-sm font-medium text-foreground"
+                  htmlFor="contest-settings-thumbnail"
+                >
+                  {translate("workspace.manage.thumbnailUploadLabel")}
+                </label>
+                <p className="mt-1 text-xs text-foreground-muted">
+                  {translate("workspace.manage.thumbnailUploadHint")}
+                </p>
+                <input
+                  id="contest-settings-thumbnail"
+                  type="file"
+                  accept="image/*"
+                  disabled={thumbnailUploading}
+                  onChange={(e) => void handleContestThumbnailChange(e)}
+                  className="mt-2 block w-full cursor-pointer text-sm text-foreground-muted file:mr-3 file:rounded-md file:border file:border-border-subtle file:bg-surface-base file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60"
+                />
+                <div className="mt-2 flex items-center gap-2 text-xs text-foreground-muted">
+                  {thumbnailUploading ? (
+                    <>
+                      <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                      {translate("workspace.manage.uploadingThumbnail")}
+                    </>
+                  ) : null}
+                </div>
+                {contest.thumbnail_url?.trim() ? (
+                  <div className="relative mt-3 h-32 max-w-xl overflow-hidden rounded-lg border border-border-subtle bg-surface-base sm:h-36 lg:h-40">
+                    <img
+                      src={contest.thumbnail_url.trim()}
+                      alt={translate("detail.visual.thumbnailAlt", {
+                        title: contest.title,
+                      })}
+                      className="absolute inset-0 size-full object-cover object-center"
+                    />
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <label className="mt-4 block text-sm font-medium text-foreground">
+            {translate("workspace.manage.prizePoolSummaryLabel")}
+          </label>
+          <input
+            value={publicDraft.prize_pool_summary}
+            onChange={(e) =>
+              setPublicDraft((prev) => ({
+                ...prev,
+                prize_pool_summary: e.target.value,
+              }))
+            }
+            className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+            placeholder={translate(
+              "workspace.manage.prizePoolSummaryPlaceholder",
+            )}
+          />
+
+          <div className="mt-6">
+            <div className="text-sm font-medium text-foreground">
+              {translate("detail.prizes.sectionTitle")}
+            </div>
+            <div className="mt-3 space-y-4">
+              {publicDraft.prizes.map((prize, index) => (
+                <div
+                  key={`prize-${index}`}
+                  className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                >
+                  <input
+                    value={prize.rank_label}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        prizes: prev.prizes.map((p, i) =>
+                          i === index
+                            ? { ...p, rank_label: e.target.value }
+                            : p,
+                        ),
+                      }))
+                    }
+                    className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 sm:col-span-2"
+                    placeholder={translate(
+                      "workspace.manage.prizeRankPlaceholder",
+                    )}
+                  />
+                  <input
+                    value={prize.title}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        prizes: prev.prizes.map((p, i) =>
+                          i === index ? { ...p, title: e.target.value } : p,
+                        ),
+                      }))
+                    }
+                    className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 sm:col-span-2"
+                    placeholder={translate(
+                      "workspace.manage.prizeTitlePlaceholder",
+                    )}
+                  />
+                  <input
+                    value={prize.value_display ?? ""}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        prizes: prev.prizes.map((p, i) =>
+                          i === index
+                            ? { ...p, value_display: e.target.value }
+                            : p,
+                        ),
+                      }))
+                    }
+                    className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    placeholder={translate(
+                      "workspace.manage.prizeValuePlaceholder",
+                    )}
+                  />
+                  <textarea
+                    rows={2}
+                    value={prize.description ?? ""}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        prizes: prev.prizes.map((p, i) =>
+                          i === index
+                            ? { ...p, description: e.target.value }
+                            : p,
+                        ),
+                      }))
+                    }
+                    className="min-h-16 rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 sm:col-span-2"
+                    placeholder={translate(
+                      "workspace.manage.prizeDescriptionPlaceholder",
+                    )}
+                  />
+                  <div className="sm:col-span-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setPublicDraft((prev) => ({
+                          ...prev,
+                          prizes: prev.prizes.filter((_, i) => i !== index),
+                        }))
+                      }
+                    >
+                      {translate("workspace.manage.removeRow")}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() =>
+                setPublicDraft((prev) => ({
+                  ...prev,
+                  prizes: [
+                    ...prev.prizes,
+                    {
+                      rank_label: "",
+                      title: "",
+                      value_display: "",
+                      description: "",
+                    },
+                  ],
+                }))
+              }
+            >
+              {translate("workspace.manage.addPrizeRow")}
+            </Button>
+          </div>
+
+          <div className="mt-6">
+            <div className="text-sm font-medium text-foreground">
+              {translate("detail.faqs.sectionTitle")}
+            </div>
+            <div className="mt-3 space-y-4">
+              {publicDraft.faqs.map((faq, index) => (
+                <div
+                  key={`faq-${index}`}
+                  className="space-y-3 rounded-xl border border-border-subtle bg-surface-base p-4"
+                >
+                  <input
+                    value={faq.question}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        faqs: prev.faqs.map((f, i) =>
+                          i === index ? { ...f, question: e.target.value } : f,
+                        ),
+                      }))
+                    }
+                    className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    placeholder={translate(
+                      "workspace.manage.faqQuestionPlaceholder",
+                    )}
+                  />
+                  <textarea
+                    rows={3}
+                    value={faq.answer}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        faqs: prev.faqs.map((f, i) =>
+                          i === index ? { ...f, answer: e.target.value } : f,
+                        ),
+                      }))
+                    }
+                    className="min-h-24 w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    placeholder={translate(
+                      "workspace.manage.faqAnswerPlaceholder",
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        faqs: prev.faqs.filter((_, i) => i !== index),
+                      }))
+                    }
+                  >
+                    {translate("workspace.manage.removeRow")}
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() =>
+                setPublicDraft((prev) => ({
+                  ...prev,
+                  faqs: [...prev.faqs, { question: "", answer: "" }],
+                }))
+              }
+            >
+              {translate("workspace.manage.addFaqRow")}
+            </Button>
+          </div>
+
+          <div className="mt-6">
+            <div className="text-sm font-medium text-foreground">
+              {translate("detail.organizationalPartners.sectionTitle")}
+            </div>
+            <p className="mt-1 text-xs text-foreground-muted">
+              {translate("detail.organizationalPartners.managerHint")}
+            </p>
+            <div className="mt-3 space-y-4">
+              {publicDraft.organizational_partners.map((partner, index) => (
+                <div
+                  key={partner.id ?? `org-partner-${index}`}
+                  className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                >
+                  <div className="sm:col-span-2">
+                    <label
+                      className="block text-sm font-medium text-foreground"
+                      htmlFor={`org-partner-logo-${index}`}
+                    >
+                      {translate(
+                        "workspace.manage.organizationalPartnerLogoUploadLabel",
+                      )}
+                    </label>
+                    <p className="mt-1 text-xs text-foreground-muted">
+                      {translate(
+                        "workspace.manage.organizationalPartnerLogoUploadHint",
+                      )}
+                    </p>
+                    <input
+                      id={`org-partner-logo-${index}`}
+                      type="file"
+                      accept="image/*"
+                      disabled={partnerLogoUploadingIndex === index}
+                      onChange={(e) =>
+                        void handleOrganizationalPartnerLogoChange(index, e)
+                      }
+                      className="mt-2 block w-full cursor-pointer text-sm text-foreground-muted file:mr-3 file:rounded-md file:border file:border-border-subtle file:bg-surface-base file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60"
+                    />
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
+                      {partnerLogoUploadingIndex === index ? (
+                        <>
+                          <Loader2
+                            className="size-3.5 animate-spin"
+                            aria-hidden
+                          />
+                          {translate("workspace.manage.uploadingPartnerLogo")}
+                        </>
+                      ) : null}
+                    </div>
+                    {partner.logo_url?.trim() ? (
+                      <div className="mt-3 flex flex-wrap items-end gap-3">
+                        <div className="overflow-hidden rounded-lg border border-border-subtle bg-surface-base p-2">
+                          <img
+                            src={partner.logo_url.trim()}
+                            alt={translate(
+                              "workspace.manage.organizationalPartnerLogoPreviewAlt",
+                              {
+                                title:
+                                  partner.title.trim() ||
+                                  translate(
+                                    "detail.organizationalPartners.previewFallbackName",
+                                  ),
+                              },
+                            )}
+                            className="h-14 w-auto max-w-[200px] object-contain"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={partnerLogoUploadingIndex === index}
+                          onClick={() =>
+                            void handleOrganizationalPartnerLogoRemove(index)
+                          }
+                        >
+                          {translate(
+                            "workspace.manage.organizationalPartnerRemoveLogo",
+                          )}
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+                  {!partner.logo_path?.trim() ? (
+                    <label className="block text-xs font-medium text-foreground-muted sm:col-span-2">
+                      {translate(
+                        "workspace.manage.organizationalPartnerLogoUrlOptional",
+                      )}
+                      <input
+                        value={partner.logo_url ?? ""}
+                        onChange={(e) => {
+                          const next = e.target.value;
+                          setPublicDraft((prev) => ({
+                            ...prev,
+                            organizational_partners:
+                              prev.organizational_partners.map((p, i) =>
+                                i === index ? { ...p, logo_url: next } : p,
+                              ),
+                          }));
+                        }}
+                        className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm text-foreground outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                        placeholder={translate(
+                          "workspace.manage.organizationalPartnerLogoPlaceholder",
+                        )}
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        inputMode="url"
+                      />
+                    </label>
+                  ) : null}
+                  <input
+                    value={partner.title}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        organizational_partners:
+                          prev.organizational_partners.map((p, i) =>
+                            i === index ? { ...p, title: e.target.value } : p,
+                          ),
+                      }))
+                    }
+                    className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 sm:col-span-2"
+                    placeholder={translate(
+                      "workspace.manage.organizationalPartnerTitlePlaceholder",
+                    )}
+                  />
+                  <textarea
+                    rows={2}
+                    value={partner.description ?? ""}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        organizational_partners:
+                          prev.organizational_partners.map((p, i) =>
+                            i === index
+                              ? { ...p, description: e.target.value }
+                              : p,
+                          ),
+                      }))
+                    }
+                    className="min-h-16 rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 sm:col-span-2"
+                    placeholder={translate(
+                      "workspace.manage.organizationalPartnerDescriptionPlaceholder",
+                    )}
+                  />
+                  <div className="sm:col-span-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setPublicDraft((prev) => ({
+                          ...prev,
+                          organizational_partners:
+                            prev.organizational_partners.filter(
+                              (_, i) => i !== index,
+                            ),
+                        }))
+                      }
+                    >
+                      {translate("workspace.manage.removeRow")}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() =>
+                setPublicDraft((prev) => ({
+                  ...prev,
+                  organizational_partners: [
+                    ...prev.organizational_partners,
+                    {
+                      id: crypto.randomUUID(),
+                      logo_url: "",
+                      logo_path: "",
+                      title: "",
+                      description: "",
+                    },
+                  ],
+                }))
+              }
+            >
+              {translate("workspace.manage.addOrganizationalPartnerRow")}
+            </Button>
+          </div>
+
+          <div className="mt-6">
+            <div className="text-sm font-medium text-foreground">
+              {translate("detail.sections.timeline")}
+            </div>
+            <div className="mt-3 grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-foreground-muted">
+                    {translate("instructorNew.form.registrationDeadlineLabel")}
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={publicDraft.registration_deadline_local}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        registration_deadline_local: e.target.value,
+                      }))
+                    }
+                    className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-foreground-muted">
+                    {translate("instructorNew.form.startsAtLabel")}
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={publicDraft.starts_at_local}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        starts_at_local: e.target.value,
+                      }))
+                    }
+                    className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <label className="text-xs font-medium text-foreground-muted">
+                    {translate("instructorNew.form.endsAtLabel")}
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={publicDraft.ends_at_local}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        ends_at_local: e.target.value,
+                      }))
+                    }
+                    className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <label className="text-xs font-medium text-foreground-muted">
+                    {translate("workspace.manage.submissionDeadlineLabel")}
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={publicDraft.submission_deadline_local}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        submission_deadline_local: e.target.value,
+                      }))
+                    }
+                    className="h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                  />
+                  <p className="text-xs text-foreground-muted">
+                    {translate("workspace.manage.submissionDeadlineHint")}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 space-y-4">
+              {publicDraft.milestones.map((milestone, index) => (
+                <div
+                  key={`ms-${index}`}
+                  className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                >
+                  <input
+                    value={milestone.title}
+                    onChange={(e) =>
+                      setPublicDraft((prev) => ({
+                        ...prev,
+                        milestones: prev.milestones.map((m, i) =>
+                          i === index ? { ...m, title: e.target.value } : m,
+                        ),
+                      }))
+                    }
+                    className="h-10 rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 sm:col-span-2"
+                    placeholder={translate(
+                      "workspace.manage.milestoneTitlePlaceholder",
+                    )}
+                  />
+                  <div className="sm:col-span-2">
+                    <label className="text-xs font-medium text-foreground-muted">
+                      {translate("workspace.manage.milestoneAtLabel")}
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={milestone.atLocal}
+                      onChange={(e) =>
+                        setPublicDraft((prev) => ({
+                          ...prev,
+                          milestones: prev.milestones.map((m, i) =>
+                            i === index ? { ...m, atLocal: e.target.value } : m,
+                          ),
+                        }))
+                      }
+                      className="mt-2 h-10 w-full rounded-lg border border-border bg-surface-base px-3 text-sm outline-hidden focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setPublicDraft((prev) => ({
+                          ...prev,
+                          milestones: prev.milestones.filter(
+                            (_, i) => i !== index,
+                          ),
+                        }))
+                      }
+                    >
+                      {translate("workspace.manage.removeRow")}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() =>
+                setPublicDraft((prev) => ({
+                  ...prev,
+                  milestones: [...prev.milestones, { title: "", atLocal: "" }],
+                }))
+              }
+            >
+              {translate("workspace.manage.addMilestoneRow")}
+            </Button>
+          </div>
+
+          <Button
+            type="button"
+            className="mt-6 w-full"
+            disabled={savingPublicContent}
+            onClick={() => void handleSavePublicContent()}
+          >
+            {savingPublicContent
+              ? translate("detail.labels.saving")
+              : translate("workspace.manage.savePublicPageContent")}
+          </Button>
+        </div>
+          </section>
+        ) : null}
+        {activeSection === "danger" ? (
+          <section
+            id="contest-settings-danger"
+            className="scroll-mt-28 rounded-md border border-destructive/25 bg-surface-base p-6 sm:scroll-mt-32"
+            aria-labelledby="contest-settings-danger-heading"
+          >
+          <h3
+            id="contest-settings-danger-heading"
+            className="text-base font-medium text-foreground"
+          >
+            {translate("workspace.manage.dangerZoneTitle")}
+          </h3>
+          <p className="mt-2 text-sm text-foreground-muted">
+            {translate("workspace.manage.dangerZoneDescription")}
+          </p>
+          <Button
+            type="button"
+            className="mt-4 w-full"
+            variant="destructive"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <Trash2 className="size-4" aria-hidden />
+            {translate("workspace.manage.deleteContest")}
+          </Button>
+          </section>
+        ) : null}
+      </div>
+    </div>
+  );
+}

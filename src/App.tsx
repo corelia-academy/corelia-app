@@ -1,9 +1,12 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import {
   BrowserRouter,
   Navigate,
+  Outlet,
   Route,
   Routes,
   useLocation,
@@ -13,56 +16,150 @@ import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
+import { RequireContestManager } from "@/components/auth/RequireContestManager";
 import Home from "@/pages/home/index";
-import Courses from "@/pages/Courses";
-import CourseDetail from "@/pages/course-details";
-import CheckoutCourse from "@/pages/CheckoutCourse";
-import CheckoutSuccess from "@/pages/CheckoutSuccess";
-import Learn from "@/pages/learn";
-import InstructorDetail from "@/pages/InstructorDetail";
-import Account, {
-  AccountProfileRoute,
-  AccountCvRoute,
-  AccountBillingRoute,
-  AccountInstructorProfileRoute,
-  AccountSettingsRoute,
-  InstructorWorkspaceProfileRoute,
-} from "@/pages/account/Account";
+import Courses from "@/pages/courses";
 import Auth from "@/pages/login/Auth";
-import AdminLayout from "@/pages/admin/AdminLayout";
-import AdminUsers from "@/pages/admin/AdminUsers";
-import AdminInstructors from "@/pages/admin/AdminInstructors";
-import AdminInstructorDetail from "@/pages/admin/AdminInstructorDetail";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import Achievements from "@/pages/Achievements";
-import InstructorLayout from "@/pages/instructor/InstructorLayout";
-import InstructorCourses from "@/pages/InstructorCourses";
-import InstructorContests from "@/pages/InstructorContests";
-import InstructorCourseNew from "@/pages/InstructorCourseNew";
-import InstructorCourseEdit from "@/pages/InstructorCourseEdit";
-import RoadmapPage from "@/pages/roadmap";
-import Contests from "@/pages/Contests";
-import ContestNew from "@/pages/ContestNew";
-import ContestPublicLayout from "@/pages/contest-detail/ContestPublicLayout";
-import ContestPublicPage from "@/pages/contest-detail/ContestPublicPage";
-import ContestApplyRedirect from "@/pages/contest-detail/ContestApplyRedirect";
-import ContestWorkspace from "@/pages/admin/ContestWorkspace";
-import { ROLE_GROUPS } from "@/config/roles";
-import {
-  PartnerContractsPage,
-  PartnerInvoicesPage,
-  PartnerPaymentsPage,
-} from "@/pages/instructor/PartnerFinance";
 import OCIDRedirect from "@/pages/OCIDRedirect";
 import NotFound from "@/pages/NotFound";
+import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
+
+// Lazy-load all routes not needed on the initial render
+const CourseDetail = lazy(() => import("@/pages/course-details"));
+const CheckoutCourse = lazy(() => import("@/pages/CheckoutCourse"));
+const CheckoutSuccess = lazy(() => import("@/pages/CheckoutSuccess"));
+const Learn = lazy(() => import("@/pages/learn"));
+const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
+const RoadmapPage = lazy(() => import("@/pages/roadmap"));
+const CareerList = lazy(() => import("@/pages/career"));
+const CareerDetail = lazy(() => import("@/pages/career/CareerDetailPage"));
+const Contests = lazy(() => import("@/pages/hackathon-detail/Contests"));
+const ContestNew = lazy(() => import("@/pages/hackathon-detail/ContestNew"));
+const ContestPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
+const ContestPublicPage = lazy(() => import("@/pages/hackathon-detail/ContestPublicPage"));
+const Projects = lazy(() => import("@/pages/projects"));
+const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
+const SearchPage = lazy(() => import("@/pages/search"));
+import { ContestManageIndexRedirect } from "@/pages/hackathon-detail/ContestManageIndexRedirect";
+import { ContestPublicLegacyRedirect } from "@/pages/hackathon-detail/ContestPublicLegacyRedirect";
+
+const ContestWorkspacePublicRoute = lazy(() =>
+  import("@/pages/hackathon-detail/ContestDetail").then((m) => ({
+    default: m.ContestDetailManagePage,
+  })),
+);
+const ConfirmSignup = lazy(() => import("@/pages/auth/ConfirmSignup"));
+const SignupVerified = lazy(() => import("@/pages/auth/SignupVerified"));
+const UserProfileLayout = lazy(() => import("@/pages/users/user-profile"));
+const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
+
+const Account = lazy(() => import("@/pages/account/Account"));
+const AccountProfileRoute = lazy(() =>
+  import("@/pages/account/AccountProfileRoute").then((m) => ({ default: m.AccountProfileRoute })),
+);
+const AccountCvRoute = lazy(() =>
+  import("@/pages/account/AccountCvRoute").then((m) => ({ default: m.AccountCvRoute })),
+);
+const AccountBillingRoute = lazy(() =>
+  import("@/pages/account/AccountBillingRoute").then((m) => ({ default: m.AccountBillingRoute })),
+);
+const AccountSettingsRoute = lazy(() =>
+  import("@/pages/account/AccountSettingsRoute").then((m) => ({ default: m.AccountSettingsRoute })),
+);
+const AccountProjectsRoute = lazy(() =>
+  import("@/pages/account/AccountProjectsRoute").then((m) => ({ default: m.AccountProjectsRoute })),
+);
+const AccountInstructorProfileRoute = lazy(() =>
+  import("@/pages/account/AccountInstructorRoutes").then((m) => ({
+    default: m.AccountInstructorProfileRoute,
+  })),
+);
+const InstructorWorkspaceProfileRoute = lazy(() =>
+  import("@/pages/account/AccountInstructorRoutes").then((m) => ({
+    default: m.InstructorWorkspaceProfileRoute,
+  })),
+);
+
+const InstructorLayout = lazy(() => import("@/pages/instructor/InstructorLayout"));
+const InstructorCourses = lazy(() => import("@/pages/InstructorCourses"));
+const InstructorContests = lazy(() => import("@/pages/hackathon-detail/InstructorContests"));
+const InstructorCourseNew = lazy(() => import("@/pages/instructor-course-new"));
+const InstructorCourseEdit = lazy(() => import("@/pages/instructor-course-edit"));
+const InstructorCareerTracks = lazy(() => import("@/pages/instructor-career-tracks"));
+const InstructorCareerTrackEditor = lazy(
+  () => import("@/pages/instructor-career-tracks/InstructorCareerTrackEditorPage"),
+);
+const PartnerContractsPage = lazy(() =>
+  import("@/pages/instructor/PartnerFinance").then((m) => ({ default: m.PartnerContractsPage })),
+);
+const PartnerInvoicesPage = lazy(() =>
+  import("@/pages/instructor/PartnerFinance").then((m) => ({ default: m.PartnerInvoicesPage })),
+);
+const PartnerPaymentsPage = lazy(() =>
+  import("@/pages/instructor/PartnerFinance").then((m) => ({ default: m.PartnerPaymentsPage })),
+);
+
+const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
+const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
+const AdminInstructors = lazy(() => import("@/pages/admin/AdminInstructors"));
+const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMilestones"));
+
+const PageFallback = () => <AuthGateLoading />;
 
 function ScrollToTop() {
   const location = useLocation();
+  const prevRef = useRef<{ pathname: string; hash: string } | null>(null);
 
   useEffect(() => {
+    const prev = prevRef.current;
+    prevRef.current = {
+      pathname: location.pathname,
+      hash: location.hash,
+    };
+
+    if (
+      prev &&
+      prev.pathname === location.pathname &&
+      prev.hash !== location.hash
+    ) {
+      return;
+    }
+
+    const manageBaseRe = /^\/hackathons\/([^/]+)\/manage(?:\/|$)/;
+    const prevManage = prev?.pathname.match(manageBaseRe);
+    const nextManage = location.pathname.match(manageBaseRe);
+    if (
+      prev &&
+      prevManage &&
+      nextManage &&
+      prevManage[1] === nextManage[1] &&
+      prev.pathname !== location.pathname
+    ) {
+      return;
+    }
+
+    const legacyContestTabRe =
+      /^\/hackathons\/([^/]+)\/(?:overview|timeline|prizes|partners|rules|faqs|projects)$/;
+    const prevLegacy = prev?.pathname.match(legacyContestTabRe);
+    const nextCanonical = location.pathname.match(/^\/hackathons\/([^/]+)$/);
+    if (
+      prevLegacy &&
+      nextCanonical &&
+      prevLegacy[1] === nextCanonical[1]
+    ) {
+      return;
+    }
+
+    const canonicalContest = /^\/hackathons\/([^/]+)$/;
+    if (canonicalContest.test(location.pathname) && location.hash) {
+      return;
+    }
+
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [location.pathname, location.search]);
+  }, [location.pathname, location.search, location.hash]);
 
   return null;
 }
@@ -76,6 +173,7 @@ export default function App() {
   }, [i18n.resolvedLanguage, i18n.language]);
 
   return (
+    <ErrorBoundary>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Toaster />
       <AuthSync />
@@ -84,18 +182,75 @@ export default function App() {
           <ScrollToTop />
           <Routes>
             <Route path="/login" element={<Auth />} />
+            <Route
+              path="/confirm-signup"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <ConfirmSignup />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/auth/signup-verified"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <SignupVerified />
+                </Suspense>
+              }
+            />
             <Route path="/ocid-redirect" element={<OCIDRedirect />} />
             <Route path="/" element={<MainLayout />}>
               <Route index element={<Home />} />
               <Route path="courses" element={<Courses />} />
+              <Route
+                path="invites/project/:token"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <ProjectInvitePage />
+                  </Suspense>
+                }
+              />
               <Route path="cohorts" element={<Navigate to="/courses" replace />} />
-              <Route path="courses/:id" element={<CourseDetail />} />
+              <Route
+                path="career"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <CareerList />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="career/corelia/:slug"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <CareerDetail />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="career/:handle/:slug"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <CareerDetail />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="courses/:id"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <CourseDetail />
+                  </Suspense>
+                }
+              />
               <Route path="cohorts/:id" element={<Navigate to="/courses" replace />} />
               <Route
                 path="checkout/course/:courseId"
                 element={
                   <RequireAuth>
-                    <CheckoutCourse />
+                    <Suspense fallback={<PageFallback />}>
+                      <CheckoutCourse />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
@@ -103,16 +258,27 @@ export default function App() {
                 path="checkout/success/:purpose/:courseId"
                 element={
                   <RequireAuth>
-                    <CheckoutSuccess />
+                    <Suspense fallback={<PageFallback />}>
+                      <CheckoutSuccess />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
-              <Route path="instructors/:id" element={<InstructorDetail />} />
+              <Route
+                path="instructors/:id"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <InstructorDetail />
+                  </Suspense>
+                }
+              />
               <Route
                 path="learn/:courseId"
                 element={
                   <RequireAuth>
-                    <Learn />
+                    <Suspense fallback={<PageFallback />}>
+                      <Learn />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
@@ -120,76 +286,297 @@ export default function App() {
                 path="learn/:courseId/lesson/:lessonId"
                 element={
                   <RequireAuth>
-                    <Learn />
+                    <Suspense fallback={<PageFallback />}>
+                      <Learn />
+                    </Suspense>
+                  </RequireAuth>
+                }
+              />
+              <Route path="achievements" element={<Navigate to="/account" replace />} />
+              <Route
+                path="roadmap"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <RoadmapPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="hackathons"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <Contests />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="hackathons/manage"
+                element={
+                  <RequireAuth>
+                    <RequireContestManager>
+                      <Suspense fallback={<PageFallback />}>
+                        <InstructorContests />
+                      </Suspense>
+                    </RequireContestManager>
                   </RequireAuth>
                 }
               />
               <Route
-                path="achievements"
+                path="hackathons/new"
                 element={
                   <RequireAuth>
-                    <Achievements />
+                    <RequireContestManager>
+                      <Suspense fallback={<PageFallback />}>
+                        <ContestNew />
+                      </Suspense>
+                    </RequireContestManager>
                   </RequireAuth>
                 }
               />
-              <Route path="roadmap" element={<RoadmapPage />} />
-              <Route path="contests" element={<Contests />} />
-              <Route path="contests/:id" element={<ContestPublicLayout />}>
-                <Route index element={<Navigate to="overview" replace />} />
-                <Route path="overview" element={<ContestPublicPage section="overview" />} />
-                <Route path="timeline" element={<ContestPublicPage section="timeline" />} />
-                <Route path="prizes" element={<ContestPublicPage section="prizes" />} />
-                <Route path="rules" element={<ContestPublicPage section="rules" />} />
-                <Route path="faqs" element={<ContestPublicPage section="faqs" />} />
-                <Route path="projects" element={<ContestPublicPage section="projects" />} />
-                <Route path="apply" element={<ContestApplyRedirect />} />
+              <Route
+                path="projects"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <Projects />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="search"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <SearchPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="hackathons/:slug/manage"
+                element={
+                  <RequireAuth>
+                    <Outlet />
+                  </RequireAuth>
+                }
+              >
+                <Route index element={<ContestManageIndexRedirect />} />
+                <Route
+                  path=":section"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestWorkspacePublicRoute />
+                    </Suspense>
+                  }
+                />
               </Route>
+              <Route
+                path="hackathons/:slug"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <ContestPublicLayout />
+                  </Suspense>
+                }
+              >
+                <Route
+                  index
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <ContestPublicPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="overview"
+                  element={<ContestPublicLegacyRedirect tab="overview" />}
+                />
+                <Route
+                  path="timeline"
+                  element={<ContestPublicLegacyRedirect tab="timeline" />}
+                />
+                <Route
+                  path="prizes"
+                  element={<ContestPublicLegacyRedirect tab="prizes" />}
+                />
+                <Route
+                  path="partners"
+                  element={<ContestPublicLegacyRedirect tab="partners" />}
+                />
+                <Route
+                  path="rules"
+                  element={<ContestPublicLegacyRedirect tab="rules" />}
+                />
+                <Route
+                  path="faqs"
+                  element={<ContestPublicLegacyRedirect tab="faqs" />}
+                />
+                <Route
+                  path="projects"
+                  element={<ContestPublicLegacyRedirect tab="projects" />}
+                />
+              </Route>
+              <Route
+                path="u/:handle"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <UserProfileLayout />
+                  </Suspense>
+                }
+              />
               <Route
                 path="account"
                 element={
                   <RequireAuth>
-                    <Account />
+                    <Suspense fallback={<PageFallback />}>
+                      <Account />
+                    </Suspense>
                   </RequireAuth>
                 }
               >
                 <Route index element={<Navigate to="profile" replace />} />
-                <Route path="profile" element={<AccountProfileRoute />} />
-                <Route path="cv" element={<AccountCvRoute />} />
-                <Route path="billing" element={<AccountBillingRoute />} />
-                <Route path="settings" element={<AccountSettingsRoute />} />
+                <Route
+                  path="profile"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountProfileRoute />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="cv"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountCvRoute />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="billing"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountBillingRoute />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="settings"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountSettingsRoute />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="projects"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountProjectsRoute />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="instructor"
-                  element={<AccountInstructorProfileRoute />}
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountInstructorProfileRoute />
+                    </Suspense>
+                  }
                 />
               </Route>
               <Route
                 path="admin"
                 element={
                   <RequireRole roles={ROLE_GROUPS.admin}>
-                    <AdminLayout />
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminLayout />
+                    </Suspense>
                   </RequireRole>
                 }
               >
-                <Route index element={<AdminUsers />} />
-                <Route path="dashboard" element={<AdminDashboard />} />
-                <Route path="instructors" element={<AdminInstructors />} />
+                <Route
+                  index
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminUsers />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="dashboard"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminDashboard />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="instructors"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminInstructors />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="instructors/:id"
-                  element={<AdminInstructorDetail />}
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminInstructorDetail />
+                    </Suspense>
+                  }
                 />
-                <Route path="contests" element={<InstructorContests />} />
-                <Route path="contests/new" element={<ContestNew />} />
-                <Route path="contests/:id/manage" element={<ContestWorkspace />} />
+                <Route
+                  path="activity-milestones"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminActivityMilestones />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="hackathons/*"
+                  element={<NotFound />}
+                />
               </Route>
               <Route
                 path="instructor"
                 element={
                   <RequireRole roles={ROLE_GROUPS.instructorWorkspace}>
-                    <InstructorLayout />
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorLayout />
+                    </Suspense>
                   </RequireRole>
                 }
               >
-                <Route path="courses" element={<InstructorCourses />} />
+                <Route
+                  path="courses"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCourses />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="career-tracks"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCareerTracks />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="career-tracks/new"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCareerTrackEditor />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="career-tracks/:id/edit"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCareerTrackEditor />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="cohorts"
                   element={<Navigate to="/instructor/courses" replace />}
@@ -202,18 +589,54 @@ export default function App() {
                   path="cohorts/:id/manage"
                   element={<Navigate to="/instructor/courses" replace />}
                 />
-                <Route path="courses/new" element={<InstructorCourseNew />} />
+                <Route
+                  path="courses/new"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCourseNew />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="courses/:id/edit"
-                  element={<InstructorCourseEdit />}
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCourseEdit />
+                    </Suspense>
+                  }
                 />
                 <Route
                   path="profile"
-                  element={<InstructorWorkspaceProfileRoute />}
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorWorkspaceProfileRoute />
+                    </Suspense>
+                  }
                 />
-                <Route path="contracts" element={<PartnerContractsPage />} />
-                <Route path="invoices" element={<PartnerInvoicesPage />} />
-                <Route path="payments" element={<PartnerPaymentsPage />} />
+                <Route
+                  path="contracts"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <PartnerContractsPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="invoices"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <PartnerInvoicesPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="payments"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <PartnerPaymentsPage />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="instructors"
                   element={
@@ -223,11 +646,20 @@ export default function App() {
                   }
                 />
               </Route>
+              <Route
+                path=":handle/*"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <UserHandleRedirect />
+                  </Suspense>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
+    </ErrorBoundary>
   );
 }

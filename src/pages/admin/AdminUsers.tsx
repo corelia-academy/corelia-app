@@ -58,7 +58,7 @@ export default function AdminUsers() {
       if (!q) return true;
       const name = (p.full_name ?? "").toLowerCase();
       const email =
-        (p.id === currentUser?.uid ? (currentUser.email ?? "") : p.email ?? "")
+        (p.id === currentUser?.id ? (currentUser.email ?? "") : p.email ?? "")
           .toLowerCase();
       return (
         name.includes(q) ||
@@ -122,13 +122,13 @@ export default function AdminUsers() {
         />
       </div>
 
-      <div className="mt-6 rounded-lg border border-border-subtle bg-card p-6 shadow-card">
+      <div className="mt-6 rounded-lg border border-border-subtle bg-surface-base p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">
               {t("users.title")}
             </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground-muted">
               {t("users.subtitle")}
             </p>
           </div>
@@ -143,7 +143,7 @@ export default function AdminUsers() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value as UserRole | "all")}
-              className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-10 rounded-md border border-border bg-surface-base px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
             >
               <option value="all">{t("users.allRoles")}</option>
               {roleOptions.map((role) => (
@@ -157,7 +157,7 @@ export default function AdminUsers() {
               disabled={loading}
               variant="ghost"
               size="sm"
-              className="text-muted-foreground hover:text-foreground"
+              className="text-foreground-muted hover:text-foreground"
             >
               {t("users.refresh")}
             </Button>
@@ -201,9 +201,9 @@ export default function AdminUsers() {
 
       {error ? <AdminErrorBanner message={error} /> : null}
 
-      <div className="mt-6 overflow-hidden rounded-lg border border-border-subtle bg-card text-card-foreground shadow-card">
-        <div className="border-b border-border-subtle bg-muted/35 px-4 py-3">
-          <p className="text-sm text-muted-foreground">
+      <div className="mt-6 overflow-hidden rounded-lg border border-border-subtle bg-surface-base text-foreground">
+        <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
+          <p className="text-sm text-foreground-muted">
             {loading
               ? t("users.syncing")
               : t("users.showing", { shown: filtered.length, total: profiles.length }) +
@@ -216,7 +216,7 @@ export default function AdminUsers() {
           {loading ? (
             <div className="space-y-4 p-4">
               {[0, 1, 2].map((idx) => (
-                <div key={idx} className="space-y-4 rounded-lg border border-border-subtle bg-background p-4">
+                <div key={idx} className="space-y-4 rounded-lg border border-border-subtle bg-surface-base p-4">
                   <div className="flex items-center gap-3">
                     <Skeleton className="size-10 rounded-full" />
                     <div className="min-w-0 flex-1 space-y-2">
@@ -239,12 +239,12 @@ export default function AdminUsers() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-                <User className="size-6 text-muted-foreground" aria-hidden />
+              <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+                <User className="size-6 text-foreground-subtle" aria-hidden />
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">{t("users.empty")}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{t("users.subtitle")}</p>
+                <p className="mt-0.5 text-xs text-foreground-muted">{t("users.subtitle")}</p>
               </div>
             </div>
           ) : (
@@ -255,10 +255,10 @@ export default function AdminUsers() {
                     <img
                       src={p.avatar_url}
                       alt=""
-                      className="size-10 rounded-full bg-muted/60 object-cover"
+                      className="size-10 rounded-full bg-surface-raised object-cover"
                     />
                   ) : (
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted/60 text-sm font-medium text-muted-foreground">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-raised text-sm font-medium text-foreground-muted">
                       {(p.full_name || "U")[0]}
                     </div>
                   )}
@@ -266,45 +266,45 @@ export default function AdminUsers() {
                     <p className="truncate text-sm font-medium text-foreground">
                       {p.full_name || t("users.mobile.notUpdated")}
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    <p className="mt-0.5 truncate text-xs text-foreground-muted">
                       {t("users.mobile.uid", { uid: p.id.substring(0, 8) })}
                     </p>
                   </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-xs uppercase tracking-[0.14em] text-foreground-muted">
                       {t("users.mobile.emailLabel")}
                     </p>
                     <p className="mt-1 text-sm text-foreground">
-                      {p.id === currentUser?.uid
+                      {p.id === currentUser?.id
                         ? currentUser?.email ?? p.email ?? "—"
                         : p.email ?? "—"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-xs uppercase tracking-[0.14em] text-foreground-muted">
                       {t("users.mobile.currentRole")}
                     </p>
                     <p className="mt-1">
-                      <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
                         {getRoleLabel(p.role)}
                       </span>
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-xs uppercase tracking-[0.14em] text-foreground-muted">
                       {t("users.mobile.phone")}
                     </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 text-sm text-foreground-muted">
                       {p.phone || t("users.mobile.dash")}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-xs uppercase tracking-[0.14em] text-foreground-muted">
                       {t("users.mobile.createdAt")}
                     </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 text-sm text-foreground-muted">
                       {p.created_at
                         ? new Date(p.created_at).toLocaleDateString(intlLocale())
                         : t("users.mobile.dash")}
@@ -312,7 +312,7 @@ export default function AdminUsers() {
                   </div>
                 </div>
                 <div>
-                  <p className="mb-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="mb-2 text-xs uppercase tracking-[0.14em] text-foreground-muted">
                     {t("users.mobile.changeRole")}
                   </p>
                   <select
@@ -320,7 +320,7 @@ export default function AdminUsers() {
                     onChange={(e) =>
                       void handleRoleChange(p.id, e.target.value as UserRole)
                     }
-                    className="w-full rounded-md border border-border-subtle bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                    className="w-full rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                   >
                     {roleOptions.map((role) => (
                       <option key={role} value={role}>
@@ -335,24 +335,24 @@ export default function AdminUsers() {
         </div>
         <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-left">
-            <thead className="border-b border-border-subtle bg-muted/50">
+            <thead className="border-b border-border-subtle bg-surface-raised">
               <tr>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   {t("users.table.name")}
                 </th>
-                <th className="min-w-[180px] px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="min-w-[180px] px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   {t("users.table.email")}
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   {t("users.table.role")}
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   {t("users.table.phone")}
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   {t("users.table.createdAt")}
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-muted">
                   {t("users.table.actions")}
                 </th>
               </tr>
@@ -394,29 +394,29 @@ export default function AdminUsers() {
                     className="p-10"
                   >
                     <div className="flex flex-col items-center gap-3 py-8 text-center">
-                      <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-                        <User className="size-6 text-muted-foreground" aria-hidden />
+                      <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
+                        <User className="size-6 text-foreground-subtle" aria-hidden />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">{t("users.empty")}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{t("users.subtitle")}</p>
+                        <p className="mt-0.5 text-xs text-foreground-muted">{t("users.subtitle")}</p>
                       </div>
                     </div>
                   </td>
                 </tr>
               ) : (
                 filtered.map((p) => (
-                  <tr key={p.id} className="transition-colors hover:bg-muted/40">
+                  <tr key={p.id} className="transition-colors hover:bg-surface-raised">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {p.avatar_url ? (
                           <img
                             src={p.avatar_url}
                             alt=""
-                            className="size-9 rounded-full bg-muted/60 object-cover"
+                            className="size-9 rounded-full bg-surface-raised object-cover"
                           />
                         ) : (
-                          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted/60 text-sm font-medium text-muted-foreground">
+                          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-raised text-sm font-medium text-foreground-muted">
                             {(p.full_name || "U")[0]}
                           </div>
                         )}
@@ -425,7 +425,7 @@ export default function AdminUsers() {
                             {p.full_name || t("users.mobile.notUpdated")}
                           </p>
                           <p
-                            className="mt-0.5 truncate text-xs text-muted-foreground"
+                            className="mt-0.5 truncate text-xs text-foreground-muted"
                             title={p.id}
                           >
                             {t("users.mobile.uid", { uid: p.id.substring(0, 8) })}
@@ -437,25 +437,25 @@ export default function AdminUsers() {
                       <span
                         className="block max-w-[240px] truncate text-sm text-foreground"
                         title={
-                          p.id === currentUser?.uid
+                          p.id === currentUser?.id
                             ? currentUser?.email ?? p.email ?? ""
                             : p.email ?? ""
                         }
                       >
-                        {p.id === currentUser?.uid
+                        {p.id === currentUser?.id
                           ? currentUser?.email ?? p.email ?? "—"
                           : p.email ?? "—"}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center rounded-full border border-border-subtle bg-muted/50 px-3 py-1 text-xs font-medium text-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
                         {getRoleLabel(p.role)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
+                    <td className="px-4 py-3 text-sm text-foreground-muted">
                       {p.phone || "—"}
                     </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
+                    <td className="px-4 py-3 text-sm text-foreground-muted">
                       {p.created_at
                         ? new Date(p.created_at).toLocaleDateString(intlLocale())
                         : "—"}
@@ -466,7 +466,7 @@ export default function AdminUsers() {
                         onChange={(e) =>
                           void handleRoleChange(p.id, e.target.value as UserRole)
                         }
-                        className="rounded-md border border-border-subtle bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"
+                        className="rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                       >
                         {roleOptions.map((role) => (
                           <option key={role} value={role}>
