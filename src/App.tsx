@@ -61,6 +61,9 @@ const AccountProfileRoute = lazy(() =>
 const AccountCvRoute = lazy(() =>
   import("@/pages/account/AccountCvRoute").then((m) => ({ default: m.AccountCvRoute })),
 );
+const AccountCoraRoute = lazy(() =>
+  import("@/pages/account/AccountCoraRoute").then((m) => ({ default: m.AccountCoraRoute })),
+);
 const AccountBillingRoute = lazy(() =>
   import("@/pages/account/AccountBillingRoute").then((m) => ({ default: m.AccountBillingRoute })),
 );
@@ -448,6 +451,14 @@ export default function App() {
                   }
                 />
                 <Route
+                  path="cora"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountCoraRoute />
+                    </Suspense>
+                  }
+                />
+                <Route
                   path="billing"
                   element={
                     <Suspense fallback={<PageFallback />}>
@@ -480,6 +491,7 @@ export default function App() {
                   }
                 />
               </Route>
+              <Route path="upgrade/cora" element={<Navigate to="/account/cora" replace />} />
               <Route
                 path="admin"
                 element={

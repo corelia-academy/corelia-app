@@ -10,6 +10,15 @@ export type AssistantContext =
   | "account"
   | "default";
 
+export type BackendAssistantContext =
+  | "lesson"
+  | "dashboard"
+  | "course_discovery"
+  | "career"
+  | "activity"
+  | "profile_review"
+  | "global";
+
 export type AssistantActionLabel =
   | "coraWidget.actions.browseCourses"
   | "coraWidget.actions.viewPaths"
@@ -44,6 +53,31 @@ export function resolveAssistantContext(pathname: string): AssistantContext {
   if (pathname.startsWith("/account")) return "account";
   if (pathname.startsWith("/u/") || pathname.startsWith("/users/")) return "profile";
   return "default";
+}
+
+export function mapAssistantContextToBackendContext(
+  context: AssistantContext | "lesson",
+): BackendAssistantContext {
+  switch (context) {
+    case "lesson":
+      return "lesson";
+    case "home":
+      return "dashboard";
+    case "courses":
+    case "search":
+      return "course_discovery";
+    case "career":
+      return "career";
+    case "hackathons":
+    case "projects":
+      return "activity";
+    case "achievements":
+    case "profile":
+    case "account":
+      return "profile_review";
+    default:
+      return "global";
+  }
 }
 
 const ASSISTANT_SURFACE_META: Record<AssistantContext, AssistantSurfaceMeta> = {

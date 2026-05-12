@@ -298,6 +298,7 @@ export default function Learn() {
             <CourseAiTutorPanel
               courseTitle={course.title ?? ""}
               lessonTitle={currentLesson?.title ?? null}
+              lessonId={currentLesson?.id ?? null}
             />
           )}
         </div>
