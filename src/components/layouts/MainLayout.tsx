@@ -17,6 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { GlobalCoraAssistant } from "@/components/course-ai/GlobalCoraAssistant";
 import Header from "./Header";
 
 const mobileTabItemClassName =
@@ -48,6 +49,7 @@ const MainLayout = () => {
         <main className="flex-1 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0">
           <Outlet />
         </main>
+        <GlobalCoraAssistant />
         <footer className="hidden border-t border-border-subtle bg-surface-raised md:block">
           <div className="container-app flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 text-xs text-foreground-muted">
             <span className="min-w-0">

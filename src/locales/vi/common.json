@@ -294,6 +294,116 @@
       "profileSetupHintPrefix": "Hãy cập nhật họ tên và số điện thoại để Corelia, giảng viên hoặc"
     }
   },
+  "coraWidget": {
+    "eyebrow": "Cora luôn sẵn sàng",
+    "title": "Cora AI Tutor",
+    "status": "UI preview",
+    "description": "Giữ Cora ở cạnh màn hình để hỏi nhanh về tiến độ học, hướng đi tiếp theo hoặc tìm khóa học phù hợp hơn ngay trong lúc đang duyệt app.",
+    "contextLabel": "Ngữ cảnh hiện tại",
+    "contextTitle": {
+      "home": "Dashboard học tập của bạn",
+      "courses": "Thư viện khóa học",
+      "career": "Lộ trình nghề nghiệp",
+      "hackathons": "Hackathon và hoạt động",
+      "projects": "Dự án và cộng tác",
+      "achievements": "Thành tích và chứng chỉ",
+      "search": "Tìm kiếm và khám phá",
+      "profile": "Hồ sơ học tập công khai",
+      "account": "Hồ sơ và cài đặt",
+      "default": "Trang hiện tại"
+    },
+    "contextDescription": {
+      "home": "Cora có thể bám theo tiến độ học và đề xuất bước tiếp theo ngay từ dashboard.",
+      "courses": "Cora có thể giúp lọc nhanh khóa học phù hợp theo mục tiêu hoặc trình độ của bạn.",
+      "career": "Cora có thể định hướng bạn nên học track nào trước để đi đúng lộ trình.",
+      "hackathons": "Cora có thể gợi ý hoạt động phù hợp với kỹ năng bạn đang xây dựng.",
+      "projects": "Cora có thể giúp bạn xác định hướng làm dự án hoặc bước triển khai tiếp theo hợp lý hơn.",
+      "achievements": "Cora có thể giải thích bạn đã đạt gì và còn thiếu cột mốc học tập nào.",
+      "search": "Cora có thể biến mục tiêu mơ hồ thành cách tìm kiếm tốt hơn giữa khóa học, lộ trình và hoạt động.",
+      "profile": "Cora có thể đọc hồ sơ công khai và gợi ý bước tiếp theo tốt hơn cho học tập hoặc portfolio.",
+      "account": "Cora có thể giải thích tiến độ, thành tích hoặc các bước cần hoàn thiện hồ sơ.",
+      "default": "Cora sẽ bám theo trang hiện tại để gợi ý câu hỏi phù hợp hơn.",
+      "guest": "Đăng nhập để sau này Cora có thể cá nhân hóa theo tiến độ và hoạt động của bạn."
+    },
+    "comingSoonHint": "Khung chat này hiện mới là giao diện sticky. Khi nối AI, Cora sẽ đọc đúng context theo trang bạn đang xem.",
+    "suggestionsLabel": "Gợi ý để bắt đầu",
+    "inputPlaceholder": "Hỏi Cora điều gì đó…",
+    "footerCaption": "Gửi tin nhắn sẽ khả dụng khi Cora AI được kết nối.",
+    "actions": {
+      "browseCourses": "Xem khóa học",
+      "viewPaths": "Xem lộ trình",
+      "viewHackathons": "Xem hackathon",
+      "viewProjects": "Xem dự án",
+      "viewAchievements": "Xem thành tích",
+      "searchAll": "Mở tìm kiếm",
+      "openAccount": "Mở tài khoản"
+    },
+    "openAction": "Mở Cora AI",
+    "hideAction": "Ẩn Cora AI",
+    "restoreAction": "Mở lại Cora AI",
+    "chipToast": "Cora AI sticky đang ở chế độ preview.",
+    "dashboard": {
+      "learningContextLabel": "Tiến độ học của bạn",
+      "discoveryContextLabel": "Khám phá tiếp theo",
+      "discoveryFallbackTitle": "Khám phá thư viện khóa học",
+      "discoveryFallbackDescription": "Cora sẽ gợi ý khóa học phù hợp theo trình độ, mục tiêu và những gì bạn đang học.",
+      "noProgress": "Khi bạn bắt đầu học một khóa, Cora có thể dùng tiến độ này để gợi ý bước tiếp theo ngay trên dashboard.",
+      "continueLearningAction": "Tiếp tục học",
+      "secondaryAction": "Tìm trong thư viện"
+    },
+    "suggestions": {
+      "home": [
+        "Tóm tắt tiến độ học của mình.",
+        "Mình nên học gì tiếp theo tuần này?",
+        "Có khóa nào phù hợp để nâng cấp từ chỗ mình đang học không?"
+      ],
+      "courses": [
+        "Gợi ý khóa học phù hợp cho người mới bắt đầu.",
+        "So sánh nhanh vài khóa học nên học trước.",
+        "Nếu muốn học nhanh trong 2 tuần thì nên chọn khóa nào?"
+      ],
+      "career": [
+        "Mình nên bắt đầu từ track nào trước?",
+        "Track này cần học những khóa nào trước?",
+        "Lộ trình nào phù hợp nếu mình muốn chuyển sang Web3?"
+      ],
+      "hackathons": [
+        "Hackathon nào hợp với người mới hơn?",
+        "Mình nên chuẩn bị kỹ năng gì trước khi tham gia?",
+        "Hoạt động nào phù hợp với tiến độ học hiện tại của mình?"
+      ],
+      "projects": [
+        "Mình nên bắt đầu dự án kiểu gì để luyện kỹ năng nhanh hơn?",
+        "Dự án nào phù hợp với giai đoạn học hiện tại của mình?",
+        "Mình nên hoàn thiện phần nào trước trong dự án?"
+      ],
+      "achievements": [
+        "Tóm tắt giúp mình các thành tích học tập hiện tại.",
+        "Mình còn thiếu gì để có thêm chứng chỉ hay badge?",
+        "Thành tích nào phản ánh tốt nhất hướng học hiện tại của mình?"
+      ],
+      "search": [
+        "Giúp mình tìm khóa học phù hợp với mục tiêu học hiện tại.",
+        "Nên tìm theo kỹ năng nào để ra kết quả tốt hơn?",
+        "Gợi ý giúp mình cách tìm course và hackathon nhanh hơn."
+      ],
+      "profile": [
+        "Từ hồ sơ này mình nên học tiếp gì để mạnh hơn?",
+        "Profile này đang thể hiện điểm mạnh học tập nào rõ nhất?",
+        "Nên bổ sung thành tích hay dự án nào tiếp theo?"
+      ],
+      "account": [
+        "Mình còn thiếu gì để hoàn thiện hồ sơ học tập?",
+        "Giải thích nhanh các mục trong hồ sơ của mình.",
+        "Làm sao để theo dõi thành tích học tập rõ hơn?"
+      ],
+      "default": [
+        "Tóm tắt nhanh trang này giúp mình.",
+        "Mình nên làm gì tiếp theo ở đây?",
+        "Có phần nào liên quan đến việc học mà mình nên xem tiếp không?"
+      ]
+    }
+  },
   "achievements": {
     "badgeCategory": {
       "learning": "Học tập",
@@ -514,4 +624,3 @@
     }
   }
 }
-

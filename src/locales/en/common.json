@@ -294,6 +294,116 @@
       "profileSetupHintPrefix": "Please update your full name and phone number so Corelia, instructors, or"
     }
   },
+  "coraWidget": {
+    "eyebrow": "Cora stays close",
+    "title": "Cora AI Tutor",
+    "status": "UI preview",
+    "description": "Keep Cora at the edge of the screen so learners can quickly ask about progress, next steps, or stronger course matches while browsing the app.",
+    "contextLabel": "Current context",
+    "contextTitle": {
+      "home": "Your learning dashboard",
+      "courses": "Course library",
+      "career": "Career paths",
+      "hackathons": "Hackathons and activities",
+      "projects": "Projects and collaboration",
+      "achievements": "Achievements and credentials",
+      "search": "Search and discovery",
+      "profile": "Public learning profile",
+      "account": "Profile and settings",
+      "default": "Current page"
+    },
+    "contextDescription": {
+      "home": "Cora can follow learning progress and suggest the next step directly from the dashboard.",
+      "courses": "Cora can help narrow down the right course based on your goals or level.",
+      "career": "Cora can point you toward the path that makes the most sense to start with.",
+      "hackathons": "Cora can suggest activities that fit the skills you are building.",
+      "projects": "Cora can help you decide what project direction or next implementation step makes sense.",
+      "achievements": "Cora can explain what you have earned and what learning milestones are still missing.",
+      "search": "Cora can turn broad goals into better searches across courses, paths, and activities.",
+      "profile": "Cora can read a public profile and suggest stronger next steps for learning or portfolio growth.",
+      "account": "Cora can explain progress, achievements, or what to complete next in your profile.",
+      "default": "Cora will adapt to the current page and suggest more relevant prompts.",
+      "guest": "Sign in so Cora can later personalize suggestions using your progress and activity."
+    },
+    "comingSoonHint": "This sticky chat is currently UI-only. Once AI is connected, Cora will read the context of the page you are viewing.",
+    "suggestionsLabel": "Try starting with",
+    "inputPlaceholder": "Ask Cora something…",
+    "footerCaption": "Sending messages will be available once Cora AI is connected.",
+    "actions": {
+      "browseCourses": "View courses",
+      "viewPaths": "View paths",
+      "viewHackathons": "View hackathons",
+      "viewProjects": "View projects",
+      "viewAchievements": "View achievements",
+      "searchAll": "Open search",
+      "openAccount": "Open account"
+    },
+    "openAction": "Open Cora AI",
+    "hideAction": "Hide Cora AI",
+    "restoreAction": "Reopen Cora AI",
+    "chipToast": "Sticky Cora AI is in preview mode.",
+    "dashboard": {
+      "learningContextLabel": "Your learning progress",
+      "discoveryContextLabel": "What to explore next",
+      "discoveryFallbackTitle": "Explore the course library",
+      "discoveryFallbackDescription": "Cora will recommend courses based on your level, goals, and what you are already learning.",
+      "noProgress": "Once you start a course, Cora can use that progress to suggest the next step right from the dashboard.",
+      "continueLearningAction": "Continue learning",
+      "secondaryAction": "Search the library"
+    },
+    "suggestions": {
+      "home": [
+        "Summarize my learning progress.",
+        "What should I study next this week?",
+        "Is there a stronger course match after what I’m learning now?"
+      ],
+      "courses": [
+        "Recommend a good course for beginners.",
+        "Compare a few courses I should start with.",
+        "Which course fits a fast two-week learning plan?"
+      ],
+      "career": [
+        "Which track should I start with first?",
+        "What courses should I finish before this track?",
+        "Which path fits me if I want to move into Web3?"
+      ],
+      "hackathons": [
+        "Which hackathon is more suitable for beginners?",
+        "What skills should I prepare before joining?",
+        "Which activity fits my current learning progress?"
+      ],
+      "projects": [
+        "What kind of project should I start to build skills faster?",
+        "Which project direction fits my current learning stage?",
+        "What part of my project should I improve first?"
+      ],
+      "achievements": [
+        "Summarize my current learning achievements.",
+        "What am I still missing to unlock more certificates or badges?",
+        "Which achievement best reflects my current learning direction?"
+      ],
+      "search": [
+        "Help me find a course that matches my current goal.",
+        "What skills should I search for to get better results?",
+        "Suggest a faster way to search across courses and hackathons."
+      ],
+      "profile": [
+        "Based on this profile, what should I learn next?",
+        "What learning strength stands out most from this profile?",
+        "What project or achievement should be added next?"
+      ],
+      "account": [
+        "What is still missing from my learning profile?",
+        "Explain the key sections in my profile.",
+        "How can I track my learning achievements more clearly?"
+      ],
+      "default": [
+        "Summarize this page for me.",
+        "What should I do next here?",
+        "Is there a learning-related section I should check after this?"
+      ]
+    }
+  },
   "achievements": {
     "badgeCategory": {
       "learning": "Learning",
@@ -513,4 +623,3 @@
     }
   }
 }
-
