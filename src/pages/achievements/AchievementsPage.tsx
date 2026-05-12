@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import { BadgeCard } from "./components/BadgeCard";
+import { OcBadgesByScopeTabs } from "./components/OcBadgesByScopeTabs";
 import { CertificateCard } from "./components/CertificateCard";
 import { OcClaimBadge } from "./components/OcClaimBadge";
 import { OcCredentialModal } from "./components/OcCredentialModal";
@@ -351,9 +351,9 @@ export default function AchievementsPage() {
             </p>
           </div>
           <div className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
-            {t("achievements.vaults.badges.summaryUnlocked", {
-              earned: earnedBadges.length,
-              total: badges.length,
+            {t("achievements.vaults.badges.summaryOcOnly", {
+              count: earnedBadges.length,
+              defaultValue: "{{count}} on-chain",
             })}
           </div>
         </div>
@@ -373,65 +373,7 @@ export default function AchievementsPage() {
             </div>
           </div>
         ) : (
-          <div className="space-y-8">
-            {earnedBadges.length > 0 && (
-              <div>
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2
-                      className="size-5 shrink-0 text-foreground-muted"
-                      aria-hidden
-                    />
-                    <h3 className="text-sm font-medium uppercase tracking-wide text-foreground-muted">
-                      {t("achievements.vaults.badges.earnedSectionTitle", {
-                        count: earnedBadges.length,
-                      })}
-                    </h3>
-                  </div>
-                  <div className="rounded-full bg-success/15 px-3 py-1 text-xs font-medium text-success">
-                    {t("achievements.vaults.badges.progressGood")}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
-                  {earnedBadges.map((badge) => (
-                    <BadgeCard
-                      key={badge.id}
-                      badge={badge}
-                      onOpenModal={openModal}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {lockedBadges.length > 0 && (
-              <div>
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Lock
-                      className="size-5 shrink-0 text-foreground-muted"
-                      aria-hidden
-                    />
-                    <h3 className="text-sm font-medium uppercase tracking-wide text-foreground-muted">
-                      Chưa mở khóa ({lockedBadges.length})
-                    </h3>
-                  </div>
-                  <div className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
-                    Tiếp tục học để mở thêm
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
-                  {lockedBadges.map((badge) => (
-                    <BadgeCard
-                      key={badge.id}
-                      badge={badge}
-                      onOpenModal={openModal}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <OcBadgesByScopeTabs badges={earnedBadges} loading={false} onOpenModal={openModal} />
         )}
       </section>
 

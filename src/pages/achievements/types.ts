@@ -17,6 +17,8 @@ export type CertificateItem = {
   ocHolderOcId?: string;
 };
 
+export type CredentialScopeForBadge = "course" | "hackathon" | "activity_milestone";
+
 export type BadgeItem = {
   id: string;
   title: string;
@@ -34,6 +36,10 @@ export type BadgeItem = {
   ocClaimStatus: ClaimStatus;
   ocTransactionHash?: string;
   ocCredentialUrl?: string;
+  /** On-chain credential id when minted via Corelia credentials pipeline */
+  mintCredentialId?: string | null;
+  /** Scope grouping for Open Campus badges */
+  credentialScope?: CredentialScopeForBadge;
 };
 
 export type ModalItem =

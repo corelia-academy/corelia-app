@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { BadgeCard } from "@/pages/achievements/components/BadgeCard";
+import { OcBadgesByScopeTabs } from "@/pages/achievements/components/OcBadgesByScopeTabs";
 import { CertificateCard } from "@/pages/achievements/components/CertificateCard";
 import { OcCredentialModal } from "@/pages/achievements/components/OcCredentialModal";
 import { StatsBar } from "@/pages/achievements/components/StatsBar";
@@ -33,7 +33,6 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
 
   const earnedBadges = badges.filter((b) => !b.locked);
   const recentCertificates = certificates.slice(0, 6);
-  const recentBadges = earnedBadges.slice(0, 8);
 
   return (
     <div className="space-y-4">
@@ -97,20 +96,8 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
               <Skeleton className="h-32 w-full rounded-md" />
               <Skeleton className="h-32 w-full rounded-md" />
             </div>
-          ) : recentBadges.length === 0 ? (
-            <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted">
-              {t("achievements.vaults.badges.loading")}
-            </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
-              {recentBadges.map((badge) => (
-                <BadgeCard
-                  key={badge.id}
-                  badge={badge}
-                  onOpenModal={openModal}
-                />
-              ))}
-            </div>
+            <OcBadgesByScopeTabs badges={earnedBadges} loading={loading} onOpenModal={openModal} />
           )}
         </div>
       </div>

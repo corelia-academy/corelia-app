@@ -28,6 +28,11 @@ const PAGE_META: Array<{
     titleKey: "layout.pageMeta.instructorDetail.title",
     descriptionKey: "layout.pageMeta.instructorDetail.description",
   },
+  {
+    match: (pathname) => pathname === "/admin/activity-milestones",
+    titleKey: "layout.pageMeta.activityMilestones.title",
+    descriptionKey: "layout.pageMeta.activityMilestones.description",
+  },
 ];
 
 export function resolveAdminPageMeta(pathname: string): AdminPageMeta {

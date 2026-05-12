@@ -7,6 +7,10 @@
       "users": { "label": "Users", "tooltip": "Users" },
       "dashboard": { "label": "Dashboard" },
       "instructors": { "label": "Instructors", "tooltip": "Instructors" },
+      "activityMilestones": {
+        "label": "Activity milestones",
+        "tooltip": "Global Open Campus milestone badges"
+      },
       "offlineClasses": { "label": "Offline classes", "tooltip": "Offline classes" },
       "contests": { "label": "Contests", "tooltip": "Contests" }
     },
@@ -22,6 +26,10 @@
       "instructors": {
         "title": "Instructor management",
         "description": "Track profiles, instructor types, and partner collaboration data."
+      },
+      "activityMilestones": {
+        "title": "Activity milestones",
+        "description": "Configure automatic and manual Open Campus badges unrelated to a single course."
       },
       "contests": {
         "title": "Contest operations",
@@ -310,6 +318,65 @@
       "changeRole": "Change role",
       "notUpdated": "Not updated",
       "dash": "—"
+    }
+  },
+  "activityMilestones": {
+    "heading": "Activity milestones",
+    "subheading": "Global badges minted through Open Campus (OCB).",
+    "add": "Add milestone",
+    "loading": "Loading…",
+    "loadFailed": "Could not load milestones.",
+    "empty": "No milestones configured.",
+    "saved": "Saved.",
+    "saveFailed": "Save failed.",
+    "edit": "Edit",
+    "grant": "Grant",
+    "createTitle": "New milestone",
+    "editTitle": "Edit milestone",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "grantTitle": "Grant milestone",
+    "grantUsersLabel": "Learner user IDs (comma or newline separated)",
+    "grantReasonLabel": "Reason (optional)",
+    "grantNeedUsers": "Enter at least one user ID.",
+    "grantOk": "Grant processed.",
+    "grantFailed": "Grant failed.",
+    "granting": "Granting…",
+    "grantSubmit": "Grant & mint",
+    "col": {
+      "name": "Name",
+      "rule": "Rule",
+      "trigger": "Trigger",
+      "issued": "Issued",
+      "active": "Active",
+      "actions": "Actions"
+    },
+    "field": {
+      "name": "Title",
+      "description": "Description",
+      "image": "Badge image",
+      "prefix": "Identifier prefix",
+      "triggerAuto": "Automatic",
+      "triggerManual": "Manual (admin grant)",
+      "event": "Event",
+      "days": "Days",
+      "count": "Count",
+      "track": "Track slug",
+      "active": "Active"
+    },
+    "event": {
+      "loginStreak": "Login streak",
+      "coursesCompleted": "Courses completed",
+      "trackCourses": "Courses completed in track",
+      "projects": "Projects submitted"
+    },
+    "rule": {
+      "manual": "Manual grant",
+      "loginStreak": "{{days}}-day login streak",
+      "coursesCompleted": "{{count}} courses completed",
+      "trackCourses": "{{count}} courses in track “{{track}}”",
+      "projects": "{{count}} projects submitted"
     }
   }
 }

@@ -42,6 +42,7 @@ const Projects = lazy(() => import("@/pages/projects"));
 const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
 const SearchPage = lazy(() => import("@/pages/search"));
 import { ContestManageIndexRedirect } from "@/pages/hackathon-detail/ContestManageIndexRedirect";
+import { ContestPublicLegacyRedirect } from "@/pages/hackathon-detail/ContestPublicLegacyRedirect";
 
 const ContestWorkspacePublicRoute = lazy(() =>
   import("@/pages/hackathon-detail/ContestDetail").then((m) => ({
@@ -104,29 +105,61 @@ const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
 const AdminInstructors = lazy(() => import("@/pages/admin/AdminInstructors"));
 const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMilestones"));
 
 const PageFallback = () => <AuthGateLoading />;
 
 function ScrollToTop() {
   const location = useLocation();
-  const prevPathRef = useRef<string | null>(null);
+  const prevRef = useRef<{ pathname: string; hash: string } | null>(null);
 
   useEffect(() => {
-    const prev = prevPathRef.current;
-    prevPathRef.current = location.pathname;
-    const manageBaseRe = /^\/hackathons\/([^/]+)\/manage(?:\/|$)/;
-    const prevMatch = prev?.match(manageBaseRe);
-    const nextMatch = location.pathname.match(manageBaseRe);
+    const prev = prevRef.current;
+    prevRef.current = {
+      pathname: location.pathname,
+      hash: location.hash,
+    };
+
     if (
-      prevMatch &&
-      nextMatch &&
-      prevMatch[1] === nextMatch[1] &&
-      prev !== location.pathname
+      prev &&
+      prev.pathname === location.pathname &&
+      prev.hash !== location.hash
     ) {
       return;
     }
+
+    const manageBaseRe = /^\/hackathons\/([^/]+)\/manage(?:\/|$)/;
+    const prevManage = prev?.pathname.match(manageBaseRe);
+    const nextManage = location.pathname.match(manageBaseRe);
+    if (
+      prev &&
+      prevManage &&
+      nextManage &&
+      prevManage[1] === nextManage[1] &&
+      prev.pathname !== location.pathname
+    ) {
+      return;
+    }
+
+    const legacyContestTabRe =
+      /^\/hackathons\/([^/]+)\/(?:overview|timeline|prizes|partners|rules|faqs|projects)$/;
+    const prevLegacy = prev?.pathname.match(legacyContestTabRe);
+    const nextCanonical = location.pathname.match(/^\/hackathons\/([^/]+)$/);
+    if (
+      prevLegacy &&
+      nextCanonical &&
+      prevLegacy[1] === nextCanonical[1]
+    ) {
+      return;
+    }
+
+    const canonicalContest = /^\/hackathons\/([^/]+)$/;
+    if (canonicalContest.test(location.pathname) && location.hash) {
+      return;
+    }
+
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [location.pathname, location.search]);
+  }, [location.pathname, location.search, location.hash]);
 
   return null;
 }
@@ -342,54 +375,41 @@ export default function App() {
                   </Suspense>
                 }
               >
-                <Route index element={<Navigate to="overview" replace />} />
                 <Route
-                  path="overview"
+                  index
                   element={
                     <Suspense fallback={<PageFallback />}>
-                      <ContestPublicPage section="overview" />
+                      <ContestPublicPage />
                     </Suspense>
                   }
+                />
+                <Route
+                  path="overview"
+                  element={<ContestPublicLegacyRedirect tab="overview" />}
                 />
                 <Route
                   path="timeline"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestPublicPage section="timeline" />
-                    </Suspense>
-                  }
+                  element={<ContestPublicLegacyRedirect tab="timeline" />}
                 />
                 <Route
                   path="prizes"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestPublicPage section="prizes" />
-                    </Suspense>
-                  }
+                  element={<ContestPublicLegacyRedirect tab="prizes" />}
+                />
+                <Route
+                  path="partners"
+                  element={<ContestPublicLegacyRedirect tab="partners" />}
                 />
                 <Route
                   path="rules"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestPublicPage section="rules" />
-                    </Suspense>
-                  }
+                  element={<ContestPublicLegacyRedirect tab="rules" />}
                 />
                 <Route
                   path="faqs"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestPublicPage section="faqs" />
-                    </Suspense>
-                  }
+                  element={<ContestPublicLegacyRedirect tab="faqs" />}
                 />
                 <Route
                   path="projects"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestPublicPage section="projects" />
-                    </Suspense>
-                  }
+                  element={<ContestPublicLegacyRedirect tab="projects" />}
                 />
               </Route>
               <Route
@@ -499,6 +519,14 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <AdminInstructorDetail />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="activity-milestones"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminActivityMilestones />
                     </Suspense>
                   }
                 />

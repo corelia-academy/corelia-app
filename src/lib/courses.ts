@@ -1,3 +1,4 @@
+import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
@@ -179,6 +180,10 @@ export function applyCourseLessonLocaleContent(
     description_markdown: localized.description_markdown ?? lesson.description_markdown,
     resources: localized.resources ?? lesson.resources,
     youtube_url: localized.youtube_url ?? lesson.youtube_url,
+    youtube_start_seconds:
+      localized.youtube_start_seconds ?? lesson.youtube_start_seconds,
+    youtube_end_seconds:
+      localized.youtube_end_seconds ?? lesson.youtube_end_seconds,
     video_primary_locale: localized.video_primary_locale ?? lesson.video_primary_locale,
     has_subtitle: localized.has_subtitle ?? lesson.has_subtitle,
     subtitle_locales: localized.subtitle_locales ?? lesson.subtitle_locales,
@@ -646,6 +651,35 @@ export async function touchEnrollment(courseId: string, viewer?: User | null): P
     .eq("id", enr.id);
 }
 
+const LESSON_LEARNER_COUNT_PAGE = 1000;
+
+/** Distinct learner count per lesson_id for a course (any lesson_progress row). */
+export async function getLessonDistinctLearnerCountsForCourse(
+  courseId: string,
+): Promise<Record<string, number>> {
+  const byLesson = new Map<string, Set<string>>();
+  let from = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("lesson_progress")
+      .select("lesson_id, user_id")
+      .eq("course_id", courseId)
+      .range(from, from + LESSON_LEARNER_COUNT_PAGE - 1);
+    if (error) throw new Error(error.message);
+    const rows = data ?? [];
+    for (const row of rows) {
+      const lid = String((row as { lesson_id?: string }).lesson_id ?? "");
+      const uid = String((row as { user_id?: string }).user_id ?? "");
+      if (!lid || !uid) continue;
+      if (!byLesson.has(lid)) byLesson.set(lid, new Set());
+      byLesson.get(lid)!.add(uid);
+    }
+    if (rows.length < LESSON_LEARNER_COUNT_PAGE) break;
+    from += LESSON_LEARNER_COUNT_PAGE;
+  }
+  return Object.fromEntries([...byLesson.entries()].map(([k, v]) => [k, v.size]));
+}
+
 export async function getLessonProgressForCourse(
   userId: string,
   courseId: string,
@@ -750,6 +784,7 @@ export async function setLessonProgress(
 
   if (completed) {
     checkAndIssueCertificate(user.id, courseId).catch(() => {});
+    invokeCheckCourseCredential(courseId).catch(() => {});
   }
 }
 
@@ -965,6 +1000,7 @@ export async function updateLesson(
   courseId: string,
   lessonId: string,
   data: Partial<CourseLessonInsert>,
+  options?: { clearYoutubeSegments?: boolean },
 ): Promise<void> {
   const { data: row, error } = await supabase
     .from("course_lessons")
@@ -978,6 +1014,10 @@ export async function updateLesson(
   delete patch.order;
   delete patch.section_id;
   const next = { ...prev, ...patch };
+  if (options?.clearYoutubeSegments) {
+    delete next.youtube_start_seconds;
+    delete next.youtube_end_seconds;
+  }
   const updates: Record<string, unknown> = { data: next };
   if (data.order != null) updates.sort_order = Number(data.order);
   if (data.section_id != null) updates.section_id = data.section_id;

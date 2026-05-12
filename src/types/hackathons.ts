@@ -93,6 +93,52 @@ export interface ContestTimelineMilestone {
   at: string;
 }
 
+/** Optional richer document fields (jsonb) — forward-compatible with redesign schema. */
+export type ContestHackathonResourceType =
+  | "livestream"
+  | "video"
+  | "image"
+  | "document"
+  | "event"
+  | "link";
+
+export interface ContestHackathonResource {
+  id: string;
+  type: ContestHackathonResourceType;
+  title: string;
+  url: string;
+  description?: string | null;
+  thumbnail_url?: string | null;
+  thumbnailUrl?: string | null;
+  starts_at?: string | null;
+  startsAt?: string | null;
+  ends_at?: string | null;
+  endsAt?: string | null;
+  pinned?: boolean;
+}
+
+export interface ContestHackathonBadge {
+  id: string;
+  name: string;
+  description: string;
+  image_url?: string | null;
+  imageUrl?: string | null;
+  criteria?: string;
+  custom_criteria_text?: string | null;
+}
+
+/** Host-side partners (sponsors / org allies) shown on the public hackathon page. */
+export interface ContestOrganizationalPartner {
+  /** Stable id for storage paths (e.g. uploaded logos). */
+  id?: string;
+  /** Display URL (signed URL when uploaded to app bucket; may be external https). */
+  logo_url?: string | null;
+  /** Storage path in `app` bucket when logo was uploaded from settings. */
+  logo_path?: string | null;
+  title: string;
+  description?: string | null;
+}
+
 export interface ContestI18nContent {
   title?: string;
   tagline?: string;
@@ -101,6 +147,7 @@ export interface ContestI18nContent {
   prize_pool_summary?: string | null;
   faqs?: ContestFaqEntry[];
   timeline_milestones?: ContestTimelineMilestone[];
+  organizational_partners?: ContestOrganizationalPartner[];
   tracks?: Array<Pick<ContestTrack, "id" | "name" | "description" | "active">>;
   rounds?: Array<Pick<ContestRound, "id" | "name" | "active">>;
   updated_at?: string;
@@ -158,6 +205,17 @@ export interface Contest {
   prizes?: ContestPrizeEntry[];
   faqs?: ContestFaqEntry[];
   timeline_milestones?: ContestTimelineMilestone[];
+  organizational_partners?: ContestOrganizationalPartner[];
+  resources?: ContestHackathonResource[];
+  badges?: ContestHackathonBadge[];
+  official_course_id?: string | null;
+  officialCourseId?: string | null;
+  related_course_ids?: string[];
+  relatedCourseIds?: string[];
+  related_career_track_ids?: string[];
+  relatedCareerTrackIds?: string[];
+  track_id?: string | null;
+  trackId?: string | null;
   /** Text-only content localization config */
   i18n?: import("@/types/entityLocales").EntityI18nConfig;
   created_by: string;
@@ -198,6 +256,7 @@ export interface ContestInsert {
   prizes?: ContestPrizeEntry[];
   faqs?: ContestFaqEntry[];
   timeline_milestones?: ContestTimelineMilestone[];
+  organizational_partners?: ContestOrganizationalPartner[];
 }
 
 export interface ContestUpdate {
@@ -235,6 +294,7 @@ export interface ContestUpdate {
   prizes?: ContestPrizeEntry[];
   faqs?: ContestFaqEntry[];
   timeline_milestones?: ContestTimelineMilestone[];
+  organizational_partners?: ContestOrganizationalPartner[];
   /** Text-only content localization config */
   i18n?: import("@/types/entityLocales").EntityI18nConfig;
 }

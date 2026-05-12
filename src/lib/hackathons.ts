@@ -19,6 +19,7 @@ import type {
   ContestInsert,
   ContestLeaderboardEntry,
   ContestMetricsSnapshot,
+  ContestOrganizationalPartner,
   ContestPrizeEntry,
   ContestRegistration,
   ContestRegistrationInsert,
@@ -94,6 +95,8 @@ function applyContestLocaleContent(contest: Contest, localized: ContestI18nConte
     prize_pool_summary: localized.prize_pool_summary ?? contest.prize_pool_summary,
     faqs: localized.faqs ?? contest.faqs,
     timeline_milestones: localized.timeline_milestones ?? contest.timeline_milestones,
+    organizational_partners:
+      localized.organizational_partners ?? contest.organizational_partners,
     tracks: localized.tracks ? (localized.tracks as Contest["tracks"]) : contest.tracks,
     rounds: localized.rounds ? (localized.rounds as Contest["rounds"]) : contest.rounds,
   };
@@ -237,6 +240,25 @@ function sanitizeTimelineMilestones(
   return cleaned;
 }
 
+function sanitizeOrganizationalPartners(
+  values: ContestOrganizationalPartner[] | undefined,
+): ContestOrganizationalPartner[] {
+  if (!values?.length) return [];
+  return values
+    .map((p) => {
+      const title = p.title.trim();
+      const id = p.id?.trim();
+      return {
+        ...(id ? { id } : {}),
+        logo_url: p.logo_url?.trim() || null,
+        logo_path: p.logo_path?.trim() || null,
+        title,
+        description: p.description?.trim() || null,
+      };
+    })
+    .filter((p) => p.title.length > 0);
+}
+
 function contestRegistrationId(contestId: string, userId: string): string {
   return `${contestId}_${userId}`;
 }
@@ -369,6 +391,27 @@ function normalizeContest(data: Contest): Contest {
     prizes: sanitizePrizeEntries(data.prizes),
     faqs: sanitizeFaqEntries(data.faqs),
     timeline_milestones: sanitizeTimelineMilestones(data.timeline_milestones ?? []),
+    organizational_partners: sanitizeOrganizationalPartners(data.organizational_partners),
+    resources: Array.isArray(data.resources) ? data.resources : undefined,
+    badges: Array.isArray(data.badges) ? data.badges : undefined,
+    official_course_id:
+      [data.official_course_id, data.officialCourseId]
+        .map((x) => (typeof x === "string" ? x.trim() : ""))
+        .find((s) => s.length > 0) ?? null,
+    related_course_ids: Array.isArray(data.related_course_ids)
+      ? data.related_course_ids.map(String)
+      : Array.isArray(data.relatedCourseIds)
+        ? data.relatedCourseIds.map(String)
+        : undefined,
+    related_career_track_ids: Array.isArray(data.related_career_track_ids)
+      ? data.related_career_track_ids.map(String)
+      : Array.isArray(data.relatedCareerTrackIds)
+        ? data.relatedCareerTrackIds.map(String)
+        : undefined,
+    track_id:
+      [data.track_id, data.trackId]
+        .map((x) => (typeof x === "string" ? x.trim() : ""))
+        .find((s) => s.length > 0) ?? null,
     submission_deadline: data.submission_deadline?.trim() || null,
   };
 }
@@ -676,6 +719,7 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
     prizes: sanitizePrizeEntries(data.prizes),
     faqs: sanitizeFaqEntries(data.faqs),
     timeline_milestones: sanitizeTimelineMilestones(data.timeline_milestones ?? []),
+    organizational_partners: sanitizeOrganizationalPartners(data.organizational_partners),
     created_by: uid,
     updated_by: uid,
     created_at: now,
@@ -750,6 +794,10 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
       updates.timeline_milestones !== undefined
         ? sanitizeTimelineMilestones(updates.timeline_milestones)
         : undefined,
+    organizational_partners:
+      updates.organizational_partners !== undefined
+        ? sanitizeOrganizationalPartners(updates.organizational_partners)
+        : undefined,
     i18n: updates.i18n,
     updated_by: uid,
     updated_at: new Date().toISOString(),
@@ -771,6 +819,9 @@ export async function deleteContest(contestId: string): Promise<void> {
   const existing = await getContest(contestId);
   await deleteStorageObjectByPath(existing?.cover_image_path);
   await deleteStorageObjectByPath(existing?.thumbnail_path);
+  for (const p of existing?.organizational_partners ?? []) {
+    await deleteStorageObjectByPath(p.logo_path);
+  }
 
   const { error } = await supabase.from("hackathons").delete().eq("id", contestId);
   if (error) throw new Error(error.message);

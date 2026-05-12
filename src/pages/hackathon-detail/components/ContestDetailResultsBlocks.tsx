@@ -2,6 +2,7 @@ import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
+import { cn } from "@/lib/utils";
 
 export function ContestDetailResultsBlocks({
   vm,
@@ -261,7 +262,7 @@ export function ContestDetailResultsBlocks({
         contest.status === "ended" &&
         (contest.published_leaderboard.length > 0 ||
           contest.winner_announcements.length > 0) && (
-          <Card>
+          <Card id="results" className={cn("scroll-mt-36")}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <Trophy className="size-5 text-primary" aria-hidden />

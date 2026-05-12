@@ -1,13 +1,16 @@
 import { CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 import { ContestDetailSubmissionCollaboration } from "@/pages/hackathon-detail/components/ContestDetailSubmissionCollaboration";
 
 export function ContestDetailParticipantSubmissionCard({
   vm,
+  embedded,
 }: {
   vm: ContestDetailViewModel;
+  embedded?: boolean;
 }) {
   const {
     translate,
@@ -28,13 +31,13 @@ export function ContestDetailParticipantSubmissionCard({
     submissionWorkspaceEditable,
   } = vm;
 
-  return (
-    <Card id="participant-workspace">
-      <CardContent className="p-4">
+  const inner = (
+    <>
+      {!embedded ? (
         <div className="flex items-center gap-3">
           <CheckCheck className="size-5 text-primary" aria-hidden />
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
               {translate("detail.participant.submissionWorkspaceTitle")}
             </h2>
             <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
@@ -44,8 +47,9 @@ export function ContestDetailParticipantSubmissionCard({
             </p>
           </div>
         </div>
+      ) : null}
 
-        <div className="mt-4 space-y-4">
+      <div className={cn("space-y-4", embedded ? "mt-0" : "mt-4")}>
           {!submissionWorkspaceEditable ? (
             <div className="rounded-md border border-border-subtle bg-surface-raised px-4 py-3 text-sm text-foreground-muted">
               {translate("detail.participant.submissionDeadlineLockedBanner")}
@@ -125,7 +129,16 @@ export function ContestDetailParticipantSubmissionCard({
             <ContestDetailSubmissionCollaboration vm={vm} />
           </div>
         </div>
-      </CardContent>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="pt-4">{inner}</div>;
+  }
+
+  return (
+    <Card id="participant-workspace">
+      <CardContent className="p-4">{inner}</CardContent>
     </Card>
   );
 }

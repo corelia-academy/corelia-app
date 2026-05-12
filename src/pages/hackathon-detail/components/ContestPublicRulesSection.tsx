@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import type { Contest } from "@/types/hackathons";
 import { renderTextAsList } from "@/pages/hackathon-detail/utils/text";
+import { cn } from "@/lib/utils";
 
 export function ContestPublicRulesSection(props: {
   contest: Contest;
@@ -9,7 +10,7 @@ export function ContestPublicRulesSection(props: {
   const { contest, t } = props;
 
   return (
-    <Card>
+    <Card id="rules" className={cn("scroll-mt-36")}>
       <CardContent className="p-4">
         <h2 className="text-lg font-semibold text-foreground">
           {t("detail.labels.rulesPublic")}

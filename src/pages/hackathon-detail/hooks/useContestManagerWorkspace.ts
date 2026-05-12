@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import type {
   ContestFaqEntry,
+  ContestOrganizationalPartner,
   ContestPrizeEntry,
   ContestRound,
   ContestStatus,
@@ -34,10 +35,14 @@ export function useContestManagerWorkspace() {
   const [savingPublicContent, setSavingPublicContent] = useState(false);
   const [bannerUploading, setBannerUploading] = useState(false);
   const [thumbnailUploading, setThumbnailUploading] = useState(false);
+  const [partnerLogoUploadingIndex, setPartnerLogoUploadingIndex] = useState<number | null>(
+    null,
+  );
   const [publicDraft, setPublicDraft] = useState<{
     prize_pool_summary: string;
     prizes: ContestPrizeEntry[];
     faqs: ContestFaqEntry[];
+    organizational_partners: ContestOrganizationalPartner[];
     registration_deadline_local: string;
     submission_deadline_local: string;
     starts_at_local: string;
@@ -47,6 +52,7 @@ export function useContestManagerWorkspace() {
     prize_pool_summary: "",
     prizes: [],
     faqs: [],
+    organizational_partners: [],
     registration_deadline_local: "",
     submission_deadline_local: "",
     starts_at_local: "",
@@ -108,6 +114,8 @@ export function useContestManagerWorkspace() {
     setBannerUploading,
     thumbnailUploading,
     setThumbnailUploading,
+    partnerLogoUploadingIndex,
+    setPartnerLogoUploadingIndex,
     publicDraft,
     setPublicDraft,
     hydrateContestMetaFromPayload,

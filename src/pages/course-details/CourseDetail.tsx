@@ -1,6 +1,7 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
+import { BookOpen } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
 import { sortLessonsByCurriculum } from "@/lib/courses";
 import { useCourseLoad } from "./hooks/useCourseLoad";
@@ -27,6 +28,9 @@ import { CourseSpotlightSection } from "./components/CourseSpotlightSection";
 import { CourseLanguagePanel } from "./components/CourseLanguagePanel";
 import { CoursePartnerBrandPanel } from "./components/CoursePartnerBrandPanel";
 import { CourseSponsorsPanel } from "./components/CourseSponsorsPanel";
+import { BinarySidebarTabs } from "@/components/course-ai/BinarySidebarTabs";
+import { CORA_AI_TUTOR_LOGO_SRC } from "@/components/course-ai/constants";
+import { CourseAiTutorPanel } from "@/components/course-ai/CourseAiTutorPanel";
 
 export default function CourseDetail() {
   const { t } = useTranslation("courses");
@@ -35,6 +39,7 @@ export default function CourseDetail() {
       String(t(key as never, options as never)),
     [t],
   );
+  const [courseAsideTab, setCourseAsideTab] = useState<"info" | "tutor">("info");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -241,28 +246,51 @@ export default function CourseDetail() {
       />
 
       <div className="mt-6 space-y-4 lg:hidden">
-        <CourseAccessPanel
-          course={course}
-          resolvedCourseId={courseLoad.resolvedCourseId}
-          hasFullCourseAccess={hasFullCourseAccess}
-          isPaidUpfront={isPaidUpfront}
-          isFreeWithPaidCertificate={isFreeWithPaidCertificate}
-          enrolled={access.enrolled}
-          paymentAccess={access.paymentAccess}
-          progressPercent={progress.progressPercent}
-          nextLesson={progress.nextLesson}
-          pricing={pricing}
-          previewLessons={previewLessons}
-          isAuthenticated={isAuthenticated}
-          enrolling={access.enrolling}
-          onContinue={handleContinue}
-          onBuy={handleBuy}
-          onStartPreview={handleStartPreview}
-          onEnroll={handleEnrollClick}
+        <BinarySidebarTabs
+          active={courseAsideTab}
+          onChange={setCourseAsideTab}
+          ariaLabel={String(t("detail.aiTutor.sidebarTablistAria"))}
+          options={[
+            {
+              value: "info",
+              label: String(t("detail.aiTutor.courseInfoTab")),
+              Icon: BookOpen,
+            },
+            {
+              value: "tutor",
+              label: String(t("detail.aiTutor.tabLabel")),
+              iconImgSrc: CORA_AI_TUTOR_LOGO_SRC,
+            },
+          ]}
         />
-        <CourseLanguagePanel course={course} lessons={lessons} />
-        <CoursePartnerBrandPanel course={course} />
-        <CourseSponsorsPanel sponsors={course.sponsors} />
+        {courseAsideTab === "info" ? (
+          <>
+            <CourseAccessPanel
+              course={course}
+              resolvedCourseId={courseLoad.resolvedCourseId}
+              hasFullCourseAccess={hasFullCourseAccess}
+              isPaidUpfront={isPaidUpfront}
+              isFreeWithPaidCertificate={isFreeWithPaidCertificate}
+              enrolled={access.enrolled}
+              paymentAccess={access.paymentAccess}
+              progressPercent={progress.progressPercent}
+              nextLesson={progress.nextLesson}
+              pricing={pricing}
+              previewLessons={previewLessons}
+              isAuthenticated={isAuthenticated}
+              enrolling={access.enrolling}
+              onContinue={handleContinue}
+              onBuy={handleBuy}
+              onStartPreview={handleStartPreview}
+              onEnroll={handleEnrollClick}
+            />
+            <CourseLanguagePanel course={course} lessons={lessons} />
+            <CoursePartnerBrandPanel course={course} />
+            <CourseSponsorsPanel sponsors={course.sponsors} />
+          </>
+        ) : (
+          <CourseAiTutorPanel courseTitle={course.title ?? ""} className="min-h-0" />
+        )}
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
@@ -286,29 +314,52 @@ export default function CourseDetail() {
           />
         </main>
 
-        <aside className="hidden space-y-6 lg:block lg:sticky lg:top-20 lg:self-start">
-          <CourseAccessPanel
-            course={course}
-            resolvedCourseId={courseLoad.resolvedCourseId}
-            hasFullCourseAccess={hasFullCourseAccess}
-            isPaidUpfront={isPaidUpfront}
-            isFreeWithPaidCertificate={isFreeWithPaidCertificate}
-            enrolled={access.enrolled}
-            paymentAccess={access.paymentAccess}
-            progressPercent={progress.progressPercent}
-            nextLesson={progress.nextLesson}
-            pricing={pricing}
-            previewLessons={previewLessons}
-            isAuthenticated={isAuthenticated}
-            enrolling={access.enrolling}
-            onContinue={handleContinue}
-            onBuy={handleBuy}
-            onStartPreview={handleStartPreview}
-            onEnroll={handleEnrollClick}
+        <aside className="hidden space-y-4 lg:block lg:sticky lg:top-20 lg:self-start">
+          <BinarySidebarTabs
+            active={courseAsideTab}
+            onChange={setCourseAsideTab}
+            ariaLabel={String(t("detail.aiTutor.sidebarTablistAria"))}
+            options={[
+              {
+                value: "info",
+                label: String(t("detail.aiTutor.courseInfoTab")),
+                Icon: BookOpen,
+              },
+              {
+                value: "tutor",
+                label: String(t("detail.aiTutor.tabLabel")),
+                iconImgSrc: CORA_AI_TUTOR_LOGO_SRC,
+              },
+            ]}
           />
-          <CourseLanguagePanel course={course} lessons={lessons} />
-          <CoursePartnerBrandPanel course={course} />
-          <CourseSponsorsPanel sponsors={course.sponsors} />
+          {courseAsideTab === "info" ? (
+            <>
+              <CourseAccessPanel
+                course={course}
+                resolvedCourseId={courseLoad.resolvedCourseId}
+                hasFullCourseAccess={hasFullCourseAccess}
+                isPaidUpfront={isPaidUpfront}
+                isFreeWithPaidCertificate={isFreeWithPaidCertificate}
+                enrolled={access.enrolled}
+                paymentAccess={access.paymentAccess}
+                progressPercent={progress.progressPercent}
+                nextLesson={progress.nextLesson}
+                pricing={pricing}
+                previewLessons={previewLessons}
+                isAuthenticated={isAuthenticated}
+                enrolling={access.enrolling}
+                onContinue={handleContinue}
+                onBuy={handleBuy}
+                onStartPreview={handleStartPreview}
+                onEnroll={handleEnrollClick}
+              />
+              <CourseLanguagePanel course={course} lessons={lessons} />
+              <CoursePartnerBrandPanel course={course} />
+              <CourseSponsorsPanel sponsors={course.sponsors} />
+            </>
+          ) : (
+            <CourseAiTutorPanel courseTitle={course.title ?? ""} className="min-h-0" />
+          )}
         </aside>
       </div>
     </div>

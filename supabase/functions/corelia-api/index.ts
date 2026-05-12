@@ -4,9 +4,13 @@
  *
  * Operations: health | payments.sepay.checkout | payments.transactions |
  *   payments.sepay.verify | payments.sepay.ipn | certificates.issue |
- *   hackathons.notifyRegistrationReview
+ *   hackathons.notifyRegistrationReview |
+ *   credentials.checkCourseCompletion | credentials.checkActivityMilestones | credentials.grant
  */
 import { handleIssueCertificate } from "./certificates/handlers.ts";
+import { handleCheckActivityMilestones } from "./credentials/check_activity.ts";
+import { handleCheckCourseCompletion } from "./credentials/check_course.ts";
+import { handleGrantCredentials } from "./credentials/grant.ts";
 import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.ts";
 import { cors, json } from "./lib/http.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
@@ -48,6 +52,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   if (op === "hackathons.notifyRegistrationReview" && req.method === "POST") {
     return await handleHackathonNotifyRegistrationReview(req, db);
+  }
+  if (op === "credentials.checkCourseCompletion" && req.method === "POST") {
+    return await handleCheckCourseCompletion(req, db);
+  }
+  if (op === "credentials.checkActivityMilestones" && req.method === "POST") {
+    return await handleCheckActivityMilestones(req, db);
+  }
+  if (op === "credentials.grant" && req.method === "POST") {
+    return await handleGrantCredentials(req, db);
   }
   return json({ message: "Unknown or disallowed op / method", op }, 404);
 });

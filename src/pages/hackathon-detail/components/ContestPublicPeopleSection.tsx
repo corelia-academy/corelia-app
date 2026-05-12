@@ -1,0 +1,72 @@
+import { Card, CardContent } from "@/components/ui/card";
+import type { Contest } from "@/types/hackathons";
+import { maskEmailAddress } from "@/pages/hackathon-detail/utils/emailMask";
+import { cn } from "@/lib/utils";
+
+function uniq(list: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of list) {
+    const v = raw.trim();
+    if (!v || seen.has(v)) continue;
+    seen.add(v);
+    out.push(v);
+  }
+  return out;
+}
+
+export function ContestPublicPeopleSection(props: {
+  contest: Contest;
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
+  const { contest, t } = props;
+  const mentors = uniq(contest.mentor_emails ?? []);
+  const judges = uniq(contest.judge_emails ?? []);
+
+  if (mentors.length === 0 && judges.length === 0) return null;
+
+  const Column = ({
+    title,
+    emails,
+  }: {
+    title: string;
+    emails: string[];
+  }) => (
+    <div className="min-w-0">
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <ul className="mt-3 flex flex-wrap gap-2">
+        {emails.map((email) => (
+          <li key={email}>
+            <span
+              className="inline-flex rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs text-foreground tabular-nums"
+              title={email}
+            >
+              {maskEmailAddress(email)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  return (
+    <Card id="people" className={cn("scroll-mt-36")}>
+      <CardContent className="p-4">
+        <h2 className="text-lg font-semibold text-foreground">
+          {t("detail.people.sectionTitle")}
+        </h2>
+        <p className="mt-2 text-sm text-foreground-muted">
+          {t("detail.people.sectionDescription")}
+        </p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {mentors.length > 0 ? (
+            <Column title={t("detail.people.mentors")} emails={mentors} />
+          ) : null}
+          {judges.length > 0 ? (
+            <Column title={t("detail.people.judges")} emails={judges} />
+          ) : null}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

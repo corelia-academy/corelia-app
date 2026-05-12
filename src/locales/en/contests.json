@@ -76,21 +76,52 @@
     },
     "listCardImageAlt": "Contest thumbnail — {{title}}"
   },
-  "previewBar": {
-    "label": "Preview mode",
-    "statusPrefix": "Status: {{status}}",
-    "exit": "Exit preview",
-    "openWorkspace": "Open workspace →",
-    "openOperations": "Open operations →",
-    "catalogTitle": "Hackathons (public surface)"
-  },
   "workspace": {
     "tabs": {
       "overview": "Overview",
       "applications": "Applications",
       "judging": "Judging",
       "analytics": "Analytics",
+      "translations": "Translations",
+      "awards": "Awards",
       "settings": "Settings"
+    },
+    "awards": {
+      "heroTitle": "Open Campus awards",
+      "heroDescription": "Configure award templates and mint on-chain credentials for winners.",
+      "tabTemplates": "Award templates",
+      "tabGrant": "Grant awards",
+      "addTemplate": "Add template",
+      "loading": "Loading…",
+      "loadFailed": "Could not load award templates.",
+      "saved": "Template saved.",
+      "saveFailed": "Could not save template.",
+      "noTemplates": "No templates yet.",
+      "colRole": "Role",
+      "colName": "Name",
+      "colIssued": "Issued",
+      "colActive": "Active",
+      "colActions": "Actions",
+      "edit": "Edit",
+      "grantTemplateLabel": "Template",
+      "grantUsersLabel": "Learner user IDs (comma or newline separated)",
+      "grantReasonLabel": "Reason (optional)",
+      "grantNeedInputs": "Choose a template and enter at least one user ID.",
+      "grantOk": "Grant request processed.",
+      "grantFailed": "Grant failed.",
+      "granting": "Granting…",
+      "grantCta": "Grant & mint",
+      "createTitle": "New award template",
+      "editTitle": "Edit award template",
+      "fieldRole": "Role",
+      "fieldName": "Award title",
+      "fieldDescription": "Description",
+      "fieldImage": "Award image",
+      "fieldPrefix": "Identifier prefix",
+      "fieldActive": "Active",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…"
     },
     "settings": {
       "description": "Edit contest settings and protect destructive actions."
@@ -119,6 +150,13 @@
         "label": "Overview",
         "description": "Your role, the operating cadence, and the contest's current status."
       },
+      "tabs": {
+        "ariaLabel": "Workspace navigation"
+      },
+      "heroEyebrow": "Organizer workspace",
+      "heroSurfaceBadge": "Manage mode",
+      "heroSurfaceHint": "You are on the organizer workspace — visitors see the public hackathon page.",
+      "heroSurfaceAria": "Manage workspace mode active",
       "fallback": {
         "label": "Hackathon workspace",
         "description": "Coordinate between Corelia, judges, and co-host partners."
@@ -167,6 +205,22 @@
       "phase4Body": "Publish leaderboard and winners to the public page.",
       "applicationsReviewTitle": "Application review",
       "applicationsReviewDescription": "Only Corelia staff review applications. Judges and co-host partners cannot access this area.",
+      "applicationsQueueSummary": "{{count}} applications",
+      "applicationsSearchPlaceholder": "Search name, team, email…",
+      "applicationsSearchAriaLabel": "Filter applications by text",
+      "applicationsFilterGroupAriaLabel": "Filter by application status",
+      "applicationsFilterAll": "All",
+      "applicationsFilterPending": "Pending",
+      "applicationsFilterApproved": "Approved",
+      "applicationsFilterRejected": "Rejected",
+      "applicationsPaginationSummary": "Showing {{start}}–{{end}} of {{total}}",
+      "applicationsPaginationPage": "Page {{page}} of {{pages}}",
+      "applicationsPrevPage": "Previous",
+      "applicationsNextPage": "Next",
+      "applicationsNoMatchesTitle": "No matching applications",
+      "applicationsNoMatchesHint": "Try another keyword or switch the status filter.",
+      "applicationsMotivationShowMore": "Show full motivation",
+      "applicationsMotivationShowLess": "Show less",
       "applicationsEmptyTitle": "No applications yet",
       "applicationsEmptyHint": "When participants submit applications, Corelia's intake queue will appear here.",
       "teamMembersPrefix": "Members:",
@@ -256,7 +310,7 @@
       "bulkInviteDone": "Bulk invite done: {{success}} succeeded · {{failed}} failed",
       "invitesEmpty": "No invites yet.",
       "publicPageContentTitle": "Public page content",
-      "publicPageContentDescription": "Prizes, FAQs, custom timeline milestones, and prize pool summary on public URLs.",
+      "publicPageContentDescription": "Prizes, organizational partners, FAQs, custom timeline milestones, and prize pool summary on public URLs.",
       "mediaTitle": "Banner & thumbnail",
       "mediaDescription": "Banner appears wide at the top of the contest card on public URLs. Thumbnail is used on contest lists and the sticky header (fallbacks to the banner when missing).",
       "bannerUploadLabel": "Banner image",
@@ -281,12 +335,30 @@
       "prizeTitlePlaceholder": "Award title",
       "prizeValuePlaceholder": "e.g. $2,000",
       "prizeDescriptionPlaceholder": "Optional description",
+      "organizationalPartnerLogoUploadLabel": "Partner logo",
+      "organizationalPartnerLogoUploadHint": "PNG, JPG, or WebP — under 2MB recommended. Saved as soon as upload finishes.",
+      "uploadingPartnerLogo": "Uploading logo…",
+      "organizationalPartnerLogoPreviewAlt": "{{title}} logo",
+      "organizationalPartnerRemoveLogo": "Remove logo",
+      "organizationalPartnerLogoUrlOptional": "Or paste an image URL (no upload)",
+      "organizationalPartnerLogoPlaceholder": "https://…",
+      "organizationalPartnerTitlePlaceholder": "Partner or organization name",
+      "organizationalPartnerDescriptionPlaceholder": "Short description (optional)",
+      "addOrganizationalPartnerRow": "Add partner",
       "savePublicPageContent": "Save public content",
       "revoke": "Revoke",
       "copyLink": "Copy link",
       "openEmail": "Open email",
       "dangerZoneTitle": "Danger Zone",
       "dangerZoneDescription": "Deleting a hackathon removes all registrations, invites, submissions, and scores. This cannot be undone.",
+      "settingsLayoutNavAria": "Hackathon settings sections",
+      "settingsLayoutNavTitle": "Settings sections",
+      "settingsLayoutNavDescription": "Jump between configuration groups instead of scrolling through one long page—the same pattern as course editing.",
+      "settingsSectionGeneral": "Status & URL",
+      "settingsSectionJudging": "Judging setup",
+      "settingsSectionAccess": "Access & invites",
+      "settingsSectionPublic": "Public page content",
+      "settingsSectionDanger": "Delete hackathon",
       "deleteContest": "Delete hackathon",
       "inviteCollaborationTitle": "Collaboration invite",
       "inviteMetaLine": "Role: {{roles}} · Status: {{status}}",
@@ -551,6 +623,49 @@
       "deleteSuccess": "Contest deleted.",
       "deleteErrorFallback": "Unable to delete the contest right now."
     },
+    "lifecycle": {
+      "badge": {
+        "upcoming": "Opening soon",
+        "registrationOpen": "Registration open",
+        "inProgress": "Build phase",
+        "judging": "Judging",
+        "ended": "Ended"
+      },
+      "countdown": {
+        "opensIn": "Registration opens in {{time}}",
+        "registrationClosesIn": "Registration closes in {{time}}",
+        "submissionClosesIn": "Submission deadline in {{time}}",
+        "resultsIn": "Results in {{time}}"
+      },
+      "hero": {
+        "upcomingBody": "Save the date — registration has not opened yet.",
+        "judgingBody": "Submissions are closed; judges are reviewing entries."
+      },
+      "cta": {
+        "notifyWhenOpen": "Get notified when registration opens",
+        "notifyWhenOpenHelper": "Turn on account notifications or check back here before the opening time.",
+        "loginToRegister": "Sign in to register",
+        "loginToRegisterHelper": "Use your Corelia profile to submit an application for this hackathon.",
+        "pendingReview": "Application pending review",
+        "pendingReviewHelper": "Corelia is reviewing your application.",
+        "goToDashboard": "Open participant workspace",
+        "dashboardHelper": "Your application was approved — continue from your participant workspace.",
+        "applicationNotApproved": "Application not approved",
+        "applicationNotApprovedHelper": "See FAQs or explore other hackathons.",
+        "registerWithProfile": "Register with my profile",
+        "registerWithProfileHelper": "Applications are open — submit yours for Corelia review.",
+        "viewSubmission": "View submitted work",
+        "viewSubmissionHelper": "Review or update your submission before the deadline.",
+        "submitWork": "Submit your project",
+        "submitWorkHelper": "Your application is approved — add your demo, repo, and slides.",
+        "followBuildPhase": "Follow the hackathon",
+        "followBuildPhaseHelper": "See timeline and showcase updates while the build phase runs.",
+        "viewSubmissionsGallery": "View submissions",
+        "viewSubmissionsGalleryHelper": "Explore submitted projects while judging is in progress.",
+        "viewWinners": "View winners & results",
+        "viewWinnersHelper": "See published outcomes and highlighted projects."
+      }
+    },
     "phase": {
       "badgeEnded": "Ended",
       "badgeLive": "Live now",
@@ -585,6 +700,75 @@
       "viewSchedule": "View timeline",
       "regClosedBeforeKickoffHelper": "Applications are closed for this contest. Review milestones until kickoff."
     },
+    "quickStats": {
+      "prize": "Prize pool",
+      "approved": "Approved teams",
+      "approvedCount": "{{count}} approved",
+      "approvedHidden": "We publish counts once enough teams have joined.",
+      "duration": "Duration",
+      "durationTbd": "TBD",
+      "format": "Format",
+      "prizeTiersCount": "{{count}} tiers",
+      "prizeTbd": "Details coming soon"
+    },
+    "resources": {
+      "sectionTitle": "Resources",
+      "sectionDescription": "Livestreams, documents, and supporting materials.",
+      "live": "Live",
+      "watchLive": "Watch live",
+      "open": "Open resource"
+    },
+    "badges": {
+      "sectionTitle": "Badges",
+      "sectionDescription": "Digital badges participants can earn.",
+      "noPreview": "No preview"
+    },
+    "track": {
+      "eyebrow": "Career track",
+      "ctaSoon": "Explore track (soon)"
+    },
+    "learn": {
+      "sectionTitle": "Related learning",
+      "sectionDescription": "Courses and tracks that pair well with this hackathon.",
+      "officialBadge": "Official course",
+      "officialHint": "Recommended preparation from the organizers.",
+      "loading": "Loading links…",
+      "courseUnavailable": "This course is not available publicly yet.",
+      "trackUnavailable": "This track does not have a public link yet.",
+      "openCourse": "Open course",
+      "openTrack": "Open track",
+      "courseLinkSoon": "Open course (soon)",
+      "relatedCoursesTitle": "Related courses",
+      "relatedCoursesHint_one": "{{count}} curated course linked.",
+      "relatedCoursesHint_other": "{{count}} curated courses linked.",
+      "relatedTracksTitle": "Career tracks",
+      "relatedTracksHint_one": "{{count}} track highlighted.",
+      "relatedTracksHint_other": "{{count}} tracks highlighted."
+    },
+    "people": {
+      "sectionTitle": "People",
+      "sectionDescription": "Mentors and judges supporting this hackathon.",
+      "mentors": "Mentors",
+      "judges": "Judges"
+    },
+    "finalCta": {
+      "title": "Ready to build?",
+      "description": "Join the hackathon, follow milestones, and showcase your work with the community."
+    },
+    "workspaceFab": {
+      "label": "Open workspace"
+    },
+    "workspacePublicHint": {
+      "ariaLabel": "Organizer workspace",
+      "body": "You're on the public page. Open the workspace to manage applications, judging, and settings."
+    },
+    "workspaceExtras": {
+      "title": "Coming soon: extended workspace tools",
+      "body": "Rich editors for hackathon resources, badge definitions, and placeholder mint flows will land here.",
+      "bulletResources": "Resources library and featured livestreams",
+      "bulletBadges": "Badge definitions and participant assignments",
+      "bulletMint": "Mint readiness checklist (EDU Chain)"
+    },
     "visual": {
       "bannerAlt": "Banner — {{title}}",
       "thumbnailAlt": "Thumbnail — {{title}}",
@@ -609,17 +793,35 @@
       "countdownMinutes": "{{count}} minutes",
       "slotsFilled": "{{approved}} / {{max}} slots",
       "slotsUnlimited": "No fixed capacity limit",
-      "implausibleStartWarning": "Start date is earlier than the contest record creation date — check schedule data."
+      "submissionDeadline": "Submission deadline",
+      "submissionsLockAtEndHint":
+        "Unless a separate deadline is set, submissions lock when the contest ends.",
+      "implausibleStartWarning": "Start date is earlier than the contest record creation date — check schedule data.",
+      "share": "Share",
+      "shareCopyLink": "Copy link",
+      "shareFacebook": "Share on Facebook",
+      "shareX": "Share on X",
+      "shareLinkedIn": "Share on LinkedIn",
+      "shareCopied": "Link copied to clipboard.",
+      "shareCopyFailed": "Could not copy the link."
     },
     "public": {
       "nav": {
         "ariaLabel": "Contest sections",
         "overview": "Overview",
         "timeline": "Timeline",
+        "resources": "Resources",
+        "track": "Track",
         "prizes": "Prizes",
+        "badges": "Badges",
+        "learn": "Learning",
+        "people": "People",
+        "partners": "Partners",
         "rules": "Rules",
         "faqs": "FAQs",
-        "projects": "Projects"
+        "projects": "Projects",
+        "results": "Results",
+        "finalCta": "Get started"
       },
       "infoCards": {
         "reviewTitle": "Application review",
@@ -656,6 +858,10 @@
       }
     },
     "participant": {
+      "workspaceTabsAriaLabel": "Participant workspace sections",
+      "tabApplication": "Application",
+      "tabSubmission": "Project submission",
+      "tabSubmissionDisabledHint": "Opens after Corelia approves your application.",
       "submissionWorkspaceTitle": "Submission workspace",
       "submissionWorkspaceApprovedBody": "Your application was approved. You can submit and update your submission here.",
       "submissionDeadlineLockedBanner": "The submission deadline has passed. Your submission and linked project card are read-only.",
@@ -758,6 +964,11 @@
       "contestThumbnailUpdated": "Thumbnail updated.",
       "contestBannerUploadFailed": "Unable to upload banner.",
       "contestThumbnailUploadFailed": "Unable to upload thumbnail.",
+      "organizationalPartnerNeedsTitle": "Enter the partner name before uploading a logo.",
+      "organizationalPartnerLogoUpdated": "Partner logo uploaded.",
+      "organizationalPartnerLogoUploadFailed": "Unable to upload partner logo.",
+      "organizationalPartnerLogoRemoved": "Partner logo removed.",
+      "organizationalPartnerLogoRemoveFailed": "Unable to remove partner logo.",
       "collabInviteLinkCopied": "Invite link copied. Share it with your teammate.",
       "collabInviteFailed": "Could not send invite.",
       "collabInviteRevoked": "Invite revoked.",
@@ -812,6 +1023,13 @@
       "valueLabel": "Value",
       "descriptionLabel": "Details"
     },
+    "organizationalPartners": {
+      "sectionTitle": "Organizational partners",
+      "sectionDescription": "Organizations supporting or co-presenting this hackathon.",
+      "empty": "Partner listings will appear here when organizers add them.",
+      "managerHint": "Shown on the public “Partners” tab. Upload a logo file or paste an image URL.",
+      "previewFallbackName": "Partner"
+    },
     "faqs": {
       "sectionTitle": "Frequently asked questions",
       "empty": "FAQs will be added soon."
@@ -830,7 +1048,7 @@
     },
     "sections": {
       "timeline": "Timeline",
-      "timelineDescription": "Key milestones for registration, kickoff, and contest end.",
+      "timelineDescription": "Key milestones for registration, kickoff, submission deadline, and contest end.",
       "howToParticipate": "How to participate",
       "timelineUtcNote": "Times are shown in your local timezone.",
       "addToCalendar": "Add to calendar (.ics)"
@@ -838,6 +1056,7 @@
     "timeline": {
       "registrationDeadline": "Registration deadline",
       "kickoff": "Kickoff",
+      "submissionDeadline": "Submission deadline",
       "end": "End"
     },
     "labels": {

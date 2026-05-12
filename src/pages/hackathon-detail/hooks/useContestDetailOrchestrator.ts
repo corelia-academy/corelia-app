@@ -30,9 +30,16 @@ import {
   type ProjectCollaborationInviteRow,
   type ProjectCollaboratorRow,
 } from "@/lib/projectCollaboration";
-import { uploadContestBanner, uploadContestThumbnail } from "@/lib/storage";
+import {
+  deleteStorageObjectByPath,
+  uploadContestBanner,
+  uploadContestOrganizationalPartnerLogo,
+  uploadContestThumbnail,
+} from "@/lib/storage";
 import type { Project } from "@/types/projects";
+import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
+import type { User } from "@supabase/supabase-js";
 import type {
   Contest,
   ContestAccessInvite,
@@ -43,7 +50,6 @@ import type {
 } from "@/types/hackathons";
 import { useTranslation } from "react-i18next";
 import { buildContestTimelineRows } from "@/components/hackathons/contestTimelineBuilders";
-import type { ContestPublicSection } from "@/pages/hackathon-detail/types";
 import {
   datetimeLocalToIso,
   isoToDatetimeLocal,
@@ -53,7 +59,12 @@ import {
   downloadTextFile,
 } from "@/pages/hackathon-detail/utils/contestDetailHelpers";
 import { contestPublicShowcaseProjectsNavVisible } from "@/pages/hackathon-detail/utils/contestShowcase";
-import { deriveContestPublicPhase } from "@/pages/hackathon-detail/utils/contestPhase";
+import {
+  deriveHackathonLifecycle,
+  getContestLifecycleDatetimes,
+  getHackathonCountdownTarget,
+  parseLifecycleInstantMs,
+} from "@/pages/hackathon-detail/utils/contestLifecycle";
 import { formatContestDate } from "@/pages/hackathon-detail/utils/formatContestDate";
 import { fetchContestDetailPayload } from "./fetchContestDetailPayload";
 import { deriveContestDetailPermissions } from "./useContestDetailPermissions";
@@ -70,12 +81,10 @@ import {
 export function useContestDetailOrchestrator({
   forceManageView,
   prefetchedContest,
-  publicSection,
   onContestSynced,
 }: {
   forceManageView?: boolean;
   prefetchedContest?: Contest | null;
-  publicSection?: ContestPublicSection;
   onContestSynced?: (next: Contest) => void;
 } = {}) {
   const { t, i18n } = useTranslation("contests");
@@ -227,6 +236,8 @@ export function useContestDetailOrchestrator({
     setBannerUploading,
     thumbnailUploading,
     setThumbnailUploading,
+    partnerLogoUploadingIndex,
+    setPartnerLogoUploadingIndex,
     publicDraft,
     setPublicDraft,
     hydrateContestMetaFromPayload,
@@ -275,7 +286,7 @@ export function useContestDetailOrchestrator({
       ...(canReview ? ["applications"] : []),
       ...(canJudge ? ["judging"] : []),
       ...(canViewAggregate ? ["analytics"] : []),
-      ...(isManager ? ["translations", "settings"] : []),
+      ...(isManager ? ["translations", "awards", "settings"] : []),
     ];
     return ids;
   }, [canJudge, canReview, canViewAggregate, isManager]);
@@ -364,6 +375,14 @@ export function useContestDetailOrchestrator({
         }),
       };
     }
+    if (activeManageSection === "awards") {
+      return {
+        label: translate("workspace.awards.heroTitle", { defaultValue: "Open Campus awards" }),
+        description: translate("workspace.awards.heroDescription", {
+          defaultValue: "Configure award templates and mint on-chain credentials for winners.",
+        }),
+      };
+    }
     if (activeManageSection === "settings") {
       return {
         label: translate("workspace.tabs.settings"),
@@ -448,47 +467,70 @@ export function useContestDetailOrchestrator({
       milestones: contest.timeline_milestones ?? [],
       registrationDeadline: contest.registration_deadline,
       startsAt: contest.starts_at,
+      submissionDeadline: contest.submission_deadline,
       endsAt: contest.ends_at,
       formatDateTime,
       defaultLabels: {
         registrationDeadline: translate("detail.timeline.registrationDeadline"),
         kickoff: translate("detail.timeline.kickoff"),
+        submissionDeadline: translate("detail.timeline.submissionDeadline"),
         end: translate("detail.timeline.end"),
       },
     });
   }, [contest, formatDateTime, translate]);
 
-  const contestPublicPhase = useMemo(
-    () => (contest ? deriveContestPublicPhase(contest) : null),
+  const contestLifecycleDatetimes = useMemo(
+    () => (contest ? getContestLifecycleDatetimes(contest) : null),
     [contest],
   );
 
-  const publicPhaseBadgeLabel = useMemo(() => {
-    if (!contest || contestPublicPhase == null) return "";
-    switch (contestPublicPhase) {
-      case "ended":
-        return translate("detail.phase.badgeEnded");
-      case "in_progress":
-        return translate("detail.phase.badgeLive");
+  const hackathonLifecycle = useMemo(
+    () =>
+      contest ? deriveHackathonLifecycle(contest, Date.now()) : null,
+    [contest, countdownTick],
+  );
+
+  const lifecycleBadgeLabel = useMemo(() => {
+    if (!contest || hackathonLifecycle == null) return "";
+    switch (hackathonLifecycle) {
+      case "draft":
+        return statusLabel(contest.status);
+      case "upcoming":
+        return translate("detail.lifecycle.badge.upcoming");
       case "registration_open":
-        return translate("detail.phase.badgeRegistrationOpen");
-      case "registration_closed_before_start":
-        return translate("detail.phase.badgeRegClosedBeforeStart");
+        return translate("detail.lifecycle.badge.registrationOpen");
+      case "in_progress":
+        return translate("detail.lifecycle.badge.inProgress");
+      case "judging":
+        return translate("detail.lifecycle.badge.judging");
+      case "ended":
+        return translate("detail.lifecycle.badge.ended");
       default:
         return statusLabel(contest.status);
     }
-  }, [contest, contestPublicPhase, statusLabel, translate]);
+  }, [contest, hackathonLifecycle, statusLabel, translate]);
 
   const publicHeroHighlights = useMemo(() => {
     void countdownTick;
-    if (!contest || isManageView || contestPublicPhase == null) return [];
+    if (
+      !contest ||
+      isManageView ||
+      hackathonLifecycle == null ||
+      contestLifecycleDatetimes == null
+    ) {
+      return [];
+    }
 
     const now = Date.now();
     const total = Number(contest.metrics_snapshot.registrations_total ?? 0);
     const approved = Number(contest.metrics_snapshot.approved_registrations ?? 0);
     const lines: string[] = [];
 
-    switch (contestPublicPhase) {
+    switch (hackathonLifecycle) {
+      case "upcoming": {
+        lines.push(translate("detail.lifecycle.hero.upcomingBody"));
+        break;
+      }
       case "registration_open": {
         if (total > 0) {
           lines.push(
@@ -499,22 +541,9 @@ export function useContestDetailOrchestrator({
         } else {
           lines.push(translate("detail.phase.hero.noApplicationsYet"));
         }
-        if (contest.registration_deadline) {
-          const end = new Date(contest.registration_deadline).getTime();
-          if (now >= end) {
-            lines.push(translate("detail.hero.registrationClosed"));
-          } else {
-            lines.push(
-              translate("detail.hero.registrationCountdown", {
-                time: formatContestCountdown(end - now, translate),
-              }),
-            );
-          }
-        }
         break;
       }
-      case "registration_closed_before_start": {
-        lines.push(translate("detail.phase.hero.registrationWindowClosed"));
+      case "in_progress": {
         if (contest.starts_at) {
           const kickoff = new Date(contest.starts_at).getTime();
           if (now < kickoff) {
@@ -525,9 +554,6 @@ export function useContestDetailOrchestrator({
             );
           }
         }
-        break;
-      }
-      case "in_progress": {
         if (approved > 0) {
           lines.push(
             translate("detail.phase.hero.approvedTeams", { count: approved }),
@@ -535,18 +561,10 @@ export function useContestDetailOrchestrator({
         } else {
           lines.push(translate("detail.phase.hero.noApprovedTeamsYet"));
         }
-        if (contest.ends_at) {
-          const end = new Date(contest.ends_at).getTime();
-          if (now >= end) {
-            lines.push(translate("detail.hero.contestEnded"));
-          } else {
-            lines.push(
-              translate("detail.hero.contestEndsCountdown", {
-                time: formatContestCountdown(end - now, translate),
-              }),
-            );
-          }
-        }
+        break;
+      }
+      case "judging": {
+        lines.push(translate("detail.lifecycle.hero.judgingBody"));
         break;
       }
       case "ended":
@@ -562,78 +580,160 @@ export function useContestDetailOrchestrator({
       }
     }
 
-    return lines.slice(0, 3);
-  }, [contest, contestPublicPhase, countdownTick, isManageView, translate]);
+    return lines.slice(0, 4);
+  }, [
+    contest,
+    contestLifecycleDatetimes,
+    countdownTick,
+    hackathonLifecycle,
+    isManageView,
+    translate,
+  ]);
+
+  const publicHeroCountdown = useMemo(() => {
+    void countdownTick;
+    if (
+      !contest ||
+      isManageView ||
+      hackathonLifecycle == null ||
+      contestLifecycleDatetimes == null
+    ) {
+      return null;
+    }
+    const target = getHackathonCountdownTarget(
+      hackathonLifecycle,
+      contestLifecycleDatetimes,
+    );
+    if (!target) return null;
+    const end = parseLifecycleInstantMs(target.iso);
+    if (end == null || Date.now() >= end) return null;
+    const msLeft = end - Date.now();
+    const time = formatContestCountdown(msLeft, translate);
+    return {
+      text: translate(target.labelKey, { time }),
+      urgent: msLeft < 3600000,
+    };
+  }, [
+    contest,
+    contestLifecycleDatetimes,
+    countdownTick,
+    hackathonLifecycle,
+    isManageView,
+    translate,
+  ]);
 
   const publicCta = useMemo(() => {
-    if (isManageView || !contest) return null;
-    const hrefSlug = contest.slug?.trim() || null;
-
-    if (registration?.status === "approved") {
-      return {
-        label: mySubmission
-          ? translate("detail.cta.continueSubmission")
-          : translate("detail.cta.submitSubmission"),
-        helper: translate("detail.cta.approvedHelper"),
-        variant: "default" as const,
-        navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/overview` : "/hackathons",
-      };
-    }
-    if (registration) {
-      return {
-        label: translate("detail.cta.viewApplicationStatus"),
-        helper: translate("detail.cta.pendingHelper"),
-        variant: "outline" as const,
-        navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/overview` : "/hackathons",
-      };
-    }
-
-    const phase = deriveContestPublicPhase(contest);
+    if (isManageView || !contest || hackathonLifecycle == null) return null;
+    const hrefSlug = contest.slug?.trim();
+    const base = hrefSlug ? `/hackathons/${hrefSlug}` : "/hackathons";
+    const participantWorkspaceHash = `${base}#participant-workspace`;
+    const participantSubmissionHash = `${base}#participant-submission`;
     const showProjects = contestPublicShowcaseProjectsNavVisible(contest);
 
-    switch (phase) {
-      case "ended":
-        return {
-          label: translate("detail.cta.viewResults"),
-          helper: translate("detail.cta.viewResultsHelper"),
-          variant: "outline" as const,
-          navigateTo: showProjects
-            ? hrefSlug
-              ? `/hackathons/${hrefSlug}/projects`
-              : "/hackathons"
-            : hrefSlug
-              ? `/hackathons/${hrefSlug}/timeline`
-              : "/hackathons",
-        };
-      case "in_progress":
-        return {
-          label: translate("detail.cta.followContest"),
-          helper: translate("detail.cta.inProgressVisitorHelper"),
-          variant: "outline" as const,
-          navigateTo:
-            showProjects && hrefSlug
-              ? `/hackathons/${hrefSlug}/projects`
-              : hrefSlug
-                ? `/hackathons/${hrefSlug}/timeline`
-                : "/hackathons",
-        };
-      case "registration_open":
-        return {
-          label: translate("detail.cta.register"),
-          helper: translate("detail.cta.registerHelper"),
-          variant: "default" as const,
-          navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/overview` : "/hackathons",
-        };
-      case "registration_closed_before_start":
-      default:
-        return {
-          label: translate("detail.cta.viewSchedule"),
-          helper: translate("detail.cta.regClosedBeforeKickoffHelper"),
-          variant: "outline" as const,
-          navigateTo: hrefSlug ? `/hackathons/${hrefSlug}/timeline` : "/hackathons",
-        };
+    const loginRedirect = (path: string) =>
+      `/login?redirect=${encodeURIComponent(path)}`;
+
+    if (hackathonLifecycle === "upcoming") {
+      return {
+        label: translate("detail.lifecycle.cta.notifyWhenOpen"),
+        helper: translate("detail.lifecycle.cta.notifyWhenOpenHelper"),
+        variant: "outline" as const,
+        navigateTo: isAuthenticated ? "/account/settings" : loginRedirect(base),
+        disabled: false as boolean | undefined,
+      };
     }
-  }, [contest, isManageView, mySubmission, registration, translate]);
+
+    if (hackathonLifecycle === "registration_open") {
+      if (!isAuthenticated) {
+        return {
+          label: translate("detail.lifecycle.cta.loginToRegister"),
+          helper: translate("detail.lifecycle.cta.loginToRegisterHelper"),
+          variant: "default" as const,
+          navigateTo: loginRedirect(participantWorkspaceHash),
+        };
+      }
+      if (registration?.status === "pending") {
+        return {
+          label: translate("detail.lifecycle.cta.pendingReview"),
+          helper: translate("detail.lifecycle.cta.pendingReviewHelper"),
+          variant: "outline" as const,
+          navigateTo: participantWorkspaceHash,
+          disabled: true,
+        };
+      }
+      if (registration?.status === "approved") {
+        return {
+          label: translate("detail.lifecycle.cta.goToDashboard"),
+          helper: translate("detail.lifecycle.cta.dashboardHelper"),
+          variant: "default" as const,
+          navigateTo: participantSubmissionHash,
+        };
+      }
+      if (registration?.status === "rejected") {
+        return {
+          label: translate("detail.lifecycle.cta.applicationNotApproved"),
+          helper: translate("detail.lifecycle.cta.applicationNotApprovedHelper"),
+          variant: "outline" as const,
+          navigateTo: `${base}#faq`,
+        };
+      }
+      return {
+        label: translate("detail.lifecycle.cta.registerWithProfile"),
+        helper: translate("detail.lifecycle.cta.registerWithProfileHelper"),
+        variant: "default" as const,
+        navigateTo: participantWorkspaceHash,
+      };
+    }
+
+    if (hackathonLifecycle === "in_progress") {
+      if (registration?.status === "approved") {
+        if (mySubmission) {
+          return {
+            label: translate("detail.lifecycle.cta.viewSubmission"),
+            helper: translate("detail.lifecycle.cta.viewSubmissionHelper"),
+            variant: "default" as const,
+            navigateTo: participantSubmissionHash,
+          };
+        }
+        return {
+          label: translate("detail.lifecycle.cta.submitWork"),
+          helper: translate("detail.lifecycle.cta.submitWorkHelper"),
+          variant: "default" as const,
+          navigateTo: participantSubmissionHash,
+        };
+      }
+      return {
+        label: translate("detail.lifecycle.cta.followBuildPhase"),
+        helper: translate("detail.lifecycle.cta.followBuildPhaseHelper"),
+        variant: "outline" as const,
+        navigateTo: showProjects ? `${base}#projects` : `${base}#timeline`,
+      };
+    }
+
+    if (hackathonLifecycle === "judging") {
+      return {
+        label: translate("detail.lifecycle.cta.viewSubmissionsGallery"),
+        helper: translate("detail.lifecycle.cta.viewSubmissionsGalleryHelper"),
+        variant: "outline" as const,
+        navigateTo: showProjects ? `${base}#projects` : `${base}#timeline`,
+      };
+    }
+
+    return {
+      label: translate("detail.lifecycle.cta.viewWinners"),
+      helper: translate("detail.lifecycle.cta.viewWinnersHelper"),
+      variant: "outline" as const,
+      navigateTo: showProjects ? `${base}#projects` : `${base}#results`,
+    };
+  }, [
+    contest,
+    hackathonLifecycle,
+    isAuthenticated,
+    isManageView,
+    mySubmission,
+    registration,
+    translate,
+  ]);
 
   const registrationDraftReady = useMemo(() => {
     if (!isAuthenticated || !authInitialized) return false;
@@ -676,6 +776,13 @@ export function useContestDetailOrchestrator({
   );
 
   const loadAbortRef = useRef<AbortController | null>(null);
+  /** Latest viewer + contest for fetch; avoids churning `loadContestData` identity on token-only updates / contest merges. */
+  const contestDetailFetchInputsRef = useRef<{
+    user: User | null;
+    profile: Profile | null;
+    contest: Contest | null;
+  }>({ user: null, profile: null, contest: null });
+  contestDetailFetchInputsRef.current = { user, profile, contest };
 
   const loadContestData = useCallback(
     async (opts?: { silent?: boolean }) => {
@@ -688,17 +795,19 @@ export function useContestDetailOrchestrator({
         setLoading(true);
         setError(null);
       }
+      const { user: viewer, profile: viewerProfile, contest: prefetchContest } =
+        contestDetailFetchInputsRef.current;
       try {
         const result = await fetchContestDetailPayload({
           slug,
-          profile,
-          userEmail: user?.email ?? undefined,
+          profile: viewerProfile,
+          userEmail: viewer?.email ?? undefined,
           uiLocale: i18n.language,
-          viewer: user ?? null,
+          viewer: viewer ?? null,
           isManager,
           translate,
           signal: ctrl.signal,
-          prefetchedContest: contest,
+          prefetchedContest: prefetchContest,
         });
         if (loadAbortRef.current !== ctrl) return;
         if (result.status === "aborted") return;
@@ -738,14 +847,11 @@ export function useContestDetailOrchestrator({
     slug,
     isManager,
     authInitialized,
-    profile,
     setContest,
     i18n.language,
     setError,
     setLoading,
     translate,
-    user,
-    contest,
     ],
   );
 
@@ -804,12 +910,41 @@ export function useContestDetailOrchestrator({
   }, [loadContestData]);
 
   useEffect(() => {
-    const idInterval = window.setInterval(
-      () => setCountdownTick((x) => x + 1),
-      30000,
-    );
-    return () => window.clearInterval(idInterval);
-  }, []);
+    if (!contest) return;
+    if (isManageView) {
+      const idInterval = window.setInterval(
+        () => setCountdownTick((x) => x + 1),
+        60000,
+      );
+      return () => window.clearInterval(idInterval);
+    }
+
+    let cancelled = false;
+    let timeoutId = 0;
+
+    const scheduleNext = () => {
+      if (cancelled) return;
+      setCountdownTick((x) => x + 1);
+      const life = deriveHackathonLifecycle(contest, Date.now());
+      const d = getContestLifecycleDatetimes(contest);
+      const target = getHackathonCountdownTarget(life, d);
+      const end = target ? parseLifecycleInstantMs(target.iso) : null;
+      const msLeft = end != null ? end - Date.now() : Infinity;
+      const delay =
+        msLeft === Infinity || msLeft <= 0
+          ? 60000
+          : msLeft < 3600000
+            ? 1000
+            : 60000;
+      timeoutId = window.setTimeout(scheduleNext, delay);
+    };
+
+    scheduleNext();
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [contest, isManageView]);
 
   useEffect(() => {
     if (
@@ -829,6 +964,24 @@ export function useContestDetailOrchestrator({
         contest.faqs && contest.faqs.length > 0
           ? contest.faqs.map((f) => ({ ...f }))
           : [{ question: "", answer: "" }],
+      organizational_partners:
+        contest.organizational_partners && contest.organizational_partners.length > 0
+          ? contest.organizational_partners.map((p) => ({
+              id: p.id?.trim() || crypto.randomUUID(),
+              logo_url: p.logo_url ?? "",
+              logo_path: p.logo_path ?? "",
+              title: p.title,
+              description: p.description ?? "",
+            }))
+          : [
+              {
+                id: crypto.randomUUID(),
+                logo_url: "",
+                logo_path: "",
+                title: "",
+                description: "",
+              },
+            ],
       registration_deadline_local: contest.registration_deadline
         ? isoToDatetimeLocal(contest.registration_deadline)
         : "",
@@ -1690,6 +1843,94 @@ export function useContestDetailOrchestrator({
     ],
   );
 
+  const handleOrganizationalPartnerLogoChange = useCallback(
+    async (index: number, event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+      if (!file || !id || !contest || !isManager) return;
+      const row = publicDraft.organizational_partners[index];
+      if (!row?.title.trim()) {
+        toast.error(translate("detail.toasts.organizationalPartnerNeedsTitle"));
+        return;
+      }
+      const partnerId = row.id?.trim() || crypto.randomUUID();
+      const prevPath = row.logo_path?.trim() || null;
+      setPartnerLogoUploadingIndex(index);
+      try {
+        const { url, path } = await uploadContestOrganizationalPartnerLogo(
+          id,
+          partnerId,
+          file,
+          prevPath,
+        );
+        const organizational_partners = publicDraft.organizational_partners.map((p, i) =>
+          i === index ? { ...p, id: partnerId, logo_url: url, logo_path: path } : p,
+        );
+        await updateContest(id, { organizational_partners });
+        const fresh = await getContest(id);
+        if (fresh) {
+          setContest(fresh);
+          onContestSynced?.(fresh);
+        }
+        toast.success(translate("detail.toasts.organizationalPartnerLogoUpdated"));
+      } catch (err) {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : translate("detail.toasts.organizationalPartnerLogoUploadFailed"),
+        );
+      } finally {
+        setPartnerLogoUploadingIndex(null);
+      }
+    },
+    [
+      contest,
+      id,
+      isManager,
+      onContestSynced,
+      publicDraft.organizational_partners,
+      setContest,
+      setPartnerLogoUploadingIndex,
+      translate,
+    ],
+  );
+
+  const handleOrganizationalPartnerLogoRemove = useCallback(
+    async (index: number) => {
+      if (!id || !contest || !isManager) return;
+      const row = publicDraft.organizational_partners[index];
+      const prevPath = row?.logo_path?.trim() || null;
+      if (prevPath) await deleteStorageObjectByPath(prevPath);
+      try {
+        const organizational_partners = publicDraft.organizational_partners.map((p, i) =>
+          i === index ? { ...p, logo_url: null, logo_path: null } : p,
+        );
+        await updateContest(id, { organizational_partners });
+        const fresh = await getContest(id);
+        if (fresh) {
+          setContest(fresh);
+          onContestSynced?.(fresh);
+        }
+        toast.success(translate("detail.toasts.organizationalPartnerLogoRemoved"));
+      } catch (err) {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : translate("detail.toasts.organizationalPartnerLogoRemoveFailed"),
+        );
+      }
+    },
+    [
+      contest,
+      id,
+      isManager,
+      onContestSynced,
+      publicDraft.organizational_partners,
+      setContest,
+      translate,
+    ],
+  );
+
   const handleSavePublicContent = useCallback(async () => {
     if (!id || !isManager || savingPublicContent || !contest || !isManageView)
       return;
@@ -1713,6 +1954,35 @@ export function useContestDetailOrchestrator({
       const faqs = publicDraft.faqs
         .map((f) => ({ question: f.question.trim(), answer: f.answer.trim() }))
         .filter((f) => f.question.length > 0 && f.answer.length > 0);
+      const organizational_partners = publicDraft.organizational_partners
+        .map((p) => {
+          const title = p.title.trim();
+          if (!title) return null;
+          const rowId = p.id?.trim();
+          return {
+            ...(rowId ? { id: rowId } : {}),
+            logo_url: p.logo_url?.trim() || null,
+            logo_path: p.logo_path?.trim() || null,
+            title,
+            description: p.description?.trim() || null,
+          };
+        })
+        .filter((p): p is NonNullable<typeof p> => p != null);
+      const prevLogoPaths = new Set(
+        (contest.organizational_partners ?? [])
+          .map((p) => p.logo_path?.trim())
+          .filter(Boolean) as string[],
+      );
+      const nextLogoPaths = new Set(
+        organizational_partners
+          .map((p) => p.logo_path?.trim())
+          .filter(Boolean) as string[],
+      );
+      for (const path of prevLogoPaths) {
+        if (!nextLogoPaths.has(path)) {
+          await deleteStorageObjectByPath(path);
+        }
+      }
       await updateContest(id, {
         registration_deadline: datetimeLocalToIso(publicDraft.registration_deadline_local),
         submission_deadline: datetimeLocalToIso(publicDraft.submission_deadline_local),
@@ -1722,6 +1992,7 @@ export function useContestDetailOrchestrator({
         prizes,
         faqs,
         timeline_milestones: milestones,
+        organizational_partners,
       });
       const fresh = await getContest(id);
       if (fresh) {
@@ -1752,6 +2023,7 @@ export function useContestDetailOrchestrator({
     publicDraft.milestones,
     publicDraft.prize_pool_summary,
     publicDraft.prizes,
+    publicDraft.organizational_partners,
     savingPublicContent,
     setContest,
     setSavingPublicContent,
@@ -1922,6 +2194,7 @@ export function useContestDetailOrchestrator({
     savingPublicContent,
     bannerUploading,
     thumbnailUploading,
+    partnerLogoUploadingIndex,
     publicDraft,
     setPublicDraft,
     activeManageSection,
@@ -1940,9 +2213,11 @@ export function useContestDetailOrchestrator({
     manageCollaborationLanes,
     judgeOwnScores,
     timelineRows,
-    contestPublicPhase,
-    publicPhaseBadgeLabel,
+    hackathonLifecycle,
+    contestLifecycleDatetimes,
+    lifecycleBadgeLabel,
     publicHeroHighlights,
+    publicHeroCountdown,
     publicCta,
     registrationDraftReady,
     submissionWorkspaceEditable,
@@ -1965,7 +2240,6 @@ export function useContestDetailOrchestrator({
     locationLabel,
     formatDateTime,
     formatDate,
-    publicSection,
     handleDeleteContest,
     handleApply,
     handleReview,
@@ -1986,6 +2260,8 @@ export function useContestDetailOrchestrator({
     handlePublishResults,
     handleContestBannerChange,
     handleContestThumbnailChange,
+    handleOrganizationalPartnerLogoChange,
+    handleOrganizationalPartnerLogoRemove,
     handleSavePublicContent,
     scoreDraftTotal,
     handleCopyInviteLink,

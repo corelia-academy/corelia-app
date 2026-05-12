@@ -146,6 +146,7 @@ export function LessonCurriculum({
   nextLessonTitle,
   hasFullCourseAccess,
   translate,
+  variant = "default",
 }: {
   courseId: string;
   groups: CurriculumGroup[];
@@ -161,11 +162,47 @@ export function LessonCurriculum({
   nextLessonTitle: string | null;
   hasFullCourseAccess: boolean;
   translate: TranslateFn;
+  variant?: "default" | "tabPanel";
 }) {
   const completedLabel = `${translate("detail.learn.stats.completedLessons")}: ${completedCount}/${lessonTotal}`;
   const nextUpLabel = `${translate("detail.learn.stats.nextUp")}: ${
     nextLessonTitle ?? translate("detail.learn.completedPath")
   }`;
+
+  const curriculumCard = (
+    <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-base">
+      <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <List className="w-4 h-4" /> {translate("detail.learn.curriculumTitle")}
+          </span>
+          <span className="text-xs text-foreground-muted">{progressPercent}%</span>
+        </div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-base">
+          <div
+            className="h-full rounded-full bg-success"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <p className="mt-2 text-xs text-foreground-muted">{completedLabel}</p>
+        <p className="mt-0.5 line-clamp-1 text-xs text-foreground-muted">{nextUpLabel}</p>
+      </div>
+
+      <CurriculumList
+        courseId={courseId}
+        groups={groups}
+        currentLessonId={currentLessonId}
+        completedIds={completedIds}
+        hasFullCourseAccess={hasFullCourseAccess}
+        translate={translate}
+        scrollClassName="max-h-[min(72vh,560px)] overflow-y-auto"
+      />
+    </div>
+  );
+
+  if (variant === "tabPanel") {
+    return curriculumCard;
+  }
 
   return (
     <>
@@ -215,43 +252,7 @@ export function LessonCurriculum({
         </div>
       </details>
 
-      <aside className="hidden lg:sticky lg:top-20 lg:block lg:self-start">
-        <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-base">
-          <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <List className="w-4 h-4" />{" "}
-                {translate("detail.learn.curriculumTitle")}
-              </span>
-              <span className="text-xs text-foreground-muted">
-                {progressPercent}%
-              </span>
-            </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-base">
-              <div
-                className="h-full rounded-full bg-success"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <p className="mt-2 text-xs text-foreground-muted">
-              {completedLabel}
-            </p>
-            <p className="mt-0.5 line-clamp-1 text-xs text-foreground-muted">
-              {nextUpLabel}
-            </p>
-          </div>
-
-          <CurriculumList
-            courseId={courseId}
-            groups={groups}
-            currentLessonId={currentLessonId}
-            completedIds={completedIds}
-            hasFullCourseAccess={hasFullCourseAccess}
-            translate={translate}
-            scrollClassName="max-h-[68vh] overflow-y-auto"
-          />
-        </div>
-      </aside>
+      <aside className="hidden lg:sticky lg:top-20 lg:block lg:self-start">{curriculumCard}</aside>
     </>
   );
 }

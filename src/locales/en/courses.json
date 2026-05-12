@@ -243,6 +243,8 @@
     "learn": {
       "pageEyebrow": "Learning",
       "breadcrumbLearn": "Learn",
+      "emptyCurriculumTitle": "No lessons in this course yet",
+      "emptyCurriculumDescription": "The instructor hasn't published a curriculum. Go back to the course page to check for updates.",
       "backToCourses": "Back to courses",
       "backToCourse": "Back to course",
       "loadingPage": "Loading learning page...",
@@ -299,6 +301,27 @@
         "submit": "Submit"
       },
       "curriculumTitle": "Curriculum"
+    },
+    "aiTutor": {
+      "tabLabel": "Cora AI Tutor",
+      "courseInfoTab": "Course info",
+      "sidebarTablistAria": "Choose a sidebar panel",
+      "fabAriaLabel": "Open Cora AI Tutor",
+      "sheetTitle": "Cora AI Tutor",
+      "sheetDescription": "Ask questions about this course. Personalized answers tied to your progress will arrive in a future update.",
+      "contextCourse": "Course: {{title}}",
+      "contextLesson": "Lesson: {{title}}",
+      "comingSoonHint": "The tutor is not connected yet. You can explore suggested questions below; live replies will be enabled soon.",
+      "suggestionsLabel": "Try asking",
+      "inputPlaceholder": "Type a question…",
+      "footerCaption": "Sending messages will be available when Cora AI Tutor launches.",
+      "chipToast": "Cora AI Tutor is coming soon.",
+      "suggestions": [
+        "Summarize the key ideas from this lesson.",
+        "What should I practice next?",
+        "Explain this concept in simpler terms.",
+        "How does this topic connect to the rest of the course?"
+      ]
     }
   },
   "filters": {

@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { getProfileForUser, invalidateCurrentProfileCache } from "@/lib/profile";
 import { useAuthStore } from "@/stores/authStore";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
-import type { User } from "@supabase/supabase-js";
+import type { AuthChangeEvent, User } from "@supabase/supabase-js";
 import { timedAsync } from "@/lib/perfTelemetry";
 
 /**
@@ -102,11 +102,26 @@ export function AuthSync() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
       if (!hasInitializedFromEvent) {
         hasInitializedFromEvent = true;
         window.clearTimeout(initTimeoutId);
       }
+
+      if (import.meta.env.DEV) {
+        console.debug("[AuthSync] onAuthStateChange", event);
+      }
+
+      // Tab visibility sometimes emits TOKEN_REFRESHED and/or SIGNED_IN again with the same user.
+      // Syncing a new `user` reference into Zustand retriggers profile fetch + downstream refetches.
+      if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
+        const prevUser = useAuthStore.getState().user;
+        const nextUser = session?.user ?? null;
+        if (prevUser?.id != null && nextUser?.id === prevUser.id) {
+          return;
+        }
+      }
+
       syncFromSession(session);
     });
 
