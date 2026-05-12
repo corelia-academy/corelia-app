@@ -12,7 +12,7 @@ import { handleCheckActivityMilestones } from "./credentials/check_activity.ts";
 import { handleCheckCourseCompletion } from "./credentials/check_course.ts";
 import { handleGrantCredentials } from "./credentials/grant.ts";
 import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.ts";
-import { cors, json } from "./lib/http.ts";
+import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
 import {
   handleMyPaymentTransactions,
@@ -40,51 +40,56 @@ function hasBearerAuthHeader(req: Request): boolean {
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
+  const cors = corsHeadersForRequest(req);
   if (req.method === "OPTIONS") {
+    if (!cors) return json({ message: "Origin not allowed" }, 403);
     return new Response(null, { status: 204, headers: cors });
   }
-  const url = new URL(req.url);
-  const op = url.searchParams.get("op") ?? "";
-  if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req)) {
-    return json({ message: "Missing Authorization header" }, 401);
-  }
-  let db: SupabaseClient;
+
   try {
-    db = createServiceClient();
+    const url = new URL(req.url);
+    const op = url.searchParams.get("op") ?? "";
+    if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req)) {
+      return withCors(req, json({ message: "Missing Authorization header" }, 401));
+    }
+    let db: SupabaseClient;
+    try {
+      db = createServiceClient();
+    } catch (e) {
+      console.error("[corelia-api] boot", e);
+      return withCors(req, json({ message: "Server misconfiguration" }, 500));
+    }
+
+    let response: Response;
+    if (op === "health" && req.method === "GET") {
+      response = json({ ok: true });
+    } else if (op === "payments.sepay.checkout" && req.method === "POST") {
+      response = await handleSePayCheckout(req, db);
+    } else if (op === "payments.transactions" && req.method === "GET") {
+      response = await handleMyPaymentTransactions(req, db);
+    } else if (op === "payments.sepay.debugLookup" && req.method === "POST") {
+      response = await handleSePayDebugLookup(req, db);
+    } else if (op === "certificates.issue" && req.method === "POST") {
+      response = await handleIssueCertificate(req, db);
+    } else if (op === "payments.sepay.verify" && req.method === "POST") {
+      response = await handleVerifySePayPayment(req, db);
+    } else if (op === "payments.sepay.ipn" && req.method === "POST") {
+      response = await handleSePayIpn(req, db);
+    } else if (op === "hackathons.notifyRegistrationReview" && req.method === "POST") {
+      response = await handleHackathonNotifyRegistrationReview(req, db);
+    } else if (op === "credentials.checkCourseCompletion" && req.method === "POST") {
+      response = await handleCheckCourseCompletion(req, db);
+    } else if (op === "credentials.checkActivityMilestones" && req.method === "POST") {
+      response = await handleCheckActivityMilestones(req, db);
+    } else if (op === "credentials.grant" && req.method === "POST") {
+      response = await handleGrantCredentials(req, db);
+    } else {
+      response = json({ message: "Unknown or disallowed op / method", op }, 404);
+    }
+
+    return withCors(req, response);
   } catch (e) {
-    console.error("[corelia-api] boot", e);
-    return json({ message: "Server misconfiguration" }, 500);
+    console.error("[corelia-api] unhandled", e);
+    return withCors(req, json({ message: "Unhandled server error" }, 500));
   }
-  if (op === "health" && req.method === "GET") return json({ ok: true });
-  if (op === "payments.sepay.checkout" && req.method === "POST") {
-    return await handleSePayCheckout(req, db);
-  }
-  if (op === "payments.transactions" && req.method === "GET") {
-    return await handleMyPaymentTransactions(req, db);
-  }
-  if (op === "payments.sepay.debugLookup" && req.method === "POST") {
-    return await handleSePayDebugLookup(req, db);
-  }
-  if (op === "certificates.issue" && req.method === "POST") {
-    return await handleIssueCertificate(req, db);
-  }
-  if (op === "payments.sepay.verify" && req.method === "POST") {
-    return await handleVerifySePayPayment(req, db);
-  }
-  if (op === "payments.sepay.ipn" && req.method === "POST") {
-    return await handleSePayIpn(req, db);
-  }
-  if (op === "hackathons.notifyRegistrationReview" && req.method === "POST") {
-    return await handleHackathonNotifyRegistrationReview(req, db);
-  }
-  if (op === "credentials.checkCourseCompletion" && req.method === "POST") {
-    return await handleCheckCourseCompletion(req, db);
-  }
-  if (op === "credentials.checkActivityMilestones" && req.method === "POST") {
-    return await handleCheckActivityMilestones(req, db);
-  }
-  if (op === "credentials.grant" && req.method === "POST") {
-    return await handleGrantCredentials(req, db);
-  }
-  return json({ message: "Unknown or disallowed op / method", op }, 404);
 });
