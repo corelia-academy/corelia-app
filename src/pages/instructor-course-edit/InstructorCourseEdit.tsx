@@ -248,6 +248,7 @@ const InstructorCourseEdit = () => {
     thumbnail_url: "",
     level: "all" as CourseLevel,
     published: false,
+    is_external_aggregated: false,
     is_updating: false,
     certificate_template_url: "",
     certificate_template_path: "",
@@ -263,6 +264,8 @@ const InstructorCourseEdit = () => {
     partner_contract_docs: [] as PartnerCourseDocument[],
     partner_invoice_docs: [] as PartnerCourseDocument[],
     partner_transfer_info: "",
+    external_source_urls_text: "",
+    external_source_attribution_note: "",
   });
 
   const [coInstructorIds, setCoInstructorIds] = useState<string[]>([]);
@@ -459,6 +462,11 @@ const InstructorCourseEdit = () => {
   const canEditCoInstructors = Boolean(
     course && (isAdmin || isSupportStaff || course.instructor_id === profile?.id),
   );
+  const isCoreliaCourse = (form.owner_type ?? course?.owner_type ?? "corelia") === "corelia";
+  const isCoreliaInstructor = profile?.instructor_origin === "corelia";
+  const canManageCourseOcb = Boolean(
+    course && isCoreliaCourse && (isAdmin || isSupportStaff || isCoreliaInstructor),
+  );
 
   useEffect(() => {
     if (!course) return;
@@ -523,6 +531,7 @@ const InstructorCourseEdit = () => {
         thumbnail_url: course.thumbnail_url,
         level: course.level,
         published: course.published,
+        is_external_aggregated: course.is_external_aggregated ?? false,
         is_updating: course.is_updating ?? false,
         certificate_template_url: course.certificate_template_url ?? "",
         certificate_template_path: course.certificate_template_path ?? "",
@@ -549,6 +558,9 @@ const InstructorCourseEdit = () => {
         partner_contract_docs: course.partner_contract_docs ?? [],
         partner_invoice_docs: course.partner_invoice_docs ?? [],
         partner_transfer_info: course.partner_transfer_info ?? "",
+        external_source_urls_text: (course.external_source_urls ?? []).join("\n"),
+        external_source_attribution_note:
+          course.external_source_attribution_note ?? "",
       });
       setSponsors(Array.isArray(course.sponsors) ? course.sponsors : []);
       const list = Array.isArray(course.partners) ? course.partners : [];
@@ -816,6 +828,16 @@ const InstructorCourseEdit = () => {
       setError(t("courseEdit.errors.invalidRevenueShare"));
       return;
     }
+    if (form.is_external_aggregated) {
+      const externalSources = form.external_source_urls_text
+        .split("\n")
+        .map((x) => x.trim())
+        .filter(Boolean);
+      if (externalSources.length === 0) {
+        setError("Vui lòng nhập ít nhất 1 nguồn (URL) khi bật Public external course.");
+        return;
+      }
+    }
     setSaving(true);
     setError(null);
     try {
@@ -881,6 +903,13 @@ const InstructorCourseEdit = () => {
         thumbnail_url: form.thumbnail_url,
         level: form.level,
         published: form.published,
+        is_external_aggregated: form.is_external_aggregated,
+        external_source_urls: form.external_source_urls_text
+          .split("\n")
+          .map((x) => x.trim())
+          .filter(Boolean),
+        external_source_attribution_note:
+          form.external_source_attribution_note.trim() || null,
         is_updating: form.is_updating,
         i18n: i18nPayload,
         sponsors,
@@ -941,6 +970,13 @@ const InstructorCourseEdit = () => {
               thumbnail_url: form.thumbnail_url,
               level: form.level,
               published: form.published,
+              is_external_aggregated: form.is_external_aggregated,
+              external_source_urls: form.external_source_urls_text
+                .split("\n")
+                .map((x) => x.trim())
+                .filter(Boolean),
+              external_source_attribution_note:
+                form.external_source_attribution_note.trim() || null,
               is_updating: form.is_updating,
               i18n: i18nPayload,
               sponsors,
@@ -4028,6 +4064,64 @@ const InstructorCourseEdit = () => {
                   </label>
                 </Field>
                 <Field>
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={form.is_external_aggregated}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          is_external_aggregated: e.target.checked,
+                        }))
+                      }
+                      className="mt-0.5 rounded border-border"
+                    />
+                    <span className="text-sm text-foreground">
+                      <span className="font-medium">Khoá học nguồn ngoài công khai (Public external course)</span>
+                      <span className="mt-1 block text-xs text-foreground-muted">
+                        Bật mục này nếu khoá học tổng hợp từ nguồn ngoài; khi bật sẽ hiển thị phần nguồn/chú thích ở trang công khai.
+                      </span>
+                    </span>
+                  </label>
+                </Field>
+                {form.is_external_aggregated ? (
+                  <>
+                    <Field>
+                      <FieldLabel>Nguồn tham chiếu (Sources URLs) *</FieldLabel>
+                      <textarea
+                        value={form.external_source_urls_text}
+                        onChange={(e) =>
+                          setForm((p) => ({
+                            ...p,
+                            external_source_urls_text: e.target.value,
+                          }))
+                        }
+                        className="min-h-[100px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                        rows={4}
+                        placeholder={"Mỗi dòng 1 URL nguồn\nhttps://youtube.com/...\nhttps://youtube.com/..."}
+                      />
+                      <p className="mt-1 text-xs text-foreground-muted">
+                        Bắt buộc khi bật Public external course.
+                      </p>
+                    </Field>
+                    <Field>
+                      <FieldLabel>Chú thích nguồn (Source attribution note)</FieldLabel>
+                      <textarea
+                        value={form.external_source_attribution_note}
+                        onChange={(e) =>
+                          setForm((p) => ({
+                            ...p,
+                            external_source_attribution_note: e.target.value,
+                          }))
+                        }
+                        className="min-h-[80px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                        rows={3}
+                        placeholder="Ghi chú công khai về nguồn tổng hợp (ví dụ: curated từ playlist YouTube của các creator)."
+                      />
+                    </Field>
+                  </>
+                ) : null}
+                <Field>
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -5904,6 +5998,9 @@ const InstructorCourseEdit = () => {
                 Tải lên ảnh template chứng nhận (PNG/JPG). Tên học viên sẽ được
                 hiển thị tại vị trí bạn chọn (theo % từ trái và từ trên).
               </p>
+              <p className="mb-4 text-sm text-foreground-muted">
+                Open Campus badge (OCB) chỉ khả dụng cho khoá học Corelia và người Corelia (hoặc admin/support).
+              </p>
 
               <div className="mb-8 space-y-4">
                 <Field>
@@ -6018,11 +6115,11 @@ const InstructorCourseEdit = () => {
                 </div>
               </div>
 
-              {id ? (
+              {id && canManageCourseOcb ? (
                 <CourseOcbCredentialSection
                   courseId={id}
                   courseSlug={(form.slug || course.slug || "").trim()}
-                  canEdit={Boolean(canEdit)}
+                  canEdit={canManageCourseOcb}
                 />
               ) : null}
             </section>

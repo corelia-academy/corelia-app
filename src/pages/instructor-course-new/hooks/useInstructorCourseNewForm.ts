@@ -43,6 +43,9 @@ export function useInstructorCourseNewForm() {
       "https://placehold.co/640x360/1e3a5f/fff?text=Kho%C3%A1+h%E1%BB%8Dc",
     level: "all" as CourseLevel,
     published: false,
+    is_external_aggregated: false,
+    external_source_urls_text: "",
+    external_source_attribution_note: "",
     access_model: "free" as CourseAccessModel,
     price_vnd: "",
     certificate_fee_vnd: "",
@@ -143,6 +146,13 @@ export function useInstructorCourseNewForm() {
           level: form.level,
           total_duration_seconds: 0,
           published: form.published,
+          is_external_aggregated: form.is_external_aggregated,
+          external_source_urls: form.external_source_urls_text
+            .split("\n")
+            .map((x) => x.trim())
+            .filter(Boolean),
+          external_source_attribution_note:
+            form.external_source_attribution_note.trim() || null,
           i18n: {
             supported_locales: form.supported_locales,
             primary_content_locale: form.primary_content_locale,

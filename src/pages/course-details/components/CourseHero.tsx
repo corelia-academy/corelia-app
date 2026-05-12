@@ -89,6 +89,9 @@ export function CourseHero({
                 {translate("filters.pricing.certificate")}
               </CourseBadge>
             ) : null}
+            {course.is_external_aggregated ? (
+              <CourseBadge variant="outline">External Source</CourseBadge>
+            ) : null}
             {enrollment?.certificate_issued_at ? (
               <CourseBadge variant="success">
                 {translate("detail.courseDetail.certificateIssued")}

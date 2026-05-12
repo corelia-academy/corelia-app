@@ -336,6 +336,36 @@ export default function InstructorCourseNewPage() {
                   />
                 </Field>
                 <Field>
+                  <FieldLabel>Sources (external URLs)</FieldLabel>
+                  <textarea
+                    value={form.external_source_urls_text}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        external_source_urls_text: e.target.value,
+                      }))
+                    }
+                    className="min-h-[100px] w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    rows={4}
+                    placeholder={"Mỗi dòng 1 URL nguồn\nhttps://youtube.com/...\nhttps://youtube.com/..."}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel>Source attribution note</FieldLabel>
+                  <textarea
+                    value={form.external_source_attribution_note}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        external_source_attribution_note: e.target.value,
+                      }))
+                    }
+                    className="min-h-[80px] w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                    rows={3}
+                    placeholder="Ghi chú công khai về nguồn tổng hợp (ví dụ: curated từ playlist YouTube của các creator)."
+                  />
+                </Field>
+                <Field>
                   <FieldLabel>{t("courseNew.labels.learningOutcomes")}</FieldLabel>
                   <p className="mt-1 text-xs text-foreground-muted">
                     {t("courseNew.labels.learningOutcomesSubtitle")}
@@ -582,6 +612,27 @@ export default function InstructorCourseNewPage() {
                     />
                     <span className="text-sm font-medium text-foreground">
                       Đã xuất bản (hiển thị trên trang Khoá học)
+                    </span>
+                  </label>
+                </Field>
+                <Field>
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={form.is_external_aggregated}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          is_external_aggregated: e.target.checked,
+                        }))
+                      }
+                      className="mt-0.5 rounded border-border"
+                    />
+                    <span className="text-sm text-foreground">
+                      <span className="font-medium">Public external course</span>
+                      <span className="mt-1 block text-xs text-foreground-muted">
+                        Course này tổng hợp nội dung từ nguồn bên ngoài (YouTube/reference link tới kênh của creator).
+                      </span>
                     </span>
                   </label>
                 </Field>
