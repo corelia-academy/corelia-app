@@ -16,6 +16,7 @@ import { cors, json } from "./lib/http.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
 import {
   handleMyPaymentTransactions,
+  handleSePayDebugLookup,
   handleSePayCheckout,
   handleSePayIpn,
   handleVerifySePayPayment,
@@ -24,6 +25,7 @@ import {
 const PROTECTED_OPS = new Set<string>([
   "payments.sepay.checkout",
   "payments.transactions",
+  "payments.sepay.debugLookup",
   "certificates.issue",
   "payments.sepay.verify",
   "hackathons.notifyRegistrationReview",
@@ -59,6 +61,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   if (op === "payments.transactions" && req.method === "GET") {
     return await handleMyPaymentTransactions(req, db);
+  }
+  if (op === "payments.sepay.debugLookup" && req.method === "POST") {
+    return await handleSePayDebugLookup(req, db);
   }
   if (op === "certificates.issue" && req.method === "POST") {
     return await handleIssueCertificate(req, db);

@@ -1,10 +1,23 @@
 import { createClient, type SupabaseClient, type User } from "https://esm.sh/@supabase/supabase-js@2.49.8";
-import { requireEnv } from "./env.ts";
 
 export type { SupabaseClient, User };
 
+function readOptionalEnv(...names: string[]): string {
+  for (const name of names) {
+    const value = Deno.env.get(name)?.trim() ?? "";
+    if (value) return value;
+  }
+  return "";
+}
+
+function requireAnyEnv(...names: string[]): string {
+  const value = readOptionalEnv(...names);
+  if (value) return value;
+  throw new Error(`Missing env: ${names.join(" | ")}`);
+}
+
 function readSupabaseSecretKey(): string {
-  const secretKeysRaw = Deno.env.get("SUPABASE_SECRET_KEYS")?.trim() ?? "";
+  const secretKeysRaw = readOptionalEnv("CORELIA_SUPABASE_SECRET_KEYS", "SUPABASE_SECRET_KEYS");
   if (secretKeysRaw) {
     try {
       const parsed = JSON.parse(secretKeysRaw) as Record<string, unknown>;
@@ -17,11 +30,11 @@ function readSupabaseSecretKey(): string {
       console.error("[corelia-api] invalid SUPABASE_SECRET_KEYS JSON", e);
     }
   }
-  return requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+  throw new Error("Missing env: CORELIA_SUPABASE_SECRET_KEYS | SUPABASE_SECRET_KEYS");
 }
 
 export function createServiceClient(): SupabaseClient {
-  const url = requireEnv("SUPABASE_URL").trim();
+  const url = requireAnyEnv("CORELIA_SUPABASE_URL", "SUPABASE_URL");
   const key = readSupabaseSecretKey();
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }

@@ -20,8 +20,14 @@ export type SePayIpnPayload = {
   order?: { order_invoice_number?: string; order_amount?: string };
 };
 
-export type SePayOrderListItem = {
-  order_invoice_number?: string;
-  order_status?: string;
-  order_amount?: string;
+export type SePayTransactionListItem = {
+  id?: string;
+  transaction_date?: string;
+  amount_in?: number | string;
+  amount_out?: number | string;
+  transaction_content?: string;
+  reference_number?: string;
+  code?: string;
+  transfer_type?: string;
+  bank_account_id?: string;
 };
