@@ -28,6 +28,7 @@ Supabase usually injects **`SUPABASE_URL`** and **`SUPABASE_SECRET_KEYS`** for d
 | `SEPAY_ENV` | Không | `sandbox` (mặc định) hoặc `production` — chọn URL checkout SePay |
 | `SEPAY_SANDBOX` | Không | `true` → PG API sandbox (`SEPAY_PGAPI_BASE_URL` ưu tiên hơn nếu có) |
 | `SEPAY_PGAPI_BASE_URL` | Không | Override base URL tra cứu đơn PG API |
+| `CORELIA_PAYMENT_CALLBACK_ORIGINS` | Khuyến nghị | Comma-separated allowlist cho `success_url` / `error_url` / `cancel_url` |
 
 ### Mail giao dịch — Resend (**dùng chung** cho mọi flow gọi `sendTransactionalEmailViaResend`, hiện có `hackathons.notifyRegistrationReview`)
 
@@ -56,3 +57,7 @@ Code gửi mail chung: [`lib/mail/resend.ts`](lib/mail/resend.ts). Handler chỉ
 Copy secrets vào `.env` trong thư mục function hoặc dùng `supabase secrets` / Dashboard tương ứng khi `supabase functions serve`.
 
 Tham khảo: [Supabase Edge Functions secrets](https://supabase.com/docs/guides/functions/secrets).
+
+## Auth mode
+
+Function này có cả op public (IPN) và op yêu cầu đăng nhập trong cùng một entrypoint, nên `verify_jwt` được cấu hình tại [`supabase/config.toml`](../../config.toml) là `false`; các op protected sẽ tự kiểm tra Bearer token trong code.

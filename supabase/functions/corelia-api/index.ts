@@ -21,12 +21,31 @@ import {
   handleVerifySePayPayment,
 } from "./payments/handlers.ts";
 
+const PROTECTED_OPS = new Set<string>([
+  "payments.sepay.checkout",
+  "payments.transactions",
+  "certificates.issue",
+  "payments.sepay.verify",
+  "hackathons.notifyRegistrationReview",
+  "credentials.checkCourseCompletion",
+  "credentials.checkActivityMilestones",
+  "credentials.grant",
+]);
+
+function hasBearerAuthHeader(req: Request): boolean {
+  const header = req.headers.get("authorization") ?? req.headers.get("Authorization");
+  return /^Bearer\s+\S+$/i.test(header ?? "");
+}
+
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: cors });
   }
   const url = new URL(req.url);
   const op = url.searchParams.get("op") ?? "";
+  if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req)) {
+    return json({ message: "Missing Authorization header" }, 401);
+  }
   let db: SupabaseClient;
   try {
     db = createServiceClient();

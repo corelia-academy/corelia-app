@@ -4,6 +4,11 @@
 # working directory name when running `supabase init`.
 project_id = "corelia-app"
 
+[functions.corelia-api]
+# Mixed surface: public webhook ops + authenticated user ops in one function.
+# Keep gateway JWT check off and enforce op-level auth in handler/router.
+verify_jwt = false
+
 [api]
 enabled = true
 # Port to use for the API URL.

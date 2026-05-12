@@ -3,6 +3,7 @@ import { randomHex, timingSafeEqual } from "../lib/crypto.ts";
 import { requireEnv } from "../lib/env.ts";
 import { json, nowIso } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
+import { isValidPaymentCallbackUrl, paymentCallbackOriginAllowlistFromEnv } from "./callback_url.ts";
 import { grantPaymentAccessForTransaction } from "./grant_access.ts";
 import {
   buildSePaySignature,
@@ -29,7 +30,12 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     if (!Number.isFinite(requestedAmountVnd) || requestedAmountVnd <= 0) {
       return json({ message: "amountVnd không hợp lệ" }, 400);
     }
-    if (!/^https?:\/\//.test(successUrl) || !/^https?:\/\//.test(errorUrl) || !/^https?:\/\//.test(cancelUrl)) {
+    const callbackAllowlist = paymentCallbackOriginAllowlistFromEnv();
+    if (
+      !isValidPaymentCallbackUrl(successUrl, callbackAllowlist) ||
+      !isValidPaymentCallbackUrl(errorUrl, callbackAllowlist) ||
+      !isValidPaymentCallbackUrl(cancelUrl, callbackAllowlist)
+    ) {
       return json({ message: "Callback URLs không hợp lệ" }, 400);
     }
     const merchantId = requireEnv("SEPAY_MERCHANT_ID");
@@ -285,18 +291,20 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
         console.error("[corelia-api] IPN amount mismatch", { invoiceNumber, expectedAmount, paidAmount });
         return json({ message: "Amount mismatch" }, 400);
       }
-      await db.from("payment_transactions").update({
+      const { error: txUpdateErr } = await db.from("payment_transactions").update({
         status: "paid",
         provider_payload: payload as unknown as Record<string, unknown>,
         updated_at: updatedAt,
       }).eq("id", invoiceNumber);
+      if (txUpdateErr) throw new Error(txUpdateErr.message);
       await grantPaymentAccessForTransaction(db, tx, invoiceNumber, updatedAt, payload);
       return json({ ok: true });
     }
-    await db.from("payment_transactions").update({
+    const { error: payloadUpdateErr } = await db.from("payment_transactions").update({
       provider_payload: payload as unknown as Record<string, unknown>,
       updated_at: updatedAt,
     }).eq("id", invoiceNumber);
+    if (payloadUpdateErr) throw new Error(payloadUpdateErr.message);
     return json({ ok: true });
   } catch (e) {
     console.error("[corelia-api] IPN", e);

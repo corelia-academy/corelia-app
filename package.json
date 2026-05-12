@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "functions:serve": "supabase functions serve corelia-api --no-verify-jwt",
+    "functions:serve": "supabase functions serve corelia-api",
     "functions:deploy": "supabase functions deploy corelia-api",
     "dev:staging": "vite --mode staging",
     "build": "tsc -b && vite build",

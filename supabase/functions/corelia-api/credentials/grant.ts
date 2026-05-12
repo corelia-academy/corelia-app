@@ -100,7 +100,11 @@ export async function handleGrantCredentials(req: Request, db: SupabaseClient): 
 
       const iid = inserted?.id != null ? String(inserted.id) : null;
       if (!iid) continue;
-      await mintCredentialOnce(db, iid);
+      const mintResult = await mintCredentialOnce(db, iid);
+      if (!mintResult.ok) {
+        errors.push(`${uid}: mint failed (${mintResult.error ?? "unknown"})`);
+        continue;
+      }
       issuanceIds.push(iid);
     }
 
