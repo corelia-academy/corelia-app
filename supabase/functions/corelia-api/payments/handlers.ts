@@ -1,12 +1,13 @@
-import { isAuthFailure } from "../lib/authz.ts";
+import { getUserRole, isAuthFailure } from "../lib/authz.ts";
 import { randomHex, timingSafeEqual } from "../lib/crypto.ts";
 import { requireEnv } from "../lib/env.ts";
 import { json, nowIso } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
+import { isValidPaymentCallbackUrl, paymentCallbackOriginAllowlistFromEnv } from "./callback_url.ts";
 import { grantPaymentAccessForTransaction } from "./grant_access.ts";
 import {
   buildSePaySignature,
-  fetchSePayOrderByInvoiceNumber,
+  fetchSePayIncomingTransactionByInvoiceNumber,
   sepayCheckoutInitUrl,
 } from "./sepay.ts";
 import type { PaymentPurpose, PaymentTransaction, SePayIpnPayload } from "./types.ts";
@@ -29,7 +30,12 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     if (!Number.isFinite(requestedAmountVnd) || requestedAmountVnd <= 0) {
       return json({ message: "amountVnd không hợp lệ" }, 400);
     }
-    if (!/^https?:\/\//.test(successUrl) || !/^https?:\/\//.test(errorUrl) || !/^https?:\/\//.test(cancelUrl)) {
+    const callbackAllowlist = paymentCallbackOriginAllowlistFromEnv();
+    if (
+      !isValidPaymentCallbackUrl(successUrl, callbackAllowlist) ||
+      !isValidPaymentCallbackUrl(errorUrl, callbackAllowlist) ||
+      !isValidPaymentCallbackUrl(cancelUrl, callbackAllowlist)
+    ) {
       return json({ message: "Callback URLs không hợp lệ" }, 400);
     }
     const merchantId = requireEnv("SEPAY_MERCHANT_ID");
@@ -218,11 +224,12 @@ export async function handleVerifySePayPayment(req: Request, db: SupabaseClient)
       verifiedBy = "transaction";
     } else if (tx.status === "paid") verifiedBy = "transaction";
     else {
-      const sepayOrder = await fetchSePayOrderByInvoiceNumber(orderRow.id, tx.user_id);
-      if (sepayOrder?.order_status === "CAPTURED") {
+      const expectedAmount = Math.round(Number(tx.amount_vnd ?? 0));
+      const sepayTx = await fetchSePayIncomingTransactionByInvoiceNumber(orderRow.id, expectedAmount);
+      if (sepayTx) {
         await grantPaymentAccessForTransaction(db, tx, orderRow.id, nowIso(), {
           source: "verify_endpoint_sepay_lookup",
-          sepay_order: sepayOrder,
+          sepay_transaction: sepayTx,
         });
         verifiedBy = "sepay_lookup";
       }
@@ -248,6 +255,55 @@ export async function handleVerifySePayPayment(req: Request, db: SupabaseClient)
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
     console.error("[corelia-api] verify", e);
     return json({ message: "Không thể xác minh thanh toán lúc này." }, 500);
+  }
+}
+
+export async function handleSePayDebugLookup(req: Request, db: SupabaseClient): Promise<Response> {
+  try {
+    const user = await verifyBearerUser(req, db);
+    const role = await getUserRole(db, user.id);
+    if (role !== "admin" && role !== "support_staff") {
+      return json({ message: "Không đủ quyền." }, 403);
+    }
+
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    const invoiceNumber = String(body.orderId ?? body.invoiceNumber ?? "").trim();
+    const expectedAmountVnd = Math.round(Number(body.amountVnd ?? body.expectedAmountVnd ?? 0));
+    if (!invoiceNumber) return json({ message: "Thiếu orderId/invoiceNumber." }, 400);
+    if (!Number.isFinite(expectedAmountVnd) || expectedAmountVnd <= 0) {
+      return json({ message: "Thiếu amountVnd hợp lệ." }, 400);
+    }
+
+    const tx = await fetchSePayIncomingTransactionByInvoiceNumber(invoiceNumber, expectedAmountVnd);
+    if (!tx) {
+      return json({
+        ok: true,
+        found: false,
+        invoice_number: invoiceNumber,
+        expected_amount_vnd: expectedAmountVnd,
+      });
+    }
+    return json({
+      ok: true,
+      found: true,
+      invoice_number: invoiceNumber,
+      expected_amount_vnd: expectedAmountVnd,
+      transaction: {
+        id: tx.id ?? null,
+        transaction_date: tx.transaction_date ?? null,
+        amount_in: tx.amount_in ?? null,
+        transfer_type: tx.transfer_type ?? null,
+        reference_number: tx.reference_number ?? null,
+        code: tx.code ?? null,
+        transaction_content: tx.transaction_content ?? null,
+        bank_account_id: tx.bank_account_id ?? null,
+      },
+    });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
+    console.error("[corelia-api] sepay.debugLookup", e);
+    return json({ message: "Không thể debug lookup SePay." }, 500);
   }
 }
 
@@ -285,18 +341,20 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
         console.error("[corelia-api] IPN amount mismatch", { invoiceNumber, expectedAmount, paidAmount });
         return json({ message: "Amount mismatch" }, 400);
       }
-      await db.from("payment_transactions").update({
+      const { error: txUpdateErr } = await db.from("payment_transactions").update({
         status: "paid",
         provider_payload: payload as unknown as Record<string, unknown>,
         updated_at: updatedAt,
       }).eq("id", invoiceNumber);
+      if (txUpdateErr) throw new Error(txUpdateErr.message);
       await grantPaymentAccessForTransaction(db, tx, invoiceNumber, updatedAt, payload);
       return json({ ok: true });
     }
-    await db.from("payment_transactions").update({
+    const { error: payloadUpdateErr } = await db.from("payment_transactions").update({
       provider_payload: payload as unknown as Record<string, unknown>,
       updated_at: updatedAt,
     }).eq("id", invoiceNumber);
+    if (payloadUpdateErr) throw new Error(payloadUpdateErr.message);
     return json({ ok: true });
   } catch (e) {
     console.error("[corelia-api] IPN", e);

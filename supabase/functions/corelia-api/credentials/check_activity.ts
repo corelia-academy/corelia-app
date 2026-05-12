@@ -205,7 +205,11 @@ export async function runActivityMilestoneCheck(
     const issuanceId = inserted?.id != null ? String(inserted.id) : null;
     if (!issuanceId) continue;
 
-    await mintCredentialOnce(db, issuanceId);
+    const mintResult = await mintCredentialOnce(db, issuanceId);
+    if (!mintResult.ok) {
+      skipped.push(String(template.id));
+      continue;
+    }
     awarded.push(issuanceId);
   }
 

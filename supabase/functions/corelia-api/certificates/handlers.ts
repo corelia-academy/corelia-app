@@ -67,6 +67,3 @@ export async function handleIssueCertificate(req: Request, db: SupabaseClient): 
     return json({ message: "Không thể cấp chứng nhận.", issued: false }, 500);
   }
 }
-
-/** Reserved for future Meet integration — keeps google_meet.ts in the deploy graph. */
-export { meetApiFetch } from "../google_meet.ts";

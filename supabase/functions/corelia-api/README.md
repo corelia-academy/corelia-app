@@ -3,6 +3,7 @@
 Single HTTP entry: `/functions/v1/corelia-api?op=<operation>`. Secrets are configured in the Supabase Dashboard (**Project Settings → Edge Functions → Secrets**) or via CLI (`supabase secrets set KEY=value`).
 
 Supabase usually injects **`SUPABASE_URL`** and **`SUPABASE_SECRET_KEYS`** for deployed functions; confirm they exist if you override secrets manually.
+You cannot create secrets starting with `SUPABASE_` in the Dashboard because this prefix is reserved internally by Supabase.
 
 ---
 
@@ -10,9 +11,8 @@ Supabase usually injects **`SUPABASE_URL`** and **`SUPABASE_SECRET_KEYS`** for d
 
 | Biến | Ghi chú |
 |------|---------|
-| `SUPABASE_URL` | URL project (vd. `https://xxx.supabase.co`) |
-| `SUPABASE_SECRET_KEYS` | JSON dictionary (vd. `{\"default\":\"sb_secret_...\"}`) — dùng trên server / Edge |
-| `SUPABASE_SERVICE_ROLE_KEY` | Legacy fallback (deprecated) — chỉ dùng nếu không có `SUPABASE_SECRET_KEYS` |
+| `CORELIA_SUPABASE_URL` | URL project cho local/dev |
+| `CORELIA_SUPABASE_SECRET_KEYS` | JSON dictionary (vd. `{\"default\":\"sb_secret_...\"}`) |
 
 ---
 
@@ -23,11 +23,17 @@ Supabase usually injects **`SUPABASE_URL`** and **`SUPABASE_SECRET_KEYS`** for d
 | Biến | Bắt buộc? | Ghi chú |
 |------|------------|---------|
 | `SEPAY_MERCHANT_ID` | Có (checkout) | |
-| `SEPAY_SECRET_KEY` | Có (checkout, ký request; dùng làm fallback IPN nếu không set secret riêng) | |
+| `SEPAY_SECRET_KEY` | Có (checkout) | Dùng ký form `pay*.sepay.vn/v1/checkout/init` |
 | `SEPAY_IPN_SECRET` | Khuyến nghị (IPN webhook) | Nếu thiếu, code fallback sang `SEPAY_SECRET_KEY` |
-| `SEPAY_ENV` | Không | `sandbox` (mặc định) hoặc `production` — chọn URL checkout SePay |
-| `SEPAY_SANDBOX` | Không | `true` → PG API sandbox (`SEPAY_PGAPI_BASE_URL` ưu tiên hơn nếu có) |
-| `SEPAY_PGAPI_BASE_URL` | Không | Override base URL tra cứu đơn PG API |
+| `SEPAY_ENV` | Không | `sandbox` (mặc định) hoặc `production` — chọn URL checkout và base URL SePay API v2 mặc định |
+| `SEPAY_API_TOKEN` | Có (verify lookup) | Bearer token cho SePay API v2 `userapi` |
+| `SEPAY_USERAPI_BASE_URL` | Không | Override base URL v2 (mặc định: sandbox `https://userapi-sandbox.sepay.vn/v2`, production `https://userapi.sepay.vn/v2`) |
+| `SEPAY_BANK_ACCOUNT_ID` | Không | UUID bank account để thu hẹp truy vấn `v2/transactions` |
+| `CORELIA_PAYMENT_CALLBACK_ORIGINS` | Khuyến nghị | Comma-separated allowlist cho `success_url` / `error_url` / `cancel_url` |
+
+Luồng checkout của SePay Payment Gateway hiện vẫn dùng endpoint `/v1/checkout/init`; phần tra soát giao dịch trong `payments.sepay.verify` đã dùng SePay API v2 (`/v2/transactions`).
+
+`payments.sepay.debugLookup` (POST) là op nội bộ để debug lookup v2 bằng `orderId + amountVnd`, chỉ cho `admin` / `support_staff`.
 
 ### Mail giao dịch — Resend (**dùng chung** cho mọi flow gọi `sendTransactionalEmailViaResend`, hiện có `hackathons.notifyRegistrationReview`)
 
@@ -41,18 +47,12 @@ Nếu thiếu `RESEND_API_KEY` hoặc `MAIL_FROM`, handler **không lỗi**: tr�
 
 Code gửi mail chung: [`lib/mail/resend.ts`](lib/mail/resend.ts). Handler chỉ lo `subject` + `html`.
 
-### Google Meet (chỉ khi gọi `meetApiFetch` — hiện chưa gắn route)
-
-| Biến | Ghi chú |
-|------|---------|
-| `GOOGLE_MEET_CLIENT_EMAIL` | Service account client email |
-| `GOOGLE_MEET_PRIVATE_KEY` | PEM PKCS8 (trong secret có thể dùng `\n` cho newline) |
-| `GOOGLE_MEET_DELEGATED_USER` | User để domain-wide delegation |
-
----
-
 ## Local
 
 Copy secrets vào `.env` trong thư mục function hoặc dùng `supabase secrets` / Dashboard tương ứng khi `supabase functions serve`.
 
 Tham khảo: [Supabase Edge Functions secrets](https://supabase.com/docs/guides/functions/secrets).
+
+## Auth mode
+
+Function này có cả op public (IPN) và op yêu cầu đăng nhập trong cùng một entrypoint, nên `verify_jwt` được cấu hình tại [`supabase/config.toml`](../../config.toml) là `false`; các op protected sẽ tự kiểm tra Bearer token trong code.

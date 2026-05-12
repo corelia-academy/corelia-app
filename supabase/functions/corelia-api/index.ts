@@ -16,10 +16,28 @@ import { cors, json } from "./lib/http.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
 import {
   handleMyPaymentTransactions,
+  handleSePayDebugLookup,
   handleSePayCheckout,
   handleSePayIpn,
   handleVerifySePayPayment,
 } from "./payments/handlers.ts";
+
+const PROTECTED_OPS = new Set<string>([
+  "payments.sepay.checkout",
+  "payments.transactions",
+  "payments.sepay.debugLookup",
+  "certificates.issue",
+  "payments.sepay.verify",
+  "hackathons.notifyRegistrationReview",
+  "credentials.checkCourseCompletion",
+  "credentials.checkActivityMilestones",
+  "credentials.grant",
+]);
+
+function hasBearerAuthHeader(req: Request): boolean {
+  const header = req.headers.get("authorization") ?? req.headers.get("Authorization");
+  return /^Bearer\s+\S+$/i.test(header ?? "");
+}
 
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -27,6 +45,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   const url = new URL(req.url);
   const op = url.searchParams.get("op") ?? "";
+  if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req)) {
+    return json({ message: "Missing Authorization header" }, 401);
+  }
   let db: SupabaseClient;
   try {
     db = createServiceClient();
@@ -40,6 +61,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   if (op === "payments.transactions" && req.method === "GET") {
     return await handleMyPaymentTransactions(req, db);
+  }
+  if (op === "payments.sepay.debugLookup" && req.method === "POST") {
+    return await handleSePayDebugLookup(req, db);
   }
   if (op === "certificates.issue" && req.method === "POST") {
     return await handleIssueCertificate(req, db);

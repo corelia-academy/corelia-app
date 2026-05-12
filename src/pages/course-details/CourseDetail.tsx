@@ -297,7 +297,12 @@ export default function CourseDetail() {
         <main className="min-w-0">
           <CourseLearningOutcomes outcomes={course.learning_outcomes ?? []} />
 
-          <CourseDescription description={course.description ?? ""} />
+          <CourseDescription
+            description={course.description ?? ""}
+            isExternalAggregated={course.is_external_aggregated}
+            externalSourceUrls={course.external_source_urls}
+            externalSourceAttributionNote={course.external_source_attribution_note}
+          />
 
           <CourseCurriculum
             visibleLessonGroups={visibleLessonGroups}

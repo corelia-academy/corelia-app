@@ -75,7 +75,11 @@ export function CourseOcbCredentialSection({
   }, [load]);
 
   const handleUpload = async (file: File | null) => {
-    if (!file || !canEdit) return;
+    if (!file) return;
+    if (!canEdit) {
+      toast.error("Bạn không có quyền cấu hình Open Campus badge cho khoá học này.");
+      return;
+    }
     setUploading(true);
     try {
       const { url } = await uploadCourseCredentialBadgeImage(courseId, file);
@@ -89,7 +93,10 @@ export function CourseOcbCredentialSection({
   };
 
   const handleSave = async () => {
-    if (!canEdit) return;
+    if (!canEdit) {
+      toast.error("Bạn không có quyền cấu hình Open Campus badge cho khoá học này.");
+      return;
+    }
     setSaving(true);
     try {
       const triggerRule: CourseCredentialTriggerRule = {

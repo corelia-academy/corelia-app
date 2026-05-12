@@ -136,6 +136,12 @@ export interface Course {
   access_model?: CourseAccessModel;
   /** Khoá học vẫn đang được cập nhật nội dung (manual flag) */
   is_updating?: boolean;
+  /** Khoá học tổng hợp từ nguồn ngoài (YouTube/reference) */
+  is_external_aggregated?: boolean;
+  /** Danh sách link nguồn ngoài (YouTube/reference) */
+  external_source_urls?: string[];
+  /** Chú thích nguồn để hiển thị công khai */
+  external_source_attribution_note?: string | null;
   /** Giá mở toàn bộ khoá học (VND) khi access_model = paid_upfront */
   price_vnd?: number | null;
   /** Giá khuyến mãi (VND) khi access_model = paid_upfront (nếu có) */
@@ -294,6 +300,9 @@ export interface CourseInsert {
   i18n?: CourseI18nConfig;
   access_model?: CourseAccessModel;
   is_updating?: boolean;
+  is_external_aggregated?: boolean;
+  external_source_urls?: string[];
+  external_source_attribution_note?: string | null;
   price_vnd?: number | null;
   promo_price_vnd?: number | null;
   promo_ends_at?: string | null;
@@ -337,6 +346,9 @@ export interface CourseUpdate {
   certificate_name_y_percent?: number | null;
   access_model?: CourseAccessModel;
   is_updating?: boolean;
+  is_external_aggregated?: boolean;
+  external_source_urls?: string[];
+  external_source_attribution_note?: string | null;
   price_vnd?: number | null;
   promo_price_vnd?: number | null;
   promo_ends_at?: string | null;

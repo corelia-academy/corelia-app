@@ -9,11 +9,12 @@ export async function grantPaymentAccessForTransaction(
   providerPayload: unknown,
 ): Promise<void> {
   const accessId = `${tx.user_id}_${tx.course_id}`;
-  const { data: existingAccess } = await db
+  const { data: existingAccess, error: existingAccessErr } = await db
     .from("course_payment_access")
     .select("full_access_granted, certificate_fee_paid")
     .eq("id", accessId)
     .maybeSingle();
+  if (existingAccessErr) throw new Error(existingAccessErr.message);
   const fullAccess = tx.purpose === "course_purchase"
     ? true
     : existingAccess?.full_access_granted === true;
