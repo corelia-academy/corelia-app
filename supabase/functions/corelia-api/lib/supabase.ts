@@ -18,19 +18,26 @@ function requireAnyEnv(...names: string[]): string {
 
 function readSupabaseSecretKey(): string {
   const secretKeysRaw = readOptionalEnv("CORELIA_SUPABASE_SECRET_KEYS", "SUPABASE_SECRET_KEYS");
-  if (secretKeysRaw) {
-    try {
-      const parsed = JSON.parse(secretKeysRaw) as Record<string, unknown>;
-      const directDefault = parsed.default;
-      if (typeof directDefault === "string" && directDefault.trim()) return directDefault.trim();
-      for (const v of Object.values(parsed)) {
-        if (typeof v === "string" && v.trim()) return v.trim();
-      }
-    } catch (e) {
-      console.error("[corelia-api] invalid SUPABASE_SECRET_KEYS JSON", e);
-    }
+  if (!secretKeysRaw) {
+    throw new Error("Missing env: CORELIA_SUPABASE_SECRET_KEYS | SUPABASE_SECRET_KEYS");
   }
-  throw new Error("Missing env: CORELIA_SUPABASE_SECRET_KEYS | SUPABASE_SECRET_KEYS");
+
+  // Preferred format: a single `sb_secret_...` string copied from the dashboard.
+  if (secretKeysRaw.startsWith("sb_secret_")) return secretKeysRaw;
+
+  // Backward compatibility for older JSON dictionary format.
+  try {
+    const parsed = JSON.parse(secretKeysRaw) as Record<string, unknown>;
+    const directDefault = parsed.default;
+    if (typeof directDefault === "string" && directDefault.trim()) return directDefault.trim();
+    for (const v of Object.values(parsed)) {
+      if (typeof v === "string" && v.trim()) return v.trim();
+    }
+  } catch (e) {
+    console.error("[corelia-api] invalid SUPABASE_SECRET_KEYS format", e);
+  }
+
+  throw new Error("Invalid env: CORELIA_SUPABASE_SECRET_KEYS | SUPABASE_SECRET_KEYS");
 }
 
 export function createServiceClient(): SupabaseClient {
