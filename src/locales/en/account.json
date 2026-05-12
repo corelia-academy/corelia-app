@@ -18,6 +18,10 @@
       "title": "Learning profile & CV",
       "description": "Info for advising & career support"
     },
+    "cora": {
+      "title": "Cora AI",
+      "description": "AI plans, limits, and upgrade history"
+    },
     "billing": {
       "title": "Billing & history",
       "description": "Invoices, payment history"
@@ -72,6 +76,40 @@
   },
   "errors": {
     "notLoggedIn": "Not signed in"
+  },
+  "projects": {
+    "pageTitle": "Project workspace",
+    "listTitle": "My projects",
+    "ownerBadge": "Owner",
+    "collaboratorBadge": "Collaborator",
+    "publicListingLabel": "Public listing:",
+    "collaboratorCardTitle": "Collaborator visibility",
+    "collaboratorCardBody": "You are listed as a collaborator on this project. You can choose whether this project appears on your public profile.",
+    "showOnProfileLabel": "Show this project on my profile",
+    "showOnProfileHint": "When enabled, this project can appear on your public profile and in your account project list.",
+    "ownerOnlyTitle": "Owner-managed content",
+    "ownerOnlyBody": "Only the project owner can edit the main project content and translations right now. As a collaborator, you can only control whether it appears on your profile.",
+    "localizationSettingsTitle": "Localization settings",
+    "primaryLocaleLabel": "Primary content locale",
+    "supportedLocalesLabel": "Supported locales",
+    "saveSettings": "Save settings",
+    "translationEditorTitle": "Translation editor",
+    "translationEditorHint": "Empty fields fall back to primary ({{primaryLocale}}).",
+    "updatedAt": "Updated: {{datetime}}",
+    "copyFromPrimary": "Copy from primary",
+    "saveTranslation": "Save translation",
+    "savingTranslation": "Saving…",
+    "targetLocaleDisabled": "Target locale {{locale}} is not enabled in supported locales.",
+    "primaryColumnTitle": "Primary ({{locale}})",
+    "translationColumnTitle": "Translation ({{locale}})",
+    "fieldTitle": "Title",
+    "fieldSummary": "Summary",
+    "titleFallback": "Fallback: {{title}}",
+    "titlePlaceholder": "Enter title",
+    "summaryPlaceholder": "Fallback to primary if empty",
+    "errors": {
+      "visibilityFailed": "Could not update profile visibility for this project."
+    }
   },
   "password": {
     "title": "Change password",
@@ -325,6 +363,90 @@
       "fetchFailed": "Unable to load payment history."
     }
   },
+  "cora": {
+    "title": "Upgrade Cora AI",
+    "subtitle": "Choose the plan that fits your pace so you can ask Cora more often, get deeper learning support, and unlock richer AI use cases across Corelia.",
+    "mustLogin": "You need to sign in to manage your Cora AI plan.",
+    "currentPlan": {
+      "statusLabel": "Current status",
+      "free": "Free plan",
+      "active": "Your Cora AI plan is active.",
+      "notSubscribed": "You're currently using Corelia's default AI allowance.",
+      "expiryLabel": "Valid until",
+      "daysLeftLabel": "Time remaining",
+      "daysLeft_one": "{{count}} day left",
+      "daysLeft_other": "{{count}} days left"
+    },
+    "selector": {
+      "title": "Choose the right plan",
+      "subtitle": "Each tier is tuned for a different learning rhythm and level of AI support.",
+      "perDuration": "{{duration}}",
+      "checkoutAction": "Continue to checkout",
+      "checkoutLoading": "Creating checkout session...",
+      "checkoutHint": "You'll be redirected to SePay to complete the upgrade."
+    },
+    "durationTitle": "Billing cycle",
+    "duration": {
+      "1": {
+        "label": "1 month",
+        "note": "Flexible if you're just getting started"
+      },
+      "6": {
+        "label": "6 months",
+        "note": "Better value for a focused learning season"
+      },
+      "12": {
+        "label": "12 months",
+        "note": "Best fit if you want Cora in your long-term workflow"
+      }
+    },
+    "tiers": {
+      "student": {
+        "title": "Student",
+        "description": "For learners who want a steady AI study companion during active courses.",
+        "features": [
+          "Ask Cora about your learning progress and current lessons",
+          "Get stronger next-course recommendations",
+          "Best for dashboard, search, and learning flows"
+        ]
+      },
+      "pro": {
+        "title": "Pro",
+        "description": "For learners who want stronger AI support for faster learning and clearer career direction.",
+        "features": [
+          "Expanded allowance for contextual AI guidance",
+          "Career path, profile review, and project direction support",
+          "Great for learners juggling multiple tracks"
+        ]
+      },
+      "bootcamp": {
+        "title": "Bootcamp",
+        "description": "For learners who need high-intensity AI support during acceleration phases.",
+        "features": [
+          "Highest allowance for chat, tutor, and discovery",
+          "Optimized for goal setting, milestone check-ins, and execution support",
+          "Best for cohorts, bootcamps, or career transition phases"
+        ]
+      }
+    },
+    "history": {
+      "title": "Cora AI history",
+      "subtitle": "Track your recent Cora AI upgrades and renewals.",
+      "loading": "Loading Cora AI history...",
+      "empty": "You don't have any Cora AI transactions yet.",
+      "planFallback": "Cora AI transaction",
+      "table": {
+        "time": "Time",
+        "plan": "Plan",
+        "amount": "Amount",
+        "status": "Status"
+      }
+    },
+    "errors": {
+      "checkoutFailed": "Unable to create a Cora AI checkout session.",
+      "fetchTransactions": "Unable to load Cora AI history."
+    }
+  },
   "ocid": {
     "card": {
       "title": "Connect OCID",
@@ -353,4 +475,3 @@
     }
   }
 }
-

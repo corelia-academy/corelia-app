@@ -1,4 +1,12 @@
-export type PaymentPurpose = "course_purchase" | "certificate_fee";
+export type PaymentPurpose = "course_purchase" | "certificate_fee" | "ai_subscription";
+
+export type AiSubscriptionTier = "student" | "pro" | "bootcamp";
+export type AiSubscriptionDurationMonths = 1 | 6 | 12;
+
+export type AiSubscriptionMeta = {
+  tier: AiSubscriptionTier;
+  duration_months: AiSubscriptionDurationMonths;
+};
 
 export type PaymentTransaction = {
   user_id: string;

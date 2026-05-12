@@ -18,6 +18,10 @@
       "title": "Hồ sơ học tập & CV",
       "description": "Thông tin phục vụ tư vấn & việc làm"
     },
+    "cora": {
+      "title": "Cora AI",
+      "description": "Gói AI, hạn mức và lịch sử nâng cấp"
+    },
     "billing": {
       "title": "Thanh toán & lịch sử",
       "description": "Hoá đơn, lịch sử thanh toán"
@@ -72,6 +76,40 @@
   },
   "errors": {
     "notLoggedIn": "Chưa đăng nhập"
+  },
+  "projects": {
+    "pageTitle": "Không gian dự án",
+    "listTitle": "Dự án của tôi",
+    "ownerBadge": "Owner",
+    "collaboratorBadge": "Collaborator",
+    "publicListingLabel": "Danh sách public:",
+    "collaboratorCardTitle": "Hiển thị của collaborator",
+    "collaboratorCardBody": "Bạn đang là collaborator của project này. Bạn có thể chọn việc project có xuất hiện trên hồ sơ công khai của mình hay không.",
+    "showOnProfileLabel": "Hiện project này trên hồ sơ của tôi",
+    "showOnProfileHint": "Khi bật, project có thể xuất hiện trên hồ sơ công khai và trong danh sách project ở tài khoản của bạn.",
+    "ownerOnlyTitle": "Nội dung do owner quản lý",
+    "ownerOnlyBody": "Hiện tại chỉ owner mới sửa được nội dung chính của project và bản dịch. Với vai trò collaborator, bạn chỉ điều khiển việc project có xuất hiện trên hồ sơ của mình hay không.",
+    "localizationSettingsTitle": "Cài đặt bản địa hóa",
+    "primaryLocaleLabel": "Ngôn ngữ nội dung chính",
+    "supportedLocalesLabel": "Ngôn ngữ hỗ trợ",
+    "saveSettings": "Lưu cài đặt",
+    "translationEditorTitle": "Trình sửa bản dịch",
+    "translationEditorHint": "Nếu để trống, hệ thống sẽ fallback về ngôn ngữ chính ({{primaryLocale}}).",
+    "updatedAt": "Cập nhật: {{datetime}}",
+    "copyFromPrimary": "Chép từ bản chính",
+    "saveTranslation": "Lưu bản dịch",
+    "savingTranslation": "Đang lưu…",
+    "targetLocaleDisabled": "Ngôn ngữ đích {{locale}} chưa được bật trong danh sách hỗ trợ.",
+    "primaryColumnTitle": "Bản chính ({{locale}})",
+    "translationColumnTitle": "Bản dịch ({{locale}})",
+    "fieldTitle": "Tiêu đề",
+    "fieldSummary": "Tóm tắt",
+    "titleFallback": "Fallback: {{title}}",
+    "titlePlaceholder": "Nhập tiêu đề",
+    "summaryPlaceholder": "Để trống để dùng bản chính",
+    "errors": {
+      "visibilityFailed": "Không thể cập nhật chế độ hiển thị project trên hồ sơ của bạn."
+    }
   },
   "password": {
     "title": "Đổi mật khẩu",
@@ -325,6 +363,90 @@
       "fetchFailed": "Không lấy được lịch sử thanh toán."
     }
   },
+  "cora": {
+    "title": "Nâng cấp Cora AI",
+    "subtitle": "Chọn gói phù hợp để hỏi Cora nhiều hơn, nhận hỗ trợ học tập sâu hơn và mở rộng các use case AI trong Corelia.",
+    "mustLogin": "Bạn cần đăng nhập để quản lý gói Cora AI.",
+    "currentPlan": {
+      "statusLabel": "Trạng thái hiện tại",
+      "free": "Gói miễn phí",
+      "active": "Gói Cora AI của bạn đang hoạt động.",
+      "notSubscribed": "Bạn đang dùng hạn mức mặc định của Corelia.",
+      "expiryLabel": "Hiệu lực đến",
+      "daysLeftLabel": "Thời gian còn lại",
+      "daysLeft_one": "Còn {{count}} ngày",
+      "daysLeft_other": "Còn {{count}} ngày"
+    },
+    "selector": {
+      "title": "Chọn gói phù hợp",
+      "subtitle": "Mỗi gói ưu tiên một kiểu học và mức độ đồng hành khác nhau của Cora.",
+      "perDuration": "{{duration}}",
+      "checkoutAction": "Tiếp tục thanh toán",
+      "checkoutLoading": "Đang tạo phiên thanh toán...",
+      "checkoutHint": "Bạn sẽ được chuyển sang cổng thanh toán SePay để hoàn tất nâng cấp."
+    },
+    "durationTitle": "Chu kỳ thanh toán",
+    "duration": {
+      "1": {
+        "label": "1 tháng",
+        "note": "Linh hoạt để bắt đầu nhanh"
+      },
+      "6": {
+        "label": "6 tháng",
+        "note": "Tiết kiệm hơn cho một chặng học rõ ràng"
+      },
+      "12": {
+        "label": "12 tháng",
+        "note": "Phù hợp khi bạn muốn dùng Cora lâu dài"
+      }
+    },
+    "tiers": {
+      "student": {
+        "title": "Student",
+        "description": "Cho học viên cần trợ lý học tập thường xuyên trong các khóa đang học.",
+        "features": [
+          "Hỏi Cora về tiến độ học và bài học hiện tại",
+          "Nhận gợi ý khóa học tiếp theo phù hợp hơn",
+          "Ưu tiên dùng cho dashboard, search và learning flow"
+        ]
+      },
+      "pro": {
+        "title": "Pro",
+        "description": "Cho người học muốn dùng AI mạnh hơn để học nhanh và định hướng nghề nghiệp rõ hơn.",
+        "features": [
+          "Mở rộng số lượt hỏi và tư vấn theo ngữ cảnh",
+          "Tư vấn career path, profile review và project direction",
+          "Phù hợp với người đang học nhiều track song song"
+        ]
+      },
+      "bootcamp": {
+        "title": "Bootcamp",
+        "description": "Cho học viên cần AI đồng hành cường độ cao trong giai đoạn tăng tốc.",
+        "features": [
+          "Hạn mức cao nhất cho chat, tutor và discovery",
+          "Tối ưu cho goal setting, milestone check-in và execution support",
+          "Phù hợp với cohort, bootcamp hoặc giai đoạn chuyển nghề"
+        ]
+      }
+    },
+    "history": {
+      "title": "Lịch sử gói Cora AI",
+      "subtitle": "Theo dõi các lần nâng cấp hoặc gia hạn gần đây của bạn.",
+      "loading": "Đang tải lịch sử Cora AI...",
+      "empty": "Bạn chưa có giao dịch Cora AI nào.",
+      "planFallback": "Giao dịch Cora AI",
+      "table": {
+        "time": "Thời gian",
+        "plan": "Gói",
+        "amount": "Số tiền",
+        "status": "Trạng thái"
+      }
+    },
+    "errors": {
+      "checkoutFailed": "Không thể tạo phiên thanh toán Cora AI.",
+      "fetchTransactions": "Không tải được lịch sử Cora AI."
+    }
+  },
   "ocid": {
     "card": {
       "title": "Kết nối OCID",
@@ -353,4 +475,3 @@
     }
   }
 }
-

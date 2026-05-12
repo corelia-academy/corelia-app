@@ -178,7 +178,7 @@ export function ContestDetailJudgingPanel({
                     </p>
                   )}
 
-                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("workspace.manage.demoPrefix")}{" "}
                       {submission.demo_url ||
@@ -192,6 +192,16 @@ export function ContestDetailJudgingPanel({
                     <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("workspace.manage.slidePrefix")}{" "}
                       {submission.slide_url ||
+                        translate("detail.labels.noDemo")}
+                    </div>
+                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
+                      {translate("common:projects.screenshot")}{" "}
+                      {submission.screenshot_url ||
+                        translate("detail.labels.noDemo")}
+                    </div>
+                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
+                      {translate("common:projects.video")}{" "}
+                      {submission.video_url ||
                         translate("detail.labels.noDemo")}
                     </div>
                   </div>

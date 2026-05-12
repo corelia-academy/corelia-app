@@ -37,22 +37,6 @@ export default function Home() {
   const displayName =
     profile?.full_name?.trim() || oauthDisplayName || t("home.studentFallback");
   const firstName = displayName.split(" ")[0] || displayName;
-  const email = profile?.email || user?.email || "";
-  const oauthAvatar =
-    typeof user?.user_metadata?.avatar_url === "string"
-      ? user.user_metadata.avatar_url
-      : typeof user?.user_metadata?.picture === "string"
-        ? user.user_metadata.picture
-        : undefined;
-  const avatarUrl = profile?.avatar_url?.trim() || oauthAvatar || undefined;
-  const initials =
-    displayName
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join("") || "HV";
-
   const momentumCards = useMemo(
     () => [
       {
@@ -180,15 +164,10 @@ export default function Home() {
         </div>
 
         <HomeSidebarAuthenticated
-          t={t}
-          avatarUrl={avatarUrl}
-          displayName={displayName}
-          initials={initials}
-          email={email}
-          role={profile?.role ?? null}
+          focusCards={focusCards}
+          courseCatalog={courseCatalog}
         />
       </div>
     </div>
   );
 }
-

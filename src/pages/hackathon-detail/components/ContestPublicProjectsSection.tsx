@@ -3,6 +3,7 @@ import { ExternalLink } from "lucide-react";
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getProjectCoverImageUrl } from "@/lib/projects";
 import { supabase } from "@/lib/supabase";
 import { listContestShowcaseProjects } from "@/lib/projects";
 import { listMyProjectHeartIds } from "@/lib/projectSocial";
@@ -157,6 +158,16 @@ export function ContestPublicProjectsSection(props: {
                 key={row.key}
                 className="flex flex-col rounded-md border border-border-subtle bg-surface-base p-4"
               >
+                {getProjectCoverImageUrl(row) ? (
+                  <div className="mb-4 overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+                    <img
+                      src={getProjectCoverImageUrl(row) ?? ""}
+                      alt={row.title}
+                      className="h-44 w-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : null}
                 {typeof row.rank === "number" ? (
                   <div className="text-xs text-foreground-muted">#{row.rank}</div>
                 ) : null}
@@ -226,6 +237,34 @@ export function ContestPublicProjectsSection(props: {
                     >
                       <ExternalLink className="size-3.5" aria-hidden />
                       {t("detail.projects.viewSlides")}
+                    </Button>
+                  ) : null}
+                  {row.screenshot_url ? (
+                    <Button
+                      render={
+                        <a href={row.screenshot_url} target="_blank" rel="noreferrer" />
+                      }
+                      nativeButton={false}
+                      size="sm"
+                      variant="outline"
+                      className="gap-1"
+                    >
+                      <ExternalLink className="size-3.5" aria-hidden />
+                      {t("common:projects.screenshot")}
+                    </Button>
+                  ) : null}
+                  {row.video_url ? (
+                    <Button
+                      render={
+                        <a href={row.video_url} target="_blank" rel="noreferrer" />
+                      }
+                      nativeButton={false}
+                      size="sm"
+                      variant="outline"
+                      className="gap-1"
+                    >
+                      <ExternalLink className="size-3.5" aria-hidden />
+                      {t("common:projects.video")}
                     </Button>
                   ) : null}
                 </div>

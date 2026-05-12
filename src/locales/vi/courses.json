@@ -308,9 +308,12 @@
       "contextCourse": "Khoá học: {{title}}",
       "contextLesson": "Bài học: {{title}}",
       "comingSoonHint": "Tutor chưa kết nối AI. Bạn có thể xem các gợi ý bên dưới; trả lời trực tiếp sẽ được bật trong thời gian tới.",
+      "liveHint": "Tutor đã được nối lát cắt đầu tiên: Cora lưu hội thoại và đọc context khoá học hoặc bài học hiện tại trước khi trả lời.",
       "suggestionsLabel": "Gợi ý câu hỏi",
       "inputPlaceholder": "Nhập câu hỏi…",
       "footerCaption": "Gửi tin nhắn sẽ khả dụng khi Cora AI Tutor ra mắt.",
+      "liveFooterCaption": "Cora Tutor đã live ở bản đầu tiên. Mình đang lưu hội thoại và bám lesson context; streaming và RAG sẽ nối tiếp ở bước sau.",
+      "throttleHint": "Bạn đã chạm ngưỡng hỏi mềm trong hôm nay, nên Cora Tutor sẽ ưu tiên câu trả lời ngắn hơn.",
       "chipToast": "Cora AI Tutor sắp ra mắt.",
       "suggestions": [
         "Tóm tắt các ý chính của bài học này.",
@@ -351,4 +354,3 @@
     "certificateFee": "Chứng nhận {{price}}"
   }
 }
-
