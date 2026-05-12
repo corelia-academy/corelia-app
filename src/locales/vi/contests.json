@@ -494,7 +494,9 @@
     },
     "validation": {
       "startsInPast": "Ngày bắt đầu không được trước hôm nay.",
-      "endsNotAfterStart": "Ngày kết thúc phải sau ngày bắt đầu."
+      "endsNotAfterStart": "Ngày kết thúc phải sau ngày bắt đầu.",
+      "registrationAfterStart": "Hạn đăng ký phải trước hoặc đúng ngày bắt đầu.",
+      "submissionAfterEnd": "Hạn nộp bài phải trước hoặc đúng ngày kết thúc."
     },
     "form": {
       "titleLabel": "Tên cuộc thi",
@@ -568,6 +570,11 @@
       "backToList": "Quay lại danh sách hackathon"
     },
     "manage": {
+      "validation": {
+        "endsNotAfterStart": "Ngày kết thúc phải sau ngày bắt đầu.",
+        "registrationAfterStart": "Hạn đăng ký phải trước hoặc đúng ngày bắt đầu.",
+        "submissionAfterEnd": "Hạn nộp bài phải trước hoặc đúng ngày kết thúc."
+      },
       "sections": {
         "applications": {
           "label": "Hồ sơ",
@@ -993,6 +1000,9 @@
         "demoUrlPlaceholder": "Demo URL",
         "repoUrlPlaceholder": "Repo URL",
         "slideUrlPlaceholder": "Slide URL",
+        "screenshotUrlPlaceholder": "Link ảnh screenshot sản phẩm",
+        "coverImageUrlPlaceholder": "Link ảnh bìa dự án (tuỳ chọn)",
+        "videoUrlPlaceholder": "Link video demo sản phẩm",
         "submitLabel": "Nộp submission",
         "updateLabel": "Cập nhật submission"
       },

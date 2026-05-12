@@ -9,6 +9,9 @@ export interface Project {
   demo_url: string | null;
   repo_url: string | null;
   slide_url: string | null;
+  screenshot_url: string | null;
+  cover_image_url: string | null;
+  video_url: string | null;
   visibility: ProjectVisibility;
   source_type: ProjectSourceType;
   source_id: string | null;
@@ -30,6 +33,9 @@ export type ContestLinkedShowcaseProject = Pick<
   | "demo_url"
   | "repo_url"
   | "slide_url"
+  | "screenshot_url"
+  | "cover_image_url"
+  | "video_url"
   | "owner_id"
   | "source_submission_id"
   | "updated_at"
@@ -50,4 +56,3 @@ export interface ProjectCommentWithAuthor extends ProjectComment {
   author_username: string | null;
   author_full_name: string | null;
 }
-

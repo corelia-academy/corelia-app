@@ -47,6 +47,9 @@ export type ContestDetailFetchedPayload = {
   submissionDemoUrl: string;
   submissionRepoUrl: string;
   submissionSlideUrl: string;
+  submissionScreenshotUrl: string;
+  submissionCoverImageUrl: string;
+  submissionVideoUrl: string;
   winnerAwards: Record<string, string>;
   invites: ContestAccessInvite[];
   myInvite: ContestAccessInvite | null;
@@ -117,6 +120,9 @@ export async function fetchContestDetailPayload({
   let submissionDemoUrl = "";
   let submissionRepoUrl = "";
   let submissionSlideUrl = "";
+  let submissionScreenshotUrl = "";
+  let submissionCoverImageUrl = "";
+  let submissionVideoUrl = "";
   const winnerAwards: Record<string, string> = {};
 
   let invites: ContestAccessInvite[] = [];
@@ -172,6 +178,9 @@ export async function fetchContestDetailPayload({
         submissionDemoUrl = item?.demo_url ?? "";
         submissionRepoUrl = item?.repo_url ?? "";
         submissionSlideUrl = item?.slide_url ?? "";
+        submissionScreenshotUrl = item?.screenshot_url ?? "";
+        submissionCoverImageUrl = item?.cover_image_url ?? "";
+        submissionVideoUrl = item?.video_url ?? "";
       }),
     );
   }
@@ -216,6 +225,9 @@ export async function fetchContestDetailPayload({
     submissionDemoUrl,
     submissionRepoUrl,
     submissionSlideUrl,
+    submissionScreenshotUrl,
+    submissionCoverImageUrl,
+    submissionVideoUrl,
     winnerAwards,
     invites,
     myInvite,

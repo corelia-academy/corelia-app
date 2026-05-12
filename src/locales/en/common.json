@@ -126,7 +126,9 @@
       "viewSource": "View source",
       "demo": "Demo",
       "repo": "Repo",
-      "slides": "Slides"
+      "slides": "Slides",
+      "screenshot": "Screenshot",
+      "video": "Video"
     }
   },
   "projects": {
@@ -138,6 +140,8 @@
     "demo": "Demo",
     "repo": "Repo",
     "slides": "Slides",
+    "screenshot": "Screenshot",
+    "video": "Video",
     "sourceHackathon": "Hackathon",
     "sourceCourse": "Course",
     "sourceShowcase": "Showcase",
@@ -297,7 +301,7 @@
   "coraWidget": {
     "eyebrow": "Cora stays close",
     "title": "Cora AI Tutor",
-    "status": "UI preview",
+    "status": "Live beta",
     "description": "Keep Cora at the edge of the screen so learners can quickly ask about progress, next steps, or stronger course matches while browsing the app.",
     "contextLabel": "Current context",
     "contextTitle": {
@@ -326,9 +330,19 @@
       "guest": "Sign in so Cora can later personalize suggestions using your progress and activity."
     },
     "comingSoonHint": "This sticky chat is currently UI-only. Once AI is connected, Cora will read the context of the page you are viewing.",
+    "liveHint": "Cora is now connected in a first vertical slice: it stores conversations, follows page context, and replies using basic learning-profile data.",
     "suggestionsLabel": "Try starting with",
     "inputPlaceholder": "Ask Cora something…",
     "footerCaption": "Sending messages will be available once Cora AI is connected.",
+    "liveFooterCaption": "Cora is in its first live slice. Conversation storage and context are on now; streaming and RAG will come next.",
+    "sendAction": "Send",
+    "sendingAction": "Sending…",
+    "throttleHint": "You have reached today’s soft usage threshold, so Cora will keep replies shorter and more efficient.",
+    "retryAction": "Retry",
+    "quotaExceededTitle": "You have reached your monthly Cora AI limit",
+    "quotaExceededDescription": "You have used about {{used}} / {{limit}} messages on the {{tier}} plan this month. Try again after the quota resets, or upgrade if you want to keep going.",
+    "quotaExceededCta": "View account",
+    "quotaExceededHint": "Cora is paused because your monthly quota has been reached.",
     "actions": {
       "browseCourses": "View courses",
       "viewPaths": "View paths",

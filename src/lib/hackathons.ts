@@ -1186,6 +1186,9 @@ export async function upsertContestSubmission(
     demo_url: input.demo_url?.trim() || null,
     repo_url: input.repo_url?.trim() || null,
     slide_url: input.slide_url?.trim() || null,
+    screenshot_url: input.screenshot_url?.trim() || null,
+    cover_image_url: input.cover_image_url?.trim() || null,
+    video_url: input.video_url?.trim() || null,
     submitted_at: now,
     updated_at: now,
   }) as Record<string, unknown>;
@@ -1356,6 +1359,9 @@ export function buildContestLeaderboard(
         demo_url: submission.demo_url ?? null,
         repo_url: submission.repo_url ?? null,
         slide_url: submission.slide_url ?? null,
+        screenshot_url: submission.screenshot_url ?? null,
+        cover_image_url: submission.cover_image_url ?? submission.screenshot_url ?? null,
+        video_url: submission.video_url ?? null,
         summary: submission.summary ?? null,
       };
     })

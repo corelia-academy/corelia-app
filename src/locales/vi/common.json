@@ -126,7 +126,9 @@
       "viewSource": "Xem nguồn",
       "demo": "Demo",
       "repo": "Repo",
-      "slides": "Slides"
+      "slides": "Slides",
+      "screenshot": "Ảnh chụp",
+      "video": "Video"
     }
   },
   "projects": {
@@ -138,6 +140,8 @@
     "demo": "Demo",
     "repo": "Repo",
     "slides": "Slides",
+    "screenshot": "Ảnh chụp",
+    "video": "Video",
     "sourceHackathon": "Hackathon",
     "sourceCourse": "Khóa học",
     "sourceShowcase": "Showcase",
@@ -297,7 +301,7 @@
   "coraWidget": {
     "eyebrow": "Cora luôn sẵn sàng",
     "title": "Cora AI Tutor",
-    "status": "UI preview",
+    "status": "Beta live",
     "description": "Giữ Cora ở cạnh màn hình để hỏi nhanh về tiến độ học, hướng đi tiếp theo hoặc tìm khóa học phù hợp hơn ngay trong lúc đang duyệt app.",
     "contextLabel": "Ngữ cảnh hiện tại",
     "contextTitle": {
@@ -326,9 +330,19 @@
       "guest": "Đăng nhập để sau này Cora có thể cá nhân hóa theo tiến độ và hoạt động của bạn."
     },
     "comingSoonHint": "Khung chat này hiện mới là giao diện sticky. Khi nối AI, Cora sẽ đọc đúng context theo trang bạn đang xem.",
+    "liveHint": "Cora đã được nối lát cắt đầu tiên: lưu hội thoại, bám context theo trang và phản hồi theo hồ sơ học tập cơ bản.",
     "suggestionsLabel": "Gợi ý để bắt đầu",
     "inputPlaceholder": "Hỏi Cora điều gì đó…",
     "footerCaption": "Gửi tin nhắn sẽ khả dụng khi Cora AI được kết nối.",
+    "liveFooterCaption": "Cora đang ở bản đầu tiên. Mình đã bật lưu hội thoại và ngữ cảnh, còn streaming và RAG sẽ nối tiếp ở bước sau.",
+    "sendAction": "Gửi",
+    "sendingAction": "Đang gửi…",
+    "throttleHint": "Bạn đã chạm ngưỡng hỏi mềm trong hôm nay, nên Cora sẽ ưu tiên trả lời ngắn và tiết kiệm hơn.",
+    "retryAction": "Thử lại",
+    "quotaExceededTitle": "Bạn đã chạm giới hạn Cora AI tháng này",
+    "quotaExceededDescription": "Hiện bạn đã dùng khoảng {{used}} / {{limit}} tin nhắn ở gói {{tier}}. Bạn có thể thử lại sau khi quota được làm mới hoặc nâng cấp để tiếp tục hỏi nhiều hơn.",
+    "quotaExceededCta": "Xem tài khoản",
+    "quotaExceededHint": "Cora tạm dừng vì bạn đã chạm quota tháng hiện tại.",
     "actions": {
       "browseCourses": "Xem khóa học",
       "viewPaths": "Xem lộ trình",

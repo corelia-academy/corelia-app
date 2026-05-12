@@ -73,6 +73,9 @@ export interface ContestLeaderboardEntry {
   demo_url?: string | null;
   repo_url?: string | null;
   slide_url?: string | null;
+  screenshot_url?: string | null;
+  cover_image_url?: string | null;
+  video_url?: string | null;
   summary?: string | null;
 }
 
@@ -372,6 +375,9 @@ export interface ContestSubmission {
   demo_url: string | null;
   repo_url: string | null;
   slide_url: string | null;
+  screenshot_url: string | null;
+  cover_image_url: string | null;
+  video_url: string | null;
   submitted_at: string;
   updated_at: string;
 }
@@ -382,6 +388,9 @@ export interface ContestSubmissionInsert {
   demo_url?: string | null;
   repo_url?: string | null;
   slide_url?: string | null;
+  screenshot_url?: string | null;
+  cover_image_url?: string | null;
+  video_url?: string | null;
 }
 
 export interface ContestScore {

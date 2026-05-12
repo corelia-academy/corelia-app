@@ -54,6 +54,7 @@ import {
   datetimeLocalToIso,
   isoToDatetimeLocal,
 } from "@/pages/hackathon-detail/utils/datetime";
+import { validateContestScheduleInputs } from "@/lib/hackathonScheduleValidation";
 import {
   formatContestCountdown,
   downloadTextFile,
@@ -153,6 +154,12 @@ export function useContestDetailOrchestrator({
     setSubmissionRepoUrl,
     submissionSlideUrl,
     setSubmissionSlideUrl,
+    submissionScreenshotUrl,
+    setSubmissionScreenshotUrl,
+    submissionCoverImageUrl,
+    setSubmissionCoverImageUrl,
+    submissionVideoUrl,
+    setSubmissionVideoUrl,
     savingSubmission,
     setSavingSubmission,
     winnerAwards,
@@ -754,19 +761,28 @@ export function useContestDetailOrchestrator({
         submissionSummary !== (mySubmission?.summary ?? "") ||
         submissionDemoUrl !== (mySubmission?.demo_url ?? "") ||
         submissionRepoUrl !== (mySubmission?.repo_url ?? "") ||
-        submissionSlideUrl !== (mySubmission?.slide_url ?? "")),
+        submissionSlideUrl !== (mySubmission?.slide_url ?? "") ||
+        submissionScreenshotUrl !== (mySubmission?.screenshot_url ?? "") ||
+        submissionCoverImageUrl !== (mySubmission?.cover_image_url ?? "") ||
+        submissionVideoUrl !== (mySubmission?.video_url ?? "")),
     [
       mySubmission?.demo_url,
       mySubmission?.repo_url,
       mySubmission?.slide_url,
+      mySubmission?.screenshot_url,
+      mySubmission?.cover_image_url,
       mySubmission?.summary,
       mySubmission?.title,
+      mySubmission?.video_url,
       registration?.status,
       submissionDemoUrl,
       submissionRepoUrl,
       submissionSlideUrl,
+      submissionScreenshotUrl,
+      submissionCoverImageUrl,
       submissionSummary,
       submissionTitle,
+      submissionVideoUrl,
     ],
   );
 
@@ -1607,6 +1623,9 @@ export function useContestDetailOrchestrator({
         demo_url: submissionDemoUrl,
         repo_url: submissionRepoUrl,
         slide_url: submissionSlideUrl,
+        screenshot_url: submissionScreenshotUrl,
+        cover_image_url: submissionCoverImageUrl,
+        video_url: submissionVideoUrl,
       });
       setMySubmission(saved);
       await loadCollaboration();
@@ -1628,6 +1647,9 @@ export function useContestDetailOrchestrator({
     submissionDemoUrl,
     submissionRepoUrl,
     submissionSlideUrl,
+    submissionScreenshotUrl,
+    submissionCoverImageUrl,
+    submissionVideoUrl,
     submissionSummary,
     submissionTitle,
     translate,
@@ -1934,6 +1956,24 @@ export function useContestDetailOrchestrator({
   const handleSavePublicContent = useCallback(async () => {
     if (!id || !isManager || savingPublicContent || !contest || !isManageView)
       return;
+    const schedule = validateContestScheduleInputs({
+      registrationDeadline: publicDraft.registration_deadline_local,
+      startsAt: publicDraft.starts_at_local,
+      endsAt: publicDraft.ends_at_local,
+      submissionDeadline: publicDraft.submission_deadline_local,
+    });
+    if (!schedule.ok) {
+      toast.error(
+        translate(
+          schedule.reason === "registration_after_start"
+            ? "manage.validation.registrationAfterStart"
+            : schedule.reason === "submission_after_end"
+              ? "manage.validation.submissionAfterEnd"
+              : "manage.validation.endsNotAfterStart",
+        ),
+      );
+      return;
+    }
     setSavingPublicContent(true);
     try {
       const milestones: ContestTimelineMilestone[] = publicDraft.milestones
@@ -2148,6 +2188,12 @@ export function useContestDetailOrchestrator({
     setSubmissionRepoUrl,
     submissionSlideUrl,
     setSubmissionSlideUrl,
+    submissionScreenshotUrl,
+    setSubmissionScreenshotUrl,
+    submissionCoverImageUrl,
+    setSubmissionCoverImageUrl,
+    submissionVideoUrl,
+    setSubmissionVideoUrl,
     savingSubmission,
     winnerAwards,
     setWinnerAwards,
