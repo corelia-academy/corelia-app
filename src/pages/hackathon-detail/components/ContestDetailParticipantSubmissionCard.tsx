@@ -24,6 +24,12 @@ export function ContestDetailParticipantSubmissionCard({
     setSubmissionRepoUrl,
     submissionSlideUrl,
     setSubmissionSlideUrl,
+    submissionScreenshotUrl,
+    setSubmissionScreenshotUrl,
+    submissionCoverImageUrl,
+    setSubmissionCoverImageUrl,
+    submissionVideoUrl,
+    setSubmissionVideoUrl,
     submissionDraftDirty,
     savingSubmission,
     handleSubmissionSave,
@@ -99,6 +105,33 @@ export function ContestDetailParticipantSubmissionCard({
             className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
             placeholder={translate(
               "detail.forms.submission.slideUrlPlaceholder",
+            )}
+          />
+          <input
+            value={submissionScreenshotUrl}
+            onChange={(e) => setSubmissionScreenshotUrl(e.target.value)}
+            disabled={!submissionWorkspaceEditable}
+            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
+            placeholder={translate(
+              "detail.forms.submission.screenshotUrlPlaceholder",
+            )}
+          />
+          <input
+            value={submissionCoverImageUrl}
+            onChange={(e) => setSubmissionCoverImageUrl(e.target.value)}
+            disabled={!submissionWorkspaceEditable}
+            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
+            placeholder={translate(
+              "detail.forms.submission.coverImageUrlPlaceholder",
+            )}
+          />
+          <input
+            value={submissionVideoUrl}
+            onChange={(e) => setSubmissionVideoUrl(e.target.value)}
+            disabled={!submissionWorkspaceEditable}
+            className="h-11 w-full rounded-md border border-border bg-surface-base px-3 text-sm outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
+            placeholder={translate(
+              "detail.forms.submission.videoUrlPlaceholder",
             )}
           />
           {submissionDraftDirty && (

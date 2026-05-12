@@ -6,7 +6,7 @@ import { ExternalLink, Package, ShieldAlert } from "lucide-react";
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { listPublicProjects } from "@/lib/projects";
+import { getProjectCoverImageUrl, listPublicProjects } from "@/lib/projects";
 import { listMyProjectHeartIds } from "@/lib/projectSocial";
 import { projectSourceLabelKey } from "@/lib/projectSource";
 import { useAuth } from "@/stores/authStore";
@@ -126,6 +126,16 @@ export default function ProjectsPage() {
                   key={project.id}
                   className="rounded-md border border-border-subtle bg-surface-base p-4"
                 >
+                  {getProjectCoverImageUrl(project) ? (
+                    <div className="mb-4 overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+                      <img
+                        src={getProjectCoverImageUrl(project) ?? ""}
+                        alt={project.title}
+                        className="h-48 w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  ) : null}
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <div className="truncate text-sm font-semibold text-foreground">
@@ -204,6 +214,34 @@ export default function ProjectsPage() {
                           {t("projects.slides")}
                         </Button>
                       ) : null}
+                      {project.screenshot_url ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          render={
+                            <a href={project.screenshot_url} target="_blank" rel="noreferrer" />
+                          }
+                          nativeButton={false}
+                          className="gap-1"
+                        >
+                          <ExternalLink className="size-4" aria-hidden />
+                          {t("projects.screenshot")}
+                        </Button>
+                      ) : null}
+                      {project.video_url ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          render={
+                            <a href={project.video_url} target="_blank" rel="noreferrer" />
+                          }
+                          nativeButton={false}
+                          className="gap-1"
+                        >
+                          <ExternalLink className="size-4" aria-hidden />
+                          {t("projects.video")}
+                        </Button>
+                      ) : null}
                     </div>
                     <ProjectSocialBlock
                       projectId={project.id}
@@ -223,4 +261,3 @@ export default function ProjectsPage() {
     </div>
   );
 }
-

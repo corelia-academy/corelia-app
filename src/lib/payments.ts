@@ -4,7 +4,9 @@ import { makeTTLCache } from "@/lib/utils";
 
 const paymentAccessCache = makeTTLCache<CoursePaymentAccess | null>(60_000);
 
-export type PaymentPurpose = "course_purchase" | "certificate_fee";
+export type PaymentPurpose = "course_purchase" | "certificate_fee" | "ai_subscription";
+export type AiSubscriptionTier = "student" | "pro" | "bootcamp";
+export type AiSubscriptionDurationMonths = 1 | 6 | 12;
 
 export interface CoursePaymentAccess {
   id: string;
@@ -29,6 +31,21 @@ export interface PaymentTransaction {
   updated_at: string;
 }
 
+export interface AiSubscription {
+  id: string;
+  user_id: string;
+  tier: AiSubscriptionTier;
+  duration_months: AiSubscriptionDurationMonths;
+  price_vnd: number;
+  started_at: string;
+  expires_at: string;
+  payment_transaction_id: string;
+  status: "active" | "expired" | "cancelled";
+  auto_renew?: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
 export interface VerifySePayPaymentResponse {
   order_id: string;
   status: PaymentTransactionStatus;
@@ -48,6 +65,14 @@ interface CreateSePayCheckoutInput {
   errorUrl: string;
   cancelUrl: string;
   discountCode?: string;
+}
+
+interface CreateAiSubscriptionCheckoutInput {
+  tier: AiSubscriptionTier;
+  durationMonths: AiSubscriptionDurationMonths;
+  successUrl: string;
+  errorUrl: string;
+  cancelUrl: string;
 }
 
 interface CreateSePayCheckoutResponse {
@@ -131,6 +156,24 @@ export async function createSePayCheckout(
   };
 }
 
+export async function createAiSubscriptionCheckout(
+  payload: CreateAiSubscriptionCheckoutInput,
+): Promise<CreateSePayCheckoutResponse> {
+  return createSePayCheckout({
+    courseId: "cora-ai",
+    purpose: "ai_subscription",
+    amountVnd: 1,
+    successUrl: payload.successUrl,
+    errorUrl: payload.errorUrl,
+    cancelUrl: payload.cancelUrl,
+    tier: payload.tier,
+    durationMonths: payload.durationMonths,
+  } as CreateSePayCheckoutInput & {
+    tier: AiSubscriptionTier;
+    durationMonths: AiSubscriptionDurationMonths;
+  });
+}
+
 export function submitSePayCheckoutForm(input: CreateSePayCheckoutResponse) {
   const form = document.createElement("form");
   form.method = "POST";
@@ -168,6 +211,20 @@ export async function getMyPaymentTransactions(): Promise<PaymentTransaction[]> 
   }>;
   if (!res.ok) throw new Error(data.message || "Không lấy được lịch sử thanh toán.");
   return Array.isArray(data.transactions) ? data.transactions : [];
+}
+
+export async function getMyAiSubscription(): Promise<AiSubscription | null> {
+  const token = await getAccessToken();
+  requireAccessToken(token);
+  const { data, error } = await supabase
+    .from("ai_subscriptions")
+    .select("*")
+    .eq("status", "active")
+    .order("expires_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? ({ ...data } as AiSubscription) : null;
 }
 
 export async function verifySePayPayment(payload: {

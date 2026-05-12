@@ -21,6 +21,17 @@ export type ProjectCollaboratorRow = {
   added_at: string;
 };
 
+export type MyProjectAccess = {
+  is_owner: boolean;
+  collaborator_role: string | null;
+  show_in_portfolio: boolean | null;
+};
+
+export type MyProjectEntry = {
+  project: Project;
+  access: MyProjectAccess;
+};
+
 export async function fetchHackathonProjectForOwnerSubmission(
   hackathonId: string,
   ownerUserId: string,
@@ -29,7 +40,7 @@ export async function fetchHackathonProjectForOwnerSubmission(
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id,owner_id,title,summary,demo_url,repo_url,slide_url,visibility,source_type,source_id,source_submission_id,created_at,updated_at",
+      "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,created_at,updated_at",
     )
     .eq("source_type", "contest")
     .eq("source_id", hackathonId)
@@ -123,6 +134,17 @@ export async function removeProjectCollaborator(
   const { error } = await supabase.rpc("remove_project_collaborator", {
     p_project_id: projectId,
     p_user_id: userId,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function setMyProjectCollaborationVisibility(
+  projectId: string,
+  showInPortfolio: boolean,
+): Promise<void> {
+  const { error } = await supabase.rpc("set_my_project_collaboration_visibility", {
+    p_project_id: projectId,
+    p_show_in_portfolio: showInPortfolio,
   });
   if (error) throw new Error(error.message);
 }

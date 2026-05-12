@@ -494,7 +494,9 @@
     },
     "validation": {
       "startsInPast": "Start date cannot be before today.",
-      "endsNotAfterStart": "End date must be after the start date."
+      "endsNotAfterStart": "End date must be after the start date.",
+      "registrationAfterStart": "Registration deadline must be on or before the start date.",
+      "submissionAfterEnd": "Submission deadline must be on or before the end date."
     },
     "form": {
       "titleLabel": "Contest title",
@@ -568,6 +570,11 @@
       "backToList": "Back to hackathons"
     },
     "manage": {
+      "validation": {
+        "endsNotAfterStart": "End date must be after the start date.",
+        "registrationAfterStart": "Registration deadline must be on or before the start date.",
+        "submissionAfterEnd": "Submission deadline must be on or before the end date."
+      },
       "sections": {
         "applications": {
           "label": "Applications",
@@ -993,6 +1000,9 @@
         "demoUrlPlaceholder": "Demo URL",
         "repoUrlPlaceholder": "Repo URL",
         "slideUrlPlaceholder": "Slide URL",
+        "screenshotUrlPlaceholder": "Screenshot image URL",
+        "coverImageUrlPlaceholder": "Cover image URL (optional)",
+        "videoUrlPlaceholder": "Demo video URL",
         "submitLabel": "Submit submission",
         "updateLabel": "Update submission"
       },
@@ -1096,4 +1106,3 @@
     }
   }
 }
-

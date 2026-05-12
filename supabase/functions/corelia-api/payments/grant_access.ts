@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "../lib/supabase.ts";
-import type { PaymentTransaction } from "./types.ts";
+import type { AiSubscriptionMeta, PaymentTransaction } from "./types.ts";
 
 export async function grantPaymentAccessForTransaction(
   db: SupabaseClient,
@@ -8,6 +8,56 @@ export async function grantPaymentAccessForTransaction(
   updatedAt: string,
   providerPayload: unknown,
 ): Promise<void> {
+  if (tx.purpose === "ai_subscription") {
+    const meta = ((providerPayload as { subscription_meta?: AiSubscriptionMeta } | null)?.subscription_meta ??
+      (tx.provider_payload as { subscription_meta?: AiSubscriptionMeta } | null)?.subscription_meta ??
+      null) as AiSubscriptionMeta | null;
+    if (!meta?.tier || !meta?.duration_months) {
+      throw new Error("Missing ai subscription metadata");
+    }
+
+    const startedAt = updatedAt;
+    const expiresDate = new Date(updatedAt);
+    expiresDate.setMonth(expiresDate.getMonth() + Number(meta.duration_months));
+    const expiresAt = expiresDate.toISOString();
+
+    const { error: cancelExistingError } = await db
+      .from("ai_subscriptions")
+      .update({ status: "cancelled", updated_at: updatedAt })
+      .eq("user_id", tx.user_id)
+      .eq("status", "active");
+    if (cancelExistingError) throw new Error(cancelExistingError.message);
+
+    const { error: subscriptionError } = await db.from("ai_subscriptions").insert({
+      user_id: tx.user_id,
+      tier: meta.tier,
+      duration_months: meta.duration_months,
+      price_vnd: Math.round(Number(tx.amount_vnd ?? 0)),
+      started_at: startedAt,
+      expires_at: expiresAt,
+      payment_transaction_id: invoiceNumber,
+      status: "active",
+      auto_renew: false,
+      created_at: updatedAt,
+      updated_at: updatedAt,
+    });
+    if (subscriptionError) throw new Error(subscriptionError.message);
+
+    const { error: profileError } = await db
+      .from("profiles")
+      .update({ tier: meta.tier, updated_at: updatedAt })
+      .eq("id", tx.user_id);
+    if (profileError) throw new Error(profileError.message);
+
+    const { error: txErr } = await db.from("payment_transactions").update({
+      status: "paid",
+      provider_payload: providerPayload as Record<string, unknown> | null,
+      updated_at: updatedAt,
+    }).eq("id", invoiceNumber);
+    if (txErr) throw new Error(txErr.message);
+    return;
+  }
+
   const accessId = `${tx.user_id}_${tx.course_id}`;
   const { data: existingAccess, error: existingAccessErr } = await db
     .from("course_payment_access")

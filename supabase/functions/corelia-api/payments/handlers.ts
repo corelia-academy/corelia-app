@@ -10,16 +10,36 @@ import {
   fetchSePayIncomingTransactionByInvoiceNumber,
   sepayCheckoutInitUrl,
 } from "./sepay.ts";
-import type { PaymentPurpose, PaymentTransaction, SePayIpnPayload } from "./types.ts";
+import type {
+  AiSubscriptionDurationMonths,
+  AiSubscriptionMeta,
+  AiSubscriptionTier,
+  PaymentPurpose,
+  PaymentTransaction,
+  SePayIpnPayload,
+} from "./types.ts";
+
+const AI_SUBSCRIPTION_PRODUCT_ID = "cora-ai";
+
+const AI_SUBSCRIPTION_PRICES: Record<
+  AiSubscriptionTier,
+  Record<AiSubscriptionDurationMonths, number>
+> = {
+  student: { 1: 99000, 6: 499000, 12: 890000 },
+  pro: { 1: 299000, 6: 1490000, 12: 2690000 },
+  bootcamp: { 1: 1990000, 6: 9990000, 12: 17900000 },
+};
 
 export async function handleSePayCheckout(req: Request, db: SupabaseClient): Promise<Response> {
   try {
     const user = await verifyBearerUser(req, db);
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-    const courseId = String(body.courseId ?? "");
-    const purpose = body.purpose === "course_purchase" || body.purpose === "certificate_fee"
+    const purpose = body.purpose === "course_purchase" || body.purpose === "certificate_fee" || body.purpose === "ai_subscription"
       ? body.purpose as PaymentPurpose
       : null;
+    const courseId = purpose === "ai_subscription"
+      ? AI_SUBSCRIPTION_PRODUCT_ID
+      : String(body.courseId ?? "");
     const requestedAmountVnd = Number(body.amountVnd ?? 0);
     const successUrl = String(body.successUrl ?? "");
     const errorUrl = String(body.errorUrl ?? "");
@@ -27,7 +47,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     const discountCodeRaw = String(body.discountCode ?? "").trim();
     if (!courseId) return json({ message: "Thiếu courseId" }, 400);
     if (!purpose) return json({ message: "Thiếu/ sai purpose" }, 400);
-    if (!Number.isFinite(requestedAmountVnd) || requestedAmountVnd <= 0) {
+    if (purpose !== "ai_subscription" && (!Number.isFinite(requestedAmountVnd) || requestedAmountVnd <= 0)) {
       return json({ message: "amountVnd không hợp lệ" }, 400);
     }
     const callbackAllowlist = paymentCallbackOriginAllowlistFromEnv();
@@ -40,30 +60,45 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     }
     const merchantId = requireEnv("SEPAY_MERCHANT_ID");
     const secretKey = requireEnv("SEPAY_SECRET_KEY");
-    const { data: courseRow, error: courseErr } = await db.from("courses").select("data").eq("id", courseId)
-      .maybeSingle();
-    if (courseErr) throw new Error(courseErr.message);
-    if (!courseRow) return json({ message: "Không tìm thấy khoá học" }, 404);
-    const course = (courseRow.data ?? {}) as {
-      price_vnd?: number | null;
-      promo_price_vnd?: number | null;
-      promo_ends_at?: string | null;
-      certificate_fee_vnd?: number | null;
-    };
-    const basePrice = Math.round(Number(course.price_vnd ?? 0));
-    const promoPrice = Math.round(Number(course.promo_price_vnd ?? 0));
-    const promoEndsAt = course.promo_ends_at ? Date.parse(course.promo_ends_at) : NaN;
-    const promoActive =
-      Number.isFinite(basePrice) &&
-      basePrice > 0 &&
-      promoPrice > 0 &&
-      promoPrice < basePrice &&
-      (!Number.isFinite(promoEndsAt) || Date.now() <= promoEndsAt);
-    const baseAmount = purpose === "course_purchase"
-      ? (promoActive ? promoPrice : basePrice)
-      : Math.round(Number(course.certificate_fee_vnd ?? 0));
+    let baseAmount = 0;
+    let subscriptionMeta: AiSubscriptionMeta | null = null;
+    if (purpose === "ai_subscription") {
+      const tier = String(body.tier ?? "").trim() as AiSubscriptionTier;
+      const durationMonths = Number(body.durationMonths ?? body.duration_months ?? 0) as AiSubscriptionDurationMonths;
+      if (!["student", "pro", "bootcamp"].includes(tier)) {
+        return json({ message: "Tier không hợp lệ" }, 400);
+      }
+      if (![1, 6, 12].includes(durationMonths)) {
+        return json({ message: "Thời hạn không hợp lệ" }, 400);
+      }
+      baseAmount = AI_SUBSCRIPTION_PRICES[tier][durationMonths];
+      subscriptionMeta = { tier, duration_months: durationMonths };
+    } else {
+      const { data: courseRow, error: courseErr } = await db.from("courses").select("data").eq("id", courseId)
+        .maybeSingle();
+      if (courseErr) throw new Error(courseErr.message);
+      if (!courseRow) return json({ message: "Không tìm thấy khoá học" }, 404);
+      const course = (courseRow.data ?? {}) as {
+        price_vnd?: number | null;
+        promo_price_vnd?: number | null;
+        promo_ends_at?: string | null;
+        certificate_fee_vnd?: number | null;
+      };
+      const basePrice = Math.round(Number(course.price_vnd ?? 0));
+      const promoPrice = Math.round(Number(course.promo_price_vnd ?? 0));
+      const promoEndsAt = course.promo_ends_at ? Date.parse(course.promo_ends_at) : NaN;
+      const promoActive =
+        Number.isFinite(basePrice) &&
+        basePrice > 0 &&
+        promoPrice > 0 &&
+        promoPrice < basePrice &&
+        (!Number.isFinite(promoEndsAt) || Date.now() <= promoEndsAt);
+      baseAmount = purpose === "course_purchase"
+        ? (promoActive ? promoPrice : basePrice)
+        : Math.round(Number(course.certificate_fee_vnd ?? 0));
+    }
     if (!Number.isFinite(baseAmount) || baseAmount <= 0) {
-      return json({ message: "Khoá học chưa cấu hình phí hợp lệ" }, 400);
+      return json({ message: purpose === "ai_subscription" ? "Gói AI chưa cấu hình giá hợp lệ" : "Khoá học chưa cấu hình phí hợp lệ" }, 400);
     }
     let finalAmount = baseAmount;
     let discountCode: string | undefined;
@@ -112,6 +147,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       discount_amount_vnd: discountCode ? discountAmount : null,
       provider: "sepay",
       status: "pending",
+      provider_payload: subscriptionMeta ? { subscription_meta: subscriptionMeta } : undefined,
       created_at: createdAt,
       updated_at: createdAt,
     };
@@ -126,6 +162,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       discount_amount_vnd: tx.discount_amount_vnd ?? undefined,
       provider: "sepay",
       status: "pending",
+      provider_payload: subscriptionMeta ? { subscription_meta: subscriptionMeta } : undefined,
       created_at: createdAt,
       updated_at: createdAt,
     });
@@ -139,7 +176,9 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       order_invoice_number: orderId,
       order_description: purpose === "course_purchase"
         ? `Thanh toán khoá học ${courseId}`
-        : `Thanh toán phí chứng nhận ${courseId}`,
+        : purpose === "certificate_fee"
+          ? `Thanh toán phí chứng nhận ${courseId}`
+          : `Thanh toán gói Cora AI ${subscriptionMeta?.tier ?? ""} ${subscriptionMeta?.duration_months ?? ""} tháng`,
       customer_id: user.id,
       success_url: successUrl,
       error_url: errorUrl,
@@ -181,7 +220,7 @@ export async function handleVerifySePayPayment(req: Request, db: SupabaseClient)
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
     const explicitOrderId = String(body.orderId ?? "").trim();
     const courseId = String(body.courseId ?? "").trim();
-    const purpose = body.purpose === "course_purchase" || body.purpose === "certificate_fee"
+    const purpose = body.purpose === "course_purchase" || body.purpose === "certificate_fee" || body.purpose === "ai_subscription"
       ? (body.purpose as PaymentPurpose)
       : undefined;
     let orderRow: ({ id: string } & PaymentTransaction) | null = null;
@@ -214,7 +253,8 @@ export async function handleVerifySePayPayment(req: Request, db: SupabaseClient)
     ]);
     const alreadyGranted =
       (tx.purpose === "course_purchase" && accessBefore?.full_access_granted === true) ||
-      (tx.purpose === "certificate_fee" && accessBefore?.certificate_fee_paid === true);
+      (tx.purpose === "certificate_fee" && accessBefore?.certificate_fee_paid === true) ||
+      (tx.purpose === "ai_subscription" && tx.status === "paid");
     let verifiedBy: "transaction" | "sepay_lookup" | "pending" = "pending";
     if (tx.status === "paid" && !alreadyGranted) {
       await grantPaymentAccessForTransaction(db, tx, orderRow.id, nowIso(), {
@@ -247,7 +287,7 @@ export async function handleVerifySePayPayment(req: Request, db: SupabaseClient)
       course_id: tx.course_id,
       full_access_granted: access?.full_access_granted === true,
       certificate_fee_paid: access?.certificate_fee_paid === true,
-      enrolled: !!enrollment || !!enrollmentBefore,
+      enrolled: tx.purpose === "ai_subscription" ? false : (!!enrollment || !!enrollmentBefore),
       verified_by: verifiedBy,
     });
   } catch (e) {

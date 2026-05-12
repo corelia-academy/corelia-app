@@ -312,9 +312,12 @@
       "contextCourse": "Course: {{title}}",
       "contextLesson": "Lesson: {{title}}",
       "comingSoonHint": "The tutor is not connected yet. You can explore suggested questions below; live replies will be enabled soon.",
+      "liveHint": "The tutor is now connected in a first slice: Cora stores the conversation and reads the current course or lesson context before replying.",
       "suggestionsLabel": "Try asking",
       "inputPlaceholder": "Type a question…",
       "footerCaption": "Sending messages will be available when Cora AI Tutor launches.",
+      "liveFooterCaption": "Cora Tutor is live in its first slice. Conversation storage and lesson-aware context are on now; streaming and RAG will come next.",
+      "throttleHint": "You have reached today’s soft usage threshold, so Cora Tutor will keep replies shorter.",
       "chipToast": "Cora AI Tutor is coming soon.",
       "suggestions": [
         "Summarize the key ideas from this lesson.",
@@ -355,4 +358,3 @@
     "certificateFee": "Certificate {{price}}"
   }
 }
-

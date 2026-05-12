@@ -4,12 +4,19 @@ import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import type { ContestLinkedShowcaseProject, Project } from "@/types/projects";
 import type { Locale } from "@/types/database";
 import type { EntityI18nConfig } from "@/types/entityLocales";
+import type { MyProjectEntry } from "@/lib/projectCollaboration";
 
 export type ProjectI18nContent = {
   title?: string;
   summary?: string | null;
   updated_at?: string;
 };
+
+export function getProjectCoverImageUrl(
+  project: Pick<Project, "cover_image_url" | "screenshot_url">,
+): string | null {
+  return project.cover_image_url || project.screenshot_url || null;
+}
 
 const LOCALE_CACHE_TTL = 5 * 60 * 1000;
 const projectLocaleCache = makeTTLCache<ProjectI18nContent | null>(LOCALE_CACHE_TTL);
@@ -112,7 +119,7 @@ export async function listContestShowcaseProjects(
   contestId: string,
 ): Promise<ContestLinkedShowcaseProject[]> {
   const select =
-    "id,title,summary,demo_url,repo_url,slide_url,owner_id,source_submission_id,updated_at,like_count" as const;
+    "id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,owner_id,source_submission_id,updated_at,like_count" as const;
 
   const { data, error } = await supabase
     .from("projects")
@@ -152,7 +159,7 @@ export type PublicProjectEntry = {
 
 export async function listPublicProjects(uiLocale?: string | null): Promise<PublicProjectEntry[]> {
   const select =
-    "id,owner_id,title,summary,demo_url,repo_url,slide_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
 
   const { data, error } = await supabase
     .from("projects")
@@ -213,7 +220,7 @@ export async function listMyProjects(uiLocale?: string | null): Promise<Project[
   if (!user) throw new Error("Chưa đăng nhập");
 
   const select =
-    "id,owner_id,title,summary,demo_url,repo_url,slide_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
 
   const [{ data: owned, error: ownedErr }, { data: collaboratorRows, error: collabErr }] =
     await Promise.all([
@@ -277,3 +284,108 @@ export async function listMyProjects(uiLocale?: string | null): Promise<Project[
   });
 }
 
+export async function listMyProjectsForAccount(uiLocale?: string | null): Promise<MyProjectEntry[]> {
+  const {
+    data: { user },
+    error: userErr,
+  } = await supabase.auth.getUser();
+  if (userErr) throw new Error(userErr.message);
+  if (!user) throw new Error("Chưa đăng nhập");
+
+  const select =
+    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+
+  const [{ data: owned, error: ownedErr }, { data: collaboratorRows, error: collabErr }] =
+    await Promise.all([
+      supabase
+        .from("projects")
+        .select(select)
+        .eq("owner_id", user.id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("project_collaborators")
+        .select("project_id,role,show_in_portfolio")
+        .eq("user_id", user.id),
+    ]);
+
+  if (ownedErr) throw new Error(ownedErr.message);
+  if (collabErr) throw new Error(collabErr.message);
+
+  const ownedProjects = ((owned ?? []) as Project[]).map((project) => ({
+    project,
+    access: {
+      is_owner: true,
+      collaborator_role: null,
+      show_in_portfolio: null,
+    },
+  }));
+
+  const collaboratorProjectIds = Array.from(
+    new Set((collaboratorRows ?? []).map((row) => row.project_id).filter(Boolean)),
+  ) as string[];
+  const collabByProjectId = new Map<
+    string,
+    { role: string | null; show_in_portfolio: boolean | null }
+  >(
+    (collaboratorRows ?? []).map((row) => [
+      String(row.project_id),
+      {
+        role: typeof row.role === "string" ? row.role : null,
+        show_in_portfolio:
+          typeof row.show_in_portfolio === "boolean" ? row.show_in_portfolio : null,
+      },
+    ]),
+  );
+
+  let collaboratorProjects: MyProjectEntry[] = [];
+  if (collaboratorProjectIds.length > 0) {
+    const { data, error } = await supabase
+      .from("projects")
+      .select(select)
+      .in("id", collaboratorProjectIds)
+      .order("updated_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    collaboratorProjects = ((data ?? []) as Project[]).map((project) => {
+      const access = collabByProjectId.get(project.id);
+      return {
+        project,
+        access: {
+          is_owner: false,
+          collaborator_role: access?.role ?? null,
+          show_in_portfolio: access?.show_in_portfolio ?? null,
+        },
+      };
+    });
+  }
+
+  const normalizedUiLocale = normalizeContentLocale(uiLocale);
+  const merged = [...ownedProjects, ...collaboratorProjects];
+  const byId = new Map<string, MyProjectEntry>();
+  for (const item of merged) byId.set(item.project.id, item);
+  const list = Array.from(byId.values()).sort((a, b) =>
+    String(b.project.updated_at ?? "").localeCompare(String(a.project.updated_at ?? "")),
+  );
+
+  const idsByLocale = new Map<Locale, string[]>();
+  for (const item of list) {
+    const desired = pickContentLocale(item.project.i18n ?? null, normalizedUiLocale);
+    const ids = idsByLocale.get(desired) ?? [];
+    ids.push(item.project.id);
+    idsByLocale.set(desired, ids);
+  }
+  const localeMaps = new Map<Locale, Map<string, ProjectI18nContent>>();
+  await Promise.all(
+    Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
+      localeMaps.set(locale, await getBatchProjectLocaleContent(ids, locale));
+    }),
+  );
+
+  return list.map((item) => {
+    const desired = pickContentLocale(item.project.i18n ?? null, normalizedUiLocale);
+    const localized = localeMaps.get(desired)?.get(item.project.id) ?? null;
+    return {
+      ...item,
+      project: applyProjectLocaleContent(item.project, localized),
+    };
+  });
+}

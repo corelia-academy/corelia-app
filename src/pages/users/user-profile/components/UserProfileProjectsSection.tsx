@@ -7,7 +7,11 @@ import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
-import { applyProjectLocaleContent, getBatchProjectLocaleContent } from "@/lib/projects";
+import {
+  applyProjectLocaleContent,
+  getBatchProjectLocaleContent,
+  getProjectCoverImageUrl,
+} from "@/lib/projects";
 import { listMyProjectHeartIds } from "@/lib/projectSocial";
 import { pickContentLocale } from "@/lib/entityLocales";
 import type { PublicProfile } from "@/types/database";
@@ -44,7 +48,7 @@ export function UserProfileProjectsSection({
       setError(null);
       try {
         const select =
-          "id,owner_id,title,summary,demo_url,repo_url,slide_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+          "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
 
         const [{ data: owned, error: ownedErr }, { data: collabRows, error: collabErr }] =
           await Promise.all([
@@ -177,6 +181,16 @@ export function UserProfileProjectsSection({
             key={project.id}
             className="rounded-md border border-border-subtle bg-surface-base p-4"
           >
+            {getProjectCoverImageUrl(project) ? (
+              <div className="mb-4 overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+                <img
+                  src={getProjectCoverImageUrl(project) ?? ""}
+                  alt={project.title}
+                  className="h-48 w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ) : null}
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <div className="truncate text-sm font-semibold text-foreground">
@@ -244,6 +258,34 @@ export function UserProfileProjectsSection({
                     {t("userProfile.projects.slides")}
                   </Button>
                 ) : null}
+                {project.screenshot_url ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    render={
+                      <a href={project.screenshot_url} target="_blank" rel="noreferrer" />
+                    }
+                    nativeButton={false}
+                    className="gap-1"
+                  >
+                    <ExternalLink className="size-4" aria-hidden />
+                    {t("userProfile.projects.screenshot")}
+                  </Button>
+                ) : null}
+                {project.video_url ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    render={
+                      <a href={project.video_url} target="_blank" rel="noreferrer" />
+                    }
+                    nativeButton={false}
+                    className="gap-1"
+                  >
+                    <ExternalLink className="size-4" aria-hidden />
+                    {t("userProfile.projects.video")}
+                  </Button>
+                ) : null}
               </div>
               <ProjectSocialBlock
                 projectId={project.id}
@@ -260,4 +302,3 @@ export function UserProfileProjectsSection({
     </div>
   );
 }
-
