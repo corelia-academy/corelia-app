@@ -442,6 +442,14 @@
         "status": "Trạng thái"
       }
     },
+    "return": {
+      "successTitle": "Thanh toán đang được xác nhận",
+      "successDescription": "Nếu giao dịch đã hoàn tất, gói Cora AI và lịch sử thanh toán của bạn sẽ tự cập nhật trong giây lát.",
+      "errorTitle": "Phiên thanh toán gặp lỗi",
+      "errorDescription": "Corelia chưa nhận được xác nhận thành công từ cổng thanh toán. Bạn có thể thử lại khi sẵn sàng.",
+      "cancelTitle": "Bạn đã hủy phiên thanh toán",
+      "cancelDescription": "Chưa có thay đổi nào với gói hiện tại của bạn. Khi cần, bạn có thể chọn lại gói và thanh toán tiếp."
+    },
     "errors": {
       "checkoutFailed": "Không thể tạo phiên thanh toán Cora AI.",
       "fetchTransactions": "Không tải được lịch sử Cora AI."
