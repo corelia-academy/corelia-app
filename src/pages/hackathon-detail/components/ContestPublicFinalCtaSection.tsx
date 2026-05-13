@@ -16,7 +16,7 @@ export function ContestPublicFinalCtaSection() {
     <section
       id="final-cta"
       className={cn(
-        "scroll-mt-36 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/25 via-primary/10 to-surface-raised px-6 py-10 text-center",
+        "scroll-mt-36 rounded-xl border border-primary/20 bg-linear-to-br from-primary/25 via-primary/10 to-surface-raised px-6 py-10 text-center",
       )}
     >
       <h2 className="text-xl font-semibold tracking-tight text-foreground">

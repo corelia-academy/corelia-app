@@ -102,7 +102,7 @@ export function ContestDetailParticipantWorkspaceTabs({
 
   return (
     <Card id="participant-workspace" className="scroll-mt-28 sm:scroll-mt-32">
-      <CardContent className="py-2 px-4">
+      <CardContent className="px-4 pt-2 pb-0">
         <nav
           className="-mx-1 border-b border-border-subtle"
           aria-label={translate("detail.participant.workspaceTabsAriaLabel")}
