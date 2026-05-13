@@ -35,6 +35,7 @@ export default function ContestNew() {
   const [endsAt, setEndsAt] = useState("");
   const [registrationDeadline, setRegistrationDeadline] = useState("");
   const [submissionDeadline, setSubmissionDeadline] = useState("");
+  const [autoApproveRegistrations, setAutoApproveRegistrations] = useState(false);
   const [maxParticipants, setMaxParticipants] = useState("");
   const [prizePoolSummary, setPrizePoolSummary] = useState("");
   const [bannerFile, setBannerFile] = useState<File | null>(null);
@@ -126,6 +127,7 @@ export default function ContestNew() {
         ends_at: datetimeLocalToIso(endsAt),
         registration_deadline: datetimeLocalToIso(registrationDeadline),
         submission_deadline: datetimeLocalToIso(submissionDeadline),
+        config: { auto_approve_registrations: autoApproveRegistrations },
         max_participants: maxParticipants.trim() ? Number(maxParticipants) : null,
         prize_pool_summary: prizePoolSummary.trim() || null,
       });
@@ -408,6 +410,29 @@ export default function ContestNew() {
                   </FieldDescription>
                 </Field>
               </div>
+
+              <Field>
+                <label
+                  htmlFor="contest-auto-approve-registrations"
+                  className="flex items-start gap-3 rounded-xl border border-border-subtle bg-surface-base px-4 py-3"
+                >
+                  <input
+                    id="contest-auto-approve-registrations"
+                    type="checkbox"
+                    checked={autoApproveRegistrations}
+                    onChange={(e) => setAutoApproveRegistrations(e.target.checked)}
+                    className="mt-1"
+                  />
+                  <div>
+                    <div className="text-sm font-medium text-foreground">
+                      {t("instructorNew.form.autoApproveRegistrationsLabel")}
+                    </div>
+                    <FieldDescription className="mt-1">
+                      {t("instructorNew.form.autoApproveRegistrationsDescription")}
+                    </FieldDescription>
+                  </div>
+                </label>
+              </Field>
 
               <Field>
                 <FieldLabel htmlFor="contest-max-participants">

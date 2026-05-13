@@ -359,6 +359,28 @@ export function isPastContestSubmissionDeadline(
   return Date.now() > ms;
 }
 
+/** Effective ISO deadline for locking registrations; explicit `registration_deadline` or fallback `submission_deadline`/`ends_at`. */
+export function getEffectiveContestRegistrationDeadline(
+  contest: Pick<Contest, "registration_deadline" | "submission_deadline" | "ends_at">,
+): string | null {
+  const explicit = contest.registration_deadline?.trim();
+  if (explicit) return explicit;
+  const submission = contest.submission_deadline?.trim();
+  if (submission) return submission;
+  const end = contest.ends_at?.trim();
+  return end || null;
+}
+
+export function isPastContestRegistrationDeadline(
+  contest: Pick<Contest, "registration_deadline" | "submission_deadline" | "ends_at">,
+): boolean {
+  const iso = getEffectiveContestRegistrationDeadline(contest);
+  if (!iso) return false;
+  const ms = new Date(iso).getTime();
+  if (!Number.isFinite(ms)) return false;
+  return Date.now() > ms;
+}
+
 function normalizeContest(data: Contest): Contest {
   const rounds = normalizeRounds(data.rounds);
   const judgingActiveRoundId =
@@ -375,7 +397,11 @@ function normalizeContest(data: Contest): Contest {
     partner_viewer_emails: sanitizeEmailList(data.partner_viewer_emails),
     mentor_emails: sanitizeEmailList(data.mentor_emails),
     reviewer_emails: sanitizeEmailList(data.reviewer_emails),
-    config: { anonymous_judging: false, ...(data.config ?? {}) },
+    config: {
+      anonymous_judging: false,
+      auto_approve_registrations: false,
+      ...(data.config ?? {}),
+    },
     tracks: normalizeTracks(data.tracks),
     rounds,
     judging: { ...(data.judging ?? {}), active_round_id: judgingActiveRoundId },
@@ -858,18 +884,21 @@ export async function registerForContest(
 ): Promise<ContestRegistration> {
   const user = await requireCurrentUser();
   const profile = await getProfileForUser(user);
+  const contest = await getContest(contestId);
+  if (!contest) throw new Error("Không tìm thấy cuộc thi.");
   const now = new Date().toISOString();
   const registrationId = contestRegistrationId(contestId, user.id);
+  const autoApprove = Boolean(contest.config?.auto_approve_registrations);
 
   const document = removeUndefinedFields({
-    status: "pending" as const,
+    status: (autoApprove ? "approved" : "pending") as ContestRegistrationStatus,
     motivation: input.motivation?.trim() || null,
     contact_email: input.contact_email?.trim() || user.email || profile?.email || null,
     contact_phone: input.contact_phone?.trim() || profile?.phone || null,
     portfolio_url: input.portfolio_url?.trim() || null,
     user_full_name:
       input.user_full_name?.trim() || profile?.full_name || (user.user_metadata?.full_name as string) || null,
-    reviewed_at: null,
+    reviewed_at: autoApprove ? now : null,
     reviewed_by: null,
     review_note: null,
     applied_at: now,
