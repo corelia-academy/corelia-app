@@ -98,7 +98,6 @@ export default function ContestNew() {
   async function handleCreate() {
     if (!canSubmit || submitting) return;
     const schedule = validateContestScheduleInputs({
-      registrationDeadline,
       startsAt,
       endsAt,
       submissionDeadline,
@@ -106,9 +105,7 @@ export default function ContestNew() {
     if (!schedule.ok) {
       toast.error(
         t(
-          schedule.reason === "registration_after_start"
-            ? "instructorNew.validation.registrationAfterStart"
-            : schedule.reason === "submission_after_end"
+          schedule.reason === "submission_after_end"
               ? "instructorNew.validation.submissionAfterEnd"
               : "instructorNew.validation.endsNotAfterStart",
         ),

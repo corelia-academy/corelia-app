@@ -1957,7 +1957,6 @@ export function useContestDetailOrchestrator({
     if (!id || !isManager || savingPublicContent || !contest || !isManageView)
       return;
     const schedule = validateContestScheduleInputs({
-      registrationDeadline: publicDraft.registration_deadline_local,
       startsAt: publicDraft.starts_at_local,
       endsAt: publicDraft.ends_at_local,
       submissionDeadline: publicDraft.submission_deadline_local,
@@ -1965,9 +1964,7 @@ export function useContestDetailOrchestrator({
     if (!schedule.ok) {
       toast.error(
         translate(
-          schedule.reason === "registration_after_start"
-            ? "manage.validation.registrationAfterStart"
-            : schedule.reason === "submission_after_end"
+          schedule.reason === "submission_after_end"
               ? "manage.validation.submissionAfterEnd"
               : "manage.validation.endsNotAfterStart",
         ),

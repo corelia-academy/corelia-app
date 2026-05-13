@@ -495,7 +495,6 @@
     "validation": {
       "startsInPast": "Start date cannot be before today.",
       "endsNotAfterStart": "End date must be after the start date.",
-      "registrationAfterStart": "Registration deadline must be on or before the start date.",
       "submissionAfterEnd": "Submission deadline must be on or before the end date."
     },
     "form": {
@@ -572,7 +571,6 @@
     "manage": {
       "validation": {
         "endsNotAfterStart": "End date must be after the start date.",
-        "registrationAfterStart": "Registration deadline must be on or before the start date.",
         "submissionAfterEnd": "Submission deadline must be on or before the end date."
       },
       "sections": {
