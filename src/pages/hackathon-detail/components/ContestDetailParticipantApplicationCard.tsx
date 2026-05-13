@@ -23,12 +23,20 @@ export function ContestDetailParticipantApplicationCard({
     setMotivation,
     applying,
     registrationDraftReady,
+    registrationWorkspaceEditable,
     handleApply,
     profile,
     user,
   } = vm;
 
   const previewEmail = profile?.email?.trim() || user?.email?.trim() || "";
+  const autoApproveRegistrations = Boolean(
+    contest.config?.auto_approve_registrations,
+  );
+  const registrationBody =
+    registration?.status === "approved"
+      ? translate("detail.participant.applicationCardApprovedBody")
+      : translate("detail.participant.applicationCardPendingBody");
 
   const inner = (
     <>
@@ -41,7 +49,7 @@ export function ContestDetailParticipantApplicationCard({
                   {translate("detail.participant.applicationCardTitle")}
                 </h2>
                 <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
-                  {translate("detail.participant.applicationCardPendingBody")}
+                  {registrationBody}
                 </p>
               </div>
             </div>
@@ -104,6 +112,41 @@ export function ContestDetailParticipantApplicationCard({
               {translate("detail.cta.viewSchedule")}
             </Button>
           </>
+        ) : !registrationWorkspaceEditable ? (
+          <>
+            {!embedded ? (
+              <div className="flex items-center gap-3">
+                <Lock className="size-5 text-primary" aria-hidden />
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                    {translate("detail.participant.registrationClosedTitle")}
+                  </h2>
+                </div>
+              </div>
+            ) : null}
+            <p
+              className={cn(
+                "text-sm leading-relaxed text-foreground-muted",
+                embedded ? "mt-0" : "mt-4",
+              )}
+            >
+              {translate("detail.participant.registrationClosedBody")}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-4 min-h-11 w-full sm:w-auto"
+              onClick={() =>
+                navigate(
+                  contest.slug
+                    ? `/hackathons/${contest.slug}/timeline`
+                    : "/hackathons",
+                )
+              }
+            >
+              {translate("detail.cta.viewSchedule")}
+            </Button>
+          </>
         ) : (
           <>
             {!embedded ? (
@@ -113,7 +156,7 @@ export function ContestDetailParticipantApplicationCard({
                     {translate("detail.participant.applicationCardTitle")}
                   </h2>
                   <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
-                    {translate("detail.participant.applicationCardPendingBody")}
+                    {registrationBody}
                   </p>
                 </div>
               </div>
@@ -122,9 +165,14 @@ export function ContestDetailParticipantApplicationCard({
               {previewEmail ? (
                 <>
                   <p className="text-sm leading-relaxed text-foreground-muted">
-                    {translate("detail.participant.quickRegisterIntro", {
-                      email: previewEmail,
-                    })}
+                    {translate(
+                      autoApproveRegistrations
+                        ? "detail.participant.quickRegisterIntroInstant"
+                        : "detail.participant.quickRegisterIntro",
+                      {
+                        email: previewEmail,
+                      },
+                    )}
                   </p>
                   <p className="text-xs leading-relaxed text-foreground-muted">
                     {translate("detail.participant.profileAttachedHint")}
@@ -171,7 +219,11 @@ export function ContestDetailParticipantApplicationCard({
                 </div>
               </details>
               <p className="text-xs leading-5 text-foreground-muted">
-                {translate("detail.participant.postSubmitHint")}
+                {translate(
+                  autoApproveRegistrations
+                    ? "detail.participant.postSubmitHintInstant"
+                    : "detail.participant.postSubmitHint",
+                )}
               </p>
               {!registrationDraftReady ? (
                 <div className="rounded-md border border-border-subtle bg-surface-base px-4 py-3 text-sm text-foreground-muted">

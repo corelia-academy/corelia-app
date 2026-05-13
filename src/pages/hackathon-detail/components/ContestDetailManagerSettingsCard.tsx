@@ -1261,6 +1261,27 @@ export function ContestDetailManagerSettingsCard({
               {translate("detail.sections.timeline")}
             </div>
             <div className="mt-3 grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4">
+              <label className="flex items-start gap-3 rounded-lg border border-border-subtle bg-surface-raised px-4 py-3 sm:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={publicDraft.auto_approve_registrations}
+                  onChange={(e) =>
+                    setPublicDraft((prev) => ({
+                      ...prev,
+                      auto_approve_registrations: e.target.checked,
+                    }))
+                  }
+                  className="mt-1"
+                />
+                <div>
+                  <div className="text-sm font-medium text-foreground">
+                    {translate("workspace.manage.autoApproveRegistrationsTitle")}
+                  </div>
+                  <p className="mt-1 text-xs text-foreground-muted">
+                    {translate("workspace.manage.autoApproveRegistrationsHint")}
+                  </p>
+                </div>
+              </label>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-foreground-muted">

@@ -16,6 +16,7 @@ import {
   scoreContestSubmission,
   updateContest,
   upsertContestSubmission,
+  isPastContestRegistrationDeadline,
   isPastContestSubmissionDeadline,
 } from "@/lib/hackathons";
 import {
@@ -636,21 +637,16 @@ export function useContestDetailOrchestrator({
     const participantWorkspaceHash = `${base}#participant-workspace`;
     const participantSubmissionHash = `${base}#participant-submission`;
     const showProjects = contestPublicShowcaseProjectsNavVisible(contest);
+    const registrationWindowOpen =
+      contest.status === "published" && !isPastContestRegistrationDeadline(contest);
+    const autoApproveRegistrations = Boolean(
+      contest.config?.auto_approve_registrations,
+    );
 
     const loginRedirect = (path: string) =>
       `/login?redirect=${encodeURIComponent(path)}`;
 
-    if (hackathonLifecycle === "upcoming") {
-      return {
-        label: translate("detail.lifecycle.cta.notifyWhenOpen"),
-        helper: translate("detail.lifecycle.cta.notifyWhenOpenHelper"),
-        variant: "outline" as const,
-        navigateTo: isAuthenticated ? "/account/settings" : loginRedirect(base),
-        disabled: false as boolean | undefined,
-      };
-    }
-
-    if (hackathonLifecycle === "registration_open") {
+    const buildRegistrationCta = () => {
       if (!isAuthenticated) {
         return {
           label: translate("detail.lifecycle.cta.loginToRegister"),
@@ -686,13 +682,34 @@ export function useContestDetailOrchestrator({
       }
       return {
         label: translate("detail.lifecycle.cta.registerWithProfile"),
-        helper: translate("detail.lifecycle.cta.registerWithProfileHelper"),
+        helper: translate(
+          autoApproveRegistrations
+            ? "detail.lifecycle.cta.registerWithProfileHelperInstant"
+            : "detail.lifecycle.cta.registerWithProfileHelper",
+        ),
         variant: "default" as const,
         navigateTo: participantWorkspaceHash,
       };
+    };
+
+    if (hackathonLifecycle === "upcoming") {
+      return {
+        label: translate("detail.lifecycle.cta.notifyWhenOpen"),
+        helper: translate("detail.lifecycle.cta.notifyWhenOpenHelper"),
+        variant: "outline" as const,
+        navigateTo: isAuthenticated ? "/account/settings" : loginRedirect(base),
+        disabled: false as boolean | undefined,
+      };
+    }
+
+    if (hackathonLifecycle === "registration_open") {
+      return buildRegistrationCta();
     }
 
     if (hackathonLifecycle === "in_progress") {
+      if (registrationWindowOpen && registration?.status !== "approved") {
+        return buildRegistrationCta();
+      }
       if (registration?.status === "approved") {
         if (mySubmission) {
           return {
@@ -747,6 +764,12 @@ export function useContestDetailOrchestrator({
     const email = profile?.email?.trim() || user?.email?.trim() || "";
     return email.length > 0;
   }, [authInitialized, isAuthenticated, profile?.email, user?.email]);
+
+  const registrationWorkspaceEditable = useMemo(() => {
+    void countdownTick;
+    if (!contest || contest.status !== "published") return false;
+    return !isPastContestRegistrationDeadline(contest);
+  }, [contest, countdownTick]);
 
   const submissionWorkspaceEditable = useMemo(() => {
     void countdownTick;
@@ -998,6 +1021,9 @@ export function useContestDetailOrchestrator({
                 description: "",
               },
             ],
+      auto_approve_registrations: Boolean(
+        contest.config?.auto_approve_registrations,
+      ),
       registration_deadline_local: contest.registration_deadline
         ? isoToDatetimeLocal(contest.registration_deadline)
         : "",
@@ -1102,6 +1128,10 @@ export function useContestDetailOrchestrator({
       navigate("/login", { state: { from: location } });
       return;
     }
+    if (!contest || !registrationWorkspaceEditable) {
+      toast.error(translate("detail.participant.registrationClosedBody"));
+      return;
+    }
     const resolvedEmail = profile?.email?.trim() || user?.email?.trim() || "";
     if (!resolvedEmail) {
       toast.error(translate("detail.toasts.contactEmailRequired"));
@@ -1120,7 +1150,13 @@ export function useContestDetailOrchestrator({
         user_full_name: profile?.full_name ?? undefined,
       });
       setRegistration(result);
-      toast.success(translate("detail.toasts.applicationSubmitted"));
+      toast.success(
+        translate(
+          result.status === "approved"
+            ? "detail.toasts.applicationSubmittedApproved"
+            : "detail.toasts.applicationSubmitted",
+        ),
+      );
     } catch (err) {
       toast.error(
         err instanceof Error
@@ -1132,6 +1168,7 @@ export function useContestDetailOrchestrator({
     }
   }, [
     applying,
+    contest,
     id,
     isAuthenticated,
     location,
@@ -1142,6 +1179,7 @@ export function useContestDetailOrchestrator({
     profile?.instructor_website,
     profile?.phone,
     profile?.website,
+    registrationWorkspaceEditable,
     setApplying,
     setRegistration,
     translate,
@@ -2021,6 +2059,10 @@ export function useContestDetailOrchestrator({
         }
       }
       await updateContest(id, {
+        config: {
+          ...(contest.config ?? {}),
+          auto_approve_registrations: publicDraft.auto_approve_registrations,
+        },
         registration_deadline: datetimeLocalToIso(publicDraft.registration_deadline_local),
         submission_deadline: datetimeLocalToIso(publicDraft.submission_deadline_local),
         starts_at: datetimeLocalToIso(publicDraft.starts_at_local),
@@ -2052,6 +2094,7 @@ export function useContestDetailOrchestrator({
     isManageView,
     isManager,
     onContestSynced,
+    publicDraft.auto_approve_registrations,
     publicDraft.faqs,
     publicDraft.registration_deadline_local,
     publicDraft.submission_deadline_local,
@@ -2263,6 +2306,7 @@ export function useContestDetailOrchestrator({
     publicHeroCountdown,
     publicCta,
     registrationDraftReady,
+    registrationWorkspaceEditable,
     submissionWorkspaceEditable,
     collabProject,
     collabMembers,
