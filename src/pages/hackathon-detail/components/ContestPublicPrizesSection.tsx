@@ -11,7 +11,10 @@ export function ContestPublicPrizesSection(props: {
   return (
     <Card id="prizes" className={cn("scroll-mt-36")}>
       <CardContent className="p-4">
-        <h2 className="text-lg font-semibold text-foreground">
+        <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+          {t("detail.public.nav.prizes")}
+        </div>
+        <h2 className="mt-1 text-lg font-semibold text-foreground">
           {t("detail.prizes.sectionTitle")}
         </h2>
         <p className="mt-2 text-sm text-foreground-muted">
@@ -24,7 +27,14 @@ export function ContestPublicPrizesSection(props: {
             {(contest.prizes ?? []).map((prize, index) => (
               <div
                 key={`${prize.rank_label}-${prize.title}-${index}`}
-                className="rounded-md border border-border-subtle bg-surface-raised p-4"
+                className={cn(
+                  "rounded-md border p-4",
+                  index === 0
+                    ? "border-primary/30 bg-primary/5"
+                    : index === 1
+                      ? "border-border bg-surface-raised"
+                      : "border-border-subtle bg-surface-raised",
+                )}
               >
                 <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
                   {prize.rank_label}

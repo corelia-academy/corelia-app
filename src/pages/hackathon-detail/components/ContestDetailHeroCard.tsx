@@ -30,7 +30,7 @@ function ContestHeroVisual({
 
   if (src) {
     return (
-      <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
+      <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
         <img
           src={src}
           alt={translate("detail.visual.bannerAlt", {
@@ -44,7 +44,7 @@ function ContestHeroVisual({
 
   return (
     <div
-      className="aspect-square w-full rounded-xl border border-border-subtle bg-linear-to-br from-primary/30 via-primary/10 to-surface-raised"
+      className="aspect-video w-full rounded-xl border border-border-subtle bg-linear-to-br from-primary/30 via-primary/10 to-surface-raised"
       aria-hidden
     />
   );
@@ -393,8 +393,7 @@ export function ContestDetailHeroCard({
                         aria-live="polite"
                         className={cn(
                           "text-sm font-medium tabular-nums text-foreground",
-                          publicHeroCountdown.urgent &&
-                            "text-red-600 dark:text-red-400",
+                          publicHeroCountdown.urgent && "text-destructive",
                         )}
                       >
                         {publicHeroCountdown.text}
