@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Contest } from "@/types/hackathons";
 import { maskEmailAddress } from "@/pages/hackathon-detail/utils/emailMask";
+import { cn } from "@/lib/utils";
 
 function uniq(list: string[]): string[] {
   const seen = new Set<string>();
