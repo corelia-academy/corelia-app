@@ -495,7 +495,6 @@
     "validation": {
       "startsInPast": "Ngày bắt đầu không được trước hôm nay.",
       "endsNotAfterStart": "Ngày kết thúc phải sau ngày bắt đầu.",
-      "registrationAfterStart": "Hạn đăng ký phải trước hoặc đúng ngày bắt đầu.",
       "submissionAfterEnd": "Hạn nộp bài phải trước hoặc đúng ngày kết thúc."
     },
     "form": {
@@ -572,7 +571,6 @@
     "manage": {
       "validation": {
         "endsNotAfterStart": "Ngày kết thúc phải sau ngày bắt đầu.",
-        "registrationAfterStart": "Hạn đăng ký phải trước hoặc đúng ngày bắt đầu.",
         "submissionAfterEnd": "Hạn nộp bài phải trước hoặc đúng ngày kết thúc."
       },
       "sections": {
