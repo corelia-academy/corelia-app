@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import {
   Bot,
   Check,
@@ -66,6 +66,7 @@ function statusTone(status: PaymentTransaction["status"]) {
 
 export function AccountCoraRoute() {
   const { t } = useTranslation("account");
+  const location = useLocation();
   const { user, aiSubscription, daysUntilExpiry, loadAiSubscription } = useAuth();
   const [selectedTierOverride, setSelectedTierOverride] =
     useState<AiSubscriptionTier | null>(null);
@@ -78,6 +79,27 @@ export function AccountCoraRoute() {
   const [error, setError] = useState<string | null>(null);
   const selectedTier = selectedTierOverride ?? aiSubscription?.tier ?? "student";
   const loadingTransactions = user ? transactions === null && !error : false;
+  const paymentState = new URLSearchParams(location.search).get("payment");
+  const paymentNotice =
+    paymentState === "success"
+      ? {
+          tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+          title: t("cora.return.successTitle"),
+          description: t("cora.return.successDescription"),
+        }
+      : paymentState === "error"
+        ? {
+            tone: "border-destructive/30 bg-destructive/10 text-destructive",
+            title: t("cora.return.errorTitle"),
+            description: t("cora.return.errorDescription"),
+          }
+        : paymentState === "cancel"
+          ? {
+              tone: "border-warning/30 bg-warning/10 text-warning",
+              title: t("cora.return.cancelTitle"),
+              description: t("cora.return.cancelDescription"),
+            }
+          : null;
 
   useEffect(() => {
     if (!user) return;
@@ -101,7 +123,7 @@ export function AccountCoraRoute() {
     return () => {
       cancelled = true;
     };
-  }, [loadAiSubscription, t, user]);
+  }, [loadAiSubscription, paymentState, t, user]);
 
   const selectedPrice = TIER_PRICES[selectedTier][selectedDuration];
   const aiTransactions = useMemo(() => transactions ?? [], [transactions]);
@@ -200,6 +222,20 @@ export function AccountCoraRoute() {
         </section>
       ) : (
         <>
+          {paymentNotice ? (
+            <section
+              className={cn(
+                "rounded-lg border px-4 py-3",
+                paymentNotice.tone,
+              )}
+            >
+              <p className="text-sm font-medium">{paymentNotice.title}</p>
+              <p className="mt-1 text-sm/6 text-current/90">
+                {paymentNotice.description}
+              </p>
+            </section>
+          ) : null}
+
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
             <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
               <div>
