@@ -43,6 +43,7 @@ export function useContestManagerWorkspace() {
     prizes: ContestPrizeEntry[];
     faqs: ContestFaqEntry[];
     organizational_partners: ContestOrganizationalPartner[];
+    auto_approve_registrations: boolean;
     registration_deadline_local: string;
     submission_deadline_local: string;
     starts_at_local: string;
@@ -53,6 +54,7 @@ export function useContestManagerWorkspace() {
     prizes: [],
     faqs: [],
     organizational_partners: [],
+    auto_approve_registrations: false,
     registration_deadline_local: "",
     submission_deadline_local: "",
     starts_at_local: "",

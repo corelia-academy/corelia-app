@@ -43,6 +43,7 @@ export interface ContestRound {
 
 export interface ContestConfig {
   anonymous_judging?: boolean;
+  auto_approve_registrations?: boolean;
 }
 
 export interface ContestJudgingConfig {
