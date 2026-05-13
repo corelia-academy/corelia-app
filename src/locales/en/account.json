@@ -442,6 +442,14 @@
         "status": "Status"
       }
     },
+    "return": {
+      "successTitle": "Payment is being confirmed",
+      "successDescription": "If the transaction completed successfully, your Cora AI plan and payment history will refresh shortly.",
+      "errorTitle": "The payment session ran into an error",
+      "errorDescription": "Corelia hasn't received a successful confirmation from the payment gateway yet. You can try again whenever you're ready.",
+      "cancelTitle": "You cancelled the payment session",
+      "cancelDescription": "Your current plan hasn't changed. Whenever you're ready, you can choose a plan and try again."
+    },
     "errors": {
       "checkoutFailed": "Unable to create a Cora AI checkout session.",
       "fetchTransactions": "Unable to load Cora AI history."

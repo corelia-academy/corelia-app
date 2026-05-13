@@ -314,14 +314,15 @@ export function useCoraAI(options: UseCoraAIOptions) {
         if (payload.quota) {
           setQuotaInfo(payload.quota);
         }
-        if (payload.assistantMessage?.content) {
+        const assistantMessage = payload.assistantMessage;
+        if (assistantMessage?.content) {
           setMessages((current) => [
             ...current.filter((message) => message.id !== tempAssistantId),
             {
               id: tempAssistantId,
               role: "assistant",
-              content: payload.assistantMessage.content,
-              createdAt: payload.assistantMessage.createdAt,
+              content: assistantMessage.content,
+              createdAt: assistantMessage.createdAt,
               cached: Boolean(payload.cached),
             },
           ]);
