@@ -3,17 +3,6 @@ import type { User } from "@supabase/supabase-js";
 import type { TFunction } from "i18next";
 import type { HomeDashboardConfig } from "@/types/dashboard";
 import type { Enrollment } from "@/types/courses";
-import {
-  computeProgressPercent,
-  getCourse,
-  getCourseLessons,
-  getCourseSections,
-  getLessonProgressForCourse,
-  getMyEnrollments,
-  getNextLesson,
-  sortLessonsByCurriculum,
-} from "@/lib/courses";
-import { getHomeDashboardConfig } from "@/lib/dashboardConfig";
 import { intlLocale } from "@/lib/intl";
 import type { FocusCard } from "../utils/homeTypes";
 import { perfMeasureEnd, perfMeasureStart } from "@/lib/perfTelemetry";
@@ -38,6 +27,11 @@ export function useHomeUserDashboard(user: User | null, t: TFunction<"common">) 
       perfMeasureStart("home.dashboard_wave");
 
       try {
+        const [{ getMyEnrollments, getCourse, getCourseLessons, getCourseSections, getLessonProgressForCourse, sortLessonsByCurriculum, computeProgressPercent, getNextLesson }, { getHomeDashboardConfig }] = await Promise.all([
+          import("@/lib/courses"),
+          import("@/lib/dashboardConfig"),
+        ]);
+
         const [enrollments, homeConfig] = await Promise.all([
           getMyEnrollments(user.id).catch(() => [] as Enrollment[]),
           getHomeDashboardConfig().catch(() => null),
@@ -107,4 +101,3 @@ export function useHomeUserDashboard(user: User | null, t: TFunction<"common">) 
 
   return { loading, focusCards, issuedCertificates, dashboardConfig };
 }
-

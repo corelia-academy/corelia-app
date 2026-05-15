@@ -664,7 +664,7 @@ create index ai_conversations_session_idx
   on ai_conversations(session_id, created_at desc)
   where session_id is not null;
 
--- ── Daily Usage (Quota) ────────────────────────────────────────────────
+-- ── Monthly Usage + Rolling Window Quota ───────────────────────────────
 create table ai_usage_daily (
   id            uuid primary key default gen_random_uuid(),
   user_id       uuid references auth.users(id) on delete cascade,
@@ -678,17 +678,18 @@ create table ai_usage_daily (
 -- ── Tier Limits ────────────────────────────────────────────────────────
 create table tier_limits (
   tier            text primary key,
-  daily_messages  int,
+  monthly_messages int,
+  rolling_3h_soft_cap int,
   haiku_only      boolean default true,
   label_vi        text,
   label_en        text
 );
 
 insert into tier_limits values
-  ('free',      5,   true,  'Miễn phí', 'Free'),
-  ('student',   50,  true,  'Học viên', 'Student'),
-  ('pro',       200, false, 'Pro',       'Pro'),
-  ('bootcamp',  999, false, 'Bootcamp',  'Bootcamp')
+  ('free',      40,  6,   true,  'Miễn phí', 'Free'),
+  ('student',   250, 20,  true,  'Học viên', 'Student'),
+  ('pro',       700, 50,  false, 'Pro',       'Pro'),
+  ('bootcamp',  1800,120, false, 'Bootcamp',  'Bootcamp')
 on conflict do nothing;
 
 -- ── Knowledge Base (RAG) ───────────────────────────────────────────────
@@ -1506,23 +1507,40 @@ async function checkAndIncrementQuota(supabase, userId) {
   const tier = profile?.tier || 'free';
 
   const { data: limits } = await supabase.from('tier_limits')
-    .select('daily_messages').eq('tier', tier).single();
+    .select('monthly_messages, rolling_3h_soft_cap').eq('tier', tier).single();
 
-  const today = new Date().toISOString().split('T')[0];
-  const { data: usage } = await supabase.from('ai_usage_daily')
-    .upsert({ user_id: userId, date: today, message_count: 0 }, { onConflict: 'user_id,date' })
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const { data: usage } = await supabase.from('ai_usage_monthly')
+    .upsert({ user_id: userId, month: thisMonth, message_count: 0 }, { onConflict: 'user_id,month' })
     .select('message_count').single();
 
-  const count = usage?.message_count || 0;
-  const limit = limits?.daily_messages || 5;
+  const monthlyCount = usage?.message_count || 0;
+  const monthlyLimit = limits?.monthly_messages || 40;
 
-  if (count >= limit) return { allowed: false, used: count, limit, tier };
+  if (monthlyCount >= monthlyLimit) {
+    return { allowed: false, used: monthlyCount, limit: monthlyLimit, tier };
+  }
 
-  await supabase.from('ai_usage_daily')
-    .update({ message_count: count + 1 })
-    .eq('user_id', userId).eq('date', today);
+  const { count: rollingWindowCount } = await supabase
+    .from('ai_conversations')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('role', 'user')
+    .gte('created_at', new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString());
 
-  return { allowed: true, used: count, limit, tier };
+  await supabase.from('ai_usage_monthly')
+    .update({ message_count: monthlyCount + 1 })
+    .eq('user_id', userId).eq('month', thisMonth);
+
+  return {
+    allowed: true,
+    monthlyUsed: monthlyCount + 1,
+    monthlyLimit,
+    windowUsed: (rollingWindowCount ?? 0) + 1,
+    windowSoftCap: limits?.rolling_3h_soft_cap || 6,
+    windowHours: 3,
+    tier,
+  };
 }
 
 function errorResponse(message: string, status: number, corsHeaders: Record<string, string>) {

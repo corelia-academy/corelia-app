@@ -317,7 +317,7 @@
       "inputPlaceholder": "Type a question…",
       "footerCaption": "Sending messages will be available when Cora AI Tutor launches.",
       "liveFooterCaption": "Cora Tutor is live in its first slice. Conversation storage and lesson-aware context are on now; streaming and RAG will come next.",
-      "throttleHint": "You have reached today’s soft usage threshold, so Cora Tutor will keep replies shorter.",
+      "throttleHint": "You have reached the soft usage threshold in the last few hours, so Cora Tutor will keep replies shorter.",
       "chipToast": "Cora AI Tutor is coming soon.",
       "suggestions": [
         "Summarize the key ideas from this lesson.",

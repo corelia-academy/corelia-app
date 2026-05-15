@@ -11,21 +11,21 @@ import {
   Routes,
   useLocation,
 } from "react-router";
-import MainLayout from "@/components/layouts/MainLayout";
 import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
 import { RequireContestManager } from "@/components/auth/RequireContestManager";
-import Home from "@/pages/home/index";
-import Courses from "@/pages/courses";
-import Auth from "@/pages/login/Auth";
-import OCIDRedirect from "@/pages/OCIDRedirect";
-import NotFound from "@/pages/NotFound";
 import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
 
 // Lazy-load all routes not needed on the initial render
+const Home = lazy(() => import("@/pages/home/index"));
+const Courses = lazy(() => import("@/pages/courses"));
+const Auth = lazy(() => import("@/pages/login/Auth"));
+const OCIDRedirect = lazy(() => import("@/pages/OCIDRedirect"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const MainLayout = lazy(() => import("@/components/layouts/MainLayout"));
 const CourseDetail = lazy(() => import("@/pages/course-details"));
 const CheckoutCourse = lazy(() => import("@/pages/CheckoutCourse"));
 const CheckoutSuccess = lazy(() => import("@/pages/CheckoutSuccess"));
@@ -61,9 +61,7 @@ const AccountProfileRoute = lazy(() =>
 const AccountCvRoute = lazy(() =>
   import("@/pages/account/AccountCvRoute").then((m) => ({ default: m.AccountCvRoute })),
 );
-const AccountCoraRoute = lazy(() =>
-  import("@/pages/account/AccountCoraRoute").then((m) => ({ default: m.AccountCoraRoute })),
-);
+const CoraCheckoutPage = lazy(() => import("@/pages/cora/CoraCheckoutPage"));
 const AccountBillingRoute = lazy(() =>
   import("@/pages/account/AccountBillingRoute").then((m) => ({ default: m.AccountBillingRoute })),
 );
@@ -184,7 +182,14 @@ export default function App() {
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
-            <Route path="/login" element={<Auth />} />
+            <Route
+              path="/login"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <Auth />
+                </Suspense>
+              }
+            />
             <Route
               path="/confirm-signup"
               element={
@@ -201,10 +206,38 @@ export default function App() {
                 </Suspense>
               }
             />
-            <Route path="/ocid-redirect" element={<OCIDRedirect />} />
-            <Route path="/" element={<MainLayout />}>
-              <Route index element={<Home />} />
-              <Route path="courses" element={<Courses />} />
+            <Route
+              path="/ocid-redirect"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <OCIDRedirect />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <MainLayout />
+                </Suspense>
+              }
+            >
+              <Route
+                index
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <Home />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="courses"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <Courses />
+                  </Suspense>
+                }
+              />
               <Route
                 path="invites/project/:token"
                 element={
@@ -451,14 +484,6 @@ export default function App() {
                   }
                 />
                 <Route
-                  path="cora"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <AccountCoraRoute />
-                    </Suspense>
-                  }
-                />
-                <Route
                   path="billing"
                   element={
                     <Suspense fallback={<PageFallback />}>
@@ -491,7 +516,21 @@ export default function App() {
                   }
                 />
               </Route>
-              <Route path="upgrade/cora" element={<Navigate to="/account/cora" replace />} />
+              <Route
+                path="account/cora"
+                element={<Navigate to="/cora" replace />}
+              />
+              <Route
+                path="cora"
+                element={
+                  <RequireAuth>
+                    <Suspense fallback={<PageFallback />}>
+                      <CoraCheckoutPage />
+                    </Suspense>
+                  </RequireAuth>
+                }
+              />
+              <Route path="upgrade/cora" element={<Navigate to="/cora" replace />} />
               <Route
                 path="admin"
                 element={
@@ -544,7 +583,11 @@ export default function App() {
                 />
                 <Route
                   path="hackathons/*"
-                  element={<NotFound />}
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <NotFound />
+                    </Suspense>
+                  }
                 />
               </Route>
               <Route
@@ -666,7 +709,14 @@ export default function App() {
                   </Suspense>
                 }
               />
-              <Route path="*" element={<NotFound />} />
+              <Route
+                path="*"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <NotFound />
+                  </Suspense>
+                }
+              />
             </Route>
           </Routes>
         </BrowserRouter>

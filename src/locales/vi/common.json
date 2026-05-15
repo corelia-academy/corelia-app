@@ -302,6 +302,11 @@
     "eyebrow": "Cora luôn sẵn sàng",
     "title": "Cora AI Tutor",
     "status": "Beta live",
+    "statusByTier": {
+      "default": "{{tier}} live",
+      "throttled": "{{tier}} · chế độ tiết kiệm",
+      "expiringSoon": "{{tier}} · sắp hết hạn ({{days}} ngày)"
+    },
     "description": "Giữ Cora ở cạnh màn hình để hỏi nhanh về tiến độ học, hướng đi tiếp theo hoặc tìm khóa học phù hợp hơn ngay trong lúc đang duyệt app.",
     "contextLabel": "Ngữ cảnh hiện tại",
     "contextTitle": {
@@ -337,12 +342,72 @@
     "liveFooterCaption": "Cora đang ở bản đầu tiên. Mình đã bật lưu hội thoại và ngữ cảnh, còn streaming và RAG sẽ nối tiếp ở bước sau.",
     "sendAction": "Gửi",
     "sendingAction": "Đang gửi…",
-    "throttleHint": "Bạn đã chạm ngưỡng hỏi mềm trong hôm nay, nên Cora sẽ ưu tiên trả lời ngắn và tiết kiệm hơn.",
+    "sourceCount_one": "Phản hồi này đang bám trên {{count}} nguồn tham chiếu nội bộ.",
+    "sourceCount_other": "Phản hồi này đang bám trên {{count}} nguồn tham chiếu nội bộ.",
+    "throttleHint": "Bạn đã chạm ngưỡng hỏi mềm trong khung vài giờ gần đây, nên Cora sẽ ưu tiên trả lời ngắn và tiết kiệm hơn.",
     "retryAction": "Thử lại",
     "quotaExceededTitle": "Bạn đã chạm giới hạn Cora AI tháng này",
     "quotaExceededDescription": "Hiện bạn đã dùng khoảng {{used}} / {{limit}} tin nhắn ở gói {{tier}}. Bạn có thể thử lại sau khi quota được làm mới hoặc nâng cấp để tiếp tục hỏi nhiều hơn.",
-    "quotaExceededCta": "Xem tài khoản",
+    "quotaExceededCta": "Xem gói Cora",
     "quotaExceededHint": "Cora tạm dừng vì bạn đã chạm quota tháng hiện tại.",
+    "plan": {
+      "tiers": {
+        "free": "Gói miễn phí",
+        "student": "Student",
+        "pro": "Pro",
+        "bootcamp": "Bootcamp"
+      },
+      "usage": "Đã dùng {{used}} / {{limit}} tin nhắn tháng này.",
+      "usageFlexible": "Gói hiện tại đã được mở rộng và sẽ tiếp tục phản ánh theo quota thực tế của tài khoản.",
+      "expiry": "Còn khoảng {{days}} ngày hiệu lực ở gói hiện tại.",
+      "throttled": "Đang ưu tiên tiết kiệm",
+      "windowUsage": "Trong {{hours}} giờ gần đây bạn đã dùng {{used}} / {{cap}} trong ngưỡng hỏi mềm.",
+      "upgradeAction": "Nâng cấp",
+      "manageAction": "Quản lý gói"
+    },
+    "memory": {
+      "title": "Cora đang ghi nhớ",
+      "style": "Kiểu hỗ trợ phù hợp lúc này: {{style}}.",
+      "weakTopics": "Điểm đang cần bám thêm: {{topics}}.",
+      "weakTopicsEmpty": "Cora chưa thấy điểm nghẽn nổi bật nào trong các lượt gần đây.",
+      "strongTopics": "Điểm bạn đang bám khá tốt: {{topics}}.",
+      "strongTopicsEmpty": "Cora vẫn đang quan sát xem bạn đang mạnh lên rõ nhất ở phần nào.",
+      "styles": {
+        "unknown": "chưa đủ tín hiệu",
+        "step_by_step": "giải thích từng bước",
+        "hands_on": "thiên về ví dụ và thực hành",
+        "concise": "ngắn gọn, đi thẳng ý chính",
+        "conceptual": "giải thích theo bản chất"
+      }
+    },
+    "personalizedSuggestions": {
+      "lessonWeakStyle": "Giải thích lại {{topic}} theo kiểu {{style}}.",
+      "lessonWeakExample": "Cho mình một ví dụ ngắn để hiểu rõ hơn về {{topic}}.",
+      "courseWeakDiscover": "Tìm giúp mình khóa học để cải thiện {{topic}}.",
+      "courseWeakNext": "Mình đang yếu ở {{topic}}, nên học gì tiếp theo?",
+      "careerWeak": "Nếu mình còn yếu ở {{topic}} thì nên đi theo track nào trước?",
+      "activityWeak": "Có hoạt động nào phù hợp để luyện thêm {{topic}} không?",
+      "profileWeak": "{{topic}} đang ảnh hưởng hồ sơ học tập của mình thế nào?",
+      "lessonStrongExpand": "Từ {{topic}}, mình nên mở rộng sang phần nào tiếp theo?",
+      "courseStrongNext": "Sau khi khá hơn ở {{topic}}, mình nên học gì nâng cao tiếp?",
+      "careerStrong": "{{topic}} có thể mở ra hướng nghề nào tiếp theo?",
+      "activityStrong": "Có dự án hoặc hoạt động nào giúp mình nâng {{topic}} lên mức mạnh hơn không?",
+      "profileStrong": "Thành tích nào nên bổ sung tiếp nếu mình đang mạnh hơn ở {{topic}}?",
+      "lessonStyleOnly": "Tiếp tục hỗ trợ mình theo kiểu {{style}} cho bài này.",
+      "defaultStyleOnly": "Gợi ý giúp mình bước tiếp theo theo kiểu {{style}}."
+    },
+    "memoryDelta": {
+      "title": "Cora vừa ghi nhận",
+      "newWeakTopic": "Cora vừa đánh dấu {{topic}} là phần bạn có thể cần hỗ trợ thêm.",
+      "newStrongTopic": "Cora vừa thấy {{topic}} đang trở thành điểm bạn bám tốt hơn.",
+      "learningStyle": "Cora đang nghiêng về cách hỗ trợ kiểu {{style}} cho bạn."
+    },
+    "recommendedActions": {
+      "title": "Nước đi nên mở tiếp"
+    },
+    "recommendedEntities": {
+      "title": "Gợi ý cụ thể để mở tiếp"
+    },
     "actions": {
       "browseCourses": "Xem khóa học",
       "viewPaths": "Xem lộ trình",

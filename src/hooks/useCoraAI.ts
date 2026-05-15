@@ -15,6 +15,14 @@ export type CoraMessage = {
   content: string;
   createdAt: string;
   cached?: boolean;
+  sources?: CoraSourceRef[];
+};
+
+export type CoraSourceRef = {
+  topic?: string | null;
+  subtopic?: string | null;
+  category?: string | null;
+  track?: string | null;
 };
 
 export type CoraQuotaInfo = {
@@ -23,9 +31,41 @@ export type CoraQuotaInfo = {
   haikuOnly: boolean;
   monthlyUsed: number;
   monthlyLimit: number | null;
-  dailyUsed: number;
-  dailySoftCap: number | null;
+  windowUsed: number;
+  windowSoftCap: number | null;
+  windowHours: number;
   tier: "free" | "student" | "pro" | "bootcamp";
+};
+
+export type CoraLearningMemory = {
+  weakTopics: string[];
+  strongTopics: string[];
+  learningStyle: string | null;
+  summary: string | null;
+  totalQuestions: number;
+};
+
+export type CoraMemoryDelta = {
+  newWeakTopic: string | null;
+  newStrongTopic: string | null;
+  learningStyle: string | null;
+  summary: string | null;
+  totalQuestions: number;
+};
+
+export type CoraRecommendedAction = {
+  label: string;
+  to: string;
+  reason: string;
+};
+
+export type CoraRecommendedEntity = {
+  kind: "course" | "career" | "hackathon";
+  title: string;
+  to: string;
+  reason: string;
+  subtitle?: string | null;
+  badge?: string | null;
 };
 
 export type CoraError =
@@ -46,6 +86,7 @@ type ConversationRow = {
   created_at: string;
   session_id?: string | null;
   cached?: boolean | null;
+  sources?: CoraSourceRef[] | null;
 };
 
 type SendMessageResponse = {
@@ -61,16 +102,34 @@ type SendMessageResponse = {
     content: string;
     createdAt: string;
   };
+  sources?: CoraSourceRef[];
+  suggestedPrompts?: string[];
+  memoryDelta?: CoraMemoryDelta;
+  recommendedActions?: CoraRecommendedAction[];
+  recommendedEntities?: CoraRecommendedEntity[];
+};
+
+type LearningProfileRow = {
+  weak_topics?: string[] | null;
+  strong_topics?: string[] | null;
+  learning_style?: string | null;
+  ai_summary?: string | null;
+  total_questions?: number | null;
 };
 
 type StreamMetaEvent = {
   sessionId?: string | null;
   quota?: CoraQuotaInfo;
+  sources?: CoraSourceRef[];
+  suggestedPrompts?: string[];
+  recommendedActions?: CoraRecommendedAction[];
+  recommendedEntities?: CoraRecommendedEntity[];
 };
 
 type StreamDoneEvent = StreamMetaEvent & {
   createdAt?: string;
   fullText?: string;
+  memoryDelta?: CoraMemoryDelta;
 };
 
 async function consumeEventStream(
@@ -123,8 +182,100 @@ function makeTempId() {
   return `temp-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function normalizeSources(input: unknown): CoraSourceRef[] | undefined {
+  if (!Array.isArray(input) || input.length === 0) return undefined;
+  const sources = input
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const source = item as Record<string, unknown>;
+      return {
+        topic: typeof source.topic === "string" ? source.topic : null,
+        subtopic: typeof source.subtopic === "string" ? source.subtopic : null,
+        category: typeof source.category === "string" ? source.category : null,
+        track: typeof source.track === "string" ? source.track : null,
+      } satisfies CoraSourceRef;
+    })
+    .filter(Boolean) as CoraSourceRef[];
+  return sources.length > 0 ? sources : undefined;
+}
+
 function backendContextFor(options: UseCoraAIOptions): BackendAssistantContext {
   return mapAssistantContextToBackendContext(options.assistantContext);
+}
+
+function normalizeLearningMemory(input: LearningProfileRow | null | undefined): CoraLearningMemory | null {
+  if (!input) return null;
+  const weakTopics = Array.isArray(input.weak_topics) ? input.weak_topics.filter(Boolean) : [];
+  const strongTopics = Array.isArray(input.strong_topics) ? input.strong_topics.filter(Boolean) : [];
+  const learningStyle = typeof input.learning_style === "string" ? input.learning_style : null;
+  const summary = typeof input.ai_summary === "string" ? input.ai_summary : null;
+  const totalQuestions = Number(input.total_questions ?? 0);
+  if (weakTopics.length === 0 && strongTopics.length === 0 && !learningStyle && !summary && totalQuestions <= 0) {
+    return null;
+  }
+  return {
+    weakTopics,
+    strongTopics,
+    learningStyle,
+    summary,
+    totalQuestions,
+  };
+}
+
+function normalizeMemoryDelta(input: unknown): CoraMemoryDelta | null {
+  if (!input || typeof input !== "object") return null;
+  const raw = input as Record<string, unknown>;
+  return {
+    newWeakTopic: typeof raw.newWeakTopic === "string" ? raw.newWeakTopic : null,
+    newStrongTopic: typeof raw.newStrongTopic === "string" ? raw.newStrongTopic : null,
+    learningStyle: typeof raw.learningStyle === "string" ? raw.learningStyle : null,
+    summary: typeof raw.summary === "string" ? raw.summary : null,
+    totalQuestions: Number(raw.totalQuestions ?? 0),
+  };
+}
+
+function normalizeRecommendedActions(input: unknown): CoraRecommendedAction[] {
+  if (!Array.isArray(input)) return [];
+  return input
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const raw = item as Record<string, unknown>;
+      if (
+        typeof raw.label !== "string" ||
+        typeof raw.to !== "string" ||
+        typeof raw.reason !== "string"
+      ) return null;
+      return {
+        label: raw.label,
+        to: raw.to,
+        reason: raw.reason,
+      } satisfies CoraRecommendedAction;
+    })
+    .filter(Boolean) as CoraRecommendedAction[];
+}
+
+function normalizeRecommendedEntities(input: unknown): CoraRecommendedEntity[] {
+  if (!Array.isArray(input)) return [];
+  return input
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const raw = item as Record<string, unknown>;
+      if (
+        (raw.kind !== "course" && raw.kind !== "career" && raw.kind !== "hackathon") ||
+        typeof raw.title !== "string" ||
+        typeof raw.to !== "string" ||
+        typeof raw.reason !== "string"
+      ) return null;
+      return {
+        kind: raw.kind,
+        title: raw.title,
+        to: raw.to,
+        reason: raw.reason,
+        subtitle: typeof raw.subtitle === "string" ? raw.subtitle : null,
+        badge: typeof raw.badge === "string" ? raw.badge : null,
+      } satisfies CoraRecommendedEntity;
+    })
+    .filter(Boolean) as CoraRecommendedEntity[];
 }
 
 export function useCoraAI(options: UseCoraAIOptions) {
@@ -136,6 +287,11 @@ export function useCoraAI(options: UseCoraAIOptions) {
   const [quotaInfo, setQuotaInfo] = useState<CoraQuotaInfo | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [lastSubmittedMessage, setLastSubmittedMessage] = useState<string | null>(null);
+  const [learningMemory, setLearningMemory] = useState<CoraLearningMemory | null>(null);
+  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
+  const [memoryDelta, setMemoryDelta] = useState<CoraMemoryDelta | null>(null);
+  const [recommendedActions, setRecommendedActions] = useState<CoraRecommendedAction[]>([]);
+  const [recommendedEntities, setRecommendedEntities] = useState<CoraRecommendedEntity[]>([]);
 
   const backendContext = useMemo(() => backendContextFor(options), [options]);
   const historyKey = options.lessonId ?? sessionId;
@@ -168,7 +324,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
 
     let query = supabase
       .from("ai_conversations")
-      .select("id,role,content,created_at,session_id,cached")
+      .select("id,role,content,created_at,session_id,cached,sources")
       .eq("user_id", user?.id ?? "")
       .order("created_at", { ascending: true });
     query =
@@ -185,14 +341,34 @@ export function useCoraAI(options: UseCoraAIOptions) {
         content: row.content,
         createdAt: row.created_at,
         cached: Boolean(row.cached),
+        sources: normalizeSources(row.sources),
       })),
     );
   }, [backendContext, isAuthenticated, options.lessonId, sessionId, user?.id]);
+
+  const loadLearningMemory = useCallback(async () => {
+    if (!isAuthenticated || !user?.id) {
+      setLearningMemory(null);
+      return;
+    }
+    const { data, error: queryError } = await supabase
+      .from("user_learning_profile")
+      .select("weak_topics,strong_topics,learning_style,ai_summary,total_questions")
+      .eq("user_id", user.id)
+      .maybeSingle<LearningProfileRow>();
+    if (queryError) throw new Error(queryError.message);
+    setLearningMemory(normalizeLearningMemory(data));
+  }, [isAuthenticated, user?.id]);
 
   useEffect(() => {
     setMessages([]);
     setError(null);
     setQuotaInfo(null);
+    setLearningMemory(null);
+    setSuggestedPrompts([]);
+    setMemoryDelta(null);
+    setRecommendedActions([]);
+    setRecommendedEntities([]);
     if (backendContext !== "lesson") {
       setSessionId(null);
     }
@@ -212,6 +388,12 @@ export function useCoraAI(options: UseCoraAIOptions) {
       setError({ type: "generic", message: historyError instanceof Error ? historyError.message : "Không thể tải lịch sử Cora." });
     });
   }, [historyKey, loadHistory]);
+
+  useEffect(() => {
+    loadLearningMemory().catch((memoryError) => {
+      setError({ type: "generic", message: memoryError instanceof Error ? memoryError.message : "Không thể tải memory của Cora." });
+    });
+  }, [loadLearningMemory]);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -262,6 +444,11 @@ export function useCoraAI(options: UseCoraAIOptions) {
             onMeta: (event) => {
               if (event.sessionId && event.sessionId !== sessionId) setSessionId(event.sessionId);
               if (event.quota) setQuotaInfo(event.quota);
+              if (Array.isArray(event.suggestedPrompts)) {
+                setSuggestedPrompts(event.suggestedPrompts.filter(Boolean));
+              }
+              setRecommendedActions(normalizeRecommendedActions(event.recommendedActions));
+              setRecommendedEntities(normalizeRecommendedEntities(event.recommendedEntities));
             },
             onDelta: (delta) => {
               setMessages((current) =>
@@ -275,6 +462,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
             onDone: (event) => {
               if (event.sessionId && event.sessionId !== sessionId) setSessionId(event.sessionId);
               if (event.quota) setQuotaInfo(event.quota);
+              const sources = normalizeSources(event.sources);
               if (typeof event.fullText === "string") {
                 setMessages((current) =>
                   current.map((message) =>
@@ -283,11 +471,14 @@ export function useCoraAI(options: UseCoraAIOptions) {
                           ...message,
                           content: event.fullText ?? message.content,
                           createdAt: event.createdAt ?? message.createdAt,
+                          sources,
                         }
                       : message,
                   ),
                 );
               }
+              setMemoryDelta(normalizeMemoryDelta(event.memoryDelta));
+              void loadLearningMemory();
             },
           });
           return;
@@ -314,7 +505,14 @@ export function useCoraAI(options: UseCoraAIOptions) {
         if (payload.quota) {
           setQuotaInfo(payload.quota);
         }
+        if (Array.isArray(payload.suggestedPrompts)) {
+          setSuggestedPrompts(payload.suggestedPrompts.filter(Boolean));
+        }
+        setRecommendedActions(normalizeRecommendedActions(payload.recommendedActions));
+        setRecommendedEntities(normalizeRecommendedEntities(payload.recommendedEntities));
+        setMemoryDelta(normalizeMemoryDelta(payload.memoryDelta));
         const assistantMessage = payload.assistantMessage;
+        const sources = normalizeSources(payload.sources);
         if (assistantMessage?.content) {
           setMessages((current) => [
             ...current.filter((message) => message.id !== tempAssistantId),
@@ -324,9 +522,11 @@ export function useCoraAI(options: UseCoraAIOptions) {
               content: assistantMessage.content,
               createdAt: assistantMessage.createdAt,
               cached: Boolean(payload.cached),
+              sources,
             },
           ]);
         }
+        await loadLearningMemory();
       } catch (sendError) {
         setMessages((current) =>
           current.filter(
@@ -353,6 +553,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
       isAuthenticated,
       options.assistantContext,
       options.lessonId,
+      loadLearningMemory,
       sessionId,
     ],
   );
@@ -363,10 +564,16 @@ export function useCoraAI(options: UseCoraAIOptions) {
     isStreaming,
     error,
     quotaInfo,
+    learningMemory,
+    suggestedPrompts,
+    memoryDelta,
+    recommendedActions,
+    recommendedEntities,
     sessionId,
     lastSubmittedMessage,
     createSession,
     loadHistory,
+    loadLearningMemory,
     sendMessage,
   };
 }

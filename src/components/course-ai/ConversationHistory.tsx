@@ -1,7 +1,16 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
-import type { CoraMessage } from "@/hooks/useCoraAI";
+import type { CoraMessage, CoraSourceRef } from "@/hooks/useCoraAI";
+
+function formatSourceLabel(source: CoraSourceRef | undefined) {
+  if (!source) return "";
+  const topic = source.topic?.trim() ?? "";
+  const subtopic = source.subtopic?.trim() ?? "";
+  if (subtopic) return `${topic} · ${subtopic}`;
+  return topic;
+}
 
 export function ConversationHistory({
   messages,
@@ -12,6 +21,7 @@ export function ConversationHistory({
   isStreaming?: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation("common");
   const endRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -40,6 +50,27 @@ export function ConversationHistory({
               </span>
             ) : null}
           </p>
+          {message.role === "assistant" && (message.sources?.length ?? 0) > 0 ? (
+            <div className="mt-2 space-y-2">
+              <p className="text-[11px] text-muted-foreground">
+                {t("coraWidget.sourceCount", { count: message.sources?.length ?? 0 })}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {message.sources?.slice(0, 2).map((source, index) => {
+                  const label = formatSourceLabel(source);
+                  if (!label) return null;
+                  return (
+                    <span
+                      key={`${message.id}-source-${index}`}
+                      className="rounded-full border border-border-subtle bg-background/70 px-2 py-0.5 text-[10px] text-muted-foreground"
+                    >
+                      {label}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
       ))}
       <div ref={endRef} />

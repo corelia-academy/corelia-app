@@ -6,13 +6,20 @@ import { ArrowUpRight, Info, MessageSquareText, Sparkles, Target } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ConversationHistory } from "@/components/course-ai/ConversationHistory";
+import { CoraLearningMemorySummary } from "@/components/course-ai/CoraLearningMemorySummary";
+import { CoraMemoryDeltaCard } from "@/components/course-ai/CoraMemoryDeltaCard";
+import { CoraPlanSummary } from "@/components/course-ai/CoraPlanSummary";
 import { QuotaExceededPrompt } from "@/components/course-ai/QuotaExceededPrompt";
+import { CoraRecommendedActions } from "@/components/course-ai/CoraRecommendedActions";
+import { CoraRecommendedEntities } from "@/components/course-ai/CoraRecommendedEntities";
+import { buildPersonalizedSuggestions } from "@/components/course-ai/suggestions";
 import { useCoraAI } from "@/hooks/useCoraAI";
 import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 
 import { CORA_AI_TUTOR_LOGO_SRC } from "./constants";
 import { CoraShell } from "./CoraShell";
+import { getCoraStatusLabel } from "./status";
 import {
   getAssistantSurfaceMeta,
   resolveAssistantContext,
@@ -33,6 +40,7 @@ function CoraAssistantCard({
   onRequestHide?: () => void;
 }) {
   const { t } = useTranslation("common");
+  const { aiSubscription, daysUntilExpiry } = useAuth();
   const context = resolveAssistantContext(pathname);
   const surface = getAssistantSurfaceMeta(context);
   const [draft, setDraft] = useState("");
@@ -43,6 +51,11 @@ function CoraAssistantCard({
     isStreaming,
     error,
     quotaInfo,
+    learningMemory,
+    suggestedPrompts,
+    memoryDelta,
+    recommendedActions,
+    recommendedEntities,
     lastSubmittedMessage,
   } = useCoraAI({
     assistantContext: context,
@@ -50,7 +63,13 @@ function CoraAssistantCard({
   });
 
   const rawSuggestions = t(surface.suggestionsKey, { returnObjects: true });
-  const suggestions = Array.isArray(rawSuggestions) ? (rawSuggestions as string[]) : [];
+  const fallbackSuggestions = buildPersonalizedSuggestions({
+    t,
+    context,
+    baseSuggestions: Array.isArray(rawSuggestions) ? (rawSuggestions as string[]) : [],
+    learningMemory,
+  });
+  const suggestions = suggestedPrompts.length > 0 ? suggestedPrompts : fallbackSuggestions;
 
   const handleSuggestionClick = (label: string) => {
     void sendMessage(label);
@@ -67,8 +86,17 @@ function CoraAssistantCard({
     <CoraShell
       eyebrow={String(t("coraWidget.eyebrow"))}
       title={String(t("coraWidget.title"))}
-      status={String(t("coraWidget.status"))}
+      status={getCoraStatusLabel({ t, quotaInfo, aiSubscription, daysUntilExpiry })}
       description={String(t("coraWidget.description"))}
+      meta={
+        <div className="space-y-3">
+          <CoraPlanSummary quotaInfo={quotaInfo} />
+          <CoraRecommendedEntities entities={recommendedEntities} />
+          <CoraRecommendedActions actions={recommendedActions} />
+          <CoraMemoryDeltaCard delta={memoryDelta} />
+          <CoraLearningMemorySummary memory={learningMemory} />
+        </div>
+      }
       onRequestHide={onRequestHide}
       hideLabel={String(t("coraWidget.hideAction"))}
       className="max-h-[min(78vh,640px)]"
@@ -140,7 +168,7 @@ function CoraAssistantCard({
                 }),
               )}
               ctaLabel={String(t("coraWidget.quotaExceededCta"))}
-              ctaTo="/account/cora"
+              ctaTo="/cora"
               retryLabel={String(t("coraWidget.retryAction"))}
               onRetry={
                 lastSubmittedMessage

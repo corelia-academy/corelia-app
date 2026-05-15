@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router";
 import {
@@ -18,6 +18,7 @@ import {
   type AiSubscriptionDurationMonths,
   type AiSubscriptionTier,
   type PaymentTransaction,
+  verifySePayPayment,
 } from "@/lib/payments";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
@@ -25,6 +26,14 @@ import { formatVndPrice } from "@/types/courses";
 
 const TIER_ORDER: AiSubscriptionTier[] = ["student", "pro", "bootcamp"];
 const DURATION_ORDER: AiSubscriptionDurationMonths[] = [1, 6, 12];
+const AI_SUBSCRIPTION_PRODUCT_ID = "cora-ai";
+
+type StoredCheckout = {
+  orderId?: string;
+  courseId?: string;
+  purpose?: string;
+  createdAt?: number;
+};
 
 const TIER_PRICES: Record<
   AiSubscriptionTier,
@@ -36,19 +45,23 @@ const TIER_PRICES: Record<
     12: 890_000,
   },
   pro: {
-    1: 299_000,
-    6: 1_490_000,
-    12: 2_690_000,
+    1: 199_000,
+    6: 999_000,
+    12: 1_790_000,
   },
   bootcamp: {
-    1: 1_990_000,
-    6: 9_990_000,
-    12: 17_900_000,
+    1: 499_000,
+    6: 2_490_000,
+    12: 4_490_000,
   },
 };
 
+function getDurationValue(duration: AiSubscriptionDurationMonths) {
+  return Number(duration);
+}
+
 function buildCheckoutUrl(status: "success" | "error" | "cancel") {
-  return `${window.location.origin}/account/cora?payment=${status}`;
+  return `${window.location.origin}/cora?payment=${status}`;
 }
 
 function statusTone(status: PaymentTransaction["status"]) {
@@ -77,17 +90,38 @@ export function AccountCoraRoute() {
   );
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentVerificationState, setPaymentVerificationState] = useState<
+    "idle" | "verifying" | "verified" | "timeout" | "failed"
+  >("idle");
   const selectedTier = selectedTierOverride ?? aiSubscription?.tier ?? "student";
   const loadingTransactions = user ? transactions === null && !error : false;
   const paymentState = new URLSearchParams(location.search).get("payment");
   const paymentNotice =
-    paymentState === "success"
+    paymentState === "success" && paymentVerificationState === "verified"
       ? {
           tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-          title: t("cora.return.successTitle"),
-          description: t("cora.return.successDescription"),
+          title: t("cora.return.verifiedTitle"),
+          description: t("cora.return.verifiedDescription"),
         }
-      : paymentState === "error"
+      : paymentState === "success" && paymentVerificationState === "timeout"
+        ? {
+            tone: "border-warning/30 bg-warning/10 text-warning",
+            title: t("cora.return.timeoutTitle"),
+            description: t("cora.return.timeoutDescription"),
+          }
+        : paymentState === "success" && paymentVerificationState === "failed"
+          ? {
+              tone: "border-destructive/30 bg-destructive/10 text-destructive",
+              title: t("cora.return.errorTitle"),
+              description: t("cora.return.errorDescription"),
+            }
+          : paymentState === "success"
+            ? {
+                tone: "border-primary/30 bg-primary/10 text-primary",
+                title: t("cora.return.verifyingTitle"),
+                description: t("cora.return.verifyingDescription"),
+              }
+            : paymentState === "error"
         ? {
             tone: "border-destructive/30 bg-destructive/10 text-destructive",
             title: t("cora.return.errorTitle"),
@@ -101,31 +135,101 @@ export function AccountCoraRoute() {
             }
           : null;
 
+  const loadAiTransactions = useCallback(async () => {
+    const rows = await getMyPaymentTransactions();
+    const aiRows = rows.filter((row) => row.purpose === "ai_subscription");
+    setTransactions(aiRows);
+  }, []);
+
   useEffect(() => {
     if (!user) return;
 
     let cancelled = false;
-
-    loadAiSubscription();
-    getMyPaymentTransactions()
-      .then((rows) => {
+    void (async () => {
+      try {
+        await loadAiSubscription();
         if (cancelled) return;
-        const aiRows = rows.filter((row) => row.purpose === "ai_subscription");
-        setTransactions(aiRows);
-      })
-      .catch((err) => {
+        await loadAiTransactions();
+      } catch (err) {
         if (cancelled) return;
         setError(
           err instanceof Error ? err.message : t("cora.errors.fetchTransactions"),
         );
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
     };
-  }, [loadAiSubscription, paymentState, t, user]);
+  }, [loadAiSubscription, loadAiTransactions, paymentState, t, user]);
+
+  useEffect(() => {
+    if (!user || paymentState !== "success") return;
+
+    let cancelled = false;
+    let stored: StoredCheckout | null = null;
+    try {
+      const raw = window.sessionStorage.getItem("corelia:lastCheckout");
+      stored = raw ? (JSON.parse(raw) as StoredCheckout) : null;
+    } catch {
+      stored = null;
+    }
+
+    const orderId =
+      stored?.courseId === AI_SUBSCRIPTION_PRODUCT_ID &&
+      stored?.purpose === "ai_subscription"
+        ? stored.orderId
+        : undefined;
+
+    void (async () => {
+      setPaymentVerificationState("verifying");
+      const deadline = Date.now() + 30_000;
+      while (!cancelled && Date.now() < deadline) {
+        try {
+          const result = await verifySePayPayment({
+            orderId,
+            courseId: AI_SUBSCRIPTION_PRODUCT_ID,
+            purpose: "ai_subscription",
+          });
+          if (cancelled) return;
+
+          if (result.status === "paid") {
+            setPaymentVerificationState("verified");
+            window.sessionStorage.removeItem("corelia:lastCheckout");
+            await Promise.all([loadAiSubscription(), loadAiTransactions()]);
+            return;
+          }
+
+          if (result.status === "failed" || result.status === "cancelled") {
+            setPaymentVerificationState("failed");
+            return;
+          }
+        } catch {
+          // Keep polling for a short window to absorb gateway/webhook delay.
+        }
+
+        await new Promise((resolve) => window.setTimeout(resolve, 2_000));
+      }
+
+      if (!cancelled) setPaymentVerificationState("timeout");
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loadAiSubscription, loadAiTransactions, paymentState, user]);
 
   const selectedPrice = TIER_PRICES[selectedTier][selectedDuration];
+  const selectedBaseMonthlyPrice = TIER_PRICES[selectedTier][1];
+  const selectedFullPrice = selectedBaseMonthlyPrice * getDurationValue(selectedDuration);
+  const selectedSavings = Math.max(selectedFullPrice - selectedPrice, 0);
+  const selectedSavingsPercent =
+    selectedFullPrice > 0
+      ? Math.round((selectedSavings / selectedFullPrice) * 100)
+      : 0;
+  const selectedMonthlyEquivalent = Math.round(
+    selectedPrice / getDurationValue(selectedDuration),
+  );
   const aiTransactions = useMemo(() => transactions ?? [], [transactions]);
   const activePlanLabel = aiSubscription
     ? t(`cora.tiers.${aiSubscription.tier}.title`)
@@ -147,6 +251,15 @@ export function AccountCoraRoute() {
         errorUrl: buildCheckoutUrl("error"),
         cancelUrl: buildCheckoutUrl("cancel"),
       });
+      window.sessionStorage.setItem(
+        "corelia:lastCheckout",
+        JSON.stringify({
+          orderId: checkout.order_id,
+          courseId: AI_SUBSCRIPTION_PRODUCT_ID,
+          purpose: "ai_subscription",
+          createdAt: Date.now(),
+        } satisfies StoredCheckout),
+      );
       submitSePayCheckoutForm(checkout);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("cora.errors.checkoutFailed"));
@@ -155,69 +268,70 @@ export function AccountCoraRoute() {
   }
 
   return (
-    <div className="space-y-4">
-      <section className="rounded-2xl border border-primary/20 bg-[radial-gradient(circle_at_top_left,_rgba(var(--primary-rgb),0.18),_transparent_55%),linear-gradient(135deg,rgba(var(--primary-rgb),0.08),transparent_45%)] p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <div className="container-app py-6 sm:py-8 lg:py-10">
+      <div className="space-y-6 sm:space-y-7 lg:space-y-8">
+        <section className="rounded-2xl border border-primary/20 bg-[radial-gradient(circle_at_top_left,_rgba(var(--primary-rgb),0.18),_transparent_55%),linear-gradient(135deg,rgba(var(--primary-rgb),0.08),transparent_45%)] px-5 py-6 sm:px-6 sm:py-7 lg:px-7 lg:py-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               <Bot className="size-3.5" aria-hidden />
               Cora AI
             </div>
-            <h1 className="mt-3 text-2xl font-semibold text-foreground">
+            <h1 className="mt-4 text-2xl font-semibold text-foreground sm:text-3xl">
               {t("cora.title")}
             </h1>
-            <p className="mt-2 text-sm leading-6 text-foreground-muted">
+            <p className="mt-3 max-w-xl text-sm leading-6 text-foreground-muted sm:text-[15px]">
               {t("cora.subtitle")}
             </p>
           </div>
 
-          <div className="rounded-xl border border-border-subtle bg-background/80 p-4 shadow-sm lg:w-80">
-            <div className="flex items-start gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Sparkles className="size-5" aria-hidden />
+            <div className="self-start rounded-xl border border-border-subtle bg-background/80 p-5 shadow-sm lg:w-80 lg:p-6">
+              <div className="flex items-start gap-3">
+                <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Sparkles className="size-5" aria-hidden />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground-muted">
+                    {t("cora.currentPlan.statusLabel")}
+                  </p>
+                  <h2 className="mt-1 text-lg font-semibold text-foreground">
+                    {activePlanLabel}
+                  </h2>
+                  <p className="mt-1 text-sm text-foreground-muted">
+                    {aiSubscription
+                      ? t("cora.currentPlan.active")
+                      : t("cora.currentPlan.notSubscribed")}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground-muted">
-                  {t("cora.currentPlan.statusLabel")}
-                </p>
-                <h2 className="mt-1 text-lg font-semibold text-foreground">
-                  {activePlanLabel}
-                </h2>
-                <p className="mt-1 text-sm text-foreground-muted">
-                  {aiSubscription
-                    ? t("cora.currentPlan.active")
-                    : t("cora.currentPlan.notSubscribed")}
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 grid gap-2 text-sm text-foreground-muted">
-              <div className="flex items-center justify-between gap-3">
-                <span>{t("cora.currentPlan.expiryLabel")}</span>
-                <span className="font-medium text-foreground">
-                  {aiSubscription
-                    ? new Date(aiSubscription.expires_at).toLocaleDateString(
-                        intlLocale(),
-                      )
-                    : "—"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span>{t("cora.currentPlan.daysLeftLabel")}</span>
-                <span className="font-medium text-foreground">
-                  {typeof daysUntilExpiry === "number"
-                    ? t("cora.currentPlan.daysLeft", {
-                        count: Math.max(daysUntilExpiry, 0),
-                      })
-                    : "—"}
-                </span>
+              <div className="mt-5 grid gap-3 text-sm text-foreground-muted">
+                <div className="flex items-center justify-between gap-3">
+                  <span>{t("cora.currentPlan.expiryLabel")}</span>
+                  <span className="font-medium text-foreground">
+                    {aiSubscription
+                      ? new Date(aiSubscription.expires_at).toLocaleDateString(
+                          intlLocale(),
+                        )
+                      : "—"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span>{t("cora.currentPlan.daysLeftLabel")}</span>
+                  <span className="font-medium text-foreground">
+                    {typeof daysUntilExpiry === "number"
+                      ? t("cora.currentPlan.daysLeft", {
+                          count: Math.max(daysUntilExpiry, 0),
+                        })
+                      : "—"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
       {!user ? (
-        <section className="rounded-lg border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted">
+        <section className="rounded-xl border border-border-subtle bg-surface-base px-5 py-4 text-sm text-foreground-muted sm:px-6">
           {t("cora.mustLogin")}
         </section>
       ) : (
@@ -225,7 +339,7 @@ export function AccountCoraRoute() {
           {paymentNotice ? (
             <section
               className={cn(
-                "rounded-lg border px-4 py-3",
+                "rounded-xl border px-5 py-4 sm:px-6",
                 paymentNotice.tone,
               )}
             >
@@ -236,8 +350,8 @@ export function AccountCoraRoute() {
             </section>
           ) : null}
 
-          <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
-            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+          <section className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] xl:gap-6">
+            <div className="rounded-xl border border-border-subtle bg-surface-base p-5 sm:p-6">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">
                   {t("cora.selector.title")}
@@ -247,7 +361,7 @@ export function AccountCoraRoute() {
                 </p>
               </div>
 
-              <div className="mt-4 grid gap-3 lg:grid-cols-3">
+              <div className="mt-6 grid gap-4 lg:grid-cols-3">
                 {TIER_ORDER.map((tier) => {
                   const isActive = selectedTier === tier;
                   const tierPrice = TIER_PRICES[tier][selectedDuration];
@@ -261,7 +375,7 @@ export function AccountCoraRoute() {
                       type="button"
                       onClick={() => setSelectedTierOverride(tier)}
                       className={cn(
-                        "rounded-xl border p-4 text-left transition-colors duration-150",
+                        "flex h-full flex-col rounded-xl border p-5 text-left transition-colors duration-150",
                         isActive
                           ? "border-primary bg-primary-muted/60"
                           : "border-border-subtle bg-surface-raised hover:border-primary/30",
@@ -283,7 +397,7 @@ export function AccountCoraRoute() {
                         ) : null}
                       </div>
 
-                      <div className="mt-4">
+                      <div className="mt-5">
                         <div className="text-xl font-semibold text-foreground">
                           {formatVndPrice(tierPrice)}
                         </div>
@@ -294,7 +408,7 @@ export function AccountCoraRoute() {
                         </div>
                       </div>
 
-                      <div className="mt-4 space-y-2">
+                      <div className="mt-5 space-y-2.5">
                         {features.map((feature) => (
                           <div
                             key={feature}
@@ -311,46 +425,87 @@ export function AccountCoraRoute() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+            <div className="rounded-xl border border-border-subtle bg-surface-base p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-foreground">
                 {t("cora.durationTitle")}
               </h2>
-              <div className="mt-4 grid gap-3">
+              <div className="mt-6 grid gap-3">
                 {DURATION_ORDER.map((duration) => {
                   const isActive = selectedDuration === duration;
+                  const durationPrice = TIER_PRICES[selectedTier][duration];
+                  const baseMonthlyPrice = TIER_PRICES[selectedTier][1];
+                  const fullPrice = baseMonthlyPrice * getDurationValue(duration);
+                  const savings = Math.max(fullPrice - durationPrice, 0);
+                  const savingsPercent =
+                    fullPrice > 0
+                      ? Math.round((savings / fullPrice) * 100)
+                      : 0;
+                  const monthlyEquivalent = Math.round(
+                    durationPrice / getDurationValue(duration),
+                  );
                   return (
                     <button
                       key={duration}
                       type="button"
                       onClick={() => setSelectedDuration(duration)}
                       className={cn(
-                        "rounded-xl border px-4 py-3 text-left transition-colors duration-150",
+                        "rounded-xl border px-4 py-3.5 text-left transition-colors duration-150",
                         isActive
                           ? "border-primary bg-primary-muted/60"
                           : "border-border-subtle bg-surface-raised hover:border-primary/30",
                       )}
                     >
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="font-medium text-foreground">
-                            {t(`cora.duration.${duration}.label`)}
+                          <div className="flex flex-wrap items-center gap-2">
+                            <div className="font-medium text-foreground">
+                              {t(`cora.duration.${duration}.label`)}
+                            </div>
+                            {duration > 1 && savings > 0 ? (
+                              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+                                {t("cora.durationSavingsBadge", {
+                                  percent: savingsPercent,
+                                })}
+                              </span>
+                            ) : null}
                           </div>
                           <div className="mt-1 text-xs text-foreground-muted">
                             {t(`cora.duration.${duration}.note`)}
                           </div>
+                          <div className="mt-2 space-y-1 text-xs text-foreground-muted">
+                            <div>
+                              {t("cora.durationMonthlyEquivalent", {
+                                amount: formatVndPrice(monthlyEquivalent),
+                              })}
+                            </div>
+                            {duration > 1 && savings > 0 ? (
+                              <div>
+                                {t("cora.durationSavingsDetail", {
+                                  amount: formatVndPrice(savings),
+                                })}
+                              </div>
+                            ) : null}
+                          </div>
                         </div>
-                        {isActive ? (
-                          <span className="rounded-full bg-primary/15 p-1 text-primary">
-                            <Check className="size-4" aria-hidden />
-                          </span>
-                        ) : null}
+                        <div className="flex shrink-0 flex-col items-end gap-2">
+                          <div className="text-right">
+                            <div className="text-sm font-semibold text-foreground">
+                              {formatVndPrice(durationPrice)}
+                            </div>
+                          </div>
+                          {isActive ? (
+                            <span className="rounded-full bg-primary/15 p-1 text-primary">
+                              <Check className="size-4" aria-hidden />
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
                     </button>
                   );
                 })}
               </div>
 
-              <div className="mt-5 rounded-xl border border-border-subtle bg-surface-raised p-4">
+              <div className="mt-7 rounded-xl border border-border-subtle bg-surface-raised p-4 sm:p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-foreground">
@@ -371,9 +526,34 @@ export function AccountCoraRoute() {
                     </p>
                   </div>
                 </div>
+                <div className="mt-4 rounded-lg border border-border-subtle bg-background/70 px-3 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                    <span className="text-foreground-muted">
+                      {t("cora.durationValueLabel")}
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {t("cora.durationMonthlyEquivalent", {
+                        amount: formatVndPrice(selectedMonthlyEquivalent),
+                      })}
+                    </span>
+                  </div>
+                  {selectedDuration > 1 && selectedSavings > 0 ? (
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+                      <span className="text-foreground-muted">
+                        {t("cora.durationSavingsSummaryLabel")}
+                      </span>
+                      <span className="font-medium text-emerald-700 dark:text-emerald-300">
+                        {t("cora.durationSavingsSummaryValue", {
+                          amount: formatVndPrice(selectedSavings),
+                          percent: selectedSavingsPercent,
+                        })}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
                 <Button
                   type="button"
-                  className="mt-4 w-full"
+                  className="mt-5 w-full"
                   onClick={handleCheckout}
                   disabled={checkoutLoading}
                 >
@@ -397,12 +577,12 @@ export function AccountCoraRoute() {
           </section>
 
           {error ? (
-            <section className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+            <section className="rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-4 text-sm text-destructive sm:px-6">
               {error}
             </section>
           ) : null}
 
-          <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
+          <section className="rounded-xl border border-border-subtle bg-surface-base p-5 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">
@@ -423,18 +603,18 @@ export function AccountCoraRoute() {
             </div>
 
             {loadingTransactions ? (
-              <div className="mt-4 flex items-center gap-2 rounded-md border border-border-subtle bg-surface-raised p-3 text-sm text-foreground-muted">
+              <div className="mt-5 flex items-center gap-2 rounded-md border border-border-subtle bg-surface-raised p-3 text-sm text-foreground-muted">
                 <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
                 {t("cora.history.loading")}
               </div>
             ) : aiTransactions.length === 0 ? (
-              <div className="mt-4 rounded-md border border-dashed border-border-subtle bg-surface-raised p-6 text-center">
+              <div className="mt-5 rounded-md border border-dashed border-border-subtle bg-surface-raised p-6 text-center">
                 <p className="text-sm font-medium text-foreground">
                   {t("cora.history.empty")}
                 </p>
               </div>
             ) : (
-              <div className="mt-4 overflow-hidden rounded-md border border-border">
+              <div className="mt-5 overflow-hidden rounded-md border border-border">
                 <div className="divide-y divide-border md:hidden">
                   {aiTransactions.map((tx) => {
                     const planLabel =
@@ -526,6 +706,7 @@ export function AccountCoraRoute() {
           </section>
         </>
       )}
+      </div>
     </div>
   );
 }

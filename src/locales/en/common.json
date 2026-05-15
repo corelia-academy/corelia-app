@@ -302,6 +302,11 @@
     "eyebrow": "Cora stays close",
     "title": "Cora AI Tutor",
     "status": "Live beta",
+    "statusByTier": {
+      "default": "{{tier}} live",
+      "throttled": "{{tier}} · efficiency mode",
+      "expiringSoon": "{{tier}} · expires soon ({{days}}d)"
+    },
     "description": "Keep Cora at the edge of the screen so learners can quickly ask about progress, next steps, or stronger course matches while browsing the app.",
     "contextLabel": "Current context",
     "contextTitle": {
@@ -337,12 +342,72 @@
     "liveFooterCaption": "Cora is in its first live slice. Conversation storage and context are on now; streaming and RAG will come next.",
     "sendAction": "Send",
     "sendingAction": "Sending…",
-    "throttleHint": "You have reached today’s soft usage threshold, so Cora will keep replies shorter and more efficient.",
+    "sourceCount_one": "This reply is grounded in {{count}} internal source.",
+    "sourceCount_other": "This reply is grounded in {{count}} internal sources.",
+    "throttleHint": "You have reached the soft usage threshold in the last few hours, so Cora will keep replies shorter and more efficient.",
     "retryAction": "Retry",
     "quotaExceededTitle": "You have reached your monthly Cora AI limit",
     "quotaExceededDescription": "You have used about {{used}} / {{limit}} messages on the {{tier}} plan this month. Try again after the quota resets, or upgrade if you want to keep going.",
-    "quotaExceededCta": "View account",
+    "quotaExceededCta": "View Cora plans",
     "quotaExceededHint": "Cora is paused because your monthly quota has been reached.",
+    "plan": {
+      "tiers": {
+        "free": "Free plan",
+        "student": "Student",
+        "pro": "Pro",
+        "bootcamp": "Bootcamp"
+      },
+      "usage": "Used {{used}} / {{limit}} messages this month.",
+      "usageFlexible": "Your current plan is expanded and will keep reflecting the real account quota as usage data syncs in.",
+      "expiry": "About {{days}} days left on your current plan.",
+      "throttled": "Efficiency mode",
+      "windowUsage": "You've used {{used}} / {{cap}} of the soft threshold in the last {{hours}} hours.",
+      "upgradeAction": "Upgrade",
+      "manageAction": "Manage plan"
+    },
+    "memory": {
+      "title": "What Cora is noticing",
+      "style": "Best-fit support style right now: {{style}}.",
+      "weakTopics": "Areas that may need more support: {{topics}}.",
+      "weakTopicsEmpty": "Cora has not seen a clear learning bottleneck yet in recent turns.",
+      "strongTopics": "Areas you seem to be handling well: {{topics}}.",
+      "strongTopicsEmpty": "Cora is still watching for stronger signals about your clearest strengths.",
+      "styles": {
+        "unknown": "not enough signal yet",
+        "step_by_step": "step-by-step guidance",
+        "hands_on": "examples and hands-on practice",
+        "concise": "brief and direct guidance",
+        "conceptual": "concept-first explanations"
+      }
+    },
+    "personalizedSuggestions": {
+      "lessonWeakStyle": "Explain {{topic}} again using a {{style}} approach.",
+      "lessonWeakExample": "Give me a short example so I can understand {{topic}} better.",
+      "courseWeakDiscover": "Help me find a course to improve {{topic}}.",
+      "courseWeakNext": "I seem weak at {{topic}}. What should I study next?",
+      "careerWeak": "If I am still weak at {{topic}}, which track should I start with first?",
+      "activityWeak": "Is there an activity that would help me practice {{topic}} more?",
+      "profileWeak": "How is {{topic}} affecting my learning profile right now?",
+      "lessonStrongExpand": "From {{topic}}, what should I expand into next?",
+      "courseStrongNext": "If I am getting stronger at {{topic}}, what advanced topic should I study next?",
+      "careerStrong": "What career direction could {{topic}} open up next for me?",
+      "activityStrong": "Is there a project or activity that would push my {{topic}} skills further?",
+      "profileStrong": "What achievement should I add next if {{topic}} is becoming a strength?",
+      "lessonStyleOnly": "Keep supporting me on this lesson using a {{style}} approach.",
+      "defaultStyleOnly": "Suggest the next step for me using a {{style}} approach."
+    },
+    "memoryDelta": {
+      "title": "What Cora just picked up",
+      "newWeakTopic": "Cora just marked {{topic}} as an area where you may need more support.",
+      "newStrongTopic": "Cora just noticed {{topic}} becoming more of a strength for you.",
+      "learningStyle": "Cora is leaning toward a {{style}} support style for you right now."
+    },
+    "recommendedActions": {
+      "title": "Where to go next"
+    },
+    "recommendedEntities": {
+      "title": "Specific things to open next"
+    },
     "actions": {
       "browseCourses": "View courses",
       "viewPaths": "View paths",
