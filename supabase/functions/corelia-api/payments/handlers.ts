@@ -26,8 +26,8 @@ const AI_SUBSCRIPTION_PRICES: Record<
   Record<AiSubscriptionDurationMonths, number>
 > = {
   student: { 1: 99000, 6: 499000, 12: 890000 },
-  pro: { 1: 299000, 6: 1490000, 12: 2690000 },
-  bootcamp: { 1: 1990000, 6: 9990000, 12: 17900000 },
+  pro: { 1: 199000, 6: 999000, 12: 1790000 },
+  bootcamp: { 1: 499000, 6: 2490000, 12: 4490000 },
 };
 
 export async function handleSePayCheckout(req: Request, db: SupabaseClient): Promise<Response> {

@@ -1,5 +1,5 @@
 import { Briefcase, BookOpen, Home, List, LogIn, Trophy } from "lucide-react";
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
@@ -17,8 +17,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { GlobalCoraAssistant } from "@/components/course-ai/GlobalCoraAssistant";
 import Header from "./Header";
+
+const GlobalCoraAssistant = lazy(() =>
+  import("@/components/course-ai/GlobalCoraAssistant").then((module) => ({
+    default: module.GlobalCoraAssistant,
+  })),
+);
 
 const mobileTabItemClassName =
   "flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2.5 text-center transition-colors";
@@ -49,7 +54,9 @@ const MainLayout = () => {
         <main className="flex-1 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0">
           <Outlet />
         </main>
-        <GlobalCoraAssistant />
+        <Suspense fallback={null}>
+          <GlobalCoraAssistant />
+        </Suspense>
         <footer className="hidden border-t border-border-subtle bg-surface-raised md:block">
           <div className="container-app flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 text-xs text-foreground-muted">
             <span className="min-w-0">

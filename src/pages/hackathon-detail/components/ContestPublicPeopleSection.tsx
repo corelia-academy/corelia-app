@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Contest } from "@/types/hackathons";
 import { maskEmailAddress } from "@/pages/hackathon-detail/utils/emailMask";
 import { cn } from "@/lib/utils";
@@ -34,17 +35,23 @@ export function ContestPublicPeopleSection(props: {
   }) => (
     <div className="min-w-0">
       <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      <ul className="mt-3 flex flex-wrap gap-2">
-        {emails.map((email) => (
-          <li key={email}>
-            <span
-              className="inline-flex rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs text-foreground tabular-nums"
-              title={email}
-            >
-              {maskEmailAddress(email)}
-            </span>
-          </li>
-        ))}
+      <ul className="mt-3 space-y-2">
+        {emails.map((email) => {
+          const initial = email.trim().charAt(0).toUpperCase();
+          return (
+            <li key={email} className="flex items-center gap-2.5">
+              <Avatar size="sm">
+                <AvatarFallback>{initial}</AvatarFallback>
+              </Avatar>
+              <span
+                className="text-xs text-foreground-muted tabular-nums"
+                title={email}
+              >
+                {maskEmailAddress(email)}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
@@ -52,7 +59,10 @@ export function ContestPublicPeopleSection(props: {
   return (
     <Card id="people" className={cn("scroll-mt-36")}>
       <CardContent className="p-4">
-        <h2 className="text-lg font-semibold text-foreground">
+        <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+          {t("detail.public.nav.people")}
+        </div>
+        <h2 className="mt-1 text-lg font-semibold text-foreground">
           {t("detail.people.sectionTitle")}
         </h2>
         <p className="mt-2 text-sm text-foreground-muted">

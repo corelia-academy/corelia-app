@@ -457,49 +457,42 @@ async function checkQuota(supabase, userId: string, tier: string): Promise<Quota
   const thisMonth = today.slice(0, 7);                   // "2026-05"
 
   const { data: limits } = await supabase.from('tier_limits')
-    .select('monthly_messages, daily_soft_cap, haiku_only')
+    .select('monthly_messages, rolling_3h_soft_cap, haiku_only')
     .eq('tier', tier).single();
 
-  // Load cả daily và monthly usage song song
-  const [dailyResult, monthlyResult] = await Promise.all([
-    supabase.from('ai_usage_daily')
-      .upsert({ user_id: userId, date: today, message_count: 0 }, { onConflict: 'user_id,date' })
-      .select('message_count').single(),
+  // Load cửa sổ ngắn + monthly usage song song
+  const [windowResult, monthlyResult] = await Promise.all([
+    supabase.from('ai_conversations')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('role', 'user')
+      .gte('created_at', new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()),
     supabase.from('ai_usage_monthly')
       .upsert({ user_id: userId, month: thisMonth, message_count: 0 }, { onConflict: 'user_id,month' })
       .select('message_count').single(),
   ]);
 
-  const dailyCount   = dailyResult.data?.message_count ?? 0;
+  const windowCount  = windowResult.count ?? 0;
   const monthlyCount = monthlyResult.data?.message_count ?? 0;
   const monthlyLimit = limits?.monthly_messages ?? 50;
-  const dailySoftCap = limits?.daily_soft_cap ?? 5;
+  const windowSoftCap = limits?.rolling_3h_soft_cap ?? 6;
 
   // Hard block: monthly exceeded
   if (monthlyLimit !== null && monthlyCount >= monthlyLimit) {
     return { allowed: false, reason: 'monthly_exceeded', used: monthlyCount, limit: monthlyLimit };
   }
 
-  // Soft throttle: daily exceeded → force Haiku, warn user
-  const throttled = dailyCount >= dailySoftCap;
-
-  // Increment both counters
-  await Promise.all([
-    supabase.from('ai_usage_daily')
-      .update({ message_count: dailyCount + 1 })
-      .eq('user_id', userId).eq('date', today),
-    supabase.from('ai_usage_monthly')
-      .update({ message_count: monthlyCount + 1 })
-      .eq('user_id', userId).eq('month', thisMonth),
-  ]);
+  // Soft throttle: short-window exceeded → force Haiku, warn user
+  const throttled = windowCount >= windowSoftCap;
 
   return {
     allowed: true,
     throttled,      // nếu true → force Haiku model
     monthlyUsed: monthlyCount + 1,
     monthlyLimit,
-    dailyUsed: dailyCount + 1,
-    dailySoftCap,
+    windowUsed: windowCount + 1,
+    windowSoftCap,
+    windowHours: 3,
     tier,
     haikuOnly: limits?.haiku_only || throttled,
   };
@@ -523,28 +516,27 @@ create table if not exists ai_usage_monthly (
 -- Cập nhật tier_limits
 alter table tier_limits
   add column if not exists monthly_messages int,
-  add column if not exists daily_soft_cap int,
+  add column if not exists rolling_3h_soft_cap int,
   add column if not exists price_vnd_monthly int default 0;
 
--- Không rename daily_messages → thêm mới, giữ backward compat
 update tier_limits set
   monthly_messages = case tier
-    when 'free'     then 50
-    when 'student'  then 500
-    when 'pro'      then 1500
-    when 'bootcamp' then 4000
+    when 'free'     then 40
+    when 'student'  then 250
+    when 'pro'      then 700
+    when 'bootcamp' then 1800
   end,
-  daily_soft_cap = case tier
-    when 'free'     then 5
-    when 'student'  then 25
-    when 'pro'      then 75
-    when 'bootcamp' then 200
+  rolling_3h_soft_cap = case tier
+    when 'free'     then 6
+    when 'student'  then 20
+    when 'pro'      then 50
+    when 'bootcamp' then 120
   end,
   price_vnd_monthly = case tier
     when 'free'     then 0
     when 'student'  then 99000
-    when 'pro'      then 299000
-    when 'bootcamp' then 1990000
+    when 'pro'      then 199000
+    when 'bootcamp' then 499000
   end;
 ```
 
@@ -552,10 +544,10 @@ update tier_limits set
 
 | Tier | Monthly | 6-Month (save) | 12-Month (save) | Quota |
 |------|---------|----------------|-----------------|-------|
-| **Free** | 0 | — | — | 50 msgs/tháng, 5/ngày |
-| **Student** | 99,000 VND | 499,000 VND (−16%) | 890,000 VND (−25%) | 500/tháng, 25/ngày |
-| **Pro** | 299,000 VND | 1,490,000 VND (−17%) | 2,690,000 VND (−25%) | 1,500/tháng, 75/ngày |
-| **Bootcamp** | 1,990,000 VND | 9,990,000 VND (−16%) | 17,900,000 VND (−25%) | 4,000/tháng, 200/ngày |
+| **Free** | 0 | — | — | 40/tháng, 6/3h |
+| **Student** | 99,000 VND | 499,000 VND | 890,000 VND | 250/tháng, 20/3h |
+| **Pro** | 199,000 VND | 999,000 VND | 1,790,000 VND | 700/tháng, 50/3h |
+| **Bootcamp** | 499,000 VND | 2,490,000 VND | 4,490,000 VND | 1,800/tháng, 120/3h |
 
 ```
 Free:     "50 câu hỏi miễn phí mỗi tháng — không cần thẻ"
@@ -593,6 +585,46 @@ where m.month = to_char(now(), 'YYYY-MM');
 -- Query admin chạy weekly để kiểm tra
 select * from ai_cost_anomaly where cost_anomaly = true order by cost_usd desc;
 ```
+
+---
+
+# 2026-05-14 Pricing Reset
+
+> Bản cập nhật này override khung giá cũ trong doc ở các đoạn còn ghi `Pro 299k` hoặc `Bootcamp 1.99m`.
+> Lý do: định vị Cora là AI companion cho learner-facing app, không phải high-ticket B2B copilot.
+
+## Pricing direction mới
+
+- Giữ trần giá consumer-friendly: `99k / 199k / 499k` mỗi tháng cho `Student / Pro / Bootcamp`
+- Không dùng `daily soft cap` làm mental model chính nữa
+- Chuyển sang `monthly hard cap + rolling 3-hour soft cap`, gần hơn với cách ChatGPT đang truyền đạt usage windows
+- Vẫn giữ monthly hard cap để khóa worst-case cost
+
+## Official pricing đề xuất
+
+| Tier | Monthly | 6-Month | 12-Month | Monthly hard cap | Rolling 3-hour soft cap |
+|------|---------|---------|----------|------------------|-------------------------|
+| Free | 0 | — | — | 40 msgs | 6 msgs / 3h |
+| Student | 99,000 VND | 499,000 VND | 890,000 VND | 250 msgs | 20 msgs / 3h |
+| Pro | 199,000 VND | 999,000 VND | 1,790,000 VND | 700 msgs | 50 msgs / 3h |
+| Bootcamp | 499,000 VND | 2,490,000 VND | 4,490,000 VND | 1,800 msgs | 120 msgs / 3h |
+
+## Product reasoning
+
+- `Student 99k` đủ rẻ để learner mua theo impulse, nhưng quota 250/tháng vẫn dư cho phần lớn hành vi học thật.
+- `Pro 199k` là nấc hợp lý nhất cho user muốn dùng AI nhiều hơn nhưng chưa sẵn sàng vượt 200k/tháng.
+- `Bootcamp 499k` nên là ceiling cho learner plan. Cao hơn mức này sẽ chuyển từ “assistant hỗ trợ học” sang “commitment mua tool”, dễ làm giảm conversion mạnh.
+
+## Quota reasoning
+
+- `Rolling 3-hour soft cap` giúp UX giống ChatGPT hơn: user hiểu rằng mình đang ở một usage window ngắn, thay vì bị báo “hôm nay hết nhịp”.
+- `Monthly hard cap` vẫn là lớp kiểm soát cost thực sự.
+- Soft cap chỉ throttle xuống model tiết kiệm hơn, không hard-block.
+
+## Deprecation note
+
+- Giá `Bootcamp 1,990,000 VND/month` được xem là deprecated cho learner-facing product.
+- Nếu sau này có nhu cầu high-touch AI plan thật sự, nên tách thành một SKU riêng kiểu `Team / Mentor / Cohort`, không nên nhét chung vào ladder `Student / Pro / Bootcamp`.
 
 ---
 
@@ -872,7 +904,7 @@ Xem **Section 4.5** — `ai_cost_anomaly` view theo dõi user nào vượt 2× e
 | Input length cap | Ngăn context stuffing | 2,000 char limit client + server |
 | Rate limit (burst) | Ngăn script/bot | 10 msgs/minute per user |
 | Email verification | Tăng chi phí tạo account | Require `email_confirmed_at` |
-| Dual quota | Kiểm soát cost worst case | Monthly hard cap + daily soft cap |
+| Dual quota | Kiểm soát cost worst case | Monthly hard cap + rolling 3-hour soft cap |
 | Concurrent limit | Ngăn parallel abuse | Max 2 in-flight per user |
 | Deduplication | Ngăn retry spam | Cache 10s window |
 | Amount validation | Ngăn tier forgery | Backend-computed amount, DB constraint |
@@ -949,8 +981,8 @@ const AI_SUBSCRIPTION_PRICES: Record<
   Record<1 | 6 | 12, number>
 > = {
   student:   { 1: 99000,    6: 499000,   12: 890000 },
-  pro:       { 1: 299000,   6: 1490000,  12: 2690000 },
-  bootcamp:  { 1: 1990000,  6: 9990000,  12: 17900000 },
+  pro:       { 1: 199000,   6: 999000,   12: 1790000 },
+  bootcamp:  { 1: 499000,   6: 2490000,  12: 4490000 },
 };
 
 export async function handleAiSubscriptionCheckout(
@@ -1197,20 +1229,20 @@ Thêm vào `src/App.tsx`:
 │                                                      │
 │  ┌───────────┐  ┌───────────┐  ┌───────────┐        │
 │  │ Student   │  │ Pro ●     │  │ Bootcamp  │        │
-│  │ 99k/tháng │  │ 299k/tháng│  │ 1.99M/th  │        │
-│  │ 500 msgs  │  │ 2000 msgs │  │ Unlimited │        │
+│  │ 99k/tháng │  │ 199k/tháng│  │ 499k/th   │        │
+│  │ 250 msgs  │  │ 700 msgs  │  │ 1800 msgs │        │
 │  └───────────┘  └───────────┘  └───────────┘        │
 │                                                      │
 │  CHỌN THỜI HẠN                                       │
-│  ○ 1 tháng  — 299,000 VND                            │
-│  ○ 6 tháng  — 1,490,000 VND  (tiết kiệm 17%)         │
-│  ○ 12 tháng — 2,690,000 VND  (tiết kiệm 25%) ★      │
+│  ○ 1 tháng  — 199,000 VND                            │
+│  ○ 6 tháng  — 999,000 VND                            │
+│  ○ 12 tháng — 1,790,000 VND                          │
 │                                                      │
-│  [Thanh toán qua SePay — 299,000 VND]                │
+│  [Thanh toán qua SePay — 199,000 VND]                │
 │                                                      │
 │  LỊCH SỬ GIAO DỊCH AI                                │
 │  ┌──────────────────────────────────────────────┐    │
-│  │ 01/05/2026  Pro 1 tháng   299,000 VND  paid  │    │
+│  │ 01/05/2026  Pro 1 tháng   199,000 VND  paid  │    │
 │  └──────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────┘
 ```
@@ -1229,16 +1261,16 @@ type Duration = 1 | 6 | 12;
 
 const PRICES: Record<Tier, Record<Duration, number>> = {
   student:  { 1: 99000,   6: 499000,   12: 890000 },
-  pro:      { 1: 299000,  6: 1490000,  12: 2690000 },
-  bootcamp: { 1: 1990000, 6: 9990000,  12: 17900000 },
+  pro:      { 1: 199000,  6: 999000,   12: 1790000 },
+  bootcamp: { 1: 499000,  6: 2490000,  12: 4490000 },
 };
 
 const SAVINGS: Record<Duration, number> = { 1: 0, 6: 17, 12: 25 };
 
 const TIER_FEATURES: Record<Tier, { msgs: string; model: string; history: string }> = {
-  student:  { msgs: '500 msgs/tháng', model: 'Haiku',           history: 'Lịch sử 90 ngày' },
-  pro:      { msgs: '2,000 msgs/tháng', model: 'Haiku + Sonnet', history: 'Lịch sử đầy đủ' },
-  bootcamp: { msgs: 'Không giới hạn', model: 'Ưu tiên Sonnet',  history: 'Lịch sử đầy đủ + export' },
+  student:  { msgs: '250 msgs/tháng', model: 'Haiku',            history: 'Lịch sử 90 ngày' },
+  pro:      { msgs: '700 msgs/tháng', model: 'Haiku + Sonnet',   history: 'Lịch sử đầy đủ' },
+  bootcamp: { msgs: '1,800 msgs/tháng', model: 'Haiku + Sonnet', history: 'Lịch sử đầy đủ + export' },
 };
 
 export function AccountCoraRoute() {

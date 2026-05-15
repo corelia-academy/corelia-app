@@ -18,8 +18,8 @@
 ### 1.2 Quota & tier tables
 
 - [ ] Tạo migration: tạo `ai_usage_monthly` (`user_id`, `month` text, `message_count`, `tokens_used`, `cost_usd`, unique `user_id,month`)
-- [ ] Tạo migration: tạo hoặc seed `tier_limits` — thêm columns `monthly_messages`, `daily_soft_cap`, `price_vnd_monthly`
-- [ ] Seed tier_limits: Free (50/5), Student (500/25), Pro (1500/75), Bootcamp (4000/200)
+- [ ] Tạo migration: tạo hoặc seed `tier_limits` — thêm columns `monthly_messages`, `rolling_3h_soft_cap`, `price_vnd_monthly`
+- [ ] Seed tier_limits: Free (40/6), Student (250/20), Pro (700/50), Bootcamp (1800/120)
 - [ ] Tạo migration: thêm `signup_fingerprint` jsonb vào `profiles` (cho anti-cheat fingerprinting)
 
 ### 1.3 Subscription tables
@@ -35,8 +35,8 @@
 ### 2.1 Auth & quota
 
 - [ ] Implement `verifyBearerUser()` — trả về user với `email_confirmed_at` check
-- [ ] Implement `checkQuota(supabase, userId, tier)` — dual quota: monthly hard cap + daily soft cap (xem Section 4.2)
-- [ ] Trả về `QuotaResult` với `allowed`, `throttled`, `haikuOnly`, `monthlyUsed/Limit`, `dailyUsed/SoftCap`
+- [ ] Implement `checkQuota(supabase, userId, tier)` — dual quota: monthly hard cap + rolling 3-hour soft cap
+- [ ] Trả về `QuotaResult` với `allowed`, `throttled`, `haikuOnly`, `monthlyUsed/Limit`, `windowUsed/SoftCap`
 - [ ] Return HTTP 429 với `{ used, limit, tier }` khi `allowed = false`
 
 ### 2.2 Anti-cheat trong handler

@@ -1,7 +1,13 @@
+import { Suspense, lazy } from "react";
 import type { Course } from "@/types/courses";
 
 import type { FocusCard } from "../utils/homeTypes";
-import { DashboardAiAssistantPanel } from "./DashboardAiAssistantPanel";
+
+const DashboardAiAssistantPanel = lazy(() =>
+  import("./DashboardAiAssistantPanel").then((module) => ({
+    default: module.DashboardAiAssistantPanel,
+  })),
+);
 
 export function HomeSidebarAuthenticated({
   focusCards,
@@ -12,10 +18,12 @@ export function HomeSidebarAuthenticated({
 }) {
   return (
     <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
-      <DashboardAiAssistantPanel
-        focusCards={focusCards}
-        courseCatalog={courseCatalog}
-      />
+      <Suspense fallback={null}>
+        <DashboardAiAssistantPanel
+          focusCards={focusCards}
+          courseCatalog={courseCatalog}
+        />
+      </Suspense>
     </aside>
   );
 }

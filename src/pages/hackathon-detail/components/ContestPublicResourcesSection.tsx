@@ -91,7 +91,10 @@ export function ContestPublicResourcesSection(props: {
   return (
     <Card id="resources" className={cn("scroll-mt-36")}>
       <CardContent className="p-4">
-        <h2 className="text-lg font-semibold text-foreground">
+        <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+          {t("detail.public.nav.resources")}
+        </div>
+        <h2 className="mt-1 text-lg font-semibold text-foreground">
           {t("detail.resources.sectionTitle")}
         </h2>
         <p className="mt-2 text-sm text-foreground-muted">
@@ -106,7 +109,7 @@ export function ContestPublicResourcesSection(props: {
                 className="flex flex-col gap-3 rounded-lg border border-primary/25 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-destructive px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                  <span className="rounded-full bg-destructive px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-destructive-foreground">
                     {t("detail.resources.live")}
                   </span>
                   <span className="text-sm font-medium text-foreground">{r.title}</span>

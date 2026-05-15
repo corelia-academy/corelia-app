@@ -37,6 +37,27 @@ function logBlock(title, value) {
   process.stdout.write(`\n[${title}]\n${value}\n`);
 }
 
+function formatQuota(quota) {
+  if (!quota || typeof quota !== "object") return "n/a";
+  const monthly = `${quota.monthlyUsed ?? "?"}/${quota.monthlyLimit ?? "∞"}`;
+  const daily = `${quota.dailyUsed ?? "?"}/${quota.dailySoftCap ?? "∞"}`;
+  return `tier=${quota.tier ?? "?"}, monthly=${monthly}, daily=${daily}, throttled=${quota.throttled === true}, haikuOnly=${quota.haikuOnly === true}`;
+}
+
+function formatSources(sources) {
+  if (!Array.isArray(sources) || sources.length === 0) return "none";
+  return sources
+    .map((source, index) => {
+      if (!source || typeof source !== "object") return `${index + 1}. unknown`;
+      const topic = source.topic ?? "unknown";
+      const subtopic = source.subtopic ? ` / ${source.subtopic}` : "";
+      const category = source.category ? ` [${source.category}]` : "";
+      const track = source.track ? ` <${source.track}>` : "";
+      return `${index + 1}. ${topic}${subtopic}${category}${track}`;
+    })
+    .join("\n");
+}
+
 const response = await fetch(endpoint, {
   method: "POST",
   headers: {
@@ -100,6 +121,32 @@ for await (const chunk of response.body) {
 
     try {
       const parsed = JSON.parse(data);
+      if (eventName === "meta") {
+        logBlock(
+          eventName,
+          [
+            `sessionId: ${parsed.sessionId ?? "n/a"}`,
+            `quota: ${formatQuota(parsed.quota)}`,
+            `placeholderId: ${parsed.placeholderId ?? "n/a"}`,
+            `sources:\n${formatSources(parsed.sources)}`,
+          ].join("\n"),
+        );
+        continue;
+      }
+      if (eventName === "done") {
+        logBlock(
+          eventName,
+          [
+            `sessionId: ${parsed.sessionId ?? "n/a"}`,
+            `provider: ${parsed.provider ?? "n/a"}`,
+            `model: ${parsed.model ?? "n/a"}`,
+            `createdAt: ${parsed.createdAt ?? "n/a"}`,
+            `quota: ${formatQuota(parsed.quota)}`,
+            `sources:\n${formatSources(parsed.sources)}`,
+          ].join("\n"),
+        );
+        continue;
+      }
       logBlock(eventName, JSON.stringify(parsed, null, 2));
     } catch {
       logBlock(eventName, data);

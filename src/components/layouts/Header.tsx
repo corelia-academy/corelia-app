@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
+  Bot,
   CreditCard,
   GraduationCap,
   IdCard,
@@ -92,7 +93,15 @@ function addRecentSearch(query: string) {
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, profile, authInitialized, signOut, user } =
+  const {
+    isAuthenticated,
+    profile,
+    authInitialized,
+    signOut,
+    user,
+    aiSubscription,
+    daysUntilExpiry,
+  } =
     useAuth();
   const { t } = useTranslation("common");
   const { t: tAccount } = useTranslation("account");
@@ -176,6 +185,11 @@ export default function Header() {
         to: "/account/cv",
         label: tAccount("nav.cv.title"),
         icon: <IdCard className="mr-2 size-4 shrink-0" aria-hidden />,
+      },
+      {
+        to: "/cora",
+        label: tAccount("nav.cora.title"),
+        icon: <Bot className="mr-2 size-4 shrink-0" aria-hidden />,
       },
       {
         to: "/account/billing",
@@ -544,7 +558,45 @@ export default function Header() {
                     </button>
                   }
                 />
-                <DropdownMenuContent align="end" className="z-20 min-w-56">
+                <DropdownMenuContent align="end" className="z-20 min-w-64">
+                  <div className="px-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate("/cora")}
+                      className="w-full rounded-lg border border-border-subtle bg-surface-raised px-3 py-3 text-left transition-colors duration-150 hover:bg-surface-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <Bot className="size-4" aria-hidden />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground-muted">
+                                Cora AI
+                              </p>
+                              <p className="mt-1 text-sm font-medium text-foreground">
+                                {aiSubscription
+                                  ? tAccount(`cora.tiers.${aiSubscription.tier}.title`)
+                                  : tAccount("cora.currentPlan.free")}
+                              </p>
+                            </div>
+                            <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">
+                              {tAccount("nav.cora.title")}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-xs leading-5 text-foreground-muted">
+                            {aiSubscription && typeof daysUntilExpiry === "number"
+                              ? tAccount("cora.currentPlan.daysLeft", {
+                                  count: Math.max(daysUntilExpiry, 0),
+                                })
+                              : tAccount("cora.currentPlan.notSubscribed")}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                  <DropdownMenuSeparator />
                   {accountDropdownItems.map((item) => (
                     <DropdownMenuItem
                       key={item.to}
