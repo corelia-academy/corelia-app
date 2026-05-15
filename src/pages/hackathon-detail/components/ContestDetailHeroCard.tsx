@@ -214,12 +214,6 @@ export function ContestDetailHeroCard({
                   </span>
                 ) : null}
               </div>
-
-              {implausibleStart && canAccessWorkspace ? (
-                <p className="rounded-md border border-warning bg-warning/15 px-3 py-2 text-xs text-warning-foreground">
-                  {translate("detail.hero.implausibleStartWarning")}
-                </p>
-              ) : null}
             </div>
 
             <div className="order-1 lg:order-2 lg:col-span-5 lg:col-start-8 lg:row-start-1">
