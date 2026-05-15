@@ -42,7 +42,7 @@ export function ContestDetailScheduleMetaStrip(props: {
   return (
     <div
       className={cn(
-        "grid grid-cols-2 rounded-lg border border-border-subtle bg-surface-base p-4 text-sm gap-4",
+        "grid grid-cols-2 sm:grid-cols-4 rounded-lg border border-border-subtle bg-surface-base p-4 text-sm gap-4",
         className,
       )}
     >
