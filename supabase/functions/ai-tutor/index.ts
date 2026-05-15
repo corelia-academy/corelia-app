@@ -1,17 +1,28 @@
+import {
+  checkQuota,
+  enforceAbuseChecks,
+  ensureSession,
+  getProfile,
+  incrementQuotaSnapshot,
+  resolveEffectiveTier,
+} from "./accessGuards.ts";
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { encodeSse, sseHeaders } from "./lib/sse.ts";
+import { getLearningMemory, updateLearningMemory } from "./learningMemory.ts";
 import { streamProviderText } from "./provider.ts";
+import { buildSourceRefs, buildSystemPrompt } from "./promptRuntime.ts";
+import { buildRecommendedActions } from "./recommendedActions.ts";
+import { buildRecommendedEntities } from "./recommendedEntities.ts";
+import { buildSuggestedPrompts } from "./suggestedPrompts.ts";
+import { buildStubReply } from "./stubReply.ts";
+import { estimateTokens, upsertUsage } from "./usageAccounting.ts";
 import { createServiceClient, type SupabaseClient, verifyBearerUser } from "./lib/supabase.ts";
-import type { QuotaResult } from "./types.ts";
-
-type BackendContextType =
-  | "lesson"
-  | "dashboard"
-  | "course_discovery"
-  | "career"
-  | "activity"
-  | "profile_review"
-  | "global";
+import type {
+  BackendContextType,
+  LearningMemoryDelta,
+  LearningProfileMemoryRow,
+} from "./behaviorTypes.ts";
+import type { MessageComplexity } from "./types.ts";
 
 type Tier = "free" | "student" | "pro" | "bootcamp";
 
@@ -34,17 +45,53 @@ type ProfileRow = {
 };
 
 type LessonContextData = {
+  courseId: string;
+  courseSlug: string | null;
   courseTitle: string;
   lessonTitle: string;
+  lessonTopic: string | null;
   lessonDescription: string | null;
   totalLessons: number;
   completedLessons: number;
   progressPercent: number;
 };
 
+type DashboardContextData = {
+  activeCourses: Array<{ courseId: string; title: string; completedLessons: number }>;
+  totalLessons: number;
+  completedLessons: number;
+  recentCourses: CourseDiscoveryContextData["recentCourses"];
+  featuredTracks: CareerContextData["featuredTracks"];
+  featuredHackathons: ActivityContextData["featuredHackathons"];
+  goal: string | null;
+  trackInterest: string | null;
+  currentLevel: string | null;
+  categoryInterests: string[];
+};
+
+type GlobalContextData = {
+  recentCourses: CourseDiscoveryContextData["recentCourses"];
+  featuredTracks: CareerContextData["featuredTracks"];
+  featuredHackathons: ActivityContextData["featuredHackathons"];
+  goal: string | null;
+  trackInterest: string | null;
+  currentLevel: string | null;
+  categoryInterests: string[];
+  enrolledCoursesCount: number;
+  completedCoursesCount: number;
+};
+
 type CourseDiscoveryContextData = {
   enrolledCount: number;
   recentCourseTitles: string[];
+  recentCourses: Array<{
+    id: string;
+    slug: string | null;
+    title: string;
+    shortDescription: string | null;
+    category: string | null;
+    level: string | null;
+  }>;
   goal: string | null;
   trackInterest: string | null;
   categoryInterests: string[];
@@ -52,13 +99,32 @@ type CourseDiscoveryContextData = {
 
 type CareerContextData = {
   trackTitles: string[];
+  featuredTracks: Array<{
+    slug: string;
+    title: string;
+    description: string | null;
+    ownerScope: "corelia" | "instructor" | null;
+    instructorHandle: string | null;
+  }>;
   currentLevel: string | null;
   trackInterest: string | null;
 };
 
 type ActivityContextData = {
   hackathonTitles: string[];
+  featuredHackathons: Array<{
+    slug: string;
+    title: string;
+    status: string | null;
+    tagline: string | null;
+    registrationDeadline: string | null;
+    submissionDeadline: string | null;
+    startsAt: string | null;
+    endsAt: string | null;
+  }>;
   projectTitles: string[];
+  trackInterest: string | null;
+  categoryInterests: string[];
 };
 
 type ProfileReviewContextData = {
@@ -67,6 +133,35 @@ type ProfileReviewContextData = {
   credentialCount: number;
   aiQuestionCount: number;
   publicProjectCount: number;
+  recentCourses: CourseDiscoveryContextData["recentCourses"];
+  featuredTracks: CareerContextData["featuredTracks"];
+  featuredHackathons: ActivityContextData["featuredHackathons"];
+  goal: string | null;
+  trackInterest: string | null;
+  currentLevel: string | null;
+  categoryInterests: string[];
+};
+
+type KnowledgeChunkRow = {
+  topic: string;
+  subtopic: string | null;
+  content: string;
+  content_category: string;
+  track: string | null;
+};
+
+function detectPreferredLanguage(input: string): "vi" | "en" {
+  return /[à-ỹđ]/i.test(input) ? "vi" : "en";
+}
+
+const FALLBACK_TIER_LIMITS: Record<
+  Tier,
+  { monthlyMessages: number; rolling3hSoftCap: number; haikuOnly: boolean }
+> = {
+  free: { monthlyMessages: 40, rolling3hSoftCap: 6, haikuOnly: true },
+  student: { monthlyMessages: 250, rolling3hSoftCap: 20, haikuOnly: true },
+  pro: { monthlyMessages: 700, rolling3hSoftCap: 50, haikuOnly: false },
+  bootcamp: { monthlyMessages: 1800, rolling3hSoftCap: 120, haikuOnly: false },
 };
 
 function mapAssistantContext(assistantContext: string): BackendContextType {
@@ -109,157 +204,222 @@ function parseRequest(body: TutorRequest): {
   return { message, assistantContext, lessonId, sessionId, stream };
 }
 
-function monthKey(now: Date): string {
-  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
-}
-
-async function getProfile(db: SupabaseClient, userId: string): Promise<ProfileRow | null> {
-  const { data, error } = await db
-    .from("profiles")
-    .select("full_name,tier,user_level,user_goal,streak_days,track_interest,category_interests")
-    .eq("id", userId)
-    .maybeSingle<ProfileRow>();
-  if (error) throw new Error(error.message);
-  return data ?? null;
-}
-
-async function ensureSession(
-  db: SupabaseClient,
-  userId: string,
-  contextType: BackendContextType,
-  sessionId: string | null,
-): Promise<string | null> {
-  if (contextType === "lesson") return null;
-  if (sessionId) {
-    const { data, error } = await db
-      .from("ai_chat_sessions")
-      .select("id")
-      .eq("id", sessionId)
-      .eq("user_id", userId)
-      .eq("context_type", contextType)
-      .maybeSingle<{ id: string }>();
-    if (error) throw new Error(error.message);
-    if (!data?.id) throw new Error("Invalid AI session");
-    return data.id;
-  }
-  const { data, error } = await db
-    .from("ai_chat_sessions")
-    .insert({ user_id: userId, context_type: contextType, title: null })
-    .select("id")
-    .single<{ id: string }>();
-  if (error || !data?.id) throw new Error(error?.message ?? "Could not create AI session");
-  return data.id;
-}
-
-async function checkQuota(
-  db: SupabaseClient,
-  userId: string,
-  tier: Tier,
-): Promise<QuotaResult> {
-  const now = new Date();
-  const today = now.toISOString().slice(0, 10);
-  const month = monthKey(now);
-
-  const [{ data: daily }, { data: monthly }, { data: limits, error: limitsError }] = await Promise.all([
-    db.from("ai_usage_daily").select("message_count").eq("user_id", userId).eq("date", today).maybeSingle(),
-    db.from("ai_usage_monthly").select("message_count").eq("user_id", userId).eq("month", month).maybeSingle(),
-    db
-      .from("tier_limits")
-      .select("monthly_messages,daily_soft_cap,haiku_only")
-      .eq("tier", tier)
-      .maybeSingle<{ monthly_messages: number | null; daily_soft_cap: number | null; haiku_only: boolean | null }>(),
-  ]);
-
-  if (limitsError) throw new Error(limitsError.message);
-
-  const monthlyUsed = Number(monthly?.message_count ?? 0);
-  const dailyUsed = Number(daily?.message_count ?? 0);
-  const monthlyLimit = limits?.monthly_messages ?? null;
-  const dailySoftCap = limits?.daily_soft_cap ?? null;
-  const allowed = monthlyLimit == null ? true : monthlyUsed < monthlyLimit;
-  const throttled = dailySoftCap == null ? false : dailyUsed >= dailySoftCap;
-
-  return {
-    allowed,
-    throttled,
-    haikuOnly: limits?.haiku_only ?? true,
-    monthlyUsed,
-    monthlyLimit,
-    dailyUsed,
-    dailySoftCap,
-    tier,
-  };
-}
-
-async function enforceAbuseChecks(
-  db: SupabaseClient,
-  userId: string,
+function classifyComplexity(
   message: string,
   contextType: BackendContextType,
-  lessonId: string | null,
-  sessionId: string | null,
-): Promise<{ cachedResponse?: { content: string; sessionId: string | null } }> {
-  const minuteAgo = new Date(Date.now() - 60_000).toISOString();
-  const { count: burstCount, error: burstError } = await db
-    .from("ai_conversations")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("role", "user")
-    .gte("created_at", minuteAgo);
-  if (burstError) throw new Error(burstError.message);
-  if ((burstCount ?? 0) >= 10) throw new Error("Rate limit exceeded");
+  contextData: Record<string, unknown>,
+): MessageComplexity {
+  const normalized = message.trim().toLowerCase();
+  const wordCount = normalized.split(/\s+/).filter(Boolean).length;
+  const sentenceCount = normalized.split(/[.!?]/).filter((part) => part.trim().length > 0).length;
 
-  const { count: pendingCount, error: pendingError } = await db
-    .from("ai_conversations")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("role", "assistant")
-    .eq("status", "pending");
-  if (pendingError) throw new Error(pendingError.message);
-  if ((pendingCount ?? 0) >= 2) throw new Error("Too many concurrent AI requests");
+  const complexSignals = [
+    "compare",
+    "phân tích",
+    "giải thích sâu",
+    "step by step",
+    "chi tiết",
+    "kiến trúc",
+    "trade-off",
+    "lộ trình",
+    "because",
+    "why",
+    "tại sao",
+    "how does",
+    "design",
+    "debug",
+  ];
+  const mediumSignals = [
+    "plan",
+    "kế hoạch",
+    "gợi ý",
+    "recommend",
+    "nên học",
+    "what should",
+    "tiếp theo",
+    "next",
+    "summarize",
+    "tóm tắt",
+  ];
 
-  const tenSecondsAgo = new Date(Date.now() - 10_000).toISOString();
-  let query = db
-    .from("ai_conversations")
-    .select("id,content,created_at")
-    .eq("user_id", userId)
-    .eq("role", "user")
-    .eq("context_type", contextType)
-    .eq("content", message)
-    .gte("created_at", tenSecondsAgo)
-    .order("created_at", { ascending: false })
-    .limit(1);
-  query = lessonId ? query.eq("lesson_id", lessonId) : query.eq("session_id", sessionId ?? "");
-  const { data: recentMessage, error: dedupeError } = await query.maybeSingle<{
-    id: string;
-    content: string;
-    created_at: string;
-  }>();
-  if (dedupeError) throw new Error(dedupeError.message);
+  const hasComplexSignal = complexSignals.some((signal) => normalized.includes(signal));
+  const hasMediumSignal = mediumSignals.some((signal) => normalized.includes(signal));
+  const lessonHasDescription =
+    contextType === "lesson" &&
+    typeof contextData.lessonDescription === "string" &&
+    contextData.lessonDescription.trim().length > 120;
 
-  if (!recentMessage) return {};
-
-  let replyQuery = db
-    .from("ai_conversations")
-    .select("content,session_id")
-    .eq("user_id", userId)
-    .eq("role", "assistant")
-    .eq("context_type", contextType)
-    .gt("created_at", recentMessage.created_at)
-    .order("created_at", { ascending: true })
-    .limit(1);
-  replyQuery = lessonId ? replyQuery.eq("lesson_id", lessonId) : replyQuery.eq("session_id", sessionId ?? "");
-  const { data: cachedReply, error: cachedReplyError } = await replyQuery.maybeSingle<{
-    content: string;
-    session_id: string | null;
-  }>();
-  if (cachedReplyError) throw new Error(cachedReplyError.message);
-  if (!cachedReply?.content) return {};
-
-  return { cachedResponse: { content: cachedReply.content, sessionId: cachedReply.session_id ?? sessionId } };
+  if (
+    hasComplexSignal ||
+    wordCount >= 45 ||
+    sentenceCount >= 4 ||
+    (contextType === "lesson" && wordCount >= 25 && lessonHasDescription)
+  ) {
+    return "complex";
+  }
+  if (hasMediumSignal || wordCount >= 16 || sentenceCount >= 2) {
+    return "medium";
+  }
+  return "simple";
 }
 
-async function loadDashboardContext(db: SupabaseClient, userId: string) {
+function knowledgeCategoriesForContext(
+  contextType: BackendContextType,
+): string[] {
+  switch (contextType) {
+    case "lesson":
+      return ["lesson", "platform_guide"];
+    case "course_discovery":
+      return ["course_catalog", "platform_guide"];
+    case "career":
+      return ["career_track", "platform_guide"];
+    case "activity":
+      return ["activity", "platform_guide"];
+    default:
+      return [];
+  }
+}
+
+function extractKnowledgeTerms(
+  message: string,
+  contextType: BackendContextType,
+  contextData: Record<string, unknown>,
+): string[] {
+  const baseTerms = message
+    .toLowerCase()
+    .split(/[^a-z0-9à-ỹ]+/i)
+    .map((part) => part.trim())
+    .filter((part) => part.length >= 3);
+
+  const contextTerms: string[] = [];
+  if (contextType === "lesson") {
+    const lessonData = contextData as Partial<LessonContextData>;
+    if (typeof lessonData.lessonTopic === "string") contextTerms.push(lessonData.lessonTopic);
+    if (typeof lessonData.lessonTitle === "string") contextTerms.push(lessonData.lessonTitle);
+    if (typeof lessonData.courseTitle === "string") contextTerms.push(lessonData.courseTitle);
+  } else if (contextType === "course_discovery") {
+    const discoveryData = contextData as Partial<CourseDiscoveryContextData>;
+    if (typeof discoveryData.goal === "string") contextTerms.push(discoveryData.goal);
+    if (typeof discoveryData.trackInterest === "string") contextTerms.push(discoveryData.trackInterest);
+    if (Array.isArray(discoveryData.categoryInterests)) {
+      contextTerms.push(...discoveryData.categoryInterests);
+    }
+  } else if (contextType === "career") {
+    const careerData = contextData as Partial<CareerContextData>;
+    if (typeof careerData.trackInterest === "string") contextTerms.push(careerData.trackInterest);
+    if (Array.isArray(careerData.trackTitles)) contextTerms.push(...careerData.trackTitles.slice(0, 2));
+  }
+
+  return Array.from(
+    new Set(
+      [...baseTerms, ...contextTerms]
+        .map((part) => part.toLowerCase().trim())
+        .filter((part) => part.length >= 3),
+    ),
+  ).slice(0, 10);
+}
+
+function scoreKnowledgeChunk(
+  chunk: KnowledgeChunkRow,
+  searchTerms: string[],
+  preferredTrack: string | null,
+): number {
+  const haystack = [
+    chunk.topic,
+    chunk.subtopic ?? "",
+    chunk.track ?? "",
+    chunk.content.slice(0, 500),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  let score = searchTerms.reduce((scoreValue, term) => {
+    if (!term) return score;
+    if (haystack.includes(term)) {
+      if (chunk.topic.toLowerCase().includes(term)) return scoreValue + 5;
+      if ((chunk.subtopic ?? "").toLowerCase().includes(term)) return scoreValue + 3;
+      if ((chunk.track ?? "").toLowerCase().includes(term)) return scoreValue + 4;
+      return scoreValue + 1;
+    }
+    return scoreValue;
+  }, 0);
+
+  if (preferredTrack && (chunk.track ?? "").toLowerCase().includes(preferredTrack.toLowerCase())) {
+    score += 6;
+  }
+
+  return score;
+}
+
+async function retrieveKnowledgeChunks(
+  db: SupabaseClient,
+  message: string,
+  contextType: BackendContextType,
+  contextData: Record<string, unknown>,
+): Promise<KnowledgeChunkRow[]> {
+  const categories = knowledgeCategoriesForContext(contextType);
+  if (categories.length === 0) return [];
+
+  const searchTerms = extractKnowledgeTerms(message, contextType, contextData);
+  let query = db
+    .from("knowledge_chunks")
+    .select("topic,subtopic,content,content_category,track")
+    .in("content_category", categories)
+    .limit(24);
+
+  if (contextType === "lesson") {
+    const lessonTopic =
+      typeof contextData.lessonTopic === "string" ? contextData.lessonTopic.trim() : "";
+    if (lessonTopic) {
+      query = query.or(
+        `topic.ilike.%${lessonTopic}%,subtopic.ilike.%${lessonTopic}%,content.ilike.%${lessonTopic}%`,
+      );
+    }
+  } else if (searchTerms.length > 0) {
+    const keyword = searchTerms[0];
+    query = query.or(
+      `topic.ilike.%${keyword}%,subtopic.ilike.%${keyword}%,content.ilike.%${keyword}%,track.ilike.%${keyword}%`,
+    );
+  }
+
+  const preferredTrack =
+    typeof contextData.trackInterest === "string" ? contextData.trackInterest.trim() : null;
+
+  const { data, error } = await query.returns<KnowledgeChunkRow[]>();
+  if (error) {
+    console.warn("[ai-tutor] knowledge retrieval failed", error.message);
+    return [];
+  }
+
+  return (data ?? [])
+    .map((chunk) => ({
+      ...chunk,
+      score: scoreKnowledgeChunk(chunk, searchTerms, preferredTrack),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .filter((chunk) => chunk.score > 0 || searchTerms.length === 0)
+    .slice(0, 5)
+    .map(({ score: _score, ...chunk }) => chunk);
+}
+
+function buildKnowledgePromptSection(chunks: KnowledgeChunkRow[]): string {
+  if (chunks.length === 0) return "Knowledge snippets: none";
+  return [
+    "Knowledge snippets:",
+    ...chunks.map((chunk, index) => {
+      const header = [chunk.content_category, chunk.topic, chunk.subtopic]
+        .filter(Boolean)
+        .join(" / ");
+      return `${index + 1}. ${header}\n${chunk.content.slice(0, 600)}`;
+    }),
+  ].join("\n");
+}
+
+async function loadDashboardContext(
+  db: SupabaseClient,
+  userId: string,
+  profile: ProfileRow | null,
+): Promise<DashboardContextData> {
   const { data: enrollments, error: enrollmentsError } = await db
     .from("enrollments")
     .select("course_id,last_accessed_at")
@@ -307,10 +467,48 @@ async function loadDashboardContext(db: SupabaseClient, userId: string) {
     };
   });
 
+  const [discoveryContext, careerContext, activityContext] = await Promise.all([
+    loadCourseDiscoveryContext(db, userId, profile),
+    loadCareerContext(db, profile),
+    loadActivityContext(db, profile),
+  ]);
+
   return {
     activeCourses,
     totalLessons: Number(lessonCount ?? 0),
     completedLessons: Array.from(completedByCourse.values()).reduce((sum, value) => sum + value, 0),
+    recentCourses: discoveryContext.recentCourses,
+    featuredTracks: careerContext.featuredTracks,
+    featuredHackathons: activityContext.featuredHackathons,
+    goal: discoveryContext.goal,
+    trackInterest: discoveryContext.trackInterest,
+    currentLevel: careerContext.currentLevel,
+    categoryInterests: discoveryContext.categoryInterests,
+  };
+}
+
+async function loadGlobalContext(
+  db: SupabaseClient,
+  userId: string,
+  profile: ProfileRow | null,
+): Promise<GlobalContextData> {
+  const [discoveryContext, careerContext, activityContext, profileReviewContext] = await Promise.all([
+    loadCourseDiscoveryContext(db, userId, profile),
+    loadCareerContext(db, profile),
+    loadActivityContext(db, profile),
+    loadProfileReviewContext(db, userId),
+  ]);
+
+  return {
+    recentCourses: discoveryContext.recentCourses,
+    featuredTracks: careerContext.featuredTracks,
+    featuredHackathons: activityContext.featuredHackathons,
+    goal: discoveryContext.goal,
+    trackInterest: discoveryContext.trackInterest,
+    currentLevel: careerContext.currentLevel,
+    categoryInterests: discoveryContext.categoryInterests,
+    enrolledCoursesCount: profileReviewContext.enrolledCoursesCount,
+    completedCoursesCount: profileReviewContext.completedCoursesCount,
   };
 }
 
@@ -330,7 +528,7 @@ async function loadLessonContext(
   const courseId = String(lessonRow.course_id);
   const [{ data: courseRow, error: courseError }, { count: totalLessons, error: lessonCountError }, { data: progressRows, error: progressError }] =
     await Promise.all([
-      db.from("courses").select("data").eq("id", courseId).maybeSingle<{ data: Record<string, unknown> | null }>(),
+      db.from("courses").select("id,slug,data").eq("id", courseId).maybeSingle<{ id: string; slug: string | null; data: Record<string, unknown> | null }>(),
       db.from("course_lessons").select("id", { count: "exact", head: true }).eq("course_id", courseId),
       db.from("lesson_progress").select("lesson_id,completed_at").eq("user_id", userId).eq("course_id", courseId),
     ]);
@@ -343,6 +541,8 @@ async function loadLessonContext(
   const progressPercent = total > 0 ? Math.min(100, Math.round((completedLessons / total) * 100)) : 0;
 
   return {
+    courseId,
+    courseSlug: courseRow?.slug?.trim() || null,
     courseTitle:
       typeof courseRow?.data?.title === "string" && courseRow.data.title.trim()
         ? courseRow.data.title
@@ -351,6 +551,14 @@ async function loadLessonContext(
       typeof lessonRow.data?.title === "string" && lessonRow.data.title.trim()
         ? lessonRow.data.title
         : "Lesson",
+    lessonTopic:
+      typeof lessonRow.data?.topic === "string" && lessonRow.data.topic.trim()
+        ? lessonRow.data.topic.trim()
+        : typeof lessonRow.data?.subtopic === "string" && lessonRow.data.subtopic.trim()
+          ? lessonRow.data.subtopic.trim()
+          : typeof lessonRow.data?.title === "string" && lessonRow.data.title.trim()
+            ? lessonRow.data.title.trim()
+            : null,
     lessonDescription:
       typeof lessonRow.data?.description_markdown === "string"
         ? lessonRow.data.description_markdown
@@ -378,7 +586,7 @@ async function loadCourseDiscoveryContext(
         .limit(5),
       db
         .from("courses")
-        .select("id,data")
+        .select("id,slug,data")
         .eq("published", true)
         .order("updated_at", { ascending: false })
         .limit(5),
@@ -389,10 +597,30 @@ async function loadCourseDiscoveryContext(
   const titles = (courses ?? [])
     .map((row) => (typeof row.data?.title === "string" ? row.data.title.trim() : ""))
     .filter(Boolean);
+  const recentCourses = (courses ?? [])
+    .map((row) => ({
+      id: String(row.id ?? ""),
+      slug: typeof row.slug === "string" && row.slug.trim() ? row.slug.trim() : null,
+      title: typeof row.data?.title === "string" ? row.data.title.trim() : "",
+      shortDescription:
+        typeof row.data?.short_description === "string" && row.data.short_description.trim()
+          ? row.data.short_description.trim()
+          : typeof row.data?.description === "string" && row.data.description.trim()
+            ? row.data.description.trim().slice(0, 180)
+            : null,
+      category:
+        typeof row.data?.primary_category === "string" && row.data.primary_category.trim()
+          ? row.data.primary_category.trim()
+          : null,
+      level:
+        typeof row.data?.level === "string" && row.data.level.trim() ? row.data.level.trim() : null,
+    }))
+    .filter((row) => row.id && row.title);
 
   return {
     enrolledCount: Number(enrollments?.length ?? 0),
     recentCourseTitles: titles,
+    recentCourses,
     goal: profile?.user_goal?.trim() || null,
     trackInterest: profile?.track_interest?.trim() || null,
     categoryInterests: Array.isArray(profile?.category_interests) ? profile!.category_interests : [],
@@ -405,27 +633,71 @@ async function loadCareerContext(
 ): Promise<CareerContextData> {
   const { data, error } = await db
     .from("career_tracks")
-    .select("title")
+    .select("slug,title,description,owner_scope,instructor_id,published")
     .eq("published", true)
     .order("updated_at", { ascending: false })
     .limit(4);
   if (error) throw new Error(error.message);
 
+  const instructorIds = Array.from(
+    new Set(
+      (data ?? [])
+        .filter((row) => row.owner_scope === "instructor" && typeof row.instructor_id === "string" && row.instructor_id.trim())
+        .map((row) => String(row.instructor_id)),
+    ),
+  );
+  const instructorHandles = new Map<string, string>();
+  if (instructorIds.length > 0) {
+    const { data: profiles, error: profilesError } = await db
+      .from("public_profiles")
+      .select("id,username,ocid")
+      .in("id", instructorIds);
+    if (profilesError) throw new Error(profilesError.message);
+    for (const profileRow of profiles ?? []) {
+      const id = typeof profileRow.id === "string" ? profileRow.id : "";
+      const handle =
+        (typeof profileRow.username === "string" ? profileRow.username.trim() : "") ||
+        (typeof profileRow.ocid === "string" ? profileRow.ocid.trim() : "");
+      if (id && handle) instructorHandles.set(id, handle);
+    }
+  }
+
   return {
     trackTitles: (data ?? [])
       .map((row) => (typeof row.title === "string" ? row.title.trim() : ""))
       .filter(Boolean),
+    featuredTracks: (data ?? [])
+      .map((row) => ({
+        slug: typeof row.slug === "string" ? row.slug.trim() : "",
+        title: typeof row.title === "string" ? row.title.trim() : "",
+        description:
+          typeof row.description === "string" && row.description.trim()
+            ? row.description.trim().slice(0, 180)
+            : null,
+        ownerScope:
+          row.owner_scope === "corelia" || row.owner_scope === "instructor"
+            ? row.owner_scope
+            : null,
+        instructorHandle:
+          row.owner_scope === "instructor" && typeof row.instructor_id === "string"
+            ? instructorHandles.get(row.instructor_id) ?? null
+            : null,
+      }))
+      .filter((row) => row.slug && row.title),
     currentLevel: profile?.user_level?.trim() || null,
     trackInterest: profile?.track_interest?.trim() || null,
   };
 }
 
-async function loadActivityContext(db: SupabaseClient): Promise<ActivityContextData> {
+async function loadActivityContext(
+  db: SupabaseClient,
+  profile: ProfileRow | null,
+): Promise<ActivityContextData> {
   const [{ data: hackathons, error: hackathonsError }, { data: projects, error: projectsError }] =
     await Promise.all([
       db
         .from("hackathons")
-        .select("document")
+        .select("slug,status,document")
         .in("status", ["published", "running", "ended"])
         .order("updated_at", { ascending: false })
         .limit(3),
@@ -443,15 +715,39 @@ async function loadActivityContext(db: SupabaseClient): Promise<ActivityContextD
     hackathonTitles: (hackathons ?? [])
       .map((row) => (typeof row.document?.title === "string" ? row.document.title.trim() : ""))
       .filter(Boolean),
+    featuredHackathons: (hackathons ?? [])
+      .map((row) => ({
+        slug: typeof row.slug === "string" ? row.slug.trim() : "",
+        title: typeof row.document?.title === "string" ? row.document.title.trim() : "",
+        status: typeof row.status === "string" ? row.status : null,
+        tagline:
+          typeof row.document?.tagline === "string" && row.document.tagline.trim()
+            ? row.document.tagline.trim().slice(0, 160)
+            : null,
+        registrationDeadline:
+          typeof row.document?.registration_deadline === "string"
+            ? row.document.registration_deadline
+            : null,
+        submissionDeadline:
+          typeof row.document?.submission_deadline === "string"
+            ? row.document.submission_deadline
+            : null,
+        startsAt: typeof row.document?.starts_at === "string" ? row.document.starts_at : null,
+        endsAt: typeof row.document?.ends_at === "string" ? row.document.ends_at : null,
+      }))
+      .filter((row) => row.slug && row.title),
     projectTitles: (projects ?? [])
       .map((row) => (typeof row.title === "string" ? row.title.trim() : ""))
       .filter(Boolean),
+    trackInterest: profile?.track_interest?.trim() || null,
+    categoryInterests: Array.isArray(profile?.category_interests) ? profile.category_interests : [],
   };
 }
 
 async function loadProfileReviewContext(
   db: SupabaseClient,
   userId: string,
+  profile: ProfileRow | null,
 ): Promise<ProfileReviewContextData> {
   const [
     { data: enrollments, error: enrollmentsError },
@@ -482,6 +778,12 @@ async function loadProfileReviewContext(
   if (credentialError) throw new Error(credentialError.message);
   if (aiQuestionError) throw new Error(aiQuestionError.message);
   if (projectCountError) throw new Error(projectCountError.message);
+
+  const [discoveryContext, careerContext, activityContext] = await Promise.all([
+    loadCourseDiscoveryContext(db, userId, profile),
+    loadCareerContext(db, profile),
+    loadActivityContext(db, profile),
+  ]);
 
   const enrolledCourseIds = Array.from(
     new Set((enrollments ?? []).map((row) => String(row.course_id ?? "")).filter(Boolean)),
@@ -525,6 +827,13 @@ async function loadProfileReviewContext(
     credentialCount: Number(credentialCount ?? 0),
     aiQuestionCount: Number(aiQuestionCount ?? 0),
     publicProjectCount: Number(publicProjectCount ?? 0),
+    recentCourses: discoveryContext.recentCourses,
+    featuredTracks: careerContext.featuredTracks,
+    featuredHackathons: activityContext.featuredHackathons,
+    goal: discoveryContext.goal,
+    trackInterest: discoveryContext.trackInterest,
+    currentLevel: careerContext.currentLevel,
+    categoryInterests: discoveryContext.categoryInterests,
   };
 }
 
@@ -540,7 +849,7 @@ async function loadContextData(
     return loadLessonContext(db, userId, extras.lessonId);
   }
   if (contextType === "dashboard") {
-    return loadDashboardContext(db, userId);
+    return loadDashboardContext(db, userId, profile);
   }
   if (contextType === "course_discovery") {
     return loadCourseDiscoveryContext(db, userId, profile);
@@ -549,150 +858,14 @@ async function loadContextData(
     return loadCareerContext(db, profile);
   }
   if (contextType === "activity") {
-    return loadActivityContext(db);
+    return loadActivityContext(db, profile);
   }
   if (contextType === "profile_review") {
-    return loadProfileReviewContext(db, userId);
+    return loadProfileReviewContext(db, userId, profile);
   }
-  return {
-    trackInterest: profile?.track_interest ?? null,
-    userGoal: profile?.user_goal ?? null,
-    categoryInterests: profile?.category_interests ?? [],
-  };
+  return loadGlobalContext(db, userId, profile);
 }
 
-function buildStubReply(args: {
-  profile: ProfileRow | null;
-  message: string;
-  contextType: BackendContextType;
-  contextData: Record<string, unknown>;
-  quota: QuotaResult;
-}): string {
-  const name = args.profile?.full_name?.trim() || "bạn";
-  const goal = args.profile?.user_goal?.trim();
-
-  if (args.contextType === "dashboard") {
-    const activeCourses = Array.isArray(args.contextData.activeCourses)
-      ? (args.contextData.activeCourses as { title: string; completedLessons: number }[])
-      : [];
-    const lead = activeCourses[0];
-    const summary = lead
-      ? `Bạn đang học nổi bật ở ${lead.title} với ${lead.completedLessons} bài đã hoàn thành.`
-      : "Mình chưa thấy khóa học đang học nổi bật nào trong dashboard của bạn.";
-    return [
-      `Chào ${name}, mình đã nhận câu hỏi: "${args.message}".`,
-      summary,
-      goal ? `Mục tiêu hiện tại mình đang bám theo là: ${goal}.` : "Bạn chưa đặt mục tiêu học tập rõ trong hồ sơ, nên mình sẽ ưu tiên gợi ý theo tiến độ gần nhất.",
-      args.quota.throttled
-        ? "Hôm nay bạn đã chạm ngưỡng nhịp hỏi mềm, nên mình sẽ giữ câu trả lời ngắn và tập trung."
-        : "Bước tiếp theo hợp lý là chốt 1 mục tiêu học cho tuần này rồi ưu tiên đúng 1 khóa đang dang dở.",
-    ].join("\n\n");
-  }
-
-  if (args.contextType === "lesson") {
-    const lesson = args.contextData as Partial<LessonContextData>;
-    const progressLine =
-      typeof lesson.completedLessons === "number" && typeof lesson.totalLessons === "number"
-        ? `Bạn đã hoàn thành ${lesson.completedLessons}/${lesson.totalLessons} bài, tương đương khoảng ${lesson.progressPercent ?? 0}% của khoá.`
-        : "Mình đang đọc progress hiện tại của bạn trong khoá học này.";
-    const lessonDescription =
-      typeof lesson.lessonDescription === "string" && lesson.lessonDescription.trim()
-        ? `Ngữ cảnh bài học hiện tại: ${lesson.lessonDescription.trim().slice(0, 240)}`
-        : "Bài học hiện tại chưa có mô tả dài, nên mình sẽ bám vào tên bài và tiến độ để hỗ trợ.";
-    return [
-      `Mình đang hỗ trợ bạn ngay trong bài "${lesson.lessonTitle ?? "Bài học hiện tại"}" của khoá "${lesson.courseTitle ?? "khoá học này"}".`,
-      progressLine,
-      lessonDescription,
-      `Câu hỏi bạn vừa gửi là: "${args.message}". Ở lát cắt hiện tại, mình sẽ ưu tiên giải thích sát bài học và gợi ý bước luyện tập tiếp theo thay vì trả lời quá rộng.`,
-    ].join("\n\n");
-  }
-
-  if (args.contextType === "course_discovery") {
-    const context = args.contextData as Partial<CourseDiscoveryContextData>;
-    const trackInterest = typeof context.trackInterest === "string" ? context.trackInterest : null;
-    const recent = Array.isArray(context.recentCourseTitles) ? context.recentCourseTitles.slice(0, 3) : [];
-    return [
-      `Mình đã nhận yêu cầu tìm hướng học phù hợp cho ${name}.`,
-      trackInterest
-        ? `Hiện mình đang ưu tiên theo track bạn quan tâm: ${trackInterest}.`
-        : "Bạn chưa chốt track cụ thể, nên mình sẽ giữ lời khuyên theo hướng khám phá an toàn.",
-      recent.length > 0
-        ? `Trong catalog gần nhất mình đang nhìn thấy các course như: ${recent.join(", ")}.`
-        : "Catalog course sẽ được mình dùng rõ hơn khi nối thêm RAG ở bước sau.",
-      `Câu hỏi bạn vừa gửi là: "${args.message}". Ở lát cắt đầu này, mình đã lưu được hội thoại và ngữ cảnh; bước tiếp theo sẽ là nối thêm catalog + RAG để gợi ý course cụ thể hơn.`,
-    ].join("\n\n");
-  }
-
-  if (args.contextType === "career") {
-    const context = args.contextData as Partial<CareerContextData>;
-    const tracks = Array.isArray(context.trackTitles) ? context.trackTitles.slice(0, 4) : [];
-    return [
-      `Mình đang hỗ trợ ${name} ở ngữ cảnh định hướng nghề nghiệp.`,
-      context.trackInterest
-        ? `Track bạn đang quan tâm là: ${context.trackInterest}.`
-        : "Bạn vẫn đang ở giai đoạn khám phá track phù hợp.",
-      tracks.length > 0
-        ? `Các track hiện mình đang thấy trên platform gồm: ${tracks.join(", ")}.`
-        : "Mình chưa đọc được danh sách track ở thời điểm này.",
-      `Câu hỏi bạn vừa gửi là: "${args.message}". Với lát cắt hiện tại, mình sẽ ưu tiên giúp bạn chọn hướng đi và thứ tự học hợp lý hơn.`,
-    ].join("\n\n");
-  }
-
-  if (args.contextType === "activity") {
-    const context = args.contextData as Partial<ActivityContextData>;
-    const hackathons = Array.isArray(context.hackathonTitles) ? context.hackathonTitles.slice(0, 3) : [];
-    const projects = Array.isArray(context.projectTitles) ? context.projectTitles.slice(0, 3) : [];
-    return [
-      `Mình đang hỗ trợ ${name} ở ngữ cảnh hoạt động thực chiến.`,
-      hackathons.length > 0
-        ? `Một vài hackathon gần đây là: ${hackathons.join(", ")}.`
-        : "Mình chưa kéo được danh sách hackathon gần đây.",
-      projects.length > 0
-        ? `Một vài project public đang nổi bật là: ${projects.join(", ")}.`
-        : "Mình chưa kéo được danh sách project public gần đây.",
-      `Câu hỏi bạn vừa gửi là: "${args.message}". Trong lát cắt này, mình sẽ ưu tiên ghép hoạt động phù hợp với giai đoạn học hiện tại của bạn.`,
-    ].join("\n\n");
-  }
-
-  if (args.contextType === "profile_review") {
-    const context = args.contextData as Partial<ProfileReviewContextData>;
-    return [
-      `Mình đang đọc hồ sơ học tập hiện tại của ${name}.`,
-      `Bạn đang có khoảng ${context.enrolledCoursesCount ?? 0} khoá đã ghi danh, ${context.completedCoursesCount ?? 0} khoá hoàn thành, ${context.credentialCount ?? 0} credential, và ${context.publicProjectCount ?? 0} project public.`,
-      `Bạn đã hỏi Cora khoảng ${context.aiQuestionCount ?? 0} câu cho đến lúc này.`,
-      `Câu hỏi bạn vừa gửi là: "${args.message}". Trong lát cắt này, mình sẽ ưu tiên giải thích khoảng trống hồ sơ và bước tiếp theo để profile mạnh hơn.`,
-    ].join("\n\n");
-  }
-
-  return [
-    `Mình đã nhận câu hỏi của ${name}: "${args.message}".`,
-    "Phiên bản đầu tiên của Cora hiện đã lưu session, nhận đúng context theo trang, và trả phản hồi theo hồ sơ học tập cơ bản.",
-    "Bước tiếp theo trong roadmap là nối provider thật, stream câu trả lời, và thêm RAG theo loại ngữ cảnh.",
-  ].join("\n\n");
-}
-
-function buildSystemPrompt(
-  profile: ProfileRow | null,
-  contextType: BackendContextType,
-  contextData: Record<string, unknown>,
-): string {
-  const learnerName = profile?.full_name?.trim() || "Learner";
-  const goal = profile?.user_goal?.trim() || "Not specified";
-  const level = profile?.user_level?.trim() || "beginner";
-  const streak = Number(profile?.streak_days ?? 0);
-
-  return [
-    "You are Cora, the AI tutor for Corelia Academy.",
-    "Reply in the same language as the user. Be practical, warm, and concise.",
-    "Prefer actionable next steps over long theory dumps.",
-    `Learner name: ${learnerName}`,
-    `Learner level: ${level}`,
-    `Learner goal: ${goal}`,
-    `Learner streak days: ${streak}`,
-    `Context type: ${contextType}`,
-    `Context data: ${JSON.stringify(contextData)}`,
-  ].join("\n");
-}
 
 async function getRecentConversationHistory(
   db: SupabaseClient,
@@ -721,50 +894,6 @@ async function getRecentConversationHistory(
       content: String(row.content ?? ""),
     }))
     .filter((row) => row.content.trim().length > 0);
-}
-
-async function upsertUsage(db: SupabaseClient, userId: string): Promise<void> {
-  const now = new Date();
-  const today = now.toISOString().slice(0, 10);
-  const month = monthKey(now);
-
-  const { data: dailyRow } = await db
-    .from("ai_usage_daily")
-    .select("id,message_count")
-    .eq("user_id", userId)
-    .eq("date", today)
-    .maybeSingle<{ id: string; message_count: number }>();
-  if (dailyRow?.id) {
-    const { error } = await db
-      .from("ai_usage_daily")
-      .update({ message_count: Number(dailyRow.message_count ?? 0) + 1, updated_at: now.toISOString() })
-      .eq("id", dailyRow.id);
-    if (error) throw new Error(error.message);
-  } else {
-    const { error } = await db
-      .from("ai_usage_daily")
-      .insert({ user_id: userId, date: today, message_count: 1 });
-    if (error) throw new Error(error.message);
-  }
-
-  const { data: monthlyRow } = await db
-    .from("ai_usage_monthly")
-    .select("id,message_count")
-    .eq("user_id", userId)
-    .eq("month", month)
-    .maybeSingle<{ id: string; message_count: number }>();
-  if (monthlyRow?.id) {
-    const { error } = await db
-      .from("ai_usage_monthly")
-      .update({ message_count: Number(monthlyRow.message_count ?? 0) + 1, updated_at: now.toISOString() })
-      .eq("id", monthlyRow.id);
-    if (error) throw new Error(error.message);
-  } else {
-    const { error } = await db
-      .from("ai_usage_monthly")
-      .insert({ user_id: userId, month, message_count: 1 });
-    if (error) throw new Error(error.message);
-  }
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -796,8 +925,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     const profile = await getProfile(db, user.id);
-    const tier = profile?.tier ?? "free";
-    const quota = await checkQuota(db, user.id, tier);
+    const tier = await resolveEffectiveTier(db, user.id, profile?.tier ?? "free");
+    const quota = await checkQuota(db, user.id, tier, FALLBACK_TIER_LIMITS);
     if (!quota.allowed) {
       return withCors(
         req,
@@ -814,6 +943,33 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     const sessionId = await ensureSession(db, user.id, contextType, body.sessionId);
+    const loadedContextData = await loadContextData(db, user.id, contextType, profile, {
+      lessonId: body.lessonId,
+    });
+    const contextData = {
+      ...loadedContextData,
+      surfaceHint: body.assistantContext,
+    };
+    const learningMemory = await getLearningMemory(db, user.id);
+    const language = detectPreferredLanguage(body.message);
+    const suggestedPrompts = buildSuggestedPrompts({
+      language,
+      contextType,
+      contextData,
+      learningMemory,
+    });
+    const recommendedActions = buildRecommendedActions({
+      language,
+      contextType,
+      contextData,
+      learningMemory,
+    });
+    const recommendedEntities = buildRecommendedEntities({
+      language,
+      contextType,
+      contextData,
+      learningMemory,
+    });
     const abuseCheck = await enforceAbuseChecks(db, user.id, body.message, contextType, body.lessonId, sessionId);
     if (abuseCheck.cachedResponse) {
       return withCors(
@@ -828,6 +984,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
             createdAt: new Date().toISOString(),
           },
           quota,
+          sources: abuseCheck.cachedResponse.sources,
+          suggestedPrompts,
+          recommendedActions,
+          recommendedEntities,
         }),
       );
     }
@@ -840,6 +1000,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       role: "user",
       content: body.message,
       status: "completed",
+      tokens_used: estimateTokens(body.message),
     };
     const { error: userMessageError } = await db.from("ai_conversations").insert(userInsert);
     if (userMessageError) throw new Error(userMessageError.message);
@@ -860,16 +1021,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .single<{ id: string }>();
     if (placeholderError || !placeholder?.id) throw new Error(placeholderError?.message ?? "Could not create placeholder");
 
-    const contextData = await loadContextData(db, user.id, contextType, profile, {
-      lessonId: body.lessonId,
-    });
+    const knowledgeChunks = await retrieveKnowledgeChunks(
+      db,
+      body.message,
+      contextType,
+      contextData,
+    );
+    const complexity = classifyComplexity(body.message, contextType, contextData);
     const fallbackReply = buildStubReply({
       profile,
       message: body.message,
       contextType,
       contextData,
       quota,
+      knowledgeChunks,
     });
+    const sourceRefs = buildSourceRefs(knowledgeChunks);
 
     const history = await getRecentConversationHistory(
       db,
@@ -878,7 +1045,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
       body.lessonId,
       sessionId,
     );
-    const systemPrompt = buildSystemPrompt(profile, contextType, contextData);
+    const systemPrompt = buildSystemPrompt(
+      profile,
+      contextType,
+      contextData,
+      knowledgeChunks,
+      learningMemory,
+      buildKnowledgePromptSection,
+    );
 
     if (body.stream) {
       const headers = sseHeaders(req);
@@ -895,6 +1069,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
               sessionId,
               quota,
               placeholderId: placeholder.id,
+              sources: sourceRefs,
+              suggestedPrompts,
+              recommendedActions,
+              recommendedEntities,
             });
 
             const result = await streamProviderText(
@@ -909,6 +1087,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 quota,
                 fallbackText: fallbackReply,
                 contextType,
+                complexity,
               },
               {
                 onTextDelta: async (delta) => {
@@ -920,14 +1099,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
             const finalText = outputText.trim() || fallbackReply;
             const nowIso = new Date().toISOString();
+            const updatedQuota = incrementQuotaSnapshot(quota);
 
             const { error: assistantError } = await db
               .from("ai_conversations")
               .update({
                 content: finalText,
                 status: "completed",
-                complexity: "simple",
+                complexity,
                 model_used: result.model,
+                tokens_used: estimateTokens(finalText),
+                sources: sourceRefs,
                 updated_at: nowIso,
               })
               .eq("id", placeholder.id);
@@ -950,15 +1132,35 @@ Deno.serve(async (req: Request): Promise<Response> => {
               if (sessionUpdateError) throw new Error(sessionUpdateError.message);
             }
 
-            await upsertUsage(db, user.id);
+            await upsertUsage(db, user.id, {
+              inputText: body.message,
+              outputText: finalText,
+              modelUsed: result.model,
+            });
+            const memoryDelta = await updateLearningMemory(db, {
+              userId: user.id,
+              contextType,
+              lessonId: body.lessonId,
+              sessionId,
+              message: body.message,
+              assistantText: finalText,
+              contextData,
+              knowledgeChunks,
+              complexity,
+            });
 
             send("done", {
               sessionId,
-              quota,
+              quota: updatedQuota,
               model: result.model,
               provider: result.provider,
               createdAt: nowIso,
               fullText: finalText,
+              sources: sourceRefs,
+              suggestedPrompts,
+              recommendedActions,
+              recommendedEntities,
+              memoryDelta,
             });
             controller.close();
           } catch (streamError) {
@@ -968,6 +1170,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
               .update({
                 content: outputText || fallbackReply,
                 status: outputText ? "completed" : "error",
+                tokens_used: estimateTokens(outputText || fallbackReply),
+                sources: sourceRefs,
                 updated_at: new Date().toISOString(),
               })
               .eq("id", placeholder.id);
@@ -988,8 +1192,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .update({
         content: fallbackReply,
         status: "completed",
-        complexity: "simple",
+        complexity,
         model_used: quota.haikuOnly || quota.throttled ? "stub-haiku" : "stub-sonnet",
+        tokens_used: estimateTokens(fallbackReply),
+        sources: sourceRefs,
         updated_at: new Date().toISOString(),
       })
       .eq("id", placeholder.id);
@@ -1012,7 +1218,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
       if (sessionUpdateError) throw new Error(sessionUpdateError.message);
     }
 
-    await upsertUsage(db, user.id);
+    await upsertUsage(db, user.id, {
+      inputText: body.message,
+      outputText: fallbackReply,
+      modelUsed: quota.haikuOnly || quota.throttled ? "stub-haiku" : "stub-sonnet",
+    });
+    const memoryDelta = await updateLearningMemory(db, {
+      userId: user.id,
+      contextType,
+      lessonId: body.lessonId,
+      sessionId,
+      message: body.message,
+      assistantText: fallbackReply,
+      contextData,
+      knowledgeChunks,
+      complexity,
+    });
+    const updatedQuota = incrementQuotaSnapshot(quota);
 
     return withCors(
       req,
@@ -1025,7 +1247,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
           content: fallbackReply,
           createdAt: new Date().toISOString(),
         },
-        quota,
+        quota: updatedQuota,
+        sources: sourceRefs,
+        suggestedPrompts,
+        recommendedActions,
+        recommendedEntities,
+        memoryDelta,
       }),
     );
   } catch (error) {

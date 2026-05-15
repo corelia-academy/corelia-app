@@ -1,4 +1,4 @@
-import type { QuotaResult } from "./types.ts";
+import type { MessageComplexity, QuotaResult } from "./types.ts";
 import { parseSseStream } from "./lib/sse.ts";
 
 export type ProviderName = "stub" | "openai" | "anthropic";
@@ -13,6 +13,7 @@ export type AIProviderRequest = {
   quota: QuotaResult;
   fallbackText: string;
   contextType: string;
+  complexity: MessageComplexity;
 };
 
 export type StreamCallbacks = {
@@ -39,15 +40,30 @@ function resolveProviderName(): ProviderName {
   return "stub";
 }
 
-function chooseModel(provider: ProviderName, quota: QuotaResult, contextType: string): string {
+function chooseModel(
+  provider: ProviderName,
+  quota: QuotaResult,
+  contextType: string,
+  complexity: MessageComplexity,
+): string {
   if (provider === "openai") {
-    if (contextType === "lesson" && !quota.haikuOnly && !quota.throttled) {
+    if (
+      contextType === "lesson" &&
+      !quota.haikuOnly &&
+      !quota.throttled &&
+      complexity === "complex"
+    ) {
       return readEnv("CORELIA_OPENAI_COMPLEX_MODEL") || "gpt-5-mini";
     }
     return readEnv("CORELIA_OPENAI_DEFAULT_MODEL") || "gpt-5-mini";
   }
   if (provider === "anthropic") {
-    if (contextType === "lesson" && !quota.haikuOnly && !quota.throttled) {
+    if (
+      contextType === "lesson" &&
+      !quota.haikuOnly &&
+      !quota.throttled &&
+      complexity === "complex"
+    ) {
       return readEnv("CORELIA_ANTHROPIC_COMPLEX_MODEL") || "claude-sonnet-4-5";
     }
     return readEnv("CORELIA_ANTHROPIC_DEFAULT_MODEL") || "claude-3-5-haiku-latest";
@@ -81,7 +97,7 @@ async function streamOpenAi(
   const apiKey = readEnv("OPENAI_API_KEY");
   if (!apiKey) return streamStub(request, callbacks);
 
-  const model = chooseModel("openai", request.quota, request.contextType);
+  const model = chooseModel("openai", request.quota, request.contextType, request.complexity);
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
@@ -132,7 +148,7 @@ async function streamAnthropic(
   const apiKey = readEnv("ANTHROPIC_API_KEY");
   if (!apiKey) return streamStub(request, callbacks);
 
-  const model = chooseModel("anthropic", request.quota, request.contextType);
+  const model = chooseModel("anthropic", request.quota, request.contextType, request.complexity);
   const [systemMessage, ...conversation] = request.messages;
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

@@ -386,6 +386,12 @@
       "checkoutHint": "You'll be redirected to SePay to complete the upgrade."
     },
     "durationTitle": "Billing cycle",
+    "durationValueLabel": "Average monthly cost",
+    "durationMonthlyEquivalent": "{{amount}} / month",
+    "durationSavingsBadge": "Save {{percent}}%",
+    "durationSavingsDetail": "{{amount}} less than paying month by month",
+    "durationSavingsSummaryLabel": "What you gain with this cycle",
+    "durationSavingsSummaryValue": "Save {{amount}} ({{percent}}%)",
     "duration": {
       "1": {
         "label": "1 month",
@@ -393,11 +399,11 @@
       },
       "6": {
         "label": "6 months",
-        "note": "Better value for a focused learning season"
+        "note": "Stay in rhythm without having to renew mid-streak"
       },
       "12": {
         "label": "12 months",
-        "note": "Best fit if you want Cora in your long-term workflow"
+        "note": "Lock in the strongest rate for a long learning runway"
       }
     },
     "tiers": {
@@ -443,8 +449,14 @@
       }
     },
     "return": {
+      "verifyingTitle": "Verifying your Cora AI payment",
+      "verifyingDescription": "Corelia is checking the payment status and syncing your plan. This usually only takes a few seconds.",
+      "verifiedTitle": "Payment confirmed successfully",
+      "verifiedDescription": "Your Cora AI plan has been updated. You can start using it right away in the dashboard, search, or learning surfaces.",
       "successTitle": "Payment is being confirmed",
       "successDescription": "If the transaction completed successfully, your Cora AI plan and payment history will refresh shortly.",
+      "timeoutTitle": "Still waiting for payment confirmation",
+      "timeoutDescription": "Corelia hasn't seen the final transaction state yet within the short window. You can wait a bit longer and refresh this page.",
       "errorTitle": "The payment session ran into an error",
       "errorDescription": "Corelia hasn't received a successful confirmation from the payment gateway yet. You can try again whenever you're ready.",
       "cancelTitle": "You cancelled the payment session",

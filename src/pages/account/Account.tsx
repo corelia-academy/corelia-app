@@ -3,7 +3,6 @@ import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import {
-  Bot,
   CreditCard,
   GraduationCap,
   IdCard,
@@ -12,7 +11,6 @@ import {
   UserCircle,
 } from "lucide-react";
 export { AccountBillingRoute } from "./AccountBillingRoute";
-export { AccountCoraRoute } from "./AccountCoraRoute";
 export { AccountCvRoute } from "./AccountCvRoute";
 export {
   AccountInstructorProfileRoute,
@@ -48,12 +46,6 @@ export default function Account() {
       title: t("nav.cv.title"),
       description: t("nav.cv.description"),
       icon: <IdCard className="size-4 shrink-0" aria-hidden />,
-    },
-    {
-      to: "/account/cora",
-      title: t("nav.cora.title"),
-      description: t("nav.cora.description"),
-      icon: <Bot className="size-4 shrink-0" aria-hidden />,
     },
     {
       to: "/account/billing",

@@ -91,9 +91,8 @@ CREATE TABLE IF NOT EXISTS public.ai_usage_monthly (
 
 CREATE TABLE IF NOT EXISTS public.tier_limits (
   tier text PRIMARY KEY CHECK (tier IN ('free', 'student', 'pro', 'bootcamp')),
-  daily_messages int,
   monthly_messages int,
-  daily_soft_cap int,
+  rolling_3h_soft_cap int,
   haiku_only boolean NOT NULL DEFAULT true,
   price_vnd_monthly int,
   label_vi text,
@@ -104,24 +103,22 @@ CREATE TABLE IF NOT EXISTS public.tier_limits (
 
 INSERT INTO public.tier_limits (
   tier,
-  daily_messages,
   monthly_messages,
-  daily_soft_cap,
+  rolling_3h_soft_cap,
   haiku_only,
   price_vnd_monthly,
   label_vi,
   label_en
 )
 VALUES
-  ('free', 5, 50, 5, true, 0, 'Miễn phí', 'Free'),
-  ('student', 50, 500, 25, true, 99000, 'Học viên', 'Student'),
-  ('pro', 200, 1500, 75, false, 299000, 'Pro', 'Pro'),
-  ('bootcamp', 999, 4000, 200, false, 1990000, 'Bootcamp', 'Bootcamp')
+  ('free', 6, 40, 6, true, 0, 'Miễn phí', 'Free'),
+  ('student', 20, 250, 20, true, 99000, 'Học viên', 'Student'),
+  ('pro', 50, 700, 50, false, 199000, 'Pro', 'Pro'),
+  ('bootcamp', 120, 1800, 120, false, 499000, 'Bootcamp', 'Bootcamp')
 ON CONFLICT (tier) DO UPDATE
 SET
-  daily_messages = EXCLUDED.daily_messages,
   monthly_messages = EXCLUDED.monthly_messages,
-  daily_soft_cap = EXCLUDED.daily_soft_cap,
+  rolling_3h_soft_cap = EXCLUDED.rolling_3h_soft_cap,
   haiku_only = EXCLUDED.haiku_only,
   price_vnd_monthly = EXCLUDED.price_vnd_monthly,
   label_vi = EXCLUDED.label_vi,

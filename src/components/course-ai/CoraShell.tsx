@@ -10,6 +10,7 @@ export function CoraShell({
   title,
   status,
   description,
+  meta,
   body,
   footer,
   onRequestHide,
@@ -20,6 +21,7 @@ export function CoraShell({
   title: string;
   status: string;
   description: string;
+  meta?: ReactNode;
   body: ReactNode;
   footer: ReactNode;
   onRequestHide?: () => void;
@@ -66,6 +68,7 @@ export function CoraShell({
           </div>
         </div>
         <p className="mt-3 text-sm leading-relaxed text-foreground-muted">{description}</p>
+        {meta ? <div className="mt-3">{meta}</div> : null}
       </div>
 
       {body}

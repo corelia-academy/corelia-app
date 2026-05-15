@@ -29,14 +29,37 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router', 'react-router-dom'],
-          'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-icons': ['lucide-react', '@phosphor-icons/react'],
-          'vendor-i18n': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
-          'vendor-markdown': ['react-markdown', 'remark-gfm', 'rehype-sanitize'],
-          'vendor-ocid': ['@opencampus/ocid-connect-js'],
-          'vendor-ui': ['@base-ui/react', 'next-themes', 'sonner', 'zustand'],
+        manualChunks(id) {
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router/') || id.includes('node_modules/react-router-dom/')) {
+            return 'vendor-react'
+          }
+          if (id.includes('@supabase/supabase-js')) {
+            return 'vendor-supabase'
+          }
+          if (id.includes('lucide-react') || id.includes('@phosphor-icons/react')) {
+            return 'vendor-icons'
+          }
+          if (id.includes('i18next') || id.includes('react-i18next') || id.includes('i18next-browser-languagedetector')) {
+            return 'vendor-i18n'
+          }
+          if (id.includes('react-markdown') || id.includes('remark-gfm') || id.includes('rehype-sanitize')) {
+            return 'vendor-markdown'
+          }
+          if (id.includes('@opencampus/ocid-connect-js')) {
+            return 'vendor-ocid'
+          }
+          if (id.includes('@base-ui/react') || id.includes('next-themes') || id.includes('sonner') || id.includes('zustand')) {
+            return 'vendor-ui'
+          }
+
+          if (
+            id.includes('/src/components/layouts/MainLayout') ||
+            id.includes('/src/components/course-ai/') ||
+            id.includes('/src/hooks/useCoraAI.ts') ||
+            id.includes('/src/pages/home/')
+          ) {
+            return 'feature-learner-core'
+          }
         },
       },
     },

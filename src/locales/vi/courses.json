@@ -313,7 +313,7 @@
       "inputPlaceholder": "Nhập câu hỏi…",
       "footerCaption": "Gửi tin nhắn sẽ khả dụng khi Cora AI Tutor ra mắt.",
       "liveFooterCaption": "Cora Tutor đã live ở bản đầu tiên. Mình đang lưu hội thoại và bám lesson context; streaming và RAG sẽ nối tiếp ở bước sau.",
-      "throttleHint": "Bạn đã chạm ngưỡng hỏi mềm trong hôm nay, nên Cora Tutor sẽ ưu tiên câu trả lời ngắn hơn.",
+      "throttleHint": "Bạn đã chạm ngưỡng hỏi mềm trong khung vài giờ gần đây, nên Cora Tutor sẽ ưu tiên câu trả lời ngắn hơn.",
       "chipToast": "Cora AI Tutor sắp ra mắt.",
       "suggestions": [
         "Tóm tắt các ý chính của bài học này.",
