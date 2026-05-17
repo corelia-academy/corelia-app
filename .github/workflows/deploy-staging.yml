@@ -37,30 +37,6 @@ jobs:
         with:
           node-version: 22
 
-      - name: Detect Supabase changes
-        id: changes
-        shell: bash
-        run: |
-          set -euo pipefail
-          BEFORE="${{ github.event.before }}"
-          AFTER="${{ github.sha }}"
-          if [[ -z "${BEFORE}" || "${BEFORE}" =~ ^0+$ ]]; then
-            BEFORE="$(git rev-parse "${AFTER}^" 2>/dev/null || true)"
-          fi
-          if [[ -z "${BEFORE}" ]]; then
-            echo "functions_changed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          CHANGED="$(git diff --name-only "$BEFORE" "$AFTER")"
-          echo "$CHANGED"
-
-          if echo "$CHANGED" | grep -qE '^supabase/functions/'; then
-            echo "functions_changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "functions_changed=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
@@ -76,14 +52,12 @@ jobs:
           supabase migration up --linked --include-all
 
       - name: Deploy Edge Function (corelia-api)
-        if: steps.changes.outputs.functions_changed == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy corelia-api --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Deploy Edge Function (ai-tutor)
-        if: steps.changes.outputs.functions_changed == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
