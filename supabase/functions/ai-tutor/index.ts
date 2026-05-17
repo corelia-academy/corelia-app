@@ -496,7 +496,7 @@ async function loadGlobalContext(
     loadCourseDiscoveryContext(db, userId, profile),
     loadCareerContext(db, profile),
     loadActivityContext(db, profile),
-    loadProfileReviewContext(db, userId),
+    loadProfileReviewContext(db, userId, profile),
   ]);
 
   return {
@@ -697,7 +697,7 @@ async function loadActivityContext(
     await Promise.all([
       db
         .from("hackathons")
-        .select("slug,status,document")
+        .select("status,document")
         .in("status", ["published", "running", "ended"])
         .order("updated_at", { ascending: false })
         .limit(3),
@@ -717,7 +717,7 @@ async function loadActivityContext(
       .filter(Boolean),
     featuredHackathons: (hackathons ?? [])
       .map((row) => ({
-        slug: typeof row.slug === "string" ? row.slug.trim() : "",
+        slug: typeof row.document?.slug === "string" ? row.document.slug.trim() : "",
         title: typeof row.document?.title === "string" ? row.document.title.trim() : "",
         status: typeof row.status === "string" ? row.status : null,
         tagline:
@@ -882,7 +882,7 @@ async function getRecentConversationHistory(
     .eq("status", "completed")
     .order("created_at", { ascending: false })
     .limit(8);
-  query = lessonId ? query.eq("lesson_id", lessonId) : query.eq("session_id", sessionId ?? "");
+  query = lessonId ? query.eq("lesson_id", lessonId) : query.eq("session_id", sessionId!);
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);
