@@ -1055,7 +1055,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
 
     if (body.stream) {
-      const headers = sseHeaders(req);
+      const headers = sseHeaders();
+      if (cors) {
+        for (const [key, value] of cors.entries()) headers.set(key, value);
+      }
       const responseStream = new ReadableStream<Uint8Array>({
         start: async (controller) => {
           const encoder = new TextEncoder();
