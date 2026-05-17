@@ -82,12 +82,22 @@ export default function OCIDRedirect() {
           return;
         }
 
-        await updateOCIDProfileForUser(user, {
-          ocid: resolvedOCId,
-          ocid_eth_address: resolvedEth,
-        });
-        await refreshProfile(user);
-        navigate("/account", { replace: true });
+        try {
+          await updateOCIDProfileForUser(user, {
+            ocid: resolvedOCId,
+            ocid_eth_address: resolvedEth,
+          });
+          await refreshProfile(user);
+          navigate("/account", { replace: true });
+        } catch (e) {
+          const message =
+            e instanceof Error && e.message === "OCID_ALREADY_LINKED"
+              ? t("ocid.redirect.alreadyLinkedToOtherAccount")
+              : e instanceof Error
+                ? e.message
+                : t("ocid.redirect.connectFailedFallback");
+          setError(message);
+        }
       },
       errorCallback: (e: unknown) => {
         const message =
