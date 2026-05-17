@@ -353,7 +353,10 @@ export async function updateOCIDProfileForUser(
       updated_at: now,
     })
     .eq("id", user.id);
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.code === "23505") throw new Error("OCID_ALREADY_LINKED");
+    throw new Error(error.message);
+  }
   invalidateCurrentProfileCache(user.id);
 }
 
