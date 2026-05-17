@@ -1,18 +1,11 @@
 export type SseEventName = "meta" | "delta" | "done" | "error";
 
-export function sseHeaders(req: Request): Headers {
-  const headers = new Headers({
+export function sseHeaders(): Headers {
+  return new Headers({
     "Content-Type": "text/event-stream; charset=utf-8",
     "Cache-Control": "no-cache, no-transform",
     Connection: "keep-alive",
   });
-  const origin = req.headers.get("origin");
-  if (origin) {
-    headers.set("Access-Control-Allow-Origin", origin);
-    headers.set("Access-Control-Allow-Credentials", "true");
-    headers.set("Vary", "Origin");
-  }
-  return headers;
 }
 
 export function encodeSse(event: SseEventName, data: unknown): string {
