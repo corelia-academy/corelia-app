@@ -11,10 +11,6 @@ import { NavLink } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import { ConversationHistory } from "@/components/course-ai/ConversationHistory";
-import { CoraLearningMemorySummary } from "@/components/course-ai/CoraLearningMemorySummary";
-import { CoraMemoryDeltaCard } from "@/components/course-ai/CoraMemoryDeltaCard";
-import { CoraRecommendedActions } from "@/components/course-ai/CoraRecommendedActions";
-import { CoraRecommendedEntities } from "@/components/course-ai/CoraRecommendedEntities";
 import { CoraShell } from "@/components/course-ai/CoraShell";
 import { getAssistantSurfaceMeta } from "@/components/course-ai/context";
 import { QuotaExceededPrompt } from "@/components/course-ai/QuotaExceededPrompt";
@@ -47,9 +43,6 @@ export function DashboardAiAssistantPanel({
     quotaInfo,
     learningMemory,
     suggestedPrompts,
-    memoryDelta,
-    recommendedActions,
-    recommendedEntities,
     lastSubmittedMessage,
   } = useCoraAI({
     assistantContext: "home",
@@ -92,14 +85,6 @@ export function DashboardAiAssistantPanel({
         daysUntilExpiry,
       })}
       tagline={String(t(surface.descriptionKey))}
-      meta={
-        <div className="space-y-3">
-          <CoraRecommendedEntities entities={recommendedEntities} />
-          <CoraRecommendedActions actions={recommendedActions} />
-          <CoraMemoryDeltaCard delta={memoryDelta} />
-          <CoraLearningMemorySummary memory={learningMemory} />
-        </div>
-      }
       className="max-h-[calc(100vh-5rem)] rounded-lg shadow-none"
       body={
         messages.length > 0 ? (
