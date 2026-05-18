@@ -1,0 +1,84 @@
+import { useLocation } from "react-router";
+import { useAuth } from "@/stores/authStore";
+import { cn } from "@/lib/utils";
+import { useCoraStore } from "@/stores/coraStore";
+import { shouldShowGlobalCoraAssistant } from "./visibility";
+import { CoraAssistantCard } from "./GlobalCoraAssistant";
+import { CourseAiTutorPanel } from "./CourseAiTutorPanel";
+
+const COURSE_DETAIL_RE = /^\/courses\/[^/]+$/;
+const LESSON_RE = /^\/learn\/.+$/;
+
+export function CoraSidebarPanel({
+  variant = "floating",
+}: {
+  variant?: "floating" | "inset";
+}) {
+  const { sidebarOpen, setSidebarOpen, sidebarMeta } = useCoraStore();
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
+
+  const { pathname } = location;
+  const isSupported = shouldShowGlobalCoraAssistant(pathname);
+  const isCourseOrLesson = COURSE_DETAIL_RE.test(pathname) || LESSON_RE.test(pathname);
+  const isOpen = sidebarOpen && isSupported;
+
+  const content = isSupported && isCourseOrLesson && sidebarMeta?.courseTitle ? (
+    <CourseAiTutorPanel
+      courseTitle={sidebarMeta.courseTitle}
+      lessonTitle={sidebarMeta.lessonTitle}
+      lessonId={sidebarMeta.lessonId}
+      className="rounded-none border-0"
+      onRequestHide={() => setSidebarOpen(false)}
+    />
+  ) : isSupported && !isCourseOrLesson ? (
+    <CoraAssistantCard
+      pathname={pathname}
+      isAuthenticated={isAuthenticated}
+      shellClassName="h-full rounded-none border-0"
+      onRequestHide={() => setSidebarOpen(false)}
+    />
+  ) : null;
+
+  if (variant === "inset") {
+    return (
+      <aside
+        className={cn(
+          "hidden xl:flex flex-col shrink-0 border-l border-border-subtle",
+          "h-full overflow-hidden",
+          "transition-[width] duration-200 ease-in-out",
+          isOpen ? "w-[360px]" : "w-0",
+        )}
+      >
+        <div className="flex h-full w-[360px] flex-col">
+          {content}
+        </div>
+      </aside>
+    );
+  }
+
+  // floating
+  return (
+    <>
+      {isOpen && (
+        <div
+          className="hidden xl:block fixed inset-0 z-30"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden
+        />
+      )}
+      <aside
+        className={cn(
+          "hidden xl:flex flex-col",
+          "fixed right-3 top-3 bottom-3 z-40 w-[360px]",
+          "overflow-hidden rounded-xl border border-border-subtle shadow-2xl",
+          "bg-surface-base",
+          "transition-transform duration-200 ease-in-out",
+          isOpen ? "translate-x-0" : "translate-x-[calc(100%+0.75rem)]",
+        )}
+      >
+        {content}
+      </aside>
+    </>
+  );
+}

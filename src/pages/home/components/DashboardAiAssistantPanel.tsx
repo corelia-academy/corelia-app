@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, BookOpen, Info, Sparkles, Target } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  CornerDownLeft,
+  Sparkles,
+  Target,
+} from "lucide-react";
 import { NavLink } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import { ConversationHistory } from "@/components/course-ai/ConversationHistory";
 import { CoraLearningMemorySummary } from "@/components/course-ai/CoraLearningMemorySummary";
 import { CoraMemoryDeltaCard } from "@/components/course-ai/CoraMemoryDeltaCard";
-import { CoraPlanSummary } from "@/components/course-ai/CoraPlanSummary";
 import { CoraRecommendedActions } from "@/components/course-ai/CoraRecommendedActions";
 import { CoraRecommendedEntities } from "@/components/course-ai/CoraRecommendedEntities";
 import { CoraShell } from "@/components/course-ai/CoraShell";
@@ -57,10 +62,13 @@ export function DashboardAiAssistantPanel({
   const fallbackSuggestions = buildPersonalizedSuggestions({
     t,
     context: "home",
-    baseSuggestions: Array.isArray(rawSuggestions) ? (rawSuggestions as string[]) : [],
+    baseSuggestions: Array.isArray(rawSuggestions)
+      ? (rawSuggestions as string[])
+      : [],
     learningMemory,
   });
-  const suggestions = suggestedPrompts.length > 0 ? suggestedPrompts : fallbackSuggestions;
+  const suggestions =
+    suggestedPrompts.length > 0 ? suggestedPrompts : fallbackSuggestions;
 
   const handleSuggestionClick = (label: string) => {
     void sendMessage(label);
@@ -77,75 +85,76 @@ export function DashboardAiAssistantPanel({
     <CoraShell
       eyebrow={String(t("coraWidget.eyebrow"))}
       title={String(t("coraWidget.title"))}
-      status={getCoraStatusLabel({ t, quotaInfo, aiSubscription, daysUntilExpiry })}
+      status={getCoraStatusLabel({
+        t,
+        quotaInfo,
+        aiSubscription,
+        daysUntilExpiry,
+      })}
       description={String(t(surface.descriptionKey))}
       meta={
         <div className="space-y-3">
-          <CoraPlanSummary quotaInfo={quotaInfo} />
           <CoraRecommendedEntities entities={recommendedEntities} />
           <CoraRecommendedActions actions={recommendedActions} />
           <CoraMemoryDeltaCard delta={memoryDelta} />
           <CoraLearningMemorySummary memory={learningMemory} />
         </div>
       }
-      className="rounded-lg shadow-none"
+      className="max-h-[calc(100vh-5rem)] rounded-lg shadow-none"
       body={
         messages.length > 0 ? (
-          <ConversationHistory messages={messages} isStreaming={isStreaming} className="min-h-0 flex-1" />
+          <ConversationHistory
+            messages={messages}
+            isStreaming={isStreaming}
+            className="min-h-0 flex-1"
+          />
         ) : (
           <div className="space-y-4 px-4 py-4">
-            <div className="grid gap-3">
+            {activeCourse ? (
               <div className="rounded-lg border border-border-subtle bg-surface-raised p-3">
                 <div className="flex items-center gap-2 text-xs font-medium text-foreground-muted">
                   <Target className="size-3.5" aria-hidden />
                   {t("coraWidget.dashboard.learningContextLabel")}
                 </div>
-                {activeCourse ? (
-                  <div className="mt-2">
-                    <p className="line-clamp-2 text-sm font-medium text-foreground">
-                      {activeCourse.title}
-                    </p>
-                    <div className="mt-2 flex items-center justify-between text-xs text-foreground-muted">
-                      <span>{t("home.sections.progress")}</span>
-                      <span>{activeCourse.progress}%</span>
-                    </div>
-                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-base">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{ width: `${activeCourse.progress}%` }}
-                      />
-                    </div>
+                <div className="mt-2">
+                  <p className="line-clamp-2 text-sm font-medium text-foreground">
+                    {activeCourse.title}
+                  </p>
+                  <div className="mt-2 flex items-center justify-between text-xs text-foreground-muted">
+                    <span>{t("home.sections.progress")}</span>
+                    <span>{activeCourse.progress}%</span>
+                  </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-base">
+                    <div
+                      className="h-full rounded-full bg-primary"
+                      style={{ width: `${activeCourse.progress}%` }}
+                    />
+                  </div>
+                  {activeCourse.nextStep ? (
                     <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-foreground-muted">
                       {activeCourse.nextStep}
                     </p>
-                  </div>
-                ) : (
-                  <p className="mt-2 text-xs leading-relaxed text-foreground-muted">
-                    {t("coraWidget.dashboard.noProgress")}
-                  </p>
-                )}
+                  ) : null}
+                </div>
               </div>
+            ) : null}
 
+            {suggestedCourse?.short_description ||
+            suggestedCourse?.description ? (
               <div className="rounded-lg border border-border-subtle bg-surface-raised p-3">
                 <div className="flex items-center gap-2 text-xs font-medium text-foreground-muted">
                   <Sparkles className="size-3.5" aria-hidden />
                   {t("coraWidget.dashboard.discoveryContextLabel")}
                 </div>
                 <p className="mt-2 text-sm font-medium text-foreground">
-                  {suggestedCourse?.title || t("coraWidget.dashboard.discoveryFallbackTitle")}
+                  {suggestedCourse.title}
                 </p>
                 <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-foreground-muted">
-                  {suggestedCourse?.short_description ||
-                    suggestedCourse?.description ||
-                    t("coraWidget.dashboard.discoveryFallbackDescription")}
+                  {suggestedCourse.short_description ||
+                    suggestedCourse.description}
                 </p>
               </div>
-            </div>
-
-            <div className="flex gap-2 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2.5 text-[11px] leading-snug text-foreground-muted">
-              <Info className="mt-px size-3.5 shrink-0 text-foreground-subtle" aria-hidden />
-              <p>{t("coraWidget.liveHint")}</p>
-            </div>
+            ) : null}
 
             <div>
               <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
@@ -198,6 +207,12 @@ export function DashboardAiAssistantPanel({
             rows={2}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void handleSubmit();
+              }
+            }}
             placeholder={String(t("coraWidget.inputPlaceholder"))}
             className={cn(
               "w-full resize-none rounded-md border border-border bg-surface-base px-3 py-2 text-sm text-foreground outline-none",
@@ -229,20 +244,28 @@ export function DashboardAiAssistantPanel({
           ) : null}
           {error ? (
             <p className="mt-2 text-[11px] leading-snug text-destructive">
-              {error.type === "quota_exceeded" ? t("coraWidget.quotaExceededHint") : error.message}
+              {error.type === "quota_exceeded"
+                ? t("coraWidget.quotaExceededHint")
+                : error.message}
             </p>
           ) : quotaInfo?.throttled ? (
             <p className="mt-2 rounded-md border border-border-subtle bg-surface-raised px-2.5 py-2 text-[11px] leading-snug text-foreground-muted">
               {t("coraWidget.throttleHint")}
             </p>
-          ) : (
-            <p className="mt-2 text-[11px] leading-snug text-foreground-muted">
-              {t("coraWidget.liveFooterCaption")}
-            </p>
-          )}
+          ) : null}
           <div className="mt-2 flex justify-end">
-            <Button type="button" size="sm" onClick={() => void handleSubmit()} disabled={isLoading || !draft.trim()}>
-              {isLoading ? t("coraWidget.sendingAction") : t("coraWidget.sendAction")}
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => void handleSubmit()}
+              disabled={isLoading || !draft.trim()}
+            >
+              {isLoading
+                ? t("coraWidget.sendingAction")
+                : t("coraWidget.sendAction")}
+              {!isLoading && (
+                <CornerDownLeft className="ml-1.5 size-3.5" aria-hidden />
+              )}
             </Button>
           </div>
         </>

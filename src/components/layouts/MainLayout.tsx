@@ -25,6 +25,12 @@ const GlobalCoraAssistant = lazy(() =>
   })),
 );
 
+const CoraSidebarPanel = lazy(() =>
+  import("@/components/course-ai/CoraSidebarPanel").then((module) => ({
+    default: module.CoraSidebarPanel,
+  })),
+);
+
 const mobileTabItemClassName =
   "flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2.5 text-center transition-colors";
 
@@ -49,11 +55,11 @@ const MainLayout = () => {
   return (
     <SidebarProvider defaultOpen={false}>
       <MainSidebarOverlay />
-      <SidebarInset className="flex min-h-dvh flex-col">
+      <SidebarInset className="flex min-h-dvh flex-col min-w-0">
         <Header />
-        <main className="flex-1 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0">
+        <div className="flex-1 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0">
           <Outlet />
-        </main>
+        </div>
         <Suspense fallback={null}>
           <GlobalCoraAssistant />
         </Suspense>
@@ -95,6 +101,9 @@ const MainLayout = () => {
           </div>
         </footer>
       </SidebarInset>
+      <Suspense fallback={null}>
+        <CoraSidebarPanel />
+      </Suspense>
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface-float pb-[env(safe-area-inset-bottom,0px)] md:hidden">
         <div className="container-app grid grid-cols-5 gap-1 px-2 py-2">
           {mobilePrimaryNav.map((item) => {

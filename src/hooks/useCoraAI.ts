@@ -8,6 +8,7 @@ import {
 import { invokeCoraAi } from "@/lib/coraAi";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/authStore";
+import { useCoraStore } from "@/stores/coraStore";
 
 export type CoraMessage = {
   id: string;
@@ -280,6 +281,7 @@ function normalizeRecommendedEntities(input: unknown): CoraRecommendedEntity[] {
 
 export function useCoraAI(options: UseCoraAIOptions) {
   const { user, isAuthenticated } = useAuth();
+  const syncQuotaInfo = useCoraStore((s) => s.setQuotaInfo);
   const [messages, setMessages] = useState<CoraMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -443,7 +445,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
           await consumeEventStream(response, {
             onMeta: (event) => {
               if (event.sessionId && event.sessionId !== sessionId) setSessionId(event.sessionId);
-              if (event.quota) setQuotaInfo(event.quota);
+              if (event.quota) { setQuotaInfo(event.quota); syncQuotaInfo(event.quota); }
               if (Array.isArray(event.suggestedPrompts)) {
                 setSuggestedPrompts(event.suggestedPrompts.filter(Boolean));
               }
@@ -461,7 +463,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
             },
             onDone: (event) => {
               if (event.sessionId && event.sessionId !== sessionId) setSessionId(event.sessionId);
-              if (event.quota) setQuotaInfo(event.quota);
+              if (event.quota) { setQuotaInfo(event.quota); syncQuotaInfo(event.quota); }
               const sources = normalizeSources(event.sources);
               if (typeof event.fullText === "string") {
                 setMessages((current) =>
@@ -504,6 +506,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
         }
         if (payload.quota) {
           setQuotaInfo(payload.quota);
+          syncQuotaInfo(payload.quota);
         }
         if (Array.isArray(payload.suggestedPrompts)) {
           setSuggestedPrompts(payload.suggestedPrompts.filter(Boolean));

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Info } from "lucide-react";
+import { CornerDownLeft } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { ConversationHistory } from "@/components/course-ai/ConversationHistory";
 import { CoraLearningMemorySummary } from "@/components/course-ai/CoraLearningMemorySummary";
 import { CoraMemoryDeltaCard } from "@/components/course-ai/CoraMemoryDeltaCard";
-import { CoraPlanSummary } from "@/components/course-ai/CoraPlanSummary";
 import { CoraShell } from "@/components/course-ai/CoraShell";
 import { QuotaExceededPrompt } from "@/components/course-ai/QuotaExceededPrompt";
 import { CoraRecommendedActions } from "@/components/course-ai/CoraRecommendedActions";
@@ -21,8 +21,10 @@ export function CourseAiTutorPanel(props: {
   lessonTitle?: string | null;
   lessonId?: string | null;
   className?: string;
+  /** When set, header shows the dismiss control (e.g. sidebar close). */
+  onRequestHide?: () => void;
 }) {
-  const { courseTitle, lessonTitle, lessonId, className } = props;
+  const { courseTitle, lessonTitle, lessonId, className, onRequestHide } = props;
   const { t } = useTranslation("courses");
   const { t: tCommon } = useTranslation("common");
   const { aiSubscription, daysUntilExpiry } = useAuth();
@@ -80,14 +82,17 @@ export function CourseAiTutorPanel(props: {
       description={String(t("detail.aiTutor.sheetDescription"))}
       meta={
         <div className="space-y-3">
-          <CoraPlanSummary quotaInfo={quotaInfo} />
           <CoraRecommendedEntities entities={recommendedEntities} />
           <CoraRecommendedActions actions={recommendedActions} />
           <CoraMemoryDeltaCard delta={memoryDelta} />
           <CoraLearningMemorySummary memory={learningMemory} />
         </div>
       }
-      className={cn("max-h-[min(72vh,560px)] rounded-md shadow-none", className)}
+      onRequestHide={onRequestHide}
+      hideLabel={
+        onRequestHide ? String(tCommon("coraWidget.hideAction")) : undefined
+      }
+      className={cn("h-full rounded-md shadow-none", className)}
       body={
         messages.length > 0 ? (
           <ConversationHistory messages={messages} isStreaming={isStreaming} className="min-h-0 flex-1" />
@@ -102,11 +107,6 @@ export function CourseAiTutorPanel(props: {
               {lessonTitle?.trim() ? (
                 <p>{t("detail.aiTutor.contextLesson", { title: lessonTitle.trim() })}</p>
               ) : null}
-            </div>
-
-            <div className="flex gap-2 rounded-md border border-border-subtle bg-surface-raised px-2.5 py-2 text-[11px] leading-snug text-foreground-muted">
-              <Info className="mt-px size-3.5 shrink-0 text-foreground-subtle" aria-hidden />
-              <p>{t("detail.aiTutor.liveHint")}</p>
             </div>
 
             <div>
@@ -138,6 +138,12 @@ export function CourseAiTutorPanel(props: {
             rows={2}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void handleSubmit();
+              }
+            }}
             placeholder={String(t("detail.aiTutor.inputPlaceholder"))}
             className={cn(
               "w-full resize-none rounded-md border border-border bg-surface-base px-3 py-2 text-sm text-foreground outline-none",
@@ -182,17 +188,15 @@ export function CourseAiTutorPanel(props: {
                 : t("detail.aiTutor.liveFooterCaption")}
           </p>
           <div className="mt-2 flex justify-end">
-            <button
+            <Button
               type="button"
-              className={cn(
-                "inline-flex h-9 items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition-opacity",
-                "disabled:cursor-not-allowed disabled:opacity-50",
-              )}
+              size="sm"
               onClick={() => void handleSubmit()}
               disabled={isLoading || !draft.trim()}
             >
               {isLoading ? tCommon("coraWidget.sendingAction") : tCommon("coraWidget.sendAction")}
-            </button>
+              {!isLoading && <CornerDownLeft className="ml-1.5 size-3.5" aria-hidden />}
+            </Button>
           </div>
         </>
       }

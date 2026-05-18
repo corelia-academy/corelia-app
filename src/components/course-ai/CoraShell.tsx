@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { CORA_AI_TUTOR_LOGO_SRC } from "@/components/course-ai/constants";
@@ -31,12 +31,12 @@ export function CoraShell({
   return (
     <div
       className={cn(
-        "flex min-h-[280px] flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-[var(--elevation-3)]",
+        "flex min-h-[280px] flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base",
         className,
       )}
     >
       <div className="border-b border-border-subtle px-4 py-4">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between">
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground-muted">
               {eyebrow}
@@ -62,16 +62,18 @@ export function CoraShell({
                 aria-label={hideLabel}
                 title={hideLabel}
               >
-                <ChevronUp className="size-4" aria-hidden />
+                <XIcon className="size-4" aria-hidden />
               </Button>
             ) : null}
           </div>
         </div>
-        <p className="mt-3 text-sm leading-relaxed text-foreground-muted">{description}</p>
-        {meta ? <div className="mt-3">{meta}</div> : null}
+        <p className="mt-3 text-sm leading-relaxed text-foreground-muted">
+          {description}
+        </p>
+        {meta ? <div>{meta}</div> : null}
       </div>
 
-      {body}
+      <div className="min-h-0 flex-1 overflow-y-auto">{body}</div>
 
       <div className="border-t border-border-subtle bg-surface-float px-4 py-3">
         {footer}

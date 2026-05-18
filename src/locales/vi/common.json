@@ -339,7 +339,6 @@
     "suggestionsLabel": "Gợi ý để bắt đầu",
     "inputPlaceholder": "Hỏi Cora điều gì đó…",
     "footerCaption": "Gửi tin nhắn sẽ khả dụng khi Cora AI được kết nối.",
-    "liveFooterCaption": "Cora đang ở bản đầu tiên. Mình đã bật lưu hội thoại và ngữ cảnh, còn streaming và RAG sẽ nối tiếp ở bước sau.",
     "sendAction": "Gửi",
     "sendingAction": "Đang gửi…",
     "sourceCount_one": "Phản hồi này đang bám trên {{count}} nguồn tham chiếu nội bộ.",
@@ -637,8 +636,7 @@
         "allUnlockedNote": "Bạn đã mở khóa toàn bộ milestone hiện có. Bây giờ có thể tập trung vào việc claim OC credential và mở rộng hồ sơ thành tích của mình."
       }
     }
-  }
-  ,
+  },
   "feedback": {
     "reportIssue": {
       "short": "Báo lỗi",
