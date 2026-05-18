@@ -12,6 +12,7 @@ export type AssistantContext =
 
 export type BackendAssistantContext =
   | "lesson"
+  | "course"
   | "dashboard"
   | "course_discovery"
   | "career"

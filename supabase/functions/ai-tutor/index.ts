@@ -31,6 +31,7 @@ type TutorRequest = {
   assistantContext?: unknown;
   sessionId?: unknown;
   lessonId?: unknown;
+  courseId?: unknown;
   stream?: unknown;
 };
 
@@ -181,6 +182,7 @@ function mapAssistantContext(assistantContext: string): BackendContextType {
     case "account":
       return "profile_review";
     case "lesson":
+    case "course":
       return "lesson";
     default:
       return "global";
@@ -191,6 +193,7 @@ function parseRequest(body: TutorRequest): {
   message: string;
   assistantContext: string;
   lessonId: string | null;
+  courseId: string | null;
   sessionId: string | null;
   stream: boolean;
 } {
@@ -198,10 +201,11 @@ function parseRequest(body: TutorRequest): {
   const assistantContext =
     typeof body.assistantContext === "string" ? body.assistantContext.trim() : "default";
   const lessonId = typeof body.lessonId === "string" && body.lessonId.trim() ? body.lessonId.trim() : null;
+  const courseId = typeof body.courseId === "string" && body.courseId.trim() ? body.courseId.trim() : null;
   const sessionId =
     typeof body.sessionId === "string" && body.sessionId.trim() ? body.sessionId.trim() : null;
   const stream = body.stream !== false;
-  return { message, assistantContext, lessonId, sessionId, stream };
+  return { message, assistantContext, lessonId, courseId, sessionId, stream };
 }
 
 function classifyComplexity(
@@ -919,10 +923,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return withCors(req, json({ message: "Message is too long" }, 400));
     }
 
-    const contextType = mapAssistantContext(body.assistantContext);
-    if (contextType === "lesson" && !body.lessonId) {
+    const rawContextType = mapAssistantContext(body.assistantContext);
+    // When courseId is provided with lesson context, use course-scoped sessions
+    const contextType: BackendContextType =
+      rawContextType === "lesson" && body.courseId ? "course" : rawContextType;
+    if (rawContextType === "lesson" && !body.lessonId) {
       return withCors(req, json({ message: "lessonId is required for lesson context" }, 400));
     }
+    // For course-scoped sessions, don't write lesson_id to ai_conversations (XOR constraint)
+    const storeLessonId = contextType === "course" ? null : body.lessonId;
 
     const profile = await getProfile(db, user.id);
     const tier = await resolveEffectiveTier(db, user.id, profile?.tier ?? "free");
@@ -942,7 +951,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const sessionId = await ensureSession(db, user.id, contextType, body.sessionId);
+    const sessionId = await ensureSession(db, user.id, contextType, body.sessionId, body.courseId);
     const loadedContextData = await loadContextData(db, user.id, contextType, profile, {
       lessonId: body.lessonId,
     });
@@ -994,7 +1003,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const userInsert = {
       user_id: user.id,
-      lesson_id: body.lessonId,
+      lesson_id: storeLessonId,
       session_id: sessionId,
       context_type: contextType,
       role: "user",
@@ -1009,7 +1018,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .from("ai_conversations")
       .insert({
         user_id: user.id,
-        lesson_id: body.lessonId,
+        lesson_id: storeLessonId,
         session_id: sessionId,
         context_type: contextType,
         role: "assistant",
@@ -1042,7 +1051,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       db,
       user.id,
       contextType,
-      body.lessonId,
+      storeLessonId,
       sessionId,
     );
     const systemPrompt = buildSystemPrompt(
