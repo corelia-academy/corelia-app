@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 export function CoraShell({
   eyebrow,
   title,
-  status,
   tagline,
   body,
   footer,
@@ -18,7 +17,6 @@ export function CoraShell({
 }: {
   eyebrow: string;
   title: string;
-  status: string;
   tagline?: string;
   body: ReactNode;
   footer: ReactNode;
@@ -33,7 +31,7 @@ export function CoraShell({
         className,
       )}
     >
-      <div className="border-b border-border-subtle px-4 pt-4">
+      <div className="border-b border-border-subtle p-4">
         <div className="flex items-start justify-between">
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground-muted">
@@ -46,24 +44,19 @@ export function CoraShell({
               draggable={false}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <div className="rounded-full border border-border-subtle bg-surface-raised px-2.5 py-1 text-[11px] font-medium text-foreground-muted">
-              {status}
-            </div>
-            {onRequestHide ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="rounded-full text-foreground-muted hover:text-foreground"
-                onClick={onRequestHide}
-                aria-label={hideLabel}
-                title={hideLabel}
-              >
-                <XIcon className="size-4" aria-hidden />
-              </Button>
-            ) : null}
-          </div>
+          {onRequestHide ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="shrink-0 rounded-full text-foreground-muted hover:text-foreground"
+              onClick={onRequestHide}
+              aria-label={hideLabel}
+              title={hideLabel}
+            >
+              <XIcon className="size-4" aria-hidden />
+            </Button>
+          ) : null}
         </div>
         {tagline ? (
           <p className="mt-2 text-xs leading-relaxed text-foreground-muted">

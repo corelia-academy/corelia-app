@@ -19,11 +19,9 @@ import { ConversationHistory } from "@/components/course-ai/ConversationHistory"
 import { QuotaExceededPrompt } from "@/components/course-ai/QuotaExceededPrompt";
 import { buildPersonalizedSuggestions } from "@/components/course-ai/suggestions";
 import { useCoraAI } from "@/hooks/useCoraAI";
-import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 
 import { CoraShell } from "./CoraShell";
-import { getCoraStatusLabel } from "./status";
 import { getAssistantSurfaceMeta, resolveAssistantContext } from "./context";
 import { shouldShowGlobalCoraAssistant } from "./visibility";
 
@@ -39,7 +37,6 @@ export function CoraAssistantCard({
   shellClassName?: string;
 }) {
   const { t } = useTranslation("common");
-  const { aiSubscription, daysUntilExpiry } = useAuth();
   const context = resolveAssistantContext(pathname);
   const surface = getAssistantSurfaceMeta(context);
   const [draft, setDraft] = useState("");
@@ -85,12 +82,6 @@ export function CoraAssistantCard({
     <CoraShell
       eyebrow={String(t("coraWidget.eyebrow"))}
       title={String(t("coraWidget.title"))}
-      status={getCoraStatusLabel({
-        t,
-        quotaInfo,
-        aiSubscription,
-        daysUntilExpiry,
-      })}
       tagline={String(t(surface.descriptionKey))}
       onRequestHide={onRequestHide}
       hideLabel={String(t("coraWidget.hideAction"))}

@@ -7,10 +7,8 @@ import { ConversationHistory } from "@/components/course-ai/ConversationHistory"
 import { CoraShell } from "@/components/course-ai/CoraShell";
 import { QuotaExceededPrompt } from "@/components/course-ai/QuotaExceededPrompt";
 import { buildPersonalizedSuggestions } from "@/components/course-ai/suggestions";
-import { getCoraStatusLabel } from "@/components/course-ai/status";
 import { useCoraAI } from "@/hooks/useCoraAI";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/stores/authStore";
 
 export function CourseAiTutorPanel(props: {
   courseTitle: string;
@@ -23,7 +21,6 @@ export function CourseAiTutorPanel(props: {
   const { courseTitle, lessonTitle, lessonId, className, onRequestHide } = props;
   const { t } = useTranslation("courses");
   const { t: tCommon } = useTranslation("common");
-  const { aiSubscription, daysUntilExpiry } = useAuth();
   const [draft, setDraft] = useState("");
   const hasLessonContext = Boolean(lessonId?.trim());
   const {
@@ -66,12 +63,6 @@ export function CourseAiTutorPanel(props: {
     <CoraShell
       eyebrow={String(t("detail.aiTutor.tabLabel"))}
       title={String(t("detail.aiTutor.sheetTitle"))}
-      status={getCoraStatusLabel({
-        t: tCommon,
-        quotaInfo,
-        aiSubscription,
-        daysUntilExpiry,
-      })}
       tagline={String(t("detail.aiTutor.sheetDescription"))}
       onRequestHide={onRequestHide}
       hideLabel={

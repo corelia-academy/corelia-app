@@ -15,10 +15,8 @@ import { CoraShell } from "@/components/course-ai/CoraShell";
 import { getAssistantSurfaceMeta } from "@/components/course-ai/context";
 import { QuotaExceededPrompt } from "@/components/course-ai/QuotaExceededPrompt";
 import { buildPersonalizedSuggestions } from "@/components/course-ai/suggestions";
-import { getCoraStatusLabel } from "@/components/course-ai/status";
 import { useCoraAI } from "@/hooks/useCoraAI";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/stores/authStore";
 import type { Course } from "@/types/courses";
 
 import type { FocusCard } from "../utils/homeTypes";
@@ -31,7 +29,6 @@ export function DashboardAiAssistantPanel({
   courseCatalog: Course[];
 }) {
   const { t } = useTranslation("common");
-  const { aiSubscription, daysUntilExpiry } = useAuth();
   const surface = getAssistantSurfaceMeta("home");
   const [draft, setDraft] = useState("");
   const {
@@ -78,12 +75,6 @@ export function DashboardAiAssistantPanel({
     <CoraShell
       eyebrow={String(t("coraWidget.eyebrow"))}
       title={String(t("coraWidget.title"))}
-      status={getCoraStatusLabel({
-        t,
-        quotaInfo,
-        aiSubscription,
-        daysUntilExpiry,
-      })}
       tagline={String(t(surface.descriptionKey))}
       className="max-h-[calc(100vh-5rem)] rounded-lg shadow-none"
       body={
