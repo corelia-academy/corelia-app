@@ -137,11 +137,12 @@ export function CourseAiTutorPanel(props: {
           <textarea
             rows={2}
             value={draft}
+            disabled={isLoading}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                void handleSubmit();
+                if (!isLoading) void handleSubmit();
               }
             }}
             placeholder={String(t("detail.aiTutor.inputPlaceholder"))}
