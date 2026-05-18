@@ -487,7 +487,8 @@
       "connectFailedFallback": "Không thể liên kết OCID. Vui lòng thử lại.",
       "alreadyLinkedToOtherAccount": "OCID này đã được liên kết với một tài khoản khác. Vui lòng ngắt kết nối từ tài khoản đó trước.",
       "mustLoginFirst": "Bạn cần đăng nhập Corelia trước khi liên kết OCID.",
-      "missingOcidFromSession": "Không lấy được OCID từ phiên đăng nhập. Vui lòng thử kết nối lại."
+      "missingOcidFromSession": "Không lấy được OCID từ phiên đăng nhập. Vui lòng thử kết nối lại.",
+      "backToHome": "Về trang chủ"
     },
     "toasts": {
       "startConnectFailed": "Không thể bắt đầu kết nối OCID.",

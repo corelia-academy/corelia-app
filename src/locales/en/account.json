@@ -487,7 +487,8 @@
       "connectFailedFallback": "Unable to link OCID. Please try again.",
       "alreadyLinkedToOtherAccount": "This OCID is already linked to another account. Please disconnect it from that account first.",
       "mustLoginFirst": "You need to sign in to Corelia before linking OCID.",
-      "missingOcidFromSession": "Couldn't retrieve OCID from the login session. Please reconnect."
+      "missingOcidFromSession": "Couldn't retrieve OCID from the login session. Please reconnect.",
+      "backToHome": "Back to Home"
     },
     "toasts": {
       "startConnectFailed": "Unable to start OCID connection.",
