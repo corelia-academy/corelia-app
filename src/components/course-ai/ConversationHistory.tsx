@@ -26,10 +26,10 @@ export function ConversationHistory({
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
-  }, [messages]);
+  }, [messages, isStreaming]);
 
   return (
-    <div className={cn("space-y-3 overflow-y-auto px-4 py-4", className)}>
+    <div className={cn("space-y-3 px-4 py-4", className)}>
       {messages.map((message) => (
         <div
           key={message.id}
