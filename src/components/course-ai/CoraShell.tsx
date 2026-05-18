@@ -35,7 +35,7 @@ export function CoraShell({
         className,
       )}
     >
-      <div className="border-b border-border-subtle px-4 py-4">
+      <div className="border-b border-border-subtle px-4 pt-4">
         <div className="flex items-start justify-between">
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground-muted">
