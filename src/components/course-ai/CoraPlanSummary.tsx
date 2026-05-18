@@ -1,4 +1,4 @@
-import { Gauge, Sparkles, Zap } from "lucide-react";
+import { Gauge, Sparkles } from "lucide-react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 
@@ -48,12 +48,6 @@ export function CoraPlanSummary({
               <Sparkles className="size-3" aria-hidden />
               {t(`coraWidget.plan.tiers.${planTier}`)}
             </span>
-            {quotaInfo?.throttled ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-warning/20 bg-warning/10 px-2 py-0.5 text-[11px] font-medium text-warning">
-                <Zap className="size-3" aria-hidden />
-                {t("coraWidget.plan.throttled")}
-              </span>
-            ) : null}
           </div>
           <div className="mt-1 flex items-center gap-2 text-[11px] text-foreground-subtle">
             {usageLimit != null ? (
