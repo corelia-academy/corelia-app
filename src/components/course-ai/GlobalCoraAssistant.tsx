@@ -148,11 +148,12 @@ export function CoraAssistantCard({
           <textarea
             rows={compact ? 2 : 3}
             value={draft}
+            disabled={isLoading}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                void handleSubmit();
+                if (!isLoading) void handleSubmit();
               }
             }}
             placeholder={String(t("coraWidget.inputPlaceholder"))}

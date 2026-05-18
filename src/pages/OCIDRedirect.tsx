@@ -5,6 +5,7 @@ import { updateOCIDProfileForUser } from "@/lib/profile";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 
 type OCAuthStateMaybe = {
   OCId?: string;
@@ -110,18 +111,24 @@ export default function OCIDRedirect() {
   return (
     <div className="min-h-[60vh]">
       {error ? (
-        <div className="container-app py-10">
+        <div className="container-app py-10 flex flex-col gap-4">
           <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
             {error}
           </div>
+          <div>
+            <Button variant="outline" onClick={() => navigate("/")}>
+              {t("ocid.redirect.backToHome")}
+            </Button>
+          </div>
         </div>
-      ) : null}
-      <LoginCallBack
-        customLoadingComponent={<Loading />}
-        customErrorComponent={<ErrorView />}
-        successCallback={callbacks.successCallback}
-        errorCallback={callbacks.errorCallback}
-      />
+      ) : (
+        <LoginCallBack
+          customLoadingComponent={<Loading />}
+          customErrorComponent={<ErrorView />}
+          successCallback={callbacks.successCallback}
+          errorCallback={callbacks.errorCallback}
+        />
+      )}
     </div>
   );
 }
