@@ -91,7 +91,7 @@ export function DashboardAiAssistantPanel({
         aiSubscription,
         daysUntilExpiry,
       })}
-      description={String(t(surface.descriptionKey))}
+      tagline={String(t(surface.descriptionKey))}
       meta={
         <div className="space-y-3">
           <CoraRecommendedEntities entities={recommendedEntities} />

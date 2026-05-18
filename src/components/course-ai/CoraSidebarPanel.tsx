@@ -1,5 +1,4 @@
 import { useLocation } from "react-router";
-import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 import { useCoraStore } from "@/stores/coraStore";
 import { shouldShowGlobalCoraAssistant } from "./visibility";
@@ -16,7 +15,6 @@ export function CoraSidebarPanel({
 }) {
   const { sidebarOpen, setSidebarOpen, sidebarMeta } = useCoraStore();
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
 
   const { pathname } = location;
   const isSupported = shouldShowGlobalCoraAssistant(pathname);
@@ -34,7 +32,6 @@ export function CoraSidebarPanel({
   ) : isSupported && !isCourseOrLesson ? (
     <CoraAssistantCard
       pathname={pathname}
-      isAuthenticated={isAuthenticated}
       shellClassName="h-full rounded-none border-0"
       onRequestHide={() => setSidebarOpen(false)}
     />
