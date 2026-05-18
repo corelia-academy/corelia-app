@@ -16,11 +16,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ConversationHistory } from "@/components/course-ai/ConversationHistory";
-import { CoraLearningMemorySummary } from "@/components/course-ai/CoraLearningMemorySummary";
-import { CoraMemoryDeltaCard } from "@/components/course-ai/CoraMemoryDeltaCard";
 import { QuotaExceededPrompt } from "@/components/course-ai/QuotaExceededPrompt";
-import { CoraRecommendedActions } from "@/components/course-ai/CoraRecommendedActions";
-import { CoraRecommendedEntities } from "@/components/course-ai/CoraRecommendedEntities";
 import { buildPersonalizedSuggestions } from "@/components/course-ai/suggestions";
 import { useCoraAI } from "@/hooks/useCoraAI";
 import { useAuth } from "@/stores/authStore";
@@ -56,9 +52,6 @@ export function CoraAssistantCard({
     quotaInfo,
     learningMemory,
     suggestedPrompts,
-    memoryDelta,
-    recommendedActions,
-    recommendedEntities,
     lastSubmittedMessage,
   } = useCoraAI({
     assistantContext: context,
@@ -99,14 +92,6 @@ export function CoraAssistantCard({
         daysUntilExpiry,
       })}
       tagline={String(t(surface.descriptionKey))}
-      meta={
-        <div className="space-y-3">
-          <CoraRecommendedEntities entities={recommendedEntities} />
-          <CoraRecommendedActions actions={recommendedActions} />
-          <CoraMemoryDeltaCard delta={memoryDelta} />
-          <CoraLearningMemorySummary memory={learningMemory} />
-        </div>
-      }
       onRequestHide={onRequestHide}
       hideLabel={String(t("coraWidget.hideAction"))}
       className={shellClassName ?? "max-h-[min(78vh,640px)]"}

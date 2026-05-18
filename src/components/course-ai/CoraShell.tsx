@@ -10,7 +10,6 @@ export function CoraShell({
   title,
   status,
   tagline,
-  meta,
   body,
   footer,
   onRequestHide,
@@ -21,7 +20,6 @@ export function CoraShell({
   title: string;
   status: string;
   tagline?: string;
-  meta?: ReactNode;
   body: ReactNode;
   footer: ReactNode;
   onRequestHide?: () => void;
@@ -72,7 +70,6 @@ export function CoraShell({
             {tagline}
           </p>
         ) : null}
-        {meta ? <div className="mt-3">{meta}</div> : null}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">{body}</div>
