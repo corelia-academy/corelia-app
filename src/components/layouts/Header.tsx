@@ -103,7 +103,6 @@ export default function Header() {
     signOut,
     user,
     aiSubscription,
-    daysUntilExpiry,
   } = useAuth();
   const { t } = useTranslation("common");
   const { t: tAccount } = useTranslation("account");

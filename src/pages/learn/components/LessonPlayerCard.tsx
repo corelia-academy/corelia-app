@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/markdown/Markdown";
-import { formatDuration, getYoutubeEmbedUrlForLesson } from "@/types/courses";
+import { getYoutubeEmbedUrlForLesson } from "@/types/courses";
 import type { CourseLesson } from "@/types/courses";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { LearnBadge } from "./LearnBadge";

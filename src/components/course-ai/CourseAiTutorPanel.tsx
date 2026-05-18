@@ -79,7 +79,7 @@ export function CourseAiTutorPanel(props: {
         aiSubscription,
         daysUntilExpiry,
       })}
-      description={String(t("detail.aiTutor.sheetDescription"))}
+      tagline={String(t("detail.aiTutor.sheetDescription"))}
       meta={
         <div className="space-y-3">
           <CoraRecommendedEntities entities={recommendedEntities} />

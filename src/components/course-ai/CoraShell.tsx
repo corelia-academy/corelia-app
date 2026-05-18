@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ChevronUp, XIcon } from "lucide-react";
+import { XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { CORA_AI_TUTOR_LOGO_SRC } from "@/components/course-ai/constants";
@@ -9,7 +9,7 @@ export function CoraShell({
   eyebrow,
   title,
   status,
-  description,
+  tagline,
   meta,
   body,
   footer,
@@ -20,7 +20,7 @@ export function CoraShell({
   eyebrow: string;
   title: string;
   status: string;
-  description: string;
+  tagline?: string;
   meta?: ReactNode;
   body: ReactNode;
   footer: ReactNode;
@@ -67,10 +67,12 @@ export function CoraShell({
             ) : null}
           </div>
         </div>
-        <p className="mt-3 text-sm leading-relaxed text-foreground-muted">
-          {description}
-        </p>
-        {meta ? <div>{meta}</div> : null}
+        {tagline ? (
+          <p className="mt-2 text-xs leading-relaxed text-foreground-muted">
+            {tagline}
+          </p>
+        ) : null}
+        {meta ? <div className="mt-3">{meta}</div> : null}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">{body}</div>

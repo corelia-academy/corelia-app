@@ -33,13 +33,11 @@ import { shouldShowGlobalCoraAssistant } from "./visibility";
 
 export function CoraAssistantCard({
   pathname,
-  isAuthenticated,
   compact,
   onRequestHide,
   shellClassName,
 }: {
   pathname: string;
-  isAuthenticated: boolean;
   compact?: boolean;
   onRequestHide?: () => void;
   shellClassName?: string;
@@ -100,7 +98,7 @@ export function CoraAssistantCard({
         aiSubscription,
         daysUntilExpiry,
       })}
-      description={String(t("coraWidget.description"))}
+      tagline={String(t(surface.descriptionKey))}
       meta={
         <div className="space-y-3">
           <CoraRecommendedEntities entities={recommendedEntities} />
@@ -234,7 +232,6 @@ export function CoraAssistantCard({
 
 export function GlobalCoraAssistant() {
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
   const { t } = useTranslation("common");
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -259,16 +256,19 @@ export function GlobalCoraAssistant() {
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent
           side="bottom"
-          className="h-[min(82vh,720px)] max-w-none p-0"
+          showCloseButton={false}
+          className="h-[80dvh] max-h-[80dvh] min-h-[80dvh] max-w-none flex flex-col p-0"
         >
           <SheetHeader className="sr-only">
             <SheetTitle>{t("coraWidget.title")}</SheetTitle>
           </SheetHeader>
-          <CoraAssistantCard
-            pathname={location.pathname}
-            isAuthenticated={isAuthenticated}
-            onRequestHide={() => setMobileOpen(false)}
-          />
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <CoraAssistantCard
+              pathname={location.pathname}
+              onRequestHide={() => setMobileOpen(false)}
+              shellClassName="flex h-full min-h-0 flex-1 flex-col rounded-none border-0 shadow-none"
+            />
+          </div>
         </SheetContent>
       </Sheet>
     </>
