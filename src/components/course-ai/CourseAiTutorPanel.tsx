@@ -4,12 +4,8 @@ import { CornerDownLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ConversationHistory } from "@/components/course-ai/ConversationHistory";
-import { CoraLearningMemorySummary } from "@/components/course-ai/CoraLearningMemorySummary";
-import { CoraMemoryDeltaCard } from "@/components/course-ai/CoraMemoryDeltaCard";
 import { CoraShell } from "@/components/course-ai/CoraShell";
 import { QuotaExceededPrompt } from "@/components/course-ai/QuotaExceededPrompt";
-import { CoraRecommendedActions } from "@/components/course-ai/CoraRecommendedActions";
-import { CoraRecommendedEntities } from "@/components/course-ai/CoraRecommendedEntities";
 import { buildPersonalizedSuggestions } from "@/components/course-ai/suggestions";
 import { getCoraStatusLabel } from "@/components/course-ai/status";
 import { useCoraAI } from "@/hooks/useCoraAI";
@@ -39,9 +35,6 @@ export function CourseAiTutorPanel(props: {
     quotaInfo,
     learningMemory,
     suggestedPrompts,
-    memoryDelta,
-    recommendedActions,
-    recommendedEntities,
     lastSubmittedMessage,
   } = useCoraAI({
     assistantContext: hasLessonContext ? "lesson" : "courses",
@@ -80,14 +73,6 @@ export function CourseAiTutorPanel(props: {
         daysUntilExpiry,
       })}
       tagline={String(t("detail.aiTutor.sheetDescription"))}
-      meta={
-        <div className="space-y-3">
-          <CoraRecommendedEntities entities={recommendedEntities} />
-          <CoraRecommendedActions actions={recommendedActions} />
-          <CoraMemoryDeltaCard delta={memoryDelta} />
-          <CoraLearningMemorySummary memory={learningMemory} />
-        </div>
-      }
       onRequestHide={onRequestHide}
       hideLabel={
         onRequestHide ? String(tCommon("coraWidget.hideAction")) : undefined
