@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
-  Bot,
   CreditCard,
   GraduationCap,
   IdCard,
@@ -27,6 +26,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/lib/supabase";
+import { CoraPlanSummary } from "@/components/course-ai/CoraPlanSummary";
+import { shouldShowGlobalCoraAssistant } from "@/components/course-ai/visibility";
+import { useCoraStore } from "@/stores/coraStore";
+import { cn } from "@/lib/utils";
 
 type SearchEntityType =
   | "project"
@@ -101,10 +104,14 @@ export default function Header() {
     user,
     aiSubscription,
     daysUntilExpiry,
-  } =
-    useAuth();
+  } = useAuth();
   const { t } = useTranslation("common");
   const { t: tAccount } = useTranslation("account");
+  const coraQuotaInfo = useCoraStore((s) => s.quotaInfo);
+  const setCoraQuotaInfo = useCoraStore((s) => s.setQuotaInfo);
+  const sidebarOpen = useCoraStore((s) => s.sidebarOpen);
+  const toggleSidebar = useCoraStore((s) => s.toggleSidebar);
+  const isCoraSupportedPage = shouldShowGlobalCoraAssistant(location.pathname);
   const { isInitialized, authState, ocAuth } = useOCAuth();
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -187,11 +194,6 @@ export default function Header() {
         icon: <IdCard className="mr-2 size-4 shrink-0" aria-hidden />,
       },
       {
-        to: "/cora",
-        label: tAccount("nav.cora.title"),
-        icon: <Bot className="mr-2 size-4 shrink-0" aria-hidden />,
-      },
-      {
         to: "/account/billing",
         label: tAccount("nav.billing.title"),
         icon: <CreditCard className="mr-2 size-4 shrink-0" aria-hidden />,
@@ -237,6 +239,41 @@ export default function Header() {
     setOcConnectLoading(false);
     setOcConnectOpen(true);
   }
+
+  useEffect(() => {
+    if (!user?.id || coraQuotaInfo) return;
+    const tier = (aiSubscription?.tier ?? "free") as
+      | "free"
+      | "student"
+      | "pro"
+      | "bootcamp";
+    const month = new Date().toISOString().slice(0, 7);
+    void Promise.all([
+      supabase
+        .from("ai_usage_monthly")
+        .select("message_count")
+        .eq("user_id", user.id)
+        .eq("month", month)
+        .maybeSingle(),
+      supabase
+        .from("tier_limits")
+        .select("monthly_messages")
+        .eq("tier", tier)
+        .maybeSingle(),
+    ]).then(([{ data: usage }, { data: limit }]) => {
+      setCoraQuotaInfo({
+        tier,
+        allowed: true,
+        throttled: false,
+        haikuOnly: false,
+        monthlyUsed: usage?.message_count ?? 0,
+        monthlyLimit: limit?.monthly_messages ?? null,
+        windowUsed: 0,
+        windowSoftCap: null,
+        windowHours: 3,
+      });
+    });
+  }, [user?.id, aiSubscription?.tier, coraQuotaInfo, setCoraQuotaInfo]);
 
   useEffect(() => {
     function onPointerDown(e: PointerEvent) {
@@ -560,41 +597,7 @@ export default function Header() {
                 />
                 <DropdownMenuContent align="end" className="z-20 min-w-64">
                   <div className="px-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => navigate("/cora")}
-                      className="w-full rounded-lg border border-border-subtle bg-surface-raised px-3 py-3 text-left transition-colors duration-150 hover:bg-surface-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                          <Bot className="size-4" aria-hidden />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground-muted">
-                                Cora AI
-                              </p>
-                              <p className="mt-1 text-sm font-medium text-foreground">
-                                {aiSubscription
-                                  ? tAccount(`cora.tiers.${aiSubscription.tier}.title`)
-                                  : tAccount("cora.currentPlan.free")}
-                              </p>
-                            </div>
-                            <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">
-                              {tAccount("nav.cora.title")}
-                            </span>
-                          </div>
-                          <p className="mt-2 text-xs leading-5 text-foreground-muted">
-                            {aiSubscription && typeof daysUntilExpiry === "number"
-                              ? tAccount("cora.currentPlan.daysLeft", {
-                                  count: Math.max(daysUntilExpiry, 0),
-                                })
-                              : tAccount("cora.currentPlan.notSubscribed")}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
+                    <CoraPlanSummary quotaInfo={coraQuotaInfo} />
                   </div>
                   <DropdownMenuSeparator />
                   {accountDropdownItems.map((item) => (
@@ -603,7 +606,7 @@ export default function Header() {
                       onClick={() => navigate(item.to)}
                       className="min-h-11 text-sm leading-relaxed"
                     >
-                      {item.icon}
+                      <div className="pl-2">{item.icon}</div>
                       {item.label}
                     </DropdownMenuItem>
                   ))}
@@ -617,7 +620,9 @@ export default function Header() {
                     variant="destructive"
                     className="min-h-11 text-sm leading-relaxed"
                   >
-                    <LogOut className="mr-2 size-4" aria-hidden />
+                    <div className="pl-2">
+                      <LogOut className="mr-2 size-4" aria-hidden />
+                    </div>
                     {t("tabs.signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -660,6 +665,30 @@ export default function Header() {
             </NavLink>
           )}
         </div>
+        {isCoraSupportedPage && (
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            aria-label={
+              sidebarOpen
+                ? String(t("coraWidget.hideAction"))
+                : String(t("coraWidget.openAction"))
+            }
+            className={cn(
+              "hidden shrink-0 items-center justify-center rounded-full border border-transparent transition-colors duration-150 xl:inline-flex cursor-pointer",
+              "hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              sidebarOpen &&
+                "border-primary-muted bg-primary-muted hover:bg-primary-muted",
+            )}
+          >
+            <img
+              src="/logo/Cora_AI_Tutor.svg"
+              alt=""
+              className="size-7 select-none"
+              draggable={false}
+            />
+          </button>
+        )}
       </div>
     </header>
   );

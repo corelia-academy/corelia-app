@@ -14,7 +14,6 @@ import { HomeHeader } from "./components/HomeHeader";
 import { MomentumCards } from "./components/MomentumCards";
 import { ContinueLearningSection } from "./components/ContinueLearningSection";
 import { ExploreCoursesSection } from "./components/ExploreCoursesSection";
-import { HomeSidebarAuthenticated } from "./components/HomeSidebarAuthenticated";
 
 export default function Home() {
   const { t } = useTranslation("common");
@@ -146,27 +145,20 @@ export default function Home() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0 space-y-6">
-          <HomeHeader
-            t={t}
-            loading={loading}
-            firstName={firstName}
-            activePinnedProgram={activePinnedProgram}
-            featuredFocus={featuredFocus}
-          />
-
-          <MomentumCards items={momentumCards} />
-
-          <ContinueLearningSection t={t} focusCards={focusCards} />
-
-          <ExploreCoursesSection t={t} courseCatalog={courseCatalog} />
-        </div>
-
-        <HomeSidebarAuthenticated
-          focusCards={focusCards}
-          courseCatalog={courseCatalog}
+      <div className="min-w-0 space-y-6">
+        <HomeHeader
+          t={t}
+          loading={loading}
+          firstName={firstName}
+          activePinnedProgram={activePinnedProgram}
+          featuredFocus={featuredFocus}
         />
+
+        <MomentumCards items={momentumCards} />
+
+        <ContinueLearningSection t={t} focusCards={focusCards} />
+
+        <ExploreCoursesSection t={t} courseCatalog={courseCatalog} />
       </div>
     </div>
   );

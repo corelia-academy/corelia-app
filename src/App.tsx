@@ -30,6 +30,7 @@ const CourseDetail = lazy(() => import("@/pages/course-details"));
 const CheckoutCourse = lazy(() => import("@/pages/CheckoutCourse"));
 const CheckoutSuccess = lazy(() => import("@/pages/CheckoutSuccess"));
 const Learn = lazy(() => import("@/pages/learn"));
+const LearnLayout = lazy(() => import("@/pages/learn/LearnLayout"));
 const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
 const RoadmapPage = lazy(() => import("@/pages/roadmap"));
 const CareerList = lazy(() => import("@/pages/career"));
@@ -215,6 +216,33 @@ export default function App() {
               }
             />
             <Route
+              path="learn"
+              element={
+                <RequireAuth>
+                  <Suspense fallback={<PageFallback />}>
+                    <LearnLayout />
+                  </Suspense>
+                </RequireAuth>
+              }
+            >
+              <Route
+                path=":courseId"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <Learn />
+                  </Suspense>
+                }
+              />
+              <Route
+                path=":courseId/lesson/:lessonId"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <Learn />
+                  </Suspense>
+                }
+              />
+            </Route>
+            <Route
               path="/"
               element={
                 <Suspense fallback={<PageFallback />}>
@@ -306,26 +334,6 @@ export default function App() {
                   <Suspense fallback={<PageFallback />}>
                     <InstructorDetail />
                   </Suspense>
-                }
-              />
-              <Route
-                path="learn/:courseId"
-                element={
-                  <RequireAuth>
-                    <Suspense fallback={<PageFallback />}>
-                      <Learn />
-                    </Suspense>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="learn/:courseId/lesson/:lessonId"
-                element={
-                  <RequireAuth>
-                    <Suspense fallback={<PageFallback />}>
-                      <Learn />
-                    </Suspense>
-                  </RequireAuth>
                 }
               />
               <Route path="achievements" element={<Navigate to="/account" replace />} />

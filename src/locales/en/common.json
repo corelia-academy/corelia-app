@@ -339,7 +339,6 @@
     "suggestionsLabel": "Try starting with",
     "inputPlaceholder": "Ask Cora something…",
     "footerCaption": "Sending messages will be available once Cora AI is connected.",
-    "liveFooterCaption": "Cora is in its first live slice. Conversation storage and context are on now; streaming and RAG will come next.",
     "sendAction": "Send",
     "sendingAction": "Sending…",
     "sourceCount_one": "This reply is grounded in {{count}} internal source.",

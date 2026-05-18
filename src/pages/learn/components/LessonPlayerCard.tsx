@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/markdown/Markdown";
-import { cn } from "@/lib/utils";
 import { formatDuration, getYoutubeEmbedUrlForLesson } from "@/types/courses";
 import type { CourseLesson } from "@/types/courses";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
@@ -31,43 +30,40 @@ export function LessonPlayerCard({
   onMarkComplete: () => void;
   onNavigateToLesson: (lessonId: string) => void;
 }) {
-  const embedUrl =
-    lesson?.youtube_url?.trim() ? getYoutubeEmbedUrlForLesson(lesson) : null;
+  const embedUrl = lesson?.youtube_url?.trim()
+    ? getYoutubeEmbedUrlForLesson(lesson)
+    : null;
+
+  const autoplayEmbedUrl = (() => {
+    if (!embedUrl) return null;
+    const u = new URL(embedUrl);
+    u.searchParams.set("autoplay", "1");
+    return u.toString();
+  })();
+
+  const isTextLesson =
+    !!lesson && !embedUrl && !!lesson.description_markdown?.trim();
 
   return (
-    <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-base">
-      <div className="border-b border-border-subtle bg-surface-raised px-4 py-3 sm:px-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-              {translate("detail.learn.currentLesson.label")}
-            </p>
-            <p className="mt-1 text-sm font-medium text-foreground">
-              {lesson?.title ??
-                translate("detail.learn.currentLesson.selectFromList")}
-            </p>
-          </div>
-          {lesson ? (
-            <div className="rounded-full bg-surface-base px-3 py-1 text-xs text-foreground-muted">
-              {formatDuration(lesson.duration_seconds)}
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      {lesson && embedUrl ? (
+    <div>
+      {lesson && autoplayEmbedUrl ? (
         <div className="relative aspect-video w-full bg-black">
           <iframe
-            src={embedUrl}
+            key={lesson.id}
+            src={autoplayEmbedUrl}
             title={lesson.title}
             className="absolute inset-0 size-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
         </div>
-      ) : (
-        <div className="flex aspect-video items-center justify-center bg-surface-raised">
-          {lesson && isDraftLesson ? (
+      ) : isTextLesson ? (
+        <div className="px-1 py-6">
+          <Markdown content={lesson!.description_markdown!} />
+        </div>
+      ) : lesson ? (
+        <div className="flex aspect-video items-center justify-center rounded-md border border-border-subtle bg-surface-raised">
+          {isDraftLesson ? (
             <div className="max-w-md px-6 text-center">
               <p className="text-sm font-medium text-foreground">
                 {translate("detail.learn.lessonDraftNoticeTitle")}
@@ -82,9 +78,9 @@ export function LessonPlayerCard({
             </p>
           )}
         </div>
-      )}
+      ) : null}
 
-      <div className="border-t border-border-subtle p-4 sm:p-5">
+      <div className="px-4 py-4 pb-8 sm:px-6">
         {lesson ? (
           <>
             <div className="flex flex-wrap items-center gap-2">
@@ -99,25 +95,17 @@ export function LessonPlayerCard({
                 </LearnBadge>
               ) : null}
             </div>
-            <h2 className="mt-3 text-lg font-semibold text-foreground">
+            <h2 className="mt-3 text-xl font-semibold text-foreground">
               {lesson.title}
             </h2>
-            <p className="mt-1 text-sm text-foreground-muted">
-              {translate("detail.learn.lessonHint")}
-            </p>
             {lesson.short_description?.trim() ? (
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
                 {lesson.short_description}
               </p>
             ) : null}
-            {lesson.description_markdown?.trim() ? (
+            {!isTextLesson && lesson.description_markdown?.trim() ? (
               <div className="mt-4 rounded-md border border-border-subtle bg-surface-raised p-4">
-                <p className="text-sm font-medium text-foreground">
-                  {translate("detail.learn.lessonAboutTitle")}
-                </p>
-                <div className="mt-3">
-                  <Markdown content={lesson.description_markdown} />
-                </div>
+                <Markdown content={lesson.description_markdown} />
               </div>
             ) : null}
             {lesson.resources?.length ? (
@@ -148,7 +136,7 @@ export function LessonPlayerCard({
               </div>
             ) : null}
 
-            <div className={cn("mt-4 flex flex-col gap-2 sm:flex-row")}>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <Button
                 variant="outline"
                 size="sm"

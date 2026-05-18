@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router";
-import { AlertCircle, CheckCircle2, List } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router";
+import { AlertCircle, CheckCircle2, ChevronLeft, List, PanelLeft, PanelRight } from "lucide-react";
 import {
   getNextLesson,
   setLessonProgress,
@@ -14,7 +14,6 @@ import {
   LearnLoadingState,
   LearnMissingCourseIdState,
 } from "./components/LearnStates";
-import { LearnHeader } from "./components/LearnHeader";
 import { LessonCurriculum, type CurriculumGroup } from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
@@ -23,9 +22,16 @@ import { useLearnEnrollmentAccess } from "./hooks/useLearnEnrollmentAccess";
 import { useLearnPaymentReturnFlow } from "./hooks/useLearnPaymentReturnFlow";
 import { useLearnProgress } from "./hooks/useLearnProgress";
 import { useLearnSubmission } from "./hooks/useLearnSubmission";
-import { BinarySidebarTabs } from "@/components/course-ai/BinarySidebarTabs";
-import { CORA_AI_TUTOR_LOGO_SRC } from "@/components/course-ai/constants";
-import { CourseAiTutorPanel } from "@/components/course-ai/CourseAiTutorPanel";
+import { useCoraStore } from "@/stores/coraStore";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export default function Learn() {
   const { t } = useTranslation("courses");
@@ -34,13 +40,17 @@ export default function Learn() {
       String(t(key as never, options as never)),
     [t],
   );
-  const [learnSidebarTab, setLearnSidebarTab] = useState<"lessons" | "tutor">("lessons");
+  const setSidebarMeta = useCoraStore((s) => s.setSidebarMeta);
+  const sidebarOpen = useCoraStore((s) => s.sidebarOpen);
+  const toggleSidebar = useCoraStore((s) => s.toggleSidebar);
   const { courseId, lessonId } = useParams<{
     courseId: string;
     lessonId?: string;
   }>();
   const navigate = useNavigate();
   const { profile, user } = useAuth();
+  const [curricOpen, setCurricOpen] = useState(true);
+
   const courseLoad = useLearnCourseLoad({
     courseId,
     loadCourseErrorFallback: translate("detail.loadCourseErrorFallback"),
@@ -111,7 +121,9 @@ export default function Learn() {
     profile?.role === "admin" ||
     profile?.role === "support_staff" ||
     profile?.role === "instructor";
-  const isDraftLesson = !currentLesson?.youtube_url?.trim();
+  const isDraftLesson =
+    !currentLesson?.youtube_url?.trim() &&
+    !currentLesson?.description_markdown?.trim();
 
   useEffect(() => {
     if (!courseId || !lessonId || !currentLesson) return;
@@ -133,6 +145,15 @@ export default function Learn() {
     translate,
     visibleLessons,
   ]);
+
+  useEffect(() => {
+    setSidebarMeta({
+      courseTitle: courseLoad.course?.title ?? "",
+      lessonTitle: currentLesson?.title ?? null,
+      lessonId: currentLesson?.id ?? null,
+    });
+    return () => setSidebarMeta(null);
+  }, [courseLoad.course?.title, currentLesson?.id, currentLesson?.title, setSidebarMeta]);
 
   const nextLesson = progress.nextLesson;
   const currentLessonIndex = currentLesson
@@ -202,33 +223,140 @@ export default function Learn() {
   const shouldShowFinalAssignment =
     !nextLesson && hasFullCourseAccess && !!course.final_assignment_title;
 
+  const curriculumProps = {
+    courseId: courseId,
+    groups: lessonsBySection,
+    visibleSectionCount,
+    visibleLessonsCount: visibleLessons.length,
+    sortedLessonsCount: sortedLessons.length,
+    currentLessonTitle: currentLesson?.title ?? null,
+    currentLessonId: currentLesson?.id ?? null,
+    progressPercent: progress.progressPercent,
+    completedIds: progress.completedIds,
+    completedCount: progress.completedIds.size,
+    lessonTotal: visibleLessons.length,
+    nextLessonTitle: nextLesson?.title ?? null,
+    hasFullCourseAccess,
+    translate,
+  };
+
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      {!hasFullCourseAccess ? (
-        <div className="mb-4 flex items-center gap-3 rounded-md border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
-          <AlertCircle className="w-4 h-4 shrink-0" aria-hidden />
-          <p>{translate("detail.learn.previewModeNotice")}</p>
+    <div className="flex flex-col h-full">
+      {/* Slim top bar */}
+      <div className="relative flex h-12 shrink-0 items-center border-b border-border-subtle bg-surface-raised px-3">
+        {/* Left */}
+        <div className="flex items-center gap-1">
+          {/* Desktop: toggle left curriculum sidebar */}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setCurricOpen((v) => !v)}
+            aria-label="Toggle curriculum"
+            className={cn(
+              "hidden xl:inline-flex",
+              curricOpen && "bg-primary-muted text-primary hover:bg-primary-muted hover:text-primary",
+            )}
+          >
+            <PanelLeft className="size-4" aria-hidden />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            render={<Link to={`/courses/${courseId}`} />}
+            nativeButton={false}
+            aria-label={translate("detail.learn.backToCourse")}
+          >
+            <ChevronLeft className="size-4" aria-hidden />
+          </Button>
         </div>
-      ) : null}
 
-      {accessModel === "paid_upfront" &&
-      access.enrolled &&
-      !access.paymentAccess?.full_access_granted ? (
-        <div className="mb-4 flex items-center gap-3 rounded-md border border-success/20 bg-success/10 px-4 py-3 text-sm text-success">
-          <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden />
-          <p>{translate("detail.accessPanel.keptAccess")}</p>
+        {/* Center — absolutely centered so it doesn't depend on left/right widths */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex max-w-[50%] items-center gap-1.5 overflow-hidden text-sm">
+          <span className="shrink-0 truncate font-medium text-foreground">
+            {course.title}
+          </span>
+          {currentLesson && (
+            <>
+              <span className="shrink-0 text-foreground-subtle">/</span>
+              <span className="truncate text-foreground-muted">{currentLesson.title}</span>
+            </>
+          )}
         </div>
-      ) : null}
 
-      <LearnHeader
-        courseId={courseId}
-        courseTitle={course.title}
-        lessonTitle={currentLesson?.title ?? null}
-        translate={translate}
-      />
+        {/* Right */}
+        <div className="ml-auto flex items-center gap-1">
+          {/* Mobile: open curriculum sheet */}
+          <Sheet>
+            <SheetTrigger
+              className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-foreground-muted hover:bg-surface-raised hover:text-foreground xl:hidden"
+              aria-label="Open curriculum"
+            >
+              <List className="size-4" aria-hidden />
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80 p-0">
+              <SheetHeader className="sr-only">
+                <SheetTitle>{translate("detail.learn.curriculumTitle")}</SheetTitle>
+              </SheetHeader>
+              <LessonCurriculum variant="sidebar" {...curriculumProps} />
+            </SheetContent>
+          </Sheet>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)]">
-        <div className="min-w-0">
+          {/* Desktop: toggle Cora AI sidebar */}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={toggleSidebar}
+            aria-label="Toggle Cora AI"
+            className={cn(
+              "hidden xl:inline-flex",
+              sidebarOpen && "bg-primary-muted text-primary hover:bg-primary-muted hover:text-primary",
+            )}
+          >
+            <PanelRight className="size-4" aria-hidden />
+          </Button>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left curriculum sidebar — desktop only */}
+        <aside
+          className={cn(
+            "hidden xl:flex flex-col shrink-0 border-r border-border-subtle",
+            "overflow-hidden transition-[width] duration-200 ease-in-out",
+            curricOpen ? "w-[280px]" : "w-0",
+          )}
+        >
+          <div className="flex flex-col w-[280px] h-full">
+            <LessonCurriculum variant="sidebar" {...curriculumProps} />
+          </div>
+        </aside>
+
+        {/* Main lesson content */}
+        <main className="flex-1 min-w-0 overflow-y-auto">
+          {(!hasFullCourseAccess ||
+            (accessModel === "paid_upfront" &&
+              access.enrolled &&
+              !access.paymentAccess?.full_access_granted)) && (
+            <div className="px-4 pt-4 sm:px-6">
+              {!hasFullCourseAccess ? (
+                <div className="mb-2 flex items-center gap-3 rounded-md border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
+                  <AlertCircle className="w-4 h-4 shrink-0" aria-hidden />
+                  <p>{translate("detail.learn.previewModeNotice")}</p>
+                </div>
+              ) : null}
+              {accessModel === "paid_upfront" &&
+              access.enrolled &&
+              !access.paymentAccess?.full_access_granted ? (
+                <div className="mb-2 flex items-center gap-3 rounded-md border border-success/20 bg-success/10 px-4 py-3 text-sm text-success">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden />
+                  <p>{translate("detail.accessPanel.keptAccess")}</p>
+                </div>
+              ) : null}
+            </div>
+          )}
+
           <LessonPlayerCard
             lesson={currentLesson}
             lessonIndex={lessonIndexForPlayer}
@@ -243,65 +371,22 @@ export default function Learn() {
           />
 
           {shouldShowFinalAssignment ? (
-            <FinalAssignmentPanel
-              courseId={courseId}
-              course={course}
-              profileId={profile?.id ?? ""}
-              isAdmin={profile?.role === "admin"}
-              certificateFeePaid={!!access.paymentAccess?.certificate_fee_paid}
-              submission={submission.submission as never}
-              translate={translate}
-              onSubmit={async (input) => {
-                await submission.submit(input);
-              }}
-            />
+            <div className="px-4 pb-8 sm:px-6">
+              <FinalAssignmentPanel
+                courseId={courseId}
+                course={course}
+                profileId={profile?.id ?? ""}
+                isAdmin={profile?.role === "admin"}
+                certificateFeePaid={!!access.paymentAccess?.certificate_fee_paid}
+                submission={submission.submission as never}
+                translate={translate}
+                onSubmit={async (input) => {
+                  await submission.submit(input);
+                }}
+              />
+            </div>
           ) : null}
-        </div>
-
-        <div className="flex min-h-0 flex-col gap-3 lg:sticky lg:top-20 lg:self-start">
-          <BinarySidebarTabs
-            active={learnSidebarTab}
-            onChange={setLearnSidebarTab}
-            ariaLabel={String(t("detail.aiTutor.sidebarTablistAria"))}
-            options={[
-              {
-                value: "lessons",
-                label: String(t("detail.learn.lessonList.title")),
-                Icon: List,
-              },
-              {
-                value: "tutor",
-                label: String(t("detail.aiTutor.tabLabel")),
-                iconImgSrc: CORA_AI_TUTOR_LOGO_SRC,
-              },
-            ]}
-          />
-          {learnSidebarTab === "lessons" ? (
-            <LessonCurriculum
-              variant="tabPanel"
-              courseId={courseId}
-              groups={lessonsBySection}
-              visibleSectionCount={visibleSectionCount}
-              visibleLessonsCount={visibleLessons.length}
-              sortedLessonsCount={sortedLessons.length}
-              currentLessonTitle={currentLesson?.title ?? null}
-              currentLessonId={currentLesson?.id ?? null}
-              progressPercent={progress.progressPercent}
-              completedIds={progress.completedIds}
-              completedCount={progress.completedIds.size}
-              lessonTotal={visibleLessons.length}
-              nextLessonTitle={nextLesson?.title ?? null}
-              hasFullCourseAccess={hasFullCourseAccess}
-              translate={translate}
-            />
-          ) : (
-            <CourseAiTutorPanel
-              courseTitle={course.title ?? ""}
-              lessonTitle={currentLesson?.title ?? null}
-              lessonId={currentLesson?.id ?? null}
-            />
-          )}
-        </div>
+        </main>
       </div>
     </div>
   );
