@@ -162,7 +162,7 @@ export function LessonCurriculum({
   nextLessonTitle: string | null;
   hasFullCourseAccess: boolean;
   translate: TranslateFn;
-  variant?: "default" | "tabPanel";
+  variant?: "default" | "tabPanel" | "sidebar";
 }) {
   const completedLabel = `${translate("detail.learn.stats.completedLessons")}: ${completedCount}/${lessonTotal}`;
   const nextUpLabel = `${translate("detail.learn.stats.nextUp")}: ${
@@ -202,6 +202,38 @@ export function LessonCurriculum({
 
   if (variant === "tabPanel") {
     return curriculumCard;
+  }
+
+  if (variant === "sidebar") {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="shrink-0 border-b border-border-subtle bg-surface-raised px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <List className="w-4 h-4" aria-hidden />
+              {translate("detail.learn.curriculumTitle")}
+            </span>
+            <span className="text-xs text-foreground-muted">{progressPercent}%</span>
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-base">
+            <div
+              className="h-full rounded-full bg-success"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <p className="mt-2 text-xs text-foreground-muted">{completedLabel}</p>
+        </div>
+        <CurriculumList
+          courseId={courseId}
+          groups={groups}
+          currentLessonId={currentLessonId}
+          completedIds={completedIds}
+          hasFullCourseAccess={hasFullCourseAccess}
+          translate={translate}
+          scrollClassName="flex-1 overflow-y-auto"
+        />
+      </div>
+    );
   }
 
   return (
