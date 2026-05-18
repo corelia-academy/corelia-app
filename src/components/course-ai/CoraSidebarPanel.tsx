@@ -24,6 +24,7 @@ export function CoraSidebarPanel({
   const content = isSupported && isCourseOrLesson && sidebarMeta?.courseTitle ? (
     <CourseAiTutorPanel
       courseTitle={sidebarMeta.courseTitle}
+      courseId={sidebarMeta.courseId}
       lessonTitle={sidebarMeta.lessonTitle}
       lessonId={sidebarMeta.lessonId}
       className="rounded-none border-0"

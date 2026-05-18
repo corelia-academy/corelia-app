@@ -77,6 +77,7 @@ export type CoraError =
 type UseCoraAIOptions = {
   assistantContext: AssistantContext | "lesson";
   lessonId?: string | null;
+  courseId?: string | null;
   autoCreateSession?: boolean;
 };
 
@@ -201,6 +202,7 @@ function normalizeSources(input: unknown): CoraSourceRef[] | undefined {
 }
 
 function backendContextFor(options: UseCoraAIOptions): BackendAssistantContext {
+  if (options.assistantContext === "lesson" && options.courseId) return "course";
   return mapAssistantContextToBackendContext(options.assistantContext);
 }
 
@@ -296,22 +298,46 @@ export function useCoraAI(options: UseCoraAIOptions) {
   const [recommendedEntities, setRecommendedEntities] = useState<CoraRecommendedEntity[]>([]);
 
   const backendContext = useMemo(() => backendContextFor(options), [options]);
-  const historyKey = options.lessonId ?? sessionId;
+  const historyKey = backendContext === "course" ? sessionId : (options.lessonId ?? sessionId);
 
   const createSession = useCallback(async () => {
     if (!user?.id || backendContext === "lesson") return null;
+
+    if (backendContext === "course" && options.courseId) {
+      const { data: existing } = await supabase
+        .from("ai_chat_sessions")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("context_type", "course")
+        .eq("course_id", options.courseId)
+        .maybeSingle<{ id: string }>();
+      if (existing?.id) { setSessionId(existing.id); return existing.id; }
+    } else {
+      const { data: existing } = await supabase
+        .from("ai_chat_sessions")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("context_type", backendContext)
+        .is("course_id", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<{ id: string }>();
+      if (existing?.id) { setSessionId(existing.id); return existing.id; }
+    }
+
     const { data, error: insertError } = await supabase
       .from("ai_chat_sessions")
       .insert({
         user_id: user.id,
         context_type: backendContext,
+        ...(options.courseId ? { course_id: options.courseId } : {}),
       })
       .select("id")
       .single<{ id: string }>();
     if (insertError) throw new Error(insertError.message);
     setSessionId(data.id);
     return data.id;
-  }, [backendContext, user?.id]);
+  }, [backendContext, options.courseId, user?.id]);
 
   const loadHistory = useCallback(async () => {
     if (!isAuthenticated) {
@@ -374,7 +400,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
     if (backendContext !== "lesson") {
       setSessionId(null);
     }
-  }, [backendContext, options.lessonId]);
+  }, [backendContext, options.lessonId, options.courseId]);
 
   useEffect(() => {
     if (!options.autoCreateSession || backendContext === "lesson" || !isAuthenticated || sessionId) {
@@ -436,6 +462,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
           message: trimmed,
           assistantContext: options.assistantContext,
           lessonId: options.lessonId ?? null,
+          courseId: options.courseId ?? null,
           sessionId: currentSessionId,
           stream: true,
         });

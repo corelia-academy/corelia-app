@@ -80,8 +80,29 @@ export async function ensureSession(
   userId: string,
   contextType: BackendContextType,
   sessionId: string | null,
+  courseId?: string | null,
 ): Promise<string | null> {
   if (contextType === "lesson") return null;
+
+  if (contextType === "course" && courseId) {
+    const { data: existing, error: lookupError } = await db
+      .from("ai_chat_sessions")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("context_type", "course")
+      .eq("course_id", courseId)
+      .maybeSingle<{ id: string }>();
+    if (lookupError) throw new Error(lookupError.message);
+    if (existing?.id) return existing.id;
+    const { data, error } = await db
+      .from("ai_chat_sessions")
+      .insert({ user_id: userId, context_type: "course", course_id: courseId })
+      .select("id")
+      .single<{ id: string }>();
+    if (error || !data?.id) throw new Error(error?.message ?? "Could not create course session");
+    return data.id;
+  }
+
   if (sessionId) {
     const { data, error } = await db
       .from("ai_chat_sessions")

@@ -137,9 +137,9 @@ export default function CourseDetail() {
   useEffect(() => {
     const title = courseLoad.course?.title;
     if (!title) return;
-    setSidebarMeta({ courseTitle: title });
+    setSidebarMeta({ courseTitle: title, courseId: courseLoad.resolvedCourseId ?? null });
     return () => setSidebarMeta(null);
-  }, [courseLoad.course?.title, setSidebarMeta]);
+  }, [courseLoad.course?.title, courseLoad.resolvedCourseId, setSidebarMeta]);
 
   const totalDurationFromLessons = lessons.reduce(
     (sum, lesson) => sum + (Number(lesson.duration_seconds) || 0),
