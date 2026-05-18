@@ -5,6 +5,7 @@ import type { CoraQuotaInfo } from "@/hooks/useCoraAI";
 
 export type CoraSidebarMeta = {
   courseTitle?: string;
+  courseId?: string | null;
   lessonTitle?: string | null;
   lessonId?: string | null;
 };

@@ -1,5 +1,6 @@
 export type BackendContextType =
   | "lesson"
+  | "course"
   | "dashboard"
   | "course_discovery"
   | "career"

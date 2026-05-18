@@ -12,13 +12,14 @@ import { cn } from "@/lib/utils";
 
 export function CourseAiTutorPanel(props: {
   courseTitle: string;
+  courseId?: string | null;
   lessonTitle?: string | null;
   lessonId?: string | null;
   className?: string;
   /** When set, header shows the dismiss control (e.g. sidebar close). */
   onRequestHide?: () => void;
 }) {
-  const { courseTitle, lessonTitle, lessonId, className, onRequestHide } = props;
+  const { courseTitle, courseId, lessonTitle, lessonId, className, onRequestHide } = props;
   const { t } = useTranslation("courses");
   const { t: tCommon } = useTranslation("common");
   const [draft, setDraft] = useState("");
@@ -36,7 +37,8 @@ export function CourseAiTutorPanel(props: {
   } = useCoraAI({
     assistantContext: hasLessonContext ? "lesson" : "courses",
     lessonId,
-    autoCreateSession: !hasLessonContext,
+    courseId,
+    autoCreateSession: !hasLessonContext || Boolean(courseId),
   });
 
   const rawSuggestions = t("detail.aiTutor.suggestions", { returnObjects: true });

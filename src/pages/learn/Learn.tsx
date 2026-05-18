@@ -149,11 +149,12 @@ export default function Learn() {
   useEffect(() => {
     setSidebarMeta({
       courseTitle: courseLoad.course?.title ?? "",
+      courseId: courseId ?? null,
       lessonTitle: currentLesson?.title ?? null,
       lessonId: currentLesson?.id ?? null,
     });
     return () => setSidebarMeta(null);
-  }, [courseLoad.course?.title, currentLesson?.id, currentLesson?.title, setSidebarMeta]);
+  }, [courseId, courseLoad.course?.title, currentLesson?.id, currentLesson?.title, setSidebarMeta]);
 
   const nextLesson = progress.nextLesson;
   const currentLessonIndex = currentLesson
