@@ -165,6 +165,8 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       const voucher = await previewAiVoucher(db, {
         voucherCode: voucherCodeRaw,
         baseAmountVnd: baseAmount,
+        tier,
+        durationMonths,
       });
       discountCode = voucher.code;
       discountAmount = voucher.discountAmountVnd;
@@ -260,6 +262,8 @@ export async function handleAiVoucherPreview(req: Request, db: SupabaseClient): 
     const preview = await previewAiVoucher(db, {
       voucherCode,
       baseAmountVnd: AI_SUBSCRIPTION_PRICES[tier][durationMonths],
+      tier,
+      durationMonths,
     });
     return json({
       code: preview.code,
@@ -288,6 +292,8 @@ export async function handleAiVoucherBatchCreate(req: Request, db: SupabaseClien
       startsAt: body.startsAt == null ? null : String(body.startsAt),
       endsAt: body.endsAt == null ? null : String(body.endsAt),
       active: body.active !== false,
+      targetTier: body.targetTier == null ? null : String(body.targetTier),
+      targetDurationMonths: body.targetDurationMonths == null ? null : Number(body.targetDurationMonths),
     });
     return json({
       batch: result.batch,

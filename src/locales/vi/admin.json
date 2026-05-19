@@ -456,9 +456,22 @@
       "quantity": "Số lượng mã",
       "codePrefix": "Prefix mã",
       "percentOff": "Phần trăm giảm",
+      "targetTier": "Gói AI mục tiêu",
+      "targetTierAny": "Mọi gói",
+      "targetDuration": "Thời hạn mục tiêu",
+      "targetDurationAny": "Mọi thời hạn",
       "startsAt": "Bắt đầu",
       "endsAt": "Kết thúc",
       "status": "Trạng thái"
+    },
+    "tiers": {
+      "student": "Student",
+      "pro": "Pro",
+      "bootcamp": "Bootcamp"
+    },
+    "durations": {
+      "1": "1 tháng",
+      "12": "12 tháng"
     }
   }
 }

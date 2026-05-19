@@ -14,6 +14,8 @@ type AiVoucherBatchRow = {
   active: boolean;
   starts_at?: string | null;
   ends_at?: string | null;
+  target_tier?: string | null;
+  target_duration_months?: number | null;
 };
 
 type AiVoucherCodeRow = {
@@ -41,6 +43,8 @@ export type BatchCreateInput = {
   startsAt?: string | null;
   endsAt?: string | null;
   active: boolean;
+  targetTier?: string | null;
+  targetDurationMonths?: number | null;
 };
 
 export type BatchCreateResult = {
@@ -67,6 +71,9 @@ function assertVoucherCode(code: string) {
   if (!VOUCHER_CODE_RE.test(code)) throw new Error("Mã voucher không hợp lệ.");
 }
 
+const VALID_TIERS = ["student", "pro", "bootcamp"] as const;
+const VALID_DURATIONS = [1, 12] as const;
+
 function assertBatchInput(input: BatchCreateInput) {
   if (!input.name.trim()) throw new Error("Thiếu tên batch.");
   if (!Number.isInteger(input.quantity) || input.quantity <= 0 || input.quantity > 1000) {
@@ -81,6 +88,12 @@ function assertBatchInput(input: BatchCreateInput) {
   const endsAt = parseTime(input.endsAt);
   if (startsAt != null && endsAt != null && startsAt > endsAt) {
     throw new Error("Thời gian bắt đầu phải trước thời gian kết thúc.");
+  }
+  if (input.targetTier != null && !(VALID_TIERS as readonly string[]).includes(input.targetTier)) {
+    throw new Error("Tier mục tiêu không hợp lệ.");
+  }
+  if (input.targetDurationMonths != null && !(VALID_DURATIONS as readonly number[]).includes(input.targetDurationMonths)) {
+    throw new Error("Thời hạn mục tiêu không hợp lệ.");
   }
 }
 
@@ -117,7 +130,9 @@ async function loadVoucherByCode(
         percent_off,
         active,
         starts_at,
-        ends_at
+        ends_at,
+        target_tier,
+        target_duration_months
       )
     `)
     .eq("code", normalizedCode)
@@ -169,7 +184,12 @@ async function countVoucherRedemptions(
 
 export async function previewAiVoucher(
   db: SupabaseClient,
-  params: { voucherCode: string; baseAmountVnd: number },
+  params: {
+    voucherCode: string;
+    baseAmountVnd: number;
+    tier?: string | null;
+    durationMonths?: number | null;
+  },
 ): Promise<AiVoucherPreview> {
   const normalizedCode = normalizeVoucherCode(params.voucherCode);
   assertVoucherCode(normalizedCode);
@@ -190,6 +210,13 @@ export async function previewAiVoucher(
   const counts = await countVoucherRedemptions(db, voucher.id, new Date(now).toISOString());
   if (counts.paid > 0) throw new Error("Voucher này đã được sử dụng.");
   if (counts.reserved > 0) throw new Error("Voucher này đang được giữ chỗ cho checkout khác.");
+
+  if (params.tier != null && batch.target_tier != null && params.tier !== batch.target_tier) {
+    throw new Error("Voucher này chỉ áp dụng cho gói " + batch.target_tier + ".");
+  }
+  if (params.durationMonths != null && batch.target_duration_months != null && params.durationMonths !== batch.target_duration_months) {
+    throw new Error("Voucher này chỉ áp dụng cho thời hạn " + batch.target_duration_months + " tháng.");
+  }
 
   const { discountAmountVnd, finalAmountVnd } = computeDiscount(
     Math.round(params.baseAmountVnd),
@@ -303,12 +330,14 @@ export async function createAiVoucherBatch(
       active: input.active,
       starts_at: input.startsAt ?? null,
       ends_at: input.endsAt ?? null,
+      target_tier: input.targetTier ?? null,
+      target_duration_months: input.targetDurationMonths ?? null,
       created_at: now,
       created_by: input.userId,
       updated_at: now,
       updated_by: input.userId,
     })
-    .select("id,name,percent_off,active,starts_at,ends_at")
+    .select("id,name,percent_off,active,starts_at,ends_at,target_tier,target_duration_months")
     .single<AiVoucherBatchRow>();
   if (batchError || !batchData) throw new Error(batchError?.message ?? "Không tạo được batch voucher.");
 

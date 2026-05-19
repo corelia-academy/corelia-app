@@ -456,9 +456,22 @@
       "quantity": "Number of codes",
       "codePrefix": "Code prefix",
       "percentOff": "Percent off",
+      "targetTier": "Target plan tier",
+      "targetTierAny": "Any tier",
+      "targetDuration": "Target duration",
+      "targetDurationAny": "Any duration",
       "startsAt": "Starts at",
       "endsAt": "Ends at",
       "status": "Status"
+    },
+    "tiers": {
+      "student": "Student",
+      "pro": "Pro",
+      "bootcamp": "Bootcamp"
+    },
+    "durations": {
+      "1": "1 month",
+      "12": "12 months"
     }
   }
 }

@@ -9,6 +9,8 @@ export interface AiVoucherBatch {
   active: boolean;
   starts_at: string | null;
   ends_at: string | null;
+  target_tier: "student" | "pro" | "bootcamp" | null;
+  target_duration_months: 1 | 12 | null;
   created_at: string;
   created_by: string | null;
   updated_at: string;
@@ -50,6 +52,8 @@ export interface AiVoucherBatchCreateInput {
   startsAt?: string | null;
   endsAt?: string | null;
   active: boolean;
+  targetTier?: "student" | "pro" | "bootcamp" | null;
+  targetDurationMonths?: 1 | 12 | null;
 }
 
 export interface AiVoucherBatchCreateResult {
@@ -66,6 +70,8 @@ function rowToBatch(row: Record<string, unknown>): AiVoucherBatch {
     active: Boolean(row.active),
     starts_at: (row.starts_at as string | null) ?? null,
     ends_at: (row.ends_at as string | null) ?? null,
+    target_tier: (row.target_tier as AiVoucherBatch["target_tier"]) ?? null,
+    target_duration_months: row.target_duration_months != null ? (Number(row.target_duration_months) as 1 | 12) : null,
     created_at: String(row.created_at),
     created_by: (row.created_by as string | null) ?? null,
     updated_at: String(row.updated_at),
@@ -179,6 +185,8 @@ export async function updateAiVoucherBatch(
     starts_at?: string | null;
     ends_at?: string | null;
     active?: boolean;
+    target_tier?: "student" | "pro" | "bootcamp" | null;
+    target_duration_months?: 1 | 12 | null;
   },
   viewer?: User | null,
 ): Promise<AiVoucherBatch> {

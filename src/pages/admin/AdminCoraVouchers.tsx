@@ -79,6 +79,8 @@ export default function AdminCoraVouchers() {
     startsAt: "",
     endsAt: "",
     active: true,
+    targetTier: "" as "" | "student" | "pro" | "bootcamp",
+    targetDurationMonths: "" as "" | "1" | "12",
   });
 
   const refresh = useCallback(async () => {
@@ -165,6 +167,8 @@ export default function AdminCoraVouchers() {
       startsAt: "",
       endsAt: "",
       active: true,
+      targetTier: "",
+      targetDurationMonths: "",
     });
     setCreatedResult(null);
   }
@@ -180,6 +184,8 @@ export default function AdminCoraVouchers() {
         startsAt: fromDateTimeLocalValue(form.startsAt),
         endsAt: fromDateTimeLocalValue(form.endsAt),
         active: form.active,
+        targetTier: form.targetTier || null,
+        targetDurationMonths: form.targetDurationMonths ? (Number(form.targetDurationMonths) as 1 | 12) : null,
       });
       setCreatedResult(result);
       toast.success(t("coraVoucherBatches.created"));
@@ -290,7 +296,17 @@ export default function AdminCoraVouchers() {
                 return (
                   <tr key={batch.id} className="border-b border-border-subtle last:border-0">
                     <td className="px-3 py-3 font-medium">{batch.name}</td>
-                    <td className="px-3 py-3">{batch.percent_off}%</td>
+                    <td className="px-3 py-3">
+                      <div>{batch.percent_off}%</div>
+                      {(batch.target_tier || batch.target_duration_months) && (
+                        <div className="mt-0.5 text-xs text-foreground-muted">
+                          {[
+                            batch.target_tier ? t(`coraVoucherBatches.tiers.${batch.target_tier}`) : null,
+                            batch.target_duration_months ? t(`coraVoucherBatches.durations.${batch.target_duration_months}`) : null,
+                          ].filter(Boolean).join(" · ")}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-3 py-3 text-foreground-muted">
                       <div>{batch.starts_at ? new Date(batch.starts_at).toLocaleString() : t("coraVoucherBatches.neverStarts")}</div>
                       <div>{batch.ends_at ? new Date(batch.ends_at).toLocaleString() : t("coraVoucherBatches.noExpiry")}</div>
@@ -342,6 +358,31 @@ export default function AdminCoraVouchers() {
             <Field>
               <FieldLabel>{t("coraVoucherBatches.form.percentOff")}</FieldLabel>
               <Input type="number" min={1} max={100} value={form.percentOff} onChange={(e) => setForm((p) => ({ ...p, percentOff: e.target.value }))} />
+            </Field>
+            <Field>
+              <FieldLabel>{t("coraVoucherBatches.form.targetTier")}</FieldLabel>
+              <select
+                value={form.targetTier}
+                onChange={(e) => setForm((p) => ({ ...p, targetTier: e.target.value as typeof form.targetTier }))}
+                className="h-10 rounded-md border border-border-subtle bg-surface-base px-3 text-sm"
+              >
+                <option value="">{t("coraVoucherBatches.form.targetTierAny")}</option>
+                <option value="student">{t("coraVoucherBatches.tiers.student")}</option>
+                <option value="pro">{t("coraVoucherBatches.tiers.pro")}</option>
+                <option value="bootcamp">{t("coraVoucherBatches.tiers.bootcamp")}</option>
+              </select>
+            </Field>
+            <Field>
+              <FieldLabel>{t("coraVoucherBatches.form.targetDuration")}</FieldLabel>
+              <select
+                value={form.targetDurationMonths}
+                onChange={(e) => setForm((p) => ({ ...p, targetDurationMonths: e.target.value as typeof form.targetDurationMonths }))}
+                className="h-10 rounded-md border border-border-subtle bg-surface-base px-3 text-sm"
+              >
+                <option value="">{t("coraVoucherBatches.form.targetDurationAny")}</option>
+                <option value="1">{t("coraVoucherBatches.durations.1")}</option>
+                <option value="12">{t("coraVoucherBatches.durations.12")}</option>
+              </select>
             </Field>
             <Field>
               <FieldLabel>{t("coraVoucherBatches.form.startsAt")}</FieldLabel>
