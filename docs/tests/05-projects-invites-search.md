@@ -4,7 +4,9 @@ Xem hub: [README.md](./README.md).
 
 ## Mục tiêu
 
-Phủ `/projects`, `/invites/project/:token`, `/search`.
+Phủ `/projects` (gallery công khai), `/invites/project/:token`, `/search?q=...`.
+
+**Lưu ý:** Chỉnh sửa project i18n nằm ở `/account/projects` ([07](./07-account-hub.md)), không phải `/projects`.
 
 ## Tiền đề staging
 
@@ -17,10 +19,10 @@ Phủ `/projects`, `/invites/project/:token`, `/search`.
 
 ## Checklist
 
-### Projects
+### Projects (gallery)
 
-1. Ẩn danh hoặc đã login: `/projects` load danh sách / empty state hợp lý.
-2. Thao tác tạo/chỉnh project (nếu có trong UI) — lưu và hiển thị lại được.
+1. Ẩn danh hoặc đã login: `/projects` — gallery load; empty state hợp lý nếu chưa có project public.
+2. Click một project card — chi tiết / link ngoài hoạt động; link hackathon (nếu có) trỏ **`/hackathons/:slug`** (canonical), không `/overview`.
 
 ### Invite
 
@@ -29,12 +31,13 @@ Phủ `/projects`, `/invites/project/:token`, `/search`.
 
 ### Search
 
-5. `/search` — ô tìm kiếm; submit/query — kết quả hoặc empty state.
-6. Click một kết quả — điều hướng đúng entity.
+5. `/search?q=<từ_khóa>` — kết quả đa loại (projects, hackathons, courses, career tracks, profiles) hoặc empty state.
+6. `/search` không có query — UI search load, submit query hoạt động.
+7. Click một kết quả — điều hướng đúng entity.
 
 ## Kết quả mong đợi
 
-- Invite không expose PII thừa; search không lock UI.
+- Invite không expose PII thừa; search không lock UI; phân biệt rõ `/projects` vs `/account/projects`.
 
 ## Ghi chú bug
 

@@ -19,14 +19,14 @@ export function ContestTimeline({
   items: TimelineItem[];
 }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-4">
+    <ul className="m-0 grid list-none grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-4">
       {items.map((item) => (
-        <div
+        <li
           key={item.key}
           className="rounded-lg border border-border-subtle bg-surface-base p-4"
         >
           <div className="flex items-start gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary" aria-hidden>
               {item.icon}
             </div>
             <div className="min-w-0 flex-1">
@@ -38,9 +38,9 @@ export function ContestTimeline({
               </div>
             </div>
           </div>
-        </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 

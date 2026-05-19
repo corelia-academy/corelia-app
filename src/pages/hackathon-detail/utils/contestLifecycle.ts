@@ -109,7 +109,7 @@ export function hackathonLifecycleBadgeClassName(lifecycle: HackathonLifecycle):
       return "bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300";
     case "ended":
     default:
-      return "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400";
+      return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
   }
 }
 

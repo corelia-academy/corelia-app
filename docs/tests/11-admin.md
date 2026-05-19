@@ -4,7 +4,7 @@ Xem hub: [README.md](./README.md).
 
 ## Mục tiêu
 
-Phủ `/admin` (index users), `/admin/dashboard`, `/admin/instructors`, `/admin/instructors/:id`.
+Phủ `/admin` (index users), `/admin/dashboard`, `/admin/instructors`, `/admin/instructors/:id`, `/admin/activity-milestones`.
 
 ## Gate & role
 
@@ -34,10 +34,15 @@ Phủ `/admin` (index users), `/admin/dashboard`, `/admin/instructors`, `/admin/
 4. `/admin/dashboard` — pinned programs / widgets không lỗi profile ([STAGING_BUILD_VERIFY.md](../STAGING_BUILD_VERIFY.md)).
 5. `/admin/instructors` — danh sách.
 6. `/admin/instructors/:id` — chi tiết một instructor seed.
+7. `/admin/activity-milestones` — trang load; danh sách / form milestone không crash (empty state hợp lý nếu chưa seed).
 
 ### Đổi role (nếu UI cho phép)
 
-7. Từ admin users, thử đổi role test user staging (chỉ user test) — xác nhận sau khi đổi, user đó vào đúng/không vào đúng khu vực ([README matrix](./README.md)).
+8. Từ admin users, thử đổi role test user staging (chỉ user test) — xác nhận sau khi đổi, user vào đúng/không vào đúng khu vực ([README matrix](./README.md)).
+
+### Route không tồn tại
+
+9. `/admin/hackathons/*` — NotFound (hackathon ops nằm ở `/hackathons/manage`, [09](./09-hackathons-manage-workspace.md)).
 
 ## Kết quả mong đợi
 

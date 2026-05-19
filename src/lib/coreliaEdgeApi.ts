@@ -29,6 +29,40 @@ export function supabaseFunctionHeaders(accessToken?: string | null): Record<str
   return headers;
 }
 
+/**
+ * Await an Edge call and return the parsed JSON response.
+ * Throws on network error or non-2xx HTTP status.
+ */
+export async function callCoreliaApi<T = unknown>(
+  op: string,
+  body: Record<string, unknown>,
+): Promise<T> {
+  const url = coreliaEdgeUrl(op);
+  if (!url) throw new Error("edge_url_not_configured");
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) throw new Error("unauthenticated");
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      ...supabaseFunctionHeaders(token),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const message =
+      typeof json === "object" && json !== null && typeof (json as Record<string, unknown>).message === "string"
+        ? (json as Record<string, unknown>).message as string
+        : `http_error:${res.status}`;
+    throw new Error(message);
+  }
+  return json as T;
+}
+
 /** Fire-and-forget Edge call (e.g. transactional email); failures are ignored. */
 export async function invokeCoreliaApi(op: string, body: Record<string, unknown>): Promise<void> {
   const url = coreliaEdgeUrl(op);

@@ -8,7 +8,6 @@ import {
 import { ContestDetailHeroCard } from "@/pages/hackathon-detail/components/ContestDetailHeroCard";
 import { ContestDetailMobileStickyCta } from "@/pages/hackathon-detail/components/ContestDetailMobileStickyCta";
 import { ContestWorkspaceFAB } from "@/pages/hackathon-detail/components/ContestWorkspaceFAB";
-import { ContestWorkspacePublicHint } from "@/pages/hackathon-detail/components/ContestWorkspacePublicHint";
 import { ContestDetailMainLayout } from "@/pages/hackathon-detail/components/ContestDetailMainLayout";
 import { ContestDetailLeftColumn } from "@/pages/hackathon-detail/components/ContestDetailLeftColumn";
 import { ContestDetailRightColumn } from "@/pages/hackathon-detail/components/ContestDetailRightColumn";
@@ -54,11 +53,6 @@ export default function ContestDetail({
     );
   }
 
-  const workspaceAboveHero =
-    !vm.isManageView && vm.canAccessWorkspace ? (
-      <ContestWorkspacePublicHint vm={vm} />
-    ) : undefined;
-
   /** Two-column layout is for public detail only (participant rail). Manage uses full-width main column. */
   const twoColumnGrid = !vm.isManageView;
 
@@ -74,7 +68,6 @@ export default function ContestDetail({
         </>
       ) : null}
       <ContestDetailMainLayout
-        aboveHero={workspaceAboveHero}
         heroCard={<ContestDetailHeroCard vm={vm} titleAs="h1" />}
         leftColumn={<ContestDetailLeftColumn />}
         rightColumn={<ContestDetailRightColumn />}

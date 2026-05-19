@@ -84,6 +84,7 @@
       "analytics": "Analytics",
       "translations": "Translations",
       "awards": "Giải thưởng",
+      "email": "Gửi email",
       "settings": "Settings"
     },
     "awards": {
@@ -125,6 +126,35 @@
     },
     "settings": {
       "description": "Edit contest settings and protect destructive actions."
+    },
+    "email": {
+      "tabLabel": "Gửi email",
+      "heroTitle": "Gửi email hàng loạt",
+      "heroDescription": "Gửi thông báo hoặc nhắc nhở đến các thí sinh đã đăng ký.",
+      "recipientFilterLabel": "Người nhận",
+      "filterAll": "Tất cả đăng ký",
+      "filterApproved": "Chỉ đã duyệt",
+      "filterPending": "Chỉ chờ duyệt",
+      "filterRejected": "Chỉ từ chối",
+      "recipientCount": "{{count}} người nhận được chọn",
+      "recipientCountZero": "Không có người nhận nào",
+      "subjectLabel": "Tiêu đề",
+      "subjectPlaceholder": "Vd: Nhắc nhở nộp bài — còn 48h",
+      "bodyLabel": "Nội dung (HTML)",
+      "bodyPlaceholder": "<p>Xin chào các bạn,</p>\n<p>...</p>",
+      "bodyPreviewToggle": "Xem trước",
+      "sendButton": "Gửi email hàng loạt",
+      "confirmTitle": "Xác nhận gửi email",
+      "confirmDescription": "Bạn sắp gửi email này đến {{count}} người nhận. Hành động này không thể hoàn tác.",
+      "confirmSubjectLabel": "Tiêu đề:",
+      "confirmButton": "Gửi ngay",
+      "cancelButton": "Huỷ",
+      "resultSent": "Đã gửi {{sent}} / {{total}}",
+      "resultFailed": "Thất bại: {{failed}}",
+      "resultSkipped": "Bỏ qua (không có email): {{skipped}}",
+      "toastSuccess": "Đã gửi email hàng loạt thành công",
+      "toastError": "Không thể gửi email hàng loạt",
+      "notConfigured": "Email chưa được cấu hình — hãy set RESEND_API_KEY và MAIL_FROM trong môi trường Supabase."
     },
     "manage": {
       "backToContests": "Quay lại danh sách hackathon",
@@ -934,9 +964,18 @@
     "errors": {
       "notFound": "Không tìm thấy cuộc thi.",
       "loadFailed": "Không thể tải cuộc thi.",
+      "timeout": "Yêu cầu mất quá nhiều thời gian. Vui lòng tải lại trang.",
       "deleteAccessDeniedTitle": "Không thể truy cập cuộc thi",
       "deleteAccessDeniedFallback": "Không tìm thấy cuộc thi.",
-      "workspaceAccessDenied": "Bạn không có quyền truy cập khu vực vận hành của cuộc thi này."
+      "workspaceAccessDenied": "Bạn không có quyền truy cập khu vực vận hành của cuộc thi này.",
+      "unauthenticated": "Bạn cần đăng nhập để thực hiện thao tác này.",
+      "forbiddenManage": "Bạn không có quyền quản lý cuộc thi này.",
+      "forbiddenScore": "Bạn không có quyền chấm điểm bài thi.",
+      "forbiddenReview": "Bạn không có quyền duyệt hồ sơ.",
+      "submissionNotApproved": "Chỉ người tham gia đã được duyệt mới có thể nộp bài.",
+      "submissionDeadlinePassed": "Đã quá hạn nộp bài.",
+      "invalidInviteEmail": "Địa chỉ email mời không hợp lệ.",
+      "missingAccountEmail": "Tài khoản của bạn chưa có địa chỉ email."
     },
     "toasts": {
       "draftRedirect": "Cuộc thi này chưa mở công khai.",

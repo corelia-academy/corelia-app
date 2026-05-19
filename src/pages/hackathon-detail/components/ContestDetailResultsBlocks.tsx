@@ -16,6 +16,7 @@ export function ContestDetailResultsBlocks({
     canViewAggregate,
     activeManageSection,
     isManager,
+    hackathonLifecycle,
     leaderboard,
     winnerAwards,
     setWinnerAwards,
@@ -259,7 +260,7 @@ export function ContestDetailResultsBlocks({
         )}
 
       {!isManageView &&
-        contest.status === "ended" &&
+        hackathonLifecycle === "ended" &&
         (contest.published_leaderboard.length > 0 ||
           contest.winner_announcements.length > 0) && (
           <Card id="results" className={cn("scroll-mt-36")}>
