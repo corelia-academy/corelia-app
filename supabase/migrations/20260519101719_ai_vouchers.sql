@@ -5,6 +5,8 @@ CREATE TABLE public.ai_voucher_batches (
   active boolean NOT NULL DEFAULT true,
   starts_at timestamptz,
   ends_at timestamptz,
+  target_tier text CHECK (target_tier IN ('student', 'pro', 'bootcamp')),
+  target_duration_months int CHECK (target_duration_months IN (1, 12)),
   created_at timestamptz NOT NULL DEFAULT now(),
   created_by uuid REFERENCES auth.users (id) ON DELETE SET NULL,
   updated_at timestamptz NOT NULL DEFAULT now(),
