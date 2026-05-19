@@ -199,7 +199,23 @@ export async function fetchContestDetailPayload({
     );
   }
 
-  await Promise.all(tasks);
+  const timeoutMs = 8_000;
+  const timeoutRace = new Promise<never>((_, reject) => {
+    const id = setTimeout(() => reject(new Error("fetch_timeout")), timeoutMs);
+    signal.addEventListener("abort", () => clearTimeout(id), { once: true });
+  });
+  try {
+    await Promise.race([Promise.all(tasks), timeoutRace]);
+  } catch (err) {
+    if (signal.aborted) return { status: "aborted" };
+    const isTimeout = err instanceof Error && err.message === "fetch_timeout";
+    return {
+      status: "error",
+      errorMessage: isTimeout
+        ? translate("detail.errors.timeout")
+        : translate("detail.errors.loadFailed"),
+    };
+  }
   if (signal.aborted) return { status: "aborted" };
 
   const clearRegistrationsForAggregateViewer =

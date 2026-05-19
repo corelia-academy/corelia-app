@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import {
+  blastContestEmail,
   buildContestLeaderboard,
   createContestAccessInvite,
   deleteContest,
@@ -18,6 +19,8 @@ import {
   upsertContestSubmission,
   isPastContestRegistrationDeadline,
   isPastContestSubmissionDeadline,
+  type BlastEmailFilter,
+  type BlastEmailResult,
 } from "@/lib/hackathons";
 import {
   createProjectCollaborationInvite,
@@ -79,6 +82,33 @@ import {
   useContestRegistrationFlow,
   type RegistrationDecisionStatus,
 } from "./useContestRegistrationFlow";
+
+const API_ERROR_I18N: Record<string, string> = {
+  "unauthenticated": "detail.errors.unauthenticated",
+  "forbidden:manage_contest": "detail.errors.forbiddenManage",
+  "forbidden:score_contest": "detail.errors.forbiddenScore",
+  "forbidden:review_applications": "detail.errors.forbiddenReview",
+  "forbidden:submission_not_approved": "detail.errors.submissionNotApproved",
+  "forbidden:submission_deadline_passed": "detail.errors.submissionDeadlinePassed",
+  "not_found:contest": "detail.errors.notFound",
+  "not_found:registration": "detail.errors.notFound",
+  "not_found:invite": "detail.errors.notFound",
+  "invalid_input:invite_email": "detail.errors.invalidInviteEmail",
+  "missing_email:account": "detail.errors.missingAccountEmail",
+};
+
+function translateApiError(
+  err: unknown,
+  translate: (key: string) => string,
+  fallbackKey: string,
+): string {
+  if (err instanceof Error) {
+    const mapped = API_ERROR_I18N[err.message];
+    if (mapped) return translate(mapped);
+    return err.message;
+  }
+  return translate(fallbackKey);
+}
 
 export function useContestDetailOrchestrator({
   forceManageView,
@@ -251,6 +281,8 @@ export function useContestDetailOrchestrator({
     hydrateContestMetaFromPayload,
   } = managerWs;
 
+  const [blasting, setBlasting] = useState(false);
+
   const { statusLabel, registrationStatusLabel, locationLabel } =
     useContestDetailLabels(translate);
 
@@ -294,7 +326,7 @@ export function useContestDetailOrchestrator({
       ...(canReview ? ["applications"] : []),
       ...(canJudge ? ["judging"] : []),
       ...(canViewAggregate ? ["analytics"] : []),
-      ...(isManager ? ["translations", "awards", "settings"] : []),
+      ...(isManager ? ["translations", "awards", "email", "settings"] : []),
     ];
     return ids;
   }, [canJudge, canReview, canViewAggregate, isManager]);
@@ -389,6 +421,12 @@ export function useContestDetailOrchestrator({
         description: translate("workspace.awards.heroDescription", {
           defaultValue: "Configure award templates and mint on-chain credentials for winners.",
         }),
+      };
+    }
+    if (activeManageSection === "email") {
+      return {
+        label: translate("workspace.email.tabLabel"),
+        description: translate("workspace.email.heroDescription"),
       };
     }
     if (activeManageSection === "settings") {
@@ -562,12 +600,10 @@ export function useContestDetailOrchestrator({
             );
           }
         }
-        if (approved > 0) {
+        if (approved >= 5) {
           lines.push(
             translate("detail.phase.hero.approvedTeams", { count: approved }),
           );
-        } else {
-          lines.push(translate("detail.phase.hero.noApprovedTeamsYet"));
         }
         break;
       }
@@ -578,7 +614,7 @@ export function useContestDetailOrchestrator({
       case "ended":
       default: {
         lines.push(translate("detail.phase.hero.contestConcluded"));
-        if (approved > 0) {
+        if (approved >= 5) {
           lines.push(
             translate("detail.phase.hero.participatedTeams", {
               count: approved,
@@ -866,11 +902,7 @@ export function useContestDetailOrchestrator({
       } catch (err) {
         if (loadAbortRef.current !== ctrl) return;
         if (!silent) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : translate("detail.errors.loadFailed"),
-          );
+          setError(translateApiError(err, translate, "detail.errors.loadFailed"));
         }
       } finally {
         if (loadAbortRef.current === ctrl && !silent) {
@@ -1112,11 +1144,7 @@ export function useContestDetailOrchestrator({
       toast.success(translate("detail.actions.deleteSuccess"));
       navigate("/hackathons", { replace: true });
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : translate("detail.actions.deleteErrorFallback");
-      toast.error(message);
+      toast.error(translateApiError(err, translate, "detail.actions.deleteErrorFallback"));
     } finally {
       setDeletingContest(false);
     }
@@ -1158,11 +1186,7 @@ export function useContestDetailOrchestrator({
         ),
       );
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : translate("detail.toasts.applicationSubmitFailed"),
-      );
+      toast.error(translateApiError(err, translate, "detail.toasts.applicationSubmitFailed"));
     } finally {
       setApplying(false);
     }
@@ -1202,11 +1226,7 @@ export function useContestDetailOrchestrator({
         );
         await loadContestData({ silent: true });
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("detail.toasts.applicationReviewUpdateFailed"),
-        );
+        toast.error(translateApiError(err, translate, "detail.toasts.applicationReviewUpdateFailed"));
       } finally {
         setSavingReviewId(null);
       }
@@ -1238,11 +1258,7 @@ export function useContestDetailOrchestrator({
       setContest((prev) => (prev ? { ...prev, status: managerStatus } : prev));
       toast.success(translate("detail.toasts.contestStatusUpdated"));
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : translate("detail.toasts.contestStatusUpdateFailed"),
-      );
+      toast.error(translateApiError(err, translate, "detail.toasts.contestStatusUpdateFailed"));
     } finally {
       setSavingStatus(false);
     }
@@ -1276,9 +1292,7 @@ export function useContestDetailOrchestrator({
       }
       toast.success(translate("detail.toasts.publicContentUpdated"));
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : translate("detail.toasts.publicContentUpdateFailed"),
-      );
+      toast.error(translateApiError(err, translate, "detail.toasts.publicContentUpdateFailed"));
     } finally {
       setSavingSlug(false);
     }
@@ -1316,11 +1330,7 @@ export function useContestDetailOrchestrator({
       toast.success(translate("detail.toasts.inviteCreated"));
       await loadContestData({ silent: true });
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : translate("detail.toasts.inviteCreateFailed"),
-      );
+      toast.error(translateApiError(err, translate, "detail.toasts.inviteCreateFailed"));
     } finally {
       setSavingInvite(false);
     }
@@ -1405,11 +1415,7 @@ export function useContestDetailOrchestrator({
         );
         await loadContestData({ silent: true });
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("workspace.manage.bulkInviteFailed"),
-        );
+        toast.error(translateApiError(err, translate, "workspace.manage.bulkInviteFailed"));
       } finally {
         setSavingInvite(false);
       }
@@ -1430,11 +1436,7 @@ export function useContestDetailOrchestrator({
         );
         await loadContestData({ silent: true });
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("detail.toasts.inviteUpdateFailed"),
-        );
+        toast.error(translateApiError(err, translate, "detail.toasts.inviteUpdateFailed"));
       } finally {
         setInviteActionId(null);
       }
@@ -1451,11 +1453,7 @@ export function useContestDetailOrchestrator({
         toast.success(translate("detail.toasts.inviteRevoked"));
         await loadContestData({ silent: true });
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("detail.toasts.inviteRevokeFailed"),
-        );
+        toast.error(translateApiError(err, translate, "detail.toasts.inviteRevokeFailed"));
       } finally {
         setInviteActionId(null);
       }
@@ -1487,11 +1485,7 @@ export function useContestDetailOrchestrator({
       );
       toast.success(translate("detail.toasts.rubricUpdated"));
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : translate("detail.toasts.rubricUpdateFailed"),
-      );
+      toast.error(translateApiError(err, translate, "detail.toasts.rubricUpdateFailed"));
     } finally {
       setSavingRubric(false);
     }
@@ -1559,11 +1553,7 @@ export function useContestDetailOrchestrator({
       }
       toast.success(translate("workspace.manage.tracksRoundsSaved"));
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : translate("workspace.manage.tracksRoundsSaveFailed"),
-      );
+      toast.error(translateApiError(err, translate, "workspace.manage.tracksRoundsSaveFailed"));
     } finally {
       setSavingTracksRounds(false);
     }
@@ -1596,11 +1586,7 @@ export function useContestDetailOrchestrator({
         toast.success(translate("detail.toasts.collabInviteLinkCopied"));
         await loadCollaboration();
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("detail.toasts.collabInviteFailed"),
-        );
+        toast.error(translateApiError(err, translate, "detail.toasts.collabInviteFailed"));
       } finally {
         setInviteSendingUserId(null);
       }
@@ -1615,11 +1601,7 @@ export function useContestDetailOrchestrator({
         toast.success(translate("detail.toasts.collabInviteRevoked"));
         await loadCollaboration();
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("detail.toasts.collabRevokeFailed"),
-        );
+        toast.error(translateApiError(err, translate, "detail.toasts.collabRevokeFailed"));
       }
     },
     [loadCollaboration, translate],
@@ -1633,11 +1615,7 @@ export function useContestDetailOrchestrator({
         toast.success(translate("detail.toasts.collaboratorRemoved"));
         await loadCollaboration();
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("detail.toasts.collaboratorRemoveFailed"),
-        );
+        toast.error(translateApiError(err, translate, "detail.toasts.collaboratorRemoveFailed"));
       }
     },
     [collabProject, loadCollaboration, translate],
@@ -1669,11 +1647,7 @@ export function useContestDetailOrchestrator({
       await loadCollaboration();
       toast.success(translate("detail.toasts.submissionSaved"));
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : translate("detail.toasts.submissionSaveFailed"),
-      );
+      toast.error(translateApiError(err, translate, "detail.toasts.submissionSaveFailed"));
     } finally {
       setSavingSubmission(false);
     }
@@ -1721,11 +1695,7 @@ export function useContestDetailOrchestrator({
         toast.success(translate("detail.toasts.scoreSaved"));
         await loadContestData({ silent: true });
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("detail.toasts.scoreSaveFailed"),
-        );
+        toast.error(translateApiError(err, translate, "detail.toasts.scoreSaveFailed"));
       } finally {
         setSavingScoreId(null);
       }
@@ -1740,6 +1710,28 @@ export function useContestDetailOrchestrator({
     ],
   );
 
+  const handleBlastEmail = useCallback(
+    async (params: {
+      subject: string;
+      html: string;
+      recipientFilter: BlastEmailFilter;
+    }): Promise<BlastEmailResult | null> => {
+      if (!id || !isManager || blasting) return null;
+      setBlasting(true);
+      try {
+        const result = await blastContestEmail(id, params);
+        toast.success(translate("workspace.email.toastSuccess"));
+        return result;
+      } catch (err) {
+        toast.error(translateApiError(err, translate, "workspace.email.toastError"));
+        return null;
+      } finally {
+        setBlasting(false);
+      }
+    },
+    [blasting, id, isManager, translate],
+  );
+
   const handleRefreshMetrics = useCallback(async () => {
     if (!id || !isManager || refreshingMetrics) return;
     setRefreshingMetrics(true);
@@ -1750,11 +1742,7 @@ export function useContestDetailOrchestrator({
       );
       toast.success(translate("detail.toasts.metricsRefreshed"));
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : translate("detail.toasts.metricsRefreshFailed"),
-      );
+      toast.error(translateApiError(err, translate, "detail.toasts.metricsRefreshFailed"));
     } finally {
       setRefreshingMetrics(false);
     }
@@ -1799,11 +1787,7 @@ export function useContestDetailOrchestrator({
       );
       toast.success(translate("detail.toasts.resultsPublished"));
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : translate("detail.toasts.publishFailed"),
-      );
+      toast.error(translateApiError(err, translate, "detail.toasts.publishFailed"));
     } finally {
       setPublishingResults(false);
     }
@@ -1841,11 +1825,7 @@ export function useContestDetailOrchestrator({
         onContestSynced?.(next);
         toast.success(translate("detail.toasts.contestBannerUpdated"));
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("detail.toasts.contestBannerUploadFailed"),
-        );
+        toast.error(translateApiError(err, translate, "detail.toasts.contestBannerUploadFailed"));
       } finally {
         setBannerUploading(false);
       }
@@ -1883,11 +1863,7 @@ export function useContestDetailOrchestrator({
         onContestSynced?.(next);
         toast.success(translate("detail.toasts.contestThumbnailUpdated"));
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("detail.toasts.contestThumbnailUploadFailed"),
-        );
+        toast.error(translateApiError(err, translate, "detail.toasts.contestThumbnailUploadFailed"));
       } finally {
         setThumbnailUploading(false);
       }
@@ -1934,11 +1910,7 @@ export function useContestDetailOrchestrator({
         }
         toast.success(translate("detail.toasts.organizationalPartnerLogoUpdated"));
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("detail.toasts.organizationalPartnerLogoUploadFailed"),
-        );
+        toast.error(translateApiError(err, translate, "detail.toasts.organizationalPartnerLogoUploadFailed"));
       } finally {
         setPartnerLogoUploadingIndex(null);
       }
@@ -1973,11 +1945,7 @@ export function useContestDetailOrchestrator({
         }
         toast.success(translate("detail.toasts.organizationalPartnerLogoRemoved"));
       } catch (err) {
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : translate("detail.toasts.organizationalPartnerLogoRemoveFailed"),
-        );
+        toast.error(translateApiError(err, translate, "detail.toasts.organizationalPartnerLogoRemoveFailed"));
       }
     },
     [
@@ -2080,11 +2048,7 @@ export function useContestDetailOrchestrator({
       }
       toast.success(translate("detail.toasts.publicContentSaved"));
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : translate("detail.toasts.publicContentSaveFailed"),
-      );
+      toast.error(translateApiError(err, translate, "detail.toasts.publicContentSaveFailed"));
     } finally {
       setSavingPublicContent(false);
     }
@@ -2343,6 +2307,8 @@ export function useContestDetailOrchestrator({
     handleTracksRoundsSave,
     handleSubmissionSave,
     handleScoreSave,
+    blasting,
+    handleBlastEmail,
     handleRefreshMetrics,
     handlePublishResults,
     handleContestBannerChange,

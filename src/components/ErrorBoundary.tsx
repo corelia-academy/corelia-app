@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   children: ReactNode;
@@ -6,6 +7,43 @@ interface Props {
 
 interface State {
   error: Error | null;
+}
+
+/** Lightweight boundary for individual page sections — keeps other sections alive on error. */
+export class SectionErrorBoundary extends Component<Props, State> {
+  state: State = { error: null };
+
+  static getDerivedStateFromError(error: Error): State {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[SectionErrorBoundary]", error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div
+          className={cn(
+            "rounded-lg border border-border-subtle bg-surface-raised px-4 py-3",
+            "text-sm text-foreground-muted",
+          )}
+          role="alert"
+        >
+          Không thể tải nội dung này.{" "}
+          <button
+            type="button"
+            className="underline underline-offset-2 hover:text-foreground"
+            onClick={() => this.setState({ error: null })}
+          >
+            Thử lại
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 export class ErrorBoundary extends Component<Props, State> {

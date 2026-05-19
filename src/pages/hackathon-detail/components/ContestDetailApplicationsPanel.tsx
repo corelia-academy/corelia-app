@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 import type { ContestRegistration, ContestRegistrationStatus } from "@/types/hackathons";
+import { maskEmailAddress } from "@/pages/hackathon-detail/utils/emailMask";
 
 const PAGE_SIZE = 20;
 const MOTIVATION_COLLAPSE_CHARS = 320;
@@ -326,8 +327,9 @@ export function ContestDetailApplicationsPanel({
                             <span className="font-medium text-foreground">
                               {translate("detail.labels.contact")}
                             </span>{" "}
-                            {item.contact_email ||
-                              translate("detail.labels.notProvided")}{" "}
+                            {item.contact_email
+                              ? maskEmailAddress(item.contact_email)
+                              : translate("detail.labels.notProvided")}{" "}
                             ·{" "}
                             {item.contact_phone ||
                               translate("detail.labels.noDataDash")}
