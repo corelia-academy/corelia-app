@@ -26,11 +26,16 @@ export async function grantPaymentAccessForTransaction(
       .limit(1)
       .maybeSingle<{ id: string; tier: string; expires_at: string; status: "active" }>();
     if (currentActiveError) throw new Error(currentActiveError.message);
-    if (currentActive?.tier && currentActive.tier !== meta.tier) {
-      throw new Error("Active subscription tier mismatch");
+    const TIER_RANK = { student: 1, pro: 2, bootcamp: 3 } as const;
+    const isUpgrade = currentActive?.tier && meta.tier !== currentActive.tier
+      && (TIER_RANK[meta.tier as keyof typeof TIER_RANK] ?? 0) > (TIER_RANK[currentActive.tier as keyof typeof TIER_RANK] ?? 0);
+
+    if (currentActive?.tier && meta.tier !== currentActive.tier && !isUpgrade) {
+      throw new Error("Downgrade not allowed on active subscription");
     }
 
-    const startBase = currentActive?.expires_at && Date.parse(currentActive.expires_at) > Date.parse(updatedAt)
+    // Upgrade → start immediately. Same-tier renewal → extend from existing expiry.
+    const startBase = (!isUpgrade && currentActive?.expires_at && Date.parse(currentActive.expires_at) > Date.parse(updatedAt))
       ? currentActive.expires_at
       : updatedAt;
     const startedAt = startBase;

@@ -588,6 +588,37 @@ export function useCoraAI(options: UseCoraAIOptions) {
     ],
   );
 
+  const clearHistory = useCallback(async () => {
+    if (backendContext === "lesson") return;
+    if (!user?.id) return;
+
+    setMessages([]);
+    setSuggestedPrompts([]);
+    setRecommendedActions([]);
+    setRecommendedEntities([]);
+    setMemoryDelta(null);
+    setError(null);
+    setSessionId(null);
+
+    // Insert a new session directly instead of calling createSession(), which
+    // would re-use the existing most-recent session via ORDER BY created_at DESC.
+    const { data, error: insertError } = await supabase
+      .from("ai_chat_sessions")
+      .insert({
+        user_id: user.id,
+        context_type: backendContext,
+        ...(options.courseId ? { course_id: options.courseId } : {}),
+      })
+      .select("id")
+      .single<{ id: string }>();
+
+    if (insertError) {
+      setError({ type: "generic", message: insertError.message });
+      return;
+    }
+    setSessionId(data.id);
+  }, [backendContext, options.courseId, user?.id]);
+
   return {
     messages,
     isLoading,
@@ -605,5 +636,6 @@ export function useCoraAI(options: UseCoraAIOptions) {
     loadHistory,
     loadLearningMemory,
     sendMessage,
+    clearHistory,
   };
 }

@@ -437,18 +437,18 @@ Giá hiện tại có buffer rất lớn so với floor. Margin worst case đề
 
 **Safety trigger**: nếu Sonnet ratio của Pro vượt 55% (theo analytics) → tăng giá Pro lên **399,000 VND** để restore buffer về 25%+.
 
-## 4.2 Dual quota — daily + monthly (bắt buộc)
+## 4.2 Dual quota — monthly hard cap + rolling 3h soft cap
 
-Chỉ monthly cap không đủ: user có thể gửi 500 msgs trong 1 ngày để "test system" hoặc chạy script. Dual quota chặn cả hai hướng.
+Chỉ monthly cap không đủ: user có thể gửi nhiều msgs liên tiếp trong vài giờ để "test system" hoặc chạy script. Dual quota chặn cả hai hướng.
 
-| Tier | Monthly hard cap | Daily soft cap | Mục đích daily cap |
-|------|-----------------|----------------|-------------------|
-| Free | 50 msgs | 5 msgs/day | Ngăn tạo nhiều account chạy script |
-| Student | 500 msgs | 25 msgs/day | Ngăn "binge" toàn bộ quota 1 ngày |
-| Pro | 1,500 msgs | 75 msgs/day | Giữ Sonnet cost trong ngưỡng an toàn |
-| Bootcamp | 4,000 msgs | 200 msgs/day | Ngăn bot; 200/ngày = ~8hr học liên tục |
+| Tier | Monthly hard cap | Rolling 3h soft cap | Mục đích soft cap |
+|------|-----------------|---------------------|-------------------|
+| Free | 50 msgs | 5 msgs/3h | Ngăn tạo nhiều account chạy script |
+| Student | 700 msgs | 70 msgs/3h | Ngăn "binge" toàn bộ quota 1 ngày |
+| Pro | 1,000 msgs | 100 msgs/3h | Giữ GPT-5.4 cost trong ngưỡng an toàn |
+| Bootcamp | 2,000 msgs | 200 msgs/3h | Ngăn bot; 200/3h = học rất intensively |
 
-Daily cap là "soft" theo nghĩa: **không block mà throttle** — response vẫn trả về nhưng bị giới hạn xuống Haiku, kèm thông báo "Bạn đang dùng nhanh hơn bình thường". Chỉ monthly cap mới hard-block.
+Soft cap là **silent throttle** — khi vượt rolling 3h cap, response vẫn trả về bình thường nhưng dùng model tiết kiệm hơn. **Không hiển thị thông báo gì cho user.** Chỉ monthly cap mới hard-block và hiển thị QuotaExceededPrompt.
 
 ```typescript
 // Quota check logic trong Edge Function
@@ -519,42 +519,37 @@ alter table tier_limits
   add column if not exists rolling_3h_soft_cap int,
   add column if not exists price_vnd_monthly int default 0;
 
-update tier_limits set
-  monthly_messages = case tier
-    when 'free'     then 40
-    when 'student'  then 250
-    when 'pro'      then 700
-    when 'bootcamp' then 1800
-  end,
-  rolling_3h_soft_cap = case tier
-    when 'free'     then 6
-    when 'student'  then 20
-    when 'pro'      then 50
-    when 'bootcamp' then 120
-  end,
-  price_vnd_monthly = case tier
-    when 'free'     then 0
-    when 'student'  then 99000
-    when 'pro'      then 199000
-    when 'bootcamp' then 499000
-  end;
+-- Dùng migration 20260620110000_fix_tier_limits_pricing_v2.sql
+UPDATE public.tier_limits SET monthly_messages=50,   rolling_3h_soft_cap=5,   haiku_only=true,  price_vnd_monthly=0      WHERE tier='free';
+UPDATE public.tier_limits SET monthly_messages=700,  rolling_3h_soft_cap=70,  haiku_only=true,  price_vnd_monthly=79000  WHERE tier='student';
+UPDATE public.tier_limits SET monthly_messages=1000, rolling_3h_soft_cap=100, haiku_only=false, price_vnd_monthly=149000 WHERE tier='pro';
+UPDATE public.tier_limits SET monthly_messages=2000, rolling_3h_soft_cap=200, haiku_only=false, price_vnd_monthly=399000 WHERE tier='bootcamp';
 ```
 
 ## 4.4 Giá chính thức và messaging
 
-| Tier | Monthly | 6-Month (save) | 12-Month (save) | Quota |
-|------|---------|----------------|-----------------|-------|
-| **Free** | 0 | — | — | 40/tháng, 6/3h |
-| **Student** | 99,000 VND | 499,000 VND | 890,000 VND | 250/tháng, 20/3h |
-| **Pro** | 199,000 VND | 999,000 VND | 1,790,000 VND | 700/tháng, 50/3h |
-| **Bootcamp** | 499,000 VND | 2,490,000 VND | 4,490,000 VND | 1,800/tháng, 120/3h |
+> Chỉ bán **1 tháng** và **1 năm**. Mặc định chọn **1 năm** (higher conversion). Không còn gói 6 tháng.
+
+| Tier | 1 tháng | 1 năm | Tiết kiệm | Quota tháng | Soft cap/3h |
+|------|---------|-------|-----------|-------------|-------------|
+| **Free** | 0 | — | — | 50 | 5 |
+| **Student** | 79,000 VND | 690,000 VND | ~27% | 700 | 70 |
+| **Pro** | 149,000 VND | 1,290,000 VND | ~28% | 1,000 | 100 |
+| **Bootcamp** | 399,000 VND | 3,490,000 VND | ~27% | 2,000* | 200 |
+
+*Bootcamp hiển thị là "Không giới hạn*" trong UI với fair-use footnote (~2.000 câu/tháng).
 
 ```
 Free:     "50 câu hỏi miễn phí mỗi tháng — không cần thẻ"
-Student:  "500 câu hỏi/tháng — học không bị gián đoạn"
-Pro:      "1,500 câu hỏi + AI thông minh hơn cho bài học phức tạp"
-Bootcamp: "4,000 câu hỏi — cho người học intensively, nhận câu trả lời Sonnet ưu tiên"
+Student:  "700 câu hỏi mỗi tháng — ~23 câu/ngày"
+Pro:      "1.000 câu hỏi mỗi tháng — ~33 câu/ngày, model AI mạnh hơn"
+Bootcamp: "Không giới hạn* — cho người học intensively"
 ```
+
+**Framing UX:** Không hiển thị quota như giới hạn. Dùng framing tích cực:
+- < 70% dùng: "Cora đã trả lời X câu hỏi tháng này"
+- 70–99% dùng: "🔥 Bạn đang học rất chăm!"
+- ≥ 100% dùng: "🎓 Tháng học rất hiệu quả!" + reset date + tier upgrade cards
 
 ## 4.5 Monitoring triggers tự động
 
@@ -625,6 +620,82 @@ select * from ai_cost_anomaly where cost_anomaly = true order by cost_usd desc;
 
 - Giá `Bootcamp 1,990,000 VND/month` được xem là deprecated cho learner-facing product.
 - Nếu sau này có nhu cầu high-touch AI plan thật sự, nên tách thành một SKU riêng kiểu `Team / Mentor / Cohort`, không nên nhét chung vào ladder `Student / Pro / Bootcamp`.
+
+---
+
+# 2026-05-19 Pricing & UX Overhaul
+
+> Bản này **override** toàn bộ giá cũ trong doc (99k/199k/499k, gói 6 tháng, v.v.).
+> Lý do: switch từ Anthropic Claude sang OpenAI GPT-5.4 mini/full, margin thực tế cao hơn trước.
+> Cũng thay đổi UX từ "limitation framing" sang "achievement framing".
+
+## AI Model mới: OpenAI GPT-5.4
+
+| Model | Input | Output | Chi phí/msg (~500 in + 300 out tokens) |
+|-------|-------|--------|-----------------------------------------|
+| GPT-5.4 mini | $0.75/1M | $4.50/1M | ~$0.0034/msg |
+| GPT-5.4 full | $2.50/1M | $15.00/1M | ~$0.011/msg |
+| Blended Pro/Bootcamp (90% mini + 10% full) | — | — | ~$0.0045/msg |
+
+**Routing mới:**
+- Free + Student: GPT-5.4 mini only (`haiku_only = true` → dùng simpleModel)
+- Pro + Bootcamp: GPT-5.4 mini default, GPT-5.4 full cho câu hỏi complex
+
+## Pricing chính thức (supersedes 2026-05-14)
+
+| Tier | 1 tháng | 1 năm | API budget (75% doanh thu) | Msgs/tháng | Soft cap/3h |
+|------|---------|-------|--------------------------|------------|-------------|
+| Free | 0đ | — | — | **50** | 5 |
+| Student | **79.000đ** | **690.000đ** | $2.33/tháng | **700** | 70 |
+| Pro | **149.000đ** | **1.290.000đ** | $4.39/tháng | **1.000** | 100 |
+| Bootcamp | **399.000đ** | **3.490.000đ** | $11.74/tháng | **2.000*** | 200 |
+
+*Bootcamp hiển thị "Không giới hạn*" trong UI (fair-use cap ẩn trong footnote).
+
+**Chu kỳ:** Chỉ 1 tháng và 1 năm. Mặc định chọn 1 năm.
+
+## Unit economics mới
+
+**Student worst case (700 msgs/tháng, GPT-5.4 mini):**
+```
+AI cost: 700 × $0.0034 = $2.38 = 59,500 VND
+SePay fee: 79,000 × 1.5% + 3,000 = 4,185 VND
+Infra: 1,500 VND
+Total: 65,185 VND  |  Revenue: 79,000 VND  |  Margin: 17.5% ✅
+```
+
+**Pro worst case (1,000 msgs/tháng, blended):**
+```
+AI cost: 1,000 × $0.0045 = $4.50 = 112,500 VND
+SePay fee: 149,000 × 1.5% + 3,000 = 5,235 VND
+Infra: 1,500 VND
+Total: 119,235 VND  |  Revenue: 149,000 VND  |  Margin: 20% ✅
+```
+
+**Bootcamp worst case (2,000 msgs/tháng, blended):**
+```
+AI cost: 2,000 × $0.0045 = $9.00 = 225,000 VND
+SePay fee: 399,000 × 1.5% + 3,000 = 8,985 VND
+Infra: 1,500 VND
+Total: 235,485 VND  |  Revenue: 399,000 VND  |  Margin: 41% ✅✅
+```
+
+## UX philosophy: Achievement không phải Limitation
+
+| Cũ (limitation) | Mới (achievement) |
+|-----------------|-------------------|
+| "45 / 50 messages" | "Cora đã trả lời 45 câu hỏi tháng này" |
+| "5 messages remaining" | "🔥 Bạn đang học rất chăm!" |
+| Throttle badge "chế độ tiết kiệm" | *(im lặng — soft cap ẩn hoàn toàn)* |
+| Hết quota: warning icon đỏ | "🎓 Tháng học rất hiệu quả!" |
+| CTA: "Xem gói Cora" | Inline tier cards với giá và câu hỏi/tháng |
+
+## Upgrade / Downgrade rules
+
+- **Nâng cấp (upgrade)**: luôn được phép. Gói mới bắt đầu ngay, gói cũ bị supersede.
+- **Gia hạn cùng tier**: thời hạn extend từ `expires_at` hiện tại (không mất ngày còn lại).
+- **Hạ cấp (downgrade)**: bị block trong khi gói còn active. Frontend disable tier thấp hơn.
+- `ai_subscriptions.status` mới: `active | expired | cancelled | superseded`.
 
 ---
 
@@ -978,11 +1049,11 @@ Thêm vào `supabase/functions/corelia-api/payments/handlers.ts`:
 ```typescript
 const AI_SUBSCRIPTION_PRICES: Record<
   "student" | "pro" | "bootcamp",
-  Record<1 | 6 | 12, number>
+  Record<1 | 12, number>
 > = {
-  student:   { 1: 99000,    6: 499000,   12: 890000 },
-  pro:       { 1: 199000,   6: 999000,   12: 1790000 },
-  bootcamp:  { 1: 499000,   6: 2490000,  12: 4490000 },
+  student:   { 1: 79000,    12: 690000   },
+  pro:       { 1: 149000,   12: 1290000  },
+  bootcamp:  { 1: 399000,   12: 3490000  },
 };
 
 export async function handleAiSubscriptionCheckout(
@@ -1002,7 +1073,7 @@ export async function handleAiSubscriptionCheckout(
     if (!["student", "pro", "bootcamp"].includes(tier)) {
       return json({ message: "Tier không hợp lệ" }, 400);
     }
-    if (![1, 6, 12].includes(durationMonths)) {
+    if (![1, 12].includes(durationMonths)) {
       return json({ message: "Thời hạn không hợp lệ" }, 400);
     }
 
@@ -1084,24 +1155,44 @@ if (tx.purpose === "ai_subscription") {
     throw new Error("Invalid ai_subscription metadata in transaction");
   }
 
-  const startedAt = updatedAt;
-  const expiresAt = new Date(Date.parse(updatedAt));
+  // Upgrade starts immediately; same-tier renewal extends from existing expiry
+  const TIER_RANK = { student: 1, pro: 2, bootcamp: 3 } as const;
+  const { data: currentActive } = await db.from("ai_subscriptions")
+    .select("tier, expires_at")
+    .eq("user_id", tx.user_id).eq("status", "active")
+    .order("expires_at", { ascending: false }).limit(1).maybeSingle();
+
+  const isUpgrade = currentActive?.tier && tier !== currentActive.tier
+    && (TIER_RANK[tier as keyof typeof TIER_RANK] ?? 0) > (TIER_RANK[currentActive.tier as keyof typeof TIER_RANK] ?? 0);
+
+  if (currentActive?.tier && tier !== currentActive.tier && !isUpgrade) {
+    throw new Error("Downgrade not allowed on active subscription");
+  }
+
+  const startBase = (!isUpgrade && currentActive?.expires_at
+    && Date.parse(currentActive.expires_at) > Date.parse(updatedAt))
+    ? currentActive.expires_at : updatedAt;
+
+  const expiresAt = new Date(Date.parse(startBase));
   expiresAt.setMonth(expiresAt.getMonth() + months);
 
-  // Insert subscription record
+  if (isUpgrade && currentActive) {
+    await db.from("ai_subscriptions").update({ status: "superseded" })
+      .eq("user_id", tx.user_id).eq("status", "active");
+  }
+
   const { error: subErr } = await db.from("ai_subscriptions").insert({
     user_id: tx.user_id,
     tier,
     duration_months: months,
     price_vnd: tx.amount_vnd,
-    started_at: startedAt,
+    started_at: updatedAt,
     expires_at: expiresAt.toISOString(),
     payment_transaction_id: orderId,
     status: "active",
   });
   if (subErr) throw new Error(subErr.message);
 
-  // Update profiles.tier
   const { error: profileErr } = await db.from("profiles")
     .update({ tier, updated_at: updatedAt })
     .eq("id", tx.user_id);
@@ -1122,7 +1213,7 @@ Không cần thay đổi IPN handler — chỉ cần thêm branch trong `grantPa
 // src/lib/payments.ts — thêm:
 
 export type AiSubscriptionTier = "student" | "pro" | "bootcamp";
-export type AiSubscriptionDuration = 1 | 6 | 12;
+export type AiSubscriptionDurationMonths = 1 | 12; // 6-month option removed
 
 export interface AiSubscription {
   id: string;

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Markdown } from "@/components/markdown/Markdown";
 import { cn } from "@/lib/utils";
 import type { CoraMessage, CoraSourceRef } from "@/hooks/useCoraAI";
 
@@ -40,16 +41,20 @@ export function ConversationHistory({
               : "mr-auto border border-border-subtle bg-surface-raised text-foreground",
           )}
         >
-          <p className="whitespace-pre-wrap break-words">
-            {message.content}
-            {isStreaming && message.role === "assistant" && message === messages[messages.length - 1] ? (
-              <span className="ml-1 inline-flex items-center gap-1 align-middle">
-                <span className="size-1.5 animate-pulse rounded-full bg-current/70" />
-                <span className="size-1.5 animate-pulse rounded-full bg-current/50 [animation-delay:120ms]" />
-                <span className="size-1.5 animate-pulse rounded-full bg-current/30 [animation-delay:240ms]" />
-              </span>
-            ) : null}
-          </p>
+          {message.role === "user" ? (
+            <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          ) : (
+            <>
+              <Markdown content={message.content} compact />
+              {isStreaming && message === messages[messages.length - 1] ? (
+                <span className="mt-1 inline-flex items-center gap-1">
+                  <span className="size-1.5 animate-pulse rounded-full bg-current/70" />
+                  <span className="size-1.5 animate-pulse rounded-full bg-current/50 [animation-delay:120ms]" />
+                  <span className="size-1.5 animate-pulse rounded-full bg-current/30 [animation-delay:240ms]" />
+                </span>
+              ) : null}
+            </>
+          )}
           {message.role === "assistant" && (message.sources?.length ?? 0) > 0 ? (
             <div className="mt-2 space-y-2">
               <p className="text-[11px] text-muted-foreground">

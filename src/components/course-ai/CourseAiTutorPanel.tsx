@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ConversationHistory } from "@/components/course-ai/ConversationHistory";
 import { CoraShell } from "@/components/course-ai/CoraShell";
 import { QuotaExceededPrompt } from "@/components/course-ai/QuotaExceededPrompt";
+import { SuggestionPills } from "@/components/course-ai/SuggestionPills";
 import { buildPersonalizedSuggestions } from "@/components/course-ai/suggestions";
 import { useCoraAI } from "@/hooks/useCoraAI";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,7 @@ export function CourseAiTutorPanel(props: {
     learningMemory,
     suggestedPrompts,
     lastSubmittedMessage,
+    clearHistory,
   } = useCoraAI({
     assistantContext: hasLessonContext ? "lesson" : "courses",
     lessonId,
@@ -67,9 +69,9 @@ export function CourseAiTutorPanel(props: {
       title={String(t("detail.aiTutor.sheetTitle"))}
       tagline={String(t("detail.aiTutor.sheetDescription"))}
       onRequestHide={onRequestHide}
-      hideLabel={
-        onRequestHide ? String(tCommon("coraWidget.hideAction")) : undefined
-      }
+      hideLabel={onRequestHide ? String(tCommon("coraWidget.hideAction")) : undefined}
+      onClearHistory={messages.length > 0 && !isLoading && !hasLessonContext ? () => { void clearHistory(); } : undefined}
+      clearHistoryLabel={String(tCommon("coraWidget.clearHistoryAction"))}
       className={cn("h-full rounded-md shadow-none", className)}
       body={
         messages.length > 0 ? (
@@ -91,27 +93,18 @@ export function CourseAiTutorPanel(props: {
               <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
                 {t("detail.aiTutor.suggestionsLabel")}
               </p>
-              <div className="flex flex-wrap gap-1.5">
-                {suggestions.map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    className={cn(
-                      "max-w-full rounded-full border border-border-subtle bg-surface-raised px-2.5 py-1 text-left text-[11px] leading-snug text-foreground-muted",
-                      "transition-colors hover:border-border hover:bg-surface-overlay hover:text-foreground",
-                    )}
-                    onClick={() => handleSuggestionClick(label)}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+              <SuggestionPills suggestions={suggestions} onSelect={handleSuggestionClick} />
             </div>
           </div>
         )
       }
       footer={
         <>
+          {messages.length > 0 && suggestedPrompts.length > 0 ? (
+            <div className="mb-2.5 border-b border-border-subtle pb-2.5">
+              <SuggestionPills suggestions={suggestedPrompts} onSelect={handleSuggestionClick} />
+            </div>
+          ) : null}
           <textarea
             rows={2}
             value={draft}
@@ -132,21 +125,12 @@ export function CourseAiTutorPanel(props: {
           {error?.type === "quota_exceeded" ? (
             <QuotaExceededPrompt
               title={String(tCommon("coraWidget.quotaExceededTitle"))}
-              description={String(
-                tCommon("coraWidget.quotaExceededDescription", {
-                  used: error.used ?? quotaInfo?.monthlyUsed ?? 0,
-                  limit: error.limit ?? quotaInfo?.monthlyLimit ?? 0,
-                  tier: error.tier ?? quotaInfo?.tier ?? "free",
-                }),
-              )}
-              ctaLabel={String(tCommon("coraWidget.quotaExceededCta"))}
-              ctaTo="/cora"
-              retryLabel={String(tCommon("coraWidget.retryAction"))}
+              subtitle={String(tCommon("coraWidget.quotaExceededSubtitle"))}
+              currentTier={error.tier ?? quotaInfo?.tier}
+              resetDate={new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)}
               onRetry={
                 lastSubmittedMessage
-                  ? () => {
-                      void sendMessage(lastSubmittedMessage);
-                    }
+                  ? () => { void sendMessage(lastSubmittedMessage); }
                   : undefined
               }
               className="mt-2"
@@ -155,16 +139,12 @@ export function CourseAiTutorPanel(props: {
           <p
             className={cn(
               "mt-1.5 text-[11px] leading-snug",
-              error ? "text-destructive" : "text-foreground-muted",
+              error && error.type !== "quota_exceeded" ? "text-destructive" : "text-foreground-muted",
             )}
           >
-            {error?.type === "quota_exceeded"
-              ? tCommon("coraWidget.quotaExceededHint")
-              : error
+            {error && error.type !== "quota_exceeded"
               ? error.message
-              : quotaInfo?.throttled
-                ? t("detail.aiTutor.throttleHint")
-                : t("detail.aiTutor.liveFooterCaption")}
+              : t("detail.aiTutor.liveFooterCaption")}
           </p>
           <div className="mt-2 flex justify-end">
             <Button
