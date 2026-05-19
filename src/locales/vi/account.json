@@ -375,7 +375,9 @@
       "expiryLabel": "Hiệu lực đến",
       "daysLeftLabel": "Thời gian còn lại",
       "daysLeft_one": "Còn {{count}} ngày",
-      "daysLeft_other": "Còn {{count}} ngày"
+      "daysLeft_other": "Còn {{count}} ngày",
+      "monthlyUsageLabel": "Tin nhắn tháng này",
+      "windowUsageLabel": "Tin nhắn ({{hours}}h qua)"
     },
     "selector": {
       "title": "Chọn gói phù hợp",
@@ -383,7 +385,8 @@
       "perDuration": "{{duration}}",
       "checkoutAction": "Tiếp tục thanh toán",
       "checkoutLoading": "Đang tạo phiên thanh toán...",
-      "checkoutHint": "Bạn sẽ được chuyển sang cổng thanh toán SePay để hoàn tất nâng cấp."
+      "checkoutHint": "Bạn sẽ được chuyển sang cổng thanh toán SePay để hoàn tất nâng cấp.",
+      "activeRenewalHint": "Gói {{tier}} hiện tại của bạn vẫn còn hiệu lực. Tạm thời bạn chỉ có thể gia hạn cùng tier."
     },
     "durationTitle": "Chu kỳ thanh toán",
     "durationValueLabel": "Chi phí trung bình mỗi tháng",
@@ -448,6 +451,15 @@
         "status": "Trạng thái"
       }
     },
+    "voucher": {
+      "label": "Voucher",
+      "placeholder": "Nhập mã voucher",
+      "apply": "Áp dụng",
+      "hint": "Mỗi checkout chỉ dùng tối đa một voucher giảm theo %.",
+      "applied": "Áp dụng voucher thành công. Bạn tiết kiệm {{amount}} cho lần thanh toán này.",
+      "basePrice": "Giá gốc",
+      "discountValue": "Giảm bởi voucher"
+    },
     "return": {
       "verifyingTitle": "Đang xác minh giao dịch Cora AI",
       "verifyingDescription": "Corelia đang kiểm tra trạng thái thanh toán và đồng bộ gói của bạn. Việc này thường chỉ mất vài giây.",
@@ -464,7 +476,10 @@
     },
     "errors": {
       "checkoutFailed": "Không thể tạo phiên thanh toán Cora AI.",
-      "fetchTransactions": "Không tải được lịch sử Cora AI."
+      "fetchTransactions": "Không tải được lịch sử Cora AI.",
+      "voucherMissing": "Hãy nhập mã voucher trước.",
+      "voucherFailed": "Không áp dụng được voucher.",
+      "tierChangeBlocked": "Khi gói hiện tại còn hiệu lực, bạn chỉ có thể gia hạn cùng tier."
     }
   },
   "ocid": {

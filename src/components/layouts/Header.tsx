@@ -240,12 +240,13 @@ export default function Header() {
   }
 
   useEffect(() => {
-    if (!user?.id || coraQuotaInfo) return;
-    const tier = (aiSubscription?.tier ?? "free") as
+    const currentTier = (aiSubscription?.tier ?? "free") as
       | "free"
       | "student"
       | "pro"
       | "bootcamp";
+    if (!user?.id) return;
+    if (coraQuotaInfo && coraQuotaInfo.tier === currentTier) return;
     const month = new Date().toISOString().slice(0, 7);
     void Promise.all([
       supabase
@@ -257,11 +258,11 @@ export default function Header() {
       supabase
         .from("tier_limits")
         .select("monthly_messages")
-        .eq("tier", tier)
+        .eq("tier", currentTier)
         .maybeSingle(),
     ]).then(([{ data: usage }, { data: limit }]) => {
       setCoraQuotaInfo({
-        tier,
+        tier: currentTier,
         allowed: true,
         throttled: false,
         haikuOnly: false,

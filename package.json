@@ -1,12 +1,13 @@
 {
   "name": "corelia-app",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "functions:serve": "supabase functions serve corelia-api",
     "functions:serve:ai": "supabase functions serve ai-tutor --env-file supabase/functions/ai-tutor/.env",
+    "functions:serve:generate-description": "supabase functions serve generate-description --env-file supabase/functions/generate-description/.env",
     "functions:deploy": "supabase functions deploy corelia-api",
     "dev:staging": "vite --mode staging",
     "build": "tsc -b && vite build",

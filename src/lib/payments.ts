@@ -25,6 +25,9 @@ export interface PaymentTransaction {
   course_id: string;
   purpose: PaymentPurpose;
   amount_vnd: number;
+  original_amount_vnd?: number | null;
+  discount_code?: string | null;
+  discount_amount_vnd?: number | null;
   provider: PaymentProvider;
   status: PaymentTransactionStatus;
   created_at: string;
@@ -40,7 +43,7 @@ export interface AiSubscription {
   started_at: string;
   expires_at: string;
   payment_transaction_id: string;
-  status: "active" | "expired" | "cancelled";
+  status: "active" | "expired" | "cancelled" | "superseded";
   auto_renew?: boolean;
   created_at: string;
   updated_at?: string;
@@ -73,6 +76,15 @@ interface CreateAiSubscriptionCheckoutInput {
   successUrl: string;
   errorUrl: string;
   cancelUrl: string;
+  voucherCode?: string;
+}
+
+export interface AiVoucherPreview {
+  code: string;
+  percent_off: number;
+  base_amount_vnd: number;
+  discount_amount_vnd: number;
+  final_amount_vnd: number;
 }
 
 interface CreateSePayCheckoutResponse {
@@ -166,12 +178,55 @@ export async function createAiSubscriptionCheckout(
     successUrl: payload.successUrl,
     errorUrl: payload.errorUrl,
     cancelUrl: payload.cancelUrl,
+    voucherCode: payload.voucherCode,
     tier: payload.tier,
     durationMonths: payload.durationMonths,
   } as CreateSePayCheckoutInput & {
+    voucherCode?: string;
     tier: AiSubscriptionTier;
     durationMonths: AiSubscriptionDurationMonths;
   });
+}
+
+export async function previewAiVoucher(payload: {
+  tier: AiSubscriptionTier;
+  durationMonths: AiSubscriptionDurationMonths;
+  voucherCode: string;
+}): Promise<AiVoucherPreview> {
+  const endpoint =
+    import.meta.env.VITE_AI_VOUCHER_PREVIEW_API ||
+    coreliaEdgeUrl("payments.ai.voucher.preview");
+  const token = await getAccessToken();
+  requireAccessToken(token);
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...supabaseFunctionHeaders(token),
+    },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+  const data = (await res.json().catch(() => ({}))) as Partial<
+    AiVoucherPreview & { message?: string }
+  >;
+  if (
+    !res.ok ||
+    !data.code ||
+    typeof data.percent_off !== "number" ||
+    typeof data.base_amount_vnd !== "number" ||
+    typeof data.discount_amount_vnd !== "number" ||
+    typeof data.final_amount_vnd !== "number"
+  ) {
+    throw new Error(data.message || "Không áp dụng được voucher.");
+  }
+  return {
+    code: data.code,
+    percent_off: data.percent_off,
+    base_amount_vnd: data.base_amount_vnd,
+    discount_amount_vnd: data.discount_amount_vnd,
+    final_amount_vnd: data.final_amount_vnd,
+  };
 }
 
 export function submitSePayCheckoutForm(input: CreateSePayCheckoutResponse) {

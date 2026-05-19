@@ -7,14 +7,19 @@ import {
   CreditCard,
   Loader2,
   Sparkles,
+  TicketPercent,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { intlLocale } from "@/lib/intl";
 import {
   createAiSubscriptionCheckout,
   getMyPaymentTransactions,
+  previewAiVoucher,
   submitSePayCheckoutForm,
+  type AiVoucherPreview,
   type AiSubscriptionDurationMonths,
   type AiSubscriptionTier,
   type PaymentTransaction,
@@ -22,6 +27,7 @@ import {
 } from "@/lib/payments";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
+import { useCoraStore } from "@/stores/coraStore";
 import { formatVndPrice } from "@/types/courses";
 
 const TIER_ORDER: AiSubscriptionTier[] = ["student", "pro", "bootcamp"];
@@ -81,6 +87,8 @@ export function AccountCoraRoute() {
   const { t } = useTranslation("account");
   const location = useLocation();
   const { user, aiSubscription, daysUntilExpiry, loadAiSubscription } = useAuth();
+  const coraQuotaInfo = useCoraStore((s) => s.quotaInfo);
+  const setCoraQuotaInfo = useCoraStore((s) => s.setQuotaInfo);
   const [selectedTierOverride, setSelectedTierOverride] =
     useState<AiSubscriptionTier | null>(null);
   const [selectedDuration, setSelectedDuration] =
@@ -89,11 +97,16 @@ export function AccountCoraRoute() {
     null,
   );
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [voucherCode, setVoucherCode] = useState("");
+  const [voucherPreview, setVoucherPreview] = useState<AiVoucherPreview | null>(null);
+  const [voucherLoading, setVoucherLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentVerificationState, setPaymentVerificationState] = useState<
     "idle" | "verifying" | "verified" | "timeout" | "failed"
   >("idle");
   const selectedTier = selectedTierOverride ?? aiSubscription?.tier ?? "student";
+  const hasActiveSubscription = !!aiSubscription && daysUntilExpiry != null && daysUntilExpiry >= 0;
+  const tierChangeBlocked = hasActiveSubscription && aiSubscription?.tier !== selectedTier;
   const loadingTransactions = user ? transactions === null && !error : false;
   const paymentState = new URLSearchParams(location.search).get("payment");
   const paymentNotice =
@@ -196,6 +209,7 @@ export function AccountCoraRoute() {
           if (result.status === "paid") {
             setPaymentVerificationState("verified");
             window.sessionStorage.removeItem("corelia:lastCheckout");
+            setCoraQuotaInfo(null);
             await Promise.all([loadAiSubscription(), loadAiTransactions()]);
             return;
           }
@@ -217,7 +231,7 @@ export function AccountCoraRoute() {
     return () => {
       cancelled = true;
     };
-  }, [loadAiSubscription, loadAiTransactions, paymentState, user]);
+  }, [loadAiSubscription, loadAiTransactions, paymentState, setCoraQuotaInfo, user]);
 
   const selectedPrice = TIER_PRICES[selectedTier][selectedDuration];
   const selectedBaseMonthlyPrice = TIER_PRICES[selectedTier][1];
@@ -230,14 +244,46 @@ export function AccountCoraRoute() {
   const selectedMonthlyEquivalent = Math.round(
     selectedPrice / getDurationValue(selectedDuration),
   );
+  const effectivePrice = voucherPreview?.final_amount_vnd ?? selectedPrice;
   const aiTransactions = useMemo(() => transactions ?? [], [transactions]);
   const activePlanLabel = aiSubscription
     ? t(`cora.tiers.${aiSubscription.tier}.title`)
     : t("cora.currentPlan.free");
 
+  useEffect(() => {
+    setVoucherPreview(null);
+    setError(null);
+  }, [selectedTier, selectedDuration]);
+
+  async function handleApplyVoucher() {
+    if (!voucherCode.trim()) {
+      setError(t("cora.errors.voucherMissing"));
+      return;
+    }
+    try {
+      setVoucherLoading(true);
+      setError(null);
+      const preview = await previewAiVoucher({
+        tier: selectedTier,
+        durationMonths: selectedDuration,
+        voucherCode: voucherCode.trim(),
+      });
+      setVoucherPreview(preview);
+    } catch (err) {
+      setVoucherPreview(null);
+      setError(err instanceof Error ? err.message : t("cora.errors.voucherFailed"));
+    } finally {
+      setVoucherLoading(false);
+    }
+  }
+
   async function handleCheckout() {
     if (!user) {
       setError(t("cora.mustLogin"));
+      return;
+    }
+    if (tierChangeBlocked) {
+      setError(t("cora.errors.tierChangeBlocked"));
       return;
     }
 
@@ -250,6 +296,7 @@ export function AccountCoraRoute() {
         successUrl: buildCheckoutUrl("success"),
         errorUrl: buildCheckoutUrl("error"),
         cancelUrl: buildCheckoutUrl("cancel"),
+        voucherCode: voucherPreview?.code,
       });
       window.sessionStorage.setItem(
         "corelia:lastCheckout",
@@ -326,6 +373,47 @@ export function AccountCoraRoute() {
                   </span>
                 </div>
               </div>
+              {coraQuotaInfo ? (
+                <div className="mt-4 grid gap-3 border-t border-border-subtle pt-4 text-sm text-foreground-muted">
+                  {coraQuotaInfo.monthlyLimit != null ? (
+                    <div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span>{t("cora.currentPlan.monthlyUsageLabel")}</span>
+                        <span className="font-medium text-foreground">
+                          {coraQuotaInfo.monthlyUsed} / {coraQuotaInfo.monthlyLimit}
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-border-subtle">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all"
+                          style={{
+                            width: `${Math.min((coraQuotaInfo.monthlyUsed / coraQuotaInfo.monthlyLimit) * 100, 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3">
+                      <span>{t("cora.currentPlan.monthlyUsageLabel")}</span>
+                      <span className="font-medium text-foreground">
+                        {coraQuotaInfo.monthlyUsed}
+                      </span>
+                    </div>
+                  )}
+                  {coraQuotaInfo.windowSoftCap != null ? (
+                    <div className="flex items-center justify-between gap-3">
+                      <span>
+                        {t("cora.currentPlan.windowUsageLabel", {
+                          hours: coraQuotaInfo.windowHours,
+                        })}
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {coraQuotaInfo.windowUsed} / {coraQuotaInfo.windowSoftCap}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
         </section>
@@ -365,6 +453,7 @@ export function AccountCoraRoute() {
                 {TIER_ORDER.map((tier) => {
                   const isActive = selectedTier === tier;
                   const tierPrice = TIER_PRICES[tier][selectedDuration];
+                  const disabled = hasActiveSubscription && aiSubscription?.tier !== tier;
                   const features = t(`cora.tiers.${tier}.features`, {
                     returnObjects: true,
                   }) as string[];
@@ -373,12 +462,14 @@ export function AccountCoraRoute() {
                     <button
                       key={tier}
                       type="button"
-                      onClick={() => setSelectedTierOverride(tier)}
+                      onClick={() => !disabled && setSelectedTierOverride(tier)}
+                      disabled={disabled}
                       className={cn(
                         "flex h-full flex-col rounded-xl border p-5 text-left transition-colors duration-150",
                         isActive
                           ? "border-primary bg-primary-muted/60"
                           : "border-border-subtle bg-surface-raised hover:border-primary/30",
+                        disabled && "cursor-not-allowed opacity-55 hover:border-border-subtle",
                       )}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -505,6 +596,14 @@ export function AccountCoraRoute() {
                 })}
               </div>
 
+              {hasActiveSubscription ? (
+                <div className="mt-5 rounded-lg border border-warning/30 bg-warning/10 px-3 py-3 text-sm text-warning">
+                  {t("cora.selector.activeRenewalHint", {
+                    tier: t(`cora.tiers.${aiSubscription?.tier ?? "student"}.title`),
+                  })}
+                </div>
+              ) : null}
+
               <div className="mt-7 rounded-xl border border-border-subtle bg-surface-raised p-4 sm:p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -517,7 +616,7 @@ export function AccountCoraRoute() {
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-semibold text-foreground">
-                      {formatVndPrice(selectedPrice)}
+                      {formatVndPrice(effectivePrice)}
                     </p>
                     <p className="text-xs text-foreground-muted">
                       {t("cora.selector.perDuration", {
@@ -527,6 +626,63 @@ export function AccountCoraRoute() {
                   </div>
                 </div>
                 <div className="mt-4 rounded-lg border border-border-subtle bg-background/70 px-3 py-3">
+                  <div className="mb-3">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <TicketPercent className="size-4 text-primary" aria-hidden />
+                      {t("cora.voucher.label")}
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                      <Input
+                        value={voucherCode}
+                        onChange={(event) => setVoucherCode(event.target.value.toUpperCase())}
+                        placeholder={t("cora.voucher.placeholder")}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => void handleApplyVoucher()}
+                        disabled={voucherLoading}
+                      >
+                        {voucherLoading ? (
+                          <Loader2 className="size-4 animate-spin" aria-hidden />
+                        ) : (
+                          t("cora.voucher.apply")
+                        )}
+                      </Button>
+                      {voucherPreview ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setVoucherPreview(null);
+                            setVoucherCode("");
+                          }}
+                        >
+                          <X className="size-4" aria-hidden />
+                        </Button>
+                      ) : null}
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-foreground-muted">
+                      {t("cora.voucher.hint")}
+                    </p>
+                  </div>
+                  {voucherPreview ? (
+                    <div className="mb-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-3 text-sm">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium text-emerald-700 dark:text-emerald-300">
+                          {voucherPreview.code}
+                        </span>
+                        <span className="text-emerald-700 dark:text-emerald-300">
+                          -{voucherPreview.percent_off}%
+                        </span>
+                      </div>
+                      <div className="mt-1 text-emerald-700/90 dark:text-emerald-300/90">
+                        {t("cora.voucher.applied", {
+                          amount: formatVndPrice(voucherPreview.discount_amount_vnd),
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
                   <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                     <span className="text-foreground-muted">
                       {t("cora.durationValueLabel")}
@@ -550,12 +706,26 @@ export function AccountCoraRoute() {
                       </span>
                     </div>
                   ) : null}
+                  {voucherPreview ? (
+                    <>
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+                        <span className="text-foreground-muted">{t("cora.voucher.basePrice")}</span>
+                        <span className="font-medium text-foreground">{formatVndPrice(voucherPreview.base_amount_vnd)}</span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+                        <span className="text-foreground-muted">{t("cora.voucher.discountValue")}</span>
+                        <span className="font-medium text-emerald-700 dark:text-emerald-300">
+                          -{formatVndPrice(voucherPreview.discount_amount_vnd)}
+                        </span>
+                      </div>
+                    </>
+                  ) : null}
                 </div>
                 <Button
                   type="button"
                   className="mt-5 w-full"
                   onClick={handleCheckout}
-                  disabled={checkoutLoading}
+                  disabled={checkoutLoading || tierChangeBlocked}
                 >
                   {checkoutLoading ? (
                     <>
@@ -644,6 +814,11 @@ export function AccountCoraRoute() {
                         <div className="text-sm font-medium text-foreground">
                           {formatVndPrice(tx.amount_vnd)}
                         </div>
+                        {tx.discount_code ? (
+                          <div className="text-xs text-foreground-muted">
+                            {tx.discount_code} · -{formatVndPrice(tx.discount_amount_vnd ?? 0)}
+                          </div>
+                        ) : null}
                       </div>
                     );
                   })}
@@ -684,7 +859,12 @@ export function AccountCoraRoute() {
                             {planLabel}
                           </td>
                           <td className="px-4 py-3 font-medium text-foreground">
-                            {formatVndPrice(tx.amount_vnd)}
+                            <div>{formatVndPrice(tx.amount_vnd)}</div>
+                            {tx.discount_code ? (
+                              <div className="text-xs font-normal text-foreground-muted">
+                                {tx.discount_code} · -{formatVndPrice(tx.discount_amount_vnd ?? 0)}
+                              </div>
+                            ) : null}
                           </td>
                           <td className="px-4 py-3">
                             <span

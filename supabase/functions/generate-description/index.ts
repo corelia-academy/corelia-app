@@ -1,0 +1,653 @@
+import { createClient, type SupabaseClient, type User } from "https://esm.sh/@supabase/supabase-js@2.49.8";
+
+type Role = "student" | "instructor" | "support_staff" | "admin";
+type Locale = "vi" | "en";
+type GenerateType = "course" | "lesson";
+type ActionType = "generate" | "translate";
+type TargetField = "short_description" | "description" | "description_markdown";
+type SourceKind = "short_description" | "description_markdown" | "transcript";
+
+type RequestBody = {
+  action?: unknown;
+  type?: unknown;
+  targetField?: unknown;
+  locale?: unknown;
+  sourceLocale?: unknown;
+  courseId?: unknown;
+  sectionId?: unknown;
+  lessonId?: unknown;
+  youtubeUrl?: unknown;
+};
+
+type CourseRow = {
+  instructor_id: string;
+  data: Record<string, unknown> | null;
+};
+
+type LessonRow = {
+  id: string;
+  course_id: string;
+  section_id: string;
+  data: Record<string, unknown> | null;
+};
+
+type ProfileRow = {
+  role: Role;
+};
+
+type LessonSource = {
+  lessonId: string;
+  lessonTitle: string;
+  shortDescription?: string;
+  markdownDescription?: string;
+  youtubeUrl?: string;
+  transcript?: string;
+  sourceKinds: SourceKind[];
+  snippet?: string;
+};
+
+const CORS_METHODS = "POST, OPTIONS";
+const CORS_HEADERS =
+  "authorization, x-client-info, apikey, content-type, x-secret-key, x-supabase-api-version";
+
+function normalizeOrigin(raw: string): string | null {
+  try {
+    const url = new URL(raw.trim());
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    if (url.username || url.password) return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
+function allowedOriginsFromEnv(): Set<string> {
+  const explicit = Deno.env.get("CORELIA_CORS_ALLOWED_ORIGINS")?.trim() ?? "";
+  const app = Deno.env.get("CORELIA_APP_ORIGIN")?.trim() ?? "";
+  const merged = explicit || app;
+  const out = new Set<string>();
+  if (!merged) return out;
+  for (const item of merged.split(",")) {
+    const origin = normalizeOrigin(item);
+    if (origin) out.add(origin);
+  }
+  return out;
+}
+
+function buildCorsHeaders(origin: string): Headers {
+  return new Headers({
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Methods": CORS_METHODS,
+    "Access-Control-Allow-Headers": CORS_HEADERS,
+    Vary: "Origin",
+  });
+}
+
+function corsHeadersForRequest(req: Request): Headers | null {
+  const origin = req.headers.get("origin")?.trim() ?? "";
+  if (!origin) return null;
+  const normalized = normalizeOrigin(origin);
+  if (!normalized) return null;
+  const allowedOrigins = allowedOriginsFromEnv();
+  if (!allowedOrigins.has(normalized)) return null;
+  return buildCorsHeaders(normalized);
+}
+
+function withCors(req: Request, res: Response): Response {
+  const headers = new Headers(res.headers);
+  const cors = corsHeadersForRequest(req);
+  if (cors) {
+    for (const [key, value] of cors.entries()) headers.set(key, value);
+  }
+  return new Response(res.body, {
+    status: res.status,
+    statusText: res.statusText,
+    headers,
+  });
+}
+
+function json(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+function readOptionalEnv(...names: string[]): string {
+  for (const name of names) {
+    const value = Deno.env.get(name)?.trim() ?? "";
+    if (value) return value;
+  }
+  return "";
+}
+
+function requireAnyEnv(...names: string[]): string {
+  const value = readOptionalEnv(...names);
+  if (value) return value;
+  throw new Error(`Missing env: ${names.join(" | ")}`);
+}
+
+function readSupabaseSecretKey(): string {
+  const secretKeysRaw = readOptionalEnv("CORELIA_SUPABASE_SECRET_KEYS", "SUPABASE_SECRET_KEYS");
+  if (!secretKeysRaw) {
+    throw new Error("Missing env: CORELIA_SUPABASE_SECRET_KEYS | SUPABASE_SECRET_KEYS");
+  }
+  if (secretKeysRaw.startsWith("sb_secret_")) return secretKeysRaw;
+  const parsed = JSON.parse(secretKeysRaw) as Record<string, unknown>;
+  const directDefault = parsed.default;
+  if (typeof directDefault === "string" && directDefault.trim()) return directDefault.trim();
+  for (const value of Object.values(parsed)) {
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  throw new Error("Invalid env: CORELIA_SUPABASE_SECRET_KEYS | SUPABASE_SECRET_KEYS");
+}
+
+function createServiceClient(): SupabaseClient {
+  const url = requireAnyEnv("CORELIA_SUPABASE_URL", "SUPABASE_URL");
+  const key = readSupabaseSecretKey();
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
+async function verifyBearerUser(req: Request, db: SupabaseClient): Promise<User> {
+  const header = req.headers.get("authorization") ?? req.headers.get("Authorization");
+  if (!header) throw new Error("Missing Authorization header");
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  if (!match) throw new Error("Invalid Authorization header");
+  const { data, error } = await db.auth.getUser(match[1]!);
+  if (error || !data.user) throw new Error("Invalid or expired session");
+  if (!data.user.email_confirmed_at) throw new Error("Email confirmation required");
+  return data.user;
+}
+
+function parseBody(body: RequestBody): {
+  action: ActionType;
+  type: GenerateType;
+  targetField: TargetField;
+  locale: Locale;
+  sourceLocale: Locale | null;
+  courseId: string | null;
+  sectionId: string | null;
+  lessonId: string | null;
+  youtubeUrl: string | null;
+} {
+  const action =
+    body.action === "translate"
+      ? "translate"
+      : body.action === "generate" || body.action == null
+        ? "generate"
+        : null;
+  const type = body.type === "lesson" ? "lesson" : body.type === "course" ? "course" : null;
+  const targetField =
+    body.targetField === "short_description" ||
+    body.targetField === "description" ||
+    body.targetField === "description_markdown"
+      ? body.targetField
+      : null;
+  const locale = body.locale === "en" ? "en" : body.locale === "vi" ? "vi" : null;
+  const sourceLocale =
+    body.sourceLocale === "en" ? "en" : body.sourceLocale === "vi" ? "vi" : null;
+  const courseId = typeof body.courseId === "string" && body.courseId.trim() ? body.courseId.trim() : null;
+  const sectionId = typeof body.sectionId === "string" && body.sectionId.trim() ? body.sectionId.trim() : null;
+  const lessonId = typeof body.lessonId === "string" && body.lessonId.trim() ? body.lessonId.trim() : null;
+  const youtubeUrl =
+    typeof body.youtubeUrl === "string" && body.youtubeUrl.trim() ? body.youtubeUrl.trim() : null;
+  if (!action || !type || !targetField || !locale) {
+    throw new Error("Thiếu action, type, targetField hoặc locale hợp lệ.");
+  }
+  return { action, type, targetField, locale, sourceLocale, courseId, sectionId, lessonId, youtubeUrl };
+}
+
+function normalizeYoutubeVideoId(value: string): string | null {
+  const trimmed = value.trim();
+  const direct = trimmed.match(/^[a-zA-Z0-9_-]{11}$/);
+  if (direct) return trimmed;
+  try {
+    const url = new URL(trimmed);
+    if (url.hostname.includes("youtu.be")) {
+      const first = url.pathname.split("/").filter(Boolean)[0];
+      return first && /^[a-zA-Z0-9_-]{11}$/.test(first) ? first : null;
+    }
+    const v = url.searchParams.get("v");
+    if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return v;
+    const embed = url.pathname.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
+    return embed?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function decodeHtml(text: string): string {
+  return text
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)));
+}
+
+function stripAndNormalizeText(input: string): string {
+  return decodeHtml(input)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function pickSnippet(...parts: Array<string | undefined>): string | undefined {
+  const text = parts.find((part) => (part?.trim().length ?? 0) > 0)?.trim();
+  if (!text) return undefined;
+  return text.length > 180 ? `${text.slice(0, 177)}...` : text;
+}
+
+async function fetchCaptionTracks(videoId: string): Promise<
+  Array<{ langCode: string; name: string; isAsr: boolean }>
+> {
+  const url = new URL("https://www.youtube.com/api/timedtext");
+  url.searchParams.set("type", "list");
+  url.searchParams.set("v", videoId);
+  const res = await fetch(url.toString());
+  if (!res.ok) return [];
+  const xml = await res.text();
+  const matches = Array.from(
+    xml.matchAll(/<track\b([^>]+?)\/>/g),
+    (match) => match[1] ?? "",
+  );
+  return matches
+    .map((attrs) => {
+      const langCode = attrs.match(/\blang_code="([^"]+)"/)?.[1] ?? "";
+      const name = decodeHtml(attrs.match(/\bname="([^"]*)"/)?.[1] ?? "");
+      const kind = attrs.match(/\bkind="([^"]+)"/)?.[1] ?? "";
+      return {
+        langCode,
+        name,
+        isAsr: kind === "asr",
+      };
+    })
+    .filter((track) => track.langCode);
+}
+
+function chooseCaptionTrack(
+  tracks: Array<{ langCode: string; name: string; isAsr: boolean }>,
+  locale: Locale,
+) {
+  const exact = tracks.filter((track) => track.langCode.toLowerCase() === locale);
+  if (exact.length > 0) return exact.find((track) => !track.isAsr) ?? exact[0];
+  const sameFamily = tracks.filter((track) => track.langCode.toLowerCase().startsWith(`${locale}-`));
+  if (sameFamily.length > 0) return sameFamily.find((track) => !track.isAsr) ?? sameFamily[0];
+  return tracks.find((track) => !track.isAsr) ?? tracks[0] ?? null;
+}
+
+async function fetchTranscript(videoId: string, locale: Locale): Promise<string | null> {
+  const tracks = await fetchCaptionTracks(videoId);
+  const track = chooseCaptionTrack(tracks, locale);
+  if (!track) return null;
+  const url = new URL("https://www.youtube.com/api/timedtext");
+  url.searchParams.set("v", videoId);
+  url.searchParams.set("lang", track.langCode);
+  if (track.name) url.searchParams.set("name", track.name);
+  if (track.isAsr) url.searchParams.set("kind", "asr");
+  const res = await fetch(url.toString());
+  if (!res.ok) return null;
+  const xml = await res.text();
+  const text = stripAndNormalizeText(xml);
+  if (!text) return null;
+  return text.length > 12000 ? text.slice(0, 12000) : text;
+}
+
+async function getUserRole(db: SupabaseClient, userId: string): Promise<Role> {
+  const { data, error } = await db.from("profiles").select("role").eq("id", userId).single();
+  if (error || !data) throw new Error("Không thể kiểm tra quyền người dùng.");
+  return (data as ProfileRow).role;
+}
+
+async function getCourseAccessRow(db: SupabaseClient, courseId: string): Promise<CourseRow> {
+  const { data, error } = await db.from("courses").select("instructor_id,data").eq("id", courseId).single();
+  if (error || !data) throw new Error("Không tìm thấy khoá học.");
+  return data as CourseRow;
+}
+
+async function ensureCanManageCourse(
+  db: SupabaseClient,
+  userId: string,
+  role: Role,
+  courseId: string,
+): Promise<void> {
+  if (role === "admin" || role === "support_staff") return;
+  const row = await getCourseAccessRow(db, courseId);
+  if (row.instructor_id === userId) return;
+  const coInstructorPermissions =
+    ((row.data ?? {}).co_instructor_permissions as Record<string, Record<string, boolean> | undefined> | undefined) ??
+    {};
+  if (coInstructorPermissions[userId]?.content) return;
+  throw new Error("Bạn không có quyền generate mô tả cho khoá học này.");
+}
+
+async function resolveLessonRows(
+  db: SupabaseClient,
+  params: {
+    courseId: string | null;
+    sectionId: string | null;
+    lessonId: string | null;
+  },
+): Promise<LessonRow[]> {
+  if (params.lessonId) {
+    const { data, error } = await db
+      .from("course_lessons")
+      .select("id,course_id,section_id,data")
+      .eq("id", params.lessonId)
+      .single();
+    if (error || !data) throw new Error("Không tìm thấy bài học.");
+    return [data as LessonRow];
+  }
+  if (params.sectionId) {
+    const query = db
+      .from("course_lessons")
+      .select("id,course_id,section_id,data")
+      .eq("section_id", params.sectionId)
+      .order("sort_order", { ascending: true });
+    if (params.courseId) query.eq("course_id", params.courseId);
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+    return (data ?? []) as LessonRow[];
+  }
+  if (!params.courseId) return [];
+  const { data, error } = await db
+    .from("course_lessons")
+    .select("id,course_id,section_id,data")
+    .eq("course_id", params.courseId)
+    .order("sort_order", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as LessonRow[];
+}
+
+async function buildLessonSources(
+  rows: LessonRow[],
+  locale: Locale,
+  options?: { forceTranscript?: boolean; youtubeUrlOverride?: string | null },
+): Promise<LessonSource[]> {
+  const sources: LessonSource[] = [];
+  for (const row of rows) {
+    const data = (row.data ?? {}) as Record<string, unknown>;
+    const shortDescription = String(data.short_description ?? "").trim();
+    const markdownDescription = String(data.description_markdown ?? "").trim();
+    const youtubeUrl =
+      options?.youtubeUrlOverride ?? (typeof data.youtube_url === "string" ? data.youtube_url.trim() : "");
+    const sourceKinds: SourceKind[] = [];
+    if (shortDescription) sourceKinds.push("short_description");
+    if (markdownDescription) sourceKinds.push("description_markdown");
+
+    let transcript: string | undefined;
+    const needsTranscript =
+      options?.forceTranscript ||
+      sourceKinds.length === 0 ||
+      (shortDescription.length + markdownDescription.length < 180 && !!youtubeUrl);
+    if (needsTranscript && youtubeUrl) {
+      const videoId = normalizeYoutubeVideoId(youtubeUrl);
+      if (videoId) {
+        transcript = (await fetchTranscript(videoId, locale)) ?? undefined;
+        if (transcript) sourceKinds.push("transcript");
+      }
+    }
+
+    sources.push({
+      lessonId: row.id,
+      lessonTitle: String(data.title ?? "").trim() || "Lesson",
+      shortDescription: shortDescription || undefined,
+      markdownDescription: markdownDescription || undefined,
+      youtubeUrl: youtubeUrl || undefined,
+      transcript,
+      sourceKinds,
+      snippet: pickSnippet(shortDescription, markdownDescription, transcript),
+    });
+  }
+  return sources;
+}
+
+function buildWarning(sources: LessonSource[]): string | null {
+  const usable = sources.filter((source) => source.sourceKinds.length > 0);
+  const totalChars = usable.reduce(
+    (sum, source) =>
+      sum +
+      (source.shortDescription?.length ?? 0) +
+      (source.markdownDescription?.length ?? 0) +
+      (source.transcript?.length ?? 0),
+    0,
+  );
+  if (usable.length === 0) {
+    return "Hãy kiểm tra đủ nội dung để generate mô tả chất lượng.";
+  }
+  if (usable.length < 2 || totalChars < 300) {
+    return "Nội dung nguồn hiện còn ít. Hãy kiểm tra đủ nội dung để generate mô tả chất lượng.";
+  }
+  return null;
+}
+
+function buildPrompt(params: {
+  action: ActionType;
+  type: GenerateType;
+  targetField: TargetField;
+  locale: Locale;
+  sourceLocale: Locale | null;
+  sources: LessonSource[];
+  isSectionScoped: boolean;
+}): string {
+  const localeInstruction =
+    params.locale === "vi"
+      ? "Viết hoàn toàn bằng tiếng Việt, tự nhiên, rõ ràng, không quảng cáo quá mức."
+      : "Write entirely in English, clear and natural, without hype.";
+  const targetInstruction =
+    params.action === "translate"
+      ? params.targetField === "short_description"
+        ? params.locale === "vi"
+          ? "Dịch và biên tập thành mô tả ngắn 1-2 câu, tự nhiên, không dịch từng chữ."
+          : "Translate and polish into a natural 1-2 sentence short description, not word-for-word."
+        : params.targetField === "description_markdown"
+          ? params.locale === "vi"
+            ? "Dịch sang Markdown tự nhiên, giữ cấu trúc hữu ích và biên tập cho mượt."
+            : "Translate into natural Markdown, preserving useful structure and polishing the writing."
+          : params.locale === "vi"
+            ? "Dịch và biên tập thành mô tả đầy đủ, rõ ý, tự nhiên."
+            : "Translate and polish into a clear, natural full description."
+      : params.targetField === "short_description"
+      ? params.locale === "vi"
+        ? "Kết quả là mô tả ngắn 1-2 câu, súc tích, không bullet."
+        : "Return a concise short description in 1-2 sentences, no bullets."
+      : params.targetField === "description_markdown"
+        ? params.locale === "vi"
+          ? "Kết quả là mô tả chi tiết dạng Markdown cho bài học, có thể dùng đoạn văn ngắn và bullet nếu hợp lý."
+          : "Return a detailed Markdown lesson description, using short paragraphs and bullets when useful."
+        : params.isSectionScoped
+          ? params.locale === "vi"
+            ? "Kết quả là mô tả chương ngắn gọn, tóm tắt các bài học bên trong."
+            : "Return a concise section description summarizing the lessons inside."
+          : params.locale === "vi"
+            ? "Kết quả là mô tả khoá học rõ ràng, giàu thông tin."
+            : "Return a clear, informative course description.";
+  const framing =
+    params.action === "translate"
+      ? params.locale === "vi"
+        ? `Bạn đang dịch nội dung giáo dục từ ${params.sourceLocale === "en" ? "tiếng Anh" : "tiếng Việt"} sang tiếng Việt.`
+        : `You are translating educational content from ${params.sourceLocale === "vi" ? "Vietnamese" : "English"} into English.`
+      : params.type === "lesson"
+      ? params.locale === "vi"
+        ? "Bạn đang viết mô tả cho một bài học dựa trên transcript video YouTube và nội dung hiện có."
+        : "You are writing a lesson description from the YouTube transcript and any existing lesson copy."
+      : params.isSectionScoped
+        ? params.locale === "vi"
+          ? "Bạn đang viết mô tả cho một chương dựa trên các bài học bên trong."
+          : "You are writing a section description from the lessons inside it."
+        : params.locale === "vi"
+          ? "Bạn đang viết mô tả cho một khoá học dựa trên các bài học bên trong."
+          : "You are writing a course description from the lessons inside it.";
+
+  const sourceText = params.sources
+    .map((source, index) => {
+      const parts = [
+        `Source ${index + 1}: ${source.lessonTitle}`,
+        source.shortDescription ? `Short description: ${source.shortDescription}` : null,
+        source.markdownDescription ? `Long description: ${source.markdownDescription}` : null,
+        source.transcript ? `Transcript excerpt: ${source.transcript}` : null,
+      ].filter(Boolean);
+      return parts.join("\n");
+    })
+    .join("\n\n");
+
+  return [
+    framing,
+    localeInstruction,
+    targetInstruction,
+    params.locale === "vi"
+      ? "Chỉ trả về nội dung cuối cùng, không thêm lời dẫn, không giải thích."
+      : "Return only the final content, with no preface or explanation.",
+    sourceText,
+  ].join("\n\n");
+}
+
+async function generateWithOpenAi(prompt: string): Promise<string> {
+  const apiKey = Deno.env.get("OPENAI_API_KEY")?.trim() ?? "";
+  if (!apiKey) throw new Error("Missing env: OPENAI_API_KEY");
+  const model = Deno.env.get("CORELIA_OPENAI_DESCRIPTION_MODEL")?.trim() || "gpt-4o-mini";
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      input: prompt,
+    }),
+  });
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    console.error("[generate-description] openai", response.status, errorText);
+    throw new Error("OpenAI chưa phản hồi được mô tả.");
+  }
+  const payload = (await response.json()) as {
+    output_text?: string;
+  };
+  const text = payload.output_text?.trim() ?? "";
+  if (!text) throw new Error("OpenAI trả về mô tả rỗng.");
+  return text;
+}
+
+Deno.serve(async (req: Request): Promise<Response> => {
+  const cors = corsHeadersForRequest(req);
+  if (req.method === "OPTIONS") {
+    if (!cors) return json({ message: "Origin not allowed" }, 403);
+    return new Response(null, { status: 204, headers: cors });
+  }
+
+  try {
+    if (req.method !== "POST") return withCors(req, json({ message: "Method not allowed" }, 405));
+    const db = createServiceClient();
+    const user = await verifyBearerUser(req, db);
+    const role = await getUserRole(db, user.id);
+    if (!["instructor", "support_staff", "admin"].includes(role)) {
+      return withCors(req, json({ message: "Bạn không có quyền dùng tính năng này." }, 403));
+    }
+
+    const parsed = parseBody((await req.json()) as RequestBody);
+    const normalizedYoutubeVideoId = parsed.youtubeUrl ? normalizeYoutubeVideoId(parsed.youtubeUrl) : null;
+
+    let rows: LessonRow[] = [];
+    let isSectionScoped = false;
+
+    if (parsed.lessonId) {
+      rows = await resolveLessonRows(db, parsed);
+      await ensureCanManageCourse(db, user.id, role, rows[0]!.course_id);
+    } else if (parsed.courseId || parsed.sectionId) {
+      const guardCourseId =
+        parsed.courseId ??
+        (
+          await db
+            .from("course_sections")
+            .select("course_id")
+            .eq("id", parsed.sectionId ?? "")
+            .single()
+        ).data?.course_id ??
+        null;
+      if (!guardCourseId) {
+        return withCors(req, json({ message: "Không xác định được phạm vi khoá học." }, 400));
+      }
+      await ensureCanManageCourse(db, user.id, role, String(guardCourseId));
+      rows = await resolveLessonRows(db, {
+        courseId: String(guardCourseId),
+        sectionId: parsed.sectionId,
+        lessonId: null,
+      });
+      isSectionScoped = Boolean(parsed.sectionId);
+    } else if (parsed.type === "lesson" && normalizedYoutubeVideoId) {
+      rows = [
+        {
+          id: "draft",
+          course_id: "",
+          section_id: "",
+          data: {
+            title: "Draft lesson",
+            youtube_url: parsed.youtubeUrl,
+          },
+        },
+      ];
+    } else {
+      return withCors(
+        req,
+        json({ message: "Thiếu lessonId, courseId/sectionId hoặc youtubeUrl hợp lệ." }, 400),
+      );
+    }
+
+    const sources = await buildLessonSources(rows, parsed.locale, {
+      forceTranscript:
+        parsed.action === "generate" && parsed.type === "lesson" && !!normalizedYoutubeVideoId,
+      youtubeUrlOverride:
+        parsed.action === "generate" && parsed.type === "lesson" && rows.length === 1 && parsed.youtubeUrl
+          ? parsed.youtubeUrl
+          : null,
+    });
+    const usable = sources.filter((source) => source.sourceKinds.length > 0);
+    const warning = buildWarning(sources);
+    if (usable.length === 0) {
+      return withCors(req, json({ message: warning ?? "Không đủ nội dung để generate." }, 422));
+    }
+
+    const prompt = buildPrompt({
+      action: parsed.action,
+      type: parsed.type,
+      targetField: parsed.targetField,
+      locale: parsed.locale,
+      sourceLocale: parsed.sourceLocale,
+      sources: usable,
+      isSectionScoped,
+    });
+    const description = await generateWithOpenAi(prompt);
+
+    return withCors(
+      req,
+      json({
+        description,
+        sources: usable.map((source) => ({
+          lessonId: source.lessonId,
+          lessonTitle: source.lessonTitle,
+          sourceKinds: source.sourceKinds,
+          snippet: source.snippet,
+        })),
+        warning,
+      }),
+    );
+  } catch (error) {
+    console.error("[generate-description]", error);
+    const message =
+      error instanceof Error ? error.message : "Không thể generate description lúc này.";
+    const status = /Missing Authorization|Invalid or expired|Email confirmation/.test(message)
+      ? 401
+      : /không có quyền|permission/i.test(message)
+        ? 403
+        : /Thiếu|Missing|hợp lệ|Không xác định|Không tìm thấy/.test(message)
+          ? 400
+          : /không đủ nội dung|rỗng/.test(message)
+            ? 422
+            : 500;
+    return withCors(req, json({ message }, status));
+  }
+});
