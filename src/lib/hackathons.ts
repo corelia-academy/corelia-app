@@ -1,4 +1,4 @@
-import { invokeCoreliaApi } from "@/lib/coreliaEdgeApi";
+import { invokeCoreliaApi, callCoreliaApi } from "@/lib/coreliaEdgeApi";
 import i18n from "@/i18n";
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
@@ -56,6 +56,8 @@ const getContestBySlugInFlight = new Map<string, Promise<Contest | null>>();
 
 const LOCALE_CACHE_TTL = 5 * 60 * 1000;
 const hackathonLocaleCache = makeTTLCache<ContestI18nContent | null>(LOCALE_CACHE_TTL);
+/** Dedup concurrent fetches for the same key — separate from TTL so TTL starts on resolution. */
+const hackathonLocaleInFlight = new Map<string, Promise<ContestI18nContent | null>>();
 
 function sanitizeSlug(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -108,25 +110,34 @@ export async function getHackathonLocaleContent(
 ): Promise<ContestI18nContent | null> {
   const normalized = normalizeContentLocale(locale);
   const key = `${contestId}:${normalized}`;
-  const existing = hackathonLocaleCache.get(key);
-  if (existing) return existing;
+
+  const cached = hackathonLocaleCache.get(key);
+  if (cached) return cached;
+
+  const inflight = hackathonLocaleInFlight.get(key);
+  if (inflight) return inflight;
+
   const promise = (async () => {
-    const { data, error } = await supabase
-      .from("hackathon_locales")
-      .select("data")
-      .eq("hackathon_id", contestId)
-      .eq("locale", normalized)
-      .maybeSingle();
-    if (error || !data?.data) return null;
-    return { ...(data.data as ContestI18nContent), updated_at: (data.data as ContestI18nContent).updated_at };
+    try {
+      const { data, error } = await supabase
+        .from("hackathon_locales")
+        .select("data")
+        .eq("hackathon_id", contestId)
+        .eq("locale", normalized)
+        .maybeSingle();
+      const result: ContestI18nContent | null =
+        error || !data?.data
+          ? null
+          : { ...(data.data as ContestI18nContent), updated_at: (data.data as ContestI18nContent).updated_at };
+      hackathonLocaleCache.set(key, Promise.resolve(result));
+      return result;
+    } finally {
+      hackathonLocaleInFlight.delete(key);
+    }
   })();
-  hackathonLocaleCache.set(key, promise);
-  try {
-    return await promise;
-  } catch (e) {
-    hackathonLocaleCache.delete(key);
-    throw e;
-  }
+
+  hackathonLocaleInFlight.set(key, promise);
+  return promise;
 }
 
 export async function getBatchHackathonLocaleContent(
@@ -497,7 +508,7 @@ async function requireCurrentUser() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Chưa đăng nhập");
+  if (!user) throw new Error("unauthenticated");
   return user;
 }
 
@@ -505,7 +516,7 @@ async function requireContestManager(): Promise<{ uid: string }> {
   const user = await requireCurrentUser();
   const profile = await getProfileForUser(user);
   if (!canManageContests(profile)) {
-    throw new Error("Bạn không có quyền quản lý cuộc thi.");
+    throw new Error("forbidden:manage_contest");
   }
   return { uid: user.id };
 }
@@ -516,13 +527,13 @@ async function requireContestScorer(
 ): Promise<{ contest: Contest; user: User }> {
   if (prefetch && prefetch.contest.id === contestId) {
     if (!canScoreContest(prefetch.contest, prefetch.profile, prefetch.viewer.email)) {
-      throw new Error("Bạn không có quyền chấm điểm contest này.");
+      throw new Error("forbidden:score_contest");
     }
     return { contest: prefetch.contest, user: prefetch.viewer };
   }
   const user = await requireCurrentUser();
   const [profile, contest] = await Promise.all([getProfileForUser(user), getContest(contestId)]);
-  if (!contest) throw new Error("Không tìm thấy cuộc thi.");
+  if (!contest) throw new Error("not_found:contest");
   if (!canScoreContest(contest, profile, user.email)) {
     throw new Error("Bạn không có quyền chấm điểm contest này.");
   }
@@ -535,13 +546,13 @@ async function requireContestReviewer(
 ): Promise<Contest> {
   if (prefetch && prefetch.contest.id === contestId) {
     if (!canReviewContestApplications(prefetch.contest, prefetch.profile)) {
-      throw new Error("Bạn không có quyền duyệt hồ sơ contest này.");
+      throw new Error("forbidden:review_applications");
     }
     return prefetch.contest;
   }
   const user = await requireCurrentUser();
   const [profile, contest] = await Promise.all([getProfileForUser(user), getContest(contestId)]);
-  if (!contest) throw new Error("Không tìm thấy cuộc thi.");
+  if (!contest) throw new Error("not_found:contest");
   if (!canReviewContestApplications(contest, profile)) {
     throw new Error("Bạn không có quyền duyệt hồ sơ contest này.");
   }
@@ -773,7 +784,7 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
     .select("*")
     .eq("id", contestId)
     .single();
-  if (fetchErr || !row) throw new Error(fetchErr?.message ?? "Không tìm thấy contest");
+  if (fetchErr || !row) throw new Error(fetchErr?.message ?? "not_found:contest");
 
   const prevDoc = (row.document ?? {}) as Record<string, unknown>;
   const payload = removeUndefinedFields({
@@ -885,7 +896,7 @@ export async function registerForContest(
   const user = await requireCurrentUser();
   const profile = await getProfileForUser(user);
   const contest = await getContest(contestId);
-  if (!contest) throw new Error("Không tìm thấy cuộc thi.");
+  if (!contest) throw new Error("not_found:contest");
   const now = new Date().toISOString();
   const registrationId = contestRegistrationId(contestId, user.id);
   const autoApprove = Boolean(contest.config?.auto_approve_registrations);
@@ -925,23 +936,23 @@ export async function getContestRegistrations(
   options?: {
     status?: ContestRegistrationStatus | "all";
     prefetch?: PrefetchedContestActorContext;
+    limit?: number;
   },
 ): Promise<ContestRegistration[]> {
   await requireContestReviewer(contestId, options?.prefetch);
 
+  const limit = Math.min(options?.limit ?? 500, 500);
   let q = supabase
     .from("hackathon_registrations")
     .select("*")
-    .eq("hackathon_id", contestId);
+    .eq("hackathon_id", contestId)
+    .limit(limit);
   if (options?.status && options.status !== "all") {
     q = q.filter("document->>status", "eq", options.status);
   }
   const { data, error } = await q;
   if (error) throw new Error(error.message);
-  const list = (data ?? []).map((d) => registrationFromRow(d as Parameters<typeof registrationFromRow>[0]));
-  return list.sort(
-    (a, b) => String(b.applied_at ?? "").localeCompare(String(a.applied_at ?? "")),
-  );
+  return (data ?? []).map((d) => registrationFromRow(d as Parameters<typeof registrationFromRow>[0]));
 }
 
 export async function reviewContestRegistration(
@@ -957,7 +968,7 @@ export async function reviewContestRegistration(
     .select("*")
     .eq("id", id)
     .single();
-  if (fe || !row) throw new Error(fe?.message ?? "Không tìm thấy đăng ký");
+  if (fe || !row) throw new Error(fe?.message ?? "not_found:registration");
   const doc = (row.document ?? {}) as Record<string, unknown>;
   const next = {
     ...doc,
@@ -978,6 +989,29 @@ export async function reviewContestRegistration(
       applicant_user_id: userId,
     });
   }
+}
+
+export type BlastEmailFilter = "all" | "approved" | "pending" | "rejected";
+
+export type BlastEmailResult = {
+  ok: boolean;
+  sent: number;
+  failed: number;
+  skipped: number;
+  total: number;
+  reason?: string;
+};
+
+export async function blastContestEmail(
+  contestId: string,
+  params: { subject: string; html: string; recipientFilter: BlastEmailFilter },
+): Promise<BlastEmailResult> {
+  return callCoreliaApi<BlastEmailResult>("hackathons.blastEmail", {
+    hackathon_id: contestId,
+    subject: params.subject,
+    html: params.html,
+    recipient_filter: params.recipientFilter,
+  });
 }
 
 export async function getMyContestAccessInvite(
@@ -1035,10 +1069,10 @@ export async function createContestAccessInvite(
 ): Promise<void> {
   const { uid } = await requireContestManager();
   const contest = await getContest(contestId);
-  if (!contest) throw new Error("Không tìm thấy cuộc thi.");
+  if (!contest) throw new Error("not_found:contest");
 
   const email = sanitizeEmail(input.email);
-  if (!email) throw new Error("Email mời không hợp lệ.");
+  if (!email) throw new Error("invalid_input:invite_email");
 
   const roles = Array.from(new Set(input.roles));
   const inviteId = contestInviteId(contestId, email);
@@ -1095,14 +1129,14 @@ export async function respondToContestAccessInvite(
   status: Extract<ContestAccessInvite["status"], "accepted" | "declined">,
 ): Promise<void> {
   const user = await requireCurrentUser();
-  if (!user.email) throw new Error("Tài khoản của bạn chưa có email.");
+  if (!user.email) throw new Error("missing_email:account");
   const id = contestInviteId(contestId, user.email);
   const { data: row, error: fe } = await supabase
     .from("hackathon_access_invites")
     .select("*")
     .eq("id", id)
     .single();
-  if (fe || !row) throw new Error(fe?.message ?? "Không tìm thấy lời mời");
+  if (fe || !row) throw new Error(fe?.message ?? "not_found:invite");
   const doc = (row.document ?? {}) as Record<string, unknown>;
   const next = { ...doc, status, responded_at: new Date().toISOString() };
   const { error } = await supabase
@@ -1187,14 +1221,14 @@ export async function upsertContestSubmission(
 ): Promise<ContestSubmission> {
   const user = await requireCurrentUser();
   const contest = await getContest(contestId);
-  if (!contest) throw new Error("Không tìm thấy cuộc thi.");
+  if (!contest) throw new Error("not_found:contest");
   const registration = await getMyContestRegistration(contestId, user);
   if (!registration || registration.status !== "approved") {
-    throw new Error("Chỉ hồ sơ đã được duyệt mới có thể nộp bài.");
+    throw new Error("forbidden:submission_not_approved");
   }
 
   if (isPastContestSubmissionDeadline(contest)) {
-    throw new Error("Đã quá hạn nộp và chỉnh sửa bài (submission deadline).");
+    throw new Error("forbidden:submission_deadline_passed");
   }
 
   const existing = await getMyContestSubmission(contestId, user);
@@ -1243,7 +1277,21 @@ export async function upsertContestSubmission(
 export async function listContestSubmissions(
   contestId: string,
   prefetch?: PrefetchedContestActorContext,
+  limit = 500,
 ): Promise<ContestSubmission[]> {
+  const clampedLimit = Math.min(limit, 500);
+
+  function mapSubmission(row: Record<string, unknown>): ContestSubmission {
+    const d = row.document as Record<string, unknown>;
+    const hid = getHackathonIdFromRow(row);
+    return {
+      id: row.id,
+      contest_id: hid ?? contestId,
+      user_id: row.user_id,
+      ...d,
+    } as ContestSubmission;
+  }
+
   if (prefetch && prefetch.contest.id === contestId) {
     const { viewer: user, contest, profile } = prefetch;
     const canSeeAll =
@@ -1252,71 +1300,51 @@ export async function listContestSubmissions(
     let q = supabase
       .from("hackathon_submissions")
       .select("*")
-      .eq("hackathon_id", contestId);
+      .eq("hackathon_id", contestId)
+      .limit(clampedLimit);
     if (!canSeeAll) q = q.eq("user_id", user.id);
     const { data, error } = await q;
     if (error) throw new Error(error.message);
-    return (data ?? [])
-      .map((row) => {
-        const d = row.document as Record<string, unknown>;
-        const hid = getHackathonIdFromRow(row as unknown as Record<string, unknown>);
-        return {
-          id: row.id,
-          contest_id: hid ?? contestId,
-          user_id: row.user_id,
-          ...d,
-        } as ContestSubmission;
-      })
-      .sort((a, b) => String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")));
+    return (data ?? []).map((row) => mapSubmission(row as Record<string, unknown>));
   }
 
   const user = await requireCurrentUser();
   const [profile, contest] = await Promise.all([getProfileForUser(user), getContest(contestId)]);
-  if (!contest) throw new Error("Không tìm thấy cuộc thi.");
+  if (!contest) throw new Error("not_found:contest");
 
   const canSeeAll = canScoreContest(contest, profile, user.email) || canManageContests(profile);
-    let q = supabase
-      .from("hackathon_submissions")
-      .select("*")
-      .eq("hackathon_id", contestId);
+  let q = supabase
+    .from("hackathon_submissions")
+    .select("*")
+    .eq("hackathon_id", contestId)
+    .limit(clampedLimit);
   if (!canSeeAll) q = q.eq("user_id", user.id);
   const { data, error } = await q;
   if (error) throw new Error(error.message);
-  return (data ?? [])
-    .map((row) => {
-      const d = row.document as Record<string, unknown>;
-      const hid = getHackathonIdFromRow(row as unknown as Record<string, unknown>);
-      return {
-        id: row.id,
-        contest_id: hid ?? contestId,
-        user_id: row.user_id,
-        ...d,
-      } as ContestSubmission;
-    })
-    .sort((a, b) => String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")));
+  return (data ?? []).map((row) => mapSubmission(row as Record<string, unknown>));
 }
 
 export async function listContestScores(
   contestId: string,
   prefetch?: PrefetchedContestActorContext,
+  limit = 500,
 ): Promise<ContestScore[]> {
   await requireContestScorer(contestId, prefetch);
   const { data, error } = await supabase
     .from("hackathon_scores")
     .select("*")
-    .eq("hackathon_id", contestId);
+    .eq("hackathon_id", contestId)
+    .limit(Math.min(limit, 500));
   if (error) throw new Error(error.message);
-  return (data ?? [])
-    .map((row) => {
-      const d = row.document as Record<string, unknown>;
-      const hackathonId = getHackathonIdFromRow(row as unknown as Record<string, unknown>);
-      return {
-        id: row.id,
-        contest_id: hackathonId ?? contestId,
-        ...d,
-      } as ContestScore;
-    })
-    .sort((a, b) => String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")));
+  return (data ?? []).map((row) => {
+    const d = row.document as Record<string, unknown>;
+    const hackathonId = getHackathonIdFromRow(row as unknown as Record<string, unknown>);
+    return {
+      id: row.id,
+      contest_id: hackathonId ?? contestId,
+      ...d,
+    } as ContestScore;
+  });
 }
 
 export async function scoreContestSubmission(
@@ -1409,7 +1437,7 @@ export async function refreshContestMetricsSnapshot(
     getProfileForUser(user),
     getContest(contestId),
   ]);
-  if (!contest) throw new Error("Không tìm thấy cuộc thi.");
+  if (!contest) throw new Error("not_found:contest");
   if (!canReviewContestApplications(contest, profile)) {
     throw new Error("Bạn không có quyền duyệt hồ sơ contest này.");
   }

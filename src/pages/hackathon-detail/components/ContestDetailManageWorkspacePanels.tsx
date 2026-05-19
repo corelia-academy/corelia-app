@@ -1,5 +1,6 @@
 import { ContestDetailAnalyticsPanel } from "@/pages/hackathon-detail/components/ContestDetailAnalyticsPanel";
 import { ContestDetailApplicationsPanel } from "@/pages/hackathon-detail/components/ContestDetailApplicationsPanel";
+import { ContestDetailBlastEmailPanel } from "@/pages/hackathon-detail/components/ContestDetailBlastEmailPanel";
 import { ContestDetailJudgingPanel } from "@/pages/hackathon-detail/components/ContestDetailJudgingPanel";
 import { ContestDetailResultsBlocks } from "@/pages/hackathon-detail/components/ContestDetailResultsBlocks";
 import { ContestDetailTranslationsPanel } from "@/pages/hackathon-detail/components/ContestDetailTranslationsPanel";
@@ -16,6 +17,7 @@ export function ContestDetailManageWorkspacePanels() {
       <ContestDetailJudgingPanel vm={vm} />
       <ContestDetailAnalyticsPanel vm={vm} />
       <ContestDetailTranslationsPanel vm={vm} />
+      <ContestDetailBlastEmailPanel vm={vm} />
       <ContestDetailResultsBlocks vm={vm} />
     </>
   );

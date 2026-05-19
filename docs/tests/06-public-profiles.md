@@ -19,8 +19,8 @@ Phủ `/u/:handle` và luồng redirect `:handle/*` (short URL profile).
 
 1. Ẩn danh: `/u/<handle_hợp_lệ>` — layout load (bio, links, projects public nếu có).
 2. Handle **không tồn tại** — 404 hoặc empty theo spec app (ghi nhận).
-3. Nếu team dùng short URL `/<handle>/...`: thử path có seed — redirect đúng hoặc landing đúng ([App.tsx](../../src/App.tsx) route `:handle/*`).
-4. Đăng nhập chính chủ: so sánh một vài field private không lộ trên guest (theo thiết kế).
+3. Nếu team dùng short URL `/<handle>/...`: thử path có seed — redirect đúng hoặc landing đúng ([App.tsx](../../src/App.tsx) route `:handle/*`). Tránh handle trùng reserved route (`hackathons`, `career`, `cora`, `courses`, …).
+4. Đăng nhập chính chủ: so sánh một vài field private không lộ trên guest (theo thiết kế). Profile có thể dùng `ocid` làm handle public nếu đã link OCID.
 
 ## Kết quả mong đợi
 

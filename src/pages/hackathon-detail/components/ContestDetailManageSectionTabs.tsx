@@ -21,7 +21,7 @@ export function ContestDetailManageSectionTabs({
     ...(canReview ? (["applications"] as const) : []),
     ...(canJudge ? (["judging"] as const) : []),
     ...(canViewAggregate ? (["analytics"] as const) : []),
-    ...(isManager ? (["translations", "awards", "settings"] as const) : []),
+    ...(isManager ? (["translations", "awards", "email", "settings"] as const) : []),
   ] as const;
 
   const base = contest.slug
@@ -64,7 +64,9 @@ export function ContestDetailManageSectionTabs({
                       ? translate("workspace.tabs.translations")
                       : key === "awards"
                         ? translate("workspace.tabs.awards")
-                        : translate("workspace.tabs.settings")}
+                        : key === "email"
+                          ? translate("workspace.email.tabLabel")
+                          : translate("workspace.tabs.settings")}
           </NavLink>
         ))}
       </div>

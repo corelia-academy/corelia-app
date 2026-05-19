@@ -84,6 +84,7 @@
       "analytics": "Analytics",
       "translations": "Translations",
       "awards": "Awards",
+      "email": "Email blast",
       "settings": "Settings"
     },
     "awards": {
@@ -125,6 +126,35 @@
     },
     "settings": {
       "description": "Edit contest settings and protect destructive actions."
+    },
+    "email": {
+      "tabLabel": "Email blast",
+      "heroTitle": "Email blast",
+      "heroDescription": "Send an announcement or reminder to registered contestants.",
+      "recipientFilterLabel": "Recipients",
+      "filterAll": "All registrants",
+      "filterApproved": "Approved only",
+      "filterPending": "Pending only",
+      "filterRejected": "Rejected only",
+      "recipientCount": "{{count}} recipients selected",
+      "recipientCountZero": "No recipients match this filter",
+      "subjectLabel": "Subject",
+      "subjectPlaceholder": "e.g. Submission reminder — 48h left",
+      "bodyLabel": "Body (HTML)",
+      "bodyPlaceholder": "<p>Hello everyone,</p>\n<p>...</p>",
+      "bodyPreviewToggle": "Preview",
+      "sendButton": "Send email blast",
+      "confirmTitle": "Confirm email blast",
+      "confirmDescription": "You are about to send this email to {{count}} recipients. This action cannot be undone.",
+      "confirmSubjectLabel": "Subject:",
+      "confirmButton": "Send now",
+      "cancelButton": "Cancel",
+      "resultSent": "Sent {{sent}} of {{total}}",
+      "resultFailed": "Failed: {{failed}}",
+      "resultSkipped": "Skipped (no email on file): {{skipped}}",
+      "toastSuccess": "Email blast sent",
+      "toastError": "Failed to send email blast",
+      "notConfigured": "Email not configured — set RESEND_API_KEY and MAIL_FROM in your Supabase environment."
     },
     "manage": {
       "backToContests": "Back to hackathons",
@@ -934,9 +964,18 @@
     "errors": {
       "notFound": "Contest not found.",
       "loadFailed": "Unable to load the contest.",
+      "timeout": "The request took too long. Please refresh and try again.",
       "deleteAccessDeniedTitle": "Unable to access the contest",
       "deleteAccessDeniedFallback": "Contest not found.",
-      "workspaceAccessDenied": "You don't have access to this contest's workspace."
+      "workspaceAccessDenied": "You don't have access to this contest's workspace.",
+      "unauthenticated": "You must be signed in to do this.",
+      "forbiddenManage": "You don't have permission to manage this contest.",
+      "forbiddenScore": "You don't have permission to score submissions.",
+      "forbiddenReview": "You don't have permission to review applications.",
+      "submissionNotApproved": "Only approved participants can submit a project.",
+      "submissionDeadlinePassed": "The submission deadline has passed.",
+      "invalidInviteEmail": "The invite email address is not valid.",
+      "missingAccountEmail": "Your account does not have an email address."
     },
     "toasts": {
       "draftRedirect": "This contest isn't public yet.",

@@ -1,5 +1,6 @@
 import { contestPublicShowcaseProjectsNavVisible } from "@/pages/hackathon-detail/utils/contestShowcase";
 import { useContestDetailVm } from "@/pages/hackathon-detail/ContestDetailContext";
+import { SectionErrorBoundary } from "@/components/ErrorBoundary";
 import { ContestPublicTimelineSection } from "@/pages/hackathon-detail/components/ContestPublicTimelineSection";
 import { ContestPublicResourcesSection } from "@/pages/hackathon-detail/components/ContestPublicResourcesSection";
 import { ContestPublicTrackSection } from "@/pages/hackathon-detail/components/ContestPublicTrackSection";
@@ -23,24 +24,50 @@ export function ContestDetailPublicFullSections() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <ContestPublicResourcesSection contest={contest} t={translate} />
-      <ContestPublicTimelineSection
-        contest={contest}
-        t={translate}
-        milestonesCustom={milestonesCustom}
-        timelineRows={timelineRows}
-        formatDateTime={formatDateTime}
-      />
-      <ContestPublicTrackSection contest={contest} t={translate} />
-      <ContestPublicPrizesSection contest={contest} t={translate} />
-      <ContestPublicBadgesSection contest={contest} t={translate} />
-      <ContestPublicLearningSection contest={contest} t={translate} />
-      <ContestPublicPeopleSection contest={contest} t={translate} />
-      <ContestPublicOrganizationalPartnersSection contest={contest} t={translate} />
-      <ContestPublicRulesSection contest={contest} t={translate} />
-      <ContestPublicFaqsSection contest={contest} t={translate} />
-      <ContestDetailResultsBlocks vm={vm} />
-      {showProjects ? <ContestPublicProjectsSection contest={contest} t={translate} /> : null}
+      <SectionErrorBoundary>
+        <ContestPublicResourcesSection contest={contest} t={translate} />
+      </SectionErrorBoundary>
+      <SectionErrorBoundary>
+        <ContestPublicTimelineSection
+          contest={contest}
+          t={translate}
+          milestonesCustom={milestonesCustom}
+          timelineRows={timelineRows}
+          formatDateTime={formatDateTime}
+        />
+      </SectionErrorBoundary>
+      <SectionErrorBoundary>
+        <ContestPublicTrackSection contest={contest} t={translate} />
+      </SectionErrorBoundary>
+      <SectionErrorBoundary>
+        <ContestPublicPrizesSection contest={contest} t={translate} />
+      </SectionErrorBoundary>
+      <SectionErrorBoundary>
+        <ContestPublicBadgesSection contest={contest} t={translate} />
+      </SectionErrorBoundary>
+      <SectionErrorBoundary>
+        <ContestPublicLearningSection contest={contest} t={translate} />
+      </SectionErrorBoundary>
+      <SectionErrorBoundary>
+        <ContestPublicPeopleSection contest={contest} t={translate} />
+      </SectionErrorBoundary>
+      <SectionErrorBoundary>
+        <ContestPublicOrganizationalPartnersSection contest={contest} t={translate} />
+      </SectionErrorBoundary>
+      <SectionErrorBoundary>
+        <ContestPublicRulesSection contest={contest} t={translate} />
+      </SectionErrorBoundary>
+      <SectionErrorBoundary>
+        <ContestPublicFaqsSection contest={contest} t={translate} />
+      </SectionErrorBoundary>
+      <SectionErrorBoundary>
+        <ContestDetailResultsBlocks vm={vm} />
+      </SectionErrorBoundary>
+      {showProjects ? (
+        <SectionErrorBoundary>
+          <ContestPublicProjectsSection contest={contest} t={translate} />
+        </SectionErrorBoundary>
+      ) : null}
       <ContestPublicFinalCtaSection />
     </div>
   );

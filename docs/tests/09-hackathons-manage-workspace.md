@@ -4,54 +4,84 @@ Xem hub: [README.md](./README.md).
 
 ## Mục tiêu
 
-Phủ `/hackathons/manage`, `/hackathons/new`, và `/hackathons/:slug/manage/:section` (workspace organizer).
+Phủ `/hackathons/manage`, `/hackathons/new`, và workspace **`/hackathons/:slug/manage/:section`** với các tab theo role: `overview`, `applications`, `judging`, `analytics`, `translations`, `awards`, `email`, `settings`.
 
 ## Gate quyền (code)
 
-- [`RequireContestManager`](../../src/components/auth/RequireContestManager.tsx) cho phép:
-  - User có `profiles.role` thuộc **instructor workspace**: `instructor`, `support_staff`, `admin` (xem [`ROLE_GROUPS.instructorWorkspace`](../../src/config/roles.ts)).
-  - **Hoặc** user đã login có **email** xuất hiện trong **`co_organizer_emails`** của ít nhất một contest trên DB (hàm `hasHackathonCoOrganizerAccess`).
-- Workspace `/hackathons/:slug/manage/*` bọc `RequireAuth`; quyền chi tiết từng section có thể phụ thuộc contest + email (judge, reviewer, …) — logic scoped xem [`permissions.ts`](../../src/lib/permissions.ts).
+- [`RequireContestManager`](../../src/components/auth/RequireContestManager.tsx) cho catalog `/hackathons/manage` và `/hackathons/new`:
+  - `profiles.role` thuộc **instructor workspace**: `instructor`, `support_staff`, `admin` ([`ROLE_GROUPS.instructorWorkspace`](../../src/config/roles.ts)).
+  - **Hoặc** email user trong **`co_organizer_emails`** của ít nhất một contest (`hasHackathonCoOrganizerAccess`).
+- Workspace `/hackathons/:slug/manage/*` chỉ bọc `RequireAuth`; tab và hành động theo scoped roles — [`permissions.ts`](../../src/lib/permissions.ts), [`ContestDetailManageSectionTabs.tsx`](../../src/pages/hackathon-detail/components/ContestDetailManageSectionTabs.tsx).
+
+### Ma trận tab manage
+
+| Section | Manager | Reviewer | Judge | Aggregate observer |
+|---------|---------|----------|-------|-------------------|
+| overview | ✓ | ✓ | ✓ | ✓ |
+| applications | ✓ | ✓ | — | — |
+| judging | ✓ | — | ✓ | — |
+| analytics | ✓ | — | — | ✓ |
+| translations, awards, email, settings | ✓ | — | — | — |
 
 ## Tiền đề staging
 
-- Contest seed có `slug` đã biết.
-- Tài khoản **Scoped_coorganizer**: email đã được gán vào `co_organizer_emails` của contest đó (staging).
+- Contest seed có `slug` đã biết, có registrations ở nhiều status (approved / pending / rejected) cho email blast.
+- **Scoped_coorganizer**: email trong `co_organizer_emails`.
+- *(Tuỳ chọn)* **Scoped_reviewer**: email trong `reviewer_emails`.
+- *(Tuỳ chọn)* **Scoped_judge**: email trong `judge_emails`.
+- Edge Function `hackathons.blastEmail` đã deploy staging; biến `RESEND_API_KEY`, `MAIL_FROM` (hoặc ghi nhận `notConfigured`).
 
 ## Tài khoản cần dùng
 
 | Account | Mục đích |
 |---------|----------|
-| **Instructor_1** | `/hackathons/manage`, `/hackathons/new`, manage đầy đủ |
+| **Instructor_1** | Catalog, new, manage đầy đủ (manager) |
 | **Admin_1** hoặc **Support_1** | Giống instructor cho gate catalog + manage |
-| **Scoped_coorganizer** (`student` + email trong contest) | Vào được `/hackathons/manage` & `/hackathons/new` dù không phải instructor |
-| **Student_1** (không trong co_organizer) | Truy cập `/hackathons/manage` → redirect `/hackathons` (fallback mặc định) |
+| **Scoped_coorganizer** | `/hackathons/manage` & `/hackathons/new` dù role `student` |
+| **Scoped_reviewer** *(tuỳ chọn)* | Tab `applications` only |
+| **Scoped_judge** *(tuỳ chọn)* | Tab `judging` only |
+| **Student_1** (không scoped) | `/hackathons/manage` → redirect `/hackathons` |
 
 ## Checklist
 
 ### Catalog quản lý
 
-1. Đăng nhập **Instructor_1**, mở `/hackathons/manage` — danh sách contest có quyền quản lý.
-2. Đăng nhập **Scoped_coorganizer** (`student`), mở `/hackathons/manage` — **được vào** (không bị đá về `/hackathons` ngay).
-3. Đăng nhập **Student_1** (không scoped), mở `/hackathons/manage` — **bị redirect** về `/hackathons`.
+1. **Instructor_1**: `/hackathons/manage` — danh sách contest có quyền quản lý.
+2. **Scoped_coorganizer**: `/hackathons/manage` — **được vào** (không redirect ngay).
+3. **Student_1** (không scoped): `/hackathons/manage` — **redirect** về `/hackathons`.
 
 ### Tạo contest
 
-4. **Instructor_1**: `/hackathons/new` — điền form tối thiểu, submit (hoặc save draft theo UI).
-5. **Scoped_coorganizer**: `/hackathons/new` — xác nhận có quyền tạo hoặc bị chặn bưởi RLS/API (ghi nhận hành vi đúng spec backend).
+4. **Instructor_1**: `/hackathons/new` — form tối thiểu, submit hoặc save draft.
+5. **Scoped_coorganizer**: `/hackathons/new` — quyền tạo hoặc chặn RLS/API (ghi nhận hành vi backend).
 
-### Workspace theo slug
+### Workspace — manager (Instructor_1)
 
-6. Với slug seed, mở `/hackathons/<slug>/manage/<section>` — shell load; tab quản lý (overview, submissions, judges, … theo UI) không crash.
-7. Kiểm tra user chỉ có quyền **đọc một phần** nếu chỉ là mentor/judge (seed email vào `mentor_emails` / `judge_emails`) — đối chiếu [`getContestScopedViewerRoles`](../../src/lib/permissions.ts).
+6. `/hackathons/<slug>/manage` — redirect/index tới `.../manage/overview`.
+7. **overview**: operating model 4 phase, metrics strip; **publish results** (leaderboard / winners) — sau publish kiểm tra `#results` trên public ([08](./08-hackathons-public.md)).
+8. **applications**: search, filter theo status, pagination — không crash với nhiều registration.
+9. **judging**, **analytics**, **translations**, **awards**, **settings** — smoke load từng tab.
+10. **email** (Email blast):
+    - Filter all / approved / pending / rejected — số lượng khớp tab applications.
+    - Subject (≤200 ký tự), HTML body, toggle preview.
+    - Confirm dialog → banner kết quả (sent / failed / skipped) + toast.
+    - Staging: dùng nội dung test; nếu thiếu Resend env → message `notConfigured`, không crash.
+11. **Negative**: **Scoped_reviewer** — **không** thấy tab `email` (ghi nhận; API có thể khác UI).
 
-### Tuỳ chọn — reviewer applications
+### Workspace — scoped roles
 
-8. Seed email **Student_1** vào `reviewer_emails` — xác nhận có thể review applications nếu UI có.
+12. **Scoped_reviewer**: chỉ thấy `overview` + `applications`; không thấy `email`, `settings`, `judging`.
+13. **Scoped_judge**: chỉ thấy `overview` + `judging`; không thấy `applications` list đầy đủ nếu policy chặn.
+14. User chỉ trong `mentor_emails` / `judge_emails` — đối chiếu [`getContestScopedViewerRoles`](../../src/lib/permissions.ts) (ghi nhận quyền đọc một phần).
+
+### Liên kết public
+
+15. Sau publish results trên overview — mở `/hackathons/<slug>#results` ([08](./08-hackathons-public.md)) và xác nhận dữ liệu hiển thị.
 
 ## Kết quả mong đợi
 
-- Phân biệt rõ ba nhóm: instructor/admin/support vs co-organizer scoped vs student thường.
+- Phân biệt rõ: instructor/admin/support vs co-organizer vs reviewer/judge scoped vs student thường.
+- Tab manage khớp ma trận role; email blast hoạt động hoặc báo cấu hình thiếu rõ ràng.
 
 ## Ghi chú bug
 

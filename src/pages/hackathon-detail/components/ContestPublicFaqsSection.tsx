@@ -23,10 +23,10 @@ export function ContestPublicFaqsSection(props: {
                 key={`${faq.question}-${index}`}
                 className="group rounded-md border border-border-subtle bg-surface-base px-4 py-3"
               >
-                <summary className="cursor-pointer list-none text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
+                <summary className="cursor-pointer list-none rounded text-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/50 [&::-webkit-details-marker]:hidden">
                   <span className="flex items-center justify-between gap-2">
                     {faq.question}
-                    <span className="text-xs text-foreground-muted group-open:rotate-180">
+                    <span className="text-xs text-foreground-muted group-open:rotate-180" aria-hidden>
                       ▼
                     </span>
                   </span>

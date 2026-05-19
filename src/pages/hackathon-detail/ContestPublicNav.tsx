@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Contest } from "@/types/hackathons";
 import { contestPublicShowcaseProjectsNavVisible } from "@/pages/hackathon-detail/utils/contestShowcase";
+import type { HackathonLifecycle } from "@/pages/hackathon-detail/utils/contestLifecycle";
 import { useContestDetailVm } from "@/pages/hackathon-detail/ContestDetailContext";
 import { Link, useLocation } from "react-router";
 
 type NavItem = { key: string; id: string; hash: string };
 
-function buildNavItems(contest: Contest): NavItem[] {
+function buildNavItems(contest: Contest, lifecycle: HackathonLifecycle | null): NavItem[] {
   const showProjects = contestPublicShowcaseProjectsNavVisible(contest);
   const items: NavItem[] = [];
   if (contest.description?.trim()) {
@@ -58,7 +59,7 @@ function buildNavItems(contest: Contest): NavItem[] {
     items.push({ key: "faqs", id: "faq", hash: "#faq" });
   }
   const resultsVisible =
-    contest.status === "ended" &&
+    lifecycle === "ended" &&
     (contest.published_leaderboard.length > 0 ||
       contest.winner_announcements.length > 0);
   if (resultsVisible) {
@@ -73,12 +74,12 @@ function buildNavItems(contest: Contest): NavItem[] {
 
 export function ContestPublicNav() {
   const vm = useContestDetailVm();
-  const { contest, translate } = vm;
+  const { contest, translate, hackathonLifecycle } = vm;
   const location = useLocation();
   const contestSlug = contest.slug?.trim() || "";
   const base = contestSlug ? `/hackathons/${contestSlug}` : "/hackathons";
 
-  const navItems = useMemo(() => buildNavItems(contest), [contest]);
+  const navItems = useMemo(() => buildNavItems(contest, hackathonLifecycle), [contest, hackathonLifecycle]);
 
   /** Ignore intersection-driven highlights briefly after hash navigation (avoids tab flicker while smooth-scroll runs). */
   const ignoreIntersectionUntilRef = useRef(0);

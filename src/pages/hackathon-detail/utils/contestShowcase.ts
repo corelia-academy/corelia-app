@@ -2,7 +2,7 @@ import type { Contest, ContestLeaderboardEntry } from "@/types/hackathons";
 import type { ContestLinkedShowcaseProject } from "@/types/projects";
 
 export function contestPublicShowcaseProjectsNavVisible(contest: Contest): boolean {
-  if (!["published", "running", "ended"].includes(contest.status)) return false;
+  if (contest.status === "draft") return false;
   const submissionsTotal = Number(contest.metrics_snapshot?.submissions_total ?? 0);
   return submissionsTotal > 0 || (contest.published_leaderboard?.length ?? 0) > 0;
 }
