@@ -14,6 +14,11 @@ verify_jwt = false
 # CORS/preflight behavior as the rest of the Corelia edge functions.
 verify_jwt = false
 
+[functions.generate-description]
+# Instructor workspace helper. Keep preflight/CORS behavior consistent and
+# verify the bearer token in the handler so we can enforce role + entity access.
+verify_jwt = false
+
 [api]
 enabled = true
 # Port to use for the API URL.

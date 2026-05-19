@@ -334,7 +334,11 @@
       "supportedLocalesHint": "Bật/tắt ngôn ngữ nội dung của khoá. Tiến độ học không đổi khi đổi ngôn ngữ.",
       "primaryLocaleLabel": "Ngôn ngữ nội dung chính",
       "editingLocaleLabel": "Đang chỉnh nội dung cho ngôn ngữ",
-      "editingNonPrimaryHint": "Bạn đang chỉnh bản dịch. Nội dung ngôn ngữ chính vẫn giữ riêng."
+      "editingNonPrimaryHint": "Bạn đang chỉnh bản dịch. Nội dung ngôn ngữ chính vẫn giữ riêng.",
+      "translationModeBadge": "Translation mode",
+      "currentLocaleBadge": "Đang sửa",
+      "primaryEditingHint": "Bạn đang chỉnh trực tiếp ngôn ngữ gốc của khoá học.",
+      "translationEditingHint": "Bạn đang chỉnh bản dịch từ {{source}} sang {{target}}."
     },
     "defaults": {
       "lessonTitle": "Bài học"
@@ -588,6 +592,74 @@
       "cancel": "Huỷ",
       "save": "Lưu"
     },
+    "descriptionGenerator": {
+      "trigger": "Generate",
+      "translateTrigger": "Translate with AI",
+      "courseTitle": "Generate mô tả khoá học",
+      "courseDescription": "Mô tả sẽ được tổng hợp từ nội dung các bài học hiện có trong khoá học.",
+      "translateCourseTitle": "AI translate mô tả khoá học",
+      "translateCourseDescription": "Dịch nội dung hiện có từ {{source}} sang {{target}} trước khi bạn lưu.",
+      "sectionTitle": "Generate mô tả chương",
+      "sectionDescription": "Mô tả sẽ được tổng hợp từ các bài học bên trong chương này.",
+      "translateSectionTitle": "AI translate mô tả chương",
+      "translateSectionDescription": "Dịch nội dung hiện có từ {{source}} sang {{target}} trước khi bạn lưu.",
+      "lessonTitle": "Generate mô tả bài học",
+      "lessonDescription": "Mô tả sẽ dựa trên nội dung video của bài học này và phần nội dung hiện có nếu có.",
+      "translateLessonTitle": "AI translate nội dung bài học",
+      "translateLessonDescription": "Dịch nội dung hiện có từ {{source}} sang {{target}} trước khi bạn lưu.",
+      "currentCourseSource": "Nguồn nội dung hiện có",
+      "translateDialogHint": "Bạn có thể translate nhanh từ ngôn ngữ gốc rồi tinh chỉnh lại bản dịch trước khi lưu.",
+      "sourcesTitle": "Nguồn nội dung dùng để generate",
+      "emptySources": "Chưa có nguồn nội dung khả dụng.",
+      "previewTitle": "Bản nháp mô tả",
+      "previewPlaceholder": "Nhấn Generate để tạo mô tả nháp...",
+      "generate": "Generate description",
+      "generating": "Đang generate...",
+      "translating": "Đang dịch...",
+      "cancel": "Huỷ",
+      "useDescription": "Dùng mô tả này",
+      "warnings": {
+        "limited": "Nội dung nguồn hiện còn ít. Hãy kiểm tra đủ nội dung để generate mô tả chất lượng.",
+        "notEnough": "Hãy kiểm tra đủ nội dung để generate mô tả chất lượng."
+      },
+      "sourceKinds": {
+        "shortDescription": "Mô tả ngắn",
+        "longDescription": "Mô tả chi tiết",
+        "transcript": "Nội dung video",
+        "missing": "Nguồn còn thiếu"
+      },
+      "errors": {
+        "generic": "Không thể generate mô tả lúc này."
+      }
+    },
+    "translationCoverage": {
+      "title": "Translation coverage",
+      "description": "Theo dõi nhanh phần nào của bản {{target}} đã có nội dung và phần nào có thể dịch từ {{source}}.",
+      "completed": "{{completed}} / {{total}} field đã có",
+      "readyToTranslate": "{{count}} field sẵn sàng dịch",
+      "states": {
+        "done": "Đã có",
+        "ready": "Có thể dịch",
+        "missing": "Chưa có nguồn"
+      },
+      "messages": {
+        "filled": "Field này đã có nội dung ở locale {{locale}}.",
+        "sourceAvailable": "Đang trống ở locale hiện tại nhưng đã có nội dung gốc ở {{locale}}.",
+        "noSource": "Hiện chưa có nội dung nguồn đủ rõ để dịch tự động."
+      },
+      "actions": {
+        "openField": "Mở field này"
+      },
+      "fields": {
+        "title": "Tên khoá học",
+        "shortDescription": "Mô tả ngắn",
+        "description": "Mô tả",
+        "learningOutcomes": "Bạn sẽ học được gì",
+        "assignmentTitle": "Tiêu đề bài tập",
+        "assignmentDescription": "Mô tả bài tập",
+        "assignmentInstructions": "Hướng dẫn bài tập"
+      }
+    },
     "lessons": {
       "edit": "Sửa",
       "editTitle": "Chỉnh sửa bài học",
@@ -690,4 +762,3 @@
     }
   }
 }
-
