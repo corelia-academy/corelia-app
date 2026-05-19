@@ -43,6 +43,31 @@ CREATE TABLE IF NOT EXISTS public.ai_vouchers (
   CONSTRAINT ai_vouchers_code_len_chk CHECK (char_length(code) BETWEEN 4 AND 32)
 );
 
+-- If the table already existed in a partially-created state, add back the
+-- missing relation column before creating indexes that depend on it.
+ALTER TABLE public.ai_vouchers
+  ADD COLUMN IF NOT EXISTS batch_id uuid REFERENCES public.ai_voucher_batches (id) ON DELETE CASCADE;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'ai_vouchers'
+      AND column_name = 'batch_id'
+      AND is_nullable = 'YES'
+  ) AND NOT EXISTS (
+    SELECT 1
+    FROM public.ai_vouchers
+    WHERE batch_id IS NULL
+  ) THEN
+    ALTER TABLE public.ai_vouchers
+      ALTER COLUMN batch_id SET NOT NULL;
+  END IF;
+END
+$$;
+
 CREATE UNIQUE INDEX IF NOT EXISTS ai_vouchers_code_key ON public.ai_vouchers (code);
 CREATE INDEX IF NOT EXISTS ai_vouchers_batch_idx ON public.ai_vouchers (batch_id, created_at DESC);
 
