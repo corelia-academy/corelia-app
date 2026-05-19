@@ -375,7 +375,9 @@
       "expiryLabel": "Valid until",
       "daysLeftLabel": "Time remaining",
       "daysLeft_one": "{{count}} day left",
-      "daysLeft_other": "{{count}} days left"
+      "daysLeft_other": "{{count}} days left",
+      "monthlyUsageLabel": "Messages this month",
+      "windowUsageLabel": "Messages (last {{hours}}h)"
     },
     "selector": {
       "title": "Choose the right plan",

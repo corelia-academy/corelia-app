@@ -22,6 +22,7 @@ import {
 } from "@/lib/payments";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
+import { useCoraStore } from "@/stores/coraStore";
 import { formatVndPrice } from "@/types/courses";
 
 const TIER_ORDER: AiSubscriptionTier[] = ["student", "pro", "bootcamp"];
@@ -81,6 +82,8 @@ export function AccountCoraRoute() {
   const { t } = useTranslation("account");
   const location = useLocation();
   const { user, aiSubscription, daysUntilExpiry, loadAiSubscription } = useAuth();
+  const coraQuotaInfo = useCoraStore((s) => s.quotaInfo);
+  const setCoraQuotaInfo = useCoraStore((s) => s.setQuotaInfo);
   const [selectedTierOverride, setSelectedTierOverride] =
     useState<AiSubscriptionTier | null>(null);
   const [selectedDuration, setSelectedDuration] =
@@ -196,6 +199,7 @@ export function AccountCoraRoute() {
           if (result.status === "paid") {
             setPaymentVerificationState("verified");
             window.sessionStorage.removeItem("corelia:lastCheckout");
+            setCoraQuotaInfo(null);
             await Promise.all([loadAiSubscription(), loadAiTransactions()]);
             return;
           }
@@ -326,6 +330,47 @@ export function AccountCoraRoute() {
                   </span>
                 </div>
               </div>
+              {coraQuotaInfo ? (
+                <div className="mt-4 grid gap-3 border-t border-border-subtle pt-4 text-sm text-foreground-muted">
+                  {coraQuotaInfo.monthlyLimit != null ? (
+                    <div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span>{t("cora.currentPlan.monthlyUsageLabel")}</span>
+                        <span className="font-medium text-foreground">
+                          {coraQuotaInfo.monthlyUsed} / {coraQuotaInfo.monthlyLimit}
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-border-subtle">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all"
+                          style={{
+                            width: `${Math.min((coraQuotaInfo.monthlyUsed / coraQuotaInfo.monthlyLimit) * 100, 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3">
+                      <span>{t("cora.currentPlan.monthlyUsageLabel")}</span>
+                      <span className="font-medium text-foreground">
+                        {coraQuotaInfo.monthlyUsed}
+                      </span>
+                    </div>
+                  )}
+                  {coraQuotaInfo.windowSoftCap != null ? (
+                    <div className="flex items-center justify-between gap-3">
+                      <span>
+                        {t("cora.currentPlan.windowUsageLabel", {
+                          hours: coraQuotaInfo.windowHours,
+                        })}
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {coraQuotaInfo.windowUsed} / {coraQuotaInfo.windowSoftCap}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
         </section>

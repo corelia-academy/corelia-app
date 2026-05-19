@@ -375,7 +375,9 @@
       "expiryLabel": "Hiệu lực đến",
       "daysLeftLabel": "Thời gian còn lại",
       "daysLeft_one": "Còn {{count}} ngày",
-      "daysLeft_other": "Còn {{count}} ngày"
+      "daysLeft_other": "Còn {{count}} ngày",
+      "monthlyUsageLabel": "Tin nhắn tháng này",
+      "windowUsageLabel": "Tin nhắn ({{hours}}h qua)"
     },
     "selector": {
       "title": "Chọn gói phù hợp",
