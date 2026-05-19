@@ -62,3 +62,9 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy ai-tutor --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy Edge Function (generate-description)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy generate-description --project-ref "$SUPABASE_PROJECT_REF"
