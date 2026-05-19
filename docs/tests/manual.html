@@ -268,13 +268,15 @@
           "<tr><td><strong>Instructor_1</strong></td><td>Instructor + hackathon manager</td><td>instructor</td><td>Gán profiles.role staging</td></tr>" +
           "<tr><td><strong>Admin_1</strong> / <strong>Support_1</strong></td><td>Admin + instructor workspace</td><td>admin hoặc support_staff</td><td>Hai account nếu cần so sánh</td></tr>" +
           "<tr><td><strong>Scoped_coorganizer</strong></td><td>Vào /hackathons/manage không cần instructor</td><td>student+</td><td>Email trong co_organizer_emails contest seed</td></tr>" +
-          '</tbody></table><p class="muted">Không chỉnh production. Báo lỗi: docs/GOOGLE_FORM_BUG_REPORT.md</p>',
+          "<tr><td><strong>Scoped_reviewer</strong></td><td>Tab applications workspace contest</td><td>student+</td><td>Email trong reviewer_emails</td></tr>" +
+          "<tr><td><strong>Scoped_judge</strong></td><td>Tab judging workspace contest</td><td>student+</td><td>Email trong judge_emails</td></tr>" +
+          '</tbody></table><p class="muted">Hackathons seed: 2 contest lifecycle khác nhau; registrations đủ status; blastEmail edge + Resend env. Không chỉnh production. Báo lỗi: docs/GOOGLE_FORM_BUG_REPORT.md</p>',
       },
       {
         id: "s01",
         title: "01 — Auth, phiên, OCID",
         intro: [
-          "Mục tiêu: đăng ký, đăng nhập, logout, session, /ocid-redirect.",
+          "Mục tiêu: đăng ký, đăng nhập, logout, session, xác nhận email, MFA (tuỳ chọn), /ocid-redirect.",
           "Tiền đề: URL staging + verify bundle. OCID chỉ khi team bật VITE_OCID_* trên staging.",
           "Tài khoản: Student_1 (đăng ký); Instructor_1 cho OCID nếu cần.",
         ],
@@ -284,9 +286,10 @@
             items: [
               { id: "s01-a1", text: "Ẩn danh: vào /login." },
               { id: "s01-a2", text: "Đăng ký email mới (hoặc provider team cho phép)." },
-              { id: "s01-a3", text: "Xác nhận email nếu Supabase yêu cầu (theo hướng dẫn staging)." },
+              { id: "s01-a3", text: "Xác nhận email → /confirm-signup hoặc /auth/signup-verified nếu Supabase yêu cầu." },
               { id: "s01-a4", text: "Đăng nhập sau khi tài khoản hoạt động." },
-              { id: "s01-a5", text: "Refresh: vẫn đăng nhập, không redirect vòng /login." },
+              { id: "s01-a5", text: "Tuỳ chọn MFA: hoàn tất LoginMfaChallenge, không loop." },
+              { id: "s01-a6", text: "Refresh: vẫn đăng nhập, không redirect vòng /login." },
             ],
           },
           {
@@ -301,7 +304,7 @@
           {
             title: "OCID (nếu bật staging)",
             items: [
-              { id: "s01-c1", text: "Mở UI kết nối OCID (Account hoặc dialog header)." },
+              { id: "s01-c1", text: "Header Link OCID hoặc dialog Connect (ngoài Account settings)." },
               { id: "s01-c2", text: "Hoàn tất OAuth nhà cung cấp." },
               { id: "s01-c3", text: "/ocid-redirect không trắng; profile cập nhật khi thành công." },
               { id: "s01-c4", text: "Reload /account/profile: trạng thái OCID nhất quán." },
@@ -319,7 +322,7 @@
         id: "s02",
         title: "02 — Trang chủ & khám phá",
         intro: [
-          "Mục tiêu: / ẩn danh vs đã login.",
+          "Mục tiêu: / ẩn danh vs đã login (momentum, continue learning, explore). Không có AI assistant trên Home.",
           "Tiền đề: bundle verified; có seed khóa học/contest public.",
           "Tài khoản: khách + Student_1.",
         ],
@@ -328,7 +331,7 @@
             items: [
               { id: "s02-1", text: "Ẩn danh: / load không blank lâu; hero/catalog không lỗi user-visible." },
               { id: "s02-2", text: "Ẩn danh: click khóa public → /courses/:id hợp lệ." },
-              { id: "s02-3", text: "Student_1: / — dashboard/de xuất (nếu có) không crash." },
+              { id: "s02-3", text: "Student_1: momentum / continue learning / explore courses không crash." },
               { id: "s02-4", text: "Đổi vi/en: Home không vỡ layout." },
             ],
           },
@@ -338,9 +341,9 @@
         id: "s03",
         title: "03 — Khóa học, checkout, học",
         intro: [
-          "Routes: /courses, /courses/:id, /checkout/course/:id, /checkout/success/..., /learn/...",
-          "Thanh toán chỉ test mode (Stripe/SePay). Tham chiếu docs/COURSE_OWNERSHIP_REVENUE_SEPAY.md, COURSE_ACCESS_MODELS.md.",
-          "Tài khoản: Student_1.",
+          "Routes: /courses, /courses/:id, /checkout/course/:id, /checkout/success/..., /learn/... + Cora trong learn.",
+          "Thanh toán chỉ test mode SePay. Tham chiếu docs/COURSE_OWNERSHIP_REVENUE_SEPAY.md, COURSE_ACCESS_MODELS.md.",
+          "Tài khoản: Student_1. Gói Cora: /cora (mục 07).",
         ],
         blocks: [
           {
@@ -364,12 +367,13 @@
             items: [
               { id: "s03-7", text: "Khóa đã có quyền: /learn/:courseId load." },
               { id: "s03-8", text: "/learn/:courseId/lesson/:lessonId — content/player load." },
-              { id: "s03-9", text: "Không quyền: URL learn trực tiếp — chặn/redirect ghi nhận spec." },
+              { id: "s03-9", text: "Learn: mở/đóng Cora sidebar/assistant — không crash." },
+              { id: "s03-10", text: "Không quyền: URL learn trực tiếp — chặn/redirect ghi nhận spec." },
             ],
           },
           {
             title: "Legacy",
-            items: [{ id: "s03-10", text: "/cohorts và /cohorts/:id redirect /courses (không 404)." }],
+            items: [{ id: "s03-11", text: "/cohorts và /cohorts/:id redirect /courses (không 404)." }],
           },
         ],
       },
@@ -392,13 +396,13 @@
       {
         id: "s05",
         title: "05 — Projects, invite, Search",
-        intro: ["Token invite hợp lệ do dev seed (không commit). Student_1; Student_2 tuỳ chọn."],
+        intro: ["Token invite hợp lệ do dev seed (không commit). /projects = gallery; /account/projects = editor i18n (mục 07). Student_1; Student_2 tuỳ chọn."],
         blocks: [
           {
-            title: "Projects",
+            title: "Projects (gallery)",
             items: [
-              { id: "s05-1", text: "/projects — list hoặc empty state hợp lý." },
-              { id: "s05-2", text: "Tạo/chỉnh project (nếu có UI) — lưu hiển thị lại." },
+              { id: "s05-1", text: "/projects — gallery load hoặc empty state hợp lý." },
+              { id: "s05-2", text: "Link hackathon trong project → /hackathons/:slug (không /overview)." },
             ],
           },
           {
@@ -411,8 +415,9 @@
           {
             title: "Search",
             items: [
-              { id: "s05-5", text: "/search — query và empty state." },
-              { id: "s05-6", text: "Click kết quả → đúng entity." },
+              { id: "s05-5", text: "/search?q=... — kết quả đa loại hoặc empty state." },
+              { id: "s05-6", text: "/search không query — submit hoạt động." },
+              { id: "s05-7", text: "Click kết quả → đúng entity." },
             ],
           },
         ],
@@ -426,16 +431,16 @@
             items: [
               { id: "s06-1", text: "Ẩn danh: /u/<handle> layout load." },
               { id: "s06-2", text: "Handle không tồn tại — 404/empty theo spec." },
-              { id: "s06-3", text: "Short URL /:handle/* nếu team dùng — smoke." },
-              { id: "s06-4", text: "Chính chủ login: field private không lộ guest." },
+              { id: "s06-3", text: "Short URL /:handle/* — smoke; tránh handle reserved (hackathons, cora, …)." },
+              { id: "s06-4", text: "Chính chủ login: field private không lộ guest; handle có thể từ OCID." },
             ],
           },
         ],
       },
       {
         id: "s07",
-        title: "07 — Account hub (/account/*)",
-        intro: ["Student_1 hầu hết tab; Instructor_1 cho tab instructor.", "Tiền đề: auth ổn (mục 01)."],
+        title: "07 — Account hub & Cora",
+        intro: ["Student_1 hầu hết tab + /cora; Instructor_1 tab instructor (role instructor). /account/projects = editor i18n, không phải /projects gallery.", "Tiền đề: auth ổn (mục 01)."],
         blocks: [
           {
             items: [
@@ -444,9 +449,12 @@
               { id: "s07-3", text: "/account/cv — chỉnh/lưu không crash." },
               { id: "s07-4", text: "/account/billing — không hard fail khi empty." },
               { id: "s07-5", text: "/account/settings — locale/email/password + OCID nếu bật." },
-              { id: "s07-6", text: "/account/projects nhất quán /projects." },
+              { id: "s07-6", text: "/account/projects — editor i18n project (không nhầm /projects gallery)." },
               { id: "s07-7a", text: "Student_1: /account/instructor empty/upsell/redirect (ghi nhận spec)." },
               { id: "s07-7b", text: "Instructor_1: /account/instructor form lưu được." },
+              { id: "s07-8", text: "/cora — subscription/AI UI load." },
+              { id: "s07-9", text: "/account/cora và /upgrade/cora redirect /cora." },
+              { id: "s07-10", text: "/achievements redirect /account (không UI riêng)." },
             ],
           },
         ],
@@ -454,15 +462,31 @@
       {
         id: "s08",
         title: "08 — Hackathons (công khai)",
-        intro: ["Contest published có slug seed. Khách + Student_1."],
+        intro: ["Single-page /hackathons/:slug + hash. 2 contest lifecycle seed khuyến nghị. Khách + Student_1."],
         blocks: [
           {
+            title: "Routing",
             items: [
               { id: "s08-1", text: "/hackathons — list; draft chỉ manager khi đúng policy." },
-              { id: "s08-2", text: "/hackathons/<slug>/overview." },
-              { id: "s08-3", text: "Tabs timeline, prizes, rules, faqs, projects — shell không 404." },
-              { id: "s08-4", text: "/hackathons/<slug> redirect overview (hoặc hành vi hiện tại)." },
-              { id: "s08-5", text: "Student_1: CTA đăng ký / participant workspace (ghi nhận)." },
+              { id: "s08-2", text: "/hackathons/<slug> single-page load; không redirect /overview." },
+              { id: "s08-3", text: "Legacy /overview, /timeline, … redirect canonical + hash." },
+            ],
+          },
+          {
+            title: "Nav & sections",
+            items: [
+              { id: "s08-4", text: "Subnav hash: click scroll + highlight active." },
+              { id: "s08-5", text: "Sections có điều kiện (#results ended+publish, #projects showcase)." },
+              { id: "s08-6", text: "FAQs accordion mở/đóng." },
+            ],
+          },
+          {
+            title: "Lifecycle & showcase",
+            items: [
+              { id: "s08-7", text: "Lifecycle phases: badge, countdown, CTA guest vs Student_1." },
+              { id: "s08-8", text: "#projects showcase + #results sau publish." },
+              { id: "s08-9", text: "Participant workspace + mobile CTA/FAB." },
+              { id: "s08-10", text: "i18n EN/VI lifecycle; API errors localized; SectionErrorBoundary known VI." },
             ],
           },
         ],
@@ -471,9 +495,9 @@
         id: "s09",
         title: "09 — Hackathons quản lý & workspace",
         intro: [
-          "Gate: RequireContestManager — instructorWorkspace HOẶC email trong co_organizer_emails.",
-          "src/components/auth/RequireContestManager.tsx, src/config/roles.ts, src/lib/permissions.ts",
-          "Contest slug seed; Scoped_coorganizer có email trong contest.",
+          "Gate catalog: RequireContestManager. Workspace tabs: overview, applications, judging, analytics, translations, awards, email, settings (role-gated).",
+          "Contest seed + registrations đủ status; blastEmail edge + Resend env.",
+          "Personas: Instructor_1, Scoped_coorganizer, Scoped_reviewer, Scoped_judge, Student_1 negative.",
         ],
         blocks: [
           {
@@ -492,11 +516,20 @@
             ],
           },
           {
-            title: "Workspace",
+            title: "Manager workspace",
             items: [
-              { id: "s09-6", text: "/hackathons/<slug>/manage/<section> shell + tab không crash." },
-              { id: "s09-7", text: "Judge/mentor scoped email — quyền đọc một phần (permissions)." },
-              { id: "s09-8", text: "Tuỳ chọn: reviewer_emails — review applications nếu có UI." },
+              { id: "s09-6", text: "manage/overview — metrics, publish results → public #results." },
+              { id: "s09-7", text: "applications — search, filter, pagination." },
+              { id: "s09-8", text: "email blast — filters, preview, confirm, sent/failed/skipped hoặc notConfigured." },
+              { id: "s09-9", text: "judging, analytics, translations, awards, settings — smoke load." },
+            ],
+          },
+          {
+            title: "Scoped roles",
+            items: [
+              { id: "s09-10", text: "Scoped_reviewer: overview + applications only; không tab email." },
+              { id: "s09-11", text: "Scoped_judge: overview + judging only." },
+              { id: "s09-12", text: "Judge/mentor email — quyền đọc một phần (permissions.ts)." },
             ],
           },
         ],
@@ -550,7 +583,9 @@
               { id: "s11-4", text: "/admin/dashboard pinned programs không lỗi profile." },
               { id: "s11-5", text: "/admin/instructors list." },
               { id: "s11-6", text: "/admin/instructors/:id chi tiết seed." },
-              { id: "s11-7", text: "Đổi role user test staging — gate đúng sau đổi." },
+              { id: "s11-7", text: "/admin/activity-milestones — load, empty state OK." },
+              { id: "s11-8", text: "Đổi role user test staging — gate đúng sau đổi." },
+              { id: "s11-9", text: "/admin/hackathons/* NotFound (ops ở /hackathons/manage)." },
             ],
           },
         ],
@@ -564,23 +599,24 @@
             title: "i18n",
             items: [
               { id: "s12-1", text: "Đổi en: Home + /account/settings không sót vi rõ ràng." },
-              { id: "s12-2", text: "Đổi vi — nhất quán." },
-              { id: "s12-3", text: "Tuỳ chọn: document.documentElement.lang khớp locale." },
+              { id: "s12-2", text: "Spot-check /cora và /learn/.../lesson/... sau đổi en." },
+              { id: "s12-3", text: "Đổi vi — nhất quán." },
+              { id: "s12-4", text: "Tuỳ chọn: document.documentElement.lang khớp locale." },
             ],
           },
           {
             title: "Theme & 404",
             items: [
-              { id: "s12-4", text: "dark/light/system: contrast OK Home + /courses." },
-              { id: "s12-5", text: "Path không tồn tại — NotFound/message rõ." },
-              { id: "s12-6", text: "/admin/hackathons/* smoke NotFound nếu applicable." },
+              { id: "s12-5", text: "dark/light/system: contrast OK Home + /courses + /hackathons/:slug." },
+              { id: "s12-6", text: "Path không tồn tại — NotFound/message rõ." },
+              { id: "s12-7", text: "/admin/hackathons/* NotFound." },
             ],
           },
           {
             title: "Mạng",
             items: [
-              { id: "s12-7", text: "DevTools Offline: reload public — error/retry hoặc splash." },
-              { id: "s12-8", text: "Bật lại online — recover (ghi nhận nếu cần hard refresh)." },
+              { id: "s12-8", text: "DevTools Offline: reload public — error/retry hoặc splash." },
+              { id: "s12-9", text: "Bật lại online — recover (ghi nhận nếu cần hard refresh)." },
             ],
           },
         ],
