@@ -375,7 +375,9 @@
       "expiryLabel": "Valid until",
       "daysLeftLabel": "Time remaining",
       "daysLeft_one": "{{count}} day left",
-      "daysLeft_other": "{{count}} days left"
+      "daysLeft_other": "{{count}} days left",
+      "monthlyUsageLabel": "Messages this month",
+      "windowUsageLabel": "Messages (last {{hours}}h)"
     },
     "selector": {
       "title": "Choose the right plan",
@@ -383,7 +385,8 @@
       "perDuration": "{{duration}}",
       "checkoutAction": "Continue to checkout",
       "checkoutLoading": "Creating checkout session...",
-      "checkoutHint": "You'll be redirected to SePay to complete the upgrade."
+      "checkoutHint": "You'll be redirected to SePay to complete the upgrade.",
+      "activeRenewalHint": "Your current {{tier}} plan is still active. For now, you can only renew the same tier."
     },
     "durationTitle": "Billing cycle",
     "durationValueLabel": "Average monthly cost",
@@ -448,6 +451,15 @@
         "status": "Status"
       }
     },
+    "voucher": {
+      "label": "Voucher",
+      "placeholder": "Enter voucher code",
+      "apply": "Apply",
+      "hint": "Only one percentage-based voucher can be used per checkout.",
+      "applied": "Voucher applied successfully. You save {{amount}} on this checkout.",
+      "basePrice": "Base price",
+      "discountValue": "Voucher discount"
+    },
     "return": {
       "verifyingTitle": "Verifying your Cora AI payment",
       "verifyingDescription": "Corelia is checking the payment status and syncing your plan. This usually only takes a few seconds.",
@@ -464,7 +476,10 @@
     },
     "errors": {
       "checkoutFailed": "Unable to create a Cora AI checkout session.",
-      "fetchTransactions": "Unable to load Cora AI history."
+      "fetchTransactions": "Unable to load Cora AI history.",
+      "voucherMissing": "Enter a voucher code first.",
+      "voucherFailed": "Unable to apply voucher.",
+      "tierChangeBlocked": "While your current plan is active, you can only renew the same tier."
     }
   },
   "ocid": {

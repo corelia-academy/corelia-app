@@ -10,6 +10,11 @@ import {
   fetchSePayIncomingTransactionByInvoiceNumber,
   sepayCheckoutInitUrl,
 } from "./sepay.ts";
+import {
+  previewAiVoucher,
+  releaseVoucherReservationForPayment,
+  reserveAiVoucherForPayment,
+} from "./vouchers.ts";
 import type {
   AiSubscriptionDurationMonths,
   AiSubscriptionMeta,
@@ -45,6 +50,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     const errorUrl = String(body.errorUrl ?? "");
     const cancelUrl = String(body.cancelUrl ?? "");
     const discountCodeRaw = String(body.discountCode ?? "").trim();
+    const voucherCodeRaw = String(body.voucherCode ?? "").trim();
     if (!courseId) return json({ message: "Thiếu courseId" }, 400);
     if (!purpose) return json({ message: "Thiếu/ sai purpose" }, 400);
     if (purpose !== "ai_subscription" && (!Number.isFinite(requestedAmountVnd) || requestedAmountVnd <= 0)) {
@@ -70,6 +76,20 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       }
       if (![1, 6, 12].includes(durationMonths)) {
         return json({ message: "Thời hạn không hợp lệ" }, 400);
+      }
+      const now = new Date().toISOString();
+      const { data: activeSubscription, error: activeSubscriptionError } = await db
+        .from("ai_subscriptions")
+        .select("tier,expires_at")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .gt("expires_at", now)
+        .order("expires_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<{ tier: AiSubscriptionTier; expires_at: string }>();
+      if (activeSubscriptionError) throw new Error(activeSubscriptionError.message);
+      if (activeSubscription?.tier && activeSubscription.tier !== tier) {
+        return json({ message: "Khi gói hiện tại còn hiệu lực, bạn chỉ có thể gia hạn cùng tier." }, 400);
       }
       baseAmount = AI_SUBSCRIPTION_PRICES[tier][durationMonths];
       subscriptionMeta = { tier, duration_months: durationMonths };
@@ -134,6 +154,15 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
           finalAmount = Math.max(0, baseAmount - discountAmount);
         }
       }
+    } else if (purpose === "ai_subscription" && voucherCodeRaw) {
+      const voucher = await previewAiVoucher(db, {
+        userId: user.id,
+        voucherCode: voucherCodeRaw,
+        baseAmountVnd: baseAmount,
+      });
+      discountCode = voucher.code;
+      discountAmount = voucher.discountAmountVnd;
+      finalAmount = voucher.finalAmountVnd;
     }
     const orderId = `CORELIA-${Date.now()}-${randomHex(6)}`;
     const createdAt = nowIso();
@@ -167,6 +196,14 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       updated_at: createdAt,
     });
     if (insErr) throw new Error(insErr.message);
+    if (purpose === "ai_subscription" && discountCode) {
+      await reserveAiVoucherForPayment(db, {
+        userId: user.id,
+        paymentTransactionId: orderId,
+        voucherCode: discountCode,
+        baseAmountVnd: baseAmount,
+      });
+    }
     const fields: Record<string, string> = {
       merchant: merchantId,
       operation: "PURCHASE",
@@ -195,6 +232,41 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
     console.error("[corelia-api] checkout", e);
     return json({ message: "Không tạo được phiên thanh toán SePay." }, 500);
+  }
+}
+
+export async function handleAiVoucherPreview(req: Request, db: SupabaseClient): Promise<Response> {
+  try {
+    const user = await verifyBearerUser(req, db);
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    const tier = String(body.tier ?? "").trim() as AiSubscriptionTier;
+    const durationMonths = Number(body.durationMonths ?? body.duration_months ?? 0) as AiSubscriptionDurationMonths;
+    const voucherCode = String(body.voucherCode ?? "").trim();
+
+    if (!["student", "pro", "bootcamp"].includes(tier)) {
+      return json({ message: "Tier không hợp lệ" }, 400);
+    }
+    if (![1, 6, 12].includes(durationMonths)) {
+      return json({ message: "Thời hạn không hợp lệ" }, 400);
+    }
+    if (!voucherCode) return json({ message: "Thiếu mã voucher." }, 400);
+
+    const preview = await previewAiVoucher(db, {
+      userId: user.id,
+      voucherCode,
+      baseAmountVnd: AI_SUBSCRIPTION_PRICES[tier][durationMonths],
+    });
+    return json({
+      code: preview.code,
+      percent_off: preview.percentOff,
+      base_amount_vnd: preview.baseAmountVnd,
+      discount_amount_vnd: preview.discountAmountVnd,
+      final_amount_vnd: preview.finalAmountVnd,
+    });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
+    return json({ message }, 400);
   }
 }
 
@@ -388,6 +460,17 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
       }).eq("id", invoiceNumber);
       if (txUpdateErr) throw new Error(txUpdateErr.message);
       await grantPaymentAccessForTransaction(db, tx, invoiceNumber, updatedAt, payload);
+      return json({ ok: true });
+    }
+    if (type === "ORDER_CANCELLED" || type === "ORDER_FAILED") {
+      const nextStatus = type === "ORDER_CANCELLED" ? "cancelled" : "failed";
+      const { error: statusErr } = await db.from("payment_transactions").update({
+        status: nextStatus,
+        provider_payload: payload as unknown as Record<string, unknown>,
+        updated_at: updatedAt,
+      }).eq("id", invoiceNumber);
+      if (statusErr) throw new Error(statusErr.message);
+      await releaseVoucherReservationForPayment(db, invoiceNumber);
       return json({ ok: true });
     }
     const { error: payloadUpdateErr } = await db.from("payment_transactions").update({

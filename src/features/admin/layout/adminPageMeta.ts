@@ -33,10 +33,14 @@ const PAGE_META: Array<{
     titleKey: "layout.pageMeta.activityMilestones.title",
     descriptionKey: "layout.pageMeta.activityMilestones.description",
   },
+  {
+    match: (pathname) => pathname === "/admin/cora-vouchers",
+    titleKey: "layout.pageMeta.coraVouchers.title",
+    descriptionKey: "layout.pageMeta.coraVouchers.description",
+  },
 ];
 
 export function resolveAdminPageMeta(pathname: string): AdminPageMeta {
   const current = PAGE_META.find((item) => item.match(pathname)) ?? PAGE_META[0];
   return { titleKey: current.titleKey, descriptionKey: current.descriptionKey };
 }
-

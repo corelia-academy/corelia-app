@@ -335,7 +335,11 @@
       "supportedLocalesHint": "Enable/disable content languages for this course. Learning progress is shared across languages.",
       "primaryLocaleLabel": "Primary content language",
       "editingLocaleLabel": "Editing content for",
-      "editingNonPrimaryHint": "You are editing a translation. Primary language content remains separate."
+      "editingNonPrimaryHint": "You are editing a translation. Primary language content remains separate.",
+      "translationModeBadge": "Translation mode",
+      "currentLocaleBadge": "Current",
+      "primaryEditingHint": "You are editing the source language directly.",
+      "translationEditingHint": "You are editing a translation from {{source}} into {{target}}."
     },
     "defaults": {
       "lessonTitle": "Lesson"
@@ -589,6 +593,74 @@
       "cancel": "Cancel",
       "save": "Save"
     },
+    "descriptionGenerator": {
+      "trigger": "Generate",
+      "translateTrigger": "Translate with AI",
+      "courseTitle": "Generate course description",
+      "courseDescription": "The description will be drafted from the lessons already inside this course.",
+      "translateCourseTitle": "AI translate course description",
+      "translateCourseDescription": "Translate the existing content from {{source}} into {{target}} before you save.",
+      "sectionTitle": "Generate section description",
+      "sectionDescription": "The description will be drafted from the lessons inside this section.",
+      "translateSectionTitle": "AI translate section description",
+      "translateSectionDescription": "Translate the existing content from {{source}} into {{target}} before you save.",
+      "lessonTitle": "Generate lesson description",
+      "lessonDescription": "The description will use the lesson's video content together with any existing lesson copy.",
+      "translateLessonTitle": "AI translate lesson content",
+      "translateLessonDescription": "Translate the existing content from {{source}} into {{target}} before you save.",
+      "currentCourseSource": "Existing source content",
+      "translateDialogHint": "You can quickly translate from the source language, then refine the result before saving.",
+      "sourcesTitle": "Source content used for generation",
+      "emptySources": "No usable source content yet.",
+      "previewTitle": "Draft description",
+      "previewPlaceholder": "Click Generate to create a draft...",
+      "generate": "Generate description",
+      "generating": "Generating...",
+      "translating": "Translating...",
+      "cancel": "Cancel",
+      "useDescription": "Use this description",
+      "warnings": {
+        "limited": "The current source content is limited. Please check that there is enough content to generate a high-quality description.",
+        "notEnough": "Please check that there is enough content to generate a high-quality description."
+      },
+      "sourceKinds": {
+        "shortDescription": "Short description",
+        "longDescription": "Long description",
+        "transcript": "Video content",
+        "missing": "Source missing"
+      },
+      "errors": {
+        "generic": "Unable to generate a description right now."
+      }
+    },
+    "translationCoverage": {
+      "title": "Translation coverage",
+      "description": "Quickly see which parts of the {{target}} version are already filled and which ones can be translated from {{source}}.",
+      "completed": "{{completed}} / {{total}} fields filled",
+      "readyToTranslate": "{{count}} fields ready to translate",
+      "states": {
+        "done": "Filled",
+        "ready": "Ready",
+        "missing": "No source"
+      },
+      "messages": {
+        "filled": "This field already has content in locale {{locale}}.",
+        "sourceAvailable": "This field is empty in the current locale but source content already exists in {{locale}}.",
+        "noSource": "There is not enough clear source content to translate automatically yet."
+      },
+      "actions": {
+        "openField": "Open this field"
+      },
+      "fields": {
+        "title": "Course title",
+        "shortDescription": "Short description",
+        "description": "Description",
+        "learningOutcomes": "What you'll learn",
+        "assignmentTitle": "Assignment title",
+        "assignmentDescription": "Assignment description",
+        "assignmentInstructions": "Assignment instructions"
+      }
+    },
     "lessons": {
       "edit": "Edit",
       "editTitle": "Edit lesson details",
@@ -691,4 +763,3 @@
     }
   }
 }
-

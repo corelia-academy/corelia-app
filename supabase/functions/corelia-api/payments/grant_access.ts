@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "../lib/supabase.ts";
 import type { AiSubscriptionMeta, PaymentTransaction } from "./types.ts";
+import { markVoucherPaidForPayment } from "./vouchers.ts";
 
 export async function grantPaymentAccessForTransaction(
   db: SupabaseClient,
@@ -16,17 +17,34 @@ export async function grantPaymentAccessForTransaction(
       throw new Error("Missing ai subscription metadata");
     }
 
-    const startedAt = updatedAt;
-    const expiresDate = new Date(updatedAt);
+    const { data: currentActive, error: currentActiveError } = await db
+      .from("ai_subscriptions")
+      .select("id,tier,expires_at,status")
+      .eq("user_id", tx.user_id)
+      .eq("status", "active")
+      .order("expires_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<{ id: string; tier: string; expires_at: string; status: "active" }>();
+    if (currentActiveError) throw new Error(currentActiveError.message);
+    if (currentActive?.tier && currentActive.tier !== meta.tier) {
+      throw new Error("Active subscription tier mismatch");
+    }
+
+    const startBase = currentActive?.expires_at && Date.parse(currentActive.expires_at) > Date.parse(updatedAt)
+      ? currentActive.expires_at
+      : updatedAt;
+    const startedAt = startBase;
+    const expiresDate = new Date(startBase);
     expiresDate.setMonth(expiresDate.getMonth() + Number(meta.duration_months));
     const expiresAt = expiresDate.toISOString();
 
-    const { error: cancelExistingError } = await db
-      .from("ai_subscriptions")
-      .update({ status: "cancelled", updated_at: updatedAt })
-      .eq("user_id", tx.user_id)
-      .eq("status", "active");
-    if (cancelExistingError) throw new Error(cancelExistingError.message);
+    if (currentActive?.id) {
+      const { error: supersedeExistingError } = await db
+        .from("ai_subscriptions")
+        .update({ status: "superseded", updated_at: updatedAt })
+        .eq("id", currentActive.id);
+      if (supersedeExistingError) throw new Error(supersedeExistingError.message);
+    }
 
     const { error: subscriptionError } = await db.from("ai_subscriptions").insert({
       user_id: tx.user_id,
@@ -55,6 +73,7 @@ export async function grantPaymentAccessForTransaction(
       updated_at: updatedAt,
     }).eq("id", invoiceNumber);
     if (txErr) throw new Error(txErr.message);
+    await markVoucherPaidForPayment(db, invoiceNumber, updatedAt);
     return;
   }
 
@@ -107,4 +126,5 @@ export async function grantPaymentAccessForTransaction(
     updated_at: updatedAt,
   }).eq("id", invoiceNumber);
   if (txErr) throw new Error(txErr.message);
+  await markVoucherPaidForPayment(db, invoiceNumber, updatedAt);
 }

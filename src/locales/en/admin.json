@@ -11,6 +11,10 @@
         "label": "Activity milestones",
         "tooltip": "Global Open Campus milestone badges"
       },
+      "coraVouchers": {
+        "label": "Cora vouchers",
+        "tooltip": "Voucher management for Cora AI checkout"
+      },
       "offlineClasses": { "label": "Offline classes", "tooltip": "Offline classes" },
       "contests": { "label": "Contests", "tooltip": "Contests" }
     },
@@ -30,6 +34,10 @@
       "activityMilestones": {
         "title": "Activity milestones",
         "description": "Configure automatic and manual Open Campus badges unrelated to a single course."
+      },
+      "coraVouchers": {
+        "title": "Cora vouchers",
+        "description": "Create and monitor percentage-based vouchers for Cora AI payments."
       },
       "contests": {
         "title": "Contest operations",
@@ -378,6 +386,63 @@
       "trackCourses": "{{count}} courses in track “{{track}}”",
       "projects": "{{count}} projects submitted"
     }
+  },
+  "coraVouchers": {
+    "heading": "Cora AI vouchers",
+    "subheading": "Manage percentage-based vouchers for Cora AI checkout and monitor their usage.",
+    "refresh": "Refresh",
+    "add": "New voucher",
+    "loading": "Loading vouchers...",
+    "loadFailed": "Unable to load vouchers.",
+    "empty": "No vouchers yet.",
+    "created": "Voucher created.",
+    "updated": "Voucher updated.",
+    "saveFailed": "Unable to save voucher.",
+    "showing": "Showing {{shown}} / {{total}} vouchers",
+    "active": "Active",
+    "inactive": "Inactive",
+    "neverStarts": "Starts immediately",
+    "noExpiry": "No expiry",
+    "usageSummary": "{{paid}} paid · {{reserved}} reserved · cap {{max}}",
+    "edit": "Edit",
+    "redemptionTitle": "Recent redemptions",
+    "redemptionEmpty": "No redemptions yet.",
+    "createTitle": "Create voucher",
+    "editTitle": "Edit voucher",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "filters": {
+      "searchPlaceholder": "Search by voucher code...",
+      "status": {
+        "all": "All statuses",
+        "active": "Active only",
+        "inactive": "Inactive only"
+      },
+      "expiry": {
+        "all": "All expiry states",
+        "expired": "Expired",
+        "notExpired": "Not expired"
+      }
+    },
+    "table": {
+      "code": "Code",
+      "percent": "Discount",
+      "window": "Validity",
+      "usage": "Usage",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "code": "Voucher code",
+      "generate": "Generate",
+      "percentOff": "Percent off",
+      "startsAt": "Starts at",
+      "endsAt": "Ends at",
+      "maxRedemptions": "Max redemptions",
+      "status": "Status",
+      "noteTitle": "Generation mode",
+      "noteBody": "The system can generate an uppercase code for admins, and you can still edit it before saving."
+    }
   }
 }
-

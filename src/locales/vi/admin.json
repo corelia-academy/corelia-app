@@ -11,6 +11,10 @@
         "label": "Milestone hoạt động",
         "tooltip": "Huy hiệu milestone Open Campus toàn cục"
       },
+      "coraVouchers": {
+        "label": "Voucher Cora",
+        "tooltip": "Quản lý voucher cho thanh toán Cora AI"
+      },
       "offlineClasses": { "label": "Lớp học trực tiếp", "tooltip": "Lớp học trực tiếp" },
       "contests": { "label": "Cuộc thi", "tooltip": "Cuộc thi" }
     },
@@ -30,6 +34,10 @@
       "activityMilestones": {
         "title": "Milestone hoạt động",
         "description": "Cấu hình huy hiệu Open Campus tự động hoặc cấp tay, không gắn một khóa học cố định."
+      },
+      "coraVouchers": {
+        "title": "Voucher Cora",
+        "description": "Tạo và theo dõi voucher giảm giá theo % cho thanh toán Cora AI."
       },
       "contests": {
         "title": "Vận hành cuộc thi",
@@ -378,6 +386,63 @@
       "trackCourses": "{{count}} khóa trong track “{{track}}”",
       "projects": "{{count}} project đã nộp"
     }
+  },
+  "coraVouchers": {
+    "heading": "Voucher Cora AI",
+    "subheading": "Quản lý voucher giảm giá theo % cho checkout Cora AI và theo dõi lượt dùng.",
+    "refresh": "Làm mới",
+    "add": "Tạo voucher",
+    "loading": "Đang tải voucher...",
+    "loadFailed": "Không tải được voucher.",
+    "empty": "Chưa có voucher nào.",
+    "created": "Đã tạo voucher.",
+    "updated": "Đã cập nhật voucher.",
+    "saveFailed": "Không lưu được voucher.",
+    "showing": "Hiển thị {{shown}} / {{total}} voucher",
+    "active": "Đang bật",
+    "inactive": "Đang tắt",
+    "neverStarts": "Áp dụng ngay",
+    "noExpiry": "Không hết hạn",
+    "usageSummary": "{{paid}} paid · {{reserved}} reserved · cap {{max}}",
+    "edit": "Sửa",
+    "redemptionTitle": "Lượt dùng gần đây",
+    "redemptionEmpty": "Chưa có lượt dùng nào.",
+    "createTitle": "Tạo voucher",
+    "editTitle": "Sửa voucher",
+    "cancel": "Huỷ",
+    "save": "Lưu",
+    "saving": "Đang lưu...",
+    "filters": {
+      "searchPlaceholder": "Tìm theo mã voucher...",
+      "status": {
+        "all": "Mọi trạng thái",
+        "active": "Chỉ đang bật",
+        "inactive": "Chỉ đang tắt"
+      },
+      "expiry": {
+        "all": "Mọi hạn dùng",
+        "expired": "Đã hết hạn",
+        "notExpired": "Chưa hết hạn"
+      }
+    },
+    "table": {
+      "code": "Mã",
+      "percent": "Giảm giá",
+      "window": "Hiệu lực",
+      "usage": "Lượt dùng",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "form": {
+      "code": "Mã voucher",
+      "generate": "Generate",
+      "percentOff": "Phần trăm giảm",
+      "startsAt": "Bắt đầu",
+      "endsAt": "Kết thúc",
+      "maxRedemptions": "Giới hạn lượt dùng",
+      "status": "Trạng thái",
+      "noteTitle": "Cách sinh mã",
+      "noteBody": "Hệ thống có thể tự sinh mã uppercase cho admin và bạn vẫn có thể sửa tay trước khi lưu."
+    }
   }
 }
-
