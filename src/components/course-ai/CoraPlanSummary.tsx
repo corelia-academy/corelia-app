@@ -1,4 +1,4 @@
-import { Gauge, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 
@@ -28,7 +28,21 @@ export function CoraPlanSummary({
   );
   const usageLimit = quotaInfo?.monthlyLimit ?? null;
   const usageUsed = quotaInfo?.monthlyUsed ?? 0;
+  const usedPct = usageLimit ? usageUsed / usageLimit : 0;
+  const isExceeded = usedPct >= 1;
+  const isNearing = usedPct >= 0.7 && !isExceeded;
   const isFree = planTier === "free";
+
+  const resetDate = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth() + 1,
+    1,
+  );
+  const resetStr = resetDate.toLocaleDateString(undefined, {
+    day: "2-digit",
+    month: "2-digit",
+  });
+  const daysLeft = Math.max(daysUntilExpiry ?? 0, 0);
 
   return (
     <div className={cn("py-2", className)}>
@@ -49,33 +63,43 @@ export function CoraPlanSummary({
               {t(`coraWidget.plan.tiers.${planTier}`)}
             </span>
           </div>
-          <div className="mt-1 flex items-center gap-2 text-[11px] text-foreground-subtle">
-            {usageLimit != null ? (
+
+          {/* Status line — 3 states */}
+          <div className="mt-1 text-[11px] leading-snug text-foreground-subtle">
+            {isExceeded ? (
+              <span className="text-foreground-muted">
+                {t("coraWidget.plan.quotaExceeded")} ·{" "}
+                {t("coraWidget.plan.resetDate", { date: resetStr })}
+              </span>
+            ) : isNearing ? (
+              <span className="text-amber-600 dark:text-amber-400">
+                {t("coraWidget.plan.nearingLimit")} ·{" "}
+                {t("coraWidget.plan.resetDate", { date: resetStr })}
+              </span>
+            ) : (
               <span>
-                {usageUsed} / {usageLimit} messages
+                {usageLimit != null
+                  ? t("coraWidget.plan.messagesThisMonth", { count: usageUsed })
+                  : null}
+                {aiSubscription?.expires_at
+                  ? (usageLimit != null ? " · " : "") +
+                    t("coraWidget.plan.daysLeft", { count: daysLeft })
+                  : null}
               </span>
-            ) : null}
-            {aiSubscription?.expires_at ? (
-              <span>{Math.max(daysUntilExpiry ?? 0, 0)}d left</span>
-            ) : null}
-            {quotaInfo?.windowSoftCap != null ? (
-              <span className="flex items-center gap-1">
-                <Gauge className="size-3 shrink-0" aria-hidden />
-                {quotaInfo.windowUsed}/{quotaInfo.windowSoftCap}
-              </span>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
 
-      {/* upgrade / manage action */}
+      {/* CTA button */}
       <Button
         render={<NavLink to="/cora" />}
         nativeButton={false}
         size="xs"
         className="mt-2.5 w-full"
+        variant={isExceeded || isNearing ? "outline" : "default"}
       >
-        {isFree
+        {isFree || isExceeded || isNearing
           ? t("coraWidget.plan.upgradeAction")
           : t("coraWidget.plan.manageAction")}
       </Button>

@@ -376,8 +376,12 @@
       "daysLeftLabel": "Thời gian còn lại",
       "daysLeft_one": "Còn {{count}} ngày",
       "daysLeft_other": "Còn {{count}} ngày",
-      "monthlyUsageLabel": "Tin nhắn tháng này",
-      "windowUsageLabel": "Tin nhắn ({{hours}}h qua)"
+      "questionsAnswered": "Cora đã trả lời {{count}} câu hỏi cho bạn tháng này",
+      "nearingQuota": "🔥 Bạn đang học rất chăm tháng này!",
+      "nearingQuotaSub": "Còn khoảng {{remaining}} câu hỏi · Reset {{date}}",
+      "upgradeNudge": "Nâng lên {{tier}}",
+      "quotaExceededMsg": "🎓 Tháng này bạn đã học rất hiệu quả!",
+      "quotaResetDate": "Quota mới vào ngày {{date}}"
     },
     "selector": {
       "title": "Chọn gói phù hợp",
@@ -386,7 +390,8 @@
       "checkoutAction": "Tiếp tục thanh toán",
       "checkoutLoading": "Đang tạo phiên thanh toán...",
       "checkoutHint": "Bạn sẽ được chuyển sang cổng thanh toán SePay để hoàn tất nâng cấp.",
-      "activeRenewalHint": "Gói {{tier}} hiện tại của bạn vẫn còn hiệu lực. Tạm thời bạn chỉ có thể gia hạn cùng tier."
+      "activeRenewalHint": "Gói {{tier}} của bạn đang hoạt động. Bạn có thể gia hạn cùng tier hoặc nâng cấp lên tier cao hơn bất cứ lúc nào.",
+      "upgradeImmediateWarning": "Nâng cấp lên {{newTier}} sẽ bắt đầu ngay lập tức và thay thế gói {{currentTier}} hiện tại. Bạn sẽ mất {{days}} ngày còn lại của gói cũ."
     },
     "durationTitle": "Chu kỳ thanh toán",
     "durationValueLabel": "Chi phí trung bình mỗi tháng",
@@ -400,13 +405,10 @@
         "label": "1 tháng",
         "note": "Linh hoạt để bắt đầu nhanh"
       },
-      "6": {
-        "label": "6 tháng",
-        "note": "Giữ đà học ổn định và bớt lo gia hạn giữa chặng"
-      },
       "12": {
-        "label": "12 tháng",
-        "note": "Khóa chi phí tốt hơn cho cả hành trình học dài hạn"
+        "label": "1 năm",
+        "note": "Khóa chi phí tốt hơn cho cả hành trình học dài hạn",
+        "popular": "Phổ biến nhất"
       }
     },
     "tiers": {
@@ -414,28 +416,29 @@
         "title": "Student",
         "description": "Cho học viên cần trợ lý học tập thường xuyên trong các khóa đang học.",
         "features": [
+          "700 câu hỏi mỗi tháng (~23 câu/ngày)",
           "Hỏi Cora về tiến độ học và bài học hiện tại",
-          "Nhận gợi ý khóa học tiếp theo phù hợp hơn",
-          "Ưu tiên dùng cho dashboard, search và learning flow"
+          "Nhận gợi ý khóa học tiếp theo phù hợp hơn"
         ]
       },
       "pro": {
         "title": "Pro",
         "description": "Cho người học muốn dùng AI mạnh hơn để học nhanh và định hướng nghề nghiệp rõ hơn.",
         "features": [
-          "Mở rộng số lượt hỏi và tư vấn theo ngữ cảnh",
+          "1.000 câu hỏi mỗi tháng (~33 câu/ngày)",
           "Tư vấn career path, profile review và project direction",
-          "Phù hợp với người đang học nhiều track song song"
+          "Phản hồi chi tiết hơn với model AI mạnh hơn"
         ]
       },
       "bootcamp": {
         "title": "Bootcamp",
         "description": "Cho học viên cần AI đồng hành cường độ cao trong giai đoạn tăng tốc.",
         "features": [
-          "Hạn mức cao nhất cho chat, tutor và discovery",
+          "Không giới hạn*",
           "Tối ưu cho goal setting, milestone check-in và execution support",
           "Phù hợp với cohort, bootcamp hoặc giai đoạn chuyển nghề"
-        ]
+        ],
+        "fairUseNote": "* Sử dụng không giới hạn theo chính sách hợp lý (~2.000 câu/tháng)"
       }
     },
     "history": {

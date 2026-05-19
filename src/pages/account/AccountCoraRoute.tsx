@@ -31,7 +31,8 @@ import { useCoraStore } from "@/stores/coraStore";
 import { formatVndPrice } from "@/types/courses";
 
 const TIER_ORDER: AiSubscriptionTier[] = ["student", "pro", "bootcamp"];
-const DURATION_ORDER: AiSubscriptionDurationMonths[] = [1, 6, 12];
+const TIER_RANK: Record<AiSubscriptionTier, number> = { student: 1, pro: 2, bootcamp: 3 };
+const DURATION_ORDER: AiSubscriptionDurationMonths[] = [1, 12];
 const AI_SUBSCRIPTION_PRODUCT_ID = "cora-ai";
 
 type StoredCheckout = {
@@ -46,19 +47,16 @@ const TIER_PRICES: Record<
   Record<AiSubscriptionDurationMonths, number>
 > = {
   student: {
-    1: 99_000,
-    6: 499_000,
-    12: 890_000,
+    1: 79_000,
+    12: 690_000,
   },
   pro: {
-    1: 199_000,
-    6: 999_000,
-    12: 1_790_000,
+    1: 149_000,
+    12: 1_290_000,
   },
   bootcamp: {
-    1: 499_000,
-    6: 2_490_000,
-    12: 4_490_000,
+    1: 399_000,
+    12: 3_490_000,
   },
 };
 
@@ -92,7 +90,7 @@ export function AccountCoraRoute() {
   const [selectedTierOverride, setSelectedTierOverride] =
     useState<AiSubscriptionTier | null>(null);
   const [selectedDuration, setSelectedDuration] =
-    useState<AiSubscriptionDurationMonths>(1);
+    useState<AiSubscriptionDurationMonths>(12);
   const [transactions, setTransactions] = useState<PaymentTransaction[] | null>(
     null,
   );
@@ -106,7 +104,9 @@ export function AccountCoraRoute() {
   >("idle");
   const selectedTier = selectedTierOverride ?? aiSubscription?.tier ?? "student";
   const hasActiveSubscription = !!aiSubscription && daysUntilExpiry != null && daysUntilExpiry >= 0;
-  const tierChangeBlocked = hasActiveSubscription && aiSubscription?.tier !== selectedTier;
+  const currentTierRank = aiSubscription ? (TIER_RANK[aiSubscription.tier] ?? 0) : 0;
+  const isUpgrade = hasActiveSubscription && (TIER_RANK[selectedTier] ?? 0) > currentTierRank;
+  const tierChangeBlocked = hasActiveSubscription && (TIER_RANK[selectedTier] ?? 0) < currentTierRank;
   const loadingTransactions = user ? transactions === null && !error : false;
   const paymentState = new URLSearchParams(location.search).get("payment");
   const paymentNotice =
@@ -374,44 +374,75 @@ export function AccountCoraRoute() {
                 </div>
               </div>
               {coraQuotaInfo ? (
-                <div className="mt-4 grid gap-3 border-t border-border-subtle pt-4 text-sm text-foreground-muted">
-                  {coraQuotaInfo.monthlyLimit != null ? (
-                    <div>
-                      <div className="flex items-center justify-between gap-3">
-                        <span>{t("cora.currentPlan.monthlyUsageLabel")}</span>
-                        <span className="font-medium text-foreground">
-                          {coraQuotaInfo.monthlyUsed} / {coraQuotaInfo.monthlyLimit}
-                        </span>
+                <div className="mt-4 border-t border-border-subtle pt-4 text-sm">
+                  {(() => {
+                    const limit = coraQuotaInfo.monthlyLimit;
+                    const used = coraQuotaInfo.monthlyUsed;
+                    const usedPct = limit ? used / limit : 0;
+                    const isExceeded = usedPct >= 1;
+                    const isNearing = usedPct >= 0.7 && !isExceeded;
+                    const resetDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1);
+                    const resetStr = resetDate.toLocaleDateString(intlLocale(), { day: "2-digit", month: "2-digit", year: "numeric" });
+                    const nextTier = aiSubscription?.tier === "student" ? "pro" : aiSubscription?.tier === "pro" ? "bootcamp" : null;
+
+                    if (isExceeded) {
+                      return (
+                        <div className="space-y-3">
+                          <p className="font-medium text-foreground">{t("cora.currentPlan.quotaExceededMsg")}</p>
+                          <p className="text-foreground-muted">{t("cora.currentPlan.quotaResetDate", { date: resetStr })}</p>
+                          {nextTier ? (
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {(["pro", "bootcamp"] as const).filter((tier) => (TIER_RANK[tier] ?? 0) > (currentTierRank ?? 0)).map((tier) => (
+                                <Button
+                                  key={tier}
+                                  render={<NavLink to={`/cora?tier=${tier}`} />}
+                                  nativeButton={false}
+                                  size="sm"
+                                  variant="outline"
+                                >
+                                  {t(`cora.tiers.${tier}.title`)} · {formatVndPrice(TIER_PRICES[tier][1])}/tháng
+                                </Button>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    }
+
+                    if (isNearing) {
+                      const remaining = limit ? Math.max(limit - used, 0) : null;
+                      return (
+                        <div className="space-y-2">
+                          <p className="font-medium text-foreground">{t("cora.currentPlan.nearingQuota")}</p>
+                          <p className="text-foreground-muted">
+                            {t("cora.currentPlan.nearingQuotaSub", { remaining, date: resetStr })}
+                          </p>
+                          <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-border-subtle">
+                            <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${Math.min(usedPct * 100, 100)}%` }} />
+                          </div>
+                          {nextTier ? (
+                            <Button render={<NavLink to={`/cora?tier=${nextTier}`} />} nativeButton={false} size="sm" variant="outline" className="mt-1">
+                              {t("cora.currentPlan.upgradeNudge", { tier: t(`cora.tiers.${nextTier}.title`) })}
+                            </Button>
+                          ) : null}
+                        </div>
+                      );
+                    }
+
+                    // Comfortable state
+                    return (
+                      <div className="space-y-2">
+                        <p className="text-foreground-muted">
+                          {t("cora.currentPlan.questionsAnswered", { count: used })}
+                        </p>
+                        {limit ? (
+                          <div className="h-1 w-full overflow-hidden rounded-full bg-border-subtle">
+                            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(usedPct * 100, 100)}%` }} />
+                          </div>
+                        ) : null}
                       </div>
-                      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-border-subtle">
-                        <div
-                          className="h-full rounded-full bg-primary transition-all"
-                          style={{
-                            width: `${Math.min((coraQuotaInfo.monthlyUsed / coraQuotaInfo.monthlyLimit) * 100, 100)}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between gap-3">
-                      <span>{t("cora.currentPlan.monthlyUsageLabel")}</span>
-                      <span className="font-medium text-foreground">
-                        {coraQuotaInfo.monthlyUsed}
-                      </span>
-                    </div>
-                  )}
-                  {coraQuotaInfo.windowSoftCap != null ? (
-                    <div className="flex items-center justify-between gap-3">
-                      <span>
-                        {t("cora.currentPlan.windowUsageLabel", {
-                          hours: coraQuotaInfo.windowHours,
-                        })}
-                      </span>
-                      <span className="font-medium text-foreground">
-                        {coraQuotaInfo.windowUsed} / {coraQuotaInfo.windowSoftCap}
-                      </span>
-                    </div>
-                  ) : null}
+                    );
+                  })()}
                 </div>
               ) : null}
             </div>
@@ -453,7 +484,7 @@ export function AccountCoraRoute() {
                 {TIER_ORDER.map((tier) => {
                   const isActive = selectedTier === tier;
                   const tierPrice = TIER_PRICES[tier][selectedDuration];
-                  const disabled = hasActiveSubscription && aiSubscription?.tier !== tier;
+                  const disabled = hasActiveSubscription && (TIER_RANK[tier] ?? 0) < currentTierRank;
                   const features = t(`cora.tiers.${tier}.features`, {
                     returnObjects: true,
                   }) as string[];
@@ -514,6 +545,9 @@ export function AccountCoraRoute() {
                   );
                 })}
               </div>
+              <p className="mt-3 text-[11px] text-foreground-subtle">
+                {t("cora.tiers.bootcamp.fairUseNote")}
+              </p>
             </div>
 
             <div className="rounded-xl border border-border-subtle bg-surface-base p-5 sm:p-6">
@@ -552,7 +586,12 @@ export function AccountCoraRoute() {
                             <div className="font-medium text-foreground">
                               {t(`cora.duration.${duration}.label`)}
                             </div>
-                            {duration > 1 && savings > 0 ? (
+                            {duration === 12 ? (
+                              <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                                {t("cora.duration.12.popular")}
+                              </span>
+                            ) : null}
+                          {duration === 12 && savings > 0 ? (
                               <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
                                 {t("cora.durationSavingsBadge", {
                                   percent: savingsPercent,
@@ -569,7 +608,7 @@ export function AccountCoraRoute() {
                                 amount: formatVndPrice(monthlyEquivalent),
                               })}
                             </div>
-                            {duration > 1 && savings > 0 ? (
+                            {duration === 12 && savings > 0 ? (
                               <div>
                                 {t("cora.durationSavingsDetail", {
                                   amount: formatVndPrice(savings),
@@ -596,8 +635,16 @@ export function AccountCoraRoute() {
                 })}
               </div>
 
-              {hasActiveSubscription ? (
-                <div className="mt-5 rounded-lg border border-warning/30 bg-warning/10 px-3 py-3 text-sm text-warning">
+              {isUpgrade ? (
+                <div className="mt-5 rounded-lg border border-primary/20 bg-primary/5 px-3 py-3 text-sm text-foreground-muted">
+                  {t("cora.selector.upgradeImmediateWarning", {
+                    newTier: t(`cora.tiers.${selectedTier}.title`),
+                    currentTier: t(`cora.tiers.${aiSubscription?.tier ?? "student"}.title`),
+                    days: Math.max(daysUntilExpiry ?? 0, 0),
+                  })}
+                </div>
+              ) : hasActiveSubscription ? (
+                <div className="mt-5 rounded-lg border border-border-subtle bg-surface-raised px-3 py-3 text-sm text-foreground-muted">
                   {t("cora.selector.activeRenewalHint", {
                     tier: t(`cora.tiers.${aiSubscription?.tier ?? "student"}.title`),
                   })}

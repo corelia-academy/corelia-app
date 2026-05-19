@@ -343,12 +343,9 @@
     "sendingAction": "Đang gửi…",
     "sourceCount_one": "Phản hồi này đang bám trên {{count}} nguồn tham chiếu nội bộ.",
     "sourceCount_other": "Phản hồi này đang bám trên {{count}} nguồn tham chiếu nội bộ.",
-    "throttleHint": "Bạn đã chạm ngưỡng hỏi mềm trong khung vài giờ gần đây, nên Cora sẽ ưu tiên trả lời ngắn và tiết kiệm hơn.",
     "retryAction": "Thử lại",
-    "quotaExceededTitle": "Bạn đã chạm giới hạn Cora AI tháng này",
-    "quotaExceededDescription": "Hiện bạn đã dùng khoảng {{used}} / {{limit}} tin nhắn ở gói {{tier}}. Bạn có thể thử lại sau khi quota được làm mới hoặc nâng cấp để tiếp tục hỏi nhiều hơn.",
-    "quotaExceededCta": "Xem gói Cora",
-    "quotaExceededHint": "Cora tạm dừng vì bạn đã chạm quota tháng hiện tại.",
+    "quotaExceededTitle": "Bạn đã học rất chăm tháng này! 🎓",
+    "quotaExceededSubtitle": "Quota Cora mới vào {{resetDate}}. Muốn tiếp tục học ngay hôm nay?",
     "plan": {
       "tiers": {
         "free": "Gói miễn phí",
@@ -356,11 +353,12 @@
         "pro": "Pro",
         "bootcamp": "Bootcamp"
       },
-      "usage": "Đã dùng {{used}} / {{limit}} tin nhắn tháng này.",
-      "usageFlexible": "Gói hiện tại đã được mở rộng và sẽ tiếp tục phản ánh theo quota thực tế của tài khoản.",
-      "expiry": "Còn khoảng {{days}} ngày hiệu lực ở gói hiện tại.",
-      "throttled": "Đang ưu tiên tiết kiệm",
-      "windowUsage": "Trong {{hours}} giờ gần đây bạn đã dùng {{used}} / {{cap}} trong ngưỡng hỏi mềm.",
+      "messagesThisMonth": "{{count}} câu hỏi tháng này",
+      "daysLeft": "còn {{count}} ngày",
+      "nearingLimit": "🔥 Bạn đang học rất chăm!",
+      "resetDate": "reset {{date}}",
+      "quotaExceeded": "🎓 Tháng học rất hiệu quả!",
+      "quotaExceededSub": "Quota mới vào {{date}}",
       "upgradeAction": "Nâng cấp",
       "manageAction": "Quản lý gói"
     },

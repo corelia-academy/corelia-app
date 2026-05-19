@@ -19,7 +19,7 @@
 
 - [ ] Tạo migration: tạo `ai_usage_monthly` (`user_id`, `month` text, `message_count`, `tokens_used`, `cost_usd`, unique `user_id,month`)
 - [ ] Tạo migration: tạo hoặc seed `tier_limits` — thêm columns `monthly_messages`, `rolling_3h_soft_cap`, `price_vnd_monthly`
-- [ ] Seed tier_limits: Free (40/6), Student (250/20), Pro (700/50), Bootcamp (1800/120)
+- [x] Seed tier_limits: Free (50/5), Student (700/70), Pro (1000/100), Bootcamp (2000/200) — migration `20260620110000_fix_tier_limits_pricing_v2.sql`
 - [ ] Tạo migration: thêm `signup_fingerprint` jsonb vào `profiles` (cho anti-cheat fingerprinting)
 
 ### 1.3 Subscription tables
@@ -99,14 +99,15 @@
 
 ## Phase 3 — Edge Function: `corelia-api` (Payments)
 
-- [ ] Thêm `"ai_subscription"` vào `PaymentPurpose` type
-- [ ] Implement `handleAiSubscriptionCheckout()` — validate tier + duration, compute amount từ price table, save pending transaction
-- [ ] Thêm route `POST /payments/ai-subscription/checkout` vào router
-- [ ] Thêm branch `ai_subscription` trong `grantPaymentAccessForTransaction()`:
-  - [ ] Validate `amount_vnd` khớp `AI_SUBSCRIPTION_PRICES[tier][months]`
-  - [ ] Insert vào `ai_subscriptions`
-  - [ ] Update `profiles.tier`
+- [x] Thêm `"ai_subscription"` vào `PaymentPurpose` type
+- [x] Implement `handleAiSubscriptionCheckout()` — validate tier + duration (chỉ 1 và 12 tháng), compute amount từ price table, save pending transaction
+- [x] Thêm route `POST /payments/ai-subscription/checkout` vào router
+- [x] Thêm branch `ai_subscription` trong `grantPaymentAccessForTransaction()`:
+  - [x] Validate `amount_vnd` khớp `AI_SUBSCRIPTION_PRICES[tier][months]`
+  - [x] Insert vào `ai_subscriptions`
+  - [x] Update `profiles.tier`
 - [ ] Xử lý `ORDER_REFUND` / `CHARGEBACK` trong IPN handler → revoke subscription + downgrade tier
+- [x] **Upgrade/downgrade logic** (2026-05-19): upgrade allowed + starts immediately, downgrade blocked while active, same-tier renewal extends from expires_at; status thêm `superseded`
 
 ---
 
@@ -156,8 +157,8 @@
   - [ ] Auto-scroll to bottom khi có message mới
   - [ ] "Load older messages" button khi có cursor (lesson history)
 - [ ] Thêm `SessionSwitcher` dropdown — 5 sessions gần nhất, icon ở header CoraShell
-- [ ] `QuotaExceededPrompt` component — hiện trong footer khi `error.type = 'quota_exceeded'`
-- [ ] Daily throttle banner — strip nhỏ trong footer khi `throttled = true`
+- [x] `QuotaExceededPrompt` redesign — neutral styling (BookOpen icon), reset date, inline tier upgrade cards (chỉ tier cao hơn current), onRetry callback
+- [x] Silent soft cap — throttle không hiển thị gì cho user (xóa throttleHint ở tất cả surfaces)
 
 ### 5.2 CourseAiTutorPanel
 
@@ -184,14 +185,14 @@
 
 ### 5.5 Trang AccountCoraRoute
 
-- [ ] Tạo `src/pages/account/AccountCoraRoute.tsx`
-- [ ] Hiện current subscription card (`CurrentSubscriptionCard`)
-- [ ] Tier selector (Student / Pro / Bootcamp) với feature list
-- [ ] Duration selector (1 / 6 / 12 tháng) với savings badge
-- [ ] CTA button → `createAiSubscriptionCheckout()` → `submitSePayCheckoutForm()`
-- [ ] AI transaction history (filter `payment_transactions` by purpose `ai_subscription`)
-- [ ] Thêm route `/account/cora` vào `src/App.tsx`
-- [ ] Thêm redirect `/upgrade/cora` → `/account/cora`
+- [x] Tạo `src/pages/account/AccountCoraRoute.tsx`
+- [x] Hiện current subscription card với 3 quota states (comfortable / nearing / exceeded)
+- [x] Tier selector (Student / Pro / Bootcamp) với feature list; tier thấp hơn current bị disabled
+- [x] Duration selector (chỉ 1 tháng và 1 năm, default 12), "Phổ biến nhất" badge cho 1 năm
+- [x] CTA button → `createAiSubscriptionCheckout()` → `submitSePayCheckoutForm()`
+- [x] Upgrade warning inline khi chọn tier cao hơn hiện tại
+- [x] AI transaction history
+- [x] Thêm route `/account/cora` vào router
 
 ### 5.6 CheckoutSuccess
 
@@ -252,6 +253,24 @@
 | Expiry cron | ai_subscriptions table |
 | Knowledge base seed | pgvector migration |
 | RAG trong ai-tutor | Knowledge base seeded |
+
+---
+
+---
+
+## 2026-05-19 UX & Pricing Overhaul (completed)
+
+- [x] Switch AI provider: Anthropic → OpenAI GPT-5.4 mini / GPT-5.4 full
+- [x] Fix `FALLBACK_TIER_LIMITS` bug trong `ai-tutor/index.ts` (monthly ↔ 3h values bị swap)
+- [x] Fix cost estimate trong `usageAccounting.ts` (dùng GPT-5.4 pricing thực tế)
+- [x] Add `max_output_tokens: 800` vào OpenAI Responses API body (`provider.ts`)
+- [x] New tier pricing: 79k/149k/399k (1 tháng), 690k/1.29M/3.49M (1 năm)
+- [x] New tier limits: 50/700/1000/2000 msgs/tháng; soft caps 5/70/100/200 per 3h
+- [x] Remove 6-month plan (`AiSubscriptionDurationMonths = 1 | 12`)
+- [x] Achievement framing trong `CoraPlanSummary` (3 states: comfortable / nearing / exceeded)
+- [x] Bootcamp hiển thị "Không giới hạn*" + fairUseNote footnote
+- [x] `CoraPlanSummary` redesign: bỏ windowUsed/windowSoftCap row, bỏ throttle badge
+- [x] i18n updates: `vi/common.json`, `en/common.json`, `vi/account.json`, `en/account.json`
 
 ---
 

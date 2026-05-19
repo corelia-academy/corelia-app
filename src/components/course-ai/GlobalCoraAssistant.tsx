@@ -141,21 +141,12 @@ export function CoraAssistantCard({
           {error?.type === "quota_exceeded" ? (
             <QuotaExceededPrompt
               title={String(t("coraWidget.quotaExceededTitle"))}
-              description={String(
-                t("coraWidget.quotaExceededDescription", {
-                  used: error.used ?? quotaInfo?.monthlyUsed ?? 0,
-                  limit: error.limit ?? quotaInfo?.monthlyLimit ?? 0,
-                  tier: error.tier ?? quotaInfo?.tier ?? "free",
-                }),
-              )}
-              ctaLabel={String(t("coraWidget.quotaExceededCta"))}
-              ctaTo="/cora"
-              retryLabel={String(t("coraWidget.retryAction"))}
+              subtitle={String(t("coraWidget.quotaExceededSubtitle"))}
+              currentTier={error.tier ?? quotaInfo?.tier}
+              resetDate={new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)}
               onRetry={
                 lastSubmittedMessage
-                  ? () => {
-                      void sendMessage(lastSubmittedMessage);
-                    }
+                  ? () => { void sendMessage(lastSubmittedMessage); }
                   : undefined
               }
               className="mt-2"
@@ -165,16 +156,10 @@ export function CoraAssistantCard({
             <p
               className={cn(
                 "text-[11px] leading-snug",
-                error ? "text-destructive" : "text-foreground-muted",
+                error && error.type !== "quota_exceeded" ? "text-destructive" : "text-foreground-muted",
               )}
             >
-              {error?.type === "quota_exceeded"
-                ? t("coraWidget.quotaExceededHint")
-                : error
-                  ? error.message
-                  : quotaInfo?.throttled
-                    ? t("coraWidget.throttleHint")
-                    : null}
+              {error && error.type !== "quota_exceeded" ? error.message : null}
             </p>
             <Button
               type="button"

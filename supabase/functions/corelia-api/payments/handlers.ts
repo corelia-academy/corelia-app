@@ -75,7 +75,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       if (!["student", "pro", "bootcamp"].includes(tier)) {
         return json({ message: "Tier không hợp lệ" }, 400);
       }
-      if (![1, 6, 12].includes(durationMonths)) {
+      if (![1, 12].includes(durationMonths)) {
         return json({ message: "Thời hạn không hợp lệ" }, 400);
       }
       const now = new Date().toISOString();
@@ -90,7 +90,13 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
         .maybeSingle<{ tier: AiSubscriptionTier; expires_at: string }>();
       if (activeSubscriptionError) throw new Error(activeSubscriptionError.message);
       if (activeSubscription?.tier && activeSubscription.tier !== tier) {
-        return json({ message: "Khi gói hiện tại còn hiệu lực, bạn chỉ có thể gia hạn cùng tier." }, 400);
+        const TIER_RANK = { student: 1, pro: 2, bootcamp: 3 } as const;
+        const currentRank = TIER_RANK[activeSubscription.tier as keyof typeof TIER_RANK] ?? 0;
+        const newRank = TIER_RANK[tier as keyof typeof TIER_RANK] ?? 0;
+        if (newRank <= currentRank) {
+          return json({ message: "Không thể hạ cấp khi gói hiện tại còn hiệu lực." }, 400);
+        }
+        // newRank > currentRank → upgrade được phép, tiếp tục
       }
       baseAmount = AI_SUBSCRIPTION_PRICES[tier][durationMonths];
       subscriptionMeta = { tier, duration_months: durationMonths };

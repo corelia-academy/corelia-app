@@ -159,10 +159,10 @@ const FALLBACK_TIER_LIMITS: Record<
   Tier,
   { monthlyMessages: number; rolling3hSoftCap: number; haikuOnly: boolean }
 > = {
-  free: { monthlyMessages: 40, rolling3hSoftCap: 6, haikuOnly: true },
-  student: { monthlyMessages: 250, rolling3hSoftCap: 20, haikuOnly: true },
-  pro: { monthlyMessages: 700, rolling3hSoftCap: 50, haikuOnly: false },
-  bootcamp: { monthlyMessages: 1800, rolling3hSoftCap: 120, haikuOnly: false },
+  free:     { monthlyMessages: 50,   rolling3hSoftCap: 5,   haikuOnly: true  },
+  student:  { monthlyMessages: 700,  rolling3hSoftCap: 70,  haikuOnly: true  },
+  pro:      { monthlyMessages: 1000, rolling3hSoftCap: 100, haikuOnly: false },
+  bootcamp: { monthlyMessages: 2000, rolling3hSoftCap: 200, haikuOnly: false },
 };
 
 function mapAssistantContext(assistantContext: string): BackendContextType {

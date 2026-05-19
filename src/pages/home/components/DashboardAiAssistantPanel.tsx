@@ -198,35 +198,20 @@ export function DashboardAiAssistantPanel({
           {error?.type === "quota_exceeded" ? (
             <QuotaExceededPrompt
               title={String(t("coraWidget.quotaExceededTitle"))}
-              description={String(
-                t("coraWidget.quotaExceededDescription", {
-                  used: error.used ?? quotaInfo?.monthlyUsed ?? 0,
-                  limit: error.limit ?? quotaInfo?.monthlyLimit ?? 0,
-                  tier: error.tier ?? quotaInfo?.tier ?? "free",
-                }),
-              )}
-              ctaLabel={String(t("coraWidget.quotaExceededCta"))}
-              ctaTo="/cora"
-              retryLabel={String(t("coraWidget.retryAction"))}
+              subtitle={String(t("coraWidget.quotaExceededSubtitle"))}
+              currentTier={error.tier ?? quotaInfo?.tier}
+              resetDate={new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)}
               onRetry={
                 lastSubmittedMessage
-                  ? () => {
-                      void sendMessage(lastSubmittedMessage);
-                    }
+                  ? () => { void sendMessage(lastSubmittedMessage); }
                   : undefined
               }
               className="mt-2"
             />
           ) : null}
-          {error ? (
+          {error && error.type !== "quota_exceeded" ? (
             <p className="mt-2 text-[11px] leading-snug text-destructive">
-              {error.type === "quota_exceeded"
-                ? t("coraWidget.quotaExceededHint")
-                : error.message}
-            </p>
-          ) : quotaInfo?.throttled ? (
-            <p className="mt-2 rounded-md border border-border-subtle bg-surface-raised px-2.5 py-2 text-[11px] leading-snug text-foreground-muted">
-              {t("coraWidget.throttleHint")}
+              {error.message}
             </p>
           ) : null}
           <div className="mt-2 flex justify-end">

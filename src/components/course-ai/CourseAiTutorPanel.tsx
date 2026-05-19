@@ -132,21 +132,12 @@ export function CourseAiTutorPanel(props: {
           {error?.type === "quota_exceeded" ? (
             <QuotaExceededPrompt
               title={String(tCommon("coraWidget.quotaExceededTitle"))}
-              description={String(
-                tCommon("coraWidget.quotaExceededDescription", {
-                  used: error.used ?? quotaInfo?.monthlyUsed ?? 0,
-                  limit: error.limit ?? quotaInfo?.monthlyLimit ?? 0,
-                  tier: error.tier ?? quotaInfo?.tier ?? "free",
-                }),
-              )}
-              ctaLabel={String(tCommon("coraWidget.quotaExceededCta"))}
-              ctaTo="/cora"
-              retryLabel={String(tCommon("coraWidget.retryAction"))}
+              subtitle={String(tCommon("coraWidget.quotaExceededSubtitle"))}
+              currentTier={error.tier ?? quotaInfo?.tier}
+              resetDate={new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)}
               onRetry={
                 lastSubmittedMessage
-                  ? () => {
-                      void sendMessage(lastSubmittedMessage);
-                    }
+                  ? () => { void sendMessage(lastSubmittedMessage); }
                   : undefined
               }
               className="mt-2"
@@ -155,16 +146,12 @@ export function CourseAiTutorPanel(props: {
           <p
             className={cn(
               "mt-1.5 text-[11px] leading-snug",
-              error ? "text-destructive" : "text-foreground-muted",
+              error && error.type !== "quota_exceeded" ? "text-destructive" : "text-foreground-muted",
             )}
           >
-            {error?.type === "quota_exceeded"
-              ? tCommon("coraWidget.quotaExceededHint")
-              : error
+            {error && error.type !== "quota_exceeded"
               ? error.message
-              : quotaInfo?.throttled
-                ? t("detail.aiTutor.throttleHint")
-                : t("detail.aiTutor.liveFooterCaption")}
+              : t("detail.aiTutor.liveFooterCaption")}
           </p>
           <div className="mt-2 flex justify-end">
             <Button

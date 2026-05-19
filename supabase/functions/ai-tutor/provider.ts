@@ -106,6 +106,7 @@ async function streamOpenAi(
     },
     body: JSON.stringify({
       model,
+      max_output_tokens: 800,
       input: request.messages.map((message) => ({
         role: message.role,
         content: [{ type: "input_text", text: message.content }],
