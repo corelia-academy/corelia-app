@@ -416,6 +416,7 @@
     },
     "openAction": "Open Cora AI",
     "hideAction": "Hide Cora AI",
+    "clearHistoryAction": "Clear chat",
     "restoreAction": "Reopen Cora AI",
     "chipToast": "Sticky Cora AI is in preview mode.",
     "dashboard": {

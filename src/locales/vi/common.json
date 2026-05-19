@@ -416,6 +416,7 @@
     },
     "openAction": "Mở Cora AI",
     "hideAction": "Ẩn Cora AI",
+    "clearHistoryAction": "Xoá cuộc trò chuyện",
     "restoreAction": "Mở lại Cora AI",
     "chipToast": "Cora AI sticky đang ở chế độ preview.",
     "dashboard": {

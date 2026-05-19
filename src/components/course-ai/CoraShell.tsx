@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { XIcon } from "lucide-react";
+import { Trash2Icon, XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { CORA_AI_TUTOR_LOGO_SRC } from "@/components/course-ai/constants";
@@ -13,6 +13,8 @@ export function CoraShell({
   footer,
   onRequestHide,
   hideLabel,
+  onClearHistory,
+  clearHistoryLabel,
   className,
 }: {
   eyebrow: string;
@@ -22,6 +24,8 @@ export function CoraShell({
   footer: ReactNode;
   onRequestHide?: () => void;
   hideLabel?: string;
+  onClearHistory?: () => void;
+  clearHistoryLabel?: string;
   className?: string;
 }) {
   return (
@@ -44,19 +48,34 @@ export function CoraShell({
               draggable={false}
             />
           </div>
-          {onRequestHide ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0 rounded-full text-foreground-muted hover:text-foreground"
-              onClick={onRequestHide}
-              aria-label={hideLabel}
-              title={hideLabel}
-            >
-              <XIcon className="size-4" aria-hidden />
-            </Button>
-          ) : null}
+          <div className="flex shrink-0 items-center gap-1">
+            {onClearHistory ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="rounded-full text-foreground-muted hover:text-foreground"
+                onClick={onClearHistory}
+                aria-label={clearHistoryLabel}
+                title={clearHistoryLabel}
+              >
+                <Trash2Icon className="size-4" aria-hidden />
+              </Button>
+            ) : null}
+            {onRequestHide ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="rounded-full text-foreground-muted hover:text-foreground"
+                onClick={onRequestHide}
+                aria-label={hideLabel}
+                title={hideLabel}
+              >
+                <XIcon className="size-4" aria-hidden />
+              </Button>
+            ) : null}
+          </div>
         </div>
         {tagline ? (
           <p className="mt-2 text-xs leading-relaxed text-foreground-muted">
