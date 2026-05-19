@@ -387,33 +387,39 @@
       "projects": "{{count}} project đã nộp"
     }
   },
-  "coraVouchers": {
-    "heading": "Voucher Cora AI",
-    "subheading": "Quản lý voucher giảm giá theo % cho checkout Cora AI và theo dõi lượt dùng.",
+  "coraVoucherBatches": {
+    "heading": "Batch voucher Cora AI",
+    "subheading": "Tạo campaign nhiều mã dùng một lần và theo dõi vòng đời của từng mã.",
     "refresh": "Làm mới",
-    "add": "Tạo voucher",
-    "loading": "Đang tải voucher...",
-    "loadFailed": "Không tải được voucher.",
-    "empty": "Chưa có voucher nào.",
-    "created": "Đã tạo voucher.",
-    "updated": "Đã cập nhật voucher.",
-    "saveFailed": "Không lưu được voucher.",
-    "showing": "Hiển thị {{shown}} / {{total}} voucher",
+    "add": "Tạo batch",
+    "loading": "Đang tải batch voucher...",
+    "loadFailed": "Không tải được batch voucher.",
+    "empty": "Chưa có batch voucher nào.",
+    "created": "Đã tạo batch voucher.",
+    "batchUpdated": "Đã cập nhật batch.",
+    "codeUpdated": "Đã cập nhật mã voucher.",
+    "saveFailed": "Không lưu được batch voucher.",
+    "copyFailed": "Không copy được danh sách mã.",
+    "codesCopied": "Đã copy danh sách mã voucher.",
+    "showing": "Hiển thị {{shown}} / {{total}} batch",
     "active": "Đang bật",
     "inactive": "Đang tắt",
     "neverStarts": "Áp dụng ngay",
     "noExpiry": "Không hết hạn",
-    "usageSummary": "{{paid}} paid · {{reserved}} reserved · cap {{max}}",
-    "edit": "Sửa",
-    "redemptionTitle": "Lượt dùng gần đây",
-    "redemptionEmpty": "Chưa có lượt dùng nào.",
-    "createTitle": "Tạo voucher",
-    "editTitle": "Sửa voucher",
+    "counts": "{{available}} available · {{reserved}} reserved · {{paid}} paid · {{inactive}} inactive",
+    "viewCodes": "Xem mã",
+    "activate": "Bật",
+    "deactivate": "Tắt",
+    "createTitle": "Tạo batch voucher",
+    "detailTitle": "Chi tiết batch",
     "cancel": "Huỷ",
     "save": "Lưu",
     "saving": "Đang lưu...",
+    "copyCodes": "Copy mã",
+    "downloadCsv": "Tải CSV",
+    "createdBatchReady": "Đã có {{count}} mã sẵn sàng để export.",
     "filters": {
-      "searchPlaceholder": "Tìm theo mã voucher...",
+      "searchPlaceholder": "Tìm theo tên batch...",
       "status": {
         "all": "Mọi trạng thái",
         "active": "Chỉ đang bật",
@@ -426,23 +432,33 @@
       }
     },
     "table": {
-      "code": "Mã",
+      "name": "Batch",
       "percent": "Giảm giá",
       "window": "Hiệu lực",
-      "usage": "Lượt dùng",
+      "counts": "Số lượng",
       "status": "Trạng thái",
       "actions": "Thao tác"
     },
+    "codesTable": {
+      "code": "Mã",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "codeFilters": {
+      "all": "Tất cả mã",
+      "available": "Sẵn dùng",
+      "reserved": "Đang giữ chỗ",
+      "paid": "Đã dùng",
+      "inactive": "Đang tắt"
+    },
     "form": {
-      "code": "Mã voucher",
-      "generate": "Generate",
+      "name": "Tên batch",
+      "quantity": "Số lượng mã",
+      "codePrefix": "Prefix mã",
       "percentOff": "Phần trăm giảm",
       "startsAt": "Bắt đầu",
       "endsAt": "Kết thúc",
-      "maxRedemptions": "Giới hạn lượt dùng",
-      "status": "Trạng thái",
-      "noteTitle": "Cách sinh mã",
-      "noteBody": "Hệ thống có thể tự sinh mã uppercase cho admin và bạn vẫn có thể sửa tay trước khi lưu."
+      "status": "Trạng thái"
     }
   }
 }

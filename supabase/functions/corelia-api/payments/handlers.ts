@@ -11,6 +11,7 @@ import {
   sepayCheckoutInitUrl,
 } from "./sepay.ts";
 import {
+  createAiVoucherBatch,
   previewAiVoucher,
   releaseVoucherReservationForPayment,
   reserveAiVoucherForPayment,
@@ -156,7 +157,6 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       }
     } else if (purpose === "ai_subscription" && voucherCodeRaw) {
       const voucher = await previewAiVoucher(db, {
-        userId: user.id,
         voucherCode: voucherCodeRaw,
         baseAmountVnd: baseAmount,
       });
@@ -252,7 +252,6 @@ export async function handleAiVoucherPreview(req: Request, db: SupabaseClient): 
     if (!voucherCode) return json({ message: "Thiếu mã voucher." }, 400);
 
     const preview = await previewAiVoucher(db, {
-      userId: user.id,
       voucherCode,
       baseAmountVnd: AI_SUBSCRIPTION_PRICES[tier][durationMonths],
     });
@@ -266,6 +265,33 @@ export async function handleAiVoucherPreview(req: Request, db: SupabaseClient): 
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
+    return json({ message }, 400);
+  }
+}
+
+export async function handleAiVoucherBatchCreate(req: Request, db: SupabaseClient): Promise<Response> {
+  try {
+    const user = await verifyBearerUser(req, db);
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    const result = await createAiVoucherBatch(db, {
+      userId: user.id,
+      name: String(body.name ?? ""),
+      quantity: Math.round(Number(body.quantity ?? 0)),
+      codePrefix: String(body.codePrefix ?? ""),
+      percentOff: Math.round(Number(body.percentOff ?? 0)),
+      startsAt: body.startsAt == null ? null : String(body.startsAt),
+      endsAt: body.endsAt == null ? null : String(body.endsAt),
+      active: body.active !== false,
+    });
+    return json({
+      batch: result.batch,
+      codes: result.codes,
+      csvText: result.csvText,
+    });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
+    if (message === "Không đủ quyền tạo batch voucher.") return json({ message }, 403);
     return json({ message }, 400);
   }
 }
