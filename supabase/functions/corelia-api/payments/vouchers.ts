@@ -1,17 +1,28 @@
+import { randomHex } from "../lib/crypto.ts";
+import { getUserRole } from "../lib/authz.ts";
 import { nowIso } from "../lib/http.ts";
 import type { SupabaseClient } from "../lib/supabase.ts";
 
 const VOUCHER_CODE_RE = /^[A-Z0-9_-]{4,32}$/;
+const CODE_PREFIX_RE = /^[A-Z0-9]{0,12}$/;
 const RESERVATION_TTL_MS = 30 * 60 * 1000;
 
-type AiVoucherRow = {
+type AiVoucherBatchRow = {
   id: string;
-  code: string;
+  name: string;
   percent_off: number;
   active: boolean;
   starts_at?: string | null;
   ends_at?: string | null;
-  max_redemptions?: number | null;
+  target_tier?: string | null;
+  target_duration_months?: number | null;
+};
+
+type AiVoucherCodeRow = {
+  id: string;
+  batch_id: string;
+  code: string;
+  active: boolean;
 };
 
 export type AiVoucherPreview = {
@@ -21,6 +32,25 @@ export type AiVoucherPreview = {
   baseAmountVnd: number;
   discountAmountVnd: number;
   finalAmountVnd: number;
+};
+
+export type BatchCreateInput = {
+  userId: string;
+  name: string;
+  quantity: number;
+  codePrefix?: string;
+  percentOff: number;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  active: boolean;
+  targetTier?: string | null;
+  targetDurationMonths?: number | null;
+};
+
+export type BatchCreateResult = {
+  batch: AiVoucherBatchRow;
+  codes: AiVoucherCodeRow[];
+  csvText: string;
 };
 
 function parseTime(value?: string | null): number | null {
@@ -33,10 +63,43 @@ export function normalizeVoucherCode(raw: string): string {
   return raw.trim().toUpperCase();
 }
 
+function normalizePrefix(raw?: string | null): string {
+  return String(raw ?? "").trim().toUpperCase();
+}
+
 function assertVoucherCode(code: string) {
-  if (!VOUCHER_CODE_RE.test(code)) {
-    throw new Error("Mã voucher không hợp lệ.");
+  if (!VOUCHER_CODE_RE.test(code)) throw new Error("Mã voucher không hợp lệ.");
+}
+
+const VALID_TIERS = ["student", "pro", "bootcamp"] as const;
+const VALID_DURATIONS = [1, 12] as const;
+
+function assertBatchInput(input: BatchCreateInput) {
+  if (!input.name.trim()) throw new Error("Thiếu tên batch.");
+  if (!Number.isInteger(input.quantity) || input.quantity <= 0 || input.quantity > 1000) {
+    throw new Error("Số lượng mã phải từ 1 đến 1000.");
   }
+  if (!Number.isInteger(input.percentOff) || input.percentOff < 1 || input.percentOff > 100) {
+    throw new Error("Phần trăm giảm giá phải từ 1 đến 100.");
+  }
+  const prefix = normalizePrefix(input.codePrefix);
+  if (!CODE_PREFIX_RE.test(prefix)) throw new Error("Prefix mã không hợp lệ.");
+  const startsAt = parseTime(input.startsAt);
+  const endsAt = parseTime(input.endsAt);
+  if (startsAt != null && endsAt != null && startsAt > endsAt) {
+    throw new Error("Thời gian bắt đầu phải trước thời gian kết thúc.");
+  }
+  if (input.targetTier != null && !(VALID_TIERS as readonly string[]).includes(input.targetTier)) {
+    throw new Error("Tier mục tiêu không hợp lệ.");
+  }
+  if (input.targetDurationMonths != null && !(VALID_DURATIONS as readonly number[]).includes(input.targetDurationMonths)) {
+    throw new Error("Thời hạn mục tiêu không hợp lệ.");
+  }
+}
+
+function buildVoucherCode(prefix = "") {
+  const suffix = randomHex(10).toUpperCase();
+  return prefix ? `${prefix}-${suffix}` : suffix;
 }
 
 function computeDiscount(baseAmountVnd: number, percentOff: number) {
@@ -50,18 +113,54 @@ function computeDiscount(baseAmountVnd: number, percentOff: number) {
   };
 }
 
-async function loadVoucherByCode(db: SupabaseClient, normalizedCode: string): Promise<AiVoucherRow> {
+async function loadVoucherByCode(
+  db: SupabaseClient,
+  normalizedCode: string,
+): Promise<{ voucher: AiVoucherCodeRow; batch: AiVoucherBatchRow }> {
   const { data, error } = await db
     .from("ai_vouchers")
-    .select("id,code,percent_off,active,starts_at,ends_at,max_redemptions")
+    .select(`
+      id,
+      batch_id,
+      code,
+      active,
+      ai_voucher_batches!inner (
+        id,
+        name,
+        percent_off,
+        active,
+        starts_at,
+        ends_at,
+        target_tier,
+        target_duration_months
+      )
+    `)
     .eq("code", normalizedCode)
-    .maybeSingle<AiVoucherRow>();
+    .maybeSingle<{
+      id: string;
+      batch_id: string;
+      code: string;
+      active: boolean;
+      ai_voucher_batches: AiVoucherBatchRow;
+    }>();
   if (error) throw new Error(error.message);
-  if (!data) throw new Error("Voucher không tồn tại.");
-  return data;
+  if (!data?.ai_voucher_batches) throw new Error("Voucher không tồn tại.");
+  return {
+    voucher: {
+      id: data.id,
+      batch_id: data.batch_id,
+      code: data.code,
+      active: data.active,
+    },
+    batch: data.ai_voucher_batches,
+  };
 }
 
-async function countActiveReservationsAndPaid(db: SupabaseClient, voucherId: string, now: string): Promise<number> {
+async function countVoucherRedemptions(
+  db: SupabaseClient,
+  voucherId: string,
+  now: string,
+): Promise<{ paid: number; reserved: number }> {
   const [{ count: paidCount, error: paidError }, { count: reservedCount, error: reservedError }] = await Promise.all([
     db
       .from("ai_voucher_redemptions")
@@ -77,25 +176,20 @@ async function countActiveReservationsAndPaid(db: SupabaseClient, voucherId: str
   ]);
   if (paidError) throw new Error(paidError.message);
   if (reservedError) throw new Error(reservedError.message);
-  return Number(paidCount ?? 0) + Number(reservedCount ?? 0);
-}
-
-async function hasPaidRedemption(db: SupabaseClient, voucherId: string, userId: string): Promise<boolean> {
-  const { data, error } = await db
-    .from("ai_voucher_redemptions")
-    .select("id")
-    .eq("voucher_id", voucherId)
-    .eq("user_id", userId)
-    .eq("status", "paid")
-    .limit(1)
-    .maybeSingle<{ id: string }>();
-  if (error) throw new Error(error.message);
-  return !!data?.id;
+  return {
+    paid: Number(paidCount ?? 0),
+    reserved: Number(reservedCount ?? 0),
+  };
 }
 
 export async function previewAiVoucher(
   db: SupabaseClient,
-  params: { userId: string; voucherCode: string; baseAmountVnd: number },
+  params: {
+    voucherCode: string;
+    baseAmountVnd: number;
+    tier?: string | null;
+    durationMonths?: number | null;
+  },
 ): Promise<AiVoucherPreview> {
   const normalizedCode = normalizeVoucherCode(params.voucherCode);
   assertVoucherCode(normalizedCode);
@@ -103,34 +197,36 @@ export async function previewAiVoucher(
     throw new Error("Giá gói không hợp lệ.");
   }
 
-  const voucher = await loadVoucherByCode(db, normalizedCode);
+  const { voucher, batch } = await loadVoucherByCode(db, normalizedCode);
   const now = Date.now();
-  const startsAt = parseTime(voucher.starts_at);
-  const endsAt = parseTime(voucher.ends_at);
+  const startsAt = parseTime(batch.starts_at);
+  const endsAt = parseTime(batch.ends_at);
 
-  if (!voucher.active) throw new Error("Voucher hiện đang bị tắt.");
+  if (!voucher.active) throw new Error("Mã voucher hiện đang bị tắt.");
+  if (!batch.active) throw new Error("Batch voucher hiện đang bị tắt.");
   if (startsAt != null && startsAt > now) throw new Error("Voucher chưa đến thời gian áp dụng.");
   if (endsAt != null && endsAt < now) throw new Error("Voucher đã hết hạn.");
-  if (await hasPaidRedemption(db, voucher.id, params.userId)) {
-    throw new Error("Bạn đã dùng voucher này rồi.");
-  }
 
-  if (voucher.max_redemptions != null) {
-    const inUse = await countActiveReservationsAndPaid(db, voucher.id, new Date(now).toISOString());
-    if (inUse >= Number(voucher.max_redemptions)) {
-      throw new Error("Voucher đã hết lượt sử dụng.");
-    }
+  const counts = await countVoucherRedemptions(db, voucher.id, new Date(now).toISOString());
+  if (counts.paid > 0) throw new Error("Voucher này đã được sử dụng.");
+  if (counts.reserved > 0) throw new Error("Voucher này đang được giữ chỗ cho checkout khác.");
+
+  if (params.tier != null && batch.target_tier != null && params.tier !== batch.target_tier) {
+    throw new Error("Voucher này chỉ áp dụng cho gói " + batch.target_tier + ".");
+  }
+  if (params.durationMonths != null && batch.target_duration_months != null && params.durationMonths !== batch.target_duration_months) {
+    throw new Error("Voucher này chỉ áp dụng cho thời hạn " + batch.target_duration_months + " tháng.");
   }
 
   const { discountAmountVnd, finalAmountVnd } = computeDiscount(
     Math.round(params.baseAmountVnd),
-    Math.round(Number(voucher.percent_off ?? 0)),
+    Math.round(Number(batch.percent_off ?? 0)),
   );
 
   return {
     voucherId: voucher.id,
     code: voucher.code,
-    percentOff: Math.round(Number(voucher.percent_off ?? 0)),
+    percentOff: Math.round(Number(batch.percent_off ?? 0)),
     baseAmountVnd: Math.round(params.baseAmountVnd),
     discountAmountVnd,
     finalAmountVnd,
@@ -140,14 +236,13 @@ export async function previewAiVoucher(
 export async function reserveAiVoucherForPayment(
   db: SupabaseClient,
   params: {
-    userId: string;
     paymentTransactionId: string;
     voucherCode: string;
+    userId: string;
     baseAmountVnd: number;
   },
 ): Promise<AiVoucherPreview> {
   const preview = await previewAiVoucher(db, {
-    userId: params.userId,
     voucherCode: params.voucherCode,
     baseAmountVnd: params.baseAmountVnd,
   });
@@ -172,7 +267,6 @@ export async function reserveAiVoucherForPayment(
     { onConflict: "payment_transaction_id" },
   );
   if (error) throw new Error(error.message);
-
   return preview;
 }
 
@@ -210,4 +304,70 @@ export async function releaseVoucherReservationForPayment(
     .eq("payment_transaction_id", paymentTransactionId)
     .eq("status", "reserved");
   if (error) throw new Error(error.message);
+}
+
+export function buildVoucherCsv(codes: AiVoucherCodeRow[]): string {
+  return ["code", ...codes.map((code) => code.code)].join("\n");
+}
+
+export async function createAiVoucherBatch(
+  db: SupabaseClient,
+  input: BatchCreateInput,
+): Promise<BatchCreateResult> {
+  assertBatchInput(input);
+  const role = await getUserRole(db, input.userId);
+  if (role !== "admin" && role !== "support_staff") {
+    throw new Error("Không đủ quyền tạo batch voucher.");
+  }
+
+  const now = nowIso();
+  const prefix = normalizePrefix(input.codePrefix);
+  const { data: batchData, error: batchError } = await db
+    .from("ai_voucher_batches")
+    .insert({
+      name: input.name.trim(),
+      percent_off: input.percentOff,
+      active: input.active,
+      starts_at: input.startsAt ?? null,
+      ends_at: input.endsAt ?? null,
+      target_tier: input.targetTier ?? null,
+      target_duration_months: input.targetDurationMonths ?? null,
+      created_at: now,
+      created_by: input.userId,
+      updated_at: now,
+      updated_by: input.userId,
+    })
+    .select("id,name,percent_off,active,starts_at,ends_at,target_tier,target_duration_months")
+    .single<AiVoucherBatchRow>();
+  if (batchError || !batchData) throw new Error(batchError?.message ?? "Không tạo được batch voucher.");
+
+  const generated = new Map<string, boolean>();
+  const rows: Array<Record<string, unknown>> = [];
+  while (rows.length < input.quantity) {
+    const code = buildVoucherCode(prefix);
+    if (generated.has(code)) continue;
+    generated.set(code, true);
+    rows.push({
+      batch_id: batchData.id,
+      code,
+      active: input.active,
+      created_at: now,
+      created_by: input.userId,
+      updated_at: now,
+      updated_by: input.userId,
+    });
+  }
+
+  const { data: insertedCodes, error: codeError } = await db
+    .from("ai_vouchers")
+    .insert(rows)
+    .select("id,batch_id,code,active");
+  if (codeError) throw new Error(codeError.message);
+
+  const codes = (insertedCodes ?? []) as AiVoucherCodeRow[];
+  return {
+    batch: batchData,
+    codes,
+    csvText: buildVoucherCsv(codes),
+  };
 }

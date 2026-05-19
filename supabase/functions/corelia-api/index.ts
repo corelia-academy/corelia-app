@@ -17,6 +17,7 @@ import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
 import {
   handleAiVoucherPreview,
+  handleAiVoucherBatchCreate,
   handleMyPaymentTransactions,
   handleSePayDebugLookup,
   handleSePayCheckout,
@@ -27,6 +28,7 @@ import {
 const PROTECTED_OPS = new Set<string>([
   "payments.sepay.checkout",
   "payments.ai.voucher.preview",
+  "payments.ai.vouchers.batchCreate",
   "payments.transactions",
   "payments.sepay.debugLookup",
   "certificates.issue",
@@ -71,6 +73,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleSePayCheckout(req, db);
     } else if (op === "payments.ai.voucher.preview" && req.method === "POST") {
       response = await handleAiVoucherPreview(req, db);
+    } else if (op === "payments.ai.vouchers.batchCreate" && req.method === "POST") {
+      response = await handleAiVoucherBatchCreate(req, db);
     } else if (op === "payments.transactions" && req.method === "GET") {
       response = await handleMyPaymentTransactions(req, db);
     } else if (op === "payments.sepay.debugLookup" && req.method === "POST") {

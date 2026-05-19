@@ -1,21 +1,35 @@
-CREATE TABLE public.ai_vouchers (
+CREATE TABLE public.ai_voucher_batches (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  code text NOT NULL,
+  name text NOT NULL,
   percent_off int NOT NULL CHECK (percent_off BETWEEN 1 AND 100),
   active boolean NOT NULL DEFAULT true,
   starts_at timestamptz,
   ends_at timestamptz,
-  max_redemptions int CHECK (max_redemptions IS NULL OR max_redemptions > 0),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid REFERENCES auth.users (id) ON DELETE SET NULL,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid REFERENCES auth.users (id) ON DELETE SET NULL,
+  CONSTRAINT ai_voucher_batches_name_len_chk CHECK (char_length(btrim(name)) BETWEEN 1 AND 120),
+  CONSTRAINT ai_voucher_batches_window_chk CHECK (
+    starts_at IS NULL OR ends_at IS NULL OR starts_at <= ends_at
+  )
+);
+
+CREATE TABLE public.ai_vouchers (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id uuid NOT NULL REFERENCES public.ai_voucher_batches (id) ON DELETE CASCADE,
+  code text NOT NULL,
+  active boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   created_by uuid REFERENCES auth.users (id) ON DELETE SET NULL,
   updated_at timestamptz NOT NULL DEFAULT now(),
   updated_by uuid REFERENCES auth.users (id) ON DELETE SET NULL,
   CONSTRAINT ai_vouchers_code_format_chk CHECK (code = upper(btrim(code))),
-  CONSTRAINT ai_vouchers_code_len_chk CHECK (char_length(code) BETWEEN 4 AND 32),
-  CONSTRAINT ai_vouchers_window_chk CHECK (starts_at IS NULL OR ends_at IS NULL OR starts_at <= ends_at)
+  CONSTRAINT ai_vouchers_code_len_chk CHECK (char_length(code) BETWEEN 4 AND 32)
 );
 
 CREATE UNIQUE INDEX ai_vouchers_code_key ON public.ai_vouchers (code);
+CREATE INDEX ai_vouchers_batch_idx ON public.ai_vouchers (batch_id, created_at DESC);
 
 CREATE TABLE public.ai_voucher_redemptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -48,8 +62,8 @@ CREATE TABLE public.ai_voucher_redemptions (
 CREATE UNIQUE INDEX ai_voucher_redemptions_payment_tx_key
   ON public.ai_voucher_redemptions (payment_transaction_id);
 
-CREATE UNIQUE INDEX ai_voucher_redemptions_one_paid_per_user_voucher
-  ON public.ai_voucher_redemptions (voucher_id, user_id)
+CREATE UNIQUE INDEX ai_voucher_redemptions_one_paid_per_voucher
+  ON public.ai_voucher_redemptions (voucher_id)
   WHERE status = 'paid';
 
 CREATE INDEX ai_voucher_redemptions_voucher_status_idx
@@ -58,8 +72,22 @@ CREATE INDEX ai_voucher_redemptions_voucher_status_idx
 CREATE INDEX ai_voucher_redemptions_user_idx
   ON public.ai_voucher_redemptions (user_id, created_at DESC);
 
+ALTER TABLE public.ai_voucher_batches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ai_vouchers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ai_voucher_redemptions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY ai_voucher_batches_admin_select
+  ON public.ai_voucher_batches FOR SELECT
+  USING (public.is_admin_or_support());
+
+CREATE POLICY ai_voucher_batches_admin_insert
+  ON public.ai_voucher_batches FOR INSERT
+  WITH CHECK (public.is_admin_or_support());
+
+CREATE POLICY ai_voucher_batches_admin_update
+  ON public.ai_voucher_batches FOR UPDATE
+  USING (public.is_admin_or_support())
+  WITH CHECK (public.is_admin_or_support());
 
 CREATE POLICY ai_vouchers_admin_select
   ON public.ai_vouchers FOR SELECT

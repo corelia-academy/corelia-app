@@ -1,14 +1,27 @@
+import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
-export interface AiVoucher {
+export interface AiVoucherBatch {
   id: string;
-  code: string;
+  name: string;
   percent_off: number;
   active: boolean;
   starts_at: string | null;
   ends_at: string | null;
-  max_redemptions: number | null;
+  target_tier: "student" | "pro" | "bootcamp" | null;
+  target_duration_months: 1 | 12 | null;
+  created_at: string;
+  created_by: string | null;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export interface AiVoucherCode {
+  id: string;
+  batch_id: string;
+  code: string;
+  active: boolean;
   created_at: string;
   created_by: string | null;
   updated_at: string;
@@ -31,34 +44,47 @@ export interface AiVoucherRedemption {
   updated_at: string;
 }
 
-export interface AiVoucherInput {
-  code: string;
-  percent_off: number;
+export interface AiVoucherBatchCreateInput {
+  name: string;
+  quantity: number;
+  codePrefix?: string;
+  percentOff: number;
+  startsAt?: string | null;
+  endsAt?: string | null;
   active: boolean;
-  starts_at?: string | null;
-  ends_at?: string | null;
-  max_redemptions?: number | null;
+  targetTier?: "student" | "pro" | "bootcamp" | null;
+  targetDurationMonths?: 1 | 12 | null;
 }
 
-const CODE_RE = /^[A-Z0-9_-]{4,32}$/;
-
-function normalizeCode(code: string): string {
-  return code.trim().toUpperCase();
+export interface AiVoucherBatchCreateResult {
+  batch: AiVoucherBatch;
+  codes: AiVoucherCode[];
+  csvText: string;
 }
 
-function assertCode(code: string) {
-  if (!CODE_RE.test(code)) throw new Error("Mã voucher không hợp lệ.");
-}
-
-function rowToVoucher(row: Record<string, unknown>): AiVoucher {
+function rowToBatch(row: Record<string, unknown>): AiVoucherBatch {
   return {
     id: String(row.id),
-    code: String(row.code),
+    name: String(row.name),
     percent_off: Number(row.percent_off),
     active: Boolean(row.active),
     starts_at: (row.starts_at as string | null) ?? null,
     ends_at: (row.ends_at as string | null) ?? null,
-    max_redemptions: row.max_redemptions == null ? null : Number(row.max_redemptions),
+    target_tier: (row.target_tier as AiVoucherBatch["target_tier"]) ?? null,
+    target_duration_months: row.target_duration_months != null ? (Number(row.target_duration_months) as 1 | 12) : null,
+    created_at: String(row.created_at),
+    created_by: (row.created_by as string | null) ?? null,
+    updated_at: String(row.updated_at),
+    updated_by: (row.updated_by as string | null) ?? null,
+  };
+}
+
+function rowToCode(row: Record<string, unknown>): AiVoucherCode {
+  return {
+    id: String(row.id),
+    batch_id: String(row.batch_id),
+    code: String(row.code),
+    active: Boolean(row.active),
     created_at: String(row.created_at),
     created_by: (row.created_by as string | null) ?? null,
     updated_at: String(row.updated_at),
@@ -84,19 +110,36 @@ function rowToRedemption(row: Record<string, unknown>): AiVoucherRedemption {
   };
 }
 
+async function getAccessToken() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
+}
+
 async function requireViewer(viewer?: User | null) {
   const user = viewer ?? (await supabase.auth.getUser()).data.user;
   if (!user) throw new Error("Chưa đăng nhập");
   return user;
 }
 
-export async function listAiVouchers(): Promise<AiVoucher[]> {
+export async function listAiVoucherBatches(): Promise<AiVoucherBatch[]> {
   const { data, error } = await supabase
-    .from("ai_vouchers")
+    .from("ai_voucher_batches")
     .select("*")
     .order("updated_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => rowToVoucher(row as Record<string, unknown>));
+  return (data ?? []).map((row) => rowToBatch(row as Record<string, unknown>));
+}
+
+export async function listAiVoucherCodes(batchId: string): Promise<AiVoucherCode[]> {
+  const { data, error } = await supabase
+    .from("ai_vouchers")
+    .select("*")
+    .eq("batch_id", batchId)
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => rowToCode(row as Record<string, unknown>));
 }
 
 export async function listAiVoucherRedemptions(): Promise<AiVoucherRedemption[]> {
@@ -104,55 +147,77 @@ export async function listAiVoucherRedemptions(): Promise<AiVoucherRedemption[]>
     .from("ai_voucher_redemptions")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(500);
+    .limit(1000);
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => rowToRedemption(row as Record<string, unknown>));
 }
 
-export async function upsertAiVoucher(
-  input: AiVoucherInput,
-  voucherId?: string | null,
+export async function createAiVoucherBatch(input: AiVoucherBatchCreateInput): Promise<AiVoucherBatchCreateResult> {
+  const endpoint = coreliaEdgeUrl("payments.ai.vouchers.batchCreate");
+  const token = await getAccessToken();
+  if (!endpoint || !token) throw new Error("Phiên đăng nhập không hợp lệ.");
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...supabaseFunctionHeaders(token),
+    },
+    credentials: "include",
+    body: JSON.stringify(input),
+  });
+  const data = (await res.json().catch(() => ({}))) as Partial<{
+    batch: AiVoucherBatch;
+    codes: AiVoucherCode[];
+    csvText: string;
+    message: string;
+  }>;
+  if (!res.ok || !data.batch || !Array.isArray(data.codes) || typeof data.csvText !== "string") {
+    throw new Error(data.message || "Không tạo được batch voucher.");
+  }
+  return { batch: data.batch, codes: data.codes, csvText: data.csvText };
+}
+
+export async function updateAiVoucherBatch(
+  batchId: string,
+  patch: {
+    name?: string;
+    percent_off?: number;
+    starts_at?: string | null;
+    ends_at?: string | null;
+    active?: boolean;
+    target_tier?: "student" | "pro" | "bootcamp" | null;
+    target_duration_months?: 1 | 12 | null;
+  },
   viewer?: User | null,
-): Promise<AiVoucher> {
+): Promise<AiVoucherBatch> {
   const user = await requireViewer(viewer);
-  const now = new Date().toISOString();
-  const code = normalizeCode(input.code);
-  assertCode(code);
-  const payload = {
-    code,
-    percent_off: Math.round(Number(input.percent_off)),
-    active: Boolean(input.active),
-    starts_at: input.starts_at ?? null,
-    ends_at: input.ends_at ?? null,
-    max_redemptions: input.max_redemptions == null ? null : Math.round(Number(input.max_redemptions)),
-    updated_at: now,
-    updated_by: user.id,
-  };
-  if (payload.percent_off < 1 || payload.percent_off > 100) {
-    throw new Error("Phần trăm giảm giá phải từ 1 đến 100.");
-  }
-
-  if (voucherId) {
-    const { data, error } = await supabase
-      .from("ai_vouchers")
-      .update(payload)
-      .eq("id", voucherId)
-      .select("*")
-      .single();
-    if (error) throw new Error(error.message);
-    return rowToVoucher(data as Record<string, unknown>);
-  }
-
   const { data, error } = await supabase
-    .from("ai_vouchers")
-    .insert({
-      id: crypto.randomUUID(),
-      ...payload,
-      created_at: now,
-      created_by: user.id,
+    .from("ai_voucher_batches")
+    .update({
+      ...patch,
+      updated_at: new Date().toISOString(),
+      updated_by: user.id,
     })
+    .eq("id", batchId)
     .select("*")
     .single();
   if (error) throw new Error(error.message);
-  return rowToVoucher(data as Record<string, unknown>);
+  return rowToBatch(data as Record<string, unknown>);
+}
+
+export async function setAiVoucherCodeActive(
+  voucherId: string,
+  active: boolean,
+  viewer?: User | null,
+): Promise<void> {
+  const user = await requireViewer(viewer);
+  const { error } = await supabase
+    .from("ai_vouchers")
+    .update({
+      active,
+      updated_at: new Date().toISOString(),
+      updated_by: user.id,
+    })
+    .eq("id", voucherId);
+  if (error) throw new Error(error.message);
 }

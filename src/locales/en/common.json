@@ -343,12 +343,9 @@
     "sendingAction": "Sending…",
     "sourceCount_one": "This reply is grounded in {{count}} internal source.",
     "sourceCount_other": "This reply is grounded in {{count}} internal sources.",
-    "throttleHint": "You have reached the soft usage threshold in the last few hours, so Cora will keep replies shorter and more efficient.",
     "retryAction": "Retry",
-    "quotaExceededTitle": "You have reached your monthly Cora AI limit",
-    "quotaExceededDescription": "You have used about {{used}} / {{limit}} messages on the {{tier}} plan this month. Try again after the quota resets, or upgrade if you want to keep going.",
-    "quotaExceededCta": "View Cora plans",
-    "quotaExceededHint": "Cora is paused because your monthly quota has been reached.",
+    "quotaExceededTitle": "You've been studying hard this month! 🎓",
+    "quotaExceededSubtitle": "Cora quota resets on {{resetDate}}. Want to keep learning today?",
     "plan": {
       "tiers": {
         "free": "Free plan",
@@ -356,11 +353,12 @@
         "pro": "Pro",
         "bootcamp": "Bootcamp"
       },
-      "usage": "Used {{used}} / {{limit}} messages this month.",
-      "usageFlexible": "Your current plan is expanded and will keep reflecting the real account quota as usage data syncs in.",
-      "expiry": "About {{days}} days left on your current plan.",
-      "throttled": "Efficiency mode",
-      "windowUsage": "You've used {{used}} / {{cap}} of the soft threshold in the last {{hours}} hours.",
+      "messagesThisMonth": "{{count}} questions this month",
+      "daysLeft": "{{count}} days left",
+      "nearingLimit": "🔥 You're on a learning streak!",
+      "resetDate": "resets {{date}}",
+      "quotaExceeded": "🎓 Great learning month!",
+      "quotaExceededSub": "New quota on {{date}}",
       "upgradeAction": "Upgrade",
       "manageAction": "Manage plan"
     },
@@ -418,6 +416,7 @@
     },
     "openAction": "Open Cora AI",
     "hideAction": "Hide Cora AI",
+    "clearHistoryAction": "Clear chat",
     "restoreAction": "Reopen Cora AI",
     "chipToast": "Sticky Cora AI is in preview mode.",
     "dashboard": {

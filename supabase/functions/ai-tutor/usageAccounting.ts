@@ -12,13 +12,20 @@ function estimateTokens(text: string): number {
 
 function estimateCostUsd(model: string, inputTokens: number, outputTokens: number): number {
   const lower = model.toLowerCase();
-  if (lower.includes("sonnet")) {
-    return Number((((inputTokens * 0.000003) + (outputTokens * 0.000015))).toFixed(6));
+  // GPT-5.4 mini: $0.75/1M input, $4.50/1M output
+  if (lower.includes("gpt-5.4-mini") || lower.includes("gpt-5-mini")) {
+    return Number(((inputTokens * 0.00000075) + (outputTokens * 0.0000045)).toFixed(6));
   }
+  // GPT-5.4 full: $2.50/1M input, $15.00/1M output
   if (lower.includes("gpt-5")) {
-    return Number((((inputTokens * 0.000001) + (outputTokens * 0.000004))).toFixed(6));
+    return Number(((inputTokens * 0.0000025) + (outputTokens * 0.000015)).toFixed(6));
   }
-  return Number((((inputTokens + outputTokens) * 0.0000008)).toFixed(6));
+  // Claude Sonnet: $3/1M input, $15/1M output
+  if (lower.includes("sonnet")) {
+    return Number(((inputTokens * 0.000003) + (outputTokens * 0.000015)).toFixed(6));
+  }
+  // Fallback (haiku/unknown): $0.80/1M tokens flat
+  return Number(((inputTokens + outputTokens) * 0.0000008).toFixed(6));
 }
 
 export { estimateTokens };

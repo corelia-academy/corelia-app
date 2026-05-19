@@ -376,8 +376,12 @@
       "daysLeftLabel": "Time remaining",
       "daysLeft_one": "{{count}} day left",
       "daysLeft_other": "{{count}} days left",
-      "monthlyUsageLabel": "Messages this month",
-      "windowUsageLabel": "Messages (last {{hours}}h)"
+      "questionsAnswered": "Cora answered {{count}} questions for you this month",
+      "nearingQuota": "🔥 You're on a learning streak this month!",
+      "nearingQuotaSub": "About {{remaining}} questions left · Resets {{date}}",
+      "upgradeNudge": "Upgrade to {{tier}}",
+      "quotaExceededMsg": "🎓 Great learning month!",
+      "quotaResetDate": "New quota on {{date}}"
     },
     "selector": {
       "title": "Choose the right plan",
@@ -386,7 +390,8 @@
       "checkoutAction": "Continue to checkout",
       "checkoutLoading": "Creating checkout session...",
       "checkoutHint": "You'll be redirected to SePay to complete the upgrade.",
-      "activeRenewalHint": "Your current {{tier}} plan is still active. For now, you can only renew the same tier."
+      "activeRenewalHint": "Your {{tier}} plan is active. You can renew the same tier or upgrade to a higher tier at any time.",
+      "upgradeImmediateWarning": "Upgrading to {{newTier}} starts immediately and replaces your current {{currentTier}} plan. You will lose the {{days}} days remaining on your current plan."
     },
     "durationTitle": "Billing cycle",
     "durationValueLabel": "Average monthly cost",
@@ -400,13 +405,10 @@
         "label": "1 month",
         "note": "Flexible if you're just getting started"
       },
-      "6": {
-        "label": "6 months",
-        "note": "Stay in rhythm without having to renew mid-streak"
-      },
       "12": {
-        "label": "12 months",
-        "note": "Lock in the strongest rate for a long learning runway"
+        "label": "1 year",
+        "note": "Lock in the strongest rate for a long learning runway",
+        "popular": "Most popular"
       }
     },
     "tiers": {
@@ -414,28 +416,29 @@
         "title": "Student",
         "description": "For learners who want a steady AI study companion during active courses.",
         "features": [
+          "700 questions per month (~23/day)",
           "Ask Cora about your learning progress and current lessons",
-          "Get stronger next-course recommendations",
-          "Best for dashboard, search, and learning flows"
+          "Get stronger next-course recommendations"
         ]
       },
       "pro": {
         "title": "Pro",
         "description": "For learners who want stronger AI support for faster learning and clearer career direction.",
         "features": [
-          "Expanded allowance for contextual AI guidance",
+          "1,000 questions per month (~33/day)",
           "Career path, profile review, and project direction support",
-          "Great for learners juggling multiple tracks"
+          "Richer answers powered by a stronger AI model"
         ]
       },
       "bootcamp": {
         "title": "Bootcamp",
         "description": "For learners who need high-intensity AI support during acceleration phases.",
         "features": [
-          "Highest allowance for chat, tutor, and discovery",
+          "Unlimited*",
           "Optimized for goal setting, milestone check-ins, and execution support",
           "Best for cohorts, bootcamps, or career transition phases"
-        ]
+        ],
+        "fairUseNote": "* Unlimited under fair use policy (~2,000 questions/month)"
       }
     },
     "history": {

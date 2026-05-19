@@ -289,11 +289,16 @@ create unique index one_active_provider
   on ai_provider_config(is_active)
   where is_active = true;
 
+-- Active: OpenAI (switched 2026-05-19)
 insert into ai_provider_config (provider, is_active, simple_model, complex_model) values
-  ('anthropic', true,
+  ('anthropic', false,
    'claude-haiku-4-5-20251001', 'claude-sonnet-4-6'),
-  ('openai', false,
-   'gpt-4o-mini', 'gpt-4o');
+  ('openai', true,
+   'gpt-5.4-mini', 'gpt-5.4')
+on conflict (provider) do update
+  set is_active=excluded.is_active,
+      simple_model=excluded.simple_model,
+      complex_model=excluded.complex_model;
 
 create table ai_provider_audit (
   id          uuid primary key default gen_random_uuid(),
@@ -425,20 +430,37 @@ async function _streamOpenAI(systemPrompt, messages, model, maxTokens, onDelta, 
 
 ## 4.4 Model Cost Tracking
 
+Active provider: **OpenAI** (switched từ Anthropic 2026-05-19).
+
 ```typescript
-// supabase/functions/ai-tutor/models.ts
+// supabase/functions/ai-tutor/usageAccounting.ts
 
-export const MODEL_COST_PER_1M: Record<string, { input: number; output: number }> = {
-  'claude-haiku-4-5-20251001': { input: 1.00,  output: 5.00  },
-  'claude-sonnet-4-6':         { input: 3.00,  output: 15.00 },
-  'gpt-4o-mini':               { input: 0.15,  output: 0.60  },
-  'gpt-4o':                    { input: 2.50,  output: 10.00 },
-};
-
-export function estimateCost(model: string, input: number, output: number): number {
-  const r = MODEL_COST_PER_1M[model] || { input: 0, output: 0 };
-  return (input / 1_000_000) * r.input + (output / 1_000_000) * r.output;
+export function estimateCostUsd(model: string, inputTokens: number, outputTokens: number): number {
+  const lower = model.toLowerCase();
+  // GPT-5.4 mini: $0.75/1M input + $4.50/1M output
+  if (lower.includes("gpt-5.4-mini") || lower.includes("gpt-5-mini")) {
+    return (inputTokens * 0.00000075) + (outputTokens * 0.0000045);
+  }
+  // GPT-5.4 full: $2.50/1M input + $15.00/1M output
+  if (lower.includes("gpt-5")) {
+    return (inputTokens * 0.0000025) + (outputTokens * 0.000015);
+  }
+  // Claude Sonnet fallback
+  if (lower.includes("sonnet")) {
+    return (inputTokens * 0.000003) + (outputTokens * 0.000015);
+  }
+  // Default (Haiku / unknown)
+  return (inputTokens + outputTokens) * 0.0000008;
 }
+```
+
+Provider config trong DB (`ai_provider_config`):
+```sql
+-- Active provider
+UPDATE ai_provider_config SET is_active=false WHERE provider='anthropic';
+UPDATE ai_provider_config SET is_active=true,
+  simple_model='gpt-5.4-mini', complex_model='gpt-5.4'
+WHERE provider='openai';
 ```
 
 ## 4.5 Secrets Setup
@@ -1933,16 +1955,19 @@ export function getSuggestedQuestions(params: {
 
 ## 11.1 Tier Configuration
 
-Quota dùng **monthly cap** thay vì daily — tự nhiên hơn với learner behavior.
+Quota dùng **monthly cap + rolling 3h soft cap** — tự nhiên hơn với learner behavior.
 
-| Tier     | Msgs/tháng | Model                   | Giá/tháng (VND) |
-|----------|-----------|-------------------------|-----------------|
-| Free     | 50        | Haiku only              | 0               |
-| Student  | 500       | Haiku only              | 99,000          |
-| Pro      | 2,000     | Haiku + Sonnet routing  | 299,000         |
-| Bootcamp | unlimited | Sonnet priority         | 1,990,000       |
+| Tier     | Msgs/tháng | Soft cap/3h | Model                      | Giá/tháng (VND) |
+|----------|-----------|-------------|----------------------------|-----------------|
+| Free     | 50        | 5           | GPT-5.4 mini only          | 0               |
+| Student  | 700       | 70          | GPT-5.4 mini only          | 79,000          |
+| Pro      | 1,000     | 100         | mini default + full routing| 149,000         |
+| Bootcamp | 2,000*    | 200         | mini default + full routing| 399,000         |
+
+*Bootcamp hiển thị là "Không giới hạn*" trong UI (fair-use footnote ẩn). Xem `CORA_MONETIZATION.md` Section 2026-05-19.
 
 Quota áp dụng cho **tất cả** surfaces (lesson + global cộng lại).
+Soft cap: silent throttle — không hiển thị gì cho user, chỉ force model tiết kiệm hơn.
 
 ```sql
 -- Schema: dùng ai_usage_monthly thay vì ai_usage_daily
@@ -1950,15 +1975,16 @@ Quota áp dụng cho **tất cả** surfaces (lesson + global cộng lại).
 -- Xem migration details trong CORA_MONETIZATION.md Section 4.3
 ```
 
-## 11.2 Gross Margin (tóm tắt)
+## 11.2 Gross Margin (tóm tắt — worst case, 100% maxout, OpenAI GPT-5.4 pricing)
 
 ```
-Student  99,000 VND → cost ~8,985 VND  → margin 90.9% ✅
-Pro     299,000 VND → cost ~29,860 VND → margin 90.0% ✅
-Bootcamp 1,990,000 VND → cost ~90,350 VND → margin 95.5% ✅✅
+Student  79,000 VND → cost ~65,185 VND  → margin ~17.5% ✅
+Pro     149,000 VND → cost ~119,235 VND → margin ~20%   ✅
+Bootcamp 399,000 VND → cost ~235,485 VND → margin ~41%  ✅✅
 
+~$0.0034/msg GPT-5.4 mini, ~$0.0045/msg blended Pro/Bootcamp
 Storage cost: ~$0/user (negligible ở dưới 100K users)
-Full analysis: CORA_MONETIZATION.md Section 2-3
+Full analysis + unit economics: CORA_MONETIZATION.md Section 2026-05-19
 ```
 
 ## 11.3 Analytics Queries

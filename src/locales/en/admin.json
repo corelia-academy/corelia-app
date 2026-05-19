@@ -387,33 +387,39 @@
       "projects": "{{count}} projects submitted"
     }
   },
-  "coraVouchers": {
-    "heading": "Cora AI vouchers",
-    "subheading": "Manage percentage-based vouchers for Cora AI checkout and monitor their usage.",
+  "coraVoucherBatches": {
+    "heading": "Cora AI voucher batches",
+    "subheading": "Create batch campaigns with single-use codes and monitor their lifecycle.",
     "refresh": "Refresh",
-    "add": "New voucher",
-    "loading": "Loading vouchers...",
-    "loadFailed": "Unable to load vouchers.",
-    "empty": "No vouchers yet.",
-    "created": "Voucher created.",
-    "updated": "Voucher updated.",
-    "saveFailed": "Unable to save voucher.",
-    "showing": "Showing {{shown}} / {{total}} vouchers",
+    "add": "New batch",
+    "loading": "Loading voucher batches...",
+    "loadFailed": "Unable to load voucher batches.",
+    "empty": "No voucher batches yet.",
+    "created": "Voucher batch created.",
+    "batchUpdated": "Batch updated.",
+    "codeUpdated": "Voucher code updated.",
+    "saveFailed": "Unable to save voucher batch.",
+    "copyFailed": "Unable to copy voucher codes.",
+    "codesCopied": "Voucher codes copied.",
+    "showing": "Showing {{shown}} / {{total}} batches",
     "active": "Active",
     "inactive": "Inactive",
     "neverStarts": "Starts immediately",
     "noExpiry": "No expiry",
-    "usageSummary": "{{paid}} paid · {{reserved}} reserved · cap {{max}}",
-    "edit": "Edit",
-    "redemptionTitle": "Recent redemptions",
-    "redemptionEmpty": "No redemptions yet.",
-    "createTitle": "Create voucher",
-    "editTitle": "Edit voucher",
+    "counts": "{{available}} available · {{reserved}} reserved · {{paid}} paid · {{inactive}} inactive",
+    "viewCodes": "View codes",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "createTitle": "Create voucher batch",
+    "detailTitle": "Batch detail",
     "cancel": "Cancel",
     "save": "Save",
     "saving": "Saving...",
+    "copyCodes": "Copy codes",
+    "downloadCsv": "Download CSV",
+    "createdBatchReady": "{{count}} codes are ready to export.",
     "filters": {
-      "searchPlaceholder": "Search by voucher code...",
+      "searchPlaceholder": "Search by batch name...",
       "status": {
         "all": "All statuses",
         "active": "Active only",
@@ -426,23 +432,46 @@
       }
     },
     "table": {
-      "code": "Code",
+      "name": "Batch",
       "percent": "Discount",
       "window": "Validity",
-      "usage": "Usage",
+      "counts": "Counts",
       "status": "Status",
       "actions": "Actions"
     },
+    "codesTable": {
+      "code": "Code",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "codeFilters": {
+      "all": "All codes",
+      "available": "Available",
+      "reserved": "Reserved",
+      "paid": "Paid",
+      "inactive": "Inactive"
+    },
     "form": {
-      "code": "Voucher code",
-      "generate": "Generate",
+      "name": "Batch name",
+      "quantity": "Number of codes",
+      "codePrefix": "Code prefix",
       "percentOff": "Percent off",
+      "targetTier": "Target plan tier",
+      "targetTierAny": "Any tier",
+      "targetDuration": "Target duration",
+      "targetDurationAny": "Any duration",
       "startsAt": "Starts at",
       "endsAt": "Ends at",
-      "maxRedemptions": "Max redemptions",
-      "status": "Status",
-      "noteTitle": "Generation mode",
-      "noteBody": "The system can generate an uppercase code for admins, and you can still edit it before saving."
+      "status": "Status"
+    },
+    "tiers": {
+      "student": "Student",
+      "pro": "Pro",
+      "bootcamp": "Bootcamp"
+    },
+    "durations": {
+      "1": "1 month",
+      "12": "12 months"
     }
   }
 }

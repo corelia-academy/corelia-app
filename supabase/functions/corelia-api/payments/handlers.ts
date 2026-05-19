@@ -11,6 +11,7 @@ import {
   sepayCheckoutInitUrl,
 } from "./sepay.ts";
 import {
+  createAiVoucherBatch,
   previewAiVoucher,
   releaseVoucherReservationForPayment,
   reserveAiVoucherForPayment,
@@ -74,7 +75,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       if (!["student", "pro", "bootcamp"].includes(tier)) {
         return json({ message: "Tier không hợp lệ" }, 400);
       }
-      if (![1, 6, 12].includes(durationMonths)) {
+      if (![1, 12].includes(durationMonths)) {
         return json({ message: "Thời hạn không hợp lệ" }, 400);
       }
       const now = new Date().toISOString();
@@ -89,7 +90,13 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
         .maybeSingle<{ tier: AiSubscriptionTier; expires_at: string }>();
       if (activeSubscriptionError) throw new Error(activeSubscriptionError.message);
       if (activeSubscription?.tier && activeSubscription.tier !== tier) {
-        return json({ message: "Khi gói hiện tại còn hiệu lực, bạn chỉ có thể gia hạn cùng tier." }, 400);
+        const TIER_RANK = { student: 1, pro: 2, bootcamp: 3 } as const;
+        const currentRank = TIER_RANK[activeSubscription.tier as keyof typeof TIER_RANK] ?? 0;
+        const newRank = TIER_RANK[tier as keyof typeof TIER_RANK] ?? 0;
+        if (newRank <= currentRank) {
+          return json({ message: "Không thể hạ cấp khi gói hiện tại còn hiệu lực." }, 400);
+        }
+        // newRank > currentRank → upgrade được phép, tiếp tục
       }
       baseAmount = AI_SUBSCRIPTION_PRICES[tier][durationMonths];
       subscriptionMeta = { tier, duration_months: durationMonths };
@@ -156,9 +163,10 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       }
     } else if (purpose === "ai_subscription" && voucherCodeRaw) {
       const voucher = await previewAiVoucher(db, {
-        userId: user.id,
         voucherCode: voucherCodeRaw,
         baseAmountVnd: baseAmount,
+        tier,
+        durationMonths,
       });
       discountCode = voucher.code;
       discountAmount = voucher.discountAmountVnd;
@@ -252,9 +260,10 @@ export async function handleAiVoucherPreview(req: Request, db: SupabaseClient): 
     if (!voucherCode) return json({ message: "Thiếu mã voucher." }, 400);
 
     const preview = await previewAiVoucher(db, {
-      userId: user.id,
       voucherCode,
       baseAmountVnd: AI_SUBSCRIPTION_PRICES[tier][durationMonths],
+      tier,
+      durationMonths,
     });
     return json({
       code: preview.code,
@@ -266,6 +275,35 @@ export async function handleAiVoucherPreview(req: Request, db: SupabaseClient): 
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
+    return json({ message }, 400);
+  }
+}
+
+export async function handleAiVoucherBatchCreate(req: Request, db: SupabaseClient): Promise<Response> {
+  try {
+    const user = await verifyBearerUser(req, db);
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    const result = await createAiVoucherBatch(db, {
+      userId: user.id,
+      name: String(body.name ?? ""),
+      quantity: Math.round(Number(body.quantity ?? 0)),
+      codePrefix: String(body.codePrefix ?? ""),
+      percentOff: Math.round(Number(body.percentOff ?? 0)),
+      startsAt: body.startsAt == null ? null : String(body.startsAt),
+      endsAt: body.endsAt == null ? null : String(body.endsAt),
+      active: body.active !== false,
+      targetTier: body.targetTier == null ? null : String(body.targetTier),
+      targetDurationMonths: body.targetDurationMonths == null ? null : Number(body.targetDurationMonths),
+    });
+    return json({
+      batch: result.batch,
+      codes: result.codes,
+      csvText: result.csvText,
+    });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
+    if (message === "Không đủ quyền tạo batch voucher.") return json({ message }, 403);
     return json({ message }, 400);
   }
 }
