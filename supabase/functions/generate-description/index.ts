@@ -17,6 +17,7 @@ type RequestBody = {
   sectionId?: unknown;
   lessonId?: unknown;
   youtubeUrl?: unknown;
+  lessonTitle?: unknown;
 };
 
 type CourseRow = {
@@ -170,6 +171,7 @@ function parseBody(body: RequestBody): {
   sectionId: string | null;
   lessonId: string | null;
   youtubeUrl: string | null;
+  lessonTitle: string | null;
 } {
   const action =
     body.action === "translate"
@@ -192,10 +194,12 @@ function parseBody(body: RequestBody): {
   const lessonId = typeof body.lessonId === "string" && body.lessonId.trim() ? body.lessonId.trim() : null;
   const youtubeUrl =
     typeof body.youtubeUrl === "string" && body.youtubeUrl.trim() ? body.youtubeUrl.trim() : null;
+  const lessonTitle =
+    typeof body.lessonTitle === "string" && body.lessonTitle.trim() ? body.lessonTitle.trim() : null;
   if (!action || !type || !targetField || !locale) {
     throw new Error("Thiếu action, type, targetField hoặc locale hợp lệ.");
   }
-  return { action, type, targetField, locale, sourceLocale, courseId, sectionId, lessonId, youtubeUrl };
+  return { action, type, targetField, locale, sourceLocale, courseId, sectionId, lessonId, youtubeUrl, lessonTitle };
 }
 
 function normalizeYoutubeVideoId(value: string): string | null {
@@ -557,6 +561,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (parsed.lessonId) {
       rows = await resolveLessonRows(db, parsed);
       await ensureCanManageCourse(db, user.id, role, rows[0]!.course_id);
+    } else if (parsed.type === "lesson" && parsed.courseId && !parsed.sectionId && normalizedYoutubeVideoId) {
+      // New/unsaved lesson (no lessonId) within a known course — treat as single draft row
+      // so youtubeUrlOverride applies and permissions are still validated.
+      await ensureCanManageCourse(db, user.id, role, parsed.courseId);
+      rows = [
+        {
+          id: "draft",
+          course_id: parsed.courseId,
+          section_id: "",
+          data: { title: parsed.lessonTitle ?? "Draft lesson", youtube_url: parsed.youtubeUrl },
+        },
+      ];
     } else if (parsed.courseId || parsed.sectionId) {
       const guardCourseId =
         parsed.courseId ??
