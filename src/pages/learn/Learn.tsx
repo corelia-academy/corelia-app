@@ -17,6 +17,10 @@ import {
 import { LessonCurriculum, type CurriculumGroup } from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
+import { SectionQuiz } from "./components/SectionQuiz";
+import { getSectionQuestions } from "@/lib/sectionQuestions";
+import { getSectionQuizResult } from "@/lib/quizAttempts";
+import type { SectionQuestion, SectionQuizResult } from "@/types/questions";
 import { useLearnCourseLoad } from "./hooks/useLearnCourseLoad";
 import { useLearnEnrollmentAccess } from "./hooks/useLearnEnrollmentAccess";
 import { useLearnPaymentReturnFlow } from "./hooks/useLearnPaymentReturnFlow";
@@ -50,6 +54,8 @@ export default function Learn() {
   const navigate = useNavigate();
   const { profile, user } = useAuth();
   const [curricOpen, setCurricOpen] = useState(true);
+  const [sectionQuestions, setSectionQuestions] = useState<SectionQuestion[]>([]);
+  const [sectionQuizResult, setSectionQuizResult] = useState<SectionQuizResult | null>(null);
 
   const courseLoad = useLearnCourseLoad({
     courseId,
@@ -155,6 +161,40 @@ export default function Learn() {
     });
     return () => setSidebarMeta(null);
   }, [courseId, courseLoad.course?.title, currentLesson?.id, currentLesson?.title, setSidebarMeta]);
+
+  // Load quiz questions and existing result whenever the current lesson (and its section) changes
+  useEffect(() => {
+    if (!courseId || !currentLesson?.section_id) {
+      setSectionQuestions([]);
+      setSectionQuizResult(null);
+      return;
+    }
+    const sectionId = currentLesson.section_id;
+    let cancelled = false;
+
+    getSectionQuestions(courseId, sectionId)
+      .then((questions) => {
+        if (cancelled) return;
+        setSectionQuestions(questions);
+        if (questions.length === 0) {
+          setSectionQuizResult(null);
+          return;
+        }
+        return getSectionQuizResult(courseId, sectionId, questions.length).then((result) => {
+          if (!cancelled) setSectionQuizResult(result);
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSectionQuestions([]);
+          setSectionQuizResult(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [courseId, currentLesson?.section_id]);
 
   const nextLesson = progress.nextLesson;
   const currentLessonIndex = currentLesson
@@ -370,6 +410,19 @@ export default function Learn() {
             onMarkComplete={() => void markComplete()}
             onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
           />
+
+          {sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (
+            <SectionQuiz
+              courseId={courseId}
+              sectionId={currentLesson.section_id}
+              sectionTitle={
+                courseLoad.sections.find((s) => s.id === currentLesson.section_id)?.title ?? ""
+              }
+              questions={sectionQuestions}
+              existingResult={sectionQuizResult}
+              onResultUpdate={setSectionQuizResult}
+            />
+          )}
 
           {shouldShowFinalAssignment ? (
             <div className="px-4 pb-8 sm:px-6">

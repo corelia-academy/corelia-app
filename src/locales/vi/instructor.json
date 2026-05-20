@@ -585,6 +585,7 @@
     },
     "sections": {
       "edit": "Sửa",
+      "questions": "Câu hỏi",
       "editTitle": "Chỉnh sửa chương",
       "titleLabel": "Tên chương",
       "descriptionLabel": "Mô tả chương",
