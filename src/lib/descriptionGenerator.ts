@@ -31,6 +31,7 @@ export type GenerateDescriptionRequest = {
   sectionId?: string;
   lessonId?: string;
   youtubeUrl?: string;
+  lessonTitle?: string;
 };
 
 export type GenerateDescriptionResponse = {
