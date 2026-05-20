@@ -1732,6 +1732,7 @@ const InstructorCourseEdit = () => {
         courseId: id ?? undefined,
         lessonId: params.lessonId,
         youtubeUrl: params.youtubeUrl?.trim() || undefined,
+        lessonTitle: params.title?.trim() || undefined,
       },
       onApply: params.onApply,
     });
