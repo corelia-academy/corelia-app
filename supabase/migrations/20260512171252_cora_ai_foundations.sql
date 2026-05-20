@@ -111,10 +111,10 @@ INSERT INTO public.tier_limits (
   label_en
 )
 VALUES
-  ('free', 6, 40, 6, true, 0, 'Miễn phí', 'Free'),
-  ('student', 20, 250, 20, true, 99000, 'Học viên', 'Student'),
-  ('pro', 50, 700, 50, false, 199000, 'Pro', 'Pro'),
-  ('bootcamp', 120, 1800, 120, false, 499000, 'Bootcamp', 'Bootcamp')
+  ('free', 6, 40, true, 0, 'Miễn phí', 'Free'),
+  ('student', 20, 250, true, 99000, 'Học viên', 'Student'),
+  ('pro', 50, 700, false, 199000, 'Pro', 'Pro'),
+  ('bootcamp', 120, 1800, false, 499000, 'Bootcamp', 'Bootcamp')
 ON CONFLICT (tier) DO UPDATE
 SET
   monthly_messages = EXCLUDED.monthly_messages,
