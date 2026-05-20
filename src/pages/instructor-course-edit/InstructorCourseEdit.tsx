@@ -145,6 +145,7 @@ import type {
 import { DescriptionGeneratorDialog } from "@/pages/instructor-course-edit/components/DescriptionGeneratorDialog";
 
 import { CourseOcbCredentialSection } from "@/pages/instructor-course-edit/components/CourseOcbCredentialSection";
+import { QuestionGeneratorDialog } from "@/pages/instructor-course-edit/components/QuestionGeneratorDialog";
 import { CO_INSTRUCTOR_PERMISSION_KEYS, EDIT_SECTION_IDS } from "./constants";
 import type { LessonDropPosition, LessonDropTarget } from "./types";
 import { formatVndInput, normalizeVndDigits } from "./utils/currency";
@@ -336,6 +337,8 @@ const InstructorCourseEdit = () => {
   const [descriptionGeneratorOpen, setDescriptionGeneratorOpen] = useState(false);
   const [descriptionGeneratorRequest, setDescriptionGeneratorRequest] =
     useState<DescriptionGeneratorDialogRequest | null>(null);
+  const [questionGeneratorOpen, setQuestionGeneratorOpen] = useState(false);
+  const [questionGeneratorSection, setQuestionGeneratorSection] = useState<CourseSection | null>(null);
   const [submissions, setSubmissions] = useState<FinalAssignmentSubmission[]>(
     [],
   );
@@ -1818,6 +1821,11 @@ const InstructorCourseEdit = () => {
     } finally {
       setAddingSection(false);
     }
+  };
+
+  const openQuestionGenerator = (section: CourseSection) => {
+    setQuestionGeneratorSection(section);
+    setQuestionGeneratorOpen(true);
   };
 
   const openEditSection = (section: CourseSection) => {
@@ -5380,6 +5388,14 @@ const InstructorCourseEdit = () => {
                           {t("courseEdit.sections.edit")}
                         </Button>
                         <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openQuestionGenerator(section)}
+                        >
+                          {t("courseEdit.sections.questions")}
+                        </Button>
+                        <Button
                           variant="ghost"
                           size="sm"
                           className="text-destructive hover:text-destructive"
@@ -7256,6 +7272,16 @@ const InstructorCourseEdit = () => {
           if (!open) setDescriptionGeneratorRequest(null);
         }}
         t={(key, options) => String(t(key as never, options as never))}
+      />
+      <QuestionGeneratorDialog
+        open={questionGeneratorOpen}
+        section={questionGeneratorSection}
+        courseId={id ?? ""}
+        locale={activeContentLocale}
+        onOpenChange={(open) => {
+          setQuestionGeneratorOpen(open);
+          if (!open) setQuestionGeneratorSection(null);
+        }}
       />
     </PageContainer>
   );
