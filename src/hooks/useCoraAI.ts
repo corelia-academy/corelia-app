@@ -24,6 +24,11 @@ export type CoraSourceRef = {
   subtopic?: string | null;
   category?: string | null;
   track?: string | null;
+  sourceTable?: string | null;
+  sourceId?: string | null;
+  locale?: "vi" | "en" | null;
+  label?: string | null;
+  href?: string | null;
 };
 
 export type CoraQuotaInfo = {
@@ -195,6 +200,11 @@ function normalizeSources(input: unknown): CoraSourceRef[] | undefined {
         subtopic: typeof source.subtopic === "string" ? source.subtopic : null,
         category: typeof source.category === "string" ? source.category : null,
         track: typeof source.track === "string" ? source.track : null,
+        sourceTable: typeof source.sourceTable === "string" ? source.sourceTable : null,
+        sourceId: typeof source.sourceId === "string" ? source.sourceId : null,
+        locale: source.locale === "en" ? "en" : source.locale === "vi" ? "vi" : null,
+        label: typeof source.label === "string" ? source.label : null,
+        href: typeof source.href === "string" ? source.href : null,
       } satisfies CoraSourceRef;
     })
     .filter(Boolean) as CoraSourceRef[];

@@ -1,5 +1,6 @@
 import type {
   BackendContextType,
+  KnowledgeChunkRow,
   LearningProfileMemoryRow,
 } from "./behaviorTypes.ts";
 
@@ -8,14 +9,6 @@ type ProfilePromptRow = {
   user_goal: string | null;
   user_level: string | null;
   streak_days: number | null;
-};
-
-type KnowledgeChunkRow = {
-  topic: string;
-  subtopic: string | null;
-  content: string;
-  content_category: string;
-  track: string | null;
 };
 
 function buildLearningMemoryPromptSection(memory: LearningProfileMemoryRow | null): string {
@@ -41,6 +34,17 @@ export function buildSourceRefs(knowledgeChunks: KnowledgeChunkRow[]) {
     subtopic: chunk.subtopic,
     category: chunk.content_category,
     track: chunk.track,
+    sourceTable: chunk.source_table,
+    sourceId: chunk.source_id,
+    locale: chunk.locale,
+    label:
+      typeof chunk.metadata?.label === "string"
+        ? chunk.metadata.label
+        : chunk.title,
+    href:
+      typeof chunk.metadata?.href === "string"
+        ? chunk.metadata.href
+        : null,
   }));
 }
 

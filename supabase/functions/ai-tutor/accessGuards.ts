@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "./lib/supabase.ts";
-import type { BackendContextType } from "./behaviorTypes.ts";
+import type { BackendContextType, SourceRef } from "./behaviorTypes.ts";
 import type { QuotaResult } from "./types.ts";
 
 type Tier = "free" | "student" | "pro" | "bootcamp";
@@ -24,13 +24,6 @@ type FallbackTierLimit = {
   monthlyMessages: number;
   rolling3hSoftCap: number;
   haikuOnly: boolean;
-};
-
-type SourceRef = {
-  topic: string;
-  subtopic: string | null;
-  category: string;
-  track: string | null;
 };
 
 function monthKey(now: Date): string {
