@@ -17,10 +17,19 @@ export function CourseAiTutorPanel(props: {
   lessonTitle?: string | null;
   lessonId?: string | null;
   className?: string;
+  hideShellHeader?: boolean;
   /** When set, header shows the dismiss control (e.g. sidebar close). */
   onRequestHide?: () => void;
 }) {
-  const { courseTitle, courseId, lessonTitle, lessonId, className, onRequestHide } = props;
+  const {
+    courseTitle,
+    courseId,
+    lessonTitle,
+    lessonId,
+    className,
+    hideShellHeader,
+    onRequestHide,
+  } = props;
   const { t } = useTranslation("courses");
   const { t: tCommon } = useTranslation("common");
   const [draft, setDraft] = useState("");
@@ -65,9 +74,8 @@ export function CourseAiTutorPanel(props: {
 
   return (
     <CoraShell
-      eyebrow={String(t("detail.aiTutor.tabLabel"))}
       title={String(t("detail.aiTutor.sheetTitle"))}
-      tagline={String(t("detail.aiTutor.sheetDescription"))}
+      hideHeader={hideShellHeader}
       onRequestHide={onRequestHide}
       hideLabel={onRequestHide ? String(tCommon("coraWidget.hideAction")) : undefined}
       onClearHistory={messages.length > 0 && !isLoading && !hasLessonContext ? () => { void clearHistory(); } : undefined}
@@ -136,16 +144,11 @@ export function CourseAiTutorPanel(props: {
               className="mt-2"
             />
           ) : null}
-          <p
-            className={cn(
-              "mt-1.5 text-[11px] leading-snug",
-              error && error.type !== "quota_exceeded" ? "text-destructive" : "text-foreground-muted",
-            )}
-          >
-            {error && error.type !== "quota_exceeded"
-              ? error.message
-              : t("detail.aiTutor.liveFooterCaption")}
-          </p>
+          {error && error.type !== "quota_exceeded" ? (
+            <p className="mt-1.5 text-[11px] leading-snug text-destructive">
+              {error.message}
+            </p>
+          ) : null}
           <div className="mt-2 flex justify-end">
             <Button
               type="button"
