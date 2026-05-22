@@ -35,8 +35,6 @@ export type AssistantAction = {
 };
 
 export type AssistantSurfaceMeta = {
-  titleKey: `coraWidget.contextTitle.${AssistantContext}`;
-  descriptionKey: `coraWidget.contextDescription.${AssistantContext | "guest"}`;
   suggestionsKey: `coraWidget.suggestions.${AssistantContext}`;
   action: AssistantAction;
 };
@@ -83,62 +81,42 @@ export function mapAssistantContextToBackendContext(
 
 const ASSISTANT_SURFACE_META: Record<AssistantContext, AssistantSurfaceMeta> = {
   home: {
-    titleKey: "coraWidget.contextTitle.home",
-    descriptionKey: "coraWidget.contextDescription.home",
     suggestionsKey: "coraWidget.suggestions.home",
     action: { to: "/courses", label: "coraWidget.actions.browseCourses" },
   },
   courses: {
-    titleKey: "coraWidget.contextTitle.courses",
-    descriptionKey: "coraWidget.contextDescription.courses",
     suggestionsKey: "coraWidget.suggestions.courses",
     action: { to: "/courses", label: "coraWidget.actions.browseCourses" },
   },
   career: {
-    titleKey: "coraWidget.contextTitle.career",
-    descriptionKey: "coraWidget.contextDescription.career",
     suggestionsKey: "coraWidget.suggestions.career",
     action: { to: "/career", label: "coraWidget.actions.viewPaths" },
   },
   hackathons: {
-    titleKey: "coraWidget.contextTitle.hackathons",
-    descriptionKey: "coraWidget.contextDescription.hackathons",
     suggestionsKey: "coraWidget.suggestions.hackathons",
     action: { to: "/hackathons", label: "coraWidget.actions.viewHackathons" },
   },
   projects: {
-    titleKey: "coraWidget.contextTitle.projects",
-    descriptionKey: "coraWidget.contextDescription.projects",
     suggestionsKey: "coraWidget.suggestions.projects",
     action: { to: "/projects", label: "coraWidget.actions.viewProjects" },
   },
   achievements: {
-    titleKey: "coraWidget.contextTitle.achievements",
-    descriptionKey: "coraWidget.contextDescription.achievements",
     suggestionsKey: "coraWidget.suggestions.achievements",
     action: { to: "/achievements", label: "coraWidget.actions.viewAchievements" },
   },
   search: {
-    titleKey: "coraWidget.contextTitle.search",
-    descriptionKey: "coraWidget.contextDescription.search",
     suggestionsKey: "coraWidget.suggestions.search",
     action: { to: "/search", label: "coraWidget.actions.searchAll" },
   },
   profile: {
-    titleKey: "coraWidget.contextTitle.profile",
-    descriptionKey: "coraWidget.contextDescription.profile",
     suggestionsKey: "coraWidget.suggestions.profile",
     action: { to: "/courses", label: "coraWidget.actions.browseCourses" },
   },
   account: {
-    titleKey: "coraWidget.contextTitle.account",
-    descriptionKey: "coraWidget.contextDescription.account",
     suggestionsKey: "coraWidget.suggestions.account",
     action: { to: "/account", label: "coraWidget.actions.openAccount" },
   },
   default: {
-    titleKey: "coraWidget.contextTitle.default",
-    descriptionKey: "coraWidget.contextDescription.default",
     suggestionsKey: "coraWidget.suggestions.default",
     action: { to: "/courses", label: "coraWidget.actions.browseCourses" },
   },

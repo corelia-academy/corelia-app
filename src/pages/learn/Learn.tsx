@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { AlertCircle, CheckCircle2, ChevronLeft, List, PanelLeft, PanelRight } from "lucide-react";
 import {
@@ -28,7 +28,15 @@ import { useLearnProgress } from "./hooks/useLearnProgress";
 import { useLearnSubmission } from "./hooks/useLearnSubmission";
 import { useCoraStore } from "@/stores/coraStore";
 import { Button } from "@/components/ui/button";
+import { CORA_AI_TUTOR_LOGO_SRC } from "@/components/course-ai/constants";
+import { CoraSidebarPanel } from "@/components/course-ai/CoraSidebarPanel";
 import { cn } from "@/lib/utils";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+  type ResizablePanelHandle,
+} from "@/components/ui/resizable";
 import {
   Sheet,
   SheetContent,
@@ -36,6 +44,24 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+
+const DESKTOP_BREAKPOINT_QUERY = "(min-width: 1280px)";
+
+function subscribeDesktopBreakpoint(onStoreChange: () => void) {
+  if (typeof window === "undefined") return () => {};
+
+  const mediaQuery = window.matchMedia(DESKTOP_BREAKPOINT_QUERY);
+  mediaQuery.addEventListener("change", onStoreChange);
+
+  return () => {
+    mediaQuery.removeEventListener("change", onStoreChange);
+  };
+}
+
+function getDesktopBreakpointSnapshot() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia(DESKTOP_BREAKPOINT_QUERY).matches;
+}
 
 export default function Learn() {
   const { t } = useTranslation("courses");
@@ -45,15 +71,22 @@ export default function Learn() {
     [t],
   );
   const setSidebarMeta = useCoraStore((s) => s.setSidebarMeta);
+  const setSidebarOpen = useCoraStore((s) => s.setSidebarOpen);
   const sidebarOpen = useCoraStore((s) => s.sidebarOpen);
-  const toggleSidebar = useCoraStore((s) => s.toggleSidebar);
   const { courseId, lessonId } = useParams<{
     courseId: string;
     lessonId?: string;
   }>();
   const navigate = useNavigate();
   const { profile, user } = useAuth();
+  const isDesktop = useSyncExternalStore(
+    subscribeDesktopBreakpoint,
+    getDesktopBreakpointSnapshot,
+    () => false,
+  );
   const [curricOpen, setCurricOpen] = useState(true);
+  const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
+  const coraPanelRef = useRef<ResizablePanelHandle | null>(null);
   const [sectionQuestions, setSectionQuestions] = useState<SectionQuestion[]>([]);
   const [sectionQuizResult, setSectionQuizResult] = useState<SectionQuizResult | null>(null);
 
@@ -165,8 +198,10 @@ export default function Learn() {
   // Load quiz questions and existing result whenever the current lesson (and its section) changes
   useEffect(() => {
     if (!courseId || !currentLesson?.section_id) {
-      setSectionQuestions([]);
-      setSectionQuizResult(null);
+      queueMicrotask(() => {
+        setSectionQuestions([]);
+        setSectionQuizResult(null);
+      });
       return;
     }
     const sectionId = currentLesson.section_id;
@@ -281,6 +316,115 @@ export default function Learn() {
     translate,
   };
 
+  const toggleCurriculumPanel = () => {
+    const panel = curriculumPanelRef.current;
+    if (!panel) {
+      setCurricOpen((value) => !value);
+      return;
+    }
+
+    if (panel.isCollapsed()) {
+      panel.expand();
+      return;
+    }
+
+    panel.collapse();
+  };
+
+  const toggleCoraPanel = () => {
+    const panel = coraPanelRef.current;
+    if (!panel) {
+      setSidebarOpen(!sidebarOpen);
+      return;
+    }
+
+    if (panel.isCollapsed()) {
+      panel.expand();
+      return;
+    }
+
+    panel.collapse();
+  };
+
+  const hideCoraPanel = () => {
+    const panel = coraPanelRef.current;
+    if (!panel) {
+      setSidebarOpen(false);
+      return;
+    }
+
+    panel.collapse();
+  };
+
+  const lessonContent = (
+    <>
+      {(!hasFullCourseAccess ||
+        (accessModel === "paid_upfront" &&
+          access.enrolled &&
+          !access.paymentAccess?.full_access_granted)) && (
+        <div className="px-4 pt-4 sm:px-6">
+          {!hasFullCourseAccess ? (
+            <div className="mb-2 flex items-center gap-3 rounded-md border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
+              <AlertCircle className="w-4 h-4 shrink-0" aria-hidden />
+              <p>{translate("detail.learn.previewModeNotice")}</p>
+            </div>
+          ) : null}
+          {accessModel === "paid_upfront" &&
+          access.enrolled &&
+          !access.paymentAccess?.full_access_granted ? (
+            <div className="mb-2 flex items-center gap-3 rounded-md border border-success/20 bg-success/10 px-4 py-3 text-sm text-success">
+              <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden />
+              <p>{translate("detail.accessPanel.keptAccess")}</p>
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      <LessonPlayerCard
+        lesson={currentLesson}
+        lessonIndex={lessonIndexForPlayer}
+        isDraftLesson={!!currentLesson && isDraftLesson}
+        completed={!!currentLesson && progress.completedIds.has(currentLesson.id)}
+        hasFullCourseAccess={hasFullCourseAccess}
+        previousLesson={previousLesson}
+        nextLesson={nextLesson}
+        translate={translate}
+        onMarkComplete={() => void markComplete()}
+        onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
+      />
+
+      {sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (
+        <SectionQuiz
+          courseId={courseId}
+          sectionId={currentLesson.section_id}
+          sectionTitle={
+            courseLoad.sections.find((s) => s.id === currentLesson.section_id)?.title ?? ""
+          }
+          questions={sectionQuestions}
+          existingResult={sectionQuizResult}
+          onResultUpdate={setSectionQuizResult}
+        />
+      )}
+
+      {shouldShowFinalAssignment ? (
+        <div className="px-4 pb-8 sm:px-6">
+          <FinalAssignmentPanel
+            courseId={courseId}
+            course={course}
+            profileId={profile?.id ?? ""}
+            isAdmin={profile?.role === "admin"}
+            certificateFeePaid={!!access.paymentAccess?.certificate_fee_paid}
+            submission={submission.submission as never}
+            translate={translate}
+            onSubmit={async (input) => {
+              await submission.submit(input);
+            }}
+          />
+        </div>
+      ) : null}
+    </>
+  );
+
   return (
     <div className="flex flex-col h-full">
       {/* Slim top bar */}
@@ -291,7 +435,7 @@ export default function Learn() {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => setCurricOpen((v) => !v)}
+            onClick={toggleCurriculumPanel}
             aria-label="Toggle curriculum"
             className={cn(
               "hidden xl:inline-flex",
@@ -327,6 +471,13 @@ export default function Learn() {
 
         {/* Right */}
         <div className="ml-auto flex items-center gap-1">
+          <img
+            src={CORA_AI_TUTOR_LOGO_SRC}
+            alt="Cora AI Tutor"
+            className="hidden h-7 w-auto shrink-0 object-contain xl:block"
+            draggable={false}
+          />
+
           {/* Mobile: open curriculum sheet */}
           <Sheet>
             <SheetTrigger
@@ -347,7 +498,7 @@ export default function Learn() {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={toggleSidebar}
+            onClick={toggleCoraPanel}
             aria-label="Toggle Cora AI"
             className={cn(
               "hidden xl:inline-flex",
@@ -361,86 +512,55 @@ export default function Learn() {
 
       {/* Body */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left curriculum sidebar — desktop only */}
-        <aside
-          className={cn(
-            "hidden xl:flex flex-col shrink-0 border-r border-border-subtle",
-            "overflow-hidden transition-[width] duration-200 ease-in-out",
-            curricOpen ? "w-[280px]" : "w-0",
-          )}
-        >
-          <div className="flex flex-col w-[280px] h-full">
-            <LessonCurriculum variant="sidebar" {...curriculumProps} />
-          </div>
-        </aside>
+        {isDesktop ? (
+          <ResizablePanelGroup
+            orientation="horizontal"
+            autoSaveId="learn-layout-desktop"
+            className="flex"
+          >
+            <ResizablePanel
+              ref={curriculumPanelRef}
+              defaultSize={22}
+              minSize={16}
+              maxSize={30}
+              collapsible
+              collapsedSize={0}
+              onCollapse={() => setCurricOpen(false)}
+              onExpand={() => setCurricOpen(true)}
+              className="flex flex-col bg-surface-base"
+            >
+              <LessonCurriculum variant="sidebar" {...curriculumProps} />
+            </ResizablePanel>
 
-        {/* Main lesson content */}
-        <main className="flex-1 min-w-0 overflow-y-auto">
-          {(!hasFullCourseAccess ||
-            (accessModel === "paid_upfront" &&
-              access.enrolled &&
-              !access.paymentAccess?.full_access_granted)) && (
-            <div className="px-4 pt-4 sm:px-6">
-              {!hasFullCourseAccess ? (
-                <div className="mb-2 flex items-center gap-3 rounded-md border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
-                  <AlertCircle className="w-4 h-4 shrink-0" aria-hidden />
-                  <p>{translate("detail.learn.previewModeNotice")}</p>
-                </div>
-              ) : null}
-              {accessModel === "paid_upfront" &&
-              access.enrolled &&
-              !access.paymentAccess?.full_access_granted ? (
-                <div className="mb-2 flex items-center gap-3 rounded-md border border-success/20 bg-success/10 px-4 py-3 text-sm text-success">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden />
-                  <p>{translate("detail.accessPanel.keptAccess")}</p>
-                </div>
-              ) : null}
-            </div>
-          )}
+            <ResizableHandle />
 
-          <LessonPlayerCard
-            lesson={currentLesson}
-            lessonIndex={lessonIndexForPlayer}
-            isDraftLesson={!!currentLesson && isDraftLesson}
-            completed={!!currentLesson && progress.completedIds.has(currentLesson.id)}
-            hasFullCourseAccess={hasFullCourseAccess}
-            previousLesson={previousLesson}
-            nextLesson={nextLesson}
-            translate={translate}
-            onMarkComplete={() => void markComplete()}
-            onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
-          />
+            <ResizablePanel defaultSize={53} minSize={35} className="min-w-0 bg-background">
+              <main className="h-full min-w-0 overflow-y-auto">{lessonContent}</main>
+            </ResizablePanel>
 
-          {sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (
-            <SectionQuiz
-              courseId={courseId}
-              sectionId={currentLesson.section_id}
-              sectionTitle={
-                courseLoad.sections.find((s) => s.id === currentLesson.section_id)?.title ?? ""
-              }
-              questions={sectionQuestions}
-              existingResult={sectionQuizResult}
-              onResultUpdate={setSectionQuizResult}
+            <ResizableHandle />
+
+            <ResizablePanel
+              ref={coraPanelRef}
+              defaultSize={25}
+              minSize={20}
+              maxSize={34}
+              collapsible
+              collapsedSize={0}
+            onCollapse={() => setSidebarOpen(false)}
+            onExpand={() => setSidebarOpen(true)}
+            className="flex flex-col bg-surface-base"
+          >
+            <CoraSidebarPanel
+              variant="embedded"
+              hideShellHeader
+              onRequestHide={hideCoraPanel}
             />
-          )}
-
-          {shouldShowFinalAssignment ? (
-            <div className="px-4 pb-8 sm:px-6">
-              <FinalAssignmentPanel
-                courseId={courseId}
-                course={course}
-                profileId={profile?.id ?? ""}
-                isAdmin={profile?.role === "admin"}
-                certificateFeePaid={!!access.paymentAccess?.certificate_fee_paid}
-                submission={submission.submission as never}
-                translate={translate}
-                onSubmit={async (input) => {
-                  await submission.submit(input);
-                }}
-              />
-            </div>
-          ) : null}
-        </main>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+        ) : (
+          <main className="min-w-0 flex-1 overflow-y-auto">{lessonContent}</main>
+        )}
       </div>
     </div>
   );

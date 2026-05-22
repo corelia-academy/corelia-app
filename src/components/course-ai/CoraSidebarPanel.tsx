@@ -10,9 +10,13 @@ const COURSE_DETAIL_RE = /^\/courses\/[^/]+$/;
 const LESSON_RE = /^\/learn\/.+$/;
 
 export function CoraSidebarPanel({
+  hideShellHeader,
+  onRequestHide,
   variant = "floating",
 }: {
-  variant?: "floating" | "inset";
+  hideShellHeader?: boolean;
+  onRequestHide?: () => void;
+  variant?: "embedded" | "floating" | "inset";
 }) {
   const { user } = useAuth();
   const { sidebarOpen, setSidebarOpen, sidebarMeta } = useCoraStore();
@@ -22,6 +26,7 @@ export function CoraSidebarPanel({
   const isSupported = !!user && shouldShowGlobalCoraAssistant(pathname);
   const isCourseOrLesson = COURSE_DETAIL_RE.test(pathname) || LESSON_RE.test(pathname);
   const isOpen = sidebarOpen && isSupported;
+  const handleRequestHide = onRequestHide ?? (() => setSidebarOpen(false));
 
   const content = isSupported && isCourseOrLesson && sidebarMeta?.courseTitle ? (
     <CourseAiTutorPanel
@@ -29,16 +34,23 @@ export function CoraSidebarPanel({
       courseId={sidebarMeta.courseId}
       lessonTitle={sidebarMeta.lessonTitle}
       lessonId={sidebarMeta.lessonId}
-      className="rounded-none border-0"
-      onRequestHide={() => setSidebarOpen(false)}
+      className="h-full rounded-none border-0"
+      hideShellHeader={hideShellHeader}
+      onRequestHide={handleRequestHide}
     />
   ) : isSupported && !isCourseOrLesson ? (
     <CoraAssistantCard
       pathname={pathname}
       shellClassName="h-full rounded-none border-0"
-      onRequestHide={() => setSidebarOpen(false)}
+      onRequestHide={handleRequestHide}
     />
   ) : null;
+
+  if (variant === "embedded") {
+    if (!isOpen || !content) return null;
+
+    return <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface-base">{content}</div>;
+  }
 
   if (variant === "inset") {
     return (
@@ -63,7 +75,7 @@ export function CoraSidebarPanel({
       {isOpen && (
         <div
           className="hidden xl:block fixed inset-0 z-30"
-          onClick={() => setSidebarOpen(false)}
+          onClick={handleRequestHide}
           aria-hidden
         />
       )}
