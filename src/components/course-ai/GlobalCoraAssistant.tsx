@@ -22,6 +22,8 @@ import { buildPersonalizedSuggestions } from "@/components/course-ai/suggestions
 import { useCoraAI } from "@/hooks/useCoraAI";
 import { cn } from "@/lib/utils";
 
+import { useAuth } from "@/stores/authStore";
+
 import { CoraShell } from "./CoraShell";
 import { getAssistantSurfaceMeta, resolveAssistantContext } from "./context";
 import { shouldShowGlobalCoraAssistant } from "./visibility";
@@ -190,9 +192,10 @@ export function CoraAssistantCard({
 export function GlobalCoraAssistant() {
   const location = useLocation();
   const { t } = useTranslation("common");
+  const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  if (!shouldShowGlobalCoraAssistant(location.pathname)) {
+  if (!user || !shouldShowGlobalCoraAssistant(location.pathname)) {
     return null;
   }
 

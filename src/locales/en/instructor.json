@@ -586,6 +586,7 @@
     },
     "sections": {
       "edit": "Edit",
+      "questions": "Questions",
       "editTitle": "Edit section",
       "titleLabel": "Title",
       "descriptionLabel": "Description",

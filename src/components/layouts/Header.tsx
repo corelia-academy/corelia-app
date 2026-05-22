@@ -110,7 +110,7 @@ export default function Header() {
   const setCoraQuotaInfo = useCoraStore((s) => s.setQuotaInfo);
   const sidebarOpen = useCoraStore((s) => s.sidebarOpen);
   const toggleSidebar = useCoraStore((s) => s.toggleSidebar);
-  const isCoraSupportedPage = shouldShowGlobalCoraAssistant(location.pathname);
+  const isCoraSupportedPage = !!user && shouldShowGlobalCoraAssistant(location.pathname);
   const { isInitialized, authState, ocAuth } = useOCAuth();
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -251,13 +251,13 @@ export default function Header() {
     void Promise.all([
       supabase
         .from("ai_usage_monthly")
-        .select("message_count")
+        .select("message_count,tokens_used")
         .eq("user_id", user.id)
         .eq("month", month)
         .maybeSingle(),
       supabase
         .from("tier_limits")
-        .select("monthly_messages")
+        .select("monthly_messages,monthly_tokens,quota_unit")
         .eq("tier", currentTier)
         .maybeSingle(),
     ]).then(([{ data: usage }, { data: limit }]) => {
@@ -271,6 +271,11 @@ export default function Header() {
         windowUsed: 0,
         windowSoftCap: null,
         windowHours: 3,
+        quotaUnit: (limit?.quota_unit as "message" | "token" | "both") ?? "message",
+        monthlyTokensUsed: usage?.tokens_used ?? 0,
+        monthlyTokensLimit: limit?.monthly_tokens ?? null,
+        rollingTokensUsed: 0,
+        rollingTokensCap: null,
       });
     });
   }, [user?.id, aiSubscription?.tier, coraQuotaInfo, setCoraQuotaInfo]);

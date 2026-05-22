@@ -2,7 +2,7 @@
 ## Kế Hoạch Implementation Hoàn Chỉnh
 
 > Stack: React + Vite · Supabase (DB, Auth, Edge Functions, pgvector) · TypeScript
-> AI: Claude Haiku 4.5 · Claude Sonnet 4.6 · Provider abstraction
+> AI: OpenAI GPT-5.4 mini · GPT-5.4 · Responses API (SSE streaming)
 > Last updated: May 2026
 
 ---
@@ -64,12 +64,12 @@
 └──────────────────────────────────┬───────────────────────────────────-─┘
                                    │
                ┌───────────────────┼──────────────────┐
-               ▼                   ▼                  ▼
-     ┌──────────────┐    ┌───────────────┐   ┌──────────────┐
-     │  Supabase    │    │ Claude Haiku  │   │Claude Sonnet │
-     │ PostgreSQL   │    │    4.5        │   │    4.6       │
-     │ + pgvector   │    │ (simple Q)    │   │ (complex Q)  │
-     └──────────────┘    └───────────────┘   └──────────────┘
+               ▼                   ▼
+     ┌──────────────┐    ┌───────────────────────────────────┐
+     │  Supabase    │    │    OpenAI (Responses API)         │
+     │ PostgreSQL   │    │  GPT-5.4 mini  ·  GPT-5.4 full   │
+     │ + pgvector   │    │  (simple/medium)  (complex)       │
+     └──────────────┘    └───────────────────────────────────┘
 ```
 
 **Luồng xử lý 1 message:**
@@ -265,172 +265,68 @@ Mapping từ UI context sang backend `context_type` trong DB:
 
 # 4. Provider Abstraction Layer
 
-## 4.1 Tại sao cần abstraction
+## 4.1 Provider
 
-Không hardcode Anthropic vào business logic. Cần switch provider vì:
-- Pricing thay đổi → migrate không cần redeploy
-- Provider downtime → fallback tức thì
-- Admin switch qua UI, không touch code
+**Provider duy nhất: OpenAI** (sử dụng từ 2026-05-19).
+Không còn `ai_provider_config` table hay Anthropic fallback.
+Model được chọn hoàn toàn qua `chooseModel()` trong `provider.ts` theo tier và complexity.
 
-## 4.2 Provider Config — Supabase
-
-```sql
-create table ai_provider_config (
-  id            uuid primary key default gen_random_uuid(),
-  provider      text not null check (provider in ('anthropic', 'openai')),
-  is_active     boolean default false,
-  simple_model  text not null,
-  complex_model text not null,
-  updated_at    timestamptz default now(),
-  updated_by    uuid references auth.users(id)
-);
-
-create unique index one_active_provider
-  on ai_provider_config(is_active)
-  where is_active = true;
-
--- Active: OpenAI (switched 2026-05-19)
-insert into ai_provider_config (provider, is_active, simple_model, complex_model) values
-  ('anthropic', false,
-   'claude-haiku-4-5-20251001', 'claude-sonnet-4-6'),
-  ('openai', true,
-   'gpt-5.4-mini', 'gpt-5.4')
-on conflict (provider) do update
-  set is_active=excluded.is_active,
-      simple_model=excluded.simple_model,
-      complex_model=excluded.complex_model;
-
-create table ai_provider_audit (
-  id          uuid primary key default gen_random_uuid(),
-  changed_to  text not null,
-  changed_by  uuid references auth.users(id),
-  reason      text,
-  created_at  timestamptz default now()
-);
-
-alter table ai_provider_config enable row level security;
-create policy "admin_write" on ai_provider_config for all
-  using (exists (
-    select 1 from profiles where id = auth.uid() and role = 'admin'
-  ));
-```
-
-## 4.3 Provider Adapter
+## 4.2 Provider Types
 
 ```typescript
 // supabase/functions/ai-tutor/provider.ts
 
-export type Provider = 'anthropic' | 'openai';
-
-export interface ProviderConfig {
-  provider: Provider;
-  simpleModel: string;
-  complexModel: string;
-}
+export type ProviderName = "stub" | "openai";
 
 export interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
 }
 
-let _cachedConfig: ProviderConfig | null = null;
+// StreamResult bao gồm actual token usage từ response.completed event
+export type StreamResult = {
+  provider: ProviderName;
+  model: string;
+  outputText: string;
+  usage?: { inputTokens: number; outputTokens: number }; // undefined nếu stream lỗi/fallback
+};
+```
 
-export async function getProviderConfig(supabase): Promise<ProviderConfig> {
-  if (_cachedConfig) return _cachedConfig;
+## 4.3 streamOpenAi — Capture actual usage
 
-  const { data } = await supabase
-    .from('ai_provider_config')
-    .select('provider, simple_model, complex_model')
-    .eq('is_active', true)
-    .single();
+OpenAI Responses API stream phát ra `response.completed` event cuối cùng với usage object.
+Code capture event này để ghi nhận token usage thực tế (không phải ước tính).
 
-  _cachedConfig = {
-    provider:     data?.provider      || 'anthropic',
-    simpleModel:  data?.simple_model  || 'claude-haiku-4-5-20251001',
-    complexModel: data?.complex_model || 'claude-sonnet-4-6',
-  };
-
-  setTimeout(() => { _cachedConfig = null; }, 60_000);
-  return _cachedConfig;
-}
-
-export async function streamAI(
-  config: ProviderConfig,
-  systemPrompt: string,
-  messages: ChatMessage[],
-  model: string,
-  maxTokens: number,
-  onDelta: (text: string) => void,
-  onDone: (totalTokens: number) => void
-): Promise<void> {
-  return config.provider === 'anthropic'
-    ? _streamAnthropic(systemPrompt, messages, model, maxTokens, onDelta, onDone)
-    : _streamOpenAI(systemPrompt, messages, model, maxTokens, onDelta, onDone);
-}
-
-async function _streamAnthropic(systemPrompt, messages, model, maxTokens, onDelta, onDone) {
-  const { default: Anthropic } = await import('npm:@anthropic-ai/sdk@0.27.0');
-  const client = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! });
-
-  const stream = client.messages.stream({
-    model, max_tokens: maxTokens, system: systemPrompt,
-    messages: messages.map(m => ({ role: m.role, content: m.content }))
-  });
-
-  for await (const chunk of stream) {
-    if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
-      onDelta(chunk.delta.text);
-    }
+```typescript
+// Trong streamOpenAi() — xử lý SSE events
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  const lines = decoder.decode(value).split("\n");
+  for (const line of lines) {
+    if (!line.startsWith("data: ")) continue;
+    const raw = line.slice(6).trim();
+    if (raw === "[DONE]") continue;
+    try {
+      const parsed = JSON.parse(raw);
+      // Text delta
+      if (parsed.type === "response.output_text.delta") {
+        output += parsed.delta ?? "";
+      }
+      // Capture actual token usage từ completed event
+      } else if (parsed.type === "response.completed" && parsed.response?.usage) {
+        usage = {
+          inputTokens: parsed.response.usage.input_tokens,
+          outputTokens: parsed.response.usage.output_tokens,
+        };
+      }
+    } catch { /* ignore malformed SSE */ }
   }
-  const final = await stream.finalMessage();
-  onDone(final.usage.input_tokens + final.usage.output_tokens);
 }
-
-async function _streamOpenAI(systemPrompt, messages, model, maxTokens, onDelta, onDone) {
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')!}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model, max_tokens: maxTokens, stream: true,
-      stream_options: { include_usage: true },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages.map(m => ({ role: m.role, content: m.content }))
-      ]
-    })
-  });
-
-  const reader = res.body!.getReader();
-  const decoder = new TextDecoder();
-  let totalTokens = 0;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    const lines = decoder.decode(value).split('\n').filter(l => l.startsWith('data:'));
-    for (const line of lines) {
-      const raw = line.slice(5).trim();
-      if (raw === '[DONE]') continue;
-      try {
-        const parsed = JSON.parse(raw);
-        const delta = parsed.choices?.[0]?.delta?.content;
-        if (delta) onDelta(delta);
-        if (parsed.usage) {
-          totalTokens = parsed.usage.prompt_tokens + parsed.usage.completion_tokens;
-        }
-      } catch { /* ignore */ }
-    }
-  }
-  onDone(totalTokens);
-}
+return { provider: "openai", model, outputText: output, usage };
 ```
 
 ## 4.4 Model Cost Tracking
-
-Active provider: **OpenAI** (switched từ Anthropic 2026-05-19).
 
 ```typescript
 // supabase/functions/ai-tutor/usageAccounting.ts
@@ -445,28 +341,16 @@ export function estimateCostUsd(model: string, inputTokens: number, outputTokens
   if (lower.includes("gpt-5")) {
     return (inputTokens * 0.0000025) + (outputTokens * 0.000015);
   }
-  // Claude Sonnet fallback
-  if (lower.includes("sonnet")) {
-    return (inputTokens * 0.000003) + (outputTokens * 0.000015);
-  }
-  // Default (Haiku / unknown)
-  return (inputTokens + outputTokens) * 0.0000008;
+  // Fallback / unknown
+  return (inputTokens + outputTokens) * 0.000001;
 }
 ```
 
-Provider config trong DB (`ai_provider_config`):
-```sql
--- Active provider
-UPDATE ai_provider_config SET is_active=false WHERE provider='anthropic';
-UPDATE ai_provider_config SET is_active=true,
-  simple_model='gpt-5.4-mini', complex_model='gpt-5.4'
-WHERE provider='openai';
-```
+Cost per model cũng được seed vào `ai_model_pricing` table (xem Section 6 Schema).
 
 ## 4.5 Secrets Setup
 
 ```bash
-supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 supabase secrets set OPENAI_API_KEY=sk-proj-...
 ```
 
@@ -521,56 +405,34 @@ function classifyByRules(message: string): QuestionComplexity | null {
   return null;
 }
 
-async function classifyByAI(message: string, anthropic): Promise<QuestionComplexity> {
-  const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 10,
-    messages: [{
-      role: 'user',
-      content: `Classify this question: "${message}"
-Reply with exactly one word: simple, medium, or complex.
-- simple: definitions, syntax, basic examples, navigation questions
-- medium: how-to, comparisons, follow-up questions
-- complex: debugging, code review, architecture, advanced concepts`
-    }]
-  });
-
-  const result = response.content[0].type === 'text'
-    ? response.content[0].text.trim().toLowerCase()
-    : 'medium';
-
-  return (result as QuestionComplexity) || 'medium';
-}
-
-export async function routeToModel(
+export function routeToModel(
   message: string,
   userTier: string,
-  providerConfig: ProviderConfig,
-  anthropic
-): Promise<RoutingResult> {
-  if (userTier === 'free' || userTier === 'student') {
-    return { model: providerConfig.simpleModel, maxTokens: 500, complexity: 'simple' };
+  haikuOnly: boolean,
+): RoutingResult {
+  // Free + Student + throttled → mini only
+  if (haikuOnly) {
+    return { model: "gpt-5.4-mini", maxTokens: 500, complexity: "simple" };
   }
 
-  let complexity = classifyByRules(message);
-  if (!complexity) {
-    complexity = await classifyByAI(message, anthropic);
-  }
+  const complexity = classifyByRules(message) ?? "medium";
 
   return {
-    simple:  { model: providerConfig.simpleModel,  maxTokens: 400, complexity: 'simple'  },
-    medium:  { model: providerConfig.simpleModel,  maxTokens: 600, complexity: 'medium'  },
-    complex: { model: providerConfig.complexModel, maxTokens: 1000, complexity: 'complex' },
+    simple:  { model: "gpt-5.4-mini", maxTokens: 400, complexity: "simple"  },
+    medium:  { model: "gpt-5.4-mini", maxTokens: 600, complexity: "medium"  },
+    complex: { model: "gpt-5.4",      maxTokens: 1000, complexity: "complex" },
   }[complexity];
 }
 ```
 
 **Kết quả dự kiến:**
 ```
-~65% câu hỏi → Haiku (simple/medium) — định nghĩa, gợi ý, navigation
-~35% câu hỏi → Sonnet (complex) — debug, review code, so sánh sâu
-Cost reduction: 55-65% so với dùng Sonnet toàn bộ
+~65% câu hỏi → GPT-5.4 mini (simple/medium) — định nghĩa, gợi ý, navigation
+~35% câu hỏi → GPT-5.4 full (complex) — debug, review code, so sánh sâu
+Cost reduction: ~70% so với dùng GPT-5.4 full toàn bộ
 ```
+
+Không còn `classifyByAI()` dùng Anthropic. Routing hoàn toàn dựa trên `classifyByRules()` — đủ chính xác cho context học và tránh latency thêm từ classify request riêng.
 
 ---
 
@@ -699,20 +561,68 @@ create table ai_usage_daily (
 
 -- ── Tier Limits ────────────────────────────────────────────────────────
 create table tier_limits (
-  tier            text primary key,
-  monthly_messages int,
-  rolling_3h_soft_cap int,
-  haiku_only      boolean default true,
-  label_vi        text,
-  label_en        text
+  tier                 text primary key,
+  monthly_messages     int,
+  rolling_3h_soft_cap  int,
+  haiku_only           boolean default true,
+  label_vi             text,
+  label_en             text,
+  -- Token-quota columns (migration 20260522000000_token_quota_phase1.sql)
+  monthly_tokens       int,
+  rolling_3h_tokens    int,
+  quota_unit           text not null default 'message'
+                       check (quota_unit in ('message','token','both'))
 );
 
-insert into tier_limits values
-  ('free',      40,  6,   true,  'Miễn phí', 'Free'),
-  ('student',   250, 20,  true,  'Học viên', 'Student'),
-  ('pro',       700, 50,  false, 'Pro',       'Pro'),
-  ('bootcamp',  1800,120, false, 'Bootcamp',  'Bootcamp')
+insert into tier_limits (tier, monthly_messages, rolling_3h_soft_cap, haiku_only,
+                          label_vi, label_en, monthly_tokens, rolling_3h_tokens, quota_unit) values
+  ('free',      50,   5,   true,  'Miễn phí', 'Free',    100000,   10000,  'message'),
+  ('student',   700,  70,  true,  'Học viên', 'Student', 1400000,  140000, 'message'),
+  ('pro',       1000, 100, false, 'Pro',       'Pro',     2000000,  200000, 'message'),
+  ('bootcamp',  2000, 200, false, 'Bootcamp',  'Bootcamp',4000000,  400000, 'message')
 on conflict do nothing;
+
+-- Rollout: Week 0 → quota_unit='message', Week 1-2 → 'both', Week 5 → 'token'
+-- Rollback bất kỳ lúc nào: UPDATE tier_limits SET quota_unit='message';
+
+-- ── Per-request Token Usage Log (migration 20260522000000_token_quota_phase1.sql) ──
+create table if not exists public.ai_usage_log (
+  id              bigserial primary key,
+  user_id         uuid not null references auth.users(id) on delete cascade,
+  feature         text not null,              -- 'cora_chat' | 'course_gen' | ...
+  conversation_id uuid,
+  model           text not null,
+  input_tokens    int not null check (input_tokens >= 0),
+  output_tokens   int not null check (output_tokens >= 0),
+  total_tokens    int generated always as (input_tokens + output_tokens) stored,
+  cost_usd        numeric(10,6),
+  estimated       boolean not null default false,  -- true nếu actual usage không có
+  request_id      text,
+  created_at      timestamptz not null default now()
+);
+create index ai_usage_log_user_time_idx on public.ai_usage_log (user_id, created_at desc);
+create index ai_usage_log_feature_idx   on public.ai_usage_log (feature, created_at desc);
+
+-- ── Model Pricing Table ────────────────────────────────────────────────
+create table if not exists public.ai_model_pricing (
+  model             text primary key,
+  input_per_1m_usd  numeric(10,4) not null,
+  output_per_1m_usd numeric(10,4) not null,
+  active            boolean not null default true,
+  updated_at        timestamptz not null default now()
+);
+insert into public.ai_model_pricing values
+  ('gpt-5.4-mini', 0.75,  4.50, true, now()),
+  ('gpt-5.4',      2.50, 15.00, true, now())
+on conflict (model) do nothing;
+
+-- ── Token split on aggregates ──────────────────────────────────────────
+alter table public.ai_usage_monthly
+  add column if not exists input_tokens  int not null default 0,
+  add column if not exists output_tokens int not null default 0;
+alter table public.ai_usage_daily
+  add column if not exists input_tokens  int not null default 0,
+  add column if not exists output_tokens int not null default 0;
 
 -- ── Knowledge Base (RAG) ───────────────────────────────────────────────
 -- content_category phân biệt loại knowledge để RAG đúng theo context.
@@ -1149,11 +1059,12 @@ Style: ${profile.learningStyle || 'unknown'}
 ```typescript
 // supabase/functions/ai-tutor/index.ts
 
-import Anthropic from 'npm:@anthropic-ai/sdk@0.27.0';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { buildSystemPrompt, type BackendContextType } from './prompt-builder.ts';
 import { routeToModel } from './router.ts';
-import { getProviderConfig, streamAI } from './provider.ts';
+import { streamOpenAi, type StreamResult } from './provider.ts';
+import { upsertUsage } from './usageAccounting.ts';
+import { checkQuota, incrementQuotaSnapshot } from './accessGuards.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -1194,13 +1105,19 @@ Deno.serve(async (req) => {
       : mapAssistantContext(assistantContext);
 
     // ── 3. Quota check ─────────────────────────────────────────────────
-    const quota = await checkAndIncrementQuota(supabase, user.id);
+    const quota = await checkQuota(supabase, user.id);
     if (!quota.allowed) {
+      // Return correct counter based on quota_unit
+      const useTokenCounter =
+        quota.quotaUnit === "token" ||
+        (quota.quotaUnit === "both" && quota.monthlyTokensLimit != null &&
+          quota.monthlyTokensUsed >= quota.monthlyTokensLimit);
       return new Response(JSON.stringify({
         error: 'quota_exceeded',
-        used: quota.used,
-        limit: quota.limit,
-        tier: quota.tier
+        used:      useTokenCounter ? quota.monthlyTokensUsed : quota.monthlyUsed,
+        limit:     useTokenCounter ? quota.monthlyTokensLimit : quota.monthlyLimit,
+        quotaUnit: quota.quotaUnit,
+        tier:      quota.tier,
       }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
@@ -1216,9 +1133,7 @@ Deno.serve(async (req) => {
     const knowledge = await searchKnowledge(supabase, message, contextType, contextData);
 
     // ── 6. Route model ─────────────────────────────────────────────────
-    const providerConfig = await getProviderConfig(supabase);
-    const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! });
-    const routing = await routeToModel(message, quota.tier, providerConfig, anthropic);
+    const routing = routeToModel(message, quota.tier, quota.haikuOnly);
 
     // ── 7. Build system prompt ─────────────────────────────────────────
     const systemPrompt = buildSystemPrompt({
@@ -1268,10 +1183,22 @@ Deno.serve(async (req) => {
           contextType,
           question: message,
           answer: fullResponse,
-          tokens: totalTokens,
+          tokens: result.usage?.outputTokens ?? totalTokens,
           routing,
         });
-        updateLearningProfile(supabase, user.id, lessonId ?? sessionId, anthropic);
+        await upsertUsage(db, user.id, {
+          inputText: message,
+          outputText: fullResponse,
+          modelUsed: result.model,
+          feature: 'cora_chat',
+          conversationId: placeholder?.id,
+          actualUsage: result.usage,
+        });
+        const totalTokensUsed = result.usage
+          ? result.usage.inputTokens + result.usage.outputTokens
+          : totalTokens;
+        incrementQuotaSnapshot(quota, totalTokensUsed);
+        updateLearningProfile(supabase, user.id, lessonId ?? sessionId);
       }
     });
 
@@ -1593,14 +1520,18 @@ Deno.serve(async (req) => {
   const { data: messages } = await query;
   if (!messages || messages.length < 4) return new Response('ok');
 
-  const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! });
-
-  const analysis = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 300,
-    messages: [{
-      role: 'user',
-      content: `Analyze this tutoring conversation. Return JSON only, no markdown:
+  const openaiRes = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')!}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-5.4-mini',
+      max_output_tokens: 300,
+      input: [{
+        role: 'user',
+        content: `Analyze this tutoring conversation. Return JSON only, no markdown:
 {
   "weak_topics": ["topics the learner struggled with"],
   "strong_topics": ["topics the learner understood well"],
@@ -1610,11 +1541,14 @@ Deno.serve(async (req) => {
 }
 Conversation:
 ${messages.map((m: any) => `${m.role}: ${m.content}`).join('\n').slice(0, 3000)}`
-    }]
+      }],
+    }),
   });
+  const openaiData = await openaiRes.json();
+  const analysisText = openaiData.output?.[0]?.content?.[0]?.text ?? '{}';
 
   try {
-    const text = analysis.content[0].type === 'text' ? analysis.content[0].text : '{}';
+    const text = analysisText;
     const insights = JSON.parse(text.replace(/```json|```/g, '').trim());
 
     const { data: existing } = await supabase.from('user_learning_profile')
@@ -1663,7 +1597,7 @@ ${messages.map((m: any) => `${m.role}: ${m.content}`).join('\n').slice(0, 3000)}
 useEffect(() => {
   return () => {
     if (messages.length >= 4) {
-      supabase.functions.invoke('update-learning-profile', {
+      void supabase.functions.invoke('update-learning-profile', {
         body: { userId: user.id, lessonId }
       });
     }
@@ -1674,7 +1608,7 @@ useEffect(() => {
 useEffect(() => {
   return () => {
     if (messages.length >= 4 && sessionId) {
-      supabase.functions.invoke('update-learning-profile', {
+      void supabase.functions.invoke('update-learning-profile', {
         body: { userId: user.id, sessionId }
       });
     }
@@ -1707,9 +1641,19 @@ export interface CoraMessage {
 }
 
 export interface CoraQuotaInfo {
-  used: number;
-  limit: number;
+  // Message-based (legacy, luôn có giá trị)
+  monthlyUsed: number;
+  monthlyLimit: number | null;
+  windowUsed: number;
+  windowSoftCap: number | null;
+  windowHours: number;
   tier: string;
+  // Token-based (có từ migration 20260522000000_token_quota_phase1.sql)
+  quotaUnit: "message" | "token" | "both";
+  monthlyTokensUsed: number;
+  monthlyTokensLimit: number | null;
+  rollingTokensUsed: number;
+  rollingTokensCap: number | null;
 }
 
 interface UseCoraAIOptions {
@@ -1956,24 +1900,25 @@ export function getSuggestedQuestions(params: {
 ## 11.1 Tier Configuration
 
 Quota dùng **monthly cap + rolling 3h soft cap** — tự nhiên hơn với learner behavior.
+Enforcement mode được kiểm soát bởi `quota_unit` column trong `tier_limits` (không cần redeploy để switch).
 
-| Tier     | Msgs/tháng | Soft cap/3h | Model                      | Giá/tháng (VND) |
-|----------|-----------|-------------|----------------------------|-----------------|
-| Free     | 50        | 5           | GPT-5.4 mini only          | 0               |
-| Student  | 700       | 70          | GPT-5.4 mini only          | 79,000          |
-| Pro      | 1,000     | 100         | mini default + full routing| 149,000         |
-| Bootcamp | 2,000*    | 200         | mini default + full routing| 399,000         |
+| Tier     | Msgs/tháng | Soft cap/3h | Tokens/tháng | Model                      | Giá/tháng (VND) |
+|----------|-----------|-------------|--------------|----------------------------|-----------------|
+| Free     | 50        | 5           | 100K         | GPT-5.4 mini only          | 0               |
+| Student  | 700       | 70          | 1.4M         | GPT-5.4 mini only          | 79,000          |
+| Pro      | 1,000     | 100         | 2M           | mini default + full routing| 149,000         |
+| Bootcamp | 2,000*    | 200         | 4M           | mini default + full routing| 399,000         |
 
 *Bootcamp hiển thị là "Không giới hạn*" trong UI (fair-use footnote ẩn). Xem `CORA_MONETIZATION.md` Section 2026-05-19.
 
 Quota áp dụng cho **tất cả** surfaces (lesson + global cộng lại).
 Soft cap: silent throttle — không hiển thị gì cho user, chỉ force model tiết kiệm hơn.
 
-```sql
--- Schema: dùng ai_usage_monthly thay vì ai_usage_daily
--- (rename + change date column to month text "2026-05")
--- Xem migration details trong CORA_MONETIZATION.md Section 4.3
-```
+**Rollout token enforcement** (DB-only, không cần redeploy):
+- Week 0: `quota_unit = 'message'` — message enforcement như cũ, token data capture
+- Week 1–4: `quota_unit = 'both'` — dual enforcement, monitor accuracy
+- Week 5+: `quota_unit = 'token'` — token-only enforcement
+- Rollback bất kỳ lúc: `UPDATE tier_limits SET quota_unit = 'message'`
 
 ## 11.2 Gross Margin (tóm tắt — worst case, 100% maxout, OpenAI GPT-5.4 pricing)
 
@@ -2015,11 +1960,12 @@ order by freq desc limit 20;
 # 12. Implementation Phases
 
 ## Phase 1 — DB Foundation
-- [ ] Chạy full migration SQL (Section 6)
-- [ ] Enable pgvector extension
-- [ ] Tạo `ai_chat_sessions` table
-- [ ] `ai_conversations.lesson_id` nullable + thêm `context_type`, `session_id`
-- [ ] Insert `tier_limits` + `ai_provider_config` data
+- [x] Chạy full migration SQL (Section 6)
+- [x] Enable pgvector extension
+- [x] Tạo `ai_chat_sessions` table
+- [x] `ai_conversations.lesson_id` nullable + thêm `context_type`, `session_id`
+- [x] Insert `tier_limits` data
+- [x] Migration token quota: `ai_usage_log`, `ai_model_pricing`, token columns on `tier_limits`/aggregates
 
 ## Phase 2 — Edge Function Core
 - [ ] Tạo `supabase/functions/ai-tutor/` với `index.ts`, `prompt-builder.ts`, `router.ts`, `provider.ts`
@@ -2081,8 +2027,8 @@ Storage cost tại 500 users sau 12 tháng: ~660 MB → $0 thêm (trong 8 GB Sup
 
 ```
 ── Lesson Context (CourseAiTutorPanel) ──
-✅ Câu hỏi đơn giản → route Haiku → response < 2s
-✅ Debug code → route Sonnet → quality cao hơn
+✅ Câu hỏi đơn giản → route GPT-5.4 mini → response < 2s
+✅ Debug code → route GPT-5.4 full → quality cao hơn
 ✅ YouTube lesson: hỏi "video nói gì?" → Cora giải thích topic, không bịa transcript
 ✅ Community course → Cora không phán xét nội dung
 ✅ Self course → Cora đóng vai study partner
@@ -2103,7 +2049,10 @@ Storage cost tại 500 users sau 12 tháng: ~660 MB → $0 thêm (trong 8 GB Sup
 ── Global / Non-lesson ──
 ✅ Session được tạo khi user mở chat lần đầu
 ✅ History persist khi user quay lại trang (cùng sessionId)
-✅ User free tier hỏi câu thứ 6 → quota_exceeded error rõ ràng
+✅ User free tier hỏi câu thứ 51 → quota_exceeded error rõ ràng
+✅ quota_unit='token': block khi vượt token limit, không phải message count
+✅ ai_usage_log có row với feature='cora_chat' và estimated=false sau mỗi request
+✅ Khi stream bị ngắt: ai_usage_log.estimated=true, dùng fallback estimate
 
 ── Language ──
 ✅ Câu hỏi tiếng Anh → Cora trả lời tiếng Anh

@@ -354,6 +354,7 @@
         "bootcamp": "Bootcamp"
       },
       "messagesThisMonth": "{{count}} questions this month",
+      "tokensThisMonth": "{{count}} tokens this month",
       "daysLeft": "{{count}} days left",
       "nearingLimit": "🔥 You're on a learning streak!",
       "resetDate": "resets {{date}}",

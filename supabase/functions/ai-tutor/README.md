@@ -11,7 +11,7 @@ Current slice includes:
 - Monthly quota + rolling 3-hour soft-throttle
 - Burst rate limiting / pending-request limiting / short-window dedupe
 - SSE streaming surface for the frontend
-- Provider abstraction with `stub`, `openai`, and `anthropic`
+- Provider abstraction with `stub` and `openai`
 
 ## Local serve
 
@@ -85,9 +85,8 @@ Optional env vars:
 | `CORELIA_SUPABASE_URL` | Local or hosted Supabase project URL |
 | `CORELIA_SUPABASE_SECRET_KEYS` | Service secret key for database access |
 | `CORELIA_CORS_ALLOWED_ORIGINS` | Browser origins allowed to call the function |
-| `CORELIA_AI_PROVIDER` | `stub`, `openai`, or `anthropic` |
+| `CORELIA_AI_PROVIDER` | `stub` or `openai` |
 | `OPENAI_API_KEY` | Enables OpenAI streaming path |
-| `ANTHROPIC_API_KEY` | Enables Anthropic streaming path |
 
 ## Notes
 

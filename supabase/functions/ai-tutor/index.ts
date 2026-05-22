@@ -19,6 +19,7 @@ import { estimateTokens, upsertUsage } from "./usageAccounting.ts";
 import { createServiceClient, type SupabaseClient, verifyBearerUser } from "./lib/supabase.ts";
 import type {
   BackendContextType,
+  KnowledgeChunkRow,
   LearningMemoryDelta,
   LearningProfileMemoryRow,
 } from "./behaviorTypes.ts";
@@ -143,26 +144,22 @@ type ProfileReviewContextData = {
   categoryInterests: string[];
 };
 
-type KnowledgeChunkRow = {
-  topic: string;
-  subtopic: string | null;
-  content: string;
-  content_category: string;
-  track: string | null;
-};
-
 function detectPreferredLanguage(input: string): "vi" | "en" {
   return /[à-ỹđ]/i.test(input) ? "vi" : "en";
 }
 
+function readEnv(name: string): string {
+  return Deno.env.get(name)?.trim() ?? "";
+}
+
 const FALLBACK_TIER_LIMITS: Record<
   Tier,
-  { monthlyMessages: number; rolling3hSoftCap: number; haikuOnly: boolean }
+  { monthlyMessages: number; rolling3hSoftCap: number; haikuOnly: boolean; monthlyTokens: number; rolling3hTokens: number }
 > = {
-  free:     { monthlyMessages: 50,   rolling3hSoftCap: 5,   haikuOnly: true  },
-  student:  { monthlyMessages: 700,  rolling3hSoftCap: 70,  haikuOnly: true  },
-  pro:      { monthlyMessages: 1000, rolling3hSoftCap: 100, haikuOnly: false },
-  bootcamp: { monthlyMessages: 2000, rolling3hSoftCap: 200, haikuOnly: false },
+  free:     { monthlyMessages: 50,   rolling3hSoftCap: 5,   haikuOnly: true,  monthlyTokens: 100000,   rolling3hTokens: 10000  },
+  student:  { monthlyMessages: 700,  rolling3hSoftCap: 70,  haikuOnly: true,  monthlyTokens: 1400000,  rolling3hTokens: 140000 },
+  pro:      { monthlyMessages: 1000, rolling3hSoftCap: 100, haikuOnly: false, monthlyTokens: 2000000,  rolling3hTokens: 200000 },
+  bootcamp: { monthlyMessages: 2000, rolling3hSoftCap: 200, haikuOnly: false, monthlyTokens: 4000000,  rolling3hTokens: 400000 },
 };
 
 function mapAssistantContext(assistantContext: string): BackendContextType {
@@ -249,7 +246,7 @@ function classifyComplexity(
   const hasComplexSignal = complexSignals.some((signal) => normalized.includes(signal));
   const hasMediumSignal = mediumSignals.some((signal) => normalized.includes(signal));
   const lessonHasDescription =
-    contextType === "lesson" &&
+    (contextType === "lesson" || contextType === "course") &&
     typeof contextData.lessonDescription === "string" &&
     contextData.lessonDescription.trim().length > 120;
 
@@ -257,7 +254,7 @@ function classifyComplexity(
     hasComplexSignal ||
     wordCount >= 45 ||
     sentenceCount >= 4 ||
-    (contextType === "lesson" && wordCount >= 25 && lessonHasDescription)
+    ((contextType === "lesson" || contextType === "course") && wordCount >= 25 && lessonHasDescription)
   ) {
     return "complex";
   }
@@ -272,13 +269,18 @@ function knowledgeCategoriesForContext(
 ): string[] {
   switch (contextType) {
     case "lesson":
+    case "course":
       return ["lesson", "platform_guide"];
     case "course_discovery":
-      return ["course_catalog", "platform_guide"];
+      return ["course_catalog", "career_track", "platform_guide"];
     case "career":
-      return ["career_track", "platform_guide"];
+      return ["career_track", "course_catalog", "platform_guide"];
     case "activity":
       return ["activity", "platform_guide"];
+    case "dashboard":
+    case "global":
+    case "profile_review":
+      return ["course_catalog", "career_track", "activity", "credential", "platform_guide"];
     default:
       return [];
   }
@@ -296,7 +298,7 @@ function extractKnowledgeTerms(
     .filter((part) => part.length >= 3);
 
   const contextTerms: string[] = [];
-  if (contextType === "lesson") {
+  if (contextType === "lesson" || contextType === "course") {
     const lessonData = contextData as Partial<LessonContextData>;
     if (typeof lessonData.lessonTopic === "string") contextTerms.push(lessonData.lessonTopic);
     if (typeof lessonData.lessonTitle === "string") contextTerms.push(lessonData.lessonTitle);
@@ -327,11 +329,15 @@ function scoreKnowledgeChunk(
   chunk: KnowledgeChunkRow,
   searchTerms: string[],
   preferredTrack: string | null,
+  contextType: BackendContextType,
+  contextData: Record<string, unknown>,
 ): number {
   const haystack = [
     chunk.topic,
     chunk.subtopic ?? "",
     chunk.track ?? "",
+    chunk.title,
+    JSON.stringify(chunk.metadata ?? {}),
     chunk.content.slice(0, 500),
   ]
     .join(" ")
@@ -352,7 +358,160 @@ function scoreKnowledgeChunk(
     score += 6;
   }
 
+  const metadata = chunk.metadata ?? {};
+  if (contextType === "lesson" || contextType === "course") {
+    const lessonId = typeof contextData.lessonId === "string" ? contextData.lessonId : null;
+    const courseId = typeof contextData.courseId === "string" ? contextData.courseId : null;
+    if (lessonId && metadata.lessonId === lessonId) score += 24;
+    if (courseId && metadata.courseId === courseId) score += 14;
+    if (chunk.content_category === "lesson") score += 3;
+  }
+  if (contextType === "course_discovery" && chunk.content_category === "course_catalog") {
+    score += 5;
+  }
+  if (contextType === "career" && chunk.content_category === "career_track") {
+    score += 5;
+  }
+  if (contextType === "activity" && chunk.content_category === "activity") {
+    score += 5;
+  }
+
   return score;
+}
+
+function normalizeChunkMetadata(input: unknown): Record<string, unknown> | null {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return null;
+  return input as Record<string, unknown>;
+}
+
+function normalizeKnowledgeChunk(input: Record<string, unknown>): KnowledgeChunkRow {
+  return {
+    topic: typeof input.topic === "string" ? input.topic : "Knowledge chunk",
+    subtopic: typeof input.subtopic === "string" ? input.subtopic : null,
+    content: typeof input.content === "string" ? input.content : "",
+    content_category: typeof input.content_category === "string" ? input.content_category : "platform_guide",
+    track: typeof input.track === "string" ? input.track : null,
+    source_table: typeof input.source_table === "string" ? input.source_table : "knowledge_chunks",
+    source_id: typeof input.source_id === "string" ? input.source_id : "",
+    locale: input.locale === "en" ? "en" : "vi",
+    title: typeof input.title === "string" ? input.title : typeof input.topic === "string" ? input.topic : "Knowledge chunk",
+    chunk_kind: typeof input.chunk_kind === "string" ? input.chunk_kind : "summary",
+    metadata: normalizeChunkMetadata(input.metadata),
+    similarity: typeof input.similarity === "number" ? input.similarity : undefined,
+  };
+}
+
+async function embedQuery(message: string): Promise<number[] | null> {
+  const apiKey = readEnv("OPENAI_API_KEY");
+  if (!apiKey) return null;
+  const response = await fetch("https://api.openai.com/v1/embeddings", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "text-embedding-3-small",
+      input: message,
+    }),
+  });
+  if (!response.ok) {
+    console.warn("[ai-tutor] query embedding failed", response.status);
+    return null;
+  }
+  const payload = await response.json().catch(() => null) as { data?: Array<{ embedding?: number[] }> } | null;
+  const embedding = payload?.data?.[0]?.embedding;
+  return Array.isArray(embedding) && embedding.length > 0 ? embedding : null;
+}
+
+async function vectorSearchKnowledge(
+  db: SupabaseClient,
+  queryEmbedding: number[],
+  categories: string[],
+  locale: "vi" | "en",
+): Promise<KnowledgeChunkRow[]> {
+  const { data, error } = await db.rpc("match_knowledge_chunks", {
+    query_embedding: `[${queryEmbedding.join(",")}]`,
+    match_count: 8,
+    filter_categories: categories,
+    preferred_locale: locale,
+    metadata_filter: null,
+  });
+  if (error) {
+    console.warn("[ai-tutor] vector search failed", error.message);
+    return [];
+  }
+  return Array.isArray(data)
+    ? data
+        .map((row) => normalizeKnowledgeChunk(row as Record<string, unknown>))
+        .filter((row) => row.content.trim().length > 0)
+    : [];
+}
+
+function sanitizeSearchTerm(term: string): string {
+  return term.replace(/[%_,]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+async function keywordSearchKnowledge(
+  db: SupabaseClient,
+  searchTerms: string[],
+  categories: string[],
+  locale: "vi" | "en",
+  contextType: BackendContextType,
+  contextData: Record<string, unknown>,
+): Promise<KnowledgeChunkRow[]> {
+  let query = db
+    .from("knowledge_chunks")
+    .select("topic,subtopic,content,content_category,track,source_table,source_id,locale,title,chunk_kind,metadata")
+    .in("content_category", categories)
+    .eq("locale", locale)
+    .limit(24);
+
+  if (contextType === "lesson" || contextType === "course") {
+    const lessonTopic =
+      typeof contextData.lessonTopic === "string" ? sanitizeSearchTerm(contextData.lessonTopic) : "";
+    if (lessonTopic) {
+      query = query.or(
+        `topic.ilike.%${lessonTopic}%,subtopic.ilike.%${lessonTopic}%,content.ilike.%${lessonTopic}%`,
+      );
+    }
+  } else if (searchTerms.length > 0) {
+    const keyword = sanitizeSearchTerm(searchTerms[0]!);
+    if (keyword) {
+      query = query.or(
+        `topic.ilike.%${keyword}%,subtopic.ilike.%${keyword}%,content.ilike.%${keyword}%,track.ilike.%${keyword}%,title.ilike.%${keyword}%`,
+      );
+    }
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.warn("[ai-tutor] keyword knowledge retrieval failed", error.message);
+    return [];
+  }
+  return Array.isArray(data)
+    ? data
+        .map((row) => normalizeKnowledgeChunk(row as Record<string, unknown>))
+        .filter((row) => row.content.trim().length > 0)
+    : [];
+}
+
+function dedupeKnowledgeChunks(chunks: KnowledgeChunkRow[]): KnowledgeChunkRow[] {
+  const seen = new Set<string>();
+  const output: KnowledgeChunkRow[] = [];
+  for (const chunk of chunks) {
+    const key = [
+      chunk.source_table,
+      chunk.source_id,
+      chunk.locale,
+      chunk.chunk_kind,
+      chunk.title,
+    ].join("|");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    output.push(chunk);
+  }
+  return output;
 }
 
 async function retrieveKnowledgeChunks(
@@ -364,41 +523,50 @@ async function retrieveKnowledgeChunks(
   const categories = knowledgeCategoriesForContext(contextType);
   if (categories.length === 0) return [];
 
+  const preferredLocale = detectPreferredLanguage(message);
+  const fallbackLocale: "vi" | "en" = preferredLocale === "vi" ? "en" : "vi";
   const searchTerms = extractKnowledgeTerms(message, contextType, contextData);
-  let query = db
-    .from("knowledge_chunks")
-    .select("topic,subtopic,content,content_category,track")
-    .in("content_category", categories)
-    .limit(24);
-
-  if (contextType === "lesson") {
-    const lessonTopic =
-      typeof contextData.lessonTopic === "string" ? contextData.lessonTopic.trim() : "";
-    if (lessonTopic) {
-      query = query.or(
-        `topic.ilike.%${lessonTopic}%,subtopic.ilike.%${lessonTopic}%,content.ilike.%${lessonTopic}%`,
-      );
-    }
-  } else if (searchTerms.length > 0) {
-    const keyword = searchTerms[0];
-    query = query.or(
-      `topic.ilike.%${keyword}%,subtopic.ilike.%${keyword}%,content.ilike.%${keyword}%,track.ilike.%${keyword}%`,
-    );
-  }
-
   const preferredTrack =
     typeof contextData.trackInterest === "string" ? contextData.trackInterest.trim() : null;
+  const queryEmbedding = await embedQuery(message);
 
-  const { data, error } = await query.returns<KnowledgeChunkRow[]>();
-  if (error) {
-    console.warn("[ai-tutor] knowledge retrieval failed", error.message);
-    return [];
-  }
+  const vectorPreferred = queryEmbedding
+    ? await vectorSearchKnowledge(db, queryEmbedding, categories, preferredLocale)
+    : [];
+  const keywordPreferred = await keywordSearchKnowledge(
+    db,
+    searchTerms,
+    categories,
+    preferredLocale,
+    contextType,
+    contextData,
+  );
 
-  return (data ?? [])
+  const needFallback = dedupeKnowledgeChunks([...vectorPreferred, ...keywordPreferred]).length < 3;
+  const vectorFallback = needFallback && queryEmbedding
+    ? await vectorSearchKnowledge(db, queryEmbedding, categories, fallbackLocale)
+    : [];
+  const keywordFallback = needFallback
+    ? await keywordSearchKnowledge(
+        db,
+        searchTerms,
+        categories,
+        fallbackLocale,
+        contextType,
+        contextData,
+      )
+    : [];
+
+  return dedupeKnowledgeChunks([
+    ...vectorPreferred,
+    ...keywordPreferred,
+    ...vectorFallback,
+    ...keywordFallback,
+  ])
     .map((chunk) => ({
       ...chunk,
-      score: scoreKnowledgeChunk(chunk, searchTerms, preferredTrack),
+      score: scoreKnowledgeChunk(chunk, searchTerms, preferredTrack, contextType, contextData) +
+        (typeof chunk.similarity === "number" ? chunk.similarity * 12 : 0),
     }))
     .sort((a, b) => b.score - a.score)
     .filter((chunk) => chunk.score > 0 || searchTerms.length === 0)
@@ -848,7 +1016,7 @@ async function loadContextData(
   profile: ProfileRow | null,
   extras: { lessonId: string | null },
 ): Promise<Record<string, unknown>> {
-  if (contextType === "lesson") {
+  if (contextType === "lesson" || contextType === "course") {
     if (!extras.lessonId) throw new Error("lessonId is required for lesson context");
     return loadLessonContext(db, userId, extras.lessonId);
   }
@@ -937,13 +1105,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const tier = await resolveEffectiveTier(db, user.id, profile?.tier ?? "free");
     const quota = await checkQuota(db, user.id, tier, FALLBACK_TIER_LIMITS);
     if (!quota.allowed) {
+      const useTokenCounter =
+        quota.quotaUnit === "token" ||
+        (quota.quotaUnit === "both" && quota.monthlyTokensLimit != null &&
+          quota.monthlyTokensUsed >= quota.monthlyTokensLimit);
       return withCors(
         req,
         json(
           {
             message: "Monthly quota exceeded",
-            used: quota.monthlyUsed,
-            limit: quota.monthlyLimit,
+            quotaUnit: quota.quotaUnit,
+            used: useTokenCounter ? quota.monthlyTokensUsed : quota.monthlyUsed,
+            limit: useTokenCounter ? quota.monthlyTokensLimit : quota.monthlyLimit,
             tier: quota.tier,
           },
           429,
@@ -958,6 +1131,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const contextData = {
       ...loadedContextData,
       surfaceHint: body.assistantContext,
+      lessonId: body.lessonId,
+      courseId: body.courseId ?? (typeof loadedContextData.courseId === "string" ? loadedContextData.courseId : null),
     };
     const learningMemory = await getLearningMemory(db, user.id);
     const language = detectPreferredLanguage(body.message);
@@ -1111,7 +1286,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
             const finalText = outputText.trim() || fallbackReply;
             const nowIso = new Date().toISOString();
-            const updatedQuota = incrementQuotaSnapshot(quota);
+            const totalTokensUsed = result.usage
+              ? result.usage.inputTokens + result.usage.outputTokens
+              : estimateTokens(body.message) + estimateTokens(finalText);
+            const updatedQuota = incrementQuotaSnapshot(quota, totalTokensUsed);
 
             const { error: assistantError } = await db
               .from("ai_conversations")
@@ -1120,7 +1298,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 status: "completed",
                 complexity,
                 model_used: result.model,
-                tokens_used: estimateTokens(finalText),
+                tokens_used: result.usage?.outputTokens ?? estimateTokens(finalText),
                 sources: sourceRefs,
                 updated_at: nowIso,
               })
@@ -1148,6 +1326,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
               inputText: body.message,
               outputText: finalText,
               modelUsed: result.model,
+              feature: "cora_chat",
+              conversationId: placeholder.id,
+              actualUsage: result.usage,
             });
             const memoryDelta = await updateLearningMemory(db, {
               userId: user.id,
@@ -1234,6 +1415,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       inputText: body.message,
       outputText: fallbackReply,
       modelUsed: quota.haikuOnly || quota.throttled ? "stub-haiku" : "stub-sonnet",
+      feature: "cora_chat",
     });
     const memoryDelta = await updateLearningMemory(db, {
       userId: user.id,

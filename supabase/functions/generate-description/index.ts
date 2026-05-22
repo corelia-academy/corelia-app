@@ -244,45 +244,100 @@ function pickSnippet(...parts: Array<string | undefined>): string | undefined {
   return text.length > 180 ? `${text.slice(0, 177)}...` : text;
 }
 
-async function fetchCaptionTracks(videoId: string): Promise<
-  Array<{ langCode: string; name: string; isAsr: boolean }>
-> {
-  const url = new URL("https://www.youtube.com/api/timedtext");
-  url.searchParams.set("type", "list");
-  url.searchParams.set("v", videoId);
-  const res = await fetch(url.toString());
-  if (!res.ok) return [];
-  const xml = await res.text();
-  const matches = Array.from(
-    xml.matchAll(/<track\b([^>]+?)\/>/g),
-    (match) => match[1] ?? "",
-  );
-  return matches
-    .map((attrs) => {
-      const langCode = attrs.match(/\blang_code="([^"]+)"/)?.[1] ?? "";
-      const name = decodeHtml(attrs.match(/\bname="([^"]*)"/)?.[1] ?? "");
-      const kind = attrs.match(/\bkind="([^"]+)"/)?.[1] ?? "";
-      return {
-        langCode,
-        name,
-        isAsr: kind === "asr",
-      };
-    })
-    .filter((track) => track.langCode);
+type CaptionTrack = { langCode: string; name: string; isAsr: boolean; baseUrl?: string };
+
+async function fetchCaptionTracksViaInnerTube(videoId: string): Promise<CaptionTrack[]> {
+  try {
+    const res = await fetch("https://www.youtube.com/youtubei/v1/player", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+      },
+      body: JSON.stringify({
+        videoId,
+        context: { client: { clientName: "WEB", clientVersion: "2.20231208.00.00", hl: "en" } },
+      }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json() as Record<string, unknown>;
+    const rawTracks = (
+      (data?.captions as Record<string, unknown>)
+        ?.playerCaptionsTracklistRenderer as Record<string, unknown>
+    )?.captionTracks as Record<string, unknown>[] ?? [];
+    return rawTracks
+      .map((t) => ({
+        langCode: String(t.languageCode ?? ""),
+        name: String((t.name as { simpleText?: string } | undefined)?.simpleText ?? ""),
+        isAsr: t.kind === "asr",
+        baseUrl: String(t.baseUrl ?? ""),
+      }))
+      .filter((t) => t.langCode && t.baseUrl);
+  } catch {
+    return [];
+  }
 }
 
-function chooseCaptionTrack(
-  tracks: Array<{ langCode: string; name: string; isAsr: boolean }>,
-  locale: Locale,
-) {
+async function fetchCaptionTracks(videoId: string): Promise<CaptionTrack[]> {
+  try {
+    const url = new URL("https://www.youtube.com/api/timedtext");
+    url.searchParams.set("type", "list");
+    url.searchParams.set("v", videoId);
+    const res = await fetch(url.toString());
+    if (!res.ok) return [];
+    const xml = await res.text();
+    const matches = Array.from(
+      xml.matchAll(/<track\b([^>]+?)\/>/g),
+      (match) => match[1] ?? "",
+    );
+    return matches
+      .map((attrs) => {
+        const langCode = attrs.match(/\blang_code="([^"]+)"/)?.[1] ?? "";
+        const name = decodeHtml(attrs.match(/\bname="([^"]*)"/)?.[1] ?? "");
+        const kind = attrs.match(/\bkind="([^"]+)"/)?.[1] ?? "";
+        return { langCode, name, isAsr: kind === "asr" };
+      })
+      .filter((track) => track.langCode);
+  } catch {
+    return [];
+  }
+}
+
+function chooseCaptionTrack(tracks: CaptionTrack[], locale: Locale): CaptionTrack | null {
   const exact = tracks.filter((track) => track.langCode.toLowerCase() === locale);
-  if (exact.length > 0) return exact.find((track) => !track.isAsr) ?? exact[0];
+  if (exact.length > 0) return exact.find((track) => !track.isAsr) ?? exact[0]!;
   const sameFamily = tracks.filter((track) => track.langCode.toLowerCase().startsWith(`${locale}-`));
-  if (sameFamily.length > 0) return sameFamily.find((track) => !track.isAsr) ?? sameFamily[0];
+  if (sameFamily.length > 0) return sameFamily.find((track) => !track.isAsr) ?? sameFamily[0]!;
   return tracks.find((track) => !track.isAsr) ?? tracks[0] ?? null;
 }
 
+function normalizeTranscriptText(text: string): string | null {
+  const out = text.replace(/\s+/g, " ").trim();
+  return out || null;
+}
+
 async function fetchTranscript(videoId: string, locale: Locale): Promise<string | null> {
+  // 1. InnerTube API (primary — returns direct baseUrl per track)
+  const innerTubeTracks = await fetchCaptionTracksViaInnerTube(videoId);
+  const innerTubeTrack = chooseCaptionTrack(innerTubeTracks, locale);
+  if (innerTubeTrack?.baseUrl) {
+    try {
+      const url = new URL(innerTubeTrack.baseUrl);
+      url.searchParams.set("fmt", "json3");
+      const res = await fetch(url.toString());
+      if (res.ok) {
+        const json = await res.json() as { events?: Array<{ segs?: Array<{ utf8: string }> }> };
+        const text = (json.events ?? [])
+          .flatMap((e) => (e.segs ?? []).map((s) => s.utf8))
+          .filter((s) => s && s.trim() !== "\n")
+          .join(" ");
+        const normalized = normalizeTranscriptText(text);
+        if (normalized) return normalized.length > 12000 ? normalized.slice(0, 12000) : normalized;
+      }
+    } catch { /* fall through to timedtext */ }
+  }
+
+  // 2. Timedtext API (fallback)
   const tracks = await fetchCaptionTracks(videoId);
   const track = chooseCaptionTrack(tracks, locale);
   if (!track) return null;
@@ -621,19 +676,25 @@ Deno.serve(async (req: Request): Promise<Response> => {
           ? parsed.youtubeUrl
           : null,
     });
+    const trivialTitles = ["lesson", "draft lesson"];
     const usable = sources.filter((source) => source.sourceKinds.length > 0);
+    const titledSources = sources.filter(
+      (source) =>
+        source.lessonTitle && !trivialTitles.includes(source.lessonTitle.toLowerCase()),
+    );
     const warning = buildWarning(sources);
-    if (usable.length === 0) {
+    if (usable.length === 0 && titledSources.length === 0) {
       return withCors(req, json({ message: warning ?? "Không đủ nội dung để generate." }, 422));
     }
 
+    const sourcesForPrompt = usable.length > 0 ? usable : titledSources;
     const prompt = buildPrompt({
       action: parsed.action,
       type: parsed.type,
       targetField: parsed.targetField,
       locale: parsed.locale,
       sourceLocale: parsed.sourceLocale,
-      sources: usable,
+      sources: sourcesForPrompt,
       isSectionScoped,
     });
     const description = await generateWithOpenAi(prompt);
@@ -642,7 +703,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       req,
       json({
         description,
-        sources: usable.map((source) => ({
+        sources: sourcesForPrompt.map((source) => ({
           lessonId: source.lessonId,
           lessonTitle: source.lessonTitle,
           sourceKinds: source.sourceKinds,
