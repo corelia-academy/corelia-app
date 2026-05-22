@@ -354,6 +354,7 @@
         "bootcamp": "Bootcamp"
       },
       "messagesThisMonth": "{{count}} câu hỏi tháng này",
+      "tokensThisMonth": "{{count}} tokens tháng này",
       "daysLeft": "còn {{count}} ngày",
       "nearingLimit": "🔥 Bạn đang học rất chăm!",
       "resetDate": "reset {{date}}",

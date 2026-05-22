@@ -1,5 +1,6 @@
 import { useLocation } from "react-router";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/stores/authStore";
 import { useCoraStore } from "@/stores/coraStore";
 import { shouldShowGlobalCoraAssistant } from "./visibility";
 import { CoraAssistantCard } from "./GlobalCoraAssistant";
@@ -13,11 +14,12 @@ export function CoraSidebarPanel({
 }: {
   variant?: "floating" | "inset";
 }) {
+  const { user } = useAuth();
   const { sidebarOpen, setSidebarOpen, sidebarMeta } = useCoraStore();
   const location = useLocation();
 
   const { pathname } = location;
-  const isSupported = shouldShowGlobalCoraAssistant(pathname);
+  const isSupported = !!user && shouldShowGlobalCoraAssistant(pathname);
   const isCourseOrLesson = COURSE_DETAIL_RE.test(pathname) || LESSON_RE.test(pathname);
   const isOpen = sidebarOpen && isSupported;
 

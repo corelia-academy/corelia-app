@@ -154,12 +154,12 @@ function readEnv(name: string): string {
 
 const FALLBACK_TIER_LIMITS: Record<
   Tier,
-  { monthlyMessages: number; rolling3hSoftCap: number; haikuOnly: boolean }
+  { monthlyMessages: number; rolling3hSoftCap: number; haikuOnly: boolean; monthlyTokens: number; rolling3hTokens: number }
 > = {
-  free:     { monthlyMessages: 50,   rolling3hSoftCap: 5,   haikuOnly: true  },
-  student:  { monthlyMessages: 700,  rolling3hSoftCap: 70,  haikuOnly: true  },
-  pro:      { monthlyMessages: 1000, rolling3hSoftCap: 100, haikuOnly: false },
-  bootcamp: { monthlyMessages: 2000, rolling3hSoftCap: 200, haikuOnly: false },
+  free:     { monthlyMessages: 50,   rolling3hSoftCap: 5,   haikuOnly: true,  monthlyTokens: 100000,   rolling3hTokens: 10000  },
+  student:  { monthlyMessages: 700,  rolling3hSoftCap: 70,  haikuOnly: true,  monthlyTokens: 1400000,  rolling3hTokens: 140000 },
+  pro:      { monthlyMessages: 1000, rolling3hSoftCap: 100, haikuOnly: false, monthlyTokens: 2000000,  rolling3hTokens: 200000 },
+  bootcamp: { monthlyMessages: 2000, rolling3hSoftCap: 200, haikuOnly: false, monthlyTokens: 4000000,  rolling3hTokens: 400000 },
 };
 
 function mapAssistantContext(assistantContext: string): BackendContextType {
@@ -1105,13 +1105,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const tier = await resolveEffectiveTier(db, user.id, profile?.tier ?? "free");
     const quota = await checkQuota(db, user.id, tier, FALLBACK_TIER_LIMITS);
     if (!quota.allowed) {
+      const useTokenCounter =
+        quota.quotaUnit === "token" ||
+        (quota.quotaUnit === "both" && quota.monthlyTokensLimit != null &&
+          quota.monthlyTokensUsed >= quota.monthlyTokensLimit);
       return withCors(
         req,
         json(
           {
             message: "Monthly quota exceeded",
-            used: quota.monthlyUsed,
-            limit: quota.monthlyLimit,
+            quotaUnit: quota.quotaUnit,
+            used: useTokenCounter ? quota.monthlyTokensUsed : quota.monthlyUsed,
+            limit: useTokenCounter ? quota.monthlyTokensLimit : quota.monthlyLimit,
             tier: quota.tier,
           },
           429,
@@ -1281,7 +1286,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
             const finalText = outputText.trim() || fallbackReply;
             const nowIso = new Date().toISOString();
-            const updatedQuota = incrementQuotaSnapshot(quota);
+            const totalTokensUsed = result.usage
+              ? result.usage.inputTokens + result.usage.outputTokens
+              : estimateTokens(body.message) + estimateTokens(finalText);
+            const updatedQuota = incrementQuotaSnapshot(quota, totalTokensUsed);
 
             const { error: assistantError } = await db
               .from("ai_conversations")
@@ -1290,7 +1298,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 status: "completed",
                 complexity,
                 model_used: result.model,
-                tokens_used: estimateTokens(finalText),
+                tokens_used: result.usage?.outputTokens ?? estimateTokens(finalText),
                 sources: sourceRefs,
                 updated_at: nowIso,
               })
@@ -1318,6 +1326,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
               inputText: body.message,
               outputText: finalText,
               modelUsed: result.model,
+              feature: "cora_chat",
+              conversationId: placeholder.id,
+              actualUsage: result.usage,
             });
             const memoryDelta = await updateLearningMemory(db, {
               userId: user.id,
@@ -1404,6 +1415,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       inputText: body.message,
       outputText: fallbackReply,
       modelUsed: quota.haikuOnly || quota.throttled ? "stub-haiku" : "stub-sonnet",
+      feature: "cora_chat",
     });
     const memoryDelta = await updateLearningMemory(db, {
       userId: user.id,
