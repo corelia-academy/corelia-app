@@ -52,6 +52,9 @@ const ContestWorkspacePublicRoute = lazy(() =>
 );
 const ConfirmSignup = lazy(() => import("@/pages/auth/ConfirmSignup"));
 const SignupVerified = lazy(() => import("@/pages/auth/SignupVerified"));
+const EmailUnsubscribePage = lazy(() =>
+  import("@/pages/EmailUnsubscribePage").then((m) => ({ default: m.EmailUnsubscribePage })),
+);
 const UserProfileLayout = lazy(() => import("@/pages/users/user-profile"));
 const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
 
@@ -213,6 +216,14 @@ export default function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <OCIDRedirect />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/email/unsubscribe"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <EmailUnsubscribePage />
                 </Suspense>
               }
             />

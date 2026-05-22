@@ -5,15 +5,19 @@
  * Operations: health | payments.sepay.checkout | payments.transactions |
  *   payments.sepay.verify | payments.sepay.ipn | certificates.issue |
  *   hackathons.notifyRegistrationReview | hackathons.blastEmail |
+ *   courses.blastEmail | careerTracks.blastEmail | notifications.unsubscribe |
  *   credentials.checkCourseCompletion | credentials.checkActivityMilestones | credentials.grant
  */
 import { handleIssueCertificate } from "./certificates/handlers.ts";
+import { handleCareerTrackBlastEmail } from "./career-tracks/blast_email.ts";
 import { handleCheckActivityMilestones } from "./credentials/check_activity.ts";
 import { handleCheckCourseCompletion } from "./credentials/check_course.ts";
 import { handleGrantCredentials } from "./credentials/grant.ts";
+import { handleCourseBlastEmail } from "./courses/blast_email.ts";
 import { handleHackathonBlastEmail } from "./hackathons/blast_email.ts";
 import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.ts";
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
+import { handleNotificationsUnsubscribe } from "./notifications/unsubscribe.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
 import {
   handleAiVoucherPreview,
@@ -35,6 +39,9 @@ const PROTECTED_OPS = new Set<string>([
   "payments.sepay.verify",
   "hackathons.notifyRegistrationReview",
   "hackathons.blastEmail",
+  "courses.blastEmail",
+  "careerTracks.blastEmail",
+  // notifications.unsubscribe is PUBLIC — intentionally omitted from PROTECTED_OPS
   "credentials.checkCourseCompletion",
   "credentials.checkActivityMilestones",
   "credentials.grant",
@@ -89,6 +96,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleHackathonNotifyRegistrationReview(req, db);
     } else if (op === "hackathons.blastEmail" && req.method === "POST") {
       response = await handleHackathonBlastEmail(req, db);
+    } else if (op === "courses.blastEmail" && req.method === "POST") {
+      response = await handleCourseBlastEmail(req, db);
+    } else if (op === "careerTracks.blastEmail" && req.method === "POST") {
+      response = await handleCareerTrackBlastEmail(req, db);
+    } else if (op === "notifications.unsubscribe" && req.method === "POST") {
+      response = await handleNotificationsUnsubscribe(req, db);
     } else if (op === "credentials.checkCourseCompletion" && req.method === "POST") {
       response = await handleCheckCourseCompletion(req, db);
     } else if (op === "credentials.checkActivityMilestones" && req.method === "POST") {

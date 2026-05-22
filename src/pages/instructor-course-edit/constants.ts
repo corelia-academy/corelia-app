@@ -6,6 +6,7 @@ export const EDIT_SECTION_IDS = [
   "content",
   "assignments",
   "certificate",
+  "announcements",
   "students",
   "danger",
 ] as const;

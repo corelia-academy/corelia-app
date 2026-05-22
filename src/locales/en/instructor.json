@@ -238,6 +238,26 @@
       "saveFailed": "Could not save track.",
       "missingRequired": "Please enter a title and slug.",
       "notFound": "Track not found."
+    },
+    "announcements": {
+      "title": "Send track announcement",
+      "heroTitle": "Send announcement to track learners",
+      "heroDescription": "Compose an email and send it to all learners enrolled in any course within this track.",
+      "subjectLabel": "Email subject",
+      "subjectPlaceholder": "Enter subject...",
+      "bodyLabel": "Body (HTML)",
+      "bodyPlaceholder": "<p>Announcement content...</p>",
+      "bodyPreviewToggle": "Preview",
+      "sendButton": "Send announcement",
+      "confirmTitle": "Send announcement?",
+      "confirmSubjectLabel": "Subject:",
+      "confirmDescription": "Email will be sent to all learners in this track.",
+      "confirmButton": "Send now",
+      "cancelButton": "Cancel",
+      "resultSent": "Successfully sent {{sent}}/{{total}} emails.",
+      "resultFailed": "{{failed}} emails failed to send.",
+      "resultError": "Send error: {{reason}}",
+      "notConfigured": "Email not configured. Please check RESEND_API_KEY."
     }
   },
   "courseNew": {
@@ -761,6 +781,29 @@
     "access": {
       "noPermission": "You don't have permission to edit this course.",
       "backToTeaching": "Teaching"
+    },
+    "announcements": {
+      "sectionTitle": "Announcements",
+      "heroTitle": "Send announcement to learners",
+      "heroDescription": "Compose an email and send it to all enrolled learners in this course.",
+      "recipientCount": "{{count}} learners will receive the email",
+      "recipientCountZero": "No learners enrolled yet",
+      "subjectLabel": "Email subject",
+      "subjectPlaceholder": "Enter subject...",
+      "bodyLabel": "Body (HTML)",
+      "bodyPlaceholder": "<p>Announcement content...</p>",
+      "bodyPreviewToggle": "Preview",
+      "sendButton": "Send announcement",
+      "confirmTitle": "Send announcement?",
+      "confirmSubjectLabel": "Subject:",
+      "confirmDescription": "Email will be sent to {{count}} enrolled learners.",
+      "confirmButton": "Send now",
+      "cancelButton": "Cancel",
+      "resultSent": "Successfully sent {{sent}}/{{total}} emails.",
+      "resultFailed": "{{failed}} emails failed to send.",
+      "resultSkipped": "{{skipped}} learners opted out of emails.",
+      "resultError": "Send error: {{reason}}",
+      "notConfigured": "Email not configured. Please check RESEND_API_KEY."
     }
   }
 }
