@@ -237,6 +237,26 @@
       "saveFailed": "Không thể lưu lộ trình.",
       "missingRequired": "Vui lòng nhập tiêu đề và slug.",
       "notFound": "Không tìm thấy lộ trình."
+    },
+    "announcements": {
+      "title": "Gửi thông báo lộ trình",
+      "heroTitle": "Gửi thông báo tới học viên trong lộ trình",
+      "heroDescription": "Soạn email và gửi tới tất cả học viên đã đăng ký bất kỳ khoá học nào trong lộ trình này.",
+      "subjectLabel": "Tiêu đề email",
+      "subjectPlaceholder": "Nhập tiêu đề...",
+      "bodyLabel": "Nội dung (HTML)",
+      "bodyPlaceholder": "<p>Nội dung thông báo...</p>",
+      "bodyPreviewToggle": "Xem trước",
+      "sendButton": "Gửi thông báo",
+      "confirmTitle": "Xác nhận gửi thông báo?",
+      "confirmSubjectLabel": "Tiêu đề:",
+      "confirmDescription": "Email sẽ được gửi tới tất cả học viên trong lộ trình này.",
+      "confirmButton": "Gửi ngay",
+      "cancelButton": "Huỷ",
+      "resultSent": "Đã gửi thành công {{sent}}/{{total}} email.",
+      "resultFailed": "{{failed}} email gửi thất bại.",
+      "resultError": "Lỗi gửi email: {{reason}}",
+      "notConfigured": "Chưa cấu hình email. Vui lòng kiểm tra RESEND_API_KEY."
     }
   },
   "courseNew": {
@@ -760,6 +780,29 @@
     "access": {
       "noPermission": "Bạn không có quyền sửa khoá học này.",
       "backToTeaching": "Quản lý giảng dạy"
+    },
+    "announcements": {
+      "sectionTitle": "Thông báo",
+      "heroTitle": "Gửi thông báo tới học viên",
+      "heroDescription": "Soạn email và gửi tới tất cả học viên đã đăng ký khoá học này.",
+      "recipientCount": "{{count}} học viên sẽ nhận được email",
+      "recipientCountZero": "Chưa có học viên nào đăng ký",
+      "subjectLabel": "Tiêu đề email",
+      "subjectPlaceholder": "Nhập tiêu đề...",
+      "bodyLabel": "Nội dung (HTML)",
+      "bodyPlaceholder": "<p>Nội dung thông báo...</p>",
+      "bodyPreviewToggle": "Xem trước",
+      "sendButton": "Gửi thông báo",
+      "confirmTitle": "Xác nhận gửi thông báo?",
+      "confirmSubjectLabel": "Tiêu đề:",
+      "confirmDescription": "Email sẽ được gửi tới {{count}} học viên đã đăng ký.",
+      "confirmButton": "Gửi ngay",
+      "cancelButton": "Huỷ",
+      "resultSent": "Đã gửi thành công {{sent}}/{{total}} email.",
+      "resultFailed": "{{failed}} email gửi thất bại.",
+      "resultSkipped": "{{skipped}} học viên đã tắt nhận email.",
+      "resultError": "Lỗi gửi email: {{reason}}",
+      "notConfigured": "Chưa cấu hình email. Vui lòng kiểm tra RESEND_API_KEY."
     }
   }
 }

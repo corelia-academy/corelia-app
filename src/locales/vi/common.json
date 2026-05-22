@@ -74,7 +74,10 @@
     "hackathonRegistrationRejectedBody": "Hồ sơ đăng ký hackathon {{hackathonTitle}} của bạn chưa được duyệt.",
     "hackathonRegistrationReviewNote": "Ghi chú từ ban tổ chức: {{note}}",
     "hackathonRegistrationFallbackTitle": "Hackathon",
-    "viewHackathon": "Xem hackathon"
+    "viewHackathon": "Xem hackathon",
+    "courseAnnouncementTitle": "Thông báo từ khoá học",
+    "trackAnnouncementTitle": "Thông báo từ lộ trình học",
+    "markRead": "Đánh dấu đã đọc"
   },
   "userProfile": {
     "tabs": {
@@ -661,5 +664,13 @@
       "connecting": "Đang kết nối…",
       "startFailed": "Không thể bắt đầu kết nối OpenCampus. Vui lòng thử lại."
     }
+  },
+  "unsubscribe": {
+    "loading": "Đang xử lý...",
+    "successTitle": "Đã huỷ đăng ký thành công",
+    "successBody": "Bạn sẽ không còn nhận được loại email thông báo này từ Corelia.",
+    "managePreferences": "Quản lý tuỳ chọn thông báo",
+    "errorTitle": "Không thể xử lý yêu cầu",
+    "errorBody": "Link huỷ đăng ký không hợp lệ hoặc đã hết hạn. Vui lòng vào Cài đặt để quản lý thông báo."
   }
 }

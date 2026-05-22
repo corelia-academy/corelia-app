@@ -66,6 +66,15 @@
       "signOutTitle": "Sign out",
       "signOutDescription": "End the current session on this device.",
       "signOutButton": "Sign out"
+    },
+    "notifications": {
+      "title": "Notification preferences",
+      "description": "Choose which notifications you want to receive by email and in-app.",
+      "emailCourseBlast": "Receive course announcement emails",
+      "emailTrackBlast": "Receive learning path announcement emails",
+      "inAppCourseBlast": "Show course announcements in-app",
+      "inAppTrackBlast": "Show learning path announcements in-app",
+      "saved": "Notification preferences saved"
     }
   },
   "common": {
