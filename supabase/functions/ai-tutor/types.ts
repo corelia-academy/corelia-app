@@ -8,6 +8,11 @@ export type QuotaResult = {
   windowSoftCap: number | null;
   windowHours: number;
   tier: "free" | "student" | "pro" | "bootcamp";
+  quotaUnit: "message" | "token" | "both";
+  monthlyTokensUsed: number;
+  monthlyTokensLimit: number | null;
+  rollingTokensUsed: number;
+  rollingTokensCap: number | null;
 };
 
 export type MessageComplexity = "simple" | "medium" | "complex";

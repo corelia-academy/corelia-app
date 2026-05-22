@@ -10,11 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Badge } from "@/components/ui/badge";
 import { invokeGenerateQuestions, type GeneratedQuestionSource } from "@/lib/questionGenerator";
 import { getSectionQuestions, setSectionQuestions } from "@/lib/sectionQuestions";
 import type { SectionQuestionData, QuestionOption } from "@/types/questions";
@@ -72,9 +68,9 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
   return (
     <div className="rounded-lg border border-border-subtle bg-surface-raised p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
-        <Badge variant="outline" className="shrink-0 mt-0.5">
+        <span className="shrink-0 mt-0.5 inline-flex items-center rounded border border-border-subtle px-2 py-0.5 text-xs font-medium text-foreground-muted">
           Câu {index + 1}
-        </Badge>
+        </span>
         <button
           type="button"
           onClick={onDelete}
@@ -85,25 +81,29 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
         </button>
       </div>
 
-      <Textarea
+      <textarea
         placeholder="Nội dung câu hỏi..."
         value={question.question}
-        onChange={(e) => setField("question", e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setField("question", e.target.value)}
         rows={2}
-        className="resize-none text-sm"
+        className="w-full resize-none rounded border border-border bg-surface-base px-3 py-2 text-sm leading-5 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
       />
 
-      <RadioGroup
-        value={String(question.correct_index)}
-        onValueChange={(v) => setField("correct_index", parseInt(v, 10))}
-        className="space-y-2"
-      >
+      <div className="space-y-2">
         {question.options.map((opt, i) => (
           <div key={opt.id} className="flex items-center gap-2">
-            <RadioGroupItem value={String(i)} id={`${question._key}-opt-${i}`} />
-            <Label htmlFor={`${question._key}-opt-${i}`} className="sr-only">
-              Đáp án {opt.id.toUpperCase()}
-            </Label>
+            <input
+              type="radio"
+              name={`correct-${question._key}`}
+              value={String(i)}
+              checked={question.correct_index === i}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setField("correct_index", parseInt(e.target.value, 10))
+              }
+              className="shrink-0 accent-primary"
+              id={`${question._key}-opt-${i}`}
+              aria-label={`Đáp án ${opt.id.toUpperCase()} là đúng`}
+            />
             <span className="shrink-0 w-5 text-xs font-medium text-foreground-muted uppercase">
               {opt.id}
             </span>
@@ -115,7 +115,7 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
             />
           </div>
         ))}
-      </RadioGroup>
+      </div>
 
       <div>
         <button
@@ -131,12 +131,12 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
           Giải thích đáp án
         </button>
         {showExplanation && (
-          <Textarea
+          <textarea
             placeholder="Giải thích vì sao đáp án đúng (tuỳ chọn)..."
             value={question.explanation ?? ""}
-            onChange={(e) => setField("explanation", e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setField("explanation", e.target.value)}
             rows={2}
-            className="mt-2 resize-none text-sm"
+            className="mt-2 w-full resize-none rounded border border-border bg-surface-base px-3 py-2 text-sm leading-5 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
           />
         )}
       </div>
@@ -273,9 +273,9 @@ export function QuestionGeneratorDialog({
           {/* Left panel: controls + sources */}
           <div className="w-64 shrink-0 border-r border-border-subtle overflow-y-auto p-4 space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-foreground-muted uppercase tracking-wide">
+              <p className="text-xs font-medium text-foreground-muted uppercase tracking-wide">
                 Số câu hỏi
-              </Label>
+              </p>
               <div className="flex gap-1 flex-wrap">
                 {COUNT_OPTIONS.map((n) => (
                   <button

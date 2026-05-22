@@ -39,6 +39,33 @@ export type RecommendedEntity = {
   badge?: string | null;
 };
 
+export type SourceRef = {
+  topic: string;
+  subtopic: string | null;
+  category: string;
+  track: string | null;
+  sourceTable: string | null;
+  sourceId: string | null;
+  locale: "vi" | "en" | null;
+  label: string | null;
+  href: string | null;
+};
+
+export type KnowledgeChunkRow = {
+  topic: string;
+  subtopic: string | null;
+  content: string;
+  content_category: string;
+  track: string | null;
+  source_table: string;
+  source_id: string;
+  locale: "vi" | "en";
+  title: string;
+  chunk_kind: string;
+  metadata: Record<string, unknown> | null;
+  similarity?: number;
+};
+
 export type LessonContextData = {
   courseId?: string;
   courseSlug?: string | null;

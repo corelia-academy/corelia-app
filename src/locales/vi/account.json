@@ -377,8 +377,12 @@
       "daysLeft_one": "Còn {{count}} ngày",
       "daysLeft_other": "Còn {{count}} ngày",
       "questionsAnswered": "Cora đã trả lời {{count}} câu hỏi cho bạn tháng này",
+      "tokensUsed": "Cora đã dùng {{count}} tokens tháng này",
       "nearingQuota": "🔥 Bạn đang học rất chăm tháng này!",
       "nearingQuotaSub": "Còn khoảng {{remaining}} câu hỏi · Reset {{date}}",
+      "nearingTokenQuota": "🔥 Bạn đang dùng nhiều tokens tháng này!",
+      "nearingTokenQuotaSub": "Còn {{remaining}} tokens · Reset {{date}}",
+      "tokenExplainer": "Token là gì? 1 từ tiếng Việt ≈ 1.5 token. 1 câu ngắn ≈ 20 token.",
       "upgradeNudge": "Nâng lên {{tier}}",
       "quotaExceededMsg": "🎓 Tháng này bạn đã học rất hiệu quả!",
       "quotaResetDate": "Quota mới vào ngày {{date}}"
@@ -416,8 +420,8 @@
         "title": "Student",
         "description": "Cho học viên cần trợ lý học tập thường xuyên trong các khóa đang học.",
         "features": [
-          "700 câu hỏi mỗi tháng (~23 câu/ngày)",
-          "Hỏi Cora về tiến độ học và bài học hiện tại",
+          "Cora đồng hành trong tất cả các khóa học đang học",
+          "Hỏi về tiến độ học và bài học hiện tại",
           "Nhận gợi ý khóa học tiếp theo phù hợp hơn"
         ]
       },
@@ -425,7 +429,7 @@
         "title": "Pro",
         "description": "Cho người học muốn dùng AI mạnh hơn để học nhanh và định hướng nghề nghiệp rõ hơn.",
         "features": [
-          "1.000 câu hỏi mỗi tháng (~33 câu/ngày)",
+          "Cora có mặt ở mọi nơi trên nền tảng, bất kỳ lúc nào",
           "Tư vấn career path, profile review và project direction",
           "Phản hồi chi tiết hơn với model AI mạnh hơn"
         ]
@@ -438,7 +442,7 @@
           "Tối ưu cho goal setting, milestone check-in và execution support",
           "Phù hợp với cohort, bootcamp hoặc giai đoạn chuyển nghề"
         ],
-        "fairUseNote": "* Sử dụng không giới hạn theo chính sách hợp lý (~2.000 câu/tháng)"
+        "fairUseNote": "* Không giới hạn theo chính sách sử dụng hợp lý"
       }
     },
     "history": {

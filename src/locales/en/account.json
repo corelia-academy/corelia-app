@@ -377,8 +377,12 @@
       "daysLeft_one": "{{count}} day left",
       "daysLeft_other": "{{count}} days left",
       "questionsAnswered": "Cora answered {{count}} questions for you this month",
+      "tokensUsed": "Cora used {{count}} tokens this month",
       "nearingQuota": "🔥 You're on a learning streak this month!",
       "nearingQuotaSub": "About {{remaining}} questions left · Resets {{date}}",
+      "nearingTokenQuota": "🔥 You're using a lot of tokens this month!",
+      "nearingTokenQuotaSub": "{{remaining}} tokens left · Resets {{date}}",
+      "tokenExplainer": "What's a token? 1 English word ≈ 1 token. A short sentence ≈ 20 tokens.",
       "upgradeNudge": "Upgrade to {{tier}}",
       "quotaExceededMsg": "🎓 Great learning month!",
       "quotaResetDate": "New quota on {{date}}"
@@ -416,16 +420,16 @@
         "title": "Student",
         "description": "For learners who want a steady AI study companion during active courses.",
         "features": [
-          "700 questions per month (~23/day)",
-          "Ask Cora about your learning progress and current lessons",
-          "Get stronger next-course recommendations"
+          "Cora available across all your active courses",
+          "Ask about your learning progress and current lessons",
+          "Get personalized next-course recommendations"
         ]
       },
       "pro": {
         "title": "Pro",
         "description": "For learners who want stronger AI support for faster learning and clearer career direction.",
         "features": [
-          "1,000 questions per month (~33/day)",
+          "Cora available everywhere on the platform, all day",
           "Career path, profile review, and project direction support",
           "Richer answers powered by a stronger AI model"
         ]
@@ -438,7 +442,7 @@
           "Optimized for goal setting, milestone check-ins, and execution support",
           "Best for cohorts, bootcamps, or career transition phases"
         ],
-        "fairUseNote": "* Unlimited under fair use policy (~2,000 questions/month)"
+        "fairUseNote": "* Unlimited under fair use policy"
       }
     },
     "history": {

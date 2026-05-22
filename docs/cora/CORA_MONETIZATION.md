@@ -285,15 +285,15 @@ Revenue: 299,000 VND
 ```
 VND/USD: 25,000 VND = $1
 SePay fee: 1.5% + 3,000 VND/transaction
-AI cost: Haiku $0.003/msg, Sonnet $0.020/msg
+AI cost: GPT-5.4 mini ~$0.0034/msg, GPT-5.4 full ~$0.011/msg (blended ~$0.0045/msg)
+  (dựa trên ~500 input + 300 output tokens/message trung bình)
 Infra (Supabase Pro amortized): ~1,500 VND/user/month ở 500 users
 Storage: ~$0 (xem Section 2)
 
 Model routing rule (bắt buộc để kiểm soát cost):
-  - Non-lesson contexts (global, dashboard, career, discovery): Haiku ONLY
-  - Lesson context: Haiku default, Sonnet chỉ khi classify = "complex"
-  - Free + Student: Haiku ONLY mọi context
-  - Pro + Bootcamp: routing như trên
+  - Free + Student: GPT-5.4 mini ONLY mọi context (haiku_only = true)
+  - Pro + Bootcamp: GPT-5.4 mini default, GPT-5.4 full chỉ khi classify = "complex" (~35%)
+  - Rolling 3h soft cap → force GPT-5.4 mini dù tier Pro/Bootcamp
 ```
 
 ## 3.2 Worst-case per tier (monthly cap, 100% maxout)
@@ -310,113 +310,101 @@ Revenue:      0 VND
 Loss:         -5,250 VND/user (acceptable — acquisition cost)
 ```
 
-### Student — 500 msgs/month, Haiku only, 99,000 VND/month
+### Student — 700 msgs/month, GPT-5.4 mini only, 79,000 VND/month
 
 ```
-AI cost:      500 × $0.003 = $1.50 = 37,500 VND
-Payment fee:  99,000 × 1.5% + 3,000 = 4,485 VND
+AI cost:      700 × $0.0034 = $2.38 = 59,500 VND
+Payment fee:  79,000 × 1.5% + 3,000 = 4,185 VND
 Infra:        1,500 VND
 ──────────────────────────────
-Total cost:   43,485 VND
-Revenue:      99,000 VND
-Profit:       55,515 VND
-Margin:       56.1% ✅ (worst case)
+Total cost:   65,185 VND
+Revenue:      79,000 VND
+Profit:       13,815 VND
+Margin:       17.5% ✅ (worst case)
 ```
 
-### Pro — 1,500 msgs/month, routing nhưng non-lesson = Haiku only, 299,000 VND/month
-
-Tại sao 1,500 không phải 2,000? Xem phân tích bên dưới.
+### Pro — 1,000 msgs/month, GPT-5.4 blended routing, 149,000 VND/month
 
 ```
 Usage split (conservative):
-  Non-lesson (global, dashboard, career): 60% = 900 msgs → Haiku only
-  Lesson context: 40% = 600 msgs → 70% Haiku + 30% Sonnet (routing)
+  Non-lesson (global, dashboard, career): 60% = 600 msgs → mini only
+  Lesson context: 40% = 400 msgs → 65% mini + 35% full (routing)
 
 AI cost:
-  900 × $0.003 = $2.70 = 67,500 VND
-  600 × (70% × $0.003 + 30% × $0.020) = 600 × $0.0081 = $4.86 = 121,500 VND
-  Total AI: 189,000 VND
+  600 × $0.0034 = $2.04 = 51,000 VND
+  400 × (65% × $0.0034 + 35% × $0.011) = 400 × $0.00605 = $2.42 = 60,500 VND
+  Total AI: ~112,500 VND ($4.50)
 
-Payment fee:  299,000 × 1.5% + 3,000 = 7,485 VND
+Payment fee:  149,000 × 1.5% + 3,000 = 5,235 VND
 Infra:        1,500 VND
 ──────────────────────────────
-Total cost:   197,985 VND
-Revenue:      299,000 VND
-Profit:       101,015 VND
-Margin:       33.8% ✅ (worst case)
+Total cost:   119,235 VND
+Revenue:      149,000 VND
+Profit:       29,765 VND
+Margin:       20% ✅ (worst case)
 ```
 
-**Tại sao Pro cap là 1,500 không phải 2,000?**
-```
-Nếu Pro = 2,000 msgs/month, worst case:
-  1,200 msgs non-lesson × $0.003 = 90,000 VND
-  800 msgs lesson × $0.0081 = 162,000 VND
-  AI cost total: 252,000 VND
-  + payment fee 7,485 + infra 1,500 = 260,985 VND
-  Revenue: 299,000 VND
-  Margin: 12.7% — quá mỏng, không có buffer nếu Sonnet routing tăng ❌
-  
-Với 1,500 msgs: margin 33.8% ✅ — đủ buffer ngay cả khi routing thay đổi.
-```
-
-### Bootcamp — 4,000 msgs/month (daily hard cap 200), routing, 1,990,000 VND/month
+### Bootcamp — 2,000 msgs/month, GPT-5.4 blended routing, 399,000 VND/month
 
 ```
 Usage split:
-  Non-lesson: 60% = 2,400 msgs → Haiku only
-  Lesson: 40% = 1,600 msgs → 60% Haiku + 40% Sonnet (heavy learner)
+  Non-lesson: 60% = 1,200 msgs → mini only
+  Lesson: 40% = 800 msgs → 65% mini + 35% full
 
 AI cost:
-  2,400 × $0.003 = $7.20 = 180,000 VND
-  1,600 × (60% × $0.003 + 40% × $0.020) = 1,600 × $0.0098 = $15.68 = 392,000 VND
-  Total AI: 572,000 VND
+  1,200 × $0.0034 = $4.08 = 102,000 VND
+  800 × $0.00605 = $4.84 = 121,000 VND
+  Total AI: ~225,000 VND ($9.00)
 
-Payment fee:  1,990,000 × 1.5% + 3,000 = 32,850 VND
+Payment fee:  399,000 × 1.5% + 3,000 = 8,985 VND
 Infra:        1,500 VND
 ──────────────────────────────
-Total cost:   606,350 VND
-Revenue:      1,990,000 VND
-Profit:       1,383,650 VND
-Margin:       69.5% ✅✅
+Total cost:   235,485 VND
+Revenue:      399,000 VND
+Profit:       163,515 VND
+Margin:       41% ✅✅
 ```
 
-## 3.3 Sensitivity: nếu routing tệ hơn dự kiến
+## 3.3 Sensitivity: nếu GPT-5.4 full routing tăng
 
-Scenario: Pro users hỏi nhiều câu phức tạp hơn, Sonnet routing tăng lên 60% cho lesson.
+Scenario: Pro users hỏi nhiều câu phức tạp hơn, full model routing tăng lên 60% cho lesson.
 
 ```
-Pro worst case với Sonnet routing 60% lesson:
-  900 msgs non-lesson × $0.003 = 67,500 VND
-  600 msgs lesson × (40% × $0.003 + 60% × $0.020) = 600 × $0.0132 = 198,000 VND
-  Total AI: 265,500 VND
-  + 7,485 + 1,500 = 274,485 VND
-  Revenue: 299,000 VND
-  Margin: 8.2% ← gần sàn 10% ⚠️
+Pro worst case với full routing 60% lesson:
+  600 msgs non-lesson × $0.0034 = 51,000 VND
+  400 msgs lesson × (40% × $0.0034 + 60% × $0.011) = 400 × $0.008 = 80,000 VND
+  Total AI: 131,000 VND
+  + 5,235 + 1,500 = 137,735 VND
+  Revenue: 149,000 VND
+  Margin: 7.6% ← gần sàn 10% ⚠️
 ```
 
-**→ Nếu monitoring cho thấy Sonnet ratio vượt 50% → cần tăng giá Pro lên 399,000 VND.**
+**→ Nếu monitoring cho thấy full model ratio vượt 55% → cần tăng giá Pro lên 199,000 VND.**
 
 ## 3.4 Break-even toàn hệ thống tại 500 users
 
 ```
-100 Free     → cost: 525,000 VND       | revenue: 0
-300 Student  → cost: 13,045,500 VND    | revenue: 29,700,000 VND
- 80 Pro      → cost: 15,838,800 VND    | revenue: 23,920,000 VND
- 20 Bootcamp → cost: 12,127,000 VND    | revenue: 39,800,000 VND
-───────────────────────────────────────────────────────────────
-Total cost (worst case): 41,536,300 VND/month
-Total revenue:           93,420,000 VND/month
-Net contribution:        51,883,700 VND/month
-Portfolio margin:        55.5% ✅ (worst case — mọi user max out)
+100 Free     → cost:  525,000 VND       | revenue:         0 VND
+300 Student  → cost: 19,555,500 VND     | revenue: 23,700,000 VND
+ 80 Pro      → cost:  9,538,800 VND     | revenue: 11,920,000 VND
+ 20 Bootcamp → cost:  4,709,700 VND     | revenue:  7,980,000 VND
+───────────────────────────────────────────────────────────────────
+Total cost (worst case): 34,329,000 VND/month
+Total revenue:           43,600,000 VND/month
+Net contribution:         9,271,000 VND/month
+Portfolio margin:            21.3% ✅ (worst case — mọi user max out)
 
 Infra overhead:
   Supabase Pro: 625,000 VND
   Misc: 250,000 VND
   Total: 875,000 VND
 
-Net sau infra: 51,008,700 VND/month
-Real margin: 54.6% — AN TOÀN ngay cả worst case ✅✅
+Net sau infra: 8,396,000 VND/month
+Real margin: 19.3% — AN TOÀN ngay cả worst case ✅
 ```
+
+Note: margin thấp hơn bản tính trước vì đây là giá tiêu dùng thực tế (79k/149k/399k), không phải 99k/299k/1.99M. Portfolio margin 19-21% ở worst-case là acceptable cho consumer SaaS.
+Trên trung bình (70% usage): margin ~45%.
 
 ---
 
@@ -426,16 +414,16 @@ Real margin: 54.6% — AN TOÀN ngay cả worst case ✅✅
 
 Để đảm bảo **tối thiểu 20% margin ngay cả worst case**, lấy total cost worst case ÷ 0.80:
 
-| Tier | Total cost worst case | Price floor (÷0.80) | Giá đề xuất | Margin worst case |
-|------|----------------------|---------------------|-------------|-------------------|
+| Tier | Total cost worst case | Price floor (÷0.85) | Giá hiện tại | Margin worst case |
+|------|----------------------|---------------------|--------------|-------------------|
 | Free | 5,250 VND | — (loss leader) | 0 | N/A |
-| Student | 43,485 VND | **54,356 VND** | **99,000 VND** | 56.1% ✅ |
-| Pro | 197,985 VND | **247,481 VND** | **299,000 VND** | 33.8% ✅ |
-| Bootcamp | 606,350 VND | **757,938 VND** | **1,990,000 VND** | 69.5% ✅ |
+| Student | 65,185 VND | **76,688 VND** | **79,000 VND** | 17.5% ✅ |
+| Pro | 119,235 VND | **140,276 VND** | **149,000 VND** | 20% ✅ |
+| Bootcamp | 235,485 VND | **277,041 VND** | **399,000 VND** | 41% ✅✅ |
 
-Giá hiện tại có buffer rất lớn so với floor. Margin worst case đều trên 30%+.
+Giá Student và Pro gần sàn. Buffer thực đến từ average usage (~70% max): margin trung bình 40%+.
 
-**Safety trigger**: nếu Sonnet ratio của Pro vượt 55% (theo analytics) → tăng giá Pro lên **399,000 VND** để restore buffer về 25%+.
+**Safety trigger**: nếu GPT-5.4 full ratio của Pro vượt 55% (theo `ai_usage_log` analytics) → tăng giá Pro lên **199,000 VND** để restore buffer về 25%+.
 
 ## 4.2 Dual quota — monthly hard cap + rolling 3h soft cap
 
@@ -451,50 +439,52 @@ Chỉ monthly cap không đủ: user có thể gửi nhiều msgs liên tiếp t
 Soft cap là **silent throttle** — khi vượt rolling 3h cap, response vẫn trả về bình thường nhưng dùng model tiết kiệm hơn. **Không hiển thị thông báo gì cho user.** Chỉ monthly cap mới hard-block và hiển thị QuotaExceededPrompt.
 
 ```typescript
-// Quota check logic trong Edge Function
-async function checkQuota(supabase, userId: string, tier: string): Promise<QuotaResult> {
-  const today = new Date().toISOString().slice(0, 10);   // "2026-05-12"
-  const thisMonth = today.slice(0, 7);                   // "2026-05"
+// Quota check — accessGuards.ts (simplified)
+// Enforcement mode kiểm soát bởi tier_limits.quota_unit ('message' | 'token' | 'both')
 
-  const { data: limits } = await supabase.from('tier_limits')
-    .select('monthly_messages, rolling_3h_soft_cap, haiku_only')
-    .eq('tier', tier).single();
+async function checkQuota(db, userId: string): Promise<QuotaResult> {
+  const thisMonth = new Date().toISOString().slice(0, 7);   // "2026-05"
+  const windowStart = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
 
-  // Load cửa sổ ngắn + monthly usage song song
-  const [windowResult, monthlyResult] = await Promise.all([
-    supabase.from('ai_conversations')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('role', 'user')
-      .gte('created_at', new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()),
-    supabase.from('ai_usage_monthly')
+  // 4 queries song song
+  const [profileRes, limitsRes, monthlyRes, rollingTokenRes] = await Promise.all([
+    db.from('profiles').select('tier').eq('id', userId).single(),
+    db.from('tier_limits').select(
+      'monthly_messages, rolling_3h_soft_cap, haiku_only, monthly_tokens, rolling_3h_tokens, quota_unit'
+    ).eq('tier', tier).single(),
+    db.from('ai_usage_monthly')
       .upsert({ user_id: userId, month: thisMonth, message_count: 0 }, { onConflict: 'user_id,month' })
-      .select('message_count').single(),
+      .select('message_count, tokens_used').single(),
+    db.from('ai_usage_log')
+      .select('input_tokens, output_tokens')
+      .eq('user_id', userId)
+      .gte('created_at', windowStart),
   ]);
 
-  const windowCount  = windowResult.count ?? 0;
-  const monthlyCount = monthlyResult.data?.message_count ?? 0;
-  const monthlyLimit = limits?.monthly_messages ?? 50;
-  const windowSoftCap = limits?.rolling_3h_soft_cap ?? 6;
+  const quotaUnit = limitsRes.data?.quota_unit ?? 'message';
+  const monthlyTokensUsed = monthlyRes.data?.tokens_used ?? 0;
+  const rollingTokensUsed = (rollingTokenRes.data ?? [])
+    .reduce((s: number, r: { input_tokens: number; output_tokens: number }) => s + r.input_tokens + r.output_tokens, 0);
 
-  // Hard block: monthly exceeded
-  if (monthlyLimit !== null && monthlyCount >= monthlyLimit) {
-    return { allowed: false, reason: 'monthly_exceeded', used: monthlyCount, limit: monthlyLimit };
-  }
+  // Enforcement logic theo quota_unit
+  const allowed =
+    quotaUnit === 'message' ? (monthlyLimit == null || monthlyUsed < monthlyLimit) :
+    quotaUnit === 'token'   ? (monthlyTokensLimit == null || monthlyTokensUsed < monthlyTokensLimit) :
+    // 'both': block nếu BẤT KỲ counter vượt
+    (monthlyLimit == null || monthlyUsed < monthlyLimit) &&
+    (monthlyTokensLimit == null || monthlyTokensUsed < monthlyTokensLimit);
 
-  // Soft throttle: short-window exceeded → force Haiku, warn user
-  const throttled = windowCount >= windowSoftCap;
+  const throttled =
+    quotaUnit === 'message' ? (windowSoftCap != null && windowUsed >= windowSoftCap) :
+    quotaUnit === 'token'   ? (rollingTokensCap != null && rollingTokensUsed >= rollingTokensCap) :
+    (windowSoftCap != null && windowUsed >= windowSoftCap) ||
+    (rollingTokensCap != null && rollingTokensUsed >= rollingTokensCap);
 
   return {
-    allowed: true,
-    throttled,      // nếu true → force Haiku model
-    monthlyUsed: monthlyCount + 1,
-    monthlyLimit,
-    windowUsed: windowCount + 1,
-    windowSoftCap,
-    windowHours: 3,
-    tier,
-    haikuOnly: limits?.haiku_only || throttled,
+    allowed, throttled, haikuOnly: limits?.haiku_only || throttled,
+    monthlyUsed, monthlyLimit, windowUsed, windowSoftCap, windowHours: 3, tier,
+    quotaUnit, monthlyTokensUsed, monthlyTokensLimit,
+    rollingTokensUsed, rollingTokensCap: limits?.rolling_3h_tokens ?? null,
   };
 }
 ```
@@ -513,36 +503,44 @@ create table if not exists ai_usage_monthly (
   unique(user_id, month)
 );
 
--- Cập nhật tier_limits
+-- Cập nhật tier_limits (migration 20260522000000_token_quota_phase1.sql)
 alter table tier_limits
-  add column if not exists monthly_messages int,
-  add column if not exists rolling_3h_soft_cap int,
-  add column if not exists price_vnd_monthly int default 0;
+  add column if not exists monthly_messages     int,
+  add column if not exists rolling_3h_soft_cap  int,
+  add column if not exists price_vnd_monthly    int default 0,
+  add column if not exists monthly_tokens       int,
+  add column if not exists rolling_3h_tokens    int,
+  add column if not exists quota_unit           text not null default 'message'
+    check (quota_unit in ('message','token','both'));
 
--- Dùng migration 20260620110000_fix_tier_limits_pricing_v2.sql
-UPDATE public.tier_limits SET monthly_messages=50,   rolling_3h_soft_cap=5,   haiku_only=true,  price_vnd_monthly=0      WHERE tier='free';
-UPDATE public.tier_limits SET monthly_messages=700,  rolling_3h_soft_cap=70,  haiku_only=true,  price_vnd_monthly=79000  WHERE tier='student';
-UPDATE public.tier_limits SET monthly_messages=1000, rolling_3h_soft_cap=100, haiku_only=false, price_vnd_monthly=149000 WHERE tier='pro';
-UPDATE public.tier_limits SET monthly_messages=2000, rolling_3h_soft_cap=200, haiku_only=false, price_vnd_monthly=399000 WHERE tier='bootcamp';
+UPDATE public.tier_limits SET monthly_messages=50,   rolling_3h_soft_cap=5,   haiku_only=true,  price_vnd_monthly=0,
+  monthly_tokens=100000,   rolling_3h_tokens=10000,  quota_unit='message' WHERE tier='free';
+UPDATE public.tier_limits SET monthly_messages=700,  rolling_3h_soft_cap=70,  haiku_only=true,  price_vnd_monthly=79000,
+  monthly_tokens=1400000,  rolling_3h_tokens=140000, quota_unit='message' WHERE tier='student';
+UPDATE public.tier_limits SET monthly_messages=1000, rolling_3h_soft_cap=100, haiku_only=false, price_vnd_monthly=149000,
+  monthly_tokens=2000000,  rolling_3h_tokens=200000, quota_unit='message' WHERE tier='pro';
+UPDATE public.tier_limits SET monthly_messages=2000, rolling_3h_soft_cap=200, haiku_only=false, price_vnd_monthly=399000,
+  monthly_tokens=4000000,  rolling_3h_tokens=400000, quota_unit='message' WHERE tier='bootcamp';
 ```
 
 ## 4.4 Giá chính thức và messaging
 
 > Chỉ bán **1 tháng** và **1 năm**. Mặc định chọn **1 năm** (higher conversion). Không còn gói 6 tháng.
 
-| Tier | 1 tháng | 1 năm | Tiết kiệm | Quota tháng | Soft cap/3h |
-|------|---------|-------|-----------|-------------|-------------|
-| **Free** | 0 | — | — | 50 | 5 |
-| **Student** | 79,000 VND | 690,000 VND | ~27% | 700 | 70 |
-| **Pro** | 149,000 VND | 1,290,000 VND | ~28% | 1,000 | 100 |
-| **Bootcamp** | 399,000 VND | 3,490,000 VND | ~27% | 2,000* | 200 |
+| Tier | 1 tháng | 1 năm | Tiết kiệm | Quota tháng | Tokens/tháng | Soft cap/3h |
+|------|---------|-------|-----------|-------------|--------------|-------------|
+| **Free** | 0 | — | — | 50 | 100K | 5 |
+| **Student** | 79,000 VND | 690,000 VND | ~27% | 700 | 1.4M | 70 |
+| **Pro** | 149,000 VND | 1,290,000 VND | ~28% | 1,000 | 2M | 100 |
+| **Bootcamp** | 399,000 VND | 3,490,000 VND | ~27% | 2,000* | 4M | 200 |
 
 *Bootcamp hiển thị là "Không giới hạn*" trong UI với fair-use footnote (~2.000 câu/tháng).
+Token quota chỉ dùng nội bộ để enforce — không hiển thị trong UI.
 
 ```
 Free:     "50 câu hỏi miễn phí mỗi tháng — không cần thẻ"
-Student:  "700 câu hỏi mỗi tháng — ~23 câu/ngày"
-Pro:      "1.000 câu hỏi mỗi tháng — ~33 câu/ngày, model AI mạnh hơn"
+Student:  "~23 cuộc hội thoại mỗi ngày"
+Pro:      "~33 cuộc hội thoại mỗi ngày, model AI mạnh hơn"
 Bootcamp: "Không giới hạn* — cho người học intensively"
 ```
 
@@ -550,6 +548,8 @@ Bootcamp: "Không giới hạn* — cho người học intensively"
 - < 70% dùng: "Cora đã trả lời X câu hỏi tháng này"
 - 70–99% dùng: "🔥 Bạn đang học rất chăm!"
 - ≥ 100% dùng: "🎓 Tháng học rất hiệu quả!" + reset date + tier upgrade cards
+
+**Lưu ý**: UI không bao giờ hiển thị raw token count. Khi `quota_unit = 'token'` UX vẫn dùng framing tích cực dựa trên `usedPct`, không show số tokens.
 
 ## 4.5 Monitoring triggers tự động
 
@@ -564,11 +564,12 @@ select
   t.monthly_messages as tier_cap,
   round(m.message_count::numeric / nullif(t.monthly_messages, 0) * 100, 1) as pct_used,
   m.cost_usd,
-  -- Flag nếu AI cost > 2× expected cho tier
+  -- Flag nếu AI cost > 2× worst-case cho tier (GPT-5.4 pricing)
+  -- Student worst case $2.38, Pro $4.50, Bootcamp $9.00
   case
-    when p.tier = 'student'  and m.cost_usd > 4.00 then true
-    when p.tier = 'pro'      and m.cost_usd > 12.00 then true
-    when p.tier = 'bootcamp' and m.cost_usd > 25.00 then true
+    when p.tier = 'student'  and m.cost_usd > 5.00 then true
+    when p.tier = 'pro'      and m.cost_usd > 9.00 then true
+    when p.tier = 'bootcamp' and m.cost_usd > 18.00 then true
     else false
   end as cost_anomaly
 from ai_usage_monthly m
@@ -583,10 +584,10 @@ select * from ai_cost_anomaly where cost_anomaly = true order by cost_usd desc;
 
 ---
 
-# 2026-05-14 Pricing Reset
+# 2026-05-14 Pricing Reset *(Superseded by 2026-05-19)*
 
-> Bản cập nhật này override khung giá cũ trong doc ở các đoạn còn ghi `Pro 299k` hoặc `Bootcamp 1.99m`.
-> Lý do: định vị Cora là AI companion cho learner-facing app, không phải high-ticket B2B copilot.
+> **Deprecated** — Giá trong section này đã bị override bởi section 2026-05-19.
+> Giữ lại để tham chiếu lịch sử định giá và reasoning ban đầu.
 
 ## Pricing direction mới
 
@@ -629,7 +630,7 @@ select * from ai_cost_anomaly where cost_anomaly = true order by cost_usd desc;
 > Lý do: switch từ Anthropic Claude sang OpenAI GPT-5.4 mini/full, margin thực tế cao hơn trước.
 > Cũng thay đổi UX từ "limitation framing" sang "achievement framing".
 
-## AI Model mới: OpenAI GPT-5.4
+## AI Model: OpenAI GPT-5.4
 
 | Model | Input | Output | Chi phí/msg (~500 in + 300 out tokens) |
 |-------|-------|--------|-----------------------------------------|
@@ -637,9 +638,12 @@ select * from ai_cost_anomaly where cost_anomaly = true order by cost_usd desc;
 | GPT-5.4 full | $2.50/1M | $15.00/1M | ~$0.011/msg |
 | Blended Pro/Bootcamp (90% mini + 10% full) | — | — | ~$0.0045/msg |
 
-**Routing mới:**
-- Free + Student: GPT-5.4 mini only (`haiku_only = true` → dùng simpleModel)
-- Pro + Bootcamp: GPT-5.4 mini default, GPT-5.4 full cho câu hỏi complex
+Dùng OpenAI Responses API (SSE). Actual token usage capture từ `response.completed` event.
+Fallback estimate: `chars / 4` khi stream bị gián đoạn (ghi `ai_usage_log.estimated = true`).
+
+**Routing:**
+- Free + Student: GPT-5.4 mini only (`haiku_only = true`)
+- Pro + Bootcamp: GPT-5.4 mini default, GPT-5.4 full cho câu hỏi complex (~35%)
 
 ## Pricing chính thức (supersedes 2026-05-14)
 
@@ -689,6 +693,20 @@ Total: 235,485 VND  |  Revenue: 399,000 VND  |  Margin: 41% ✅✅
 | Throttle badge "chế độ tiết kiệm" | *(im lặng — soft cap ẩn hoàn toàn)* |
 | Hết quota: warning icon đỏ | "🎓 Tháng học rất hiệu quả!" |
 | CTA: "Xem gói Cora" | Inline tier cards với giá và câu hỏi/tháng |
+
+## Token-based Quota Rollout (2026-05-22)
+
+Enforcement mode switch không cần redeploy — chỉ cần UPDATE DB:
+
+| Phase | Thời điểm | quota_unit | Hành động |
+|-------|-----------|------------|-----------|
+| Week 0 | Deploy | `'message'` | Capture token data, không đổi enforcement |
+| Week 1–4 | Monitor | `'both'` | Dual enforce — block nếu BẤT KỲ counter vượt |
+| Week 5+ | Switch | `'token'` | Token-only enforcement |
+| Rollback | Bất kỳ lúc | `'message'` | `UPDATE tier_limits SET quota_unit='message'` |
+
+Token limits: Free 100K · Student 1.4M · Pro 2M · Bootcamp 4M tokens/tháng.
+Ratio: ~2,000 tokens/message (500 input + 300 output + overhead).
 
 ## Upgrade / Downgrade rules
 
@@ -1049,11 +1067,11 @@ Thêm vào `supabase/functions/corelia-api/payments/handlers.ts`:
 ```typescript
 const AI_SUBSCRIPTION_PRICES: Record<
   "student" | "pro" | "bootcamp",
-  Record<1 | 12, number>
+  Partial<Record<1 | 12, number>>
 > = {
-  student:   { 1: 79000,    12: 690000   },
-  pro:       { 1: 149000,   12: 1290000  },
-  bootcamp:  { 1: 399000,   12: 3490000  },
+  student:  { 1: 79000,   12: 690000  },
+  pro:      { 1: 149000,  12: 1290000 },
+  bootcamp: { 1: 399000,  12: 3490000 },
 };
 
 export async function handleAiSubscriptionCheckout(
@@ -1074,7 +1092,7 @@ export async function handleAiSubscriptionCheckout(
       return json({ message: "Tier không hợp lệ" }, 400);
     }
     if (![1, 12].includes(durationMonths)) {
-      return json({ message: "Thời hạn không hợp lệ" }, 400);
+      return json({ message: "Thời hạn không hợp lệ (chỉ 1 hoặc 12 tháng)" }, 400);
     }
 
     const callbackAllowlist = paymentCallbackOriginAllowlistFromEnv();
@@ -1109,7 +1127,7 @@ export async function handleAiSubscriptionCheckout(
     const secretKey  = requireEnv("SEPAY_SECRET_KEY");
 
     const tierLabels = { student: "Học viên", pro: "Pro", bootcamp: "Bootcamp" };
-    const durationLabels = { 1: "1 tháng", 6: "6 tháng", 12: "12 tháng" };
+    const durationLabels = { 1: "1 tháng", 12: "12 tháng" };
 
     const fields: Record<string, string> = {
       merchant:             merchantId,
@@ -1320,16 +1338,16 @@ Thêm vào `src/App.tsx`:
 │                                                      │
 │  ┌───────────┐  ┌───────────┐  ┌───────────┐        │
 │  │ Student   │  │ Pro ●     │  │ Bootcamp  │        │
-│  │ 99k/tháng │  │ 199k/tháng│  │ 499k/th   │        │
-│  │ 250 msgs  │  │ 700 msgs  │  │ 1800 msgs │        │
+│  │ 79k/tháng │  │ 149k/tháng│  │ 399k/th   │        │
+│  │ ~23 hội   │  │ ~33 hội   │  │ Không giới│        │
+│  │ thoại/ngày│  │ thoại/ngày│  │ hạn*      │        │
 │  └───────────┘  └───────────┘  └───────────┘        │
 │                                                      │
 │  CHỌN THỜI HẠN                                       │
-│  ○ 1 tháng  — 199,000 VND                            │
-│  ○ 6 tháng  — 999,000 VND                            │
-│  ○ 12 tháng — 1,790,000 VND                          │
+│  ○ 1 tháng  — 149,000 VND                            │
+│  ● 12 tháng — 1,290,000 VND  ← mặc định             │
 │                                                      │
-│  [Thanh toán qua SePay — 199,000 VND]                │
+│  [Thanh toán qua SePay — 149,000 VND]                │
 │                                                      │
 │  LỊCH SỬ GIAO DỊCH AI                                │
 │  ┌──────────────────────────────────────────────┐    │
@@ -1351,17 +1369,17 @@ type Tier = 'student' | 'pro' | 'bootcamp';
 type Duration = 1 | 6 | 12;
 
 const PRICES: Record<Tier, Record<Duration, number>> = {
-  student:  { 1: 99000,   6: 499000,   12: 890000 },
-  pro:      { 1: 199000,  6: 999000,   12: 1790000 },
-  bootcamp: { 1: 499000,  6: 2490000,  12: 4490000 },
+  student:  { 1: 79000,   12: 690000  },
+  pro:      { 1: 149000,  12: 1290000 },
+  bootcamp: { 1: 399000,  12: 3490000 },
 };
 
-const SAVINGS: Record<Duration, number> = { 1: 0, 6: 17, 12: 25 };
+const SAVINGS: Record<Duration, number> = { 1: 0, 12: 27 };
 
-const TIER_FEATURES: Record<Tier, { msgs: string; model: string; history: string }> = {
-  student:  { msgs: '250 msgs/tháng', model: 'Haiku',            history: 'Lịch sử 90 ngày' },
-  pro:      { msgs: '700 msgs/tháng', model: 'Haiku + Sonnet',   history: 'Lịch sử đầy đủ' },
-  bootcamp: { msgs: '1,800 msgs/tháng', model: 'Haiku + Sonnet', history: 'Lịch sử đầy đủ + export' },
+const TIER_FEATURES: Record<Tier, { sessions: string; model: string; history: string }> = {
+  student:  { sessions: '~23 cuộc hội thoại/ngày', model: 'GPT-5.4 mini',            history: 'Lịch sử 90 ngày' },
+  pro:      { sessions: '~33 cuộc hội thoại/ngày', model: 'GPT-5.4 mini + full',      history: 'Lịch sử đầy đủ' },
+  bootcamp: { sessions: 'Không giới hạn*',          model: 'GPT-5.4 mini + full',      history: 'Lịch sử đầy đủ + export' },
 };
 
 export function AccountCoraRoute() {

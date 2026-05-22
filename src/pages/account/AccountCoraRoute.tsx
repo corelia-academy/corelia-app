@@ -376,14 +376,33 @@ export function AccountCoraRoute() {
               {coraQuotaInfo ? (
                 <div className="mt-4 border-t border-border-subtle pt-4 text-sm">
                   {(() => {
-                    const limit = coraQuotaInfo.monthlyLimit;
-                    const used = coraQuotaInfo.monthlyUsed;
-                    const usedPct = limit ? used / limit : 0;
+                    const quotaUnit = coraQuotaInfo.quotaUnit ?? "message";
+                    const useTokenDisplay = quotaUnit === "token";
+
+                    const limit = useTokenDisplay ? coraQuotaInfo.monthlyTokensLimit : coraQuotaInfo.monthlyLimit;
+                    const used = useTokenDisplay ? coraQuotaInfo.monthlyTokensUsed : coraQuotaInfo.monthlyUsed;
+                    const msgPct = coraQuotaInfo.monthlyLimit ? coraQuotaInfo.monthlyUsed / coraQuotaInfo.monthlyLimit : 0;
+                    const tokenPct = coraQuotaInfo.monthlyTokensLimit ? coraQuotaInfo.monthlyTokensUsed / coraQuotaInfo.monthlyTokensLimit : 0;
+                    const usedPct = useTokenDisplay
+                      ? tokenPct
+                      : quotaUnit === "both"
+                        ? Math.max(msgPct, tokenPct)
+                        : msgPct;
                     const isExceeded = usedPct >= 1;
                     const isNearing = usedPct >= 0.7 && !isExceeded;
                     const resetDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1);
                     const resetStr = resetDate.toLocaleDateString(intlLocale(), { day: "2-digit", month: "2-digit", year: "numeric" });
                     const nextTier = aiSubscription?.tier === "student" ? "pro" : aiSubscription?.tier === "pro" ? "bootcamp" : null;
+
+                    const formatCount = (n: number) => useTokenDisplay
+                      ? n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${Math.round(n / 1_000)}K` : String(n)
+                      : String(n);
+
+                    const tokenExplainer = useTokenDisplay ? (
+                      <p className="mt-1 text-xs text-foreground-muted">
+                        {t("cora.currentPlan.tokenExplainer")}
+                      </p>
+                    ) : null;
 
                     if (isExceeded) {
                       return (
@@ -411,15 +430,23 @@ export function AccountCoraRoute() {
 
                     if (isNearing) {
                       const remaining = limit ? Math.max(limit - used, 0) : null;
+                      const remainingStr = remaining != null ? formatCount(remaining) : null;
                       return (
                         <div className="space-y-2">
-                          <p className="font-medium text-foreground">{t("cora.currentPlan.nearingQuota")}</p>
+                          <p className="font-medium text-foreground">
+                            {useTokenDisplay
+                              ? t("cora.currentPlan.nearingTokenQuota")
+                              : t("cora.currentPlan.nearingQuota")}
+                          </p>
                           <p className="text-foreground-muted">
-                            {t("cora.currentPlan.nearingQuotaSub", { remaining, date: resetStr })}
+                            {useTokenDisplay
+                              ? t("cora.currentPlan.nearingTokenQuotaSub", { remaining: remainingStr, date: resetStr })
+                              : t("cora.currentPlan.nearingQuotaSub", { remaining: remainingStr, date: resetStr })}
                           </p>
                           <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-border-subtle">
                             <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${Math.min(usedPct * 100, 100)}%` }} />
                           </div>
+                          {tokenExplainer}
                           {nextTier ? (
                             <Button render={<NavLink to={`/cora?tier=${nextTier}`} />} nativeButton={false} size="sm" variant="outline" className="mt-1">
                               {t("cora.currentPlan.upgradeNudge", { tier: t(`cora.tiers.${nextTier}.title`) })}
@@ -433,13 +460,16 @@ export function AccountCoraRoute() {
                     return (
                       <div className="space-y-2">
                         <p className="text-foreground-muted">
-                          {t("cora.currentPlan.questionsAnswered", { count: used })}
+                          {useTokenDisplay
+                            ? t("cora.currentPlan.tokensUsed", { count: formatCount(used) })
+                            : t("cora.currentPlan.questionsAnswered", { count: used })}
                         </p>
                         {limit ? (
                           <div className="h-1 w-full overflow-hidden rounded-full bg-border-subtle">
                             <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(usedPct * 100, 100)}%` }} />
                           </div>
                         ) : null}
+                        {tokenExplainer}
                       </div>
                     );
                   })()}
