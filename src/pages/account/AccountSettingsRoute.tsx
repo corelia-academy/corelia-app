@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { LanguageSettingsCard } from "./LanguageSettingsCard";
+import { NotificationPreferencesCard } from "./NotificationPreferencesCard";
 
 function AccountSettingsSection() {
   const { t } = useTranslation("account");
@@ -28,6 +29,7 @@ function AccountSettingsSection() {
   return (
     <div className="space-y-4">
       <LanguageSettingsCard />
+      <NotificationPreferencesCard />
       <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

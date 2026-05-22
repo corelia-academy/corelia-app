@@ -66,6 +66,15 @@
       "signOutTitle": "Đăng xuất",
       "signOutDescription": "Kết thúc phiên hiện tại trên thiết bị này.",
       "signOutButton": "Đăng xuất"
+    },
+    "notifications": {
+      "title": "Tuỳ chọn thông báo",
+      "description": "Chọn loại thông báo bạn muốn nhận qua email và trong ứng dụng.",
+      "emailCourseBlast": "Nhận email thông báo từ khoá học",
+      "emailTrackBlast": "Nhận email thông báo từ lộ trình học",
+      "inAppCourseBlast": "Hiển thị thông báo khoá học trong ứng dụng",
+      "inAppTrackBlast": "Hiển thị thông báo lộ trình trong ứng dụng",
+      "saved": "Đã lưu tuỳ chọn thông báo"
     }
   },
   "common": {

@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Plus,
   List,
+  Mail,
   PlayCircle,
   Users,
   FileText,
@@ -147,6 +148,7 @@ import { DescriptionGeneratorDialog } from "@/pages/instructor-course-edit/compo
 import { CourseOcbCredentialSection } from "@/pages/instructor-course-edit/components/CourseOcbCredentialSection";
 import { QuestionGeneratorDialog } from "@/pages/instructor-course-edit/components/QuestionGeneratorDialog";
 import { CO_INSTRUCTOR_PERMISSION_KEYS, EDIT_SECTION_IDS } from "./constants";
+import { AnnouncementsSection } from "./components/AnnouncementsSection";
 import type { LessonDropPosition, LessonDropTarget } from "./types";
 import { formatVndInput, normalizeVndDigits } from "./utils/currency";
 import { createSponsorId, getNextOrder, isValidHttpUrl } from "./utils/helpers";
@@ -411,6 +413,7 @@ const InstructorCourseEdit = () => {
     | "content"
     | "assignments"
     | "certificate"
+    | "announcements"
     | "students"
     | "danger";
   const sectionIds = EDIT_SECTION_IDS as readonly SectionId[];
@@ -469,6 +472,9 @@ const InstructorCourseEdit = () => {
     canEdit || coInstructorPermsEffective.students,
   );
   const canAccessDanger = Boolean(canEdit);
+  const canAccessAnnouncements = Boolean(
+    canEdit || isCourseCoInstructorWithAnyPermission(course, profile?.id),
+  );
 
   useEffect(() => {
     const allowed: SectionId[] = [];
@@ -477,6 +483,7 @@ const InstructorCourseEdit = () => {
     if (canAccessContent) allowed.push("content");
     if (canAccessAssignments) allowed.push("assignments");
     if (canAccessCertificate) allowed.push("certificate");
+    if (canAccessAnnouncements) allowed.push("announcements");
     if (canAccessStudents) allowed.push("students");
     if (canAccessDanger) allowed.push("danger");
     if (allowed.length === 0) return;
@@ -491,6 +498,7 @@ const InstructorCourseEdit = () => {
     canAccessContent,
     canAccessAssignments,
     canAccessCertificate,
+    canAccessAnnouncements,
     canAccessStudents,
     canAccessDanger,
   ]);
@@ -3446,6 +3454,23 @@ const InstructorCourseEdit = () => {
               >
                 <Award className="size-4 shrink-0" aria-hidden />
                 Chứng nhận
+              </button>
+            </li>
+            ) : null}
+            {canAccessAnnouncements ? (
+            <li>
+              <button
+                type="button"
+                onClick={() => setSection("announcements")}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                  activeSection === "announcements"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+                )}
+              >
+                <Mail className="size-4 shrink-0" aria-hidden />
+                {t("courseEdit.announcements.sectionTitle")}
               </button>
             </li>
             ) : null}
@@ -7056,6 +7081,13 @@ const InstructorCourseEdit = () => {
                 />
               ) : null}
             </section>
+          )}
+
+          {activeSection === "announcements" && canAccessAnnouncements && (
+            <AnnouncementsSection
+              courseId={id ?? ""}
+              enrollmentCount={enrollments.length}
+            />
           )}
 
           {activeSection === "students" && canAccessStudents && (

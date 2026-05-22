@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ArrowDown, ArrowUp, Copy, Plus, Save, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { CareerTrackBlastEmailPanel } from "./CareerTrackBlastEmailPanel";
 
 import { PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 import { Button } from "@/components/ui/button";
@@ -742,6 +743,12 @@ export default function InstructorCareerTrackEditorPage() {
               </div>
             </div>
           </div>
+        </PageSectionCard>
+      ) : null}
+
+      {!isNew && id ? (
+        <PageSectionCard className="mt-4">
+          <CareerTrackBlastEmailPanel trackId={id} />
         </PageSectionCard>
       ) : null}
     </PageContainer>

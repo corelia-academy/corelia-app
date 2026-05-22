@@ -167,6 +167,8 @@ export function NotificationBell() {
                 const isRegApproved = n.type === "hackathon_registration_approved";
                 const isRegRejected = n.type === "hackathon_registration_rejected";
                 const isHackathonRegistrationReview = isRegApproved || isRegRejected;
+                const isCourseAnnouncement = n.type === "course_announcement";
+                const isTrackAnnouncement = n.type === "track_announcement";
                 const resolved = Boolean(n.resolved_at);
                 const pid =
                   typeof n.payload.project_id === "string" ? n.payload.project_id : "";
@@ -287,6 +289,32 @@ export function NotificationBell() {
                             </Button>
                           </div>
                         ) : null}
+                      </>
+                    ) : isCourseAnnouncement || isTrackAnnouncement ? (
+                      <>
+                        <div className="font-medium text-foreground">
+                          {isCourseAnnouncement
+                            ? t("notifications.courseAnnouncementTitle")
+                            : t("notifications.trackAnnouncementTitle")}
+                        </div>
+                        {typeof n.payload.subject === "string" && n.payload.subject ? (
+                          <p className="mt-1 text-xs leading-relaxed text-foreground-muted line-clamp-2">
+                            {n.payload.subject}
+                          </p>
+                        ) : null}
+                        {!n.read_at && (
+                          <div className="mt-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="xs"
+                              className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
+                              onClick={() => void markNotificationRead(n.id).then(() => refresh())}
+                            >
+                              {t("notifications.markRead")}
+                            </Button>
+                          </div>
+                        )}
                       </>
                     ) : (
                       <div className="text-foreground-muted">{n.type}</div>

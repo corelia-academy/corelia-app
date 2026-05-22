@@ -74,7 +74,10 @@
     "hackathonRegistrationRejectedBody": "Your application for {{hackathonTitle}} was not approved.",
     "hackathonRegistrationReviewNote": "Note from reviewer: {{note}}",
     "hackathonRegistrationFallbackTitle": "Hackathon",
-    "viewHackathon": "View hackathon"
+    "viewHackathon": "View hackathon",
+    "courseAnnouncementTitle": "Course announcement",
+    "trackAnnouncementTitle": "Learning path announcement",
+    "markRead": "Mark as read"
   },
   "userProfile": {
     "tabs": {
@@ -661,5 +664,13 @@
       "connecting": "Connecting…",
       "startFailed": "Could not start OpenCampus connection. Please try again."
     }
+  },
+  "unsubscribe": {
+    "loading": "Processing...",
+    "successTitle": "Successfully unsubscribed",
+    "successBody": "You will no longer receive this type of email notification from Corelia.",
+    "managePreferences": "Manage notification preferences",
+    "errorTitle": "Could not process request",
+    "errorBody": "The unsubscribe link is invalid or has expired. Please go to Settings to manage your notifications."
   }
 }
