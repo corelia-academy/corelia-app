@@ -299,51 +299,13 @@
     }
   },
   "coraWidget": {
-    "eyebrow": "Cora stays close",
     "title": "Cora AI Tutor",
-    "status": "Live beta",
-    "statusByTier": {
-      "default": "{{tier}} live",
-      "throttled": "{{tier}} · efficiency mode",
-      "expiringSoon": "{{tier}} · expires soon ({{days}}d)"
-    },
-    "description": "Keep Cora at the edge of the screen so learners can quickly ask about progress, next steps, or stronger course matches while browsing the app.",
-    "contextLabel": "Current context",
-    "contextTitle": {
-      "home": "Your learning dashboard",
-      "courses": "Course library",
-      "career": "Career paths",
-      "hackathons": "Hackathons and activities",
-      "projects": "Projects and collaboration",
-      "achievements": "Achievements and credentials",
-      "search": "Search and discovery",
-      "profile": "Public learning profile",
-      "account": "Profile and settings",
-      "default": "Current page"
-    },
-    "contextDescription": {
-      "home": "Cora can follow learning progress and suggest the next step directly from the dashboard.",
-      "courses": "Cora can help narrow down the right course based on your goals or level.",
-      "career": "Cora can point you toward the path that makes the most sense to start with.",
-      "hackathons": "Cora can suggest activities that fit the skills you are building.",
-      "projects": "Cora can help you decide what project direction or next implementation step makes sense.",
-      "achievements": "Cora can explain what you have earned and what learning milestones are still missing.",
-      "search": "Cora can turn broad goals into better searches across courses, paths, and activities.",
-      "profile": "Cora can read a public profile and suggest stronger next steps for learning or portfolio growth.",
-      "account": "Cora can explain progress, achievements, or what to complete next in your profile.",
-      "default": "Cora will adapt to the current page and suggest more relevant prompts.",
-      "guest": "Sign in so Cora can later personalize suggestions using your progress and activity."
-    },
-    "comingSoonHint": "This sticky chat is currently UI-only. Once AI is connected, Cora will read the context of the page you are viewing.",
-    "liveHint": "Cora is now connected in a first vertical slice: it stores conversations, follows page context, and replies using basic learning-profile data.",
     "suggestionsLabel": "Try starting with",
     "inputPlaceholder": "Ask Cora something…",
-    "footerCaption": "Sending messages will be available once Cora AI is connected.",
     "sendAction": "Send",
     "sendingAction": "Sending…",
     "sourceCount_one": "This reply is grounded in {{count}} internal source.",
     "sourceCount_other": "This reply is grounded in {{count}} internal sources.",
-    "retryAction": "Retry",
     "quotaExceededTitle": "You've been studying hard this month! 🎓",
     "quotaExceededSubtitle": "Cora quota resets on {{resetDate}}. Want to keep learning today?",
     "plan": {

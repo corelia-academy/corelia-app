@@ -73,9 +73,7 @@ export function DashboardAiAssistantPanel({
 
   return (
     <CoraShell
-      eyebrow={String(t("coraWidget.eyebrow"))}
       title={String(t("coraWidget.title"))}
-      tagline={String(t(surface.descriptionKey))}
       className="max-h-[calc(100vh-5rem)] rounded-lg shadow-none"
       body={
         messages.length > 0 ? (

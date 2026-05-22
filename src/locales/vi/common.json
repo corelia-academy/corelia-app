@@ -299,51 +299,13 @@
     }
   },
   "coraWidget": {
-    "eyebrow": "Cora luôn sẵn sàng",
     "title": "Cora AI Tutor",
-    "status": "Beta live",
-    "statusByTier": {
-      "default": "{{tier}} live",
-      "throttled": "{{tier}} · chế độ tiết kiệm",
-      "expiringSoon": "{{tier}} · sắp hết hạn ({{days}} ngày)"
-    },
-    "description": "Giữ Cora ở cạnh màn hình để hỏi nhanh về tiến độ học, hướng đi tiếp theo hoặc tìm khóa học phù hợp hơn ngay trong lúc đang duyệt app.",
-    "contextLabel": "Ngữ cảnh hiện tại",
-    "contextTitle": {
-      "home": "Dashboard học tập của bạn",
-      "courses": "Thư viện khóa học",
-      "career": "Lộ trình nghề nghiệp",
-      "hackathons": "Hackathon và hoạt động",
-      "projects": "Dự án và cộng tác",
-      "achievements": "Thành tích và chứng chỉ",
-      "search": "Tìm kiếm và khám phá",
-      "profile": "Hồ sơ học tập công khai",
-      "account": "Hồ sơ và cài đặt",
-      "default": "Trang hiện tại"
-    },
-    "contextDescription": {
-      "home": "Cora có thể bám theo tiến độ học và đề xuất bước tiếp theo ngay từ dashboard.",
-      "courses": "Cora có thể giúp lọc nhanh khóa học phù hợp theo mục tiêu hoặc trình độ của bạn.",
-      "career": "Cora có thể định hướng bạn nên học track nào trước để đi đúng lộ trình.",
-      "hackathons": "Cora có thể gợi ý hoạt động phù hợp với kỹ năng bạn đang xây dựng.",
-      "projects": "Cora có thể giúp bạn xác định hướng làm dự án hoặc bước triển khai tiếp theo hợp lý hơn.",
-      "achievements": "Cora có thể giải thích bạn đã đạt gì và còn thiếu cột mốc học tập nào.",
-      "search": "Cora có thể biến mục tiêu mơ hồ thành cách tìm kiếm tốt hơn giữa khóa học, lộ trình và hoạt động.",
-      "profile": "Cora có thể đọc hồ sơ công khai và gợi ý bước tiếp theo tốt hơn cho học tập hoặc portfolio.",
-      "account": "Cora có thể giải thích tiến độ, thành tích hoặc các bước cần hoàn thiện hồ sơ.",
-      "default": "Cora sẽ bám theo trang hiện tại để gợi ý câu hỏi phù hợp hơn.",
-      "guest": "Đăng nhập để sau này Cora có thể cá nhân hóa theo tiến độ và hoạt động của bạn."
-    },
-    "comingSoonHint": "Khung chat này hiện mới là giao diện sticky. Khi nối AI, Cora sẽ đọc đúng context theo trang bạn đang xem.",
-    "liveHint": "Cora đã được nối lát cắt đầu tiên: lưu hội thoại, bám context theo trang và phản hồi theo hồ sơ học tập cơ bản.",
     "suggestionsLabel": "Gợi ý để bắt đầu",
     "inputPlaceholder": "Hỏi Cora điều gì đó…",
-    "footerCaption": "Gửi tin nhắn sẽ khả dụng khi Cora AI được kết nối.",
     "sendAction": "Gửi",
     "sendingAction": "Đang gửi…",
     "sourceCount_one": "Phản hồi này đang bám trên {{count}} nguồn tham chiếu nội bộ.",
     "sourceCount_other": "Phản hồi này đang bám trên {{count}} nguồn tham chiếu nội bộ.",
-    "retryAction": "Thử lại",
     "quotaExceededTitle": "Bạn đã học rất chăm tháng này! 🎓",
     "quotaExceededSubtitle": "Quota Cora mới vào {{resetDate}}. Muốn tiếp tục học ngay hôm nay?",
     "plan": {

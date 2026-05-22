@@ -84,9 +84,7 @@ export function CoraAssistantCard({
 
   return (
     <CoraShell
-      eyebrow={String(t("coraWidget.eyebrow"))}
       title={String(t("coraWidget.title"))}
-      tagline={String(t(surface.descriptionKey))}
       onRequestHide={onRequestHide}
       hideLabel={String(t("coraWidget.hideAction"))}
       onClearHistory={messages.length > 0 && !isLoading ? () => { void clearHistory(); } : undefined}
