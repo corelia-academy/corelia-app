@@ -265,6 +265,7 @@ export function LessonCurriculum({
           currentLessonId={currentLessonId}
           completedIds={completedIds}
           hasFullCourseAccess={hasFullCourseAccess}
+          hasSections={hasSections}
           translate={translate}
           scrollClassName="flex-1 overflow-y-auto"
         />
@@ -314,6 +315,7 @@ export function LessonCurriculum({
             currentLessonId={currentLessonId}
             completedIds={completedIds}
             hasFullCourseAccess={hasFullCourseAccess}
+            hasSections={hasSections}
             translate={translate}
             scrollClassName="max-h-[60vh] overflow-y-auto"
           />
