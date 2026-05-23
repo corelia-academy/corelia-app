@@ -40,8 +40,8 @@ function CatalogGridSkeleton() {
             </div>
             <Skeleton className="h-4 w-full rounded-sm" />
             <div className="space-y-2">
-              <Skeleton className="h-10 w-full rounded-xl" />
-              <Skeleton className="h-10 w-full rounded-xl" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
             </div>
           </CardContent>
         </Card>
@@ -267,7 +267,7 @@ export default function Contests() {
                     src={listImageUrl}
                     alt=""
                     aspectClassName="aspect-video"
-                    surfaceClassName="bg-linear-to-br from-primary/12 via-surface-raised to-surface-raised"
+                    surfaceClassName="bg-surface-raised"
                     emptyMinHeightClassName="min-h-28"
                     trophyIconClassName="size-14 text-primary/40"
                   />

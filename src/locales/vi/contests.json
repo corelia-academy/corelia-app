@@ -77,6 +77,12 @@
     "listCardImageAlt": "Ảnh đại diện contest — {{title}}"
   },
   "workspace": {
+    "access": {
+      "cardTitle": "Bạn có quyền quản lý hackathon này",
+      "cardDescription": "Vai trò của bạn cho phép truy cập workspace — duyệt đơn, chấm bài, chỉnh sửa nội dung hoặc gửi thông báo.",
+      "roleReviewer": "Người duyệt đơn",
+      "roleAnalytics": "Xem phân tích"
+    },
     "tabs": {
       "overview": "Overview",
       "applications": "Applications",
@@ -86,6 +92,12 @@
       "awards": "Giải thưởng",
       "email": "Gửi email",
       "settings": "Settings"
+    },
+    "tabGroups": {
+      "run": "Vận hành",
+      "comms": "Truyền thông",
+      "insights": "Phân tích",
+      "configure": "Cấu hình"
     },
     "awards": {
       "heroTitle": "Giải thưởng Open Campus",
@@ -233,6 +245,23 @@
       "phase4Header": "Phase 4",
       "phase4Title": "Publish outcomes",
       "phase4Body": "Publish leaderboard and winners to the public page.",
+      "dashboard": {
+        "actionsTitle": "Việc tiếp theo cần làm",
+        "actionsDescription": "Mở thẳng phần workspace bạn cần xử lý.",
+        "viewAction": "Mở →",
+        "reviewApplicationsTitle": "Duyệt đơn đăng ký",
+        "reviewApplicationsDescription": "Duyệt hoặc từ chối các đơn đăng ký mới của đội thi.",
+        "scoreSubmissionsTitle": "Chấm bài nộp",
+        "scoreSubmissionsDescription": "Mở hàng chờ chấm điểm và đánh giá các bài đang hoạt động.",
+        "editHackathonTitle": "Chỉnh sửa hackathon",
+        "editHackathonDescription": "Cập nhật tiêu đề, lịch, giải thưởng, quy định và phân quyền.",
+        "announceTitle": "Gửi thông báo",
+        "announceDescription": "Gửi email đồng loạt cho toàn bộ người đã đăng ký.",
+        "awardsTitle": "Quản lý giải thưởng",
+        "awardsDescription": "Cấu hình mẫu giải và mint chứng nhận cho người thắng.",
+        "viewPublicTitle": "Mở trang công khai",
+        "viewPublicDescription": "Xem trang mà thí sinh đang thấy."
+      },
       "applicationsReviewTitle": "Application review",
       "applicationsReviewDescription": "Only Corelia staff review applications. Judges and co-host partners cannot access this area.",
       "applicationsQueueSummary": "{{count}} hồ sơ",
@@ -1043,6 +1072,17 @@
         "notePlaceholder": "Ghi chú lời mời"
       },
       "submission": {
+        "projectGroup": "Dự án",
+        "linksGroup": "Liên kết",
+        "mediaGroup": "Hình ảnh & video",
+        "titleLabel": "Tên submission",
+        "summaryLabel": "Tóm tắt",
+        "demoUrlLabel": "Demo URL",
+        "repoUrlLabel": "Repo URL",
+        "slideUrlLabel": "Slide deck URL",
+        "screenshotUrlLabel": "Screenshot URL",
+        "coverImageUrlLabel": "Ảnh bìa dự án",
+        "videoUrlLabel": "Video demo URL",
         "titlePlaceholder": "Tên submission",
         "summaryPlaceholder": "Tóm tắt giải pháp, vấn đề giải quyết và điểm nổi bật",
         "demoUrlPlaceholder": "Demo URL",

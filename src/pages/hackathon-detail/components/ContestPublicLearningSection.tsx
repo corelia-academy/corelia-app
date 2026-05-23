@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { Link } from "react-router";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { HackathonSectionCard } from "@/pages/hackathon-detail/components/HackathonSectionCard";
 import type { Contest } from "@/types/hackathons";
 import {
   careerTrackHref,
   useContestLearningLinks,
 } from "@/pages/hackathon-detail/hooks/useContestLearningLinks";
-import { cn } from "@/lib/utils";
 
 export function ContestPublicLearningSection(props: {
   contest: Contest;
@@ -51,29 +51,24 @@ export function ContestPublicLearningSection(props: {
   const officialCourse = officialId ? coursesById.get(officialId) : undefined;
 
   return (
-    <Card id="learn" className={cn("scroll-mt-36")}>
-      <CardContent className="space-y-6 p-4">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">
-            {t("detail.learn.sectionTitle")}
-          </h2>
-          <p className="mt-2 text-sm text-foreground-muted">
-            {t("detail.learn.sectionDescription")}
-          </p>
-        </div>
-
+    <HackathonSectionCard
+      id="learn"
+      title={t("detail.learn.sectionTitle")}
+      description={t("detail.learn.sectionDescription")}
+    >
+      <div className="space-y-6">
         {showOfficial ? (
-          <div className="rounded-xl border border-primary/25 bg-primary/5 p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-primary">
+          <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
+            <div className="text-xs font-semibold uppercase tracking-widest text-primary">
               {t("detail.learn.officialBadge")}
             </div>
             <p className="mt-2 text-sm text-foreground-muted">
               {t("detail.learn.officialHint")}
             </p>
             {loading ? (
-              <p className="mt-4 text-xs text-foreground-muted">
-                {t("detail.learn.loading")}
-              </p>
+              <div className="mt-4 space-y-2" aria-busy="true">
+                <Skeleton className="h-11 w-40" />
+              </div>
             ) : officialCourse ? (
               <Button
                 type="button"
@@ -105,9 +100,11 @@ export function ContestPublicLearningSection(props: {
               })}
             </p>
             {loading ? (
-              <p className="mt-3 text-xs text-foreground-muted">
-                {t("detail.learn.loading")}
-              </p>
+              <div className="mt-3 space-y-2" aria-busy="true">
+                {Array.from({ length: Math.min(3, relatedCourseIds.length) }).map((_, idx) => (
+                  <Skeleton key={idx} className="h-5 w-full max-w-sm" />
+                ))}
+              </div>
             ) : (
               <ul className="mt-3 list-none space-y-2 p-0">
                 {relatedCourseIds.map((id) => {
@@ -145,9 +142,11 @@ export function ContestPublicLearningSection(props: {
               })}
             </p>
             {loading ? (
-              <p className="mt-3 text-xs text-foreground-muted">
-                {t("detail.learn.loading")}
-              </p>
+              <div className="mt-3 space-y-2" aria-busy="true">
+                {Array.from({ length: Math.min(3, trackIdsOrdered.length) }).map((_, idx) => (
+                  <Skeleton key={idx} className="h-5 w-full max-w-sm" />
+                ))}
+              </div>
             ) : (
               <ul className="mt-3 list-none space-y-2 p-0">
                 {trackIdsOrdered.map((id) => {
@@ -174,7 +173,7 @@ export function ContestPublicLearningSection(props: {
             )}
           </div>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </HackathonSectionCard>
   );
 }

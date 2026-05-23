@@ -19,6 +19,11 @@ verify_jwt = false
 # verify the bearer token in the handler so we can enforce role + entity access.
 verify_jwt = false
 
+[functions.generate-questions]
+# Instructor workspace helper. Mirror the same auth/CORS behavior as the other
+# workspace Edge Functions and verify the bearer token inside the handler.
+verify_jwt = false
+
 [api]
 enabled = true
 # Port to use for the API URL.

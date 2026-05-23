@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from "react";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const TEXTAREA_CLASS =
   "min-h-[88px] w-full rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15";
@@ -182,9 +183,29 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
             </Button>
           </div>
           {loading ? (
-            <div className="flex items-center gap-2 text-sm text-foreground-muted">
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-              {translate("workspace.awards.loading")}
+            <div
+              className="overflow-hidden rounded-md border border-border-subtle"
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
+            >
+              <div className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr] gap-3 border-b border-border-subtle bg-surface-raised px-3 py-2">
+                {Array.from({ length: 5 }).map((_, idx) => (
+                  <Skeleton key={idx} className="h-4 w-full" />
+                ))}
+              </div>
+              <div className="divide-y divide-border-subtle">
+                {Array.from({ length: 4 }).map((_, rowIdx) => (
+                  <div
+                    key={rowIdx}
+                    className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr] gap-3 px-3 py-3"
+                  >
+                    {Array.from({ length: 5 }).map((_, cellIdx) => (
+                      <Skeleton key={cellIdx} className="h-5 w-full" />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           ) : templates.length === 0 ? (
             <p className="text-sm text-foreground-muted">{translate("workspace.awards.noTemplates")}</p>

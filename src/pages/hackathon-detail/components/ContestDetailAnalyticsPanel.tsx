@@ -23,7 +23,7 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
         <div className="flex items-center gap-3">
           <BarChart3 className="size-5 text-primary" aria-hidden />
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
               {translate("workspace.manage.analyticsTitle")}
             </h2>
             <p className="mt-1 text-sm text-foreground-muted">
@@ -37,7 +37,7 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
             <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {translate("workspace.manage.metricApplications")}
             </div>
-            <div className="mt-2 text-3xl font-semibold text-foreground">
+            <div className="mt-2 text-2xl font-semibold text-foreground">
               {Number(contest.metrics_snapshot.registrations_total ?? 0)}
             </div>
           </div>
@@ -45,7 +45,7 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
             <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {translate("workspace.manage.metricApproved")}
             </div>
-            <div className="mt-2 text-3xl font-semibold text-foreground">
+            <div className="mt-2 text-2xl font-semibold text-foreground">
               {Number(contest.metrics_snapshot.approved_registrations ?? 0)}
             </div>
           </div>
@@ -53,7 +53,7 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
             <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {translate("workspace.manage.metricSubmissions")}
             </div>
-            <div className="mt-2 text-3xl font-semibold text-foreground">
+            <div className="mt-2 text-2xl font-semibold text-foreground">
               {Number(contest.metrics_snapshot.submissions_total ?? 0)}
             </div>
           </div>
@@ -61,7 +61,7 @@ export function ContestDetailAnalyticsPanel({ vm }: { vm: ContestDetailViewModel
             <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {translate("workspace.manage.metricScored")}
             </div>
-            <div className="mt-2 text-3xl font-semibold text-foreground">
+            <div className="mt-2 text-2xl font-semibold text-foreground">
               {Number(contest.metrics_snapshot.scored_submissions ?? 0)}
             </div>
           </div>

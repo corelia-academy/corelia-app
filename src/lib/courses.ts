@@ -1044,6 +1044,18 @@ export async function reorderCourseLessons(
   if (error) throw new Error(error.message);
 }
 
+export async function reorderCourseSections(
+  courseId: string,
+  sections: Array<Pick<CourseSection, "id" | "order">>,
+): Promise<void> {
+  if (sections.length === 0) return;
+  const { error } = await supabase.rpc("batch_update_section_orders", {
+    p_course_id: courseId,
+    p_updates: sections.map((s) => ({ id: s.id, sort_order: s.order })),
+  });
+  if (error) throw new Error(error.message);
+}
+
 export async function deleteSection(
   courseId: string,
   sectionId: string,

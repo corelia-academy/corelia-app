@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { NavLink, Outlet, useParams } from "react-router";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { getContestBySlug } from "@/lib/hackathons";
 import type { Contest } from "@/types/hackathons";
 import { useTranslation } from "react-i18next";
+import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
 
 const PUBLIC_STATUSES: Contest["status"][] = ["published", "running", "ended"];
 
@@ -48,24 +48,7 @@ export default function ContestPublicLayout() {
   }, [slug, translate]);
 
   if (loading) {
-    return (
-      <PageContainer width="default">
-        <div
-          className="flex min-h-[200px] flex-col items-center justify-center gap-3 py-16 text-center"
-          role="status"
-          aria-live="polite"
-          aria-busy="true"
-        >
-          <Loader2
-            className="size-8 animate-spin text-foreground-muted"
-            aria-hidden
-          />
-          <p className="text-sm text-foreground-muted">
-            {translate("detail.loading.title")}
-          </p>
-        </div>
-      </PageContainer>
-    );
+    return <ContestDetailLoadingCard translate={translate} />;
   }
 
   if (error || !contest || !slug) {

@@ -5,3 +5,10 @@ export type LessonDropTarget = {
   lessonId: string;
   position: LessonDropPosition;
 };
+
+export type SectionDropPosition = "before" | "after";
+
+export type SectionDropTarget = {
+  sectionId: string;
+  position: SectionDropPosition;
+};

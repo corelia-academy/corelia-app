@@ -316,3 +316,28 @@
 .bg-ocid-blue {
   background-color: #151ae9;
 }
+
+/* Premium UI Redesign Utilities */
+@utility bg-glow-radial {
+  background: radial-gradient(circle at top, var(--primary-muted) 0%, transparent 70%);
+}
+
+@utility animate-fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@utility transition-all-300 {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
