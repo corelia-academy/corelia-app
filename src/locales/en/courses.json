@@ -277,11 +277,15 @@
         "selectAside": "Select a lesson from the side list"
       },
       "lessonNumberBadge": "Lesson {{index}}",
+      "articleLessonBadge": "Reading",
       "completedBadge": "Completed",
       "lessonHint": "Finish this video to keep progressing through the path.",
+      "lessonArticleDraftNoticeTitle": "This lesson is being prepared",
+      "lessonArticleDraftNoticeBody": "Written content is not available yet. Please check back later.",
       "markComplete": {
         "done": "Completed",
-        "action": "Mark as watched"
+        "action": "Mark as watched",
+        "actionArticle": "Mark as read"
       },
       "nav": {
         "previous": "Previous",

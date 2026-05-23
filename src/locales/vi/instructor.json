@@ -496,7 +496,31 @@
       "deleteCourseFailed": "Lỗi xoá khoá học",
       "reorderLessonsFailed": "Không thể cập nhật thứ tự bài học",
       "reorderSectionsFailed": "Không thể cập nhật thứ tự chương",
-      "createDiscountFailed": "Không tạo được mã giảm giá."
+      "createDiscountFailed": "Không tạo được mã giảm giá.",
+      "prepareLessonFailed": "Không thể chuẩn bị bài học.",
+      "externalSourcesRequired": "Vui lòng nhập ít nhất 1 nguồn (URL) khi bật Public external course."
+    },
+    "page": {
+      "back": "Quay lại"
+    },
+    "business": {
+      "ownershipLabel": "Sở hữu khoá học & chia sẻ doanh thu",
+      "ownershipAdminOnly": "Chỉ học vụ/admin được cập nhật phần sở hữu và doanh thu.",
+      "ownershipCurrent": "Hiện tại: {{type}}",
+      "instructorShare": "Giảng viên nhận {{percent}}%.",
+      "partnerTransferLabel": "Thông tin chuyển khoản đối tác",
+      "partnerTransferHint": "Hiển thị cho giảng viên đối tác trong mục Hoá đơn & thanh toán.",
+      "noContractDocs": "Chưa có tài liệu hợp đồng.",
+      "noInvoiceDocs": "Chưa có tài liệu hoá đơn."
+    },
+    "externalCourse": {
+      "toggleLabel": "Khoá học nguồn ngoài công khai (Public external course)",
+      "toggleHint": "Bật mục này nếu khoá học tổng hợp từ nguồn ngoài; khi bật sẽ hiển thị phần nguồn/chú thích ở trang công khai.",
+      "sourcesLabel": "Nguồn tham chiếu (Sources URLs) *",
+      "sourcesPlaceholder": "Mỗi dòng 1 URL nguồn\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourcesRequired": "Bắt buộc khi bật Public external course.",
+      "attributionLabel": "Chú thích nguồn (Source attribution note)",
+      "attributionPlaceholder": "Ghi chú công khai về nguồn tổng hợp (ví dụ: curated từ playlist YouTube của các creator)."
     },
     "toasts": {
       "totalDurationRefreshed": "Đã cập nhật tổng thời lượng. Trang danh sách khoá học sẽ hiển thị đúng.",
@@ -549,6 +573,13 @@
       "afterUploadHintPrefix": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" ( % từ trái / % từ",
       "fileFormatHint": "Định dạng: PNG hoặc JPG."
     },
+    "certificateGuide": {
+      "title": "Hướng dẫn tạo template",
+      "sizeHint": "Kích thước khuyến nghị: 1200×800 px (tỉ lệ 3:2) hoặc A4.",
+      "nameAreaHint": "Để trống một vùng trên ảnh cho tên học viên (ví dụ giữa trang).",
+      "afterUploadHint": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" (% từ trái / % từ trên) để tên học viên nằm đúng vùng trống. 50% = giữa.",
+      "downloadSample": "Tải template mẫu (SVG)"
+    },
     "ocb": {
       "title": "Huy hiệu Open Campus (OCB)",
       "subtitle": "Mint huy hiệu on-chain khi học viên đạt điều kiện (template chứng nhận PDF phía trên giữ nguyên).",
@@ -596,12 +627,40 @@
       "promoPriceVndLabel": "Giá khuyến mãi (VND)",
       "promoPricePlaceholder": "Để trống nếu không khuyến mãi",
       "promoEndsAtLabel": "Hẹn giờ kết thúc khuyến mãi (ISO)",
-      "updateTotalDurationLabelPrefix": "Khoá học trả phí trước: bật \"Học thử miễn phí\" cho các bài"
+      "updateTotalDurationLabelPrefix": "Khoá học trả phí trước: bật \"Học thử miễn phí\" cho các bài",
+      "intro": "Thiết lập mô hình truy cập, giá khoá học, phí chứng nhận và mã giảm giá.",
+      "paidPreviewHint": "Học viên chưa thanh toán chỉ xem được bài có bật \"Học thử miễn phí\".",
+      "promoMustBeLower": "Giá khuyến mãi phải nhỏ hơn giá gốc.",
+      "promoEndsOptional": "Để trống nếu không hẹn giờ.",
+      "discountsTitle": "Mã giảm giá & khuyến mãi",
+      "certificateFeeLabel": "Phí chứng nhận / bài thu hoạch (VND)",
+      "certificateFeeHint": "Toàn bộ bài học vẫn miễn phí; khoản phí này áp dụng khi học viên muốn nộp bài thu hoạch để xét chứng nhận."
     },
     "discounts": {
       "createTitle": "Tạo mã giảm giá (theo % hoặc số tiền) và giới hạn",
+      "subtitleSuffix": " thời gian/lượt dùng.",
+      "empty": "Chưa có mã giảm giá nào.",
       "activeOn": "Bật",
-      "activeOff": "Tắt"
+      "activeOff": "Tắt",
+      "table": {
+        "code": "Mã",
+        "type": "Loại",
+        "value": "Giá trị",
+        "status": "Trạng thái",
+        "actions": "Hành động",
+        "active": "Đang bật",
+        "inactive": "Tắt",
+        "delete": "Xoá"
+      },
+      "form": {
+        "code": "Mã",
+        "codePlaceholder": "VD: SPRING10",
+        "type": "Loại",
+        "value": "Giá trị",
+        "startsAt": "Bắt đầu (ISO, tuỳ chọn)",
+        "endsAt": "Kết thúc (ISO, tuỳ chọn)",
+        "maxRedemptions": "Giới hạn lượt dùng (tuỳ chọn)"
+      }
     },
     "sidebar": {
       "editingLanguage": "Ngôn ngữ đang chỉnh sửa",
@@ -615,17 +674,26 @@
         "assignments": "Bài tập cuối khoá",
         "certificate": "Chứng nhận",
         "students": "Quản lý học viên",
-        "danger": "Xoá khoá học"
+        "danger": "Xoá khoá học",
+        "announcements": "Thông báo"
       }
     },
     "content": {
       "heading": "Nội dung khoá học",
       "savingOrder": "Đang lưu thứ tự bài học...",
       "dragHint": "Kéo biểu tượng chấm để đổi thứ tự bài trong từng chương, hoặc dùng mũi tên lên/xuống khi cần.",
+      "sectionsToggleLabel": "Phân chia theo section",
+      "sectionsToggleHint": "Bật nếu khoá học cần nhóm bài học theo chương/phần. Tắt để hiển thị danh sách bài học phẳng.",
+      "paidUpfrontPreviewBanner": "Khoá học trả phí trước: bật \"Học thử miễn phí\" cho các bài muốn mở cho học viên chưa thanh toán.",
       "addSectionHeading": "Thêm chương mới",
       "lessonTitlePlaceholder": "Tên bài (tùy chọn)",
       "lessonMinutesPlaceholder": "Thời lượng (phút) — nếu không lấy được từ YouTube, nhập vào đây",
       "sectionTitlePlaceholder": "Tên chương"
+    },
+    "questions": {
+      "generateFailed": "Không thể tạo câu hỏi.",
+      "fillRequired": "Vui lòng điền đầy đủ nội dung câu hỏi và ít nhất 2 lựa chọn.",
+      "saveFailed": "Không thể lưu câu hỏi."
     },
     "sections": {
       "notTranslated": "Chưa dịch",
@@ -708,6 +776,11 @@
       }
     },
     "lessons": {
+      "formatLabel": "Loại bài học",
+      "formatVideo": "Bài video",
+      "formatArticle": "Bài đọc (chữ)",
+      "formatHint": "Bài đọc chỉ dùng nội dung viết — không bắt buộc link YouTube.",
+      "articleContentRequired": "Hãy thêm nội dung bài học (markdown hoặc mô tả ngắn) cho bài đọc.",
       "notTranslated": "Chưa dịch",
       "edit": "Sửa",
       "editTitle": "Chỉnh sửa bài học",
@@ -726,6 +799,8 @@
       "durationMinutesLabel": "Thời lượng (phút)",
       "durationHint": "Nếu để trống, hệ thống sẽ thử lấy thời lượng từ YouTube (khi có link và cấu hình API).",
       "previewFreeLabel": "Bật bài học thử miễn phí",
+      "previewBadge": "Học thử",
+      "previewFreeBadge": "Học thử miễn phí",
       "shortDescriptionLabel": "Mô tả ngắn",
       "shortDescriptionPlaceholder": "1–2 câu mô tả (tuỳ chọn)",
       "markdownLabel": "Mô tả chi tiết (Markdown)",
@@ -804,6 +879,9 @@
     },
     "students": {
       "empty": "Chưa có học viên nào ghi danh vào khoá học này.",
+      "providerLabel": "Provider: {{provider}}",
+      "providerEmpty": "Provider: —",
+      "orderLabel": "Order: {{id}}",
       "columns": {
         "student": "Học viên",
         "progress": "Tiến độ",
@@ -841,6 +919,14 @@
       "dragReorder": "Kéo để đổi thứ tự",
       "moveUp": "Đưa lên trên",
       "moveDown": "Đưa xuống dưới"
+    },
+    "a11y": {
+      "dragSection": "Kéo để đổi thứ tự chương {{title}}",
+      "moveSectionUp": "Đưa chương {{title}} lên trên",
+      "moveSectionDown": "Đưa chương {{title}} xuống dưới",
+      "dragLesson": "Kéo để đổi thứ tự bài {{title}}",
+      "moveLessonUp": "Đưa bài {{title}} lên trên",
+      "moveLessonDown": "Đưa bài {{title}} xuống dưới"
     },
     "access": {
       "noPermission": "Bạn không có quyền sửa khoá học này.",

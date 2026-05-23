@@ -198,6 +198,9 @@ export interface LessonResource {
   url: string;
 }
 
+/** `video` = YouTube embed; `article` = markdown/text lesson without video. */
+export type LessonFormat = "video" | "article";
+
 export interface CourseLesson {
   id: string;
   section_id: string;
@@ -208,6 +211,8 @@ export interface CourseLesson {
   description_markdown?: string;
   /** Danh sách tài liệu/resources cho bài học */
   resources?: LessonResource[];
+  /** Loại bài học — mặc định suy ra từ youtube_url / nội dung. */
+  lesson_format?: LessonFormat;
   /** URL YouTube (embed hoặc watch), ví dụ https://www.youtube.com/watch?v=VIDEO_ID */
   youtube_url?: string;
   /** Giây bắt đầu clip trong video (optional; mặc định 0) */
@@ -382,6 +387,7 @@ export interface CourseSectionInsert {
 export interface CourseLessonInsert {
   section_id: string;
   title: string;
+  lesson_format?: LessonFormat;
   short_description?: string;
   description_markdown?: string;
   resources?: LessonResource[];

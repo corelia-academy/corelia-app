@@ -6,6 +6,7 @@ import {
   setLessonProgress,
   sortLessonsByCurriculum,
 } from "@/lib/courses";
+import { isLessonDraftForLearners, isLessonPublishedForLearners } from "@/lib/lessonFormat";
 import { useAuth } from "@/stores/authStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -160,16 +161,16 @@ export default function Learn() {
     profile?.role === "admin" ||
     profile?.role === "support_staff" ||
     profile?.role === "instructor";
-  const isDraftLesson =
-    !currentLesson?.youtube_url?.trim() &&
-    !currentLesson?.description_markdown?.trim();
+  const isDraftLesson = currentLesson
+    ? isLessonDraftForLearners(currentLesson)
+    : false;
 
   useEffect(() => {
     if (!courseId || !lessonId || !currentLesson) return;
     if (!isDraftLesson) return;
     if (isPrivilegedViewer) return;
 
-    const fallback = visibleLessons.find((l) => l.youtube_url?.trim());
+    const fallback = visibleLessons.find((l) => isLessonPublishedForLearners(l));
     if (fallback && fallback.id !== currentLesson.id) {
       toast.message(translate("detail.learn.lessonDraftToast"));
       navigate(`/learn/${courseId}/lesson/${fallback.id}`, { replace: true });

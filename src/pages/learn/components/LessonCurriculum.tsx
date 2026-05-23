@@ -1,5 +1,6 @@
 import { Link } from "react-router";
-import { CheckCircle2, ChevronDown, List, Lock, PlayCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, FileText, List, Lock, PlayCircle } from "lucide-react";
+import { isArticleLesson } from "@/lib/lessonFormat";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/types/courses";
@@ -25,6 +26,7 @@ function LessonItem({
   const done = completedIds.has(lesson.id);
   const active = currentLessonId === lesson.id;
   const locked = !hasFullCourseAccess && !lesson.is_preview_free;
+  const article = isArticleLesson(lesson);
   return (
     <div
       className={cn(
@@ -51,8 +53,10 @@ function LessonItem({
         >
           {done ? (
             <CheckCircle2 className="mt-0.5 w-4 h-4 shrink-0 text-success sm:mt-0" aria-hidden />
+          ) : article ? (
+            <FileText className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
           ) : (
-            <PlayCircle className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" />
+            <PlayCircle className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
           )}
           <div className="min-w-0 flex-1">
             <span

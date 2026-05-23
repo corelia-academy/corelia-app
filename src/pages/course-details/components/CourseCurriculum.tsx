@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CourseBadge } from "./CourseBadge";
+import { isLessonDraftForLearners } from "@/lib/lessonFormat";
 import {
   formatDuration,
   type CourseLesson,
@@ -49,7 +50,7 @@ function LessonRow({
           {translate("detail.courseDetail.previewLessonBadge")}
         </CourseBadge>
       ) : null}
-      {!lesson.youtube_url?.trim() ? (
+      {isLessonDraftForLearners(lesson) ? (
         <CourseBadge className="mt-0.5 sm:mt-0" variant="warning">
           {translate("detail.courseDetail.lessonDraftBadge")}
         </CourseBadge>
