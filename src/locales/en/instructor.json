@@ -537,6 +537,8 @@
       "uploadingTemplate": "Uploading..."
     },
     "certificate": {
+      "sectionTitle": "Certificate template",
+      "sectionDescription": "Upload a certificate template image (PNG/JPG). The learner's name will be shown at the position you choose (as % from left and from top).",
       "saveNamePosition": "Save name position",
       "templateLabel": "Certificate template",
       "uploadTemplate": "Upload template",
@@ -600,7 +602,26 @@
       "activeOn": "On",
       "activeOff": "Off"
     },
+    "sidebar": {
+      "editingLanguage": "Editing language",
+      "primaryBadge": "primary",
+      "navTitle": "Editor navigation",
+      "navHint": "Go through each configuration group to complete the course before publishing.",
+      "nav": {
+        "info": "General info",
+        "pricing": "Pricing & payment",
+        "content": "Content & lessons",
+        "assignments": "Final assignment",
+        "certificate": "Certificate",
+        "students": "Manage students",
+        "danger": "Delete course"
+      }
+    },
     "content": {
+      "heading": "Course content",
+      "savingOrder": "Saving lesson order...",
+      "dragHint": "Drag the dot icon to reorder lessons within each section, or use the up/down arrows as needed.",
+      "addSectionHeading": "Add new section",
       "lessonTitlePlaceholder": "Lesson title (optional)",
       "lessonMinutesPlaceholder": "Duration (minutes) — if YouTube duration can't be fetched, enter it here",
       "sectionTitlePlaceholder": "Section title"
@@ -759,14 +780,54 @@
       "descriptionPlaceholder": "Describe what learners need to submit...",
       "instructionsLabel": "Instructions (optional)",
       "instructionsPlaceholder": "Additional guidance for learners...",
-      "reviewApprove": "Approve"
+      "reviewApprove": "Approve",
+      "reviewReject": "Reject",
+      "settingsTitle": "Assignment settings",
+      "submissionsTitle": "Student submissions",
+      "noSubmissions": "No submissions yet.",
+      "noSubmissionsHint": "No submissions yet. Add an assignment title in \"Assignment settings\" above and save to enable submission requirements.",
+      "columns": {
+        "student": "Learner",
+        "content": "Content",
+        "submittedAt": "Submitted",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "lessonProgress": "{{progress}}% lessons",
+      "attachments": "{{count}} attachment(s)"
     },
     "publishing": {
       "publishedHint": "Published (visible on the course page)",
       "updatingHint": "This course is being updated (show a notice to learners)"
     },
+    "students": {
+      "empty": "No learners enrolled in this course yet.",
+      "columns": {
+        "student": "Learner",
+        "progress": "Progress",
+        "assignment": "Assignment",
+        "certificate": "Certificate",
+        "payment": "Payment",
+        "enrolledAt": "Enrolled",
+        "lastAccess": "Last access"
+      },
+      "status": {
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "pending": "Pending",
+        "notSubmitted": "Not submitted",
+        "notEligible": "Not eligible",
+        "paid": "Paid",
+        "free": "Free / untracked",
+        "issued": "Issued"
+      }
+    },
     "danger": {
-      "deleteCourseTitle": "Delete course?"
+      "deleteCourseTitle": "Delete course?",
+      "dangerZoneTitle": "Danger zone",
+      "deleteWarning": "Deleting the course will remove all content (sections, lessons). This action cannot be undone.",
+      "deleteConfirmWarning": "All content (sections, lessons) will be permanently deleted. This action cannot be undone.",
+      "deleteButton": "Delete"
     },
     "stats": {
       "sections": "Sections",

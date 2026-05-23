@@ -536,6 +536,8 @@
       "uploadingTemplate": "Đang tải lên..."
     },
     "certificate": {
+      "sectionTitle": "Template chứng nhận",
+      "sectionDescription": "Tải lên ảnh template chứng nhận (PNG/JPG). Tên học viên sẽ được hiển thị tại vị trí bạn chọn (theo % từ trái và từ trên).",
       "saveNamePosition": "Lưu vị trí tên",
       "templateLabel": "Template chứng nhận",
       "uploadTemplate": "Tải template lên",
@@ -599,7 +601,26 @@
       "activeOn": "Bật",
       "activeOff": "Tắt"
     },
+    "sidebar": {
+      "editingLanguage": "Ngôn ngữ đang chỉnh sửa",
+      "primaryBadge": "chính",
+      "navTitle": "Điều hướng chỉnh sửa",
+      "navHint": "Đi qua từng nhóm cấu hình để hoàn thiện khoá học trước khi xuất bản.",
+      "nav": {
+        "info": "Thông tin chung",
+        "pricing": "Giá & thanh toán",
+        "content": "Nội dung & bài học",
+        "assignments": "Bài tập cuối khoá",
+        "certificate": "Chứng nhận",
+        "students": "Quản lý học viên",
+        "danger": "Xoá khoá học"
+      }
+    },
     "content": {
+      "heading": "Nội dung khoá học",
+      "savingOrder": "Đang lưu thứ tự bài học...",
+      "dragHint": "Kéo biểu tượng chấm để đổi thứ tự bài trong từng chương, hoặc dùng mũi tên lên/xuống khi cần.",
+      "addSectionHeading": "Thêm chương mới",
       "lessonTitlePlaceholder": "Tên bài (tùy chọn)",
       "lessonMinutesPlaceholder": "Thời lượng (phút) — nếu không lấy được từ YouTube, nhập vào đây",
       "sectionTitlePlaceholder": "Tên chương"
@@ -758,14 +779,54 @@
       "descriptionPlaceholder": "Mô tả chi tiết bài tập học viên cần làm...",
       "instructionsLabel": "Hướng dẫn (tùy chọn)",
       "instructionsPlaceholder": "Hướng dẫn thêm cho học viên...",
-      "reviewApprove": "Duyệt"
+      "reviewApprove": "Duyệt",
+      "reviewReject": "Từ chối",
+      "settingsTitle": "Cấu hình bài tập",
+      "submissionsTitle": "Bài nộp của học viên",
+      "noSubmissions": "Chưa có bài nộp nào.",
+      "noSubmissionsHint": "Chưa có bài nộp nào. Thêm tiêu đề bài tập ở mục \"Cấu hình bài tập\" phía trên và lưu để bật yêu cầu nộp bài.",
+      "columns": {
+        "student": "Học viên",
+        "content": "Nội dung",
+        "submittedAt": "Ngày nộp",
+        "status": "Trạng thái",
+        "actions": "Thao tác"
+      },
+      "lessonProgress": "{{progress}}% bài học",
+      "attachments": "{{count}} file đính kèm"
     },
     "publishing": {
       "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
       "updatingHint": "Khoá học đang được cập nhật (hiện banner cho học viên)"
     },
+    "students": {
+      "empty": "Chưa có học viên nào ghi danh vào khoá học này.",
+      "columns": {
+        "student": "Học viên",
+        "progress": "Tiến độ",
+        "assignment": "Bài tập",
+        "certificate": "Chứng nhận",
+        "payment": "Thanh toán",
+        "enrolledAt": "Ngày ghi danh",
+        "lastAccess": "Lần truy cập cuối"
+      },
+      "status": {
+        "approved": "Đã duyệt",
+        "rejected": "Từ chối",
+        "pending": "Chờ duyệt",
+        "notSubmitted": "Chưa nộp",
+        "notEligible": "Chưa đủ điều kiện",
+        "paid": "Trả phí",
+        "free": "Miễn phí / chưa ghi nhận",
+        "issued": "Đã cấp"
+      }
+    },
     "danger": {
-      "deleteCourseTitle": "Xoá khoá học?"
+      "deleteCourseTitle": "Xoá khoá học?",
+      "dangerZoneTitle": "Vùng nguy hiểm",
+      "deleteWarning": "Xoá khoá học sẽ xoá toàn bộ nội dung (chương, bài học). Hành động này không thể hoàn tác.",
+      "deleteConfirmWarning": "Toàn bộ nội dung (chương, bài học) sẽ bị xoá. Hành động này không thể hoàn tác.",
+      "deleteButton": "Xoá"
     },
     "stats": {
       "sections": "Chương",

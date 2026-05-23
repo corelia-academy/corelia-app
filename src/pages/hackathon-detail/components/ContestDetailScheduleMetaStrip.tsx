@@ -17,15 +17,19 @@ function MetaCell({
   hint?: string;
 }) {
   return (
-    <div className="flex min-w-0 items-start gap-2">
-      <Icon className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
-      <div className="min-w-0 text-foreground">
-        <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+    <div className="group/cell flex min-w-0 items-start gap-3 rounded-lg p-2.5 transition-all duration-200 hover:bg-surface-base hover:shadow-xs border border-transparent hover:border-border-subtle">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/5 text-primary group-hover/cell:bg-primary group-hover/cell:text-primary-foreground transition-all duration-200">
+        <Icon className="size-4 shrink-0" aria-hidden />
+      </div>
+      <div className="min-w-0 flex-1 text-foreground">
+        <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted group-hover/cell:text-primary transition-colors">
           {label}
         </div>
-        <div className="mt-1 font-medium">{value}</div>
+        <div className="mt-1 text-xs sm:text-sm font-medium leading-snug break-words">
+          {value}
+        </div>
         {hint ? (
-          <div className="mt-1 text-xs leading-snug text-foreground-muted">
+          <div className="mt-1 text-2xs leading-snug text-foreground-subtle">
             {hint}
           </div>
         ) : null}
@@ -71,7 +75,7 @@ export function ContestDetailScheduleMetaStrip(props: {
   return (
     <div
       className={cn(
-        "grid gap-x-6 gap-y-4 rounded-md border border-border-subtle bg-surface-raised p-4 text-sm sm:grid-cols-2",
+        "grid gap-4 rounded-xl border border-border-subtle bg-surface-raised/60 p-3 text-sm sm:grid-cols-2",
         hasSubmission ? "md:grid-cols-4" : "md:grid-cols-3",
         className,
       )}

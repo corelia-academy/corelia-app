@@ -26,16 +26,23 @@ export function HackathonSectionCard({
   className?: string;
 }) {
   return (
-    <Card id={id} className={cn(id && "scroll-mt-36", className)}>
+    <Card
+      id={id}
+      className={cn(
+        id && "scroll-mt-36",
+        "transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-surface-raised bg-surface-base border border-border-subtle animate-fade-in-up",
+        className,
+      )}
+    >
       <CardContent className="p-4 sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 space-y-1">
             {eyebrow ? (
-              <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+              <div className="text-xs font-semibold uppercase tracking-widest text-primary">
                 {eyebrow}
               </div>
             ) : null}
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            <h2 className="relative pl-3 text-lg font-semibold tracking-tight text-foreground before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:rounded-full before:bg-primary">
               {title}
             </h2>
             {description ? (
@@ -49,5 +56,6 @@ export function HackathonSectionCard({
         {children ? <div className="mt-6">{children}</div> : null}
       </CardContent>
     </Card>
+
   );
 }

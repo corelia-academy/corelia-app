@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   ArrowLeft,
@@ -140,6 +140,7 @@ import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { Markdown } from "@/components/markdown/Markdown";
+import type { DescriptionSourceInput } from "@/lib/descriptionGenerator";
 import type {
   DescriptionGeneratorDialogRequest,
   DescriptionGeneratorSourcePreview,
@@ -324,6 +325,9 @@ const InstructorCourseEdit = () => {
   const [defaultVideoPrimaryLocale, setDefaultVideoPrimaryLocale] =
     useState<SupportedCourseLocale>("vi");
   const [activeContentLocale, setActiveContentLocale] = useState<SupportedCourseLocale>("vi");
+  // tEdit is scoped to activeContentLocale: UI chrome in the editor flips language
+  // when the user switches content locale, without touching the global i18n setting.
+  const tEdit = useMemo(() => i18n.getFixedT(activeContentLocale, "instructor"), [activeContentLocale, i18n]);
 
   // Per-locale draft cache for section & lesson dialogs
   type SectionDraft = { title: string; description: string };
@@ -548,6 +552,20 @@ const InstructorCourseEdit = () => {
     };
   };
 
+  const createSourceInput = (item: {
+    id: string;
+    title: string;
+    shortDescription?: string | null;
+    markdownDescription?: string | null;
+    youtubeUrl?: string | null;
+  }): DescriptionSourceInput => ({
+    id: item.id,
+    title: item.title.trim() || t("courseEdit.defaults.lessonTitle"),
+    shortDescription: item.shortDescription?.trim() || undefined,
+    markdownDescription: item.markdownDescription?.trim() || undefined,
+    youtubeUrl: item.youtubeUrl?.trim() || undefined,
+  });
+
   const buildGeneratorWarning = (sources: DescriptionGeneratorSourcePreview[]): string | null => {
     const usableSources = sources.filter((source) => !source.sourceKinds.includes("missing"));
     if (usableSources.length === 0) {
@@ -621,6 +639,16 @@ const InstructorCourseEdit = () => {
         targetField,
         locale: activeContentLocale,
         sourceLocale,
+        sourceInputs: [
+          createSourceInput({
+            id: `course-${sourceLocale}`,
+            title: `${t("courseEdit.descriptionGenerator.currentCourseSource")} · ${localeBadge(sourceLocale)}`,
+            shortDescription:
+              targetField === "short_description" ? sourceText : undefined,
+            markdownDescription:
+              targetField === "description" ? sourceText : undefined,
+          }),
+        ],
         courseId: id,
       },
       onApply: (value) =>
@@ -1712,6 +1740,13 @@ const InstructorCourseEdit = () => {
         targetField: "description",
         locale: dialogSectionLocale,
         sourceLocale,
+        sourceInputs: [
+          createSourceInput({
+            id: `${editingSection.id}-${sourceLocale}`,
+            title: `${sourceDraft.title || t("courseEdit.sections.titleLabel")} · ${localeBadge(sourceLocale)}`,
+            markdownDescription: sourceDraft.description,
+          }),
+        ],
         courseId: id,
         sectionId: editingSection.id,
       },
@@ -1800,6 +1835,16 @@ const InstructorCourseEdit = () => {
         targetField: params.targetField,
         locale: params.locale,
         sourceLocale,
+        sourceInputs: [
+          createSourceInput({
+            id: `${editingLesson?.id ?? "draft"}-${sourceLocale}-${params.targetField}`,
+            title: `${sourceDraft.title || t("courseEdit.defaults.lessonTitle")} · ${localeBadge(sourceLocale)}`,
+            shortDescription:
+              params.targetField === "short_description" ? sourceText : undefined,
+            markdownDescription:
+              params.targetField === "description_markdown" ? sourceText : undefined,
+          }),
+        ],
         courseId: id,
         lessonId: editingLesson?.id,
       },
@@ -3487,7 +3532,7 @@ const InstructorCourseEdit = () => {
           {/* Locale switcher — always visible */}
           <div className="mb-3 rounded-lg border border-border-subtle bg-surface-raised p-2">
             <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-foreground-muted">
-              Ngôn ngữ đang chỉnh sửa
+              {tEdit("courseEdit.sidebar.editingLanguage" as never)}
             </p>
             <div className="mb-2 rounded-lg border border-border-subtle bg-surface-base p-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -3524,7 +3569,7 @@ const InstructorCourseEdit = () => {
                   {loc.toUpperCase()}
                   {loc === primaryContentLocale && (
                     <span className="rounded bg-primary-foreground/20 px-1 py-0.5 text-[10px] leading-none">
-                      chính
+                      {tEdit("courseEdit.sidebar.primaryBadge" as never)}
                     </span>
                   )}
                 </button>
@@ -3533,10 +3578,10 @@ const InstructorCourseEdit = () => {
           </div>
           <div className="mb-3 px-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
-              Điều hướng chỉnh sửa
+              {tEdit("courseEdit.sidebar.navTitle" as never)}
             </p>
             <p className="mt-1 text-sm text-foreground-muted">
-              Đi qua từng nhóm cấu hình để hoàn thiện khoá học trước khi xuất bản.
+              {tEdit("courseEdit.sidebar.navHint" as never)}
             </p>
           </div>
           <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
@@ -3553,7 +3598,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <Settings className="size-4 shrink-0" aria-hidden />
-                Thông tin chung
+                {tEdit("courseEdit.sidebar.nav.info" as never)}
               </button>
             </li>
             ) : null}
@@ -3570,7 +3615,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <DollarSign className="size-4 shrink-0" aria-hidden />
-                Giá & thanh toán
+                {tEdit("courseEdit.sidebar.nav.pricing" as never)}
               </button>
             </li>
             ) : null}
@@ -3587,7 +3632,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <List className="size-4 shrink-0" aria-hidden />
-                Nội dung & bài học
+                {tEdit("courseEdit.sidebar.nav.content" as never)}
               </button>
             </li>
             ) : null}
@@ -3604,7 +3649,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <FileText className="size-4 shrink-0" aria-hidden />
-                Bài tập cuối khoá
+                {tEdit("courseEdit.sidebar.nav.assignments" as never)}
               </button>
             </li>
             ) : null}
@@ -3621,7 +3666,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <Award className="size-4 shrink-0" aria-hidden />
-                Chứng nhận
+                {tEdit("courseEdit.sidebar.nav.certificate" as never)}
               </button>
             </li>
             ) : null}
@@ -3638,7 +3683,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <Mail className="size-4 shrink-0" aria-hidden />
-                {t("courseEdit.announcements.sectionTitle")}
+                {tEdit("courseEdit.announcements.sectionTitle" as never)}
               </button>
             </li>
             ) : null}
@@ -3655,7 +3700,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <Users className="size-4 shrink-0" aria-hidden />
-                Quản lý học viên
+                {tEdit("courseEdit.sidebar.nav.students" as never)}
               </button>
             </li>
             ) : null}
@@ -3672,7 +3717,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <AlertTriangle className="size-4 shrink-0" aria-hidden />
-                Xoá khoá học
+                {tEdit("courseEdit.sidebar.nav.danger" as never)}
               </button>
             </li>
             ) : null}
@@ -3684,13 +3729,13 @@ const InstructorCourseEdit = () => {
           {activeSection === "info" && canAccessInfo && (
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground">
-                Thông tin chung
+                {tEdit("courseEdit.sidebar.nav.info" as never)}
               </h2>
               <FieldGroup className="mt-4">
                 {/* Locale config — advanced, collapsed into a summary row */}
                 <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2">
                   <div className="flex items-center gap-2 text-xs text-foreground-muted">
-                    <span className="font-medium text-foreground">Ngôn ngữ hỗ trợ:</span>
+                    <span className="font-medium text-foreground">{tEdit("courseEdit.i18n.supportedLocalesLabel" as never)}:</span>
                     {(["vi", "en"] as const).map((loc) => {
                       const enabled = supportedLocales.includes(loc);
                       return (
@@ -3722,7 +3767,7 @@ const InstructorCourseEdit = () => {
                     })}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-foreground-muted">
-                    <span className="font-medium text-foreground">Ngôn ngữ chính:</span>
+                    <span className="font-medium text-foreground">{tEdit("courseEdit.i18n.primaryLocaleLabel" as never)}:</span>
                     <select
                       value={primaryContentLocale}
                       onChange={(e) => setPrimaryContentLocale(normalizeCourseLocale(e.target.value))}
@@ -5089,7 +5134,7 @@ const InstructorCourseEdit = () => {
           {activeSection === "pricing" && canAccessPricing && (
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
-                <DollarSign className="size-5" aria-hidden /> Giá & thanh toán
+                <DollarSign className="size-5" aria-hidden /> {tEdit("courseEdit.sidebar.nav.pricing" as never)}
               </h2>
               <p className="mt-1 text-sm text-foreground-muted">
                 Thiết lập mô hình truy cập, giá khoá học, phí chứng nhận và mã
@@ -5522,12 +5567,12 @@ const InstructorCourseEdit = () => {
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
-                  <List className="size-5" /> Nội dung khoá học
+                  <List className="size-5" /> {tEdit("courseEdit.content.heading" as never)}
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   {reorderingLessons && (
                     <span className="text-xs text-foreground-muted">
-                      Đang lưu thứ tự bài học...
+                      {tEdit("courseEdit.content.savingOrder" as never)}
                     </span>
                   )}
                   <Button
@@ -5544,8 +5589,7 @@ const InstructorCourseEdit = () => {
                 </div>
               </div>
               <p className="mt-2 text-xs text-foreground-muted">
-                Kéo biểu tượng chấm để đổi thứ tự bài trong từng chương, hoặc
-                dùng mũi tên lên/xuống khi cần.
+                {tEdit("courseEdit.content.dragHint" as never)}
               </p>
 
               <div className="mt-4 space-y-4">
@@ -5890,7 +5934,7 @@ const InstructorCourseEdit = () => {
 
               <div className="mt-4 rounded-md border border-dashed border-border-subtle p-4">
                 <p className="text-sm text-foreground-muted mb-2">
-                  Thêm chương mới
+                  {tEdit("courseEdit.content.addSectionHeading" as never)}
                 </p>
                 <div className="grid gap-2">
                   <Input
@@ -6922,7 +6966,7 @@ const InstructorCourseEdit = () => {
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h2 className="flex items-center gap-2 text-lg font-medium text-foreground">
-                  <FileText className="size-5" aria-hidden /> Bài tập cuối khoá
+                  <FileText className="size-5" aria-hidden /> {tEdit("courseEdit.sidebar.nav.assignments" as never)}
                 </h2>
                 <span className="rounded bg-surface-raised px-2 py-1 text-xs font-semibold text-foreground">
                   {activeContentLocale.toUpperCase()}
@@ -6943,7 +6987,7 @@ const InstructorCourseEdit = () => {
 
               <div className="mb-8 rounded-md border border-border-subtle bg-surface-raised p-4">
                 <h3 className="text-sm font-medium text-foreground mb-3">
-                  Cấu hình bài tập
+                  {tEdit("courseEdit.assignments.settingsTitle" as never)}
                 </h3>
                 <FieldGroup>
                   <div
@@ -7034,13 +7078,13 @@ const InstructorCourseEdit = () => {
               </div>
 
               <h3 className="text-sm font-medium text-foreground mb-3">
-                Bài nộp của học viên
+                {tEdit("courseEdit.assignments.submissionsTitle" as never)}
               </h3>
               {(contentForm.final_assignment_title || course.final_assignment_title) ? (
                 <>
                   {submissions.length === 0 ? (
                     <p className="text-sm text-foreground-muted py-4">
-                      Chưa có bài nộp nào.
+                      {tEdit("courseEdit.assignments.noSubmissions" as never)}
                     </p>
                   ) : (
                     <div className="overflow-hidden rounded-md border border-border-subtle">
@@ -7048,19 +7092,19 @@ const InstructorCourseEdit = () => {
                         <thead>
                           <tr className="border-b border-border-subtle bg-surface-raised">
                             <th className="px-4 py-3 font-medium text-foreground">
-                              Học viên
+                              {tEdit("courseEdit.assignments.columns.student" as never)}
                             </th>
                             <th className="px-4 py-3 font-medium text-foreground">
-                              Nội dung
+                              {tEdit("courseEdit.assignments.columns.content" as never)}
                             </th>
                             <th className="px-4 py-3 font-medium text-foreground">
-                              Ngày nộp
+                              {tEdit("courseEdit.assignments.columns.submittedAt" as never)}
                             </th>
                             <th className="px-4 py-3 font-medium text-foreground">
-                              Trạng thái
+                              {tEdit("courseEdit.assignments.columns.status" as never)}
                             </th>
                             <th className="px-4 py-3 font-medium text-foreground w-40">
-                              Thao tác
+                              {tEdit("courseEdit.assignments.columns.actions" as never)}
                             </th>
                           </tr>
                         </thead>
@@ -7079,7 +7123,7 @@ const InstructorCourseEdit = () => {
                                       {profile?.full_name || "—"}
                                     </span>
                                     <span className="block text-xs text-foreground-muted">
-                                      {prog}% bài học
+                                      {tEdit("courseEdit.assignments.lessonProgress" as never, { progress: prog })}
                                     </span>
                                   </div>
                                 </td>
@@ -7089,7 +7133,7 @@ const InstructorCourseEdit = () => {
                                   </p>
                                   {sub.file_urls?.length ? (
                                     <span className="text-xs text-foreground-muted">
-                                      {sub.file_urls.length} file đính kèm
+                                      {tEdit("courseEdit.assignments.attachments" as never, { count: sub.file_urls.length })}
                                     </span>
                                   ) : null}
                                 </td>
@@ -7101,16 +7145,15 @@ const InstructorCourseEdit = () => {
                                 <td className="px-4 py-3">
                                   {sub.status === "approved" ? (
                                     <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
-                                      <CheckCircle2 className="size-3.5" aria-hidden /> Đã
-                                      duyệt
+                                      <CheckCircle2 className="size-3.5" aria-hidden /> {tEdit("courseEdit.students.status.approved" as never)}
                                     </span>
                                   ) : sub.status === "rejected" ? (
                                     <span className="inline-flex items-center gap-1 rounded-md bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">
-                                      <XCircle className="size-3.5" /> Từ chối
+                                      <XCircle className="size-3.5" /> {tEdit("courseEdit.students.status.rejected" as never)}
                                     </span>
                                   ) : (
                                     <span className="inline-flex items-center gap-1 rounded-md bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">
-                                      Chờ duyệt
+                                      {tEdit("courseEdit.students.status.pending" as never)}
                                     </span>
                                   )}
                                 </td>
@@ -7149,7 +7192,7 @@ const InstructorCourseEdit = () => {
                                           )
                                         }
                                       >
-                                        Từ chối
+                                        {tEdit("courseEdit.assignments.reviewReject" as never)}
                                       </Button>
                                     </div>
                                   ) : null}
@@ -7164,8 +7207,7 @@ const InstructorCourseEdit = () => {
                 </>
               ) : (
                 <p className="text-sm text-foreground-muted">
-                  Chưa có bài nộp nào. Thêm tiêu đề bài tập ở mục "Cấu hình bài
-                  tập" phía trên và lưu để bật yêu cầu nộp bài.
+                  {tEdit("courseEdit.assignments.noSubmissionsHint" as never)}
                 </p>
               )}
             </section>
@@ -7174,12 +7216,10 @@ const InstructorCourseEdit = () => {
           {activeSection === "certificate" && canAccessCertificate && (
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
-                <Award className="size-5" aria-hidden /> Template
-                chứng nhận
+                <Award className="size-5" aria-hidden /> {tEdit("courseEdit.certificate.sectionTitle" as never)}
               </h2>
               <p className="mb-4 text-sm text-foreground-muted">
-                Tải lên ảnh template chứng nhận (PNG/JPG). Tên học viên sẽ được
-                hiển thị tại vị trí bạn chọn (theo % từ trái và từ trên).
+                {tEdit("courseEdit.certificate.sectionDescription" as never)}
               </p>
               <p className="mb-4 text-sm text-foreground-muted">
                 Open Campus badge (OCB) chỉ khả dụng cho khoá học Corelia và người Corelia (hoặc admin/support).
@@ -7318,11 +7358,11 @@ const InstructorCourseEdit = () => {
           {activeSection === "students" && canAccessStudents && (
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
-                <Users className="size-5" /> Quản lý học viên
+                <Users className="size-5" /> {tEdit("courseEdit.sidebar.nav.students" as never)}
               </h2>
               {enrollments.length === 0 ? (
                 <p className="text-sm text-foreground-muted py-4">
-                  Chưa có học viên nào ghi danh vào khoá học này.
+                  {tEdit("courseEdit.students.empty" as never)}
                 </p>
               ) : (
                 <div className="overflow-hidden rounded-md border border-border-subtle">
@@ -7330,28 +7370,28 @@ const InstructorCourseEdit = () => {
                     <thead>
                       <tr className="border-b border-border-subtle bg-surface-raised">
                         <th className="px-4 py-3 font-medium text-foreground">
-                          Học viên
+                          {tEdit("courseEdit.students.columns.student" as never)}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
                           Email
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          Tiến độ
+                          {tEdit("courseEdit.students.columns.progress" as never)}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          Bài tập
+                          {tEdit("courseEdit.students.columns.assignment" as never)}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          Chứng nhận
+                          {tEdit("courseEdit.students.columns.certificate" as never)}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          Thanh toán
+                          {tEdit("courseEdit.students.columns.payment" as never)}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          Ngày ghi danh
+                          {tEdit("courseEdit.students.columns.enrolledAt" as never)}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          Lần truy cập cuối
+                          {tEdit("courseEdit.students.columns.lastAccess" as never)}
                         </th>
                       </tr>
                     </thead>
@@ -7399,20 +7439,20 @@ const InstructorCourseEdit = () => {
                                 sub ? (
                                   sub.status === "approved" ? (
                                     <span className="text-success text-xs">
-                                      Đã duyệt
+                                      {tEdit("courseEdit.students.status.approved" as never)}
                                     </span>
                                   ) : sub.status === "rejected" ? (
                                     <span className="text-destructive text-xs">
-                                      Từ chối
+                                      {tEdit("courseEdit.students.status.rejected" as never)}
                                     </span>
                                   ) : (
                                     <span className="text-warning text-xs">
-                                      Chờ duyệt
+                                      {tEdit("courseEdit.students.status.pending" as never)}
                                     </span>
                                   )
                                 ) : (
                                   <span className="text-foreground-muted text-xs">
-                                    Chưa nộp
+                                    {tEdit("courseEdit.students.status.notSubmitted" as never)}
                                   </span>
                                 )
                               ) : (
@@ -7424,11 +7464,11 @@ const InstructorCourseEdit = () => {
                             <td className="px-4 py-3">
                               {hasCert ? (
                                 <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
-                                  <CheckCircle2 className="size-3.5" aria-hidden /> Đã cấp
+                                  <CheckCircle2 className="size-3.5" aria-hidden /> {tEdit("courseEdit.students.status.issued" as never)}
                                 </span>
                               ) : (
                                 <span className="text-foreground-muted text-xs">
-                                  Chưa đủ điều kiện
+                                  {tEdit("courseEdit.students.status.notEligible" as never)}
                                 </span>
                               )}
                             </td>
@@ -7436,7 +7476,7 @@ const InstructorCourseEdit = () => {
                               {isPaid ? (
                                 <div className="space-y-0.5">
                                   <div className="text-xs font-medium text-foreground">
-                                    Trả phí ·{" "}
+                                    {tEdit("courseEdit.students.status.paid" as never)} ·{" "}
                                     {formatVndPrice(e.paid_amount_vnd)}
                                   </div>
                                   <div className="text-xs text-foreground-muted">
@@ -7450,7 +7490,7 @@ const InstructorCourseEdit = () => {
                                 </div>
                               ) : (
                                 <span className="text-xs text-foreground-muted">
-                                  Miễn phí / chưa ghi nhận
+                                  {tEdit("courseEdit.students.status.free" as never)}
                                 </span>
                               )}
                             </td>
@@ -7481,11 +7521,10 @@ const InstructorCourseEdit = () => {
           {activeSection === "danger" && canAccessDanger && (
             <section className="rounded-md border border-destructive/30 bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
-                <AlertTriangle className="size-5" aria-hidden /> Vùng nguy hiểm
+                <AlertTriangle className="size-5" aria-hidden /> {tEdit("courseEdit.danger.dangerZoneTitle" as never)}
               </h2>
               <p className="text-sm text-foreground-muted mb-4">
-                Xoá khoá học sẽ xoá toàn bộ nội dung (chương, bài học). Hành
-                động này không thể hoàn tác.
+                {tEdit("courseEdit.danger.deleteWarning" as never)}
               </p>
               <Dialog>
                 <DialogTrigger
@@ -7495,7 +7534,7 @@ const InstructorCourseEdit = () => {
                       className="text-destructive border-destructive/50 hover:bg-destructive/10"
                       type="button"
                     >
-                      <Trash2 className="size-4" aria-hidden /> Xoá khoá học
+                      <Trash2 className="size-4" aria-hidden /> {tEdit("courseEdit.sidebar.nav.danger" as never)}
                     </Button>
                   }
                 />
@@ -7504,15 +7543,14 @@ const InstructorCourseEdit = () => {
                     <DialogTitle>{t("courseEdit.danger.deleteCourseTitle")}</DialogTitle>
                   </DialogHeader>
                   <p className="text-sm text-foreground-muted">
-                    Toàn bộ nội dung (chương, bài học) sẽ bị xoá. Hành động này
-                    không thể hoàn tác.
+                    {tEdit("courseEdit.danger.deleteConfirmWarning" as never)}
                   </p>
                   <DialogFooter>
                     <Button
                       variant="destructive"
                       onClick={() => void handleDeleteCourse()}
                     >
-                      Xoá
+                      {tEdit("courseEdit.danger.deleteButton" as never)}
                     </Button>
                   </DialogFooter>
                 </DialogContent>

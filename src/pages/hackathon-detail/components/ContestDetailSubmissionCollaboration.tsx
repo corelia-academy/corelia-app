@@ -3,6 +3,7 @@ import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileCombobox } from "@/components/ui/profile-combobox";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 import { supabase } from "@/lib/supabase";
 
@@ -93,8 +94,19 @@ export function ContestDetailSubmissionCollaboration({
 
   if (collabLoading && !collabProject) {
     return (
-      <div className="text-sm text-foreground-muted">
-        {translate("common:status.loading")}
+      <div
+        className="space-y-3 rounded-md border border-border-subtle bg-surface-base p-4"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div className="flex items-center gap-2">
+          <Skeleton className="size-5 rounded-full" />
+          <Skeleton className="h-5 w-36" />
+        </div>
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-10 w-full" />
       </div>
     );
   }
@@ -140,7 +152,10 @@ export function ContestDetailSubmissionCollaboration({
           }}
         />
         {invitableLoading ? (
-          <p className="text-xs text-foreground-muted">{translate("common:status.loading")}</p>
+          <div className="space-y-2" aria-busy="true">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
         ) : null}
       </div>
 

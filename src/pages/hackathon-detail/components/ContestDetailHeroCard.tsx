@@ -1,4 +1,4 @@
-import { Share2, Trophy } from "lucide-react";
+import { ArrowRight, Share2, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -166,8 +166,10 @@ function PublicHero({
     hackathonLifecycle,
     publicHeroHighlights,
     publicHeroCountdown,
+    publicCta,
     formatDateTime,
     locationLabel,
+    navigate,
   } = vm;
   const lifecycleForBadge =
     hackathonLifecycle ?? deriveHackathonLifecycle(contest);
@@ -182,77 +184,107 @@ function PublicHero({
     lifecycleForBadge !== "ended" && publicHeroHighlights.length > 0;
 
   return (
-    <Card className="overflow-hidden">
-      <HackathonHeroBanner contest={contest} translate={translate} />
-      <CardContent className="p-4 sm:p-6">
-        <div className="flex flex-col gap-5">
-          <header className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-              {translate("detail.labels.publicType")}
+    <div className="rounded-lg border border-border-subtle bg-surface-base">
+      <Card className="overflow-hidden border-none bg-transparent shadow-none">
+        <HackathonHeroBanner contest={contest} translate={translate} />
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-5">
+            <div className="space-y-4">
+              <header className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-5">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+                    <span>{translate("detail.labels.publicType")}</span>
+                    <span className="text-foreground-subtle/50">•</span>
+                    <HackathonLifecyclePill
+                      lifecycle={lifecycleForBadge}
+                      label={lifecycleBadgeLabel}
+                    />
+                  </div>
+                  <Tag className="text-2xl font-semibold tracking-tight text-foreground">
+                    {contest.title}
+                  </Tag>
+                </div>
+                <div className="mt-1 flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+                  {publicCta ? (
+                    <Button
+                      type="button"
+                      size="lg"
+                      variant={publicCta.variant}
+                      className="min-h-11 gap-2"
+                      disabled={Boolean(publicCta.disabled)}
+                      onClick={() => navigate(publicCta.navigateTo)}
+                    >
+                      <span className="max-w-[18rem] truncate">
+                        {publicCta.label}
+                      </span>
+                      {!publicCta.disabled ? (
+                        <ArrowRight className="size-4" aria-hidden />
+                      ) : null}
+                    </Button>
+                  ) : null}
+                  <HackathonShareMenu contest={contest} translate={translate} />
+                </div>
+              </header>
+
+              {contest.tagline?.trim() ? (
+                <p className="max-w-3xl text-sm leading-relaxed text-foreground-muted">
+                  {contest.tagline}
+                </p>
+              ) : null}
+
+              {prizeSummary ? (
+                <div className="flex w-fit items-center gap-2 rounded-md border border-primary/20 bg-primary-muted px-3 py-1.5 text-xs font-semibold text-primary transition-colors duration-150">
+                  <Trophy className="size-4 shrink-0 text-primary" aria-hidden />
+                  <span className="min-w-0 leading-snug">{prizeSummary}</span>
+                </div>
+              ) : null}
+
+              {publicCta?.helper ? (
+                <p className="max-w-2xl text-xs leading-relaxed text-foreground-muted">
+                  {publicCta.helper}
+                </p>
+              ) : null}
             </div>
-            <Tag className="text-2xl font-semibold tracking-tight text-foreground">
-              {contest.title}
-            </Tag>
-            {contest.tagline?.trim() ? (
-              <p className="max-w-2xl text-sm leading-relaxed text-foreground-muted">
-                {contest.tagline}
+
+            {publicHeroCountdown ? (
+              <p
+                aria-live="polite"
+                className={cn(
+                  "text-sm font-medium tabular-nums",
+                  publicHeroCountdown.urgent
+                    ? "text-destructive"
+                    : "text-foreground",
+                )}
+              >
+                {publicHeroCountdown.text}
               </p>
             ) : null}
-          </header>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <HackathonLifecyclePill
-              lifecycle={lifecycleForBadge}
-              label={lifecycleBadgeLabel}
+            {showHighlights ? (
+              <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-sm text-foreground-muted sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1">
+                {publicHeroHighlights.map((line) => (
+                  <li key={line} className="flex min-w-0 items-start gap-2">
+                    <span
+                      className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary"
+                      aria-hidden
+                    />
+                    <span className="leading-snug">{line}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            <ContestDetailScheduleMetaStrip
+              contest={contest}
+              translate={translate}
+              formatDateTime={formatDateTime}
+              locationLabel={locationLabel}
+              labelsMode="public"
             />
-            <HackathonShareMenu contest={contest} translate={translate} />
           </div>
-
-          {publicHeroCountdown ? (
-            <p
-              aria-live="polite"
-              className={cn(
-                "text-sm font-medium tabular-nums",
-                publicHeroCountdown.urgent
-                  ? "text-destructive"
-                  : "text-foreground",
-              )}
-            >
-              {publicHeroCountdown.text}
-            </p>
-          ) : null}
-
-          {showHighlights ? (
-            <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-sm text-foreground-muted sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1">
-              {publicHeroHighlights.map((line) => (
-                <li key={line} className="flex min-w-0 items-start gap-2">
-                  <span
-                    className="mt-1.5 size-1 shrink-0 rounded-full bg-primary"
-                    aria-hidden
-                  />
-                  <span className="leading-snug">{line}</span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-
-          {prizeSummary ? (
-            <p className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <Trophy className="size-4 shrink-0 text-primary" aria-hidden />
-              <span className="min-w-0 leading-snug">{prizeSummary}</span>
-            </p>
-          ) : null}
-
-          <ContestDetailScheduleMetaStrip
-            contest={contest}
-            translate={translate}
-            formatDateTime={formatDateTime}
-            locationLabel={locationLabel}
-            labelsMode="public"
-          />
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

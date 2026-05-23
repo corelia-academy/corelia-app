@@ -1072,6 +1072,17 @@
         "notePlaceholder": "Invite note"
       },
       "submission": {
+        "projectGroup": "Project",
+        "linksGroup": "Links",
+        "mediaGroup": "Media",
+        "titleLabel": "Submission title",
+        "summaryLabel": "Summary",
+        "demoUrlLabel": "Demo URL",
+        "repoUrlLabel": "Repository URL",
+        "slideUrlLabel": "Slide deck URL",
+        "screenshotUrlLabel": "Screenshot URL",
+        "coverImageUrlLabel": "Cover image URL",
+        "videoUrlLabel": "Demo video URL",
         "titlePlaceholder": "Submission title",
         "summaryPlaceholder": "Summarize the solution, the problem solved, and key highlights",
         "demoUrlPlaceholder": "Demo URL",

@@ -13,6 +13,7 @@ type RequestBody = {
   targetField?: unknown;
   locale?: unknown;
   sourceLocale?: unknown;
+  sourceInputs?: unknown;
   courseId?: unknown;
   sectionId?: unknown;
   lessonId?: unknown;
@@ -45,6 +46,16 @@ type LessonSource = {
   transcript?: string;
   sourceKinds: SourceKind[];
   snippet?: string;
+};
+
+type SourceInput = {
+  id?: unknown;
+  title?: unknown;
+  lessonTitle?: unknown;
+  shortDescription?: unknown;
+  markdownDescription?: unknown;
+  transcript?: unknown;
+  youtubeUrl?: unknown;
 };
 
 const CORS_METHODS = "POST, OPTIONS";
@@ -167,6 +178,7 @@ function parseBody(body: RequestBody): {
   targetField: TargetField;
   locale: Locale;
   sourceLocale: Locale | null;
+  sourceInputs: SourceInput[] | null;
   courseId: string | null;
   sectionId: string | null;
   lessonId: string | null;
@@ -189,6 +201,7 @@ function parseBody(body: RequestBody): {
   const locale = body.locale === "en" ? "en" : body.locale === "vi" ? "vi" : null;
   const sourceLocale =
     body.sourceLocale === "en" ? "en" : body.sourceLocale === "vi" ? "vi" : null;
+  const sourceInputs = Array.isArray(body.sourceInputs) ? (body.sourceInputs as SourceInput[]) : null;
   const courseId = typeof body.courseId === "string" && body.courseId.trim() ? body.courseId.trim() : null;
   const sectionId = typeof body.sectionId === "string" && body.sectionId.trim() ? body.sectionId.trim() : null;
   const lessonId = typeof body.lessonId === "string" && body.lessonId.trim() ? body.lessonId.trim() : null;
@@ -199,7 +212,7 @@ function parseBody(body: RequestBody): {
   if (!action || !type || !targetField || !locale) {
     throw new Error("Thiếu action, type, targetField hoặc locale hợp lệ.");
   }
-  return { action, type, targetField, locale, sourceLocale, courseId, sectionId, lessonId, youtubeUrl, lessonTitle };
+  return { action, type, targetField, locale, sourceLocale, sourceInputs, courseId, sectionId, lessonId, youtubeUrl, lessonTitle };
 }
 
 function normalizeYoutubeVideoId(value: string): string | null {
@@ -463,6 +476,49 @@ async function buildLessonSources(
   return sources;
 }
 
+async function buildProvidedSources(
+  inputs: SourceInput[],
+  locale: Locale,
+): Promise<LessonSource[]> {
+  const sources: LessonSource[] = [];
+  for (const [index, raw] of inputs.entries()) {
+    const shortDescription = String(raw.shortDescription ?? "").trim();
+    const markdownDescription = String(raw.markdownDescription ?? "").trim();
+    const transcriptInput = String(raw.transcript ?? "").trim();
+    const youtubeUrl = String(raw.youtubeUrl ?? "").trim();
+    const sourceKinds: SourceKind[] = [];
+    if (shortDescription) sourceKinds.push("short_description");
+    if (markdownDescription) sourceKinds.push("description_markdown");
+    if (transcriptInput) sourceKinds.push("transcript");
+
+    let transcript = transcriptInput || undefined;
+    const needsTranscript =
+      sourceKinds.length === 0 ||
+      (shortDescription.length + markdownDescription.length < 180 && !!youtubeUrl && !transcript);
+    if (needsTranscript && youtubeUrl) {
+      const videoId = normalizeYoutubeVideoId(youtubeUrl);
+      if (videoId) {
+        transcript = (await fetchTranscript(videoId, locale)) ?? undefined;
+        if (transcript) sourceKinds.push("transcript");
+      }
+    }
+
+    const title = String(raw.title ?? raw.lessonTitle ?? "").trim() || `Source ${index + 1}`;
+
+    sources.push({
+      lessonId: String(raw.id ?? `source-${index + 1}`),
+      lessonTitle: title,
+      shortDescription: shortDescription || undefined,
+      markdownDescription: markdownDescription || undefined,
+      youtubeUrl: youtubeUrl || undefined,
+      transcript,
+      sourceKinds,
+      snippet: pickSnippet(shortDescription, markdownDescription, transcript),
+    });
+  }
+  return sources;
+}
+
 function buildWarning(sources: LessonSource[]): string | null {
   const usable = sources.filter((source) => source.sourceKinds.length > 0);
   const totalChars = usable.reduce(
@@ -610,16 +666,45 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const parsed = parseBody((await req.json()) as RequestBody);
     const normalizedYoutubeVideoId = parsed.youtubeUrl ? normalizeYoutubeVideoId(parsed.youtubeUrl) : null;
 
+    let guardCourseId = parsed.courseId ?? null;
+    if (!guardCourseId && parsed.lessonId) {
+      const { data, error } = await db
+        .from("course_lessons")
+        .select("course_id")
+        .eq("id", parsed.lessonId)
+        .single();
+      if (error || !data?.course_id) {
+        return withCors(req, json({ message: "Không xác định được phạm vi khoá học." }, 400));
+      }
+      guardCourseId = String(data.course_id);
+    }
+    if (!guardCourseId && parsed.sectionId) {
+      const { data, error } = await db
+        .from("course_sections")
+        .select("course_id")
+        .eq("id", parsed.sectionId)
+        .single();
+      if (error || !data?.course_id) {
+        return withCors(req, json({ message: "Không xác định được phạm vi khoá học." }, 400));
+      }
+      guardCourseId = String(data.course_id);
+    }
+    if (!guardCourseId) {
+      return withCors(req, json({ message: "Không xác định được phạm vi khoá học." }, 400));
+    }
+    await ensureCanManageCourse(db, user.id, role, guardCourseId);
+
     let rows: LessonRow[] = [];
     let isSectionScoped = false;
+    const hasProvidedSources = parsed.action === "translate" && (parsed.sourceInputs?.length ?? 0) > 0;
 
-    if (parsed.lessonId) {
+    if (hasProvidedSources) {
+      isSectionScoped = Boolean(parsed.sectionId);
+    } else if (parsed.lessonId) {
       rows = await resolveLessonRows(db, parsed);
-      await ensureCanManageCourse(db, user.id, role, rows[0]!.course_id);
     } else if (parsed.type === "lesson" && parsed.courseId && !parsed.sectionId && normalizedYoutubeVideoId) {
       // New/unsaved lesson (no lessonId) within a known course — treat as single draft row
       // so youtubeUrlOverride applies and permissions are still validated.
-      await ensureCanManageCourse(db, user.id, role, parsed.courseId);
       rows = [
         {
           id: "draft",
@@ -629,20 +714,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
         },
       ];
     } else if (parsed.courseId || parsed.sectionId) {
-      const guardCourseId =
-        parsed.courseId ??
-        (
-          await db
-            .from("course_sections")
-            .select("course_id")
-            .eq("id", parsed.sectionId ?? "")
-            .single()
-        ).data?.course_id ??
-        null;
-      if (!guardCourseId) {
-        return withCors(req, json({ message: "Không xác định được phạm vi khoá học." }, 400));
-      }
-      await ensureCanManageCourse(db, user.id, role, String(guardCourseId));
       rows = await resolveLessonRows(db, {
         courseId: String(guardCourseId),
         sectionId: parsed.sectionId,
@@ -668,26 +739,38 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const sources = await buildLessonSources(rows, parsed.locale, {
-      forceTranscript:
-        parsed.action === "generate" && parsed.type === "lesson" && !!normalizedYoutubeVideoId,
-      youtubeUrlOverride:
-        parsed.action === "generate" && parsed.type === "lesson" && rows.length === 1 && parsed.youtubeUrl
-          ? parsed.youtubeUrl
-          : null,
-    });
-    const trivialTitles = ["lesson", "draft lesson"];
-    const usable = sources.filter((source) => source.sourceKinds.length > 0);
-    const titledSources = sources.filter(
-      (source) =>
-        source.lessonTitle && !trivialTitles.includes(source.lessonTitle.toLowerCase()),
-    );
+    const sources = hasProvidedSources
+      ? await buildProvidedSources(parsed.sourceInputs ?? [], parsed.locale)
+      : await buildLessonSources(rows, parsed.locale, {
+          forceTranscript:
+            parsed.action === "generate" && parsed.type === "lesson" && !!normalizedYoutubeVideoId,
+          youtubeUrlOverride:
+            parsed.action === "generate" &&
+            parsed.type === "lesson" &&
+            rows.length === 1 &&
+            parsed.youtubeUrl
+              ? parsed.youtubeUrl
+              : null,
+        });
     const warning = buildWarning(sources);
-    if (usable.length === 0 && titledSources.length === 0) {
+    const usable = sources.filter((source) => source.sourceKinds.length > 0);
+    const sourcesForPrompt = hasProvidedSources
+      ? usable
+      : (() => {
+          const trivialTitles = ["lesson", "draft lesson"];
+          const titledSources = sources.filter(
+            (source) =>
+              source.lessonTitle && !trivialTitles.includes(source.lessonTitle.toLowerCase()),
+          );
+          if (usable.length === 0 && titledSources.length === 0) {
+            return null;
+          }
+          return usable.length > 0 ? usable : titledSources;
+        })();
+    if (!sourcesForPrompt) {
       return withCors(req, json({ message: warning ?? "Không đủ nội dung để generate." }, 422));
     }
 
-    const sourcesForPrompt = usable.length > 0 ? usable : titledSources;
     const prompt = buildPrompt({
       action: parsed.action,
       type: parsed.type,

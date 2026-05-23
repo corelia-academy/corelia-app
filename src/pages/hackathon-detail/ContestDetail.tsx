@@ -1,6 +1,7 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Settings } from "lucide-react";
 import { Link } from "react-router";
 import type { Contest } from "@/types/hackathons";
+import { Button } from "@/components/ui/button";
 import { ContestDetailDeleteContestDialog } from "@/pages/hackathon-detail/components/ContestDetailDeleteContestDialog";
 import {
   ContestDetailErrorCard,
@@ -13,7 +14,6 @@ import { ContestDetailMainLayout } from "@/pages/hackathon-detail/components/Con
 import { ContestDetailLeftColumn } from "@/pages/hackathon-detail/components/ContestDetailLeftColumn";
 import { ContestDetailRightColumn } from "@/pages/hackathon-detail/components/ContestDetailRightColumn";
 import { ContestPublicHashScroll } from "@/pages/hackathon-detail/components/ContestPublicHashScroll";
-import { ContestWorkspaceAccessCard } from "@/pages/hackathon-detail/components/ContestWorkspaceAccessCard";
 import { ContestDetailProvider } from "@/pages/hackathon-detail/ContestDetailContext";
 import { useContestDetail } from "@/pages/hackathon-detail/hooks/useContestDetail";
 import { narrowContestDetailView } from "@/pages/hackathon-detail/viewModel";
@@ -93,9 +93,6 @@ export default function ContestDetail({
                   {vm.contest.title}
                 </span>
               </nav>
-              {vm.canAccessWorkspace ? (
-                <ContestWorkspaceAccessCard vm={vm} />
-              ) : null}
             </div>
           ) : null
         }
@@ -116,6 +113,23 @@ export default function ContestDetail({
           />
         }
       />
+      {!vm.isManageView && vm.canAccessWorkspace ? (
+        <Button
+          type="button"
+          variant="secondary"
+          className="fixed bottom-20 right-4 z-40 min-h-11 gap-2 border border-border-strong md:bottom-6 md:right-6"
+          onClick={() =>
+            vm.navigate(
+              vm.contest.slug?.trim()
+                ? `/hackathons/${vm.contest.slug.trim()}/manage/overview`
+                : "/hackathons/manage",
+            )
+          }
+        >
+          <Settings className="size-4" aria-hidden />
+          {vm.translate("detail.workspaceFab.label")}
+        </Button>
+      ) : null}
     </ContestDetailProvider>
   );
 }
