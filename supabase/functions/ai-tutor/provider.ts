@@ -62,7 +62,7 @@ async function streamOpenAi(
     },
     body: JSON.stringify({
       model,
-      max_tokens: 800,
+      max_completion_tokens: 800,
       messages: request.messages,
       stream: true,
       stream_options: { include_usage: true },
@@ -71,7 +71,7 @@ async function streamOpenAi(
   if (!response.ok || !response.body) {
     const errBody = await response.text().catch(() => "");
     console.error("[ai-tutor] openai error", response.status, errBody);
-    throw new Error(`OpenAI request failed: ${response.status}`);
+    throw new Error(`OpenAI ${response.status}: ${errBody.slice(0, 500)}`);
   }
 
   let outputText = "";
