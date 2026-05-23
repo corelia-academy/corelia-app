@@ -5137,27 +5137,6 @@ const InstructorCourseEdit = () => {
                     </span>
                   </label>
                 </Field>
-                <Field>
-                  <label className="flex items-start gap-2">
-                    <input
-                      type="checkbox"
-                      checked={form.has_sections}
-                      onChange={(e) =>
-                        setForm((p) => ({
-                          ...p,
-                          has_sections: e.target.checked,
-                        }))
-                      }
-                      className="mt-0.5 rounded border-border"
-                    />
-                    <span className="text-sm text-foreground">
-                      <span className="font-medium">Phân chia theo section</span>
-                      <span className="mt-1 block text-xs text-foreground-muted">
-                        Bật nếu khoá học cần nhóm bài học theo chương/phần. Tắt để hiển thị danh sách bài học phẳng (không có section header).
-                      </span>
-                    </span>
-                  </label>
-                </Field>
               </FieldGroup>
               <Button
                 className="mt-4"
@@ -5629,6 +5608,24 @@ const InstructorCourseEdit = () => {
               <p className="mt-2 text-xs text-foreground-muted">
                 {tEdit("courseEdit.content.dragHint" as never)}
               </p>
+
+              <div className="mt-4 flex items-start gap-2 rounded-md border border-border-subtle bg-surface-raised px-3 py-2.5">
+                <input
+                  type="checkbox"
+                  id="has-sections-toggle"
+                  checked={form.has_sections}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, has_sections: e.target.checked }))
+                  }
+                  className="mt-0.5 rounded border-border"
+                />
+                <label htmlFor="has-sections-toggle" className="cursor-pointer text-sm text-foreground">
+                  <span className="font-medium">Phân chia theo section</span>
+                  <span className="mt-0.5 block text-xs text-foreground-muted">
+                    Bật nếu khoá học cần nhóm bài học theo chương/phần. Tắt để hiển thị danh sách bài học phẳng.
+                  </span>
+                </label>
+              </div>
 
               <div className="mt-4 space-y-4">
                 {form.access_model === "paid_upfront" && (
