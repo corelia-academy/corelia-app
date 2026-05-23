@@ -4,8 +4,14 @@ type Role = "student" | "instructor" | "support_staff" | "admin";
 type Locale = "vi" | "en";
 type GenerateType = "course" | "lesson";
 type ActionType = "generate" | "translate";
-type TargetField = "short_description" | "description" | "description_markdown";
+type TargetField =
+  | "title"
+  | "short_description"
+  | "description"
+  | "description_markdown"
+  | "learning_outcomes";
 type SourceKind = "short_description" | "description_markdown" | "transcript";
+type BundleKind = "course_info" | "section" | "lesson" | "assignment";
 
 type RequestBody = {
   action?: unknown;
@@ -14,6 +20,8 @@ type RequestBody = {
   locale?: unknown;
   sourceLocale?: unknown;
   sourceInputs?: unknown;
+  bundleKind?: unknown;
+  sourceBundle?: unknown;
   courseId?: unknown;
   sectionId?: unknown;
   lessonId?: unknown;
@@ -56,6 +64,15 @@ type SourceInput = {
   markdownDescription?: unknown;
   transcript?: unknown;
   youtubeUrl?: unknown;
+};
+
+type TranslationBundle = {
+  title?: string;
+  shortDescription?: string;
+  description?: string;
+  markdownDescription?: string;
+  learningOutcomes?: string[];
+  instructions?: string;
 };
 
 const CORS_METHODS = "POST, OPTIONS";
@@ -179,6 +196,8 @@ function parseBody(body: RequestBody): {
   locale: Locale;
   sourceLocale: Locale | null;
   sourceInputs: SourceInput[] | null;
+  bundleKind: BundleKind | null;
+  sourceBundle: TranslationBundle | null;
   courseId: string | null;
   sectionId: string | null;
   lessonId: string | null;
@@ -193,15 +212,25 @@ function parseBody(body: RequestBody): {
         : null;
   const type = body.type === "lesson" ? "lesson" : body.type === "course" ? "course" : null;
   const targetField =
+    body.targetField === "title" ||
     body.targetField === "short_description" ||
     body.targetField === "description" ||
-    body.targetField === "description_markdown"
+    body.targetField === "description_markdown" ||
+    body.targetField === "learning_outcomes"
       ? body.targetField
       : null;
   const locale = body.locale === "en" ? "en" : body.locale === "vi" ? "vi" : null;
   const sourceLocale =
     body.sourceLocale === "en" ? "en" : body.sourceLocale === "vi" ? "vi" : null;
   const sourceInputs = Array.isArray(body.sourceInputs) ? (body.sourceInputs as SourceInput[]) : null;
+  const bundleKind =
+    body.bundleKind === "course_info" ||
+    body.bundleKind === "section" ||
+    body.bundleKind === "lesson" ||
+    body.bundleKind === "assignment"
+      ? body.bundleKind
+      : null;
+  const sourceBundle = parseTranslationBundle(body.sourceBundle);
   const courseId = typeof body.courseId === "string" && body.courseId.trim() ? body.courseId.trim() : null;
   const sectionId = typeof body.sectionId === "string" && body.sectionId.trim() ? body.sectionId.trim() : null;
   const lessonId = typeof body.lessonId === "string" && body.lessonId.trim() ? body.lessonId.trim() : null;
@@ -212,7 +241,46 @@ function parseBody(body: RequestBody): {
   if (!action || !type || !targetField || !locale) {
     throw new Error("Thiếu action, type, targetField hoặc locale hợp lệ.");
   }
-  return { action, type, targetField, locale, sourceLocale, sourceInputs, courseId, sectionId, lessonId, youtubeUrl, lessonTitle };
+  return {
+    action,
+    type,
+    targetField,
+    locale,
+    sourceLocale,
+    sourceInputs,
+    bundleKind,
+    sourceBundle,
+    courseId,
+    sectionId,
+    lessonId,
+    youtubeUrl,
+    lessonTitle,
+  };
+}
+
+function parseTranslationBundle(value: unknown): TranslationBundle | null {
+  if (!value || typeof value !== "object") return null;
+  const input = value as Record<string, unknown>;
+  const text = (key: keyof TranslationBundle): string | undefined => {
+    const raw = input[key];
+    return typeof raw === "string" && raw.trim() ? raw.trim() : undefined;
+  };
+  const learningOutcomes = Array.isArray(input.learningOutcomes)
+    ? input.learningOutcomes
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter(Boolean)
+    : undefined;
+  const out: TranslationBundle = {
+    title: text("title"),
+    shortDescription: text("shortDescription"),
+    description: text("description"),
+    markdownDescription: text("markdownDescription"),
+    instructions: text("instructions"),
+  };
+  if (learningOutcomes?.length) out.learningOutcomes = learningOutcomes;
+  return Object.values(out).some((item) => (Array.isArray(item) ? item.length > 0 : Boolean(item)))
+    ? out
+    : null;
 }
 
 function normalizeYoutubeVideoId(value: string): string | null {
@@ -553,7 +621,15 @@ function buildPrompt(params: {
       : "Write entirely in English, clear and natural, without hype.";
   const targetInstruction =
     params.action === "translate"
-      ? params.targetField === "short_description"
+      ? params.targetField === "title"
+        ? params.locale === "vi"
+          ? "Dịch và biên tập thành một tiêu đề ngắn, tự nhiên, giữ đúng nghĩa."
+          : "Translate and polish into a short, natural title that preserves the meaning."
+        : params.targetField === "learning_outcomes"
+          ? params.locale === "vi"
+            ? "Dịch thành danh sách kết quả học tập, mỗi dòng là một ý ngắn, không bullet marker."
+            : "Translate into a list of learning outcomes, one short outcome per line, no bullet markers."
+          : params.targetField === "short_description"
         ? params.locale === "vi"
           ? "Dịch và biên tập thành mô tả ngắn 1-2 câu, tự nhiên, không dịch từng chữ."
           : "Translate and polish into a natural 1-2 sentence short description, not word-for-word."
@@ -619,6 +695,46 @@ function buildPrompt(params: {
   ].join("\n\n");
 }
 
+function bundleFieldInstruction(kind: BundleKind, locale: Locale): string {
+  const common =
+    locale === "vi"
+      ? "Dịch tự nhiên, rõ ràng, giữ ý nghĩa giáo dục, không dịch từng chữ."
+      : "Translate naturally and clearly, preserving the educational meaning without word-for-word phrasing.";
+  if (kind === "course_info") {
+    return `${common} Return JSON with keys: title, shortDescription, description, learningOutcomes. learningOutcomes must be an array of short strings.`;
+  }
+  if (kind === "section") {
+    return `${common} Return JSON with keys: title, description.`;
+  }
+  if (kind === "lesson") {
+    return `${common} Return JSON with keys: title, shortDescription, markdownDescription. Preserve useful Markdown structure in markdownDescription.`;
+  }
+  return `${common} Return JSON with keys: title, description, instructions.`;
+}
+
+function buildBundlePrompt(params: {
+  kind: BundleKind;
+  locale: Locale;
+  sourceLocale: Locale | null;
+  sourceBundle: TranslationBundle;
+}): string {
+  const localeInstruction =
+    params.locale === "vi"
+      ? "Viết hoàn toàn bằng tiếng Việt."
+      : "Write entirely in English.";
+  const framing =
+    params.locale === "vi"
+      ? `Bạn đang dịch nội dung khoá học từ ${params.sourceLocale === "en" ? "tiếng Anh" : "tiếng Việt"} sang tiếng Việt.`
+      : `You are translating course content from ${params.sourceLocale === "vi" ? "Vietnamese" : "English"} into English.`;
+  return [
+    framing,
+    localeInstruction,
+    bundleFieldInstruction(params.kind, params.locale),
+    "Return only valid JSON. Do not include Markdown fences, preface, or explanation.",
+    `Source JSON:\n${JSON.stringify(params.sourceBundle, null, 2)}`,
+  ].join("\n\n");
+}
+
 async function generateWithOpenAi(prompt: string): Promise<string> {
   const apiKey = Deno.env.get("OPENAI_API_KEY")?.trim() ?? "";
   if (!apiKey) throw new Error("Missing env: OPENAI_API_KEY");
@@ -646,6 +762,72 @@ async function generateWithOpenAi(prompt: string): Promise<string> {
     throw new Error("OpenAI trả về mô tả rỗng.");
   }
   return text;
+}
+
+function parseModelJson(text: string): unknown {
+  const trimmed = text.trim();
+  const unfenced = trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+  try {
+    return JSON.parse(unfenced);
+  } catch {
+    const start = unfenced.indexOf("{");
+    const end = unfenced.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      return JSON.parse(unfenced.slice(start, end + 1));
+    }
+    throw new Error("OpenAI trả về JSON không hợp lệ.");
+  }
+}
+
+function validateBundle(kind: BundleKind, value: unknown): TranslationBundle {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("OpenAI trả về bản dịch không hợp lệ.");
+  }
+  const input = value as Record<string, unknown>;
+  const readString = (key: string): string => {
+    const raw = input[key];
+    return typeof raw === "string" ? raw.trim() : "";
+  };
+  const bundle: TranslationBundle = {};
+  if (kind === "course_info") {
+    bundle.title = readString("title");
+    bundle.shortDescription = readString("shortDescription");
+    bundle.description = readString("description");
+    bundle.learningOutcomes = Array.isArray(input.learningOutcomes)
+      ? input.learningOutcomes
+          .map((item) => (typeof item === "string" ? item.trim() : ""))
+          .filter(Boolean)
+      : [];
+    if (!bundle.title && !bundle.shortDescription && !bundle.description && !bundle.learningOutcomes.length) {
+      throw new Error("OpenAI trả về bản dịch rỗng.");
+    }
+    return bundle;
+  }
+  if (kind === "section") {
+    bundle.title = readString("title");
+    bundle.description = readString("description");
+    if (!bundle.title && !bundle.description) throw new Error("OpenAI trả về bản dịch rỗng.");
+    return bundle;
+  }
+  if (kind === "lesson") {
+    bundle.title = readString("title");
+    bundle.shortDescription = readString("shortDescription");
+    bundle.markdownDescription = readString("markdownDescription");
+    if (!bundle.title && !bundle.shortDescription && !bundle.markdownDescription) {
+      throw new Error("OpenAI trả về bản dịch rỗng.");
+    }
+    return bundle;
+  }
+  bundle.title = readString("title");
+  bundle.description = readString("description");
+  bundle.instructions = readString("instructions");
+  if (!bundle.title && !bundle.description && !bundle.instructions) {
+    throw new Error("OpenAI trả về bản dịch rỗng.");
+  }
+  return bundle;
 }
 
 type OpenAiResponsesPayload = {
@@ -772,6 +954,39 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
     await ensureCanManageCourse(db, user.id, role, guardCourseId);
 
+    if (parsed.action === "translate" && parsed.bundleKind) {
+      if (!parsed.sourceBundle) {
+        return withCors(req, json({ message: "Không đủ nội dung nguồn để dịch." }, 422));
+      }
+      const prompt = buildBundlePrompt({
+        kind: parsed.bundleKind,
+        locale: parsed.locale,
+        sourceLocale: parsed.sourceLocale,
+        sourceBundle: parsed.sourceBundle,
+      });
+      const raw = await generateWithOpenAi(prompt);
+      const bundle = validateBundle(parsed.bundleKind, parseModelJson(raw));
+      const sourceTitle = parsed.sourceLocale
+        ? `Source ${parsed.sourceLocale.toUpperCase()}`
+        : "Source content";
+      return withCors(
+        req,
+        json({
+          description: JSON.stringify(bundle),
+          bundle,
+          sources: [
+            {
+              lessonId: `${parsed.bundleKind}-source`,
+              lessonTitle: sourceTitle,
+              sourceKinds: ["description_markdown"],
+              snippet: JSON.stringify(parsed.sourceBundle).slice(0, 180),
+            },
+          ],
+          warning: null,
+        }),
+      );
+    }
+
     let rows: LessonRow[] = [];
     let isSectionScoped = false;
     const hasProvidedSources = parsed.action === "translate" && (parsed.sourceInputs?.length ?? 0) > 0;
@@ -883,7 +1098,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         ? 403
         : /Thiếu|Missing|hợp lệ|Không xác định|Không tìm thấy/.test(message)
           ? 400
-          : /không đủ nội dung|rỗng/.test(message)
+          : /không đủ nội dung|rỗng/i.test(message)
             ? 422
             : 500;
     return withCors(req, json({ message }, status));

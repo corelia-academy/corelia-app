@@ -659,6 +659,7 @@
       "generate": "Generate description",
       "generating": "Đang generate...",
       "translating": "Đang dịch...",
+      "translateApplied": "Đã áp dụng bản dịch. Hãy rà soát rồi lưu khi sẵn sàng.",
       "cancel": "Huỷ",
       "useDescription": "Dùng mô tả này",
       "warnings": {
