@@ -14,7 +14,6 @@ import { buildSourceRefs, buildSystemPrompt } from "./promptRuntime.ts";
 import { buildRecommendedActions } from "./recommendedActions.ts";
 import { buildRecommendedEntities } from "./recommendedEntities.ts";
 import { buildSuggestedPrompts } from "./suggestedPrompts.ts";
-import { buildStubReply } from "./stubReply.ts";
 import { estimateTokens, upsertUsage } from "./usageAccounting.ts";
 import { createServiceClient, type SupabaseClient, verifyBearerUser } from "./lib/supabase.ts";
 import type {
@@ -1199,7 +1198,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         role: "assistant",
         content: "",
         status: "pending",
-        model_used: quota.haikuOnly || quota.throttled ? "stub-haiku" : "stub-sonnet",
+        model_used: "pending",
       })
       .select("id")
       .single<{ id: string }>();
@@ -1212,14 +1211,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
       contextData,
     );
     const complexity = classifyComplexity(body.message, contextType, contextData);
-    const fallbackReply = buildStubReply({
-      profile,
-      message: body.message,
-      contextType,
-      contextData,
-      quota,
-      knowledgeChunks,
-    });
     const sourceRefs = buildSourceRefs(knowledgeChunks);
 
     const history = await getRecentConversationHistory(
@@ -1272,7 +1263,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
                   })),
                 ],
                 quota,
-                fallbackText: fallbackReply,
                 contextType,
                 complexity,
               },
@@ -1284,7 +1274,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
               },
             );
 
-            const finalText = outputText.trim() || fallbackReply;
+            const finalText = outputText.trim();
+            if (!finalText) throw new Error("Empty response from AI provider");
             const nowIso = new Date().toISOString();
             const totalTokensUsed = result.usage
               ? result.usage.inputTokens + result.usage.outputTokens
@@ -1361,9 +1352,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
             await db
               .from("ai_conversations")
               .update({
-                content: outputText || fallbackReply,
+                content: outputText,
                 status: outputText ? "completed" : "error",
-                tokens_used: estimateTokens(outputText || fallbackReply),
+                tokens_used: estimateTokens(outputText),
                 sources: sourceRefs,
                 updated_at: new Date().toISOString(),
               })
@@ -1380,16 +1371,44 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return new Response(responseStream, { status: 200, headers });
     }
 
+    let collected = "";
+    const providerResult = await streamProviderText(
+      {
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...history.map((message) => ({
+            role: message.role,
+            content: message.content,
+          })),
+        ],
+        quota,
+        contextType,
+        complexity,
+      },
+      {
+        onTextDelta: (delta) => {
+          collected += delta;
+        },
+      },
+    );
+    const finalText = (providerResult.outputText || collected).trim();
+    if (!finalText) throw new Error("Empty response from AI provider");
+    const nowIso = new Date().toISOString();
+    const totalTokensUsed = providerResult.usage
+      ? providerResult.usage.inputTokens + providerResult.usage.outputTokens
+      : estimateTokens(body.message) + estimateTokens(finalText);
+    const updatedQuota = incrementQuotaSnapshot(quota, totalTokensUsed);
+
     const { error: assistantError } = await db
       .from("ai_conversations")
       .update({
-        content: fallbackReply,
+        content: finalText,
         status: "completed",
         complexity,
-        model_used: quota.haikuOnly || quota.throttled ? "stub-haiku" : "stub-sonnet",
-        tokens_used: estimateTokens(fallbackReply),
+        model_used: providerResult.model,
+        tokens_used: providerResult.usage?.outputTokens ?? estimateTokens(finalText),
         sources: sourceRefs,
-        updated_at: new Date().toISOString(),
+        updated_at: nowIso,
       })
       .eq("id", placeholder.id);
     if (assistantError) throw new Error(assistantError.message);
@@ -1404,8 +1423,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
         .from("ai_chat_sessions")
         .update({
           message_count: Number(sessionRow?.message_count ?? 0) + 2,
-          last_message_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          last_message_at: nowIso,
+          updated_at: nowIso,
         })
         .eq("id", sessionId);
       if (sessionUpdateError) throw new Error(sessionUpdateError.message);
@@ -1413,9 +1432,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     await upsertUsage(db, user.id, {
       inputText: body.message,
-      outputText: fallbackReply,
-      modelUsed: quota.haikuOnly || quota.throttled ? "stub-haiku" : "stub-sonnet",
+      outputText: finalText,
+      modelUsed: providerResult.model,
       feature: "cora_chat",
+      conversationId: placeholder.id,
+      actualUsage: providerResult.usage,
     });
     const memoryDelta = await updateLearningMemory(db, {
       userId: user.id,
@@ -1423,12 +1444,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
       lessonId: body.lessonId,
       sessionId,
       message: body.message,
-      assistantText: fallbackReply,
+      assistantText: finalText,
       contextData,
       knowledgeChunks,
       complexity,
     });
-    const updatedQuota = incrementQuotaSnapshot(quota);
 
     return withCors(
       req,
@@ -1438,8 +1458,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
         sessionId,
         assistantMessage: {
           role: "assistant",
-          content: fallbackReply,
-          createdAt: new Date().toISOString(),
+          content: finalText,
+          createdAt: nowIso,
         },
         quota: updatedQuota,
         sources: sourceRefs,

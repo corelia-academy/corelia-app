@@ -6,12 +6,11 @@ Current slice includes:
 - Bearer auth + email confirmation check
 - AI sessions + conversation persistence
 - Context-aware replies for `dashboard`, `lesson`, `course_discovery`, `career`, `activity`, `profile_review`
-- Fallback-first knowledge retrieval from `knowledge_chunks` for `lesson`, `course_discovery`, `career`, and `activity`
-- Stub replies that surface retrieved knowledge highlights, so local testing still shows RAG impact before a real provider is enabled
+- Knowledge retrieval from `knowledge_chunks` (pgvector + keyword fallback) for `lesson`, `course_discovery`, `career`, and `activity`
 - Monthly quota + rolling 3-hour soft-throttle
 - Burst rate limiting / pending-request limiting / short-window dedupe
 - SSE streaming surface for the frontend
-- Provider abstraction with `stub` and `openai`
+- OpenAI provider via `/v1/responses` streaming
 
 ## Local serve
 
@@ -31,7 +30,7 @@ pnpm functions:serve:ai
 
 2. Grab a valid Supabase access token for a learner account.
 
-3. Optional but recommended: seed starter knowledge first so `stub` replies can quote relevant course/lesson/activity chunks:
+3. Seed starter knowledge so retrieval has chunks to ground on:
 
 ```bash
 CORELIA_SUPABASE_URL=... \
@@ -45,7 +44,7 @@ pnpm cora:seed:knowledge --write
 CORA_AI_TEST_ACCESS_TOKEN=<token> pnpm cora:test:stream
 ```
 
-When `CORELIA_AI_PROVIDER=stub`, successful replies should still mention a short “knowledge chunks” section if retrieval finds relevant seeded content.
+`OPENAI_API_KEY` must be set; the function throws if it is missing.
 
 ## Seed starter knowledge
 
@@ -85,12 +84,14 @@ Optional env vars:
 | `CORELIA_SUPABASE_URL` | Local or hosted Supabase project URL |
 | `CORELIA_SUPABASE_SECRET_KEYS` | Service secret key for database access |
 | `CORELIA_CORS_ALLOWED_ORIGINS` | Browser origins allowed to call the function |
-| `CORELIA_AI_PROVIDER` | `stub` or `openai` |
-| `OPENAI_API_KEY` | Enables OpenAI streaming path |
+| `CORELIA_AI_PROVIDER` | Currently only `openai` is supported |
+| `OPENAI_API_KEY` | Required — used by the chat provider and embeddings (RAG) |
+| `CORELIA_OPENAI_DEFAULT_MODEL` | Default model id (e.g. `gpt-4o-mini`) |
+| `CORELIA_OPENAI_COMPLEX_MODEL` | Model id used for complex lesson questions (e.g. `gpt-4o`) |
 
 ## Notes
 
-- If no provider API key is present, the function falls back to `stub` and still streams tokens so the product flow remains testable.
+- The function throws if `OPENAI_API_KEY` is missing — there is no stub fallback.
 - Frontend expects SSE events: `meta`, `delta`, `done`, `error`.
 - `meta` and `done` events now include a small `sources` array when retrieval finds relevant knowledge chunks, which is useful for local QA and future source-aware UI.
 - `verify_jwt` stays disabled in `supabase/config.toml`; auth is enforced inside the handler so `OPTIONS` preflight works consistently.

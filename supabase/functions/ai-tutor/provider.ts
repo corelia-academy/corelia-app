@@ -1,7 +1,7 @@
 import type { MessageComplexity, QuotaResult } from "./types.ts";
 import { parseSseStream } from "./lib/sse.ts";
 
-export type ProviderName = "stub" | "openai";
+export type ProviderName = "openai";
 
 export type AIMessage = {
   role: "system" | "user" | "assistant";
@@ -11,7 +11,6 @@ export type AIMessage = {
 export type AIProviderRequest = {
   messages: AIMessage[];
   quota: QuotaResult;
-  fallbackText: string;
   contextType: string;
   complexity: MessageComplexity;
 };
@@ -42,28 +41,9 @@ function chooseModel(
     !quota.throttled &&
     complexity === "complex"
   ) {
-    return readEnv("CORELIA_OPENAI_COMPLEX_MODEL") || "gpt-5-mini";
+    return readEnv("CORELIA_OPENAI_COMPLEX_MODEL") || "gpt-4o";
   }
-  return readEnv("CORELIA_OPENAI_DEFAULT_MODEL") || "gpt-5-mini";
-}
-
-async function streamStub(
-  request: AIProviderRequest,
-  callbacks: StreamCallbacks,
-): Promise<StreamResult> {
-  const text = request.fallbackText;
-  const tokens = text.split(/(\s+)/).filter(Boolean);
-  let output = "";
-  for (const token of tokens) {
-    output += token;
-    await callbacks.onTextDelta(token);
-    await new Promise((resolve) => setTimeout(resolve, 16));
-  }
-  return {
-    provider: "stub",
-    model: "stub-cora",
-    outputText: output,
-  };
+  return readEnv("CORELIA_OPENAI_DEFAULT_MODEL") || "gpt-4o-mini";
 }
 
 async function streamOpenAi(
@@ -71,7 +51,7 @@ async function streamOpenAi(
   callbacks: StreamCallbacks,
 ): Promise<StreamResult> {
   const apiKey = readEnv("OPENAI_API_KEY");
-  if (!apiKey) return streamStub(request, callbacks);
+  if (!apiKey) throw new Error("OPENAI_API_KEY is required");
 
   const model = chooseModel(request.quota, request.contextType, request.complexity);
   const response = await fetch("https://api.openai.com/v1/responses", {
@@ -91,8 +71,9 @@ async function streamOpenAi(
     }),
   });
   if (!response.ok || !response.body) {
-    console.error("[ai-tutor] openai error", response.status, await response.text().catch(() => ""));
-    return streamStub(request, callbacks);
+    const errBody = await response.text().catch(() => "");
+    console.error("[ai-tutor] openai error", response.status, errBody);
+    throw new Error(`OpenAI request failed: ${response.status}`);
   }
 
   let outputText = "";
@@ -122,7 +103,7 @@ async function streamOpenAi(
   return {
     provider: "openai",
     model,
-    outputText: outputText || request.fallbackText,
+    outputText,
     usage,
   };
 }
@@ -131,10 +112,5 @@ export async function streamProviderText(
   request: AIProviderRequest,
   callbacks: StreamCallbacks,
 ): Promise<StreamResult> {
-  const configured = readEnv("CORELIA_AI_PROVIDER").toLowerCase();
-  if (configured === "stub") return streamStub(request, callbacks);
-  if (readEnv("OPENAI_API_KEY") || configured === "openai") {
-    return streamOpenAi(request, callbacks);
-  }
-  return streamStub(request, callbacks);
+  return streamOpenAi(request, callbacks);
 }
