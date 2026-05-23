@@ -497,7 +497,31 @@
       "deleteCourseFailed": "Failed to delete course",
       "reorderLessonsFailed": "Unable to update lesson order",
       "reorderSectionsFailed": "Unable to update section order",
-      "createDiscountFailed": "Unable to create discount code."
+      "createDiscountFailed": "Unable to create discount code.",
+      "prepareLessonFailed": "Could not prepare the lesson.",
+      "externalSourcesRequired": "Enter at least one source URL when Public external course is enabled."
+    },
+    "page": {
+      "back": "Back"
+    },
+    "business": {
+      "ownershipLabel": "Course ownership & revenue share",
+      "ownershipAdminOnly": "Only admins can update ownership and revenue settings.",
+      "ownershipCurrent": "Current: {{type}}",
+      "instructorShare": "Instructor receives {{percent}}%.",
+      "partnerTransferLabel": "Partner transfer details",
+      "partnerTransferHint": "Shown to partner instructors in Invoices & payments.",
+      "noContractDocs": "No contract documents yet.",
+      "noInvoiceDocs": "No invoice documents yet."
+    },
+    "externalCourse": {
+      "toggleLabel": "Public external course",
+      "toggleHint": "Enable if this course aggregates external sources; sources and attribution will appear on the public page.",
+      "sourcesLabel": "Reference sources (URLs) *",
+      "sourcesPlaceholder": "One URL per line\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourcesRequired": "Required when Public external course is enabled.",
+      "attributionLabel": "Source attribution note",
+      "attributionPlaceholder": "Public note about aggregated sources (e.g. curated from creators' YouTube playlists)."
     },
     "toasts": {
       "totalDurationRefreshed": "Total duration updated. The course list page should now display correctly.",
@@ -550,6 +574,13 @@
       "afterUploadHintPrefix": "After uploading, adjust the two \"Name position\" fields (% from left / % from",
       "fileFormatHint": "Format: PNG or JPG."
     },
+    "certificateGuide": {
+      "title": "How to create a template",
+      "sizeHint": "Recommended size: 1200×800 px (3:2 ratio) or A4.",
+      "nameAreaHint": "Leave an empty area on the image for the learner name (e.g. center).",
+      "afterUploadHint": "After uploading, adjust the two \"Name position\" fields (% from left / % from top) so the learner name sits in the blank area. 50% = center.",
+      "downloadSample": "Download sample template (SVG)"
+    },
     "ocb": {
       "title": "Open Campus badge (OCB)",
       "subtitle": "Mint an on-chain completion badge when learners meet your rules (PDF certificate settings above stay unchanged).",
@@ -597,12 +628,40 @@
       "promoPriceVndLabel": "Promo price (VND)",
       "promoPricePlaceholder": "Leave blank if no promotion",
       "promoEndsAtLabel": "Promo end time (ISO)",
-      "updateTotalDurationLabelPrefix": "Paid-upfront course: enable \"Free preview\" for lessons"
+      "updateTotalDurationLabelPrefix": "Paid-upfront course: enable \"Free preview\" for lessons",
+      "intro": "Set access model, course price, certificate fee, and discount codes.",
+      "paidPreviewHint": "Learners who have not paid can only view lessons marked as free preview.",
+      "promoMustBeLower": "Promo price must be lower than the base price.",
+      "promoEndsOptional": "Leave blank if there is no end time.",
+      "discountsTitle": "Discount codes & promotions",
+      "certificateFeeLabel": "Certificate / final project fee (VND)",
+      "certificateFeeHint": "All lessons remain free; this fee applies when learners submit work for certificate review."
     },
     "discounts": {
       "createTitle": "Create a discount code (percent or fixed amount) with limits",
+      "subtitleSuffix": " with time/redemption limits.",
+      "empty": "No discount codes yet.",
       "activeOn": "On",
-      "activeOff": "Off"
+      "activeOff": "Off",
+      "table": {
+        "code": "Code",
+        "type": "Type",
+        "value": "Value",
+        "status": "Status",
+        "actions": "Actions",
+        "active": "Active",
+        "inactive": "Off",
+        "delete": "Delete"
+      },
+      "form": {
+        "code": "Code",
+        "codePlaceholder": "e.g. SPRING10",
+        "type": "Type",
+        "value": "Value",
+        "startsAt": "Start (ISO, optional)",
+        "endsAt": "End (ISO, optional)",
+        "maxRedemptions": "Redemption limit (optional)"
+      }
     },
     "sidebar": {
       "editingLanguage": "Editing language",
@@ -616,17 +675,26 @@
         "assignments": "Final assignment",
         "certificate": "Certificate",
         "students": "Manage students",
-        "danger": "Delete course"
+        "danger": "Delete course",
+        "announcements": "Announcements"
       }
     },
     "content": {
       "heading": "Course content",
       "savingOrder": "Saving lesson order...",
       "dragHint": "Drag the dot icon to reorder lessons within each section, or use the up/down arrows as needed.",
+      "sectionsToggleLabel": "Organize by sections",
+      "sectionsToggleHint": "Enable to group lessons into chapters. Disable for a flat lesson list.",
+      "paidUpfrontPreviewBanner": "Paid-upfront course: enable \"Free preview\" on lessons you want available to learners who have not paid.",
       "addSectionHeading": "Add new section",
       "lessonTitlePlaceholder": "Lesson title (optional)",
       "lessonMinutesPlaceholder": "Duration (minutes) — if YouTube duration can't be fetched, enter it here",
       "sectionTitlePlaceholder": "Section title"
+    },
+    "questions": {
+      "generateFailed": "Could not generate questions.",
+      "fillRequired": "Fill in the question and at least two answer choices.",
+      "saveFailed": "Could not save questions."
     },
     "sections": {
       "notTranslated": "Not translated",
@@ -709,6 +777,11 @@
       }
     },
     "lessons": {
+      "formatLabel": "Lesson type",
+      "formatVideo": "Video lesson",
+      "formatArticle": "Text lesson",
+      "formatHint": "Text lessons use written content only — no YouTube video required.",
+      "articleContentRequired": "Add lesson content (markdown or short description) for a text lesson.",
       "notTranslated": "Not translated",
       "edit": "Edit",
       "editTitle": "Edit lesson details",
@@ -727,6 +800,8 @@
       "durationMinutesLabel": "Duration (minutes)",
       "durationHint": "If you leave this blank, the system will try to fetch duration from YouTube when possible.",
       "previewFreeLabel": "Enable free preview lesson",
+      "previewBadge": "Preview",
+      "previewFreeBadge": "Free preview",
       "shortDescriptionLabel": "Short description",
       "shortDescriptionPlaceholder": "One or two sentences (optional)",
       "markdownLabel": "Long description (Markdown)",
@@ -805,6 +880,9 @@
     },
     "students": {
       "empty": "No learners enrolled in this course yet.",
+      "providerLabel": "Provider: {{provider}}",
+      "providerEmpty": "Provider: —",
+      "orderLabel": "Order: {{id}}",
       "columns": {
         "student": "Learner",
         "progress": "Progress",
@@ -842,6 +920,14 @@
       "dragReorder": "Drag to reorder",
       "moveUp": "Move up",
       "moveDown": "Move down"
+    },
+    "a11y": {
+      "dragSection": "Drag to reorder section {{title}}",
+      "moveSectionUp": "Move section {{title}} up",
+      "moveSectionDown": "Move section {{title}} down",
+      "dragLesson": "Drag to reorder lesson {{title}}",
+      "moveLessonUp": "Move lesson {{title}} up",
+      "moveLessonDown": "Move lesson {{title}} down"
     },
     "access": {
       "noPermission": "You don't have permission to edit this course.",

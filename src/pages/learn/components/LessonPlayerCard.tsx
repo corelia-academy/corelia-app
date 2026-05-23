@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/markdown/Markdown";
+import { isArticleLesson, isLessonDraftForLearners, isVideoLesson } from "@/lib/lessonFormat";
+import { cn } from "@/lib/utils";
 import { getYoutubeEmbedUrlForLesson } from "@/types/courses";
 import type { CourseLesson } from "@/types/courses";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
@@ -30,9 +32,12 @@ export function LessonPlayerCard({
   onMarkComplete: () => void;
   onNavigateToLesson: (lessonId: string) => void;
 }) {
-  const embedUrl = lesson?.youtube_url?.trim()
-    ? getYoutubeEmbedUrlForLesson(lesson)
-    : null;
+  const articleLesson = lesson ? isArticleLesson(lesson) : false;
+  const videoLesson = lesson ? isVideoLesson(lesson) : false;
+  const embedUrl =
+    lesson && videoLesson && lesson.youtube_url?.trim()
+      ? getYoutubeEmbedUrlForLesson(lesson)
+      : null;
 
   const autoplayEmbedUrl = (() => {
     if (!embedUrl) return null;
@@ -41,46 +46,16 @@ export function LessonPlayerCard({
     return u.toString();
   })();
 
-  const isTextLesson =
-    !!lesson && !embedUrl && !!lesson.description_markdown?.trim();
+  const showArticleBody =
+    !!lesson &&
+    articleLesson &&
+    Boolean(lesson.description_markdown?.trim());
+
+  const draftForDisplay = lesson ? isLessonDraftForLearners(lesson) : isDraftLesson;
 
   return (
     <div>
-      {lesson && autoplayEmbedUrl ? (
-        <div className="relative aspect-video w-full bg-black">
-          <iframe
-            key={lesson.id}
-            src={autoplayEmbedUrl}
-            title={lesson.title}
-            className="absolute inset-0 size-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-      ) : isTextLesson ? (
-        <div className="px-1 py-6">
-          <Markdown content={lesson!.description_markdown!} />
-        </div>
-      ) : lesson ? (
-        <div className="flex aspect-video items-center justify-center rounded-md border border-border-subtle bg-surface-raised">
-          {isDraftLesson ? (
-            <div className="max-w-md px-6 text-center">
-              <p className="text-sm font-medium text-foreground">
-                {translate("detail.learn.lessonDraftNoticeTitle")}
-              </p>
-              <p className="mt-2 text-sm text-foreground-muted">
-                {translate("detail.learn.lessonDraftNoticeBody")}
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm text-foreground-muted">
-              {translate("detail.learn.currentLesson.selectAside")}
-            </p>
-          )}
-        </div>
-      ) : null}
-
-      <div className="px-4 py-4 pb-8 sm:px-6">
+      <div className="px-4 py-4 sm:px-6">
         {lesson ? (
           <>
             <div className="flex flex-wrap items-center gap-2">
@@ -89,6 +64,11 @@ export function LessonPlayerCard({
                   index: (lessonIndex ?? 0) + 1,
                 })}
               </LearnBadge>
+              {articleLesson ? (
+                <LearnBadge variant="outline">
+                  {translate("detail.learn.articleLessonBadge")}
+                </LearnBadge>
+              ) : null}
               {completed ? (
                 <LearnBadge variant="success">
                   {translate("detail.learn.completedBadge")}
@@ -103,13 +83,69 @@ export function LessonPlayerCard({
                 {lesson.short_description}
               </p>
             ) : null}
-            {!isTextLesson && lesson.description_markdown?.trim() ? (
-              <div className="mt-4 rounded-md border border-border-subtle bg-surface-raised p-4">
+          </>
+        ) : null}
+      </div>
+
+      {lesson && autoplayEmbedUrl ? (
+        <div className="relative aspect-video w-full bg-black">
+          <iframe
+            key={lesson.id}
+            src={autoplayEmbedUrl}
+            title={lesson.title}
+            className="absolute inset-0 size-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      ) : showArticleBody ? (
+        <div className="border-y border-border-subtle bg-surface-base px-4 py-6 sm:px-6">
+          <Markdown content={lesson.description_markdown!} />
+        </div>
+      ) : lesson ? (
+        <div className="mx-4 mb-2 flex aspect-video items-center justify-center rounded-md border border-border-subtle bg-surface-raised sm:mx-6">
+          {draftForDisplay ? (
+            <div className="max-w-md px-6 text-center">
+              <p className="text-sm font-medium text-foreground">
+                {translate(
+                  articleLesson
+                    ? "detail.learn.lessonArticleDraftNoticeTitle"
+                    : "detail.learn.lessonDraftNoticeTitle",
+                )}
+              </p>
+              <p className="mt-2 text-sm text-foreground-muted">
+                {translate(
+                  articleLesson
+                    ? "detail.learn.lessonArticleDraftNoticeBody"
+                    : "detail.learn.lessonDraftNoticeBody",
+                )}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-foreground-muted">
+              {translate("detail.learn.currentLesson.selectAside")}
+            </p>
+          )}
+        </div>
+      ) : null}
+
+      <div className="px-4 py-4 pb-8 sm:px-6">
+        {lesson ? (
+          <>
+            {videoLesson && lesson.description_markdown?.trim() ? (
+              <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
                 <Markdown content={lesson.description_markdown} />
               </div>
             ) : null}
             {lesson.resources?.length ? (
-              <div className="mt-4 rounded-md border border-border-subtle bg-surface-base p-4">
+              <div
+                className={cn(
+                  "rounded-md border border-border-subtle bg-surface-base p-4",
+                  (videoLesson && lesson.description_markdown?.trim()) || showArticleBody
+                    ? "mt-4"
+                    : "",
+                )}
+              >
                 <p className="text-sm font-medium text-foreground">
                   {translate("detail.learn.lessonResourcesTitle")}
                 </p>
@@ -142,12 +178,14 @@ export function LessonPlayerCard({
                 size="sm"
                 className="w-full justify-center sm:w-auto"
                 onClick={onMarkComplete}
-                disabled={completed || !hasFullCourseAccess || isDraftLesson}
+                disabled={completed || !hasFullCourseAccess || draftForDisplay}
               >
                 <CheckCircle2 className="w-4 h-4" aria-hidden />{" "}
                 {completed
                   ? translate("detail.learn.markComplete.done")
-                  : translate("detail.learn.markComplete.action")}
+                  : articleLesson
+                    ? translate("detail.learn.markComplete.actionArticle")
+                    : translate("detail.learn.markComplete.action")}
               </Button>
               {previousLesson ? (
                 <Button

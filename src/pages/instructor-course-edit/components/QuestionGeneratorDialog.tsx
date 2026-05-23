@@ -16,6 +16,7 @@ import { getSectionQuestions, setSectionQuestions } from "@/lib/sectionQuestions
 import type { SectionQuestionData, QuestionOption } from "@/types/questions";
 import type { CourseSection, SupportedCourseLocale } from "@/types/courses";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 type DraftQuestion = SectionQuestionData & {
@@ -159,6 +160,7 @@ export function QuestionGeneratorDialog({
   locale,
   onOpenChange,
 }: Props) {
+  const { t } = useTranslation("instructor");
   const [questions, setQuestions] = useState<DraftQuestion[]>([]);
   const [sources, setSources] = useState<GeneratedQuestionSource[]>([]);
   const [generating, setGenerating] = useState(false);
@@ -206,7 +208,9 @@ export function QuestionGeneratorDialog({
       // Scroll to bottom so user sees the first question
       setTimeout(() => listEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (err) {
-      setGenerateError(err instanceof Error ? err.message : "Không thể tạo câu hỏi.");
+      setGenerateError(
+        err instanceof Error ? err.message : t("courseEdit.questions.generateFailed"),
+      );
     } finally {
       setGenerating(false);
     }
@@ -219,7 +223,7 @@ export function QuestionGeneratorDialog({
       (q) => !q.question.trim() || q.options.filter((o) => o.text.trim()).length < 2,
     );
     if (invalid) {
-      toast.error("Vui lòng điền đầy đủ nội dung câu hỏi và ít nhất 2 lựa chọn.");
+      toast.error(t("courseEdit.questions.fillRequired"));
       return;
     }
     setSaving(true);
@@ -236,7 +240,7 @@ export function QuestionGeneratorDialog({
       toast.success(`Đã lưu ${questions.length} câu hỏi cho chương này.`);
       onOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể lưu câu hỏi.");
+      toast.error(err instanceof Error ? err.message : t("courseEdit.questions.saveFailed"));
     } finally {
       setSaving(false);
     }
