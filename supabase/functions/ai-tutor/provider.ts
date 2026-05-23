@@ -54,7 +54,7 @@ async function streamOpenAi(
   if (!apiKey) throw new Error("OPENAI_API_KEY is required");
 
   const model = chooseModel(request.quota, request.contextType, request.complexity);
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -62,12 +62,10 @@ async function streamOpenAi(
     },
     body: JSON.stringify({
       model,
-      max_output_tokens: 800,
-      input: request.messages.map((message) => ({
-        role: message.role,
-        content: [{ type: "input_text", text: message.content }],
-      })),
+      max_tokens: 800,
+      messages: request.messages,
       stream: true,
+      stream_options: { include_usage: true },
     }),
   });
   if (!response.ok || !response.body) {
@@ -82,21 +80,19 @@ async function streamOpenAi(
   for await (const event of parseSseStream(response.body)) {
     if (!event.data || event.data === "[DONE]") continue;
     const parsed = JSON.parse(event.data) as {
-      type?: string;
-      delta?: string;
-      error?: { message?: string };
-      response?: { usage?: { input_tokens: number; output_tokens: number } };
+      choices?: Array<{ delta?: { content?: string } }>;
+      usage?: { prompt_tokens: number; completion_tokens: number };
     };
-    if (parsed.type === "response.output_text.delta" && typeof parsed.delta === "string") {
-      outputText += parsed.delta;
-      await callbacks.onTextDelta(parsed.delta);
-    } else if (parsed.type === "response.completed" && parsed.response?.usage) {
+    const delta = parsed.choices?.[0]?.delta?.content;
+    if (typeof delta === "string" && delta) {
+      outputText += delta;
+      await callbacks.onTextDelta(delta);
+    }
+    if (parsed.usage) {
       usage = {
-        inputTokens: parsed.response.usage.input_tokens,
-        outputTokens: parsed.response.usage.output_tokens,
+        inputTokens: parsed.usage.prompt_tokens,
+        outputTokens: parsed.usage.completion_tokens,
       };
-    } else if (parsed.type === "error") {
-      throw new Error(parsed.error?.message ?? "OpenAI streaming error");
     }
   }
 
