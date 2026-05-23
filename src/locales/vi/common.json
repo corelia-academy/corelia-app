@@ -383,6 +383,12 @@
     "openAction": "Mở Cora AI",
     "hideAction": "Ẩn Cora AI",
     "clearHistoryAction": "Xoá cuộc trò chuyện",
+    "newChatAction": "Cuộc trò chuyện mới",
+    "historyAction": "Lịch sử chat",
+    "historyEmpty": "Chưa có cuộc trò chuyện nào ở đây.",
+    "historyLoading": "Đang tải…",
+    "fromOtherLessonLabel": "Bài khác",
+    "untitledSessionLabel": "Chưa đặt tên",
     "restoreAction": "Mở lại Cora AI",
     "chipToast": "Cora AI sticky đang ở chế độ preview.",
     "dashboard": {

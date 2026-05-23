@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Trash2Icon, XIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { CORA_AI_TUTOR_LOGO_SRC } from "@/components/course-ai/constants";
@@ -14,6 +14,9 @@ export function CoraShell({
   hideLabel,
   onClearHistory,
   clearHistoryLabel,
+  onNewSession,
+  newSessionLabel,
+  historySlot,
   className,
 }: {
   title: string;
@@ -24,6 +27,9 @@ export function CoraShell({
   hideLabel?: string;
   onClearHistory?: () => void;
   clearHistoryLabel?: string;
+  onNewSession?: () => void;
+  newSessionLabel?: string;
+  historySlot?: ReactNode;
   className?: string;
 }) {
   return (
@@ -45,6 +51,20 @@ export function CoraShell({
               />
             </div>
             <div className="flex shrink-0 items-center gap-1">
+              {onNewSession ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="rounded-full text-foreground-muted hover:text-foreground"
+                  onClick={onNewSession}
+                  aria-label={newSessionLabel}
+                  title={newSessionLabel}
+                >
+                  <PlusIcon className="size-4" aria-hidden />
+                </Button>
+              ) : null}
+              {historySlot}
               {onClearHistory ? (
                 <Button
                   type="button"

@@ -72,6 +72,16 @@ async function fetchIssuanceWithTemplate(
   };
 }
 
+async function getUserEmailLocale(db: SupabaseClient, userId: string): Promise<string | null> {
+  const { data } = await db.auth.admin.getUserById(userId);
+  const meta = data?.user?.user_metadata;
+  if (meta && typeof meta === "object" && "locale" in meta) {
+    const locale = (meta as { locale?: unknown }).locale;
+    return typeof locale === "string" ? locale : null;
+  }
+  return null;
+}
+
 async function sendMintEmail(params: {
   to: string;
   scopeType: string;
@@ -79,6 +89,7 @@ async function sendMintEmail(params: {
   profileUrl: string;
   credentialId?: string | null;
   imageUrl?: string | null;
+  locale?: string | null;
 }): Promise<void> {
   const kind: CredentialMintEmailKind =
     params.scopeType === "hackathon"
@@ -93,6 +104,7 @@ async function sendMintEmail(params: {
     profileUrl: params.profileUrl,
     credentialId: params.credentialId,
     imageUrl: params.imageUrl,
+    locale: params.locale,
   });
 
   await sendTransactionalEmailViaResend({
@@ -142,6 +154,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
   const holderOcId = profile?.ocid != null ? String(profile.ocid) : null;
   const holderAddress = profile?.ocid_eth_address != null ? String(profile.ocid_eth_address) : null;
   const email = profile?.email != null ? String(profile.email).trim() : "";
+  const emailLocale = await getUserEmailLocale(db, row.user_id);
 
   const profilePath = username ? `/u/${encodeURIComponent(username)}` : `/account`;
   const profileUrl = `${baseUrl}${profilePath}`;
@@ -208,6 +221,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
             profileUrl,
             credentialId: ocCredentialId,
             imageUrl: template.image_url,
+            locale: emailLocale,
           });
         }
         return { ok: true, duplicate: true };
@@ -239,6 +253,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
         profileUrl,
         credentialId: ocCredentialId,
         imageUrl: template.image_url,
+        locale: emailLocale,
       });
     }
 
