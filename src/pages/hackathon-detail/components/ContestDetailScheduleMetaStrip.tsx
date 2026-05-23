@@ -1,11 +1,48 @@
+import type { ComponentType } from "react";
 import { Calendar, MapPin, Timer, Upload } from "lucide-react";
 import type { Contest } from "@/types/hackathons";
 import { cn } from "@/lib/utils";
 
-/** Horizontal schedule summary: start → end, optional submission deadline, format/location. */
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+function MetaCell({
+  icon: Icon,
+  label,
+  value,
+  hint,
+}: {
+  icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  label: string;
+  value: string;
+  hint?: string;
+}) {
+  return (
+    <div className="flex min-w-0 items-start gap-2">
+      <Icon className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+      <div className="min-w-0 text-foreground">
+        <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+          {label}
+        </div>
+        <div className="mt-1 font-medium">{value}</div>
+        {hint ? (
+          <div className="mt-1 text-xs leading-snug text-foreground-muted">
+            {hint}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Horizontal schedule summary: start → end, optional submission deadline, format/location.
+ * Renders as an even grid that stacks at xs (1 col) → sm (2 cols) → md (3 or 4 cols depending
+ * on whether the submission deadline is present). Skips the visible card-in-card border so
+ * the strip blends with whichever surface hosts it.
+ */
 export function ContestDetailScheduleMetaStrip(props: {
   contest: Contest;
-  translate: (key: string, options?: Record<string, unknown>) => string;
+  translate: Translate;
   formatDateTime: (value: string | null) => string;
   locationLabel: (location: Contest["location"]) => string;
   labelsMode: "public" | "manage";
@@ -20,83 +57,51 @@ export function ContestDetailScheduleMetaStrip(props: {
     className,
   } = props;
 
-  const startLabel =
-    labelsMode === "manage"
-      ? translate("workspace.manage.heroStart")
-      : translate("detail.hero.start");
-  const endLabel =
-    labelsMode === "manage"
-      ? translate("workspace.manage.heroEnd")
-      : translate("detail.hero.end");
-  const formatLabel =
-    labelsMode === "manage"
-      ? translate("workspace.manage.heroFormat")
-      : translate("detail.hero.format");
-  const submissionDeadlineLabel =
-    labelsMode === "manage"
-      ? translate("workspace.manage.submissionDeadlineLabel")
-      : translate("detail.hero.submissionDeadline");
+  const t = (publicKey: string, manageKey: string) =>
+    translate(labelsMode === "manage" ? manageKey : publicKey);
 
   const submissionDeadlineIso = contest.submission_deadline?.trim() ?? "";
+  const hasSubmission = submissionDeadlineIso.length > 0;
+
+  const endHint =
+    !hasSubmission && contest.ends_at?.trim()
+      ? translate("detail.hero.submissionsLockAtEndHint")
+      : undefined;
 
   return (
     <div
       className={cn(
-        "grid grid-cols-2 sm:grid-cols-4 rounded-lg border border-border-subtle bg-surface-base p-4 text-sm gap-4",
+        "grid gap-x-6 gap-y-4 rounded-md border border-border-subtle bg-surface-raised p-4 text-sm sm:grid-cols-2",
+        hasSubmission ? "md:grid-cols-4" : "md:grid-cols-3",
         className,
       )}
     >
-      <span className="inline-flex min-w-0 items-start gap-2">
-        <Calendar className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
-        <span className="min-w-0 text-foreground">
-          <span className="block text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-            {startLabel}
-          </span>
-          <span className="mt-1 block font-medium">
-            {formatDateTime(contest.starts_at)}
-          </span>
-        </span>
-      </span>
-      <span className="inline-flex min-w-0 items-start gap-2">
-        <Timer className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
-        <span className="min-w-0 text-foreground">
-          <span className="block text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-            {endLabel}
-          </span>
-          <span className="mt-1 block font-medium">
-            {formatDateTime(contest.ends_at)}
-          </span>
-          {!submissionDeadlineIso && contest.ends_at?.trim() ? (
-            <span className="mt-1 block text-xs leading-snug text-foreground-muted">
-              {translate("detail.hero.submissionsLockAtEndHint")}
-            </span>
-          ) : null}
-        </span>
-      </span>
-      {submissionDeadlineIso ? (
-        <span className="col-span-2 inline-flex min-w-0 items-start gap-2 border-t border-border-subtle pt-4">
-          <Upload className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
-          <span className="min-w-0 text-foreground">
-            <span className="block text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-              {submissionDeadlineLabel}
-            </span>
-            <span className="mt-1 block font-medium">
-              {formatDateTime(contest.submission_deadline)}
-            </span>
-          </span>
-        </span>
+      <MetaCell
+        icon={Calendar}
+        label={t("detail.hero.start", "workspace.manage.heroStart")}
+        value={formatDateTime(contest.starts_at)}
+      />
+      <MetaCell
+        icon={Timer}
+        label={t("detail.hero.end", "workspace.manage.heroEnd")}
+        value={formatDateTime(contest.ends_at)}
+        hint={endHint}
+      />
+      {hasSubmission ? (
+        <MetaCell
+          icon={Upload}
+          label={t(
+            "detail.hero.submissionDeadline",
+            "workspace.manage.submissionDeadlineLabel",
+          )}
+          value={formatDateTime(contest.submission_deadline)}
+        />
       ) : null}
-      <span className="col-span-2 inline-flex min-w-0 items-start gap-2 border-t border-border-subtle pt-4">
-        <MapPin className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
-        <span className="min-w-0 text-foreground">
-          <span className="block text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-            {formatLabel}
-          </span>
-          <span className="mt-1 block font-medium">
-            {locationLabel(contest.location)}
-          </span>
-        </span>
-      </span>
+      <MetaCell
+        icon={MapPin}
+        label={t("detail.hero.format", "workspace.manage.heroFormat")}
+        value={locationLabel(contest.location)}
+      />
     </div>
   );
 }

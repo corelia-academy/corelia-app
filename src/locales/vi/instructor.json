@@ -493,6 +493,7 @@
       "deleteLessonFailed": "Lỗi xoá bài học",
       "deleteCourseFailed": "Lỗi xoá khoá học",
       "reorderLessonsFailed": "Không thể cập nhật thứ tự bài học",
+      "reorderSectionsFailed": "Không thể cập nhật thứ tự chương",
       "createDiscountFailed": "Không tạo được mã giảm giá."
     },
     "toasts": {

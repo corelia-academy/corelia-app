@@ -16,10 +16,10 @@ Current slice includes:
 ## Local serve
 
 ```bash
-supabase functions serve ai-tutor --env-file supabase/functions/ai-tutor/.env
+supabase functions serve ai-tutor --env-file supabase/functions/.env
 ```
 
-Copy [`./.env.example`](./.env.example) to `./.env` for local work.
+Copy [`../.env.example`](../.env.example) to [`../.env`](../.env) for local work.
 
 ## Quick local stream test
 

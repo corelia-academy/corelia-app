@@ -494,6 +494,7 @@
       "deleteLessonFailed": "Failed to delete lesson",
       "deleteCourseFailed": "Failed to delete course",
       "reorderLessonsFailed": "Unable to update lesson order",
+      "reorderSectionsFailed": "Unable to update section order",
       "createDiscountFailed": "Unable to create discount code."
     },
     "toasts": {

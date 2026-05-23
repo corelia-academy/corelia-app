@@ -50,7 +50,7 @@ export function ContestDetailJudgingPanel({
         <div className="flex items-center gap-3">
           <Gavel className="size-5 text-primary" aria-hidden />
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
               {translate("workspace.manage.judgingTitle")}
             </h2>
             <p className="mt-1 text-sm text-foreground-muted">
@@ -160,7 +160,7 @@ export function ContestDetailJudgingPanel({
                           : ""}
                       </div>
                     </div>
-                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
+                    <div className="rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("workspace.manage.averageScores")}{" "}
                       <span className="font-medium text-foreground">
                         {boardEntry?.average_score ?? 0}
@@ -179,27 +179,27 @@ export function ContestDetailJudgingPanel({
                   )}
 
                   <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
+                    <div className="rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("workspace.manage.demoPrefix")}{" "}
                       {submission.demo_url ||
                         translate("detail.labels.noDemo")}
                     </div>
-                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
+                    <div className="rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("workspace.manage.repoPrefix")}{" "}
                       {submission.repo_url ||
                         translate("detail.labels.noDemo")}
                     </div>
-                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
+                    <div className="rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("workspace.manage.slidePrefix")}{" "}
                       {submission.slide_url ||
                         translate("detail.labels.noDemo")}
                     </div>
-                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
+                    <div className="rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("common:projects.screenshot")}{" "}
                       {submission.screenshot_url ||
                         translate("detail.labels.noDemo")}
                     </div>
-                    <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
+                    <div className="rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("common:projects.video")}{" "}
                       {submission.video_url ||
                         translate("detail.labels.noDemo")}
@@ -264,7 +264,7 @@ export function ContestDetailJudgingPanel({
                     />
                   </div>
 
-                  <div className="mt-4 flex flex-col gap-2 rounded-xl border border-border-subtle bg-surface-raised px-3 py-3 text-sm text-foreground-muted sm:flex-row sm:items-center sm:justify-between">
+                  <div className="mt-4 flex flex-col gap-2 rounded-lg border border-border-subtle bg-surface-raised px-3 py-3 text-sm text-foreground-muted sm:flex-row sm:items-center sm:justify-between">
                     <span>
                       {translate("workspace.manage.rawTotal")}{" "}
                       <span className="font-medium text-foreground">

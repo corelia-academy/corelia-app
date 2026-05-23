@@ -289,7 +289,7 @@ export default function InstructorContests() {
               <ContestListCardThumbnail
                 src={listImg}
                 aspectClassName="aspect-[2/1]"
-                surfaceClassName="bg-linear-to-br from-primary/10 via-surface-raised to-surface-raised"
+                surfaceClassName="bg-surface-raised"
                 emptyMinHeightClassName="min-h-[96px]"
                 trophyIconClassName="size-12 text-primary/35"
               />

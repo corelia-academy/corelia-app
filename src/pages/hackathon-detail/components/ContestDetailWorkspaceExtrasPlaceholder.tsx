@@ -13,7 +13,7 @@ export function ContestDetailWorkspaceExtrasPlaceholder() {
   return (
     <Card>
       <CardContent className="space-y-3 p-4">
-        <h2 className="text-lg font-semibold text-foreground">
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">
           {translate("detail.workspaceExtras.title")}
         </h2>
         <p className="text-sm text-foreground-muted">

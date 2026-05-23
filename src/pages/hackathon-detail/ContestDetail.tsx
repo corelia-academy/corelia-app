@@ -1,3 +1,5 @@
+import { ChevronRight } from "lucide-react";
+import { Link } from "react-router";
 import type { Contest } from "@/types/hackathons";
 import { ContestDetailDeleteContestDialog } from "@/pages/hackathon-detail/components/ContestDetailDeleteContestDialog";
 import {
@@ -7,14 +9,15 @@ import {
 } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
 import { ContestDetailHeroCard } from "@/pages/hackathon-detail/components/ContestDetailHeroCard";
 import { ContestDetailMobileStickyCta } from "@/pages/hackathon-detail/components/ContestDetailMobileStickyCta";
-import { ContestWorkspaceFAB } from "@/pages/hackathon-detail/components/ContestWorkspaceFAB";
 import { ContestDetailMainLayout } from "@/pages/hackathon-detail/components/ContestDetailMainLayout";
 import { ContestDetailLeftColumn } from "@/pages/hackathon-detail/components/ContestDetailLeftColumn";
 import { ContestDetailRightColumn } from "@/pages/hackathon-detail/components/ContestDetailRightColumn";
 import { ContestPublicHashScroll } from "@/pages/hackathon-detail/components/ContestPublicHashScroll";
+import { ContestWorkspaceAccessCard } from "@/pages/hackathon-detail/components/ContestWorkspaceAccessCard";
 import { ContestDetailProvider } from "@/pages/hackathon-detail/ContestDetailContext";
 import { useContestDetail } from "@/pages/hackathon-detail/hooks/useContestDetail";
 import { narrowContestDetailView } from "@/pages/hackathon-detail/viewModel";
+import { shouldShowParticipantRail } from "@/pages/hackathon-detail/utils/contestLifecycle";
 
 export default function ContestDetail({
   forceManageView,
@@ -53,8 +56,18 @@ export default function ContestDetail({
     );
   }
 
-  /** Two-column layout is for public detail only (participant rail). Manage uses full-width main column. */
-  const twoColumnGrid = !vm.isManageView;
+  /**
+   * Two-column layout is for public detail only (participant rail). When the rail has no actionable
+   * content (ended contests without a viewer registration, draft, etc.), fall back to single column
+   * so the main content can use the full width.
+   */
+  const showParticipantRail =
+    !vm.isManageView &&
+    shouldShowParticipantRail({
+      lifecycle: vm.hackathonLifecycle,
+      hasExistingRegistration: Boolean(vm.registration),
+    });
+  const twoColumnGrid = showParticipantRail;
 
   return (
     <ContestDetailProvider vm={vm}>
@@ -62,15 +75,33 @@ export default function ContestDetail({
         <>
           <ContestPublicHashScroll enabled />
           <ContestDetailMobileStickyCta />
-          {vm.canAccessWorkspace ? (
-            <ContestWorkspaceFAB vm={vm} mobileStickyReserve />
-          ) : null}
         </>
       ) : null}
       <ContestDetailMainLayout
+        aboveHero={
+          !vm.isManageView ? (
+            <div className="space-y-3 sm:space-y-4">
+              <nav
+                aria-label="Breadcrumb"
+                className="flex items-center gap-1 text-xs text-foreground-muted"
+              >
+                <Link to="/hackathons" className="hover:text-foreground">
+                  {vm.translate("catalog.heroTitle")}
+                </Link>
+                <ChevronRight className="size-3" aria-hidden />
+                <span className="truncate font-medium text-foreground">
+                  {vm.contest.title}
+                </span>
+              </nav>
+              {vm.canAccessWorkspace ? (
+                <ContestWorkspaceAccessCard vm={vm} />
+              ) : null}
+            </div>
+          ) : null
+        }
         heroCard={<ContestDetailHeroCard vm={vm} titleAs="h1" />}
         leftColumn={<ContestDetailLeftColumn />}
-        rightColumn={<ContestDetailRightColumn />}
+        rightColumn={showParticipantRail ? <ContestDetailRightColumn /> : null}
         twoColumnGrid={twoColumnGrid}
         afterGrid={
           <ContestDetailDeleteContestDialog

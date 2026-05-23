@@ -77,6 +77,12 @@
     "listCardImageAlt": "Contest thumbnail — {{title}}"
   },
   "workspace": {
+    "access": {
+      "cardTitle": "You can manage this hackathon",
+      "cardDescription": "Your role grants workspace access — review applications, score submissions, edit content, or send announcements.",
+      "roleReviewer": "Application reviewer",
+      "roleAnalytics": "Analytics viewer"
+    },
     "tabs": {
       "overview": "Overview",
       "applications": "Applications",
@@ -86,6 +92,12 @@
       "awards": "Awards",
       "email": "Email blast",
       "settings": "Settings"
+    },
+    "tabGroups": {
+      "run": "Run",
+      "comms": "Comms",
+      "insights": "Insights",
+      "configure": "Configure"
     },
     "awards": {
       "heroTitle": "Open Campus awards",
@@ -233,6 +245,23 @@
       "phase4Header": "Phase 4",
       "phase4Title": "Publish outcomes",
       "phase4Body": "Publish leaderboard and winners to the public page.",
+      "dashboard": {
+        "actionsTitle": "What to work on next",
+        "actionsDescription": "Jump straight into the part of the workspace you need.",
+        "viewAction": "Open →",
+        "reviewApplicationsTitle": "Review applications",
+        "reviewApplicationsDescription": "Approve or reject incoming team applications.",
+        "scoreSubmissionsTitle": "Score submissions",
+        "scoreSubmissionsDescription": "Open the judging queue and rate active submissions.",
+        "editHackathonTitle": "Edit hackathon",
+        "editHackathonDescription": "Update title, schedule, prizes, rules, and access.",
+        "announceTitle": "Send announcement",
+        "announceDescription": "Email all registered participants at once.",
+        "awardsTitle": "Manage awards",
+        "awardsDescription": "Configure award templates and mint credentials for winners.",
+        "viewPublicTitle": "Open public page",
+        "viewPublicDescription": "See what participants see right now."
+      },
       "applicationsReviewTitle": "Application review",
       "applicationsReviewDescription": "Only Corelia staff review applications. Judges and co-host partners cannot access this area.",
       "applicationsQueueSummary": "{{count}} applications",

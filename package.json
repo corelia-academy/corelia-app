@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "functions:serve": "supabase functions serve corelia-api",
-    "functions:serve:ai": "supabase functions serve ai-tutor --env-file supabase/functions/ai-tutor/.env",
-    "functions:serve:generate-description": "supabase functions serve generate-description --env-file supabase/functions/generate-description/.env",
+    "functions:serve": "supabase functions serve corelia-api --env-file supabase/functions/.env",
+    "functions:serve:ai": "supabase functions serve ai-tutor --env-file supabase/functions/.env",
+    "functions:serve:generate-description": "supabase functions serve generate-description --env-file supabase/functions/.env",
     "functions:deploy": "supabase functions deploy corelia-api",
     "dev:staging": "vite --mode staging",
     "build": "tsc -b && vite build",

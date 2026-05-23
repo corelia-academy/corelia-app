@@ -132,7 +132,7 @@ export function ContestDetailApplicationsPanel({
       <CardContent className="p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
               {translate("workspace.manage.applicationsReviewTitle")}
             </h2>
             <p className="mt-2 text-sm text-foreground-muted">
@@ -323,7 +323,7 @@ export function ContestDetailApplicationsPanel({
                         ) : null}
 
                         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
+                          <div className="rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                             <span className="font-medium text-foreground">
                               {translate("detail.labels.contact")}
                             </span>{" "}
@@ -334,7 +334,7 @@ export function ContestDetailApplicationsPanel({
                             {item.contact_phone ||
                               translate("detail.labels.noDataDash")}
                           </div>
-                          <div className="rounded-xl border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
+                          <div className="rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                             <span className="font-medium text-foreground">
                               {translate("workspace.manage.portfolioLabel")}
                             </span>{" "}

@@ -51,6 +51,7 @@ import {
   updateSection,
   updateLesson,
   reorderCourseLessons,
+  reorderCourseSections,
   deleteSection,
   deleteLesson,
   deleteCourse,
@@ -149,7 +150,12 @@ import { CourseOcbCredentialSection } from "@/pages/instructor-course-edit/compo
 import { QuestionGeneratorDialog } from "@/pages/instructor-course-edit/components/QuestionGeneratorDialog";
 import { CO_INSTRUCTOR_PERMISSION_KEYS, EDIT_SECTION_IDS } from "./constants";
 import { AnnouncementsSection } from "./components/AnnouncementsSection";
-import type { LessonDropPosition, LessonDropTarget } from "./types";
+import type {
+  LessonDropPosition,
+  LessonDropTarget,
+  SectionDropPosition,
+  SectionDropTarget,
+} from "./types";
 import { formatVndInput, normalizeVndDigits } from "./utils/currency";
 import { createSponsorId, getNextOrder, isValidHttpUrl } from "./utils/helpers";
 
@@ -204,6 +210,10 @@ const InstructorCourseEdit = () => {
   >(null);
   const [lessonDropTarget, setLessonDropTarget] =
     useState<LessonDropTarget | null>(null);
+  const [reorderingSections, setReorderingSections] = useState(false);
+  const [draggingSectionId, setDraggingSectionId] = useState<string | null>(null);
+  const [sectionDropTarget, setSectionDropTarget] =
+    useState<SectionDropTarget | null>(null);
   const [addingLessonDraftSectionId, setAddingLessonDraftSectionId] = useState<string | null>(null);
   const [newLessonTitle, setNewLessonTitle] = useState("");
   const [newLessonShortDescription, setNewLessonShortDescription] = useState("");
@@ -3011,6 +3021,164 @@ const InstructorCourseEdit = () => {
     await commitLessonOrder(sectionId, nextSectionLessons);
   };
 
+  const clearSectionDragState = () => {
+    setDraggingSectionId(null);
+    setSectionDropTarget(null);
+  };
+
+  const buildReorderedSections = (
+    sourceSectionId: string,
+    targetSectionId: string,
+    targetPosition: SectionDropPosition,
+  ) => {
+    if (sourceSectionId === targetSectionId) return null;
+
+    const sourceIndex = orderedSections.findIndex((s) => s.id === sourceSectionId);
+    const targetIndex = orderedSections.findIndex((s) => s.id === targetSectionId);
+    if (sourceIndex === -1 || targetIndex === -1) return null;
+
+    const nextSections = [...orderedSections];
+    const [movedSection] = nextSections.splice(sourceIndex, 1);
+    if (!movedSection) return null;
+
+    let insertIndex = targetIndex;
+    if (sourceIndex < targetIndex) insertIndex -= 1;
+    if (targetPosition === "after") insertIndex += 1;
+    insertIndex = Math.max(0, Math.min(insertIndex, nextSections.length));
+
+    nextSections.splice(insertIndex, 0, movedSection);
+    const unchanged = nextSections.every(
+      (section, index) => section.id === orderedSections[index]?.id,
+    );
+    if (unchanged) return null;
+
+    return nextSections.map((section, index) => ({
+      ...section,
+      order: index,
+    }));
+  };
+
+  const commitSectionOrder = async (nextOrderedSections: CourseSection[]) => {
+    if (!id || nextOrderedSections.length === 0) return;
+
+    const previousSections = sections;
+    const reorderedById = new Map(
+      nextOrderedSections.map((section) => [section.id, section]),
+    );
+    const nextSections = previousSections.map(
+      (section) => reorderedById.get(section.id) ?? section,
+    );
+
+    setReorderingSections(true);
+    setSections(nextSections);
+    clearSectionDragState();
+
+    try {
+      await reorderCourseSections(
+        id,
+        nextOrderedSections.map(({ id: sectionId, order }) => ({
+          id: sectionId,
+          order,
+        })),
+      );
+    } catch (e) {
+      setSections(previousSections);
+      const message =
+        e instanceof Error
+          ? e.message
+          : t("courseEdit.errors.reorderSectionsFailed");
+      setError(message);
+      toast.error(message);
+    } finally {
+      setReorderingSections(false);
+    }
+  };
+
+  const getSectionDropPosition = (
+    event: React.DragEvent<HTMLElement>,
+  ): SectionDropPosition => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return event.clientY - rect.top >= rect.height / 2 ? "after" : "before";
+  };
+
+  const handleMoveSection = async (
+    sectionId: string,
+    direction: -1 | 1,
+  ) => {
+    if (reorderingSections) return;
+
+    const currentIndex = orderedSections.findIndex((s) => s.id === sectionId);
+    const targetSection = orderedSections[currentIndex + direction];
+    if (currentIndex === -1 || !targetSection) return;
+
+    const nextOrderedSections = buildReorderedSections(
+      sectionId,
+      targetSection.id,
+      direction > 0 ? "after" : "before",
+    );
+    if (!nextOrderedSections) return;
+
+    await commitSectionOrder(nextOrderedSections);
+  };
+
+  const handleSectionDragStart = (
+    sectionId: string,
+    event: React.DragEvent<HTMLButtonElement>,
+  ) => {
+    if (reorderingSections) {
+      event.preventDefault();
+      return;
+    }
+
+    setDraggingSectionId(sectionId);
+    setSectionDropTarget(null);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", sectionId);
+  };
+
+  const handleSectionDragOver = (
+    sectionId: string,
+    event: React.DragEvent<HTMLDivElement>,
+  ) => {
+    if (reorderingSections || !draggingSectionId) return;
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    const position = getSectionDropPosition(event);
+    setSectionDropTarget((current) => {
+      if (
+        current?.sectionId === sectionId &&
+        current.position === position
+      ) {
+        return current;
+      }
+      return { sectionId, position };
+    });
+  };
+
+  const handleSectionDrop = async (
+    sectionId: string,
+    event: React.DragEvent<HTMLDivElement>,
+  ) => {
+    event.preventDefault();
+    if (reorderingSections || !draggingSectionId) {
+      clearSectionDragState();
+      return;
+    }
+
+    const nextOrderedSections = buildReorderedSections(
+      draggingSectionId,
+      sectionId,
+      getSectionDropPosition(event),
+    );
+    if (!nextOrderedSections) {
+      clearSectionDragState();
+      return;
+    }
+
+    await commitSectionOrder(nextOrderedSections);
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-80 items-center justify-center">
@@ -5387,23 +5555,79 @@ const InstructorCourseEdit = () => {
                     muốn mở cho học viên chưa thanh toán.
                   </div>
                 )}
-                {lessonsBySection.map(({ section, lessons: secLessons }) => (
+                {lessonsBySection.map(({ section, lessons: secLessons }, sectionIndex) => {
+                  const isSectionDragging = draggingSectionId === section.id;
+                  const isSectionDropBefore =
+                    sectionDropTarget?.sectionId === section.id &&
+                    sectionDropTarget.position === "before";
+                  const isSectionDropAfter =
+                    sectionDropTarget?.sectionId === section.id &&
+                    sectionDropTarget.position === "after";
+
+                  return (
                   <div
                     key={section.id}
-                    className="overflow-hidden rounded-md border border-border-subtle bg-surface-base"
+                    onDragOver={(event) => handleSectionDragOver(section.id, event)}
+                    onDrop={(event) => void handleSectionDrop(section.id, event)}
+                    onDragEnd={clearSectionDragState}
+                    className={cn(
+                      "overflow-hidden rounded-md border border-border-subtle bg-surface-base transition-[background-color,border-color,opacity]",
+                      isSectionDragging && "opacity-45",
+                      isSectionDropBefore && "border-t-2 border-t-primary",
+                      isSectionDropAfter && "border-b-2 border-b-primary",
+                    )}
                   >
                     <div className="flex items-center justify-between border-b border-border-subtle bg-surface-raised px-4 py-2">
-                      <div className="min-w-0">
-                        <span className="font-medium text-foreground">
-                          {section.title}
-                        </span>
-                        {section.description?.trim() ? (
-                          <p className="mt-1 line-clamp-2 text-xs text-foreground-muted">
-                            {section.description}
-                          </p>
-                        ) : null}
+                      <div className="flex min-w-0 items-center gap-2">
+                        <button
+                          type="button"
+                          draggable={!reorderingSections}
+                          disabled={reorderingSections}
+                          onDragStart={(event) => handleSectionDragStart(section.id, event)}
+                          onDragEnd={clearSectionDragState}
+                          aria-label={`Kéo để đổi thứ tự chương ${section.title}`}
+                          title={t("courseEdit.tooltips.dragReorder")}
+                          className="flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-foreground-muted transition hover:border-border-subtle hover:bg-surface-base hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <GripVertical className="size-4" aria-hidden />
+                        </button>
+                        <div className="min-w-0">
+                          <span className="font-medium text-foreground">
+                            {section.title}
+                          </span>
+                          {section.description?.trim() ? (
+                            <p className="mt-1 line-clamp-2 text-xs text-foreground-muted">
+                              {section.description}
+                            </p>
+                          ) : null}
+                        </div>
                       </div>
                       <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          disabled={reorderingSections || sectionIndex === 0}
+                          onClick={() => void handleMoveSection(section.id, -1)}
+                          aria-label={`Đưa chương ${section.title} lên trên`}
+                          title={t("courseEdit.tooltips.moveUp")}
+                        >
+                          <ArrowUpFromLine className="size-4" aria-hidden />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          disabled={
+                            reorderingSections ||
+                            sectionIndex === lessonsBySection.length - 1
+                          }
+                          onClick={() => void handleMoveSection(section.id, 1)}
+                          aria-label={`Đưa chương ${section.title} xuống dưới`}
+                          title={t("courseEdit.tooltips.moveDown")}
+                        >
+                          <ArrowDownToLine className="size-4" aria-hidden />
+                        </Button>
                         <Button
                           type="button"
                           variant="ghost"
@@ -5660,7 +5884,8 @@ const InstructorCourseEdit = () => {
                       </Button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="mt-4 rounded-md border border-dashed border-border-subtle p-4">
