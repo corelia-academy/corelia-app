@@ -1025,7 +1025,7 @@ export async function updateLesson(
   courseId: string,
   lessonId: string,
   data: Partial<CourseLessonInsert>,
-  options?: { clearYoutubeSegments?: boolean },
+  options?: { clearYoutubeSegments?: boolean; clearYoutube?: boolean },
 ): Promise<void> {
   const { data: row, error } = await supabase
     .from("course_lessons")
@@ -1040,6 +1040,11 @@ export async function updateLesson(
   delete patch.section_id;
   const next = { ...prev, ...patch };
   if (options?.clearYoutubeSegments) {
+    delete next.youtube_start_seconds;
+    delete next.youtube_end_seconds;
+  }
+  if (options?.clearYoutube) {
+    delete next.youtube_url;
     delete next.youtube_start_seconds;
     delete next.youtube_end_seconds;
   }

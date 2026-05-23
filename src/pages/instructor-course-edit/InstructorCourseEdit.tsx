@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   ArrowLeft,
@@ -119,7 +119,10 @@ import type {
   CourseLessonLocaleContent,
   Enrollment,
   FinalAssignmentSubmission,
+  LessonFormat,
 } from "@/types/courses";
+import { LessonFormatSelector } from "@/components/course/LessonFormatSelector";
+import { getLessonFormat, isLessonDraftForLearners } from "@/lib/lessonFormat";
 import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
@@ -237,6 +240,8 @@ const InstructorCourseEdit = () => {
   const [newLessonResources, setNewLessonResources] = useState<
     Array<{ title: string; url: string }>
   >([]);
+  const [newLessonFormat, setNewLessonFormat] = useState<LessonFormat>("video");
+  const [editingLessonFormat, setEditingLessonFormat] = useState<LessonFormat>("video");
   const [lessonLearnerCounts, setLessonLearnerCounts] = useState<Record<string, number>>({});
   const [longVideoSplitOpen, setLongVideoSplitOpen] = useState(false);
   const [longVideoSplitPayload, setLongVideoSplitPayload] = useState<{
@@ -335,10 +340,6 @@ const InstructorCourseEdit = () => {
   const [defaultVideoPrimaryLocale, setDefaultVideoPrimaryLocale] =
     useState<SupportedCourseLocale>("vi");
   const [activeContentLocale, setActiveContentLocale] = useState<SupportedCourseLocale>("vi");
-  // tEdit is scoped to activeContentLocale: UI chrome in the editor flips language
-  // when the user switches content locale, without touching the global i18n setting.
-  const tEdit = useMemo(() => i18n.getFixedT(activeContentLocale, "instructor"), [activeContentLocale, i18n]);
-
   // Per-locale draft cache for section & lesson dialogs
   type SectionDraft = { title: string; description: string };
   type LessonDraft = {
@@ -644,7 +645,7 @@ const InstructorCourseEdit = () => {
         throw new Error(t("courseEdit.descriptionGenerator.errors.generic"));
       }
       params.onApply(response.bundle);
-      toast.success(t("courseEdit.descriptionGenerator.translateApplied" as never));
+      toast.success(t("courseEdit.descriptionGenerator.translateApplied"));
     } catch (translateError) {
       toast.error(
         translateError instanceof Error
@@ -1112,7 +1113,7 @@ const InstructorCourseEdit = () => {
         .map((x) => x.trim())
         .filter(Boolean);
       if (externalSources.length === 0) {
-        setError("Vui lòng nhập ít nhất 1 nguồn (URL) khi bật Public external course.");
+        setError(t("courseEdit.errors.externalSourcesRequired"));
         return;
       }
     }
@@ -1493,7 +1494,7 @@ const InstructorCourseEdit = () => {
       toast.error(
         e instanceof Error
           ? e.message
-          : String(t("courseEdit.sponsors.errors.uploadLogoFailed" as never)),
+          : String(t("courseEdit.sponsors.errors.uploadLogoFailed")),
       );
     } finally {
       setUploadingSponsorLogo(false);
@@ -1506,12 +1507,12 @@ const InstructorCourseEdit = () => {
     if (!sid) return;
     const name = sponsorForm.name.trim();
     if (!name) {
-      toast.error(String(t("courseEdit.sponsors.errors.missingName" as never)));
+      toast.error(String(t("courseEdit.sponsors.errors.missingName")));
       return;
     }
     const websiteValue = sponsorForm.website.trim();
     if (websiteValue && !isValidHttpUrl(websiteValue)) {
-      toast.error(String(t("courseEdit.sponsors.errors.invalidWebsite" as never)));
+      toast.error(String(t("courseEdit.sponsors.errors.invalidWebsite")));
       return;
     }
 
@@ -1541,7 +1542,7 @@ const InstructorCourseEdit = () => {
   const removeSponsor = async (s: CourseSponsor) => {
     const sid = String(s.id ?? "").trim();
     if (!sid) return;
-    if (!confirm(String(t("courseEdit.sponsors.confirm.remove" as never)))) return;
+    if (!confirm(String(t("courseEdit.sponsors.confirm.remove")))) return;
     const nextSponsors = sponsors.filter((x) => String(x.id ?? "").trim() !== sid);
     await persistSponsors(nextSponsors, "courseEdit.sponsors.toasts.removed");
     await deleteStorageObjectByPath(s.logo_path ?? null);
@@ -1631,7 +1632,7 @@ const InstructorCourseEdit = () => {
       toast.error(
         e instanceof Error
           ? e.message
-          : String(t("courseEdit.partners.errors.uploadLogoFailed" as never)),
+          : String(t("courseEdit.partners.errors.uploadLogoFailed")),
       );
     } finally {
       setUploadingPartnerLogo(false);
@@ -1644,12 +1645,12 @@ const InstructorCourseEdit = () => {
     if (!pid) return;
     const name = partnerForm.name.trim();
     if (!name) {
-      toast.error(String(t("courseEdit.partners.errors.missingName" as never)));
+      toast.error(String(t("courseEdit.partners.errors.missingName")));
       return;
     }
     const websiteValue = partnerForm.website.trim();
     if (websiteValue && !isValidHttpUrl(websiteValue)) {
-      toast.error(String(t("courseEdit.partners.errors.invalidWebsite" as never)));
+      toast.error(String(t("courseEdit.partners.errors.invalidWebsite")));
       return;
     }
 
@@ -1679,7 +1680,7 @@ const InstructorCourseEdit = () => {
   const removePartner = async (p: CoursePartner) => {
     const pid = String(p.id ?? "").trim();
     if (!pid) return;
-    if (!confirm(String(t("courseEdit.partners.confirm.remove" as never)))) return;
+    if (!confirm(String(t("courseEdit.partners.confirm.remove")))) return;
     const nextPartners = partners.filter((x) => String(x.id ?? "").trim() !== pid);
     await persistPartners(nextPartners, "courseEdit.partners.toasts.removed");
     await deleteStorageObjectByPath(p.logo_path ?? null);
@@ -1972,7 +1973,7 @@ const InstructorCourseEdit = () => {
       }
       setAddingLessonDraftSectionId(defaultSec.id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Không thể chuẩn bị bài học.");
+      setError(e instanceof Error ? e.message : t("courseEdit.errors.prepareLessonFailed"));
     }
   };
 
@@ -2126,11 +2127,14 @@ const InstructorCourseEdit = () => {
       youtube_end_seconds?: number | null;
       explicit_duration_seconds?: number;
       lessonAccumulator?: CourseLesson[];
+      lessonFormat?: LessonFormat;
     },
   ): Promise<CourseLesson> => {
     if (!id) throw new Error(t("courseEdit.errors.addLessonFailed"));
 
-    const youtubeUrl = opts.youtubeUrl.trim();
+    const lessonFormat = opts.lessonFormat ?? newLessonFormat;
+    const isArticleFormat = lessonFormat === "article";
+    const youtubeUrl = isArticleFormat ? "" : opts.youtubeUrl.trim();
     const sanitizedResources = (snap.resources ?? [])
       .map((r) => ({ title: (r.title ?? "").trim(), url: (r.url ?? "").trim() }))
       .filter((r) => r.title && r.url);
@@ -2177,10 +2181,11 @@ const InstructorCourseEdit = () => {
     const les = await addLesson(id, {
       section_id: sectionId,
       title: lessonTitle,
+      lesson_format: lessonFormat,
       short_description: snap.shortDescription.trim() || undefined,
       youtube_url: youtubeUrl || undefined,
-      youtube_start_seconds: ytStart,
-      youtube_end_seconds: ytEnd,
+      youtube_start_seconds: isArticleFormat ? undefined : ytStart,
+      youtube_end_seconds: isArticleFormat ? undefined : ytEnd,
       description_markdown: snap.markdown.trim() || undefined,
       resources: sanitizedResources.length ? sanitizedResources : undefined,
       video_primary_locale: vidLocale,
@@ -2355,6 +2360,7 @@ const InstructorCourseEdit = () => {
     setNewLessonIsPreviewFree(false);
     setNewLessonMarkdown("");
     setNewLessonResources([]);
+    setNewLessonFormat("video");
     setAddingLessonDraftSectionId(null);
     pendingNewLessonSnapRef.current = null;
   };
@@ -2593,7 +2599,13 @@ const InstructorCourseEdit = () => {
     };
     pendingNewLessonSnapRef.current = snap;
 
-    const youtubeUrl = newLessonYoutubeUrl.trim();
+    const isArticleFormat = newLessonFormat === "article";
+    if (isArticleFormat && !newLessonMarkdown.trim() && !newLessonShortDescription.trim()) {
+      toast.error(t("courseEdit.lessons.articleContentRequired"));
+      return;
+    }
+
+    const youtubeUrl = isArticleFormat ? "" : newLessonYoutubeUrl.trim();
 
     setAddingLessonInProgress(true);
     try {
@@ -2607,7 +2619,7 @@ const InstructorCourseEdit = () => {
 
       const durationGuess = fromInput > 0 ? fromInput : fromApi;
 
-      if (youtubeUrl && durationGuess > LONG_VIDEO_SPLIT_SECONDS) {
+      if (!isArticleFormat && youtubeUrl && durationGuess > LONG_VIDEO_SPLIT_SECONDS) {
         const videoDur = meta?.durationSeconds ?? durationGuess;
         const description = meta?.description ?? "";
         const chapterStarts = parseChaptersFromDescription(description, videoDur);
@@ -2639,6 +2651,7 @@ const InstructorCourseEdit = () => {
       const secSubset = lessons.filter((l) => l.section_id === sectionId);
       await insertLessonIntoCourse(sectionId, snap, {
         youtubeUrl,
+        lessonFormat: newLessonFormat,
         lessonAccumulator: secSubset,
       });
       resetNewLessonFormFields();
@@ -2690,6 +2703,7 @@ const InstructorCourseEdit = () => {
     // Primary locale uses the lesson data directly
     lessonDraftRef.current.set(primaryContentLocale, lessonToDraft(lesson));
     setEditingLesson(lesson);
+    setEditingLessonFormat(getLessonFormat(lesson));
     applyLessonDraftToState(lessonToDraft(lesson));
     setEditingLessonYoutubeStartLabel(
       formatSecondsToTimestamp(lesson.youtube_start_seconds ?? 0),
@@ -2747,9 +2761,19 @@ const InstructorCourseEdit = () => {
       // Flush current dialog state into draft map
       lessonDraftRef.current.set(dialogLessonLocale, captureLessonDraftFromState());
 
-      const ytUrlTrimmedMaster = editingLessonYoutubeUrl.trim();
+      const primaryDraft =
+        lessonDraftRef.current.get(primaryContentLocale) ?? captureLessonDraftFromState();
+      const isArticleFormat = editingLessonFormat === "article";
+      if (isArticleFormat) {
+        if (!primaryDraft.markdown.trim() && !primaryDraft.shortDescription.trim()) {
+          toast.error(t("courseEdit.lessons.articleContentRequired"));
+          return;
+        }
+      }
+
+      const ytUrlTrimmedMaster = isArticleFormat ? "" : editingLessonYoutubeUrl.trim();
       const learnerCount = lessonLearnerCounts[editingLesson.id] ?? 0;
-      if (learnerCount > 0) {
+      if (!isArticleFormat && learnerCount > 0) {
         const prevId = getYoutubeVideoId(editingLesson.youtube_url ?? "");
         const nextId = getYoutubeVideoId(ytUrlTrimmedMaster);
         if (prevId && nextId && prevId !== nextId) {
@@ -2761,6 +2785,7 @@ const InstructorCourseEdit = () => {
       const prevVid = getYoutubeVideoId(editingLesson.youtube_url ?? "");
       const nextVid = getYoutubeVideoId(ytUrlTrimmedMaster);
       if (
+        !isArticleFormat &&
         learnerCount === 0 &&
         ytUrlTrimmedMaster &&
         nextVid &&
@@ -2827,7 +2852,7 @@ const InstructorCourseEdit = () => {
 
       let youtube_start_seconds: number | undefined;
       let youtube_end_seconds: number | null | undefined;
-      if (ytUrlTrimmedMaster) {
+      if (!isArticleFormat && ytUrlTrimmedMaster) {
         const startParsed =
           parseTimestampLabelToSeconds(editingLessonYoutubeStartLabel.trim()) ?? 0;
         youtube_start_seconds = startParsed > 0 ? startParsed : undefined;
@@ -2846,7 +2871,7 @@ const InstructorCourseEdit = () => {
       }
 
       let segmentDurationSeconds: number | undefined;
-      if (ytUrlTrimmedMaster) {
+      if (!isArticleFormat && ytUrlTrimmedMaster) {
         const effectiveStart = youtube_start_seconds ?? 0;
         if (
           youtube_end_seconds != null &&
@@ -2868,7 +2893,7 @@ const InstructorCourseEdit = () => {
       }
 
       const segmentPrimaryPatch =
-        ytUrlTrimmedMaster
+        !isArticleFormat && ytUrlTrimmedMaster
           ? {
               youtube_start_seconds,
               youtube_end_seconds:
@@ -2885,17 +2910,25 @@ const InstructorCourseEdit = () => {
           .filter((r) => r.title && r.url);
         const payload = {
           title: draft.title.trim() || editingLesson.title,
-          youtube_url: draft.youtubeUrl.trim() || undefined,
+          youtube_url: isArticleFormat ? undefined : draft.youtubeUrl.trim() || undefined,
           video_primary_locale: draft.videoPrimaryLocale,
-          has_subtitle: draft.hasSubtitle,
-          subtitle_locales: draft.hasSubtitle ? draft.subtitleLocales : [],
+          has_subtitle: isArticleFormat ? false : draft.hasSubtitle,
+          subtitle_locales:
+            isArticleFormat || !draft.hasSubtitle ? [] : draft.subtitleLocales,
           short_description: draft.shortDescription.trim() || undefined,
           description_markdown: draft.markdown.trim() || undefined,
           resources: sanitizedResources.length ? sanitizedResources : undefined,
         };
         if (loc === primaryContentLocale) {
-          const merged = { ...payload, ...segmentPrimaryPatch };
-          await updateLesson(id, editingLesson.id, merged);
+          const merged = {
+            ...payload,
+            lesson_format: editingLessonFormat,
+            ...segmentPrimaryPatch,
+          };
+          await updateLesson(id, editingLesson.id, merged, {
+            clearYoutube: isArticleFormat,
+            clearYoutubeSegments: Boolean(!isArticleFormat && ytUrlTrimmedMaster),
+          });
           setLessons((prev) =>
             prev.map((l) => (l.id === editingLesson.id ? { ...l, ...merged } : l)),
           );
@@ -3374,7 +3407,7 @@ const InstructorCourseEdit = () => {
           to="/instructor/courses"
           className="mt-4 inline-flex items-center gap-2 text-foreground hover:underline"
         >
-          <ArrowLeft className="size-4" /> Quay lại
+          <ArrowLeft className="size-4" /> {t("courseEdit.page.back")}
         </Link>
       </div>
     );
@@ -3535,13 +3568,13 @@ const InstructorCourseEdit = () => {
           };
 
     const labelByKey = {
-      title: t("courseEdit.translationCoverage.fields.title" as never),
-      short_description: t("courseEdit.translationCoverage.fields.shortDescription" as never),
-      description: t("courseEdit.translationCoverage.fields.description" as never),
-      learning_outcomes: t("courseEdit.translationCoverage.fields.learningOutcomes" as never),
-      final_assignment_title: t("courseEdit.translationCoverage.fields.assignmentTitle" as never),
-      final_assignment_description: t("courseEdit.translationCoverage.fields.assignmentDescription" as never),
-      final_assignment_instructions: t("courseEdit.translationCoverage.fields.assignmentInstructions" as never),
+      title: t("courseEdit.translationCoverage.fields.title"),
+      short_description: t("courseEdit.translationCoverage.fields.shortDescription"),
+      description: t("courseEdit.translationCoverage.fields.description"),
+      learning_outcomes: t("courseEdit.translationCoverage.fields.learningOutcomes"),
+      final_assignment_title: t("courseEdit.translationCoverage.fields.assignmentTitle"),
+      final_assignment_description: t("courseEdit.translationCoverage.fields.assignmentDescription"),
+      final_assignment_instructions: t("courseEdit.translationCoverage.fields.assignmentInstructions"),
     } as const;
 
     const generatorTargetField =
@@ -3683,28 +3716,10 @@ const InstructorCourseEdit = () => {
         {/* Sidebar inner — điều hướng từng phần */}
         <nav className="h-fit shrink-0 rounded-lg border border-border-subtle bg-surface-base p-3 xl:sticky xl:top-24 xl:w-64">
           {/* Locale switcher — always visible */}
-          <div className="mb-3 rounded-lg border border-border-subtle bg-surface-raised p-2">
-            <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-foreground-muted">
-              {tEdit("courseEdit.sidebar.editingLanguage" as never)}
+          <div className="mb-3 px-1">
+            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-foreground-muted">
+              {t("courseEdit.sidebar.editingLanguage")}
             </p>
-            <div className="mb-2 rounded-lg border border-border-subtle bg-surface-base p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-surface-raised px-2 py-1 text-[11px] font-semibold text-foreground">
-                  {t("courseEdit.i18n.primaryLocaleLabel" as never)}: {localeBadge(primaryContentLocale)}
-                </span>
-                <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary">
-                  {t("courseEdit.i18n.currentLocaleBadge" as never)}: {localeBadge(activeContentLocale)}
-                </span>
-              </div>
-              <p className="mt-2 text-xs text-foreground-muted">
-                {activeContentLocale === primaryContentLocale
-                  ? t("courseEdit.i18n.primaryEditingHint" as never)
-                  : t("courseEdit.i18n.translationEditingHint" as never, {
-                      source: primaryContentLocale.toUpperCase(),
-                      target: activeContentLocale.toUpperCase(),
-                    })}
-              </p>
-            </div>
             <div className="flex gap-1">
               {supportedLocales.map((loc) => (
                 <button
@@ -3722,7 +3737,7 @@ const InstructorCourseEdit = () => {
                   {loc.toUpperCase()}
                   {loc === primaryContentLocale && (
                     <span className="rounded bg-primary-foreground/20 px-1 py-0.5 text-[10px] leading-none">
-                      {tEdit("courseEdit.sidebar.primaryBadge" as never)}
+                      {t("courseEdit.sidebar.primaryBadge")}
                     </span>
                   )}
                 </button>
@@ -3731,10 +3746,10 @@ const InstructorCourseEdit = () => {
           </div>
           <div className="mb-3 px-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
-              {tEdit("courseEdit.sidebar.navTitle" as never)}
+              {t("courseEdit.sidebar.navTitle")}
             </p>
             <p className="mt-1 text-sm text-foreground-muted">
-              {tEdit("courseEdit.sidebar.navHint" as never)}
+              {t("courseEdit.sidebar.navHint")}
             </p>
           </div>
           <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
@@ -3751,7 +3766,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <Settings className="size-4 shrink-0" aria-hidden />
-                {tEdit("courseEdit.sidebar.nav.info" as never)}
+                {t("courseEdit.sidebar.nav.info")}
               </button>
             </li>
             ) : null}
@@ -3768,7 +3783,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <DollarSign className="size-4 shrink-0" aria-hidden />
-                {tEdit("courseEdit.sidebar.nav.pricing" as never)}
+                {t("courseEdit.sidebar.nav.pricing")}
               </button>
             </li>
             ) : null}
@@ -3785,7 +3800,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <List className="size-4 shrink-0" aria-hidden />
-                {tEdit("courseEdit.sidebar.nav.content" as never)}
+                {t("courseEdit.sidebar.nav.content")}
               </button>
             </li>
             ) : null}
@@ -3802,7 +3817,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <FileText className="size-4 shrink-0" aria-hidden />
-                {tEdit("courseEdit.sidebar.nav.assignments" as never)}
+                {t("courseEdit.sidebar.nav.assignments")}
               </button>
             </li>
             ) : null}
@@ -3819,7 +3834,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <Award className="size-4 shrink-0" aria-hidden />
-                {tEdit("courseEdit.sidebar.nav.certificate" as never)}
+                {t("courseEdit.sidebar.nav.certificate")}
               </button>
             </li>
             ) : null}
@@ -3836,7 +3851,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <Mail className="size-4 shrink-0" aria-hidden />
-                {tEdit("courseEdit.announcements.sectionTitle" as never)}
+                {t("courseEdit.sidebar.nav.announcements")}
               </button>
             </li>
             ) : null}
@@ -3853,7 +3868,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <Users className="size-4 shrink-0" aria-hidden />
-                {tEdit("courseEdit.sidebar.nav.students" as never)}
+                {t("courseEdit.sidebar.nav.students")}
               </button>
             </li>
             ) : null}
@@ -3870,7 +3885,7 @@ const InstructorCourseEdit = () => {
                 )}
               >
                 <AlertTriangle className="size-4 shrink-0" aria-hidden />
-                {tEdit("courseEdit.sidebar.nav.danger" as never)}
+                {t("courseEdit.sidebar.nav.danger")}
               </button>
             </li>
             ) : null}
@@ -3882,13 +3897,13 @@ const InstructorCourseEdit = () => {
           {activeSection === "info" && canAccessInfo && (
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground">
-                {tEdit("courseEdit.sidebar.nav.info" as never)}
+                {t("courseEdit.sidebar.nav.info")}
               </h2>
               <FieldGroup className="mt-4">
                 {/* Locale config — advanced, collapsed into a summary row */}
                 <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2">
                   <div className="flex items-center gap-2 text-xs text-foreground-muted">
-                    <span className="font-medium text-foreground">{tEdit("courseEdit.i18n.supportedLocalesLabel" as never)}:</span>
+                    <span className="font-medium text-foreground">{t("courseEdit.i18n.supportedLocalesLabel")}:</span>
                     {(["vi", "en"] as const).map((loc) => {
                       const enabled = supportedLocales.includes(loc);
                       return (
@@ -3920,7 +3935,7 @@ const InstructorCourseEdit = () => {
                     })}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-foreground-muted">
-                    <span className="font-medium text-foreground">{tEdit("courseEdit.i18n.primaryLocaleLabel" as never)}:</span>
+                    <span className="font-medium text-foreground">{t("courseEdit.i18n.primaryLocaleLabel")}:</span>
                     <select
                       value={primaryContentLocale}
                       onChange={(e) => setPrimaryContentLocale(normalizeCourseLocale(e.target.value))}
@@ -3936,14 +3951,14 @@ const InstructorCourseEdit = () => {
                   <div className="rounded-xl border border-warning/20 bg-warning/10 p-4 text-sm text-foreground">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-warning/15 px-2 py-1 text-xs font-semibold text-warning">
-                        {t("courseEdit.i18n.translationModeBadge" as never)}
+                        {t("courseEdit.i18n.translationModeBadge")}
                       </span>
                       <span className="text-sm font-medium">
                         {localeBadge(primaryContentLocale)} → {localeBadge(activeContentLocale)}
                       </span>
                     </div>
                     <p className="mt-2 text-sm text-foreground-muted">
-                      {t("courseEdit.i18n.editingNonPrimaryHint" as never)}
+                      {t("courseEdit.i18n.editingNonPrimaryHint")}
                     </p>
                   </div>
                 )}
@@ -3953,7 +3968,7 @@ const InstructorCourseEdit = () => {
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <p className="text-sm font-semibold text-foreground">
-                            {t("courseEdit.translationCoverage.title" as never)}
+                            {t("courseEdit.translationCoverage.title")}
                           </p>
                           <p className="mt-1 text-sm text-foreground-muted">
                             {t("courseEdit.translationCoverage.description" as never, {
@@ -4023,10 +4038,10 @@ const InstructorCourseEdit = () => {
                                 )}
                               >
                                 {item.currentFilled
-                                  ? t("courseEdit.translationCoverage.states.done" as never)
+                                  ? t("courseEdit.translationCoverage.states.done")
                                   : item.sourceFilled
-                                    ? t("courseEdit.translationCoverage.states.ready" as never)
-                                    : t("courseEdit.translationCoverage.states.missing" as never)}
+                                    ? t("courseEdit.translationCoverage.states.ready")
+                                    : t("courseEdit.translationCoverage.states.missing")}
                               </span>
                             </div>
                             <p className="mt-2 text-xs text-foreground-muted">
@@ -4038,11 +4053,11 @@ const InstructorCourseEdit = () => {
                                   ? t("courseEdit.translationCoverage.messages.sourceAvailable" as never, {
                                       locale: primaryContentLocale.toUpperCase(),
                                     })
-                                  : t("courseEdit.translationCoverage.messages.noSource" as never)}
+                                  : t("courseEdit.translationCoverage.messages.noSource")}
                             </p>
                             <div className="mt-3 flex flex-wrap items-center gap-2">
                               <span className="text-[11px] font-medium text-foreground-muted">
-                                {t("courseEdit.translationCoverage.actions.openField" as never)}
+                                {t("courseEdit.translationCoverage.actions.openField")}
                               </span>
                               {!item.currentFilled && item.sourceFilled ? (
                                 <Button
@@ -4278,34 +4293,16 @@ const InstructorCourseEdit = () => {
                 {course && canEditCoInstructors ? (
                   <Field>
                     <FieldLabel>
-                      {String(
-                        t("courseEdit.coInstructors.label" as never, {
-                          defaultValue: "Co-instructors",
-                        } as never),
-                      )}
+                      {t("courseEdit.coInstructors.label")}
                     </FieldLabel>
                     <p className="mt-1 text-xs text-foreground-muted">
-                      {String(
-                        t("courseEdit.coInstructors.hint" as never, {
-                          defaultValue:
-                            "Thêm đồng giảng viên để hiển thị trên trang khoá học và cấp một số quyền giới hạn.",
-                        } as never),
-                      )}
+                      {t("courseEdit.coInstructors.hint")}
                     </p>
 
                     <div className="mt-3 space-y-3">
                       <ProfileCombobox
-                        title={String(
-                          t("courseEdit.coInstructors.dialogTitle" as never, {
-                            defaultValue: "Chọn co-instructors",
-                          } as never),
-                        )}
-                        description={String(
-                          t("courseEdit.coInstructors.dialogDescription" as never, {
-                            defaultValue:
-                              "Chỉ những instructor có trong danh sách mới có thể được chọn.",
-                          } as never),
-                        )}
+                        title={t("courseEdit.coInstructors.dialogTitle")}
+                        description={t("courseEdit.coInstructors.dialogDescription")}
                         options={
                           instructorDirectory
                             .filter((p) => p.id !== course.instructor_id)
@@ -4315,11 +4312,7 @@ const InstructorCourseEdit = () => {
                                 label:
                                   p.full_name ??
                                   p.email ??
-                                  String(
-                                    t("courseEdit.coInstructors.fallbackName" as never, {
-                                      defaultValue: "Instructor",
-                                    } as never),
-                                  ),
+                                  t("courseEdit.coInstructors.fallbackName"),
                                 description:
                                   p.instructor_headline ??
                                   p.instructor_organization ??
@@ -4327,21 +4320,9 @@ const InstructorCourseEdit = () => {
                               }),
                             )
                         }
-                        placeholder={String(
-                          t("courseEdit.coInstructors.placeholder" as never, {
-                            defaultValue: "Chọn co-instructors…",
-                          } as never),
-                        )}
-                        searchPlaceholder={String(
-                          t("courseEdit.coInstructors.searchPlaceholder" as never, {
-                            defaultValue: "Tìm theo tên/email…",
-                          } as never),
-                        )}
-                        emptyLabel={String(
-                          t("courseEdit.coInstructors.emptyLabel" as never, {
-                            defaultValue: "Không có instructor phù hợp.",
-                          } as never),
-                        )}
+                        placeholder={t("courseEdit.coInstructors.placeholder")}
+                        searchPlaceholder={t("courseEdit.coInstructors.searchPlaceholder")}
+                        emptyLabel={t("courseEdit.coInstructors.emptyLabel")}
                         multiple
                         value={coInstructorIds}
                         onChange={(value) => {
@@ -4363,11 +4344,7 @@ const InstructorCourseEdit = () => {
 
                       {loadingInstructorDirectory ? (
                         <p className="text-xs text-foreground-muted">
-                          {String(
-                            t("courseEdit.coInstructors.loadingDirectory" as never, {
-                              defaultValue: "Đang tải danh sách instructor…",
-                            } as never),
-                          )}
+                          {t("courseEdit.coInstructors.loadingDirectory")}
                         </p>
                       ) : null}
 
@@ -4439,9 +4416,7 @@ const InstructorCourseEdit = () => {
                                         />
                                         <span className="text-foreground">
                                           {String(
-                                            t(item.labelKey as never, {
-                                              defaultValue: item.key,
-                                            } as never),
+                                            t(item.labelKey as never),
                                           )}
                                         </span>
                                       </label>
@@ -4459,19 +4434,10 @@ const InstructorCourseEdit = () => {
 
                 <Field>
                   <FieldLabel>
-                    {String(
-                      t("courseEdit.sponsors.label" as never, {
-                        defaultValue: "Sponsors",
-                      } as never),
-                    )}
+                    {t("courseEdit.sponsors.label")}
                   </FieldLabel>
                   <p className="mt-1 text-xs text-foreground-muted">
-                    {String(
-                      t("courseEdit.sponsors.hint" as never, {
-                        defaultValue:
-                          "Thêm sponsor để hiển thị ở sidebar trang khoá học (logo, tên, website, mô tả).",
-                      } as never),
-                    )}
+                    {t("courseEdit.sponsors.hint")}
                   </p>
 
                   <div className="mt-3 space-y-3">
@@ -4484,19 +4450,10 @@ const InstructorCourseEdit = () => {
                         onClick={openAddSponsor}
                       >
                         <Plus className="size-4" aria-hidden />
-                        {String(
-                          t("courseEdit.sponsors.actions.add" as never, {
-                            defaultValue: "Thêm sponsor",
-                          } as never),
-                        )}
+                        {t("courseEdit.sponsors.actions.add")}
                       </Button>
                       <span className="text-xs text-foreground-muted">
-                        {String(
-                          t("courseEdit.sponsors.countLabel" as never, {
-                            defaultValue: "{{count}} sponsor",
-                            count: sponsors.length,
-                          } as never),
-                        )}
+                        {t("courseEdit.sponsors.countLabel", { count: sponsors.length })}
                       </span>
                     </div>
 
@@ -4581,11 +4538,7 @@ const InstructorCourseEdit = () => {
                       </div>
                     ) : (
                       <p className="text-xs text-foreground-muted">
-                        {String(
-                          t("courseEdit.sponsors.empty" as never, {
-                            defaultValue: "Chưa có sponsor nào.",
-                          } as never),
-                        )}
+                        {t("courseEdit.sponsors.empty")}
                       </p>
                     )}
                   </div>
@@ -4594,22 +4547,14 @@ const InstructorCourseEdit = () => {
                     <DialogContent className="max-w-lg">
                       <DialogHeader>
                         <DialogTitle>
-                          {String(
-                            t("courseEdit.sponsors.dialog.title" as never, {
-                              defaultValue: "Sponsor",
-                            } as never),
-                          )}
+                          {t("courseEdit.sponsors.dialog.title")}
                         </DialogTitle>
                       </DialogHeader>
 
                       <div className="space-y-4">
                         <Field>
                           <FieldLabel>
-                            {String(
-                              t("courseEdit.sponsors.fields.logo" as never, {
-                                defaultValue: "Logo",
-                              } as never),
-                            )}
+                            {t("courseEdit.sponsors.fields.logo")}
                           </FieldLabel>
                           <div className="mt-2 flex items-center gap-3">
                             <input
@@ -4627,16 +4572,8 @@ const InstructorCourseEdit = () => {
                               onClick={() => sponsorLogoInputRef.current?.click()}
                             >
                               {uploadingSponsorLogo
-                                ? String(
-                                    t("courseEdit.sponsors.actions.uploading" as never, {
-                                      defaultValue: "Đang tải lên...",
-                                    } as never),
-                                  )
-                                : String(
-                                    t("courseEdit.sponsors.actions.uploadLogo" as never, {
-                                      defaultValue: "Tải logo lên",
-                                    } as never),
-                                  )}
+                                ? t("courseEdit.sponsors.actions.uploading")
+                                : t("courseEdit.sponsors.actions.uploadLogo")}
                             </Button>
                             {sponsorForm.logo_url ? (
                               <img
@@ -4650,11 +4587,7 @@ const InstructorCourseEdit = () => {
 
                         <Field>
                           <FieldLabel>
-                            {String(
-                              t("courseEdit.sponsors.fields.name" as never, {
-                                defaultValue: "Tên sponsor",
-                              } as never),
-                            )}
+                            {t("courseEdit.sponsors.fields.name")}
                           </FieldLabel>
                           <Input
                             value={sponsorForm.name}
@@ -4666,11 +4599,7 @@ const InstructorCourseEdit = () => {
 
                         <Field>
                           <FieldLabel>
-                            {String(
-                              t("courseEdit.sponsors.fields.website" as never, {
-                                defaultValue: "Website",
-                              } as never),
-                            )}
+                            {t("courseEdit.sponsors.fields.website")}
                           </FieldLabel>
                           <Input
                             value={sponsorForm.website}
@@ -4686,11 +4615,7 @@ const InstructorCourseEdit = () => {
 
                         <Field>
                           <FieldLabel>
-                            {String(
-                              t("courseEdit.sponsors.fields.description" as never, {
-                                defaultValue: "Mô tả",
-                              } as never),
-                            )}
+                            {t("courseEdit.sponsors.fields.description")}
                           </FieldLabel>
                           <textarea
                             value={sponsorForm.description}
@@ -4712,22 +4637,14 @@ const InstructorCourseEdit = () => {
                           variant="outline"
                           onClick={() => setSponsorDialogOpen(false)}
                         >
-                          {String(
-                            t("courseEdit.sponsors.actions.cancel" as never, {
-                              defaultValue: "Huỷ",
-                            } as never),
-                          )}
+                          {t("courseEdit.sponsors.actions.cancel")}
                         </Button>
                         <Button
                           type="button"
                           onClick={() => void saveSponsorFromDialog()}
                           disabled={uploadingSponsorLogo}
                         >
-                          {String(
-                            t("courseEdit.sponsors.actions.save" as never, {
-                              defaultValue: "Lưu sponsor",
-                            } as never),
-                          )}
+                          {t("courseEdit.sponsors.actions.save")}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
@@ -4736,19 +4653,10 @@ const InstructorCourseEdit = () => {
 
                 <Field>
                   <FieldLabel>
-                    {String(
-                      t("courseEdit.partners.label" as never, {
-                        defaultValue: "Partners",
-                      } as never),
-                    )}
+                    {t("courseEdit.partners.label")}
                   </FieldLabel>
                   <p className="mt-1 text-xs text-foreground-muted">
-                    {String(
-                      t("courseEdit.partners.hint" as never, {
-                        defaultValue:
-                          "Thêm partner để hiển thị ở sidebar trang khoá học (logo, tên, website, mô tả).",
-                      } as never),
-                    )}
+                    {t("courseEdit.partners.hint")}
                   </p>
 
                   <div className="mt-3 space-y-3">
@@ -4762,19 +4670,10 @@ const InstructorCourseEdit = () => {
                         disabled={!canEdit}
                       >
                         <Plus className="size-4" aria-hidden />
-                        {String(
-                          t("courseEdit.partners.actions.add" as never, {
-                            defaultValue: "Thêm partner",
-                          } as never),
-                        )}
+                        {t("courseEdit.partners.actions.add")}
                       </Button>
                       <span className="text-xs text-foreground-muted">
-                        {String(
-                          t("courseEdit.partners.countLabel" as never, {
-                            defaultValue: "{{count}} partner",
-                            count: partners.length,
-                          } as never),
-                        )}
+                        {t("courseEdit.partners.countLabel", { count: partners.length })}
                       </span>
                     </div>
 
@@ -4861,11 +4760,7 @@ const InstructorCourseEdit = () => {
                       </div>
                     ) : (
                       <p className="text-xs text-foreground-muted">
-                        {String(
-                          t("courseEdit.partners.empty" as never, {
-                            defaultValue: "Chưa có partner nào.",
-                          } as never),
-                        )}
+                        {t("courseEdit.partners.empty")}
                       </p>
                     )}
                   </div>
@@ -4874,22 +4769,14 @@ const InstructorCourseEdit = () => {
                     <DialogContent className="max-w-lg">
                       <DialogHeader>
                         <DialogTitle>
-                          {String(
-                            t("courseEdit.partners.dialog.title" as never, {
-                              defaultValue: "Partner",
-                            } as never),
-                          )}
+                          {t("courseEdit.partners.dialog.title")}
                         </DialogTitle>
                       </DialogHeader>
 
                       <div className="space-y-4">
                         <Field>
                           <FieldLabel>
-                            {String(
-                              t("courseEdit.partners.fields.logo" as never, {
-                                defaultValue: "Logo",
-                              } as never),
-                            )}
+                            {t("courseEdit.partners.fields.logo")}
                           </FieldLabel>
                           <div className="mt-2 flex items-center gap-3">
                             <input
@@ -4907,16 +4794,8 @@ const InstructorCourseEdit = () => {
                               onClick={() => partnerLogoInputRef.current?.click()}
                             >
                               {uploadingPartnerLogo
-                                ? String(
-                                    t("courseEdit.partners.actions.uploading" as never, {
-                                      defaultValue: "Đang tải lên...",
-                                    } as never),
-                                  )
-                                : String(
-                                    t("courseEdit.partners.actions.uploadLogo" as never, {
-                                      defaultValue: "Tải logo lên",
-                                    } as never),
-                                  )}
+                                ? t("courseEdit.partners.actions.uploading")
+                                : t("courseEdit.partners.actions.uploadLogo")}
                             </Button>
                             {partnerForm.logo_url ? (
                               <img
@@ -4930,11 +4809,7 @@ const InstructorCourseEdit = () => {
 
                         <Field>
                           <FieldLabel>
-                            {String(
-                              t("courseEdit.partners.fields.name" as never, {
-                                defaultValue: "Tên partner",
-                              } as never),
-                            )}
+                            {t("courseEdit.partners.fields.name")}
                           </FieldLabel>
                           <Input
                             value={partnerForm.name}
@@ -4946,11 +4821,7 @@ const InstructorCourseEdit = () => {
 
                         <Field>
                           <FieldLabel>
-                            {String(
-                              t("courseEdit.partners.fields.website" as never, {
-                                defaultValue: "Website",
-                              } as never),
-                            )}
+                            {t("courseEdit.partners.fields.website")}
                           </FieldLabel>
                           <Input
                             value={partnerForm.website}
@@ -4963,11 +4834,7 @@ const InstructorCourseEdit = () => {
 
                         <Field>
                           <FieldLabel>
-                            {String(
-                              t("courseEdit.partners.fields.description" as never, {
-                                defaultValue: "Mô tả",
-                              } as never),
-                            )}
+                            {t("courseEdit.partners.fields.description")}
                           </FieldLabel>
                           <textarea
                             value={partnerForm.description}
@@ -4989,22 +4856,14 @@ const InstructorCourseEdit = () => {
                           variant="outline"
                           onClick={() => setPartnerDialogOpen(false)}
                         >
-                          {String(
-                            t("courseEdit.partners.actions.cancel" as never, {
-                              defaultValue: "Huỷ",
-                            } as never),
-                          )}
+                          {t("courseEdit.partners.actions.cancel")}
                         </Button>
                         <Button
                           type="button"
                           onClick={() => void savePartnerFromDialog()}
                           disabled={uploadingPartnerLogo}
                         >
-                          {String(
-                            t("courseEdit.partners.actions.save" as never, {
-                              defaultValue: "Lưu partner",
-                            } as never),
-                          )}
+                          {t("courseEdit.partners.actions.save")}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
@@ -5044,9 +4903,7 @@ const InstructorCourseEdit = () => {
                 {showBusinessSettingsSection && (
                   <>
                     <Field>
-                      <FieldLabel>
-                        Sở hữu khoá học & chia sẻ doanh thu
-                      </FieldLabel>
+                      <FieldLabel>{t("courseEdit.business.ownershipLabel")}</FieldLabel>
                       <select
                         value={form.owner_type}
                         onChange={(e) =>
@@ -5071,12 +4928,13 @@ const InstructorCourseEdit = () => {
                       </select>
                       {!canManageBusinessSettings && (
                         <p className="mt-1 text-xs text-foreground-muted">
-                          Chỉ học vụ/admin được cập nhật phần sở hữu và doanh
-                          thu.
+                          {t("courseEdit.business.ownershipAdminOnly")}
                         </p>
                       )}
                       <p className="mt-1 text-xs text-foreground-muted">
-                        Hiện tại: {getCourseOwnerTypeLabel(form.owner_type)}.
+                        {t("courseEdit.business.ownershipCurrent", {
+                          type: getCourseOwnerTypeLabel(form.owner_type),
+                        })}
                       </p>
                     </Field>
                     {form.owner_type === "external_partner" && (
@@ -5097,16 +4955,15 @@ const InstructorCourseEdit = () => {
                             }
                           />
                           <p className="mt-1 text-xs text-foreground-muted">
-                            Giảng viên nhận{" "}
-                            {100 -
-                              Number(form.platform_revenue_share_percent || 0)}
-                            %.
+                            {t("courseEdit.business.instructorShare", {
+                              percent:
+                                100 -
+                                Number(form.platform_revenue_share_percent || 0),
+                            })}
                           </p>
                         </Field>
                         <Field>
-                          <FieldLabel>
-                            Thông tin chuyển khoản đối tác
-                          </FieldLabel>
+                          <FieldLabel>{t("courseEdit.business.partnerTransferLabel")}</FieldLabel>
                           <textarea
                             value={form.partner_transfer_info}
                             onChange={(e) =>
@@ -5121,8 +4978,7 @@ const InstructorCourseEdit = () => {
                             placeholder={t("courseEdit.form.partnerTransferPlaceholder")}
                           />
                           <p className="mt-1 text-xs text-foreground-muted">
-                            Hiển thị cho giảng viên đối tác trong mục Hoá đơn &
-                            thanh toán.
+                            {t("courseEdit.business.partnerTransferHint")}
                           </p>
                         </Field>
                         <Field>
@@ -5158,7 +5014,7 @@ const InstructorCourseEdit = () => {
                             </div>
                           ) : (
                             <p className="mt-1 text-xs text-foreground-muted">
-                              Chưa có tài liệu hợp đồng.
+                              {t("courseEdit.business.noContractDocs")}
                             </p>
                           )}
                         </Field>
@@ -5195,7 +5051,7 @@ const InstructorCourseEdit = () => {
                             </div>
                           ) : (
                             <p className="mt-1 text-xs text-foreground-muted">
-                              Chưa có tài liệu hoá đơn.
+                              {t("courseEdit.business.noInvoiceDocs")}
                             </p>
                           )}
                         </Field>
@@ -5258,9 +5114,9 @@ const InstructorCourseEdit = () => {
                       className="mt-0.5 rounded border-border"
                     />
                     <span className="text-sm text-foreground">
-                      <span className="font-medium">Khoá học nguồn ngoài công khai (Public external course)</span>
+                      <span className="font-medium">{t("courseEdit.externalCourse.toggleLabel")}</span>
                       <span className="mt-1 block text-xs text-foreground-muted">
-                        Bật mục này nếu khoá học tổng hợp từ nguồn ngoài; khi bật sẽ hiển thị phần nguồn/chú thích ở trang công khai.
+                        {t("courseEdit.externalCourse.toggleHint")}
                       </span>
                     </span>
                   </label>
@@ -5268,7 +5124,7 @@ const InstructorCourseEdit = () => {
                 {form.is_external_aggregated ? (
                   <>
                     <Field>
-                      <FieldLabel>Nguồn tham chiếu (Sources URLs) *</FieldLabel>
+                      <FieldLabel>{t("courseEdit.externalCourse.sourcesLabel")}</FieldLabel>
                       <textarea
                         value={form.external_source_urls_text}
                         onChange={(e) =>
@@ -5279,14 +5135,14 @@ const InstructorCourseEdit = () => {
                         }
                         className="min-h-[100px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                         rows={4}
-                        placeholder={"Mỗi dòng 1 URL nguồn\nhttps://youtube.com/...\nhttps://youtube.com/..."}
+                        placeholder={t("courseEdit.externalCourse.sourcesPlaceholder")}
                       />
                       <p className="mt-1 text-xs text-foreground-muted">
-                        Bắt buộc khi bật Public external course.
+                        {t("courseEdit.externalCourse.sourcesRequired")}
                       </p>
                     </Field>
                     <Field>
-                      <FieldLabel>Chú thích nguồn (Source attribution note)</FieldLabel>
+                      <FieldLabel>{t("courseEdit.externalCourse.attributionLabel")}</FieldLabel>
                       <textarea
                         value={form.external_source_attribution_note}
                         onChange={(e) =>
@@ -5297,7 +5153,7 @@ const InstructorCourseEdit = () => {
                         }
                         className="min-h-[80px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                         rows={3}
-                        placeholder="Ghi chú công khai về nguồn tổng hợp (ví dụ: curated từ playlist YouTube của các creator)."
+                        placeholder={t("courseEdit.externalCourse.attributionPlaceholder")}
                       />
                     </Field>
                   </>
@@ -5334,11 +5190,10 @@ const InstructorCourseEdit = () => {
           {activeSection === "pricing" && canAccessPricing && (
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
-                <DollarSign className="size-5" aria-hidden /> {tEdit("courseEdit.sidebar.nav.pricing" as never)}
+                <DollarSign className="size-5" aria-hidden /> {t("courseEdit.sidebar.nav.pricing")}
               </h2>
               <p className="mt-1 text-sm text-foreground-muted">
-                Thiết lập mô hình truy cập, giá khoá học, phí chứng nhận và mã
-                giảm giá.
+                {t("courseEdit.pricing.intro")}
               </p>
 
               <FieldGroup className="mt-4">
@@ -5387,8 +5242,7 @@ const InstructorCourseEdit = () => {
                         }
                       />
                       <p className="mt-1 text-xs text-foreground-muted">
-                        Học viên chưa thanh toán chỉ xem được bài có bật "Học
-                        thử miễn phí".
+                        {t("courseEdit.pricing.paidPreviewHint")}
                       </p>
                     </Field>
 
@@ -5407,7 +5261,7 @@ const InstructorCourseEdit = () => {
                         placeholder={t("courseEdit.pricing.promoPricePlaceholder")}
                       />
                       <p className="mt-1 text-xs text-foreground-muted">
-                        Giá khuyến mãi phải nhỏ hơn giá gốc.
+                        {t("courseEdit.pricing.promoMustBeLower")}
                       </p>
                     </Field>
 
@@ -5424,7 +5278,7 @@ const InstructorCourseEdit = () => {
                         placeholder="2026-03-31T23:59:59.000Z"
                       />
                       <p className="mt-1 text-xs text-foreground-muted">
-                        Để trống nếu không hẹn giờ.
+                        {t("courseEdit.pricing.promoEndsOptional")}
                       </p>
                     </Field>
 
@@ -5432,11 +5286,11 @@ const InstructorCourseEdit = () => {
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="text-sm font-medium text-foreground">
-                            Mã giảm giá & khuyến mãi
+                            {t("courseEdit.pricing.discountsTitle")}
                           </p>
                           <p className="text-xs text-foreground-muted">
                             {t("courseEdit.discounts.createTitle")}
-                            thời gian/lượt dùng.
+                            {t("courseEdit.discounts.subtitleSuffix")}
                           </p>
                         </div>
                         <Button
@@ -5460,7 +5314,7 @@ const InstructorCourseEdit = () => {
 
                       {discounts.length === 0 ? (
                         <p className="mt-3 text-xs text-foreground-muted">
-                          Chưa có mã giảm giá nào.
+                          {t("courseEdit.discounts.empty")}
                         </p>
                       ) : (
                         <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-surface-base">
@@ -5468,19 +5322,19 @@ const InstructorCourseEdit = () => {
                             <thead>
                               <tr className="border-b border-border-subtle bg-surface-raised">
                                 <th className="px-3 py-2 font-medium text-foreground">
-                                  Code
+                                  {t("courseEdit.discounts.table.code")}
                                 </th>
                                 <th className="px-3 py-2 font-medium text-foreground">
-                                  Loại
+                                  {t("courseEdit.discounts.table.type")}
                                 </th>
                                 <th className="px-3 py-2 font-medium text-foreground">
-                                  Giá trị
+                                  {t("courseEdit.discounts.table.value")}
                                 </th>
                                 <th className="px-3 py-2 font-medium text-foreground">
-                                  Trạng thái
+                                  {t("courseEdit.discounts.table.status")}
                                 </th>
                                 <th className="px-3 py-2 font-medium text-foreground">
-                                  Hành động
+                                  {t("courseEdit.discounts.table.actions")}
                                 </th>
                               </tr>
                             </thead>
@@ -5504,11 +5358,11 @@ const InstructorCourseEdit = () => {
                                   <td className="px-3 py-2">
                                     {d.active ? (
                                       <span className="text-success text-xs">
-                                        Active
+                                        {t("courseEdit.discounts.table.active")}
                                       </span>
                                     ) : (
                                       <span className="text-foreground-muted text-xs">
-                                        Off
+                                        {t("courseEdit.discounts.table.inactive")}
                                       </span>
                                     )}
                                   </td>
@@ -5556,7 +5410,7 @@ const InstructorCourseEdit = () => {
                                           );
                                         }}
                                       >
-                                        Xoá
+                                        {t("courseEdit.discounts.table.delete")}
                                       </Button>
                                     </div>
                                   </td>
@@ -5570,7 +5424,7 @@ const InstructorCourseEdit = () => {
                       <div className="mt-4 grid gap-3 md:grid-cols-2">
                         <div>
                           <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                            Code
+                            {t("courseEdit.discounts.form.code")}
                           </label>
                           <Input
                             value={discountForm.code}
@@ -5580,13 +5434,13 @@ const InstructorCourseEdit = () => {
                                 code: e.target.value.toUpperCase(),
                               }))
                             }
-                            placeholder="VD: SPRING10"
+                            placeholder={t("courseEdit.discounts.form.codePlaceholder")}
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                              Loại
+                              {t("courseEdit.discounts.form.type")}
                             </label>
                             <select
                               value={discountForm.type}
@@ -5604,7 +5458,7 @@ const InstructorCourseEdit = () => {
                           </div>
                           <div>
                             <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                              Giá trị
+                              {t("courseEdit.discounts.form.value")}
                             </label>
                             <Input
                               inputMode="numeric"
@@ -5623,7 +5477,7 @@ const InstructorCourseEdit = () => {
                         </div>
                         <div>
                           <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                            Bắt đầu (ISO, tuỳ chọn)
+                            {t("courseEdit.discounts.form.startsAt")}
                           </label>
                           <Input
                             value={discountForm.starts_at}
@@ -5638,7 +5492,7 @@ const InstructorCourseEdit = () => {
                         </div>
                         <div>
                           <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                            Kết thúc (ISO, tuỳ chọn)
+                            {t("courseEdit.discounts.form.endsAt")}
                           </label>
                           <Input
                             value={discountForm.ends_at}
@@ -5653,7 +5507,7 @@ const InstructorCourseEdit = () => {
                         </div>
                         <div>
                           <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                            Giới hạn lượt dùng (tuỳ chọn)
+                            {t("courseEdit.discounts.form.maxRedemptions")}
                           </label>
                           <Input
                             inputMode="numeric"
@@ -5727,9 +5581,7 @@ const InstructorCourseEdit = () => {
 
                 {form.access_model === "free_with_paid_certificate" && (
                   <Field>
-                    <FieldLabel>
-                      Phí chứng nhận / bài thu hoạch (VND)
-                    </FieldLabel>
+                    <FieldLabel>{t("courseEdit.pricing.certificateFeeLabel")}</FieldLabel>
                     <Input
                       type="text"
                       inputMode="numeric"
@@ -5744,8 +5596,7 @@ const InstructorCourseEdit = () => {
                       }
                     />
                     <p className="mt-1 text-xs text-foreground-muted">
-                      Toàn bộ bài học vẫn miễn phí; khoản phí này áp dụng khi
-                      học viên muốn nộp bài thu hoạch để xét chứng nhận.
+                      {t("courseEdit.pricing.certificateFeeHint")}
                     </p>
                   </Field>
                 )}
@@ -5767,12 +5618,12 @@ const InstructorCourseEdit = () => {
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
-                  <List className="size-5" /> {tEdit("courseEdit.content.heading" as never)}
+                  <List className="size-5" /> {t("courseEdit.content.heading")}
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   {reorderingLessons && (
                     <span className="text-xs text-foreground-muted">
-                      {tEdit("courseEdit.content.savingOrder" as never)}
+                      {t("courseEdit.content.savingOrder")}
                     </span>
                   )}
                   <Button
@@ -5789,7 +5640,7 @@ const InstructorCourseEdit = () => {
                 </div>
               </div>
               <p className="mt-2 text-xs text-foreground-muted">
-                {tEdit("courseEdit.content.dragHint" as never)}
+                {t("courseEdit.content.dragHint")}
               </p>
 
               <div className="mt-4 flex items-start gap-2 rounded-md border border-border-subtle bg-surface-raised px-3 py-2.5">
@@ -5805,9 +5656,9 @@ const InstructorCourseEdit = () => {
                   className="mt-0.5 rounded border-border"
                 />
                 <label htmlFor="has-sections-toggle" className="cursor-pointer text-sm text-foreground">
-                  <span className="font-medium">Phân chia theo section</span>
+                  <span className="font-medium">{t("courseEdit.content.sectionsToggleLabel")}</span>
                   <span className="mt-0.5 block text-xs text-foreground-muted">
-                    Bật nếu khoá học cần nhóm bài học theo chương/phần. Tắt để hiển thị danh sách bài học phẳng.
+                    {t("courseEdit.content.sectionsToggleHint")}
                   </span>
                 </label>
               </div>
@@ -5815,8 +5666,7 @@ const InstructorCourseEdit = () => {
               <div className="mt-4 space-y-4">
                 {form.access_model === "paid_upfront" && (
                   <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
-                    {t("courseEdit.pricing.updateTotalDurationLabelPrefix")}
-                    muốn mở cho học viên chưa thanh toán.
+                    {t("courseEdit.content.paidUpfrontPreviewBanner")}
                   </div>
                 )}
                 {lessonsBySection.map(({ section, lessons: secLessons }, sectionIndex) => {
@@ -5850,7 +5700,7 @@ const InstructorCourseEdit = () => {
                           disabled={reorderingSections}
                           onDragStart={(event) => handleSectionDragStart(section.id, event)}
                           onDragEnd={clearSectionDragState}
-                          aria-label={`Kéo để đổi thứ tự chương ${section.title}`}
+                          aria-label={t("courseEdit.a11y.dragSection", { title: section.title })}
                           title={t("courseEdit.tooltips.dragReorder")}
                           className="flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-foreground-muted transition hover:border-border-subtle hover:bg-surface-base hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
                         >
@@ -5865,7 +5715,7 @@ const InstructorCourseEdit = () => {
                             </span>
                             {activeContentLocale !== primaryContentLocale && !sectionLocaleMap.has(section.id) && (
                               <span className="rounded bg-warning/15 px-1.5 py-0.5 text-[10px] font-medium text-warning">
-                                {tEdit("courseEdit.sections.notTranslated")}
+                                {t("courseEdit.sections.notTranslated")}
                               </span>
                             )}
                           </div>
@@ -5885,7 +5735,7 @@ const InstructorCourseEdit = () => {
                           size="icon-xs"
                           disabled={reorderingSections || sectionIndex === 0}
                           onClick={() => void handleMoveSection(section.id, -1)}
-                          aria-label={`Đưa chương ${section.title} lên trên`}
+                          aria-label={t("courseEdit.a11y.moveSectionUp", { title: section.title })}
                           title={t("courseEdit.tooltips.moveUp")}
                         >
                           <ArrowUpFromLine className="size-4" aria-hidden />
@@ -5899,7 +5749,7 @@ const InstructorCourseEdit = () => {
                             sectionIndex === lessonsBySection.length - 1
                           }
                           onClick={() => void handleMoveSection(section.id, 1)}
-                          aria-label={`Đưa chương ${section.title} xuống dưới`}
+                          aria-label={t("courseEdit.a11y.moveSectionDown", { title: section.title })}
                           title={t("courseEdit.tooltips.moveDown")}
                         >
                           <ArrowDownToLine className="size-4" aria-hidden />
@@ -5974,7 +5824,7 @@ const InstructorCourseEdit = () => {
                                   )
                                 }
                                 onDragEnd={clearLessonDragState}
-                                aria-label={`Kéo để đổi thứ tự bài ${lesson.title}`}
+                                aria-label={t("courseEdit.a11y.dragLesson", { title: lesson.title })}
                                 title={t("courseEdit.tooltips.dragReorder")}
                                 className="flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent text-foreground-muted transition hover:border-border-subtle hover:bg-surface-raised hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
                               >
@@ -5988,16 +5838,16 @@ const InstructorCourseEdit = () => {
                               </span>
                               {activeContentLocale !== primaryContentLocale && !lessonLocaleMap.has(lesson.id) && (
                                 <span className="rounded bg-warning/15 px-1.5 py-0.5 text-[10px] font-medium text-warning shrink-0">
-                                  {tEdit("courseEdit.lessons.notTranslated")}
+                                  {t("courseEdit.lessons.notTranslated")}
                                 </span>
                               )}
                               {form.access_model === "paid_upfront" &&
                                 lesson.is_preview_free && (
                                   <span className="rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
-                                    Học thử
+                                    {t("courseEdit.lessons.previewBadge")}
                                   </span>
                                 )}
-                              {!lesson.youtube_url?.trim() ? (
+                              {isLessonDraftForLearners(lesson) ? (
                                 <span className="rounded-md bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">
                                   {t("courseEdit.lessons.draftBadge")}
                                 </span>
@@ -6025,7 +5875,7 @@ const InstructorCourseEdit = () => {
                                 onClick={() =>
                                   void handleMoveLesson(section.id, lesson.id, -1)
                                 }
-                                aria-label={`Đưa bài ${lesson.title} lên trên`}
+                                aria-label={t("courseEdit.a11y.moveLessonUp", { title: lesson.title })}
                                 title={t("courseEdit.tooltips.moveUp")}
                               >
                                 <ArrowUpFromLine className="size-4" aria-hidden />
@@ -6041,7 +5891,7 @@ const InstructorCourseEdit = () => {
                                 onClick={() =>
                                   void handleMoveLesson(section.id, lesson.id, 1)
                                 }
-                                aria-label={`Đưa bài ${lesson.title} xuống dưới`}
+                                aria-label={t("courseEdit.a11y.moveLessonDown", { title: lesson.title })}
                                 title={t("courseEdit.tooltips.moveDown")}
                               >
                                 <ArrowDownToLine className="size-4" aria-hidden />
@@ -6060,7 +5910,7 @@ const InstructorCourseEdit = () => {
                                     }
                                     className="rounded border-border"
                                   />
-                                  Học thử miễn phí
+                                  {t("courseEdit.lessons.previewFreeBadge")}
                                 </label>
                               )}
                               <Button
@@ -6117,7 +5967,7 @@ const InstructorCourseEdit = () => {
               {form.has_sections ? (
               <div className="mt-4 rounded-md border border-dashed border-border-subtle p-4">
                 <p className="text-sm text-foreground-muted mb-2">
-                  {tEdit("courseEdit.content.addSectionHeading" as never)}
+                  {t("courseEdit.content.addSectionHeading")}
                 </p>
                 <div className="grid gap-2">
                   <Input
@@ -6207,7 +6057,7 @@ const InstructorCourseEdit = () => {
                   <div className="rounded-xl border border-warning/20 bg-warning/10 p-4 text-sm text-foreground">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-warning/15 px-2 py-1 text-xs font-semibold text-warning">
-                        {t("courseEdit.i18n.translationModeBadge" as never)}
+                        {t("courseEdit.i18n.translationModeBadge")}
                       </span>
                       <span className="text-sm font-medium">
                         {localeBadge(primaryContentLocale)} → {localeBadge(dialogSectionLocale)}
@@ -6318,7 +6168,7 @@ const InstructorCourseEdit = () => {
                     <div className="mb-4 rounded-xl border border-warning/20 bg-warning/10 p-4 text-sm text-foreground">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-full bg-warning/15 px-2 py-1 text-xs font-semibold text-warning">
-                          {t("courseEdit.i18n.translationModeBadge" as never)}
+                          {t("courseEdit.i18n.translationModeBadge")}
                         </span>
                         <span className="text-sm font-medium">
                           {localeBadge(primaryContentLocale)} → {localeBadge(dialogLessonLocale)}
@@ -6347,6 +6197,27 @@ const InstructorCourseEdit = () => {
                   ) : null}
                   <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_360px]">
                 <div className="space-y-4 md:pr-2">
+                  {dialogLessonLocale === primaryContentLocale ? (
+                    <Field>
+                      <FieldLabel>{t("courseEdit.lessons.formatLabel")}</FieldLabel>
+                      <LessonFormatSelector
+                        value={editingLessonFormat}
+                        onChange={(next) => {
+                          setEditingLessonFormat(next);
+                          if (next === "article") setEditingLessonYoutubeUrl("");
+                        }}
+                        videoLabel={t("courseEdit.lessons.formatVideo")}
+                        articleLabel={t("courseEdit.lessons.formatArticle")}
+                        hint={t("courseEdit.lessons.formatHint")}
+                        disabled={
+                          !!editingLesson &&
+                          (lessonLearnerCounts[editingLesson.id] ?? 0) > 0
+                        }
+                      />
+                    </Field>
+                  ) : null}
+                  {dialogLessonLocale === primaryContentLocale &&
+                  editingLessonFormat === "video" ? (
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.youtubeLabel")}</FieldLabel>
                     <Input
@@ -6368,7 +6239,9 @@ const InstructorCourseEdit = () => {
                       }
                     />
                   </Field>
+                  ) : null}
                   {dialogLessonLocale === primaryContentLocale &&
+                  editingLessonFormat === "video" &&
                   editingLessonYoutubeUrl.trim() ? (
                     <div className="grid gap-3 sm:grid-cols-2">
                       <Field>
@@ -6407,8 +6280,9 @@ const InstructorCourseEdit = () => {
                       placeholder={t("courseEdit.content.lessonTitlePlaceholder")}
                     />
                   </Field>
+                  {editingLessonFormat === "video" ? (
                   <Field>
-                    <FieldLabel>{t("courseEdit.lessons.videoPrimaryLocaleLabel" as never)}</FieldLabel>
+                    <FieldLabel>{t("courseEdit.lessons.videoPrimaryLocaleLabel")}</FieldLabel>
                     <select
                       value={editingLessonVideoPrimaryLocale}
                       onChange={(e) =>
@@ -6425,9 +6299,10 @@ const InstructorCourseEdit = () => {
                       ))}
                     </select>
                     <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseEdit.lessons.videoPrimaryLocaleHint" as never)}
+                      {t("courseEdit.lessons.videoPrimaryLocaleHint")}
                     </p>
                   </Field>
+                  ) : null}
                   <Field>
                     <FieldLabel>
                       <span>{t("courseEdit.lessons.shortDescriptionLabel")}</span>
@@ -6843,6 +6718,20 @@ const InstructorCourseEdit = () => {
                   <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_360px]">
                 <div className="space-y-4 md:pr-2">
                   <Field>
+                    <FieldLabel>{t("courseEdit.lessons.formatLabel")}</FieldLabel>
+                    <LessonFormatSelector
+                      value={newLessonFormat}
+                      onChange={(next) => {
+                        setNewLessonFormat(next);
+                        if (next === "article") setNewLessonYoutubeUrl("");
+                      }}
+                      videoLabel={t("courseEdit.lessons.formatVideo")}
+                      articleLabel={t("courseEdit.lessons.formatArticle")}
+                      hint={t("courseEdit.lessons.formatHint")}
+                    />
+                  </Field>
+                  {newLessonFormat === "video" ? (
+                  <Field>
                     <FieldLabel>{t("courseEdit.lessons.youtubeLabel")}</FieldLabel>
                     <Input
                       value={newLessonYoutubeUrl}
@@ -6850,8 +6739,10 @@ const InstructorCourseEdit = () => {
                       placeholder={t("courseEdit.lessons.youtubePlaceholder")}
                     />
                   </Field>
+                  ) : null}
+                  {newLessonFormat === "video" ? (
                   <Field>
-                    <FieldLabel>{t("courseEdit.lessons.videoPrimaryLocaleLabel" as never)}</FieldLabel>
+                    <FieldLabel>{t("courseEdit.lessons.videoPrimaryLocaleLabel")}</FieldLabel>
                     <select
                       value={defaultVideoPrimaryLocale}
                       onChange={(e) =>
@@ -6866,9 +6757,10 @@ const InstructorCourseEdit = () => {
                       ))}
                     </select>
                     <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseEdit.lessons.videoPrimaryLocaleHint" as never)}
+                      {t("courseEdit.lessons.videoPrimaryLocaleHint")}
                     </p>
                   </Field>
+                  ) : null}
                   <Field>
                     <FieldLabel>
                       {t("courseEdit.lessons.titleLabel")}
@@ -7113,7 +7005,7 @@ const InstructorCourseEdit = () => {
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h2 className="flex items-center gap-2 text-lg font-medium text-foreground">
-                  <FileText className="size-5" aria-hidden /> {tEdit("courseEdit.sidebar.nav.assignments" as never)}
+                  <FileText className="size-5" aria-hidden /> {t("courseEdit.sidebar.nav.assignments")}
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   {activeContentLocale !== primaryContentLocale ? (
@@ -7162,7 +7054,7 @@ const InstructorCourseEdit = () => {
 
               <div className="mb-8 rounded-md border border-border-subtle bg-surface-raised p-4">
                 <h3 className="text-sm font-medium text-foreground mb-3">
-                  {tEdit("courseEdit.assignments.settingsTitle" as never)}
+                  {t("courseEdit.assignments.settingsTitle")}
                 </h3>
                 <FieldGroup>
                   <div
@@ -7253,13 +7145,13 @@ const InstructorCourseEdit = () => {
               </div>
 
               <h3 className="text-sm font-medium text-foreground mb-3">
-                {tEdit("courseEdit.assignments.submissionsTitle" as never)}
+                {t("courseEdit.assignments.submissionsTitle")}
               </h3>
               {(contentForm.final_assignment_title || course.final_assignment_title) ? (
                 <>
                   {submissions.length === 0 ? (
                     <p className="text-sm text-foreground-muted py-4">
-                      {tEdit("courseEdit.assignments.noSubmissions" as never)}
+                      {t("courseEdit.assignments.noSubmissions")}
                     </p>
                   ) : (
                     <div className="overflow-hidden rounded-md border border-border-subtle">
@@ -7267,19 +7159,19 @@ const InstructorCourseEdit = () => {
                         <thead>
                           <tr className="border-b border-border-subtle bg-surface-raised">
                             <th className="px-4 py-3 font-medium text-foreground">
-                              {tEdit("courseEdit.assignments.columns.student" as never)}
+                              {t("courseEdit.assignments.columns.student")}
                             </th>
                             <th className="px-4 py-3 font-medium text-foreground">
-                              {tEdit("courseEdit.assignments.columns.content" as never)}
+                              {t("courseEdit.assignments.columns.content")}
                             </th>
                             <th className="px-4 py-3 font-medium text-foreground">
-                              {tEdit("courseEdit.assignments.columns.submittedAt" as never)}
+                              {t("courseEdit.assignments.columns.submittedAt")}
                             </th>
                             <th className="px-4 py-3 font-medium text-foreground">
-                              {tEdit("courseEdit.assignments.columns.status" as never)}
+                              {t("courseEdit.assignments.columns.status")}
                             </th>
                             <th className="px-4 py-3 font-medium text-foreground w-40">
-                              {tEdit("courseEdit.assignments.columns.actions" as never)}
+                              {t("courseEdit.assignments.columns.actions")}
                             </th>
                           </tr>
                         </thead>
@@ -7298,7 +7190,7 @@ const InstructorCourseEdit = () => {
                                       {profile?.full_name || "—"}
                                     </span>
                                     <span className="block text-xs text-foreground-muted">
-                                      {tEdit("courseEdit.assignments.lessonProgress" as never, { progress: prog })}
+                                      {t("courseEdit.assignments.lessonProgress" as never, { progress: prog })}
                                     </span>
                                   </div>
                                 </td>
@@ -7308,7 +7200,7 @@ const InstructorCourseEdit = () => {
                                   </p>
                                   {sub.file_urls?.length ? (
                                     <span className="text-xs text-foreground-muted">
-                                      {tEdit("courseEdit.assignments.attachments" as never, { count: sub.file_urls.length })}
+                                      {t("courseEdit.assignments.attachments" as never, { count: sub.file_urls.length })}
                                     </span>
                                   ) : null}
                                 </td>
@@ -7320,15 +7212,15 @@ const InstructorCourseEdit = () => {
                                 <td className="px-4 py-3">
                                   {sub.status === "approved" ? (
                                     <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
-                                      <CheckCircle2 className="size-3.5" aria-hidden /> {tEdit("courseEdit.students.status.approved" as never)}
+                                      <CheckCircle2 className="size-3.5" aria-hidden /> {t("courseEdit.students.status.approved")}
                                     </span>
                                   ) : sub.status === "rejected" ? (
                                     <span className="inline-flex items-center gap-1 rounded-md bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">
-                                      <XCircle className="size-3.5" /> {tEdit("courseEdit.students.status.rejected" as never)}
+                                      <XCircle className="size-3.5" /> {t("courseEdit.students.status.rejected")}
                                     </span>
                                   ) : (
                                     <span className="inline-flex items-center gap-1 rounded-md bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">
-                                      {tEdit("courseEdit.students.status.pending" as never)}
+                                      {t("courseEdit.students.status.pending")}
                                     </span>
                                   )}
                                 </td>
@@ -7367,7 +7259,7 @@ const InstructorCourseEdit = () => {
                                           )
                                         }
                                       >
-                                        {tEdit("courseEdit.assignments.reviewReject" as never)}
+                                        {t("courseEdit.assignments.reviewReject")}
                                       </Button>
                                     </div>
                                   ) : null}
@@ -7382,7 +7274,7 @@ const InstructorCourseEdit = () => {
                 </>
               ) : (
                 <p className="text-sm text-foreground-muted">
-                  {tEdit("courseEdit.assignments.noSubmissionsHint" as never)}
+                  {t("courseEdit.assignments.noSubmissionsHint")}
                 </p>
               )}
             </section>
@@ -7391,10 +7283,10 @@ const InstructorCourseEdit = () => {
           {activeSection === "certificate" && canAccessCertificate && (
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
-                <Award className="size-5" aria-hidden /> {tEdit("courseEdit.certificate.sectionTitle" as never)}
+                <Award className="size-5" aria-hidden /> {t("courseEdit.certificate.sectionTitle")}
               </h2>
               <p className="mb-4 text-sm text-foreground-muted">
-                {tEdit("courseEdit.certificate.sectionDescription" as never)}
+                {t("courseEdit.certificate.sectionDescription")}
               </p>
               <p className="mb-4 text-sm text-foreground-muted">
                 Open Campus badge (OCB) chỉ khả dụng cho khoá học Corelia và người Corelia (hoặc admin/support).
@@ -7486,20 +7378,12 @@ const InstructorCourseEdit = () => {
 
               <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
                 <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                  <FileText className="size-4" /> Hướng dẫn tạo template
+                  <FileText className="size-4" /> {t("courseEdit.certificateGuide.title")}
                 </h3>
                 <ul className="list-inside list-disc space-y-1 text-sm text-foreground-muted">
-                  <li>
-                    Kích thước khuyến nghị: 1200×800 px (tỉ lệ 3:2) hoặc A4.
-                  </li>
-                  <li>
-                    Để trống một vùng trên ảnh cho tên học viên (ví dụ giữa
-                    trang).
-                  </li>
-                  <li>
-                    {t("courseEdit.certificate.afterUploadHintPrefix")}
-                    trên ) để tên học viên nằm đúng vùng trống. 50% = giữa.
-                  </li>
+                  <li>{t("courseEdit.certificateGuide.sizeHint")}</li>
+                  <li>{t("courseEdit.certificateGuide.nameAreaHint")}</li>
+                  <li>{t("courseEdit.certificateGuide.afterUploadHint")}</li>
                   <li>{t("courseEdit.certificate.fileFormatHint")}</li>
                 </ul>
                 <div className="mt-4">
@@ -7508,7 +7392,7 @@ const InstructorCourseEdit = () => {
                     download="certificate-template-sample.svg"
                     className="inline-flex items-center gap-2 rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-raised"
                   >
-                    <Download className="size-4" aria-hidden /> Tải template mẫu (SVG)
+                    <Download className="size-4" aria-hidden /> {t("courseEdit.certificateGuide.downloadSample")}
                   </a>
                 </div>
               </div>
@@ -7533,11 +7417,11 @@ const InstructorCourseEdit = () => {
           {activeSection === "students" && canAccessStudents && (
             <section className="rounded-md border border-border-subtle bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
-                <Users className="size-5" /> {tEdit("courseEdit.sidebar.nav.students" as never)}
+                <Users className="size-5" /> {t("courseEdit.sidebar.nav.students")}
               </h2>
               {enrollments.length === 0 ? (
                 <p className="text-sm text-foreground-muted py-4">
-                  {tEdit("courseEdit.students.empty" as never)}
+                  {t("courseEdit.students.empty")}
                 </p>
               ) : (
                 <div className="overflow-hidden rounded-md border border-border-subtle">
@@ -7545,28 +7429,28 @@ const InstructorCourseEdit = () => {
                     <thead>
                       <tr className="border-b border-border-subtle bg-surface-raised">
                         <th className="px-4 py-3 font-medium text-foreground">
-                          {tEdit("courseEdit.students.columns.student" as never)}
+                          {t("courseEdit.students.columns.student")}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
                           Email
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          {tEdit("courseEdit.students.columns.progress" as never)}
+                          {t("courseEdit.students.columns.progress")}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          {tEdit("courseEdit.students.columns.assignment" as never)}
+                          {t("courseEdit.students.columns.assignment")}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          {tEdit("courseEdit.students.columns.certificate" as never)}
+                          {t("courseEdit.students.columns.certificate")}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          {tEdit("courseEdit.students.columns.payment" as never)}
+                          {t("courseEdit.students.columns.payment")}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          {tEdit("courseEdit.students.columns.enrolledAt" as never)}
+                          {t("courseEdit.students.columns.enrolledAt")}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          {tEdit("courseEdit.students.columns.lastAccess" as never)}
+                          {t("courseEdit.students.columns.lastAccess")}
                         </th>
                       </tr>
                     </thead>
@@ -7614,20 +7498,20 @@ const InstructorCourseEdit = () => {
                                 sub ? (
                                   sub.status === "approved" ? (
                                     <span className="text-success text-xs">
-                                      {tEdit("courseEdit.students.status.approved" as never)}
+                                      {t("courseEdit.students.status.approved")}
                                     </span>
                                   ) : sub.status === "rejected" ? (
                                     <span className="text-destructive text-xs">
-                                      {tEdit("courseEdit.students.status.rejected" as never)}
+                                      {t("courseEdit.students.status.rejected")}
                                     </span>
                                   ) : (
                                     <span className="text-warning text-xs">
-                                      {tEdit("courseEdit.students.status.pending" as never)}
+                                      {t("courseEdit.students.status.pending")}
                                     </span>
                                   )
                                 ) : (
                                   <span className="text-foreground-muted text-xs">
-                                    {tEdit("courseEdit.students.status.notSubmitted" as never)}
+                                    {t("courseEdit.students.status.notSubmitted")}
                                   </span>
                                 )
                               ) : (
@@ -7639,11 +7523,11 @@ const InstructorCourseEdit = () => {
                             <td className="px-4 py-3">
                               {hasCert ? (
                                 <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
-                                  <CheckCircle2 className="size-3.5" aria-hidden /> {tEdit("courseEdit.students.status.issued" as never)}
+                                  <CheckCircle2 className="size-3.5" aria-hidden /> {t("courseEdit.students.status.issued")}
                                 </span>
                               ) : (
                                 <span className="text-foreground-muted text-xs">
-                                  {tEdit("courseEdit.students.status.notEligible" as never)}
+                                  {t("courseEdit.students.status.notEligible")}
                                 </span>
                               )}
                             </td>
@@ -7651,29 +7535,29 @@ const InstructorCourseEdit = () => {
                               {isPaid ? (
                                 <div className="space-y-0.5">
                                   <div className="text-xs font-medium text-foreground">
-                                    {tEdit("courseEdit.students.status.paid" as never)} ·{" "}
+                                    {t("courseEdit.students.status.paid")} ·{" "}
                                     {formatVndPrice(e.paid_amount_vnd)}
                                   </div>
                                   <div className="text-xs text-foreground-muted">
                                     {e.paid_provider
-                                      ? `Provider: ${e.paid_provider}`
-                                      : "Provider: —"}
+                                      ? t("courseEdit.students.providerLabel", {
+                                          provider: e.paid_provider,
+                                        })
+                                      : t("courseEdit.students.providerEmpty")}
                                     {e.paid_order_id
-                                      ? ` · Order: ${e.paid_order_id}`
+                                      ? ` · ${t("courseEdit.students.orderLabel", { id: e.paid_order_id })}`
                                       : ""}
                                   </div>
                                 </div>
                               ) : (
                                 <span className="text-xs text-foreground-muted">
-                                  {tEdit("courseEdit.students.status.free" as never)}
+                                  {t("courseEdit.students.status.free")}
                                 </span>
                               )}
                             </td>
                             <td className="px-4 py-3 text-foreground-muted">
                               {e.enrolled_at
-                                ? new Date(e.enrolled_at).toLocaleDateString(
-                                    "vi-VN",
-                                  )
+                                ? new Date(e.enrolled_at).toLocaleDateString(intlLocale())
                                 : "—"}
                             </td>
                             <td className="px-4 py-3 text-foreground-muted">
@@ -7696,10 +7580,10 @@ const InstructorCourseEdit = () => {
           {activeSection === "danger" && canAccessDanger && (
             <section className="rounded-md border border-destructive/30 bg-surface-base p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-2">
-                <AlertTriangle className="size-5" aria-hidden /> {tEdit("courseEdit.danger.dangerZoneTitle" as never)}
+                <AlertTriangle className="size-5" aria-hidden /> {t("courseEdit.danger.dangerZoneTitle")}
               </h2>
               <p className="text-sm text-foreground-muted mb-4">
-                {tEdit("courseEdit.danger.deleteWarning" as never)}
+                {t("courseEdit.danger.deleteWarning")}
               </p>
               <Dialog>
                 <DialogTrigger
@@ -7709,7 +7593,7 @@ const InstructorCourseEdit = () => {
                       className="text-destructive border-destructive/50 hover:bg-destructive/10"
                       type="button"
                     >
-                      <Trash2 className="size-4" aria-hidden /> {tEdit("courseEdit.sidebar.nav.danger" as never)}
+                      <Trash2 className="size-4" aria-hidden /> {t("courseEdit.sidebar.nav.danger")}
                     </Button>
                   }
                 />
@@ -7718,14 +7602,14 @@ const InstructorCourseEdit = () => {
                     <DialogTitle>{t("courseEdit.danger.deleteCourseTitle")}</DialogTitle>
                   </DialogHeader>
                   <p className="text-sm text-foreground-muted">
-                    {tEdit("courseEdit.danger.deleteConfirmWarning" as never)}
+                    {t("courseEdit.danger.deleteConfirmWarning")}
                   </p>
                   <DialogFooter>
                     <Button
                       variant="destructive"
                       onClick={() => void handleDeleteCourse()}
                     >
-                      {tEdit("courseEdit.danger.deleteButton" as never)}
+                      {t("courseEdit.danger.deleteButton")}
                     </Button>
                   </DialogFooter>
                 </DialogContent>

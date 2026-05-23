@@ -272,11 +272,15 @@
         "selectAside": "Chọn một bài học bên cạnh"
       },
       "lessonNumberBadge": "Bài {{index}}",
+      "articleLessonBadge": "Bài đọc",
       "completedBadge": "Đã hoàn thành",
       "lessonHint": "Học xong video này để tiếp tục mở tiến độ cho toàn bộ lộ trình.",
+      "lessonArticleDraftNoticeTitle": "Bài học đang được chuẩn bị",
+      "lessonArticleDraftNoticeBody": "Nội dung đọc chưa sẵn sàng. Vui lòng quay lại sau.",
       "markComplete": {
         "done": "Đã hoàn thành",
-        "action": "Đánh dấu đã xem"
+        "action": "Đánh dấu đã xem",
+        "actionArticle": "Đánh dấu đã đọc"
       },
       "nav": {
         "previous": "Bài trước",
