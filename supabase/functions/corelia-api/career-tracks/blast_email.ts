@@ -1,5 +1,7 @@
 import { isAuthFailure } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
+import { normalizeAnnouncementBodyHtml } from "../lib/mail/announcement_body.ts";
+import { resolveAppUrl, wrapBlastEmail } from "../lib/mail/layout.ts";
 import { sendBatchEmailsViaResend } from "../lib/mail/resend.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 
@@ -110,20 +112,22 @@ export async function handleCareerTrackBlastEmail(
     );
     const uniqueEmails = [...new Set(emailResults.filter(Boolean))];
 
-    const appUrl = Deno.env.get("APP_URL") ?? "https://app.corelia.dev";
-    const unsubUrl = `${appUrl}/account/settings`;
-    const htmlWithFooter = `${html}
-<br><br>
-<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0">
-<p style="font-size:12px;color:#6b7280;line-height:1.5">
-  Bạn nhận email này vì đã đăng ký khoá học trong lộ trình học trên Corelia.<br>
-  <a href="${unsubUrl}" style="color:#6b7280">Quản lý tuỳ chọn thông báo</a>
-</p>`;
+    const bodyHtml = normalizeAnnouncementBodyHtml(html);
+    if (!bodyHtml) {
+      return json({ message: "invalid_input:empty_body" }, 400);
+    }
+
+    const unsubUrl = `${resolveAppUrl()}/account/settings`;
+    const htmlWithLayout = wrapBlastEmail({
+      bodyHtml,
+      kind: "career_track",
+      unsubUrl,
+    });
 
     const result = await sendBatchEmailsViaResend({
       to_list: uniqueEmails,
       subject,
-      html: htmlWithFooter,
+      html: htmlWithLayout,
     });
 
     if (inAppRecipientIds.length > 0) {

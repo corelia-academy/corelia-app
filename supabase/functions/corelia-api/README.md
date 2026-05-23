@@ -46,7 +46,7 @@ Luồng checkout của SePay Payment Gateway hiện vẫn dùng endpoint `/v1/ch
 
 Nếu thiếu `RESEND_API_KEY` hoặc `MAIL_FROM`, handler **không lỗi**: trả `{ skipped: true, reason: "email_not_configured" }` và log cảnh báo — phù hợp môi trường dev.
 
-Code gửi mail chung: [`lib/mail/resend.ts`](lib/mail/resend.ts). Handler chỉ lo `subject` + `html`.
+Code gửi mail chung: [`lib/mail/resend.ts`](lib/mail/resend.ts) (transport) + [`lib/mail/layout.ts`](lib/mail/layout.ts) (branded shell, i18n vi/en). Handler/builder lo `subject` + nội dung body; `wrapTransactionalEmail` / `wrapBlastEmail` bọc HTML cuối.
 
 ## Local
 

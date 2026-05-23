@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, EyeOff, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AnnouncementBodyField,
+  announcementMessageToHtml,
+} from "@/components/email/AnnouncementBodyField";
 import { blastCareerTrackEmail, type BlastEmailResult } from "@/lib/courseBlast";
 
 const SUBJECT_MAX = 200;
@@ -24,7 +28,6 @@ export function CareerTrackBlastEmailPanel({ trackId }: Props) {
   const { t } = useTranslation("instructor");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [lastResult, setLastResult] = useState<BlastEmailResult | null>(null);
@@ -39,7 +42,7 @@ export function CareerTrackBlastEmailPanel({ trackId }: Props) {
     try {
       const result = await blastCareerTrackEmail(trackId, {
         subject: subject.trim(),
-        html: body.trim(),
+        html: announcementMessageToHtml(body),
       });
       setLastResult(result);
     } catch (e) {
@@ -72,7 +75,6 @@ export function CareerTrackBlastEmailPanel({ trackId }: Props) {
         </div>
       </div>
 
-      {/* Subject */}
       <div>
         <label
           htmlFor="track-ann-subject"
@@ -92,40 +94,18 @@ export function CareerTrackBlastEmailPanel({ trackId }: Props) {
         </p>
       </div>
 
-      {/* Body */}
-      <div>
-        <div className="mb-1.5 flex items-center justify-between">
-          <label htmlFor="track-ann-body" className="text-sm font-medium text-foreground">
-            {t("careerTracks.announcements.bodyLabel")}
-          </label>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-auto gap-1.5 px-2 py-1 text-xs text-foreground-muted hover:text-foreground"
-            onClick={() => setShowPreview((v) => !v)}
-          >
-            {showPreview ? <EyeOff className="size-3.5" aria-hidden /> : <Eye className="size-3.5" aria-hidden />}
-            {t("careerTracks.announcements.bodyPreviewToggle")}
-          </Button>
-        </div>
-        <textarea
-          id="track-ann-body"
-          rows={8}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder={t("careerTracks.announcements.bodyPlaceholder")}
-          className="w-full rounded-md border border-border bg-surface-base px-3 py-2 font-mono text-xs text-foreground outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
-        />
-        {showPreview && body.trim() && (
-          <div
-            className="mt-3 min-h-20 rounded-md border border-border-subtle bg-white px-5 py-4 text-sm text-gray-900 shadow-inner"
-            dangerouslySetInnerHTML={{ __html: body }}
-          />
-        )}
-      </div>
+      <AnnouncementBodyField
+        id="track-ann-body"
+        value={body}
+        onChange={setBody}
+        label={t("careerTracks.announcements.bodyLabel")}
+        placeholder={t("careerTracks.announcements.bodyPlaceholder")}
+        hint={t("careerTracks.announcements.bodyHint")}
+        previewToggleLabel={t("careerTracks.announcements.bodyPreviewToggle")}
+        previewBrandedNote={t("careerTracks.announcements.bodyPreviewBrandedNote")}
+        rows={8}
+      />
 
-      {/* Last result */}
       {lastResult && (
         <div className="rounded-md border border-border-subtle bg-surface-raised px-4 py-3 text-sm">
           {lastResult.ok ? (
@@ -152,7 +132,6 @@ export function CareerTrackBlastEmailPanel({ trackId }: Props) {
         </div>
       )}
 
-      {/* Send button + confirm dialog */}
       <div className="flex justify-end">
         <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <DialogTrigger

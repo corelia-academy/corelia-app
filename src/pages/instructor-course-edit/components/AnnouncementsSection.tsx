@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Eye, EyeOff, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AnnouncementBodyField,
+  announcementMessageToHtml,
+} from "@/components/email/AnnouncementBodyField";
 import { blastCourseEmail, type BlastEmailResult } from "@/lib/courseBlast";
 
 const SUBJECT_MAX = 200;
@@ -25,7 +29,6 @@ export function AnnouncementsSection({ courseId, enrollmentCount }: Props) {
   const { t } = useTranslation("instructor");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [lastResult, setLastResult] = useState<BlastEmailResult | null>(null);
@@ -45,7 +48,7 @@ export function AnnouncementsSection({ courseId, enrollmentCount }: Props) {
     try {
       const result = await blastCourseEmail(courseId, {
         subject: subject.trim(),
-        html: body.trim(),
+        html: announcementMessageToHtml(body),
       });
       setLastResult(result);
     } catch (e) {
@@ -101,38 +104,16 @@ export function AnnouncementsSection({ courseId, enrollmentCount }: Props) {
           </p>
         </div>
 
-        {/* Body */}
-        <div>
-          <div className="mb-1.5 flex items-center justify-between">
-            <label htmlFor="ann-body" className="text-sm font-medium text-foreground">
-              {t("courseEdit.announcements.bodyLabel")}
-            </label>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-auto gap-1.5 px-2 py-1 text-xs text-foreground-muted hover:text-foreground"
-              onClick={() => setShowPreview((v) => !v)}
-            >
-              {showPreview ? <EyeOff className="size-3.5" aria-hidden /> : <Eye className="size-3.5" aria-hidden />}
-              {t("courseEdit.announcements.bodyPreviewToggle")}
-            </Button>
-          </div>
-          <textarea
-            id="ann-body"
-            rows={10}
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder={t("courseEdit.announcements.bodyPlaceholder")}
-            className="w-full rounded-md border border-border bg-surface-base px-3 py-2 font-mono text-xs text-foreground outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
-          />
-          {showPreview && body.trim() && (
-            <div
-              className="mt-3 min-h-24 rounded-md border border-border-subtle bg-white px-5 py-4 text-sm text-gray-900 shadow-inner"
-              dangerouslySetInnerHTML={{ __html: body }}
-            />
-          )}
-        </div>
+        <AnnouncementBodyField
+          id="ann-body"
+          value={body}
+          onChange={setBody}
+          label={t("courseEdit.announcements.bodyLabel")}
+          placeholder={t("courseEdit.announcements.bodyPlaceholder")}
+          hint={t("courseEdit.announcements.bodyHint")}
+          previewToggleLabel={t("courseEdit.announcements.bodyPreviewToggle")}
+          previewBrandedNote={t("courseEdit.announcements.bodyPreviewBrandedNote")}
+        />
 
         {/* Last result */}
         {lastResult && (

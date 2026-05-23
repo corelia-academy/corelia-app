@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Mail, Eye, EyeOff } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AnnouncementBodyField,
+  announcementMessageToHtml,
+} from "@/components/email/AnnouncementBodyField";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 import type { BlastEmailFilter } from "@/lib/hackathons";
 
@@ -47,7 +51,6 @@ export function ContestDetailBlastEmailPanel({
   const [recipientFilter, setRecipientFilter] = useState<BlastEmailFilter>("all");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [lastResult, setLastResult] = useState<{
     sent: number;
@@ -74,7 +77,7 @@ export function ContestDetailBlastEmailPanel({
     setConfirmOpen(false);
     const result = await handleBlastEmail({
       subject: subject.trim(),
-      html: body.trim(),
+      html: announcementMessageToHtml(body),
       recipientFilter,
     });
     if (result) setLastResult(result);
@@ -157,48 +160,16 @@ export function ContestDetailBlastEmailPanel({
             </p>
           </div>
 
-          {/* Body */}
-          <div>
-            <div className="mb-1.5 flex items-center justify-between">
-              <label
-                htmlFor="blast-body"
-                className="text-sm font-medium text-foreground"
-              >
-                {translate("workspace.email.bodyLabel")}
-              </label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-auto gap-1.5 px-2 py-1 text-xs text-foreground-muted hover:text-foreground"
-                onClick={() => setShowPreview((v) => !v)}
-                aria-pressed={showPreview}
-              >
-                {showPreview ? (
-                  <EyeOff className="size-3.5" aria-hidden />
-                ) : (
-                  <Eye className="size-3.5" aria-hidden />
-                )}
-                {translate("workspace.email.bodyPreviewToggle")}
-              </Button>
-            </div>
-            <textarea
-              id="blast-body"
-              rows={10}
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder={translate("workspace.email.bodyPlaceholder")}
-              className="w-full rounded-md border border-border bg-surface-base px-3 py-2 font-mono text-xs text-foreground outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
-            />
-
-            {showPreview && body.trim() && (
-              <div
-                className="mt-3 min-h-24 rounded-md border border-border-subtle bg-white px-5 py-4 text-sm text-gray-900 shadow-inner"
-                aria-label={translate("workspace.email.bodyPreviewToggle")}
-                dangerouslySetInnerHTML={{ __html: body }}
-              />
-            )}
-          </div>
+          <AnnouncementBodyField
+            id="blast-body"
+            value={body}
+            onChange={setBody}
+            label={translate("workspace.email.bodyLabel")}
+            placeholder={translate("workspace.email.bodyPlaceholder")}
+            hint={translate("workspace.email.bodyHint")}
+            previewToggleLabel={translate("workspace.email.bodyPreviewToggle")}
+            previewBrandedNote={translate("workspace.email.bodyPreviewBrandedNote")}
+          />
 
           {/* Last result */}
           {lastResult && (
