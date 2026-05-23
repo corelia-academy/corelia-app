@@ -80,6 +80,7 @@ export default function SignupVerified() {
       const session = await waitForActiveSession(SESSION_WAIT_MS);
       if (cancelled) return;
       if (session?.user) {
+        setSecondsLeft(REDIRECT_SECONDS);
         setPhase("success");
         return;
       }
@@ -94,8 +95,6 @@ export default function SignupVerified() {
 
   useEffect(() => {
     if (phase !== "success") return;
-
-    setSecondsLeft(REDIRECT_SECONDS);
 
     const countdownId = window.setInterval(() => {
       setSecondsLeft((s) => Math.max(0, s - 1));

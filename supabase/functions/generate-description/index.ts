@@ -639,12 +639,90 @@ async function generateWithOpenAi(prompt: string): Promise<string> {
     console.error("[generate-description] openai", response.status, errorText);
     throw new Error("OpenAI chưa phản hồi được mô tả.");
   }
-  const payload = (await response.json()) as {
-    output_text?: string;
-  };
-  const text = payload.output_text?.trim() ?? "";
-  if (!text) throw new Error("OpenAI trả về mô tả rỗng.");
+  const payload = (await response.json()) as OpenAiResponsesPayload;
+  const { text, debug } = extractResponseText(payload);
+  if (!text) {
+    console.error("[generate-description] openai empty_output", debug);
+    throw new Error("OpenAI trả về mô tả rỗng.");
+  }
   return text;
+}
+
+type OpenAiResponsesPayload = {
+  output_text?: string;
+  output?: Array<{
+    type?: string;
+    content?: Array<{
+      type?: string;
+      text?: string;
+      refusal?: string;
+    }>;
+  }>;
+};
+
+function normalizeModelText(value: string | null | undefined): string | null {
+  const text = value?.trim() ?? "";
+  return text || null;
+}
+
+function summarizeResponsePayload(payload: OpenAiResponsesPayload): Record<string, unknown> {
+  const outputs = Array.isArray(payload.output) ? payload.output : [];
+  return {
+    hasOutputText: Boolean(payload.output_text?.trim()),
+    outputCount: outputs.length,
+    outputTypes: outputs.map((item) => item?.type ?? "unknown").slice(0, 6),
+    contentTypes: outputs
+      .flatMap((item) => (Array.isArray(item?.content) ? item.content : []))
+      .map((item) => item?.type ?? "unknown")
+      .slice(0, 10),
+    hasRefusal: outputs.some((item) =>
+      (Array.isArray(item?.content) ? item.content : []).some((content) =>
+        typeof content?.refusal === "string" && content.refusal.trim().length > 0
+      )
+    ),
+  };
+}
+
+function extractResponseText(payload: OpenAiResponsesPayload): {
+  text: string | null;
+  debug: Record<string, unknown>;
+} {
+  const topLevelText = normalizeModelText(payload.output_text);
+  if (topLevelText) {
+    return {
+      text: topLevelText,
+      debug: {
+        source: "output_text",
+        ...summarizeResponsePayload(payload),
+      },
+    };
+  }
+
+  const outputs = Array.isArray(payload.output) ? payload.output : [];
+  const contentText = outputs
+    .flatMap((item) => (Array.isArray(item?.content) ? item.content : []))
+    .map((item) => normalizeModelText(item?.text))
+    .filter((item): item is string => Boolean(item))
+    .join("\n")
+    .trim();
+
+  if (contentText) {
+    return {
+      text: contentText,
+      debug: {
+        source: "output.content.text",
+        ...summarizeResponsePayload(payload),
+      },
+    };
+  }
+
+  return {
+    text: null,
+    debug: {
+      source: "empty",
+      ...summarizeResponsePayload(payload),
+    },
+  };
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {

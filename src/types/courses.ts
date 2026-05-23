@@ -136,6 +136,8 @@ export interface Course {
   access_model?: CourseAccessModel;
   /** Khoá học vẫn đang được cập nhật nội dung (manual flag) */
   is_updating?: boolean;
+  /** Khoá học có phân chia theo section (false = flat lesson list) */
+  has_sections?: boolean;
   /** Khoá học tổng hợp từ nguồn ngoài (YouTube/reference) */
   is_external_aggregated?: boolean;
   /** Danh sách link nguồn ngoài (YouTube/reference) */
@@ -300,6 +302,7 @@ export interface CourseInsert {
   i18n?: CourseI18nConfig;
   access_model?: CourseAccessModel;
   is_updating?: boolean;
+  has_sections?: boolean;
   is_external_aggregated?: boolean;
   external_source_urls?: string[];
   external_source_attribution_note?: string | null;
@@ -346,6 +349,7 @@ export interface CourseUpdate {
   certificate_name_y_percent?: number | null;
   access_model?: CourseAccessModel;
   is_updating?: boolean;
+  has_sections?: boolean;
   is_external_aggregated?: boolean;
   external_source_urls?: string[];
   external_source_attribution_note?: string | null;

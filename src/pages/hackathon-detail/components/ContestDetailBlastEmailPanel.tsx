@@ -195,7 +195,6 @@ export function ContestDetailBlastEmailPanel({
               <div
                 className="mt-3 min-h-24 rounded-md border border-border-subtle bg-white px-5 py-4 text-sm text-gray-900 shadow-inner"
                 aria-label={translate("workspace.email.bodyPreviewToggle")}
-                // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{ __html: body }}
               />
             )}
