@@ -1,45 +1,41 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { ChevronDown } from "lucide-react";
+import { HackathonSectionCard } from "@/pages/hackathon-detail/components/HackathonSectionCard";
 import type { Contest } from "@/types/hackathons";
-import { cn } from "@/lib/utils";
 
 export function ContestPublicFaqsSection(props: {
   contest: Contest;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   const { contest, t } = props;
+  const faqs = contest.faqs ?? [];
 
   return (
-    <Card id="faq" className={cn("scroll-mt-36")}>
-      <CardContent className="p-4">
-        <h2 className="text-lg font-semibold text-foreground">
-          {t("detail.faqs.sectionTitle")}
-        </h2>
-        {(contest.faqs ?? []).length === 0 ? (
-          <p className="mt-4 text-sm text-foreground-muted">{t("detail.faqs.empty")}</p>
-        ) : (
-          <div className="mt-6 space-y-3">
-            {(contest.faqs ?? []).map((faq, index) => (
-              <details
-                key={`${faq.question}-${index}`}
-                className="group rounded-md border border-border-subtle bg-surface-base px-4 py-3"
-              >
-                <summary className="cursor-pointer list-none rounded text-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/50 [&::-webkit-details-marker]:hidden">
-                  <span className="flex items-center justify-between gap-2">
-                    {faq.question}
-                    <span className="text-xs text-foreground-muted group-open:rotate-180" aria-hidden>
-                      ▼
-                    </span>
-                  </span>
-                </summary>
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
-                  {faq.answer}
-                </p>
-              </details>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <HackathonSectionCard id="faq" title={t("detail.faqs.sectionTitle")}>
+      {faqs.length === 0 ? (
+        <p className="text-sm text-foreground-muted">{t("detail.faqs.empty")}</p>
+      ) : (
+        <div className="space-y-3.5">
+          {faqs.map((faq, index) => (
+            <details
+              key={`${faq.question}-${index}`}
+              className="group rounded-xl border border-border-subtle bg-surface-base px-4.5 py-4 transition-all duration-300 open:border-primary/20 open:shadow-xs hover:border-primary/15"
+            >
+              <summary className="cursor-pointer list-none rounded-lg text-sm font-semibold text-foreground outline-hidden focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
+                <span className="flex items-center justify-between gap-3 select-none">
+                  <span className="group-hover:text-primary transition-colors duration-150">{faq.question}</span>
+                  <ChevronDown
+                    className="size-4 shrink-0 text-foreground-muted transition-transform duration-300 group-open:rotate-180 group-hover:text-primary"
+                    aria-hidden
+                  />
+                </span>
+              </summary>
+              <div className="mt-3.5 border-t border-border-subtle/50 pt-3.5 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted animate-fade-in-up">
+                {faq.answer}
+              </div>
+            </details>
+          ))}
+        </div>
+      )}
+    </HackathonSectionCard>
   );
 }
-

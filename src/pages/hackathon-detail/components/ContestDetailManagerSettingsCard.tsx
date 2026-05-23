@@ -143,7 +143,7 @@ export function ContestDetailManagerSettingsCard({
               onClick={() => setSettingsSection("general")}
               aria-current={activeSection === "general" ? "true" : undefined}
               className={cn(
-                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
                 activeSection === "general"
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
@@ -159,7 +159,7 @@ export function ContestDetailManagerSettingsCard({
               onClick={() => setSettingsSection("judging")}
               aria-current={activeSection === "judging" ? "true" : undefined}
               className={cn(
-                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
                 activeSection === "judging"
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
@@ -175,7 +175,7 @@ export function ContestDetailManagerSettingsCard({
               onClick={() => setSettingsSection("access")}
               aria-current={activeSection === "access" ? "true" : undefined}
               className={cn(
-                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
                 activeSection === "access"
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
@@ -191,7 +191,7 @@ export function ContestDetailManagerSettingsCard({
               onClick={() => setSettingsSection("public")}
               aria-current={activeSection === "public" ? "true" : undefined}
               className={cn(
-                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
                 activeSection === "public"
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
@@ -207,7 +207,7 @@ export function ContestDetailManagerSettingsCard({
               onClick={() => setSettingsSection("danger")}
               aria-current={activeSection === "danger" ? "true" : undefined}
               className={cn(
-                "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
                 activeSection === "danger"
                   ? "bg-destructive/10 text-destructive"
                   : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
@@ -359,7 +359,7 @@ export function ContestDetailManagerSettingsCard({
               </div>
             ))}
           </div>
-          <div className="mt-3 rounded-xl border border-border-subtle bg-surface-base px-3 py-2 text-sm text-foreground-muted">
+          <div className="mt-3 rounded-lg border border-border-subtle bg-surface-base px-3 py-2 text-sm text-foreground-muted">
             {translate("workspace.manage.rubricTotalPrefix")}{" "}
             <span className="font-medium text-foreground">
               {[
@@ -392,7 +392,7 @@ export function ContestDetailManagerSettingsCard({
             {translate("workspace.manage.tracksRoundsDescription")}
           </p>
 
-          <div className="mt-4 rounded-xl border border-border-subtle bg-surface-base p-4">
+          <div className="mt-4 rounded-lg border border-border-subtle bg-surface-base p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-medium text-foreground">
@@ -421,7 +421,7 @@ export function ContestDetailManagerSettingsCard({
               {(tracksDraft ?? []).map((track, index) => (
                 <div
                   key={`track-${index}`}
-                  className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                  className="grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
                 >
                   <input
                     value={track.id}
@@ -491,7 +491,7 @@ export function ContestDetailManagerSettingsCard({
               {(roundsDraft ?? []).map((round, index) => (
                 <div
                   key={`round-${index}`}
-                  className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                  className="grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
                 >
                   <input
                     value={round.id}
@@ -769,7 +769,7 @@ export function ContestDetailManagerSettingsCard({
             {translate("workspace.manage.publicPageContentDescription")}
           </p>
 
-          <div className="mt-6 rounded-xl border border-border-subtle bg-surface-raised p-4">
+          <div className="mt-6 rounded-lg border border-border-subtle bg-surface-raised p-4">
             <div className="text-sm font-medium text-foreground">
               {translate("workspace.manage.mediaTitle")}
             </div>
@@ -804,7 +804,7 @@ export function ContestDetailManagerSettingsCard({
                   ) : null}
                 </div>
                 {contest.cover_image_url?.trim() ? (
-                  <div className="relative mt-3 h-36 max-w-3xl overflow-hidden rounded-lg border border-border-subtle bg-surface-base sm:h-40 lg:h-44">
+                  <div className="relative mt-3 aspect-[21/9] w-full max-w-3xl overflow-hidden rounded-md border border-border-subtle bg-surface-base">
                     <img
                       src={contest.cover_image_url.trim()}
                       alt={translate("detail.visual.bannerAlt", {
@@ -842,7 +842,7 @@ export function ContestDetailManagerSettingsCard({
                   ) : null}
                 </div>
                 {contest.thumbnail_url?.trim() ? (
-                  <div className="relative mt-3 h-32 max-w-xl overflow-hidden rounded-lg border border-border-subtle bg-surface-base sm:h-36 lg:h-40">
+                  <div className="relative mt-3 aspect-video w-full max-w-md overflow-hidden rounded-md border border-border-subtle bg-surface-base">
                     <img
                       src={contest.thumbnail_url.trim()}
                       alt={translate("detail.visual.thumbnailAlt", {
@@ -881,7 +881,7 @@ export function ContestDetailManagerSettingsCard({
               {publicDraft.prizes.map((prize, index) => (
                 <div
                   key={`prize-${index}`}
-                  className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                  className="grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
                 >
                   <input
                     value={prize.rank_label}
@@ -1000,7 +1000,7 @@ export function ContestDetailManagerSettingsCard({
               {publicDraft.faqs.map((faq, index) => (
                 <div
                   key={`faq-${index}`}
-                  className="space-y-3 rounded-xl border border-border-subtle bg-surface-base p-4"
+                  className="space-y-3 rounded-lg border border-border-subtle bg-surface-base p-4"
                 >
                   <input
                     value={faq.question}
@@ -1076,7 +1076,7 @@ export function ContestDetailManagerSettingsCard({
               {publicDraft.organizational_partners.map((partner, index) => (
                 <div
                   key={partner.id ?? `org-partner-${index}`}
-                  className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                  className="grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
                 >
                   <div className="sm:col-span-2">
                     <label
@@ -1260,7 +1260,7 @@ export function ContestDetailManagerSettingsCard({
             <div className="text-sm font-medium text-foreground">
               {translate("detail.sections.timeline")}
             </div>
-            <div className="mt-3 grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4">
+            <div className="mt-3 grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4">
               <label className="flex items-start gap-3 rounded-lg border border-border-subtle bg-surface-raised px-4 py-3 sm:col-span-2">
                 <input
                   type="checkbox"
@@ -1356,7 +1356,7 @@ export function ContestDetailManagerSettingsCard({
               {publicDraft.milestones.map((milestone, index) => (
                 <div
                   key={`ms-${index}`}
-                  className="grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                  className="grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
                 >
                   <input
                     value={milestone.title}

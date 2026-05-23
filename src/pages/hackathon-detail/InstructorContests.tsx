@@ -49,6 +49,56 @@ import {
   PageSectionCard,
 } from "@/components/layouts/PagePrimitives";
 import { useAuth } from "@/stores/authStore";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function InstructorContestWorkspaceSkeleton() {
+  return (
+    <PageContainer>
+      <PageSectionCard className="mb-4">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <div className="w-full max-w-3xl space-y-3">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-8 w-full max-w-md" />
+            <Skeleton className="h-4 w-full max-w-2xl" />
+            <Skeleton className="h-4 w-3/4 max-w-xl" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-9 w-28 rounded-full" />
+            <Skeleton className="h-9 w-24 rounded-full" />
+            <Skeleton className="h-11 w-32" />
+          </div>
+        </div>
+      </PageSectionCard>
+
+      <div
+        className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        {Array.from({ length: 6 }).map((_, idx) => (
+          <PageSectionCard key={idx} className="overflow-hidden p-0">
+            <Skeleton className="aspect-video w-full rounded-none" />
+            <div className="space-y-4 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-5 w-full max-w-56" />
+                </div>
+                <Skeleton className="h-8 w-8" />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+              <Skeleton className="h-11 w-full" />
+            </div>
+          </PageSectionCard>
+        ))}
+      </div>
+    </PageContainer>
+  );
+}
 
 export default function InstructorContests() {
   const { authInitialized, user } = useAuth();
@@ -121,12 +171,7 @@ export default function InstructorContests() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-80 items-center justify-center gap-3 text-sm text-foreground-muted">
-        <Loader2 className="size-4 animate-spin" aria-hidden />
-        {t("instructor.loadingWorkspace")}
-      </div>
-    );
+    return <InstructorContestWorkspaceSkeleton />;
   }
 
   return (
@@ -289,7 +334,7 @@ export default function InstructorContests() {
               <ContestListCardThumbnail
                 src={listImg}
                 aspectClassName="aspect-[2/1]"
-                surfaceClassName="bg-linear-to-br from-primary/10 via-surface-raised to-surface-raised"
+                surfaceClassName="bg-surface-raised"
                 emptyMinHeightClassName="min-h-[96px]"
                 trophyIconClassName="size-12 text-primary/35"
               />

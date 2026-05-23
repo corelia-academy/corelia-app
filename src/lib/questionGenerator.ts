@@ -44,14 +44,19 @@ export async function invokeGenerateQuestions(
   const token = session?.access_token;
   if (!token) throw new Error("Bạn cần đăng nhập để dùng tính năng này.");
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      ...supabaseFunctionHeaders(token),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: {
+        ...supabaseFunctionHeaders(token),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new Error("Không kết nối được Edge Function generate-questions. Kiểm tra deploy/CORS.");
+  }
 
   const json = (await res.json().catch(() => ({}))) as Partial<GenerateQuestionsResponse> & {
     message?: string;

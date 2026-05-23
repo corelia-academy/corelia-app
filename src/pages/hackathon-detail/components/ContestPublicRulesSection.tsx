@@ -1,25 +1,20 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { HackathonSectionCard } from "@/pages/hackathon-detail/components/HackathonSectionCard";
 import type { Contest } from "@/types/hackathons";
 import { renderTextAsList } from "@/pages/hackathon-detail/utils/text";
-import { cn } from "@/lib/utils";
 
 export function ContestPublicRulesSection(props: {
   contest: Contest;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   const { contest, t } = props;
-
   return (
-    <Card id="rules" className={cn("scroll-mt-36")}>
-      <CardContent className="p-4">
-        <h2 className="text-lg font-semibold text-foreground">
-          {t("detail.labels.rulesPublic")}
-        </h2>
-        {contest.rules?.trim()
-          ? renderTextAsList(contest.rules)
-          : renderTextAsList(t("detail.labels.rulesEmpty"))}
-      </CardContent>
-    </Card>
+    <HackathonSectionCard
+      id="rules"
+      title={t("detail.labels.rulesPublic")}
+    >
+      {contest.rules?.trim()
+        ? renderTextAsList(contest.rules)
+        : renderTextAsList(t("detail.labels.rulesEmpty"))}
+    </HackathonSectionCard>
   );
 }
-

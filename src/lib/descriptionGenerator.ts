@@ -21,12 +21,22 @@ export type DescriptionSource = {
   snippet?: string;
 };
 
+export type DescriptionSourceInput = {
+  id?: string;
+  title?: string;
+  shortDescription?: string;
+  markdownDescription?: string;
+  transcript?: string;
+  youtubeUrl?: string;
+};
+
 export type GenerateDescriptionRequest = {
   action?: DescriptionGeneratorAction;
   type: DescriptionGeneratorType;
   targetField: DescriptionGeneratorTargetField;
   locale: SupportedCourseLocale;
   sourceLocale?: SupportedCourseLocale;
+  sourceInputs?: DescriptionSourceInput[];
   courseId?: string;
   sectionId?: string;
   lessonId?: string;

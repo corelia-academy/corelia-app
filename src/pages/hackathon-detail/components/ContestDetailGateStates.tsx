@@ -12,36 +12,70 @@ export function ContestDetailLoadingCard({
 }) {
   return (
     <PageContainer width="default">
-      <Card>
-        <CardContent className="flex min-h-80 flex-col items-center justify-center p-8 text-center">
-          <div className="rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground-muted">
-            {translate("detail.loading.eyebrow")}
-          </div>
-          <div className="mt-4 text-sm font-medium text-foreground">
-            {translate("detail.loading.title")}
-          </div>
-          <div className="mt-2 text-sm text-foreground-muted">
-            {translate("detail.loading.description")}
-          </div>
-          <div className="mt-4 grid w-full max-w-3xl gap-3 md:grid-cols-3">
-            <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-left">
-              <Skeleton className="h-3 w-24 rounded-full" />
-              <Skeleton className="mt-3 h-4 w-3/4 rounded-full" />
-              <Skeleton className="mt-2 h-4 w-2/3 rounded-full" />
+      <div
+        className="space-y-4 sm:space-y-5"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        aria-label={translate("detail.loading.title")}
+      >
+        <Skeleton className="h-4 w-48" />
+        <Card className="overflow-hidden">
+          <Skeleton className="aspect-[21/9] w-full rounded-none" />
+          <CardContent className="space-y-4 p-4 sm:p-6">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0 flex-1 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-24 rounded-full" />
+                  <Skeleton className="h-6 w-28 rounded-full" />
+                </div>
+                <Skeleton className="h-8 w-full max-w-xl" />
+                <Skeleton className="h-4 w-full max-w-2xl" />
+                <Skeleton className="h-4 w-3/4 max-w-xl" />
+              </div>
+              <div className="flex shrink-0 gap-2">
+                <Skeleton className="h-11 w-36" />
+                <Skeleton className="h-11 w-24" />
+              </div>
             </div>
-            <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-left">
-              <Skeleton className="h-3 w-20 rounded-full" />
-              <Skeleton className="mt-3 h-4 w-4/5 rounded-full" />
-              <Skeleton className="mt-2 h-4 w-1/2 rounded-full" />
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-md border border-border-subtle bg-surface-base p-3"
+                >
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="mt-2 h-4 w-28" />
+                </div>
+              ))}
             </div>
-            <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-left">
-              <Skeleton className="h-3 w-28 rounded-full" />
-              <Skeleton className="mt-3 h-4 w-2/3 rounded-full" />
-              <Skeleton className="mt-2 h-4 w-3/5 rounded-full" />
-            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(320px,360px)] xl:items-start xl:gap-8">
+          <div className="order-2 space-y-6 xl:order-1">
+            <Skeleton className="h-11 w-full" />
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <Card key={idx}>
+                <CardContent className="space-y-3 p-4 sm:p-6">
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-2/3" />
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+          <Card className="order-1 xl:order-2">
+            <CardContent className="space-y-4 p-4 sm:p-6">
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-11 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </PageContainer>
   );
 }

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { intlLocale } from "@/lib/intl";
 import { cn } from "@/lib/utils";
+import { maskEmailAddress } from "@/pages/hackathon-detail/utils/emailMask";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 
 export function ContestDetailParticipantApplicationCard({
@@ -30,6 +31,7 @@ export function ContestDetailParticipantApplicationCard({
   } = vm;
 
   const previewEmail = profile?.email?.trim() || user?.email?.trim() || "";
+  const maskedPreviewEmail = previewEmail ? maskEmailAddress(previewEmail) : "";
   const autoApproveRegistrations = Boolean(
     contest.config?.auto_approve_registrations,
   );
@@ -42,7 +44,16 @@ export function ContestDetailParticipantApplicationCard({
     <>
       {registration ? (
         <>
-          {!embedded ? (
+          {embedded ? (
+            <div className="mb-4">
+              <h2 className="text-base font-semibold tracking-tight text-foreground">
+                {translate("detail.participant.applicationCardTitle")}
+              </h2>
+              <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
+                {registrationBody}
+              </p>
+            </div>
+          ) : (
             <div className="flex items-center gap-3">
               <div>
                 <h2 className="text-lg font-semibold tracking-tight text-foreground">
@@ -53,7 +64,7 @@ export function ContestDetailParticipantApplicationCard({
                 </p>
               </div>
             </div>
-          ) : null}
+          )}
           <div
             className={cn(
               "rounded-md border border-border-subtle bg-surface-base p-4",
@@ -79,7 +90,11 @@ export function ContestDetailParticipantApplicationCard({
           </>
         ) : contest.status !== "published" ? (
           <>
-            {!embedded ? (
+            {embedded ? (
+              <h2 className="mb-3 text-base font-semibold tracking-tight text-foreground">
+                {translate("detail.participant.registrationLockedTitle")}
+              </h2>
+            ) : (
               <div className="flex items-center gap-3">
                 <Lock className="size-5 text-primary" aria-hidden />
                 <div>
@@ -88,7 +103,7 @@ export function ContestDetailParticipantApplicationCard({
                   </h2>
                 </div>
               </div>
-            ) : null}
+            )}
             <p
               className={cn(
                 "text-sm leading-relaxed text-foreground-muted",
@@ -114,7 +129,11 @@ export function ContestDetailParticipantApplicationCard({
           </>
         ) : !registrationWorkspaceEditable ? (
           <>
-            {!embedded ? (
+            {embedded ? (
+              <h2 className="mb-3 text-base font-semibold tracking-tight text-foreground">
+                {translate("detail.participant.registrationClosedTitle")}
+              </h2>
+            ) : (
               <div className="flex items-center gap-3">
                 <Lock className="size-5 text-primary" aria-hidden />
                 <div>
@@ -123,7 +142,7 @@ export function ContestDetailParticipantApplicationCard({
                   </h2>
                 </div>
               </div>
-            ) : null}
+            )}
             <p
               className={cn(
                 "text-sm leading-relaxed text-foreground-muted",
@@ -149,7 +168,16 @@ export function ContestDetailParticipantApplicationCard({
           </>
         ) : (
           <>
-            {!embedded ? (
+            {embedded ? (
+              <div className="mb-4">
+                <h2 className="text-base font-semibold tracking-tight text-foreground">
+                  {translate("detail.participant.applicationCardTitle")}
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
+                  {registrationBody}
+                </p>
+              </div>
+            ) : (
               <div className="flex items-center gap-3">
                 <div>
                   <h2 className="text-lg font-semibold tracking-tight text-foreground">
@@ -160,7 +188,7 @@ export function ContestDetailParticipantApplicationCard({
                   </p>
                 </div>
               </div>
-            ) : null}
+            )}
             <div className={cn("space-y-4", embedded ? "mt-0" : "mt-4")}>
               {previewEmail ? (
                 <>
@@ -170,7 +198,7 @@ export function ContestDetailParticipantApplicationCard({
                         ? "detail.participant.quickRegisterIntroInstant"
                         : "detail.participant.quickRegisterIntro",
                       {
-                        email: previewEmail,
+                        email: maskedPreviewEmail,
                       },
                     )}
                   </p>

@@ -26,8 +26,11 @@ pnpm dev
 ### Edge Functions (local)
 
 ```bash
+cp supabase/functions/.env.example supabase/functions/.env
 pnpm functions:serve
 ```
+
+All Edge Functions now share `supabase/functions/.env` as the local secrets file. You can reuse the same file for hosted sync with `supabase secrets set --env-file supabase/functions/.env`.
 
 ## Build
 

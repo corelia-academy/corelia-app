@@ -113,6 +113,23 @@ export function hackathonLifecycleBadgeClassName(lifecycle: HackathonLifecycle):
   }
 }
 
+/**
+ * Whether the participant workspace rail (register / submit cards) has any actionable content.
+ * Active phases (registration_open / in_progress / judging) always show the rail; ended/upcoming
+ * only show it when the viewer already has a registration record (status display).
+ */
+export function shouldShowParticipantRail(opts: {
+  lifecycle: HackathonLifecycle | null;
+  hasExistingRegistration: boolean;
+}): boolean {
+  const { lifecycle, hasExistingRegistration } = opts;
+  if (lifecycle == null || lifecycle === "draft") return false;
+  if (lifecycle === "ended" || lifecycle === "upcoming") {
+    return hasExistingRegistration;
+  }
+  return true;
+}
+
 export function hackathonLifecycleShowsPulseDot(lifecycle: HackathonLifecycle): boolean {
   return (
     lifecycle === "registration_open" ||

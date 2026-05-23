@@ -50,7 +50,13 @@ Code gửi mail chung: [`lib/mail/resend.ts`](lib/mail/resend.ts). Handler chỉ
 
 ## Local
 
-Copy secrets vào `.env` trong thư mục function hoặc dùng `supabase secrets` / Dashboard tương ứng khi `supabase functions serve`.
+Local secrets dùng chung file [`supabase/functions/.env`](../.env). Khởi tạo từ [`supabase/functions/.env.example`](../.env.example), rồi serve function với:
+
+```bash
+supabase functions serve corelia-api --env-file supabase/functions/.env
+```
+
+Khi cần sync secrets lên hosted project, có thể dùng `supabase secrets set --env-file supabase/functions/.env` hoặc Dashboard.
 
 Tham khảo: [Supabase Edge Functions secrets](https://supabase.com/docs/guides/functions/secrets).
 

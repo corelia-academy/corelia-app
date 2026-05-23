@@ -7,13 +7,12 @@ import {
   Radio,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { HackathonSectionCard } from "@/pages/hackathon-detail/components/HackathonSectionCard";
 import type {
   Contest,
   ContestHackathonResource,
   ContestHackathonResourceType,
 } from "@/types/hackathons";
-import { cn } from "@/lib/utils";
 
 function resourceIcon(type: ContestHackathonResourceType) {
   switch (type) {
@@ -89,30 +88,27 @@ export function ContestPublicResourcesSection(props: {
   };
 
   return (
-    <Card id="resources" className={cn("scroll-mt-36")}>
-      <CardContent className="p-4">
-        <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
-          {t("detail.public.nav.resources")}
-        </div>
-        <h2 className="mt-1 text-lg font-semibold text-foreground">
-          {t("detail.resources.sectionTitle")}
-        </h2>
-        <p className="mt-2 text-sm text-foreground-muted">
-          {t("detail.resources.sectionDescription")}
-        </p>
-
+    <HackathonSectionCard
+      id="resources"
+      eyebrow={t("detail.public.nav.resources")}
+      title={t("detail.resources.sectionTitle")}
+      description={t("detail.resources.sectionDescription")}
+    >
+      <div className="space-y-6">
         {featured.length > 0 ? (
-          <div className="mt-6 space-y-3">
+          <div className="space-y-3">
             {featured.map((r) => (
               <div
                 key={r.id}
-                className="flex flex-col gap-3 rounded-lg border border-primary/25 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 rounded-md border border-destructive/20 bg-destructive-muted p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-destructive px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-destructive-foreground">
+                  <span className="rounded-full bg-destructive px-2 py-0.5 text-xs font-semibold uppercase tracking-widest text-destructive-foreground">
                     {t("detail.resources.live")}
                   </span>
-                  <span className="text-sm font-medium text-foreground">{r.title}</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {r.title}
+                  </span>
                 </div>
                 <Button
                   type="button"
@@ -129,12 +125,12 @@ export function ContestPublicResourcesSection(props: {
           </div>
         ) : null}
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {rest.map((r) => (
             <ResourceCard key={r.id} r={r} />
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </HackathonSectionCard>
   );
 }

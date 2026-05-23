@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { HackathonSectionCard } from "@/pages/hackathon-detail/components/HackathonSectionCard";
 import { getProjectCoverImageUrl } from "@/lib/projects";
 import { supabase } from "@/lib/supabase";
 import { listContestShowcaseProjects } from "@/lib/projects";
@@ -14,7 +14,6 @@ import {
   type ContestShowcaseDisplayRow,
 } from "@/pages/hackathon-detail/utils/contestShowcase";
 import { useAuth } from "@/stores/authStore";
-import { cn } from "@/lib/utils";
 
 export function ContestPublicProjectsSection(props: {
   contest: Contest;
@@ -132,27 +131,24 @@ export function ContestPublicProjectsSection(props: {
   const submissionsTotal = Number(contest.metrics_snapshot?.submissions_total ?? 0);
 
   return (
-    <Card id="projects" className={cn("scroll-mt-36")}>
-      <CardContent className="p-4">
-        <h2 className="text-lg font-semibold text-foreground">
-          {t("detail.projects.sectionTitle")}
-        </h2>
-        <p className="mt-2 text-sm text-foreground-muted">
-          {t("detail.projects.sectionDescription")}
-        </p>
-        {displayRows.length === 0 ? (
-          <div className="mt-6 rounded-md border border-dashed border-border-subtle bg-surface-base px-4 py-8 text-center">
-            <div className="text-sm font-medium text-foreground">
-              {t("detail.projects.emptyTitle")}
-            </div>
-            <div className="mt-2 text-sm text-foreground-muted">
-              {submissionsTotal > 0 && showcaseProjects.length === 0
-                ? t("detail.projects.emptyHintSyncing")
-                : t("detail.projects.emptyHint")}
-            </div>
+    <HackathonSectionCard
+      id="projects"
+      title={t("detail.projects.sectionTitle")}
+      description={t("detail.projects.sectionDescription")}
+    >
+      {displayRows.length === 0 ? (
+        <div className="rounded-md border border-dashed border-border-subtle bg-surface-base px-4 py-8 text-center">
+          <div className="text-sm font-medium text-foreground">
+            {t("detail.projects.emptyTitle")}
           </div>
-        ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-2 text-sm text-foreground-muted">
+            {submissionsTotal > 0 && showcaseProjects.length === 0
+              ? t("detail.projects.emptyHintSyncing")
+              : t("detail.projects.emptyHint")}
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {displayRows.map((row) => (
               <div
                 key={row.key}
@@ -283,10 +279,9 @@ export function ContestPublicProjectsSection(props: {
                   />
                 ) : null}
               </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          ))}
+        </div>
+      )}
+    </HackathonSectionCard>
   );
 }

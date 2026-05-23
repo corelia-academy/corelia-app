@@ -23,17 +23,17 @@ export function ContestTimeline({
       {items.map((item) => (
         <li
           key={item.key}
-          className="rounded-lg border border-border-subtle bg-surface-base p-4"
+          className="group/timeline rounded-xl border border-border-subtle bg-surface-base p-4.5 transition-all duration-300 hover:-translate-y-[2px] hover:shadow-md hover:border-primary/25"
         >
-          <div className="flex items-start gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary" aria-hidden>
+          <div className="flex items-start gap-4">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary group-hover/timeline:bg-primary group-hover/timeline:text-primary-foreground transition-all duration-300 shadow-2xs" aria-hidden>
               {item.icon}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+              <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted group-hover/timeline:text-primary transition-colors">
                 {item.label}
               </div>
-              <div className="mt-1 wrap-break-word text-sm font-medium leading-snug text-foreground">
+              <div className="mt-1.5 wrap-break-word text-sm font-semibold leading-snug text-foreground">
                 {item.value}
               </div>
             </div>
@@ -50,12 +50,12 @@ export function ContestTimelineVertical({ rows }: { rows: ContestTimelineRow[] }
       {rows.map((row) => (
         <li
           key={row.key}
-          className="rounded-lg border border-border-subtle bg-surface-base p-4"
+          className="group/timeline rounded-xl border border-border-subtle bg-surface-base p-4.5 pl-5 relative transition-all duration-300 hover:-translate-y-[2px] hover:shadow-md hover:border-primary/25 border-l-3 border-l-primary/30 hover:border-l-primary"
         >
-          <div className="text-sm font-medium leading-snug text-foreground">
+          <div className="text-sm font-semibold leading-snug text-foreground group-hover/timeline:text-primary transition-colors">
             {row.title}
           </div>
-          <div className="mt-1.5 wrap-break-word text-sm leading-snug text-foreground-muted">
+          <div className="mt-2 wrap-break-word text-sm leading-snug text-foreground-muted">
             {row.datetimeLabel}
           </div>
         </li>

@@ -1,32 +1,52 @@
-import { NavLink } from "react-router";
+import { useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
+
+type SectionKey =
+  | "overview"
+  | "applications"
+  | "judging"
+  | "analytics"
+  | "translations"
+  | "awards"
+  | "email"
+  | "settings";
+
+function sectionLabel(
+  key: SectionKey,
+  translate: (k: string) => string,
+): string {
+  if (key === "email") return translate("workspace.email.tabLabel");
+  return translate(`workspace.tabs.${key}`);
+}
 
 export function ContestDetailManageSectionTabs({
   vm,
 }: {
   vm: ContestDetailViewModel;
 }) {
-  const {
-    translate,
-    contest,
-    canReview,
-    canJudge,
-    canViewAggregate,
-    isManager,
-  } = vm;
+  const { translate, contest, canReview, canJudge, canViewAggregate, isManager } =
+    vm;
+  const navigate = useNavigate();
 
-  const keys = [
+  const visibleSections: SectionKey[] = [
     "overview",
     ...(canReview ? (["applications"] as const) : []),
     ...(canJudge ? (["judging"] as const) : []),
     ...(canViewAggregate ? (["analytics"] as const) : []),
-    ...(isManager ? (["translations", "awards", "email", "settings"] as const) : []),
-  ] as const;
+    ...(isManager
+      ? (["translations", "awards", "email", "settings"] as const)
+      : []),
+  ];
+
+  const activeSection = (vm.activeManageSection ?? "overview") as SectionKey;
 
   const base = contest.slug
     ? `/hackathons/${contest.slug}/manage`
     : "/hackathons/manage/overview";
+
+  const buildHref = (key: SectionKey) =>
+    contest.slug ? `${base}/${key}` : base;
 
   return (
     <nav
@@ -36,39 +56,27 @@ export function ContestDetailManageSectionTabs({
       )}
       aria-label={translate("workspace.manage.tabs.ariaLabel")}
     >
-      <div className="-mb-px flex gap-0 overflow-x-auto overscroll-x-contain px-1 pb-px [scrollbar-width:none] sm:gap-1 [&::-webkit-scrollbar]:hidden">
-        {keys.map((key) => (
-          <NavLink
-            key={key}
-            to={contest.slug ? `${base}/${key}` : base}
-            end={key === "overview"}
-            className={({ isActive }) =>
-              cn(
+      <div className="-mb-px flex gap-1 overflow-x-auto overscroll-x-contain px-1 pb-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {visibleSections.map((key) => {
+          const isActive = activeSection === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => navigate(buildHref(key))}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
                 "inline-flex min-h-11 shrink-0 items-center border-b-2 px-3 py-2.5 text-sm font-medium transition-colors duration-150",
                 "rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base",
                 isActive
                   ? "border-primary text-foreground"
                   : "border-transparent text-foreground-muted hover:border-border hover:text-foreground",
-              )
-            }
-          >
-            {key === "overview"
-              ? translate("workspace.tabs.overview")
-              : key === "applications"
-                ? translate("workspace.tabs.applications")
-                : key === "judging"
-                  ? translate("workspace.tabs.judging")
-                  : key === "analytics"
-                    ? translate("workspace.tabs.analytics")
-                    : key === "translations"
-                      ? translate("workspace.tabs.translations")
-                      : key === "awards"
-                        ? translate("workspace.tabs.awards")
-                        : key === "email"
-                          ? translate("workspace.email.tabLabel")
-                          : translate("workspace.tabs.settings")}
-          </NavLink>
-        ))}
+              )}
+            >
+              {sectionLabel(key, translate)}
+            </button>
+          );
+        })}
       </div>
     </nav>
   );

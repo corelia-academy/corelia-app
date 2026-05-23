@@ -195,7 +195,7 @@ export default function ContestNew() {
               <div className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 {t("instructorNew.hero.eyebrow")}
               </div>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-2xl">
                 {t("instructorNew.hero.title")}
               </h1>
               <p className="mt-2 max-w-3xl text-sm text-foreground-muted">
@@ -414,7 +414,7 @@ export default function ContestNew() {
               <Field>
                 <label
                   htmlFor="contest-auto-approve-registrations"
-                  className="flex items-start gap-3 rounded-xl border border-border-subtle bg-surface-base px-4 py-3"
+                  className="flex items-start gap-3 rounded-lg border border-border-subtle bg-surface-base px-4 py-3"
                 >
                   <input
                     id="contest-auto-approve-registrations"
