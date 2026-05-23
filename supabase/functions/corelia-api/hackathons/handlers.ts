@@ -1,8 +1,9 @@
 import { isAuthFailure } from "../lib/authz.ts";
-import { escapeHtml } from "../lib/html.ts";
 import { json } from "../lib/http.ts";
 import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
+import { resolveAppUrl } from "../lib/mail/layout.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
+import { buildHackathonRegistrationReviewEmail } from "./emails.ts";
 
 async function reviewerCanReviewHackathonRegistration(
   db: SupabaseClient,
@@ -72,30 +73,24 @@ export async function handleHackathonNotifyRegistrationReview(req: Request, db: 
       return json({ ok: true, skipped: true, reason: "no_recipient_email" }, 200);
     }
 
-    const appOrigin = Deno.env.get("CORELIA_APP_ORIGIN")?.trim().replace(/\/+$/, "") ?? "";
-    const hackathonHref =
-      appOrigin && slug ? `${appOrigin}/hackathons/${encodeURIComponent(slug)}` : "";
+    const appOrigin = resolveAppUrl();
+    const hackathonHref = slug ? `${appOrigin}/hackathons/${encodeURIComponent(slug)}` : "";
 
     const isApproved = status === "approved";
-    const subject = isApproved
-      ? `[Corelia] Registration approved — ${hackathonTitle}`
-      : `[Corelia] Registration update — ${hackathonTitle}`;
-    const noteHtml =
-      typeof doc.review_note === "string" && doc.review_note.trim()
-        ? `<p style="margin-top:12px"><strong>Note:</strong> ${escapeHtml(doc.review_note.trim())}</p>`
-        : "";
-    const linkHtml = hackathonHref
-      ? `<p style="margin-top:16px"><a href="${escapeHtml(hackathonHref)}">Open hackathon</a></p>`
-      : "";
+    const userMeta = authData?.user?.user_metadata;
+    const locale =
+      userMeta && typeof userMeta === "object" && "locale" in userMeta &&
+        typeof (userMeta as { locale?: unknown }).locale === "string"
+        ? (userMeta as { locale: string }).locale
+        : null;
 
-    const html = `
-<p>Hello,</p>
-<p>Your hackathon registration for <strong>${escapeHtml(hackathonTitle)}</strong> has been <strong>${
-      isApproved ? "approved" : "rejected"
-    }</strong>.</p>
-${noteHtml}
-${linkHtml}
-`.trim();
+    const { subject, html } = buildHackathonRegistrationReviewEmail({
+      hackathonTitle,
+      isApproved,
+      reviewNote: typeof doc.review_note === "string" ? doc.review_note : null,
+      hackathonHref: hackathonHref || undefined,
+      locale,
+    });
 
     const mailResult = await sendTransactionalEmailViaResend({
       to: [toEmail],

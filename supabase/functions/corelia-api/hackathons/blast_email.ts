@@ -1,5 +1,7 @@
 import { isAuthFailure } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
+import { normalizeAnnouncementBodyHtml } from "../lib/mail/announcement_body.ts";
+import { resolveAppUrl, wrapBlastEmail } from "../lib/mail/layout.ts";
 import { sendBatchEmailsViaResend } from "../lib/mail/resend.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 
@@ -127,10 +129,22 @@ export async function handleHackathonBlastEmail(
       );
     }
 
+    const bodyHtml = normalizeAnnouncementBodyHtml(html);
+    if (!bodyHtml) {
+      return json({ message: "invalid_input:empty_body" }, 400);
+    }
+
+    const unsubUrl = `${resolveAppUrl()}/account/settings`;
+    const htmlWithLayout = wrapBlastEmail({
+      bodyHtml,
+      kind: "hackathon",
+      unsubUrl,
+    });
+
     const result = await sendBatchEmailsViaResend({
       to_list: uniqueEmails,
       subject,
-      html,
+      html: htmlWithLayout,
     });
 
     if (result.skipped) {

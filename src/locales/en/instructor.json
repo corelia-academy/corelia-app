@@ -245,9 +245,11 @@
       "heroDescription": "Compose an email and send it to all learners enrolled in any course within this track.",
       "subjectLabel": "Email subject",
       "subjectPlaceholder": "Enter subject...",
-      "bodyLabel": "Body (HTML)",
-      "bodyPlaceholder": "<p>Announcement content...</p>",
+      "bodyLabel": "Message",
+      "bodyPlaceholder": "Write your announcement here. Use a blank line between paragraphs.",
+      "bodyHint": "Plain text only — line breaks are kept. You do not need to write HTML.",
       "bodyPreviewToggle": "Preview",
+      "bodyPreviewBrandedNote": "Preview (header and footer are added automatically when sent):",
       "sendButton": "Send announcement",
       "confirmTitle": "Send announcement?",
       "confirmSubjectLabel": "Subject:",
@@ -627,6 +629,7 @@
       "sectionTitlePlaceholder": "Section title"
     },
     "sections": {
+      "notTranslated": "Not translated",
       "edit": "Edit",
       "questions": "Questions",
       "editTitle": "Edit section",
@@ -706,6 +709,7 @@
       }
     },
     "lessons": {
+      "notTranslated": "Not translated",
       "edit": "Edit",
       "editTitle": "Edit lesson details",
       "create": "Add lesson",
@@ -851,9 +855,11 @@
       "recipientCountZero": "No learners enrolled yet",
       "subjectLabel": "Email subject",
       "subjectPlaceholder": "Enter subject...",
-      "bodyLabel": "Body (HTML)",
-      "bodyPlaceholder": "<p>Announcement content...</p>",
+      "bodyLabel": "Message",
+      "bodyPlaceholder": "Write your announcement here. Use a blank line between paragraphs.",
+      "bodyHint": "Plain text only — line breaks are kept. You do not need to write HTML.",
       "bodyPreviewToggle": "Preview",
+      "bodyPreviewBrandedNote": "Preview (header and footer are added automatically when sent):",
       "sendButton": "Send announcement",
       "confirmTitle": "Send announcement?",
       "confirmSubjectLabel": "Subject:",

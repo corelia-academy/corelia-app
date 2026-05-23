@@ -2911,7 +2911,7 @@ const InstructorCourseEdit = () => {
             );
             setLessonLocaleMap((prev) => {
               const next = new Map(prev);
-              next.set(editingLesson.id, { locale: loc, title: payload.title, ...payload });
+              next.set(editingLesson.id, { locale: loc, ...payload });
               return next;
             });
           }
@@ -5865,7 +5865,7 @@ const InstructorCourseEdit = () => {
                             </span>
                             {activeContentLocale !== primaryContentLocale && !sectionLocaleMap.has(section.id) && (
                               <span className="rounded bg-warning/15 px-1.5 py-0.5 text-[10px] font-medium text-warning">
-                                {tEdit("courseEdit.sections.notTranslated" as never, { defaultValue: "Chưa dịch" } as never)}
+                                {tEdit("courseEdit.sections.notTranslated")}
                               </span>
                             )}
                           </div>
@@ -5988,7 +5988,7 @@ const InstructorCourseEdit = () => {
                               </span>
                               {activeContentLocale !== primaryContentLocale && !lessonLocaleMap.has(lesson.id) && (
                                 <span className="rounded bg-warning/15 px-1.5 py-0.5 text-[10px] font-medium text-warning shrink-0">
-                                  {tEdit("courseEdit.lessons.notTranslated" as never, { defaultValue: "Chưa dịch" } as never)}
+                                  {tEdit("courseEdit.lessons.notTranslated")}
                                 </span>
                               )}
                               {form.access_model === "paid_upfront" &&
