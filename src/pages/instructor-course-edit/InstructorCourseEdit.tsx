@@ -49,7 +49,6 @@ import {
   addSection,
   addLesson,
   getOrCreateDefaultSection,
-  DEFAULT_SECTION_TITLE,
   updateSection,
   updateLesson,
   reorderCourseLessons,
