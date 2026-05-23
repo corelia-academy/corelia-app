@@ -1461,6 +1461,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
           ? 429
           : 500;
     console.error("[ai-tutor] unhandled", error);
-    return withCors(req, json({ message }, status));
+    const clientMessage =
+      status === 500
+        ? "Cora AI đang gặp trục trặc, thử lại sau ít phút giúp mình."
+        : message;
+    return withCors(req, json({ message: clientMessage }, status));
   }
 });

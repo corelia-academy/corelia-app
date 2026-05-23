@@ -531,8 +531,10 @@ export function useContestDetailOrchestrator({
   );
 
   const hackathonLifecycle = useMemo(
-    () =>
-      contest ? deriveHackathonLifecycle(contest, Date.now()) : null,
+    () => {
+      void countdownTick;
+      return contest ? deriveHackathonLifecycle(contest, Date.now()) : null;
+    },
     [contest, countdownTick],
   );
 

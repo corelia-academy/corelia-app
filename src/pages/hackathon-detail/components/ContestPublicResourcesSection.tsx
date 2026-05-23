@@ -6,6 +6,7 @@ import {
   Play,
   Radio,
 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { HackathonSectionCard } from "@/pages/hackathon-detail/components/HackathonSectionCard";
 import type {
@@ -36,10 +37,10 @@ export function ContestPublicResourcesSection(props: {
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   const { contest, t } = props;
+  const [now] = useState(() => Date.now());
   const list = contest.resources ?? [];
   if (list.length === 0) return null;
 
-  const now = Date.now();
   const featured = list.filter((r) => {
     if (r.type !== "livestream") return r.pinned;
     const startRaw = r.starts_at ?? r.startsAt ?? "";

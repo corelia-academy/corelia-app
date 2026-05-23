@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -95,14 +95,6 @@ export function ContestDetailApplicationsPanel({
     pageOffset + PAGE_SIZE,
   );
 
-  useEffect(() => {
-    setPage(1);
-  }, [statusFilter, queryNorm]);
-
-  useEffect(() => {
-    setPage((p) => Math.min(p, totalPages));
-  }, [totalPages]);
-
   if (
     !isManageView ||
     !canReview ||
@@ -173,7 +165,10 @@ export function ContestDetailApplicationsPanel({
                     type="button"
                     size="sm"
                     variant={statusFilter === fb.id ? "default" : "outline"}
-                    onClick={() => setStatusFilter(fb.id)}
+                    onClick={() => {
+                      setStatusFilter(fb.id);
+                      setPage(1);
+                    }}
                   >
                     {translate(fb.labelKey)} ({statusCounts[fb.id]})
                   </Button>
@@ -181,7 +176,10 @@ export function ContestDetailApplicationsPanel({
               </div>
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
                 placeholder={translate(
                   "workspace.manage.applicationsSearchPlaceholder",
                 )}

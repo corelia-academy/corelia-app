@@ -7,6 +7,75 @@ import type { CourseLesson, CourseSection } from "@/types/courses";
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
+function LessonItem({
+  courseId,
+  lesson,
+  currentLessonId,
+  completedIds,
+  hasFullCourseAccess,
+  translate,
+}: {
+  courseId: string;
+  lesson: import("@/types/courses").CourseLesson;
+  currentLessonId: string | null;
+  completedIds: Set<string>;
+  hasFullCourseAccess: boolean;
+  translate: TranslateFn;
+}) {
+  const done = completedIds.has(lesson.id);
+  const active = currentLessonId === lesson.id;
+  const locked = !hasFullCourseAccess && !lesson.is_preview_free;
+  return (
+    <div
+      className={cn(
+        "border-t border-border-subtle px-4 py-3 transition-colors duration-150",
+        active && "bg-primary-muted text-primary",
+        !locked && "hover:bg-surface-raised",
+        locked && "opacity-75",
+      )}
+    >
+      {locked ? (
+        <div className="flex items-start gap-3">
+          <Lock className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted" aria-hidden />
+          <span className="min-w-0 flex-1 line-clamp-2 text-sm leading-5 text-foreground-muted">
+            {lesson.title}
+          </span>
+          <span className="shrink-0 text-xs text-warning">
+            {translate("detail.learn.lessonLockedBadge")}
+          </span>
+        </div>
+      ) : (
+        <Link
+          to={`/learn/${courseId}/lesson/${lesson.id}`}
+          className="flex items-start gap-3 sm:items-center"
+        >
+          {done ? (
+            <CheckCircle2 className="mt-0.5 w-4 h-4 shrink-0 text-success sm:mt-0" aria-hidden />
+          ) : (
+            <PlayCircle className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" />
+          )}
+          <div className="min-w-0 flex-1">
+            <span
+              className={cn(
+                "block line-clamp-2 text-sm leading-5 sm:line-clamp-1",
+                active ? "font-medium text-primary" : "text-foreground",
+              )}
+            >
+              {lesson.title}
+            </span>
+            <span className="mt-1 block text-xs text-foreground-muted sm:hidden">
+              {formatDuration(lesson.duration_seconds)}
+            </span>
+          </div>
+          <span className="hidden shrink-0 text-xs text-foreground-muted sm:inline">
+            {formatDuration(lesson.duration_seconds)}
+          </span>
+        </Link>
+      )}
+    </div>
+  );
+}
+
 export interface CurriculumGroup {
   section: CourseSection;
   lessons: CourseLesson[];
@@ -18,6 +87,7 @@ function CurriculumList({
   currentLessonId,
   completedIds,
   hasFullCourseAccess,
+  hasSections,
   translate,
   scrollClassName,
 }: {
@@ -26,6 +96,7 @@ function CurriculumList({
   currentLessonId: string | null;
   completedIds: Set<string>;
   hasFullCourseAccess: boolean;
+  hasSections: boolean;
   translate: TranslateFn;
   scrollClassName?: string;
 }) {
@@ -55,78 +126,40 @@ function CurriculumList({
     );
   }
 
+  const flatLessons = hasSections ? null : groups.flatMap(({ lessons }) => lessons);
+
   return (
     <div className={cn(scrollClassName)}>
-      {groups.map(({ section, lessons: sectionLessons }) => (
-        <div key={section.id}>
-          <div className="bg-surface-raised px-4 py-2 text-xs font-medium text-foreground">
-            {section.title}
-          </div>
-          {sectionLessons.map((lesson) => {
-            const done = completedIds.has(lesson.id);
-            const active = currentLessonId === lesson.id;
-            const locked = !hasFullCourseAccess && !lesson.is_preview_free;
-            return (
-              <div
-                key={lesson.id}
-                className={cn(
-                  "border-t border-border-subtle px-4 py-3 transition-colors duration-150",
-                  active && "bg-primary-muted text-primary",
-                  !locked && "hover:bg-surface-raised",
-                  locked && "opacity-75",
-                )}
-              >
-                {locked ? (
-                  <div className="flex items-start gap-3">
-                    <Lock
-                      className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted"
-                      aria-hidden
-                    />
-                    <span className="min-w-0 flex-1 line-clamp-2 text-sm leading-5 text-foreground-muted">
-                      {lesson.title}
-                    </span>
-                    <span className="shrink-0 text-xs text-warning">
-                      {translate("detail.learn.lessonLockedBadge")}
-                    </span>
-                  </div>
-                ) : (
-                  <Link
-                    to={`/learn/${courseId}/lesson/${lesson.id}`}
-                    className="flex items-start gap-3 sm:items-center"
-                  >
-                    {done ? (
-                      <CheckCircle2
-                        className="mt-0.5 w-4 h-4 shrink-0 text-success sm:mt-0"
-                        aria-hidden
-                      />
-                    ) : (
-                      <PlayCircle className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <span
-                        className={cn(
-                          "block line-clamp-2 text-sm leading-5 sm:line-clamp-1",
-                          active
-                            ? "font-medium text-primary"
-                            : "text-foreground",
-                        )}
-                      >
-                        {lesson.title}
-                      </span>
-                      <span className="mt-1 block text-xs text-foreground-muted sm:hidden">
-                        {formatDuration(lesson.duration_seconds)}
-                      </span>
-                    </div>
-                    <span className="hidden shrink-0 text-xs text-foreground-muted sm:inline">
-                      {formatDuration(lesson.duration_seconds)}
-                    </span>
-                  </Link>
-                )}
+      {hasSections
+        ? groups.map(({ section, lessons: sectionLessons }) => (
+            <div key={section.id}>
+              <div className="bg-surface-raised px-4 py-2 text-xs font-medium text-foreground">
+                {section.title}
               </div>
-            );
-          })}
-        </div>
-      ))}
+              {sectionLessons.map((lesson) => (
+                <LessonItem
+                  key={lesson.id}
+                  courseId={courseId}
+                  lesson={lesson}
+                  currentLessonId={currentLessonId}
+                  completedIds={completedIds}
+                  hasFullCourseAccess={hasFullCourseAccess}
+                  translate={translate}
+                />
+              ))}
+            </div>
+          ))
+        : flatLessons!.map((lesson) => (
+            <LessonItem
+              key={lesson.id}
+              courseId={courseId}
+              lesson={lesson}
+              currentLessonId={currentLessonId}
+              completedIds={completedIds}
+              hasFullCourseAccess={hasFullCourseAccess}
+              translate={translate}
+            />
+          ))}
     </div>
   );
 }
@@ -145,6 +178,7 @@ export function LessonCurriculum({
   lessonTotal,
   nextLessonTitle,
   hasFullCourseAccess,
+  hasSections = true,
   translate,
   variant = "default",
 }: {
@@ -161,6 +195,7 @@ export function LessonCurriculum({
   lessonTotal: number;
   nextLessonTitle: string | null;
   hasFullCourseAccess: boolean;
+  hasSections?: boolean;
   translate: TranslateFn;
   variant?: "default" | "tabPanel" | "sidebar";
 }) {
@@ -194,6 +229,7 @@ export function LessonCurriculum({
         currentLessonId={currentLessonId}
         completedIds={completedIds}
         hasFullCourseAccess={hasFullCourseAccess}
+        hasSections={hasSections}
         translate={translate}
         scrollClassName="max-h-[min(72vh,560px)] overflow-y-auto"
       />
