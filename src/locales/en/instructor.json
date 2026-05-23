@@ -720,8 +720,6 @@
       "youtubePlaceholder": "YouTube link (optional)",
       "videoPrimaryLocaleLabel": "Video primary language",
       "videoPrimaryLocaleHint": "Used to describe the audio/voiceover language of the video; it can differ from the content language.",
-      "hasSubtitleLabel": "This lesson has subtitles",
-      "subtitleHint": "YouTube subtitles can be provided by the channel or auto-translated; if missing, you can still translate subtitles in YouTube Studio.",
       "durationMinutesLabel": "Duration (minutes)",
       "durationHint": "If you leave this blank, the system will try to fetch duration from YouTube when possible.",
       "previewFreeLabel": "Enable free preview lesson",

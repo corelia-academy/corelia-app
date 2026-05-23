@@ -38,9 +38,11 @@ import {
   applyCourseLessonLocaleContent,
   applyCourseSectionLocaleContent,
   getCourseLessonLocaleContent,
+  getCourseLessonLocaleContentMap,
   getCourseLocaleContent,
   getCoursePrimaryLocale,
   getCourseSectionLocaleContent,
+  getCourseSectionLocaleContentMap,
   getCourseSupportedLocales,
   normalizeCourseLocale,
   setCourseLessonLocaleContent,
@@ -112,7 +114,9 @@ import {
 import type {
   Course,
   CourseSection,
+  CourseSectionLocaleContent,
   CourseLesson,
+  CourseLessonLocaleContent,
   Enrollment,
   FinalAssignmentSubmission,
 } from "@/types/courses";
@@ -195,6 +199,8 @@ const InstructorCourseEdit = () => {
   const [course, setCourse] = useState<Course | null>(null);
   const [sections, setSections] = useState<CourseSection[]>([]);
   const [lessons, setLessons] = useState<CourseLesson[]>([]);
+  const [sectionLocaleMap, setSectionLocaleMap] = useState<Map<string, CourseSectionLocaleContent>>(new Map());
+  const [lessonLocaleMap, setLessonLocaleMap] = useState<Map<string, CourseLessonLocaleContent>>(new Map());
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [studentProfiles, setStudentProfiles] = useState<
     Record<string, Profile | null>
@@ -276,9 +282,6 @@ const InstructorCourseEdit = () => {
   const [editingLessonResources, setEditingLessonResources] = useState<
     Array<{ title: string; url: string }>
   >([]);
-  const [expandedLessonIds, setExpandedLessonIds] = useState<Set<string>>(
-    () => new Set(),
-  );
   const courseFieldRefs = useRef<
     Partial<
       Record<
@@ -890,6 +893,25 @@ const InstructorCourseEdit = () => {
       cancelled = true;
     };
   }, [activeContentLocale, course, id]);
+
+  useEffect(() => {
+    if (!id || activeContentLocale === primaryContentLocale) {
+      setSectionLocaleMap(new Map());
+      setLessonLocaleMap(new Map());
+      return;
+    }
+    let cancelled = false;
+    void Promise.all([
+      getCourseSectionLocaleContentMap(id, activeContentLocale),
+      getCourseLessonLocaleContentMap(id, activeContentLocale),
+    ]).then(([secMap, lesMap]) => {
+      if (!cancelled) {
+        setSectionLocaleMap(secMap);
+        setLessonLocaleMap(lesMap);
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [id, activeContentLocale, primaryContentLocale]);
 
   useEffect(() => {
     if (!id) return;
@@ -1841,6 +1863,28 @@ const InstructorCourseEdit = () => {
     });
   };
 
+  const handleTranslateLearningOutcomes = () => {
+    if (!course || activeContentLocale === primaryContentLocale) return;
+    void translateBundle({
+      busyKey: "learning_outcomes",
+      bundleKind: "course_info",
+      type: "course",
+      targetLocale: activeContentLocale,
+      sourceLocale: primaryContentLocale,
+      courseId: id,
+      sourceBundle: {
+        learningOutcomes: course.learning_outcomes ?? [],
+      },
+      onApply: (bundle) =>
+        setContentForm((prev) => ({
+          ...prev,
+          learning_outcomes: bundle.learningOutcomes?.length
+            ? bundle.learningOutcomes
+            : prev.learning_outcomes,
+        })),
+    });
+  };
+
   const handleTranslateAssignmentBundle = () => {
     if (!course || activeContentLocale === primaryContentLocale) return;
     void translateBundle({
@@ -2046,6 +2090,11 @@ const InstructorCourseEdit = () => {
                   : s,
               ),
             );
+            setSectionLocaleMap((prev) => {
+              const next = new Map(prev);
+              next.set(editingSection.id, { locale: loc, title, description });
+              return next;
+            });
           }
         }
       }
@@ -2860,6 +2909,11 @@ const InstructorCourseEdit = () => {
                   : l,
               ),
             );
+            setLessonLocaleMap((prev) => {
+              const next = new Map(prev);
+              next.set(editingLesson.id, { locale: loc, title: payload.title, ...payload });
+              return next;
+            });
           }
         }
       }
@@ -4145,6 +4199,28 @@ const InstructorCourseEdit = () => {
                     <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                       {activeContentLocale.toUpperCase()}
                     </span>
+                    {activeContentLocale !== primaryContentLocale ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="ml-2 inline-flex items-center gap-1"
+                        disabled={
+                          translatingBundle === "learning_outcomes" ||
+                          !(course?.learning_outcomes?.length)
+                        }
+                        onClick={handleTranslateLearningOutcomes}
+                      >
+                        {translatingBundle === "learning_outcomes" ? (
+                          <Loader2 className="size-4 animate-spin" aria-hidden />
+                        ) : (
+                          <Sparkles className="size-4" aria-hidden />
+                        )}
+                        {translatingBundle === "learning_outcomes"
+                          ? t("courseEdit.descriptionGenerator.translating")
+                          : t("courseEdit.descriptionGenerator.translateTrigger")}
+                      </Button>
+                    ) : null}
                   </FieldLabel>
                   <p className="mt-1 text-xs text-foreground-muted">
                     {t("courseEdit.form.learningOutcomesSubtitle")}
@@ -5781,12 +5857,23 @@ const InstructorCourseEdit = () => {
                           <GripVertical className="size-4" aria-hidden />
                         </button>
                         <div className="min-w-0">
-                          <span className="font-medium text-foreground">
-                            {section.title}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-medium text-foreground">
+                              {activeContentLocale !== primaryContentLocale && sectionLocaleMap.has(section.id)
+                                ? (sectionLocaleMap.get(section.id)?.title ?? section.title)
+                                : section.title}
+                            </span>
+                            {activeContentLocale !== primaryContentLocale && !sectionLocaleMap.has(section.id) && (
+                              <span className="rounded bg-warning/15 px-1.5 py-0.5 text-[10px] font-medium text-warning">
+                                {tEdit("courseEdit.sections.notTranslated" as never, { defaultValue: "Chưa dịch" } as never)}
+                              </span>
+                            )}
+                          </div>
                           {section.description?.trim() ? (
                             <p className="mt-1 line-clamp-2 text-xs text-foreground-muted">
-                              {section.description}
+                              {activeContentLocale !== primaryContentLocale && sectionLocaleMap.has(section.id)
+                                ? (sectionLocaleMap.get(section.id)?.description ?? section.description)
+                                : section.description}
                             </p>
                           ) : null}
                         </div>
@@ -5895,8 +5982,15 @@ const InstructorCourseEdit = () => {
                               </button>
                               <PlayCircle className="size-4 shrink-0 text-foreground-muted" />
                               <span className="text-sm text-foreground truncate">
-                                {lesson.title}
+                                {activeContentLocale !== primaryContentLocale && lessonLocaleMap.has(lesson.id)
+                                  ? (lessonLocaleMap.get(lesson.id)?.title ?? lesson.title)
+                                  : lesson.title}
                               </span>
+                              {activeContentLocale !== primaryContentLocale && !lessonLocaleMap.has(lesson.id) && (
+                                <span className="rounded bg-warning/15 px-1.5 py-0.5 text-[10px] font-medium text-warning shrink-0">
+                                  {tEdit("courseEdit.lessons.notTranslated" as never, { defaultValue: "Chưa dịch" } as never)}
+                                </span>
+                              )}
                               {form.access_model === "paid_upfront" &&
                                 lesson.is_preview_free && (
                                   <span className="rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
@@ -5912,69 +6006,9 @@ const InstructorCourseEdit = () => {
                                 {formatDuration(lesson.duration_seconds)}
                               </span>
                               </div>
-                              {lesson.short_description?.trim() ? (
-                                <p className="mt-1 line-clamp-2 text-xs text-foreground-muted">
-                                  {lesson.short_description}
-                                </p>
-                              ) : null}
-
-                              {expandedLessonIds.has(lesson.id) ? (
-                                <div className="mt-3 rounded-md border border-border-subtle bg-surface-raised p-3">
-                                  {lesson.description_markdown?.trim() ? (
-                                    <Markdown content={lesson.description_markdown} />
-                                  ) : null}
-                                  {lesson.resources?.length ? (
-                                    <div className="mt-3">
-                                      <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
-                                        {t("courseEdit.lessons.resourcesLabel")}
-                                      </p>
-                                      <ul className="mt-2 space-y-1 text-sm text-foreground-muted">
-                                        {lesson.resources
-                                          .map((r) => ({
-                                            title: (r.title ?? "").trim(),
-                                            url: (r.url ?? "").trim(),
-                                          }))
-                                          .filter((r) => r.title && r.url)
-                                          .map((r) => (
-                                            <li key={r.url} className="truncate">
-                                              <a
-                                                href={r.url}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="underline underline-offset-4"
-                                              >
-                                                {r.title}
-                                              </a>
-                                            </li>
-                                          ))}
-                                      </ul>
-                                    </div>
-                                  ) : null}
-                                </div>
-                              ) : null}
                             </div>
 
                             <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                              {(lesson.description_markdown?.trim() ||
-                                lesson.resources?.length) ? (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    setExpandedLessonIds((prev) => {
-                                      const next = new Set(prev);
-                                      if (next.has(lesson.id)) next.delete(lesson.id);
-                                      else next.add(lesson.id);
-                                      return next;
-                                    })
-                                  }
-                                >
-                                  {expandedLessonIds.has(lesson.id)
-                                    ? t("courseEdit.lessons.hidePreview")
-                                    : t("courseEdit.lessons.showPreview")}
-                                </Button>
-                              ) : null}
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -6393,49 +6427,6 @@ const InstructorCourseEdit = () => {
                     <p className="mt-1 text-xs text-foreground-muted">
                       {t("courseEdit.lessons.videoPrimaryLocaleHint" as never)}
                     </p>
-                  </Field>
-                  <Field>
-                    <label className="inline-flex items-center gap-2 text-sm text-foreground">
-                      <input
-                        type="checkbox"
-                        checked={editingLessonHasSubtitle}
-                        onChange={(e) => setEditingLessonHasSubtitle(e.target.checked)}
-                        className="rounded border-border"
-                      />
-                      <span>{t("courseEdit.lessons.hasSubtitleLabel" as never)}</span>
-                    </label>
-                    <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseEdit.lessons.subtitleHint" as never)}
-                    </p>
-                    {editingLessonHasSubtitle ? (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {(["vi", "en"] as const).map((loc) => {
-                          const active = editingLessonSubtitleLocales.includes(loc);
-                          return (
-                            <button
-                              key={loc}
-                              type="button"
-                              onClick={() =>
-                                setEditingLessonSubtitleLocales((prev) => {
-                                  const next = new Set(prev);
-                                  if (next.has(loc)) next.delete(loc);
-                                  else next.add(loc);
-                                  return Array.from(next);
-                                })
-                              }
-                              className={cn(
-                                "rounded-md border px-2 py-1 text-xs font-medium",
-                                active
-                                  ? "border-primary bg-primary/10 text-primary"
-                                  : "border-border-subtle bg-surface-base text-foreground-muted",
-                              )}
-                            >
-                              {loc.toUpperCase()}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : null}
                   </Field>
                   <Field>
                     <FieldLabel>
