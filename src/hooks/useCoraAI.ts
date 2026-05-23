@@ -84,6 +84,15 @@ export type CoraError =
   | { type: "quota_exceeded"; message: string; used?: number; limit?: number | null; tier?: string }
   | { type: "generic"; message: string };
 
+export type CoraSessionSummary = {
+  id: string;
+  title: string | null;
+  lastMessageAt: string;
+  messageCount: number;
+  lessonId: string | null;
+  lessonTitle: string | null;
+};
+
 type UseCoraAIOptions = {
   assistantContext: AssistantContext | "lesson";
   lessonId?: string | null;
@@ -319,12 +328,16 @@ export function useCoraAI(options: UseCoraAIOptions) {
     if (!user?.id || backendContext === "lesson") return null;
 
     if (backendContext === "course" && options.courseId) {
+      // Reuse most-recent session per (user × course) for default landing.
+      // Explicit new-session creation goes through `newSession()`.
       const { data: existing } = await supabase
         .from("ai_chat_sessions")
         .select("id")
         .eq("user_id", user.id)
         .eq("context_type", "course")
         .eq("course_id", options.courseId)
+        .order("last_message_at", { ascending: false })
+        .limit(1)
         .maybeSingle<{ id: string }>();
       if (existing?.id) { setSessionId(existing.id); return existing.id; }
     } else {
@@ -346,13 +359,14 @@ export function useCoraAI(options: UseCoraAIOptions) {
         user_id: user.id,
         context_type: backendContext,
         ...(options.courseId ? { course_id: options.courseId } : {}),
+        ...(options.lessonId ? { lesson_id: options.lessonId } : {}),
       })
       .select("id")
       .single<{ id: string }>();
     if (insertError) throw new Error(insertError.message);
     setSessionId(data.id);
     return data.id;
-  }, [backendContext, options.courseId, user?.id]);
+  }, [backendContext, options.courseId, options.lessonId, user?.id]);
 
   const loadHistory = useCallback(async () => {
     if (!isAuthenticated) {
@@ -614,6 +628,99 @@ export function useCoraAI(options: UseCoraAIOptions) {
     ],
   );
 
+  const newSession = useCallback(async () => {
+    if (!user?.id) return null;
+    setMessages([]);
+    setSuggestedPrompts([]);
+    setRecommendedActions([]);
+    setRecommendedEntities([]);
+    setMemoryDelta(null);
+    setError(null);
+
+    // For lesson-only context (no courseId), there's no chat_session row to create.
+    if (backendContext === "lesson") {
+      setSessionId(null);
+      return null;
+    }
+
+    const { data, error: insertError } = await supabase
+      .from("ai_chat_sessions")
+      .insert({
+        user_id: user.id,
+        context_type: backendContext,
+        ...(options.courseId ? { course_id: options.courseId } : {}),
+        ...(options.lessonId ? { lesson_id: options.lessonId } : {}),
+      })
+      .select("id")
+      .single<{ id: string }>();
+    if (insertError) {
+      setError({ type: "generic", message: insertError.message });
+      return null;
+    }
+    setSessionId(data.id);
+    return data.id;
+  }, [backendContext, options.courseId, options.lessonId, user?.id]);
+
+  const switchSession = useCallback(
+    (id: string) => {
+      if (!id || id === sessionId) return;
+      setMessages([]);
+      setSuggestedPrompts([]);
+      setRecommendedActions([]);
+      setRecommendedEntities([]);
+      setMemoryDelta(null);
+      setError(null);
+      setSessionId(id);
+    },
+    [sessionId],
+  );
+
+  const listSessionsForContext = useCallback(async (): Promise<CoraSessionSummary[]> => {
+    if (!user?.id) return [];
+
+    // Scope: course-level when courseId is present; otherwise the global
+    // context_type bucket. Lesson-only (no courseId) currently has no
+    // ai_chat_sessions rows so we return empty.
+    if (backendContext === "lesson") return [];
+
+    let query = supabase
+      .from("ai_chat_sessions")
+      .select("id,title,last_message_at,message_count,lesson_id")
+      .eq("user_id", user.id)
+      .eq("context_type", backendContext)
+      .order("last_message_at", { ascending: false })
+      .limit(30);
+    if (options.courseId) {
+      query = query.eq("course_id", options.courseId);
+    } else {
+      query = query.is("course_id", null);
+    }
+
+    type SessionRow = {
+      id: string;
+      title: string | null;
+      last_message_at: string;
+      message_count: number;
+      lesson_id: string | null;
+    };
+    const { data, error: queryError } = await query.returns<SessionRow[]>();
+    if (queryError) throw new Error(queryError.message);
+    const rows = data ?? [];
+
+    // Lesson title hydration is intentionally not fetched here: lessons live in
+    // `course_lessons` (composite key) + locales, which makes this query
+    // expensive. The popover component uses `lessonId !== currentLessonId` to
+    // show a generic "from another lesson" badge, which is enough signal.
+    return rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      lastMessageAt: row.last_message_at,
+      messageCount: Number(row.message_count ?? 0),
+      lessonId: row.lesson_id,
+      lessonTitle: null,
+    }));
+  }, [backendContext, options.courseId, user?.id]);
+
   const clearHistory = useCallback(async () => {
     if (backendContext === "lesson") return;
     if (!user?.id) return;
@@ -663,5 +770,8 @@ export function useCoraAI(options: UseCoraAIOptions) {
     loadLearningMemory,
     sendMessage,
     clearHistory,
+    newSession,
+    switchSession,
+    listSessionsForContext,
   };
 }

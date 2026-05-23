@@ -719,8 +719,6 @@
       "youtubePlaceholder": "Link YouTube (tuỳ chọn)",
       "videoPrimaryLocaleLabel": "Ngôn ngữ chính của video",
       "videoPrimaryLocaleHint": "Dùng để mô tả ngôn ngữ audio/voiceover của video, có thể khác ngôn ngữ nội dung.",
-      "hasSubtitleLabel": "Có subtitle cho bài học này",
-      "subtitleHint": "YouTube có thể có subtitle do kênh cung cấp hoặc auto-translate; nếu chưa có, bạn vẫn có thể dịch subtitle bằng YouTube Studio.",
       "durationMinutesLabel": "Thời lượng (phút)",
       "durationHint": "Nếu để trống, hệ thống sẽ thử lấy thời lượng từ YouTube (khi có link và cấu hình API).",
       "previewFreeLabel": "Bật bài học thử miễn phí",

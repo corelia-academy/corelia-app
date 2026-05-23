@@ -76,28 +76,13 @@ export async function ensureSession(
   contextType: BackendContextType,
   sessionId: string | null,
   courseId?: string | null,
+  lessonId?: string | null,
 ): Promise<string | null> {
   if (contextType === "lesson") return null;
 
-  if (contextType === "course" && courseId) {
-    const { data: existing, error: lookupError } = await db
-      .from("ai_chat_sessions")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("context_type", "course")
-      .eq("course_id", courseId)
-      .maybeSingle<{ id: string }>();
-    if (lookupError) throw new Error(lookupError.message);
-    if (existing?.id) return existing.id;
-    const { data, error } = await db
-      .from("ai_chat_sessions")
-      .insert({ user_id: userId, context_type: "course", course_id: courseId })
-      .select("id")
-      .single<{ id: string }>();
-    if (error || !data?.id) throw new Error(error?.message ?? "Could not create course session");
-    return data.id;
-  }
-
+  // If client supplies a sessionId, verify ownership and use it.
+  // This lets the client manage multiple sessions per (user × course) — needed
+  // for the chat history popover UI.
   if (sessionId) {
     const { data, error } = await db
       .from("ai_chat_sessions")
@@ -110,6 +95,35 @@ export async function ensureSession(
     if (!data?.id) throw new Error("Invalid AI session");
     return data.id;
   }
+
+  // No sessionId from client — fall back to "most recent" lookup for the
+  // current context (preserves single-session UX when popover not used).
+  if (contextType === "course" && courseId) {
+    const { data: existing, error: lookupError } = await db
+      .from("ai_chat_sessions")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("context_type", "course")
+      .eq("course_id", courseId)
+      .order("last_message_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<{ id: string }>();
+    if (lookupError) throw new Error(lookupError.message);
+    if (existing?.id) return existing.id;
+    const { data, error } = await db
+      .from("ai_chat_sessions")
+      .insert({
+        user_id: userId,
+        context_type: "course",
+        course_id: courseId,
+        ...(lessonId ? { lesson_id: lessonId } : {}),
+      })
+      .select("id")
+      .single<{ id: string }>();
+    if (error || !data?.id) throw new Error(error?.message ?? "Could not create course session");
+    return data.id;
+  }
+
   const { data, error } = await db
     .from("ai_chat_sessions")
     .insert({ user_id: userId, context_type: contextType, title: null })

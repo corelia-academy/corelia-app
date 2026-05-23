@@ -181,7 +181,6 @@
         "duration": "Duration",
         "curriculum": "Curriculum",
         "completion": "Completion",
-        "contentLanguage": "Content language",
         "videoLanguage": "Video language"
       },
       "language": {
@@ -190,10 +189,6 @@
       },
       "languagePanel": {
         "title": "Language & subtitles"
-      },
-      "subtitles": {
-        "note": "Lessons use YouTube. You can enable Subtitles (CC) or Auto-translate in the player if needed.",
-        "coverage": "Subtitles: {{with}}/{{total}} lessons"
       },
       "completion": {
         "hasFinalAssignment": "Has a final assignment for review",

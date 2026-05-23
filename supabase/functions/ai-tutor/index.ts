@@ -1123,7 +1123,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const sessionId = await ensureSession(db, user.id, contextType, body.sessionId, body.courseId);
+    const sessionId = await ensureSession(db, user.id, contextType, body.sessionId, body.courseId, body.lessonId);
     const loadedContextData = await loadContextData(db, user.id, contextType, profile, {
       lessonId: body.lessonId,
     });
@@ -1299,16 +1299,24 @@ Deno.serve(async (req: Request): Promise<Response> => {
             if (sessionId) {
               const { data: sessionRow } = await db
                 .from("ai_chat_sessions")
-                .select("message_count")
+                .select("message_count,title")
                 .eq("id", sessionId)
-                .maybeSingle<{ message_count: number }>();
+                .maybeSingle<{ message_count: number; title: string | null }>();
+              const prevCount = Number(sessionRow?.message_count ?? 0);
+              const isFirstMessage = prevCount === 0;
+              const existingTitle = sessionRow?.title?.trim() ?? "";
+              const autoTitle = isFirstMessage && !existingTitle
+                ? body.message.trim().slice(0, 60)
+                : null;
+              const sessionUpdate: Record<string, unknown> = {
+                message_count: prevCount + 2,
+                last_message_at: nowIso,
+                updated_at: nowIso,
+              };
+              if (autoTitle) sessionUpdate.title = autoTitle;
               const { error: sessionUpdateError } = await db
                 .from("ai_chat_sessions")
-                .update({
-                  message_count: Number(sessionRow?.message_count ?? 0) + 2,
-                  last_message_at: nowIso,
-                  updated_at: nowIso,
-                })
+                .update(sessionUpdate)
                 .eq("id", sessionId);
               if (sessionUpdateError) throw new Error(sessionUpdateError.message);
             }
@@ -1416,16 +1424,24 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (sessionId) {
       const { data: sessionRow } = await db
         .from("ai_chat_sessions")
-        .select("message_count")
+        .select("message_count,title")
         .eq("id", sessionId)
-        .maybeSingle<{ message_count: number }>();
+        .maybeSingle<{ message_count: number; title: string | null }>();
+      const prevCount = Number(sessionRow?.message_count ?? 0);
+      const isFirstMessage = prevCount === 0;
+      const existingTitle = sessionRow?.title?.trim() ?? "";
+      const autoTitle = isFirstMessage && !existingTitle
+        ? body.message.trim().slice(0, 60)
+        : null;
+      const sessionUpdate: Record<string, unknown> = {
+        message_count: prevCount + 2,
+        last_message_at: nowIso,
+        updated_at: nowIso,
+      };
+      if (autoTitle) sessionUpdate.title = autoTitle;
       const { error: sessionUpdateError } = await db
         .from("ai_chat_sessions")
-        .update({
-          message_count: Number(sessionRow?.message_count ?? 0) + 2,
-          last_message_at: nowIso,
-          updated_at: nowIso,
-        })
+        .update(sessionUpdate)
         .eq("id", sessionId);
       if (sessionUpdateError) throw new Error(sessionUpdateError.message);
     }
