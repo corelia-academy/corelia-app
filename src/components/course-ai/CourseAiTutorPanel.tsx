@@ -4,6 +4,7 @@ import { CornerDownLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ConversationHistory } from "@/components/course-ai/ConversationHistory";
+import { CoraHistoryPopover } from "@/components/course-ai/CoraHistoryPopover";
 import { CoraShell } from "@/components/course-ai/CoraShell";
 import { QuotaExceededPrompt } from "@/components/course-ai/QuotaExceededPrompt";
 import { SuggestionPills } from "@/components/course-ai/SuggestionPills";
@@ -45,6 +46,10 @@ export function CourseAiTutorPanel(props: {
     suggestedPrompts,
     lastSubmittedMessage,
     clearHistory,
+    sessionId,
+    newSession,
+    switchSession,
+    listSessionsForContext,
   } = useCoraAI({
     assistantContext: hasLessonContext ? "lesson" : "courses",
     lessonId,
@@ -80,6 +85,18 @@ export function CourseAiTutorPanel(props: {
       hideLabel={onRequestHide ? String(tCommon("coraWidget.hideAction")) : undefined}
       onClearHistory={messages.length > 0 && !isLoading && !hasLessonContext ? () => { void clearHistory(); } : undefined}
       clearHistoryLabel={String(tCommon("coraWidget.clearHistoryAction"))}
+      onNewSession={Boolean(courseId) && !isLoading ? () => { void newSession(); } : undefined}
+      newSessionLabel={String(tCommon("coraWidget.newChatAction"))}
+      historySlot={
+        courseId ? (
+          <CoraHistoryPopover
+            loadSessions={listSessionsForContext}
+            onSelect={switchSession}
+            activeSessionId={sessionId}
+            currentLessonId={lessonId ?? null}
+          />
+        ) : null
+      }
       className={cn("h-full rounded-md shadow-none", className)}
       body={
         messages.length > 0 ? (

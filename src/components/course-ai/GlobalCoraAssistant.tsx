@@ -16,6 +16,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ConversationHistory } from "@/components/course-ai/ConversationHistory";
+import { CoraHistoryPopover } from "@/components/course-ai/CoraHistoryPopover";
 import { QuotaExceededPrompt } from "@/components/course-ai/QuotaExceededPrompt";
 import { SuggestionPills } from "@/components/course-ai/SuggestionPills";
 import { buildPersonalizedSuggestions } from "@/components/course-ai/suggestions";
@@ -54,6 +55,10 @@ export function CoraAssistantCard({
     suggestedPrompts,
     lastSubmittedMessage,
     clearHistory,
+    sessionId,
+    newSession,
+    switchSession,
+    listSessionsForContext,
   } = useCoraAI({
     assistantContext: context,
     autoCreateSession: true,
@@ -89,6 +94,15 @@ export function CoraAssistantCard({
       hideLabel={String(t("coraWidget.hideAction"))}
       onClearHistory={messages.length > 0 && !isLoading ? () => { void clearHistory(); } : undefined}
       clearHistoryLabel={String(t("coraWidget.clearHistoryAction"))}
+      onNewSession={!isLoading ? () => { void newSession(); } : undefined}
+      newSessionLabel={String(t("coraWidget.newChatAction"))}
+      historySlot={
+        <CoraHistoryPopover
+          loadSessions={listSessionsForContext}
+          onSelect={switchSession}
+          activeSessionId={sessionId}
+        />
+      }
       className={shellClassName ?? "max-h-[min(78vh,640px)]"}
       body={
         messages.length > 0 ? (

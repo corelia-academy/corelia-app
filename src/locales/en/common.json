@@ -383,6 +383,12 @@
     "openAction": "Open Cora AI",
     "hideAction": "Hide Cora AI",
     "clearHistoryAction": "Clear chat",
+    "newChatAction": "New chat",
+    "historyAction": "Chat history",
+    "historyEmpty": "No previous chats here yet.",
+    "historyLoading": "Loading…",
+    "fromOtherLessonLabel": "Other lesson",
+    "untitledSessionLabel": "Untitled chat",
     "restoreAction": "Reopen Cora AI",
     "chipToast": "Sticky Cora AI is in preview mode.",
     "dashboard": {
