@@ -32,6 +32,12 @@
     "loadCourseErrorFallback": "Failed to load course",
     "loadLessonsErrorFallback": "Failed to load lessons",
     "enrollErrorFallback": "Failed to enroll",
+    "duration": {
+      "lessThanOneMinute": "< 1 min",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "hoursMinutes": "{{hours}}h {{minutes}}m"
+    },
     "payment": {
       "failed": "Payment failed. Please try again.",
       "cancelled": "You cancelled the payment.",

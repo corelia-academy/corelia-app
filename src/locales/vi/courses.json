@@ -32,6 +32,11 @@
     "loadCourseErrorFallback": "Lỗi tải khoá học",
     "loadLessonsErrorFallback": "Lỗi tải danh sách bài học",
     "enrollErrorFallback": "Lỗi ghi danh",
+    "duration": {
+      "lessThanOneMinute": "< 1 phút",
+      "minutes": "{{count}} phút",
+      "hoursMinutes": "{{hours}} giờ {{minutes}} phút"
+    },
     "payment": {
       "failed": "Thanh toán thất bại. Vui lòng thử lại.",
       "cancelled": "Bạn đã huỷ thanh toán.",

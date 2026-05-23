@@ -141,7 +141,12 @@ import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { Markdown } from "@/components/markdown/Markdown";
-import type { DescriptionSourceInput } from "@/lib/descriptionGenerator";
+import {
+  invokeGenerateDescription,
+  type DescriptionSourceInput,
+  type DescriptionTranslationBundle,
+  type DescriptionTranslationBundleKind,
+} from "@/lib/descriptionGenerator";
 import type {
   DescriptionGeneratorDialogRequest,
   DescriptionGeneratorSourcePreview,
@@ -355,6 +360,7 @@ const InstructorCourseEdit = () => {
   const [descriptionGeneratorOpen, setDescriptionGeneratorOpen] = useState(false);
   const [descriptionGeneratorRequest, setDescriptionGeneratorRequest] =
     useState<DescriptionGeneratorDialogRequest | null>(null);
+  const [translatingBundle, setTranslatingBundle] = useState<string | null>(null);
   const [questionGeneratorOpen, setQuestionGeneratorOpen] = useState(false);
   const [questionGeneratorSection, setQuestionGeneratorSection] = useState<CourseSection | null>(null);
   const [submissions, setSubmissions] = useState<FinalAssignmentSubmission[]>(
@@ -590,6 +596,62 @@ const InstructorCourseEdit = () => {
       : primaryContentLocale;
 
   const localeBadge = (locale: SupportedCourseLocale) => `${locale === "vi" ? "🇻🇳" : "🇬🇧"} ${locale.toUpperCase()}`;
+
+  const bundleHasSource = (bundle: DescriptionTranslationBundle): boolean =>
+    Boolean(
+      bundle.title?.trim() ||
+        bundle.shortDescription?.trim() ||
+        bundle.description?.trim() ||
+        bundle.markdownDescription?.trim() ||
+        bundle.instructions?.trim() ||
+        bundle.learningOutcomes?.some((item) => item.trim()),
+    );
+
+  const translateBundle = async (params: {
+    busyKey: string;
+    bundleKind: DescriptionTranslationBundleKind;
+    type: "course" | "lesson";
+    targetLocale: SupportedCourseLocale;
+    sourceLocale: SupportedCourseLocale;
+    sourceBundle: DescriptionTranslationBundle;
+    courseId?: string;
+    sectionId?: string;
+    lessonId?: string;
+    onApply: (bundle: DescriptionTranslationBundle) => void;
+  }) => {
+    if (!bundleHasSource(params.sourceBundle)) {
+      toast.error(t("courseEdit.descriptionGenerator.warnings.notEnough"));
+      return;
+    }
+    setTranslatingBundle(params.busyKey);
+    try {
+      const response = await invokeGenerateDescription({
+        action: "translate",
+        type: params.type,
+        targetField: "description",
+        locale: params.targetLocale,
+        sourceLocale: params.sourceLocale,
+        bundleKind: params.bundleKind,
+        sourceBundle: params.sourceBundle,
+        courseId: params.courseId,
+        sectionId: params.sectionId,
+        lessonId: params.lessonId,
+      });
+      if (!response.bundle) {
+        throw new Error(t("courseEdit.descriptionGenerator.errors.generic"));
+      }
+      params.onApply(response.bundle);
+      toast.success(t("courseEdit.descriptionGenerator.translateApplied" as never));
+    } catch (translateError) {
+      toast.error(
+        translateError instanceof Error
+          ? translateError.message
+          : t("courseEdit.descriptionGenerator.errors.generic"),
+      );
+    } finally {
+      setTranslatingBundle(null);
+    }
+  };
 
   const openTranslateCourseField = (
     targetField: "short_description" | "description",
@@ -1711,53 +1773,6 @@ const InstructorCourseEdit = () => {
     });
   };
 
-  const handleTranslateSectionDescription = () => {
-    if (!editingSection) return;
-    const sourceLocale = primaryContentLocale;
-    const sourceDraft = sectionDraftRef.current.get(sourceLocale) ?? {
-      title: editingSection.title ?? "",
-      description: editingSection.description ?? "",
-    };
-    const sourcePreviews = [
-      createSourcePreview({
-        id: `${editingSection.id}-${sourceLocale}`,
-        title: `${sourceDraft.title || t("courseEdit.sections.titleLabel")} · ${localeBadge(sourceLocale)}`,
-        markdownDescription: sourceDraft.description,
-      }),
-    ];
-    openDescriptionGenerator({
-      title: t("courseEdit.descriptionGenerator.translateSectionTitle"),
-      description: t("courseEdit.descriptionGenerator.translateSectionDescription", {
-        source: sourceLocale.toUpperCase(),
-        target: dialogSectionLocale.toUpperCase(),
-      }),
-      type: "course",
-      targetField: "description",
-      locale: dialogSectionLocale,
-      sourcePreviews,
-      warning: buildGeneratorWarning(sourcePreviews),
-      actionLabel: t("courseEdit.descriptionGenerator.translateTrigger"),
-      loadingLabel: t("courseEdit.descriptionGenerator.translating"),
-      requestBody: {
-        action: "translate",
-        type: "course",
-        targetField: "description",
-        locale: dialogSectionLocale,
-        sourceLocale,
-        sourceInputs: [
-          createSourceInput({
-            id: `${editingSection.id}-${sourceLocale}`,
-            title: `${sourceDraft.title || t("courseEdit.sections.titleLabel")} · ${localeBadge(sourceLocale)}`,
-            markdownDescription: sourceDraft.description,
-          }),
-        ],
-        courseId: id,
-        sectionId: editingSection.id,
-      },
-      onApply: (value) => setEditingSectionDescription(value),
-    });
-  };
-
   const handleGenerateLessonDescription = (params: {
     targetField: "short_description" | "description_markdown";
     lessonId?: string;
@@ -1798,61 +1813,109 @@ const InstructorCourseEdit = () => {
     });
   };
 
-  const handleTranslateLessonDescription = (params: {
-    targetField: "short_description" | "description_markdown";
-    locale: SupportedCourseLocale;
-    onApply: (value: string) => void;
-  }) => {
-    const sourceLocale = primaryContentLocale;
-    const sourceDraft =
-      lessonDraftRef.current.get(sourceLocale) ?? captureLessonDraftFromState();
-    const sourceText =
-      params.targetField === "short_description"
-        ? sourceDraft.shortDescription
-        : sourceDraft.markdown;
-    const sourcePreviews = [
-      createSourcePreview({
-        id: `${editingLesson?.id ?? "draft"}-${sourceLocale}-${params.targetField}`,
-        title: `${sourceDraft.title || t("courseEdit.defaults.lessonTitle")} · ${localeBadge(sourceLocale)}`,
-        shortDescription:
-          params.targetField === "short_description" ? sourceText : undefined,
-        markdownDescription:
-          params.targetField === "description_markdown" ? sourceText : undefined,
-      }),
-    ];
-    openDescriptionGenerator({
-      title: t("courseEdit.descriptionGenerator.translateLessonTitle"),
-      description: t("courseEdit.descriptionGenerator.translateLessonDescription", {
-        source: sourceLocale.toUpperCase(),
-        target: params.locale.toUpperCase(),
-      }),
-      type: "lesson",
-      targetField: params.targetField,
-      locale: params.locale,
-      sourcePreviews,
-      warning: buildGeneratorWarning(sourcePreviews),
-      actionLabel: t("courseEdit.descriptionGenerator.translateTrigger"),
-      loadingLabel: t("courseEdit.descriptionGenerator.translating"),
-      requestBody: {
-        action: "translate",
-        type: "lesson",
-        targetField: params.targetField,
-        locale: params.locale,
-        sourceLocale,
-        sourceInputs: [
-          createSourceInput({
-            id: `${editingLesson?.id ?? "draft"}-${sourceLocale}-${params.targetField}`,
-            title: `${sourceDraft.title || t("courseEdit.defaults.lessonTitle")} · ${localeBadge(sourceLocale)}`,
-            shortDescription:
-              params.targetField === "short_description" ? sourceText : undefined,
-            markdownDescription:
-              params.targetField === "description_markdown" ? sourceText : undefined,
-          }),
-        ],
-        courseId: id,
-        lessonId: editingLesson?.id,
+  const handleTranslateCourseInfoBundle = () => {
+    if (!course || activeContentLocale === primaryContentLocale) return;
+    void translateBundle({
+      busyKey: "course_info",
+      bundleKind: "course_info",
+      type: "course",
+      targetLocale: activeContentLocale,
+      sourceLocale: primaryContentLocale,
+      courseId: id,
+      sourceBundle: {
+        title: course.title ?? "",
+        shortDescription: course.short_description ?? "",
+        description: course.description ?? "",
+        learningOutcomes: course.learning_outcomes ?? [],
       },
-      onApply: params.onApply,
+      onApply: (bundle) =>
+        setContentForm((prev) => ({
+          ...prev,
+          title: bundle.title ?? prev.title,
+          short_description: bundle.shortDescription ?? prev.short_description,
+          description: bundle.description ?? prev.description,
+          learning_outcomes: bundle.learningOutcomes?.length
+            ? bundle.learningOutcomes
+            : prev.learning_outcomes,
+        })),
+    });
+  };
+
+  const handleTranslateAssignmentBundle = () => {
+    if (!course || activeContentLocale === primaryContentLocale) return;
+    void translateBundle({
+      busyKey: "assignment",
+      bundleKind: "assignment",
+      type: "course",
+      targetLocale: activeContentLocale,
+      sourceLocale: primaryContentLocale,
+      courseId: id,
+      sourceBundle: {
+        title: course.final_assignment_title ?? "",
+        description: course.final_assignment_description ?? "",
+        instructions: course.final_assignment_instructions ?? "",
+      },
+      onApply: (bundle) =>
+        setContentForm((prev) => ({
+          ...prev,
+          final_assignment_title: bundle.title ?? prev.final_assignment_title,
+          final_assignment_description:
+            bundle.description ?? prev.final_assignment_description,
+          final_assignment_instructions:
+            bundle.instructions ?? prev.final_assignment_instructions,
+        })),
+    });
+  };
+
+  const handleTranslateSectionBundle = () => {
+    if (!editingSection || dialogSectionLocale === primaryContentLocale) return;
+    const sourceDraft = sectionDraftRef.current.get(primaryContentLocale) ?? {
+      title: editingSection.title ?? "",
+      description: editingSection.description ?? "",
+    };
+    void translateBundle({
+      busyKey: "section",
+      bundleKind: "section",
+      type: "course",
+      targetLocale: dialogSectionLocale,
+      sourceLocale: primaryContentLocale,
+      courseId: id,
+      sectionId: editingSection.id,
+      sourceBundle: {
+        title: sourceDraft.title,
+        description: sourceDraft.description,
+      },
+      onApply: (bundle) => {
+        setEditingSectionTitle(bundle.title ?? editingSectionTitle);
+        setEditingSectionDescription(bundle.description ?? editingSectionDescription);
+      },
+    });
+  };
+
+  const handleTranslateLessonBundle = () => {
+    if (!editingLesson || dialogLessonLocale === primaryContentLocale) return;
+    const sourceDraft =
+      lessonDraftRef.current.get(primaryContentLocale) ?? captureLessonDraftFromState();
+    void translateBundle({
+      busyKey: "lesson",
+      bundleKind: "lesson",
+      type: "lesson",
+      targetLocale: dialogLessonLocale,
+      sourceLocale: primaryContentLocale,
+      courseId: id,
+      lessonId: editingLesson.id,
+      sourceBundle: {
+        title: sourceDraft.title,
+        shortDescription: sourceDraft.shortDescription,
+        markdownDescription: sourceDraft.markdown,
+      },
+      onApply: (bundle) => {
+        setEditingLessonTitle(bundle.title ?? editingLessonTitle);
+        setEditingLessonShortDescription(
+          bundle.shortDescription ?? editingLessonShortDescription,
+        );
+        setEditingLessonMarkdown(bundle.markdownDescription ?? editingLessonMarkdown);
+      },
     });
   };
 
@@ -3428,9 +3491,11 @@ const InstructorCourseEdit = () => {
     } as const;
 
     const generatorTargetField =
-      key === "title" ||
-      key === "short_description" ||
-      key === "final_assignment_title"
+      key === "title" || key === "final_assignment_title"
+        ? "title"
+        : key === "learning_outcomes"
+          ? "learning_outcomes"
+          : key === "short_description"
         ? "short_description"
         : "description";
 
@@ -3476,6 +3541,23 @@ const InstructorCourseEdit = () => {
         targetField: generatorTargetField,
         locale: activeContentLocale,
         sourceLocale,
+        sourceInputs: [
+          createSourceInput({
+            id: `coverage-${key}-${sourceLocale}`,
+            title: `${labelByKey[key]} · ${localeBadge(sourceLocale)}`,
+            shortDescription:
+              key === "short_description" || key === "title" || key === "final_assignment_title"
+                ? sourceText
+                : undefined,
+            markdownDescription:
+              key === "description" ||
+              key === "learning_outcomes" ||
+              key === "final_assignment_description" ||
+              key === "final_assignment_instructions"
+                ? sourceText
+                : undefined,
+          }),
+        ],
         courseId: id,
       },
       onApply: (value) =>
@@ -3826,7 +3908,32 @@ const InstructorCourseEdit = () => {
                             })}
                           </p>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="inline-flex items-center gap-1.5"
+                            disabled={
+                              translatingBundle === "course_info" ||
+                              !bundleHasSource({
+                                title: course.title ?? "",
+                                shortDescription: course.short_description ?? "",
+                                description: course.description ?? "",
+                                learningOutcomes: course.learning_outcomes ?? [],
+                              })
+                            }
+                            onClick={handleTranslateCourseInfoBundle}
+                          >
+                            {translatingBundle === "course_info" ? (
+                              <Loader2 className="size-4 animate-spin" aria-hidden />
+                            ) : (
+                              <Sparkles className="size-4" aria-hidden />
+                            )}
+                            {translatingBundle === "course_info"
+                              ? t("courseEdit.descriptionGenerator.translating")
+                              : t("courseEdit.descriptionGenerator.translateTrigger")}
+                          </Button>
                           <span className="rounded-full bg-surface-base px-2.5 py-1 text-xs font-semibold text-foreground">
                             {t("courseEdit.translationCoverage.completed" as never, {
                               completed: translationCoverageStats.completed,
@@ -6021,22 +6128,43 @@ const InstructorCourseEdit = () => {
               <DialogHeader>
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle>{t("courseEdit.sections.editTitle")}</DialogTitle>
-                  <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
-                    {supportedLocales.map((loc) => (
-                      <button
-                        key={loc}
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    {dialogSectionLocale !== primaryContentLocale ? (
+                      <Button
                         type="button"
-                        onClick={() => switchDialogSectionLocale(loc)}
-                        className={cn(
-                          "flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
-                          dialogSectionLocale === loc
-                            ? "bg-surface-base text-foreground"
-                            : "text-foreground-muted hover:text-foreground",
-                        )}
+                        variant="secondary"
+                        size="sm"
+                        className="inline-flex items-center gap-1.5"
+                        disabled={translatingBundle === "section"}
+                        onClick={handleTranslateSectionBundle}
                       >
-                        {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
-                      </button>
-                    ))}
+                        {translatingBundle === "section" ? (
+                          <Loader2 className="size-4 animate-spin" aria-hidden />
+                        ) : (
+                          <Sparkles className="size-4" aria-hidden />
+                        )}
+                        {translatingBundle === "section"
+                          ? t("courseEdit.descriptionGenerator.translating")
+                          : t("courseEdit.descriptionGenerator.translateTrigger")}
+                      </Button>
+                    ) : null}
+                    <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
+                      {supportedLocales.map((loc) => (
+                        <button
+                          key={loc}
+                          type="button"
+                          onClick={() => switchDialogSectionLocale(loc)}
+                          className={cn(
+                            "flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
+                            dialogSectionLocale === loc
+                              ? "bg-surface-base text-foreground"
+                              : "text-foreground-muted hover:text-foreground",
+                          )}
+                        >
+                          {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </DialogHeader>
@@ -6084,18 +6212,6 @@ const InstructorCourseEdit = () => {
                       <Sparkles className="size-4" aria-hidden />
                       {t("courseEdit.descriptionGenerator.trigger")}
                     </Button>
-                    {dialogSectionLocale !== primaryContentLocale ? (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        className="ml-2 inline-flex items-center gap-1"
-                        onClick={handleTranslateSectionDescription}
-                      >
-                        <Sparkles className="size-4" aria-hidden />
-                        {t("courseEdit.descriptionGenerator.translateTrigger")}
-                      </Button>
-                    ) : null}
                   </FieldLabel>
                   <textarea
                     value={editingSectionDescription}
@@ -6123,22 +6239,43 @@ const InstructorCourseEdit = () => {
                 <DialogHeader className="sticky top-0 z-10 border-b border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
                   <div className="flex items-center justify-between gap-3">
                     <DialogTitle>{t("courseEdit.lessons.editTitle")}</DialogTitle>
-                    <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
-                      {supportedLocales.map((loc) => (
-                        <button
-                          key={loc}
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      {dialogLessonLocale !== primaryContentLocale ? (
+                        <Button
                           type="button"
-                          onClick={() => switchDialogLessonLocale(loc)}
-                          className={cn(
-                            "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-colors",
-                            dialogLessonLocale === loc
-                              ? "bg-surface-base text-foreground"
-                              : "text-foreground-muted hover:text-foreground",
-                          )}
+                          variant="secondary"
+                          size="sm"
+                          className="inline-flex items-center gap-1.5"
+                          disabled={translatingBundle === "lesson"}
+                          onClick={handleTranslateLessonBundle}
                         >
-                          {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
-                        </button>
-                      ))}
+                          {translatingBundle === "lesson" ? (
+                            <Loader2 className="size-4 animate-spin" aria-hidden />
+                          ) : (
+                            <Sparkles className="size-4" aria-hidden />
+                          )}
+                          {translatingBundle === "lesson"
+                            ? t("courseEdit.descriptionGenerator.translating")
+                            : t("courseEdit.descriptionGenerator.translateTrigger")}
+                        </Button>
+                      ) : null}
+                      <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
+                        {supportedLocales.map((loc) => (
+                          <button
+                            key={loc}
+                            type="button"
+                            onClick={() => switchDialogLessonLocale(loc)}
+                            className={cn(
+                              "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-colors",
+                              dialogLessonLocale === loc
+                                ? "bg-surface-base text-foreground"
+                                : "text-foreground-muted hover:text-foreground",
+                            )}
+                          >
+                            {loc === "vi" ? "🇻🇳" : "🇬🇧"} {loc.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </DialogHeader>
@@ -6326,23 +6463,6 @@ const InstructorCourseEdit = () => {
                         <Sparkles className="size-4" aria-hidden />
                         {t("courseEdit.descriptionGenerator.trigger")}
                       </Button>
-                      {dialogLessonLocale !== primaryContentLocale ? (
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          className="ml-2 inline-flex items-center gap-1"
-                          onClick={() =>
-                            handleTranslateLessonDescription({
-                              targetField: "short_description",
-                              locale: dialogLessonLocale,
-                              onApply: setEditingLessonShortDescription,
-                            })}
-                        >
-                          <Sparkles className="size-4" aria-hidden />
-                          {t("courseEdit.descriptionGenerator.translateTrigger")}
-                        </Button>
-                      ) : null}
                     </FieldLabel>
                     <Input
                       value={editingLessonShortDescription}
@@ -6376,23 +6496,6 @@ const InstructorCourseEdit = () => {
                         <Sparkles className="size-4" aria-hidden />
                         {t("courseEdit.descriptionGenerator.trigger")}
                       </Button>
-                      {dialogLessonLocale !== primaryContentLocale ? (
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          className="ml-2 inline-flex items-center gap-1"
-                          onClick={() =>
-                            handleTranslateLessonDescription({
-                              targetField: "description_markdown",
-                              locale: dialogLessonLocale,
-                              onApply: setEditingLessonMarkdown,
-                            })}
-                        >
-                          <Sparkles className="size-4" aria-hidden />
-                          {t("courseEdit.descriptionGenerator.translateTrigger")}
-                        </Button>
-                      ) : null}
                     </FieldLabel>
                     <p className="mt-1 text-xs text-foreground-muted">
                       {t("courseEdit.lessons.markdownHint")}
@@ -7021,9 +7124,37 @@ const InstructorCourseEdit = () => {
                 <h2 className="flex items-center gap-2 text-lg font-medium text-foreground">
                   <FileText className="size-5" aria-hidden /> {tEdit("courseEdit.sidebar.nav.assignments" as never)}
                 </h2>
-                <span className="rounded bg-surface-raised px-2 py-1 text-xs font-semibold text-foreground">
-                  {activeContentLocale.toUpperCase()}
-                </span>
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  {activeContentLocale !== primaryContentLocale ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="inline-flex items-center gap-1.5"
+                      disabled={
+                        translatingBundle === "assignment" ||
+                        !bundleHasSource({
+                          title: course.final_assignment_title ?? "",
+                          description: course.final_assignment_description ?? "",
+                          instructions: course.final_assignment_instructions ?? "",
+                        })
+                      }
+                      onClick={handleTranslateAssignmentBundle}
+                    >
+                      {translatingBundle === "assignment" ? (
+                        <Loader2 className="size-4 animate-spin" aria-hidden />
+                      ) : (
+                        <Sparkles className="size-4" aria-hidden />
+                      )}
+                      {translatingBundle === "assignment"
+                        ? t("courseEdit.descriptionGenerator.translating")
+                        : t("courseEdit.descriptionGenerator.translateTrigger")}
+                    </Button>
+                  ) : null}
+                  <span className="rounded bg-surface-raised px-2 py-1 text-xs font-semibold text-foreground">
+                    {activeContentLocale.toUpperCase()}
+                  </span>
+                </div>
               </div>
               {form.access_model === "free_with_paid_certificate" && (
                 <p className="mb-3 text-sm text-primary">
