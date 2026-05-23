@@ -5614,9 +5614,11 @@ const InstructorCourseEdit = () => {
                   type="checkbox"
                   id="has-sections-toggle"
                   checked={form.has_sections}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, has_sections: e.target.checked }))
-                  }
+                  onChange={(e) => {
+                    const value = e.target.checked;
+                    setForm((p) => ({ ...p, has_sections: value }));
+                    if (id) void updateCourse(id, { has_sections: value });
+                  }}
                   className="mt-0.5 rounded border-border"
                 />
                 <label htmlFor="has-sections-toggle" className="cursor-pointer text-sm text-foreground">
