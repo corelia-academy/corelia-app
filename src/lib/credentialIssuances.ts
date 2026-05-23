@@ -68,8 +68,9 @@ export async function fetchMintedCredentialIssuancesForUser(
 
 export function openCampusCredentialExplorerUrl(
   credentialId: string | null | undefined,
-  _network: CredentialIssuanceWithTemplate["network"],
+  _network?: CredentialIssuanceWithTemplate["network"],
 ): string | null {
+  void _network;
   if (!credentialId?.trim()) return null;
   const id = credentialId.trim();
   return `https://id.opencampus.xyz/public/credentials?id=${encodeURIComponent(id)}`;

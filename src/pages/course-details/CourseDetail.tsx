@@ -289,6 +289,7 @@ export default function CourseDetail() {
             visibleLessonGroups={visibleLessonGroups}
             isPaidUpfront={isPaidUpfront}
             isPreviewOnlyCurriculum={isPreviewOnlyCurriculum}
+            hasSections={courseLoad.course?.has_sections ?? true}
           />
 
           <CourseSpotlightSection

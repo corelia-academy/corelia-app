@@ -313,6 +313,7 @@ export default function Learn() {
     lessonTotal: visibleLessons.length,
     nextLessonTitle: nextLesson?.title ?? null,
     hasFullCourseAccess,
+    hasSections: course.has_sections ?? true,
     translate,
   };
 

@@ -48,6 +48,8 @@ import {
   setCourseSectionLocaleContent,
   addSection,
   addLesson,
+  getOrCreateDefaultSection,
+  DEFAULT_SECTION_TITLE,
   updateSection,
   updateLesson,
   reorderCourseLessons,
@@ -294,6 +296,7 @@ const InstructorCourseEdit = () => {
     published: false,
     is_external_aggregated: false,
     is_updating: false,
+    has_sections: true,
     certificate_template_url: "",
     certificate_template_path: "",
     certificate_name_x_percent: 50,
@@ -724,6 +727,7 @@ const InstructorCourseEdit = () => {
         published: course.published,
         is_external_aggregated: course.is_external_aggregated ?? false,
         is_updating: course.is_updating ?? false,
+        has_sections: course.has_sections ?? true,
         certificate_template_url: course.certificate_template_url ?? "",
         certificate_template_path: course.certificate_template_path ?? "",
         certificate_name_x_percent: course.certificate_name_x_percent ?? 50,
@@ -1102,6 +1106,7 @@ const InstructorCourseEdit = () => {
         external_source_attribution_note:
           form.external_source_attribution_note.trim() || null,
         is_updating: form.is_updating,
+        has_sections: form.has_sections,
         i18n: i18nPayload,
         sponsors,
         partners,
@@ -1850,6 +1855,19 @@ const InstructorCourseEdit = () => {
       },
       onApply: params.onApply,
     });
+  };
+
+  const handleAddLessonDirect = async () => {
+    if (!id) return;
+    try {
+      const defaultSec = await getOrCreateDefaultSection(id);
+      if (!sections.some((s) => s.id === defaultSec.id)) {
+        setSections((prev) => [...prev, defaultSec]);
+      }
+      setAddingLessonDraftSectionId(defaultSec.id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Không thể chuẩn bị bài học.");
+    }
   };
 
   const handleAddSection = async () => {
@@ -5120,6 +5138,27 @@ const InstructorCourseEdit = () => {
                     </span>
                   </label>
                 </Field>
+                <Field>
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={form.has_sections}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          has_sections: e.target.checked,
+                        }))
+                      }
+                      className="mt-0.5 rounded border-border"
+                    />
+                    <span className="text-sm text-foreground">
+                      <span className="font-medium">Phân chia theo section</span>
+                      <span className="mt-1 block text-xs text-foreground-muted">
+                        Bật nếu khoá học cần nhóm bài học theo chương/phần. Tắt để hiển thị danh sách bài học phẳng (không có section header).
+                      </span>
+                    </span>
+                  </label>
+                </Field>
               </FieldGroup>
               <Button
                 className="mt-4"
@@ -5621,6 +5660,7 @@ const InstructorCourseEdit = () => {
                       isSectionDropAfter && "border-b-2 border-b-primary",
                     )}
                   >
+                    {form.has_sections && (
                     <div className="flex items-center justify-between border-b border-border-subtle bg-surface-raised px-4 py-2">
                       <div className="flex min-w-0 items-center gap-2">
                         <button
@@ -5698,6 +5738,7 @@ const InstructorCourseEdit = () => {
                         </Button>
                       </div>
                     </div>
+                    )}
                     <ul className="divide-y divide-border-subtle">
                       {secLessons.map((lesson, lessonIndex) => {
                         const isDragging = draggingLessonId === lesson.id;
@@ -5908,6 +5949,7 @@ const InstructorCourseEdit = () => {
                         );
                       })}
                     </ul>
+                    {form.has_sections && (
                     <div className="border-t border-border-subtle p-3">
                       <Button
                         variant="ghost"
@@ -5927,11 +5969,13 @@ const InstructorCourseEdit = () => {
                         <Plus className="size-4" /> {t("courseEdit.lessons.create")}
                       </Button>
                     </div>
+                    )}
                   </div>
                   );
                 })}
               </div>
 
+              {form.has_sections ? (
               <div className="mt-4 rounded-md border border-dashed border-border-subtle p-4">
                 <p className="text-sm text-foreground-muted mb-2">
                   {tEdit("courseEdit.content.addSectionHeading" as never)}
@@ -5960,6 +6004,17 @@ const InstructorCourseEdit = () => {
                   </Button>
                 </div>
               </div>
+              ) : (
+              <div className="mt-4">
+                <Button
+                  onClick={() => void handleAddLessonDirect()}
+                  disabled={!canEdit}
+                  className="inline-flex items-center gap-1"
+                >
+                  <Plus className="size-4" /> {t("courseEdit.lessons.create")}
+                </Button>
+              </div>
+              )}
             </section>
           )}
 

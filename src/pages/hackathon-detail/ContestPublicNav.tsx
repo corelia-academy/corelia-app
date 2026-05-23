@@ -85,25 +85,28 @@ export function ContestPublicNav() {
   const ignoreIntersectionUntilRef = useRef(0);
 
   const [activeId, setActiveId] = useState(() => {
-    const raw = location.hash.replace(/^#/, "").trim();
-    return raw ? decodeURIComponent(raw) : navItems[0]?.id ?? "";
+    return navItems[0]?.id ?? "";
   });
+
+  const hashActiveId = useMemo(() => {
+    const raw = location.hash.replace(/^#/, "").trim();
+    if (!raw) return null;
+    const id = decodeURIComponent(raw);
+    return navItems.some((item) => item.id === id) ? id : null;
+  }, [location.hash, navItems]);
+
+  const displayedActiveId = hashActiveId ?? (
+    navItems.some((item) => item.id === activeId) ? activeId : (navItems[0]?.id ?? "")
+  );
 
   useEffect(() => {
     const raw = location.hash.replace(/^#/, "").trim();
     if (!raw) return;
     const id = decodeURIComponent(raw);
-    setActiveId(id);
     if (navItems.some((i) => i.id === id)) {
       ignoreIntersectionUntilRef.current = Date.now() + 650;
     }
   }, [location.hash, navItems]);
-
-  useEffect(() => {
-    setActiveId((prev) =>
-      navItems.some((i) => i.id === prev) ? prev : (navItems[0]?.id ?? ""),
-    );
-  }, [navItems]);
 
   useEffect(() => {
     if (navItems.length === 0) return;
@@ -150,7 +153,7 @@ export function ContestPublicNav() {
         >
           <div className="-mb-px flex gap-4 overflow-x-auto overscroll-x-contain pb-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
             {navItems.map((item) => {
-              const active = activeId === item.id;
+              const active = displayedActiveId === item.id;
               const to = `${base}${item.hash}`;
               return (
                 <Link

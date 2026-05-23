@@ -904,6 +904,28 @@ export async function addSection(courseId: string, data: CourseSectionInsert): P
   return { id, ...payload } as CourseSection;
 }
 
+/** ID cố định của default section khi khoá học không dùng sections */
+export const DEFAULT_SECTION_TITLE = "__default__";
+
+/**
+ * Trả về section mặc định (title = "__default__") cho khoá học không có sections.
+ * Nếu chưa tồn tại thì tạo mới.
+ */
+export async function getOrCreateDefaultSection(courseId: string): Promise<CourseSection> {
+  const { data: rows, error } = await supabase
+    .from("course_sections")
+    .select("id, sort_order, data")
+    .eq("course_id", courseId)
+    .eq("data->>title", DEFAULT_SECTION_TITLE)
+    .limit(1);
+  if (error) throw new Error(error.message);
+  if (rows && rows.length > 0) {
+    const row = rows[0];
+    return { id: row.id, title: DEFAULT_SECTION_TITLE, order: row.sort_order ?? 0 } as CourseSection;
+  }
+  return addSection(courseId, { title: DEFAULT_SECTION_TITLE, order: 0 });
+}
+
 export async function addLesson(courseId: string, data: CourseLessonInsert): Promise<CourseLesson> {
   const payload = removeUndefinedFields(data as unknown as Record<string, unknown>) as unknown as CourseLessonInsert;
   const id = crypto.randomUUID();

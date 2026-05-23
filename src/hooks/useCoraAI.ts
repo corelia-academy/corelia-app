@@ -540,6 +540,15 @@ export function useCoraAI(options: UseCoraAIOptions) {
               tier: payload.tier,
             } satisfies CoraError;
           }
+          if (response.status === 401) {
+            throw { type: "auth", message: "Bạn cần đăng nhập để dùng Cora AI." } satisfies CoraError;
+          }
+          if (response.status === 429) {
+            throw new Error("Cora AI đang nhận quá nhiều yêu cầu, thử lại sau một lát giúp mình.");
+          }
+          if (response.status >= 500) {
+            throw new Error("Cora AI đang gặp trục trặc, thử lại sau ít phút giúp mình.");
+          }
           throw new Error(String(payload.message ?? "Cora AI chưa phản hồi được."));
         }
 
@@ -597,9 +606,11 @@ export function useCoraAI(options: UseCoraAIOptions) {
       createSession,
       isAuthenticated,
       options.assistantContext,
+      options.courseId,
       options.lessonId,
       loadLearningMemory,
       sessionId,
+      syncQuotaInfo,
     ],
   );
 

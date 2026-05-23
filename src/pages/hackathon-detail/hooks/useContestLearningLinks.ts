@@ -170,7 +170,7 @@ export function useContestLearningLinks(contest: Contest) {
     return () => {
       cancelled = true;
     };
-  }, [courseIds.join("|"), trackIds.join("|")]);
+  }, [courseIds, trackIds]);
 
   return {
     officialId,

@@ -15,16 +15,61 @@ export interface CurriculumGroup {
   lessons: CourseLesson[];
 }
 
+function LessonRow({
+  lesson,
+  index,
+  isPaidUpfront,
+  translate,
+}: {
+  lesson: CourseLesson;
+  index: number;
+  isPaidUpfront: boolean;
+  translate: (key: string, options?: Record<string, unknown>) => string;
+}) {
+  return (
+    <div className="flex items-start gap-3 px-4 py-3 sm:items-center">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-raised text-xs font-medium text-foreground-muted">
+        {index + 1}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="line-clamp-2 text-sm text-foreground sm:line-clamp-1">
+          {lesson.title}
+        </p>
+        {lesson.short_description?.trim() ? (
+          <p className="mt-1 line-clamp-2 text-xs text-foreground-muted">
+            {lesson.short_description}
+          </p>
+        ) : null}
+        <p className="mt-0.5 text-xs text-foreground-muted">
+          {formatDuration(lesson.duration_seconds)}
+        </p>
+      </div>
+      {isPaidUpfront && lesson.is_preview_free ? (
+        <CourseBadge className="mt-0.5 sm:mt-0" variant="success">
+          {translate("detail.courseDetail.previewLessonBadge")}
+        </CourseBadge>
+      ) : null}
+      {!lesson.youtube_url?.trim() ? (
+        <CourseBadge className="mt-0.5 sm:mt-0" variant="warning">
+          {translate("detail.courseDetail.lessonDraftBadge")}
+        </CourseBadge>
+      ) : null}
+    </div>
+  );
+}
+
 interface CourseCurriculumProps {
   visibleLessonGroups: CurriculumGroup[];
   isPaidUpfront: boolean;
   isPreviewOnlyCurriculum: boolean;
+  hasSections?: boolean;
 }
 
 export function CourseCurriculum({
   visibleLessonGroups,
   isPaidUpfront,
   isPreviewOnlyCurriculum,
+  hasSections = true,
 }: CourseCurriculumProps) {
   const { t } = useTranslation("courses");
   const translate = (key: string, options?: Record<string, unknown>) =>
@@ -52,36 +97,41 @@ export function CourseCurriculum({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
-            {translate("detail.courseDetail.sectionCount", {
-              count: visibleLessonGroups.length,
-            })}
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 rounded-full px-3 text-xs"
-            onClick={() => {
-              setCollapsedSections((prev) => {
-                const next = new Set(prev);
-                const allIds = visibleLessonGroups.map((g) => g.section.id);
-                const allCollapsed =
-                  allIds.length > 0 && allIds.every((sid) => next.has(sid));
-                if (allCollapsed) {
-                  allIds.forEach((sid) => next.delete(sid));
-                  return next;
-                }
-                allIds.forEach((sid) => next.add(sid));
-                return next;
-              });
-            }}
-          >
-            {translate("detail.courseDetail.curriculum.collapseAll")}
-          </Button>
+          {hasSections && (
+            <>
+              <div className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
+                {translate("detail.courseDetail.sectionCount", {
+                  count: visibleLessonGroups.length,
+                })}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-full px-3 text-xs"
+                onClick={() => {
+                  setCollapsedSections((prev) => {
+                    const next = new Set(prev);
+                    const allIds = visibleLessonGroups.map((g) => g.section.id);
+                    const allCollapsed =
+                      allIds.length > 0 && allIds.every((sid) => next.has(sid));
+                    if (allCollapsed) {
+                      allIds.forEach((sid) => next.delete(sid));
+                      return next;
+                    }
+                    allIds.forEach((sid) => next.add(sid));
+                    return next;
+                  });
+                }}
+              >
+                {translate("detail.courseDetail.curriculum.collapseAll")}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
+      {hasSections ? (
       <div className="space-y-3">
         {visibleLessonGroups.map(
           ({ section, lessons: sectionLessons }, sectionIndex) => {
@@ -136,41 +186,13 @@ export function CourseCurriculum({
                 {!isCollapsed ? (
                   <div className="divide-y divide-border-subtle">
                     {sectionLessons.map((lesson, lessonIndex) => (
-                      <div
+                      <LessonRow
                         key={lesson.id}
-                        className="flex items-start gap-3 px-4 py-3 sm:items-center"
-                      >
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-raised text-xs font-medium text-foreground-muted">
-                          {lessonIndex + 1}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="line-clamp-2 text-sm text-foreground sm:line-clamp-1">
-                            {lesson.title}
-                          </p>
-                          {lesson.short_description?.trim() ? (
-                            <p className="mt-1 line-clamp-2 text-xs text-foreground-muted">
-                              {lesson.short_description}
-                            </p>
-                          ) : null}
-                          <p className="mt-0.5 text-xs text-foreground-muted">
-                            {formatDuration(lesson.duration_seconds)}
-                          </p>
-                        </div>
-                        {isPaidUpfront && lesson.is_preview_free ? (
-                          <CourseBadge className="mt-0.5 sm:mt-0" variant="success">
-                            {translate(
-                              "detail.courseDetail.previewLessonBadge",
-                            )}
-                          </CourseBadge>
-                        ) : null}
-                        {!lesson.youtube_url?.trim() ? (
-                          <CourseBadge className="mt-0.5 sm:mt-0" variant="warning">
-                            {translate(
-                              "detail.courseDetail.lessonDraftBadge",
-                            )}
-                          </CourseBadge>
-                        ) : null}
-                      </div>
+                        lesson={lesson}
+                        index={lessonIndex}
+                        isPaidUpfront={isPaidUpfront}
+                        translate={translate}
+                      />
                     ))}
                   </div>
                 ) : null}
@@ -179,6 +201,19 @@ export function CourseCurriculum({
           },
         )}
       </div>
+      ) : (
+      <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-base divide-y divide-border-subtle">
+        {visibleLessonGroups.flatMap(({ lessons: sectionLessons }) => sectionLessons).map((lesson, index) => (
+          <LessonRow
+            key={lesson.id}
+            lesson={lesson}
+            index={index}
+            isPaidUpfront={isPaidUpfront}
+            translate={translate}
+          />
+        ))}
+      </div>
+      )}
     </section>
   );
 }
