@@ -5,9 +5,16 @@ import type { SupportedCourseLocale } from "../types/courses";
 export type DescriptionGeneratorType = "course" | "lesson";
 export type DescriptionGeneratorAction = "generate" | "translate";
 export type DescriptionGeneratorTargetField =
+  | "title"
   | "short_description"
   | "description"
-  | "description_markdown";
+  | "description_markdown"
+  | "learning_outcomes";
+export type DescriptionTranslationBundleKind =
+  | "course_info"
+  | "section"
+  | "lesson"
+  | "assignment";
 
 export type DescriptionSourceKind =
   | "short_description"
@@ -30,6 +37,15 @@ export type DescriptionSourceInput = {
   youtubeUrl?: string;
 };
 
+export type DescriptionTranslationBundle = {
+  title?: string;
+  shortDescription?: string;
+  description?: string;
+  markdownDescription?: string;
+  learningOutcomes?: string[];
+  instructions?: string;
+};
+
 export type GenerateDescriptionRequest = {
   action?: DescriptionGeneratorAction;
   type: DescriptionGeneratorType;
@@ -37,6 +53,8 @@ export type GenerateDescriptionRequest = {
   locale: SupportedCourseLocale;
   sourceLocale?: SupportedCourseLocale;
   sourceInputs?: DescriptionSourceInput[];
+  bundleKind?: DescriptionTranslationBundleKind;
+  sourceBundle?: DescriptionTranslationBundle;
   courseId?: string;
   sectionId?: string;
   lessonId?: string;
@@ -46,6 +64,7 @@ export type GenerateDescriptionRequest = {
 
 export type GenerateDescriptionResponse = {
   description: string;
+  bundle?: DescriptionTranslationBundle | null;
   sources: DescriptionSource[];
   warning?: string | null;
 };
@@ -88,6 +107,10 @@ export async function invokeGenerateDescription(
   }
   return {
     description: json.description,
+    bundle:
+      json.bundle && typeof json.bundle === "object"
+        ? (json.bundle as DescriptionTranslationBundle)
+        : null,
     sources: json.sources,
     warning: typeof json.warning === "string" ? json.warning : null,
   };

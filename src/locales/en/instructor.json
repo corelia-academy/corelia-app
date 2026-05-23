@@ -660,6 +660,7 @@
       "generate": "Generate description",
       "generating": "Generating...",
       "translating": "Translating...",
+      "translateApplied": "Translation applied. Review and save when ready.",
       "cancel": "Cancel",
       "useDescription": "Use this description",
       "warnings": {
