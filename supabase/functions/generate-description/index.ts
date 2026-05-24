@@ -1010,7 +1010,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     let rows: LessonRow[] = [];
     let isSectionScoped = false;
-    const hasProvidedSources = parsed.action === "translate" && (parsed.sourceInputs?.length ?? 0) > 0;
+    const hasProvidedSources =
+      (parsed.action === "translate" || parsed.intent === "practice") &&
+      (parsed.sourceInputs?.length ?? 0) > 0;
 
     if (hasProvidedSources) {
       isSectionScoped = Boolean(parsed.sectionId);
