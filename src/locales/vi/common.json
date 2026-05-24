@@ -208,6 +208,11 @@
     "empty": "Chưa có dữ liệu",
     "error": "Có lỗi xảy ra"
   },
+  "errorBoundary": {
+    "title": "Đã xảy ra lỗi",
+    "sectionMessage": "Không thể tải nội dung này.",
+    "reloadHome": "Làm mới & về trang chủ"
+  },
   "home": {
     "syncing": "Đang đồng bộ...",
     "dashboard": "Dashboard",

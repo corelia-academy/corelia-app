@@ -208,6 +208,11 @@
     "empty": "No data yet",
     "error": "Something went wrong"
   },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "sectionMessage": "Could not load this content.",
+    "reloadHome": "Reload & go home"
+  },
   "home": {
     "syncing": "Syncing...",
     "dashboard": "Dashboard",
