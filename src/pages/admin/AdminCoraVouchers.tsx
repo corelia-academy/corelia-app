@@ -7,6 +7,7 @@ import {
   Loader2,
   Plus,
   RefreshCw,
+  Trash2,
   TicketPercent,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -23,6 +24,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   createAiVoucherBatch,
+  deleteAiVoucherBatch,
   listAiVoucherBatches,
   listAiVoucherCodes,
   listAiVoucherRedemptions,
@@ -71,6 +73,7 @@ export default function AdminCoraVouchers() {
   const [expiryFilter, setExpiryFilter] = useState<"all" | "expired" | "not_expired">("all");
   const [codeFilter, setCodeFilter] = useState<"all" | "available" | "reserved" | "paid" | "inactive">("all");
   const [createdResult, setCreatedResult] = useState<AiVoucherBatchCreateResult | null>(null);
+  const [deletingBatch, setDeletingBatch] = useState<AiVoucherBatch | null>(null);
   const [form, setForm] = useState({
     name: "",
     quantity: "10",
@@ -149,6 +152,13 @@ export default function AdminCoraVouchers() {
     });
   }, [batches, expiryFilter, search, statusFilter]);
 
+  const redemptionByVoucherId = useMemo(() => {
+    return redemptions.reduce<Record<string, AiVoucherRedemption>>((acc, r) => {
+      if (r.status === "paid") acc[r.voucher_id] = r;
+      return acc;
+    }, {});
+  }, [redemptions]);
+
   const detailBatch = detailBatchId ? batches.find((batch) => batch.id === detailBatchId) ?? null : null;
   const detailCodes = useMemo(() => {
     if (!detailBatchId) return [];
@@ -189,6 +199,20 @@ export default function AdminCoraVouchers() {
       });
       setCreatedResult(result);
       toast.success(t("coraVoucherBatches.created"));
+      await refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("coraVoucherBatches.saveFailed"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteBatch(batch: AiVoucherBatch) {
+    setSaving(true);
+    try {
+      await deleteAiVoucherBatch(batch.id);
+      toast.success(t("coraVoucherBatches.batchDeleted"));
+      setDeletingBatch(null);
       await refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("coraVoucherBatches.saveFailed"));
@@ -326,6 +350,15 @@ export default function AdminCoraVouchers() {
                         </Button>
                         <Button type="button" variant="outline" size="sm" onClick={() => void handleToggleBatch(batch)}>
                           {batch.active ? t("coraVoucherBatches.deactivate") : t("coraVoucherBatches.activate")}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => setDeletingBatch(batch)}
+                        >
+                          <Trash2 className="size-4" aria-hidden />
                         </Button>
                       </div>
                     </td>
@@ -486,16 +519,26 @@ export default function AdminCoraVouchers() {
                 <tr>
                   <th className="px-3 py-2">{t("coraVoucherBatches.codesTable.code")}</th>
                   <th className="px-3 py-2">{t("coraVoucherBatches.codesTable.status")}</th>
+                  <th className="px-3 py-2">{t("coraVoucherBatches.codesTable.usedAt")}</th>
                   <th className="px-3 py-2">{t("coraVoucherBatches.codesTable.actions")}</th>
                 </tr>
               </thead>
               <tbody>
                 {detailCodes.map((code) => {
                   const status = !code.active ? "inactive" : (voucherRedemptionMap[code.id] ?? "available");
+                  const redemption = redemptionByVoucherId[code.id];
                   return (
                     <tr key={code.id} className="border-b border-border-subtle last:border-0">
-                      <td className="px-3 py-3 font-medium">{code.code}</td>
+                      <td className="px-3 py-3 font-mono text-sm font-medium">{code.code}</td>
                       <td className="px-3 py-3 text-foreground-muted">{t(`coraVoucherBatches.codeFilters.${status}`)}</td>
+                      <td className="px-3 py-3 text-sm text-foreground-muted">
+                        {redemption ? (
+                          <div>
+                            <div>{redemption.paid_at ? new Date(redemption.paid_at).toLocaleString() : "—"}</div>
+                            <div className="mt-0.5 font-mono text-xs opacity-60">{redemption.user_id.slice(0, 8)}…</div>
+                          </div>
+                        ) : "—"}
+                      </td>
                       <td className="px-3 py-3">
                         <Button type="button" variant="outline" size="sm" onClick={() => void handleToggleCode(code)}>
                           {code.active ? t("coraVoucherBatches.deactivate") : t("coraVoucherBatches.activate")}
@@ -507,6 +550,30 @@ export default function AdminCoraVouchers() {
               </tbody>
             </table>
           </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!deletingBatch} onOpenChange={(open) => !open && setDeletingBatch(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("coraVoucherBatches.deleteConfirmTitle")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-foreground-muted">
+            {t("coraVoucherBatches.deleteConfirmBody", { name: deletingBatch?.name ?? "" })}
+          </p>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setDeletingBatch(null)}>
+              {t("coraVoucherBatches.cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => deletingBatch && void handleDeleteBatch(deletingBatch)}
+              disabled={saving}
+            >
+              {saving ? <Loader2 className="mr-2 size-4 animate-spin" aria-hidden /> : <Trash2 className="mr-2 size-4" aria-hidden />}
+              {t("coraVoucherBatches.delete")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

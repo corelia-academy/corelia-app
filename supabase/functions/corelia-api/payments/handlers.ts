@@ -12,6 +12,7 @@ import {
 } from "./sepay.ts";
 import {
   createAiVoucherBatch,
+  deleteAiVoucherBatch,
   previewAiVoucher,
   releaseVoucherReservationForPayment,
   reserveAiVoucherForPayment,
@@ -304,6 +305,22 @@ export async function handleAiVoucherBatchCreate(req: Request, db: SupabaseClien
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
     if (message === "Không đủ quyền tạo batch voucher.") return json({ message }, 403);
+    return json({ message }, 400);
+  }
+}
+
+export async function handleAiVoucherBatchDelete(req: Request, db: SupabaseClient): Promise<Response> {
+  try {
+    const user = await verifyBearerUser(req, db);
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    const batchId = String(body.batchId ?? "").trim();
+    if (!batchId) return json({ message: "Thiếu batchId." }, 400);
+    await deleteAiVoucherBatch(db, batchId, user.id);
+    return json({ ok: true });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
+    if (message === "Không đủ quyền xóa batch voucher.") return json({ message }, 403);
     return json({ message }, 400);
   }
 }

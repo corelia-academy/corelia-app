@@ -306,6 +306,48 @@ export async function releaseVoucherReservationForPayment(
   if (error) throw new Error(error.message);
 }
 
+export async function deleteAiVoucherBatch(
+  db: SupabaseClient,
+  batchId: string,
+  userId: string,
+): Promise<void> {
+  const role = await getUserRole(db, userId);
+  if (role !== "admin" && role !== "support_staff") {
+    throw new Error("Không đủ quyền xóa batch voucher.");
+  }
+
+  const { data: voucherRows, error: voucherFetchError } = await db
+    .from("ai_vouchers")
+    .select("id")
+    .eq("batch_id", batchId);
+  if (voucherFetchError) throw new Error(voucherFetchError.message);
+
+  const ids = (voucherRows ?? []).map((v) => (v as { id: string }).id);
+  if (ids.length > 0) {
+    const { count, error: redemptionCheckError } = await db
+      .from("ai_voucher_redemptions")
+      .select("id", { count: "exact", head: true })
+      .in("voucher_id", ids)
+      .eq("status", "paid");
+    if (redemptionCheckError) throw new Error(redemptionCheckError.message);
+    if ((count ?? 0) > 0) {
+      throw new Error("Không thể xóa batch đã có voucher được sử dụng.");
+    }
+
+    const { error: deleteCodesError } = await db
+      .from("ai_vouchers")
+      .delete()
+      .eq("batch_id", batchId);
+    if (deleteCodesError) throw new Error(deleteCodesError.message);
+  }
+
+  const { error: deleteBatchError } = await db
+    .from("ai_voucher_batches")
+    .delete()
+    .eq("id", batchId);
+  if (deleteBatchError) throw new Error(deleteBatchError.message);
+}
+
 export function buildVoucherCsv(codes: AiVoucherCodeRow[]): string {
   return ["code", ...codes.map((code) => code.code)].join("\n");
 }
