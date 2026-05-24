@@ -79,10 +79,11 @@ export function LessonQuiz({
 
     async function load() {
       try {
-        const [qs, existingResult] = await Promise.all([
-          getLessonQuestions(courseId, lessonId),
-          getLessonQuizResult(courseId, lessonId, 0).catch(() => null),
-        ]);
+        const qs = await getLessonQuestions(courseId, lessonId);
+        const existingResult =
+          qs.length > 0
+            ? await getLessonQuizResult(courseId, lessonId, qs.length).catch(() => null)
+            : null;
         if (cancelled) return;
         setQuestions(qs);
         if (existingResult && existingResult.completed) {

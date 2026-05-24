@@ -67,13 +67,17 @@ function LessonItem({
             >
               {lesson.title}
             </span>
-            <span className="mt-1 block text-xs text-foreground-muted sm:hidden">
+            {lesson.duration_seconds > 0 ? (
+              <span className="mt-1 block text-xs text-foreground-muted sm:hidden">
+                {formatDuration(lesson.duration_seconds)}
+              </span>
+            ) : null}
+          </div>
+          {lesson.duration_seconds > 0 ? (
+            <span className="hidden shrink-0 text-xs text-foreground-muted sm:inline">
               {formatDuration(lesson.duration_seconds)}
             </span>
-          </div>
-          <span className="hidden shrink-0 text-xs text-foreground-muted sm:inline">
-            {formatDuration(lesson.duration_seconds)}
-          </span>
+          ) : null}
         </Link>
       )}
     </div>
