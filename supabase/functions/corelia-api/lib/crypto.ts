@@ -13,6 +13,20 @@ export function randomHex(bytes: number): string {
   return Array.from(u, (x) => x.toString(16).padStart(2, "0")).join("");
 }
 
+// Unambiguous alphanumeric alphabet — excludes O/0 and I/1/L lookalikes
+const ALPHANUM = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
+export function randomAlphanumeric(length: number): string {
+  const u = new Uint8Array(length * 2);
+  crypto.getRandomValues(u);
+  let result = "";
+  for (let i = 0; i < u.length && result.length < length; i++) {
+    const idx = u[i]! % ALPHANUM.length;
+    result += ALPHANUM[idx];
+  }
+  return result;
+}
+
 export async function hmacSha256Base64(secret: string, message: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
