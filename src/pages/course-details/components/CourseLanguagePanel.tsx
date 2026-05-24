@@ -10,7 +10,6 @@ import { CourseBadge } from "./CourseBadge";
 
 export function CourseLanguagePanel({
   course,
-  lessons: _lessons,
 }: {
   course: Course;
   lessons: CourseLesson[];

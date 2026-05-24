@@ -87,10 +87,12 @@ export interface AiVoucherPreview {
   final_amount_vnd: number;
 }
 
-interface CreateSePayCheckoutResponse {
-  checkout_url: string;
+export interface CreateSePayCheckoutResponse {
+  checkout_url?: string;
   order_id: string;
-  fields: Record<string, string>;
+  fields?: Record<string, string>;
+  free_checkout?: boolean;
+  success_url?: string;
 }
 
 export async function getCoursePaymentAccess(
@@ -158,7 +160,20 @@ export async function createSePayCheckout(
   const data = (await res.json().catch(() => ({}))) as Partial<
     CreateSePayCheckoutResponse & { message?: string }
   >;
-  if (!res.ok || !data.checkout_url || !data.order_id || !data.fields) {
+  if (!res.ok || !data.order_id) {
+    throw new Error(data.message || "Không tạo được phiên thanh toán SePay.");
+  }
+  if (data.free_checkout) {
+    if (!data.success_url) {
+      throw new Error(data.message || "Không tạo được phiên thanh toán SePay.");
+    }
+    return {
+      order_id: data.order_id,
+      free_checkout: true,
+      success_url: data.success_url,
+    };
+  }
+  if (!data.checkout_url || !data.fields) {
     throw new Error(data.message || "Không tạo được phiên thanh toán SePay.");
   }
   return {
@@ -230,6 +245,9 @@ export async function previewAiVoucher(payload: {
 }
 
 export function submitSePayCheckoutForm(input: CreateSePayCheckoutResponse) {
+  if (!input.checkout_url || !input.fields) {
+    throw new Error("Thiếu thông tin checkout SePay.");
+  }
   const form = document.createElement("form");
   form.method = "POST";
   form.action = input.checkout_url;
@@ -245,6 +263,14 @@ export function submitSePayCheckoutForm(input: CreateSePayCheckoutResponse) {
   document.body.appendChild(form);
   form.submit();
   form.remove();
+}
+
+export function completeSePayCheckout(input: CreateSePayCheckoutResponse) {
+  if (input.free_checkout && input.success_url) {
+    window.location.assign(input.success_url);
+    return;
+  }
+  submitSePayCheckoutForm(input);
 }
 
 export async function getMyPaymentTransactions(): Promise<PaymentTransaction[]> {

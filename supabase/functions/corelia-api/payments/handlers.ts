@@ -66,8 +66,6 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     ) {
       return json({ message: "Callback URLs không hợp lệ" }, 400);
     }
-    const merchantId = requireEnv("SEPAY_MERCHANT_ID");
-    const secretKey = requireEnv("SEPAY_SECRET_KEY");
     let baseAmount = 0;
     let subscriptionMeta: AiSubscriptionMeta | null = null;
     if (purpose === "ai_subscription") {
@@ -166,8 +164,8 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       const voucher = await previewAiVoucher(db, {
         voucherCode: voucherCodeRaw,
         baseAmountVnd: baseAmount,
-        tier,
-        durationMonths,
+        tier: subscriptionMeta?.tier ?? null,
+        durationMonths: subscriptionMeta?.duration_months ?? null,
       });
       discountCode = voucher.code;
       discountAmount = voucher.discountAmountVnd;
@@ -213,11 +211,28 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
         baseAmountVnd: baseAmount,
       });
     }
+    const roundedFinalAmount = Math.round(finalAmount);
+    if (roundedFinalAmount <= 0) {
+      if (!discountCode) {
+        return json({ message: "Không thể hoàn tất checkout miễn phí." }, 400);
+      }
+      const freeCheckoutPayload = subscriptionMeta
+        ? { source: "free_checkout", subscription_meta: subscriptionMeta }
+        : { source: "free_checkout" };
+      await grantPaymentAccessForTransaction(db, tx, orderId, createdAt, freeCheckoutPayload);
+      return json({
+        order_id: orderId,
+        free_checkout: true,
+        success_url: successUrl,
+      });
+    }
+    const merchantId = requireEnv("SEPAY_MERCHANT_ID");
+    const secretKey = requireEnv("SEPAY_SECRET_KEY");
     const fields: Record<string, string> = {
       merchant: merchantId,
       operation: "PURCHASE",
       payment_method: "BANK_TRANSFER",
-      order_amount: String(Math.round(finalAmount)),
+      order_amount: String(roundedFinalAmount),
       currency: "VND",
       order_invoice_number: orderId,
       order_description: purpose === "course_purchase"

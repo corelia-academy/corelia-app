@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { getCourse } from "@/lib/courses";
-import { createSePayCheckout, submitSePayCheckoutForm } from "@/lib/payments";
+import { createSePayCheckout, completeSePayCheckout } from "@/lib/payments";
 import type { Course } from "@/types/courses";
 import { formatVndPrice } from "@/types/courses";
 import { intlLocale } from "@/lib/intl";
@@ -116,7 +116,7 @@ export default function CheckoutCourse() {
           createdAt: Date.now(),
         }),
       );
-      submitSePayCheckoutForm(checkout);
+      completeSePayCheckout(checkout);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("detail.checkout.createPaymentFailed"));
     } finally {

@@ -12,11 +12,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  AnnouncementBodyField,
-  announcementMessageToHtml,
-} from "@/components/email/AnnouncementBodyField";
+import { AnnouncementBodyField } from "@/components/email/AnnouncementBodyField";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
+import { announcementMessageToHtml } from "@/lib/email/announcementBody";
 import type { BlastEmailFilter } from "@/lib/hackathons";
 
 const SUBJECT_MAX = 200;
