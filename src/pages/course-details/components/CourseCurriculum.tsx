@@ -41,9 +41,11 @@ function LessonRow({
             {lesson.short_description}
           </p>
         ) : null}
-        <p className="mt-0.5 text-xs text-foreground-muted">
-          {formatDuration(lesson.duration_seconds)}
-        </p>
+        {lesson.duration_seconds > 0 ? (
+          <p className="mt-0.5 text-xs text-foreground-muted">
+            {formatDuration(lesson.duration_seconds)}
+          </p>
+        ) : null}
       </div>
       {isPaidUpfront && lesson.is_preview_free ? (
         <CourseBadge className="mt-0.5 sm:mt-0" variant="success">
