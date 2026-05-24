@@ -23,7 +23,7 @@ export function GuestHome({
     <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-6">
-          <section className="rounded-lg border border-border-subtle bg-surface-base p-6">
+          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
             <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               Corelia Academy
             </div>
@@ -70,7 +70,7 @@ export function GuestHome({
                 return (
                   <div
                     key={item.label}
-                    className="rounded-lg border border-border-subtle bg-surface-base p-4 transition-all duration-200 ease-out hover:bg-surface-raised"
+                    className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised"
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary-muted text-primary">
@@ -89,7 +89,7 @@ export function GuestHome({
             </div>
           </section>
 
-          <section className="rounded-lg border border-border-subtle bg-surface-base p-4 sm:p-5">
+          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold tracking-tight text-foreground">
                 {t("home.guest.featuredCoursesTitle")}
@@ -129,7 +129,7 @@ export function GuestHome({
                   <NavLink
                     key={course.id}
                     to={`/courses/${course.slug || course.id}`}
-                    className="group cursor-pointer overflow-hidden rounded-lg border border-border-subtle bg-surface-base transition-all duration-200 ease-out hover:bg-surface-raised hover:border-border hover:-translate-y-0.5"
+                    className="group cursor-pointer overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised hover:border-border hover:-translate-y-0.5"
                   >
                     <div className="relative aspect-video bg-surface-raised">
                       {course.thumbnail_url ? (
@@ -155,7 +155,7 @@ export function GuestHome({
           </section>
 
           {contests.length > 0 ? (
-            <section className="rounded-lg border border-border-subtle bg-surface-base p-4 sm:p-5">
+            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-5">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold tracking-tight text-foreground">
                   {t("home.guest.openContestsTitle")}
@@ -180,7 +180,7 @@ export function GuestHome({
                   <NavLink
                     key={contest.id}
                     to={contestSlug ? `/hackathons/${contestSlug}/overview` : "/hackathons"}
-                    className="flex cursor-pointer items-start justify-between gap-3 rounded-lg border border-border-subtle bg-surface-base px-3 py-3 transition-all duration-200 ease-out hover:bg-surface-raised hover:border-border hover:-translate-y-0.5"
+                    className="flex cursor-pointer items-start justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-3 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised hover:border-border hover:-translate-y-0.5"
                   >
                     <div className="relative size-14 shrink-0 overflow-hidden rounded-lg border border-border-subtle bg-surface-raised">
                       {rowImg ? (
@@ -220,7 +220,7 @@ export function GuestHome({
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
-          <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
+          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <div className="text-sm font-medium text-foreground">
               {t("home.guest.startLearningTitle")}
             </div>
@@ -247,7 +247,7 @@ export function GuestHome({
             </div>
           </section>
 
-          <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
+          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               <BookOpen className="size-4 shrink-0" aria-hidden />
               {t("home.guest.quickLinksTitle")}
@@ -260,7 +260,7 @@ export function GuestHome({
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className="flex items-center justify-between rounded-md border border-border-subtle bg-surface-base px-3 py-3 text-sm text-foreground transition-all duration-200 ease-out hover:bg-surface-raised hover:border-border hover:-translate-y-0.5"
+                  className="flex items-center justify-between rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-3 text-sm text-foreground transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised hover:border-border hover:-translate-y-0.5"
                 >
                   <span>{item.label}</span>
                   <ArrowRight className="size-4 text-foreground-muted" aria-hidden />

@@ -110,20 +110,20 @@ export function FinalAssignmentPanel({
   if (!course.final_assignment_title) return null;
 
   return (
-    <div className="mt-6 rounded-md border border-border-subtle bg-surface-base p-5 sm:p-6">
+    <div className="mt-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-6">
       <div className="flex items-center gap-2">
         <FileText className="w-5 h-5 text-primary" aria-hidden />
-        <h2 className="text-lg font-semibold text-foreground">
+        <h2 className="text-[18px] font-semibold text-foreground">
           {course.final_assignment_title}
         </h2>
       </div>
       {course.final_assignment_description ? (
-        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
+        <p className="mt-2 whitespace-pre-wrap text-[15px] leading-[1.7] text-foreground-muted">
           {course.final_assignment_description}
         </p>
       ) : null}
       {course.final_assignment_instructions ? (
-        <div className="mt-3 rounded-md bg-surface-raised p-4 text-sm leading-relaxed text-foreground-muted">
+        <div className="mt-3 rounded-lg bg-surface-raised p-4 text-[15px] leading-[1.7] text-foreground-muted">
           <p className="whitespace-pre-wrap">
             {course.final_assignment_instructions}
           </p>

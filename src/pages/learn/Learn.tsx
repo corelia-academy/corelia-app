@@ -1,12 +1,29 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { AlertCircle, CheckCircle2, ChevronLeft, List, PanelLeft, PanelRight } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronLeft,
+  List,
+  PanelLeft,
+  PanelRight,
+} from "lucide-react";
 import {
   getNextLesson,
   setLessonProgress,
   sortLessonsByCurriculum,
 } from "@/lib/courses";
-import { isLessonDraftForLearners, isLessonPublishedForLearners } from "@/lib/lessonFormat";
+import {
+  isLessonDraftForLearners,
+  isLessonPublishedForLearners,
+} from "@/lib/lessonFormat";
 import { useAuth } from "@/stores/authStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -15,7 +32,10 @@ import {
   LearnLoadingState,
   LearnMissingCourseIdState,
 } from "./components/LearnStates";
-import { LessonCurriculum, type CurriculumGroup } from "./components/LessonCurriculum";
+import {
+  LessonCurriculum,
+  type CurriculumGroup,
+} from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
 import { SectionQuiz } from "./components/SectionQuiz";
@@ -87,8 +107,11 @@ export default function Learn() {
   const [curricOpen, setCurricOpen] = useState(true);
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
   const coraPanelRef = useRef<ResizablePanelHandle | null>(null);
-  const [sectionQuestions, setSectionQuestions] = useState<SectionQuestion[]>([]);
-  const [sectionQuizResult, setSectionQuizResult] = useState<SectionQuizResult | null>(null);
+  const [sectionQuestions, setSectionQuestions] = useState<SectionQuestion[]>(
+    [],
+  );
+  const [sectionQuizResult, setSectionQuizResult] =
+    useState<SectionQuizResult | null>(null);
 
   const courseLoad = useLearnCourseLoad({
     courseId,
@@ -169,7 +192,9 @@ export default function Learn() {
     if (!isDraftLesson) return;
     if (isPrivilegedViewer) return;
 
-    const fallback = visibleLessons.find((l) => isLessonPublishedForLearners(l));
+    const fallback = visibleLessons.find((l) =>
+      isLessonPublishedForLearners(l),
+    );
     if (fallback && fallback.id !== currentLesson.id) {
       toast.message(translate("detail.learn.lessonDraftToast"));
       navigate(`/learn/${courseId}/lesson/${fallback.id}`, { replace: true });
@@ -194,7 +219,14 @@ export default function Learn() {
       lessonFormat: currentLesson?.lesson_format ?? null,
     });
     return () => setSidebarMeta(null);
-  }, [courseId, courseLoad.course?.title, currentLesson?.id, currentLesson?.title, currentLesson?.lesson_format, setSidebarMeta]);
+  }, [
+    courseId,
+    courseLoad.course?.title,
+    currentLesson?.id,
+    currentLesson?.title,
+    currentLesson?.lesson_format,
+    setSidebarMeta,
+  ]);
 
   // Load quiz questions and existing result whenever the current lesson (and its section) changes
   useEffect(() => {
@@ -216,9 +248,11 @@ export default function Learn() {
           setSectionQuizResult(null);
           return;
         }
-        return getSectionQuizResult(courseId, sectionId, questions.length).then((result) => {
-          if (!cancelled) setSectionQuizResult(result);
-        });
+        return getSectionQuizResult(courseId, sectionId, questions.length).then(
+          (result) => {
+            if (!cancelled) setSectionQuizResult(result);
+          },
+        );
       })
       .catch(() => {
         if (!cancelled) {
@@ -245,7 +279,9 @@ export default function Learn() {
     () =>
       courseLoad.sections.map((section) => ({
         section,
-        lessons: sortedLessons.filter((lesson) => lesson.section_id === section.id),
+        lessons: sortedLessons.filter(
+          (lesson) => lesson.section_id === section.id,
+        ),
       })),
     [courseLoad.sections, sortedLessons],
   );
@@ -257,10 +293,20 @@ export default function Learn() {
     if (!currentLesson || !courseId || !access.hasFullCourseAccess) return;
     if (isDraftLesson) return;
     try {
-      await setLessonProgress(currentLesson.id, courseId, true, undefined, user);
+      await setLessonProgress(
+        currentLesson.id,
+        courseId,
+        true,
+        undefined,
+        user,
+      );
       progress.setProgressList((prev) => {
-        const existing = prev.find((progress) => progress.lesson_id === currentLesson.id);
-        const next = prev.filter((progress) => progress.lesson_id !== currentLesson.id);
+        const existing = prev.find(
+          (progress) => progress.lesson_id === currentLesson.id,
+        );
+        const next = prev.filter(
+          (progress) => progress.lesson_id !== currentLesson.id,
+        );
         next.push({
           id: existing?.id ?? `${courseId}_${currentLesson.id}`,
           lesson_id: currentLesson.id,
@@ -335,12 +381,22 @@ export default function Learn() {
 
   const toggleCoraPanel = () => {
     const panel = coraPanelRef.current;
-    if (!panel) { setSidebarOpen(!sidebarOpen); return; }
-    if (panel.isCollapsed()) { panel.expand(); } else { panel.collapse(); }
+    if (!panel) {
+      setSidebarOpen(!sidebarOpen);
+      return;
+    }
+    if (panel.isCollapsed()) {
+      panel.expand();
+    } else {
+      panel.collapse();
+    }
   };
   const hideCoraPanel = () => {
     const panel = coraPanelRef.current;
-    if (!panel) { setSidebarOpen(false); return; }
+    if (!panel) {
+      setSidebarOpen(false);
+      return;
+    }
     panel.collapse();
   };
 
@@ -372,7 +428,9 @@ export default function Learn() {
         lesson={currentLesson}
         lessonIndex={lessonIndexForPlayer}
         isDraftLesson={!!currentLesson && isDraftLesson}
-        completed={!!currentLesson && progress.completedIds.has(currentLesson.id)}
+        completed={
+          !!currentLesson && progress.completedIds.has(currentLesson.id)
+        }
         hasFullCourseAccess={hasFullCourseAccess}
         previousLesson={previousLesson}
         nextLesson={nextLesson}
@@ -387,7 +445,8 @@ export default function Learn() {
           courseId={courseId}
           sectionId={currentLesson.section_id}
           sectionTitle={
-            courseLoad.sections.find((s) => s.id === currentLesson.section_id)?.title ?? ""
+            courseLoad.sections.find((s) => s.id === currentLesson.section_id)
+              ?.title ?? ""
           }
           questions={sectionQuestions}
           existingResult={sectionQuizResult}
@@ -420,12 +479,13 @@ export default function Learn() {
       <div className="flex items-center gap-1">
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
           onClick={toggleCurriculumPanel}
-          aria-label="Toggle curriculum"
+          aria-label={translate("detail.learn.toggleCurriculum")}
           className={cn(
             "hidden xl:inline-flex",
-            curricOpen && "bg-primary-muted text-primary hover:bg-primary-muted hover:text-primary",
+            curricOpen &&
+              "bg-primary-muted text-primary hover:bg-primary-muted hover:text-primary",
           )}
         >
           <PanelLeft className="size-4" aria-hidden />
@@ -433,10 +493,11 @@ export default function Learn() {
 
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
           render={<Link to={`/courses/${courseId}`} />}
           nativeButton={false}
           aria-label={translate("detail.learn.backToCourse")}
+          className="min-h-11 min-w-11"
         >
           <ChevronLeft className="size-4" aria-hidden />
         </Button>
@@ -444,11 +505,15 @@ export default function Learn() {
 
       {/* Center — absolutely centered */}
       <div className="absolute left-1/2 -translate-x-1/2 flex max-w-[50%] items-center gap-1.5 overflow-hidden text-sm">
-        <span className="shrink-0 truncate font-medium text-foreground">{course.title}</span>
+        <span className="shrink-0 truncate font-medium text-foreground">
+          {course.title}
+        </span>
         {currentLesson && (
           <>
             <span className="shrink-0 text-foreground-subtle">/</span>
-            <span className="truncate text-foreground-muted">{currentLesson.title}</span>
+            <span className="truncate text-foreground-muted">
+              {currentLesson.title}
+            </span>
           </>
         )}
       </div>
@@ -458,14 +523,16 @@ export default function Learn() {
         {/* Mobile: open curriculum sheet */}
         <Sheet>
           <SheetTrigger
-            className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-foreground-muted hover:bg-surface-raised hover:text-foreground xl:hidden"
-            aria-label="Open curriculum"
+            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md text-foreground-muted hover:bg-surface-raised hover:text-foreground xl:hidden"
+            aria-label={translate("detail.learn.openCurriculum")}
           >
             <List className="size-4" aria-hidden />
           </SheetTrigger>
           <SheetContent side="left" className="w-80 p-0">
             <SheetHeader className="sr-only">
-              <SheetTitle>{translate("detail.learn.curriculumTitle")}</SheetTitle>
+              <SheetTitle>
+                {translate("detail.learn.curriculumTitle")}
+              </SheetTitle>
             </SheetHeader>
             <LessonCurriculum variant="sidebar" {...curriculumProps} />
           </SheetContent>
@@ -474,12 +541,13 @@ export default function Learn() {
         {/* Desktop: toggle Cora AI sidebar */}
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
           onClick={toggleCoraPanel}
-          aria-label="Toggle Cora AI"
+          aria-label={translate("detail.learn.toggleCora")}
           className={cn(
             "hidden xl:inline-flex",
-            sidebarOpen && "bg-primary-muted text-primary hover:bg-primary-muted hover:text-primary",
+            sidebarOpen &&
+              "bg-primary-muted text-primary hover:bg-primary-muted hover:text-primary",
           )}
         >
           <PanelRight className="size-4" aria-hidden />
@@ -492,12 +560,22 @@ export default function Learn() {
     <div className="flex h-full">
       {isDesktop ? (
         /* Desktop: outer ResizablePanelGroup — [left-content | cora] */
-        <ResizablePanelGroup orientation="horizontal" autoSaveId="learn-layout-outer">
+        <ResizablePanelGroup
+          orientation="horizontal"
+          autoSaveId="learn-layout-outer"
+        >
           {/* Left panel: header + curriculum + lesson */}
-          <ResizablePanel defaultSize={75} minSize={50} className="flex min-w-0 flex-col">
+          <ResizablePanel
+            defaultSize={75}
+            minSize={50}
+            className="flex min-w-0 flex-col"
+          >
             {topBar}
             <div className="flex flex-1 overflow-hidden">
-              <ResizablePanelGroup orientation="horizontal" autoSaveId="learn-layout-inner">
+              <ResizablePanelGroup
+                orientation="horizontal"
+                autoSaveId="learn-layout-inner"
+              >
                 <ResizablePanel
                   ref={curriculumPanelRef}
                   defaultSize={24}
@@ -512,8 +590,14 @@ export default function Learn() {
                   <LessonCurriculum variant="sidebar" {...curriculumProps} />
                 </ResizablePanel>
                 <ResizableHandle />
-                <ResizablePanel defaultSize={76} minSize={40} className="min-w-0 bg-background">
-                  <main className="h-full min-w-0 overflow-y-auto">{lessonContent}</main>
+                <ResizablePanel
+                  defaultSize={76}
+                  minSize={40}
+                  className="min-w-0 bg-background"
+                >
+                  <main className="h-full min-w-0 overflow-y-auto">
+                    {lessonContent}
+                  </main>
                 </ResizablePanel>
               </ResizablePanelGroup>
             </div>
@@ -532,14 +616,19 @@ export default function Learn() {
             onExpand={() => setSidebarOpen(true)}
             className="flex flex-col bg-surface-base"
           >
-            <CoraSidebarPanel variant="embedded" onRequestHide={hideCoraPanel} />
+            <CoraSidebarPanel
+              variant="embedded"
+              onRequestHide={hideCoraPanel}
+            />
           </ResizablePanel>
         </ResizablePanelGroup>
       ) : (
         /* Mobile: simple flex column */
         <div className="flex min-w-0 flex-1 flex-col">
           {topBar}
-          <main className="min-w-0 flex-1 overflow-y-auto">{lessonContent}</main>
+          <main className="min-w-0 flex-1 overflow-y-auto">
+            {lessonContent}
+          </main>
         </div>
       )}
     </div>

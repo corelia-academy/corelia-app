@@ -59,6 +59,14 @@ export function LessonPlayerCard({
 
   const draftForDisplay = lesson ? isLessonDraftForLearners(lesson) : isDraftLesson;
 
+  if (!lesson) {
+    return (
+      <div className="px-4 py-16 sm:px-6 text-center text-sm text-foreground-muted">
+        {translate("detail.learn.noLessonSelected")}
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="px-4 py-4 sm:px-6">
@@ -95,7 +103,7 @@ export function LessonPlayerCard({
 
       {lesson && autoplayEmbedUrl ? (
         <div className="mx-4 overflow-hidden rounded-2xl shadow-card sm:mx-6">
-          <div className="relative aspect-video w-full bg-black">
+          <div className="relative aspect-video w-full bg-brand-navy">
             <iframe
               key={lesson.id}
               src={autoplayEmbedUrl}

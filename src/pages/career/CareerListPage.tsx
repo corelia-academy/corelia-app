@@ -66,7 +66,7 @@ export default function CareerListPage() {
       </div>
 
       {!hasTracks ? (
-        <div className="mt-5 flex flex-col items-center gap-3 rounded-md border border-border-subtle bg-surface-base py-16 text-center">
+        <div className="mt-5 flex flex-col items-center gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card py-16 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
             <Layers className="size-6 text-foreground-subtle" aria-hidden />
           </div>
@@ -97,7 +97,7 @@ export default function CareerListPage() {
                   ? `/career/${encodeURIComponent(track.instructorHandle)}/${track.slug}`
                   : `/career/corelia/${track.slug}`
               }
-              className="group cursor-pointer overflow-hidden rounded-md border border-border-subtle bg-surface-base text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
+              className="group cursor-pointer overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card text-foreground transition-[transform,background-color,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
             >
               <div className="p-4">
                 <div className="flex items-start justify-between gap-3">

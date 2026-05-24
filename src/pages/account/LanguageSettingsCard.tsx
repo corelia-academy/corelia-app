@@ -8,7 +8,7 @@ export function LanguageSettingsCard() {
   const { language, setLanguage } = useLocale();
 
   return (
-    <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="min-w-0">
         <h2 className="text-lg font-semibold text-foreground">
           {t("settings.language.title")}

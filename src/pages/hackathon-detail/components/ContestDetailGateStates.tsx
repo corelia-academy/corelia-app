@@ -42,7 +42,7 @@ export function ContestDetailLoadingCard({
               {Array.from({ length: 4 }).map((_, idx) => (
                 <div
                   key={idx}
-                  className="rounded-md border border-border-subtle bg-surface-base p-3"
+                  className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3"
                 >
                   <Skeleton className="h-3 w-20" />
                   <Skeleton className="mt-2 h-4 w-28" />

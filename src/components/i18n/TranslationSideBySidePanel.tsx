@@ -32,7 +32,7 @@ export function TranslationSideBySidePanel({
           <div className="rounded-lg border border-border-subtle bg-surface-raised p-4">
             {primary}
           </div>
-          <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             {target}
           </div>
         </div>

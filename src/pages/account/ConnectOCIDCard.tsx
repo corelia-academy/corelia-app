@@ -69,7 +69,7 @@ export default function ConnectOCIDCard() {
   }
 
   return (
-    <section className="space-y-4 rounded-lg border border-border-subtle bg-surface-base p-4">
+    <section className="space-y-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-lg font-semibold">{t("ocid.card.title")}</h2>
@@ -93,7 +93,7 @@ export default function ConnectOCIDCard() {
           {authState.error.message}
         </div>
       ) : connected ? (
-        <div className="grid gap-3 rounded-md border border-border-subtle bg-surface-base p-3 text-sm">
+        <div className="grid gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 text-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="text-foreground-muted">
               {t("ocid.card.ocidLabel")}
@@ -146,7 +146,7 @@ export default function ConnectOCIDCard() {
             type="button"
             onClick={handleConnect}
             disabled={loading || !isInitialized}
-            className="h-11 cursor-pointer border border-border-subtle bg-ocid-blue text-white px-3 py-2.5 text-left text-sm hover:opacity-90 active:opacity-80"
+            className="h-11 cursor-pointer border border-border-subtle bg-ocid-blue text-primary-foreground px-3 py-2.5 text-left text-sm hover:opacity-90 active:opacity-80"
           >
             <img
               src="/logo/OC-square-logo.svg"

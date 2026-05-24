@@ -66,7 +66,7 @@ export function AnnouncementsSection({ courseId, enrollmentCount }: Props) {
   }
 
   return (
-    <section className="rounded-md border border-border-subtle bg-surface-base p-6">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
       <div className="flex items-start gap-3">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
           <Mail className="size-5" aria-hidden />

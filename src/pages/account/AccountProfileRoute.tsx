@@ -133,11 +133,11 @@ export function AccountProfileRoute() {
   if (!authInitialized || (profileLoading && !profile)) {
     return (
       <div className="space-y-4">
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <Skeleton className="h-6 w-56 rounded" />
           <Skeleton className="mt-2 h-4 w-full max-w-xl rounded" />
         </div>
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center gap-4">
             <Skeleton className="size-20 rounded-full" />
             <div className="min-w-0 flex-1 space-y-2">
@@ -194,7 +194,7 @@ export function AccountProfileRoute() {
         <button
           type="button"
           onClick={() => void refreshProfile(user)}
-          className="rounded-md border border-border-subtle bg-surface-base px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
+          className="rounded-2xl border border-border-subtle bg-surface-base shadow-card px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
         >
           {t("profile.retry")}
         </button>

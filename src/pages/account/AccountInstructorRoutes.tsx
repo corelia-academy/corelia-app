@@ -83,7 +83,7 @@ function InstructorProfileSection() {
   return (
     <form
       onSubmit={(e) => void onSubmitInstructorProfile(e)}
-      className="space-y-5 rounded-lg border border-border-subtle bg-surface-base p-4 sm:p-5"
+      className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-5"
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -101,7 +101,7 @@ function InstructorProfileSection() {
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {t("instructorProfile.cards.originLabel")}
             </p>
@@ -109,7 +109,7 @@ function InstructorProfileSection() {
               {originLabel}
             </p>
           </div>
-          <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {t("instructorProfile.cards.organizationLabel")}
             </p>
@@ -117,7 +117,7 @@ function InstructorProfileSection() {
               {organization.trim() || t("instructorProfile.common.notUpdated")}
             </p>
           </div>
-          <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {t("instructorProfile.cards.headlineLabel")}
             </p>
@@ -125,7 +125,7 @@ function InstructorProfileSection() {
               {headline.trim() || t("instructorProfile.common.notUpdated")}
             </p>
           </div>
-          <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
               {t("instructorProfile.cards.websiteLabel")}
             </p>

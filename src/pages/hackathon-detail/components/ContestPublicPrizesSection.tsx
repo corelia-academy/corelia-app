@@ -28,30 +28,30 @@ export function ContestPublicPrizesSection(props: {
               <div
                 key={`${prize.rank_label}-${prize.title}-${index}`}
                 className={cn(
-                  "relative group rounded-xl border p-5 transition-all duration-300 hover:-translate-y-[3px] hover:shadow-lg flex flex-col gap-1.5 overflow-hidden",
+                  "relative group rounded-xl border p-5 transition-[transform,background-color,border-color,box-shadow] duration-300 hover:-translate-y-[3px] hover:shadow-card flex flex-col gap-1.5 overflow-hidden",
                   isFirst
-                    ? "border-amber-300/60 bg-amber-50/20 hover:border-amber-400 dark:border-amber-500/30 dark:bg-amber-950/10 dark:hover:border-amber-500/50 shadow-xs"
+                    ? "border-warning/30 bg-warning/10 hover:border-warning dark:border-warning/30 dark:bg-warning/10 dark:hover:border-warning/50 shadow-xs"
                     : "border-border-subtle bg-surface-raised hover:border-primary/20",
                 )}
               >
                 {isFirst ? (
-                  <div className="absolute -top-2 -right-2 p-3 text-amber-500 dark:text-amber-400 opacity-15 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none">
+                  <div className="absolute -top-2 -right-2 p-3 text-warning opacity-15 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none">
                     <Trophy className="size-20" />
                   </div>
                 ) : null}
 
                 <div className="flex items-center gap-2">
                   <div className={cn(
-                    "flex size-8 items-center justify-center rounded-lg shadow-2xs transition-all duration-300",
+                    "flex size-8 items-center justify-center rounded-lg shadow-2xs transition-[transform,background-color,border-color,box-shadow] duration-300",
                     isFirst 
-                      ? "bg-amber-100 text-amber-600 dark:bg-amber-900/55 dark:text-amber-400 group-hover:scale-105" 
+                      ? "bg-amber-100 text-warning dark:bg-warning/20 dark:text-warning group-hover:scale-105" 
                       : "bg-primary/5 text-primary group-hover:scale-105"
                   )}>
                     <Icon className="size-4.5" />
                   </div>
                   <div className={cn(
                     "text-xs font-bold uppercase tracking-wider",
-                    isFirst ? "text-amber-700 dark:text-amber-400" : "text-foreground-muted group-hover:text-primary transition-colors"
+                    isFirst ? "text-warning" : "text-foreground-muted group-hover:text-primary transition-colors"
                   )}>
                     {prize.rank_label}
                   </div>
@@ -64,7 +64,7 @@ export function ContestPublicPrizesSection(props: {
                 {prize.value_display ? (
                   <div className={cn(
                     "text-lg font-bold tracking-tight mt-1",
-                    isFirst ? "text-amber-600 dark:text-amber-400" : "text-primary"
+                    isFirst ? "text-warning" : "text-primary"
                   )}>
                     {prize.value_display}
                   </div>

@@ -12,7 +12,7 @@ export function ContinueLearningSection({
   focusCards: FocusCard[];
 }) {
   return (
-    <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-medium text-foreground">{t("home.continueLearning")}</h2>
         <Button
@@ -33,7 +33,7 @@ export function ContinueLearningSection({
             <NavLink
               key={item.id}
               to={item.action}
-              className="min-w-[240px] max-w-[240px] cursor-pointer rounded-lg border border-border-subtle bg-surface-base p-3 transition-all duration-200 ease-out hover:bg-surface-raised hover:-translate-y-0.5"
+              className="min-w-[240px] max-w-[240px] cursor-pointer rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised hover:-translate-y-0.5"
             >
               <div className="line-clamp-2 text-sm font-medium text-foreground">
                 {item.title}

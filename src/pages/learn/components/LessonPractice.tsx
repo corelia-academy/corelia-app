@@ -1,4 +1,5 @@
 import { MessageSquareText } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/markdown/Markdown";
 import { useCoraStore } from "@/stores/coraStore";
@@ -10,6 +11,7 @@ export function LessonPractice({
   markdown: string;
   onDiscussWithCora?: () => void;
 }) {
+  const { t } = useTranslation("courses");
   const setSidebarOpen = useCoraStore((s) => s.setSidebarOpen);
 
   function handleDiscuss() {
@@ -29,7 +31,7 @@ export function LessonPractice({
           </div>
           <div className="border-t border-border-subtle bg-surface-raised px-6 py-3 flex items-center justify-between gap-3">
             <p className="text-xs text-foreground-muted">
-              Cần gợi ý? Hỏi Cora để được hướng dẫn từng bước.
+              {t("detail.learn.practice.hint")}
             </p>
             <Button
               type="button"
@@ -39,7 +41,7 @@ export function LessonPractice({
               onClick={handleDiscuss}
             >
               <MessageSquareText className="size-3.5 mr-1.5" aria-hidden />
-              Hỏi Cora
+              {t("detail.learn.practice.askCora")}
             </Button>
           </div>
         </div>

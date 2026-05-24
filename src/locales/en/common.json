@@ -18,7 +18,8 @@
     "copy": "Copy",
     "download": "Download",
     "share": "Share",
-    "search": "Search"
+    "search": "Search",
+    "runInRemix": "Run in Remix"
   },
   "footer": {
     "copyrightPrefix": "© {{year}} Corelia Academy. All rights reserved.",
@@ -395,6 +396,42 @@
     "lessonFormatArticle": "Reading lesson",
     "lessonFormatQuiz": "Quiz",
     "lessonFormatPractice": "Practice",
+    "formatSuggestions": {
+      "video": [
+        "Summarize this video",
+        "Ask about this video",
+        "Explain what I just watched",
+        "Generate 3 practice questions"
+      ],
+      "article": [
+        "Summarize this reading",
+        "Explain this concept in simpler terms",
+        "Ask about this paragraph",
+        "Generate 3 practice questions"
+      ],
+      "quiz": [
+        "Explain the correct answers",
+        "Give me a hint for this quiz",
+        "Related concepts"
+      ],
+      "practice": [
+        "Review my approach",
+        "Give me a hint",
+        "Solution walkthrough"
+      ]
+    },
+    "surfaceContext": {
+      "home": { "title": "Your dashboard", "description": "Progress, courses, and what to do next" },
+      "courses": { "title": "Course library", "description": "Browse and compare courses" },
+      "career": { "title": "Career paths", "description": "Tracks and skills for your goals" },
+      "hackathons": { "title": "Hackathons", "description": "Contests and submissions" },
+      "projects": { "title": "Projects", "description": "Portfolio and collaboration" },
+      "achievements": { "title": "Achievements", "description": "Certificates and badges" },
+      "search": { "title": "Search", "description": "Find courses, people, and content" },
+      "profile": { "title": "Profile", "description": "Public learning profile" },
+      "account": { "title": "Account", "description": "Settings and billing" },
+      "default": { "title": "Corelia", "description": "Learning assistant" }
+    },
     "restoreAction": "Reopen Cora AI",
     "chipToast": "Sticky Cora AI is in preview mode.",
     "dashboard": {

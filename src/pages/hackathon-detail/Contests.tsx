@@ -262,7 +262,7 @@ export default function Contests() {
                 className="group block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 aria-label={`${t("catalog.viewContest")}: ${contest.title}`}
               >
-                <Card className="h-full overflow-hidden border-border-subtle transition-all duration-200 ease-out group-hover:border-border group-hover:bg-surface-raised group-hover:-translate-y-0.5">
+                <Card className="h-full overflow-hidden border-border-subtle transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out group-hover:border-border group-hover:bg-surface-raised group-hover:-translate-y-0.5">
                   <ContestListCardThumbnail
                     src={listImageUrl}
                     alt=""

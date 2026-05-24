@@ -245,7 +245,7 @@ export default function AdminCoraVouchers() {
         </div>
       </div>
 
-      <div className="mb-4 grid gap-3 rounded-xl border border-border-subtle bg-surface-base p-4 md:grid-cols-4">
+      <div className="mb-4 grid gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 md:grid-cols-4">
         <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("coraVoucherBatches.filters.searchPlaceholder")} />
         <select
           value={statusFilter}
@@ -278,7 +278,7 @@ export default function AdminCoraVouchers() {
       ) : filteredBatches.length === 0 ? (
         <p className="text-sm text-foreground-muted">{t("coraVoucherBatches.empty")}</p>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-base">
+        <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border-subtle bg-surface-raised">
               <tr>
@@ -406,8 +406,8 @@ export default function AdminCoraVouchers() {
           </div>
 
           {createdResult ? (
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+            <div className="rounded-xl border border-success/20 bg-success/10 p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-success">
                 <Check className="size-4" aria-hidden />
                 {t("coraVoucherBatches.createdBatchReady", { count: createdResult.codes.length })}
               </div>
@@ -480,7 +480,7 @@ export default function AdminCoraVouchers() {
               {t("coraVoucherBatches.downloadCsv")}
             </Button>
           </div>
-          <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface-base">
+          <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border-subtle bg-surface-raised">
                 <tr>

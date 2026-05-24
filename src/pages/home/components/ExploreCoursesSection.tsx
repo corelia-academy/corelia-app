@@ -13,7 +13,7 @@ export function ExploreCoursesSection({
   courseCatalog: Course[];
 }) {
   return (
-    <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-medium text-foreground">{t("home.sections.exploreTitle")}</h2>
         <Button
@@ -48,7 +48,7 @@ export function ExploreCoursesSection({
             <NavLink
               key={course.id}
               to={`/courses/${course.slug || course.id}`}
-              className="group cursor-pointer overflow-hidden rounded-lg border border-border-subtle bg-surface-base transition-all duration-200 ease-out hover:bg-surface-raised hover:-translate-y-0.5 hover:border-border"
+              className="group cursor-pointer overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised hover:-translate-y-0.5 hover:border-border"
             >
               <div className="relative aspect-video bg-surface-raised">
                 {course.thumbnail_url ? (

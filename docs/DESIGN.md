@@ -256,3 +256,25 @@ Dark mode `--elevation-card`: `0 8px 24px oklch(0 0 0 / 0.2)`.
 - Surfaces: 5 layers từ `0.18` đến `0.30` lightness
 - Shadows: strong black overlay `oklch(0 0 0 / 0.2)` thay vì light shadow
 - KHÔNG dùng `white` — dùng `oklch(0.95 0.01 75)` (warm off-white)
+
+---
+
+## 11. Partner branding (OpenCampus / OCID)
+
+Màu thương hiệu đối tác — **không** thay bằng `--primary` / `--brand-accent` Corelia.
+
+| Token / class | Value | Dùng cho |
+|---------------|-------|----------|
+| `.bg-ocid-blue` | `#151ae9` | Nền CTA kết nối OCID |
+| `.text-ocid-foreground` hoặc `text-primary-foreground` | chữ sáng trên nền OC | Label nút OC |
+
+**Phạm vi:** chỉ luồng OCID — `ConnectOCIDCard`, `OpenCampusConnectDialog`, nút connect trong `Header`. Không dùng cho UI Corelia chung.
+
+**Credential modal:** gradient xanh OC (`#00e5b4` / `#0047ff`) trong `OcCredentialModal` — giữ palette partner, có thể map sang CSS vars `--ocid-credential-*` nếu cần.
+
+---
+
+## 12. Motion exceptions
+
+- **Collapsible sidebar** (`ui/sidebar`, `CoraSidebarPanel`, `InstructorSidebar`): `transition-[width]` được phép — pattern shadcn collapse.
+- **Progress fill:** ưu tiên `transform: scaleX(...)` + `transition-transform` thay animate `width` khi refactor; curriculum bar có thể giữ `width` inline không transition.

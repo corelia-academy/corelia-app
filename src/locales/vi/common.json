@@ -18,7 +18,8 @@
     "copy": "Sao chép",
     "download": "Tải xuống",
     "share": "Chia sẻ",
-    "search": "Tìm kiếm"
+    "search": "Tìm kiếm",
+    "runInRemix": "Chạy trên Remix"
   },
   "footer": {
     "copyrightPrefix": "© {{year}} Corelia Academy. Tất cả quyền được bảo lưu.",
@@ -395,6 +396,42 @@
     "lessonFormatArticle": "Bài đọc",
     "lessonFormatQuiz": "Bài kiểm tra",
     "lessonFormatPractice": "Bài thực hành",
+    "formatSuggestions": {
+      "video": [
+        "Tóm tắt video này",
+        "Hỏi về video này",
+        "Giải thích những gì tôi vừa xem",
+        "Tạo 3 câu hỏi luyện tập"
+      ],
+      "article": [
+        "Tóm tắt bài đọc này",
+        "Giải thích khái niệm đơn giản hơn",
+        "Hỏi về đoạn này",
+        "Tạo 3 câu hỏi luyện tập"
+      ],
+      "quiz": [
+        "Giải thích đáp án đúng",
+        "Cho tôi gợi ý cho bài kiểm tra",
+        "Các khái niệm liên quan"
+      ],
+      "practice": [
+        "Xem lại cách làm của tôi",
+        "Cho tôi gợi ý",
+        "Hướng dẫn lời giải"
+      ]
+    },
+    "surfaceContext": {
+      "home": { "title": "Dashboard của bạn", "description": "Tiến độ, khoá học và việc làm tiếp theo" },
+      "courses": { "title": "Thư viện khoá học", "description": "Duyệt và so sánh khoá học" },
+      "career": { "title": "Lộ trình nghề nghiệp", "description": "Track và kỹ năng theo mục tiêu" },
+      "hackathons": { "title": "Hackathon", "description": "Cuộc thi và bài nộp" },
+      "projects": { "title": "Dự án", "description": "Portfolio và cộng tác" },
+      "achievements": { "title": "Thành tích", "description": "Chứng chỉ và huy hiệu" },
+      "search": { "title": "Tìm kiếm", "description": "Khoá học, người dùng và nội dung" },
+      "profile": { "title": "Hồ sơ", "description": "Hồ sơ học tập công khai" },
+      "account": { "title": "Tài khoản", "description": "Cài đặt và thanh toán" },
+      "default": { "title": "Corelia", "description": "Trợ lý học tập" }
+    },
     "restoreAction": "Mở lại Cora AI",
     "chipToast": "Cora AI sticky đang ở chế độ preview.",
     "dashboard": {

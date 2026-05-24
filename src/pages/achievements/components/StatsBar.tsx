@@ -49,7 +49,7 @@ export function StatsBar({
       ].map((stat) => (
         <div
           key={stat.label}
-          className="flex flex-col items-center gap-2 rounded-md border border-border-subtle bg-surface-base p-3 sm:flex-row sm:gap-3 sm:p-4"
+          className="flex flex-col items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 sm:flex-row sm:gap-3 sm:p-4"
         >
           <div className="shrink-0 rounded-md bg-surface-raised p-2">{stat.icon}</div>
           <div className="min-w-0 text-center sm:text-left">

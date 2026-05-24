@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckCircle2, Loader2, RotateCcw, Trophy, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -61,6 +62,7 @@ export function LessonQuiz({
   lessonId: string;
   lessonTitle?: string | null;
 }) {
+  const { t } = useTranslation("courses");
   const [questions, setQuestions] = useState<SectionQuestion[]>([]);
   const [quizUIState, dispatch] = useReducer(quizReducer, initialQuizState);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -123,7 +125,7 @@ export function LessonQuiz({
       };
       dispatch({ type: "DONE", result: newResult });
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Không thể lưu kết quả.");
+      setSubmitError(err instanceof Error ? err.message : t("detail.learn.quiz.saveError"));
       dispatch({ type: "SUBMIT_ERROR" });
     }
   }
@@ -137,7 +139,7 @@ export function LessonQuiz({
     return (
       <div className="flex items-center justify-center py-12 text-foreground-muted">
         <Loader2 className="size-5 animate-spin mr-2" aria-hidden />
-        <span className="text-sm">Đang tải bài kiểm tra…</span>
+        <span className="text-sm">{t("detail.learn.quiz.loading")}</span>
       </div>
     );
   }
@@ -146,8 +148,8 @@ export function LessonQuiz({
     return (
       <div className="px-4 py-8 sm:px-6 text-center text-sm text-foreground-muted">
         {quizState === "error"
-          ? "Không thể tải câu hỏi. Vui lòng thử lại."
-          : "Bài kiểm tra chưa có câu hỏi."}
+          ? t("detail.learn.quiz.loadError")
+          : t("detail.learn.quiz.emptyQuestions")}
       </div>
     );
   }
@@ -160,19 +162,20 @@ export function LessonQuiz({
     ? Math.round((result.correct / result.total) * 100)
     : null;
 
+  const title = lessonTitle?.trim()
+    ? t("detail.learn.quiz.titleWithLesson", { title: lessonTitle.trim() })
+    : t("detail.learn.quiz.title");
+
   return (
     <div className="px-4 py-6 pb-8 sm:px-6">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-foreground">
-            Bài kiểm tra{lessonTitle ? `: ${lessonTitle}` : ""}
-          </h2>
+          <h2 className="text-[18px] font-semibold text-foreground">{title}</h2>
           <p className="text-[13px] text-foreground-muted">
-            {questions.length} câu hỏi trắc nghiệm về nội dung bài học này.
+            {t("detail.learn.quiz.meta", { count: questions.length })}
           </p>
         </div>
 
-        {/* Score banner */}
         {isReview && scorePercent !== null && (
           <div
             className={cn(
@@ -185,22 +188,25 @@ export function LessonQuiz({
             <Trophy className="size-5 shrink-0" aria-hidden />
             <div className="flex-1">
               <p className="font-medium text-sm">
-                {result!.correct}/{result!.total} câu đúng ({scorePercent}%)
+                {t("detail.learn.quiz.score", {
+                  correct: result!.correct,
+                  total: result!.total,
+                  percent: scorePercent,
+                })}
               </p>
               <p className="text-xs opacity-80 mt-0.5">
                 {scorePercent >= 70
-                  ? "Tốt lắm! Bạn đã nắm vững nội dung bài học."
-                  : "Hãy xem lại bài học và thử lại nhé!"}
+                  ? t("detail.learn.quiz.scoreGood")
+                  : t("detail.learn.quiz.scoreRetry")}
               </p>
             </div>
             <Button type="button" variant="ghost" size="sm" onClick={handleRetry} className="shrink-0">
               <RotateCcw className="size-3.5 mr-1.5" aria-hidden />
-              Làm lại
+              {t("detail.learn.quiz.retry")}
             </Button>
           </div>
         )}
 
-        {/* Questions */}
         <div className="space-y-5">
           {questions.map((q, qi) => {
             const attempt = reviewMap?.get(q.id);
@@ -208,7 +214,7 @@ export function LessonQuiz({
 
             return (
               <div key={q.id} className="space-y-3">
-                <p className="text-sm font-medium text-foreground leading-snug">
+                <p className="text-[15px] font-medium text-foreground leading-[1.7]">
                   <span className="text-foreground-muted mr-1.5">{qi + 1}.</span>
                   {q.question}
                 </p>
@@ -230,7 +236,7 @@ export function LessonQuiz({
                           dispatch({ type: "SELECT", questionId: q.id, index: oi });
                         }}
                         className={cn(
-                          "w-full flex items-start gap-3 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors",
+                          "w-full flex items-start gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
                           !isReview && [
                             "hover:bg-surface-raised cursor-pointer",
                             selected === oi
@@ -257,8 +263,8 @@ export function LessonQuiz({
                 </div>
 
                 {isReview && q.explanation && (
-                  <div className="rounded-xl bg-surface-raised px-3 py-2 text-xs text-foreground-muted">
-                    <span className="font-medium text-foreground">Giải thích: </span>
+                  <div className="rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-xs text-foreground-muted">
+                    <span className="font-medium text-foreground">{t("detail.learn.quiz.explanation")} </span>
                     {q.explanation}
                   </div>
                 )}
@@ -267,7 +273,6 @@ export function LessonQuiz({
           })}
         </div>
 
-        {/* Submit */}
         {!isReview && (
           <div className="space-y-2">
             {submitError && <p className="text-sm text-destructive">{submitError}</p>}
@@ -277,10 +282,16 @@ export function LessonQuiz({
               onClick={() => void handleSubmit()}
             >
               {quizState === "submitting"
-                ? "Đang nộp…"
+                ? t("detail.learn.quiz.submitting")
                 : allAnswered
-                  ? `Nộp bài (${answeredCount}/${questions.length})`
-                  : `Trả lời tất cả câu hỏi (${answeredCount}/${questions.length})`}
+                  ? t("detail.learn.quiz.submitReady", {
+                      answered: answeredCount,
+                      total: questions.length,
+                    })
+                  : t("detail.learn.quiz.submitIncomplete", {
+                      answered: answeredCount,
+                      total: questions.length,
+                    })}
             </Button>
           </div>
         )}

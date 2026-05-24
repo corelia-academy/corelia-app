@@ -17,8 +17,8 @@ function MetaCell({
   hint?: string;
 }) {
   return (
-    <div className="group/cell flex min-w-0 items-start gap-3 rounded-lg p-2.5 transition-all duration-200 hover:bg-surface-base hover:shadow-xs border border-transparent hover:border-border-subtle">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/5 text-primary group-hover/cell:bg-primary group-hover/cell:text-primary-foreground transition-all duration-200">
+    <div className="group/cell flex min-w-0 items-start gap-3 rounded-lg p-2.5 transition-[transform,background-color,border-color,box-shadow] duration-200 hover:bg-surface-base hover:shadow-xs border border-transparent hover:border-border-subtle">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/5 text-primary group-hover/cell:bg-primary group-hover/cell:text-primary-foreground transition-[transform,background-color,border-color,box-shadow] duration-200">
         <Icon className="size-4 shrink-0" aria-hidden />
       </div>
       <div className="min-w-0 flex-1 text-foreground">

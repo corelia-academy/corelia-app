@@ -152,7 +152,7 @@ export function ContestPublicProjectsSection(props: {
             {displayRows.map((row) => (
               <div
                 key={row.key}
-                className="flex flex-col rounded-md border border-border-subtle bg-surface-base p-4"
+                className="flex flex-col rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4"
               >
                 {getProjectCoverImageUrl(row) ? (
                   <div className="mb-4 overflow-hidden rounded-md border border-border-subtle bg-surface-raised">

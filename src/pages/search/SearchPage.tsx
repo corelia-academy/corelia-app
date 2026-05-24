@@ -109,7 +109,7 @@ export default function SearchPage() {
             </div>
           </div>
         ) : !q ? null : items.length === 0 ? (
-          <div className="rounded-lg border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
             {t("search.empty")}
           </div>
         ) : (
@@ -118,7 +118,7 @@ export default function SearchPage() {
               <NavLink
                 key={`${item.entity_type}:${item.entity_id}`}
                 to={item.href}
-                className="block rounded-lg border border-border-subtle bg-surface-base p-4 transition-colors duration-150 hover:bg-surface-raised"
+                className="block rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 transition-colors duration-150 hover:bg-surface-raised"
               >
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold text-foreground">

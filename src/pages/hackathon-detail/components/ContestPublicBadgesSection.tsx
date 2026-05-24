@@ -21,7 +21,7 @@ export function ContestPublicBadgesSection(props: {
           return (
             <div
               key={b.id}
-              className="group flex flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-base transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg hover:border-primary/20"
+              className="group flex flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-base transition-[transform,background-color,border-color,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-card hover:border-primary/20"
             >
               <div className="aspect-square bg-surface-raised/40 relative overflow-hidden flex items-center justify-center p-5 border-b border-border-subtle/50 group-hover:bg-primary/5 transition-colors duration-300">
                 {img?.trim() ? (

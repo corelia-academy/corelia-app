@@ -13,39 +13,6 @@ import { useCoraAI } from "@/hooks/useCoraAI";
 import { cn } from "@/lib/utils";
 import type { LessonFormat } from "@/types/courses";
 
-function getFormatSuggestions(format: LessonFormat | null | undefined): string[] {
-  switch (format) {
-    case "video":
-      return [
-        "Summarize this video",
-        "Ask about this video",
-        "Explain what I just watched",
-        "Generate 3 practice questions",
-      ];
-    case "article":
-      return [
-        "Summarize this reading",
-        "Explain this concept in simpler terms",
-        "Ask about this paragraph",
-        "Generate 3 practice questions",
-      ];
-    case "quiz":
-      return [
-        "Explain the correct answers",
-        "Give me a hint for this quiz",
-        "Explain related concepts",
-      ];
-    case "practice":
-      return [
-        "Review my approach",
-        "Give me a hint",
-        "Show me a solution walkthrough",
-      ];
-    default:
-      return [];
-  }
-}
-
 const FORMAT_ICON: Record<string, React.ElementType> = {
   video: Video,
   article: FileText,
@@ -99,9 +66,15 @@ export function CourseAiTutorPanel(props: {
   });
 
   const rawSuggestions = t("detail.aiTutor.suggestions", { returnObjects: true });
-  const formatSuggestions = getFormatSuggestions(lessonFormat);
-  const baseSuggestions = formatSuggestions.length > 0
-    ? formatSuggestions
+  const formatKey = lessonFormat && ["video", "article", "quiz", "practice"].includes(lessonFormat)
+    ? `coraWidget.formatSuggestions.${lessonFormat}` as const
+    : null;
+  const formatSuggestions = formatKey
+    ? (tCommon(formatKey, { returnObjects: true }) as string[] | string)
+    : [];
+  const formatList = Array.isArray(formatSuggestions) ? formatSuggestions : [];
+  const baseSuggestions = formatList.length > 0
+    ? formatList
     : Array.isArray(rawSuggestions) ? (rawSuggestions as string[]) : [];
 
   const fallbackSuggestions = buildPersonalizedSuggestions({
@@ -182,7 +155,7 @@ export function CourseAiTutorPanel(props: {
             {/* Suggestions */}
             <div>
               <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
-                {tCommon("coraWidget.toolsLabel")}
+                {tCommon("coraWidget.suggestionsLabel")}
               </p>
               <SuggestionPills suggestions={suggestions} onSelect={handleSuggestionClick} />
             </div>

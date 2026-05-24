@@ -79,7 +79,7 @@ export function openCampusCredentialExplorerUrl(
 function badgeIconForScope(scope: CredentialTemplateSummary["scope_type"]) {
   switch (scope) {
     case "hackathon":
-      return createElement(Medal, { className: "size-6 text-amber-600", "aria-hidden": true });
+      return createElement(Medal, { className: "size-6 text-warning", "aria-hidden": true });
     case "activity_milestone":
       return createElement(Sparkles, { className: "size-6 text-violet-600", "aria-hidden": true });
     default:

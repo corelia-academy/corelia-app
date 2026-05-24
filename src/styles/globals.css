@@ -334,6 +334,38 @@
   background-color: #151ae9;
 }
 
+.text-ocid-foreground {
+  color: oklch(1 0 0);
+}
+
+/* Design system component utilities (docs/DESIGN.md) */
+@utility ds-card {
+  border-radius: var(--radius-2xl);
+  border-width: 1px;
+  border-color: var(--border-subtle);
+  background-color: var(--surface-base);
+  box-shadow: var(--elevation-card);
+}
+
+@utility ds-card-hover {
+  transition-property: transform, background-color, border-color, box-shadow;
+  transition-duration: 200ms;
+  &:hover {
+    transform: translateY(-2px);
+    background-color: var(--surface-raised);
+  }
+}
+
+@utility ds-body {
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+@utility ds-h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
 /* Premium UI Redesign Utilities */
 @utility bg-glow-radial {
   background: radial-gradient(circle at top, var(--primary-muted) 0%, transparent 70%);

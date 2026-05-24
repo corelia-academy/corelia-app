@@ -177,7 +177,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <section className="rounded-lg border border-border-subtle bg-surface-base p-6">
+      <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 text-xs text-foreground-muted">
@@ -212,7 +212,7 @@ export default function AdminDashboard() {
           {programs.map((item, index) => (
             <div
               key={item.id}
-              className="rounded-lg border border-border-subtle bg-surface-base p-4"
+              className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <div>

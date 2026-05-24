@@ -567,7 +567,7 @@ export default function InstructorCareerTrackEditorPage() {
                 orderedCourses.map((course, idx) => (
                   <div
                     key={course.id}
-                    className="flex items-center justify-between gap-2 rounded-md border border-border-subtle bg-surface-base px-3 py-2"
+                    className="flex items-center justify-between gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2"
                   >
                     <div className="min-w-0">
                       <div className="line-clamp-2 text-sm font-medium text-foreground">
@@ -684,7 +684,7 @@ export default function InstructorCareerTrackEditorPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
                   Translation ({targetLocale})

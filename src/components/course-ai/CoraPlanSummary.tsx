@@ -95,7 +95,7 @@ export function CoraPlanSummary({
                 {t("coraWidget.plan.resetDate", { date: resetStr })}
               </span>
             ) : isNearing ? (
-              <span className="text-amber-600 dark:text-amber-400">
+              <span className="text-warning">
                 {t("coraWidget.plan.nearingLimit")} ·{" "}
                 {t("coraWidget.plan.resetDate", { date: resetStr })}
               </span>

@@ -95,7 +95,7 @@ const InstructorCourses = () => {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -110,7 +110,7 @@ const InstructorCourses = () => {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -125,7 +125,7 @@ const InstructorCourses = () => {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -140,7 +140,7 @@ const InstructorCourses = () => {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -155,7 +155,7 @@ const InstructorCourses = () => {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -194,7 +194,7 @@ const InstructorCourses = () => {
       </PageSectionCard>
 
       {courses.length === 0 ? (
-        <div className="mt-4 rounded-lg border border-border-subtle bg-surface-base">
+        <div className="mt-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card">
           <EmptyState
             icon={<BookOpen className="size-6 text-foreground-subtle" aria-hidden />}
             title={t("courseListPage.empty.title")}
@@ -218,7 +218,7 @@ const InstructorCourses = () => {
           {courses.map((course) => (
             <article
               key={course.id}
-              className="group flex h-full flex-col overflow-hidden rounded-lg border border-border-subtle bg-surface-base transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-raised"
+              className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[transform,background-color,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-surface-raised"
             >
               <button
                 type="button"
@@ -258,7 +258,7 @@ const InstructorCourses = () => {
                     {course.slug}
                   </p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-md border border-border-subtle bg-surface-base p-3">
+                    <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3">
                       <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                         {t("courseListPage.courseCards.pricingLabel")}
                       </p>
@@ -272,7 +272,7 @@ const InstructorCourses = () => {
                             : t("courseListPage.courseCards.free")}
                       </p>
                     </div>
-                    <div className="rounded-md border border-border-subtle bg-surface-base p-3">
+                    <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3">
                       <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
                         {t("courseListPage.courseCards.instructorLabel")}
                       </p>
