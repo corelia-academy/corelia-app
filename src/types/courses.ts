@@ -211,6 +211,8 @@ export interface CourseLesson {
   description_markdown?: string;
   /** Danh sách tài liệu/resources cho bài học */
   resources?: LessonResource[];
+  /** Practice lesson can reference the content lesson it is based on. */
+  practice_source_lesson_id?: string | null;
   /** Loại bài học — mặc định suy ra từ youtube_url / nội dung. */
   lesson_format?: LessonFormat;
   /** URL YouTube (embed hoặc watch), ví dụ https://www.youtube.com/watch?v=VIDEO_ID */
@@ -238,6 +240,7 @@ export interface CourseLessonLocaleContent {
   short_description?: string;
   description_markdown?: string;
   resources?: LessonResource[];
+  practice_source_lesson_id?: string | null;
   youtube_url?: string;
   youtube_start_seconds?: number;
   youtube_end_seconds?: number | null;
@@ -391,6 +394,7 @@ export interface CourseLessonInsert {
   short_description?: string;
   description_markdown?: string;
   resources?: LessonResource[];
+  practice_source_lesson_id?: string | null;
   youtube_url?: string;
   youtube_start_seconds?: number;
   youtube_end_seconds?: number | null;

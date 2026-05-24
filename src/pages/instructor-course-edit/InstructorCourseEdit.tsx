@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   ArrowLeft,
@@ -156,6 +156,12 @@ import {
   type DescriptionTranslationBundle,
   type DescriptionTranslationBundleKind,
 } from "@/lib/descriptionGenerator";
+import {
+  invokeGenerateQuestions,
+  type GeneratedQuestionSource,
+} from "@/lib/questionGenerator";
+import { setLessonQuestions } from "@/lib/sectionQuestions";
+import type { QuestionOption, SectionQuestionData } from "@/types/questions";
 import type {
   DescriptionGeneratorDialogRequest,
   DescriptionGeneratorSourcePreview,
@@ -177,6 +183,8 @@ import { createSponsorId, getNextOrder, isValidHttpUrl } from "./utils/helpers";
 
 /** Gợi ý tách lesson khi video dài hơn ngưỡng này (giây). */
 const LONG_VIDEO_SPLIT_SECONDS = 3600;
+const QUIZ_OPTION_IDS = ["a", "b", "c", "d"] as const;
+const NEW_QUIZ_COUNT_OPTIONS = [3, 5, 7, 10] as const;
 
 type CoverageFieldKey =
   | "title"
@@ -242,8 +250,44 @@ const InstructorCourseEdit = () => {
   const [newLessonResources, setNewLessonResources] = useState<
     Array<{ title: string; url: string }>
   >([]);
+  const [newPracticeSourceLessonId, setNewPracticeSourceLessonId] = useState("");
   const [newLessonFormat, setNewLessonFormat] = useState<LessonFormat>("video");
+  type NewQuizQuestionDraft = SectionQuestionData & { _key: string };
+  const makeBlankNewQuizQuestion = (): NewQuizQuestionDraft => ({
+    _key: crypto.randomUUID(),
+    type: "mcq",
+    question: "",
+    options: QUIZ_OPTION_IDS.map((optionId) => ({ id: optionId, text: "" })),
+    correct_index: 0,
+    explanation: "",
+    locale: activeContentLocale,
+  });
+  const questionDataToNewQuizDraft = (
+    question: SectionQuestionData,
+  ): NewQuizQuestionDraft => ({
+    _key: crypto.randomUUID(),
+    type: "mcq",
+    question: question.question ?? "",
+    options: QUIZ_OPTION_IDS.map((optionId, index) => ({
+      id: optionId,
+      text: question.options[index]?.text ?? "",
+    })),
+    correct_index: question.correct_index ?? 0,
+    explanation: question.explanation ?? "",
+    locale: activeContentLocale,
+  });
+  const [newQuizQuestions, setNewQuizQuestions] = useState<NewQuizQuestionDraft[]>([]);
+  const [newQuizSourceLessonIds, setNewQuizSourceLessonIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [newQuizQuestionCount, setNewQuizQuestionCount] = useState<number>(5);
+  const [newQuizGenerating, setNewQuizGenerating] = useState(false);
+  const [newQuizGenerateError, setNewQuizGenerateError] = useState<string | null>(null);
+  const [newQuizGeneratedSources, setNewQuizGeneratedSources] = useState<
+    GeneratedQuestionSource[]
+  >([]);
   const [editingLessonFormat, setEditingLessonFormat] = useState<LessonFormat>("video");
+  const [editingLessonMinutes, setEditingLessonMinutes] = useState<number | "">("");
   const [lessonLearnerCounts, setLessonLearnerCounts] = useState<Record<string, number>>({});
   const [longVideoSplitOpen, setLongVideoSplitOpen] = useState(false);
   const [longVideoSplitPayload, setLongVideoSplitPayload] = useState<{
@@ -289,6 +333,7 @@ const InstructorCourseEdit = () => {
   const [editingLessonResources, setEditingLessonResources] = useState<
     Array<{ title: string; url: string }>
   >([]);
+  const [editingPracticeSourceLessonId, setEditingPracticeSourceLessonId] = useState("");
   const courseFieldRefs = useRef<
     Partial<
       Record<
@@ -349,6 +394,7 @@ const InstructorCourseEdit = () => {
     hasSubtitle: boolean; subtitleLocales: SupportedCourseLocale[];
     shortDescription: string; markdown: string;
     resources: Array<{ title: string; url: string }>;
+    practiceSourceLessonId: string;
   };
   const sectionDraftRef = useRef<Map<SupportedCourseLocale, SectionDraft>>(new Map());
   const lessonDraftRef = useRef<Map<SupportedCourseLocale, LessonDraft>>(new Map());
@@ -2025,6 +2071,88 @@ const InstructorCourseEdit = () => {
     setLessonQuizDialogOpen(true);
   };
 
+  const hasQuizSourceContent = (lesson: CourseLesson) =>
+    lesson.lesson_format !== "quiz" &&
+    lesson.lesson_format !== "practice" &&
+    Boolean(lesson.short_description?.trim() || lesson.description_markdown?.trim());
+
+  const getPracticeSourceLessons = (
+    sectionId: string | null | undefined,
+    excludeLessonId?: string,
+  ) =>
+    lessons
+      .filter(
+        (lesson) =>
+          lesson.section_id === sectionId &&
+          lesson.id !== excludeLessonId &&
+          hasQuizSourceContent(lesson),
+      )
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  const getNewQuizSourceLessons = () =>
+    getPracticeSourceLessons(addingLessonDraftSectionId);
+
+  const resetNewQuizGenerationState = () => {
+    setNewQuizSourceLessonIds(new Set());
+    setNewQuizGenerateError(null);
+    setNewQuizGenerating(false);
+    setNewQuizGeneratedSources([]);
+  };
+
+  const seedNewQuizSourceLessons = (sectionId: string | null) => {
+    const sourceIds = getPracticeSourceLessons(sectionId).map((lesson) => lesson.id);
+    setNewQuizSourceLessonIds(new Set(sourceIds));
+  };
+
+  const toggleNewQuizSourceLesson = (lessonId: string) => {
+    setNewQuizSourceLessonIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(lessonId)) next.delete(lessonId);
+      else next.add(lessonId);
+      return next;
+    });
+  };
+
+  const lessonQuizDialogSectionLessons = useMemo(
+    () =>
+      lessonQuizDialogLesson
+        ? lessons
+            .filter((l) => l.section_id === lessonQuizDialogLesson.section_id)
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((l) => ({
+              id: l.id,
+              title: l.title,
+              hasSourceContent: hasQuizSourceContent(l),
+            }))
+        : [],
+    [lessonQuizDialogLesson, lessons],
+  );
+
+  const handleGenerateNewQuizQuestions = async () => {
+    if (!id || !addingLessonDraftSectionId || newQuizSourceLessonIds.size === 0) return;
+    setNewQuizGenerating(true);
+    setNewQuizGenerateError(null);
+    try {
+      const sourceLessonIds = Array.from(newQuizSourceLessonIds);
+      const res = await invokeGenerateQuestions({
+        courseId: id,
+        // The quiz lesson does not exist yet, so we anchor generation on the first source lesson.
+        lessonId: sourceLessonIds[0],
+        sourceLessonIds,
+        locale: activeContentLocale,
+        count: newQuizQuestionCount,
+      });
+      setNewQuizGeneratedSources(res.sources);
+      setNewQuizQuestions(res.questions.map(questionDataToNewQuizDraft));
+    } catch (err) {
+      setNewQuizGenerateError(
+        err instanceof Error ? err.message : t("courseEdit.questions.generateFailed"),
+      );
+    } finally {
+      setNewQuizGenerating(false);
+    }
+  };
+
   const openEditSection = (section: CourseSection) => {
     sectionDraftRef.current = new Map();
     const initLocale = activeContentLocale;
@@ -2143,7 +2271,9 @@ const InstructorCourseEdit = () => {
 
     const lessonFormat = opts.lessonFormat ?? newLessonFormat;
     const isArticleFormat = lessonFormat === "article";
-    const youtubeUrl = isArticleFormat ? "" : opts.youtubeUrl.trim();
+    const isPracticeFormat = lessonFormat === "practice";
+    const isQuizFormat = lessonFormat === "quiz";
+    const youtubeUrl = isArticleFormat || isPracticeFormat || isQuizFormat ? "" : opts.youtubeUrl.trim();
     const sanitizedResources = (snap.resources ?? [])
       .map((r) => ({ title: (r.title ?? "").trim(), url: (r.url ?? "").trim() }))
       .filter((r) => r.title && r.url);
@@ -2191,16 +2321,21 @@ const InstructorCourseEdit = () => {
       section_id: sectionId,
       title: lessonTitle,
       lesson_format: lessonFormat,
-      short_description: snap.shortDescription.trim() || undefined,
+      short_description: isQuizFormat || isPracticeFormat ? undefined : snap.shortDescription.trim() || undefined,
       youtube_url: youtubeUrl || undefined,
-      youtube_start_seconds: isArticleFormat ? undefined : ytStart,
-      youtube_end_seconds: isArticleFormat ? undefined : ytEnd,
+      youtube_start_seconds: isArticleFormat || isPracticeFormat || isQuizFormat ? undefined : ytStart,
+      youtube_end_seconds: isArticleFormat || isPracticeFormat || isQuizFormat ? undefined : ytEnd,
       description_markdown: snap.markdown.trim() || undefined,
-      resources: sanitizedResources.length ? sanitizedResources : undefined,
+      resources: isQuizFormat || isPracticeFormat
+        ? undefined
+        : sanitizedResources.length
+          ? sanitizedResources
+          : undefined,
+      practice_source_lesson_id: isPracticeFormat ? newPracticeSourceLessonId || undefined : undefined,
       video_primary_locale: vidLocale,
       has_subtitle: subOn,
       subtitle_locales: subLocales,
-      duration_seconds: Math.max(0, Math.floor(durationSeconds || 0)),
+      duration_seconds: isQuizFormat || isPracticeFormat ? 0 : Math.max(0, Math.floor(durationSeconds || 0)),
       order: getNextOrder(secSubset),
       is_preview_free:
         form.access_model === "paid_upfront" ? snap.isPreviewFree : false,
@@ -2209,10 +2344,14 @@ const InstructorCourseEdit = () => {
     if (activeContentLocale !== primaryContentLocale) {
       await setCourseLessonLocaleContent(id, les.id, activeContentLocale, {
         title: lessonTitle,
-        short_description: snap.shortDescription.trim() || undefined,
+        short_description: isQuizFormat || isPracticeFormat ? undefined : snap.shortDescription.trim() || undefined,
         youtube_url: youtubeUrl || undefined,
         description_markdown: snap.markdown.trim() || undefined,
-        resources: sanitizedResources.length ? sanitizedResources : undefined,
+        resources: isQuizFormat || isPracticeFormat
+          ? undefined
+          : sanitizedResources.length
+            ? sanitizedResources
+            : undefined,
         video_primary_locale: vidLocale,
         has_subtitle: subOn,
         subtitle_locales: subLocales,
@@ -2222,10 +2361,14 @@ const InstructorCourseEdit = () => {
         applyCourseLessonLocaleContent(les, {
           locale: activeContentLocale,
           title: lessonTitle,
-          short_description: snap.shortDescription.trim() || undefined,
+          short_description: isQuizFormat || isPracticeFormat ? undefined : snap.shortDescription.trim() || undefined,
           youtube_url: youtubeUrl || undefined,
           description_markdown: snap.markdown.trim() || undefined,
-          resources: sanitizedResources.length ? sanitizedResources : undefined,
+          resources: isQuizFormat || isPracticeFormat
+            ? undefined
+            : sanitizedResources.length
+              ? sanitizedResources
+              : undefined,
           video_primary_locale: vidLocale,
           has_subtitle: subOn,
           subtitle_locales: subLocales,
@@ -2369,9 +2512,54 @@ const InstructorCourseEdit = () => {
     setNewLessonIsPreviewFree(false);
     setNewLessonMarkdown("");
     setNewLessonResources([]);
+    setNewPracticeSourceLessonId("");
+    setNewQuizQuestions([]);
+    resetNewQuizGenerationState();
     setNewLessonFormat("video");
     setAddingLessonDraftSectionId(null);
     pendingNewLessonSnapRef.current = null;
+  };
+
+  const updateNewQuizQuestion = (
+    index: number,
+    updater: (question: NewQuizQuestionDraft) => NewQuizQuestionDraft,
+  ) => {
+    setNewQuizQuestions((prev) =>
+      prev.map((question, i) => (i === index ? updater(question) : question)),
+    );
+  };
+
+  const updateNewQuizQuestionOption = (
+    questionIndex: number,
+    optionIndex: number,
+    text: string,
+  ) => {
+    updateNewQuizQuestion(questionIndex, (question) => ({
+      ...question,
+      options: question.options.map((option, i) =>
+        i === optionIndex ? { ...option, text } : option,
+      ) as QuestionOption[],
+    }));
+  };
+
+  const serializeNewQuizQuestions = (): SectionQuestionData[] => {
+    return newQuizQuestions
+      .map((question) => ({
+        type: "mcq" as const,
+        question: question.question.trim(),
+        options: question.options.map((option) => ({
+          id: option.id,
+          text: option.text.trim(),
+        })),
+        correct_index: question.correct_index,
+        explanation: question.explanation?.trim() || undefined,
+        locale: activeContentLocale,
+      }))
+      .filter(
+        (question) =>
+          question.question ||
+          question.options.some((option) => option.text),
+      );
   };
 
   const handleCancelLongVideoSplit = () => {
@@ -2600,19 +2788,46 @@ const InstructorCourseEdit = () => {
 
     const snap: PendingNewLessonSnap = {
       title: newLessonTitle,
-      shortDescription: newLessonShortDescription,
-      markdown: newLessonMarkdown,
-      resources: [...newLessonResources],
-      minutes: newLessonMinutes,
+      shortDescription:
+        newLessonFormat === "quiz" || newLessonFormat === "practice"
+          ? ""
+          : newLessonShortDescription,
+      markdown: newLessonFormat === "quiz" ? "" : newLessonMarkdown,
+      resources:
+        newLessonFormat === "quiz" || newLessonFormat === "practice"
+          ? []
+          : [...newLessonResources],
+      minutes:
+        newLessonFormat === "quiz" || newLessonFormat === "practice"
+          ? ""
+          : newLessonMinutes,
       isPreviewFree: newLessonIsPreviewFree,
     };
     pendingNewLessonSnapRef.current = snap;
 
     const isArticleFormat = newLessonFormat === "article";
+    const isPracticeFormat = newLessonFormat === "practice";
     const isNonVideoNewFormat = newLessonFormat !== "video";
     if (isArticleFormat && !newLessonMarkdown.trim() && !newLessonShortDescription.trim()) {
       toast.error(t("courseEdit.lessons.articleContentRequired"));
       return;
+    }
+    if (isPracticeFormat && !newLessonMarkdown.trim()) {
+      toast.error(t("courseEdit.lessons.practiceContentRequired"));
+      return;
+    }
+    const quizQuestionPayload =
+      newLessonFormat === "quiz" ? serializeNewQuizQuestions() : [];
+    if (newLessonFormat === "quiz") {
+      const invalid = quizQuestionPayload.find(
+        (question) =>
+          !question.question ||
+          question.options.filter((option) => option.text).length < 2,
+      );
+      if (invalid) {
+        toast.error(t("courseEdit.questions.fillRequired"));
+        return;
+      }
     }
 
     const youtubeUrl = isNonVideoNewFormat ? "" : newLessonYoutubeUrl.trim();
@@ -2659,12 +2874,19 @@ const InstructorCourseEdit = () => {
       }
 
       const secSubset = lessons.filter((l) => l.section_id === sectionId);
-      await insertLessonIntoCourse(sectionId, snap, {
+      const createdLesson = await insertLessonIntoCourse(sectionId, snap, {
         youtubeUrl,
         lessonFormat: newLessonFormat,
         lessonAccumulator: secSubset,
       });
       resetNewLessonFormFields();
+      if (newLessonFormat === "quiz") {
+        if (quizQuestionPayload.length > 0) {
+          await setLessonQuestions(id, createdLesson.id, quizQuestionPayload);
+        } else {
+          openLessonQuizGenerator(createdLesson);
+        }
+      }
       await refreshCourseTotalDuration(id);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.addLessonFailed"));
@@ -2682,6 +2904,7 @@ const InstructorCourseEdit = () => {
     setEditingLessonShortDescription(draft.shortDescription);
     setEditingLessonMarkdown(draft.markdown);
     setEditingLessonResources(draft.resources);
+    setEditingPracticeSourceLessonId(draft.practiceSourceLessonId);
   };
 
   const captureLessonDraftFromState = (): LessonDraft => ({
@@ -2693,6 +2916,7 @@ const InstructorCourseEdit = () => {
     shortDescription: editingLessonShortDescription,
     markdown: editingLessonMarkdown,
     resources: editingLessonResources,
+    practiceSourceLessonId: editingPracticeSourceLessonId,
   });
 
   const lessonToDraft = (lesson: CourseLesson): LessonDraft => ({
@@ -2704,6 +2928,7 @@ const InstructorCourseEdit = () => {
     shortDescription: lesson.short_description ?? "",
     markdown: lesson.description_markdown ?? "",
     resources: (lesson.resources ?? []).map((r) => ({ title: r.title ?? "", url: r.url ?? "" })),
+    practiceSourceLessonId: lesson.practice_source_lesson_id ?? "",
   });
 
   const openEditLesson = (lesson: CourseLesson) => {
@@ -2714,6 +2939,9 @@ const InstructorCourseEdit = () => {
     lessonDraftRef.current.set(primaryContentLocale, lessonToDraft(lesson));
     setEditingLesson(lesson);
     setEditingLessonFormat(getLessonFormat(lesson));
+    setEditingLessonMinutes(
+      lesson.duration_seconds > 0 ? Math.ceil(lesson.duration_seconds / 60) : "",
+    );
     applyLessonDraftToState(lessonToDraft(lesson));
     setEditingLessonYoutubeStartLabel(
       formatSecondsToTimestamp(lesson.youtube_start_seconds ?? 0),
@@ -2737,6 +2965,7 @@ const InstructorCourseEdit = () => {
           shortDescription: localized?.short_description ?? lesson.short_description ?? "",
           markdown: localized?.description_markdown ?? lesson.description_markdown ?? "",
           resources: (localized?.resources ?? lesson.resources ?? []).map((r) => ({ title: r.title ?? "", url: r.url ?? "" })),
+          practiceSourceLessonId: lesson.practice_source_lesson_id ?? "",
         };
         if (!lessonDraftRef.current.has(loc)) {
           lessonDraftRef.current.set(loc, draft);
@@ -2774,10 +3003,18 @@ const InstructorCourseEdit = () => {
       const primaryDraft =
         lessonDraftRef.current.get(primaryContentLocale) ?? captureLessonDraftFromState();
       const isArticleFormat = editingLessonFormat === "article";
+      const isPracticeFormat = editingLessonFormat === "practice";
+      const isQuizFormat = editingLessonFormat === "quiz";
       const isNonVideoFormat = editingLessonFormat !== "video";
       if (isArticleFormat) {
         if (!primaryDraft.markdown.trim() && !primaryDraft.shortDescription.trim()) {
           toast.error(t("courseEdit.lessons.articleContentRequired"));
+          return;
+        }
+      }
+      if (isPracticeFormat) {
+        if (!primaryDraft.markdown.trim()) {
+          toast.error(t("courseEdit.lessons.practiceContentRequired"));
           return;
         }
       }
@@ -2914,6 +3151,12 @@ const InstructorCourseEdit = () => {
                 : {}),
             }
           : {};
+      const nonVideoDurationPatch =
+        isQuizFormat || isPracticeFormat
+          ? { duration_seconds: 0 }
+          : isNonVideoFormat && editingLessonMinutes !== "" && Number(editingLessonMinutes) > 0
+          ? { duration_seconds: Math.max(0, Math.floor(Number(editingLessonMinutes) * 60)) }
+          : {};
 
       for (const [loc, draft] of lessonDraftRef.current) {
         const sanitizedResources = (draft.resources ?? [])
@@ -2926,15 +3169,23 @@ const InstructorCourseEdit = () => {
           has_subtitle: isNonVideoFormat ? false : draft.hasSubtitle,
           subtitle_locales:
             isNonVideoFormat || !draft.hasSubtitle ? [] : draft.subtitleLocales,
-          short_description: draft.shortDescription.trim() || undefined,
-          description_markdown: draft.markdown.trim() || undefined,
-          resources: sanitizedResources.length ? sanitizedResources : undefined,
+          short_description: isQuizFormat || isPracticeFormat ? "" : draft.shortDescription.trim() || undefined,
+          description_markdown: isQuizFormat ? "" : draft.markdown.trim() || undefined,
+          resources: isQuizFormat || isPracticeFormat
+            ? []
+            : sanitizedResources.length
+              ? sanitizedResources
+              : undefined,
+          practice_source_lesson_id: isPracticeFormat
+            ? draft.practiceSourceLessonId || undefined
+            : undefined,
         };
         if (loc === primaryContentLocale) {
           const merged = {
             ...payload,
             lesson_format: editingLessonFormat,
             ...segmentPrimaryPatch,
+            ...nonVideoDurationPatch,
           };
           await updateLesson(id, editingLesson.id, merged, {
             clearYoutube: isNonVideoFormat,
@@ -5981,6 +6232,10 @@ const InstructorCourseEdit = () => {
                           setNewLessonIsPreviewFree(false);
                           setNewLessonMarkdown("");
                           setNewLessonResources([]);
+                          setNewPracticeSourceLessonId("");
+                          setNewQuizQuestions([]);
+                          resetNewQuizGenerationState();
+                          setNewLessonFormat("video");
                         }}
                         className="inline-flex items-center gap-1"
                       >
@@ -6224,7 +6479,13 @@ const InstructorCourseEdit = () => {
                       </p>
                     </div>
                   ) : null}
-                  <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_360px]">
+                  <div
+                    className={cn(
+                      "grid gap-6",
+                      editingLessonFormat !== "quiz" &&
+                        "md:grid-cols-[minmax(0,1fr)_360px]",
+                    )}
+                  >
                 <div className="space-y-4 md:pr-2">
                   {dialogLessonLocale === primaryContentLocale ? (
                     <Field>
@@ -6234,6 +6495,23 @@ const InstructorCourseEdit = () => {
                         onChange={(next) => {
                           setEditingLessonFormat(next);
                           if (next !== "video") setEditingLessonYoutubeUrl("");
+                          if (next === "quiz") {
+                            setEditingLessonShortDescription("");
+                            setEditingLessonMarkdown("");
+                            setEditingLessonMinutes("");
+                            setEditingLessonResources([]);
+                          } else if (next === "practice") {
+                            setEditingLessonShortDescription("");
+                            setEditingLessonMinutes("");
+                            setEditingLessonResources([]);
+                            const source = getPracticeSourceLessons(
+                              editingLesson?.section_id,
+                              editingLesson?.id,
+                            ).at(-1);
+                            setEditingPracticeSourceLessonId(
+                              editingPracticeSourceLessonId || source?.id || "",
+                            );
+                          }
                         }}
                         videoLabel={t("courseEdit.lessons.formatVideo")}
                         articleLabel={t("courseEdit.lessons.formatArticle")}
@@ -6311,6 +6589,29 @@ const InstructorCourseEdit = () => {
                       placeholder={t("courseEdit.content.lessonTitlePlaceholder")}
                     />
                   </Field>
+                  {dialogLessonLocale === primaryContentLocale &&
+                  editingLessonFormat === "article" ? (
+                    <Field>
+                      <FieldLabel>{t("courseEdit.lessons.durationMinutesLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={
+                          editingLessonMinutes === "" ? "" : String(editingLessonMinutes)
+                        }
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setEditingLessonMinutes(
+                            v === "" ? "" : Math.max(0, parseInt(v, 10) || 0),
+                          );
+                        }}
+                        placeholder={t("courseEdit.content.lessonMinutesPlaceholder")}
+                      />
+                      <p className="mt-1 text-xs text-foreground-muted">
+                        {t("courseEdit.lessons.nonVideoDurationHint")}
+                      </p>
+                    </Field>
+                  ) : null}
                   {editingLessonFormat === "video" ? (
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.videoPrimaryLocaleLabel")}</FieldLabel>
@@ -6334,6 +6635,7 @@ const InstructorCourseEdit = () => {
                     </p>
                   </Field>
                   ) : null}
+                  {editingLessonFormat !== "quiz" ? (
                   <Field>
                     <FieldLabel>
                       <span>{t("courseEdit.lessons.shortDescriptionLabel")}</span>
@@ -6367,9 +6669,68 @@ const InstructorCourseEdit = () => {
                       placeholder={t("courseEdit.lessons.shortDescriptionPlaceholder")}
                     />
                   </Field>
+                  ) : null}
+                  {dialogLessonLocale === primaryContentLocale &&
+                  editingLessonFormat === "practice" &&
+                  editingLesson ? (
+                    <Field>
+                      <FieldLabel>{t("courseEdit.lessons.practiceSourceLabel")}</FieldLabel>
+                      <select
+                        value={editingPracticeSourceLessonId}
+                        onChange={(e) => setEditingPracticeSourceLessonId(e.target.value)}
+                        className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                      >
+                        <option value="">
+                          {t("courseEdit.lessons.practiceSourceNone")}
+                        </option>
+                        {getPracticeSourceLessons(
+                          editingLesson.section_id,
+                          editingLesson.id,
+                        ).map((lesson) => (
+                          <option key={lesson.id} value={lesson.id}>
+                            {lesson.title}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="mt-1 text-xs text-foreground-muted">
+                        {t("courseEdit.lessons.practiceSourceHint")}
+                      </p>
+                    </Field>
+                  ) : null}
+                  {editingLessonFormat === "quiz" && editingLesson ? (
+                    <div className="rounded-lg border border-border-subtle bg-surface-raised p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t("courseEdit.lessons.quizSetupTitle")}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-foreground-muted">
+                            {t("courseEdit.lessons.quizSetupHint")}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => openLessonQuizGenerator(editingLesson)}
+                        >
+                          <CheckSquare className="size-4" aria-hidden />
+                          {t("courseEdit.lessons.lessonQuestions")}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+                  {editingLessonFormat !== "quiz" ? (
                   <Field>
                     <FieldLabel>
-                      <span>{t("courseEdit.lessons.markdownLabel")}</span>
+                      <span>
+                        {t(
+                          editingLessonFormat === "practice"
+                            ? "courseEdit.lessons.practiceMarkdownLabel"
+                            : "courseEdit.lessons.markdownLabel",
+                        )}
+                      </span>
                       <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {dialogLessonLocale.toUpperCase()}
                       </span>
@@ -6395,7 +6756,11 @@ const InstructorCourseEdit = () => {
                       </Button>
                     </FieldLabel>
                     <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseEdit.lessons.markdownHint")}
+                      {t(
+                        editingLessonFormat === "practice"
+                          ? "courseEdit.lessons.practiceMarkdownHint"
+                          : "courseEdit.lessons.markdownHint",
+                      )}
                     </p>
                     <textarea
                       value={editingLessonMarkdown}
@@ -6404,6 +6769,8 @@ const InstructorCourseEdit = () => {
                       rows={10}
                     />
                   </Field>
+                  ) : null}
+                  {editingLessonFormat !== "quiz" && editingLessonFormat !== "practice" ? (
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.resourcesLabel")}</FieldLabel>
                     <div className="mt-2 space-y-2">
@@ -6462,7 +6829,9 @@ const InstructorCourseEdit = () => {
                       {t("courseEdit.lessons.addResource")}
                     </Button>
                   </Field>
+                  ) : null}
                 </div>
+                {editingLessonFormat !== "quiz" ? (
                 <div className="space-y-4 md:sticky md:top-4 md:self-start">
                   <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
                     <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -6510,6 +6879,7 @@ const InstructorCourseEdit = () => {
                     ) : null}
                   </div>
                 </div>
+                ) : null}
                   </div>
                 </div>
                 <DialogFooter className="sticky bottom-0 z-10 border-t border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
@@ -6746,7 +7116,13 @@ const InstructorCourseEdit = () => {
                   </div>
                 </DialogHeader>
                 <div className="flex-1 overflow-y-auto p-4">
-                  <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_360px]">
+                  <div
+                    className={cn(
+                      "grid gap-6",
+                      newLessonFormat !== "quiz" &&
+                        "md:grid-cols-[minmax(0,1fr)_360px]",
+                    )}
+                  >
                 <div className="space-y-4 md:pr-2">
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.formatLabel")}</FieldLabel>
@@ -6755,6 +7131,22 @@ const InstructorCourseEdit = () => {
                       onChange={(next) => {
                         setNewLessonFormat(next);
                         if (next !== "video") setNewLessonYoutubeUrl("");
+                        if (next === "quiz") {
+                          setNewLessonShortDescription("");
+                          setNewLessonMarkdown("");
+                          setNewLessonMinutes("");
+                          setNewLessonResources([]);
+                          seedNewQuizSourceLessons(addingLessonDraftSectionId);
+                          setNewQuizQuestions((prev) =>
+                            prev.length > 0 ? prev : [makeBlankNewQuizQuestion()],
+                          );
+                        } else if (next === "practice") {
+                          setNewLessonShortDescription("");
+                          setNewLessonMinutes("");
+                          setNewLessonResources([]);
+                          const source = getPracticeSourceLessons(addingLessonDraftSectionId).at(-1);
+                          setNewPracticeSourceLessonId(source?.id ?? "");
+                        }
                       }}
                       videoLabel={t("courseEdit.lessons.formatVideo")}
                       articleLabel={t("courseEdit.lessons.formatArticle")}
@@ -6807,6 +7199,7 @@ const InstructorCourseEdit = () => {
                       placeholder={t("courseEdit.content.lessonTitlePlaceholder")}
                     />
                   </Field>
+                  {newLessonFormat !== "quiz" && newLessonFormat !== "practice" ? (
                   <Field>
                     <FieldLabel>
                       <span>{t("courseEdit.lessons.shortDescriptionLabel")}</span>
@@ -6839,6 +7232,8 @@ const InstructorCourseEdit = () => {
                       placeholder={t("courseEdit.lessons.shortDescriptionPlaceholder")}
                     />
                   </Field>
+                  ) : null}
+                  {newLessonFormat === "video" || newLessonFormat === "article" ? (
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.durationMinutesLabel")}</FieldLabel>
                     <Input
@@ -6854,10 +7249,15 @@ const InstructorCourseEdit = () => {
                       placeholder={t("courseEdit.content.lessonMinutesPlaceholder")}
                     />
                     <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseEdit.lessons.durationHint")}
+                      {t(
+                        newLessonFormat === "video"
+                          ? "courseEdit.lessons.durationHint"
+                          : "courseEdit.lessons.nonVideoDurationHint",
+                      )}
                     </p>
                   </Field>
-                  {form.access_model === "paid_upfront" && (
+                  ) : null}
+                  {form.access_model === "paid_upfront" && newLessonFormat !== "quiz" && (
                     <label className="inline-flex items-center gap-2 text-xs text-foreground-muted">
                       <input
                         type="checkbox"
@@ -6868,9 +7268,233 @@ const InstructorCourseEdit = () => {
                       {t("courseEdit.lessons.previewFreeLabel")}
                     </label>
                   )}
+                  {newLessonFormat === "quiz" ? (
+                    <div className="space-y-3 rounded-lg border border-border-subtle bg-surface-raised p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t("courseEdit.lessons.quizSetupTitle")}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-foreground-muted">
+                            {t("courseEdit.lessons.quizCreateHint")}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() =>
+                            setNewQuizQuestions((prev) => [
+                              ...prev,
+                              makeBlankNewQuizQuestion(),
+                            ])
+                          }
+                        >
+                          <Plus className="size-4" aria-hidden />
+                          {t("courseEdit.questions.add")}
+                        </Button>
+                      </div>
+                      {getNewQuizSourceLessons().length > 0 ? (
+                        <div className="grid gap-4 rounded-lg border border-border-subtle bg-surface-base p-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
+                              {t("courseEdit.questions.sourceLessons")}
+                            </p>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {getNewQuizSourceLessons().map((lesson) => (
+                                <label
+                                  key={lesson.id}
+                                  className="flex items-start gap-2 rounded-md border border-border-subtle bg-surface-raised px-3 py-2 text-xs text-foreground-muted"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={newQuizSourceLessonIds.has(lesson.id)}
+                                    onChange={() => toggleNewQuizSourceLesson(lesson.id)}
+                                    className="mt-0.5 shrink-0 rounded border-border accent-primary"
+                                  />
+                                  <span className="line-clamp-2">{lesson.title}</span>
+                                </label>
+                              ))}
+                            </div>
+                            {newQuizGeneratedSources.length > 0 ? (
+                              <p className="text-xs text-foreground-muted">
+                                {t("courseEdit.questions.sources")}:{" "}
+                                {newQuizGeneratedSources
+                                  .map((source) => source.lessonTitle)
+                                  .join(", ")}
+                              </p>
+                            ) : null}
+                            {newQuizGenerateError ? (
+                              <p className="text-xs text-destructive">
+                                {newQuizGenerateError}
+                              </p>
+                            ) : null}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                            <select
+                              value={newQuizQuestionCount}
+                              onChange={(e) =>
+                                setNewQuizQuestionCount(parseInt(e.target.value, 10) || 5)
+                              }
+                              className="h-9 rounded border border-border bg-surface-base px-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                              aria-label={t("courseEdit.questions.count")}
+                            >
+                              {NEW_QUIZ_COUNT_OPTIONS.map((count) => (
+                                <option key={count} value={count}>
+                                  {count}
+                                </option>
+                              ))}
+                            </select>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={
+                                newQuizGenerating || newQuizSourceLessonIds.size === 0
+                              }
+                              onClick={() => void handleGenerateNewQuizQuestions()}
+                            >
+                              {newQuizGenerating ? (
+                                <Loader2 className="size-4 animate-spin" aria-hidden />
+                              ) : (
+                                <Sparkles className="size-4" aria-hidden />
+                              )}
+                              {newQuizGenerating
+                                ? t("courseEdit.questions.generating")
+                                : t("courseEdit.questions.generate")}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : null}
+                      {newQuizQuestions.length > 0 ? (
+                        <div className="space-y-3">
+                          {newQuizQuestions.map((question, questionIndex) => (
+                            <div
+                              key={question._key}
+                              className="space-y-3 rounded-lg border border-border-subtle bg-surface-base p-3"
+                            >
+                              <div className="flex items-start gap-2">
+                                <span className="mt-2 shrink-0 rounded border border-border-subtle px-2 py-0.5 text-xs font-medium text-foreground-muted">
+                                  {questionIndex + 1}
+                                </span>
+                                <textarea
+                                  value={question.question}
+                                  onChange={(e) =>
+                                    updateNewQuizQuestion(questionIndex, (prev) => ({
+                                      ...prev,
+                                      question: e.target.value,
+                                    }))
+                                  }
+                                  rows={2}
+                                  placeholder={t("courseEdit.questions.questionPlaceholder")}
+                                  className="min-h-[68px] w-full resize-none rounded border border-border bg-surface-base px-3 py-2 text-sm leading-5 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-xs"
+                                  className="mt-1 shrink-0 text-destructive"
+                                  onClick={() =>
+                                    setNewQuizQuestions((prev) =>
+                                      prev.filter((_, i) => i !== questionIndex),
+                                    )
+                                  }
+                                  aria-label={t("courseEdit.questions.remove")}
+                                >
+                                  <Trash2 className="size-4" aria-hidden />
+                                </Button>
+                              </div>
+                              <div className="space-y-2">
+                                {question.options.map((option, optionIndex) => (
+                                  <div key={option.id} className="flex items-center gap-2">
+                                    <input
+                                      type="radio"
+                                      name={`new-quiz-correct-${question._key}`}
+                                      checked={question.correct_index === optionIndex}
+                                      onChange={() =>
+                                        updateNewQuizQuestion(questionIndex, (prev) => ({
+                                          ...prev,
+                                          correct_index: optionIndex,
+                                        }))
+                                      }
+                                      className="shrink-0 accent-primary"
+                                      aria-label={t("courseEdit.questions.correctAnswer", {
+                                        option: option.id.toUpperCase(),
+                                      })}
+                                    />
+                                    <span className="w-5 shrink-0 text-xs font-medium uppercase text-foreground-muted">
+                                      {option.id}
+                                    </span>
+                                    <Input
+                                      value={option.text}
+                                      onChange={(e) =>
+                                        updateNewQuizQuestionOption(
+                                          questionIndex,
+                                          optionIndex,
+                                          e.target.value,
+                                        )
+                                      }
+                                      placeholder={t("courseEdit.questions.optionPlaceholder", {
+                                        option: option.id.toUpperCase(),
+                                      })}
+                                      className="h-9 flex-1 text-sm"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                              <Input
+                                value={question.explanation ?? ""}
+                                onChange={(e) =>
+                                  updateNewQuizQuestion(questionIndex, (prev) => ({
+                                    ...prev,
+                                    explanation: e.target.value,
+                                  }))
+                                }
+                                placeholder={t("courseEdit.questions.explanationPlaceholder")}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="rounded-md border border-dashed border-border-subtle px-3 py-4 text-center text-sm text-foreground-muted">
+                          {t("courseEdit.questions.emptyInline")}
+                        </p>
+                      )}
+                    </div>
+                  ) : null}
+                  {newLessonFormat === "practice" ? (
+                    <Field>
+                      <FieldLabel>{t("courseEdit.lessons.practiceSourceLabel")}</FieldLabel>
+                      <select
+                        value={newPracticeSourceLessonId}
+                        onChange={(e) => setNewPracticeSourceLessonId(e.target.value)}
+                        className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                      >
+                        <option value="">
+                          {t("courseEdit.lessons.practiceSourceNone")}
+                        </option>
+                        {getPracticeSourceLessons(addingLessonDraftSectionId).map((lesson) => (
+                          <option key={lesson.id} value={lesson.id}>
+                            {lesson.title}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="mt-1 text-xs text-foreground-muted">
+                        {t("courseEdit.lessons.practiceSourceHint")}
+                      </p>
+                    </Field>
+                  ) : null}
+                  {newLessonFormat !== "quiz" ? (
                   <Field>
                     <FieldLabel>
-                      <span>{t("courseEdit.lessons.markdownLabel")}</span>
+                      <span>
+                        {t(
+                          newLessonFormat === "practice"
+                            ? "courseEdit.lessons.practiceMarkdownLabel"
+                            : "courseEdit.lessons.markdownLabel",
+                        )}
+                      </span>
                       <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {activeContentLocale.toUpperCase()}
                       </span>
@@ -6895,7 +7519,11 @@ const InstructorCourseEdit = () => {
                       </Button>
                     </FieldLabel>
                     <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseEdit.lessons.markdownHint")}
+                      {t(
+                        newLessonFormat === "practice"
+                          ? "courseEdit.lessons.practiceMarkdownHint"
+                          : "courseEdit.lessons.markdownHint",
+                      )}
                     </p>
                     <textarea
                       value={newLessonMarkdown}
@@ -6904,6 +7532,8 @@ const InstructorCourseEdit = () => {
                       rows={10}
                     />
                   </Field>
+                  ) : null}
+                  {newLessonFormat !== "quiz" && newLessonFormat !== "practice" ? (
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.resourcesLabel")}</FieldLabel>
                     <div className="mt-2 space-y-2">
@@ -6962,7 +7592,9 @@ const InstructorCourseEdit = () => {
                       {t("courseEdit.lessons.addResource")}
                     </Button>
                   </Field>
+                  ) : null}
                 </div>
+                {newLessonFormat !== "quiz" ? (
                 <div className="space-y-4 md:sticky md:top-4 md:self-start">
                   <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
                     <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -7010,6 +7642,7 @@ const InstructorCourseEdit = () => {
                     ) : null}
                   </div>
                 </div>
+                ) : null}
                   </div>
                 </div>
                 <DialogFooter className="sticky bottom-0 z-10 border-t border-border-subtle bg-surface-float/95 p-4 backdrop-blur">
@@ -7678,14 +8311,7 @@ const InstructorCourseEdit = () => {
         mode="lesson"
         lessonId={lessonQuizDialogLesson?.id}
         lessonTitle={lessonQuizDialogLesson?.title}
-        sectionLessons={
-          lessonQuizDialogLesson
-            ? lessons
-                .filter((l) => l.section_id === lessonQuizDialogLesson.section_id)
-                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                .map((l) => ({ id: l.id, title: l.title }))
-            : []
-        }
+        sectionLessons={lessonQuizDialogSectionLessons}
         onOpenChange={(open) => {
           setLessonQuizDialogOpen(open);
           if (!open) setLessonQuizDialogLesson(null);

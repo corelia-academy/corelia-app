@@ -32,10 +32,10 @@ export function isLessonPublishedForLearners(
     "lesson_format" | "youtube_url" | "description_markdown" | "short_description"
   >,
 ): boolean {
-  if (isArticleLesson(lesson)) {
-    return Boolean(
-      lesson.description_markdown?.trim() || lesson.short_description?.trim(),
-    );
+  const format = getLessonFormat(lesson);
+  if (format === "quiz") return true;
+  if (format === "article" || format === "practice") {
+    return Boolean(lesson.description_markdown?.trim() || lesson.short_description?.trim());
   }
   return Boolean(lesson.youtube_url?.trim());
 }
