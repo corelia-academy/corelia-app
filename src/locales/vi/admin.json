@@ -397,8 +397,12 @@
     "empty": "Chưa có batch voucher nào.",
     "created": "Đã tạo batch voucher.",
     "batchUpdated": "Đã cập nhật batch.",
+    "batchDeleted": "Đã xóa batch voucher.",
     "codeUpdated": "Đã cập nhật mã voucher.",
     "saveFailed": "Không lưu được batch voucher.",
+    "delete": "Xóa",
+    "deleteConfirmTitle": "Xóa batch voucher?",
+    "deleteConfirmBody": "Batch \"{{name}}\" và toàn bộ mã chưa dùng sẽ bị xóa vĩnh viễn. Không thể hoàn tác.",
     "copyFailed": "Không copy được danh sách mã.",
     "codesCopied": "Đã copy danh sách mã voucher.",
     "showing": "Hiển thị {{shown}} / {{total}} batch",
@@ -442,6 +446,7 @@
     "codesTable": {
       "code": "Mã",
       "status": "Trạng thái",
+      "usedAt": "Đã dùng lúc",
       "actions": "Thao tác"
     },
     "codeFilters": {
