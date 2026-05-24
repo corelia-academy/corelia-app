@@ -6,7 +6,7 @@
 
 ALTER TABLE public.course_section_questions
   ADD COLUMN IF NOT EXISTS lesson_id uuid
-    REFERENCES public.lessons(id) ON DELETE CASCADE;
+    REFERENCES public.course_lessons(id) ON DELETE CASCADE;
 
 -- Index for fast lesson-scoped retrieval
 CREATE INDEX IF NOT EXISTS idx_csq_lesson_id
@@ -17,7 +17,7 @@ CREATE INDEX IF NOT EXISTS idx_csq_lesson_id
 
 ALTER TABLE public.section_question_attempts
   ADD COLUMN IF NOT EXISTS lesson_id uuid
-    REFERENCES public.lessons(id) ON DELETE CASCADE;
+    REFERENCES public.course_lessons(id) ON DELETE CASCADE;
 
 -- Index for fast retrieval of attempts by user + lesson
 CREATE INDEX IF NOT EXISTS idx_sqa_user_lesson
