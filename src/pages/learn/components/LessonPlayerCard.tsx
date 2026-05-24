@@ -121,7 +121,12 @@ export function LessonPlayerCard({
           </div>
         </div>
       ) : quizLesson && courseId && lesson ? (
-        <LessonQuiz courseId={courseId} lessonId={lesson.id} lessonTitle={lesson.title} />
+        <LessonQuiz
+          courseId={courseId}
+          lessonId={lesson.id}
+          lessonTitle={lesson.title}
+          onPassed={completed ? undefined : onMarkComplete}
+        />
       ) : practiceLesson && lesson?.description_markdown?.trim() ? (
         <LessonPractice markdown={lesson.description_markdown} />
       ) : lesson ? (
@@ -205,9 +210,11 @@ export function LessonPlayerCard({
                 <CheckCircle2 className="w-4 h-4" aria-hidden />{" "}
                 {completed
                   ? translate("detail.learn.markComplete.done")
-                  : articleLesson
-                    ? translate("detail.learn.markComplete.actionArticle")
-                    : translate("detail.learn.markComplete.action")}
+                  : practiceLesson
+                    ? translate("detail.learn.markComplete.actionPractice")
+                    : articleLesson
+                      ? translate("detail.learn.markComplete.actionArticle")
+                      : translate("detail.learn.markComplete.action")}
               </Button>
               {previousLesson ? (
                 <Button

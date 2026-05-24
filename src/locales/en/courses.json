@@ -285,7 +285,8 @@
       "markComplete": {
         "done": "Completed",
         "action": "Mark as watched",
-        "actionArticle": "Mark as read"
+        "actionArticle": "Mark as read",
+        "actionPractice": "Mark as done"
       },
       "nav": {
         "previous": "Previous",
