@@ -345,6 +345,9 @@ export default function Learn() {
 
   const shouldShowFinalAssignment =
     !nextLesson && hasFullCourseAccess && !!course.final_assignment_title;
+  const shouldShowSectionQuiz =
+    currentLesson?.lesson_format !== "quiz" &&
+    currentLesson?.lesson_format !== "practice";
 
   const curriculumProps = {
     courseId: courseId,
@@ -440,8 +443,9 @@ export default function Learn() {
         courseId={courseId}
       />
 
-      {sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (
+      {shouldShowSectionQuiz && sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (
         <SectionQuiz
+          key={currentLesson.section_id}
           courseId={courseId}
           sectionId={currentLesson.section_id}
           sectionTitle={

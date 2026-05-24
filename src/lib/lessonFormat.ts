@@ -57,6 +57,22 @@ export function isActivityLesson(
   return format === "quiz" || format === "practice";
 }
 
+export function getActivityLessonDisplayName(format: LessonFormat, index: number): string {
+  const n = Math.max(1, Math.floor(index));
+  if (format === "quiz") return `Quiz ${n}`;
+  if (format === "practice") return `Practice ${n}`;
+  return `Lesson ${n}`;
+}
+
+export function getNextActivityLessonTitle(
+  format: LessonFormat,
+  sectionLessons: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description">[],
+): string {
+  if (format !== "quiz" && format !== "practice") return "";
+  const count = sectionLessons.filter((lesson) => getLessonFormat(lesson) === format).length;
+  return getActivityLessonDisplayName(format, count + 1);
+}
+
 /** Split lessons into content (video/article) and activity (quiz/practice) counts. */
 export function splitLessonCounts<T extends Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description">>(
   lessons: T[],

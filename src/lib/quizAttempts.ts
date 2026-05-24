@@ -27,7 +27,7 @@ export async function submitQuizAttempt(
       selected_index: params.selectedIndex,
       is_correct: params.isCorrect,
     })
-    .select("id,user_id,course_id,section_id,question_id,selected_index,is_correct,attempted_at")
+    .select("id,user_id,course_id,section_id,lesson_id,question_id,selected_index,is_correct,attempted_at")
     .single();
 
   if (error) throw new Error(error.message);
@@ -55,7 +55,7 @@ export async function submitSectionQuizAttempts(
   const { data, error } = await supabase
     .from("section_question_attempts")
     .insert(rows)
-    .select("id,user_id,course_id,section_id,question_id,selected_index,is_correct,attempted_at");
+    .select("id,user_id,course_id,section_id,lesson_id,question_id,selected_index,is_correct,attempted_at");
 
   if (error) throw new Error(error.message);
   return (data ?? []) as SectionQuestionAttempt[];
@@ -68,9 +68,10 @@ export async function getSectionQuizResult(
 ): Promise<SectionQuizResult | null> {
   const { data, error } = await supabase
     .from("section_question_attempts")
-    .select("id,user_id,course_id,section_id,question_id,selected_index,is_correct,attempted_at")
+    .select("id,user_id,course_id,section_id,lesson_id,question_id,selected_index,is_correct,attempted_at")
     .eq("course_id", courseId)
     .eq("section_id", sectionId)
+    .is("lesson_id", null)
     .order("attempted_at", { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -127,7 +128,7 @@ export async function submitLessonQuizAttempts(
   const { data, error } = await supabase
     .from("section_question_attempts")
     .insert(rows)
-    .select("id,user_id,course_id,section_id,question_id,selected_index,is_correct,attempted_at");
+    .select("id,user_id,course_id,section_id,lesson_id,question_id,selected_index,is_correct,attempted_at");
 
   if (error) throw new Error(error.message);
   return (data ?? []) as SectionQuestionAttempt[];
@@ -140,7 +141,7 @@ export async function getLessonQuizResult(
 ): Promise<SectionQuizResult | null> {
   const { data, error } = await supabase
     .from("section_question_attempts")
-    .select("id,user_id,course_id,section_id,question_id,selected_index,is_correct,attempted_at")
+    .select("id,user_id,course_id,section_id,lesson_id,question_id,selected_index,is_correct,attempted_at")
     .eq("course_id", courseId)
     .eq("lesson_id", lessonId)
     .order("attempted_at", { ascending: false });
@@ -171,8 +172,10 @@ export async function getLessonQuizResult(
 export async function getSectionQuizResults(courseId: string): Promise<SectionQuizResult[]> {
   const { data, error } = await supabase
     .from("section_question_attempts")
-    .select("id,user_id,course_id,section_id,question_id,selected_index,is_correct,attempted_at")
+    .select("id,user_id,course_id,section_id,lesson_id,question_id,selected_index,is_correct,attempted_at")
     .eq("course_id", courseId)
+    .not("section_id", "is", null)
+    .is("lesson_id", null)
     .order("attempted_at", { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -180,6 +183,7 @@ export async function getSectionQuizResults(courseId: string): Promise<SectionQu
 
   const bySectionQuestion = new Map<string, Map<string, SectionQuestionAttempt>>();
   for (const a of attempts) {
+    if (!a.section_id) continue;
     if (!bySectionQuestion.has(a.section_id)) {
       bySectionQuestion.set(a.section_id, new Map());
     }

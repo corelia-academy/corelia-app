@@ -50,6 +50,7 @@ export type GenerateDescriptionRequest = {
   action?: DescriptionGeneratorAction;
   type: DescriptionGeneratorType;
   targetField: DescriptionGeneratorTargetField;
+  intent?: "practice";
   locale: SupportedCourseLocale;
   sourceLocale?: SupportedCourseLocale;
   sourceInputs?: DescriptionSourceInput[];

@@ -111,14 +111,16 @@ export function CourseHero({
 
           <div className="mt-6 grid gap-4 text-sm">
             <dl className="grid grid-cols-1 gap-2 rounded-md bg-surface-raised p-4 text-sm sm:grid-cols-2">
-              <div>
-                <dt className="text-foreground-muted">
-                  {translate("detail.courseDetail.stats.duration")}
-                </dt>
-                <dd className="mt-0.5 font-medium text-foreground">
-                  {formatDuration(displayTotalDuration)}
-                </dd>
-              </div>
+              {displayTotalDuration > 0 ? (
+                <div>
+                  <dt className="text-foreground-muted">
+                    {translate("detail.courseDetail.stats.duration")}
+                  </dt>
+                  <dd className="mt-0.5 font-medium text-foreground">
+                    {formatDuration(displayTotalDuration)}
+                  </dd>
+                </div>
+              ) : null}
               <div>
                 <dt className="text-foreground-muted">
                   {translate("detail.courseDetail.stats.curriculum")}
