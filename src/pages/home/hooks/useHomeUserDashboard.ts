@@ -27,15 +27,20 @@ export function useHomeUserDashboard(user: User | null, t: TFunction<"common">) 
       perfMeasureStart("home.dashboard_wave");
 
       try {
-        const [{ getMyEnrollments, getCourse, getCourseLessons, getCourseSections, getLessonProgressForCourse, sortLessonsByCurriculum, computeProgressPercent, getNextLesson }, { getHomeDashboardConfig }] = await Promise.all([
+        const [{ getMyEnrollments, getCourse, getCourseLessons, getCourseSections, getLessonProgressForCourse, sortLessonsByCurriculum, computeProgressPercent, getNextLesson, backfillMissingEnrollmentsForUser }, { getHomeDashboardConfig }] = await Promise.all([
           import("@/lib/courses"),
           import("@/lib/dashboardConfig"),
         ]);
 
-        const [enrollments, homeConfig] = await Promise.all([
+        const [enrollmentsInitial, homeConfig] = await Promise.all([
           getMyEnrollments(user.id).catch(() => [] as Enrollment[]),
           getHomeDashboardConfig().catch(() => null),
         ]);
+
+        const created = await backfillMissingEnrollmentsForUser(user.id).catch(() => 0);
+        const enrollments = created > 0
+          ? await getMyEnrollments(user.id).catch(() => enrollmentsInitial)
+          : enrollmentsInitial;
 
         const enrollmentCards = await Promise.all<FocusCard | null>(
           enrollments
