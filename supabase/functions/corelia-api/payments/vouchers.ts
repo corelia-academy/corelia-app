@@ -1,4 +1,4 @@
-import { randomHex } from "../lib/crypto.ts";
+import { randomAlphanumeric } from "../lib/crypto.ts";
 import { getUserRole } from "../lib/authz.ts";
 import { nowIso } from "../lib/http.ts";
 import type { SupabaseClient } from "../lib/supabase.ts";
@@ -98,7 +98,7 @@ function assertBatchInput(input: BatchCreateInput) {
 }
 
 function buildVoucherCode(prefix = "") {
-  const suffix = randomHex(10).toUpperCase();
+  const suffix = randomAlphanumeric(8);
   return prefix ? `${prefix}-${suffix}` : suffix;
 }
 
