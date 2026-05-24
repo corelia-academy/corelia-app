@@ -175,8 +175,8 @@ export function LessonQuiz({
     : t("detail.learn.quiz.title");
 
   return (
-    <div className="px-4 py-6 pb-8 sm:px-6">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="mx-4 mb-8 overflow-hidden rounded-2xl border border-border-subtle shadow-card sm:mx-6">
+      <div className="px-6 py-6 space-y-6">
         <div className="space-y-1">
           <h2 className="text-[18px] font-semibold text-foreground">{title}</h2>
           <p className="text-[13px] text-foreground-muted">
