@@ -12,11 +12,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  AnnouncementBodyField,
-  announcementMessageToHtml,
-} from "@/components/email/AnnouncementBodyField";
+import { AnnouncementBodyField } from "@/components/email/AnnouncementBodyField";
 import { blastCareerTrackEmail, type BlastEmailResult } from "@/lib/courseBlast";
+import { announcementMessageToHtml } from "@/lib/email/announcementBody";
 
 const SUBJECT_MAX = 200;
 
