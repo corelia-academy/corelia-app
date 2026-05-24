@@ -397,8 +397,12 @@
     "empty": "No voucher batches yet.",
     "created": "Voucher batch created.",
     "batchUpdated": "Batch updated.",
+    "batchDeleted": "Voucher batch deleted.",
     "codeUpdated": "Voucher code updated.",
     "saveFailed": "Unable to save voucher batch.",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete voucher batch?",
+    "deleteConfirmBody": "Batch \"{{name}}\" and all unused codes will be permanently deleted. This cannot be undone.",
     "copyFailed": "Unable to copy voucher codes.",
     "codesCopied": "Voucher codes copied.",
     "showing": "Showing {{shown}} / {{total}} batches",
@@ -442,6 +446,7 @@
     "codesTable": {
       "code": "Code",
       "status": "Status",
+      "usedAt": "Used at",
       "actions": "Actions"
     },
     "codeFilters": {

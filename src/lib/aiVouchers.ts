@@ -205,6 +205,20 @@ export async function updateAiVoucherBatch(
   return rowToBatch(data as Record<string, unknown>);
 }
 
+export async function deleteAiVoucherBatch(batchId: string): Promise<void> {
+  const endpoint = coreliaEdgeUrl("payments.ai.vouchers.batchDelete");
+  const token = await getAccessToken();
+  if (!endpoint || !token) throw new Error("Phiên đăng nhập không hợp lệ.");
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...supabaseFunctionHeaders(token) },
+    credentials: "include",
+    body: JSON.stringify({ batchId }),
+  });
+  const data = (await res.json().catch(() => ({}))) as Partial<{ message: string }>;
+  if (!res.ok) throw new Error(data.message || "Không xóa được batch voucher.");
+}
+
 export async function setAiVoucherCodeActive(
   voucherId: string,
   active: boolean,
