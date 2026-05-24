@@ -18,7 +18,7 @@ import {
   createAiSubscriptionCheckout,
   getMyPaymentTransactions,
   previewAiVoucher,
-  submitSePayCheckoutForm,
+  completeSePayCheckout,
   type AiVoucherPreview,
   type AiSubscriptionDurationMonths,
   type AiSubscriptionTier,
@@ -307,7 +307,7 @@ export function AccountCoraRoute() {
           createdAt: Date.now(),
         } satisfies StoredCheckout),
       );
-      submitSePayCheckoutForm(checkout);
+      completeSePayCheckout(checkout);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("cora.errors.checkoutFailed"));
       setCheckoutLoading(false);

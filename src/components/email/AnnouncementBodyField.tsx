@@ -85,8 +85,3 @@ export function AnnouncementBodyField({
     </div>
   );
 }
-
-/** Convert plain message to HTML for blast/announcement APIs. */
-export function announcementMessageToHtml(message: string): string {
-  return plainTextToAnnouncementHtml(message);
-}

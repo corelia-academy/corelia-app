@@ -26,3 +26,8 @@ export function plainTextToAnnouncementHtml(text: string): string {
     })
     .join("");
 }
+
+/** Convert plain message to HTML for blast/announcement APIs. */
+export function announcementMessageToHtml(message: string): string {
+  return plainTextToAnnouncementHtml(message);
+}
