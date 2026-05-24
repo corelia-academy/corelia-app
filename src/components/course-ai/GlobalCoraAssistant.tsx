@@ -94,7 +94,7 @@ export function CoraAssistantCard({
       hideLabel={String(t("coraWidget.hideAction"))}
       onClearHistory={messages.length > 0 && !isLoading ? () => { void clearHistory(); } : undefined}
       clearHistoryLabel={String(t("coraWidget.clearHistoryAction"))}
-      onNewSession={!isLoading ? () => { void newSession(); } : undefined}
+      onNewSession={!isLoading && messages.length > 0 ? () => { void newSession(); } : undefined}
       newSessionLabel={String(t("coraWidget.newChatAction"))}
       historySlot={
         <CoraHistoryPopover

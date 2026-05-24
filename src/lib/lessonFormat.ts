@@ -1,13 +1,11 @@
-import type { CourseLesson } from "@/types/courses";
+import type { CourseLesson, LessonFormat } from "@/types/courses";
 
-export type LessonFormat = "video" | "article";
+export type { LessonFormat };
 
 export function getLessonFormat(
   lesson: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description">,
 ): LessonFormat {
-  if (lesson.lesson_format === "article" || lesson.lesson_format === "video") {
-    return lesson.lesson_format;
-  }
+  if (lesson.lesson_format) return lesson.lesson_format;
   if (lesson.youtube_url?.trim()) return "video";
   if (lesson.description_markdown?.trim() || lesson.short_description?.trim()) {
     return "article";

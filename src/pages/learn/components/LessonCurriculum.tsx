@@ -30,8 +30,8 @@ function LessonItem({
   return (
     <div
       className={cn(
-        "border-t border-border-subtle px-4 py-3 transition-colors duration-150",
-        active && "bg-primary-muted text-primary",
+        "border-t border-border-subtle border-l-[3px] pl-[calc(1rem-3px)] pr-4 py-3 transition-colors duration-150",
+        active ? "bg-primary-muted text-primary border-l-brand-accent" : "border-l-transparent",
         !locked && "hover:bg-surface-raised",
         locked && "opacity-75",
       )}

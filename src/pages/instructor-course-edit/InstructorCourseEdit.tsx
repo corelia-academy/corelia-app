@@ -14,9 +14,11 @@ import {
   Award,
   AlertTriangle,
   CheckCircle2,
+  CheckSquare,
   Download,
   GripVertical,
   Loader2,
+  PenLine,
   Settings,
   DollarSign,
   Trash2,
@@ -367,6 +369,8 @@ const InstructorCourseEdit = () => {
   const [translatingBundle, setTranslatingBundle] = useState<string | null>(null);
   const [questionGeneratorOpen, setQuestionGeneratorOpen] = useState(false);
   const [questionGeneratorSection, setQuestionGeneratorSection] = useState<CourseSection | null>(null);
+  const [lessonQuizDialogOpen, setLessonQuizDialogOpen] = useState(false);
+  const [lessonQuizDialogLesson, setLessonQuizDialogLesson] = useState<CourseLesson | null>(null);
   const [submissions, setSubmissions] = useState<FinalAssignmentSubmission[]>(
     [],
   );
@@ -2016,6 +2020,11 @@ const InstructorCourseEdit = () => {
     setQuestionGeneratorOpen(true);
   };
 
+  const openLessonQuizGenerator = (lesson: CourseLesson) => {
+    setLessonQuizDialogLesson(lesson);
+    setLessonQuizDialogOpen(true);
+  };
+
   const openEditSection = (section: CourseSection) => {
     sectionDraftRef.current = new Map();
     const initLocale = activeContentLocale;
@@ -2600,12 +2609,13 @@ const InstructorCourseEdit = () => {
     pendingNewLessonSnapRef.current = snap;
 
     const isArticleFormat = newLessonFormat === "article";
+    const isNonVideoNewFormat = newLessonFormat !== "video";
     if (isArticleFormat && !newLessonMarkdown.trim() && !newLessonShortDescription.trim()) {
       toast.error(t("courseEdit.lessons.articleContentRequired"));
       return;
     }
 
-    const youtubeUrl = isArticleFormat ? "" : newLessonYoutubeUrl.trim();
+    const youtubeUrl = isNonVideoNewFormat ? "" : newLessonYoutubeUrl.trim();
 
     setAddingLessonInProgress(true);
     try {
@@ -2619,7 +2629,7 @@ const InstructorCourseEdit = () => {
 
       const durationGuess = fromInput > 0 ? fromInput : fromApi;
 
-      if (!isArticleFormat && youtubeUrl && durationGuess > LONG_VIDEO_SPLIT_SECONDS) {
+      if (!isNonVideoNewFormat && youtubeUrl && durationGuess > LONG_VIDEO_SPLIT_SECONDS) {
         const videoDur = meta?.durationSeconds ?? durationGuess;
         const description = meta?.description ?? "";
         const chapterStarts = parseChaptersFromDescription(description, videoDur);
@@ -2764,6 +2774,7 @@ const InstructorCourseEdit = () => {
       const primaryDraft =
         lessonDraftRef.current.get(primaryContentLocale) ?? captureLessonDraftFromState();
       const isArticleFormat = editingLessonFormat === "article";
+      const isNonVideoFormat = editingLessonFormat !== "video";
       if (isArticleFormat) {
         if (!primaryDraft.markdown.trim() && !primaryDraft.shortDescription.trim()) {
           toast.error(t("courseEdit.lessons.articleContentRequired"));
@@ -2771,9 +2782,9 @@ const InstructorCourseEdit = () => {
         }
       }
 
-      const ytUrlTrimmedMaster = isArticleFormat ? "" : editingLessonYoutubeUrl.trim();
+      const ytUrlTrimmedMaster = isNonVideoFormat ? "" : editingLessonYoutubeUrl.trim();
       const learnerCount = lessonLearnerCounts[editingLesson.id] ?? 0;
-      if (!isArticleFormat && learnerCount > 0) {
+      if (!isNonVideoFormat && learnerCount > 0) {
         const prevId = getYoutubeVideoId(editingLesson.youtube_url ?? "");
         const nextId = getYoutubeVideoId(ytUrlTrimmedMaster);
         if (prevId && nextId && prevId !== nextId) {
@@ -2785,7 +2796,7 @@ const InstructorCourseEdit = () => {
       const prevVid = getYoutubeVideoId(editingLesson.youtube_url ?? "");
       const nextVid = getYoutubeVideoId(ytUrlTrimmedMaster);
       if (
-        !isArticleFormat &&
+        !isNonVideoFormat &&
         learnerCount === 0 &&
         ytUrlTrimmedMaster &&
         nextVid &&
@@ -2852,7 +2863,7 @@ const InstructorCourseEdit = () => {
 
       let youtube_start_seconds: number | undefined;
       let youtube_end_seconds: number | null | undefined;
-      if (!isArticleFormat && ytUrlTrimmedMaster) {
+      if (!isNonVideoFormat && ytUrlTrimmedMaster) {
         const startParsed =
           parseTimestampLabelToSeconds(editingLessonYoutubeStartLabel.trim()) ?? 0;
         youtube_start_seconds = startParsed > 0 ? startParsed : undefined;
@@ -2871,7 +2882,7 @@ const InstructorCourseEdit = () => {
       }
 
       let segmentDurationSeconds: number | undefined;
-      if (!isArticleFormat && ytUrlTrimmedMaster) {
+      if (!isNonVideoFormat && ytUrlTrimmedMaster) {
         const effectiveStart = youtube_start_seconds ?? 0;
         if (
           youtube_end_seconds != null &&
@@ -2893,7 +2904,7 @@ const InstructorCourseEdit = () => {
       }
 
       const segmentPrimaryPatch =
-        !isArticleFormat && ytUrlTrimmedMaster
+        !isNonVideoFormat && ytUrlTrimmedMaster
           ? {
               youtube_start_seconds,
               youtube_end_seconds:
@@ -2910,11 +2921,11 @@ const InstructorCourseEdit = () => {
           .filter((r) => r.title && r.url);
         const payload = {
           title: draft.title.trim() || editingLesson.title,
-          youtube_url: isArticleFormat ? undefined : draft.youtubeUrl.trim() || undefined,
+          youtube_url: isNonVideoFormat ? undefined : draft.youtubeUrl.trim() || undefined,
           video_primary_locale: draft.videoPrimaryLocale,
-          has_subtitle: isArticleFormat ? false : draft.hasSubtitle,
+          has_subtitle: isNonVideoFormat ? false : draft.hasSubtitle,
           subtitle_locales:
-            isArticleFormat || !draft.hasSubtitle ? [] : draft.subtitleLocales,
+            isNonVideoFormat || !draft.hasSubtitle ? [] : draft.subtitleLocales,
           short_description: draft.shortDescription.trim() || undefined,
           description_markdown: draft.markdown.trim() || undefined,
           resources: sanitizedResources.length ? sanitizedResources : undefined,
@@ -2926,8 +2937,8 @@ const InstructorCourseEdit = () => {
             ...segmentPrimaryPatch,
           };
           await updateLesson(id, editingLesson.id, merged, {
-            clearYoutube: isArticleFormat,
-            clearYoutubeSegments: Boolean(!isArticleFormat && ytUrlTrimmedMaster),
+            clearYoutube: isNonVideoFormat,
+            clearYoutubeSegments: Boolean(!isNonVideoFormat && ytUrlTrimmedMaster),
           });
           setLessons((prev) =>
             prev.map((l) => (l.id === editingLesson.id ? { ...l, ...merged } : l)),
@@ -5830,7 +5841,15 @@ const InstructorCourseEdit = () => {
                               >
                                 <GripVertical className="size-4" aria-hidden />
                               </button>
-                              <PlayCircle className="size-4 shrink-0 text-foreground-muted" />
+                              {lesson.lesson_format === "quiz" ? (
+                                <CheckSquare className="size-4 shrink-0 text-foreground-muted" />
+                              ) : lesson.lesson_format === "practice" ? (
+                                <PenLine className="size-4 shrink-0 text-foreground-muted" />
+                              ) : lesson.lesson_format === "article" ? (
+                                <FileText className="size-4 shrink-0 text-foreground-muted" />
+                              ) : (
+                                <PlayCircle className="size-4 shrink-0 text-foreground-muted" />
+                              )}
                               <span className="text-sm text-foreground truncate">
                                 {activeContentLocale !== primaryContentLocale && lessonLocaleMap.has(lesson.id)
                                   ? (lessonLocaleMap.get(lesson.id)?.title ?? lesson.title)
@@ -5912,6 +5931,16 @@ const InstructorCourseEdit = () => {
                                   />
                                   {t("courseEdit.lessons.previewFreeBadge")}
                                 </label>
+                              )}
+                              {lesson.lesson_format === "quiz" && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => openLessonQuizGenerator(lesson)}
+                                >
+                                  {t("courseEdit.lessons.lessonQuestions")}
+                                </Button>
                               )}
                               <Button
                                 type="button"
@@ -6204,10 +6233,12 @@ const InstructorCourseEdit = () => {
                         value={editingLessonFormat}
                         onChange={(next) => {
                           setEditingLessonFormat(next);
-                          if (next === "article") setEditingLessonYoutubeUrl("");
+                          if (next !== "video") setEditingLessonYoutubeUrl("");
                         }}
                         videoLabel={t("courseEdit.lessons.formatVideo")}
                         articleLabel={t("courseEdit.lessons.formatArticle")}
+                        quizLabel={t("courseEdit.lessons.formatQuiz")}
+                        practiceLabel={t("courseEdit.lessons.formatPractice")}
                         hint={t("courseEdit.lessons.formatHint")}
                         disabled={
                           !!editingLesson &&
@@ -6723,10 +6754,12 @@ const InstructorCourseEdit = () => {
                       value={newLessonFormat}
                       onChange={(next) => {
                         setNewLessonFormat(next);
-                        if (next === "article") setNewLessonYoutubeUrl("");
+                        if (next !== "video") setNewLessonYoutubeUrl("");
                       }}
                       videoLabel={t("courseEdit.lessons.formatVideo")}
                       articleLabel={t("courseEdit.lessons.formatArticle")}
+                      quizLabel={t("courseEdit.lessons.formatQuiz")}
+                      practiceLabel={t("courseEdit.lessons.formatPractice")}
                       hint={t("courseEdit.lessons.formatHint")}
                     />
                   </Field>
@@ -7635,6 +7668,27 @@ const InstructorCourseEdit = () => {
         onOpenChange={(open) => {
           setQuestionGeneratorOpen(open);
           if (!open) setQuestionGeneratorSection(null);
+        }}
+      />
+      <QuestionGeneratorDialog
+        open={lessonQuizDialogOpen}
+        section={null}
+        courseId={id ?? ""}
+        locale={activeContentLocale}
+        mode="lesson"
+        lessonId={lessonQuizDialogLesson?.id}
+        lessonTitle={lessonQuizDialogLesson?.title}
+        sectionLessons={
+          lessonQuizDialogLesson
+            ? lessons
+                .filter((l) => l.section_id === lessonQuizDialogLesson.section_id)
+                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                .map((l) => ({ id: l.id, title: l.title }))
+            : []
+        }
+        onOpenChange={(open) => {
+          setLessonQuizDialogOpen(open);
+          if (!open) setLessonQuizDialogLesson(null);
         }}
       />
     </PageContainer>

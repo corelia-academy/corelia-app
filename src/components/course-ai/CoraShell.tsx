@@ -32,6 +32,53 @@ export function CoraShell({
   historySlot?: ReactNode;
   className?: string;
 }) {
+  const hasActions = !!(onNewSession || historySlot || onClearHistory || onRequestHide);
+
+  const actionButtons = (
+    <div className="flex shrink-0 items-center gap-1">
+      {onNewSession ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="rounded-full text-foreground-muted hover:text-foreground"
+          onClick={onNewSession}
+          aria-label={newSessionLabel}
+          title={newSessionLabel}
+        >
+          <PlusIcon className="size-4" aria-hidden />
+        </Button>
+      ) : null}
+      {historySlot}
+      {onClearHistory ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="rounded-full text-foreground-muted hover:text-foreground"
+          onClick={onClearHistory}
+          aria-label={clearHistoryLabel}
+          title={clearHistoryLabel}
+        >
+          <Trash2Icon className="size-4" aria-hidden />
+        </Button>
+      ) : null}
+      {onRequestHide ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="rounded-full text-foreground-muted hover:text-foreground"
+          onClick={onRequestHide}
+          aria-label={hideLabel}
+          title={hideLabel}
+        >
+          <XIcon className="size-4" aria-hidden />
+        </Button>
+      ) : null}
+    </div>
+  );
+
   return (
     <div
       className={cn(
@@ -39,60 +86,21 @@ export function CoraShell({
         className,
       )}
     >
-      {hideHeader ? null : (
-        <div className="border-b border-border-subtle p-2">
-          <div className="flex items-start justify-between">
-            <div className="min-w-0">
-              <img
-                src={CORA_AI_TUTOR_LOGO_SRC}
-                alt={title}
-                className="h-8 w-auto max-w-[220px] object-contain object-left"
-                draggable={false}
-              />
-            </div>
-            <div className="flex shrink-0 items-center gap-1">
-              {onNewSession ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className="rounded-full text-foreground-muted hover:text-foreground"
-                  onClick={onNewSession}
-                  aria-label={newSessionLabel}
-                  title={newSessionLabel}
-                >
-                  <PlusIcon className="size-4" aria-hidden />
-                </Button>
-              ) : null}
-              {historySlot}
-              {onClearHistory ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className="rounded-full text-foreground-muted hover:text-foreground"
-                  onClick={onClearHistory}
-                  aria-label={clearHistoryLabel}
-                  title={clearHistoryLabel}
-                >
-                  <Trash2Icon className="size-4" aria-hidden />
-                </Button>
-              ) : null}
-              {onRequestHide ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className="rounded-full text-foreground-muted hover:text-foreground"
-                  onClick={onRequestHide}
-                  aria-label={hideLabel}
-                  title={hideLabel}
-                >
-                  <XIcon className="size-4" aria-hidden />
-                </Button>
-              ) : null}
-            </div>
+      {hideHeader ? (
+        hasActions ? (
+          <div className="flex h-12 shrink-0 items-center justify-end border-b border-border-subtle px-2">
+            {actionButtons}
           </div>
+        ) : null
+      ) : (
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-subtle px-3">
+          <img
+            src={CORA_AI_TUTOR_LOGO_SRC}
+            alt={title}
+            className="h-7 w-auto max-w-[180px] object-contain object-left"
+            draggable={false}
+          />
+          {actionButtons}
         </div>
       )}
 

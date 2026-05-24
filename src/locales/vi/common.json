@@ -389,6 +389,12 @@
     "historyLoading": "Đang tải…",
     "fromOtherLessonLabel": "Bài khác",
     "untitledSessionLabel": "Chưa đặt tên",
+    "contextLabel": "Cora đang dùng",
+    "toolsLabel": "Thử hỏi",
+    "lessonFormatVideo": "Bài học video",
+    "lessonFormatArticle": "Bài đọc",
+    "lessonFormatQuiz": "Bài kiểm tra",
+    "lessonFormatPractice": "Bài thực hành",
     "restoreAction": "Mở lại Cora AI",
     "chipToast": "Cora AI sticky đang ở chế độ preview.",
     "dashboard": {

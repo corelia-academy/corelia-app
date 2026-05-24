@@ -34,6 +34,7 @@ export function CoraSidebarPanel({
       courseId={sidebarMeta.courseId}
       lessonTitle={sidebarMeta.lessonTitle}
       lessonId={sidebarMeta.lessonId}
+      lessonFormat={sidebarMeta.lessonFormat}
       className="h-full rounded-none border-0"
       hideShellHeader={hideShellHeader}
       onRequestHide={handleRequestHide}

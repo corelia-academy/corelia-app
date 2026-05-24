@@ -389,6 +389,12 @@
     "historyLoading": "Loading…",
     "fromOtherLessonLabel": "Other lesson",
     "untitledSessionLabel": "Untitled chat",
+    "contextLabel": "Cora is using",
+    "toolsLabel": "Try asking",
+    "lessonFormatVideo": "Video lesson",
+    "lessonFormatArticle": "Reading lesson",
+    "lessonFormatQuiz": "Quiz",
+    "lessonFormatPractice": "Practice",
     "restoreAction": "Reopen Cora AI",
     "chipToast": "Sticky Cora AI is in preview mode.",
     "dashboard": {
