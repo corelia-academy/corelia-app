@@ -48,3 +48,24 @@ export function isLessonDraftForLearners(
 ): boolean {
   return !isLessonPublishedForLearners(lesson);
 }
+
+/** True if lesson is an activity (quiz / practice) rather than content (video / article). */
+export function isActivityLesson(
+  lesson: Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description">,
+): boolean {
+  const format = getLessonFormat(lesson);
+  return format === "quiz" || format === "practice";
+}
+
+/** Split lessons into content (video/article) and activity (quiz/practice) counts. */
+export function splitLessonCounts<T extends Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description">>(
+  lessons: T[],
+): { contentCount: number; activityCount: number } {
+  let contentCount = 0;
+  let activityCount = 0;
+  for (const lesson of lessons) {
+    if (isActivityLesson(lesson)) activityCount += 1;
+    else contentCount += 1;
+  }
+  return { contentCount, activityCount };
+}
