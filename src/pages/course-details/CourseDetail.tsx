@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/stores/authStore";
 import { sortLessonsByCurriculum } from "@/lib/courses";
-import { splitLessonCounts } from "@/lib/lessonFormat";
+import { isActivityLesson, splitLessonCounts } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseLessons } from "./hooks/useCourseLessons";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
@@ -111,7 +111,7 @@ export default function CourseDetail() {
       courseLoad.sections.map((section) => ({
         section,
         lessons: sortedLessons.filter(
-          (lesson) => lesson.section_id === section.id,
+          (lesson) => lesson.section_id === section.id && !isActivityLesson(lesson),
         ),
       })),
     [courseLoad.sections, sortedLessons],
