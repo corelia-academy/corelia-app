@@ -650,6 +650,7 @@ export async function touchEnrollment(courseId: string, viewer?: User | null): P
     .from("enrollments")
     .update({ last_accessed_at: new Date().toISOString() })
     .eq("id", enr.id);
+  invalidateEnrollmentsCache(user.id);
 }
 
 const LESSON_LEARNER_COUNT_PAGE = 1000;
@@ -783,9 +784,36 @@ export async function setLessonProgress(
 
   invalidateLessonProgressCache(user.id, courseId);
 
+  void ensureEnrollmentForProgress(user.id, courseId, now);
+
   if (completed) {
     checkAndIssueCertificate(user.id, courseId).catch(() => {});
     invokeCheckCourseCredential(courseId).catch(() => {});
+  }
+}
+
+async function ensureEnrollmentForProgress(
+  userId: string,
+  courseId: string,
+  now: string,
+): Promise<void> {
+  try {
+    const enrollmentId = `${userId}_${courseId}`;
+    const { error } = await supabase
+      .from("enrollments")
+      .upsert(
+        {
+          id: enrollmentId,
+          user_id: userId,
+          course_id: courseId,
+          enrolled_at: now,
+          last_accessed_at: now,
+        },
+        { onConflict: "id", ignoreDuplicates: true },
+      );
+    if (!error) invalidateEnrollmentsCache(userId);
+  } catch {
+    // Best-effort: progress write already succeeded.
   }
 }
 
