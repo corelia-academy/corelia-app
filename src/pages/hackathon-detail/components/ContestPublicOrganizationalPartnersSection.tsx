@@ -30,7 +30,7 @@ export function ContestPublicOrganizationalPartnersSection(props: {
                   <img
                     src={partner.logo_url.trim()}
                     alt={partner.title}
-                    className="size-14 rounded-md border border-border-subtle bg-surface-base object-contain p-1"
+                    className="size-14 rounded-2xl border border-border-subtle bg-surface-base shadow-card object-contain p-1"
                   />
                 </div>
               ) : null}

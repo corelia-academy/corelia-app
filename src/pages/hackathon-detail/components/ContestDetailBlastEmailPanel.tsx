@@ -191,7 +191,7 @@ export function ContestDetailBlastEmailPanel({
                 </p>
               )}
               {lastResult.reason === "email_not_configured" && (
-                <p className="mt-0.5 text-amber-600">
+                <p className="mt-0.5 text-warning">
                   {translate("workspace.email.notConfigured")}
                 </p>
               )}

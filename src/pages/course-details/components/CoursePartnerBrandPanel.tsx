@@ -64,7 +64,7 @@ export function CoursePartnerBrandPanel({
             return (
               <div
                 key={p.id}
-                className="flex items-start gap-3 rounded-md border border-border-subtle bg-surface-base p-3"
+                className="flex items-start gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3"
               >
                 <div className="shrink-0">
                   {logoSrc ? (
@@ -73,7 +73,7 @@ export function CoursePartnerBrandPanel({
                       alt={p.name}
                       loading="lazy"
                       decoding="async"
-                      className="size-10 rounded-md border border-border-subtle bg-surface-base object-contain"
+                      className="size-10 rounded-2xl border border-border-subtle bg-surface-base shadow-card object-contain"
                     />
                   ) : (
                     <div className="grid size-10 place-items-center rounded-md border border-border-subtle bg-surface-raised text-xs font-semibold text-foreground-muted">

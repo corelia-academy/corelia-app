@@ -125,7 +125,7 @@ export function ContestDetailManagerSettingsCard({
   return (
     <div className="flex flex-col gap-4 xl:flex-row">
       <nav
-        className="h-fit shrink-0 rounded-lg border border-border-subtle bg-surface-base p-3 xl:sticky xl:top-24 xl:w-64"
+        className="h-fit shrink-0 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 xl:sticky xl:top-24 xl:w-64"
         aria-label={translate("workspace.manage.settingsLayoutNavAria")}
       >
         <div className="mb-3 px-2">
@@ -224,7 +224,7 @@ export function ContestDetailManagerSettingsCard({
         {activeSection === "general" ? (
           <section
             id="contest-settings-general"
-            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+            className="scroll-mt-28 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 sm:scroll-mt-32"
             aria-labelledby="contest-settings-general-heading"
           >
         <div className="flex items-center gap-3">
@@ -321,7 +321,7 @@ export function ContestDetailManagerSettingsCard({
         {activeSection === "judging" ? (
           <section
             id="contest-settings-judging"
-            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+            className="scroll-mt-28 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 sm:scroll-mt-32"
           >
         <div>
           <h3 className="text-base font-medium text-foreground">
@@ -359,7 +359,7 @@ export function ContestDetailManagerSettingsCard({
               </div>
             ))}
           </div>
-          <div className="mt-3 rounded-lg border border-border-subtle bg-surface-base px-3 py-2 text-sm text-foreground-muted">
+          <div className="mt-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm text-foreground-muted">
             {translate("workspace.manage.rubricTotalPrefix")}{" "}
             <span className="font-medium text-foreground">
               {[
@@ -392,7 +392,7 @@ export function ContestDetailManagerSettingsCard({
             {translate("workspace.manage.tracksRoundsDescription")}
           </p>
 
-          <div className="mt-4 rounded-lg border border-border-subtle bg-surface-base p-4">
+          <div className="mt-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-medium text-foreground">
@@ -421,7 +421,7 @@ export function ContestDetailManagerSettingsCard({
               {(tracksDraft ?? []).map((track, index) => (
                 <div
                   key={`track-${index}`}
-                  className="grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                  className="grid gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:grid-cols-2"
                 >
                   <input
                     value={track.id}
@@ -491,7 +491,7 @@ export function ContestDetailManagerSettingsCard({
               {(roundsDraft ?? []).map((round, index) => (
                 <div
                   key={`round-${index}`}
-                  className="grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                  className="grid gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:grid-cols-2"
                 >
                   <input
                     value={round.id}
@@ -587,7 +587,7 @@ export function ContestDetailManagerSettingsCard({
         {activeSection === "access" ? (
           <section
             id="contest-settings-access"
-            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+            className="scroll-mt-28 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 sm:scroll-mt-32"
           >
         <div>
           <h3 className="text-base font-medium text-foreground">
@@ -759,7 +759,7 @@ export function ContestDetailManagerSettingsCard({
         {activeSection === "public" ? (
           <section
             id="contest-settings-public"
-            className="scroll-mt-28 rounded-md border border-border-subtle bg-surface-base p-6 sm:scroll-mt-32"
+            className="scroll-mt-28 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 sm:scroll-mt-32"
           >
         <div>
           <h3 className="text-base font-medium text-foreground">
@@ -804,7 +804,7 @@ export function ContestDetailManagerSettingsCard({
                   ) : null}
                 </div>
                 {contest.cover_image_url?.trim() ? (
-                  <div className="relative mt-3 aspect-[21/9] w-full max-w-3xl overflow-hidden rounded-md border border-border-subtle bg-surface-base">
+                  <div className="relative mt-3 aspect-[21/9] w-full max-w-3xl overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
                     <img
                       src={contest.cover_image_url.trim()}
                       alt={translate("detail.visual.bannerAlt", {
@@ -842,7 +842,7 @@ export function ContestDetailManagerSettingsCard({
                   ) : null}
                 </div>
                 {contest.thumbnail_url?.trim() ? (
-                  <div className="relative mt-3 aspect-video w-full max-w-md overflow-hidden rounded-md border border-border-subtle bg-surface-base">
+                  <div className="relative mt-3 aspect-video w-full max-w-md overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
                     <img
                       src={contest.thumbnail_url.trim()}
                       alt={translate("detail.visual.thumbnailAlt", {
@@ -881,7 +881,7 @@ export function ContestDetailManagerSettingsCard({
               {publicDraft.prizes.map((prize, index) => (
                 <div
                   key={`prize-${index}`}
-                  className="grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                  className="grid gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:grid-cols-2"
                 >
                   <input
                     value={prize.rank_label}
@@ -1000,7 +1000,7 @@ export function ContestDetailManagerSettingsCard({
               {publicDraft.faqs.map((faq, index) => (
                 <div
                   key={`faq-${index}`}
-                  className="space-y-3 rounded-lg border border-border-subtle bg-surface-base p-4"
+                  className="space-y-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4"
                 >
                   <input
                     value={faq.question}
@@ -1076,7 +1076,7 @@ export function ContestDetailManagerSettingsCard({
               {publicDraft.organizational_partners.map((partner, index) => (
                 <div
                   key={partner.id ?? `org-partner-${index}`}
-                  className="grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                  className="grid gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:grid-cols-2"
                 >
                   <div className="sm:col-span-2">
                     <label
@@ -1115,7 +1115,7 @@ export function ContestDetailManagerSettingsCard({
                     </div>
                     {partner.logo_url?.trim() ? (
                       <div className="mt-3 flex flex-wrap items-end gap-3">
-                        <div className="overflow-hidden rounded-lg border border-border-subtle bg-surface-base p-2">
+                        <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card p-2">
                           <img
                             src={partner.logo_url.trim()}
                             alt={translate(
@@ -1260,7 +1260,7 @@ export function ContestDetailManagerSettingsCard({
             <div className="text-sm font-medium text-foreground">
               {translate("detail.sections.timeline")}
             </div>
-            <div className="mt-3 grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4">
+            <div className="mt-3 grid gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
               <label className="flex items-start gap-3 rounded-lg border border-border-subtle bg-surface-raised px-4 py-3 sm:col-span-2">
                 <input
                   type="checkbox"
@@ -1356,7 +1356,7 @@ export function ContestDetailManagerSettingsCard({
               {publicDraft.milestones.map((milestone, index) => (
                 <div
                   key={`ms-${index}`}
-                  className="grid gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 sm:grid-cols-2"
+                  className="grid gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:grid-cols-2"
                 >
                   <input
                     value={milestone.title}

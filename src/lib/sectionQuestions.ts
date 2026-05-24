@@ -111,3 +111,60 @@ export async function deleteSectionQuestion(questionId: string): Promise<void> {
 
   if (error) throw new Error(error.message);
 }
+
+// ── Lesson-level quiz functions ───────────────────────────────────────────────
+
+type RawLessonQuestionRow = RawQuestionRow & { lesson_id: string };
+
+function lessonRowToQuestion(row: RawLessonQuestionRow): SectionQuestion {
+  return {
+    ...rowToQuestion(row as RawQuestionRow),
+    section_id: row.lesson_id, // reuse section_id field to carry lesson_id for compatibility
+  };
+}
+
+export async function getLessonQuestions(
+  courseId: string,
+  lessonId: string,
+): Promise<SectionQuestion[]> {
+  const { data, error } = await supabase
+    .from("course_section_questions")
+    .select("id,course_id,section_id,lesson_id,sort_order,data,created_at,updated_at")
+    .eq("course_id", courseId)
+    .eq("lesson_id", lessonId)
+    .order("sort_order", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as RawLessonQuestionRow[]).map(lessonRowToQuestion);
+}
+
+export async function setLessonQuestions(
+  courseId: string,
+  lessonId: string,
+  questions: SectionQuestionData[],
+): Promise<SectionQuestion[]> {
+  const { error: deleteError } = await supabase
+    .from("course_section_questions")
+    .delete()
+    .eq("course_id", courseId)
+    .eq("lesson_id", lessonId);
+
+  if (deleteError) throw new Error(deleteError.message);
+  if (questions.length === 0) return [];
+
+  const inserts = questions.map((q, i) => ({
+    course_id: courseId,
+    lesson_id: lessonId,
+    section_id: null as string | null,
+    sort_order: i,
+    data: q,
+  }));
+
+  const { data, error } = await supabase
+    .from("course_section_questions")
+    .insert(inserts)
+    .select("id,course_id,section_id,lesson_id,sort_order,data,created_at,updated_at");
+
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as RawLessonQuestionRow[]).map(lessonRowToQuestion);
+}

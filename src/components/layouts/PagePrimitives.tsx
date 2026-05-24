@@ -41,7 +41,7 @@ export function PageSectionCard({
   return (
     <section
       className={cn(
-        "rounded-lg border border-border-subtle bg-surface-base p-4",
+        "rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4",
         className,
       )}
     >

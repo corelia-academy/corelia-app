@@ -289,7 +289,7 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
             </label>
             <div>
               <div className="text-xs font-medium text-foreground-muted">Supported locales</div>
-              <div className="mt-2 flex flex-wrap gap-3 rounded-md border border-border-subtle bg-surface-base p-3 text-sm">
+              <div className="mt-2 flex flex-wrap gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 text-sm">
                 {(["vi", "en"] as const).map((lng) => (
                   <label key={lng} className="inline-flex items-center gap-2 text-foreground">
                     <input
@@ -362,7 +362,7 @@ export function ContestDetailTranslationsPanel({ vm }: { vm: ContestDetailViewMo
             </div>
           </div>
 
-          <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
                 Translation ({targetLocale})

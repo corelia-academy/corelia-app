@@ -198,8 +198,8 @@ export interface LessonResource {
   url: string;
 }
 
-/** `video` = YouTube embed; `article` = markdown/text lesson without video. */
-export type LessonFormat = "video" | "article";
+/** `video` = YouTube embed; `article` = markdown/text lesson; `quiz` = MCQ with score; `practice` = open-ended exercise. */
+export type LessonFormat = "video" | "article" | "quiz" | "practice";
 
 export interface CourseLesson {
   id: string;

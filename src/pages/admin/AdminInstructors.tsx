@@ -123,7 +123,7 @@ export default function AdminInstructors() {
         />
       </div>
 
-      <div className="mt-6 rounded-lg border border-border-subtle bg-surface-base p-6">
+      <div className="mt-6 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">
@@ -209,7 +209,7 @@ export default function AdminInstructors() {
 
       {error ? <AdminErrorBanner message={error} /> : null}
 
-      <div className="mt-6 overflow-hidden rounded-lg border border-border-subtle bg-surface-base text-foreground">
+      <div className="mt-6 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card text-foreground">
         <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
           <p className="text-sm text-foreground-muted">
             {loading

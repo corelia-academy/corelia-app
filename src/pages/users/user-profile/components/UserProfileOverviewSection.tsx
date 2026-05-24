@@ -17,7 +17,7 @@ export function UserProfileOverviewSection({
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-      <section className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+      <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
         <h2 className="text-base font-semibold text-foreground">
           {t("userProfile.overview.title")}
         </h2>
@@ -30,7 +30,7 @@ export function UserProfileOverviewSection({
         )}
       </section>
 
-      <section className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+      <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
         <h2 className="text-base font-semibold text-foreground">
           {t("userProfile.overview.quickInfo")}
         </h2>

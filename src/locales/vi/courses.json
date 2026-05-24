@@ -300,7 +300,36 @@
         "submitting": "Đang nộp...",
         "submit": "Nộp bài"
       },
-      "curriculumTitle": "Curriculum"
+      "curriculumTitle": "Curriculum",
+      "quiz": {
+        "loading": "Đang tải bài kiểm tra…",
+        "loadError": "Không thể tải câu hỏi. Vui lòng thử lại.",
+        "emptyQuestions": "Bài kiểm tra chưa có câu hỏi.",
+        "saveError": "Không thể lưu kết quả.",
+        "title": "Bài kiểm tra",
+        "titleWithLesson": "Bài kiểm tra: {{title}}",
+        "meta": "{{count}} câu hỏi trắc nghiệm về nội dung bài học này.",
+        "sectionTitle": "Bài kiểm tra: {{title}}",
+        "sectionMeta": "{{count}} câu hỏi trắc nghiệm về nội dung chương này.",
+        "sectionEmpty": "Bài kiểm tra chương chưa có câu hỏi.",
+        "score": "{{correct}}/{{total}} câu đúng ({{percent}}%)",
+        "scoreGood": "Tốt lắm! Bạn đã nắm vững nội dung bài học.",
+        "scoreRetry": "Hãy xem lại bài học và thử lại nhé!",
+        "scoreGoodSection": "Tốt lắm! Bạn đã nắm vững nội dung chương này.",
+        "retry": "Làm lại",
+        "explanation": "Giải thích:",
+        "submitting": "Đang nộp…",
+        "submitReady": "Nộp bài ({{answered}}/{{total}})",
+        "submitIncomplete": "Trả lời tất cả câu hỏi ({{answered}}/{{total}})"
+      },
+      "practice": {
+        "hint": "Cần gợi ý? Hỏi Cora để được hướng dẫn từng bước.",
+        "askCora": "Hỏi Cora"
+      },
+      "noLessonSelected": "Chọn một bài học từ curriculum để bắt đầu.",
+      "toggleCurriculum": "Bật/tắt curriculum",
+      "openCurriculum": "Mở curriculum",
+      "toggleCora": "Bật/tắt Cora AI"
     },
     "aiTutor": {
       "sheetTitle": "Cora AI Tutor",

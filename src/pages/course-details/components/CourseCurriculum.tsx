@@ -140,7 +140,7 @@ export function CourseCurriculum({
             return (
               <div
                 key={section.id}
-                className="overflow-hidden rounded-md border border-border-subtle bg-surface-base"
+                className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card"
               >
                 <button
                   type="button"
@@ -203,7 +203,7 @@ export function CourseCurriculum({
         )}
       </div>
       ) : (
-      <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-base divide-y divide-border-subtle">
+      <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card divide-y divide-border-subtle">
         {visibleLessonGroups.flatMap(({ lessons: sectionLessons }) => sectionLessons).map((lesson, index) => (
           <LessonRow
             key={lesson.id}

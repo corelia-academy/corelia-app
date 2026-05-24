@@ -25,7 +25,7 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
 
   if (!isSelf) {
     return (
-      <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
+      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
         {t("userProfile.achievements.selfOnly")}
       </div>
     );
@@ -36,7 +36,7 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
         {loading ? (
           <div className="space-y-3">
             <Skeleton className="h-10 w-full rounded-md" />
@@ -47,7 +47,7 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
         )}
       </div>
 
-      <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
         <div className="text-sm font-medium text-foreground">
           {t("achievements.vaults.certificates.title")}
         </div>
@@ -63,7 +63,7 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
               <Skeleton className="h-28 w-full rounded-md" />
             </div>
           ) : recentCertificates.length === 0 ? (
-            <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted">
               {t("achievements.vaults.certificates.empty")}
             </div>
           ) : (
@@ -80,7 +80,7 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
         </div>
       </div>
 
-      <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
         <div className="text-sm font-medium text-foreground">
           {t("achievements.vaults.badges.title")}
         </div>

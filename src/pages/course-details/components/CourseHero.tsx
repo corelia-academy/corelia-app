@@ -67,7 +67,7 @@ export function CourseHero({
       : null;
 
   return (
-    <section className="rounded-md border border-border-subtle bg-surface-base">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card">
       <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)] lg:items-start">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-xs text-foreground-muted">

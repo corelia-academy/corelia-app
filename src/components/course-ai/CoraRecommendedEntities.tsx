@@ -63,6 +63,7 @@ export function CoraRecommendedEntities({
                   variant="ghost"
                   size="sm"
                   className="shrink-0"
+                  aria-label={entity.title}
                 >
                   <ArrowUpRight className="size-4" />
                 </Button>

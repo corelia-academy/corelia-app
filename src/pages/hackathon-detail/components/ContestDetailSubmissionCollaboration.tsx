@@ -86,7 +86,7 @@ export function ContestDetailSubmissionCollaboration({
 
   if (!collabProject && !collabLoading) {
     return (
-      <div className="rounded-md border border-border-subtle bg-surface-base px-4 py-3 text-sm text-foreground-muted">
+      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card px-4 py-3 text-sm text-foreground-muted">
         {translate("detail.collaboration.saveSubmissionFirst")}
       </div>
     );
@@ -95,7 +95,7 @@ export function ContestDetailSubmissionCollaboration({
   if (collabLoading && !collabProject) {
     return (
       <div
-        className="space-y-3 rounded-md border border-border-subtle bg-surface-base p-4"
+        className="space-y-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4"
         role="status"
         aria-live="polite"
         aria-busy="true"
@@ -114,7 +114,7 @@ export function ContestDetailSubmissionCollaboration({
   if (!collabProject) return null;
 
   return (
-    <div className="space-y-4 rounded-md border border-border-subtle bg-surface-base p-4">
+    <div className="space-y-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-center gap-2">
         <Users className="size-5 text-primary" aria-hidden />
         <h3 className="text-sm font-semibold text-foreground">

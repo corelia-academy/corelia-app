@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CornerDownLeft } from "lucide-react";
+import { CornerDownLeft, FileText, Video } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ConversationHistory } from "@/components/course-ai/ConversationHistory";
@@ -11,12 +11,19 @@ import { SuggestionPills } from "@/components/course-ai/SuggestionPills";
 import { buildPersonalizedSuggestions } from "@/components/course-ai/suggestions";
 import { useCoraAI } from "@/hooks/useCoraAI";
 import { cn } from "@/lib/utils";
+import type { LessonFormat } from "@/types/courses";
+
+const FORMAT_ICON: Record<string, React.ElementType> = {
+  video: Video,
+  article: FileText,
+};
 
 export function CourseAiTutorPanel(props: {
   courseTitle: string;
   courseId?: string | null;
   lessonTitle?: string | null;
   lessonId?: string | null;
+  lessonFormat?: LessonFormat | null;
   className?: string;
   hideShellHeader?: boolean;
   /** When set, header shows the dismiss control (e.g. sidebar close). */
@@ -27,6 +34,7 @@ export function CourseAiTutorPanel(props: {
     courseId,
     lessonTitle,
     lessonId,
+    lessonFormat,
     className,
     hideShellHeader,
     onRequestHide,
@@ -58,10 +66,21 @@ export function CourseAiTutorPanel(props: {
   });
 
   const rawSuggestions = t("detail.aiTutor.suggestions", { returnObjects: true });
+  const formatKey = lessonFormat && ["video", "article", "quiz", "practice"].includes(lessonFormat)
+    ? `coraWidget.formatSuggestions.${lessonFormat}` as const
+    : null;
+  const formatSuggestions = formatKey
+    ? (tCommon(formatKey, { returnObjects: true }) as string[] | string)
+    : [];
+  const formatList = Array.isArray(formatSuggestions) ? formatSuggestions : [];
+  const baseSuggestions = formatList.length > 0
+    ? formatList
+    : Array.isArray(rawSuggestions) ? (rawSuggestions as string[]) : [];
+
   const fallbackSuggestions = buildPersonalizedSuggestions({
     t: tCommon,
     context: hasLessonContext ? "lesson" : "courses",
-    baseSuggestions: Array.isArray(rawSuggestions) ? (rawSuggestions as string[]) : [],
+    baseSuggestions,
     learningMemory,
   });
   const suggestions = suggestedPrompts.length > 0 ? suggestedPrompts : fallbackSuggestions;
@@ -77,6 +96,17 @@ export function CourseAiTutorPanel(props: {
     await sendMessage(text);
   };
 
+  const FormatIcon = lessonFormat ? FORMAT_ICON[lessonFormat] : null;
+  const formatLabel = lessonFormat === "video"
+    ? tCommon("coraWidget.lessonFormatVideo")
+    : lessonFormat === "article"
+      ? tCommon("coraWidget.lessonFormatArticle")
+      : lessonFormat === "quiz"
+        ? tCommon("coraWidget.lessonFormatQuiz")
+        : lessonFormat === "practice"
+          ? tCommon("coraWidget.lessonFormatPractice")
+          : null;
+
   return (
     <CoraShell
       title={String(t("detail.aiTutor.sheetTitle"))}
@@ -85,7 +115,7 @@ export function CourseAiTutorPanel(props: {
       hideLabel={onRequestHide ? String(tCommon("coraWidget.hideAction")) : undefined}
       onClearHistory={messages.length > 0 && !isLoading && !hasLessonContext ? () => { void clearHistory(); } : undefined}
       clearHistoryLabel={String(tCommon("coraWidget.clearHistoryAction"))}
-      onNewSession={Boolean(courseId) && !isLoading ? () => { void newSession(); } : undefined}
+      onNewSession={Boolean(courseId) && !isLoading && messages.length > 0 ? () => { void newSession(); } : undefined}
       newSessionLabel={String(tCommon("coraWidget.newChatAction"))}
       historySlot={
         courseId ? (
@@ -103,20 +133,29 @@ export function CourseAiTutorPanel(props: {
           <ConversationHistory messages={messages} isStreaming={isStreaming} className="min-h-0 flex-1" />
         ) : (
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3 sm:px-4">
-            <div className="space-y-1 text-xs text-foreground-muted">
-              <p className="font-medium text-foreground">
-                {t("detail.aiTutor.contextCourse", {
-                  title: courseTitle.trim() || "—",
-                })}
+            {/* Context block */}
+            <div className="rounded-xl border border-border-subtle bg-surface-raised p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground-muted mb-1.5">
+                {tCommon("coraWidget.contextLabel")}
+              </p>
+              <p className="text-xs font-medium text-foreground leading-snug">
+                {courseTitle.trim() || "—"}
               </p>
               {lessonTitle?.trim() ? (
-                <p>{t("detail.aiTutor.contextLesson", { title: lessonTitle.trim() })}</p>
+                <p className="mt-0.5 text-xs text-foreground-muted leading-snug">{lessonTitle.trim()}</p>
+              ) : null}
+              {formatLabel ? (
+                <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] text-foreground-subtle">
+                  {FormatIcon ? <FormatIcon className="size-3" aria-hidden /> : null}
+                  {formatLabel}
+                </span>
               ) : null}
             </div>
 
+            {/* Suggestions */}
             <div>
               <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
-                {t("detail.aiTutor.suggestionsLabel")}
+                {tCommon("coraWidget.suggestionsLabel")}
               </p>
               <SuggestionPills suggestions={suggestions} onSelect={handleSuggestionClick} />
             </div>

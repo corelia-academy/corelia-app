@@ -1,6 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
+import { CodeBlock } from "./CodeBlock";
 
 export function Markdown({ content, compact }: { content: string; compact?: boolean }) {
   const value = content?.trim();
@@ -28,23 +29,24 @@ export function Markdown({ content, compact }: { content: string; compact?: bool
           ul: (props) => <ul className="list-disc space-y-1 pl-5" {...props} />,
           ol: (props) => <ol className="list-decimal space-y-1 pl-5" {...props} />,
           li: (props) => <li className="leading-7" {...props} />,
-          code: ({ className, ...props }) => {
-            const isBlock = className?.includes("language-");
-            return isBlock ? (
-              <code className={className} {...props} />
-            ) : (
-              <code
-                className="rounded bg-surface-raised px-1.5 py-0.5 font-mono text-[0.9em] text-foreground"
-                {...props}
-              />
+          code: ({ className, children }) => {
+            const language = (className ?? "").replace("language-", "").toLowerCase().trim();
+            if (className?.startsWith("language-")) {
+              return (
+                <CodeBlock
+                  language={language}
+                  code={String(children).replace(/\n$/, "")}
+                />
+              );
+            }
+            return (
+              <code className="rounded bg-surface-raised px-1.5 py-0.5 font-mono text-[0.9em] text-foreground">
+                {children}
+              </code>
             );
           },
-          pre: (props) => (
-            <pre
-              className="overflow-x-auto rounded-md border border-border-subtle bg-surface-raised p-3 text-xs leading-6 text-foreground"
-              {...props}
-            />
-          ),
+          // CodeBlock handles its own container — pre just passes through
+          pre: ({ children }) => <>{children}</>,
           blockquote: (props) => (
             <blockquote
               className="border-l-2 border-border-subtle pl-4 italic text-foreground-muted"
@@ -58,4 +60,3 @@ export function Markdown({ content, compact }: { content: string; compact?: bool
     </div>
   );
 }
-

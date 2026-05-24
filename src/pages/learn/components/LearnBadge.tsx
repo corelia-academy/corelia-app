@@ -18,7 +18,7 @@ export function LearnBadge({
   variant?: LearnBadgeVariant;
 }) {
   const base =
-    "inline-flex items-center rounded px-2 py-1 text-xs font-medium";
+    "inline-flex items-center rounded-sm px-2 py-1 text-xs font-medium";
   const variants: Record<LearnBadgeVariant, string> = {
     secondary: "bg-surface-raised text-foreground-muted",
     outline: "bg-transparent text-foreground-muted border border-border",

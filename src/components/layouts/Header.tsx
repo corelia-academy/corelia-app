@@ -645,7 +645,7 @@ export default function Header() {
                     alt="Open Campus"
                     className="h-6 rounded-full"
                   />
-                  <span className="text-white">
+                  <span className="text-primary-foreground">
                     Link <span className="font-bold">OCID</span>
                   </span>
                 </button>

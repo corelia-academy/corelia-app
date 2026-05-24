@@ -229,7 +229,7 @@ const InstructorDetail = () => {
                 <Link
                   key={course.id}
                   to={`/courses/${course.slug || course.id}`}
-                  className="group overflow-hidden rounded-md border border-border-subtle bg-surface-base text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
+                  className="group overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card text-foreground transition-[transform,background-color,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
                 >
                   <div className="relative aspect-video w-full overflow-hidden bg-surface-raised">
                     <img

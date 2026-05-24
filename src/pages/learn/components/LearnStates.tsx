@@ -11,7 +11,7 @@ export function LearnMissingCourseIdState({
 }) {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5 shadow-sm">
+      <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
         <p className="text-sm font-medium text-destructive">
           {translate("detail.missingCourseId")}
         </p>
@@ -31,7 +31,7 @@ export function LearnMissingCourseIdState({
 export function LearnLoadingState({ translate }: { translate: TranslateFn }) {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="flex min-h-96 flex-col items-center justify-center rounded-md border border-border-subtle bg-surface-base p-8 text-center">
+      <div className="flex min-h-96 flex-col items-center justify-center rounded-2xl border border-border-subtle bg-surface-base p-8 text-center shadow-card">
         <Loader2 className="w-8 h-8 animate-spin text-foreground-muted" aria-hidden />
         <p className="mt-4 text-sm text-foreground-muted">
           {translate("detail.learn.loadingPage")}
@@ -50,7 +50,7 @@ export function LearnErrorState({
 }) {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <div className="rounded-md border border-destructive/20 bg-destructive/10 p-5 shadow-sm">
+      <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5 shadow-card">
         <p className="text-sm font-medium text-destructive">{message}</p>
         <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
         <Link

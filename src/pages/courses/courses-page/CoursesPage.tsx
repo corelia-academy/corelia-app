@@ -96,7 +96,7 @@ export default function CoursesPage() {
       </div>
 
       {filteredOnlineCourses.length === 0 ? (
-        <div className="mt-5 flex flex-col items-center gap-3 rounded-lg border border-border-subtle bg-surface-base py-16 text-center">
+        <div className="mt-5 flex flex-col items-center gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card py-16 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-surface-raised">
             <BookOpen className="size-6 text-foreground-subtle" aria-hidden />
           </div>
@@ -134,7 +134,7 @@ export default function CoursesPage() {
             <Link
               key={course.id}
               to={`/courses/${course.slug || course.id}`}
-              className="group cursor-pointer overflow-hidden rounded-lg border border-border-subtle bg-surface-base text-foreground transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
+              className="group cursor-pointer overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card text-foreground transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
             >
               <div className="relative aspect-video overflow-hidden bg-surface-raised">
                 <img

@@ -158,7 +158,7 @@ export function UserProfileProjectsSection({
 
   if (error) {
     return (
-      <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
+      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
         {error}
       </div>
     );
@@ -166,7 +166,7 @@ export function UserProfileProjectsSection({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
+      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
         {t("userProfile.projects.empty")}
       </div>
     );
@@ -179,7 +179,7 @@ export function UserProfileProjectsSection({
         return (
           <div
             key={project.id}
-            className="rounded-md border border-border-subtle bg-surface-base p-4"
+            className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4"
           >
             {getProjectCoverImageUrl(project) ? (
               <div className="mb-4 overflow-hidden rounded-md border border-border-subtle bg-surface-raised">

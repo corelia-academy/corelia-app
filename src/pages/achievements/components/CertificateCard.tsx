@@ -25,7 +25,7 @@ export function CertificateCard({
   const { t } = useTranslation("common");
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   return (
-    <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-md border border-border-subtle bg-surface-base transition-all duration-200 hover:-translate-y-0.5">
+    <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[transform,background-color,border-color,box-shadow] duration-200 hover:-translate-y-0.5">
       <div
         className={cn(
           "h-1.5 w-full shrink-0",

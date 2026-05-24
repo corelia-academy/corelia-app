@@ -139,7 +139,7 @@ export function DescriptionGeneratorDialog({
                 sources.map((source) => (
                   <div
                     key={source.id}
-                    className="rounded-md border border-border-subtle bg-surface-base p-3"
+                    className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3"
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-sm font-medium text-foreground">{source.title}</p>
@@ -164,7 +164,7 @@ export function DescriptionGeneratorDialog({
               )}
             </div>
             {warning ? (
-              <p className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-foreground">
+              <p className="mt-3 rounded-md border border-amber-500/30 bg-warning/10 px-3 py-2 text-sm text-foreground">
                 {warning}
               </p>
             ) : null}

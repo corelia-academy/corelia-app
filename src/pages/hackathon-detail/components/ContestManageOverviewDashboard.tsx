@@ -44,7 +44,7 @@ function ActionCard({
       type="button"
       onClick={() => onNavigate(action.href)}
       className={cn(
-        "group flex w-full flex-col gap-3 rounded-lg border border-border-subtle bg-surface-base p-4 text-left transition-all duration-200 ease-out",
+        "group flex w-full flex-col gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-left transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out",
         "hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base",
       )}
       aria-label={action.title}

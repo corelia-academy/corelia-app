@@ -30,7 +30,7 @@ export function HackathonSectionCard({
       id={id}
       className={cn(
         id && "scroll-mt-36",
-        "transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-surface-raised bg-surface-base border border-border-subtle animate-fade-in-up",
+        "transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:bg-surface-raised bg-surface-base border border-border-subtle animate-fade-in-up",
         className,
       )}
     >

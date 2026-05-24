@@ -2,12 +2,14 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import type { CoraQuotaInfo } from "@/hooks/useCoraAI";
+import type { LessonFormat } from "@/types/courses";
 
 export type CoraSidebarMeta = {
   courseTitle?: string;
   courseId?: string | null;
   lessonTitle?: string | null;
   lessonId?: string | null;
+  lessonFormat?: LessonFormat | null;
 };
 
 type CoraStore = {

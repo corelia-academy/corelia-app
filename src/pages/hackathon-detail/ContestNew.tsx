@@ -213,7 +213,7 @@ export default function ContestNew() {
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
               <div className="flex items-center gap-3">
                 <Trophy className="size-5 text-primary" aria-hidden />
                 <div>
@@ -226,7 +226,7 @@ export default function ContestNew() {
                 </div>
               </div>
             </div>
-            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="size-5 text-primary" aria-hidden />
                 <div>
@@ -239,7 +239,7 @@ export default function ContestNew() {
                 </div>
               </div>
             </div>
-            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
               <div className="flex items-center gap-3">
                 <Gavel className="size-5 text-primary" aria-hidden />
                 <div>
@@ -252,7 +252,7 @@ export default function ContestNew() {
                 </div>
               </div>
             </div>
-            <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
               <div className="flex items-center gap-3">
                 <Calendar className="size-5 text-primary" aria-hidden />
                 <div>
@@ -414,7 +414,7 @@ export default function ContestNew() {
               <Field>
                 <label
                   htmlFor="contest-auto-approve-registrations"
-                  className="flex items-start gap-3 rounded-lg border border-border-subtle bg-surface-base px-4 py-3"
+                  className="flex items-start gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-4 py-3"
                 >
                   <input
                     id="contest-auto-approve-registrations"
@@ -564,7 +564,7 @@ export default function ContestNew() {
                 {readinessItems.map((item) => (
                   <div
                     key={item.title}
-                    className="rounded-lg border border-border-subtle bg-surface-base p-4"
+                    className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4"
                   >
                     <div className="text-sm font-medium text-foreground">{item.title}</div>
                     <div className="mt-2 text-sm leading-6 text-foreground-muted">

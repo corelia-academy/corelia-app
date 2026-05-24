@@ -114,7 +114,7 @@ export default function ProjectsPage() {
             </div>
           </div>
         ) : items.length === 0 ? (
-          <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted sm:p-6">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
             {t("projects.empty")}
           </div>
         ) : (
@@ -124,7 +124,7 @@ export default function ProjectsPage() {
               return (
                 <div
                   key={project.id}
-                  className="rounded-md border border-border-subtle bg-surface-base p-4"
+                  className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4"
                 >
                   {getProjectCoverImageUrl(project) ? (
                     <div className="mb-4 overflow-hidden rounded-md border border-border-subtle bg-surface-raised">

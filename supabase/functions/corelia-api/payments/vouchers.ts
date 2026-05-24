@@ -350,6 +350,7 @@ export async function createAiVoucherBatch(
     rows.push({
       batch_id: batchData.id,
       code,
+      percent_off: input.percentOff,
       active: input.active,
       created_at: now,
       created_by: input.userId,

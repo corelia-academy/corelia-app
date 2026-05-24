@@ -64,13 +64,13 @@ export function ProfileSection(props: {
 
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="space-y-5">
-      <div className="grid gap-4 rounded-lg border border-border-subtle bg-surface-base p-4">
+      <div className="grid gap-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
         <div className="grid gap-2">
           <Label className="text-sm font-medium">{t("profile.emailLoginLabel")}</Label>
           <div className="text-sm text-foreground-muted">{sessionEmail}</div>
         </div>
 
-        <div className="grid gap-2 rounded-md border border-border-subtle bg-surface-base p-3">
+        <div className="grid gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3">
           <div className="text-xs font-medium text-foreground-muted">
             {t("profile.publicProfile.label")}
           </div>

@@ -138,7 +138,7 @@ export function ProfileCombobox({
                       key={option.id}
                       type="button"
                       onClick={() => toggleOption(option.id)}
-                      className={`flex w-full items-start justify-between gap-4 rounded-lg border px-4 py-3 text-left transition-all duration-200 ease-out ${
+                      className={`flex w-full items-start justify-between gap-4 rounded-lg border px-4 py-3 text-left transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out ${
                         checked
                           ? "border-primary bg-primary-muted"
                           : "border-border-subtle bg-surface-base hover:bg-surface-raised hover:border-border"

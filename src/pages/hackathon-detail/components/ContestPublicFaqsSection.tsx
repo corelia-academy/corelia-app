@@ -18,7 +18,7 @@ export function ContestPublicFaqsSection(props: {
           {faqs.map((faq, index) => (
             <details
               key={`${faq.question}-${index}`}
-              className="group rounded-xl border border-border-subtle bg-surface-base px-4.5 py-4 transition-all duration-300 open:border-primary/20 open:shadow-xs hover:border-primary/15"
+              className="group rounded-2xl border border-border-subtle bg-surface-base shadow-card px-4.5 py-4 transition-[transform,background-color,border-color,box-shadow] duration-300 open:border-primary/20 open:shadow-xs hover:border-primary/15"
             >
               <summary className="cursor-pointer list-none rounded-lg text-sm font-semibold text-foreground outline-hidden focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
                 <span className="flex items-center justify-between gap-3 select-none">

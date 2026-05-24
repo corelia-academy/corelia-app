@@ -85,7 +85,7 @@ export function OcBadgesByScopeTabs({
       </div>
 
       {current.length === 0 ? (
-        <div className="rounded-md border border-border-subtle bg-surface-base p-6 text-sm text-foreground-muted">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 text-sm text-foreground-muted">
           {t("achievements.ocVault.empty", { defaultValue: "No badges in this category yet." })}
         </div>
       ) : (

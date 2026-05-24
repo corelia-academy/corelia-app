@@ -305,7 +305,36 @@
         "submitting": "Submitting...",
         "submit": "Submit"
       },
-      "curriculumTitle": "Curriculum"
+      "curriculumTitle": "Curriculum",
+      "quiz": {
+        "loading": "Loading quiz…",
+        "loadError": "Could not load questions. Please try again.",
+        "emptyQuestions": "This quiz has no questions yet.",
+        "saveError": "Could not save your results.",
+        "title": "Quiz",
+        "titleWithLesson": "Quiz: {{title}}",
+        "meta": "{{count}} multiple-choice questions about this lesson.",
+        "sectionTitle": "Quiz: {{title}}",
+        "sectionMeta": "{{count}} multiple-choice questions about this section.",
+        "sectionEmpty": "This section quiz has no questions yet.",
+        "score": "{{correct}}/{{total}} correct ({{percent}}%)",
+        "scoreGood": "Great work! You understand this lesson well.",
+        "scoreRetry": "Review the lesson and try again.",
+        "scoreGoodSection": "Great work! You understand this section well.",
+        "retry": "Try again",
+        "explanation": "Explanation:",
+        "submitting": "Submitting…",
+        "submitReady": "Submit ({{answered}}/{{total}})",
+        "submitIncomplete": "Answer all questions ({{answered}}/{{total}})"
+      },
+      "practice": {
+        "hint": "Need a hint? Ask Cora for step-by-step guidance.",
+        "askCora": "Ask Cora"
+      },
+      "noLessonSelected": "Select a lesson from the curriculum to begin.",
+      "toggleCurriculum": "Toggle curriculum",
+      "openCurriculum": "Open curriculum",
+      "toggleCora": "Toggle Cora AI"
     },
     "aiTutor": {
       "sheetTitle": "Cora AI Tutor",

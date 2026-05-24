@@ -19,11 +19,11 @@ export function HomeHeader({
   featuredFocus: FocusCard | null;
 }) {
   const featuredWrapperClassName = activePinnedProgram
-    ? "rounded-lg border border-primary/20 transition-colors duration-300 hover:border-primary/50 [box-shadow:0_0_0_1px_oklch(68%_0.20_255_/_0.08)] hover:[box-shadow:0_0_0_1px_oklch(68%_0.20_255_/_0.20)]"
+    ? "rounded-lg border border-primary/20 ring-1 ring-brand-accent/10 transition-colors duration-300 hover:border-primary/50 hover:ring-brand-accent/25"
     : "rounded-lg border border-border-subtle";
 
   return (
-    <section className="rounded-lg border border-border-subtle bg-surface-base p-4 sm:p-5">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-5">
       <div className="flex flex-col gap-2">
         <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
           {loading ? t("home.syncing") : t("home.dashboard")}
