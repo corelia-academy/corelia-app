@@ -145,7 +145,7 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
   );
 }
 
-type SourceLesson = { id: string; title: string };
+type SourceLesson = { id: string; title: string; hasSourceContent?: boolean };
 
 type Props = {
   open: boolean;
@@ -208,11 +208,29 @@ export function QuestionGeneratorDialog({
       })
       .finally(() => setLoading(false));
 
-    // Default: select current lesson as source
     if (isLessonMode && lessonId) {
-      setSelectedSourceIds(new Set([lessonId]));
+      const currentIndex = sectionLessons.findIndex((l) => l.id === lessonId);
+      const contentSources = sectionLessons.filter(
+        (l) => l.id !== lessonId && l.hasSourceContent !== false,
+      );
+      const priorContentSources =
+        currentIndex > 0
+          ? sectionLessons
+              .slice(0, currentIndex)
+              .filter((l) => l.hasSourceContent !== false)
+          : [];
+      const current = sectionLessons.find((l) => l.id === lessonId);
+      const defaults =
+        priorContentSources.length > 0
+          ? priorContentSources
+          : contentSources.length > 0
+            ? contentSources
+            : current && current.hasSourceContent !== false
+              ? [current]
+              : [];
+      setSelectedSourceIds(new Set(defaults.map((l) => l.id)));
     }
-  }, [open, section, courseId, isLessonMode, lessonId]);
+  }, [open, section, courseId, isLessonMode, lessonId, sectionLessons]);
 
   // Reset when closed
   useEffect(() => {
@@ -282,10 +300,10 @@ export function QuestionGeneratorDialog({
 
       if (isLessonMode) {
         await setLessonQuestions(courseId, lessonId!, payload);
-        toast.success(`Đã lưu ${questions.length} câu hỏi cho bài học này.`);
+        toast.success(t("courseEdit.questions.savedLesson", { count: questions.length }));
       } else {
         await setSectionQuestions(courseId, section!.id, payload);
-        toast.success(`Đã lưu ${questions.length} câu hỏi cho chương này.`);
+        toast.success(t("courseEdit.questions.savedSection", { count: questions.length }));
       }
       onOpenChange(false);
     } catch (err) {
@@ -309,12 +327,12 @@ export function QuestionGeneratorDialog({
   }
 
   const dialogTitle = isLessonMode
-    ? `Câu hỏi bài học: ${lessonTitle ?? ""}`
-    : `Câu hỏi kiểm tra: ${section?.title ?? ""}`;
+    ? t("courseEdit.questions.lessonTitle", { title: lessonTitle ?? "" })
+    : t("courseEdit.questions.sectionTitle", { title: section?.title ?? "" });
 
   const dialogDescription = isLessonMode
-    ? "Tạo câu hỏi trắc nghiệm cho bài học này. Có thể chọn bài học khác trong chương làm nguồn nội dung."
-    : "Dùng AI để tạo câu hỏi trắc nghiệm từ nội dung các bài học. Có thể chỉnh sửa trước khi lưu.";
+    ? t("courseEdit.questions.lessonDescription")
+    : t("courseEdit.questions.sectionDescription");
 
   function toggleSourceLesson(id: string) {
     setSelectedSourceIds((prev) => {
@@ -347,7 +365,7 @@ export function QuestionGeneratorDialog({
             {isLessonMode && sectionLessons.length > 1 && (
               <div className="space-y-1.5">
                 <p className="text-xs font-medium text-foreground-muted uppercase tracking-wide">
-                  Nguồn bài học
+                  {t("courseEdit.questions.sourceLessons")}
                 </p>
                 <ul className="space-y-1">
                   {sectionLessons.map((l) => (
@@ -365,7 +383,9 @@ export function QuestionGeneratorDialog({
                         )}>
                           {l.title}
                           {l.id === lessonId && (
-                            <span className="ml-1 text-[10px] text-foreground-subtle">(bài này)</span>
+                            <span className="ml-1 text-[10px] text-foreground-subtle">
+                              ({t("courseEdit.questions.currentLesson")})
+                            </span>
                           )}
                         </span>
                       </label>
@@ -377,7 +397,7 @@ export function QuestionGeneratorDialog({
 
             <div className="space-y-2">
               <p className="text-xs font-medium text-foreground-muted uppercase tracking-wide">
-                Số câu hỏi
+                {t("courseEdit.questions.count")}
               </p>
               <div className="flex gap-1 flex-wrap">
                 {COUNT_OPTIONS.map((n) => (
@@ -408,12 +428,12 @@ export function QuestionGeneratorDialog({
               {generating ? (
                 <>
                   <Loader2 className="size-4 mr-2 animate-spin" aria-hidden />
-                  Đang tạo...
+                  {t("courseEdit.questions.generating")}
                 </>
               ) : (
                 <>
                   <Sparkles className="size-4 mr-2" aria-hidden />
-                  Generate câu hỏi
+                  {t("courseEdit.questions.generate")}
                 </>
               )}
             </Button>
@@ -425,7 +445,7 @@ export function QuestionGeneratorDialog({
             {sources.length > 0 && (
               <div className="space-y-1.5">
                 <p className="text-xs font-medium text-foreground-muted uppercase tracking-wide">
-                  Nguồn nội dung
+                  {t("courseEdit.questions.sources")}
                 </p>
                 <ul className="space-y-1">
                   {sources.map((s) => (
@@ -448,14 +468,13 @@ export function QuestionGeneratorDialog({
             {loading && (
               <div className="flex items-center gap-2 text-sm text-foreground-muted py-4">
                 <Loader2 className="size-4 animate-spin" />
-                Đang tải câu hỏi...
+                {t("courseEdit.questions.loading")}
               </div>
             )}
 
             {!loading && questions.length === 0 && (
               <p className="text-sm text-foreground-muted py-4 text-center">
-                Nhấn &ldquo;Generate câu hỏi&rdquo; để tạo câu hỏi từ nội dung bài học,
-                hoặc tự thêm câu hỏi bằng nút bên dưới.
+                {t("courseEdit.questions.empty")}
               </p>
             )}
 
@@ -477,7 +496,7 @@ export function QuestionGeneratorDialog({
               onClick={addBlankQuestion}
             >
               <Plus className="size-4 mr-1.5" aria-hidden />
-              Thêm câu hỏi
+              {t("courseEdit.questions.add")}
             </Button>
 
             <div ref={listEndRef} />
@@ -491,7 +510,7 @@ export function QuestionGeneratorDialog({
             onClick={() => onOpenChange(false)}
             disabled={saving}
           >
-            Huỷ
+            {t("courseEdit.questions.cancel")}
           </Button>
           <Button
             type="button"
@@ -501,10 +520,10 @@ export function QuestionGeneratorDialog({
             {saving ? (
               <>
                 <Loader2 className="size-4 mr-2 animate-spin" aria-hidden />
-                Đang lưu...
+                {t("courseEdit.questions.saving")}
               </>
             ) : (
-              `Lưu ${questions.length} câu hỏi`
+              t("courseEdit.questions.saveCount", { count: questions.length })
             )}
           </Button>
         </DialogFooter>
