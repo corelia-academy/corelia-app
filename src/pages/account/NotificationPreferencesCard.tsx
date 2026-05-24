@@ -54,7 +54,7 @@ function Toggle({
       >
         <span
           className={[
-            "pointer-events-none inline-block size-5 rounded-full bg-white shadow-sm transition-transform duration-200",
+            "pointer-events-none inline-block size-5 rounded-full bg-primary-foreground shadow-sm transition-transform duration-200",
             checked ? "translate-x-5" : "translate-x-0",
           ].join(" ")}
         />
@@ -121,7 +121,7 @@ export function NotificationPreferencesCard() {
   if (loading) return null;
 
   return (
-    <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <h2 className="text-lg font-semibold text-foreground">
         {t("settings.notifications.title")}
       </h2>

@@ -54,7 +54,7 @@ export function CoreliaSpotlight({
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-lg border border-border-subtle bg-surface-base p-5 sm:p-6">
+    <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-5 sm:p-6">
       <div className="flex flex-col gap-2">
         <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
           {eyebrow}
@@ -80,7 +80,7 @@ export function CoreliaSpotlight({
               key={item.id}
               to={item.href}
               className={cn(
-                "group cursor-pointer overflow-hidden rounded-lg border border-border-subtle p-4 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised",
+                "group cursor-pointer overflow-hidden rounded-lg border border-border-subtle p-4 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised",
                 accent.shell,
               )}
             >
@@ -108,7 +108,7 @@ export function CoreliaSpotlight({
               </div>
 
               {item.meta ? (
-                <div className="mt-4 rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-xs text-foreground-muted">
+                <div className="mt-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-xs text-foreground-muted">
                   {item.meta}
                 </div>
               ) : null}

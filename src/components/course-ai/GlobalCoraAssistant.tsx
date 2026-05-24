@@ -94,7 +94,7 @@ export function CoraAssistantCard({
       hideLabel={String(t("coraWidget.hideAction"))}
       onClearHistory={messages.length > 0 && !isLoading ? () => { void clearHistory(); } : undefined}
       clearHistoryLabel={String(t("coraWidget.clearHistoryAction"))}
-      onNewSession={!isLoading ? () => { void newSession(); } : undefined}
+      onNewSession={!isLoading && messages.length > 0 ? () => { void newSession(); } : undefined}
       newSessionLabel={String(t("coraWidget.newChatAction"))}
       historySlot={
         <CoraHistoryPopover
@@ -113,12 +113,23 @@ export function CoraAssistantCard({
           />
         ) : (
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
+            <div className="rounded-xl border border-border-subtle bg-surface-raised p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground-muted mb-1.5">
+                {t("coraWidget.contextLabel")}
+              </p>
+              <p className="text-xs font-medium text-foreground leading-snug">
+                {t(`coraWidget.surfaceContext.${context}.title`)}
+              </p>
+              <p className="mt-0.5 text-xs text-foreground-muted leading-snug">
+                {t(`coraWidget.surfaceContext.${context}.description`)}
+              </p>
+            </div>
             <div>
               <div className="mb-2 flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
                 <Sparkles className="size-3.5" aria-hidden />
                 {t("coraWidget.suggestionsLabel")}
               </div>
-              <SuggestionPills suggestions={suggestions} onSelect={handleSuggestionClick} />
+              <SuggestionPills suggestions={suggestions} onSelect={handleSuggestionClick} disabled={isLoading} />
             </div>
           </div>
         )
@@ -218,7 +229,7 @@ export function GlobalCoraAssistant() {
           type="button"
           onClick={() => setMobileOpen(true)}
           size="lg"
-          className="h-12 rounded-full px-4 shadow-[var(--elevation-3)]"
+          className="h-12 rounded-full px-4 shadow-card"
         >
           <MessageSquareText className="size-4" />
           {t("coraWidget.openAction")}

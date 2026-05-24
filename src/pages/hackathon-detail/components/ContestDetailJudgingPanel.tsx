@@ -135,7 +135,7 @@ export function ContestDetailJudgingPanel({
               return (
                 <div
                   key={submission.id}
-                  className="rounded-md border border-border-subtle bg-surface-base p-4"
+                  className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4"
                 >
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div>

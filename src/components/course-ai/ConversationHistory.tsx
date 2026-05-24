@@ -35,7 +35,7 @@ export function ConversationHistory({
         <div
           key={message.id}
           className={cn(
-            "max-w-[88%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-sm",
+            "max-w-[88%] rounded-2xl px-3 py-2 text-sm leading-[1.7] shadow-sm",
             message.role === "user"
               ? "ml-auto bg-primary text-primary-foreground"
               : "mr-auto border border-border-subtle bg-surface-raised text-foreground",
@@ -57,7 +57,7 @@ export function ConversationHistory({
           )}
           {message.role === "assistant" && (message.sources?.length ?? 0) > 0 ? (
             <div className="mt-2 space-y-2">
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[11px] text-foreground-muted">
                 {t("coraWidget.sourceCount", { count: message.sources?.length ?? 0 })}
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -67,7 +67,7 @@ export function ConversationHistory({
                   return (
                     <span
                       key={`${message.id}-source-${index}`}
-                      className="rounded-full border border-border-subtle bg-background/70 px-2 py-0.5 text-[10px] text-muted-foreground"
+                      className="rounded-full border border-border-subtle bg-background/70 px-2 py-0.5 text-[10px] text-foreground-subtle"
                     >
                       {label}
                     </span>

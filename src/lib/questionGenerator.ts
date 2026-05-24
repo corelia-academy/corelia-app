@@ -14,7 +14,9 @@ export type GeneratedQuestionSource = {
 
 export type GenerateQuestionsRequest = {
   courseId: string;
-  sectionId: string;
+  sectionId?: string;
+  lessonId?: string;
+  sourceLessonIds?: string[];
   locale: SupportedCourseLocale;
   count?: number;
 };

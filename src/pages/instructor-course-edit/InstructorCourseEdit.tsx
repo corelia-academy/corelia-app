@@ -14,9 +14,11 @@ import {
   Award,
   AlertTriangle,
   CheckCircle2,
+  CheckSquare,
   Download,
   GripVertical,
   Loader2,
+  PenLine,
   Settings,
   DollarSign,
   Trash2,
@@ -367,6 +369,8 @@ const InstructorCourseEdit = () => {
   const [translatingBundle, setTranslatingBundle] = useState<string | null>(null);
   const [questionGeneratorOpen, setQuestionGeneratorOpen] = useState(false);
   const [questionGeneratorSection, setQuestionGeneratorSection] = useState<CourseSection | null>(null);
+  const [lessonQuizDialogOpen, setLessonQuizDialogOpen] = useState(false);
+  const [lessonQuizDialogLesson, setLessonQuizDialogLesson] = useState<CourseLesson | null>(null);
   const [submissions, setSubmissions] = useState<FinalAssignmentSubmission[]>(
     [],
   );
@@ -2016,6 +2020,11 @@ const InstructorCourseEdit = () => {
     setQuestionGeneratorOpen(true);
   };
 
+  const openLessonQuizGenerator = (lesson: CourseLesson) => {
+    setLessonQuizDialogLesson(lesson);
+    setLessonQuizDialogOpen(true);
+  };
+
   const openEditSection = (section: CourseSection) => {
     sectionDraftRef.current = new Map();
     const initLocale = activeContentLocale;
@@ -2600,12 +2609,13 @@ const InstructorCourseEdit = () => {
     pendingNewLessonSnapRef.current = snap;
 
     const isArticleFormat = newLessonFormat === "article";
+    const isNonVideoNewFormat = newLessonFormat !== "video";
     if (isArticleFormat && !newLessonMarkdown.trim() && !newLessonShortDescription.trim()) {
       toast.error(t("courseEdit.lessons.articleContentRequired"));
       return;
     }
 
-    const youtubeUrl = isArticleFormat ? "" : newLessonYoutubeUrl.trim();
+    const youtubeUrl = isNonVideoNewFormat ? "" : newLessonYoutubeUrl.trim();
 
     setAddingLessonInProgress(true);
     try {
@@ -2619,7 +2629,7 @@ const InstructorCourseEdit = () => {
 
       const durationGuess = fromInput > 0 ? fromInput : fromApi;
 
-      if (!isArticleFormat && youtubeUrl && durationGuess > LONG_VIDEO_SPLIT_SECONDS) {
+      if (!isNonVideoNewFormat && youtubeUrl && durationGuess > LONG_VIDEO_SPLIT_SECONDS) {
         const videoDur = meta?.durationSeconds ?? durationGuess;
         const description = meta?.description ?? "";
         const chapterStarts = parseChaptersFromDescription(description, videoDur);
@@ -2764,6 +2774,7 @@ const InstructorCourseEdit = () => {
       const primaryDraft =
         lessonDraftRef.current.get(primaryContentLocale) ?? captureLessonDraftFromState();
       const isArticleFormat = editingLessonFormat === "article";
+      const isNonVideoFormat = editingLessonFormat !== "video";
       if (isArticleFormat) {
         if (!primaryDraft.markdown.trim() && !primaryDraft.shortDescription.trim()) {
           toast.error(t("courseEdit.lessons.articleContentRequired"));
@@ -2771,9 +2782,9 @@ const InstructorCourseEdit = () => {
         }
       }
 
-      const ytUrlTrimmedMaster = isArticleFormat ? "" : editingLessonYoutubeUrl.trim();
+      const ytUrlTrimmedMaster = isNonVideoFormat ? "" : editingLessonYoutubeUrl.trim();
       const learnerCount = lessonLearnerCounts[editingLesson.id] ?? 0;
-      if (!isArticleFormat && learnerCount > 0) {
+      if (!isNonVideoFormat && learnerCount > 0) {
         const prevId = getYoutubeVideoId(editingLesson.youtube_url ?? "");
         const nextId = getYoutubeVideoId(ytUrlTrimmedMaster);
         if (prevId && nextId && prevId !== nextId) {
@@ -2785,7 +2796,7 @@ const InstructorCourseEdit = () => {
       const prevVid = getYoutubeVideoId(editingLesson.youtube_url ?? "");
       const nextVid = getYoutubeVideoId(ytUrlTrimmedMaster);
       if (
-        !isArticleFormat &&
+        !isNonVideoFormat &&
         learnerCount === 0 &&
         ytUrlTrimmedMaster &&
         nextVid &&
@@ -2852,7 +2863,7 @@ const InstructorCourseEdit = () => {
 
       let youtube_start_seconds: number | undefined;
       let youtube_end_seconds: number | null | undefined;
-      if (!isArticleFormat && ytUrlTrimmedMaster) {
+      if (!isNonVideoFormat && ytUrlTrimmedMaster) {
         const startParsed =
           parseTimestampLabelToSeconds(editingLessonYoutubeStartLabel.trim()) ?? 0;
         youtube_start_seconds = startParsed > 0 ? startParsed : undefined;
@@ -2871,7 +2882,7 @@ const InstructorCourseEdit = () => {
       }
 
       let segmentDurationSeconds: number | undefined;
-      if (!isArticleFormat && ytUrlTrimmedMaster) {
+      if (!isNonVideoFormat && ytUrlTrimmedMaster) {
         const effectiveStart = youtube_start_seconds ?? 0;
         if (
           youtube_end_seconds != null &&
@@ -2893,7 +2904,7 @@ const InstructorCourseEdit = () => {
       }
 
       const segmentPrimaryPatch =
-        !isArticleFormat && ytUrlTrimmedMaster
+        !isNonVideoFormat && ytUrlTrimmedMaster
           ? {
               youtube_start_seconds,
               youtube_end_seconds:
@@ -2910,11 +2921,11 @@ const InstructorCourseEdit = () => {
           .filter((r) => r.title && r.url);
         const payload = {
           title: draft.title.trim() || editingLesson.title,
-          youtube_url: isArticleFormat ? undefined : draft.youtubeUrl.trim() || undefined,
+          youtube_url: isNonVideoFormat ? undefined : draft.youtubeUrl.trim() || undefined,
           video_primary_locale: draft.videoPrimaryLocale,
-          has_subtitle: isArticleFormat ? false : draft.hasSubtitle,
+          has_subtitle: isNonVideoFormat ? false : draft.hasSubtitle,
           subtitle_locales:
-            isArticleFormat || !draft.hasSubtitle ? [] : draft.subtitleLocales,
+            isNonVideoFormat || !draft.hasSubtitle ? [] : draft.subtitleLocales,
           short_description: draft.shortDescription.trim() || undefined,
           description_markdown: draft.markdown.trim() || undefined,
           resources: sanitizedResources.length ? sanitizedResources : undefined,
@@ -2926,8 +2937,8 @@ const InstructorCourseEdit = () => {
             ...segmentPrimaryPatch,
           };
           await updateLesson(id, editingLesson.id, merged, {
-            clearYoutube: isArticleFormat,
-            clearYoutubeSegments: Boolean(!isArticleFormat && ytUrlTrimmedMaster),
+            clearYoutube: isNonVideoFormat,
+            clearYoutubeSegments: Boolean(!isNonVideoFormat && ytUrlTrimmedMaster),
           });
           setLessons((prev) =>
             prev.map((l) => (l.id === editingLesson.id ? { ...l, ...merged } : l)),
@@ -3665,7 +3676,7 @@ const InstructorCourseEdit = () => {
 
   return (
     <PageContainer>
-      <div className="mb-4 rounded-lg border border-border-subtle bg-surface-base p-4">
+      <div className="mb-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap gap-2">
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
@@ -3686,7 +3697,7 @@ const InstructorCourseEdit = () => {
           {editorStats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div key={stat.label} className="rounded-lg border border-border-subtle bg-surface-base p-4">
+              <div key={stat.label} className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -3714,7 +3725,7 @@ const InstructorCourseEdit = () => {
 
       <div className="flex flex-col gap-4 xl:flex-row">
         {/* Sidebar inner — điều hướng từng phần */}
-        <nav className="h-fit shrink-0 rounded-lg border border-border-subtle bg-surface-base p-3 xl:sticky xl:top-24 xl:w-64">
+        <nav className="h-fit shrink-0 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 xl:sticky xl:top-24 xl:w-64">
           {/* Locale switcher — always visible */}
           <div className="mb-3 px-1">
             <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-foreground-muted">
@@ -3895,7 +3906,7 @@ const InstructorCourseEdit = () => {
         {/* Nội dung theo section đang chọn */}
         <div className="min-w-0 flex-1">
           {activeSection === "info" && canAccessInfo && (
-            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
+            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <h2 className="text-lg font-medium text-foreground">
                 {t("courseEdit.sidebar.nav.info")}
               </h2>
@@ -4023,7 +4034,7 @@ const InstructorCourseEdit = () => {
                             key={item.key}
                             type="button"
                             onClick={() => focusCoverageField(item.key)}
-                            className="rounded-lg border border-border-subtle bg-surface-base p-3 text-left transition hover:border-primary/30 hover:bg-surface-raised"
+                            className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 text-left transition hover:border-primary/30 hover:bg-surface-raised"
                           >
                             <div className="flex items-start justify-between gap-3">
                               <p className="text-sm font-medium text-foreground">{item.label}</p>
@@ -4398,7 +4409,7 @@ const InstructorCourseEdit = () => {
                                     return (
                                       <label
                                         key={item.key}
-                                        className="flex items-center gap-2 rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm"
+                                        className="flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm"
                                       >
                                         <input
                                           type="checkbox"
@@ -4473,7 +4484,7 @@ const InstructorCourseEdit = () => {
                           return (
                             <div
                               key={sid || name}
-                              className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-border-subtle bg-surface-base p-3"
+                              className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3"
                             >
                               <div className="flex min-w-0 items-start gap-3">
                                 {logoSrc ? (
@@ -4482,7 +4493,7 @@ const InstructorCourseEdit = () => {
                                     alt={name}
                                     loading="lazy"
                                     decoding="async"
-                                    className="size-10 shrink-0 rounded-md border border-border-subtle bg-surface-base object-contain"
+                                    className="size-10 shrink-0 rounded-2xl border border-border-subtle bg-surface-base shadow-card object-contain"
                                   />
                                 ) : (
                                   <div className="grid size-10 shrink-0 place-items-center rounded-md border border-border-subtle bg-surface-raised text-xs font-semibold text-foreground-muted">
@@ -4579,7 +4590,7 @@ const InstructorCourseEdit = () => {
                               <img
                                 src={sponsorForm.logo_url}
                                 alt=""
-                                className="size-10 rounded-md border border-border-subtle bg-surface-base object-contain"
+                                className="size-10 rounded-2xl border border-border-subtle bg-surface-base shadow-card object-contain"
                               />
                             ) : null}
                           </div>
@@ -4693,7 +4704,7 @@ const InstructorCourseEdit = () => {
                           return (
                             <div
                               key={pid || name}
-                              className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-border-subtle bg-surface-base p-3"
+                              className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3"
                             >
                               <div className="flex min-w-0 items-start gap-3">
                                 {logoSrc ? (
@@ -4702,7 +4713,7 @@ const InstructorCourseEdit = () => {
                                     alt={name}
                                     loading="lazy"
                                     decoding="async"
-                                    className="size-10 shrink-0 rounded-md border border-border-subtle bg-surface-base object-contain"
+                                    className="size-10 shrink-0 rounded-2xl border border-border-subtle bg-surface-base shadow-card object-contain"
                                   />
                                 ) : (
                                   <div className="grid size-10 shrink-0 place-items-center rounded-md border border-border-subtle bg-surface-raised text-xs font-semibold text-foreground-muted">
@@ -4801,7 +4812,7 @@ const InstructorCourseEdit = () => {
                               <img
                                 src={partnerForm.logo_url}
                                 alt=""
-                                className="size-10 rounded-md border border-border-subtle bg-surface-base object-contain"
+                                className="size-10 rounded-2xl border border-border-subtle bg-surface-base shadow-card object-contain"
                               />
                             ) : null}
                           </div>
@@ -5188,7 +5199,7 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "pricing" && canAccessPricing && (
-            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
+            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
                 <DollarSign className="size-5" aria-hidden /> {t("courseEdit.sidebar.nav.pricing")}
               </h2>
@@ -5317,7 +5328,7 @@ const InstructorCourseEdit = () => {
                           {t("courseEdit.discounts.empty")}
                         </p>
                       ) : (
-                        <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-surface-base">
+                        <div className="mt-3 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
                           <table className="w-full text-left text-xs">
                             <thead>
                               <tr className="border-b border-border-subtle bg-surface-raised">
@@ -5615,7 +5626,7 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "content" && canAccessContent && (
-            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
+            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
                   <List className="size-5" /> {t("courseEdit.content.heading")}
@@ -5685,7 +5696,7 @@ const InstructorCourseEdit = () => {
                     onDrop={(event) => void handleSectionDrop(section.id, event)}
                     onDragEnd={clearSectionDragState}
                     className={cn(
-                      "overflow-hidden rounded-md border border-border-subtle bg-surface-base transition-[background-color,border-color,opacity]",
+                      "overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[background-color,border-color,opacity]",
                       isSectionDragging && "opacity-45",
                       isSectionDropBefore && "border-t-2 border-t-primary",
                       isSectionDropAfter && "border-b-2 border-b-primary",
@@ -5830,7 +5841,15 @@ const InstructorCourseEdit = () => {
                               >
                                 <GripVertical className="size-4" aria-hidden />
                               </button>
-                              <PlayCircle className="size-4 shrink-0 text-foreground-muted" />
+                              {lesson.lesson_format === "quiz" ? (
+                                <CheckSquare className="size-4 shrink-0 text-foreground-muted" />
+                              ) : lesson.lesson_format === "practice" ? (
+                                <PenLine className="size-4 shrink-0 text-foreground-muted" />
+                              ) : lesson.lesson_format === "article" ? (
+                                <FileText className="size-4 shrink-0 text-foreground-muted" />
+                              ) : (
+                                <PlayCircle className="size-4 shrink-0 text-foreground-muted" />
+                              )}
                               <span className="text-sm text-foreground truncate">
                                 {activeContentLocale !== primaryContentLocale && lessonLocaleMap.has(lesson.id)
                                   ? (lessonLocaleMap.get(lesson.id)?.title ?? lesson.title)
@@ -5912,6 +5931,16 @@ const InstructorCourseEdit = () => {
                                   />
                                   {t("courseEdit.lessons.previewFreeBadge")}
                                 </label>
+                              )}
+                              {lesson.lesson_format === "quiz" && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => openLessonQuizGenerator(lesson)}
+                                >
+                                  {t("courseEdit.lessons.lessonQuestions")}
+                                </Button>
                               )}
                               <Button
                                 type="button"
@@ -6182,10 +6211,10 @@ const InstructorCourseEdit = () => {
                   {editingLesson && (lessonLearnerCounts[editingLesson.id] ?? 0) > 0 ? (
                     <div
                       role="alert"
-                      className="mb-4 flex gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-foreground"
+                      className="mb-4 flex gap-2 rounded-md border border-amber-500/40 bg-warning/10 px-3 py-2 text-sm text-foreground"
                     >
                       <AlertTriangle
-                        className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400"
+                        className="mt-0.5 size-4 shrink-0 text-warning"
                         aria-hidden
                       />
                       <p>
@@ -6204,10 +6233,12 @@ const InstructorCourseEdit = () => {
                         value={editingLessonFormat}
                         onChange={(next) => {
                           setEditingLessonFormat(next);
-                          if (next === "article") setEditingLessonYoutubeUrl("");
+                          if (next !== "video") setEditingLessonYoutubeUrl("");
                         }}
                         videoLabel={t("courseEdit.lessons.formatVideo")}
                         articleLabel={t("courseEdit.lessons.formatArticle")}
+                        quizLabel={t("courseEdit.lessons.formatQuiz")}
+                        practiceLabel={t("courseEdit.lessons.formatPractice")}
                         hint={t("courseEdit.lessons.formatHint")}
                         disabled={
                           !!editingLesson &&
@@ -6723,10 +6754,12 @@ const InstructorCourseEdit = () => {
                       value={newLessonFormat}
                       onChange={(next) => {
                         setNewLessonFormat(next);
-                        if (next === "article") setNewLessonYoutubeUrl("");
+                        if (next !== "video") setNewLessonYoutubeUrl("");
                       }}
                       videoLabel={t("courseEdit.lessons.formatVideo")}
                       articleLabel={t("courseEdit.lessons.formatArticle")}
+                      quizLabel={t("courseEdit.lessons.formatQuiz")}
+                      practiceLabel={t("courseEdit.lessons.formatPractice")}
                       hint={t("courseEdit.lessons.formatHint")}
                     />
                   </Field>
@@ -7002,7 +7035,7 @@ const InstructorCourseEdit = () => {
           </Dialog>
 
           {activeSection === "assignments" && canAccessAssignments && (
-            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
+            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h2 className="flex items-center gap-2 text-lg font-medium text-foreground">
                   <FileText className="size-5" aria-hidden /> {t("courseEdit.sidebar.nav.assignments")}
@@ -7281,7 +7314,7 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "certificate" && canAccessCertificate && (
-            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
+            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
                 <Award className="size-5" aria-hidden /> {t("courseEdit.certificate.sectionTitle")}
               </h2>
@@ -7390,7 +7423,7 @@ const InstructorCourseEdit = () => {
                   <a
                     href="/certificate-template-sample.svg"
                     download="certificate-template-sample.svg"
-                    className="inline-flex items-center gap-2 rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-raised"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-raised"
                   >
                     <Download className="size-4" aria-hidden /> {t("courseEdit.certificateGuide.downloadSample")}
                   </a>
@@ -7415,7 +7448,7 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "students" && canAccessStudents && (
-            <section className="rounded-md border border-border-subtle bg-surface-base p-6">
+            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
                 <Users className="size-5" /> {t("courseEdit.sidebar.nav.students")}
               </h2>
@@ -7635,6 +7668,27 @@ const InstructorCourseEdit = () => {
         onOpenChange={(open) => {
           setQuestionGeneratorOpen(open);
           if (!open) setQuestionGeneratorSection(null);
+        }}
+      />
+      <QuestionGeneratorDialog
+        open={lessonQuizDialogOpen}
+        section={null}
+        courseId={id ?? ""}
+        locale={activeContentLocale}
+        mode="lesson"
+        lessonId={lessonQuizDialogLesson?.id}
+        lessonTitle={lessonQuizDialogLesson?.title}
+        sectionLessons={
+          lessonQuizDialogLesson
+            ? lessons
+                .filter((l) => l.section_id === lessonQuizDialogLesson.section_id)
+                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                .map((l) => ({ id: l.id, title: l.title }))
+            : []
+        }
+        onOpenChange={(open) => {
+          setLessonQuizDialogOpen(open);
+          if (!open) setLessonQuizDialogLesson(null);
         }}
       />
     </PageContainer>

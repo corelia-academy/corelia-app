@@ -34,6 +34,7 @@ export function CoraSidebarPanel({
       courseId={sidebarMeta.courseId}
       lessonTitle={sidebarMeta.lessonTitle}
       lessonId={sidebarMeta.lessonId}
+      lessonFormat={sidebarMeta.lessonFormat}
       className="h-full rounded-none border-0"
       hideShellHeader={hideShellHeader}
       onRequestHide={handleRequestHide}
@@ -83,7 +84,7 @@ export function CoraSidebarPanel({
         className={cn(
           "hidden xl:flex flex-col",
           "fixed right-3 top-3 bottom-3 z-40 w-[360px]",
-          "overflow-hidden rounded-xl border border-border-subtle shadow-2xl",
+          "overflow-hidden rounded-2xl border border-border-subtle shadow-card",
           "bg-surface-base",
           "transition-transform duration-200 ease-in-out",
           isOpen ? "translate-x-0" : "translate-x-[calc(100%+0.75rem)]",

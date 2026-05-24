@@ -30,7 +30,7 @@ function AccountSettingsSection() {
     <div className="space-y-4">
       <LanguageSettingsCard />
       <NotificationPreferencesCard />
-      <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
+      <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-lg font-semibold text-foreground">
@@ -42,7 +42,7 @@ function AccountSettingsSection() {
           </div>
         </div>
 
-        <div className="mt-4 rounded-md border border-border-subtle bg-surface-base p-3">
+        <div className="mt-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3">
           <div className="text-xs font-medium text-foreground-muted">
             {t("settings.appearance.themeLabel")}
           </div>
@@ -70,7 +70,7 @@ function AccountSettingsSection() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-border-subtle bg-surface-base p-4">
+      <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
         <div className="min-w-0">
             <h2 className="text-lg font-semibold text-foreground">
             {t("settings.session.title")}
@@ -80,7 +80,7 @@ function AccountSettingsSection() {
           </p>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface-base p-3">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3">
           <div className="min-w-0">
             <div className="text-sm font-medium text-foreground">
               {t("settings.session.signOutTitle")}

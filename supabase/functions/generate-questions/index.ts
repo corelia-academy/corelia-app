@@ -6,6 +6,8 @@ type Locale = "vi" | "en";
 type RequestBody = {
   courseId?: unknown;
   sectionId?: unknown;
+  lessonId?: unknown;
+  sourceLessonIds?: unknown;
   locale?: unknown;
   count?: unknown;
 };
@@ -187,7 +189,9 @@ async function ensureCanManageCourse(
 
 function parseBody(body: RequestBody): {
   courseId: string;
-  sectionId: string;
+  sectionId: string | null;
+  lessonId: string | null;
+  sourceLessonIds: string[] | null;
   locale: Locale;
   count: number;
 } {
@@ -195,12 +199,21 @@ function parseBody(body: RequestBody): {
     typeof body.courseId === "string" && body.courseId.trim() ? body.courseId.trim() : null;
   const sectionId =
     typeof body.sectionId === "string" && body.sectionId.trim() ? body.sectionId.trim() : null;
+  const lessonId =
+    typeof body.lessonId === "string" && body.lessonId.trim() ? body.lessonId.trim() : null;
+  const sourceLessonIds =
+    Array.isArray(body.sourceLessonIds) && body.sourceLessonIds.length > 0
+      ? (body.sourceLessonIds as unknown[])
+          .filter((id) => typeof id === "string" && (id as string).trim())
+          .map((id) => (id as string).trim())
+          .slice(0, 8)
+      : null;
   const locale = body.locale === "en" ? "en" : "vi";
   const rawCount = typeof body.count === "number" ? body.count : parseInt(String(body.count ?? "5"), 10);
   const count = isNaN(rawCount) ? 5 : Math.min(10, Math.max(1, rawCount));
   if (!courseId) throw new Error("Thiếu courseId.");
-  if (!sectionId) throw new Error("Thiếu sectionId.");
-  return { courseId, sectionId, locale, count };
+  if (!lessonId && !sectionId) throw new Error("Thiếu sectionId hoặc lessonId.");
+  return { courseId, sectionId, lessonId, sourceLessonIds, locale, count };
 }
 
 function normalizeYoutubeVideoId(value: string): string | null {
@@ -505,23 +518,38 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return withCors(req, json({ message: "Bạn không có quyền dùng tính năng này." }, 403));
     }
 
-    const { courseId, sectionId, locale, count } = parseBody((await req.json()) as RequestBody);
+    const { courseId, sectionId, lessonId, sourceLessonIds, locale, count } = parseBody((await req.json()) as RequestBody);
 
     await ensureCanManageCourse(db, user.id, role, courseId);
 
-    const { data: lessonData, error: lessonError } = await db
+    let lessonQuery = db
       .from("course_lessons")
       .select("id,course_id,section_id,data")
       .eq("course_id", courseId)
-      .eq("section_id", sectionId)
       .order("sort_order", { ascending: true })
       .limit(8);
+
+    if (lessonId) {
+      // Lesson-scoped: fetch specific source lessons (defaults to the lesson itself)
+      const idsToFetch = sourceLessonIds && sourceLessonIds.length > 0
+        ? sourceLessonIds
+        : [lessonId];
+      lessonQuery = lessonQuery.in("id", idsToFetch);
+    } else {
+      // Section-scoped: fetch all lessons in section
+      lessonQuery = lessonQuery.eq("section_id", sectionId!);
+    }
+
+    const { data: lessonData, error: lessonError } = await lessonQuery;
 
     if (lessonError) throw new Error(lessonError.message);
     const rows = (lessonData ?? []) as LessonRow[];
 
     if (rows.length === 0) {
-      return withCors(req, json({ message: "Chương này chưa có bài học nào." }, 422));
+      const emptyMsg = lessonId
+        ? "Bài học chưa có nội dung để generate câu hỏi."
+        : "Chương này chưa có bài học nào.";
+      return withCors(req, json({ message: emptyMsg }, 422));
     }
 
     const sources = await buildLessonSources(rows, locale);
@@ -530,13 +558,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (usable.length === 0) {
       return withCors(
         req,
-        json({ message: "Các bài học trong chương chưa có nội dung để generate câu hỏi." }, 422),
+        json({ message: "Các bài học được chọn chưa có nội dung để generate câu hỏi." }, 422),
       );
     }
 
     const warning =
       rows.length > 8
-        ? "Chỉ lấy nội dung từ 8 bài đầu tiên của chương."
+        ? "Chỉ lấy nội dung từ 8 bài đầu tiên."
         : usable.length < rows.length
           ? "Một số bài học chưa có nội dung và không được đưa vào."
           : null;

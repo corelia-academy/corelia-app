@@ -30,8 +30,8 @@ function LessonItem({
   return (
     <div
       className={cn(
-        "border-t border-border-subtle px-4 py-3 transition-colors duration-150",
-        active && "bg-primary-muted text-primary",
+        "border-t border-border-subtle border-l-[3px] pl-[calc(1rem-3px)] pr-4 py-3 transition-colors duration-150",
+        active ? "bg-primary-muted text-primary border-l-brand-accent" : "border-l-transparent",
         !locked && "hover:bg-surface-raised",
         locked && "opacity-75",
       )}
@@ -209,7 +209,7 @@ export function LessonCurriculum({
   }`;
 
   const curriculumCard = (
-    <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-base">
+    <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
       <div className="border-b border-border-subtle bg-surface-raised px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <span className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -279,7 +279,7 @@ export function LessonCurriculum({
 
   return (
     <>
-      <details className="mb-6 overflow-hidden rounded-md border border-border-subtle bg-surface-base lg:hidden [&_summary::-webkit-details-marker]:hidden">
+      <details className="mb-6 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card lg:hidden [&_summary::-webkit-details-marker]:hidden">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">

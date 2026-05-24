@@ -14,7 +14,7 @@ function SubmissionGroup({
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-3 rounded-lg border border-border-subtle bg-surface-base p-4">
+    <section className="space-y-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <h3 className="text-sm font-semibold text-foreground">{title}</h3>
       <div className="space-y-3">{children}</div>
     </section>

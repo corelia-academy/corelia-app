@@ -4,7 +4,7 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 function MetricTile({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-md border border-border-subtle bg-surface-base p-4">
+    <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
         {label}
       </div>

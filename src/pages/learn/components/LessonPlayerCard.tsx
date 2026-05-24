@@ -6,6 +6,8 @@ import { getYoutubeEmbedUrlForLesson } from "@/types/courses";
 import type { CourseLesson } from "@/types/courses";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { LearnBadge } from "./LearnBadge";
+import { LessonQuiz } from "./LessonQuiz";
+import { LessonPractice } from "./LessonPractice";
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
@@ -20,6 +22,7 @@ export function LessonPlayerCard({
   translate,
   onMarkComplete,
   onNavigateToLesson,
+  courseId,
 }: {
   lesson: CourseLesson | null;
   lessonIndex: number | null;
@@ -31,9 +34,12 @@ export function LessonPlayerCard({
   translate: TranslateFn;
   onMarkComplete: () => void;
   onNavigateToLesson: (lessonId: string) => void;
+  courseId?: string | null;
 }) {
   const articleLesson = lesson ? isArticleLesson(lesson) : false;
   const videoLesson = lesson ? isVideoLesson(lesson) : false;
+  const quizLesson = lesson?.lesson_format === "quiz";
+  const practiceLesson = lesson?.lesson_format === "practice";
   const embedUrl =
     lesson && videoLesson && lesson.youtube_url?.trim()
       ? getYoutubeEmbedUrlForLesson(lesson)
@@ -52,6 +58,14 @@ export function LessonPlayerCard({
     Boolean(lesson.description_markdown?.trim());
 
   const draftForDisplay = lesson ? isLessonDraftForLearners(lesson) : isDraftLesson;
+
+  if (!lesson) {
+    return (
+      <div className="px-4 py-16 sm:px-6 text-center text-sm text-foreground-muted">
+        {translate("detail.learn.noLessonSelected")}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -75,11 +89,11 @@ export function LessonPlayerCard({
                 </LearnBadge>
               ) : null}
             </div>
-            <h2 className="mt-3 text-xl font-semibold text-foreground">
+            <h2 className="mt-3 text-2xl font-semibold text-foreground">
               {lesson.title}
             </h2>
             {lesson.short_description?.trim() ? (
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
+              <p className="mt-2 whitespace-pre-wrap text-[15px] leading-[1.7] text-foreground-muted">
                 {lesson.short_description}
               </p>
             ) : null}
@@ -88,22 +102,30 @@ export function LessonPlayerCard({
       </div>
 
       {lesson && autoplayEmbedUrl ? (
-        <div className="relative aspect-video w-full bg-black">
-          <iframe
-            key={lesson.id}
-            src={autoplayEmbedUrl}
-            title={lesson.title}
-            className="absolute inset-0 size-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+        <div className="mx-4 overflow-hidden rounded-2xl shadow-card sm:mx-6">
+          <div className="relative aspect-video w-full bg-brand-navy">
+            <iframe
+              key={lesson.id}
+              src={autoplayEmbedUrl}
+              title={lesson.title}
+              className="absolute inset-0 size-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
         </div>
       ) : showArticleBody ? (
-        <div className="border-y border-border-subtle bg-surface-base px-4 py-6 sm:px-6">
-          <Markdown content={lesson.description_markdown!} />
+        <div className="mx-4 overflow-hidden rounded-2xl border border-border-subtle shadow-card sm:mx-6">
+          <div className="px-6 py-8 text-[15px] leading-[1.7]">
+            <Markdown content={lesson.description_markdown!} />
+          </div>
         </div>
+      ) : quizLesson && courseId && lesson ? (
+        <LessonQuiz courseId={courseId} lessonId={lesson.id} lessonTitle={lesson.title} />
+      ) : practiceLesson && lesson?.description_markdown?.trim() ? (
+        <LessonPractice markdown={lesson.description_markdown} />
       ) : lesson ? (
-        <div className="mx-4 mb-2 flex aspect-video items-center justify-center rounded-md border border-border-subtle bg-surface-raised sm:mx-6">
+        <div className="mx-4 mb-2 flex aspect-video items-center justify-center rounded-2xl border border-border-subtle bg-surface-raised sm:mx-6">
           {draftForDisplay ? (
             <div className="max-w-md px-6 text-center">
               <p className="text-sm font-medium text-foreground">
@@ -133,23 +155,23 @@ export function LessonPlayerCard({
         {lesson ? (
           <>
             {videoLesson && lesson.description_markdown?.trim() ? (
-              <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
+              <div className="rounded-2xl border border-border-subtle bg-surface-raised p-5 text-[15px] leading-[1.7]">
                 <Markdown content={lesson.description_markdown} />
               </div>
             ) : null}
             {lesson.resources?.length ? (
               <div
                 className={cn(
-                  "rounded-md border border-border-subtle bg-surface-base p-4",
+                  "rounded-2xl border border-border-subtle bg-surface-base p-4",
                   (videoLesson && lesson.description_markdown?.trim()) || showArticleBody
                     ? "mt-4"
                     : "",
                 )}
               >
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-[13px] font-semibold text-foreground">
                   {translate("detail.learn.lessonResourcesTitle")}
                 </p>
-                <ul className="mt-2 space-y-1 text-sm">
+                <ul className="mt-2 space-y-1 text-[13px]">
                   {lesson.resources
                     .map((r) => ({
                       title: (r.title ?? "").trim(),
@@ -174,7 +196,7 @@ export function LessonPlayerCard({
 
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 className="w-full justify-center sm:w-auto"
                 onClick={onMarkComplete}

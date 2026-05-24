@@ -71,7 +71,7 @@ function buildCheckoutUrl(status: "success" | "error" | "cancel") {
 function statusTone(status: PaymentTransaction["status"]) {
   switch (status) {
     case "paid":
-      return "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+      return "border-success/20 bg-success/10 text-success";
     case "failed":
       return "border-destructive/20 bg-destructive/10 text-destructive";
     case "cancelled":
@@ -112,7 +112,7 @@ export function AccountCoraRoute() {
   const paymentNotice =
     paymentState === "success" && paymentVerificationState === "verified"
       ? {
-          tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+          tone: "border-success/30 bg-success/10 text-success",
           title: t("cora.return.verifiedTitle"),
           description: t("cora.return.verifiedDescription"),
         }
@@ -444,7 +444,10 @@ export function AccountCoraRoute() {
                               : t("cora.currentPlan.nearingQuotaSub", { remaining: remainingStr, date: resetStr })}
                           </p>
                           <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-border-subtle">
-                            <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${Math.min(usedPct * 100, 100)}%` }} />
+                            <div
+                              className="h-full w-full origin-left rounded-full bg-warning transition-transform"
+                              style={{ transform: `scaleX(${Math.min(usedPct, 1)})` }}
+                            />
                           </div>
                           {tokenExplainer}
                           {nextTier ? (
@@ -466,7 +469,10 @@ export function AccountCoraRoute() {
                         </p>
                         {limit ? (
                           <div className="h-1 w-full overflow-hidden rounded-full bg-border-subtle">
-                            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(usedPct * 100, 100)}%` }} />
+                            <div
+                              className="h-full w-full origin-left rounded-full bg-primary transition-transform"
+                              style={{ transform: `scaleX(${Math.min(usedPct, 1)})` }}
+                            />
                           </div>
                         ) : null}
                         {tokenExplainer}
@@ -480,7 +486,7 @@ export function AccountCoraRoute() {
         </section>
 
       {!user ? (
-        <section className="rounded-xl border border-border-subtle bg-surface-base px-5 py-4 text-sm text-foreground-muted sm:px-6">
+        <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card px-5 py-4 text-sm text-foreground-muted sm:px-6">
           {t("cora.mustLogin")}
         </section>
       ) : (
@@ -500,7 +506,7 @@ export function AccountCoraRoute() {
           ) : null}
 
           <section className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] xl:gap-6">
-            <div className="rounded-xl border border-border-subtle bg-surface-base p-5 sm:p-6">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-5 sm:p-6">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">
                   {t("cora.selector.title")}
@@ -580,7 +586,7 @@ export function AccountCoraRoute() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-border-subtle bg-surface-base p-5 sm:p-6">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-foreground">
                 {t("cora.durationTitle")}
               </h2>
@@ -622,7 +628,7 @@ export function AccountCoraRoute() {
                               </span>
                             ) : null}
                           {duration === 12 && savings > 0 ? (
-                              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+                              <span className="rounded-full border border-success/20 bg-success/10 px-2 py-0.5 text-[11px] font-medium text-success">
                                 {t("cora.durationSavingsBadge", {
                                   percent: savingsPercent,
                                 })}
@@ -744,16 +750,16 @@ export function AccountCoraRoute() {
                     </p>
                   </div>
                   {voucherPreview ? (
-                    <div className="mb-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-3 text-sm">
+                    <div className="mb-3 rounded-lg border border-success/20 bg-success/10 px-3 py-3 text-sm">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-medium text-emerald-700 dark:text-emerald-300">
+                        <span className="font-medium text-success">
                           {voucherPreview.code}
                         </span>
-                        <span className="text-emerald-700 dark:text-emerald-300">
+                        <span className="text-success">
                           -{voucherPreview.percent_off}%
                         </span>
                       </div>
-                      <div className="mt-1 text-emerald-700/90 dark:text-emerald-300/90">
+                      <div className="mt-1 text-success/90">
                         {t("cora.voucher.applied", {
                           amount: formatVndPrice(voucherPreview.discount_amount_vnd),
                         })}
@@ -775,7 +781,7 @@ export function AccountCoraRoute() {
                       <span className="text-foreground-muted">
                         {t("cora.durationSavingsSummaryLabel")}
                       </span>
-                      <span className="font-medium text-emerald-700 dark:text-emerald-300">
+                      <span className="font-medium text-success">
                         {t("cora.durationSavingsSummaryValue", {
                           amount: formatVndPrice(selectedSavings),
                           percent: selectedSavingsPercent,
@@ -791,7 +797,7 @@ export function AccountCoraRoute() {
                       </div>
                       <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
                         <span className="text-foreground-muted">{t("cora.voucher.discountValue")}</span>
-                        <span className="font-medium text-emerald-700 dark:text-emerald-300">
+                        <span className="font-medium text-success">
                           -{formatVndPrice(voucherPreview.discount_amount_vnd)}
                         </span>
                       </div>
@@ -829,7 +835,7 @@ export function AccountCoraRoute() {
             </section>
           ) : null}
 
-          <section className="rounded-xl border border-border-subtle bg-surface-base p-5 sm:p-6">
+          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-5 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">

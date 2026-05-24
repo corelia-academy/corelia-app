@@ -55,7 +55,7 @@ export function OcCredentialModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl w-full min-w-0 rounded-lg p-0 overflow-hidden">
+      <DialogContent className="max-w-xl w-full min-w-0 rounded-3xl p-0 overflow-hidden">
         <div className="h-1.5 w-full bg-linear-to-r from-[#00e5b4] via-[#0047ff] to-[#00e5b4]" />
 
         <div className="min-w-0 p-4 sm:p-6">

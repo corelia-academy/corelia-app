@@ -34,7 +34,7 @@ export default function UserProfileLayout() {
 
   return (
     <div className="container-app py-6 sm:py-8">
-      <section className="overflow-hidden rounded-md border border-border-subtle bg-surface-base">
+      <section className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
         <div className="relative p-4 sm:p-6">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--primary)_14%,transparent),transparent_40%),linear-gradient(180deg,color-mix(in_oklch,var(--primary-container)_48%,transparent),transparent_70%)]" />
 

@@ -91,7 +91,7 @@ export default function CareerDetailPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-7">
-          <section className="rounded-md border border-border-subtle bg-surface-base p-4">
+          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <h2 className="text-sm font-semibold text-foreground">
               {t("detail.whatYoullLearn")}
             </h2>
@@ -112,7 +112,7 @@ export default function CareerDetailPage() {
             )}
           </section>
 
-          <section className="rounded-md border border-border-subtle bg-surface-base p-4">
+          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <h2 className="text-sm font-semibold text-foreground">
               {t("detail.includedCourses")}
             </h2>
@@ -122,7 +122,7 @@ export default function CareerDetailPage() {
                 <Link
                   key={item.course.id}
                   to={`/courses/${item.course.slug || item.course.id}`}
-                  className="group flex items-center gap-3 rounded-md border border-border-subtle bg-surface-base px-3 py-2 transition-colors duration-150 hover:bg-surface-raised"
+                  className="group flex items-center gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 transition-colors duration-150 hover:bg-surface-raised"
                 >
                   <div className="size-12 shrink-0 overflow-hidden rounded-md bg-surface-raised">
                     <img
@@ -146,7 +146,7 @@ export default function CareerDetailPage() {
         </div>
 
         <div className="space-y-6 lg:col-span-5">
-          <section className="rounded-md border border-border-subtle bg-surface-base p-4">
+          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <h2 className="text-sm font-semibold text-foreground">
               {t("detail.prerequisites")}
             </h2>
@@ -167,7 +167,7 @@ export default function CareerDetailPage() {
             )}
           </section>
 
-          <section className="rounded-md border border-border-subtle bg-surface-base p-4">
+          <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <h2 className="text-sm font-semibold text-foreground">
               {t("detail.nextSteps")}
             </h2>

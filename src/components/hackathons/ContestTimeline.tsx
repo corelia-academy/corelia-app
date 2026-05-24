@@ -23,10 +23,10 @@ export function ContestTimeline({
       {items.map((item) => (
         <li
           key={item.key}
-          className="group/timeline rounded-xl border border-border-subtle bg-surface-base p-4.5 transition-all duration-300 hover:-translate-y-[2px] hover:shadow-md hover:border-primary/25"
+          className="group/timeline rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4.5 transition-[transform,background-color,border-color,box-shadow] duration-300 hover:-translate-y-[2px] hover:shadow-md hover:border-primary/25"
         >
           <div className="flex items-start gap-4">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary group-hover/timeline:bg-primary group-hover/timeline:text-primary-foreground transition-all duration-300 shadow-2xs" aria-hidden>
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary group-hover/timeline:bg-primary group-hover/timeline:text-primary-foreground transition-[transform,background-color,border-color,box-shadow] duration-300 shadow-2xs" aria-hidden>
               {item.icon}
             </div>
             <div className="min-w-0 flex-1">
@@ -50,7 +50,7 @@ export function ContestTimelineVertical({ rows }: { rows: ContestTimelineRow[] }
       {rows.map((row) => (
         <li
           key={row.key}
-          className="group/timeline rounded-xl border border-border-subtle bg-surface-base p-4.5 pl-5 relative transition-all duration-300 hover:-translate-y-[2px] hover:shadow-md hover:border-primary/25 border-l-3 border-l-primary/30 hover:border-l-primary"
+          className="group/timeline rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4.5 pl-5 relative transition-[transform,background-color,border-color,box-shadow] duration-300 hover:-translate-y-[2px] hover:shadow-md hover:border-primary/25 border-l-3 border-l-primary/30 hover:border-l-primary"
         >
           <div className="text-sm font-semibold leading-snug text-foreground group-hover/timeline:text-primary transition-colors">
             {row.title}

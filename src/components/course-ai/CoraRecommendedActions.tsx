@@ -42,6 +42,7 @@ export function CoraRecommendedActions({
                 variant="ghost"
                 size="sm"
                 className="shrink-0"
+                aria-label={action.label}
               >
                 <ArrowUpRight className="size-4" />
               </Button>

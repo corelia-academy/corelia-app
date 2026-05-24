@@ -66,7 +66,7 @@ export default function InstructorCourseNewPage() {
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               Trạng thái
             </p>
@@ -74,7 +74,7 @@ export default function InstructorCourseNewPage() {
               {t("courseNew.labels.draft")}
             </p>
           </div>
-          <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               Loại truy cập
             </p>
@@ -82,7 +82,7 @@ export default function InstructorCourseNewPage() {
               {getCourseAccessModelLabel(form.access_model)}
             </p>
           </div>
-          <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               Sở hữu doanh thu
             </p>
@@ -90,7 +90,7 @@ export default function InstructorCourseNewPage() {
               {getCourseOwnerTypeLabel(form.owner_type)}
             </p>
           </div>
-          <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+          <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
               Cấp độ
             </p>
@@ -108,7 +108,7 @@ export default function InstructorCourseNewPage() {
       )}
 
       <div className="grid gap-4 xl:grid-cols-[260px_1fr]">
-        <nav className="h-fit rounded-lg border border-border-subtle bg-surface-base p-3 xl:sticky xl:top-24">
+        <nav className="h-fit rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 xl:sticky xl:top-24">
           <div className="mb-3 px-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
               Lộ trình thiết lập

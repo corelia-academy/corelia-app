@@ -57,7 +57,7 @@ export function ContestPublicResourcesSection(props: {
     const Icon = resourceIcon(r.type);
     const thumb = r.thumbnail_url ?? r.thumbnailUrl ?? null;
     return (
-      <div className="flex flex-col overflow-hidden rounded-lg border border-border-subtle bg-surface-base">
+      <div className="flex flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
         {thumb?.trim() ? (
           <div className="relative aspect-video w-full bg-surface-raised">
             <img src={thumb.trim()} alt="" className="h-full w-full object-cover" />

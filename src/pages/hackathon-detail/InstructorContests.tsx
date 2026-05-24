@@ -221,7 +221,7 @@ export default function InstructorContests() {
       </PageSectionCard>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -234,7 +234,7 @@ export default function InstructorContests() {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -247,7 +247,7 @@ export default function InstructorContests() {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -262,7 +262,7 @@ export default function InstructorContests() {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -275,7 +275,7 @@ export default function InstructorContests() {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -288,7 +288,7 @@ export default function InstructorContests() {
             </div>
           </div>
         </div>
-        <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
@@ -306,7 +306,7 @@ export default function InstructorContests() {
       </div>
 
       {items.length === 0 ? (
-        <div className="mt-4 rounded-lg border border-border-subtle bg-surface-base">
+        <div className="mt-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card">
           <EmptyState
             icon={<Trophy className="size-6 text-foreground-subtle" aria-hidden />}
             title={t("instructor.empty.title")}
@@ -329,7 +329,7 @@ export default function InstructorContests() {
             return (
             <article
               key={contest.id}
-              className="group flex h-full flex-col overflow-hidden rounded-lg border border-border-subtle bg-surface-base transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-surface-raised"
+              className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:bg-surface-raised"
             >
               <ContestListCardThumbnail
                 src={listImg}

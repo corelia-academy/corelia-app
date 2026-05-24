@@ -127,7 +127,7 @@ export default function CheckoutCourse() {
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-[960px] px-4 py-8">
-        <div className="rounded-md border border-border-subtle bg-surface-base p-6">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
           <div className="flex flex-col items-center gap-3 py-12 text-center">
             <Loader2 className="size-10 animate-spin text-foreground-subtle" aria-hidden />
             <div>
@@ -137,12 +137,12 @@ export default function CheckoutCourse() {
             </div>
           </div>
           <div className="mt-6 grid gap-3 md:grid-cols-2">
-            <div className="space-y-3 rounded-md border border-border-subtle bg-surface-base p-4">
+            <div className="space-y-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
               <Skeleton className="h-4 w-40 rounded-full" />
               <Skeleton className="h-4 w-3/4 rounded-full" />
               <Skeleton className="h-4 w-2/3 rounded-full" />
             </div>
-            <div className="space-y-3 rounded-md border border-border-subtle bg-surface-base p-4">
+            <div className="space-y-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
               <Skeleton className="h-4 w-32 rounded-full" />
               <Skeleton className="h-4 w-2/3 rounded-full" />
               <Skeleton className="h-4 w-1/2 rounded-full" />
@@ -187,7 +187,7 @@ export default function CheckoutCourse() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
-        <section className="rounded-md border border-border-subtle bg-surface-base p-6">
+        <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
           <h2 className="text-sm font-medium text-foreground">{t("detail.checkout.courseSectionTitle")}</h2>
           <p className="mt-2 text-base text-foreground">{course.title}</p>
           <p className="mt-1 text-sm text-foreground-muted">
@@ -247,7 +247,7 @@ export default function CheckoutCourse() {
           </div>
         </section>
 
-        <aside className="rounded-md border border-border-subtle bg-surface-base p-6">
+        <aside className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
           <h2 className="text-sm font-medium text-foreground">{t("detail.checkout.paymentAsideTitle")}</h2>
           <p className="mt-2 text-sm text-foreground-muted">
             {t("detail.checkout.paymentAsideBodyPrefix")}{" "}

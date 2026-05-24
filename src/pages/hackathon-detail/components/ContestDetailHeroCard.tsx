@@ -184,7 +184,7 @@ function PublicHero({
     lifecycleForBadge !== "ended" && publicHeroHighlights.length > 0;
 
   return (
-    <div className="rounded-lg border border-border-subtle bg-surface-base">
+    <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card">
       <Card className="overflow-hidden border-none bg-transparent shadow-none">
         <HackathonHeroBanner contest={contest} translate={translate} />
         <CardContent className="p-4 sm:p-6">

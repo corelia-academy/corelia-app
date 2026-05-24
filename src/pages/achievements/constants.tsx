@@ -26,9 +26,9 @@ export const BADGE_STYLES: Array<
   },
   {
     icon: <Medal className="size-7" aria-hidden />,
-    color: "text-sky-600 dark:text-sky-400",
-    bgColor: "bg-sky-50 dark:bg-sky-950/50",
-    borderColor: "border-sky-200 dark:border-sky-700/50",
+    color: "text-warning",
+    bgColor: "bg-warning/10 dark:bg-sky-950/50",
+    borderColor: "border-warning/20 dark:border-sky-700/50",
     category: "learning",
   },
   {

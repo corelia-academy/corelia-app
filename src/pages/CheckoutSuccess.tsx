@@ -156,7 +156,7 @@ export default function CheckoutSuccess() {
 
   return (
     <div className="mx-auto w-full max-w-[960px] px-4 py-10">
-      <div className="rounded-md border border-border-subtle bg-surface-base p-6">
+      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
         <h1 className="text-2xl font-normal tracking-tight text-foreground">
           {t("detail.checkoutSuccess.title")}
         </h1>

@@ -19,7 +19,7 @@ export function BadgeCard({
   return (
     <div
       className={cn(
-        "group relative flex min-w-0 flex-col items-center gap-2 rounded-md border p-3 text-center transition-all duration-200 sm:gap-3 sm:p-4",
+        "group relative flex min-w-0 flex-col items-center gap-2 rounded-md border p-3 text-center transition-[transform,background-color,border-color,box-shadow] duration-200 sm:gap-3 sm:p-4",
         badge.locked
           ? "border-border bg-surface-raised opacity-60 grayscale"
           : cn(

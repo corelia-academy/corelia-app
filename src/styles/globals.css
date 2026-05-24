@@ -46,7 +46,7 @@
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-2xl: 1rem; /* 16px — premium card radius */
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
   --color-sidebar: var(--sidebar);
@@ -63,6 +63,13 @@
   --color-surface-raised: var(--surface-raised);
   --color-surface-overlay: var(--surface-overlay);
   --color-surface-float: var(--surface-float);
+
+  /* Brand tokens */
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-accent: var(--brand-accent);
+
+  /* Shadows */
+  --shadow-card: var(--elevation-card);
   --font-sans:
     "Google Sans Variable", ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
@@ -141,6 +148,11 @@
     0 4px 6px -1px oklch(0.2 0.04 235 / 0.08),
     0 2px 4px -2px oklch(0 0 0 / 0.04);
   --elevation-3: var(--elevation-2);
+  --elevation-card: 0 8px 24px oklch(0.15 0.04 235 / 0.04);
+
+  /* ── Brand ── */
+  --brand-navy: oklch(0.17 0.055 235);   /* ≈ #0B2533 */
+  --brand-accent: oklch(0.44 0.22 263);  /* ≈ #2D5BE3 */
 
   /* ── Sidebar ── */
   --sidebar: oklch(0.98 0.005 75);
@@ -221,6 +233,11 @@
   --elevation-2:
     0 4px 6px -1px oklch(0 0 0 / 0.4), 0 2px 4px -2px oklch(0 0 0 / 0.3);
   --elevation-3: var(--elevation-2);
+  --elevation-card: 0 8px 24px oklch(0 0 0 / 0.2);
+
+  /* ── Brand ── */
+  --brand-navy: oklch(0.12 0.04 240);
+  --brand-accent: oklch(0.62 0.2 263); /* Sáng hơn cho dark mode */
 
   /* ── Sidebar ── */
   --sidebar: oklch(0.16 0.03 240);
@@ -315,6 +332,38 @@
 
 .bg-ocid-blue {
   background-color: #151ae9;
+}
+
+.text-ocid-foreground {
+  color: oklch(1 0 0);
+}
+
+/* Design system component utilities (docs/DESIGN.md) */
+@utility ds-card {
+  border-radius: var(--radius-2xl);
+  border-width: 1px;
+  border-color: var(--border-subtle);
+  background-color: var(--surface-base);
+  box-shadow: var(--elevation-card);
+}
+
+@utility ds-card-hover {
+  transition-property: transform, background-color, border-color, box-shadow;
+  transition-duration: 200ms;
+  &:hover {
+    transform: translateY(-2px);
+    background-color: var(--surface-raised);
+  }
+}
+
+@utility ds-body {
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+@utility ds-h2 {
+  font-size: 18px;
+  font-weight: 600;
 }
 
 /* Premium UI Redesign Utilities */

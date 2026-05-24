@@ -33,7 +33,7 @@ export function BillingSection() {
   const transactionRows = transactions ?? [];
 
   return (
-    <div className="space-y-4 rounded-lg border border-border-subtle bg-surface-base p-4">
+    <div className="space-y-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div>
         <h2 className="text-lg font-semibold">{t("billing.title")}</h2>
         <p className="mt-1 text-sm text-foreground-muted">

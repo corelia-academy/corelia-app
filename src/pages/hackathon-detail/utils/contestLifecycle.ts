@@ -100,16 +100,16 @@ export function hackathonLifecycleBadgeClassName(lifecycle: HackathonLifecycle):
     case "draft":
       return "border border-border-subtle bg-surface-raised text-foreground-muted";
     case "upcoming":
-      return "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200";
+      return "bg-surface-overlay text-foreground-muted";
     case "registration_open":
-      return "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300";
+      return "bg-success/10 text-success";
     case "in_progress":
-      return "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300";
+      return "bg-warning/10 text-warning";
     case "judging":
-      return "bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300";
+      return "bg-primary-muted text-primary";
     case "ended":
     default:
-      return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
+      return "bg-surface-overlay text-foreground-subtle";
   }
 }
 

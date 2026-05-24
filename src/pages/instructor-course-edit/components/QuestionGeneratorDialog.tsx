@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { invokeGenerateQuestions, type GeneratedQuestionSource } from "@/lib/questionGenerator";
-import { getSectionQuestions, setSectionQuestions } from "@/lib/sectionQuestions";
+import { getSectionQuestions, setSectionQuestions, getLessonQuestions, setLessonQuestions } from "@/lib/sectionQuestions";
 import type { SectionQuestionData, QuestionOption } from "@/types/questions";
 import type { CourseSection, SupportedCourseLocale } from "@/types/courses";
 import { toast } from "sonner";
@@ -145,12 +145,20 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
   );
 }
 
+type SourceLesson = { id: string; title: string };
+
 type Props = {
   open: boolean;
   section: CourseSection | null;
   courseId: string;
   locale: SupportedCourseLocale;
   onOpenChange: (open: boolean) => void;
+  /** When set to "lesson", uses lessonId-scoped questions instead of sectionId-scoped */
+  mode?: "section" | "lesson";
+  lessonId?: string | null;
+  lessonTitle?: string | null;
+  /** Other lessons in the same section, for source selection */
+  sectionLessons?: SourceLesson[];
 };
 
 export function QuestionGeneratorDialog({
@@ -159,6 +167,10 @@ export function QuestionGeneratorDialog({
   courseId,
   locale,
   onOpenChange,
+  mode = "section",
+  lessonId,
+  lessonTitle,
+  sectionLessons = [],
 }: Props) {
   const { t } = useTranslation("instructor");
   const [questions, setQuestions] = useState<DraftQuestion[]>([]);
@@ -168,23 +180,39 @@ export function QuestionGeneratorDialog({
   const [loading, setLoading] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [count, setCount] = useState<number>(5);
+  // Lesson mode: which source lessons are selected for generation
+  const [selectedSourceIds, setSelectedSourceIds] = useState<Set<string>>(new Set());
   const listEndRef = useRef<HTMLDivElement>(null);
+
+  const isLessonMode = mode === "lesson";
 
   // Load existing questions when dialog opens
   useEffect(() => {
-    if (!open || !section || !courseId) return;
+    if (!open || !courseId) return;
+    if (isLessonMode && !lessonId) return;
+    if (!isLessonMode && !section) return;
+
     setLoading(true);
     setGenerateError(null);
-    getSectionQuestions(courseId, section.id)
+
+    const loadPromise = isLessonMode
+      ? getLessonQuestions(courseId, lessonId!)
+      : getSectionQuestions(courseId, section!.id);
+
+    loadPromise
       .then((existing) => {
         setQuestions(existing.map(dataToDraft));
       })
       .catch(() => {
-        // Non-critical — start with empty list
         setQuestions([]);
       })
       .finally(() => setLoading(false));
-  }, [open, section, courseId]);
+
+    // Default: select current lesson as source
+    if (isLessonMode && lessonId) {
+      setSelectedSourceIds(new Set([lessonId]));
+    }
+  }, [open, section, courseId, isLessonMode, lessonId]);
 
   // Reset when closed
   useEffect(() => {
@@ -194,18 +222,31 @@ export function QuestionGeneratorDialog({
       setGenerateError(null);
       setGenerating(false);
       setSaving(false);
+      setSelectedSourceIds(new Set());
     }
   }, [open]);
 
   async function handleGenerate() {
-    if (!section || !courseId) return;
+    if (!courseId) return;
+    if (!isLessonMode && !section) return;
+    if (isLessonMode && !lessonId) return;
+
     setGenerating(true);
     setGenerateError(null);
     try {
-      const res = await invokeGenerateQuestions({ courseId, sectionId: section.id, locale, count });
+      const req = isLessonMode
+        ? {
+            courseId,
+            lessonId: lessonId!,
+            sourceLessonIds: selectedSourceIds.size > 0 ? Array.from(selectedSourceIds) : undefined,
+            locale,
+            count,
+          }
+        : { courseId, sectionId: section!.id, locale, count };
+
+      const res = await invokeGenerateQuestions(req);
       setSources(res.sources);
       setQuestions(res.questions.map(dataToDraft));
-      // Scroll to bottom so user sees the first question
       setTimeout(() => listEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (err) {
       setGenerateError(
@@ -217,8 +258,10 @@ export function QuestionGeneratorDialog({
   }
 
   async function handleSave() {
-    if (!section || !courseId) return;
-    // Validate: every question must have text + at least 2 options with text
+    if (!courseId) return;
+    if (!isLessonMode && !section) return;
+    if (isLessonMode && !lessonId) return;
+
     const invalid = questions.find(
       (q) => !q.question.trim() || q.options.filter((o) => o.text.trim()).length < 2,
     );
@@ -236,8 +279,14 @@ export function QuestionGeneratorDialog({
         explanation: q.explanation?.trim() || undefined,
         locale,
       }));
-      await setSectionQuestions(courseId, section.id, payload);
-      toast.success(`Đã lưu ${questions.length} câu hỏi cho chương này.`);
+
+      if (isLessonMode) {
+        await setLessonQuestions(courseId, lessonId!, payload);
+        toast.success(`Đã lưu ${questions.length} câu hỏi cho bài học này.`);
+      } else {
+        await setSectionQuestions(courseId, section!.id, payload);
+        toast.success(`Đã lưu ${questions.length} câu hỏi cho chương này.`);
+      }
       onOpenChange(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("courseEdit.questions.saveFailed"));
@@ -259,23 +308,73 @@ export function QuestionGeneratorDialog({
     setTimeout(() => listEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   }
 
-  const sectionTitle = section?.title ?? "";
+  const dialogTitle = isLessonMode
+    ? `Câu hỏi bài học: ${lessonTitle ?? ""}`
+    : `Câu hỏi kiểm tra: ${section?.title ?? ""}`;
+
+  const dialogDescription = isLessonMode
+    ? "Tạo câu hỏi trắc nghiệm cho bài học này. Có thể chọn bài học khác trong chương làm nguồn nội dung."
+    : "Dùng AI để tạo câu hỏi trắc nghiệm từ nội dung các bài học. Có thể chỉnh sửa trước khi lưu.";
+
+  function toggleSourceLesson(id: string) {
+    setSelectedSourceIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border-subtle shrink-0">
           <DialogTitle className="text-base">
-            Câu hỏi kiểm tra: {sectionTitle}
+            {dialogTitle}
           </DialogTitle>
           <DialogDescription>
-            Dùng AI để tạo câu hỏi trắc nghiệm từ nội dung các bài học. Có thể chỉnh sửa trước khi lưu.
+            {dialogDescription}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-1 overflow-hidden">
           {/* Left panel: controls + sources */}
           <div className="w-64 shrink-0 border-r border-border-subtle overflow-y-auto p-4 space-y-4">
+            {/* Source lesson selector (lesson mode only) */}
+            {isLessonMode && sectionLessons.length > 1 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-foreground-muted uppercase tracking-wide">
+                  Nguồn bài học
+                </p>
+                <ul className="space-y-1">
+                  {sectionLessons.map((l) => (
+                    <li key={l.id}>
+                      <label className="flex items-start gap-2 cursor-pointer py-0.5">
+                        <input
+                          type="checkbox"
+                          checked={selectedSourceIds.has(l.id)}
+                          onChange={() => toggleSourceLesson(l.id)}
+                          className="mt-0.5 rounded border-border accent-primary"
+                        />
+                        <span className={cn(
+                          "text-xs leading-relaxed",
+                          l.id === lessonId ? "text-foreground font-medium" : "text-foreground-muted",
+                        )}>
+                          {l.title}
+                          {l.id === lessonId && (
+                            <span className="ml-1 text-[10px] text-foreground-subtle">(bài này)</span>
+                          )}
+                        </span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="space-y-2">
               <p className="text-xs font-medium text-foreground-muted uppercase tracking-wide">
                 Số câu hỏi
@@ -303,7 +402,7 @@ export function QuestionGeneratorDialog({
               type="button"
               size="sm"
               className="w-full"
-              disabled={generating || loading}
+              disabled={generating || loading || (isLessonMode && selectedSourceIds.size === 0)}
               onClick={handleGenerate}
             >
               {generating ? (

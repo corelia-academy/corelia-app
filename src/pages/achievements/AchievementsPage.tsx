@@ -51,7 +51,7 @@ export default function AchievementsPage() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <section className="mb-6 overflow-hidden rounded-lg border border-border-subtle bg-surface-base">
+      <section className="mb-6 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
         <div className="relative p-4 sm:p-6">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--primary)_15%,transparent),transparent_38%),linear-gradient(180deg,color-mix(in_oklch,var(--primary-container)_58%,transparent),transparent_72%)]" />
           <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
@@ -92,7 +92,7 @@ export default function AchievementsPage() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-md border border-border-subtle bg-surface-base/85 p-4">
+              <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card/85 p-4">
                 <p className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
                   {t("achievements.hero.claimedOnOc.title")}
                 </p>
@@ -103,7 +103,7 @@ export default function AchievementsPage() {
                   {t("achievements.hero.claimedOnOc.description")}
                 </p>
               </div>
-              <div className="rounded-md border border-border-subtle bg-surface-base/85 p-4">
+              <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card/85 p-4">
                 <p className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
                   {t("achievements.hero.pending.title")}
                 </p>
@@ -114,7 +114,7 @@ export default function AchievementsPage() {
                   {t("achievements.hero.pending.description")}
                 </p>
               </div>
-              <div className="rounded-md border border-border-subtle bg-surface-base/85 p-4 sm:col-span-2">
+              <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card/85 p-4 sm:col-span-2">
                 <p className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
                   {t("achievements.hero.nextMilestone")}
                 </p>
@@ -137,7 +137,7 @@ export default function AchievementsPage() {
       </div>
 
       <section className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-        <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
           <div className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
             {t("achievements.meaning.title")}
           </div>
@@ -147,7 +147,7 @@ export default function AchievementsPage() {
           </div>
         </div>
 
-        <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
           <div className="text-xs uppercase tracking-[0.16em] text-foreground-muted">
             {t("achievements.useCases.title")}
           </div>
@@ -168,7 +168,7 @@ export default function AchievementsPage() {
       </section>
 
       <section className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-foreground-muted">
             <CheckCircle2 className="size-4" aria-hidden />
             {t("achievements.recent.title")}
@@ -202,7 +202,7 @@ export default function AchievementsPage() {
                   type="button"
                   variant="ghost"
                   onClick={() => openModal({ kind: "cert", data: cert })}
-                  className="h-auto w-full justify-start rounded-md border border-border-subtle bg-surface-base p-4 text-left hover:bg-surface-raised"
+                  className="h-auto w-full justify-start rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-left hover:bg-surface-raised"
                 >
                   <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
                     <Award className="size-5" aria-hidden />
@@ -224,7 +224,7 @@ export default function AchievementsPage() {
                   type="button"
                   variant="ghost"
                   onClick={() => openModal({ kind: "badge", data: badge })}
-                  className="h-auto w-full justify-start rounded-md border border-border-subtle bg-surface-base p-4 text-left hover:bg-surface-raised"
+                  className="h-auto w-full justify-start rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-left hover:bg-surface-raised"
                 >
                   <div
                     className={cn(
@@ -250,7 +250,7 @@ export default function AchievementsPage() {
           )}
         </div>
 
-        <div className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-foreground-muted">
             <Lock className="size-4" aria-hidden />
             Sắp mở khóa
@@ -278,7 +278,7 @@ export default function AchievementsPage() {
                 </div>
               ))
             ) : (
-              <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm leading-6 text-foreground-muted">
+              <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm leading-6 text-foreground-muted">
                 {t("achievements.vaults.nextUnlock.allUnlockedNote")}
               </div>
             )}
@@ -286,7 +286,7 @@ export default function AchievementsPage() {
         </div>
       </section>
 
-      <section className="mb-6 rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+      <section className="mb-6 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
             <h2 className="text-lg font-medium text-foreground">
@@ -340,7 +340,7 @@ export default function AchievementsPage() {
         )}
       </section>
 
-      <section className="rounded-md border border-border-subtle bg-surface-base p-4 sm:p-6">
+      <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
             <h2 className="text-lg font-medium text-foreground">

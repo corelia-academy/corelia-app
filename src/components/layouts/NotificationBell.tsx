@@ -181,7 +181,7 @@ export function NotificationBell() {
                 return (
                   <li
                     key={n.id}
-                    className="rounded-lg border border-border-subtle bg-surface-base p-3 text-sm"
+                    className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 text-sm"
                   >
                     {isInvite ? (
                       <>

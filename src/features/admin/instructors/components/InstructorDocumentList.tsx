@@ -23,7 +23,7 @@ export function InstructorDocumentList({
         .map((doc) => (
           <li
             key={doc.path}
-            className="flex items-center justify-between gap-3 rounded-xl border border-border-subtle bg-surface-base px-3 py-3"
+            className="flex items-center justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-3"
           >
             <div className="min-w-0">
               <a

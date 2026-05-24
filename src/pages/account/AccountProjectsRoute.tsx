@@ -209,13 +209,13 @@ export function AccountProjectsRoute() {
       </div>
 
       {entries.length === 0 ? (
-        <div className="rounded-md border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted">
           {t("projects.empty")}
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <div className="rounded-lg border border-border-subtle bg-surface-base p-3">
+            <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3">
               <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
                 {t("account:projects.listTitle")}
               </div>
@@ -265,7 +265,7 @@ export function AccountProjectsRoute() {
                       <p className="mt-2 text-sm text-foreground-muted">
                         {t("account:projects.collaboratorCardBody")}
                       </p>
-                      <label className="mt-4 flex items-start gap-3 rounded-md border border-border-subtle bg-surface-base p-3 text-sm">
+                      <label className="mt-4 flex items-start gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 text-sm">
                         <input
                           type="checkbox"
                           className="mt-0.5"
@@ -286,7 +286,7 @@ export function AccountProjectsRoute() {
                       </label>
                     </div>
 
-                    <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+                    <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
                       <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                         <UserRoundCheck className="size-4 text-primary" aria-hidden />
                         {t("account:projects.ownerOnlyTitle")}
@@ -324,7 +324,7 @@ export function AccountProjectsRoute() {
                         <div className="text-xs font-medium text-foreground-muted">
                           {t("account:projects.supportedLocalesLabel")}
                         </div>
-                        <div className="mt-2 flex flex-wrap gap-3 rounded-md border border-border-subtle bg-surface-base p-3 text-sm">
+                        <div className="mt-2 flex flex-wrap gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 text-sm">
                           {(["vi", "en"] as const).map((lng) => (
                             <label key={lng} className="inline-flex items-center gap-2 text-foreground">
                               <input
@@ -361,7 +361,7 @@ export function AccountProjectsRoute() {
                 ) : null}
 
                 {selectedIsOwner ? (
-                  <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+                  <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <div className="text-sm font-medium text-foreground">
@@ -442,7 +442,7 @@ export function AccountProjectsRoute() {
                         </div>
                       </div>
 
-                      <div className="rounded-lg border border-border-subtle bg-surface-base p-4">
+                      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
                         <div className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
                           {t("account:projects.translationColumnTitle", { locale: targetLocale })}
                         </div>

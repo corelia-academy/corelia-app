@@ -40,7 +40,7 @@ export function EmailUnsubscribePage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md rounded-xl border border-border-subtle bg-surface-base p-8 text-center shadow-sm">
+      <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-base shadow-card p-8 text-center shadow-sm">
         {status === "loading" && (
           <p className="text-sm text-foreground-muted">{t("unsubscribe.loading")}</p>
         )}
