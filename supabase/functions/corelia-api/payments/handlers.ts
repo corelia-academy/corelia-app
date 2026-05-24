@@ -32,9 +32,9 @@ const AI_SUBSCRIPTION_PRICES: Record<
   AiSubscriptionTier,
   Record<AiSubscriptionDurationMonths, number>
 > = {
-  student: { 1: 99000, 6: 499000, 12: 890000 },
-  pro: { 1: 199000, 6: 999000, 12: 1790000 },
-  bootcamp: { 1: 499000, 6: 2490000, 12: 4490000 },
+  student: { 1: 79_000, 12: 690_000 },
+  pro: { 1: 149_000, 12: 1_290_000 },
+  bootcamp: { 1: 399_000, 12: 3_490_000 },
 };
 
 export async function handleSePayCheckout(req: Request, db: SupabaseClient): Promise<Response> {
@@ -255,7 +255,7 @@ export async function handleAiVoucherPreview(req: Request, db: SupabaseClient): 
     if (!["student", "pro", "bootcamp"].includes(tier)) {
       return json({ message: "Tier không hợp lệ" }, 400);
     }
-    if (![1, 6, 12].includes(durationMonths)) {
+    if (![1, 12].includes(durationMonths)) {
       return json({ message: "Thời hạn không hợp lệ" }, 400);
     }
     if (!voucherCode) return json({ message: "Thiếu mã voucher." }, 400);
