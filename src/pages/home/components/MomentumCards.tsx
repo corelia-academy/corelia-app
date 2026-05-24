@@ -27,7 +27,7 @@ export function MomentumCards({
                 <div className="mt-1 text-2xl font-semibold text-foreground">
                   {item.value}
                 </div>
-                <div className="mt-1 line-clamp-2 text-xs leading-relaxed text-foreground-muted">
+                <div className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-foreground-muted">
                   {item.note}
                 </div>
               </div>

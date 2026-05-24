@@ -25,7 +25,7 @@ export function HomeHeader({
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-5">
       <div className="flex flex-col gap-2">
-        <div className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+        <div className="text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
           {loading ? t("home.syncing") : t("home.dashboard")}
         </div>
         {loading ? (
@@ -45,7 +45,7 @@ export function HomeHeader({
         )}
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+      <div className="mt-4 flex flex-col gap-3">
         {loading ? (
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-4 w-32 rounded-full" />
@@ -88,7 +88,7 @@ export function HomeHeader({
                   <span>{t("home.sections.progress")}</span>
                   <span>{featuredFocus.progress}%</span>
                 </div>
-                <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-raised">
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-raised">
                   <div
                     className="h-full rounded-full bg-primary"
                     style={{ width: `${featuredFocus.progress}%` }}
@@ -108,7 +108,7 @@ export function HomeHeader({
           </div>
         )}
 
-        <div className="flex shrink-0 gap-2 sm:justify-end">
+        <div className="flex flex-wrap gap-2 sm:justify-end">
           {!loading ? (
             <>
               <Button
