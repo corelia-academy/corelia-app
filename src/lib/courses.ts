@@ -633,6 +633,7 @@ export async function enrollCourse(courseId: string, viewer?: User | null): Prom
     .select("*")
     .single();
   if (error) throw new Error(error.message);
+  invalidateEnrollmentsCache(user.id);
   return { id: data.id, ...data } as Enrollment;
 }
 
