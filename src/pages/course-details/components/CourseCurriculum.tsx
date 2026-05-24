@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CourseBadge } from "./CourseBadge";
-import { isLessonDraftForLearners } from "@/lib/lessonFormat";
+import { isActivityLesson, isLessonDraftForLearners } from "@/lib/lessonFormat";
 import {
   formatDuration,
   type CourseLesson,
@@ -172,7 +172,7 @@ export function CourseCurriculum({
                   <div className="flex items-center gap-2 text-xs text-foreground-muted">
                     <span>
                       {translate("detail.courseDetail.lessonCountShort", {
-                        count: sectionLessons.length,
+                        count: sectionLessons.filter((l) => !isActivityLesson(l)).length,
                       })}
                     </span>
                     <ChevronDown

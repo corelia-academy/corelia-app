@@ -280,7 +280,8 @@
       "markComplete": {
         "done": "Đã hoàn thành",
         "action": "Đánh dấu đã xem",
-        "actionArticle": "Đánh dấu đã đọc"
+        "actionArticle": "Đánh dấu đã đọc",
+        "actionPractice": "Đánh dấu đã làm"
       },
       "nav": {
         "previous": "Bài trước",

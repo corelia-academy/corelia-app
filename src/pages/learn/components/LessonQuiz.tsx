@@ -53,14 +53,18 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
 
 const initialQuizState: QuizState = { status: "loading", selectedAnswers: {}, result: null };
 
+const QUIZ_PASS_RATIO = 0.7;
+
 export function LessonQuiz({
   courseId,
   lessonId,
   lessonTitle,
+  onPassed,
 }: {
   courseId: string;
   lessonId: string;
   lessonTitle?: string | null;
+  onPassed?: () => void;
 }) {
   const { t } = useTranslation("courses");
   const [questions, setQuestions] = useState<SectionQuestion[]>([]);
@@ -124,6 +128,9 @@ export function LessonQuiz({
         attempts: saved,
       };
       dispatch({ type: "DONE", result: newResult });
+      if (questions.length > 0 && correct / questions.length >= QUIZ_PASS_RATIO) {
+        onPassed?.();
+      }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : t("detail.learn.quiz.saveError"));
       dispatch({ type: "SUBMIT_ERROR" });

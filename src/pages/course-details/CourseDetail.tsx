@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/stores/authStore";
 import { sortLessonsByCurriculum } from "@/lib/courses";
+import { splitLessonCounts } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseLessons } from "./hooks/useCourseLessons";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
@@ -120,11 +121,12 @@ export default function CourseDetail() {
   );
 
   const isPreviewOnlyCurriculum = isPaidUpfront && !hasFullCourseAccess;
+  const { contentCount } = splitLessonCounts(lessons);
   const curriculumCountLabel = isPreviewOnlyCurriculum
     ? translate("detail.courseDetail.lessonCountPreview", {
-        count: lessons.length,
+        count: contentCount,
       })
-    : translate("detail.courseDetail.lessonCount", { count: lessons.length });
+    : translate("detail.courseDetail.lessonCount", { count: contentCount });
 
   const canReviewDraft =
     courseLoad.course &&
