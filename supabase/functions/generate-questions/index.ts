@@ -452,6 +452,49 @@ function validateAndNormalizeQuestions(raw: unknown): GeneratedQuestion[] {
   return out;
 }
 
+type OpenAiResponsesPayload = {
+  output_text?: string;
+  output?: Array<{
+    type?: string;
+    content?: Array<{
+      type?: string;
+      text?: string;
+      refusal?: string;
+    }>;
+  }>;
+};
+
+function extractResponseText(payload: OpenAiResponsesPayload): string | null {
+  const top = payload.output_text?.trim();
+  if (top) return top;
+  const outputs = Array.isArray(payload.output) ? payload.output : [];
+  const joined = outputs
+    .flatMap((item) => (Array.isArray(item?.content) ? item.content : []))
+    .map((item) => item?.text?.trim() ?? "")
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+  return joined || null;
+}
+
+function parseModelJson(text: string): unknown {
+  const unfenced = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+  try {
+    return JSON.parse(unfenced);
+  } catch {
+    const start = unfenced.indexOf("{");
+    const end = unfenced.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      return JSON.parse(unfenced.slice(start, end + 1));
+    }
+    throw new Error("OpenAI trả về JSON không hợp lệ.");
+  }
+}
+
 async function generateQuestionsWithOpenAi(
   system: string,
   user: string,
@@ -460,21 +503,15 @@ async function generateQuestionsWithOpenAi(
   if (!apiKey) throw new Error("Missing env: OPENAI_API_KEY");
   const model = Deno.env.get("CORELIA_OPENAI_QUESTIONS_MODEL")?.trim() || "gpt-4o-mini";
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const input = `${system}\n\n${user}`;
+
+  const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      model,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-      max_tokens: 4000,
-    }),
+    body: JSON.stringify({ model, input }),
   });
 
   if (!response.ok) {
@@ -483,19 +520,14 @@ async function generateQuestionsWithOpenAi(
     throw new Error("OpenAI chưa phản hồi được câu hỏi.");
   }
 
-  const payload = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = payload.choices?.[0]?.message?.content?.trim() ?? "";
-  if (!content) throw new Error("OpenAI trả về nội dung rỗng.");
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(content);
-  } catch {
-    throw new Error("OpenAI trả về JSON không hợp lệ.");
+  const payload = (await response.json()) as OpenAiResponsesPayload;
+  const content = extractResponseText(payload);
+  if (!content) {
+    console.error("[generate-questions] openai empty_output", payload);
+    throw new Error("OpenAI trả về nội dung rỗng.");
   }
 
+  const parsed = parseModelJson(content);
   const questions = validateAndNormalizeQuestions(parsed);
   if (questions.length === 0) throw new Error("Không thể parse câu hỏi từ phản hồi AI.");
   return questions;
