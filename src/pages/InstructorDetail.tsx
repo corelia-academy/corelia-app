@@ -17,6 +17,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { useTranslation } from "react-i18next";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const InstructorDetail = () => {
   const { t } = useTranslation("courses");
@@ -62,6 +63,16 @@ const InstructorDetail = () => {
       cancelled = true;
     };
   }, [id, translate]);
+
+  const instructorBio =
+    profile?.instructor_bio?.trim() || profile?.bio?.trim() || undefined;
+
+  usePageMeta({
+    title: profile?.full_name?.trim() ?? undefined,
+    description: instructorBio,
+    image: profile?.avatar_url ?? undefined,
+    url: window.location.href,
+  });
 
   if (!id) {
     return (

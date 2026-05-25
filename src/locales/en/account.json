@@ -260,6 +260,7 @@
     "errors": {
       "avatarUploadFailed": "Unable to upload image.",
       "updateFailed": "Unable to update information.",
+      "usernameTaken": "This username is already taken. Please choose a different one.",
       "loadFailed": "Could not load your profile. Please check your connection."
     },
     "retry": "Try again"

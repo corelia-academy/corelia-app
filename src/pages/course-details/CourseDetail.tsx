@@ -31,6 +31,7 @@ import { CourseSponsorsPanel } from "./components/CourseSponsorsPanel";
 import { CourseInstructorSection } from "./components/CourseInstructorSection";
 import { useInstructorProfile } from "./hooks/useInstructorProfile";
 import { useCoraStore } from "@/stores/coraStore";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function CourseDetail() {
   const { t } = useTranslation("courses");
@@ -145,6 +146,13 @@ export default function CourseDetail() {
     setSidebarMeta({ courseTitle: title, courseId: courseLoad.resolvedCourseId ?? null });
     return () => setSidebarMeta(null);
   }, [courseLoad.course?.title, courseLoad.resolvedCourseId, setSidebarMeta]);
+
+  usePageMeta({
+    title: courseLoad.course?.title ?? undefined,
+    description: courseLoad.course?.description ?? undefined,
+    image: courseLoad.course?.thumbnail_url ?? undefined,
+    url: window.location.href,
+  });
 
   const totalDurationFromLessons = lessons.reduce(
     (sum, lesson) => sum + (Number(lesson.duration_seconds) || 0),
