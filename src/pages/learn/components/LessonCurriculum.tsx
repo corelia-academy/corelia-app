@@ -1,6 +1,6 @@
 import { Link } from "react-router";
-import { CheckCircle2, ChevronDown, FileText, List, Lock, PlayCircle } from "lucide-react";
-import { isArticleLesson } from "@/lib/lessonFormat";
+import { CheckCircle2, CheckSquare, ChevronDown, FileText, List, Lock, PenLine, PlayCircle } from "lucide-react";
+import { getLessonFormat, isArticleLesson } from "@/lib/lessonFormat";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/types/courses";
@@ -53,6 +53,10 @@ function LessonItem({
         >
           {done ? (
             <CheckCircle2 className="mt-0.5 w-4 h-4 shrink-0 text-success sm:mt-0" aria-hidden />
+          ) : getLessonFormat(lesson) === "practice" ? (
+            <PenLine className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
+          ) : getLessonFormat(lesson) === "quiz" ? (
+            <CheckSquare className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
           ) : article ? (
             <FileText className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
           ) : (
