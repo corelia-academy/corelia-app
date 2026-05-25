@@ -28,6 +28,8 @@ import { CourseSpotlightSection } from "./components/CourseSpotlightSection";
 import { CourseLanguagePanel } from "./components/CourseLanguagePanel";
 import { CoursePartnerBrandPanel } from "./components/CoursePartnerBrandPanel";
 import { CourseSponsorsPanel } from "./components/CourseSponsorsPanel";
+import { CourseInstructorSection } from "./components/CourseInstructorSection";
+import { useInstructorProfile } from "./hooks/useInstructorProfile";
 import { useCoraStore } from "@/stores/coraStore";
 
 export default function CourseDetail() {
@@ -86,6 +88,7 @@ export default function CourseDetail() {
   });
 
   const spotlightContests = useSpotlightContests();
+  const { profile: instructorProfile } = useInstructorProfile(courseLoad.course?.instructor_id);
 
   usePaymentReturnFlow({
     resolvedCourseId: courseLoad.resolvedCourseId,
@@ -293,6 +296,10 @@ export default function CourseDetail() {
             isPreviewOnlyCurriculum={isPreviewOnlyCurriculum}
             hasSections={courseLoad.course?.has_sections ?? true}
           />
+
+          {instructorProfile ? (
+            <CourseInstructorSection profile={instructorProfile} />
+          ) : null}
 
           <CourseSpotlightSection
             resolvedCourseId={courseLoad.resolvedCourseId ?? ""}

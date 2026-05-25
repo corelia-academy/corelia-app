@@ -15,7 +15,7 @@ export function CourseLearningOutcomes({
   return (
     <Card className="mt-6">
       <CardContent className="p-6">
-        <h2 className="text-lg font-semibold text-foreground">
+        <h2 className="text-[18px] font-semibold text-foreground">
           {String(t("detail.courseDetail.learningOutcomes.title"))}
         </h2>
         <p className="mt-1 text-sm text-foreground-muted">

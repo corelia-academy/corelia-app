@@ -1,19 +1,136 @@
 import { Link } from "react-router";
-import { BadgeCheck, BookOpen, Clock } from "lucide-react";
+import { ArrowRight, BadgeCheck, BookOpen, Clock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import {
   formatDuration,
   getCourseAccessModelLabel,
   getCourseLevelLabel,
-  getCourseOwnerTypeLabel,
+  type Course,
 } from "@/types/courses";
 
 import { useCoursesCatalog } from "./hooks/useCoursesCatalog";
+import {
+  useUserCoursesProgress,
+  type CourseProgressEntry,
+} from "./hooks/useUserCoursesProgress";
 import { type CatalogTranslate, getPrimaryPriceLabel } from "./utils/catalog";
+
+function levelBadgeClass(level?: string | null): string {
+  switch (level) {
+    case "beginner":
+      return "border-success/30 bg-success/15 text-success";
+    case "intermediate":
+      return "border-brand-accent/30 bg-brand-accent/15 text-brand-accent";
+    case "advanced":
+      return "border-warning/30 bg-warning/15 text-warning";
+    default:
+      return "border-border bg-surface-raised text-foreground-muted";
+  }
+}
+
+function CourseCard({
+  course,
+  progress,
+  translate,
+  cardContinueLabel,
+  cardStartLabel,
+}: {
+  course: Course;
+  progress: CourseProgressEntry | undefined;
+  translate: CatalogTranslate;
+  cardContinueLabel: string;
+  cardStartLabel: string;
+}) {
+  const enrolled = !!progress?.enrolled;
+  const percent = progress?.percent ?? 0;
+  const showProgress = enrolled && percent > 0;
+  const ctaLabel = showProgress ? cardContinueLabel : cardStartLabel;
+
+  return (
+    <Link
+      to={`/courses/${course.slug || course.id}`}
+      className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
+    >
+      <div className="relative aspect-video w-full overflow-hidden bg-surface-raised">
+        {course.thumbnail_url ? (
+          <img
+            src={course.thumbnail_url}
+            alt={course.title}
+            className="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center">
+            <BookOpen className="size-10 text-foreground-subtle" aria-hidden />
+          </div>
+        )}
+        <span
+          className={cn(
+            "absolute right-3 top-3 inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium backdrop-blur-sm",
+            levelBadgeClass(course.level),
+          )}
+        >
+          {getCourseLevelLabel(course.level)}
+        </span>
+        {showProgress ? (
+          <div className="absolute inset-x-0 bottom-0 h-1.5 bg-black/30">
+            <div
+              className="h-full bg-success"
+              style={{ width: `${percent}%` }}
+            />
+          </div>
+        ) : null}
+      </div>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-2 p-4">
+        {course.instructor_name ? (
+          <div className="line-clamp-1 text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
+            {course.instructor_name}
+          </div>
+        ) : null}
+        <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">
+          {course.title}
+        </h3>
+
+        {course.short_description || course.description ? (
+          <p className="line-clamp-2 text-[13px] leading-relaxed text-foreground-muted">
+            {course.short_description || course.description}
+          </p>
+        ) : null}
+
+        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-foreground-muted">
+          <span className="inline-flex items-center gap-1">
+            <Clock className="size-3.5 shrink-0" aria-hidden />
+            {formatDuration(Number(course.total_duration_seconds) || 0)}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <BadgeCheck className="size-3.5 shrink-0" aria-hidden />
+            {getCourseAccessModelLabel(course.access_model)}
+          </span>
+          <span className="ml-auto font-medium text-foreground">
+            {getPrimaryPriceLabel(course, translate)}
+          </span>
+        </div>
+
+        {enrolled ? (
+          <div className="flex items-center justify-between gap-2 border-t border-border-subtle pt-2">
+            <span className="text-[13px] text-foreground-muted">
+              {showProgress ? `${percent}%` : ctaLabel}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[13px] font-medium text-primary">
+              {showProgress ? ctaLabel : null}
+              <ArrowRight className="size-3.5" aria-hidden />
+            </span>
+          </div>
+        ) : null}
+      </div>
+    </Link>
+  );
+}
 
 export default function CoursesPage() {
   const { t } = useTranslation("courses");
@@ -27,6 +144,7 @@ export default function CoursesPage() {
     activeFilterCount,
     resetFilters,
   } = useCoursesCatalog();
+  const { progressByCourse } = useUserCoursesProgress();
 
   if (loading) {
     return (
@@ -39,9 +157,9 @@ export default function CoursesPage() {
           <Skeleton className="mt-1 h-4 w-72 max-w-full rounded" />
         </div>
         <Skeleton className="h-40 w-full rounded-md border border-border-subtle" />
-        <div className="mt-5 grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-64 w-full rounded-md" />
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-[4/5] w-full rounded-2xl" />
           ))}
         </div>
       </div>
@@ -64,6 +182,9 @@ export default function CoursesPage() {
     );
   }
 
+  const cardContinueLabel = t("catalog.card.continueLearning");
+  const cardStartLabel = t("catalog.card.startLearning");
+
   return (
     <div className="container-app py-6 sm:py-8">
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -74,12 +195,11 @@ export default function CoursesPage() {
               {t("catalog.title")}
             </h1>
           </div>
-          <p className="mt-1 text-sm text-foreground-muted">
-            {t("catalog.results", { count: filteredOnlineCourses.length })}
-            {hasActiveFilters
-              ? t("catalog.activeFilters", { count: activeFilterCount })
-              : null}
-          </p>
+          {hasActiveFilters ? (
+            <p className="mt-1 text-[13px] text-foreground-muted">
+              {t("catalog.activeFilters", { count: activeFilterCount }).replace(/^\s*·\s*/, "")}
+            </p>
+          ) : null}
         </div>
 
         {hasActiveFilters ? (
@@ -129,52 +249,16 @@ export default function CoursesPage() {
           )}
         </div>
       ) : (
-        <div className="mt-5 grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredOnlineCourses.map((course) => (
-            <Link
+            <CourseCard
               key={course.id}
-              to={`/courses/${course.slug || course.id}`}
-              className="group cursor-pointer overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card text-foreground transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
-            >
-              <div className="relative aspect-video overflow-hidden bg-surface-raised">
-                <img
-                  src={course.thumbnail_url}
-                  alt={course.title}
-                  className="size-full object-cover"
-                />
-              </div>
-              <div className="p-3">
-                <div className="line-clamp-2 text-sm font-semibold leading-snug tracking-tight text-foreground">
-                  {course.title}
-                </div>
-                <div className="mt-1 line-clamp-1 text-xs text-foreground-muted">
-                  {course.instructor_name}
-                </div>
-
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-1 text-xs text-foreground-muted">
-                    <Clock className="size-3 shrink-0" aria-hidden />
-                    {formatDuration(Number(course.total_duration_seconds) || 0)}
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-1 text-xs text-foreground-muted">
-                    <BadgeCheck className="size-3 shrink-0" aria-hidden />
-                    {getCourseAccessModelLabel(course.access_model)}
-                  </span>
-                  <span className="inline-flex items-center rounded-md bg-surface-raised px-2 py-1 text-xs text-foreground-muted">
-                    {getCourseLevelLabel(course.level)}
-                  </span>
-                </div>
-
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <div className="text-sm font-semibold text-foreground">
-                    {getPrimaryPriceLabel(course, translate)}
-                  </div>
-                  <div className="text-xs text-foreground-muted">
-                    {getCourseOwnerTypeLabel(course.owner_type)}
-                  </div>
-                </div>
-              </div>
-            </Link>
+              course={course}
+              progress={progressByCourse.get(course.id)}
+              translate={translate}
+              cardContinueLabel={cardContinueLabel}
+              cardStartLabel={cardStartLabel}
+            />
           ))}
         </div>
       )}

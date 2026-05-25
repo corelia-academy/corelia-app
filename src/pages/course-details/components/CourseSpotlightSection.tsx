@@ -78,7 +78,7 @@ export function CourseSpotlightSection({
             : translate("detail.spotlight.newContestBadge"),
         title: liveContest.title,
         description: liveContest.tagline,
-        href: `/hackathons/${liveContest.id}`,
+        href: `/hackathons/${liveContest.slug ?? liveContest.id}`,
         ctaLabel: translate("detail.spotlight.exploreContest"),
         meta: registrationDeadlineText
           ? translate("detail.spotlight.contestDeadlineMeta", {

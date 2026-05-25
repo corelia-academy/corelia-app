@@ -14,7 +14,7 @@ export function ContinueLearningSection({
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-medium text-foreground">{t("home.continueLearning")}</h2>
+        <h2 className="text-[18px] font-semibold text-foreground">{t("home.continueLearning")}</h2>
         <Button
           render={<NavLink to="/courses" />}
           nativeButton={false}
@@ -46,7 +46,7 @@ export function ContinueLearningSection({
                   <span>{t("home.sections.progress")}</span>
                   <span>{item.progress}%</span>
                 </div>
-                <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-raised">
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-raised">
                   <div
                     className="h-full rounded-full bg-primary"
                     style={{ width: `${item.progress}%` }}

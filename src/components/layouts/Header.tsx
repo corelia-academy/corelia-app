@@ -110,7 +110,8 @@ export default function Header() {
   const setCoraQuotaInfo = useCoraStore((s) => s.setQuotaInfo);
   const sidebarOpen = useCoraStore((s) => s.sidebarOpen);
   const toggleSidebar = useCoraStore((s) => s.toggleSidebar);
-  const isCoraSupportedPage = !!user && shouldShowGlobalCoraAssistant(location.pathname);
+  const isCoraSupportedPage =
+    !!user && shouldShowGlobalCoraAssistant(location.pathname);
   const { isInitialized, authState, ocAuth } = useOCAuth();
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -271,7 +272,8 @@ export default function Header() {
         windowUsed: 0,
         windowSoftCap: null,
         windowHours: 3,
-        quotaUnit: (limit?.quota_unit as "message" | "token" | "both") ?? "message",
+        quotaUnit:
+          (limit?.quota_unit as "message" | "token" | "both") ?? "message",
         monthlyTokensUsed: usage?.tokens_used ?? 0,
         monthlyTokensLimit: limit?.monthly_tokens ?? null,
         rollingTokensUsed: 0,
@@ -637,7 +639,7 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={handleOcLogoClick}
-                  className="hidden h-10 items-center justify-center gap-2 rounded-full border border-border bg-ocid-blue px-2.5 py-2 text-left text-sm cursor-pointer text-primary-foreground transition-colors duration-150 hover:opacity-90 md:inline-flex"
+                  className="hidden h-10 items-center justify-center gap-2 rounded-full border border-border bg-ocid-blue px-2.5 py-2 text-left text-sm cursor-pointer transition-colors duration-150 hover:opacity-90 md:inline-flex text-white"
                   aria-label={t("openCampusConnect.header.ariaLabel")}
                 >
                   <img
@@ -645,7 +647,7 @@ export default function Header() {
                     alt="Open Campus"
                     className="h-6 rounded-full"
                   />
-                  <span className="text-primary-foreground">
+                  <span>
                     Link <span className="font-bold">OCID</span>
                   </span>
                 </button>

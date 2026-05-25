@@ -449,37 +449,36 @@ const InstructorCourseEdit = () => {
   const [sponsors, setSponsors] = useState<CourseSponsor[]>([]);
   const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
   const [activeSponsorId, setActiveSponsorId] = useState<string | null>(null);
+  type LocaleContentDraft = { name: string; description: string };
   const [sponsorForm, setSponsorForm] = useState<{
-    name: string;
     website: string;
-    description: string;
     logo_url: string;
     logo_path: string;
+    locale_content: { vi: LocaleContentDraft; en: LocaleContentDraft };
   }>({
-    name: "",
     website: "",
-    description: "",
     logo_url: "",
     logo_path: "",
+    locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
   });
+  const [sponsorDialogLocale, setSponsorDialogLocale] = useState<SupportedCourseLocale>("vi");
   const sponsorLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingSponsorLogo, setUploadingSponsorLogo] = useState(false);
   const [partners, setPartners] = useState<CoursePartner[]>([]);
   const [partnerDialogOpen, setPartnerDialogOpen] = useState(false);
   const [activePartnerId, setActivePartnerId] = useState<string | null>(null);
   const [partnerForm, setPartnerForm] = useState<{
-    name: string;
     website: string;
-    description: string;
     logo_url: string;
     logo_path: string;
+    locale_content: { vi: LocaleContentDraft; en: LocaleContentDraft };
   }>({
-    name: "",
     website: "",
-    description: "",
     logo_url: "",
     logo_path: "",
+    locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
   });
+  const [partnerDialogLocale, setPartnerDialogLocale] = useState<SupportedCourseLocale>("vi");
   const partnerLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingPartnerLogo, setUploadingPartnerLogo] = useState(false);
   const [discounts, setDiscounts] = useState<CourseDiscount[]>([]);
@@ -1490,24 +1489,28 @@ const InstructorCourseEdit = () => {
   const openAddSponsor = () => {
     const sid = createSponsorId();
     setActiveSponsorId(sid);
+    setSponsorDialogLocale("vi");
     setSponsorForm({
-      name: "",
       website: "",
-      description: "",
       logo_url: "",
       logo_path: "",
+      locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
     });
     setSponsorDialogOpen(true);
   };
 
   const openEditSponsor = (s: CourseSponsor) => {
     setActiveSponsorId(String(s.id ?? "").trim() || null);
+    setSponsorDialogLocale("vi");
+    const lc = s.locale_content ?? {};
     setSponsorForm({
-      name: String(s.name ?? ""),
       website: String(s.website ?? ""),
-      description: String(s.description ?? ""),
       logo_url: String(s.logo_url ?? ""),
       logo_path: String(s.logo_path ?? ""),
+      locale_content: {
+        vi: { name: lc.vi?.name ?? s.name ?? "", description: lc.vi?.description ?? s.description ?? "" },
+        en: { name: lc.en?.name ?? "", description: lc.en?.description ?? "" },
+      },
     });
     setSponsorDialogOpen(true);
   };
@@ -1537,15 +1540,21 @@ const InstructorCourseEdit = () => {
           updated[idx] = { ...updated[idx], logo_url: result.url, logo_path: result.path };
           return updated;
         }
+        const viName = sponsorForm.locale_content.vi.name.trim();
+        const enName = sponsorForm.locale_content.en.name.trim();
         return [
           ...normalized,
           {
             id: sid,
-            name: sponsorForm.name.trim() || sid,
+            name: viName || enName || sid,
             website: sponsorForm.website.trim() || null,
-            description: sponsorForm.description.trim() || null,
+            description: sponsorForm.locale_content.vi.description.trim() || sponsorForm.locale_content.en.description.trim() || null,
             logo_url: result.url,
             logo_path: result.path,
+            locale_content: {
+              vi: { name: viName, description: sponsorForm.locale_content.vi.description.trim() },
+              en: { name: enName, description: sponsorForm.locale_content.en.description.trim() },
+            },
           },
         ];
       })();
@@ -1566,8 +1575,10 @@ const InstructorCourseEdit = () => {
   const saveSponsorFromDialog = async () => {
     const sid = String(activeSponsorId ?? "").trim();
     if (!sid) return;
-    const name = sponsorForm.name.trim();
-    if (!name) {
+    const viName = sponsorForm.locale_content.vi.name.trim();
+    const enName = sponsorForm.locale_content.en.name.trim();
+    const primaryName = viName || enName;
+    if (!primaryName) {
       toast.error(String(t("courseEdit.sponsors.errors.missingName")));
       return;
     }
@@ -1577,16 +1588,22 @@ const InstructorCourseEdit = () => {
       return;
     }
 
+    const localeContent: CourseSponsor["locale_content"] = {
+      vi: { name: viName, description: sponsorForm.locale_content.vi.description.trim() },
+      en: { name: enName, description: sponsorForm.locale_content.en.description.trim() },
+    };
+
     const nextSponsors = (() => {
       const normalized = sponsors.map((s) => ({ ...s, id: String(s.id ?? "").trim() }));
       const idx = normalized.findIndex((s) => s.id === sid);
       const nextItem: CourseSponsor = {
         id: sid,
-        name,
+        name: primaryName,
         website: websiteValue || null,
-        description: sponsorForm.description.trim() || null,
+        description: sponsorForm.locale_content.vi.description.trim() || sponsorForm.locale_content.en.description.trim() || null,
         logo_url: sponsorForm.logo_url.trim() || null,
         logo_path: sponsorForm.logo_path.trim() || null,
+        locale_content: localeContent,
       };
       if (idx >= 0) {
         const updated = [...normalized];
@@ -1626,24 +1643,28 @@ const InstructorCourseEdit = () => {
   const openAddPartner = () => {
     const pid = createSponsorId();
     setActivePartnerId(pid);
+    setPartnerDialogLocale("vi");
     setPartnerForm({
-      name: "",
       website: "",
-      description: "",
       logo_url: "",
       logo_path: "",
+      locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
     });
     setPartnerDialogOpen(true);
   };
 
   const openEditPartner = (p: CoursePartner) => {
     setActivePartnerId(String(p.id ?? "").trim() || null);
+    setPartnerDialogLocale("vi");
+    const lc = p.locale_content ?? {};
     setPartnerForm({
-      name: String(p.name ?? ""),
       website: String(p.website ?? ""),
-      description: String(p.description ?? ""),
       logo_url: String(p.logo_url ?? ""),
       logo_path: String(p.logo_path ?? ""),
+      locale_content: {
+        vi: { name: lc.vi?.name ?? p.name ?? "", description: lc.vi?.description ?? p.description ?? "" },
+        en: { name: lc.en?.name ?? "", description: lc.en?.description ?? "" },
+      },
     });
     setPartnerDialogOpen(true);
   };
@@ -1675,15 +1696,21 @@ const InstructorCourseEdit = () => {
           };
           return updated;
         }
+        const viName = partnerForm.locale_content.vi.name.trim();
+        const enName = partnerForm.locale_content.en.name.trim();
         return [
           ...normalized,
           {
             id: pid,
-            name: partnerForm.name.trim() || pid,
+            name: viName || enName || pid,
             website: partnerForm.website.trim() || null,
-            description: partnerForm.description.trim() || null,
+            description: partnerForm.locale_content.vi.description.trim() || partnerForm.locale_content.en.description.trim() || null,
             logo_url: result.url,
             logo_path: result.path,
+            locale_content: {
+              vi: { name: viName, description: partnerForm.locale_content.vi.description.trim() },
+              en: { name: enName, description: partnerForm.locale_content.en.description.trim() },
+            },
           },
         ];
       })();
@@ -1704,8 +1731,10 @@ const InstructorCourseEdit = () => {
   const savePartnerFromDialog = async () => {
     const pid = String(activePartnerId ?? "").trim();
     if (!pid) return;
-    const name = partnerForm.name.trim();
-    if (!name) {
+    const viName = partnerForm.locale_content.vi.name.trim();
+    const enName = partnerForm.locale_content.en.name.trim();
+    const primaryName = viName || enName;
+    if (!primaryName) {
       toast.error(String(t("courseEdit.partners.errors.missingName")));
       return;
     }
@@ -1715,16 +1744,22 @@ const InstructorCourseEdit = () => {
       return;
     }
 
+    const localeContent: CoursePartner["locale_content"] = {
+      vi: { name: viName, description: partnerForm.locale_content.vi.description.trim() },
+      en: { name: enName, description: partnerForm.locale_content.en.description.trim() },
+    };
+
     const nextPartners = (() => {
       const normalized = partners.map((p) => ({ ...p, id: String(p.id ?? "").trim() }));
       const idx = normalized.findIndex((p) => p.id === pid);
       const nextItem: CoursePartner = {
         id: pid,
-        name,
+        name: primaryName,
         website: websiteValue || null,
-        description: partnerForm.description.trim() || null,
+        description: partnerForm.locale_content.vi.description.trim() || partnerForm.locale_content.en.description.trim() || null,
         logo_url: partnerForm.logo_url.trim() || null,
         logo_path: partnerForm.logo_path.trim() || null,
+        locale_content: localeContent,
       };
       if (idx >= 0) {
         const updated = [...normalized];
@@ -4854,7 +4889,9 @@ const InstructorCourseEdit = () => {
                       <div className="space-y-2">
                         {sponsors.map((s) => {
                           const sid = String(s.id ?? "").trim();
-                          const name = String(s.name ?? "").trim();
+                          const lc = s.locale_content?.[activeContentLocale];
+                          const name = (lc?.name?.trim() || s.name || "").trim();
+                          const description = lc?.description?.trim() || s.description || "";
                           const logoSrc =
                             s.logo_url && String(s.logo_url).trim()
                               ? String(s.logo_url)
@@ -4897,9 +4934,9 @@ const InstructorCourseEdit = () => {
                                       {website}
                                     </a>
                                   ) : null}
-                                  {s.description ? (
+                                  {description ? (
                                     <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-foreground-muted">
-                                      {s.description}
+                                      {description}
                                     </p>
                                   ) : null}
                                 </div>
@@ -4978,14 +5015,39 @@ const InstructorCourseEdit = () => {
                           </div>
                         </Field>
 
+                        {/* Locale tabs */}
+                        <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
+                          {(["vi", "en"] as const).map((loc) => (
+                            <button
+                              key={loc}
+                              type="button"
+                              onClick={() => setSponsorDialogLocale(loc)}
+                              className={cn(
+                                "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                                sponsorDialogLocale === loc
+                                  ? "bg-surface-base text-foreground shadow-sm"
+                                  : "text-foreground-muted hover:text-foreground",
+                              )}
+                            >
+                              {loc === "vi" ? "🇻🇳 Tiếng Việt" : "🇬🇧 English"}
+                            </button>
+                          ))}
+                        </div>
+
                         <Field>
                           <FieldLabel>
                             {t("courseEdit.sponsors.fields.name")}
                           </FieldLabel>
                           <Input
-                            value={sponsorForm.name}
+                            value={sponsorForm.locale_content[sponsorDialogLocale].name}
                             onChange={(e) =>
-                              setSponsorForm((p) => ({ ...p, name: e.target.value }))
+                              setSponsorForm((p) => ({
+                                ...p,
+                                locale_content: {
+                                  ...p.locale_content,
+                                  [sponsorDialogLocale]: { ...p.locale_content[sponsorDialogLocale], name: e.target.value },
+                                },
+                              }))
                             }
                           />
                         </Field>
@@ -5011,11 +5073,14 @@ const InstructorCourseEdit = () => {
                             {t("courseEdit.sponsors.fields.description")}
                           </FieldLabel>
                           <textarea
-                            value={sponsorForm.description}
+                            value={sponsorForm.locale_content[sponsorDialogLocale].description}
                             onChange={(e) =>
                               setSponsorForm((p) => ({
                                 ...p,
-                                description: e.target.value,
+                                locale_content: {
+                                  ...p.locale_content,
+                                  [sponsorDialogLocale]: { ...p.locale_content[sponsorDialogLocale], description: e.target.value },
+                                },
                               }))
                             }
                             className="min-h-[120px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
@@ -5074,7 +5139,9 @@ const InstructorCourseEdit = () => {
                       <div className="space-y-2">
                         {partners.map((p) => {
                           const pid = String(p.id ?? "").trim();
-                          const name = String(p.name ?? "").trim();
+                          const plc = p.locale_content?.[activeContentLocale];
+                          const name = (plc?.name?.trim() || p.name || "").trim();
+                          const pDescription = plc?.description?.trim() || p.description || "";
                           const logoSrc =
                             p.logo_url && String(p.logo_url).trim()
                               ? String(p.logo_url)
@@ -5117,9 +5184,9 @@ const InstructorCourseEdit = () => {
                                       {website}
                                     </a>
                                   ) : null}
-                                  {p.description ? (
+                                  {pDescription ? (
                                     <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-foreground-muted">
-                                      {p.description}
+                                      {pDescription}
                                     </p>
                                   ) : null}
                                 </div>
@@ -5200,14 +5267,39 @@ const InstructorCourseEdit = () => {
                           </div>
                         </Field>
 
+                        {/* Locale tabs */}
+                        <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
+                          {(["vi", "en"] as const).map((loc) => (
+                            <button
+                              key={loc}
+                              type="button"
+                              onClick={() => setPartnerDialogLocale(loc)}
+                              className={cn(
+                                "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                                partnerDialogLocale === loc
+                                  ? "bg-surface-base text-foreground shadow-sm"
+                                  : "text-foreground-muted hover:text-foreground",
+                              )}
+                            >
+                              {loc === "vi" ? "🇻🇳 Tiếng Việt" : "🇬🇧 English"}
+                            </button>
+                          ))}
+                        </div>
+
                         <Field>
                           <FieldLabel>
                             {t("courseEdit.partners.fields.name")}
                           </FieldLabel>
                           <Input
-                            value={partnerForm.name}
+                            value={partnerForm.locale_content[partnerDialogLocale].name}
                             onChange={(e) =>
-                              setPartnerForm((p) => ({ ...p, name: e.target.value }))
+                              setPartnerForm((p) => ({
+                                ...p,
+                                locale_content: {
+                                  ...p.locale_content,
+                                  [partnerDialogLocale]: { ...p.locale_content[partnerDialogLocale], name: e.target.value },
+                                },
+                              }))
                             }
                           />
                         </Field>
@@ -5230,11 +5322,14 @@ const InstructorCourseEdit = () => {
                             {t("courseEdit.partners.fields.description")}
                           </FieldLabel>
                           <textarea
-                            value={partnerForm.description}
+                            value={partnerForm.locale_content[partnerDialogLocale].description}
                             onChange={(e) =>
                               setPartnerForm((p) => ({
                                 ...p,
-                                description: e.target.value,
+                                locale_content: {
+                                  ...p.locale_content,
+                                  [partnerDialogLocale]: { ...p.locale_content[partnerDialogLocale], description: e.target.value },
+                                },
                               }))
                             }
                             className="min-h-[120px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"

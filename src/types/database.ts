@@ -8,6 +8,23 @@ import i18n from "@/i18n";
 export type UserRole = "student" | "instructor" | "support_staff" | "admin";
 export type Locale = "vi" | "en";
 
+export type InstructorSocialPlatform =
+  | "twitter"
+  | "linkedin"
+  | "github"
+  | "youtube"
+  | "facebook"
+  | "instagram"
+  | "tiktok"
+  | "website"
+  | "other";
+
+export interface InstructorSocialLink {
+  platform: InstructorSocialPlatform;
+  url: string;
+  label?: string | null;
+}
+
 export interface PartnerProfileDocument {
   name: string;
   url: string;
@@ -54,6 +71,8 @@ export interface Profile {
   instructor_organization?: string | null;
   /** Link website cá nhân / LinkedIn / portfolio (nếu có) */
   instructor_website?: string | null;
+  /** Danh sách link mạng xã hội của giảng viên */
+  instructor_social_links?: InstructorSocialLink[] | null;
   /** Hồ sơ hợp đồng đối tác ở cấp giảng viên (không phụ thuộc khoá học) */
   partner_contract_docs?: PartnerProfileDocument[];
   /** Hồ sơ hoá đơn đối tác ở cấp giảng viên */
@@ -89,6 +108,7 @@ export interface ProfileInsert {
   instructor_bio?: string | null;
   instructor_organization?: string | null;
   instructor_website?: string | null;
+  instructor_social_links?: InstructorSocialLink[] | null;
   partner_contract_docs?: PartnerProfileDocument[];
   partner_invoice_docs?: PartnerProfileDocument[];
   partner_transfer_info?: string | null;
@@ -117,6 +137,7 @@ export interface ProfileUpdate {
   instructor_bio?: string | null;
   instructor_organization?: string | null;
   instructor_website?: string | null;
+  instructor_social_links?: InstructorSocialLink[] | null;
   partner_contract_docs?: PartnerProfileDocument[];
   partner_invoice_docs?: PartnerProfileDocument[];
   partner_transfer_info?: string | null;
@@ -167,6 +188,7 @@ export interface PublicProfile {
   instructor_bio: string | null;
   instructor_organization: string | null;
   instructor_website: string | null;
+  instructor_social_links: InstructorSocialLink[] | null;
   profile_public: boolean;
   created_at: string;
   updated_at: string;

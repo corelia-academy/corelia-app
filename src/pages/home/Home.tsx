@@ -139,6 +139,13 @@ export default function Home() {
 
   const activePinnedProgram = pinnedPrograms[0] ?? null;
 
+  // Header already surfaces either the pinned program or the first focus card,
+  // so drop the first focus card from the strip below when no pinned program
+  // is shown to avoid showing the same course twice.
+  const continueLearningCards = activePinnedProgram
+    ? focusCards
+    : focusCards.slice(1);
+
   if (!isAuthenticated) {
     return <GuestHome t={t} courseCatalog={courseCatalog} contests={contests} />;
   }
@@ -156,7 +163,9 @@ export default function Home() {
 
         <MomentumCards items={momentumCards} />
 
-        <ContinueLearningSection t={t} focusCards={focusCards} />
+        {continueLearningCards.length > 0 ? (
+          <ContinueLearningSection t={t} focusCards={continueLearningCards} />
+        ) : null}
 
         <ExploreCoursesSection t={t} courseCatalog={courseCatalog} />
       </div>

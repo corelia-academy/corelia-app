@@ -54,6 +54,7 @@ function rowToProfile(row: Record<string, unknown>): Profile {
     instructor_bio: (row.instructor_bio as string | null) ?? null,
     instructor_organization: (row.instructor_organization as string | null) ?? null,
     instructor_website: (row.instructor_website as string | null) ?? null,
+    instructor_social_links: (row.instructor_social_links as Profile["instructor_social_links"]) ?? null,
     partner_contract_docs: (row.partner_contract_docs as Profile["partner_contract_docs"]) ?? [],
     partner_invoice_docs: (row.partner_invoice_docs as Profile["partner_invoice_docs"]) ?? [],
     partner_transfer_info: (row.partner_transfer_info as string | null) ?? null,
@@ -81,6 +82,7 @@ function rowToPublicProfile(row: Record<string, unknown>): PublicProfile {
     instructor_bio: (row.instructor_bio as string | null) ?? null,
     instructor_organization: (row.instructor_organization as string | null) ?? null,
     instructor_website: (row.instructor_website as string | null) ?? null,
+    instructor_social_links: (row.instructor_social_links as PublicProfile["instructor_social_links"]) ?? null,
     profile_public: (row.profile_public as boolean | null) ?? true,
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
@@ -313,6 +315,7 @@ export async function updateProfileForUser(
     safeUpdates.instructor_organization = updates.instructor_organization;
   }
   if (updates.instructor_website !== undefined) safeUpdates.instructor_website = updates.instructor_website;
+  if (updates.instructor_social_links !== undefined) safeUpdates.instructor_social_links = updates.instructor_social_links;
 
   safeUpdates.updated_at = new Date().toISOString();
 

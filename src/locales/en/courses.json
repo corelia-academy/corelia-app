@@ -25,7 +25,12 @@
     "searchPlaceholder": "Search by course name, instructor...",
     "sort": "Sort",
     "emptyTitle": "No courses match the current filters.",
-    "emptyDescription": "Try removing some filters or search by instructor, topic, and learning format."
+    "emptyDescription": "Try removing some filters or search by instructor, topic, and learning format.",
+    "card": {
+      "courseProgress": "Course progress",
+      "continueLearning": "Continue learning",
+      "startLearning": "Start learning"
+    }
   },
   "detail": {
     "missingCourseId": "Missing course id",
@@ -163,6 +168,10 @@
       },
       "certificateIssued": "Certificate issued",
       "instructorLabel": "Instructor",
+      "instructor": {
+        "title": "About the instructor",
+        "fallbackName": "Instructor"
+      },
       "coInstructors": {
         "title": "Co-instructors",
         "subtitle": "Additional instructors supporting the main instructor in this course.",
