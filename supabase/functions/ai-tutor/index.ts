@@ -35,9 +35,37 @@ type TutorRequest = {
   stream?: unknown;
   action?: unknown;
   selectedText?: unknown;
+  attachments?: unknown;
 };
 
 type TutorAction = "chat" | "explain_selected_text";
+
+export type MessageAttachment = {
+  kind: "image";
+  url: string;
+  path?: string;
+  mime?: string;
+};
+
+const MAX_ATTACHMENTS_PER_TURN = 3;
+const VISION_ALLOWED_TIERS: Tier[] = ["pro", "bootcamp"];
+
+function parseAttachments(raw: unknown): MessageAttachment[] {
+  if (!Array.isArray(raw)) return [];
+  const out: MessageAttachment[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const obj = item as Record<string, unknown>;
+    if (obj.kind !== "image") continue;
+    const url = typeof obj.url === "string" ? obj.url.trim() : "";
+    if (!url.startsWith("https://")) continue;
+    const path = typeof obj.path === "string" ? obj.path.trim() : undefined;
+    const mime = typeof obj.mime === "string" ? obj.mime.trim() : undefined;
+    out.push({ kind: "image", url, path, mime });
+    if (out.length >= MAX_ATTACHMENTS_PER_TURN) break;
+  }
+  return out;
+}
 
 type ProfileRow = {
   full_name: string | null;
@@ -198,6 +226,7 @@ function parseRequest(body: TutorRequest): {
   stream: boolean;
   action: TutorAction;
   selectedText: string | null;
+  attachments: MessageAttachment[];
 } {
   const message = typeof body.message === "string" ? body.message.trim() : "";
   const assistantContext =
@@ -213,7 +242,8 @@ function parseRequest(body: TutorRequest): {
     typeof body.selectedText === "string" && body.selectedText.trim()
       ? body.selectedText.trim().slice(0, 2000)
       : null;
-  return { message, assistantContext, lessonId, courseId, sessionId, stream, action, selectedText };
+  const attachments = parseAttachments(body.attachments);
+  return { message, assistantContext, lessonId, courseId, sessionId, stream, action, selectedText, attachments };
 }
 
 function classifyComplexity(
@@ -1056,10 +1086,10 @@ async function getRecentConversationHistory(
   contextType: BackendContextType,
   lessonId: string | null,
   sessionId: string | null,
-): Promise<Array<{ role: "user" | "assistant"; content: string }>> {
+): Promise<Array<{ role: "user" | "assistant"; content: string; attachments: MessageAttachment[] }>> {
   let query = db
     .from("ai_conversations")
-    .select("role,content,created_at")
+    .select("role,content,created_at,attachments")
     .eq("user_id", userId)
     .eq("context_type", contextType)
     .eq("status", "completed")
@@ -1075,8 +1105,22 @@ async function getRecentConversationHistory(
     .map((row) => ({
       role: row.role as "user" | "assistant",
       content: String(row.content ?? ""),
+      attachments: parseAttachments((row as { attachments?: unknown }).attachments),
     }))
-    .filter((row) => row.content.trim().length > 0);
+    .filter((row) => row.content.trim().length > 0 || row.attachments.length > 0);
+}
+
+function buildMessageContent(
+  text: string,
+  attachments: MessageAttachment[],
+): string | Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> {
+  if (attachments.length === 0) return text;
+  const parts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [];
+  if (text.trim()) parts.push({ type: "text", text });
+  for (const att of attachments) {
+    parts.push({ type: "image_url", image_url: { url: att.url } });
+  }
+  return parts;
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -1095,7 +1139,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const user = await verifyBearerUser(req, db);
     const body = parseRequest((await req.json().catch(() => ({}))) as TutorRequest);
 
-    if (!body.message) {
+    if (!body.message && body.attachments.length === 0) {
       return withCors(req, json({ message: "Message is required" }, 400));
     }
     if (body.message.length > 2000) {
@@ -1106,6 +1150,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         return withCors(req, json({ message: "selectedText is required" }, 400));
       }
     }
+    const hasAttachments = body.attachments.length > 0;
 
     const rawContextType = mapAssistantContext(body.assistantContext);
     // When courseId is provided with lesson context, use course-scoped sessions
@@ -1119,6 +1164,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const profile = await getProfile(db, user.id);
     const tier = await resolveEffectiveTier(db, user.id, profile?.tier ?? "free");
+    if (hasAttachments && !VISION_ALLOWED_TIERS.includes(tier)) {
+      return withCors(
+        req,
+        json(
+          {
+            message: "Upload ảnh hiện chỉ khả dụng với gói Pro hoặc Bootcamp.",
+            tier,
+            requiresTier: VISION_ALLOWED_TIERS,
+          },
+          403,
+        ),
+      );
+    }
     const quota = await checkQuota(db, user.id, tier, FALLBACK_TIER_LIMITS);
     if (!quota.allowed) {
       const useTokenCounter =
@@ -1201,6 +1259,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       content: body.message,
       status: "completed",
       tokens_used: estimateTokens(body.message),
+      attachments: body.attachments,
     };
     const { error: userMessageError } = await db.from("ai_conversations").insert(userInsert);
     if (userMessageError) throw new Error(userMessageError.message);
@@ -1281,7 +1340,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
                   { role: "system", content: systemPrompt },
                   ...history.map((message) => ({
                     role: message.role,
-                    content: message.content,
+                    content:
+                      message.role === "user" && message.attachments.length > 0
+                        ? buildMessageContent(message.content, message.attachments)
+                        : message.content,
                   })),
                 ],
                 quota,
