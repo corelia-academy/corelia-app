@@ -35,9 +35,10 @@ export function SelectableLessonContent({ children, className, lessonId }: Props
     }
     const rect = range.getBoundingClientRect();
     if (rect.width === 0 && rect.height === 0) return;
+    // Viewport-relative coords (button uses position: fixed)
     const anchor = {
-      x: rect.left + rect.width / 2 + window.scrollX,
-      y: rect.top + window.scrollY,
+      x: rect.left + rect.width / 2,
+      y: rect.top,
     };
     setSelection(text.slice(0, MAX_SELECTION_LENGTH), anchor);
   }, [currentSelected, setSelection]);

@@ -46,11 +46,21 @@ export function ExplainSelectionButton() {
       type="button"
       onMouseDown={(event) => event.preventDefault()}
       onClick={handleClick}
-      className="fixed z-50 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-foreground text-background px-3 py-1.5 text-xs font-medium shadow-card hover:opacity-90 transition-opacity"
-      style={{ top, left }}
+      className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-lg ring-1 ring-black/10 hover:opacity-90 transition-opacity"
+      style={{
+        position: "fixed",
+        top,
+        left,
+        transform: "translateX(-50%)",
+        zIndex: 50,
+        backgroundColor: "#0F172A",
+        color: "#FFFFFF",
+      }}
     >
-      <Sparkles className="w-3.5 h-3.5" aria-hidden />
-      {t("coraWidget.explainButtonLabel", { defaultValue: "Explain with Cora" })}
+      <Sparkles size={14} aria-hidden />
+      <span>
+        {t("coraWidget.explainButtonLabel", { defaultValue: "Explain with Cora" })}
+      </span>
     </button>,
     document.body,
   );
