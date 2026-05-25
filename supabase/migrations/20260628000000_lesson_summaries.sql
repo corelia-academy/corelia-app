@@ -10,7 +10,7 @@
 CREATE TABLE IF NOT EXISTS public.lesson_summaries (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  course_id uuid NOT NULL,
+  course_id text NOT NULL,
   lesson_id text NOT NULL,
   locale text NOT NULL DEFAULT 'vi' CHECK (locale IN ('vi', 'en')),
   key_points jsonb NOT NULL DEFAULT '[]'::jsonb,
