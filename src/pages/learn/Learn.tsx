@@ -37,6 +37,7 @@ import {
   type CurriculumGroup,
 } from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
+import { LessonRecapCard } from "./components/LessonRecapCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
 import { SectionQuiz } from "./components/SectionQuiz";
 import { getSectionQuestions } from "@/lib/sectionQuestions";
@@ -441,6 +442,14 @@ export default function Learn() {
         onMarkComplete={() => void markComplete()}
         onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
         courseId={courseId}
+      />
+
+      <LessonRecapCard
+        lessonId={currentLesson?.id ?? null}
+        courseId={courseId ?? null}
+        completed={
+          !!currentLesson && progress.completedIds.has(currentLesson.id)
+        }
       />
 
       {shouldShowSectionQuiz && sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (

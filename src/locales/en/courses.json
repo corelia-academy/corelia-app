@@ -275,6 +275,15 @@
         "completedLessons": "Completed",
         "nextUp": "Next"
       },
+      "recap": {
+        "title": "Cora's recap",
+        "keyPointsLabel": "Key takeaways",
+        "practicalTipsLabel": "Practical tips",
+        "generating": "Cora is summarizing this lesson…",
+        "regenerate": "Regenerate",
+        "error": "Cora couldn't summarize this lesson right now.",
+        "retry": "Try again"
+      },
       "lessonList": {
         "title": "Lessons",
         "metaFullAccess": "{{sections}} sections • {{lessons}} lessons",

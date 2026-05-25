@@ -270,6 +270,15 @@
         "completedLessons": "Bài đã xong",
         "nextUp": "Tiếp theo"
       },
+      "recap": {
+        "title": "Cora tóm tắt",
+        "keyPointsLabel": "Ý chính cần nhớ",
+        "practicalTipsLabel": "Mẹo áp dụng",
+        "generating": "Cora đang tóm tắt bài học…",
+        "regenerate": "Tóm tắt lại",
+        "error": "Cora chưa thể tóm tắt bài học lúc này.",
+        "retry": "Thử lại"
+      },
       "lessonList": {
         "title": "Danh sách bài học",
         "metaFullAccess": "{{sections}} chương • {{lessons}} bài",
