@@ -157,21 +157,98 @@ export type PublicProjectEntry = {
   owner: ProjectOwnerPublicProfile | null;
 };
 
-export async function listPublicProjects(uiLocale?: string | null): Promise<PublicProjectEntry[]> {
-  const select =
-    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+export type PublicProjectSourceFilter = "all" | "hackathon" | "course" | "standalone";
+export type PublicProjectSort = "newest" | "most_liked" | "most_commented";
+
+export type ListPublicProjectsOptions = {
+  locale?: string | null;
+  source?: PublicProjectSourceFilter | "contest" | null;
+  sort?: PublicProjectSort | null;
+  limit?: number;
+  cursor?: string | null;
+};
+
+export type PublicProjectListResult = {
+  items: PublicProjectEntry[];
+  nextCursor: string | null;
+  hasMore: boolean;
+};
+
+function normalizePublicProjectSource(
+  source: ListPublicProjectsOptions["source"],
+): Project["source_type"] | null {
+  if (!source || source === "all") return null;
+  if (source === "hackathon") return "contest";
+  if (source === "contest") return "contest";
+  return source;
+}
+
+function normalizeProjectListSort(sort: ListPublicProjectsOptions["sort"]): PublicProjectSort {
+  if (sort === "most_liked" || sort === "most_commented") return sort;
+  return "newest";
+}
+
+function parseProjectCursor(cursor: string | null | undefined): number {
+  const value = Number.parseInt(cursor ?? "0", 10);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function normalizeProjectLimit(limit: number | null | undefined): number {
+  if (!Number.isFinite(limit ?? NaN)) return 12;
+  return Math.min(Math.max(Math.trunc(limit ?? 12), 1), 48);
+}
+
+function isUuidLike(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+}
+
+async function getProjectCommentCounts(projectIds: string[]): Promise<Map<string, number>> {
+  const ids = Array.from(new Set(projectIds.map((id) => id.trim()).filter(Boolean)));
+  const counts = new Map<string, number>();
+  for (const id of ids) counts.set(id, 0);
+  if (ids.length === 0) return counts;
 
   const { data, error } = await supabase
-    .from("projects")
-    .select(select)
-    .eq("visibility", "public")
-    .order("updated_at", { ascending: false })
-    .limit(100);
-  if (error) throw new Error(error.message);
+    .from("project_comments")
+    .select("project_id")
+    .in("project_id", ids)
+    .is("deleted_at", null);
 
+  if (error) throw new Error(error.message);
+  for (const row of data ?? []) {
+    const projectId = String(row.project_id ?? "");
+    if (!projectId) continue;
+    counts.set(projectId, (counts.get(projectId) ?? 0) + 1);
+  }
+  return counts;
+}
+
+async function attachOwners(projects: Project[]): Promise<PublicProjectEntry[]> {
+  const ownerIds = Array.from(new Set(projects.map((p) => p.owner_id).filter(Boolean)));
+  if (ownerIds.length === 0) return projects.map((project) => ({ project, owner: null }));
+
+  const { data: owners, error: ownerErr } = await supabase
+    .from("public_profiles")
+    .select("id,username,ocid,full_name,avatar_url")
+    .in("id", ownerIds);
+  if (ownerErr) throw new Error(ownerErr.message);
+
+  const ownerMap = new Map<string, ProjectOwnerPublicProfile>();
+  for (const row of (owners ?? []) as ProjectOwnerPublicProfile[]) {
+    ownerMap.set(row.id, row);
+  }
+
+  return projects.map((project) => ({
+    project,
+    owner: ownerMap.get(project.owner_id) ?? null,
+  }));
+}
+
+async function localizeProjects(projects: Project[], uiLocale?: string | null): Promise<Project[]> {
   const normalizedUiLocale = normalizeContentLocale(uiLocale);
 
-  const projects = (data ?? []) as Project[];
   const idsByLocale = new Map<Locale, string[]>();
   for (const p of projects) {
     const desired = pickContentLocale(p.i18n ?? null, normalizedUiLocale);
@@ -185,30 +262,101 @@ export async function listPublicProjects(uiLocale?: string | null): Promise<Publ
       localeMaps.set(locale, await getBatchProjectLocaleContent(ids, locale));
     }),
   );
-  const localizedProjects = projects.map((p) => {
+
+  return projects.map((p) => {
     const desired = pickContentLocale(p.i18n ?? null, normalizedUiLocale);
     const localized = localeMaps.get(desired)?.get(p.id) ?? null;
     return applyProjectLocaleContent(p, localized);
   });
+}
 
-  const ownerIds = Array.from(new Set(localizedProjects.map((p) => p.owner_id).filter(Boolean)));
-  if (ownerIds.length === 0) return localizedProjects.map((project) => ({ project, owner: null }));
+export async function listPublicProjects(
+  options: ListPublicProjectsOptions = {},
+): Promise<PublicProjectListResult> {
+  const select =
+    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+  const limit = normalizeProjectLimit(options.limit);
+  const offset = parseProjectCursor(options.cursor);
+  const sourceType = normalizePublicProjectSource(options.source);
+  const sort = normalizeProjectListSort(options.sort);
 
-  const { data: owners, error: ownerErr } = await supabase
-    .from("public_profiles")
-    .select("id,username,ocid,full_name,avatar_url")
-    .in("id", ownerIds);
-  if (ownerErr) throw new Error(ownerErr.message);
+  let query = supabase
+    .from("projects")
+    .select(select)
+    .eq("visibility", "public");
 
-  const ownerMap = new Map<string, ProjectOwnerPublicProfile>();
-  for (const row of (owners ?? []) as ProjectOwnerPublicProfile[]) {
-    ownerMap.set(row.id, row);
+  if (sourceType) query = query.eq("source_type", sourceType);
+
+  if (sort === "most_liked") {
+    query = query.order("like_count", { ascending: false }).order("updated_at", { ascending: false });
+  } else {
+    query = query.order("updated_at", { ascending: false });
   }
 
-  return localizedProjects.map((project) => ({
-    project,
-    owner: ownerMap.get(project.owner_id) ?? null,
+  const rangeStart = sort === "most_commented" ? 0 : offset;
+  const rangeSize = sort === "most_commented" ? offset + limit : limit;
+  const { data, error } = await query.range(rangeStart, rangeStart + rangeSize);
+  if (error) throw new Error(error.message);
+
+  const fetchedProjects = (data ?? []) as Project[];
+  const hasMore = fetchedProjects.length > rangeSize;
+  const candidates =
+    sort === "most_commented"
+      ? fetchedProjects.slice(0, offset + limit)
+      : fetchedProjects.slice(0, limit);
+  const commentCounts = await getProjectCommentCounts(candidates.map((p) => p.id));
+  let projects = candidates.map((project) => ({
+    ...project,
+    comment_count: commentCounts.get(project.id) ?? 0,
   }));
+
+  if (sort === "most_commented") {
+    projects = projects
+      .sort((a, b) => {
+        const countDiff = Number(b.comment_count ?? 0) - Number(a.comment_count ?? 0);
+        if (countDiff !== 0) return countDiff;
+        return String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? ""));
+      })
+      .slice(offset, offset + limit);
+  }
+
+  const localizedProjects = await localizeProjects(projects, options.locale);
+  return {
+    items: await attachOwners(localizedProjects),
+    nextCursor: hasMore ? String(offset + limit) : null,
+    hasMore,
+  };
+}
+
+export async function getProjectById(
+  id: string,
+  uiLocale?: string | null,
+): Promise<PublicProjectEntry | null> {
+  const trimmedId = id.trim();
+  if (!trimmedId) return null;
+  if (!isUuidLike(trimmedId)) return null;
+
+  const select =
+    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+
+  const { data, error } = await supabase
+    .from("projects")
+    .select(select)
+    .eq("id", trimmedId)
+    .eq("visibility", "public")
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+
+  const project = data as Project;
+  const commentCounts = await getProjectCommentCounts([project.id]);
+  const [localizedProject] = await localizeProjects(
+    [{ ...project, comment_count: commentCounts.get(project.id) ?? 0 }],
+    uiLocale,
+  );
+  const [entry] = await attachOwners([localizedProject]);
+  return entry ?? null;
 }
 
 export async function listMyProjects(uiLocale?: string | null): Promise<Project[]> {

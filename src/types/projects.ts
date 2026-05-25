@@ -18,6 +18,8 @@ export interface Project {
   source_submission_id: string | null;
   /** Denormalized count from project_hearts (server-maintained). */
   like_count?: number;
+  /** Derived count from project_comments for public gallery/detail UI. */
+  comment_count?: number;
   /** Text-only content localization config */
   i18n?: import("@/types/entityLocales").EntityI18nConfig;
   created_at: string;
