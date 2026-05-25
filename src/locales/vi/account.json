@@ -260,6 +260,7 @@
     "errors": {
       "avatarUploadFailed": "Không thể tải ảnh lên.",
       "updateFailed": "Không thể cập nhật thông tin.",
+      "usernameTaken": "Username này đã được sử dụng. Vui lòng chọn username khác.",
       "loadFailed": "Không thể tải thông tin tài khoản. Kiểm tra kết nối và thử lại."
     },
     "retry": "Thử lại"
