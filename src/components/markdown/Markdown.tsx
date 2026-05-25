@@ -1,6 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
+import { cn } from "@/lib/utils";
 import { CodeBlock } from "./CodeBlock";
 
 export function Markdown({ content, compact }: { content: string; compact?: boolean }) {
@@ -8,7 +9,12 @@ export function Markdown({ content, compact }: { content: string; compact?: bool
   if (!value) return null;
 
   return (
-    <div className={compact ? "space-y-2 text-sm leading-relaxed" : "space-y-3 text-sm leading-7 text-foreground-muted"}>
+    <div
+      className={cn(
+        compact ? "space-y-2 text-sm leading-relaxed" : "space-y-3 text-sm leading-7 text-foreground-muted",
+        "[&>h1:first-child]:mt-0 [&>h2:first-child]:mt-0 [&>h3:first-child]:mt-0 [&>h4:first-child]:mt-0",
+      )}
+    >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeSanitize]}

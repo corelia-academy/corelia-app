@@ -116,7 +116,7 @@ export function LessonPlayerCard({
         </div>
       ) : showArticleBody ? (
         <div className="mx-4 overflow-hidden rounded-2xl border border-border-subtle shadow-card sm:mx-6">
-          <div className="px-6 py-8 text-[15px] leading-[1.7]">
+          <div className="px-6 pt-5 pb-8 text-[15px] leading-[1.7]">
             <Markdown content={lesson.description_markdown!} />
           </div>
         </div>
