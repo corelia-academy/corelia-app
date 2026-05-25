@@ -453,7 +453,10 @@ export function useCoraAI(options: UseCoraAIOptions) {
   }, [loadLearningMemory]);
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (
+      text: string,
+      extras?: { action?: "chat" | "explain_selected_text"; selectedText?: string },
+    ) => {
       const trimmed = text.trim();
       if (!trimmed) return;
       if (!isAuthenticated) {
@@ -494,6 +497,8 @@ export function useCoraAI(options: UseCoraAIOptions) {
           courseId: options.courseId ?? null,
           sessionId: currentSessionId,
           stream: true,
+          ...(extras?.action ? { action: extras.action } : {}),
+          ...(extras?.selectedText ? { selectedText: extras.selectedText } : {}),
         });
         const contentType = response.headers.get("content-type") ?? "";
 
@@ -626,6 +631,22 @@ export function useCoraAI(options: UseCoraAIOptions) {
       sessionId,
       syncQuotaInfo,
     ],
+  );
+
+  const explainSelectedText = useCallback(
+    async (selectedText: string, userBubbleLabel?: string) => {
+      const trimmed = selectedText.trim();
+      if (trimmed.length < 4) return;
+      const snippet = trimmed.length > 80 ? `${trimmed.slice(0, 80)}…` : trimmed;
+      const bubble = userBubbleLabel
+        ? userBubbleLabel.replace("{{snippet}}", snippet)
+        : `Giải thích đoạn: "${snippet}"`;
+      await sendMessage(bubble, {
+        action: "explain_selected_text",
+        selectedText: trimmed,
+      });
+    },
+    [sendMessage],
   );
 
   const newSession = useCallback(async () => {
@@ -769,6 +790,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
     loadHistory,
     loadLearningMemory,
     sendMessage,
+    explainSelectedText,
     clearHistory,
     newSession,
     switchSession,

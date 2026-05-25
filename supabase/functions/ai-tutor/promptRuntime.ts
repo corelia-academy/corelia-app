@@ -131,6 +131,53 @@ function summarizeContext(contextType: BackendContextType, data: Record<string, 
   return lines.length > 0 ? ["Context details:", ...lines].join("\n") : "Context details: none";
 }
 
+export type ExplainSelectionOptions = {
+  selectedText: string;
+};
+
+function buildLearningStyleHint(style: string | null | undefined): string | null {
+  const normalized = (style ?? "").trim().toLowerCase();
+  switch (normalized) {
+    case "visual":
+      return "Lean on visual metaphors and describe shapes/diagrams in words (e.g. \"imagine a tree where…\").";
+    case "analogy":
+      return "Lead with one concrete everyday analogy before any technical detail.";
+    case "step_by_step":
+    case "step-by-step":
+    case "stepbystep":
+      return "Structure the explanation as numbered steps (1, 2, 3…).";
+    case "hands_on":
+    case "hands-on":
+      return "Include one short runnable code/practice example the learner can try right away.";
+    case "story":
+    case "narrative":
+      return "Frame the explanation as a brief story or scenario.";
+    default:
+      return null;
+  }
+}
+
+function buildExplainSelectionSection(
+  options: ExplainSelectionOptions,
+  learningMemory: LearningProfileMemoryRow | null,
+): string {
+  const styleHint = buildLearningStyleHint(learningMemory?.learning_style ?? null);
+  const trimmed = options.selectedText.trim().slice(0, 2000);
+  return [
+    "Explain-on-demand task:",
+    "- The learner highlighted the passage below from the current lesson and wants it re-explained.",
+    "- Re-explain it clearly, do NOT just repeat the original wording.",
+    "- Tailor the explanation to the learner's preferred learning style above.",
+    styleHint ? `- Style guidance: ${styleHint}` : "- Style guidance: clear, concise, plain language.",
+    "- Keep it under ~200 words. End with ONE short check-for-understanding question.",
+    "",
+    "Highlighted passage:",
+    "```",
+    trimmed,
+    "```",
+  ].join("\n");
+}
+
 export function buildSystemPrompt(
   profile: ProfilePromptRow | null,
   contextType: BackendContextType,
@@ -138,13 +185,14 @@ export function buildSystemPrompt(
   knowledgeChunks: KnowledgeChunkRow[],
   learningMemory: LearningProfileMemoryRow | null,
   buildKnowledgePromptSection: (chunks: KnowledgeChunkRow[]) => string,
+  explainSelection: ExplainSelectionOptions | null = null,
 ): string {
   const learnerName = profile?.full_name?.trim() || "Learner";
   const goal = profile?.user_goal?.trim() || "Not specified";
   const level = profile?.user_level?.trim() || "beginner";
   const streak = Number(profile?.streak_days ?? 0);
 
-  return [
+  const sections = [
     "You are Cora, the AI tutor for Corelia Academy.",
     "Reply in the same language the user wrote in. Be practical, warm, and concise.",
     "",
@@ -161,5 +209,11 @@ export function buildSystemPrompt(
     summarizeContext(contextType, contextData),
     buildKnowledgePromptSection(knowledgeChunks),
     buildLearningMemoryPromptSection(learningMemory),
-  ].join("\n");
+  ];
+
+  if (explainSelection) {
+    sections.push("", buildExplainSelectionSection(explainSelection, learningMemory));
+  }
+
+  return sections.join("\n");
 }

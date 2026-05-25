@@ -33,7 +33,11 @@ type TutorRequest = {
   lessonId?: unknown;
   courseId?: unknown;
   stream?: unknown;
+  action?: unknown;
+  selectedText?: unknown;
 };
+
+type TutorAction = "chat" | "explain_selected_text";
 
 type ProfileRow = {
   full_name: string | null;
@@ -192,6 +196,8 @@ function parseRequest(body: TutorRequest): {
   courseId: string | null;
   sessionId: string | null;
   stream: boolean;
+  action: TutorAction;
+  selectedText: string | null;
 } {
   const message = typeof body.message === "string" ? body.message.trim() : "";
   const assistantContext =
@@ -201,7 +207,13 @@ function parseRequest(body: TutorRequest): {
   const sessionId =
     typeof body.sessionId === "string" && body.sessionId.trim() ? body.sessionId.trim() : null;
   const stream = body.stream !== false;
-  return { message, assistantContext, lessonId, courseId, sessionId, stream };
+  const action: TutorAction =
+    body.action === "explain_selected_text" ? "explain_selected_text" : "chat";
+  const selectedText =
+    typeof body.selectedText === "string" && body.selectedText.trim()
+      ? body.selectedText.trim().slice(0, 2000)
+      : null;
+  return { message, assistantContext, lessonId, courseId, sessionId, stream, action, selectedText };
 }
 
 function classifyComplexity(
@@ -1089,6 +1101,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (body.message.length > 2000) {
       return withCors(req, json({ message: "Message is too long" }, 400));
     }
+    if (body.action === "explain_selected_text") {
+      if (!body.selectedText || body.selectedText.length < 4) {
+        return withCors(req, json({ message: "selectedText is required" }, 400));
+      }
+    }
 
     const rawContextType = mapAssistantContext(body.assistantContext);
     // When courseId is provided with lesson context, use course-scoped sessions
@@ -1220,6 +1237,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       storeLessonId,
       sessionId,
     );
+    const explainSelection =
+      body.action === "explain_selected_text" && body.selectedText
+        ? { selectedText: body.selectedText }
+        : null;
     const systemPrompt = buildSystemPrompt(
       profile,
       contextType,
@@ -1227,6 +1248,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       knowledgeChunks,
       learningMemory,
       buildKnowledgePromptSection,
+      explainSelection,
     );
 
     if (body.stream) {

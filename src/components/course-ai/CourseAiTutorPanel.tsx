@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { useCoraStore } from "@/stores/coraStore";
 import { CornerDownLeft, FileText, Video } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -46,6 +48,7 @@ export function CourseAiTutorPanel(props: {
   const {
     messages,
     sendMessage,
+    explainSelectedText,
     isLoading,
     isStreaming,
     error,
@@ -88,6 +91,33 @@ export function CourseAiTutorPanel(props: {
   const handleSuggestionClick = (label: string) => {
     void sendMessage(label);
   };
+
+  const pendingExplainRequest = useCoraStore((s) => s.pendingExplainRequest);
+  const clearExplainRequest = useCoraStore((s) => s.clearExplainRequest);
+  const explainBubbleTemplate = tCommon("coraWidget.explainUserBubble", {
+    snippet: "{{snippet}}",
+    defaultValue: "Explain this passage: \"{{snippet}}\"",
+  });
+  useEffect(() => {
+    if (!pendingExplainRequest) return;
+    // Only consume the request when this panel matches the lesson the user was on.
+    if (
+      pendingExplainRequest.lessonId &&
+      lessonId &&
+      pendingExplainRequest.lessonId !== lessonId
+    ) {
+      return;
+    }
+    const text = pendingExplainRequest.text;
+    clearExplainRequest();
+    void explainSelectedText(text, explainBubbleTemplate);
+  }, [
+    pendingExplainRequest,
+    lessonId,
+    clearExplainRequest,
+    explainSelectedText,
+    explainBubbleTemplate,
+  ]);
 
   const handleSubmit = async () => {
     const text = draft.trim();

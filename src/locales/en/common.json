@@ -308,6 +308,8 @@
     "inputPlaceholder": "Ask Cora something…",
     "sendAction": "Send",
     "sendingAction": "Sending…",
+    "explainButtonLabel": "Explain with Cora",
+    "explainUserBubble": "Explain this passage: \"{{snippet}}\"",
     "sourceCount_one": "This reply is grounded in {{count}} internal source.",
     "sourceCount_other": "This reply is grounded in {{count}} internal sources.",
     "quotaExceededTitle": "You've been studying hard this month! 🎓",

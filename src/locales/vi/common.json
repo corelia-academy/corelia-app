@@ -308,6 +308,8 @@
     "inputPlaceholder": "Hỏi Cora điều gì đó…",
     "sendAction": "Gửi",
     "sendingAction": "Đang gửi…",
+    "explainButtonLabel": "Cora giải thích",
+    "explainUserBubble": "Giải thích đoạn: \"{{snippet}}\"",
     "sourceCount_one": "Phản hồi này đang bám trên {{count}} nguồn tham chiếu nội bộ.",
     "sourceCount_other": "Phản hồi này đang bám trên {{count}} nguồn tham chiếu nội bộ.",
     "quotaExceededTitle": "Bạn đã học rất chăm tháng này! 🎓",
