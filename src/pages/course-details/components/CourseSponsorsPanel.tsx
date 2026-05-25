@@ -1,7 +1,9 @@
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 import { Card, CardContent } from "@/components/ui/card";
-import type { CourseSponsor } from "@/types/courses";
+import type { CourseSponsor, SupportedCourseLocale } from "@/types/courses";
+import { normalizeCourseLocale } from "@/lib/courses";
 
 function isValidHttpUrl(input?: string | null): boolean {
   const value = String(input ?? "").trim();
@@ -22,14 +24,19 @@ export function CourseSponsorsPanel({
   const { t } = useTranslation("courses");
   const translate = (key: string, options?: Record<string, unknown>) =>
     String(t(key as never, options as never));
+  const currentLocale = normalizeCourseLocale(i18n.language) as SupportedCourseLocale;
 
   const list = Array.isArray(sponsors) ? sponsors : [];
   const visible = list
-    .map((s) => ({
-      ...s,
-      id: String(s.id ?? "").trim(),
-      name: String(s.name ?? "").trim(),
-    }))
+    .map((s) => {
+      const lc = s.locale_content?.[currentLocale];
+      return {
+        ...s,
+        id: String(s.id ?? "").trim(),
+        name: (lc?.name?.trim() || s.name || "").trim(),
+        description: lc?.description?.trim() || s.description || null,
+      };
+    })
     .filter((s) => s.id && s.name);
 
   if (visible.length === 0) return null;
@@ -37,9 +44,9 @@ export function CourseSponsorsPanel({
   return (
     <Card>
       <CardContent className="p-4">
-        <h3 className="text-sm font-medium text-foreground">
+        <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
           {translate("detail.courseDetail.sponsors.title")}
-        </h3>
+        </p>
 
         <div className="mt-3 space-y-3">
           {visible.map((s) => {
@@ -50,42 +57,33 @@ export function CourseSponsorsPanel({
             return (
               <div
                 key={s.id}
-                className="flex items-start gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3"
+                className="rounded-2xl border border-border-subtle bg-surface-base shadow-card overflow-hidden"
               >
-                <div className="shrink-0">
+                {/* Logo strip */}
+                <div className="flex items-center justify-center bg-surface-raised px-4 py-5 border-b border-border-subtle">
                   {logoSrc ? (
                     <img
                       src={logoSrc}
                       alt={s.name}
                       loading="lazy"
                       decoding="async"
-                      className="size-10 rounded-2xl border border-border-subtle bg-surface-base shadow-card object-contain"
+                      className="h-10 max-w-[120px] object-contain"
                     />
                   ) : (
-                    <div className="grid size-10 place-items-center rounded-md border border-border-subtle bg-surface-raised text-xs font-semibold text-foreground-muted">
-                      {s.name.slice(0, 2).toUpperCase()}
-                    </div>
+                    <span className="text-base font-bold tracking-tight text-foreground">
+                      {s.name}
+                    </span>
                   )}
                 </div>
 
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-foreground">
-                    {website ? (
-                      <a
-                        href={website}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="hover:underline"
-                      >
-                        {s.name}
-                      </a>
-                    ) : (
-                      s.name
-                    )}
-                  </div>
+                {/* Body */}
+                <div className="px-4 py-3 space-y-2">
+                  <p className="text-sm font-semibold text-foreground leading-snug">
+                    {s.name}
+                  </p>
 
                   {hasDescription ? (
-                    <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
+                    <p className="line-clamp-3 text-xs leading-relaxed text-foreground-muted">
                       {s.description}
                     </p>
                   ) : null}
@@ -95,7 +93,7 @@ export function CourseSponsorsPanel({
                       href={website}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 inline-flex items-center gap-2 text-xs text-primary hover:underline"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
                     >
                       <Globe className="size-3.5" aria-hidden />
                       {translate("detail.courseDetail.sponsors.websiteLabel")}

@@ -336,6 +336,20 @@
         "placeholder": "https://..., linkedin.com/in/..., portfolio cá nhân"
       }
     },
+    "socialLinks": {
+      "title": "Mạng xã hội & links",
+      "subtitle": "Thêm các tài khoản mạng xã hội hoặc link để hiển thị trên trang khoá học.",
+      "empty": "Chưa có link nào. Thêm link đầu tiên bên dưới.",
+      "addTitle": "Thêm link mới",
+      "urlPlaceholder": "https://...",
+      "labelPlaceholder": "Nhãn tuỳ chọn (ví dụ: Blog cá nhân)",
+      "addButton": "Thêm",
+      "removeLabel": "Xoá link",
+      "errors": {
+        "urlRequired": "Vui lòng nhập URL.",
+        "urlInvalid": "URL phải bắt đầu bằng https:// hoặc http://"
+      }
+    },
     "actions": {
       "saving": "Đang lưu...",
       "save": "Lưu hồ sơ giảng viên"

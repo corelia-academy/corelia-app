@@ -25,7 +25,12 @@
     "searchPlaceholder": "Tìm theo tên khoá, giảng viên...",
     "sort": "Sắp xếp",
     "emptyTitle": "Chưa có khoá online nào khớp bộ lọc hiện tại.",
-    "emptyDescription": "Thử bỏ bớt bộ lọc hoặc tìm theo tên giảng viên, lĩnh vực và hình thức học."
+    "emptyDescription": "Thử bỏ bớt bộ lọc hoặc tìm theo tên giảng viên, lĩnh vực và hình thức học.",
+    "card": {
+      "courseProgress": "Tiến độ khoá học",
+      "continueLearning": "Tiếp tục học",
+      "startLearning": "Bắt đầu học"
+    }
   },
   "detail": {
     "missingCourseId": "Thiếu mã khoá học",
@@ -162,6 +167,10 @@
       },
       "certificateIssued": "Đã cấp chứng nhận",
       "instructorLabel": "Giảng viên",
+      "instructor": {
+        "title": "Giới thiệu giảng viên",
+        "fallbackName": "Giảng viên"
+      },
       "coInstructors": {
         "title": "Đồng giảng viên",
         "subtitle": "Những người đồng hành cùng giảng viên chính trong khoá học này.",

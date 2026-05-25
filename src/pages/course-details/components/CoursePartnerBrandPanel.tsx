@@ -1,7 +1,9 @@
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Course, CoursePartner } from "@/types/courses";
+import type { Course, CoursePartner, SupportedCourseLocale } from "@/types/courses";
+import { normalizeCourseLocale } from "@/lib/courses";
 
 function isValidHttpUrl(input?: string | null): boolean {
   const value = String(input ?? "").trim();
@@ -22,6 +24,7 @@ export function CoursePartnerBrandPanel({
   const { t } = useTranslation("courses");
   const translate = (key: string, options?: Record<string, unknown>) =>
     String(t(key as never, options as never));
+  const currentLocale = normalizeCourseLocale(i18n.language) as SupportedCourseLocale;
 
   const legacy = course.partner_brand ?? null;
   const legacyName = String(legacy?.name ?? "").trim();
@@ -38,11 +41,15 @@ export function CoursePartnerBrandPanel({
 
   const list = Array.isArray(course.partners) ? course.partners : [];
   const visible = [
-    ...list.map((p) => ({
-      ...p,
-      id: String(p.id ?? "").trim(),
-      name: String(p.name ?? "").trim(),
-    })),
+    ...list.map((p) => {
+      const lc = p.locale_content?.[currentLocale];
+      return {
+        ...p,
+        id: String(p.id ?? "").trim(),
+        name: (lc?.name?.trim() || p.name || "").trim(),
+        description: lc?.description?.trim() || p.description || null,
+      };
+    }),
     ...(legacyPartner ? [legacyPartner] : []),
   ].filter((p) => p.id && p.name);
 
