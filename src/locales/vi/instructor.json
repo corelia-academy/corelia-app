@@ -329,6 +329,7 @@
     },
     "empty": {
       "title": "Chưa có khoá học nào trong workspace này.",
+      "description": "Tạo khoá học đầu tiên để bắt đầu xây dựng danh mục của bạn.",
       "createFirst": "Tạo khoá học đầu tiên"
     },
     "coursePills": {

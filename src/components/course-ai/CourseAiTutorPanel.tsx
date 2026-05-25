@@ -138,9 +138,6 @@ export function CourseAiTutorPanel(props: {
     explainBubbleTemplate,
   ]);
 
-  const visionAllowed =
-    quotaInfo?.tier === "pro" || quotaInfo?.tier === "bootcamp";
-
   const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
   const ALLOWED_MIME = ["image/png", "image/jpeg", "image/webp"];
 
@@ -160,10 +157,6 @@ export function CourseAiTutorPanel(props: {
   };
 
   const handleAttachClick = () => {
-    if (!visionAllowed) {
-      toast.error(String(tCommon("coraWidget.attachImageTierLocked")));
-      return;
-    }
     fileInputRef.current?.click();
   };
 
@@ -177,10 +170,7 @@ export function CourseAiTutorPanel(props: {
       | null = null;
 
     if (attachedFile) {
-      if (!user?.id) {
-        toast.error(String(tCommon("coraWidget.attachImageTierLocked")));
-        return;
-      }
+      if (!user?.id) return;
       setUploading(true);
       try {
         const { url, path } = await uploadCoraImageAttachment(user.id, attachedFile);
@@ -359,16 +349,9 @@ export function CourseAiTutorPanel(props: {
               size="sm"
               onClick={handleAttachClick}
               disabled={isLoading || uploading}
-              title={String(
-                visionAllowed
-                  ? tCommon("coraWidget.attachImageLabel")
-                  : tCommon("coraWidget.attachImageTierLocked"),
-              )}
+              title={String(tCommon("coraWidget.attachImageLabel"))}
               aria-label={String(tCommon("coraWidget.attachImageLabel"))}
-              className={cn(
-                "h-8 px-2",
-                !visionAllowed && "opacity-50",
-              )}
+              className="h-8 px-2"
             >
               <Paperclip className="size-4" aria-hidden />
             </Button>

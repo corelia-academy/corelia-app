@@ -48,7 +48,6 @@ export type MessageAttachment = {
 };
 
 const MAX_ATTACHMENTS_PER_TURN = 3;
-const VISION_ALLOWED_TIERS: Tier[] = ["pro", "bootcamp"];
 
 function parseAttachments(raw: unknown): MessageAttachment[] {
   if (!Array.isArray(raw)) return [];
@@ -1150,7 +1149,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
         return withCors(req, json({ message: "selectedText is required" }, 400));
       }
     }
-    const hasAttachments = body.attachments.length > 0;
 
     const rawContextType = mapAssistantContext(body.assistantContext);
     // When courseId is provided with lesson context, use course-scoped sessions
@@ -1164,19 +1162,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const profile = await getProfile(db, user.id);
     const tier = await resolveEffectiveTier(db, user.id, profile?.tier ?? "free");
-    if (hasAttachments && !VISION_ALLOWED_TIERS.includes(tier)) {
-      return withCors(
-        req,
-        json(
-          {
-            message: "Upload ảnh hiện chỉ khả dụng với gói Pro hoặc Bootcamp.",
-            tier,
-            requiresTier: VISION_ALLOWED_TIERS,
-          },
-          403,
-        ),
-      );
-    }
     const quota = await checkQuota(db, user.id, tier, FALLBACK_TIER_LIMITS);
     if (!quota.allowed) {
       const useTokenCounter =
