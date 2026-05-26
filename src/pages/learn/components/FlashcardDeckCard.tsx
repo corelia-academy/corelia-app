@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Layers, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { Layers, Loader2, RefreshCw, Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useFlashcardDeck } from "@/hooks/useFlashcardDeck";
@@ -134,55 +134,91 @@ export function FlashcardDeckCard({ lessonId, courseId, completed, locale }: Pro
       setPhase("done");
       return null;
     }
+    // Sync UI strings with the deck's content locale so buttons match the cards.
+    const tOpts = { lng: deck.locale } as const;
     return (
       <div className="mx-4 mt-4 rounded-2xl border border-border-subtle bg-surface-raised p-5 sm:mx-6">
         <div className="mb-3 flex items-center justify-between text-xs text-foreground-muted">
-          <span>
+          <span className="font-medium">
             {index + 1} / {queue.length}
           </span>
           <button
             type="button"
-            className="text-foreground-muted hover:text-foreground"
+            aria-label={String(
+              t("detail.learn.flashcards.backToOverview", {
+                ...tOpts,
+                defaultValue: "Quay lại",
+              }),
+            )}
+            className="inline-flex size-7 items-center justify-center rounded-md text-foreground-muted hover:bg-surface-base hover:text-foreground"
             onClick={() => setPhase("idle")}
           >
-            ×
+            <X className="size-4" aria-hidden />
           </button>
         </div>
+
+        {/* 3D flip card */}
         <button
           type="button"
           onClick={() => setFlipped((v) => !v)}
-          className={cn(
-            "block w-full rounded-xl border border-border bg-surface-base p-6 text-left transition",
-            "hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/40",
-            "min-h-[140px]",
-          )}
+          className="block w-full text-left [perspective:1200px]"
           aria-label={String(
-            t("detail.learn.flashcards.flipHint", { defaultValue: "Bấm để lật thẻ" }),
+            t("detail.learn.flashcards.flipHint", {
+              ...tOpts,
+              defaultValue: "Bấm để lật thẻ",
+            }),
           )}
         >
-          {flipped ? (
-            <div>
+          <div
+            className={cn(
+              "relative min-h-[160px] w-full transition-transform duration-500 [transform-style:preserve-3d]",
+              flipped && "[transform:rotateY(180deg)]",
+            )}
+          >
+            {/* Front face */}
+            <div
+              className={cn(
+                "absolute inset-0 flex flex-col rounded-xl border border-border bg-surface-base p-6",
+                "[backface-visibility:hidden]",
+              )}
+            >
               <p className="mb-2 text-[11px] uppercase tracking-wide text-foreground-muted">
-                {t("detail.learn.flashcards.backLabel", { defaultValue: "Đáp án" })}
+                {t("detail.learn.flashcards.frontLabel", {
+                  ...tOpts,
+                  defaultValue: "Câu hỏi",
+                })}
+              </p>
+              <p className="whitespace-pre-wrap text-[15px] leading-[1.65] text-foreground">
+                {card.front}
+              </p>
+              <p className="mt-auto pt-3 text-[11px] text-foreground-muted">
+                {t("detail.learn.flashcards.flipHint", {
+                  ...tOpts,
+                  defaultValue: "Bấm để lật thẻ",
+                })}
+              </p>
+            </div>
+
+            {/* Back face */}
+            <div
+              className={cn(
+                "absolute inset-0 flex flex-col rounded-xl border border-primary/40 bg-surface-base p-6",
+                "[backface-visibility:hidden] [transform:rotateY(180deg)]",
+              )}
+            >
+              <p className="mb-2 text-[11px] uppercase tracking-wide text-foreground-muted">
+                {t("detail.learn.flashcards.backLabel", {
+                  ...tOpts,
+                  defaultValue: "Đáp án",
+                })}
               </p>
               <p className="whitespace-pre-wrap text-[15px] leading-[1.65] text-foreground">
                 {card.back}
               </p>
             </div>
-          ) : (
-            <div>
-              <p className="mb-2 text-[11px] uppercase tracking-wide text-foreground-muted">
-                {t("detail.learn.flashcards.frontLabel", { defaultValue: "Câu hỏi" })}
-              </p>
-              <p className="whitespace-pre-wrap text-[15px] leading-[1.65] text-foreground">
-                {card.front}
-              </p>
-              <p className="mt-3 text-[11px] text-foreground-muted">
-                {t("detail.learn.flashcards.flipHint", { defaultValue: "Bấm để lật thẻ" })}
-              </p>
-            </div>
-          )}
+          </div>
         </button>
+
         <div className="mt-4 grid grid-cols-3 gap-2">
           <Button
             variant="outline"
@@ -190,7 +226,7 @@ export function FlashcardDeckCard({ lessonId, courseId, completed, locale }: Pro
             disabled={!flipped}
             onClick={() => void handleAnswer("again")}
           >
-            {t("detail.learn.flashcards.again", { defaultValue: "Lại" })}
+            {t("detail.learn.flashcards.again", { ...tOpts, defaultValue: "Lại" })}
           </Button>
           <Button
             variant="outline"
@@ -198,14 +234,14 @@ export function FlashcardDeckCard({ lessonId, courseId, completed, locale }: Pro
             disabled={!flipped}
             onClick={() => void handleAnswer("good")}
           >
-            {t("detail.learn.flashcards.good", { defaultValue: "Tốt" })}
+            {t("detail.learn.flashcards.good", { ...tOpts, defaultValue: "Tốt" })}
           </Button>
           <Button
             size="sm"
             disabled={!flipped}
             onClick={() => void handleAnswer("easy")}
           >
-            {t("detail.learn.flashcards.easy", { defaultValue: "Dễ" })}
+            {t("detail.learn.flashcards.easy", { ...tOpts, defaultValue: "Dễ" })}
           </Button>
         </div>
       </div>
