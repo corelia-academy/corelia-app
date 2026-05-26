@@ -98,6 +98,29 @@ AS $$
   WHERE p.id = p_project_id;
 $$;
 
+CREATE OR REPLACE FUNCTION private.hackathon_activity_payload(
+  p_hackathon_id text,
+  p_extra jsonb DEFAULT '{}'::jsonb
+)
+RETURNS jsonb
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public, private
+AS $$
+  SELECT COALESCE(
+    (
+      SELECT p_extra || jsonb_build_object(
+        'hackathon_slug', NULLIF(trim(h.document->>'slug'), ''),
+        'hackathon_title', COALESCE(NULLIF(trim(h.document->>'title'), ''), h.id)
+      )
+      FROM public.hackathons h
+      WHERE h.id = p_hackathon_id
+    ),
+    p_extra
+  );
+$$;
+
 CREATE OR REPLACE FUNCTION private.emit_activity_on_enrollment_insert()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -203,7 +226,10 @@ BEGIN
     NEW.hackathon_id,
     'user',
     NEW.user_id::text,
-    jsonb_build_object('registration_id', NEW.id),
+    private.hackathon_activity_payload(
+      NEW.hackathon_id,
+      jsonb_build_object('registration_id', NEW.id)
+    ),
     'public'
   );
   RETURN NEW;
@@ -230,7 +256,10 @@ BEGIN
     NEW.hackathon_id,
     'user',
     NEW.user_id::text,
-    jsonb_build_object('submission_id', NEW.id),
+    private.hackathon_activity_payload(
+      NEW.hackathon_id,
+      jsonb_build_object('submission_id', NEW.id)
+    ),
     'public'
   );
   RETURN NEW;
@@ -273,7 +302,10 @@ BEGIN
         NEW.id,
         NULL,
         NULL,
-        jsonb_build_object('old_status', OLD.status, 'new_status', NEW.status),
+        private.hackathon_activity_payload(
+          NEW.id,
+          jsonb_build_object('old_status', OLD.status, 'new_status', NEW.status)
+        ),
         'public'
       );
     END IF;
@@ -392,7 +424,12 @@ BEGIN
       'course_id', NEW.course_id,
       'hackathon_id', NEW.hackathon_id,
       'oc_credential_id', NEW.oc_credential_id
-    ),
+    ) ||
+    CASE
+      WHEN NEW.hackathon_id IS NOT NULL
+        THEN private.hackathon_activity_payload(NEW.hackathon_id)
+      ELSE '{}'::jsonb
+    END,
     'public'
   );
 

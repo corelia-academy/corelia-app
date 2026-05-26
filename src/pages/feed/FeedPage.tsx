@@ -35,7 +35,10 @@ function objectHref(event: ActivityEvent): string | null {
   const id = event.target_id ?? event.object_id;
   if (!id) return null;
   if (type === "course") return `/courses/${id}`;
-  if (type === "hackathon") return `/hackathons/${id}`;
+  if (type === "hackathon") {
+    const slug = payloadText(event.payload, ["hackathon_slug", "slug"]);
+    return `/hackathons/${slug ?? id}`;
+  }
   if (type === "project") return `/projects/${id}`;
   if (type === "user") return `/u/${id}`;
   return null;
