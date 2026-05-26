@@ -365,12 +365,36 @@ function extractKnowledgeTerms(
   ).slice(0, 10);
 }
 
+async function fetchUserSeenLessonIds(
+  db: SupabaseClient,
+  userId: string,
+  courseId: string | null,
+): Promise<Set<string>> {
+  let query = db
+    .from("lesson_progress")
+    .select("lesson_id")
+    .eq("user_id", userId)
+    .limit(500);
+  if (courseId) query = query.eq("course_id", courseId);
+  const { data, error } = await query;
+  if (error) {
+    console.warn("[ai-tutor] fetchUserSeenLessonIds failed", error.message);
+    return new Set();
+  }
+  return new Set(
+    (data ?? [])
+      .map((r) => (typeof r.lesson_id === "string" ? r.lesson_id : String(r.lesson_id ?? "")))
+      .filter(Boolean),
+  );
+}
+
 function scoreKnowledgeChunk(
   chunk: KnowledgeChunkRow,
   searchTerms: string[],
   preferredTrack: string | null,
   contextType: BackendContextType,
   contextData: Record<string, unknown>,
+  seenLessonIds: Set<string>,
 ): number {
   const haystack = [
     chunk.topic,
@@ -399,12 +423,22 @@ function scoreKnowledgeChunk(
   }
 
   const metadata = chunk.metadata ?? {};
+  const chunkLessonId =
+    typeof metadata.lessonId === "string" ? (metadata.lessonId as string) : null;
   if (contextType === "lesson" || contextType === "course") {
     const lessonId = typeof contextData.lessonId === "string" ? contextData.lessonId : null;
     const courseId = typeof contextData.courseId === "string" ? contextData.courseId : null;
     if (lessonId && metadata.lessonId === lessonId) score += 24;
     if (courseId && metadata.courseId === courseId) score += 14;
     if (chunk.content_category === "lesson") score += 3;
+    // Boost chunks from OTHER lessons the learner has actually visited (RAG memory across lessons).
+    if (
+      chunkLessonId &&
+      chunkLessonId !== lessonId &&
+      seenLessonIds.has(chunkLessonId)
+    ) {
+      score += 10;
+    }
   }
   if (contextType === "course_discovery" && chunk.content_category === "course_catalog") {
     score += 5;
@@ -559,9 +593,24 @@ async function retrieveKnowledgeChunks(
   message: string,
   contextType: BackendContextType,
   contextData: Record<string, unknown>,
+  seenLessonIds: Set<string>,
 ): Promise<KnowledgeChunkRow[]> {
   const categories = knowledgeCategoriesForContext(contextType);
   if (categories.length === 0) return [];
+
+  const currentLessonId =
+    typeof contextData.lessonId === "string" ? contextData.lessonId : null;
+  // For lesson/course contexts, only surface lesson-category chunks the learner
+  // has actually visited (plus the current lesson). Other categories are unaffected.
+  const allowLessonChunk = (chunk: KnowledgeChunkRow): boolean => {
+    if (chunk.content_category !== "lesson") return true;
+    if (contextType !== "lesson" && contextType !== "course") return true;
+    const meta = chunk.metadata ?? {};
+    const lessonId = typeof meta.lessonId === "string" ? (meta.lessonId as string) : null;
+    if (!lessonId) return true; // legacy chunk without metadata — let it through
+    if (lessonId === currentLessonId) return true;
+    return seenLessonIds.has(lessonId);
+  };
 
   const preferredLocale = detectPreferredLanguage(message);
   const fallbackLocale: "vi" | "en" = preferredLocale === "vi" ? "en" : "vi";
@@ -603,10 +652,18 @@ async function retrieveKnowledgeChunks(
     ...vectorFallback,
     ...keywordFallback,
   ])
+    .filter(allowLessonChunk)
     .map((chunk) => ({
       ...chunk,
-      score: scoreKnowledgeChunk(chunk, searchTerms, preferredTrack, contextType, contextData) +
-        (typeof chunk.similarity === "number" ? chunk.similarity * 12 : 0),
+      score:
+        scoreKnowledgeChunk(
+          chunk,
+          searchTerms,
+          preferredTrack,
+          contextType,
+          contextData,
+          seenLessonIds,
+        ) + (typeof chunk.similarity === "number" ? chunk.similarity * 12 : 0),
     }))
     .sort((a, b) => b.score - a.score)
     .filter((chunk) => chunk.score > 0 || searchTerms.length === 0)
@@ -1265,11 +1322,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .single<{ id: string }>();
     if (placeholderError || !placeholder?.id) throw new Error(placeholderError?.message ?? "Could not create placeholder");
 
+    const seenLessonIds = await fetchUserSeenLessonIds(db, user.id, body.courseId);
     const knowledgeChunks = await retrieveKnowledgeChunks(
       db,
       body.message,
       contextType,
       contextData,
+      seenLessonIds,
     );
     const complexity = classifyComplexity(body.message, contextType, contextData);
     const sourceRefs = buildSourceRefs(knowledgeChunks);
