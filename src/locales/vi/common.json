@@ -54,6 +54,7 @@
   },
   "header": {
     "publicProfile": "Hồ sơ công khai",
+    "feedAria": "Mở feed hoạt động",
     "notifications": "Thông báo",
     "notificationsAria": "Mở thông báo",
     "noNotifications": "Chưa có thông báo.",

@@ -54,6 +54,7 @@
   },
   "header": {
     "publicProfile": "Public profile",
+    "feedAria": "Open activity feed",
     "notifications": "Notifications",
     "notificationsAria": "Open notifications",
     "noNotifications": "No notifications yet.",

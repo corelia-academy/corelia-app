@@ -16,6 +16,7 @@ import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
 import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
+import { FeedUnreadButton } from "@/components/layouts/FeedUnreadButton";
 import { NotificationBell } from "@/components/layouts/NotificationBell";
 import { useTheme } from "next-themes";
 import {
@@ -580,6 +581,7 @@ export default function Header() {
             <div className="h-9 w-28 animate-pulse rounded-full bg-surface-raised md:h-10" />
           ) : isAuthenticated ? (
             <div className="flex items-center gap-3">
+              <FeedUnreadButton />
               <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger

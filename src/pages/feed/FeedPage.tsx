@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getFeed } from "@/lib/feed";
+import { markFeedRead } from "@/lib/feedUnread";
 import { listFollowing } from "@/lib/follows";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -362,7 +363,10 @@ export default function FeedPage() {
           const seen = new Set(current.map((event) => event.id));
           return [...current, ...nextEvents.filter((event) => !seen.has(event.id))];
         });
-        if (!append) setHasNewEvents(false);
+        if (!append) {
+          if (user?.id) markFeedRead(user.id, nextEvents[0]?.created_at ?? new Date().toISOString());
+          setHasNewEvents(false);
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : t("errors.load"));
       } finally {
@@ -370,7 +374,7 @@ export default function FeedPage() {
         setLoadingMore(false);
       }
     },
-    [loadActors, refreshFollowedSubjects, t],
+    [loadActors, refreshFollowedSubjects, t, user?.id],
   );
 
   useEffect(() => {
