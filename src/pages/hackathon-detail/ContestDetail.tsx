@@ -2,6 +2,7 @@ import { ChevronRight, Settings } from "lucide-react";
 import { Link } from "react-router";
 import type { Contest } from "@/types/hackathons";
 import { Button } from "@/components/ui/button";
+import { FollowButton } from "@/components/social/FollowButton";
 import { ContestDetailDeleteContestDialog } from "@/pages/hackathon-detail/components/ContestDetailDeleteContestDialog";
 import {
   ContestDetailErrorCard,
@@ -88,7 +89,7 @@ export default function ContestDetail({
       <ContestDetailMainLayout
         aboveHero={
           !vm.isManageView ? (
-            <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <nav
                 aria-label="Breadcrumb"
                 className="flex items-center gap-1 text-xs text-foreground-muted"
@@ -101,6 +102,12 @@ export default function ContestDetail({
                   {vm.contest.title}
                 </span>
               </nav>
+              <FollowButton
+                subject={{ type: "hackathon", id: vm.contest.id }}
+                followerCount={vm.contest.follower_count ?? 0}
+                size="sm"
+                className="self-start sm:self-auto"
+              />
             </div>
           ) : null
         }

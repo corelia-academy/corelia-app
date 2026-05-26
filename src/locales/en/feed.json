@@ -1,0 +1,55 @@
+{
+  "eyebrow": "Activity",
+  "title": "Feed",
+  "description": "Follow activity from people, courses, hackathons, and projects you care about.",
+  "actions": {
+    "refresh": "Refresh",
+    "retry": "Try again",
+    "showNew": "New activity available",
+    "loadMore": "Load more"
+  },
+  "empty": {
+    "title": "No activity yet",
+    "description": "Follow public profiles, courses, hackathons, or projects to start building your feed."
+  },
+  "errors": {
+    "title": "Could not load feed",
+    "load": "Could not load activity.",
+    "check": "Could not check follow state.",
+    "save": "Could not update follow state."
+  },
+  "follow": {
+    "follow": "Follow",
+    "following": "Following",
+    "errors": {
+      "check": "Could not check follow state.",
+      "save": "Could not update follow state."
+    }
+  },
+  "item": {
+    "open": "Open"
+  },
+  "objects": {
+    "course": "course",
+    "hackathon": "hackathon",
+    "project": "project",
+    "user": "profile",
+    "credential": "credential"
+  },
+  "verbs": {
+    "fallback": "{{actor}} has new activity on {{object}}.",
+    "user_enrolled_course": "{{actor}} enrolled in {{object}}.",
+    "user_completed_section": "{{actor}} completed a lesson in {{object}}.",
+    "user_completed_course": "{{actor}} completed {{object}}.",
+    "user_earned_credential": "{{actor}} earned credential {{object}}.",
+    "user_registered_hackathon": "{{actor}} registered for {{object}}.",
+    "user_submitted_hackathon": "{{actor}} submitted to {{object}}.",
+    "hackathon_status_changed": "{{object}} changed status.",
+    "user_published_project": "{{actor}} published {{object}}.",
+    "user_joined_project": "{{actor}} joined {{object}}.",
+    "user_followed_user": "{{actor}} followed a profile.",
+    "user_followed_course": "{{actor}} followed {{object}}.",
+    "user_followed_hackathon": "{{actor}} followed {{object}}.",
+    "user_followed_project": "{{actor}} followed {{object}}."
+  }
+}

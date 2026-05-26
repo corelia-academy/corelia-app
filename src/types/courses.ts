@@ -127,6 +127,7 @@ export interface Course {
   /** Tổng thời lượng ước tính (giây) */
   total_duration_seconds: number;
   published: boolean;
+  follower_count?: number;
   created_at: string;
   updated_at: string;
   /** Cấu hình đa ngôn ngữ cho nội dung khoá (không ảnh hưởng progress) */

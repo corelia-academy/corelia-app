@@ -4,6 +4,7 @@ import { ExternalLink, ShieldAlert, User } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { FollowButton } from "@/components/social/FollowButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/stores/authStore";
 import { getRoleLabel } from "@/types/database";
@@ -120,6 +121,13 @@ export default function UserProfileLayout() {
                     {t("userProfile.actions.editProfile")}
                   </Button>
                 </NavLink>
+              ) : null}
+              {!loading && profile && !isSelf && profile.profile_public ? (
+                <FollowButton
+                  subject={{ type: "user", id: profile.id }}
+                  followerCount={profile.follower_count ?? 0}
+                  size="lg"
+                />
               ) : null}
             </div>
           </div>

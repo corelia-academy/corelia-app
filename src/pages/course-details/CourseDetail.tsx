@@ -33,6 +33,7 @@ import { CourseCoInstructorsSection } from "./components/CourseCoInstructorsSect
 import { useInstructorProfile } from "./hooks/useInstructorProfile";
 import { useCoraStore } from "@/stores/coraStore";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { FollowButton } from "@/components/social/FollowButton";
 
 export default function CourseDetail() {
   const { t } = useTranslation("courses");
@@ -262,6 +263,15 @@ export default function CourseDetail() {
         displayTotalDuration={displayTotalDuration}
         curriculumCountLabel={curriculumCountLabel}
       />
+
+      {course.published && courseLoad.resolvedCourseId ? (
+        <div className="mt-4 flex justify-end">
+          <FollowButton
+            subject={{ type: "course", id: courseLoad.resolvedCourseId }}
+            followerCount={course.follower_count ?? 0}
+          />
+        </div>
+      ) : null}
 
       <div className="mt-6 space-y-4 lg:hidden">
         <CourseAccessPanel

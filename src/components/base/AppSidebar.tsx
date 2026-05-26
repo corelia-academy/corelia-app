@@ -5,6 +5,7 @@ import {
   GraduationCap,
   Home,
   Package,
+  Rss,
   Settings,
   Trophy,
 } from "lucide-react";
@@ -28,6 +29,7 @@ import { ROLE_GROUPS } from "@/config/roles";
 
 const primaryNav = [
   { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
+  { labelKey: "nav.feed" as const, href: "/feed", icon: Rss },
   { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
   { labelKey: "nav.career" as const, href: "/career", icon: Briefcase },
   { labelKey: "nav.contests" as const, href: "/hackathons", icon: Trophy },
