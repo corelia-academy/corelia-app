@@ -295,6 +295,23 @@
         "error": "Cora chưa thể tóm tắt bài học lúc này.",
         "retry": "Thử lại"
       },
+      "readinessCheck": {
+        "title": "Kiểm tra sẵn sàng",
+        "subtitle": "Cora hỏi nhanh {{count}} câu về kiến thức nền trước khi bắt đầu.",
+        "startAction": "Bắt đầu kiểm tra",
+        "skipAction": "Bỏ qua",
+        "generating": "Cora đang chuẩn bị câu hỏi…",
+        "questionCounter": "Câu {{current}}/{{total}}",
+        "nextAction": "Tiếp",
+        "submitAction": "Nộp bài",
+        "passedTitle": "Sẵn sàng! 🎯",
+        "passedSubtitle": "Bạn nắm vững kiến thức nền cho bài này.",
+        "passedAction": "Bắt đầu học",
+        "failedTitle": "Nên ôn lại trước",
+        "failedSubtitle": "Cora gợi ý bạn xem lại những bài này:",
+        "failedAction": "Vẫn vào học",
+        "retryAction": "Làm lại"
+      },
       "flashcards": {
         "title": "Flashcards",
         "subtitle": "Củng cố trí nhớ bằng thẻ ghi nhớ",
