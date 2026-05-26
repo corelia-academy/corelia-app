@@ -8,6 +8,12 @@ const GlobalCoraAssistant = lazy(() =>
   })),
 );
 
+const ExplainSelectionButton = lazy(() =>
+  import("@/components/course-ai/ExplainSelectionButton").then((m) => ({
+    default: m.ExplainSelectionButton,
+  })),
+);
+
 export default function LearnLayout() {
   const setSidebarOpen = useCoraStore((s) => s.setSidebarOpen);
 
@@ -23,6 +29,9 @@ export default function LearnLayout() {
       </div>
       <Suspense fallback={null}>
         <GlobalCoraAssistant />
+      </Suspense>
+      <Suspense fallback={null}>
+        <ExplainSelectionButton />
       </Suspense>
     </div>
   );

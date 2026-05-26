@@ -260,6 +260,7 @@
     "errors": {
       "avatarUploadFailed": "Unable to upload image.",
       "updateFailed": "Unable to update information.",
+      "usernameTaken": "This username is already taken. Please choose a different one.",
       "loadFailed": "Could not load your profile. Please check your connection."
     },
     "retry": "Try again"
@@ -334,6 +335,20 @@
       "website": {
         "label": "Website / LinkedIn / portfolio",
         "placeholder": "https://..., linkedin.com/in/..., personal portfolio"
+      }
+    },
+    "socialLinks": {
+      "title": "Social media & links",
+      "subtitle": "Add your social media accounts or links to display on course pages.",
+      "empty": "No links added yet. Add your first link below.",
+      "addTitle": "Add new link",
+      "urlPlaceholder": "https://...",
+      "labelPlaceholder": "Optional label (e.g. Personal blog)",
+      "addButton": "Add",
+      "removeLabel": "Remove link",
+      "errors": {
+        "urlRequired": "Please enter a URL.",
+        "urlInvalid": "URL must start with https:// or http://"
       }
     },
     "actions": {

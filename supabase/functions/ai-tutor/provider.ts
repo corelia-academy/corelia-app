@@ -3,9 +3,13 @@ import { parseSseStream } from "./lib/sse.ts";
 
 export type ProviderName = "openai";
 
+export type AIContentPart =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string; detail?: "low" | "high" | "auto" } };
+
 export type AIMessage = {
   role: "system" | "user" | "assistant";
-  content: string;
+  content: string | AIContentPart[];
 };
 
 export type AIProviderRequest = {

@@ -260,6 +260,7 @@
     "errors": {
       "avatarUploadFailed": "Không thể tải ảnh lên.",
       "updateFailed": "Không thể cập nhật thông tin.",
+      "usernameTaken": "Username này đã được sử dụng. Vui lòng chọn username khác.",
       "loadFailed": "Không thể tải thông tin tài khoản. Kiểm tra kết nối và thử lại."
     },
     "retry": "Thử lại"
@@ -334,6 +335,20 @@
       "website": {
         "label": "Website / LinkedIn / portfolio",
         "placeholder": "https://..., linkedin.com/in/..., portfolio cá nhân"
+      }
+    },
+    "socialLinks": {
+      "title": "Mạng xã hội & links",
+      "subtitle": "Thêm các tài khoản mạng xã hội hoặc link để hiển thị trên trang khoá học.",
+      "empty": "Chưa có link nào. Thêm link đầu tiên bên dưới.",
+      "addTitle": "Thêm link mới",
+      "urlPlaceholder": "https://...",
+      "labelPlaceholder": "Nhãn tuỳ chọn (ví dụ: Blog cá nhân)",
+      "addButton": "Thêm",
+      "removeLabel": "Xoá link",
+      "errors": {
+        "urlRequired": "Vui lòng nhập URL.",
+        "urlInvalid": "URL phải bắt đầu bằng https:// hoặc http://"
       }
     },
     "actions": {

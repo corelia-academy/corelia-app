@@ -18,6 +18,7 @@ import { ContestDetailProvider } from "@/pages/hackathon-detail/ContestDetailCon
 import { useContestDetail } from "@/pages/hackathon-detail/hooks/useContestDetail";
 import { narrowContestDetailView } from "@/pages/hackathon-detail/viewModel";
 import { shouldShowParticipantRail } from "@/pages/hackathon-detail/utils/contestLifecycle";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function ContestDetail({
   forceManageView,
@@ -33,6 +34,13 @@ export default function ContestDetail({
     forceManageView,
     prefetchedContest,
     onContestSynced,
+  });
+
+  usePageMeta({
+    title: ctx.contest?.title ?? undefined,
+    description: ctx.contest?.description ?? undefined,
+    image: ctx.contest?.cover_image_url ?? ctx.contest?.thumbnail_url ?? undefined,
+    url: window.location.href,
   });
 
   if (ctx.loading) {

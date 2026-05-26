@@ -15,7 +15,7 @@ export function ExploreCoursesSection({
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-medium text-foreground">{t("home.sections.exploreTitle")}</h2>
+        <h2 className="text-[18px] font-semibold text-foreground">{t("home.sections.exploreTitle")}</h2>
         <Button
           render={<NavLink to="/courses" />}
           nativeButton={false}

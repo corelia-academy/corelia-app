@@ -40,6 +40,7 @@ const ContestNew = lazy(() => import("@/pages/hackathon-detail/ContestNew"));
 const ContestPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
 const ContestPublicPage = lazy(() => import("@/pages/hackathon-detail/ContestPublicPage"));
 const Projects = lazy(() => import("@/pages/projects"));
+const ProjectDetail = lazy(() => import("@/pages/projects/ProjectDetailPage"));
 const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
 const SearchPage = lazy(() => import("@/pages/search"));
 import { ContestManageIndexRedirect } from "@/pages/hackathon-detail/ContestManageIndexRedirect";
@@ -394,6 +395,14 @@ export default function App() {
                 element={
                   <Suspense fallback={<PageFallback />}>
                     <Projects />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="projects/:id"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <ProjectDetail />
                   </Suspense>
                 }
               />

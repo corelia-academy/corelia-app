@@ -37,13 +37,15 @@ function LessonRow({
           {lesson.title}
         </p>
         {lesson.short_description?.trim() ? (
-          <p className="mt-1 line-clamp-2 text-xs text-foreground-muted">
+          <p className="mt-1 line-clamp-2 text-[13px] text-foreground-muted">
             {lesson.short_description}
           </p>
         ) : null}
-        <p className="mt-0.5 text-xs text-foreground-muted">
-          {formatDuration(lesson.duration_seconds)}
-        </p>
+        {lesson.duration_seconds > 0 ? (
+          <p className="mt-0.5 text-[13px] text-foreground-muted">
+            {formatDuration(lesson.duration_seconds)}
+          </p>
+        ) : null}
       </div>
       {isPaidUpfront && lesson.is_preview_free ? (
         <CourseBadge className="mt-0.5 sm:mt-0" variant="success">
@@ -83,11 +85,11 @@ export function CourseCurriculum({
     <section className="mt-8">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+          <h2 className="flex items-center gap-2 text-[18px] font-semibold text-foreground">
             <BookOpen className="size-5 shrink-0" aria-hidden />{" "}
             {translate("detail.courseDetail.curriculum.title")}
           </h2>
-          <p className="mt-1 text-sm text-foreground-muted">
+          <p className="mt-1 text-[13px] text-foreground-muted">
             {isPreviewOnlyCurriculum
               ? translate(
                   "detail.courseDetail.curriculum.previewDescription",
@@ -155,7 +157,7 @@ export function CourseCurriculum({
                   className="flex w-full flex-col gap-2 border-b border-border-subtle bg-surface-raised px-4 py-3 text-left transition-colors duration-150 hover:bg-surface-overlay sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-foreground-muted">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
                       {translate("detail.courseDetail.sectionLabel", {
                         index: sectionIndex + 1,
                       })}

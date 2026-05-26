@@ -6,13 +6,48 @@ import {
   FilePenLine,
   GraduationCap,
   Link2,
+  Plus,
   ShieldCheck,
+  Trash2,
+  Globe,
+  Github,
+  Linkedin,
+  Twitter,
+  Youtube,
+  Facebook,
+  Instagram,
 } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
 import { updateProfileForUser } from "@/lib/profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { InstructorSocialLink, InstructorSocialPlatform } from "@/types/database";
+
+const SOCIAL_PLATFORMS: { value: InstructorSocialPlatform; label: string }[] = [
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "github", label: "GitHub" },
+  { value: "twitter", label: "Twitter / X" },
+  { value: "youtube", label: "YouTube" },
+  { value: "facebook", label: "Facebook" },
+  { value: "instagram", label: "Instagram" },
+  { value: "tiktok", label: "TikTok" },
+  { value: "website", label: "Website" },
+  { value: "other", label: "Khác" },
+];
+
+function SocialPlatformIcon({ platform }: { platform: InstructorSocialPlatform }) {
+  const cls = "size-4 shrink-0";
+  switch (platform) {
+    case "github": return <Github className={cls} aria-hidden />;
+    case "linkedin": return <Linkedin className={cls} aria-hidden />;
+    case "twitter": return <Twitter className={cls} aria-hidden />;
+    case "youtube": return <Youtube className={cls} aria-hidden />;
+    case "facebook": return <Facebook className={cls} aria-hidden />;
+    case "instagram": return <Instagram className={cls} aria-hidden />;
+    default: return <Globe className={cls} aria-hidden />;
+  }
+}
 
 function InstructorProfileSection() {
   const { t } = useTranslation("account");
@@ -23,6 +58,13 @@ function InstructorProfileSection() {
     profile?.instructor_organization ?? "",
   );
   const [website, setWebsite] = useState(profile?.instructor_website ?? "");
+  const [socialLinks, setSocialLinks] = useState<InstructorSocialLink[]>(
+    profile?.instructor_social_links ?? [],
+  );
+  const [newPlatform, setNewPlatform] = useState<InstructorSocialPlatform>("linkedin");
+  const [newUrl, setNewUrl] = useState("");
+  const [newLabel, setNewLabel] = useState("");
+  const [addError, setAddError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -45,6 +87,29 @@ function InstructorProfileSection() {
     );
   }
 
+  function handleAddLink() {
+    setAddError(null);
+    const url = newUrl.trim();
+    if (!url) {
+      setAddError(t("instructorProfile.socialLinks.errors.urlRequired"));
+      return;
+    }
+    if (!/^https?:\/\/.+/.test(url)) {
+      setAddError(t("instructorProfile.socialLinks.errors.urlInvalid"));
+      return;
+    }
+    setSocialLinks((prev) => [
+      ...prev,
+      { platform: newPlatform, url, label: newLabel.trim() || null },
+    ]);
+    setNewUrl("");
+    setNewLabel("");
+  }
+
+  function handleRemoveLink(idx: number) {
+    setSocialLinks((prev) => prev.filter((_, i) => i !== idx));
+  }
+
   async function onSubmitInstructorProfile(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -57,6 +122,7 @@ function InstructorProfileSection() {
         instructor_bio: bio || null,
         instructor_organization: organization || null,
         instructor_website: website || null,
+        instructor_social_links: socialLinks.length > 0 ? socialLinks : null,
       });
       await refreshProfile(user);
       setSuccess(t("instructorProfile.success.updated"));
@@ -75,10 +141,14 @@ function InstructorProfileSection() {
       : profile.instructor_origin === "external"
         ? t("instructorProfile.origin.external")
         : t("instructorProfile.origin.unknown");
-  const completedFields = [headline, bio, organization, website].filter((value) =>
-    value.trim(),
-  ).length;
-  const completionPercent = Math.round((completedFields / 4) * 100);
+  const completedFields = [
+    headline.trim(),
+    bio.trim(),
+    organization.trim(),
+    website.trim(),
+    socialLinks.length > 0 ? "1" : "",
+  ].filter(Boolean).length;
+  const completionPercent = Math.round((completedFields / 5) * 100);
 
   return (
     <form
@@ -228,6 +298,91 @@ function InstructorProfileSection() {
           onChange={(e) => setWebsite(e.target.value)}
           placeholder={t("instructorProfile.fields.website.placeholder")}
         />
+      </div>
+
+      {/* Social links */}
+      <div className="space-y-3">
+        <div>
+          <p className="text-sm font-medium text-foreground">
+            {t("instructorProfile.socialLinks.title")}
+          </p>
+          <p className="mt-0.5 text-xs text-foreground-muted">
+            {t("instructorProfile.socialLinks.subtitle")}
+          </p>
+        </div>
+
+        {/* Existing links */}
+        {socialLinks.length > 0 ? (
+          <ul className="space-y-2">
+            {socialLinks.map((link, idx) => {
+              const platformMeta = SOCIAL_PLATFORMS.find((p) => p.value === link.platform);
+              const displayLabel = link.label?.trim() || platformMeta?.label || link.platform;
+              return (
+                <li
+                  key={idx}
+                  className="flex items-center gap-3 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm"
+                >
+                  <SocialPlatformIcon platform={link.platform} />
+                  <span className="min-w-0 flex-1">
+                    <span className="font-medium text-foreground">{displayLabel}</span>
+                    <span className="ml-2 truncate text-foreground-muted">{link.url}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveLink(idx)}
+                    className="ml-auto shrink-0 rounded p-1 text-foreground-muted transition-colors hover:bg-destructive/10 hover:text-destructive"
+                    aria-label={t("instructorProfile.socialLinks.removeLabel")}
+                  >
+                    <Trash2 className="size-3.5" aria-hidden />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-xs text-foreground-muted italic">
+            {t("instructorProfile.socialLinks.empty")}
+          </p>
+        )}
+
+        {/* Add link row */}
+        <div className="rounded-lg border border-border-subtle bg-surface-base p-3 space-y-2">
+          <p className="text-xs font-medium text-foreground-muted uppercase tracking-wide">
+            {t("instructorProfile.socialLinks.addTitle")}
+          </p>
+          <div className="grid gap-2 sm:grid-cols-[160px_1fr_1fr_auto]">
+            <select
+              value={newPlatform}
+              onChange={(e) => setNewPlatform(e.target.value as InstructorSocialPlatform)}
+              className="rounded border border-border bg-surface-base px-3 py-2 text-sm text-foreground outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+            >
+              {SOCIAL_PLATFORMS.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            <Input
+              value={newUrl}
+              onChange={(e) => setNewUrl(e.target.value)}
+              placeholder={t("instructorProfile.socialLinks.urlPlaceholder")}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddLink(); }}}
+            />
+            <Input
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              placeholder={t("instructorProfile.socialLinks.labelPlaceholder")}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddLink(); }}}
+            />
+            <Button type="button" variant="outline" size="sm" onClick={handleAddLink}>
+              <Plus className="size-4" aria-hidden />
+              <span className="sr-only">{t("instructorProfile.socialLinks.addButton")}</span>
+            </Button>
+          </div>
+          {addError ? (
+            <p className="text-xs text-destructive">{addError}</p>
+          ) : null}
+        </div>
       </div>
 
       {error ? (

@@ -10,6 +10,13 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/authStore";
 import { useCoraStore } from "@/stores/coraStore";
 
+export type CoraMessageAttachment = {
+  kind: "image";
+  url: string;
+  path?: string;
+  mime?: string;
+};
+
 export type CoraMessage = {
   id: string;
   role: "user" | "assistant";
@@ -17,6 +24,7 @@ export type CoraMessage = {
   createdAt: string;
   cached?: boolean;
   sources?: CoraSourceRef[];
+  attachments?: CoraMessageAttachment[];
 };
 
 export type CoraSourceRef = {
@@ -108,6 +116,7 @@ type ConversationRow = {
   session_id?: string | null;
   cached?: boolean | null;
   sources?: CoraSourceRef[] | null;
+  attachments?: unknown;
 };
 
 type SendMessageResponse = {
@@ -201,6 +210,25 @@ async function consumeEventStream(
 
 function makeTempId() {
   return `temp-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function normalizeAttachments(input: unknown): CoraMessageAttachment[] | undefined {
+  if (!Array.isArray(input) || input.length === 0) return undefined;
+  const out: CoraMessageAttachment[] = [];
+  for (const item of input) {
+    if (!item || typeof item !== "object") continue;
+    const raw = item as Record<string, unknown>;
+    if (raw.kind !== "image") continue;
+    const url = typeof raw.url === "string" ? raw.url : "";
+    if (!url) continue;
+    out.push({
+      kind: "image",
+      url,
+      path: typeof raw.path === "string" ? raw.path : undefined,
+      mime: typeof raw.mime === "string" ? raw.mime : undefined,
+    });
+  }
+  return out.length > 0 ? out : undefined;
 }
 
 function normalizeSources(input: unknown): CoraSourceRef[] | undefined {
@@ -381,7 +409,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
 
     let query = supabase
       .from("ai_conversations")
-      .select("id,role,content,created_at,session_id,cached,sources")
+      .select("id,role,content,created_at,session_id,cached,sources,attachments")
       .eq("user_id", user?.id ?? "")
       .order("created_at", { ascending: true });
     query =
@@ -399,6 +427,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
         createdAt: row.created_at,
         cached: Boolean(row.cached),
         sources: normalizeSources(row.sources),
+        attachments: normalizeAttachments(row.attachments),
       })),
     );
   }, [backendContext, isAuthenticated, options.lessonId, sessionId, user?.id]);
@@ -453,9 +482,17 @@ export function useCoraAI(options: UseCoraAIOptions) {
   }, [loadLearningMemory]);
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (
+      text: string,
+      extras?: {
+        action?: "chat" | "explain_selected_text";
+        selectedText?: string;
+        attachments?: CoraMessageAttachment[];
+      },
+    ) => {
       const trimmed = text.trim();
-      if (!trimmed) return;
+      const attachments = extras?.attachments?.filter((a) => a.url) ?? [];
+      if (!trimmed && attachments.length === 0) return;
       if (!isAuthenticated) {
         setError({ type: "auth", message: "Bạn cần đăng nhập để dùng Cora AI." });
         return;
@@ -470,6 +507,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
         role: "user",
         content: trimmed,
         createdAt: new Date().toISOString(),
+        attachments: attachments.length > 0 ? attachments : undefined,
       };
       const tempAssistantId = makeTempId();
       setMessages((current) => [...current, tempUserMessage]);
@@ -494,6 +532,9 @@ export function useCoraAI(options: UseCoraAIOptions) {
           courseId: options.courseId ?? null,
           sessionId: currentSessionId,
           stream: true,
+          ...(extras?.action ? { action: extras.action } : {}),
+          ...(extras?.selectedText ? { selectedText: extras.selectedText } : {}),
+          ...(attachments.length > 0 ? { attachments } : {}),
         });
         const contentType = response.headers.get("content-type") ?? "";
 
@@ -626,6 +667,22 @@ export function useCoraAI(options: UseCoraAIOptions) {
       sessionId,
       syncQuotaInfo,
     ],
+  );
+
+  const explainSelectedText = useCallback(
+    async (selectedText: string, userBubbleLabel?: string) => {
+      const trimmed = selectedText.trim();
+      if (trimmed.length < 4) return;
+      const snippet = trimmed.length > 80 ? `${trimmed.slice(0, 80)}…` : trimmed;
+      const bubble = userBubbleLabel
+        ? userBubbleLabel.replace("{{snippet}}", snippet)
+        : `Giải thích đoạn: "${snippet}"`;
+      await sendMessage(bubble, {
+        action: "explain_selected_text",
+        selectedText: trimmed,
+      });
+    },
+    [sendMessage],
   );
 
   const newSession = useCallback(async () => {
@@ -769,6 +826,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
     loadHistory,
     loadLearningMemory,
     sendMessage,
+    explainSelectedText,
     clearHistory,
     newSession,
     switchSession,

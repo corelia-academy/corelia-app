@@ -37,6 +37,7 @@ import {
   type CurriculumGroup,
 } from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
+import { LessonRecapCard } from "./components/LessonRecapCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
 import { SectionQuiz } from "./components/SectionQuiz";
 import { getSectionQuestions } from "@/lib/sectionQuestions";
@@ -345,6 +346,9 @@ export default function Learn() {
 
   const shouldShowFinalAssignment =
     !nextLesson && hasFullCourseAccess && !!course.final_assignment_title;
+  const shouldShowSectionQuiz =
+    currentLesson?.lesson_format !== "quiz" &&
+    currentLesson?.lesson_format !== "practice";
 
   const curriculumProps = {
     courseId: courseId,
@@ -440,8 +444,17 @@ export default function Learn() {
         courseId={courseId}
       />
 
-      {sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (
+      <LessonRecapCard
+        lessonId={currentLesson?.id ?? null}
+        courseId={courseId ?? null}
+        completed={
+          !!currentLesson && progress.completedIds.has(currentLesson.id)
+        }
+      />
+
+      {shouldShowSectionQuiz && sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (
         <SectionQuiz
+          key={currentLesson.section_id}
           courseId={courseId}
           sectionId={currentLesson.section_id}
           sectionTitle={

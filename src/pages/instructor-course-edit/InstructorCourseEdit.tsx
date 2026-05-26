@@ -124,7 +124,11 @@ import type {
   LessonFormat,
 } from "@/types/courses";
 import { LessonFormatSelector } from "@/components/course/LessonFormatSelector";
-import { getLessonFormat, isLessonDraftForLearners } from "@/lib/lessonFormat";
+import {
+  getLessonFormat,
+  getNextActivityLessonTitle,
+  isLessonDraftForLearners,
+} from "@/lib/lessonFormat";
 import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
@@ -251,6 +255,9 @@ const InstructorCourseEdit = () => {
     Array<{ title: string; url: string }>
   >([]);
   const [newPracticeSourceLessonId, setNewPracticeSourceLessonId] = useState("");
+  const [newPracticeSourceLessonIds, setNewPracticeSourceLessonIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [newLessonFormat, setNewLessonFormat] = useState<LessonFormat>("video");
   type NewQuizQuestionDraft = SectionQuestionData & { _key: string };
   const makeBlankNewQuizQuestion = (): NewQuizQuestionDraft => ({
@@ -334,6 +341,9 @@ const InstructorCourseEdit = () => {
     Array<{ title: string; url: string }>
   >([]);
   const [editingPracticeSourceLessonId, setEditingPracticeSourceLessonId] = useState("");
+  const [editingPracticeSourceLessonIds, setEditingPracticeSourceLessonIds] = useState<Set<string>>(
+    new Set(),
+  );
   const courseFieldRefs = useRef<
     Partial<
       Record<
@@ -395,6 +405,7 @@ const InstructorCourseEdit = () => {
     shortDescription: string; markdown: string;
     resources: Array<{ title: string; url: string }>;
     practiceSourceLessonId: string;
+    practiceSourceLessonIds: string[];
   };
   const sectionDraftRef = useRef<Map<SupportedCourseLocale, SectionDraft>>(new Map());
   const lessonDraftRef = useRef<Map<SupportedCourseLocale, LessonDraft>>(new Map());
@@ -438,37 +449,36 @@ const InstructorCourseEdit = () => {
   const [sponsors, setSponsors] = useState<CourseSponsor[]>([]);
   const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
   const [activeSponsorId, setActiveSponsorId] = useState<string | null>(null);
+  type LocaleContentDraft = { name: string; description: string };
   const [sponsorForm, setSponsorForm] = useState<{
-    name: string;
     website: string;
-    description: string;
     logo_url: string;
     logo_path: string;
+    locale_content: { vi: LocaleContentDraft; en: LocaleContentDraft };
   }>({
-    name: "",
     website: "",
-    description: "",
     logo_url: "",
     logo_path: "",
+    locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
   });
+  const [sponsorDialogLocale, setSponsorDialogLocale] = useState<SupportedCourseLocale>("vi");
   const sponsorLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingSponsorLogo, setUploadingSponsorLogo] = useState(false);
   const [partners, setPartners] = useState<CoursePartner[]>([]);
   const [partnerDialogOpen, setPartnerDialogOpen] = useState(false);
   const [activePartnerId, setActivePartnerId] = useState<string | null>(null);
   const [partnerForm, setPartnerForm] = useState<{
-    name: string;
     website: string;
-    description: string;
     logo_url: string;
     logo_path: string;
+    locale_content: { vi: LocaleContentDraft; en: LocaleContentDraft };
   }>({
-    name: "",
     website: "",
-    description: "",
     logo_url: "",
     logo_path: "",
+    locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
   });
+  const [partnerDialogLocale, setPartnerDialogLocale] = useState<SupportedCourseLocale>("vi");
   const partnerLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingPartnerLogo, setUploadingPartnerLogo] = useState(false);
   const [discounts, setDiscounts] = useState<CourseDiscount[]>([]);
@@ -1479,24 +1489,28 @@ const InstructorCourseEdit = () => {
   const openAddSponsor = () => {
     const sid = createSponsorId();
     setActiveSponsorId(sid);
+    setSponsorDialogLocale("vi");
     setSponsorForm({
-      name: "",
       website: "",
-      description: "",
       logo_url: "",
       logo_path: "",
+      locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
     });
     setSponsorDialogOpen(true);
   };
 
   const openEditSponsor = (s: CourseSponsor) => {
     setActiveSponsorId(String(s.id ?? "").trim() || null);
+    setSponsorDialogLocale("vi");
+    const lc = s.locale_content ?? {};
     setSponsorForm({
-      name: String(s.name ?? ""),
       website: String(s.website ?? ""),
-      description: String(s.description ?? ""),
       logo_url: String(s.logo_url ?? ""),
       logo_path: String(s.logo_path ?? ""),
+      locale_content: {
+        vi: { name: lc.vi?.name ?? s.name ?? "", description: lc.vi?.description ?? s.description ?? "" },
+        en: { name: lc.en?.name ?? "", description: lc.en?.description ?? "" },
+      },
     });
     setSponsorDialogOpen(true);
   };
@@ -1526,15 +1540,21 @@ const InstructorCourseEdit = () => {
           updated[idx] = { ...updated[idx], logo_url: result.url, logo_path: result.path };
           return updated;
         }
+        const viName = sponsorForm.locale_content.vi.name.trim();
+        const enName = sponsorForm.locale_content.en.name.trim();
         return [
           ...normalized,
           {
             id: sid,
-            name: sponsorForm.name.trim() || sid,
+            name: viName || enName || sid,
             website: sponsorForm.website.trim() || null,
-            description: sponsorForm.description.trim() || null,
+            description: sponsorForm.locale_content.vi.description.trim() || sponsorForm.locale_content.en.description.trim() || null,
             logo_url: result.url,
             logo_path: result.path,
+            locale_content: {
+              vi: { name: viName, description: sponsorForm.locale_content.vi.description.trim() },
+              en: { name: enName, description: sponsorForm.locale_content.en.description.trim() },
+            },
           },
         ];
       })();
@@ -1555,8 +1575,10 @@ const InstructorCourseEdit = () => {
   const saveSponsorFromDialog = async () => {
     const sid = String(activeSponsorId ?? "").trim();
     if (!sid) return;
-    const name = sponsorForm.name.trim();
-    if (!name) {
+    const viName = sponsorForm.locale_content.vi.name.trim();
+    const enName = sponsorForm.locale_content.en.name.trim();
+    const primaryName = viName || enName;
+    if (!primaryName) {
       toast.error(String(t("courseEdit.sponsors.errors.missingName")));
       return;
     }
@@ -1566,16 +1588,22 @@ const InstructorCourseEdit = () => {
       return;
     }
 
+    const localeContent: CourseSponsor["locale_content"] = {
+      vi: { name: viName, description: sponsorForm.locale_content.vi.description.trim() },
+      en: { name: enName, description: sponsorForm.locale_content.en.description.trim() },
+    };
+
     const nextSponsors = (() => {
       const normalized = sponsors.map((s) => ({ ...s, id: String(s.id ?? "").trim() }));
       const idx = normalized.findIndex((s) => s.id === sid);
       const nextItem: CourseSponsor = {
         id: sid,
-        name,
+        name: primaryName,
         website: websiteValue || null,
-        description: sponsorForm.description.trim() || null,
+        description: sponsorForm.locale_content.vi.description.trim() || sponsorForm.locale_content.en.description.trim() || null,
         logo_url: sponsorForm.logo_url.trim() || null,
         logo_path: sponsorForm.logo_path.trim() || null,
+        locale_content: localeContent,
       };
       if (idx >= 0) {
         const updated = [...normalized];
@@ -1615,24 +1643,28 @@ const InstructorCourseEdit = () => {
   const openAddPartner = () => {
     const pid = createSponsorId();
     setActivePartnerId(pid);
+    setPartnerDialogLocale("vi");
     setPartnerForm({
-      name: "",
       website: "",
-      description: "",
       logo_url: "",
       logo_path: "",
+      locale_content: { vi: { name: "", description: "" }, en: { name: "", description: "" } },
     });
     setPartnerDialogOpen(true);
   };
 
   const openEditPartner = (p: CoursePartner) => {
     setActivePartnerId(String(p.id ?? "").trim() || null);
+    setPartnerDialogLocale("vi");
+    const lc = p.locale_content ?? {};
     setPartnerForm({
-      name: String(p.name ?? ""),
       website: String(p.website ?? ""),
-      description: String(p.description ?? ""),
       logo_url: String(p.logo_url ?? ""),
       logo_path: String(p.logo_path ?? ""),
+      locale_content: {
+        vi: { name: lc.vi?.name ?? p.name ?? "", description: lc.vi?.description ?? p.description ?? "" },
+        en: { name: lc.en?.name ?? "", description: lc.en?.description ?? "" },
+      },
     });
     setPartnerDialogOpen(true);
   };
@@ -1664,15 +1696,21 @@ const InstructorCourseEdit = () => {
           };
           return updated;
         }
+        const viName = partnerForm.locale_content.vi.name.trim();
+        const enName = partnerForm.locale_content.en.name.trim();
         return [
           ...normalized,
           {
             id: pid,
-            name: partnerForm.name.trim() || pid,
+            name: viName || enName || pid,
             website: partnerForm.website.trim() || null,
-            description: partnerForm.description.trim() || null,
+            description: partnerForm.locale_content.vi.description.trim() || partnerForm.locale_content.en.description.trim() || null,
             logo_url: result.url,
             logo_path: result.path,
+            locale_content: {
+              vi: { name: viName, description: partnerForm.locale_content.vi.description.trim() },
+              en: { name: enName, description: partnerForm.locale_content.en.description.trim() },
+            },
           },
         ];
       })();
@@ -1693,8 +1731,10 @@ const InstructorCourseEdit = () => {
   const savePartnerFromDialog = async () => {
     const pid = String(activePartnerId ?? "").trim();
     if (!pid) return;
-    const name = partnerForm.name.trim();
-    if (!name) {
+    const viName = partnerForm.locale_content.vi.name.trim();
+    const enName = partnerForm.locale_content.en.name.trim();
+    const primaryName = viName || enName;
+    if (!primaryName) {
       toast.error(String(t("courseEdit.partners.errors.missingName")));
       return;
     }
@@ -1704,16 +1744,22 @@ const InstructorCourseEdit = () => {
       return;
     }
 
+    const localeContent: CoursePartner["locale_content"] = {
+      vi: { name: viName, description: partnerForm.locale_content.vi.description.trim() },
+      en: { name: enName, description: partnerForm.locale_content.en.description.trim() },
+    };
+
     const nextPartners = (() => {
       const normalized = partners.map((p) => ({ ...p, id: String(p.id ?? "").trim() }));
       const idx = normalized.findIndex((p) => p.id === pid);
       const nextItem: CoursePartner = {
         id: pid,
-        name,
+        name: primaryName,
         website: websiteValue || null,
-        description: partnerForm.description.trim() || null,
+        description: partnerForm.locale_content.vi.description.trim() || partnerForm.locale_content.en.description.trim() || null,
         logo_url: partnerForm.logo_url.trim() || null,
         logo_path: partnerForm.logo_path.trim() || null,
+        locale_content: localeContent,
       };
       if (idx >= 0) {
         const updated = [...normalized];
@@ -1853,18 +1899,23 @@ const InstructorCourseEdit = () => {
     title: string;
     shortDescription?: string;
     markdownDescription?: string;
+    sourceInputs?: DescriptionSourceInput[];
+    sourcePreviews?: DescriptionGeneratorSourcePreview[];
     locale: SupportedCourseLocale;
     onApply: (value: string) => void;
   }) => {
-    const sourcePreviews = [
-      createSourcePreview({
-        id: params.lessonId ?? "draft-lesson",
-        title: params.title,
-        shortDescription: params.shortDescription,
-        markdownDescription: params.markdownDescription,
-        youtubeUrl: params.youtubeUrl,
-      }),
-    ];
+    const sourcePreviews =
+      params.sourcePreviews && params.sourcePreviews.length > 0
+        ? params.sourcePreviews
+        : [
+            createSourcePreview({
+              id: params.lessonId ?? "draft-lesson",
+              title: params.title,
+              shortDescription: params.shortDescription,
+              markdownDescription: params.markdownDescription,
+              youtubeUrl: params.youtubeUrl,
+            }),
+          ];
     openDescriptionGenerator({
       title: t("courseEdit.descriptionGenerator.lessonTitle"),
       description: t("courseEdit.descriptionGenerator.lessonDescription"),
@@ -1876,11 +1927,47 @@ const InstructorCourseEdit = () => {
       requestBody: {
         type: "lesson",
         targetField: params.targetField,
+        intent:
+          params.targetField === "description_markdown" &&
+          params.sourceInputs &&
+          params.sourceInputs.length > 0
+            ? "practice"
+            : undefined,
         locale: params.locale,
         courseId: id ?? undefined,
         lessonId: params.lessonId,
         youtubeUrl: params.youtubeUrl?.trim() || undefined,
         lessonTitle: params.title?.trim() || undefined,
+        sourceInputs: params.sourceInputs,
+      },
+      onApply: params.onApply,
+    });
+  };
+
+  const handleGeneratePracticeTitle = (params: {
+    sourceIds: Set<string>;
+    fallbackTitle: string;
+    locale: SupportedCourseLocale;
+    onApply: (value: string) => void;
+  }) => {
+    const sourcePreviews = getLessonSourcePreviews(params.sourceIds);
+    const sourceInputs = getLessonSourceInputs(params.sourceIds);
+    openDescriptionGenerator({
+      title: t("courseEdit.descriptionGenerator.lessonTitle"),
+      description: t("courseEdit.descriptionGenerator.lessonDescription"),
+      type: "lesson",
+      targetField: "title",
+      locale: params.locale,
+      sourcePreviews,
+      warning: buildGeneratorWarning(sourcePreviews),
+      requestBody: {
+        type: "lesson",
+        targetField: "title",
+        intent: "practice",
+        locale: params.locale,
+        courseId: id ?? undefined,
+        lessonTitle: params.fallbackTitle,
+        sourceInputs,
       },
       onApply: params.onApply,
     });
@@ -2092,6 +2179,50 @@ const InstructorCourseEdit = () => {
   const getNewQuizSourceLessons = () =>
     getPracticeSourceLessons(addingLessonDraftSectionId);
 
+  const getLessonSourceInputs = (sourceIds: Iterable<string>): DescriptionSourceInput[] => {
+    const selected = new Set(sourceIds);
+    return lessons
+      .filter((lesson) => selected.has(lesson.id))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((lesson) =>
+        createSourceInput({
+          id: lesson.id,
+          title: lesson.title,
+          shortDescription: lesson.short_description,
+          markdownDescription: lesson.description_markdown,
+          youtubeUrl: lesson.youtube_url,
+        }),
+      );
+  };
+
+  const getLessonSourcePreviews = (
+    sourceIds: Iterable<string>,
+  ): DescriptionGeneratorSourcePreview[] => {
+    const selected = new Set(sourceIds);
+    return lessons
+      .filter((lesson) => selected.has(lesson.id))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((lesson) =>
+        createSourcePreview({
+          id: lesson.id,
+          title: lesson.title,
+          shortDescription: lesson.short_description,
+          markdownDescription: lesson.description_markdown,
+          youtubeUrl: lesson.youtube_url,
+        }),
+      );
+  };
+
+  const getDefaultActivityLessonTitle = (
+    sectionId: string,
+    format: LessonFormat,
+    accumulator?: CourseLesson[],
+  ) =>
+    getNextActivityLessonTitle(
+      format,
+      accumulator ?? lessons.filter((lesson) => lesson.section_id === sectionId),
+    );
+
   const resetNewQuizGenerationState = () => {
     setNewQuizSourceLessonIds(new Set());
     setNewQuizGenerateError(null);
@@ -2104,11 +2235,37 @@ const InstructorCourseEdit = () => {
     setNewQuizSourceLessonIds(new Set(sourceIds));
   };
 
+  const seedNewPracticeSourceLessons = (sectionId: string | null) => {
+    const sourceIds = getPracticeSourceLessons(sectionId).map((lesson) => lesson.id);
+    setNewPracticeSourceLessonIds(new Set(sourceIds));
+    setNewPracticeSourceLessonId(sourceIds[0] ?? "");
+  };
+
   const toggleNewQuizSourceLesson = (lessonId: string) => {
     setNewQuizSourceLessonIds((prev) => {
       const next = new Set(prev);
       if (next.has(lessonId)) next.delete(lessonId);
       else next.add(lessonId);
+      return next;
+    });
+  };
+
+  const toggleNewPracticeSourceLesson = (lessonId: string) => {
+    setNewPracticeSourceLessonIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(lessonId)) next.delete(lessonId);
+      else next.add(lessonId);
+      setNewPracticeSourceLessonId(Array.from(next)[0] ?? "");
+      return next;
+    });
+  };
+
+  const toggleEditingPracticeSourceLesson = (lessonId: string) => {
+    setEditingPracticeSourceLessonIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(lessonId)) next.delete(lessonId);
+      else next.add(lessonId);
+      setEditingPracticeSourceLessonId(Array.from(next)[0] ?? "");
       return next;
     });
   };
@@ -2310,7 +2467,11 @@ const InstructorCourseEdit = () => {
       opts.lessonAccumulator ?? lessons.filter((l) => l.section_id === sectionId);
 
     const lessonTitle =
-      (opts.title ?? snap.title).trim() || t("courseEdit.defaults.lessonTitle");
+      (opts.title ?? snap.title).trim() ||
+      getDefaultActivityLessonTitle(sectionId, lessonFormat, secSubset) ||
+      t("courseEdit.defaults.lessonTitle");
+    const practiceSourceId =
+      Array.from(newPracticeSourceLessonIds)[0] || newPracticeSourceLessonId || undefined;
 
     const vidLocale = snap.videoPrimaryLocale ?? defaultVideoPrimaryLocale;
     const subOn = snap.hasSubtitle ?? false;
@@ -2331,7 +2492,7 @@ const InstructorCourseEdit = () => {
         : sanitizedResources.length
           ? sanitizedResources
           : undefined,
-      practice_source_lesson_id: isPracticeFormat ? newPracticeSourceLessonId || undefined : undefined,
+      practice_source_lesson_id: isPracticeFormat ? practiceSourceId : undefined,
       video_primary_locale: vidLocale,
       has_subtitle: subOn,
       subtitle_locales: subLocales,
@@ -2513,6 +2674,7 @@ const InstructorCourseEdit = () => {
     setNewLessonMarkdown("");
     setNewLessonResources([]);
     setNewPracticeSourceLessonId("");
+    setNewPracticeSourceLessonIds(new Set());
     setNewQuizQuestions([]);
     resetNewQuizGenerationState();
     setNewLessonFormat("video");
@@ -2905,6 +3067,7 @@ const InstructorCourseEdit = () => {
     setEditingLessonMarkdown(draft.markdown);
     setEditingLessonResources(draft.resources);
     setEditingPracticeSourceLessonId(draft.practiceSourceLessonId);
+    setEditingPracticeSourceLessonIds(new Set(draft.practiceSourceLessonIds));
   };
 
   const captureLessonDraftFromState = (): LessonDraft => ({
@@ -2917,6 +3080,7 @@ const InstructorCourseEdit = () => {
     markdown: editingLessonMarkdown,
     resources: editingLessonResources,
     practiceSourceLessonId: editingPracticeSourceLessonId,
+    practiceSourceLessonIds: Array.from(editingPracticeSourceLessonIds),
   });
 
   const lessonToDraft = (lesson: CourseLesson): LessonDraft => ({
@@ -2929,6 +3093,7 @@ const InstructorCourseEdit = () => {
     markdown: lesson.description_markdown ?? "",
     resources: (lesson.resources ?? []).map((r) => ({ title: r.title ?? "", url: r.url ?? "" })),
     practiceSourceLessonId: lesson.practice_source_lesson_id ?? "",
+    practiceSourceLessonIds: lesson.practice_source_lesson_id ? [lesson.practice_source_lesson_id] : [],
   });
 
   const openEditLesson = (lesson: CourseLesson) => {
@@ -2966,6 +3131,7 @@ const InstructorCourseEdit = () => {
           markdown: localized?.description_markdown ?? lesson.description_markdown ?? "",
           resources: (localized?.resources ?? lesson.resources ?? []).map((r) => ({ title: r.title ?? "", url: r.url ?? "" })),
           practiceSourceLessonId: lesson.practice_source_lesson_id ?? "",
+          practiceSourceLessonIds: lesson.practice_source_lesson_id ? [lesson.practice_source_lesson_id] : [],
         };
         if (!lessonDraftRef.current.has(loc)) {
           lessonDraftRef.current.set(loc, draft);
@@ -3177,7 +3343,7 @@ const InstructorCourseEdit = () => {
               ? sanitizedResources
               : undefined,
           practice_source_lesson_id: isPracticeFormat
-            ? draft.practiceSourceLessonId || undefined
+            ? draft.practiceSourceLessonIds[0] || draft.practiceSourceLessonId || undefined
             : undefined,
         };
         if (loc === primaryContentLocale) {
@@ -4723,7 +4889,9 @@ const InstructorCourseEdit = () => {
                       <div className="space-y-2">
                         {sponsors.map((s) => {
                           const sid = String(s.id ?? "").trim();
-                          const name = String(s.name ?? "").trim();
+                          const lc = s.locale_content?.[activeContentLocale];
+                          const name = (lc?.name?.trim() || s.name || "").trim();
+                          const description = lc?.description?.trim() || s.description || "";
                           const logoSrc =
                             s.logo_url && String(s.logo_url).trim()
                               ? String(s.logo_url)
@@ -4766,9 +4934,9 @@ const InstructorCourseEdit = () => {
                                       {website}
                                     </a>
                                   ) : null}
-                                  {s.description ? (
+                                  {description ? (
                                     <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-foreground-muted">
-                                      {s.description}
+                                      {description}
                                     </p>
                                   ) : null}
                                 </div>
@@ -4847,14 +5015,39 @@ const InstructorCourseEdit = () => {
                           </div>
                         </Field>
 
+                        {/* Locale tabs */}
+                        <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
+                          {(["vi", "en"] as const).map((loc) => (
+                            <button
+                              key={loc}
+                              type="button"
+                              onClick={() => setSponsorDialogLocale(loc)}
+                              className={cn(
+                                "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                                sponsorDialogLocale === loc
+                                  ? "bg-surface-base text-foreground shadow-sm"
+                                  : "text-foreground-muted hover:text-foreground",
+                              )}
+                            >
+                              {loc === "vi" ? "🇻🇳 Tiếng Việt" : "🇬🇧 English"}
+                            </button>
+                          ))}
+                        </div>
+
                         <Field>
                           <FieldLabel>
                             {t("courseEdit.sponsors.fields.name")}
                           </FieldLabel>
                           <Input
-                            value={sponsorForm.name}
+                            value={sponsorForm.locale_content[sponsorDialogLocale].name}
                             onChange={(e) =>
-                              setSponsorForm((p) => ({ ...p, name: e.target.value }))
+                              setSponsorForm((p) => ({
+                                ...p,
+                                locale_content: {
+                                  ...p.locale_content,
+                                  [sponsorDialogLocale]: { ...p.locale_content[sponsorDialogLocale], name: e.target.value },
+                                },
+                              }))
                             }
                           />
                         </Field>
@@ -4880,11 +5073,14 @@ const InstructorCourseEdit = () => {
                             {t("courseEdit.sponsors.fields.description")}
                           </FieldLabel>
                           <textarea
-                            value={sponsorForm.description}
+                            value={sponsorForm.locale_content[sponsorDialogLocale].description}
                             onChange={(e) =>
                               setSponsorForm((p) => ({
                                 ...p,
-                                description: e.target.value,
+                                locale_content: {
+                                  ...p.locale_content,
+                                  [sponsorDialogLocale]: { ...p.locale_content[sponsorDialogLocale], description: e.target.value },
+                                },
                               }))
                             }
                             className="min-h-[120px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
@@ -4943,7 +5139,9 @@ const InstructorCourseEdit = () => {
                       <div className="space-y-2">
                         {partners.map((p) => {
                           const pid = String(p.id ?? "").trim();
-                          const name = String(p.name ?? "").trim();
+                          const plc = p.locale_content?.[activeContentLocale];
+                          const name = (plc?.name?.trim() || p.name || "").trim();
+                          const pDescription = plc?.description?.trim() || p.description || "";
                           const logoSrc =
                             p.logo_url && String(p.logo_url).trim()
                               ? String(p.logo_url)
@@ -4986,9 +5184,9 @@ const InstructorCourseEdit = () => {
                                       {website}
                                     </a>
                                   ) : null}
-                                  {p.description ? (
+                                  {pDescription ? (
                                     <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-xs leading-relaxed text-foreground-muted">
-                                      {p.description}
+                                      {pDescription}
                                     </p>
                                   ) : null}
                                 </div>
@@ -5069,14 +5267,39 @@ const InstructorCourseEdit = () => {
                           </div>
                         </Field>
 
+                        {/* Locale tabs */}
+                        <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
+                          {(["vi", "en"] as const).map((loc) => (
+                            <button
+                              key={loc}
+                              type="button"
+                              onClick={() => setPartnerDialogLocale(loc)}
+                              className={cn(
+                                "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                                partnerDialogLocale === loc
+                                  ? "bg-surface-base text-foreground shadow-sm"
+                                  : "text-foreground-muted hover:text-foreground",
+                              )}
+                            >
+                              {loc === "vi" ? "🇻🇳 Tiếng Việt" : "🇬🇧 English"}
+                            </button>
+                          ))}
+                        </div>
+
                         <Field>
                           <FieldLabel>
                             {t("courseEdit.partners.fields.name")}
                           </FieldLabel>
                           <Input
-                            value={partnerForm.name}
+                            value={partnerForm.locale_content[partnerDialogLocale].name}
                             onChange={(e) =>
-                              setPartnerForm((p) => ({ ...p, name: e.target.value }))
+                              setPartnerForm((p) => ({
+                                ...p,
+                                locale_content: {
+                                  ...p.locale_content,
+                                  [partnerDialogLocale]: { ...p.locale_content[partnerDialogLocale], name: e.target.value },
+                                },
+                              }))
                             }
                           />
                         </Field>
@@ -5099,11 +5322,14 @@ const InstructorCourseEdit = () => {
                             {t("courseEdit.partners.fields.description")}
                           </FieldLabel>
                           <textarea
-                            value={partnerForm.description}
+                            value={partnerForm.locale_content[partnerDialogLocale].description}
                             onChange={(e) =>
                               setPartnerForm((p) => ({
                                 ...p,
-                                description: e.target.value,
+                                locale_content: {
+                                  ...p.locale_content,
+                                  [partnerDialogLocale]: { ...p.locale_content[partnerDialogLocale], description: e.target.value },
+                                },
                               }))
                             }
                             className="min-h-[120px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm leading-6 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
@@ -6122,9 +6348,11 @@ const InstructorCourseEdit = () => {
                                   {t("courseEdit.lessons.draftBadge")}
                                 </span>
                               ) : null}
-                              <span className="shrink-0 text-xs text-foreground-muted">
-                                {formatDuration(lesson.duration_seconds)}
-                              </span>
+                              {lesson.duration_seconds > 0 ? (
+                                <span className="shrink-0 text-xs text-foreground-muted">
+                                  {formatDuration(lesson.duration_seconds)}
+                                </span>
+                              ) : null}
                               </div>
                             </div>
 
@@ -6233,6 +6461,7 @@ const InstructorCourseEdit = () => {
                           setNewLessonMarkdown("");
                           setNewLessonResources([]);
                           setNewPracticeSourceLessonId("");
+                          setNewPracticeSourceLessonIds(new Set());
                           setNewQuizQuestions([]);
                           resetNewQuizGenerationState();
                           setNewLessonFormat("video");
@@ -6508,9 +6737,11 @@ const InstructorCourseEdit = () => {
                               editingLesson?.section_id,
                               editingLesson?.id,
                             ).at(-1);
-                            setEditingPracticeSourceLessonId(
-                              editingPracticeSourceLessonId || source?.id || "",
-                            );
+                            const seedIds = editingPracticeSourceLessonIds.size
+                              ? editingPracticeSourceLessonIds
+                              : new Set(source?.id ? [source.id] : []);
+                            setEditingPracticeSourceLessonIds(new Set(seedIds));
+                            setEditingPracticeSourceLessonId(Array.from(seedIds)[0] ?? "");
                           }
                         }}
                         videoLabel={t("courseEdit.lessons.formatVideo")}
@@ -6582,6 +6813,24 @@ const InstructorCourseEdit = () => {
                       <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {dialogLessonLocale.toUpperCase()}
                       </span>
+                      {editingLessonFormat === "practice" && editingPracticeSourceLessonIds.size > 0 ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="ml-2 inline-flex items-center gap-1"
+                          onClick={() =>
+                            handleGeneratePracticeTitle({
+                              sourceIds: editingPracticeSourceLessonIds,
+                              fallbackTitle: editingLessonTitle || editingLesson?.title || "Practice",
+                              locale: dialogLessonLocale,
+                              onApply: setEditingLessonTitle,
+                            })}
+                        >
+                          <Sparkles className="size-4" aria-hidden />
+                          {t("courseEdit.descriptionGenerator.trigger")}
+                        </Button>
+                      ) : null}
                     </FieldLabel>
                     <Input
                       value={editingLessonTitle}
@@ -6635,7 +6884,7 @@ const InstructorCourseEdit = () => {
                     </p>
                   </Field>
                   ) : null}
-                  {editingLessonFormat !== "quiz" ? (
+                  {editingLessonFormat !== "quiz" && editingLessonFormat !== "practice" ? (
                   <Field>
                     <FieldLabel>
                       <span>{t("courseEdit.lessons.shortDescriptionLabel")}</span>
@@ -6673,25 +6922,27 @@ const InstructorCourseEdit = () => {
                   {dialogLessonLocale === primaryContentLocale &&
                   editingLessonFormat === "practice" &&
                   editingLesson ? (
-                    <Field>
+                    <Field className="rounded-lg border border-border-subtle bg-surface-raised p-4">
                       <FieldLabel>{t("courseEdit.lessons.practiceSourceLabel")}</FieldLabel>
-                      <select
-                        value={editingPracticeSourceLessonId}
-                        onChange={(e) => setEditingPracticeSourceLessonId(e.target.value)}
-                        className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
-                      >
-                        <option value="">
-                          {t("courseEdit.lessons.practiceSourceNone")}
-                        </option>
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
                         {getPracticeSourceLessons(
                           editingLesson.section_id,
                           editingLesson.id,
                         ).map((lesson) => (
-                          <option key={lesson.id} value={lesson.id}>
-                            {lesson.title}
-                          </option>
+                          <label
+                            key={lesson.id}
+                            className="flex items-start gap-2 rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-xs text-foreground-muted"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={editingPracticeSourceLessonIds.has(lesson.id)}
+                              onChange={() => toggleEditingPracticeSourceLesson(lesson.id)}
+                              className="mt-0.5 shrink-0 rounded border-border accent-primary"
+                            />
+                            <span className="line-clamp-2">{lesson.title}</span>
+                          </label>
                         ))}
-                      </select>
+                      </div>
                       <p className="mt-1 text-xs text-foreground-muted">
                         {t("courseEdit.lessons.practiceSourceHint")}
                       </p>
@@ -6747,6 +6998,14 @@ const InstructorCourseEdit = () => {
                             title: editingLessonTitle || editingLesson?.title || "",
                             shortDescription: editingLessonShortDescription,
                             markdownDescription: editingLessonMarkdown,
+                            sourceInputs:
+                              editingLessonFormat === "practice" && editingPracticeSourceLessonIds.size > 0
+                                ? getLessonSourceInputs(editingPracticeSourceLessonIds)
+                                : undefined,
+                            sourcePreviews:
+                              editingLessonFormat === "practice" && editingPracticeSourceLessonIds.size > 0
+                                ? getLessonSourcePreviews(editingPracticeSourceLessonIds)
+                                : undefined,
                             locale: dialogLessonLocale,
                             onApply: setEditingLessonMarkdown,
                           })}
@@ -7144,8 +7403,7 @@ const InstructorCourseEdit = () => {
                           setNewLessonShortDescription("");
                           setNewLessonMinutes("");
                           setNewLessonResources([]);
-                          const source = getPracticeSourceLessons(addingLessonDraftSectionId).at(-1);
-                          setNewPracticeSourceLessonId(source?.id ?? "");
+                          seedNewPracticeSourceLessons(addingLessonDraftSectionId);
                         }
                       }}
                       videoLabel={t("courseEdit.lessons.formatVideo")}
@@ -7192,6 +7450,31 @@ const InstructorCourseEdit = () => {
                       <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {activeContentLocale.toUpperCase()}
                       </span>
+                      {newLessonFormat === "practice" && newPracticeSourceLessonIds.size > 0 ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="ml-2 inline-flex items-center gap-1"
+                          onClick={() =>
+                            handleGeneratePracticeTitle({
+                              sourceIds: newPracticeSourceLessonIds,
+                              fallbackTitle:
+                                newLessonTitle ||
+                                (addingLessonDraftSectionId
+                                  ? getDefaultActivityLessonTitle(
+                                      addingLessonDraftSectionId,
+                                      "practice",
+                                    )
+                                  : "Practice"),
+                              locale: activeContentLocale,
+                              onApply: setNewLessonTitle,
+                            })}
+                        >
+                          <Sparkles className="size-4" aria-hidden />
+                          {t("courseEdit.descriptionGenerator.trigger")}
+                        </Button>
+                      ) : null}
                     </FieldLabel>
                     <Input
                       value={newLessonTitle}
@@ -7464,22 +7747,24 @@ const InstructorCourseEdit = () => {
                     </div>
                   ) : null}
                   {newLessonFormat === "practice" ? (
-                    <Field>
+                    <Field className="rounded-lg border border-border-subtle bg-surface-raised p-4">
                       <FieldLabel>{t("courseEdit.lessons.practiceSourceLabel")}</FieldLabel>
-                      <select
-                        value={newPracticeSourceLessonId}
-                        onChange={(e) => setNewPracticeSourceLessonId(e.target.value)}
-                        className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
-                      >
-                        <option value="">
-                          {t("courseEdit.lessons.practiceSourceNone")}
-                        </option>
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
                         {getPracticeSourceLessons(addingLessonDraftSectionId).map((lesson) => (
-                          <option key={lesson.id} value={lesson.id}>
-                            {lesson.title}
-                          </option>
+                          <label
+                            key={lesson.id}
+                            className="flex items-start gap-2 rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-xs text-foreground-muted"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={newPracticeSourceLessonIds.has(lesson.id)}
+                              onChange={() => toggleNewPracticeSourceLesson(lesson.id)}
+                              className="mt-0.5 shrink-0 rounded border-border accent-primary"
+                            />
+                            <span className="line-clamp-2">{lesson.title}</span>
+                          </label>
                         ))}
-                      </select>
+                      </div>
                       <p className="mt-1 text-xs text-foreground-muted">
                         {t("courseEdit.lessons.practiceSourceHint")}
                       </p>
@@ -7510,6 +7795,14 @@ const InstructorCourseEdit = () => {
                             title: newLessonTitle,
                             shortDescription: newLessonShortDescription,
                             markdownDescription: newLessonMarkdown,
+                            sourceInputs:
+                              newLessonFormat === "practice" && newPracticeSourceLessonIds.size > 0
+                                ? getLessonSourceInputs(newPracticeSourceLessonIds)
+                                : undefined,
+                            sourcePreviews:
+                              newLessonFormat === "practice" && newPracticeSourceLessonIds.size > 0
+                                ? getLessonSourcePreviews(newPracticeSourceLessonIds)
+                                : undefined,
                             locale: activeContentLocale,
                             onApply: setNewLessonMarkdown,
                           })}

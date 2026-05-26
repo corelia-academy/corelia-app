@@ -24,7 +24,7 @@ export function CourseDescription({
   return (
     <Card className="mt-6">
       <CardContent className="p-6">
-        <h2 className="text-lg font-semibold text-foreground">
+        <h2 className="text-[18px] font-semibold text-foreground">
           {String(t("detail.courseDetail.overview.title"))}
         </h2>
         {description?.trim() ? (

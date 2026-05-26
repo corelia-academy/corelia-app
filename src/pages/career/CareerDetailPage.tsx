@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDuration } from "@/types/courses";
 
 import { useCareerTrackDetail } from "./hooks/useCareerTrackDetail";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function CareerDetailPage() {
   const { t } = useTranslation("career");
@@ -20,6 +21,12 @@ export default function CareerDetailPage() {
       ? { owner_scope: "corelia", slug }
       : { owner_scope: "instructor", handle, slug },
   );
+
+  usePageMeta({
+    title: track?.title ?? undefined,
+    description: track?.description ?? undefined,
+    url: window.location.href,
+  });
 
   if (loading) {
     return (

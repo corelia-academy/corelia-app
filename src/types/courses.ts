@@ -36,24 +36,37 @@ export interface CourseCoInstructorSnapshot {
   bio?: string | null;
 }
 
+export interface SponsorLocaleContent {
+  name?: string;
+  description?: string;
+}
+
 export interface CourseSponsor {
   /** Stable id for list rendering + updates */
   id: string;
+  /** Tên fallback (primary locale, backward compat) */
   name: string;
   website?: string | null;
+  /** Mô tả fallback (primary locale, backward compat) */
   description?: string | null;
   logo_url?: string | null;
   logo_path?: string | null;
+  /** Nội dung đa ngôn ngữ: tên & mô tả theo từng locale */
+  locale_content?: Partial<Record<SupportedCourseLocale, SponsorLocaleContent>> | null;
 }
 
 export interface CoursePartner {
   /** Stable id for list rendering + updates */
   id: string;
+  /** Tên fallback (primary locale, backward compat) */
   name: string;
   website?: string | null;
+  /** Mô tả fallback (primary locale, backward compat) */
   description?: string | null;
   logo_url?: string | null;
   logo_path?: string | null;
+  /** Nội dung đa ngôn ngữ: tên & mô tả theo từng locale */
+  locale_content?: Partial<Record<SupportedCourseLocale, SponsorLocaleContent>> | null;
 }
 
 export interface CoursePartnerBrand {

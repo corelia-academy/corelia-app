@@ -26,8 +26,9 @@ export function SectionQuiz({
   onResultUpdate,
 }: Props) {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
-  const [result, setResult] = useState<SectionQuizResult | null>(existingResult);
+  const [result, setResult] = useState<SectionQuizResult | null>(null);
   const [quizState, setQuizState] = useState<QuizState>("idle");
+  const [retrying, setRetrying] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const { t } = useTranslation("courses");
 
@@ -65,6 +66,7 @@ export function SectionQuiz({
       };
       setResult(newResult);
       onResultUpdate(newResult);
+      setRetrying(false);
       setQuizState("done");
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : t("detail.learn.quiz.saveError"));
@@ -75,11 +77,16 @@ export function SectionQuiz({
   function handleRetry() {
     setSelectedAnswers({});
     setResult(null);
+    setRetrying(true);
     setQuizState("idle");
     setSubmitError(null);
   }
 
-  const displayResult = quizState === "done" ? result : null;
+  const submittedResult =
+    quizState === "done" && result?.completed && result.section_id === sectionId
+      ? result
+      : null;
+  const displayResult = retrying ? null : submittedResult ?? (existingResult?.completed ? existingResult : null);
   const reviewMap = displayResult
     ? new Map(displayResult.attempts.map((a) => [a.question_id, a]))
     : null;

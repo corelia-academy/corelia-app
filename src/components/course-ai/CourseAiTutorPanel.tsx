@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CornerDownLeft, FileText, Video } from "lucide-react";
+import { toast } from "sonner";
 
+import { useCoraStore } from "@/stores/coraStore";
+import { CornerDownLeft, FileText, Paperclip, Video, X } from "lucide-react";
+
+import { uploadCoraImageAttachment } from "@/lib/storage";
+import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { ConversationHistory } from "@/components/course-ai/ConversationHistory";
 import { CoraHistoryPopover } from "@/components/course-ai/CoraHistoryPopover";
@@ -41,11 +46,28 @@ export function CourseAiTutorPanel(props: {
   } = props;
   const { t } = useTranslation("courses");
   const { t: tCommon } = useTranslation("common");
+  const { user } = useAuth();
   const [draft, setDraft] = useState("");
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const hasLessonContext = Boolean(lessonId?.trim());
+
+  // Build/cleanup local preview URL
+  useEffect(() => {
+    if (!attachedFile) {
+      setAttachmentPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(attachedFile);
+    setAttachmentPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [attachedFile]);
   const {
     messages,
     sendMessage,
+    explainSelectedText,
     isLoading,
     isStreaming,
     error,
@@ -89,11 +111,90 @@ export function CourseAiTutorPanel(props: {
     void sendMessage(label);
   };
 
+  const pendingExplainRequest = useCoraStore((s) => s.pendingExplainRequest);
+  const clearExplainRequest = useCoraStore((s) => s.clearExplainRequest);
+  const explainBubbleTemplate = tCommon("coraWidget.explainUserBubble", {
+    snippet: "{{snippet}}",
+    defaultValue: "Explain this passage: \"{{snippet}}\"",
+  });
+  useEffect(() => {
+    if (!pendingExplainRequest) return;
+    // Only consume the request when this panel matches the lesson the user was on.
+    if (
+      pendingExplainRequest.lessonId &&
+      lessonId &&
+      pendingExplainRequest.lessonId !== lessonId
+    ) {
+      return;
+    }
+    const text = pendingExplainRequest.text;
+    clearExplainRequest();
+    void explainSelectedText(text, explainBubbleTemplate);
+  }, [
+    pendingExplainRequest,
+    lessonId,
+    clearExplainRequest,
+    explainSelectedText,
+    explainBubbleTemplate,
+  ]);
+
+  const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+  const ALLOWED_MIME = ["image/png", "image/jpeg", "image/webp"];
+
+  const handleFilePicked = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!ALLOWED_MIME.includes(file.type)) {
+      toast.error(String(tCommon("coraWidget.attachImageBadType")));
+      return;
+    }
+    if (file.size > MAX_ATTACHMENT_BYTES) {
+      toast.error(String(tCommon("coraWidget.attachImageTooLarge")));
+      return;
+    }
+    setAttachedFile(file);
+  };
+
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const handleSubmit = async () => {
     const text = draft.trim();
-    if (!text) return;
+    if (!text && !attachedFile) return;
+    if (uploading) return;
+
+    let uploadedAttachment:
+      | { kind: "image"; url: string; path: string; mime: string }
+      | null = null;
+
+    if (attachedFile) {
+      if (!user?.id) return;
+      setUploading(true);
+      try {
+        const { url, path } = await uploadCoraImageAttachment(user.id, attachedFile);
+        uploadedAttachment = {
+          kind: "image",
+          url,
+          path,
+          mime: attachedFile.type,
+        };
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : "Upload ảnh thất bại.",
+        );
+        setUploading(false);
+        return;
+      }
+      setUploading(false);
+    }
+
     setDraft("");
-    await sendMessage(text);
+    setAttachedFile(null);
+    await sendMessage(text, {
+      attachments: uploadedAttachment ? [uploadedAttachment] : undefined,
+    });
   };
 
   const FormatIcon = lessonFormat ? FORMAT_ICON[lessonFormat] : null;
@@ -169,15 +270,51 @@ export function CourseAiTutorPanel(props: {
               <SuggestionPills suggestions={suggestedPrompts} onSelect={handleSuggestionClick} />
             </div>
           ) : null}
+          {attachedFile && attachmentPreview ? (
+            <div className="mb-2 inline-flex items-start gap-2 rounded-md border border-border-subtle bg-surface-raised p-2">
+              <img
+                src={attachmentPreview}
+                alt={attachedFile.name}
+                className="size-16 rounded object-cover"
+              />
+              <div className="flex flex-col text-[11px] leading-tight text-foreground-muted">
+                <span className="truncate max-w-[140px] text-foreground">
+                  {attachedFile.name}
+                </span>
+                <span>{Math.round(attachedFile.size / 1024)} KB</span>
+                {uploading ? (
+                  <span className="text-primary">
+                    {tCommon("coraWidget.attachImageUploading")}
+                  </span>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                onClick={() => setAttachedFile(null)}
+                className="ml-auto rounded p-1 text-foreground-muted hover:bg-surface-base"
+                aria-label={String(tCommon("coraWidget.removeAttachment"))}
+                disabled={uploading}
+              >
+                <X className="size-3.5" aria-hidden />
+              </button>
+            </div>
+          ) : null}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            hidden
+            onChange={handleFilePicked}
+          />
           <textarea
             rows={2}
             value={draft}
-            disabled={isLoading}
+            disabled={isLoading || uploading}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                if (!isLoading) void handleSubmit();
+                if (!isLoading && !uploading) void handleSubmit();
               }
             }}
             placeholder={String(t("detail.aiTutor.inputPlaceholder"))}
@@ -205,15 +342,37 @@ export function CourseAiTutorPanel(props: {
               {error.message}
             </p>
           ) : null}
-          <div className="mt-2 flex justify-end">
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleAttachClick}
+              disabled={isLoading || uploading}
+              title={String(tCommon("coraWidget.attachImageLabel"))}
+              aria-label={String(tCommon("coraWidget.attachImageLabel"))}
+              className="h-8 px-2"
+            >
+              <Paperclip className="size-4" aria-hidden />
+            </Button>
             <Button
               type="button"
               size="sm"
               onClick={() => void handleSubmit()}
-              disabled={isLoading || !draft.trim()}
+              disabled={
+                isLoading ||
+                uploading ||
+                (!draft.trim() && !attachedFile)
+              }
             >
-              {isLoading ? tCommon("coraWidget.sendingAction") : tCommon("coraWidget.sendAction")}
-              {!isLoading && <CornerDownLeft className="ml-1.5 size-3.5" aria-hidden />}
+              {uploading
+                ? tCommon("coraWidget.attachImageUploading")
+                : isLoading
+                  ? tCommon("coraWidget.sendingAction")
+                  : tCommon("coraWidget.sendAction")}
+              {!isLoading && !uploading && (
+                <CornerDownLeft className="ml-1.5 size-3.5" aria-hidden />
+              )}
             </Button>
           </div>
         </>

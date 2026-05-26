@@ -23,28 +23,24 @@ export function LessonPractice({
   }
 
   return (
-    <div className="px-4 pb-8 sm:px-6">
-      <div className="max-w-2xl mx-auto">
-        <div className="overflow-hidden rounded-2xl border border-border-subtle shadow-card">
-          <div className="px-6 py-8 text-[15px] leading-[1.7]">
-            <Markdown content={markdown} />
-          </div>
-          <div className="border-t border-border-subtle bg-surface-raised px-6 py-3 flex items-center justify-between gap-3">
-            <p className="text-xs text-foreground-muted">
-              {t("detail.learn.practice.hint")}
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="shrink-0"
-              onClick={handleDiscuss}
-            >
-              <MessageSquareText className="size-3.5 mr-1.5" aria-hidden />
-              {t("detail.learn.practice.askCora")}
-            </Button>
-          </div>
-        </div>
+    <div className="mx-4 mb-8 overflow-hidden rounded-2xl border border-border-subtle shadow-card sm:mx-6">
+      <div className="px-6 pt-5 pb-8 text-[15px] leading-[1.7]">
+        <Markdown content={markdown} />
+      </div>
+      <div className="border-t border-border-subtle bg-surface-raised px-6 py-3 flex items-center justify-between gap-3">
+        <p className="text-xs text-foreground-muted">
+          {t("detail.learn.practice.hint")}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          onClick={handleDiscuss}
+        >
+          <MessageSquareText className="size-3.5 mr-1.5" aria-hidden />
+          {t("detail.learn.practice.askCora")}
+        </Button>
       </div>
     </div>
   );

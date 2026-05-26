@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/markdown/Markdown";
+import { SelectableLessonContent } from "@/components/course-ai/SelectableLessonContent";
 import { isArticleLesson, isLessonDraftForLearners, isVideoLesson } from "@/lib/lessonFormat";
 import { cn } from "@/lib/utils";
 import { getYoutubeEmbedUrlForLesson } from "@/types/courses";
@@ -116,9 +117,12 @@ export function LessonPlayerCard({
         </div>
       ) : showArticleBody ? (
         <div className="mx-4 overflow-hidden rounded-2xl border border-border-subtle shadow-card sm:mx-6">
-          <div className="px-6 py-8 text-[15px] leading-[1.7]">
+          <SelectableLessonContent
+            className="px-6 pt-5 pb-8 text-[15px] leading-[1.7]"
+            lessonId={lesson.id}
+          >
             <Markdown content={lesson.description_markdown!} />
-          </div>
+          </SelectableLessonContent>
         </div>
       ) : quizLesson && courseId && lesson ? (
         <LessonQuiz
@@ -160,9 +164,12 @@ export function LessonPlayerCard({
         {lesson ? (
           <>
             {videoLesson && lesson.description_markdown?.trim() ? (
-              <div className="rounded-2xl border border-border-subtle bg-surface-raised p-5 text-[15px] leading-[1.7]">
+              <SelectableLessonContent
+                className="rounded-2xl border border-border-subtle bg-surface-raised p-5 text-[15px] leading-[1.7]"
+                lessonId={lesson.id}
+              >
                 <Markdown content={lesson.description_markdown} />
-              </div>
+              </SelectableLessonContent>
             ) : null}
             {lesson.resources?.length ? (
               <div

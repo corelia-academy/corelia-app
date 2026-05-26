@@ -31,6 +31,12 @@ const CoraSidebarPanel = lazy(() =>
   })),
 );
 
+const ExplainSelectionButton = lazy(() =>
+  import("@/components/course-ai/ExplainSelectionButton").then((module) => ({
+    default: module.ExplainSelectionButton,
+  })),
+);
+
 const mobileTabItemClassName =
   "flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2.5 text-center transition-colors";
 
@@ -103,6 +109,9 @@ const MainLayout = () => {
       </SidebarInset>
       <Suspense fallback={null}>
         <CoraSidebarPanel />
+      </Suspense>
+      <Suspense fallback={null}>
+        <ExplainSelectionButton />
       </Suspense>
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface-float pb-[env(safe-area-inset-bottom,0px)] md:hidden">
         <div className="container-app grid grid-cols-5 gap-1 px-2 py-2">

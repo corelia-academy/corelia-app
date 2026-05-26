@@ -109,8 +109,14 @@ export function AccountProfileRoute() {
 
     try {
       if (!user) return;
+
+      const newUsername = username.trim() || null;
+      // Chỉ gửi username khi thực sự thay đổi (tránh unique constraint tự conflict)
+      const usernameChanged =
+        newUsername?.toLowerCase() !== (profile?.username ?? "").toLowerCase();
+
       await updateProfileForUser(user, {
-        username: username.trim() || null,
+        ...(usernameChanged ? { username: newUsername } : {}),
         full_name: fullName || null,
         phone: phone || null,
         avatar_url: avatarUrl || null,
@@ -121,9 +127,17 @@ export function AccountProfileRoute() {
       await refreshProfile(user);
       setSuccess(t("profile.success.updated"));
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : t("profile.errors.updateFailed");
-      setError(message);
+      const raw = err instanceof Error ? err.message : "";
+      // Unique constraint trên username (profiles_username_lower_key)
+      const isUsernameTaken =
+        raw.includes("profiles_username_lower_key") ||
+        raw.includes("duplicate key") ||
+        raw.includes("23505");
+      setError(
+        isUsernameTaken
+          ? t("profile.errors.usernameTaken")
+          : raw || t("profile.errors.updateFailed"),
+      );
     } finally {
       setSaving(false);
     }

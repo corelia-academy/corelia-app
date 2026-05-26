@@ -633,6 +633,7 @@ export async function enrollCourse(courseId: string, viewer?: User | null): Prom
     .select("*")
     .single();
   if (error) throw new Error(error.message);
+  invalidateEnrollmentsCache(user.id);
   return { id: data.id, ...data } as Enrollment;
 }
 
@@ -649,6 +650,7 @@ export async function touchEnrollment(courseId: string, viewer?: User | null): P
     .from("enrollments")
     .update({ last_accessed_at: new Date().toISOString() })
     .eq("id", enr.id);
+  invalidateEnrollmentsCache(user.id);
 }
 
 const LESSON_LEARNER_COUNT_PAGE = 1000;
@@ -782,9 +784,106 @@ export async function setLessonProgress(
 
   invalidateLessonProgressCache(user.id, courseId);
 
+  void ensureEnrollmentForProgress(user.id, courseId, now);
+
   if (completed) {
     checkAndIssueCertificate(user.id, courseId).catch(() => {});
     invokeCheckCourseCredential(courseId).catch(() => {});
+  }
+}
+
+async function ensureEnrollmentForProgress(
+  userId: string,
+  courseId: string,
+  now: string,
+): Promise<void> {
+  try {
+    const enrollmentId = `${userId}_${courseId}`;
+    const { error } = await supabase
+      .from("enrollments")
+      .upsert(
+        {
+          id: enrollmentId,
+          user_id: userId,
+          course_id: courseId,
+          enrolled_at: now,
+          last_accessed_at: now,
+        },
+        { onConflict: "id", ignoreDuplicates: true },
+      );
+    if (error) {
+      console.error("[ensureEnrollmentForProgress] upsert failed", {
+        userId,
+        courseId,
+        error,
+      });
+      return;
+    }
+    invalidateEnrollmentsCache(userId);
+  } catch (err) {
+    console.error("[ensureEnrollmentForProgress] unexpected error", {
+      userId,
+      courseId,
+      err,
+    });
+  }
+}
+
+/**
+ * Create enrollment rows for courses where the user has lesson_progress but no
+ * enrollment yet (legacy free-course learners predating auto-enroll). Returns
+ * the number of rows created. Idempotent — safe to call on every dashboard load.
+ */
+export async function backfillMissingEnrollmentsForUser(userId: string): Promise<number> {
+  try {
+    const [{ data: progressRows, error: progressError }, enrollments] = await Promise.all([
+      supabase.from("lesson_progress").select("course_id").eq("user_id", userId),
+      getMyEnrollments(userId).catch(() => [] as Enrollment[]),
+    ]);
+    if (progressError) {
+      console.error("[backfillMissingEnrollmentsForUser] progress query failed", {
+        userId,
+        error: progressError,
+      });
+      return 0;
+    }
+    const progressCourseIds = new Set<string>(
+      (progressRows ?? [])
+        .map((r) => (r as { course_id: string | null }).course_id)
+        .filter((id): id is string => !!id),
+    );
+    if (progressCourseIds.size === 0) return 0;
+    const enrolledCourseIds = new Set(enrollments.map((e) => e.course_id));
+    const missing = Array.from(progressCourseIds).filter((id) => !enrolledCourseIds.has(id));
+    if (missing.length === 0) return 0;
+
+    const now = new Date().toISOString();
+    const rows = missing.map((courseId) => ({
+      id: `${userId}_${courseId}`,
+      user_id: userId,
+      course_id: courseId,
+      enrolled_at: now,
+      last_accessed_at: now,
+    }));
+    const { error: upsertError } = await supabase
+      .from("enrollments")
+      .upsert(rows, { onConflict: "id", ignoreDuplicates: true });
+    if (upsertError) {
+      console.error("[backfillMissingEnrollmentsForUser] upsert failed", {
+        userId,
+        missingCount: missing.length,
+        error: upsertError,
+      });
+      return 0;
+    }
+    invalidateEnrollmentsCache(userId);
+    return missing.length;
+  } catch (err) {
+    console.error("[backfillMissingEnrollmentsForUser] unexpected error", {
+      userId,
+      err,
+    });
+    return 0;
   }
 }
 

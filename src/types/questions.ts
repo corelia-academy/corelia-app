@@ -29,7 +29,8 @@ export interface SectionQuestionAttempt {
   id: string;
   user_id: string;
   course_id: string;
-  section_id: string;
+  section_id: string | null;
+  lesson_id?: string | null;
   question_id: string;
   selected_index: number;
   is_correct: boolean;

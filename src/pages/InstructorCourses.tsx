@@ -198,9 +198,7 @@ const InstructorCourses = () => {
           <EmptyState
             icon={<BookOpen className="size-6 text-foreground-subtle" aria-hidden />}
             title={t("courseListPage.empty.title")}
-            description={
-              t("courseListPage.empty.description", { defaultValue: "" }) || undefined
-            }
+            description={t("courseListPage.empty.description")}
             action={
               <Button
                 type="button"

@@ -19,6 +19,7 @@ import {
   profileHandle,
   profileTitle,
 } from "./utils/profileDisplay";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function UserProfileLayout() {
   const { t } = useTranslation("common");
@@ -31,6 +32,13 @@ export default function UserProfileLayout() {
   const website =
     profile?.website?.trim() || profile?.instructor_website?.trim() || null;
   const bio = profile?.bio?.trim() || profile?.instructor_bio?.trim() || null;
+
+  usePageMeta({
+    title: profile ? profileTitle(profile) : undefined,
+    description: bio ?? undefined,
+    image: profile?.avatar_url ?? undefined,
+    url: window.location.href,
+  });
 
   return (
     <div className="container-app py-6 sm:py-8">

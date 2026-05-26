@@ -330,6 +330,7 @@
     },
     "empty": {
       "title": "No courses in this workspace yet.",
+      "description": "Create your first course to start building your catalog.",
       "createFirst": "Create your first course"
     },
     "coursePills": {

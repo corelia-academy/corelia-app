@@ -17,6 +17,7 @@ type RequestBody = {
   action?: unknown;
   type?: unknown;
   targetField?: unknown;
+  intent?: unknown;
   locale?: unknown;
   sourceLocale?: unknown;
   sourceInputs?: unknown;
@@ -193,6 +194,7 @@ function parseBody(body: RequestBody): {
   action: ActionType;
   type: GenerateType;
   targetField: TargetField;
+  intent: "practice" | null;
   locale: Locale;
   sourceLocale: Locale | null;
   sourceInputs: SourceInput[] | null;
@@ -219,6 +221,7 @@ function parseBody(body: RequestBody): {
     body.targetField === "learning_outcomes"
       ? body.targetField
       : null;
+  const intent = body.intent === "practice" ? "practice" : null;
   const locale = body.locale === "en" ? "en" : body.locale === "vi" ? "vi" : null;
   const sourceLocale =
     body.sourceLocale === "en" ? "en" : body.sourceLocale === "vi" ? "vi" : null;
@@ -245,6 +248,7 @@ function parseBody(body: RequestBody): {
     action,
     type,
     targetField,
+    intent,
     locale,
     sourceLocale,
     sourceInputs,
@@ -610,6 +614,7 @@ function buildPrompt(params: {
   action: ActionType;
   type: GenerateType;
   targetField: TargetField;
+  intent: "practice" | null;
   locale: Locale;
   sourceLocale: Locale | null;
   sources: LessonSource[];
@@ -640,6 +645,18 @@ function buildPrompt(params: {
           : params.locale === "vi"
             ? "Dịch và biên tập thành mô tả đầy đủ, rõ ý, tự nhiên."
             : "Translate and polish into a clear, natural full description."
+      : params.targetField === "title"
+        ? params.intent === "practice"
+          ? params.locale === "vi"
+            ? "Kết quả là một tiêu đề bài thực hành ngắn, cụ thể, tự nhiên, không thêm dấu ngoặc kép."
+            : "Return one short, specific, natural practice activity title, without quotation marks."
+          : params.locale === "vi"
+            ? "Kết quả là một tiêu đề bài học ngắn, tự nhiên, không thêm dấu ngoặc kép."
+            : "Return one short, natural lesson title, without quotation marks."
+      : params.intent === "practice" && params.targetField === "description_markdown"
+        ? params.locale === "vi"
+          ? "Kết quả là bài thực hành dạng Markdown: nêu bối cảnh/ngữ cảnh ngắn, yêu cầu cụ thể, tiêu chí hoàn thành và gợi ý nếu hữu ích. Không viết như mô tả marketing."
+          : "Return a Markdown practice activity: brief context, concrete task requirements, completion criteria, and hints if useful. Do not write marketing copy."
       : params.targetField === "short_description"
       ? params.locale === "vi"
         ? "Kết quả là mô tả ngắn 1-2 câu, súc tích, không bullet."
@@ -660,6 +677,10 @@ function buildPrompt(params: {
       ? params.locale === "vi"
         ? `Bạn đang dịch nội dung giáo dục từ ${params.sourceLocale === "en" ? "tiếng Anh" : "tiếng Việt"} sang tiếng Việt.`
         : `You are translating educational content from ${params.sourceLocale === "vi" ? "Vietnamese" : "English"} into English.`
+      : params.intent === "practice"
+      ? params.locale === "vi"
+        ? "Bạn đang tạo một bài thực hành dựa trên các bài học nguồn đã chọn."
+        : "You are creating a practice activity from the selected source lessons."
       : params.type === "lesson"
       ? params.locale === "vi"
         ? "Bạn đang viết mô tả cho một bài học dựa trên transcript video YouTube và nội dung hiện có."
@@ -989,7 +1010,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     let rows: LessonRow[] = [];
     let isSectionScoped = false;
-    const hasProvidedSources = parsed.action === "translate" && (parsed.sourceInputs?.length ?? 0) > 0;
+    const hasProvidedSources =
+      (parsed.action === "translate" || parsed.intent === "practice") &&
+      (parsed.sourceInputs?.length ?? 0) > 0;
 
     if (hasProvidedSources) {
       isSectionScoped = Boolean(parsed.sectionId);
@@ -1068,6 +1091,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       action: parsed.action,
       type: parsed.type,
       targetField: parsed.targetField,
+      intent: parsed.intent,
       locale: parsed.locale,
       sourceLocale: parsed.sourceLocale,
       sources: sourcesForPrompt,

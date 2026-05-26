@@ -11,6 +11,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 function asStringList(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -77,6 +78,11 @@ export default function RoadmapPage() {
   const planned = asStringList(
     t("roadmap.plannedItems", { returnObjects: true }),
   );
+
+  usePageMeta({
+    title: t("roadmap.documentTitle"),
+    url: window.location.href,
+  });
 
   useEffect(() => {
     const prev = document.title;
