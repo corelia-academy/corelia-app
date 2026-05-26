@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getFeed } from "@/lib/feed";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import type { ActivityEvent } from "@/types/feed";
+import type { ActivityEvent, FeedBundle } from "@/types/feed";
 
 interface FeedActor {
   id: string;
@@ -20,6 +20,7 @@ interface FeedActor {
 }
 
 const PAGE_SIZE = 20;
+const BUNDLE_VERBS = new Set(["user.completed_section", "user.followed_user"]);
 
 function actorLabel(actor: FeedActor | undefined): string {
   return actor?.full_name?.trim() || actor?.username?.trim() || actor?.ocid?.trim() || "Corelia";
@@ -79,26 +80,101 @@ function formatDate(value: string, locale: string): string {
   }
 }
 
+function eventDay(value: string): string {
+  return value.slice(0, 10);
+}
+
+function bundleKey(event: ActivityEvent): string | null {
+  if (!BUNDLE_VERBS.has(event.verb)) return null;
+  const day = eventDay(event.created_at);
+
+  if (event.verb === "user.completed_section") {
+    return [
+      event.actor_id,
+      event.verb,
+      event.object_type,
+      event.object_id,
+      day,
+    ].join("|");
+  }
+
+  if (event.verb === "user.followed_user") {
+    return [event.actor_id, event.verb, day].join("|");
+  }
+
+  return null;
+}
+
+function bundleFeedEvents(events: ActivityEvent[]): FeedBundle[] {
+  const buckets = new Map<string, { events: ActivityEvent[]; firstIndex: number }>();
+
+  events.forEach((event, index) => {
+    const key = bundleKey(event);
+    if (!key) return;
+    const bucket = buckets.get(key);
+    if (bucket) bucket.events.push(event);
+    else buckets.set(key, { events: [event], firstIndex: index });
+  });
+
+  const emitted = new Set<string>();
+  const entries: FeedBundle[] = [];
+
+  events.forEach((event, index) => {
+    const key = bundleKey(event);
+    const bucket = key ? buckets.get(key) : null;
+
+    if (!key || !bucket || bucket.events.length < 2) {
+      entries.push({
+        kind: "single",
+        key: `single:${event.id}`,
+        events: [event],
+        created_at: event.created_at,
+      });
+      return;
+    }
+
+    if (emitted.has(key) || bucket.firstIndex !== index) return;
+
+    emitted.add(key);
+    entries.push({
+      kind: "bundle",
+      key: `bundle:${key}`,
+      events: bucket.events,
+      created_at: bucket.events[0]?.created_at ?? event.created_at,
+    });
+  });
+
+  return entries;
+}
+
 function FeedItem({
-  event,
+  bundle,
   actor,
   locale,
 }: {
-  event: ActivityEvent;
+  bundle: FeedBundle;
   actor: FeedActor | undefined;
   locale: string;
 }) {
   const { t } = useTranslation("feed");
+  const event = bundle.events[0];
+  if (!event) return null;
+
   const fallbackObject = t(`objects.${event.object_type}`, {
     defaultValue: event.object_type,
   });
   const object = objectLabel(event, fallbackObject);
   const actorName = actorLabel(actor);
   const href = objectHref(event);
-  const text = t(`verbs.${verbKey(event.verb)}`, {
+  const i18nKey = bundle.kind === "bundle"
+    ? `verbs.${verbKey(event.verb)}_bundle`
+    : `verbs.${verbKey(event.verb)}`;
+  const text = t(i18nKey, {
     actor: actorName,
     object,
-    count: Number(event.payload.milestone ?? event.payload.like_count ?? 0),
+    count: bundle.kind === "bundle"
+      ? bundle.events.length
+      : Number(event.payload.milestone ?? event.payload.like_count ?? 0),
     section: payloadText(event.payload, ["section_title"]) ?? "",
     defaultValue: t("verbs.fallback", { actor: actorName, object }),
   });
@@ -216,7 +292,7 @@ export default function FeedPage() {
     };
   }, []);
 
-  const groupedEvents = useMemo(() => events, [events]);
+  const groupedEvents = useMemo(() => bundleFeedEvents(events), [events]);
 
   return (
     <div className="container-app py-6 sm:py-8">
@@ -283,11 +359,11 @@ export default function FeedPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {groupedEvents.map((event) => (
+          {groupedEvents.map((bundle) => (
             <FeedItem
-              key={event.id}
-              event={event}
-              actor={actors[event.actor_id]}
+              key={bundle.key}
+              bundle={bundle}
+              actor={actors[bundle.events[0]?.actor_id ?? ""]}
               locale={i18n.resolvedLanguage ?? i18n.language}
             />
           ))}

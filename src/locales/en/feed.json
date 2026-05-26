@@ -40,6 +40,7 @@
     "fallback": "{{actor}} has new activity on {{object}}.",
     "user_enrolled_course": "{{actor}} enrolled in {{object}}.",
     "user_completed_section": "{{actor}} completed a lesson in {{object}}.",
+    "user_completed_section_bundle": "{{actor}} completed {{count}} lessons in {{object}}.",
     "user_completed_course": "{{actor}} completed {{object}}.",
     "user_earned_credential": "{{actor}} earned credential {{object}}.",
     "user_registered_hackathon": "{{actor}} registered for {{object}}.",
@@ -51,6 +52,7 @@
     "user_joined_project": "{{actor}} joined {{object}}.",
     "project_received_hearts_milestone": "{{object}} reached {{count}} hearts.",
     "user_followed_user": "{{actor}} followed a profile.",
+    "user_followed_user_bundle": "{{actor}} followed {{count}} profiles.",
     "user_followed_course": "{{actor}} followed {{object}}.",
     "user_followed_hackathon": "{{actor}} followed {{object}}.",
     "user_followed_project": "{{actor}} followed {{object}}."

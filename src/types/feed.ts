@@ -27,3 +27,10 @@ export interface ActivityEvent {
   visibility: ActivityVisibility;
   created_at: string;
 }
+
+export interface FeedBundle {
+  kind: "single" | "bundle";
+  key: string;
+  events: ActivityEvent[];
+  created_at: string;
+}

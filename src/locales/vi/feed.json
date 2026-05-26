@@ -40,6 +40,7 @@
     "fallback": "{{actor}} có hoạt động mới trên {{object}}.",
     "user_enrolled_course": "{{actor}} đã đăng ký khóa học {{object}}.",
     "user_completed_section": "{{actor}} đã hoàn thành một bài học trong {{object}}.",
+    "user_completed_section_bundle": "{{actor}} đã hoàn thành {{count}} bài học trong {{object}}.",
     "user_completed_course": "{{actor}} đã hoàn tất khóa học {{object}}.",
     "user_earned_credential": "{{actor}} đã nhận credential {{object}}.",
     "user_registered_hackathon": "{{actor}} đã đăng ký hackathon {{object}}.",
@@ -51,6 +52,7 @@
     "user_joined_project": "{{actor}} đã tham gia dự án {{object}}.",
     "project_received_hearts_milestone": "Dự án {{object}} đã đạt {{count}} hearts.",
     "user_followed_user": "{{actor}} đã follow một hồ sơ.",
+    "user_followed_user_bundle": "{{actor}} đã follow {{count}} hồ sơ.",
     "user_followed_course": "{{actor}} đã follow khóa học {{object}}.",
     "user_followed_hackathon": "{{actor}} đã follow hackathon {{object}}.",
     "user_followed_project": "{{actor}} đã follow dự án {{object}}."
