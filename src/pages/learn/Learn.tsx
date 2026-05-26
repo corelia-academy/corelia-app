@@ -38,6 +38,7 @@ import {
 } from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
 import { FlashcardDeckCard } from "./components/FlashcardDeckCard";
+import { LessonReadinessCard } from "./components/LessonReadinessCard";
 import { LessonRecapCard } from "./components/LessonRecapCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
 import { SectionQuiz } from "./components/SectionQuiz";
@@ -86,7 +87,8 @@ function getDesktopBreakpointSnapshot() {
 }
 
 export default function Learn() {
-  const { t } = useTranslation("courses");
+  const { t, i18n } = useTranslation("courses");
+  const currentLocale: "vi" | "en" = i18n.language?.startsWith("en") ? "en" : "vi";
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
       String(t(key as never, options as never)),
@@ -428,6 +430,14 @@ export default function Learn() {
           ) : null}
         </div>
       )}
+
+      <LessonReadinessCard
+        lesson={currentLesson}
+        courseId={courseId ?? null}
+        allLessons={visibleLessons}
+        locale={currentLocale}
+        onJumpToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
+      />
 
       <LessonPlayerCard
         lesson={currentLesson}
