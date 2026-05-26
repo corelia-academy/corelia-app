@@ -104,7 +104,9 @@
       "ocid": "OCID: {{ocid}}",
       "website": "Website",
       "role": "Role",
-      "memberSince": "Member since"
+      "memberSince": "Member since",
+      "followers": "Followers",
+      "following": "Following"
     },
     "errors": {
       "notFound": "User not found",
@@ -116,6 +118,10 @@
       "quickInfo": "Quick info",
       "empty": "No public info yet.",
       "instructorHeadlineFallback": "Instructor"
+    },
+    "activity": {
+      "title": "Activity",
+      "empty": "No public activity yet."
     },
     "achievements": {
       "selfOnly": "Achievements are only visible to the account owner for now.",

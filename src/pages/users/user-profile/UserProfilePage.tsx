@@ -10,6 +10,7 @@ import { useAuth } from "@/stores/authStore";
 import { getRoleLabel } from "@/types/database";
 
 import { UserProfileAchievementsSection } from "./components/UserProfileAchievementsSection";
+import { UserProfileActivitySection } from "./components/UserProfileActivitySection";
 import { UserProfileContestsSection } from "./components/UserProfileContestsSection";
 import { UserProfileCoursesSection } from "./components/UserProfileCoursesSection";
 import { UserProfileOverviewSection } from "./components/UserProfileOverviewSection";
@@ -155,6 +156,7 @@ export default function UserProfileLayout() {
         ) : profile ? (
           <div className="space-y-6">
             <UserProfileOverviewSection profile={profile} />
+            <UserProfileActivitySection profile={profile} />
             <UserProfileAchievementsSection isSelf={isSelf} />
             <UserProfileCoursesSection profile={profile} />
             <UserProfileContestsSection profile={profile} isSelf={isSelf} />

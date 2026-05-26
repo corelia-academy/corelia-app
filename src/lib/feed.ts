@@ -16,3 +16,22 @@ export async function getFeed(options: GetFeedOptions = {}): Promise<ActivityEve
   if (error) throw new Error(error.message);
   return (data ?? []) as ActivityEvent[];
 }
+
+export async function getActorActivity(
+  actorId: string,
+  options: GetFeedOptions = {},
+): Promise<ActivityEvent[]> {
+  let query = supabase
+    .from("activity_events")
+    .select("*")
+    .eq("actor_id", actorId)
+    .order("created_at", { ascending: false })
+    .limit(Math.min(Math.max(options.limit ?? 10, 1), 50));
+
+  if (options.cursor) query = query.lt("created_at", options.cursor);
+  if (options.filter?.length) query = query.in("verb", options.filter);
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ActivityEvent[];
+}
