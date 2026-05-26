@@ -211,3 +211,17 @@ export function uploadUserAvatar(userId: string, file: File): Promise<{ url: str
   const ext = buildSafeExt(file.name, "jpg");
   return uploadToPath(`avatars/${userId}/${Date.now()}.${ext}`, file);
 }
+
+/** Image attachment for a Cora chat message: cora-attachments/{userId}/{timestamp}-{uuid}.{ext} */
+export function uploadCoraImageAttachment(
+  userId: string,
+  file: File,
+): Promise<{ url: string; path: string }> {
+  if (!userId) throw new Error("Thiếu userId");
+  const ext = buildSafeExt(file.name, "jpg");
+  const uniq =
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : String(Date.now());
+  return uploadToPath(`cora-attachments/${userId}/${Date.now()}-${uniq}.${ext}`, file);
+}

@@ -40,7 +40,9 @@ const ContestNew = lazy(() => import("@/pages/hackathon-detail/ContestNew"));
 const ContestPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
 const ContestPublicPage = lazy(() => import("@/pages/hackathon-detail/ContestPublicPage"));
 const Projects = lazy(() => import("@/pages/projects"));
+const ProjectDetail = lazy(() => import("@/pages/projects/ProjectDetailPage"));
 const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
+const CoInstructorInvitePage = lazy(() => import("@/pages/invites/CoInstructorInvitePage"));
 const SearchPage = lazy(() => import("@/pages/search"));
 import { ContestManageIndexRedirect } from "@/pages/hackathon-detail/ContestManageIndexRedirect";
 import { ContestPublicLegacyRedirect } from "@/pages/hackathon-detail/ContestPublicLegacyRedirect";
@@ -286,6 +288,14 @@ export default function App() {
                   </Suspense>
                 }
               />
+              <Route
+                path="invites/co-instructor/:token"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <CoInstructorInvitePage />
+                  </Suspense>
+                }
+              />
               <Route path="cohorts" element={<Navigate to="/courses" replace />} />
               <Route
                 path="career"
@@ -394,6 +404,14 @@ export default function App() {
                 element={
                   <Suspense fallback={<PageFallback />}>
                     <Projects />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="projects/:id"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <ProjectDetail />
                   </Suspense>
                 }
               />

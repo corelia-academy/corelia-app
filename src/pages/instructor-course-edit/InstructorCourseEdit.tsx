@@ -184,6 +184,12 @@ import type {
 } from "./types";
 import { formatVndInput, normalizeVndDigits } from "./utils/currency";
 import { createSponsorId, getNextOrder, isValidHttpUrl } from "./utils/helpers";
+import {
+  inviteCoInstructor,
+  listPendingCoInstructorInvites,
+  revokeCoInstructorInvite,
+  type CoInstructorInviteRow,
+} from "@/lib/coInstructorInvites";
 
 /** Gợi ý tách lesson khi video dài hơn ngưỡng này (giây). */
 const LONG_VIDEO_SPLIT_SECONDS = 3600;
@@ -391,6 +397,14 @@ const InstructorCourseEdit = () => {
   const [instructorDirectory, setInstructorDirectory] = useState<Profile[]>([]);
   const [loadingInstructorDirectory, setLoadingInstructorDirectory] =
     useState(false);
+  // Pending invites for this course (manager view). Source of truth = DB.
+  const [pendingCoInstructorInvites, setPendingCoInstructorInvites] = useState<
+    CoInstructorInviteRow[]
+  >([]);
+  // Snapshot of ids that were already accepted at load-time. Used to decide
+  // which uids in coInstructorIds need an invite (newly added) vs perms update.
+  const [acceptedCoInstructorIdsSnapshot, setAcceptedCoInstructorIdsSnapshot] =
+    useState<string[]>([]);
 
   const [supportedLocales, setSupportedLocales] = useState<SupportedCourseLocale[]>(["vi", "en"]);
   const [primaryContentLocale, setPrimaryContentLocale] = useState<SupportedCourseLocale>("vi");
@@ -789,14 +803,31 @@ const InstructorCourseEdit = () => {
 
   useEffect(() => {
     if (!course) return;
-    const ids =
-      (course.co_instructors ?? [])
-        .map((c) => String(c.id ?? "").trim())
-        .filter(Boolean) ?? [];
-    const filtered = ids.filter((cid) => cid !== course.instructor_id);
-    setCoInstructorIds(Array.from(new Set(filtered)));
+    const acceptedIds = Object.keys(course.co_instructor_permissions ?? {})
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .filter((cid) => cid !== course.instructor_id);
+    const uniqueAccepted = Array.from(new Set(acceptedIds));
+    setCoInstructorIds(uniqueAccepted);
     setCoInstructorPermissions(course.co_instructor_permissions ?? {});
+    setAcceptedCoInstructorIdsSnapshot(uniqueAccepted);
   }, [course]);
+
+  // Load pending co-instructor invites for this course (manager view).
+  useEffect(() => {
+    if (!course?.id || !canEditCoInstructors) return;
+    let cancelled = false;
+    void listPendingCoInstructorInvites(course.id)
+      .then((rows) => {
+        if (!cancelled) setPendingCoInstructorInvites(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setPendingCoInstructorInvites([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [course?.id, canEditCoInstructors]);
 
   useEffect(() => {
     if (!canEditCoInstructors) return;
@@ -1210,13 +1241,30 @@ const InstructorCourseEdit = () => {
 
       const shouldUpdateRootContent = activeContentLocale === primaryContentLocale;
 
+      // Split coInstructorIds into already-accepted (write perms via updateCourse)
+      // vs newly-added-to-invite (handled post-save via invite RPC + email).
+      const pendingInviteIdSet = new Set(
+        pendingCoInstructorInvites.map((i) => i.invitee_user_id),
+      );
+      const acceptedSet = new Set(acceptedCoInstructorIdsSnapshot);
+      const writableAcceptedIds = coInstructorIds.filter((cid) =>
+        acceptedSet.has(cid),
+      );
+      const idsToInvite = coInstructorIds.filter(
+        (cid) =>
+          cid &&
+          cid !== course.instructor_id &&
+          !acceptedSet.has(cid) &&
+          !pendingInviteIdSet.has(cid),
+      );
+
       const coInstructorSnapshots = (() => {
         if (!canEditCoInstructors) return undefined;
         const byId = new Map(instructorDirectory.map((p) => [p.id, p]));
         const fallbackById = new Map(
           (course.co_instructors ?? []).map((c) => [c.id, c]),
         );
-        return coInstructorIds
+        return writableAcceptedIds
           .filter((cid) => cid && cid !== course.instructor_id)
           .map((cid) => {
             const prof = byId.get(cid);
@@ -1230,7 +1278,7 @@ const InstructorCourseEdit = () => {
       const coInstructorPermissionsPayload = (() => {
         if (!canEditCoInstructors) return undefined;
         const next: Record<string, CourseCoInstructorPermissions> = {};
-        for (const cid of coInstructorIds) {
+        for (const cid of writableAcceptedIds) {
           if (!cid || cid === course.instructor_id) continue;
           next[cid] = coInstructorPermissions[cid] ?? {};
         }
@@ -1372,10 +1420,67 @@ const InstructorCourseEdit = () => {
           : null,
       );
       toast.success(successMessage);
+
+      // After course save, fire co-instructor invites for newly-added uids.
+      if (canEditCoInstructors && idsToInvite.length > 0) {
+        let invitedCount = 0;
+        let inviteFailures = 0;
+        for (const inviteeId of idsToInvite) {
+          try {
+            await inviteCoInstructor({
+              courseId: course.id,
+              inviteeUserId: inviteeId,
+              permissions: coInstructorPermissions[inviteeId] ?? {},
+            });
+            invitedCount += 1;
+          } catch (err) {
+            inviteFailures += 1;
+            console.error("[co-instructor invite]", inviteeId, err);
+          }
+        }
+        if (invitedCount > 0) {
+          toast.success(
+            t("courseEdit.coInstructors.inviteSent", { count: invitedCount }),
+          );
+        }
+        if (inviteFailures > 0) {
+          toast.error(
+            t("courseEdit.coInstructors.inviteFailed", { count: inviteFailures }),
+          );
+        }
+        // Remove invited uids from local state (they are not real co-instructors yet)
+        // and reload pending invites from DB.
+        const invitedSet = new Set(idsToInvite);
+        setCoInstructorIds((prev) => prev.filter((id) => !invitedSet.has(id)));
+        setCoInstructorPermissions((prev) => {
+          const next = { ...prev };
+          for (const id of invitedSet) delete next[id];
+          return next;
+        });
+        try {
+          const refreshed = await listPendingCoInstructorInvites(course.id);
+          setPendingCoInstructorInvites(refreshed);
+        } catch (err) {
+          console.error("[co-instructor invite] refresh pending", err);
+        }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRevokeCoInstructorInvite = async (inviteId: string) => {
+    if (!course?.id) return;
+    try {
+      await revokeCoInstructorInvite(inviteId);
+      setPendingCoInstructorInvites((prev) =>
+        prev.filter((i) => i.id !== inviteId),
+      );
+      toast.success(t("courseEdit.coInstructors.inviteRevoked"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "revoke_failed");
     }
   };
 
@@ -4734,6 +4839,12 @@ const InstructorCourseEdit = () => {
                         options={
                           instructorDirectory
                             .filter((p) => p.id !== course.instructor_id)
+                            .filter(
+                              (p) =>
+                                !pendingCoInstructorInvites.some(
+                                  (inv) => inv.invitee_user_id === p.id,
+                                ),
+                            )
                             .map(
                               (p): ProfileComboboxOption => ({
                                 id: p.id,
@@ -4776,6 +4887,63 @@ const InstructorCourseEdit = () => {
                         </p>
                       ) : null}
 
+                      {pendingCoInstructorInvites.length > 0 ? (
+                        <div className="space-y-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
+                          <div className="text-xs font-semibold uppercase tracking-wide text-amber-300">
+                            {t("courseEdit.coInstructors.pendingTitle")}
+                          </div>
+                          <p className="text-xs text-foreground-muted">
+                            {t("courseEdit.coInstructors.pendingHint")}
+                          </p>
+                          {pendingCoInstructorInvites.map((inv) => {
+                            const display =
+                              instructorDirectory.find((p) => p.id === inv.invitee_user_id)
+                                ?.full_name ??
+                              instructorDirectory.find((p) => p.id === inv.invitee_user_id)
+                                ?.email ??
+                              inv.invitee_user_id;
+                            const perms = inv.permissions ?? {};
+                            const permKeys = Object.entries(perms)
+                              .filter(([, v]) => v === true)
+                              .map(([k]) => k);
+                            return (
+                              <div
+                                key={inv.id}
+                                className="flex items-start justify-between gap-2 rounded-md border border-border-subtle bg-surface-base p-3"
+                              >
+                                <div className="min-w-0">
+                                  <div className="text-sm font-medium text-foreground">
+                                    {display}
+                                  </div>
+                                  <div className="mt-0.5 text-xs text-foreground-muted">
+                                    {inv.invitee_user_id}
+                                  </div>
+                                  <div className="mt-1 text-xs text-foreground-muted">
+                                    {t("courseEdit.coInstructors.pendingExpiresAt", {
+                                      date: new Date(inv.expires_at).toLocaleString(),
+                                    })}
+                                  </div>
+                                  {permKeys.length > 0 ? (
+                                    <div className="mt-1 text-xs text-foreground-muted">
+                                      {permKeys.join(", ")}
+                                    </div>
+                                  ) : null}
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-2"
+                                  onClick={() => handleRevokeCoInstructorInvite(inv.id)}
+                                >
+                                  {t("courseEdit.coInstructors.revokeInvite")}
+                                </Button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+
                       {coInstructorIds.length > 0 ? (
                         <div className="space-y-3">
                           {coInstructorIds.map((cid) => {
@@ -4786,6 +4954,8 @@ const InstructorCourseEdit = () => {
                                 ?.email ??
                               cid;
                             const perms = coInstructorPermissions[cid] ?? {};
+                            const willInvite =
+                              !acceptedCoInstructorIdsSnapshot.includes(cid);
                             return (
                               <div
                                 key={cid}
@@ -4793,8 +4963,13 @@ const InstructorCourseEdit = () => {
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="min-w-0">
-                                    <div className="text-sm font-medium text-foreground">
+                                    <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-foreground">
                                       {display}
+                                      {willInvite ? (
+                                        <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
+                                          {t("courseEdit.coInstructors.willInviteBadge")}
+                                        </span>
+                                      ) : null}
                                     </div>
                                     <div className="mt-0.5 text-xs text-foreground-muted">
                                       {cid}

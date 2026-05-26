@@ -32,6 +32,7 @@
     "backHome": "Về trang chủ"
   },
   "nav": {
+    "someone": "Một người dùng",
     "home": "Trang chủ",
     "courses": "Khóa học",
     "career": "Lộ trình",
@@ -69,6 +70,14 @@
     "inviteDeclined": "Đã từ chối lời mời.",
     "inviteAcceptFailed": "Không thể chấp nhận lời mời.",
     "inviteDeclineFailed": "Không thể từ chối lời mời.",
+    "coInstructorInviteTitle": "Lời mời đồng giảng viên",
+    "coInstructorInviteBody": "Bạn được mời cùng giảng khoá \"{{course}}\".",
+    "coInstructorInviteCourseFallback": "một khoá học",
+    "coInstructorInvitePermissions": "Quyền: {{list}}",
+    "coInstructorInviteAccepted": "Bạn đã trở thành đồng giảng viên.",
+    "coInstructorInviteDeclined": "Đã từ chối lời mời đồng giảng viên.",
+    "coInstructorInviteAcceptFailed": "Không thể chấp nhận lời mời đồng giảng viên.",
+    "coInstructorInviteDeclineFailed": "Không thể từ chối lời mời đồng giảng viên.",
     "hackathonRegistrationApprovedTitle": "Đã duyệt hồ sơ",
     "hackathonRegistrationApprovedBody": "Hồ sơ đăng ký hackathon {{hackathonTitle}} của bạn đã được duyệt.",
     "hackathonRegistrationRejectedTitle": "Hồ sơ chưa được duyệt",
@@ -139,6 +148,13 @@
     "title": "Dự án",
     "description": "Trang tổng hợp dự án public của toàn bộ cộng đồng Corelia.",
     "empty": "Chưa có dự án nào.",
+    "loading": "Đang tải dự án...",
+    "loadMore": "Tải thêm",
+    "emptyTitle": "Chưa tìm thấy dự án",
+    "emptyDescription": "Hãy thử bộ lọc khác hoặc quay lại khi cộng đồng đăng thêm dự án.",
+    "errorTitle": "Không tải được dự án",
+    "errorDescription": "Có lỗi xảy ra khi tải thư viện dự án.",
+    "retry": "Thử lại",
     "byPrefix": "Bởi",
     "viewSource": "Xem nguồn",
     "demo": "Demo",
@@ -149,6 +165,38 @@
     "sourceHackathon": "Hackathon",
     "sourceCourse": "Khóa học",
     "sourceShowcase": "Showcase",
+    "filters": {
+      "label": "Nguồn dự án",
+      "all": "Tất cả",
+      "hackathon": "Hackathon",
+      "course": "Khóa học",
+      "showcase": "Showcase"
+    },
+    "sort": {
+      "label": "Sắp xếp",
+      "newest": "Mới nhất",
+      "mostLiked": "Nhiều tim nhất",
+      "mostCommented": "Nhiều bình luận nhất"
+    },
+    "card": {
+      "noSummary": "Dự án chưa có mô tả ngắn.",
+      "links": "Liên kết dự án",
+      "moreLinks": "Còn {{count}} liên kết"
+    },
+    "detail": {
+      "backToProjects": "Quay lại Dự án",
+      "viewSource": "Xem nguồn",
+      "demo": "Demo",
+      "repo": "Repo",
+      "slides": "Slides",
+      "screenshot": "Ảnh chụp",
+      "video": "Video",
+      "description": "Mô tả",
+      "noDescription": "Dự án chưa có mô tả chi tiết.",
+      "notFoundTitle": "Không tìm thấy dự án",
+      "notFoundDescription": "Dự án này có thể không tồn tại hoặc chưa được public.",
+      "goBack": "Quay lại Dự án"
+    },
     "social": {
       "heart": "Thả tim",
       "unheart": "Bỏ tim",
@@ -207,6 +255,11 @@
     "loading": "Đang tải…",
     "empty": "Chưa có dữ liệu",
     "error": "Có lỗi xảy ra"
+  },
+  "errorBoundary": {
+    "title": "Đã xảy ra lỗi",
+    "sectionMessage": "Không thể tải nội dung này.",
+    "reloadHome": "Làm mới & về trang chủ"
   },
   "home": {
     "syncing": "Đang đồng bộ...",
@@ -308,6 +361,14 @@
     "inputPlaceholder": "Hỏi Cora điều gì đó…",
     "sendAction": "Gửi",
     "sendingAction": "Đang gửi…",
+    "explainButtonLabel": "Cora giải thích",
+    "explainUserBubble": "Giải thích đoạn: \"{{snippet}}\"",
+    "attachImageLabel": "Đính kèm ảnh",
+    "attachImageTooLarge": "Ảnh quá lớn (tối đa 5MB)",
+    "attachImageBadType": "Chỉ hỗ trợ ảnh PNG, JPEG hoặc WEBP",
+    "attachImageTierLocked": "Upload ảnh yêu cầu gói Pro hoặc Bootcamp",
+    "attachImageUploading": "Đang upload…",
+    "removeAttachment": "Bỏ",
     "sourceCount_one": "Phản hồi này đang bám trên {{count}} nguồn tham chiếu nội bộ.",
     "sourceCount_other": "Phản hồi này đang bám trên {{count}} nguồn tham chiếu nội bộ.",
     "quotaExceededTitle": "Bạn đã học rất chăm tháng này! 🎓",

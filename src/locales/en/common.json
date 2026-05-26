@@ -33,6 +33,7 @@
   },
   "nav": {
     "home": "Home",
+    "someone": "Someone",
     "courses": "Courses",
     "career": "Career",
     "contests": "Hackathons",
@@ -69,6 +70,14 @@
     "inviteDeclined": "Invite declined.",
     "inviteAcceptFailed": "Could not accept invite.",
     "inviteDeclineFailed": "Could not decline invite.",
+    "coInstructorInviteTitle": "Co-instructor invite",
+    "coInstructorInviteBody": "You were invited to co-teach \"{{course}}\".",
+    "coInstructorInviteCourseFallback": "a course",
+    "coInstructorInvitePermissions": "Permissions: {{list}}",
+    "coInstructorInviteAccepted": "You're now a co-instructor.",
+    "coInstructorInviteDeclined": "Co-instructor invite declined.",
+    "coInstructorInviteAcceptFailed": "Could not accept co-instructor invite.",
+    "coInstructorInviteDeclineFailed": "Could not decline co-instructor invite.",
     "hackathonRegistrationApprovedTitle": "Registration approved",
     "hackathonRegistrationApprovedBody": "Your application for {{hackathonTitle}} was approved.",
     "hackathonRegistrationRejectedTitle": "Registration not approved",
@@ -139,6 +148,13 @@
     "title": "Projects",
     "description": "A public gallery of projects across the Corelia ecosystem.",
     "empty": "No projects yet.",
+    "loading": "Loading projects...",
+    "loadMore": "Load more",
+    "emptyTitle": "No projects found",
+    "emptyDescription": "Try another source filter or come back when the community publishes more work.",
+    "errorTitle": "Could not load projects",
+    "errorDescription": "Something went wrong while loading the project gallery.",
+    "retry": "Retry",
     "byPrefix": "By",
     "viewSource": "View source",
     "demo": "Demo",
@@ -149,6 +165,38 @@
     "sourceHackathon": "Hackathon",
     "sourceCourse": "Course",
     "sourceShowcase": "Showcase",
+    "filters": {
+      "label": "Project source",
+      "all": "All",
+      "hackathon": "Hackathon",
+      "course": "Course",
+      "showcase": "Showcase"
+    },
+    "sort": {
+      "label": "Sort",
+      "newest": "Newest",
+      "mostLiked": "Most liked",
+      "mostCommented": "Most commented"
+    },
+    "card": {
+      "noSummary": "No summary provided yet.",
+      "links": "Project links",
+      "moreLinks": "{{count}} more links"
+    },
+    "detail": {
+      "backToProjects": "Back to Projects",
+      "viewSource": "View source",
+      "demo": "Demo",
+      "repo": "Repo",
+      "slides": "Slides",
+      "screenshot": "Screenshot",
+      "video": "Video",
+      "description": "Description",
+      "noDescription": "No description provided yet.",
+      "notFoundTitle": "Project not found",
+      "notFoundDescription": "This project may not exist or may not be public.",
+      "goBack": "Back to Projects"
+    },
     "social": {
       "heart": "Like",
       "unheart": "Unlike",
@@ -207,6 +255,11 @@
     "loading": "Loading…",
     "empty": "No data yet",
     "error": "Something went wrong"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "sectionMessage": "Could not load this content.",
+    "reloadHome": "Reload & go home"
   },
   "home": {
     "syncing": "Syncing...",
@@ -308,6 +361,14 @@
     "inputPlaceholder": "Ask Cora something…",
     "sendAction": "Send",
     "sendingAction": "Sending…",
+    "explainButtonLabel": "Explain with Cora",
+    "explainUserBubble": "Explain this passage: \"{{snippet}}\"",
+    "attachImageLabel": "Attach image",
+    "attachImageTooLarge": "Image is too large (max 5MB)",
+    "attachImageBadType": "Only PNG, JPEG or WEBP images are supported",
+    "attachImageTierLocked": "Image upload requires the Pro or Bootcamp plan",
+    "attachImageUploading": "Uploading…",
+    "removeAttachment": "Remove",
     "sourceCount_one": "This reply is grounded in {{count}} internal source.",
     "sourceCount_other": "This reply is grounded in {{count}} internal sources.",
     "quotaExceededTitle": "You've been studying hard this month! 🎓",

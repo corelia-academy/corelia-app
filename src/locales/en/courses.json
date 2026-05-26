@@ -1,4 +1,20 @@
 {
+  "inviteCoInstructor": {
+    "title": "Co-instructor invite",
+    "summary": "{{inviter}} invited you to co-teach \"{{course}}\".",
+    "permissions": "Permissions: {{list}}",
+    "expiresAt": "Expires {{date}}",
+    "ctaAccept": "Accept",
+    "ctaDecline": "Decline",
+    "ctaLogin": "Log in to continue",
+    "loginRequired": "You need to sign in to review this invite.",
+    "invalid": "This invite link is invalid.",
+    "accepted": "You're now a co-instructor.",
+    "declined": "Invite declined.",
+    "errorFallback": "Could not process the invite.",
+    "notActionable": "This invite is no longer active (status: {{status}}).",
+    "courseFallback": "a course"
+  },
   "level": {
     "beginner": "Beginner",
     "intermediate": "Intermediate",
@@ -274,6 +290,15 @@
         "progress": "Progress",
         "completedLessons": "Completed",
         "nextUp": "Next"
+      },
+      "recap": {
+        "title": "Cora's recap",
+        "keyPointsLabel": "Key takeaways",
+        "practicalTipsLabel": "Practical tips",
+        "generating": "Cora is summarizing this lesson…",
+        "regenerate": "Regenerate",
+        "error": "Cora couldn't summarize this lesson right now.",
+        "retry": "Try again"
       },
       "lessonList": {
         "title": "Lessons",

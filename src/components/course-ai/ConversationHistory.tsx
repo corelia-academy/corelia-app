@@ -42,7 +42,33 @@ export function ConversationHistory({
           )}
         >
           {message.role === "user" ? (
-            <p className="whitespace-pre-wrap break-words">{message.content}</p>
+            <>
+              {message.attachments && message.attachments.length > 0 ? (
+                <div className="mb-1.5 flex flex-wrap gap-1.5">
+                  {message.attachments.map((att, idx) =>
+                    att.kind === "image" ? (
+                      <a
+                        key={`${message.id}-att-${idx}`}
+                        href={att.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block overflow-hidden rounded-md border border-primary-foreground/30"
+                      >
+                        <img
+                          src={att.url}
+                          alt="attachment"
+                          className="max-h-60 max-w-full object-contain"
+                          loading="lazy"
+                        />
+                      </a>
+                    ) : null,
+                  )}
+                </div>
+              ) : null}
+              {message.content ? (
+                <p className="whitespace-pre-wrap break-words">{message.content}</p>
+              ) : null}
+            </>
           ) : (
             <>
               <Markdown content={message.content} compact />
