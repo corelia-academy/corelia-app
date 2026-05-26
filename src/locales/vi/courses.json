@@ -295,6 +295,26 @@
         "error": "Cora chưa thể tóm tắt bài học lúc này.",
         "retry": "Thử lại"
       },
+      "flashcards": {
+        "title": "Flashcards",
+        "subtitle": "Củng cố trí nhớ bằng thẻ ghi nhớ",
+        "generateAction": "Tạo flashcards",
+        "regenerateAction": "Tạo lại",
+        "generating": "Cora đang tạo thẻ…",
+        "startReview": "Bắt đầu ôn",
+        "noDueToday": "Tuyệt vời! Quay lại ngày mai 🎯",
+        "dueCount": "{{count}} thẻ cần ôn",
+        "totalCount": "Tổng {{count}} thẻ",
+        "frontLabel": "Câu hỏi",
+        "backLabel": "Đáp án",
+        "flipHint": "Bấm để lật thẻ",
+        "again": "Lại",
+        "good": "Tốt",
+        "easy": "Dễ",
+        "sessionDone": "Xong! Đã ôn {{count}} thẻ.",
+        "backToOverview": "Quay lại",
+        "empty": "Lesson này chưa đủ nội dung để tạo flashcards."
+      },
       "lessonList": {
         "title": "Danh sách bài học",
         "metaFullAccess": "{{sections}} chương • {{lessons}} bài",

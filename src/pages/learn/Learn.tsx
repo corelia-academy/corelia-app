@@ -37,6 +37,7 @@ import {
   type CurriculumGroup,
 } from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
+import { FlashcardDeckCard } from "./components/FlashcardDeckCard";
 import { LessonRecapCard } from "./components/LessonRecapCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
 import { SectionQuiz } from "./components/SectionQuiz";
@@ -445,6 +446,14 @@ export default function Learn() {
       />
 
       <LessonRecapCard
+        lessonId={currentLesson?.id ?? null}
+        courseId={courseId ?? null}
+        completed={
+          !!currentLesson && progress.completedIds.has(currentLesson.id)
+        }
+      />
+
+      <FlashcardDeckCard
         lessonId={currentLesson?.id ?? null}
         courseId={courseId ?? null}
         completed={

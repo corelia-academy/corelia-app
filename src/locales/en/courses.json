@@ -300,6 +300,26 @@
         "error": "Cora couldn't summarize this lesson right now.",
         "retry": "Try again"
       },
+      "flashcards": {
+        "title": "Flashcards",
+        "subtitle": "Reinforce memory with spaced repetition",
+        "generateAction": "Generate flashcards",
+        "regenerateAction": "Regenerate",
+        "generating": "Cora is generating cards…",
+        "startReview": "Start review",
+        "noDueToday": "Nothing due — see you tomorrow 🎯",
+        "dueCount": "{{count}} cards due",
+        "totalCount": "{{count}} cards total",
+        "frontLabel": "Question",
+        "backLabel": "Answer",
+        "flipHint": "Tap to flip",
+        "again": "Again",
+        "good": "Good",
+        "easy": "Easy",
+        "sessionDone": "Done! Reviewed {{count}} cards.",
+        "backToOverview": "Back",
+        "empty": "Not enough content yet to generate flashcards."
+      },
       "lessonList": {
         "title": "Lessons",
         "metaFullAccess": "{{sections}} sections • {{lessons}} lessons",
