@@ -7,9 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getFeed } from "@/lib/feed";
+import { listFollowing } from "@/lib/follows";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import type { ActivityEvent, FeedBundle } from "@/types/feed";
+import { useAuth } from "@/stores/authStore";
+import type { ActivityEvent, FeedBundle, FollowRow, FollowSubjectType } from "@/types/feed";
 
 interface FeedActor {
   id: string;
@@ -21,6 +23,90 @@ interface FeedActor {
 
 const PAGE_SIZE = 20;
 const BUNDLE_VERBS = new Set(["user.completed_section", "user.followed_user"]);
+const FOLLOW_SUBJECT_TYPES: FollowSubjectType[] = ["user", "course", "hackathon", "project"];
+
+type FollowedSubjects = Record<FollowSubjectType, Set<string>>;
+
+function createFollowedSubjects(): FollowedSubjects {
+  return {
+    user: new Set<string>(),
+    course: new Set<string>(),
+    hackathon: new Set<string>(),
+    project: new Set<string>(),
+  };
+}
+
+function buildFollowedSubjects(rows: FollowRow[]): FollowedSubjects {
+  const subjects = createFollowedSubjects();
+  const now = Date.now();
+
+  for (const row of rows) {
+    if (row.muted_until && new Date(row.muted_until).getTime() > now) continue;
+    subjects[row.subject_type].add(row.subject_id);
+  }
+
+  return subjects;
+}
+
+function activityEventFromRecord(record: Record<string, unknown>): ActivityEvent | null {
+  if (
+    typeof record.id !== "number" ||
+    typeof record.actor_id !== "string" ||
+    typeof record.verb !== "string" ||
+    typeof record.object_type !== "string" ||
+    typeof record.object_id !== "string" ||
+    typeof record.created_at !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    id: record.id,
+    actor_id: record.actor_id,
+    verb: record.verb,
+    object_type: record.object_type,
+    object_id: record.object_id,
+    target_type: typeof record.target_type === "string" ? record.target_type : null,
+    target_id: typeof record.target_id === "string" ? record.target_id : null,
+    payload: record.payload && typeof record.payload === "object"
+      ? (record.payload as Record<string, unknown>)
+      : {},
+    visibility: record.visibility === "followers" || record.visibility === "private"
+      ? record.visibility
+      : "public",
+    created_at: record.created_at,
+  };
+}
+
+function isFollowSubjectType(value: string | null): value is FollowSubjectType {
+  return Boolean(value && FOLLOW_SUBJECT_TYPES.includes(value as FollowSubjectType));
+}
+
+function eventMatchesFollowedSubjects(
+  event: ActivityEvent,
+  followed: FollowedSubjects,
+  userId: string,
+): boolean {
+  if (event.actor_id === userId) return true;
+  if (followed.user.has(event.actor_id)) return true;
+
+  if (
+    isFollowSubjectType(event.object_type) &&
+    followed[event.object_type].has(event.object_id)
+  ) {
+    return true;
+  }
+
+  if (
+    isFollowSubjectType(event.target_type) &&
+    event.target_id &&
+    followed[event.target_type].has(event.target_id)
+  ) {
+    return true;
+  }
+
+  return false;
+}
 
 function actorLabel(actor: FeedActor | undefined): string {
   return actor?.full_name?.trim() || actor?.username?.trim() || actor?.ocid?.trim() || "Corelia";
@@ -35,7 +121,10 @@ function objectHref(event: ActivityEvent): string | null {
   const type = event.target_type ?? event.object_type;
   const id = event.target_id ?? event.object_id;
   if (!id) return null;
-  if (type === "course") return `/courses/${id}`;
+  if (type === "course") {
+    const slug = payloadText(event.payload, ["course_slug", "slug"]);
+    return `/courses/${slug ?? id}`;
+  }
   if (type === "hackathon") {
     const slug = payloadText(event.payload, ["hackathon_slug", "slug"]);
     return `/hackathons/${slug ?? id}`;
@@ -214,6 +303,7 @@ function FeedItem({
 
 export default function FeedPage() {
   const { t, i18n } = useTranslation("feed");
+  const { user } = useAuth();
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [actors, setActors] = useState<Record<string, FeedActor>>({});
   const [loading, setLoading] = useState(true);
@@ -221,6 +311,19 @@ export default function FeedPage() {
   const [error, setError] = useState<string | null>(null);
   const [hasNewEvents, setHasNewEvents] = useState(false);
   const cursorRef = useRef<string | null>(null);
+  const followedRef = useRef<FollowedSubjects>(createFollowedSubjects());
+
+  const refreshFollowedSubjects = useCallback(async () => {
+    if (!user?.id) {
+      followedRef.current = createFollowedSubjects();
+      return followedRef.current;
+    }
+
+    const rows = await listFollowing();
+    const next = buildFollowedSubjects(rows);
+    followedRef.current = next;
+    return next;
+  }, [user?.id]);
 
   const loadActors = useCallback(async (nextEvents: ActivityEvent[]) => {
     const ids = Array.from(new Set(nextEvents.map((event) => event.actor_id)));
@@ -248,6 +351,7 @@ export default function FeedPage() {
       else setLoading(true);
       setError(null);
       try {
+        await refreshFollowedSubjects();
         const nextEvents = await getFeed({
           cursor: append ? cursorRef.current : null,
           limit: PAGE_SIZE,
@@ -266,7 +370,7 @@ export default function FeedPage() {
         setLoadingMore(false);
       }
     },
-    [loadActors, t],
+    [loadActors, refreshFollowedSubjects, t],
   );
 
   useEffect(() => {
@@ -278,19 +382,44 @@ export default function FeedPage() {
   }, [events]);
 
   useEffect(() => {
+    if (!user?.id) return;
+
     const channel = supabase
       .channel("activity-feed-page")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "activity_events" },
-        () => setHasNewEvents(true),
+        (payload) => {
+          const event = activityEventFromRecord(payload.new);
+          if (!event) return;
+          if (eventMatchesFollowedSubjects(event, followedRef.current, user.id)) {
+            setHasNewEvents(true);
+          }
+        },
+      )
+      .subscribe();
+
+    const followsChannel = supabase
+      .channel("activity-feed-follows")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "follows",
+          filter: `follower_id=eq.${user.id}`,
+        },
+        () => {
+          void refreshFollowedSubjects();
+        },
       )
       .subscribe();
 
     return () => {
       void supabase.removeChannel(channel);
+      void supabase.removeChannel(followsChannel);
     };
-  }, []);
+  }, [refreshFollowedSubjects, user?.id]);
 
   const groupedEvents = useMemo(() => bundleFeedEvents(events), [events]);
 
