@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: set this to true or false
+  msw: set this to true or false
+  sharp: set this to true or false
+  supabase: set this to true or false
+  workerd: set this to true or false

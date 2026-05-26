@@ -139,6 +139,13 @@
     "title": "Projects",
     "description": "A public gallery of projects across the Corelia ecosystem.",
     "empty": "No projects yet.",
+    "loading": "Loading projects...",
+    "loadMore": "Load more",
+    "emptyTitle": "No projects found",
+    "emptyDescription": "Try another source filter or come back when the community publishes more work.",
+    "errorTitle": "Could not load projects",
+    "errorDescription": "Something went wrong while loading the project gallery.",
+    "retry": "Retry",
     "byPrefix": "By",
     "viewSource": "View source",
     "demo": "Demo",
@@ -149,6 +156,38 @@
     "sourceHackathon": "Hackathon",
     "sourceCourse": "Course",
     "sourceShowcase": "Showcase",
+    "filters": {
+      "label": "Project source",
+      "all": "All",
+      "hackathon": "Hackathon",
+      "course": "Course",
+      "showcase": "Showcase"
+    },
+    "sort": {
+      "label": "Sort",
+      "newest": "Newest",
+      "mostLiked": "Most liked",
+      "mostCommented": "Most commented"
+    },
+    "card": {
+      "noSummary": "No summary provided yet.",
+      "links": "Project links",
+      "moreLinks": "{{count}} more links"
+    },
+    "detail": {
+      "backToProjects": "Back to Projects",
+      "viewSource": "View source",
+      "demo": "Demo",
+      "repo": "Repo",
+      "slides": "Slides",
+      "screenshot": "Screenshot",
+      "video": "Video",
+      "description": "Description",
+      "noDescription": "No description provided yet.",
+      "notFoundTitle": "Project not found",
+      "notFoundDescription": "This project may not exist or may not be public.",
+      "goBack": "Back to Projects"
+    },
     "social": {
       "heart": "Like",
       "unheart": "Unlike",
