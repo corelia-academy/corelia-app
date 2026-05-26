@@ -98,6 +98,8 @@ function FeedItem({
   const text = t(`verbs.${verbKey(event.verb)}`, {
     actor: actorName,
     object,
+    count: Number(event.payload.milestone ?? event.payload.like_count ?? 0),
+    section: payloadText(event.payload, ["section_title"]) ?? "",
     defaultValue: t("verbs.fallback", { actor: actorName, object }),
   });
 
