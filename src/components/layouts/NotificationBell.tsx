@@ -18,6 +18,11 @@ import {
   type UserNotificationRow,
 } from "@/lib/notifications";
 import {
+  acceptCoInstructorInviteById,
+  declineCoInstructorInviteById,
+} from "@/lib/coInstructorInvites";
+import { useNavigate } from "react-router";
+import {
   fetchProjectInviteDisplayContextByProjectIds,
   type ProjectInviteDisplayContext,
 } from "@/lib/notificationInviteContext";
@@ -30,6 +35,7 @@ function payloadString(payload: Record<string, unknown>, key: string): string {
 export function NotificationBell() {
   const { t } = useTranslation("common");
   const { isAuthenticated, authInitialized } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<UserNotificationRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -109,6 +115,50 @@ export function NotificationBell() {
     }
   }
 
+  async function handleAcceptCoInstructorInvite(notification: UserNotificationRow) {
+    const inviteId = notification.payload.invite_id;
+    if (typeof inviteId !== "string" || !inviteId) return;
+    setBusyId(notification.id);
+    try {
+      const res = await acceptCoInstructorInviteById(inviteId);
+      await markNotificationRead(notification.id);
+      await refresh();
+      toast.success(t("notifications.coInstructorInviteAccepted"));
+      setOpen(false);
+      if (res?.course_id) {
+        navigate(`/instructor/courses/${res.course_id}/edit`);
+      }
+    } catch (e) {
+      toast.error(
+        e instanceof Error
+          ? e.message
+          : t("notifications.coInstructorInviteAcceptFailed"),
+      );
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleDeclineCoInstructorInvite(notification: UserNotificationRow) {
+    const inviteId = notification.payload.invite_id;
+    if (typeof inviteId !== "string" || !inviteId) return;
+    setBusyId(notification.id);
+    try {
+      await declineCoInstructorInviteById(inviteId);
+      await markNotificationRead(notification.id);
+      await refresh();
+      toast.success(t("notifications.coInstructorInviteDeclined"));
+    } catch (e) {
+      toast.error(
+        e instanceof Error
+          ? e.message
+          : t("notifications.coInstructorInviteDeclineFailed"),
+      );
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function handleDeclineInvite(notification: UserNotificationRow) {
     const inviteId = notification.payload.invite_id;
     if (typeof inviteId !== "string" || !inviteId) return;
@@ -164,6 +214,7 @@ export function NotificationBell() {
             <ul className="grid gap-2">
               {items.map((n) => {
                 const isInvite = n.type === "project_collaboration_invite";
+                const isCoInstructorInvite = n.type === "co_instructor_invite";
                 const isRegApproved = n.type === "hackathon_registration_approved";
                 const isRegRejected = n.type === "hackathon_registration_rejected";
                 const isHackathonRegistrationReview = isRegApproved || isRegRejected;
@@ -238,6 +289,59 @@ export function NotificationBell() {
                               className="min-h-8"
                               disabled={busyId === n.id}
                               onClick={() => void handleDeclineInvite(n)}
+                            >
+                              {t("header.decline")}
+                            </Button>
+                          </div>
+                        ) : (
+                          <p className="mt-2 text-xs text-foreground-muted">
+                            {t("notifications.inviteResolved")}
+                          </p>
+                        )}
+                      </>
+                    ) : isCoInstructorInvite ? (
+                      <>
+                        <div className="font-medium text-foreground">
+                          {t("notifications.coInstructorInviteTitle")}
+                        </div>
+                        <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                          {t("notifications.coInstructorInviteBody", {
+                            course: payloadString(n.payload, "course_title") ||
+                              t("notifications.coInstructorInviteCourseFallback"),
+                          })}
+                        </p>
+                        {(() => {
+                          const perms = (n.payload.permissions ?? {}) as Record<string, unknown>;
+                          const enabled = Object.entries(perms)
+                            .filter(([, v]) => v === true)
+                            .map(([k]) => k);
+                          if (enabled.length === 0) return null;
+                          return (
+                            <p className="mt-1 text-xs text-foreground-muted">
+                              {t("notifications.coInstructorInvitePermissions", {
+                                list: enabled.join(", "),
+                              })}
+                            </p>
+                          );
+                        })()}
+                        {!resolved ? (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="min-h-8"
+                              disabled={busyId === n.id}
+                              onClick={() => void handleAcceptCoInstructorInvite(n)}
+                            >
+                              {t("header.accept")}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="min-h-8"
+                              disabled={busyId === n.id}
+                              onClick={() => void handleDeclineCoInstructorInvite(n)}
                             >
                               {t("header.decline")}
                             </Button>

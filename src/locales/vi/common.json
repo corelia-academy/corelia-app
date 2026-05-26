@@ -32,6 +32,7 @@
     "backHome": "Về trang chủ"
   },
   "nav": {
+    "someone": "Một người dùng",
     "home": "Trang chủ",
     "courses": "Khóa học",
     "career": "Lộ trình",
@@ -69,6 +70,14 @@
     "inviteDeclined": "Đã từ chối lời mời.",
     "inviteAcceptFailed": "Không thể chấp nhận lời mời.",
     "inviteDeclineFailed": "Không thể từ chối lời mời.",
+    "coInstructorInviteTitle": "Lời mời đồng giảng viên",
+    "coInstructorInviteBody": "Bạn được mời cùng giảng khoá \"{{course}}\".",
+    "coInstructorInviteCourseFallback": "một khoá học",
+    "coInstructorInvitePermissions": "Quyền: {{list}}",
+    "coInstructorInviteAccepted": "Bạn đã trở thành đồng giảng viên.",
+    "coInstructorInviteDeclined": "Đã từ chối lời mời đồng giảng viên.",
+    "coInstructorInviteAcceptFailed": "Không thể chấp nhận lời mời đồng giảng viên.",
+    "coInstructorInviteDeclineFailed": "Không thể từ chối lời mời đồng giảng viên.",
     "hackathonRegistrationApprovedTitle": "Đã duyệt hồ sơ",
     "hackathonRegistrationApprovedBody": "Hồ sơ đăng ký hackathon {{hackathonTitle}} của bạn đã được duyệt.",
     "hackathonRegistrationRejectedTitle": "Hồ sơ chưa được duyệt",

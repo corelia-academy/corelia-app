@@ -14,6 +14,7 @@ import { handleCheckActivityMilestones } from "./credentials/check_activity.ts";
 import { handleCheckCourseCompletion } from "./credentials/check_course.ts";
 import { handleGrantCredentials } from "./credentials/grant.ts";
 import { handleCourseBlastEmail } from "./courses/blast_email.ts";
+import { handleCoInstructorInviteEmail } from "./courses/co_instructor_invite_email.ts";
 import { handleHackathonBlastEmail } from "./hackathons/blast_email.ts";
 import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.ts";
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
@@ -42,6 +43,7 @@ const PROTECTED_OPS = new Set<string>([
   "hackathons.notifyRegistrationReview",
   "hackathons.blastEmail",
   "courses.blastEmail",
+  "courses.coInstructorInvite.sendEmail",
   "careerTracks.blastEmail",
   // notifications.unsubscribe is PUBLIC — intentionally omitted from PROTECTED_OPS
   "credentials.checkCourseCompletion",
@@ -102,6 +104,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleHackathonBlastEmail(req, db);
     } else if (op === "courses.blastEmail" && req.method === "POST") {
       response = await handleCourseBlastEmail(req, db);
+    } else if (op === "courses.coInstructorInvite.sendEmail" && req.method === "POST") {
+      response = await handleCoInstructorInviteEmail(req, db);
     } else if (op === "careerTracks.blastEmail" && req.method === "POST") {
       response = await handleCareerTrackBlastEmail(req, db);
     } else if (op === "notifications.unsubscribe" && req.method === "POST") {

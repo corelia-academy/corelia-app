@@ -1,4 +1,20 @@
 {
+  "inviteCoInstructor": {
+    "title": "Lời mời đồng giảng viên",
+    "summary": "{{inviter}} đã mời bạn cùng giảng khoá \"{{course}}\".",
+    "permissions": "Quyền: {{list}}",
+    "expiresAt": "Hết hạn {{date}}",
+    "ctaAccept": "Chấp nhận",
+    "ctaDecline": "Từ chối",
+    "ctaLogin": "Đăng nhập để tiếp tục",
+    "loginRequired": "Bạn cần đăng nhập để xem lời mời này.",
+    "invalid": "Liên kết lời mời không hợp lệ.",
+    "accepted": "Bạn đã trở thành đồng giảng viên.",
+    "declined": "Đã từ chối lời mời.",
+    "errorFallback": "Không xử lý được lời mời.",
+    "notActionable": "Lời mời này không còn hiệu lực (trạng thái: {{status}}).",
+    "courseFallback": "một khoá học"
+  },
   "level": {
     "beginner": "Cơ bản",
     "intermediate": "Trung cấp",

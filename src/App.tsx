@@ -42,6 +42,7 @@ const ContestPublicPage = lazy(() => import("@/pages/hackathon-detail/ContestPub
 const Projects = lazy(() => import("@/pages/projects"));
 const ProjectDetail = lazy(() => import("@/pages/projects/ProjectDetailPage"));
 const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
+const CoInstructorInvitePage = lazy(() => import("@/pages/invites/CoInstructorInvitePage"));
 const SearchPage = lazy(() => import("@/pages/search"));
 import { ContestManageIndexRedirect } from "@/pages/hackathon-detail/ContestManageIndexRedirect";
 import { ContestPublicLegacyRedirect } from "@/pages/hackathon-detail/ContestPublicLegacyRedirect";
@@ -284,6 +285,14 @@ export default function App() {
                 element={
                   <Suspense fallback={<PageFallback />}>
                     <ProjectInvitePage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="invites/co-instructor/:token"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <CoInstructorInvitePage />
                   </Suspense>
                 }
               />

@@ -1,4 +1,20 @@
 {
+  "inviteCoInstructor": {
+    "title": "Co-instructor invite",
+    "summary": "{{inviter}} invited you to co-teach \"{{course}}\".",
+    "permissions": "Permissions: {{list}}",
+    "expiresAt": "Expires {{date}}",
+    "ctaAccept": "Accept",
+    "ctaDecline": "Decline",
+    "ctaLogin": "Log in to continue",
+    "loginRequired": "You need to sign in to review this invite.",
+    "invalid": "This invite link is invalid.",
+    "accepted": "You're now a co-instructor.",
+    "declined": "Invite declined.",
+    "errorFallback": "Could not process the invite.",
+    "notActionable": "This invite is no longer active (status: {{status}}).",
+    "courseFallback": "a course"
+  },
   "level": {
     "beginner": "Beginner",
     "intermediate": "Intermediate",

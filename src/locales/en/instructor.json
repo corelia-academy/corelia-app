@@ -383,7 +383,15 @@
         "content": "View content",
         "certificates": "View certificates",
         "pricing": "View pricing"
-      }
+      },
+      "willInviteBadge": "Will invite on save",
+      "inviteSent": "Sent {{count}} co-instructor invite(s)",
+      "inviteFailed": "{{count}} co-instructor invite(s) failed",
+      "inviteRevoked": "Invite revoked",
+      "pendingTitle": "Pending invites",
+      "pendingHint": "These people have been invited but haven't accepted yet. They can't access the course until they accept.",
+      "pendingExpiresAt": "Expires {{date}}",
+      "revokeInvite": "Revoke"
     },
     "sponsors": {
       "label": "Sponsors",

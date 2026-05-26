@@ -1052,13 +1052,14 @@ export async function getCoursesForManagement(userId: string, isAdmin: boolean):
     if (error) throw new Error(error.message);
     return (data ?? []).map((r) => rowToCourse(r as CourseRow));
   }
-  const { data, error } = await supabase
-    .from("courses")
-    .select("*")
-    .eq("instructor_id", userId)
-    .order("updated_at", { ascending: false });
+  // RPC returns courses where the caller is the primary instructor OR a
+  // co-instructor (uid present as a key in data.co_instructor_permissions).
+  // The `userId` arg is preserved for the call site; `auth.uid()` inside the
+  // RPC is the source of truth so it can't be spoofed.
+  void userId;
+  const { data, error } = await supabase.rpc("list_manageable_courses");
   if (error) throw new Error(error.message);
-  return (data ?? []).map((r) => rowToCourse(r as CourseRow));
+  return ((data ?? []) as unknown as CourseRow[]).map((r) => rowToCourse(r));
 }
 
 function splitCourseUpdate(updates: CourseUpdate): {

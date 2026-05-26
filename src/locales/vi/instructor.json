@@ -382,7 +382,15 @@
         "content": "Xem nội dung",
         "certificates": "Xem chứng nhận",
         "pricing": "Xem pricing"
-      }
+      },
+      "willInviteBadge": "Sẽ gửi lời mời khi lưu",
+      "inviteSent": "Đã gửi {{count}} lời mời đồng giảng viên",
+      "inviteFailed": "{{count}} lời mời thất bại",
+      "inviteRevoked": "Đã thu hồi lời mời",
+      "pendingTitle": "Lời mời đang chờ",
+      "pendingHint": "Những người này đã được mời nhưng chưa đồng ý. Họ chưa thể truy cập khoá học cho tới khi accept.",
+      "pendingExpiresAt": "Hết hạn {{date}}",
+      "revokeInvite": "Thu hồi"
     },
     "sponsors": {
       "label": "Sponsors",
