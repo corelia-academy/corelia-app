@@ -13,7 +13,10 @@
     "declined": "Invite declined.",
     "errorFallback": "Could not process the invite.",
     "notActionable": "This invite is no longer active (status: {{status}}).",
-    "courseFallback": "a course"
+    "courseFallback": "a course",
+    "wrongAccountTitle": "This invite is for a different account",
+    "wrongAccountBody": "You're signed in as {{email}}. Sign out and sign in with the account that received this invite.",
+    "signOutAndSwitch": "Sign out and switch account"
   },
   "level": {
     "beginner": "Beginner",
