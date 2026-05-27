@@ -3557,11 +3557,6 @@ const InstructorCourseEdit = () => {
   };
 
   const handleDeleteLesson = async (lessonId: string) => {
-    const lc = lessonLearnerCounts[lessonId] ?? 0;
-    if (lc > 0) {
-      toast.error(t("courseEdit.lessons.deleteBlockedHasProgress", { count: lc }));
-      return;
-    }
     if (!id || !confirm(t("courseEdit.confirm.deleteLesson"))) return;
     try {
       await deleteLesson(id, lessonId);
@@ -6647,17 +6642,7 @@ const InstructorCourseEdit = () => {
                                 variant="ghost"
                                 size="sm"
                                 className="text-destructive shrink-0"
-                                disabled={
-                                  reorderingLessons ||
-                                  (lessonLearnerCounts[lesson.id] ?? 0) > 0
-                                }
-                                title={
-                                  (lessonLearnerCounts[lesson.id] ?? 0) > 0
-                                    ? t("courseEdit.lessons.deleteLockedTooltip", {
-                                        count: lessonLearnerCounts[lesson.id] ?? 0,
-                                      })
-                                    : undefined
-                                }
+                                disabled={reorderingLessons}
                                 onClick={() => handleDeleteLesson(lesson.id)}
                               >
                                 <Trash2 className="size-4" aria-hidden />
