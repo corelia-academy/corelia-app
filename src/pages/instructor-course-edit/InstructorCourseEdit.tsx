@@ -7722,7 +7722,7 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   ) : null}
-                  {newLessonFormat === "video" || newLessonFormat === "article" ? (
+                  {newLessonFormat === "video" ? (
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.durationMinutesLabel")}</FieldLabel>
                     <Input
@@ -7738,11 +7738,7 @@ const InstructorCourseEdit = () => {
                       placeholder={t("courseEdit.content.lessonMinutesPlaceholder")}
                     />
                     <p className="mt-1 text-xs text-foreground-muted">
-                      {t(
-                        newLessonFormat === "video"
-                          ? "courseEdit.lessons.durationHint"
-                          : "courseEdit.lessons.nonVideoDurationHint",
-                      )}
+                      {t("courseEdit.lessons.durationHint")}
                     </p>
                   </Field>
                   ) : null}
