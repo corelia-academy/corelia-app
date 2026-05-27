@@ -371,6 +371,7 @@ export interface CourseUpdate {
   certificate_name_x_percent?: number | null;
   certificate_name_y_percent?: number | null;
   access_model?: CourseAccessModel;
+  has_certificate?: boolean;
   is_updating?: boolean;
   has_sections?: boolean;
   is_external_aggregated?: boolean;
