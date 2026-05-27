@@ -726,6 +726,7 @@ export function useContestDetailOrchestrator({
             : "detail.lifecycle.cta.registerWithProfileHelper",
         ),
         variant: "default" as const,
+        action: "apply" as const,
         navigateTo: participantWorkspaceHash,
       };
     };

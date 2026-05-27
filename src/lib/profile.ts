@@ -441,11 +441,16 @@ async function fetchPublicProfileByHandleOnce(handle: string): Promise<PublicPro
   const h = handle.trim();
   if (!h) return null;
 
-  // Single query: match lower(username) OR exact ocid
+  const filters = [`username.ilike.${h}`, `ocid.eq.${h}`];
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(h)) {
+    filters.push(`id.eq.${h}`);
+  }
+
+  // Single query: match lower(username), exact OCID, or UUID fallback from feed links.
   const { data, error } = await supabase
     .from("public_profiles")
     .select("*")
-    .or(`username.ilike.${h},ocid.eq.${h}`)
+    .or(filters.join(","))
     .limit(1)
     .maybeSingle();
 
