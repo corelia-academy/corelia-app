@@ -26,6 +26,9 @@
       "save": "Không cập nhật được trạng thái follow."
     }
   },
+  "followers": {
+    "summary": "{{count}} người theo dõi"
+  },
   "item": {
     "open": "Mở"
   },

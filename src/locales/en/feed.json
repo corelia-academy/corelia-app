@@ -26,6 +26,9 @@
       "save": "Could not update follow state."
     }
   },
+  "followers": {
+    "summary": "{{count}} followers"
+  },
   "item": {
     "open": "Open"
   },

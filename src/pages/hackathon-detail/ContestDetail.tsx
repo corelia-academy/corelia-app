@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import type { Contest } from "@/types/hackathons";
 import { Button } from "@/components/ui/button";
 import { FollowButton } from "@/components/social/FollowButton";
+import { FollowerPreview } from "@/components/social/FollowerPreview";
 import { ContestDetailDeleteContestDialog } from "@/pages/hackathon-detail/components/ContestDetailDeleteContestDialog";
 import {
   ContestDetailErrorCard,
@@ -102,12 +103,18 @@ export default function ContestDetail({
                   {vm.contest.title}
                 </span>
               </nav>
-              <FollowButton
-                subject={{ type: "hackathon", id: vm.contest.id }}
-                followerCount={vm.contest.follower_count ?? 0}
-                size="sm"
-                className="self-start sm:self-auto"
-              />
+              <div className="flex flex-col items-start gap-2 sm:items-end">
+                <FollowButton
+                  subject={{ type: "hackathon", id: vm.contest.id }}
+                  followerCount={vm.contest.follower_count ?? 0}
+                  size="sm"
+                  className="self-start sm:self-auto"
+                />
+                <FollowerPreview
+                  subject={{ type: "hackathon", id: vm.contest.id }}
+                  totalCount={vm.contest.follower_count ?? 0}
+                />
+              </div>
             </div>
           ) : null
         }

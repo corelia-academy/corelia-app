@@ -34,6 +34,7 @@ import { useInstructorProfile } from "./hooks/useInstructorProfile";
 import { useCoraStore } from "@/stores/coraStore";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { FollowButton } from "@/components/social/FollowButton";
+import { FollowerPreview } from "@/components/social/FollowerPreview";
 
 export default function CourseDetail() {
   const { t } = useTranslation("courses");
@@ -265,10 +266,14 @@ export default function CourseDetail() {
       />
 
       {course.published && courseLoad.resolvedCourseId ? (
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex flex-col items-end gap-2">
           <FollowButton
             subject={{ type: "course", id: courseLoad.resolvedCourseId }}
             followerCount={course.follower_count ?? 0}
+          />
+          <FollowerPreview
+            subject={{ type: "course", id: courseLoad.resolvedCourseId }}
+            totalCount={course.follower_count ?? 0}
           />
         </div>
       ) : null}

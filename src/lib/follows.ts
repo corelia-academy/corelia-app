@@ -1,6 +1,15 @@
 import { supabase } from "@/lib/supabase";
 import type { FollowRow, FollowSubject } from "@/types/feed";
 
+export interface FollowerPreviewRow {
+  id: string;
+  username: string | null;
+  ocid: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  followed_at: string;
+}
+
 export async function followSubject(subject: FollowSubject): Promise<void> {
   const {
     data: { user },
@@ -45,6 +54,19 @@ export async function listFollowing(): Promise<FollowRow[]> {
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []) as FollowRow[];
+}
+
+export async function listFollowers(
+  subject: FollowSubject,
+  limit = 12,
+): Promise<FollowerPreviewRow[]> {
+  const { data, error } = await supabase.rpc("list_followers_v1", {
+    p_subject_type: subject.type,
+    p_subject_id: subject.id,
+    p_limit: limit,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as FollowerPreviewRow[];
 }
 
 export async function isFollowing(subject: FollowSubject): Promise<boolean> {
