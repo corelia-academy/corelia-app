@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { FollowButton } from "@/components/social/FollowButton";
+import { FollowerPreview } from "@/components/social/FollowerPreview";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProjectById, getProjectCoverImageUrl, type PublicProjectEntry } from "@/lib/projects";
@@ -330,11 +331,17 @@ export default function ProjectDetailPage() {
         <aside className="min-w-0 lg:sticky lg:top-20 lg:self-start">
           <div className="rounded-lg border border-border-subtle bg-surface-base p-4 shadow-card">
             {project.visibility === "public" ? (
-              <FollowButton
-                subject={{ type: "project", id: project.id }}
-                followerCount={project.follower_count ?? 0}
-                className="mb-3 w-full"
-              />
+              <div className="mb-3 space-y-2">
+                <FollowButton
+                  subject={{ type: "project", id: project.id }}
+                  followerCount={project.follower_count ?? 0}
+                  className="w-full"
+                />
+                <FollowerPreview
+                  subject={{ type: "project", id: project.id }}
+                  totalCount={project.follower_count ?? 0}
+                />
+              </div>
             ) : null}
             <ProjectSocialBlock
               projectId={project.id}
