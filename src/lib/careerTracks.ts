@@ -42,25 +42,31 @@ function rowToCourse(row: CourseRow): Course {
   } as Course;
 }
 
-function pickIncludedCourse(
-  course: Course,
-): Pick<Course, "id" | "slug" | "title" | "thumbnail_url" | "total_duration_seconds"> {
+type IncludedCoursePick = Pick<
+  Course,
+  | "id"
+  | "slug"
+  | "title"
+  | "thumbnail_url"
+  | "total_duration_seconds"
+  | "short_description"
+>;
+
+function pickIncludedCourse(course: Course): IncludedCoursePick {
   return {
     id: course.id,
     slug: course.slug,
     title: course.title,
     thumbnail_url: course.thumbnail_url,
     total_duration_seconds: course.total_duration_seconds,
+    short_description: course.short_description,
   };
 }
 
 async function fetchPublishedCoursesByIds(
   courseIds: string[],
-): Promise<Map<string, Pick<Course, "id" | "slug" | "title" | "thumbnail_url" | "total_duration_seconds">>> {
-  const result = new Map<
-    string,
-    Pick<Course, "id" | "slug" | "title" | "thumbnail_url" | "total_duration_seconds">
-  >();
+): Promise<Map<string, IncludedCoursePick>> {
+  const result = new Map<string, IncludedCoursePick>();
   const ids = Array.from(new Set(courseIds.filter(Boolean)));
   if (ids.length === 0) return result;
 
@@ -259,6 +265,12 @@ export async function listCareerTracks(uiLocale?: string | null): Promise<Career
           what_youll_learn,
           prerequisites,
           has_certificate,
+          thumbnail_url,
+          thumbnail_path,
+          short_description,
+          sponsors,
+          partner_brand,
+          partners,
           created_at,
           updated_at,
           career_track_courses (
@@ -347,6 +359,12 @@ export async function getCareerTrackBySlug(
           what_youll_learn,
           prerequisites,
           has_certificate,
+          thumbnail_url,
+          thumbnail_path,
+          short_description,
+          sponsors,
+          partner_brand,
+          partners,
           created_at,
           updated_at,
           career_track_courses (
@@ -403,7 +421,15 @@ export type CareerTrackUpsertInput = Pick<
   | "prerequisites"
   | "has_certificate"
   | "i18n"
-> & { published?: boolean };
+> & {
+  published?: boolean;
+  short_description?: string | null;
+  thumbnail_url?: string | null;
+  thumbnail_path?: string | null;
+  sponsors?: CareerTrack["sponsors"];
+  partner_brand?: CareerTrack["partner_brand"];
+  partners?: CareerTrack["partners"];
+};
 
 export async function listCareerTracksForInstructor(): Promise<CareerTrackDetail[]> {
   const userId = await requireAuthedUserId();
@@ -463,6 +489,12 @@ export async function createInstructorCareerTrack(
     what_youll_learn: input.what_youll_learn ?? [],
     prerequisites: input.prerequisites ?? [],
     has_certificate: Boolean(input.has_certificate),
+    short_description: input.short_description ?? null,
+    thumbnail_url: input.thumbnail_url ?? null,
+    thumbnail_path: input.thumbnail_path ?? null,
+    sponsors: input.sponsors ?? [],
+    partner_brand: input.partner_brand ?? null,
+    partners: input.partners ?? [],
     i18n: input.i18n ?? null,
     updated_at: new Date().toISOString(),
   };
@@ -483,6 +515,12 @@ export async function createInstructorCareerTrack(
         what_youll_learn,
         prerequisites,
         has_certificate,
+        thumbnail_url,
+        thumbnail_path,
+        short_description,
+        sponsors,
+        partner_brand,
+        partners,
         created_at,
         updated_at
       `,
@@ -510,6 +548,12 @@ export async function updateInstructorCareerTrack(
   if (Array.isArray(patch.prerequisites)) updates.prerequisites = patch.prerequisites;
   if (typeof patch.has_certificate === "boolean") updates.has_certificate = patch.has_certificate;
   if (typeof patch.published === "boolean") updates.published = patch.published;
+  if (patch.short_description !== undefined) updates.short_description = patch.short_description;
+  if (patch.thumbnail_url !== undefined) updates.thumbnail_url = patch.thumbnail_url;
+  if (patch.thumbnail_path !== undefined) updates.thumbnail_path = patch.thumbnail_path;
+  if (patch.sponsors !== undefined) updates.sponsors = patch.sponsors ?? [];
+  if (patch.partner_brand !== undefined) updates.partner_brand = patch.partner_brand;
+  if (patch.partners !== undefined) updates.partners = patch.partners ?? [];
   if (patch.i18n !== undefined) updates.i18n = patch.i18n;
 
   const { error } = await supabase

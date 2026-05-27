@@ -1,4 +1,9 @@
-import type { Course } from "@/types/courses";
+import type {
+  Course,
+  CoursePartner,
+  CoursePartnerBrand,
+  CourseSponsor,
+} from "@/types/courses";
 
 export type CareerTrack = {
   id: string;
@@ -7,9 +12,15 @@ export type CareerTrack = {
   slug: string;
   title: string;
   description: string;
+  short_description?: string | null;
   what_youll_learn: string[];
   prerequisites: string[];
   has_certificate: boolean;
+  thumbnail_url?: string | null;
+  thumbnail_path?: string | null;
+  sponsors?: CourseSponsor[];
+  partner_brand?: CoursePartnerBrand | null;
+  partners?: CoursePartner[];
   /** Text-only content localization config */
   i18n?: import("@/types/entityLocales").EntityI18nConfig;
   published?: boolean;
@@ -18,7 +29,15 @@ export type CareerTrack = {
 };
 
 export type CareerTrackIncludedCourse = {
-  course: Pick<Course, "id" | "slug" | "title" | "thumbnail_url" | "total_duration_seconds">;
+  course: Pick<
+    Course,
+    | "id"
+    | "slug"
+    | "title"
+    | "thumbnail_url"
+    | "total_duration_seconds"
+    | "short_description"
+  >;
   sort_order: number;
 };
 

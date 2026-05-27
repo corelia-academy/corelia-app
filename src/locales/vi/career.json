@@ -11,8 +11,23 @@
     "includedCourses": "Các khóa học trong lộ trình",
     "prerequisites": "Yêu cầu trước khi học",
     "nextSteps": "Bước tiếp theo",
+    "description": "Giới thiệu lộ trình",
+    "thumbnailFallback": "Chưa có hình ảnh lộ trình",
     "emptyWhatYoullLearn": "Chưa có thông tin.",
-    "emptyPrerequisites": "Không có yêu cầu đặc biệt."
+    "emptyPrerequisites": "Không có yêu cầu đặc biệt.",
+    "courseProgress": "Tiến độ",
+    "continueButton": "Tiếp tục học",
+    "startButton": "Bắt đầu học",
+    "viewCourseButton": "Xem khóa học",
+    "stats": {
+      "courses": "Khóa học",
+      "duration": "Tổng thời lượng"
+    },
+    "actionPanel": {
+      "ready": "Sẵn sàng học",
+      "exploreCopy": "Khám phá các khóa học trong lộ trình bên dưới và bắt đầu hành trình của bạn.",
+      "continueLabel": "Tiếp tục từ khóa học gần nhất"
+    }
   },
   "labels": {
     "certificate": "Certificate",
@@ -29,4 +44,3 @@
     "loadFailed": "Không thể tải dữ liệu."
   }
 }
-

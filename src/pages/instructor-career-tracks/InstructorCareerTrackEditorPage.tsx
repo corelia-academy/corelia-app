@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { ArrowDown, ArrowUp, Copy, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, ImagePlus, Plus, Save, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CareerTrackBlastEmailPanel } from "./CareerTrackBlastEmailPanel";
 
@@ -10,7 +10,13 @@ import { Field, FieldGroup, FieldLabel, FieldDescription, FieldSeparator } from 
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/stores/authStore";
 import { getCoursesForManagement } from "@/lib/courses";
-import type { Course } from "@/types/courses";
+import { uploadCareerTrackThumbnail } from "@/lib/storage";
+import type {
+  Course,
+  CoursePartner,
+  CoursePartnerBrand,
+  CourseSponsor,
+} from "@/types/courses";
 import type { CareerTrackDetail } from "@/types/career";
 import {
   createInstructorCareerTrack,
@@ -68,11 +74,18 @@ export default function InstructorCareerTrackEditorPage() {
     title: "",
     slug: "",
     description: "",
+    shortDescription: "",
     whatYoullLearnText: "",
     prerequisitesText: "",
     hasCertificate: false,
     published: false,
+    thumbnailUrl: "" as string,
+    thumbnailPath: "" as string,
   });
+  const [sponsors, setSponsors] = useState<CourseSponsor[]>([]);
+  const [partnerBrand, setPartnerBrand] = useState<CoursePartnerBrand | null>(null);
+  const [partners, setPartners] = useState<CoursePartner[]>([]);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [courseIds, setCourseIds] = useState<string[]>([]);
   const [courseToAdd, setCourseToAdd] = useState<string>("");
 
@@ -131,11 +144,17 @@ export default function InstructorCareerTrackEditorPage() {
           title: found.title ?? "",
           slug: found.slug ?? "",
           description: found.description ?? "",
+          shortDescription: found.short_description ?? "",
           whatYoullLearnText: (found.what_youll_learn ?? []).join("\n"),
           prerequisitesText: (found.prerequisites ?? []).join("\n"),
           hasCertificate: Boolean(found.has_certificate),
           published: Boolean(found.published),
+          thumbnailUrl: found.thumbnail_url ?? "",
+          thumbnailPath: found.thumbnail_path ?? "",
         });
+        setSponsors(Array.isArray(found.sponsors) ? found.sponsors : []);
+        setPartnerBrand(found.partner_brand ?? null);
+        setPartners(Array.isArray(found.partners) ? found.partners : []);
         setCourseIds(found.includedCourses.map((x) => x.course.id));
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : t("careerTracks.errors.loadFailed"));
@@ -271,10 +290,16 @@ export default function InstructorCareerTrackEditorPage() {
         title: form.title.trim(),
         slug: form.slug.trim(),
         description: form.description.trim(),
+        short_description: form.shortDescription.trim() || null,
         what_youll_learn: splitLines(form.whatYoullLearnText),
         prerequisites: splitLines(form.prerequisitesText),
         has_certificate: form.hasCertificate,
         published: form.published,
+        thumbnail_url: form.thumbnailUrl || null,
+        thumbnail_path: form.thumbnailPath || null,
+        sponsors,
+        partner_brand: partnerBrand,
+        partners,
         i18n: i18nConfigDraft,
       };
       if (!payload.title || !payload.slug) {
@@ -338,6 +363,79 @@ export default function InstructorCareerTrackEditorPage() {
     } finally {
       setSavingTranslation(false);
     }
+  }
+
+  async function handleThumbnailUpload(file: File) {
+    if (!id) {
+      setError("Hãy lưu lộ trình trước khi tải ảnh.");
+      return;
+    }
+    setUploadingThumbnail(true);
+    setError(null);
+    try {
+      const result = await uploadCareerTrackThumbnail(id, file, form.thumbnailPath || null);
+      setForm((p) => ({
+        ...p,
+        thumbnailUrl: result.url,
+        thumbnailPath: result.path,
+      }));
+      await updateInstructorCareerTrack(id, {
+        thumbnail_url: result.url,
+        thumbnail_path: result.path,
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload thất bại");
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  }
+
+  function addSponsor() {
+    setSponsors((prev) => [
+      ...prev,
+      {
+        id: `sp_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        name: "",
+        website: null,
+        description: null,
+        logo_url: null,
+        logo_path: null,
+      },
+    ]);
+  }
+
+  function updateSponsor(idx: number, patch: Partial<CourseSponsor>) {
+    setSponsors((prev) =>
+      prev.map((s, i) => (i === idx ? { ...s, ...patch } : s)),
+    );
+  }
+
+  function removeSponsor(idx: number) {
+    setSponsors((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  function addPartner() {
+    setPartners((prev) => [
+      ...prev,
+      {
+        id: `pt_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        name: "",
+        website: null,
+        description: null,
+        logo_url: null,
+        logo_path: null,
+      },
+    ]);
+  }
+
+  function updatePartner(idx: number, patch: Partial<CoursePartner>) {
+    setPartners((prev) =>
+      prev.map((p, i) => (i === idx ? { ...p, ...patch } : p)),
+    );
+  }
+
+  function removePartner(idx: number) {
+    setPartners((prev) => prev.filter((_, i) => i !== idx));
   }
 
   function copyAllFromPrimary() {
@@ -413,6 +511,23 @@ export default function InstructorCareerTrackEditorPage() {
               />
             </Field>
             <Field>
+              <FieldLabel>Mô tả ngắn (short description)</FieldLabel>
+              <FieldDescription>
+                Hiển thị ngay dưới tiêu đề ở trang chi tiết. ~1–2 câu.
+              </FieldDescription>
+              <textarea
+                value={form.shortDescription}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, shortDescription: e.target.value }))
+                }
+                rows={2}
+                maxLength={280}
+                className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                placeholder="Hành trình học Web3 trong 8 tuần…"
+              />
+            </Field>
+
+            <Field>
               <FieldLabel>{t("careerTracks.fields.description")}</FieldLabel>
               <textarea
                 value={form.description}
@@ -421,6 +536,57 @@ export default function InstructorCareerTrackEditorPage() {
                 className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                 placeholder={t("careerTracks.placeholders.description")}
               />
+            </Field>
+
+            <Field>
+              <FieldLabel>Ảnh bìa (thumbnail)</FieldLabel>
+              <FieldDescription>
+                Tỷ lệ 16:9. Hiển thị ở hero trang chi tiết. Cần lưu lộ trình trước khi upload.
+              </FieldDescription>
+              <div className="flex items-start gap-3">
+                <div className="aspect-video w-40 shrink-0 overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+                  {form.thumbnailUrl ? (
+                    <img
+                      src={form.thumbnailUrl}
+                      alt=""
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <div className="grid size-full place-items-center text-foreground-subtle">
+                      <ImagePlus className="size-6" aria-hidden />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploadingThumbnail || !id}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void handleThumbnailUpload(file);
+                      e.target.value = "";
+                    }}
+                    className="text-xs"
+                  />
+                  {uploadingThumbnail ? (
+                    <span className="text-xs text-foreground-muted">Đang tải lên…</span>
+                  ) : null}
+                  {form.thumbnailUrl ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        setForm((p) => ({ ...p, thumbnailUrl: "", thumbnailPath: "" }))
+                      }
+                    >
+                      <Trash2 className="size-3.5" aria-hidden />
+                      Gỡ ảnh
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
             </Field>
 
             <FieldSeparator>{t("careerTracks.sections.learning")}</FieldSeparator>
@@ -745,6 +911,197 @@ export default function InstructorCareerTrackEditorPage() {
           </div>
         </PageSectionCard>
       ) : null}
+
+      <PageSectionCard className="mt-4">
+        <FieldGroup>
+          <Field>
+            <FieldLabel>Sponsors</FieldLabel>
+            <FieldDescription>
+              Logo + tên hiển thị ở sidebar trang chi tiết. Để URL logo trống nếu muốn hiển thị tên.
+            </FieldDescription>
+          </Field>
+
+          <div className="space-y-3">
+            {sponsors.map((sp, idx) => (
+              <div
+                key={sp.id}
+                className="rounded-md border border-border-subtle bg-surface-raised p-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="text-xs font-medium text-foreground-muted">
+                    Sponsor #{idx + 1}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeSponsor(idx)}
+                  >
+                    <Trash2 className="size-3.5" aria-hidden />
+                  </Button>
+                </div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  <Input
+                    placeholder="Tên"
+                    value={sp.name ?? ""}
+                    onChange={(e) => updateSponsor(idx, { name: e.target.value })}
+                  />
+                  <Input
+                    placeholder="Website (https://…)"
+                    value={sp.website ?? ""}
+                    onChange={(e) =>
+                      updateSponsor(idx, { website: e.target.value || null })
+                    }
+                  />
+                  <Input
+                    placeholder="Logo URL (https://…)"
+                    value={sp.logo_url ?? ""}
+                    onChange={(e) =>
+                      updateSponsor(idx, { logo_url: e.target.value || null })
+                    }
+                  />
+                  <Input
+                    placeholder="Mô tả ngắn (tuỳ chọn)"
+                    value={sp.description ?? ""}
+                    onChange={(e) =>
+                      updateSponsor(idx, { description: e.target.value || null })
+                    }
+                  />
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addSponsor}
+            >
+              <Plus className="size-3.5" aria-hidden />
+              Thêm sponsor
+            </Button>
+          </div>
+
+          <FieldSeparator>Partner brand</FieldSeparator>
+
+          <div className="space-y-3">
+            {partners.map((p, idx) => (
+              <div
+                key={p.id}
+                className="rounded-md border border-border-subtle bg-surface-raised p-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="text-xs font-medium text-foreground-muted">
+                    Partner #{idx + 1}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removePartner(idx)}
+                  >
+                    <Trash2 className="size-3.5" aria-hidden />
+                  </Button>
+                </div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  <Input
+                    placeholder="Tên"
+                    value={p.name ?? ""}
+                    onChange={(e) => updatePartner(idx, { name: e.target.value })}
+                  />
+                  <Input
+                    placeholder="Website (https://…)"
+                    value={p.website ?? ""}
+                    onChange={(e) =>
+                      updatePartner(idx, { website: e.target.value || null })
+                    }
+                  />
+                  <Input
+                    placeholder="Logo URL (https://…)"
+                    value={p.logo_url ?? ""}
+                    onChange={(e) =>
+                      updatePartner(idx, { logo_url: e.target.value || null })
+                    }
+                  />
+                  <Input
+                    placeholder="Mô tả ngắn (tuỳ chọn)"
+                    value={p.description ?? ""}
+                    onChange={(e) =>
+                      updatePartner(idx, { description: e.target.value || null })
+                    }
+                  />
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addPartner}
+            >
+              <Plus className="size-3.5" aria-hidden />
+              Thêm partner
+            </Button>
+          </div>
+
+          <FieldSeparator>Legacy partner brand (single)</FieldSeparator>
+          <FieldDescription>
+            Hỗ trợ shape cũ — chỉ điền nếu cần. Khuyến nghị dùng &ldquo;Partner&rdquo; ở trên.
+          </FieldDescription>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Input
+              placeholder="Tên"
+              value={partnerBrand?.name ?? ""}
+              onChange={(e) =>
+                setPartnerBrand((prev) => ({
+                  ...(prev ?? { name: "" }),
+                  name: e.target.value,
+                }))
+              }
+            />
+            <Input
+              placeholder="Website (https://…)"
+              value={partnerBrand?.website ?? ""}
+              onChange={(e) =>
+                setPartnerBrand((prev) => ({
+                  ...(prev ?? { name: "" }),
+                  website: e.target.value || null,
+                }))
+              }
+            />
+            <Input
+              placeholder="Logo URL (https://…)"
+              value={partnerBrand?.logo_url ?? ""}
+              onChange={(e) =>
+                setPartnerBrand((prev) => ({
+                  ...(prev ?? { name: "" }),
+                  logo_url: e.target.value || null,
+                }))
+              }
+            />
+            <Input
+              placeholder="Mô tả ngắn (tuỳ chọn)"
+              value={partnerBrand?.description ?? ""}
+              onChange={(e) =>
+                setPartnerBrand((prev) => ({
+                  ...(prev ?? { name: "" }),
+                  description: e.target.value || null,
+                }))
+              }
+            />
+          </div>
+          {partnerBrand?.name?.trim() ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setPartnerBrand(null)}
+            >
+              <Trash2 className="size-3.5" aria-hidden />
+              Gỡ legacy partner
+            </Button>
+          ) : null}
+        </FieldGroup>
+      </PageSectionCard>
 
       {!isNew && id ? (
         <PageSectionCard className="mt-4">
