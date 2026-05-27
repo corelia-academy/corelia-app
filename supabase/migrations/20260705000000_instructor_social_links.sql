@@ -7,6 +7,9 @@ ALTER TABLE public.public_profiles
   ADD COLUMN IF NOT EXISTS instructor_social_links jsonb DEFAULT NULL;
 
 -- Update sync trigger to include instructor_social_links
+CREATE SCHEMA IF NOT EXISTS internal;
+REVOKE ALL ON SCHEMA internal FROM PUBLIC;
+
 CREATE OR REPLACE FUNCTION internal.sync_public_profile()
 RETURNS trigger
 LANGUAGE plpgsql
