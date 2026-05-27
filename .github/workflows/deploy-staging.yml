@@ -80,3 +80,15 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy generate-lesson-summary --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy Edge Function (generate-flashcards)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy generate-flashcards --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy Edge Function (embed-lesson)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy embed-lesson --project-ref "$SUPABASE_PROJECT_REF"
