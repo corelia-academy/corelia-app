@@ -245,33 +245,31 @@ function CareerHero({
           </dl>
         </div>
 
-        <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
-          <div className="relative aspect-video">
+        <div className="relative aspect-video w-full self-start overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+          <img
+            src="/Corelia_Banner_Square.png"
+            alt=""
+            aria-hidden
+            decoding="async"
+            className="absolute inset-0 size-full object-cover opacity-90"
+          />
+          {thumbnailSrc ? (
             <img
-              src="/Corelia_Banner_Square.png"
-              alt=""
-              aria-hidden
+              src={thumbnailSrc}
+              alt={track.title}
+              loading="lazy"
               decoding="async"
-              className="absolute inset-0 size-full object-cover opacity-90"
+              onError={() => setThumbnailFailed(true)}
+              className="absolute inset-0 size-full object-cover"
             />
-            {thumbnailSrc ? (
-              <img
-                src={thumbnailSrc}
-                alt={track.title}
-                loading="lazy"
-                decoding="async"
-                onError={() => setThumbnailFailed(true)}
-                className="absolute inset-0 size-full object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 grid place-items-center">
-                <div className="flex items-center gap-2 rounded-full bg-surface-base/70 px-3 py-1 text-xs font-medium text-foreground-muted backdrop-blur">
-                  <Layers className="size-4" aria-hidden />
-                  {t("detail.thumbnailFallback")}
-                </div>
+          ) : (
+            <div className="absolute inset-0 grid place-items-center">
+              <div className="flex items-center gap-2 rounded-full bg-surface-base/70 px-3 py-1 text-xs font-medium text-foreground-muted backdrop-blur">
+                <Layers className="size-4" aria-hidden />
+                {t("detail.thumbnailFallback")}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

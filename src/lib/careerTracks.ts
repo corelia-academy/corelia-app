@@ -279,6 +279,7 @@ export async function listCareerTracks(uiLocale?: string | null): Promise<Career
           )
         `,
       )
+      .eq("published", true)
       .order("updated_at", { ascending: false });
 
     if (error) throw new Error(error.message);
@@ -374,6 +375,7 @@ export async function getCareerTrackBySlug(
         `,
       )
       .eq("slug", normalizedSlug)
+      .eq("published", true)
       .maybeSingle();
 
     if (error) throw new Error(error.message);

@@ -619,26 +619,32 @@ export default function InstructorCareerTrackEditorPage() {
 
         <PageSectionCard className="lg:col-span-5">
           <FieldGroup>
+            <FieldLabel>{t("careerTracks.fields.settings")}</FieldLabel>
             <Field>
-              <FieldLabel>{t("careerTracks.fields.settings")}</FieldLabel>
-              <div className="flex flex-col gap-3 rounded-md border border-border-subtle bg-surface-raised p-3">
-                <label className="flex items-center gap-2 text-sm text-foreground">
-                  <input
-                    type="checkbox"
-                    checked={form.hasCertificate}
-                    onChange={(e) => setForm((p) => ({ ...p, hasCertificate: e.target.checked }))}
-                  />
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={form.hasCertificate}
+                  onChange={(e) => setForm((p) => ({ ...p, hasCertificate: e.target.checked }))}
+                  className="rounded border-border"
+                />
+                <span className="text-sm font-medium text-foreground">
                   {t("careerTracks.fields.hasCertificate")}
-                </label>
-                <label className="flex items-center gap-2 text-sm text-foreground">
-                  <input
-                    type="checkbox"
-                    checked={form.published}
-                    onChange={(e) => setForm((p) => ({ ...p, published: e.target.checked }))}
-                  />
+                </span>
+              </label>
+            </Field>
+            <Field>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={form.published}
+                  onChange={(e) => setForm((p) => ({ ...p, published: e.target.checked }))}
+                  className="rounded border-border"
+                />
+                <span className="text-sm font-medium text-foreground">
                   {t("careerTracks.fields.published")}
-                </label>
-              </div>
+                </span>
+              </label>
             </Field>
 
             {!isNew && id ? (

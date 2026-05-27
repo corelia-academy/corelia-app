@@ -6491,6 +6491,7 @@ const InstructorCourseEdit = () => {
                     )}
                     <ul className="divide-y divide-border-subtle">
                       {secLessons.map((lesson, lessonIndex) => {
+                        const resolvedLessonFormat = getLessonFormat(lesson);
                         const isDragging = draggingLessonId === lesson.id;
                         const isDropBefore =
                           lessonDropTarget?.sectionId === section.id &&
@@ -6538,11 +6539,11 @@ const InstructorCourseEdit = () => {
                               >
                                 <GripVertical className="size-4" aria-hidden />
                               </button>
-                              {lesson.lesson_format === "quiz" ? (
+                              {resolvedLessonFormat === "quiz" ? (
                                 <CheckSquare className="size-4 shrink-0 text-foreground-muted" />
-                              ) : lesson.lesson_format === "practice" ? (
+                              ) : resolvedLessonFormat === "practice" ? (
                                 <PenLine className="size-4 shrink-0 text-foreground-muted" />
-                              ) : lesson.lesson_format === "article" ? (
+                              ) : resolvedLessonFormat === "article" ? (
                                 <FileText className="size-4 shrink-0 text-foreground-muted" />
                               ) : (
                                 <PlayCircle className="size-4 shrink-0 text-foreground-muted" />
@@ -6631,7 +6632,7 @@ const InstructorCourseEdit = () => {
                                   {t("courseEdit.lessons.previewFreeBadge")}
                                 </label>
                               )}
-                              {lesson.lesson_format === "quiz" && (
+                              {resolvedLessonFormat === "quiz" && (
                                 <Button
                                   type="button"
                                   variant="ghost"
