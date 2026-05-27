@@ -223,6 +223,7 @@ DECLARE
   ];
   v_missing text[];
   v_actor_follow_events integer;
+  v_course_followers integer;
 BEGIN
   SELECT array_agg(v)
   INTO v_missing
@@ -245,6 +246,40 @@ BEGIN
 
   IF v_actor_follow_events < 1 THEN
     RAISE EXCEPTION 'Expected actor follow event to appear while follower follows actor';
+  END IF;
+
+  SELECT count(*)::integer
+  INTO v_course_followers
+  FROM public.list_followers_v1('course', (SELECT value FROM feed_smoke_ctx WHERE key = 'course_id'), 5);
+
+  IF v_course_followers <> 1 THEN
+    RAISE EXCEPTION 'Expected follower preview RPC to return 1 course follower, got %', v_course_followers;
+  END IF;
+END $$;
+
+RESET ROLE;
+
+UPDATE public.projects
+SET visibility = 'private'
+WHERE id = (SELECT value::uuid FROM feed_smoke_ctx WHERE key = 'project_id');
+
+SET LOCAL ROLE authenticated;
+SET LOCAL row_security = on;
+SELECT set_config('request.jwt.claim.sub', (SELECT value FROM feed_smoke_ctx WHERE key = 'follower_id'), true);
+SELECT set_config('request.jwt.claim.role', 'authenticated', true);
+
+DO $$
+DECLARE
+  v_project_events integer;
+BEGIN
+  SELECT count(*)::integer
+  INTO v_project_events
+  FROM public.get_feed_v1(NULL, 100, NULL) e
+  WHERE e.object_type = 'project'
+    AND e.object_id = (SELECT value FROM feed_smoke_ctx WHERE key = 'project_id');
+
+  IF v_project_events <> 0 THEN
+    RAISE EXCEPTION 'Expected private project activity to be hidden from follower feed, got % events', v_project_events;
   END IF;
 END $$;
 
