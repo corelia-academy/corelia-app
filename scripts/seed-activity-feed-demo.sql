@@ -35,6 +35,7 @@ BEGIN
 
   -- Login-capable auth users.
   INSERT INTO auth.users (
+    instance_id,
     id,
     aud,
     role,
@@ -48,6 +49,7 @@ BEGIN
   )
   VALUES
     (
+      '00000000-0000-0000-0000-000000000000',
       v_student_1,
       'authenticated',
       'authenticated',
@@ -60,6 +62,7 @@ BEGIN
       now()
     ),
     (
+      '00000000-0000-0000-0000-000000000000',
       v_student_2,
       'authenticated',
       'authenticated',
@@ -72,6 +75,7 @@ BEGIN
       now()
     ),
     (
+      '00000000-0000-0000-0000-000000000000',
       v_student_3,
       'authenticated',
       'authenticated',
@@ -84,6 +88,7 @@ BEGIN
       now()
     ),
     (
+      '00000000-0000-0000-0000-000000000000',
       v_instructor,
       'authenticated',
       'authenticated',
@@ -96,6 +101,7 @@ BEGIN
       now()
     ),
     (
+      '00000000-0000-0000-0000-000000000000',
       v_collaborator,
       'authenticated',
       'authenticated',
@@ -350,6 +356,7 @@ BEGIN
     v_heart_user := gen_random_uuid();
 
     INSERT INTO auth.users (
+      instance_id,
       id,
       aud,
       role,
@@ -362,6 +369,7 @@ BEGIN
       updated_at
     )
     VALUES (
+      '00000000-0000-0000-0000-000000000000',
       v_heart_user,
       'authenticated',
       'authenticated',
@@ -392,6 +400,19 @@ BEGIN
     INSERT INTO public.project_hearts (project_id, user_id)
     VALUES (v_project_id, v_heart_user);
   END LOOP;
+
+  -- GoTrue scans token columns as strings during password login, so keep them
+  -- as empty strings instead of NULL for manually seeded auth users.
+  UPDATE auth.users
+  SET confirmation_token = coalesce(confirmation_token, ''),
+      recovery_token = coalesce(recovery_token, ''),
+      email_change_token_new = coalesce(email_change_token_new, ''),
+      email_change = coalesce(email_change, ''),
+      email_change_token_current = coalesce(email_change_token_current, ''),
+      phone_change = coalesce(phone_change, ''),
+      phone_change_token = coalesce(phone_change_token, ''),
+      reauthentication_token = coalesce(reauthentication_token, '')
+  WHERE email LIKE 'feed-demo-%@corelia.test';
 
   -- Credential event.
   INSERT INTO public.credential_templates (
