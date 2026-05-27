@@ -27,7 +27,14 @@
     }
   },
   "followers": {
-    "summary": "{{count}} người theo dõi"
+    "summary": "{{count}} người theo dõi",
+    "title": "Người theo dõi",
+    "description": "Các hồ sơ công khai đang theo dõi nội dung này.",
+    "loading": "Đang tải người theo dõi...",
+    "empty": "Chưa có người theo dõi công khai.",
+    "errors": {
+      "load": "Không tải được danh sách người theo dõi."
+    }
   },
   "item": {
     "open": "Mở"

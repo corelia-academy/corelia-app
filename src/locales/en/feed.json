@@ -27,7 +27,14 @@
     }
   },
   "followers": {
-    "summary": "{{count}} followers"
+    "summary": "{{count}} followers",
+    "title": "Followers",
+    "description": "Public profiles following this item.",
+    "loading": "Loading followers...",
+    "empty": "No public followers yet.",
+    "errors": {
+      "load": "Could not load followers."
+    }
   },
   "item": {
     "open": "Open"
