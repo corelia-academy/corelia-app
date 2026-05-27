@@ -31,13 +31,19 @@ function rowToQuestion(row: RawQuestionRow): SectionQuestion {
 export async function getSectionQuestions(
   courseId: string,
   sectionId: string,
+  locale?: string,
 ): Promise<SectionQuestion[]> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("course_section_questions")
     .select("id,course_id,section_id,sort_order,data,created_at,updated_at")
     .eq("course_id", courseId)
-    .eq("section_id", sectionId)
-    .order("sort_order", { ascending: true });
+    .eq("section_id", sectionId);
+
+  if (locale) {
+    query = query.eq("data->>locale", locale);
+  }
+
+  const { data, error } = await query.order("sort_order", { ascending: true });
 
   if (error) throw new Error(error.message);
   return ((data ?? []) as RawQuestionRow[]).map(rowToQuestion);
@@ -47,13 +53,20 @@ export async function setSectionQuestions(
   courseId: string,
   sectionId: string,
   questions: SectionQuestionData[],
+  locale?: string,
 ): Promise<SectionQuestion[]> {
   // Delete existing then insert new set — two separate calls (Supabase JS doesn't support transactions natively)
-  const { error: deleteError } = await supabase
+  let deleteQuery = supabase
     .from("course_section_questions")
     .delete()
     .eq("course_id", courseId)
     .eq("section_id", sectionId);
+
+  if (locale) {
+    deleteQuery = deleteQuery.eq("data->>locale", locale);
+  }
+
+  const { error: deleteError } = await deleteQuery;
 
   if (deleteError) throw new Error(deleteError.message);
 
@@ -126,13 +139,19 @@ function lessonRowToQuestion(row: RawLessonQuestionRow): SectionQuestion {
 export async function getLessonQuestions(
   courseId: string,
   lessonId: string,
+  locale?: string,
 ): Promise<SectionQuestion[]> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("course_section_questions")
     .select("id,course_id,section_id,lesson_id,sort_order,data,created_at,updated_at")
     .eq("course_id", courseId)
-    .eq("lesson_id", lessonId)
-    .order("sort_order", { ascending: true });
+    .eq("lesson_id", lessonId);
+
+  if (locale) {
+    query = query.eq("data->>locale", locale);
+  }
+
+  const { data, error } = await query.order("sort_order", { ascending: true });
 
   if (error) throw new Error(error.message);
   return ((data ?? []) as RawLessonQuestionRow[]).map(lessonRowToQuestion);
@@ -142,12 +161,19 @@ export async function setLessonQuestions(
   courseId: string,
   lessonId: string,
   questions: SectionQuestionData[],
+  locale?: string,
 ): Promise<SectionQuestion[]> {
-  const { error: deleteError } = await supabase
+  let deleteQuery = supabase
     .from("course_section_questions")
     .delete()
     .eq("course_id", courseId)
     .eq("lesson_id", lessonId);
+
+  if (locale) {
+    deleteQuery = deleteQuery.eq("data->>locale", locale);
+  }
+
+  const { error: deleteError } = await deleteQuery;
 
   if (deleteError) throw new Error(deleteError.message);
   if (questions.length === 0) return [];
