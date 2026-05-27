@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabase";
 import { makeTTLCache } from "@/lib/utils";
-import { getPublicProfileByHandle } from "@/lib/profile";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import type {
   CareerTrack,
@@ -321,34 +320,18 @@ export async function listCareerTracks(uiLocale?: string | null): Promise<Career
 }
 
 export async function getCareerTrackBySlug(
-  opts:
-    | { owner_scope: "corelia"; slug: string }
-    | { owner_scope: "instructor"; handle: string; slug: string },
+  slug: string,
   uiLocale?: string | null,
 ): Promise<CareerTrackDetail | null> {
   const normalizedUiLocale = normalizeContentLocale(uiLocale);
-
-  const normalizedSlug = opts.slug.trim();
+  const normalizedSlug = slug.trim();
   if (!normalizedSlug) return null;
 
-  const cacheKey =
-    opts.owner_scope === "corelia"
-      ? `corelia:${normalizedSlug}:${normalizedUiLocale}`
-      : `instructor:${opts.handle.trim().toLowerCase()}:${normalizedSlug}:${normalizedUiLocale}`;
-
+  const cacheKey = `slug:${normalizedSlug}:${normalizedUiLocale}`;
   const cached = trackBySlugCache.get(cacheKey);
   if (cached) return cached;
 
   const promise = (async () => {
-    let instructorId: string | null = null;
-    let instructorHandle: string | null = null;
-    if (opts.owner_scope === "instructor") {
-      const p = await getPublicProfileByHandle(opts.handle);
-      if (!p) return null;
-      instructorId = p.id;
-      instructorHandle = profileToHandle(p) ?? opts.handle;
-    }
-
     const { data, error } = await supabase
       .from("career_tracks")
       .select(
@@ -372,9 +355,7 @@ export async function getCareerTrackBySlug(
           )
         `,
       )
-      .eq("owner_scope", opts.owner_scope)
       .eq("slug", normalizedSlug)
-      .eq("instructor_id", instructorId)
       .maybeSingle();
 
     if (error) throw new Error(error.message);
@@ -385,11 +366,14 @@ export async function getCareerTrackBySlug(
     };
     const { career_track_courses, ...track } = row;
     const detail = await computeDetail(track, career_track_courses ?? []);
-    const resolved: CareerTrackDetail = {
-      ...detail,
-      instructorHandle:
-        detail.owner_scope === "instructor" ? instructorHandle : null,
-    };
+
+    let instructorHandle: string | null = null;
+    if (detail.owner_scope === "instructor" && detail.instructor_id) {
+      const handles = await fetchHandlesByInstructorIds([detail.instructor_id]).catch(() => new Map<string, string>());
+      instructorHandle = handles.get(detail.instructor_id) ?? null;
+    }
+
+    const resolved: CareerTrackDetail = { ...detail, instructorHandle };
     const desired = pickContentLocale(resolved.i18n ?? null, normalizedUiLocale);
     const localized = await getCareerTrackLocaleContent(resolved.id, desired);
     return applyCareerTrackLocaleContent(resolved, localized);

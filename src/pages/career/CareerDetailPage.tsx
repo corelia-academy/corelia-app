@@ -14,13 +14,8 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function CareerDetailPage() {
   const { t } = useTranslation("career");
-  const { handle, slug } = useParams<{ handle?: string; slug?: string }>();
-  const isCorelia = handle?.trim().toLowerCase() === "corelia";
-  const { track, loading, error } = useCareerTrackDetail(
-    isCorelia
-      ? { owner_scope: "corelia", slug }
-      : { owner_scope: "instructor", handle, slug },
-  );
+  const { slug } = useParams<{ slug?: string }>();
+  const { track, loading, error } = useCareerTrackDetail(slug);
 
   usePageMeta({
     title: track?.title ?? undefined,

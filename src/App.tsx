@@ -315,15 +315,7 @@ export default function App() {
                 }
               />
               <Route
-                path="career/corelia/:slug"
-                element={
-                  <Suspense fallback={<PageFallback />}>
-                    <CareerDetail />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="career/:handle/:slug"
+                path="career/:slug"
                 element={
                   <Suspense fallback={<PageFallback />}>
                     <CareerDetail />

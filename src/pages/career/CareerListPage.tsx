@@ -92,11 +92,7 @@ export default function CareerListPage() {
           {tracks.map((track) => (
             <Link
               key={track.id}
-              to={
-                track.owner_scope === "instructor" && track.instructorHandle
-                  ? `/career/${encodeURIComponent(track.instructorHandle)}/${track.slug}`
-                  : `/career/corelia/${track.slug}`
-              }
+              to={`/career/${track.slug}`}
               className="group cursor-pointer overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card text-foreground transition-[transform,background-color,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-surface-raised"
             >
               <div className="p-4">

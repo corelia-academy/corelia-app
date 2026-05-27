@@ -26,12 +26,8 @@ export async function seedHackathonEn(slug: string) {
   return await getContestBySlug(slug, "en");
 }
 
-export async function seedCareerTrackEn(
-  opts:
-    | { owner_scope: "corelia"; slug: string }
-    | { owner_scope: "instructor"; handle: string; slug: string },
-) {
-  const track = await getCareerTrackBySlug(opts, "vi");
+export async function seedCareerTrackEn(slug: string) {
+  const track = await getCareerTrackBySlug(slug, "vi");
   if (!track) throw new Error("Career track not found");
   await setCareerTrackLocaleContent(track.id, "en", {
     title: `${track.title} (EN)`,
@@ -41,7 +37,7 @@ export async function seedCareerTrackEn(
   });
   return {
     vi: track,
-    en: await getCareerTrackBySlug(opts, "en"),
+    en: await getCareerTrackBySlug(slug, "en"),
   };
 }
 
