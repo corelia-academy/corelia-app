@@ -866,12 +866,10 @@
       "segmentStartPlaceholder": "e.g. 0:00",
       "segmentEndPlaceholder": "e.g. 15:30 (leave blank for end of video)",
       "segmentHint": "Timestamps define this lesson's slice of the same YouTube video (M:SS or H:MM:SS).",
-      "progressLockBanner": "{{count}} learner(s) already have progress on this lesson. You can edit text and segment timestamps, but you cannot switch to a different video or delete this lesson.",
+      "progressLockBanner": "{{count}} learner(s) already have progress on this lesson. You can edit text and segment timestamps, but you cannot switch to a different video.",
       "youtubeLockedHint": "YouTube link is locked because learners have progress on this lesson.",
       "cannotChangeVideoWithProgress": "Cannot switch to a different YouTube video while learners have progress on this lesson.",
-      "segmentEndInvalid": "Segment end must be a valid timestamp after the start time.",
-      "deleteBlockedHasProgress": "Cannot delete this lesson — {{count}} learner(s) already have progress.",
-      "deleteLockedTooltip": "{{count}} learner(s) have progress — delete disabled"
+      "segmentEndInvalid": "Segment end must be a valid timestamp after the start time."
     },
     "longVideo": {
       "title": "Long YouTube video",

@@ -3557,11 +3557,6 @@ const InstructorCourseEdit = () => {
   };
 
   const handleDeleteLesson = async (lessonId: string) => {
-    const lc = lessonLearnerCounts[lessonId] ?? 0;
-    if (lc > 0) {
-      toast.error(t("courseEdit.lessons.deleteBlockedHasProgress", { count: lc }));
-      return;
-    }
     if (!id || !confirm(t("courseEdit.confirm.deleteLesson"))) return;
     try {
       await deleteLesson(id, lessonId);
@@ -6491,6 +6486,7 @@ const InstructorCourseEdit = () => {
                     )}
                     <ul className="divide-y divide-border-subtle">
                       {secLessons.map((lesson, lessonIndex) => {
+                        const resolvedLessonFormat = getLessonFormat(lesson);
                         const isDragging = draggingLessonId === lesson.id;
                         const isDropBefore =
                           lessonDropTarget?.sectionId === section.id &&
@@ -6538,11 +6534,11 @@ const InstructorCourseEdit = () => {
                               >
                                 <GripVertical className="size-4" aria-hidden />
                               </button>
-                              {lesson.lesson_format === "quiz" ? (
+                              {resolvedLessonFormat === "quiz" ? (
                                 <CheckSquare className="size-4 shrink-0 text-foreground-muted" />
-                              ) : lesson.lesson_format === "practice" ? (
+                              ) : resolvedLessonFormat === "practice" ? (
                                 <PenLine className="size-4 shrink-0 text-foreground-muted" />
-                              ) : lesson.lesson_format === "article" ? (
+                              ) : resolvedLessonFormat === "article" ? (
                                 <FileText className="size-4 shrink-0 text-foreground-muted" />
                               ) : (
                                 <PlayCircle className="size-4 shrink-0 text-foreground-muted" />
@@ -6631,7 +6627,7 @@ const InstructorCourseEdit = () => {
                                   {t("courseEdit.lessons.previewFreeBadge")}
                                 </label>
                               )}
-                              {lesson.lesson_format === "quiz" && (
+                              {resolvedLessonFormat === "quiz" && (
                                 <Button
                                   type="button"
                                   variant="ghost"
@@ -6646,17 +6642,7 @@ const InstructorCourseEdit = () => {
                                 variant="ghost"
                                 size="sm"
                                 className="text-destructive shrink-0"
-                                disabled={
-                                  reorderingLessons ||
-                                  (lessonLearnerCounts[lesson.id] ?? 0) > 0
-                                }
-                                title={
-                                  (lessonLearnerCounts[lesson.id] ?? 0) > 0
-                                    ? t("courseEdit.lessons.deleteLockedTooltip", {
-                                        count: lessonLearnerCounts[lesson.id] ?? 0,
-                                      })
-                                    : undefined
-                                }
+                                disabled={reorderingLessons}
                                 onClick={() => handleDeleteLesson(lesson.id)}
                               >
                                 <Trash2 className="size-4" aria-hidden />
@@ -7736,7 +7722,7 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   ) : null}
-                  {newLessonFormat === "video" || newLessonFormat === "article" ? (
+                  {newLessonFormat === "video" ? (
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.durationMinutesLabel")}</FieldLabel>
                     <Input
@@ -7752,11 +7738,7 @@ const InstructorCourseEdit = () => {
                       placeholder={t("courseEdit.content.lessonMinutesPlaceholder")}
                     />
                     <p className="mt-1 text-xs text-foreground-muted">
-                      {t(
-                        newLessonFormat === "video"
-                          ? "courseEdit.lessons.durationHint"
-                          : "courseEdit.lessons.nonVideoDurationHint",
-                      )}
+                      {t("courseEdit.lessons.durationHint")}
                     </p>
                   </Field>
                   ) : null}
