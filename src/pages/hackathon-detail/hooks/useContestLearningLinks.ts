@@ -17,13 +17,8 @@ export type ResolvedLearningTrack = {
   instructorHandle: string | null;
 };
 
-export function careerTrackHref(track: ResolvedLearningTrack): string | null {
-  if (track.owner_scope === "corelia") {
-    return `/career/corelia/${encodeURIComponent(track.slug)}`;
-  }
-  const handle = track.instructorHandle?.trim();
-  if (!handle) return null;
-  return `/career/${encodeURIComponent(handle)}/${encodeURIComponent(track.slug)}`;
+export function careerTrackHref(track: ResolvedLearningTrack): string {
+  return `/career/${encodeURIComponent(track.slug)}`;
 }
 
 export function useContestLearningLinks(contest: Contest) {

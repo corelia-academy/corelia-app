@@ -1,0 +1,31 @@
+{
+  "page": {
+    "title": "Lộ trình học cá nhân",
+    "subtitle": "Nhập mục tiêu — Cora sẽ kết hợp courses và career tracks có sẵn để dựng lộ trình cho bạn.",
+    "savedTitle": "Lộ trình đã lưu",
+    "emptyTitle": "Chưa có lộ trình nào.",
+    "emptyHint": "Điền mục tiêu ở trên để Cora dựng giúp bạn lộ trình đầu tiên."
+  },
+  "form": {
+    "goalLabel": "Mục tiêu của bạn là gì?",
+    "goalHint": "Mô tả 1-2 câu — Cora sẽ chọn courses và career tracks phù hợp từ catalog Corelia.",
+    "goalPlaceholder": "ví dụ: trở thành full-stack developer trong 6 tháng",
+    "generateAction": "Tạo lộ trình",
+    "generating": "Cora đang dựng lộ trình…"
+  },
+  "card": {
+    "estimatedWeeks": "~{{weeks}} tuần",
+    "coursesCount": "{{count}} courses",
+    "tracksCount": "{{count}} tracks",
+    "milestonesLabel": "Milestones",
+    "coursesLabel": "Courses đề xuất",
+    "tracksLabel": "Career tracks",
+    "weeklyLabel": "Kế hoạch theo tuần",
+    "weekLabel": "Tuần {{week}}",
+    "weeksShort": "{{count}} tuần",
+    "delete": "Xóa",
+    "confirmDelete": "Xóa hẳn",
+    "toggle": "Mở/thu",
+    "disclaimer": "Cora gợi ý dựa trên catalog hiện tại. Bạn có thể điều chỉnh trình tự theo nhu cầu."
+  }
+}

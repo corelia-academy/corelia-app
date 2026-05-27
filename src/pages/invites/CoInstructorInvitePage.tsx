@@ -17,12 +17,13 @@ export default function CoInstructorInvitePage() {
   const navigate = useNavigate();
   const { t } = useTranslation("courses");
   const { t: tc } = useTranslation("common");
-  const { isAuthenticated, authInitialized } = useAuth();
-  const [busy, setBusy] = useState<"accept" | "decline" | null>(null);
+  const { isAuthenticated, authInitialized, user, signOut } = useAuth();
+  const [busy, setBusy] = useState<"accept" | "decline" | "switch" | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [preview, setPreview] = useState<CoInstructorInvitePreview | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [wrongAccount, setWrongAccount] = useState(false);
 
   const safeToken = (token ?? "").trim();
 
@@ -31,15 +32,18 @@ export default function CoInstructorInvitePage() {
     let cancelled = false;
     setPreviewLoading(true);
     setPreviewError(null);
+    setWrongAccount(false);
     peekCoInstructorInviteByToken(safeToken)
       .then((data) => {
         if (!cancelled) setPreview(data);
       })
       .catch((e) => {
-        if (!cancelled) {
-          setPreviewError(
-            e instanceof Error ? e.message : "invite_preview_failed",
-          );
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : "invite_preview_failed";
+        if (msg === "forbidden") {
+          setWrongAccount(true);
+        } else {
+          setPreviewError(msg);
         }
       })
       .finally(() => {
@@ -49,6 +53,20 @@ export default function CoInstructorInvitePage() {
       cancelled = true;
     };
   }, [authInitialized, isAuthenticated, safeToken]);
+
+  async function onSignOutAndSwitch() {
+    setBusy("switch");
+    try {
+      await signOut();
+      navigate("/login", {
+        state: { from: { pathname: window.location.pathname } },
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("inviteCoInstructor.errorFallback"));
+    } finally {
+      setBusy(null);
+    }
+  }
 
   async function onAccept() {
     if (!safeToken) return;
@@ -65,8 +83,12 @@ export default function CoInstructorInvitePage() {
     } catch (e) {
       const msg =
         e instanceof Error ? e.message : t("inviteCoInstructor.errorFallback");
-      setMessage(msg);
-      toast.error(msg);
+      if (msg === "forbidden") {
+        setWrongAccount(true);
+      } else {
+        setMessage(msg);
+        toast.error(msg);
+      }
     } finally {
       setBusy(null);
     }
@@ -83,8 +105,12 @@ export default function CoInstructorInvitePage() {
     } catch (e) {
       const msg =
         e instanceof Error ? e.message : t("inviteCoInstructor.errorFallback");
-      setMessage(msg);
-      toast.error(msg);
+      if (msg === "forbidden") {
+        setWrongAccount(true);
+      } else {
+        setMessage(msg);
+        toast.error(msg);
+      }
     } finally {
       setBusy(null);
     }
@@ -127,6 +153,27 @@ export default function CoInstructorInvitePage() {
             <p className="text-sm text-destructive">
               {t("inviteCoInstructor.invalid")}
             </p>
+          ) : wrongAccount ? (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">
+                {t("inviteCoInstructor.wrongAccountTitle")}
+              </p>
+              <p className="text-sm text-foreground-muted">
+                {t("inviteCoInstructor.wrongAccountBody", {
+                  email: user?.email ?? "",
+                })}
+              </p>
+              <Button
+                type="button"
+                className="w-full"
+                disabled={busy !== null}
+                onClick={() => void onSignOutAndSwitch()}
+              >
+                {busy === "switch"
+                  ? tc("status.loading")
+                  : t("inviteCoInstructor.signOutAndSwitch")}
+              </Button>
+            </div>
           ) : previewLoading ? (
             <p className="text-sm text-foreground-muted">{tc("status.loading")}</p>
           ) : previewError ? (

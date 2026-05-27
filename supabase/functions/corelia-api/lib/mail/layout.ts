@@ -56,7 +56,6 @@ const EMAIL_STYLES = `
   .e-btn-teal {
     background: linear-gradient(135deg, #3ecfb4, #2ab89e); color: #1e2440;
   }
-  .e-divider { height: 1px; background: #ddd7cf; margin: 0 30px 20px; }
   .e-footer {
     background: #ede7df; padding: 16px 30px; text-align: center;
     border-top: 1px solid #ddd7cf;
@@ -76,6 +75,8 @@ type TransactionalWrapParams = {
   ctaHtml?: string;
   footerReason: string;
   footerExtraHtml?: string;
+  /** Hidden inbox-preview text. Defaults to heroSubtitle or heroTitle. */
+  preheader?: string;
 };
 
 /** Full branded HTML document for fixed transactional emails (Resend). */
@@ -84,8 +85,22 @@ export function wrapTransactionalEmail(params: TransactionalWrapParams): string 
   const heroSubtitle = params.heroSubtitle?.trim()
     ? `<p>${params.heroSubtitle}</p>`
     : "";
+  // No divider between CTA and footer — the .e-footer border-top is enough
+  // visually, and a standalone <div> divider triggers Gmail's "show trimmed
+  // content" heuristic that hides everything below it.
   const ctaBlock = params.ctaHtml?.trim()
-    ? `<div class="e-cta-wrap">${params.ctaHtml}</div><div class="e-divider"></div>`
+    ? `<div class="e-cta-wrap">${params.ctaHtml}</div>`
+    : "";
+
+  // Unique per-send fingerprint so Gmail doesn't dedupe boilerplate footer
+  // across multiple emails to the same recipient.
+  const messageFingerprint = `${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+
+  const preheaderText = (params.preheader ?? params.heroSubtitle ?? params.heroTitle).trim();
+  const preheaderBlock = preheaderText
+    ? `<div style="display:none!important;visibility:hidden;opacity:0;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#f5f0eb;">${escapeHtml(preheaderText)}</div>`
     : "";
 
   return `<!doctype html>
@@ -93,12 +108,11 @@ export function wrapTransactionalEmail(params: TransactionalWrapParams): string 
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet" />
+    <title>${escapeHtml(params.heroTitle)}</title>
     <style>${EMAIL_STYLES}</style>
   </head>
   <body style="margin:0;padding:28px 14px;background:#f5f0eb;font-family:Roboto,Arial,sans-serif;">
+    ${preheaderBlock}
     <div class="e-container">
       <div class="e-header">
         <img src="${LOGO_URL}" alt="Corelia Academy" height="36" style="display:block;height:36px;width:auto" />
@@ -116,6 +130,7 @@ export function wrapTransactionalEmail(params: TransactionalWrapParams): string 
         <p><a href="${escapeHtml(resolveAppUrl())}">app.corelia.academy</a></p>
       </div>
     </div>
+    <span style="display:none!important;font-size:0;color:transparent;line-height:0;mso-hide:all">${messageFingerprint}</span>
   </body>
 </html>`;
 }

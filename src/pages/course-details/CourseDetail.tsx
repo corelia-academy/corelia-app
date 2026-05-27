@@ -261,6 +261,12 @@ export default function CourseDetail() {
         previewLessons={previewLessons}
         displayTotalDuration={displayTotalDuration}
         curriculumCountLabel={curriculumCountLabel}
+        progressPercent={progress.progressPercent}
+        onCertificateClaimed={(issuedAt) =>
+          access.setEnrollment(
+            access.enrollment ? { ...access.enrollment, certificate_issued_at: issuedAt } : null,
+          )
+        }
       />
 
       <div className="mt-6 space-y-4 lg:hidden">

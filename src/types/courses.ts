@@ -147,6 +147,8 @@ export interface Course {
   certificate_name_y_percent?: number;
   /** Mô hình truy cập khoá học */
   access_model?: CourseAccessModel;
+  /** Khoá học có hỗ trợ cấp chứng nhận hoàn thành */
+  has_certificate?: boolean;
   /** Khoá học vẫn đang được cập nhật nội dung (manual flag) */
   is_updating?: boolean;
   /** Khoá học có phân chia theo section (false = flat lesson list) */
@@ -369,6 +371,7 @@ export interface CourseUpdate {
   certificate_name_x_percent?: number | null;
   certificate_name_y_percent?: number | null;
   access_model?: CourseAccessModel;
+  has_certificate?: boolean;
   is_updating?: boolean;
   has_sections?: boolean;
   is_external_aggregated?: boolean;

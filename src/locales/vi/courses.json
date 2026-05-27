@@ -13,7 +13,10 @@
     "declined": "Đã từ chối lời mời.",
     "errorFallback": "Không xử lý được lời mời.",
     "notActionable": "Lời mời này không còn hiệu lực (trạng thái: {{status}}).",
-    "courseFallback": "một khoá học"
+    "courseFallback": "một khoá học",
+    "wrongAccountTitle": "Lời mời này thuộc về một tài khoản khác",
+    "wrongAccountBody": "Bạn đang đăng nhập bằng {{email}}. Đăng xuất rồi đăng nhập lại bằng tài khoản đã nhận lời mời này.",
+    "signOutAndSwitch": "Đăng xuất và chuyển tài khoản"
   },
   "level": {
     "beginner": "Cơ bản",
@@ -182,6 +185,7 @@
         "title": "Tổng quan khoá học"
       },
       "certificateIssued": "Đã cấp chứng nhận",
+      "claimCertificate": "Nhận chứng nhận",
       "instructorLabel": "Giảng viên",
       "instructor": {
         "title": "Giới thiệu giảng viên",

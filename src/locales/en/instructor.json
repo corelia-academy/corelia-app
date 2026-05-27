@@ -537,6 +537,7 @@
       "saved": "Changes saved.",
       "assignmentApproved": "Submission approved. A certificate will be issued when the learner reaches 100% completion.",
       "assignmentRejected": "Submission rejected.",
+      "certificateIssued": "Certificate issued.",
       "certTemplateUploaded": "Certificate template uploaded.",
       "partnerContractUploaded": "Partner contract document uploaded.",
       "partnerInvoiceUploaded": "Partner invoice document uploaded.",
@@ -922,6 +923,7 @@
     },
     "publishing": {
       "publishedHint": "Published (visible on the course page)",
+      "hasCertificateHint": "This course issues a completion certificate",
       "updatingHint": "This course is being updated (show a notice to learners)"
     },
     "students": {
@@ -944,6 +946,7 @@
         "pending": "Pending",
         "notSubmitted": "Not submitted",
         "notEligible": "Not eligible",
+        "issue": "Issue",
         "paid": "Paid",
         "free": "Free / untracked",
         "issued": "Issued"

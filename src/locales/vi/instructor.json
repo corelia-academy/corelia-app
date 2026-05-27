@@ -536,6 +536,7 @@
       "saved": "Đã lưu thay đổi.",
       "assignmentApproved": "Đã duyệt bài. Chứng nhận sẽ được cấp nếu học viên đã hoàn thành 100% bài học.",
       "assignmentRejected": "Đã từ chối bài.",
+      "certificateIssued": "Đã cấp chứng nhận.",
       "certTemplateUploaded": "Đã tải template chứng nhận lên.",
       "partnerContractUploaded": "Đã tải lên hồ sơ hợp đồng.",
       "partnerInvoiceUploaded": "Đã tải lên hồ sơ hoá đơn.",
@@ -921,6 +922,7 @@
     },
     "publishing": {
       "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
+      "hasCertificateHint": "Khoá học có cấp chứng nhận hoàn thành",
       "updatingHint": "Khoá học đang được cập nhật (hiện banner cho học viên)"
     },
     "students": {
@@ -943,6 +945,7 @@
         "pending": "Chờ duyệt",
         "notSubmitted": "Chưa nộp",
         "notEligible": "Chưa đủ điều kiện",
+        "issue": "Cấp",
         "paid": "Trả phí",
         "free": "Miễn phí / chưa ghi nhận",
         "issued": "Đã cấp"
