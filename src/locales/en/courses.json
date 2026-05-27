@@ -183,6 +183,7 @@
         "title": "Course overview"
       },
       "certificateIssued": "Certificate issued",
+      "claimCertificate": "Claim certificate",
       "instructorLabel": "Instructor",
       "instructor": {
         "title": "About the instructor",

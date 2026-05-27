@@ -371,6 +371,7 @@ const InstructorCourseEdit = () => {
     published: false,
     is_external_aggregated: false,
     is_updating: false,
+    has_certificate: false,
     has_sections: true,
     certificate_template_url: "",
     certificate_template_path: "",
@@ -454,6 +455,7 @@ const InstructorCourseEdit = () => {
   const [reviewingSubmissionId, setReviewingSubmissionId] = useState<
     string | null
   >(null);
+  const [issuingCertForUser, setIssuingCertForUser] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingThumb, setUploadingThumb] = useState(false);
   const certificateInputRef = useRef<HTMLInputElement | null>(null);
@@ -883,6 +885,7 @@ const InstructorCourseEdit = () => {
         published: course.published,
         is_external_aggregated: course.is_external_aggregated ?? false,
         is_updating: course.is_updating ?? false,
+        has_certificate: course.has_certificate ?? false,
         has_sections: course.has_sections ?? true,
         certificate_template_url: course.certificate_template_url ?? "",
         certificate_template_path: course.certificate_template_path ?? "",
@@ -1298,6 +1301,7 @@ const InstructorCourseEdit = () => {
         external_source_attribution_note:
           form.external_source_attribution_note.trim() || null,
         is_updating: form.is_updating,
+        has_certificate: form.has_certificate,
         has_sections: form.has_sections,
         i18n: i18nPayload,
         sponsors,
@@ -1366,6 +1370,7 @@ const InstructorCourseEdit = () => {
               external_source_attribution_note:
                 form.external_source_attribution_note.trim() || null,
               is_updating: form.is_updating,
+              has_certificate: form.has_certificate,
               i18n: i18nPayload,
               sponsors,
               partners,
@@ -1527,6 +1532,28 @@ const InstructorCourseEdit = () => {
       toast.error(e instanceof Error ? e.message : t("courseEdit.errors.processFailed"));
     } finally {
       setReviewingSubmissionId(null);
+    }
+  };
+
+  const handleIssueCertificateForUser = async (userId: string) => {
+    if (!id) return;
+    setIssuingCertForUser(userId);
+    try {
+      const issued = await checkAndIssueCertificate(userId, id);
+      if (issued) {
+        setEnrollments((prev) =>
+          prev.map((e) =>
+            e.user_id === userId
+              ? { ...e, certificate_issued_at: new Date().toISOString() }
+              : e,
+          ),
+        );
+        toast.success(t("courseEdit.toasts.certificateIssued"));
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("courseEdit.errors.processFailed"));
+    } finally {
+      setIssuingCertForUser(null);
     }
   };
 
@@ -5825,6 +5852,24 @@ const InstructorCourseEdit = () => {
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
+                      checked={form.has_certificate ?? false}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          has_certificate: e.target.checked,
+                        }))
+                      }
+                      className="rounded border-border"
+                    />
+                    <span className="text-sm font-medium">
+                      {t("courseEdit.publishing.hasCertificateHint")}
+                    </span>
+                  </label>
+                </Field>
+                <Field>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
                       checked={form.is_updating}
                       onChange={(e) =>
                         setForm((p) => ({
@@ -8655,10 +8700,21 @@ const InstructorCourseEdit = () => {
                               )}
                             </td>
                             <td className="px-4 py-3">
-                              {hasCert ? (
+                              {!course.has_certificate ? (
+                                <span className="text-foreground-muted text-xs">—</span>
+                              ) : hasCert ? (
                                 <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
                                   <CheckCircle2 className="size-3.5" aria-hidden /> {t("courseEdit.students.status.issued")}
                                 </span>
+                              ) : prog >= 100 && (!course.final_assignment_title || sub?.status === "approved") ? (
+                                <button
+                                  type="button"
+                                  disabled={issuingCertForUser === e.user_id}
+                                  onClick={() => void handleIssueCertificateForUser(e.user_id)}
+                                  className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary hover:bg-primary/20 disabled:opacity-50"
+                                >
+                                  {issuingCertForUser === e.user_id ? "…" : t("courseEdit.students.status.issue")}
+                                </button>
                               ) : (
                                 <span className="text-foreground-muted text-xs">
                                   {t("courseEdit.students.status.notEligible")}
