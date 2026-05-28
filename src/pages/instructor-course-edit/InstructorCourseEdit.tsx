@@ -406,6 +406,8 @@ const InstructorCourseEdit = () => {
   // which uids in coInstructorIds need an invite (newly added) vs perms update.
   const [acceptedCoInstructorIdsSnapshot, setAcceptedCoInstructorIdsSnapshot] =
     useState<string[]>([]);
+  // Per co-instructor visibility on course details page (default: true).
+  const [coInstructorVisibility, setCoInstructorVisibility] = useState<Record<string, boolean>>({});
 
   const [supportedLocales, setSupportedLocales] = useState<SupportedCourseLocale[]>(["vi", "en"]);
   const [primaryContentLocale, setPrimaryContentLocale] = useState<SupportedCourseLocale>("vi");
@@ -813,6 +815,11 @@ const InstructorCourseEdit = () => {
     setCoInstructorIds(uniqueAccepted);
     setCoInstructorPermissions(course.co_instructor_permissions ?? {});
     setAcceptedCoInstructorIdsSnapshot(uniqueAccepted);
+    const vis: Record<string, boolean> = {};
+    for (const snap of course.co_instructors ?? []) {
+      vis[snap.id] = snap.show_on_course_page !== false;
+    }
+    setCoInstructorVisibility(vis);
   }, [course]);
 
   // Load pending co-instructor invites for this course (manager view).
@@ -1270,11 +1277,12 @@ const InstructorCourseEdit = () => {
         return writableAcceptedIds
           .filter((cid) => cid && cid !== course.instructor_id)
           .map((cid) => {
+            const showOnPage = coInstructorVisibility[cid] !== false;
             const prof = byId.get(cid);
-            if (prof) return toCoInstructorSnapshot(prof);
-            const fallback = fallbackById.get(cid);
-            if (fallback) return fallback;
-            return { id: cid, name: cid };
+            const base = prof
+              ? toCoInstructorSnapshot(prof)
+              : (fallbackById.get(cid) ?? { id: cid, name: cid });
+            return { ...base, show_on_course_page: showOnPage };
           });
       })();
 
@@ -5047,6 +5055,21 @@ const InstructorCourseEdit = () => {
                                       </label>
                                     );
                                   })}
+                                  <label className="flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm sm:col-span-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={coInstructorVisibility[cid] !== false}
+                                      onChange={(e) => {
+                                        setCoInstructorVisibility((prev) => ({
+                                          ...prev,
+                                          [cid]: e.target.checked,
+                                        }));
+                                      }}
+                                    />
+                                    <span className="text-foreground">
+                                      {t("courseEdit.coInstructors.showOnCoursePage")}
+                                    </span>
+                                  </label>
                                 </div>
                               </div>
                             );

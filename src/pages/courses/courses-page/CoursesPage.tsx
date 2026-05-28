@@ -87,11 +87,6 @@ function CourseCard({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-2 p-4">
-        {course.instructor_name ? (
-          <div className="line-clamp-1 text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
-            {course.instructor_name}
-          </div>
-        ) : null}
         <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">
           {course.title}
         </h3>

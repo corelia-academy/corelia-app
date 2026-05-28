@@ -130,13 +130,15 @@ export async function invokeGenerateFlashcards(
 export async function fetchFlashcardDeck(args: {
   userId: string;
   lessonId: string;
+  locale?: "vi" | "en";
 }): Promise<FlashcardDeck | null> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("flashcard_decks")
     .select("id,cards,locale,created_at,updated_at")
     .eq("user_id", args.userId)
-    .eq("lesson_id", args.lessonId)
-    .maybeSingle<{
+    .eq("lesson_id", args.lessonId);
+  if (args.locale) query = query.eq("locale", args.locale);
+  const { data, error } = await query.maybeSingle<{
       id: string;
       cards: unknown;
       locale: "vi" | "en";
@@ -191,6 +193,7 @@ export async function persistDeckCards(args: {
 }
 
 export function isDueToday(card: Flashcard, reference: Date = new Date()): boolean {
+  if (card.review_count === 0) return true;
   const due = new Date(card.next_review_at).getTime();
   return due <= reference.getTime();
 }

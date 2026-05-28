@@ -461,6 +461,7 @@ export default function Learn() {
         completed={
           !!currentLesson && progress.completedIds.has(currentLesson.id)
         }
+        locale={currentLocale}
       />
 
       <FlashcardDeckCard
@@ -469,6 +470,7 @@ export default function Learn() {
         completed={
           !!currentLesson && progress.completedIds.has(currentLesson.id)
         }
+        locale={currentLocale}
       />
 
       {shouldShowSectionQuiz && sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (
@@ -502,6 +504,7 @@ export default function Learn() {
           />
         </div>
       ) : null}
+      <div className="pb-8" />
     </>
   );
 
