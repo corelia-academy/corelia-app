@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getFeed } from "@/lib/feed";
+import { bundleFeedEvents } from "@/lib/feedBundling";
 import { markFeedRead } from "@/lib/feedUnread";
 import { listFollowing } from "@/lib/follows";
 import { supabase } from "@/lib/supabase";
@@ -23,7 +24,6 @@ interface FeedActor {
 }
 
 const PAGE_SIZE = 20;
-const BUNDLE_VERBS = new Set(["user.completed_section", "user.followed_user"]);
 const FOLLOW_SUBJECT_TYPES: FollowSubjectType[] = ["user", "course", "hackathon", "project"];
 
 type FollowedSubjects = Record<FollowSubjectType, Set<string>>;
@@ -168,73 +168,6 @@ function formatDate(value: string, locale: string): string {
   } catch {
     return value;
   }
-}
-
-function eventDay(value: string): string {
-  return value.slice(0, 10);
-}
-
-function bundleKey(event: ActivityEvent): string | null {
-  if (!BUNDLE_VERBS.has(event.verb)) return null;
-  const day = eventDay(event.created_at);
-
-  if (event.verb === "user.completed_section") {
-    return [
-      event.actor_id,
-      event.verb,
-      event.object_type,
-      event.object_id,
-      day,
-    ].join("|");
-  }
-
-  if (event.verb === "user.followed_user") {
-    return [event.actor_id, event.verb, day].join("|");
-  }
-
-  return null;
-}
-
-function bundleFeedEvents(events: ActivityEvent[]): FeedBundle[] {
-  const buckets = new Map<string, { events: ActivityEvent[]; firstIndex: number }>();
-
-  events.forEach((event, index) => {
-    const key = bundleKey(event);
-    if (!key) return;
-    const bucket = buckets.get(key);
-    if (bucket) bucket.events.push(event);
-    else buckets.set(key, { events: [event], firstIndex: index });
-  });
-
-  const emitted = new Set<string>();
-  const entries: FeedBundle[] = [];
-
-  events.forEach((event, index) => {
-    const key = bundleKey(event);
-    const bucket = key ? buckets.get(key) : null;
-
-    if (!key || !bucket || bucket.events.length < 2) {
-      entries.push({
-        kind: "single",
-        key: `single:${event.id}`,
-        events: [event],
-        created_at: event.created_at,
-      });
-      return;
-    }
-
-    if (emitted.has(key) || bucket.firstIndex !== index) return;
-
-    emitted.add(key);
-    entries.push({
-      kind: "bundle",
-      key: `bundle:${key}`,
-      events: bucket.events,
-      created_at: bucket.events[0]?.created_at ?? event.created_at,
-    });
-  });
-
-  return entries;
 }
 
 function FeedItem({
