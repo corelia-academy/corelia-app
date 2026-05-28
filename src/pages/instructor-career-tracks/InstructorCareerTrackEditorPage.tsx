@@ -104,7 +104,6 @@ export default function InstructorCareerTrackEditorPage() {
   });
   const [savingTranslation, setSavingTranslation] = useState(false);
   const translationInitialRef = useRef<string>("");
-  const [translationDirty, setTranslationDirty] = useState(false);
   const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
@@ -183,7 +182,6 @@ export default function InstructorCareerTrackEditorPage() {
   useEffect(() => {
     if (!track?.id || !isTranslating) return;
     let cancelled = false;
-    setTranslationDirty(false);
     void (async () => {
       try {
         const content = await getCareerTrackLocaleContent(track.id, activeContentLocale);
@@ -206,11 +204,6 @@ export default function InstructorCareerTrackEditorPage() {
     })();
     return () => { cancelled = true; };
   }, [activeContentLocale, isTranslating, track?.id]);
-
-  useEffect(() => {
-    const next = JSON.stringify(translationDraft);
-    setTranslationDirty(next !== translationInitialRef.current);
-  }, [translationDraft]);
 
   const availableById = useMemo(() => {
     const map = new Map<string, Course>();
@@ -301,8 +294,7 @@ export default function InstructorCareerTrackEditorPage() {
         prerequisites: splitLines(translationDraft.prerequisitesText),
       });
       translationInitialRef.current = JSON.stringify(translationDraft);
-      setTranslationDirty(false);
-      toast.success(t("careerTracks.actions.translationSaved"));
+        toast.success(t("careerTracks.actions.translationSaved"));
     } catch (e) {
       setError(e instanceof Error ? e.message : t("careerTracks.errors.saveFailed"));
     } finally {
