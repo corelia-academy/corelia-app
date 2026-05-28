@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { getPublishedCourses } from "@/lib/courses";
-import type { Course, CourseLevel } from "@/types/courses";
+import {
+  applyCourseLocaleContent,
+  getBatchCourseLocaleContent,
+  getPublishedCourses,
+} from "@/lib/courses";
+import type { Course, CourseLevel, SupportedCourseLocale } from "@/types/courses";
 
 import {
   filterAndSortCourses,
@@ -12,7 +16,9 @@ import {
 } from "../utils/catalog";
 
 export function useCoursesCatalog() {
-  const { t } = useTranslation("courses");
+  const { t, i18n } = useTranslation("courses");
+  const currentLocale: SupportedCourseLocale = i18n.language?.startsWith("en") ? "en" : "vi";
+  const [rawCourses, setRawCourses] = useState<Course[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +35,7 @@ export function useCoursesCatalog() {
     getPublishedCourses()
       .then((onlineRows) => {
         if (cancelled) return;
-        setCourses(onlineRows);
+        setRawCourses(onlineRows);
       })
       .catch((e) => {
         if (!cancelled) {
@@ -46,6 +52,31 @@ export function useCoursesCatalog() {
       cancelled = true;
     };
   }, [t]);
+
+  // Apply locale translations whenever raw courses or locale changes.
+  useEffect(() => {
+    if (rawCourses.length === 0) {
+      setCourses(rawCourses);
+      return;
+    }
+    if (currentLocale === "vi") {
+      setCourses(rawCourses);
+      return;
+    }
+    let cancelled = false;
+    const ids = rawCourses.map((c) => c.id);
+    getBatchCourseLocaleContent(ids, currentLocale).then((localeMap) => {
+      if (cancelled) return;
+      setCourses(
+        rawCourses.map((c) =>
+          applyCourseLocaleContent(c, localeMap.get(c.id) ?? null),
+        ),
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [rawCourses, currentLocale]);
 
   const filteredOnlineCourses = useMemo(
     () =>
