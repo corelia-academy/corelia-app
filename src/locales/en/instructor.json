@@ -188,7 +188,8 @@
     "editor": {
       "newTitle": "Create track",
       "editTitle": "Edit track",
-      "subtitle": "Set up content and order the courses in the learning path."
+      "subtitle": "Set up content and order the courses in the learning path.",
+      "translationModeHint": "Editing translation for {{locale}}. Empty fields fall back to the primary locale."
     },
     "sections": {
       "learning": "Content",
@@ -231,7 +232,8 @@
       "unpublish": "Unpublish",
       "back": "Back",
       "save": "Save",
-      "saving": "Saving…"
+      "saving": "Saving…",
+      "translationSaved": "Translation saved."
     },
     "errors": {
       "loadFailed": "Could not load tracks.",
