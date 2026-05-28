@@ -188,7 +188,8 @@
     "editor": {
       "newTitle": "Tạo lộ trình",
       "editTitle": "Chỉnh sửa lộ trình",
-      "subtitle": "Thiết lập nội dung và sắp xếp khoá học theo thứ tự học."
+      "subtitle": "Thiết lập nội dung và sắp xếp khoá học theo thứ tự học.",
+      "translationModeHint": "Đang chỉnh sửa bản dịch {{locale}}. Trường nào để trống sẽ dùng ngôn ngữ gốc làm fallback."
     },
     "sections": {
       "learning": "Nội dung",
@@ -230,7 +231,8 @@
       "unpublish": "Gỡ xuất bản",
       "back": "Quay lại",
       "save": "Lưu",
-      "saving": "Đang lưu…"
+      "saving": "Đang lưu…",
+      "translationSaved": "Đã lưu bản dịch."
     },
     "errors": {
       "loadFailed": "Không thể tải dữ liệu lộ trình.",
