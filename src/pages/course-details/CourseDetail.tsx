@@ -29,7 +29,6 @@ import { CourseLanguagePanel } from "./components/CourseLanguagePanel";
 import { CoursePartnerBrandPanel } from "./components/CoursePartnerBrandPanel";
 import { CourseSponsorsPanel } from "./components/CourseSponsorsPanel";
 import { CourseInstructorSection } from "./components/CourseInstructorSection";
-import { CourseCoInstructorsSection } from "./components/CourseCoInstructorsSection";
 import { useInstructorProfile } from "./hooks/useInstructorProfile";
 import { useCoraStore } from "@/stores/coraStore";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -313,11 +312,10 @@ export default function CourseDetail() {
           />
 
           {instructorProfile ? (
-            <CourseInstructorSection profile={instructorProfile} />
-          ) : null}
-
-          {course.co_instructors && course.co_instructors.length > 0 ? (
-            <CourseCoInstructorsSection coInstructors={course.co_instructors} />
+            <CourseInstructorSection
+              profile={instructorProfile}
+              coInstructors={course.co_instructors ?? []}
+            />
           ) : null}
 
           <CourseSpotlightSection

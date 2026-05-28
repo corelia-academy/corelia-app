@@ -385,6 +385,7 @@
         "certificates": "Xem chứng nhận",
         "pricing": "Xem pricing"
       },
+      "showOnCoursePage": "Hiển thị ở trang chi tiết khoá học",
       "willInviteBadge": "Sẽ gửi lời mời khi lưu",
       "inviteSent": "Đã gửi {{count}} lời mời đồng giảng viên",
       "inviteFailed": "{{count}} lời mời thất bại",

@@ -386,6 +386,7 @@
         "certificates": "View certificates",
         "pricing": "View pricing"
       },
+      "showOnCoursePage": "Show on course details page",
       "willInviteBadge": "Will invite on save",
       "inviteSent": "Sent {{count}} co-instructor invite(s)",
       "inviteFailed": "{{count}} co-instructor invite(s) failed",

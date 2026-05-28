@@ -69,6 +69,7 @@ export function useLessonSummary(params: {
       .select("id,key_points,practical_tips,locale,created_at,updated_at")
       .eq("user_id", user.id)
       .eq("lesson_id", lessonId)
+      .eq("locale", locale ?? "vi")
       .maybeSingle<DbSummaryRow>();
     if (error) {
       setState({ summary: null, loading: false, generating: false, error: error.message });

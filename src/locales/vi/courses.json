@@ -189,6 +189,7 @@
       "instructorLabel": "Giảng viên",
       "instructor": {
         "title": "Giới thiệu giảng viên",
+        "titlePlural": "Giảng viên",
         "fallbackName": "Giảng viên"
       },
       "coInstructors": {

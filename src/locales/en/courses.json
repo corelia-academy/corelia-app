@@ -190,6 +190,7 @@
       "instructorLabel": "Instructor",
       "instructor": {
         "title": "About the instructor",
+        "titlePlural": "Instructors",
         "fallbackName": "Instructor"
       },
       "coInstructors": {

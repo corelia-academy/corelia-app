@@ -34,6 +34,7 @@ export interface CourseCoInstructorSnapshot {
   organization?: string | null;
   website?: string | null;
   bio?: string | null;
+  show_on_course_page?: boolean;
 }
 
 export interface SponsorLocaleContent {
