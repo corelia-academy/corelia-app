@@ -4,6 +4,7 @@ import { normalizeAnnouncementBodyHtml } from "../lib/mail/announcement_body.ts"
 import { resolveAppUrl, wrapBlastEmail } from "../lib/mail/layout.ts";
 import { sendBatchEmailsViaResend } from "../lib/mail/resend.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
+import { canProfileBlastHackathonEmail } from "./blast_permissions.ts";
 
 type RecipientFilter = "all" | "approved" | "pending" | "rejected";
 
@@ -20,11 +21,7 @@ async function senderCanBlastHackathon(
   if (error) throw new Error(error.message);
   if (!profile) return false;
 
-  const role = String(profile.role ?? "");
-  if (role === "admin" || role === "support_staff") return true;
-
-  const email = typeof profile.email === "string" ? profile.email.trim().toLowerCase() : "";
-  if (!email) return false;
+  if (canProfileBlastHackathonEmail(profile, undefined)) return true;
 
   const { data: h, error: hErr } = await db
     .from("hackathons")
@@ -34,25 +31,7 @@ async function senderCanBlastHackathon(
   if (hErr) throw new Error(hErr.message);
   if (!h?.document || typeof h.document !== "object") return false;
 
-  const doc = h.document as Record<string, unknown>;
-
-  // co_organizer_emails = full co-host with management permissions
-  const coOrgEmails = doc.co_organizer_emails;
-  if (Array.isArray(coOrgEmails)) {
-    if (coOrgEmails.some((e) => typeof e === "string" && e.trim().toLowerCase() === email)) {
-      return true;
-    }
-  }
-
-  // reviewer_emails = application reviewers also get blast access
-  const reviewerEmails = doc.reviewer_emails;
-  if (Array.isArray(reviewerEmails)) {
-    if (reviewerEmails.some((e) => typeof e === "string" && e.trim().toLowerCase() === email)) {
-      return true;
-    }
-  }
-
-  return false;
+  return canProfileBlastHackathonEmail(profile, h.document as Record<string, unknown>);
 }
 
 export async function handleHackathonBlastEmail(
