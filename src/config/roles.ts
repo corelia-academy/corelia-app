@@ -1,9 +1,10 @@
-import type { UserRole } from "@/types/database";
+import type { UserRole } from "../types/database";
 
 export const ROLE_GROUPS = {
-  /** Admin + nhân viên (học vụ/chăm sóc viên) */
+  /** Admin and support staff. */
   admin: ["admin", "support_staff"] as UserRole[],
-  /** Khu vực instructor workspace (giữ nguyên hành vi hiện tại) */
+  /** Full hackathon managers for catalog, workspace, and service mutations. */
+  contestManagers: ["instructor", "support_staff", "admin"] as UserRole[],
+  /** Instructor workspace access. */
   instructorWorkspace: ["instructor", "support_staff", "admin"] as UserRole[],
 } as const;
-
