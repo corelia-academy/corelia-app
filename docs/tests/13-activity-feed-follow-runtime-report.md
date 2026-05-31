@@ -4,6 +4,14 @@ Issue: #96
 Branch: `fix/activity-feed-follow-system`  
 Ngày cập nhật: 2026-05-28
 
+## Checklist HTML cơ bản cho sub-issue QA
+
+Nếu cần quy trình test tay ngắn gọn hơn cho tester, dùng file HTML này:
+
+`docs/tests/13-activity-feed-follow-manual.html`
+
+File này có checkbox Pass/Fail/Blocked/Skip, ô ghi Actual/Error cho từng bước, lưu tạm bằng `localStorage`, và nút export JSON để paste lại vào sub-issue QA. File report hiện tại vẫn giữ vai trò handoff chi tiết cho dev/tester kỹ thuật.
+
 ## Mục tiêu của file này
 
 File này dùng để tester kiểm tra phần **runtime/UI** của Activity Feed + Follow System sau khi code đã qua build, lint, unit test và smoke DB.
