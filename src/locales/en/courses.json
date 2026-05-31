@@ -13,7 +13,10 @@
     "declined": "Invite declined.",
     "errorFallback": "Could not process the invite.",
     "notActionable": "This invite is no longer active (status: {{status}}).",
-    "courseFallback": "a course"
+    "courseFallback": "a course",
+    "wrongAccountTitle": "This invite is for a different account",
+    "wrongAccountBody": "You're signed in as {{email}}. Sign out and sign in with the account that received this invite.",
+    "signOutAndSwitch": "Sign out and switch account"
   },
   "level": {
     "beginner": "Beginner",
@@ -183,9 +186,11 @@
         "title": "Course overview"
       },
       "certificateIssued": "Certificate issued",
+      "claimCertificate": "Claim certificate",
       "instructorLabel": "Instructor",
       "instructor": {
         "title": "About the instructor",
+        "titlePlural": "Instructors",
         "fallbackName": "Instructor"
       },
       "coInstructors": {
@@ -299,6 +304,23 @@
         "regenerate": "Regenerate",
         "error": "Cora couldn't summarize this lesson right now.",
         "retry": "Try again"
+      },
+      "readinessCheck": {
+        "title": "Readiness check",
+        "subtitle": "Cora will ask {{count}} quick questions on prior material before you start.",
+        "startAction": "Start check",
+        "skipAction": "Skip",
+        "generating": "Cora is preparing questions…",
+        "questionCounter": "Question {{current}}/{{total}}",
+        "nextAction": "Next",
+        "submitAction": "Submit",
+        "passedTitle": "You're ready! 🎯",
+        "passedSubtitle": "You have a solid grasp of the prior material.",
+        "passedAction": "Start the lesson",
+        "failedTitle": "Review these first",
+        "failedSubtitle": "Cora suggests revisiting:",
+        "failedAction": "Continue anyway",
+        "retryAction": "Retry"
       },
       "flashcards": {
         "title": "Flashcards",

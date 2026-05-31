@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { CourseBadge } from "./CourseBadge";
 import i18n from "@/i18n";
 import {
+  checkAndIssueCertificate,
   getCoursePrimaryLocale,
   normalizeCourseLocale,
   pickCourseContentLocale,
@@ -25,6 +26,8 @@ interface CourseHeroProps {
   previewLessons: CourseLesson[];
   displayTotalDuration: number;
   curriculumCountLabel: string;
+  progressPercent?: number;
+  onCertificateClaimed?: (issuedAt: string) => void;
 }
 
 export function CourseHero({
@@ -35,15 +38,31 @@ export function CourseHero({
   previewLessons,
   displayTotalDuration,
   curriculumCountLabel,
+  progressPercent = 0,
+  onCertificateClaimed,
 }: CourseHeroProps) {
   const { t } = useTranslation(["courses", "common"]);
   const translate = (key: string, options?: Record<string, unknown>) =>
     String(t(key as never, options as never));
   const translateCommon = (key: string, options?: Record<string, unknown>) =>
     String(t(`common:${key}` as never, options as never));
-  const [failedThumbnailSrc, setFailedThumbnailSrc] = useState<string | null>(
-    null,
-  );
+  const [failedThumbnailSrc, setFailedThumbnailSrc] = useState<string | null>(null);
+  const [claiming, setClaiming] = useState(false);
+
+  const handleClaimCertificate = async () => {
+    if (!enrollment || claiming) return;
+    setClaiming(true);
+    try {
+      const issued = await checkAndIssueCertificate(enrollment.user_id, course.id);
+      if (issued) {
+        onCertificateClaimed?.(new Date().toISOString());
+      }
+    } catch {
+      // silently ignore — user can retry
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   const contentLocale = pickCourseContentLocale(course, i18n.language);
   // Keep this in sync with sidebar language panel; hero only needs fallback notice.
@@ -96,6 +115,15 @@ export function CourseHero({
               <CourseBadge variant="success">
                 {translate("detail.courseDetail.certificateIssued")}
               </CourseBadge>
+            ) : course.has_certificate && enrollment && progressPercent >= 100 ? (
+              <button
+                type="button"
+                onClick={() => void handleClaimCertificate()}
+                disabled={claiming}
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20 disabled:opacity-50"
+              >
+                {claiming ? "…" : translate("detail.courseDetail.claimCertificate")}
+              </button>
             ) : null}
           </div>
 

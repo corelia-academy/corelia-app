@@ -372,7 +372,7 @@ export default function Header() {
     <header className="sticky top-0 z-40 flex w-full border-b border-border-subtle bg-surface-raised">
       <div className="mx-auto flex h-14 w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
         <div className="flex items-center gap-4">
-          <SidebarTrigger className="shrink-0 size-7">
+          <SidebarTrigger className="hidden md:inline-flex shrink-0 size-7">
             <MenuIcon className="size-5" aria-hidden />
           </SidebarTrigger>
           <NavLink

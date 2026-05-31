@@ -188,7 +188,8 @@
     "editor": {
       "newTitle": "Create track",
       "editTitle": "Edit track",
-      "subtitle": "Set up content and order the courses in the learning path."
+      "subtitle": "Set up content and order the courses in the learning path.",
+      "translationModeHint": "Editing translation for {{locale}}. Empty fields fall back to the primary locale."
     },
     "sections": {
       "learning": "Content",
@@ -231,7 +232,8 @@
       "unpublish": "Unpublish",
       "back": "Back",
       "save": "Save",
-      "saving": "Saving…"
+      "saving": "Saving…",
+      "translationSaved": "Translation saved."
     },
     "errors": {
       "loadFailed": "Could not load tracks.",
@@ -384,6 +386,7 @@
         "certificates": "View certificates",
         "pricing": "View pricing"
       },
+      "showOnCoursePage": "Show on course details page",
       "willInviteBadge": "Will invite on save",
       "inviteSent": "Sent {{count}} co-instructor invite(s)",
       "inviteFailed": "{{count}} co-instructor invite(s) failed",
@@ -537,6 +540,7 @@
       "saved": "Changes saved.",
       "assignmentApproved": "Submission approved. A certificate will be issued when the learner reaches 100% completion.",
       "assignmentRejected": "Submission rejected.",
+      "certificateIssued": "Certificate issued.",
       "certTemplateUploaded": "Certificate template uploaded.",
       "partnerContractUploaded": "Partner contract document uploaded.",
       "partnerInvoiceUploaded": "Partner invoice document uploaded.",
@@ -865,12 +869,10 @@
       "segmentStartPlaceholder": "e.g. 0:00",
       "segmentEndPlaceholder": "e.g. 15:30 (leave blank for end of video)",
       "segmentHint": "Timestamps define this lesson's slice of the same YouTube video (M:SS or H:MM:SS).",
-      "progressLockBanner": "{{count}} learner(s) already have progress on this lesson. You can edit text and segment timestamps, but you cannot switch to a different video or delete this lesson.",
+      "progressLockBanner": "{{count}} learner(s) already have progress on this lesson. You can edit text and segment timestamps, but you cannot switch to a different video.",
       "youtubeLockedHint": "YouTube link is locked because learners have progress on this lesson.",
       "cannotChangeVideoWithProgress": "Cannot switch to a different YouTube video while learners have progress on this lesson.",
-      "segmentEndInvalid": "Segment end must be a valid timestamp after the start time.",
-      "deleteBlockedHasProgress": "Cannot delete this lesson — {{count}} learner(s) already have progress.",
-      "deleteLockedTooltip": "{{count}} learner(s) have progress — delete disabled"
+      "segmentEndInvalid": "Segment end must be a valid timestamp after the start time."
     },
     "longVideo": {
       "title": "Long YouTube video",
@@ -922,6 +924,7 @@
     },
     "publishing": {
       "publishedHint": "Published (visible on the course page)",
+      "hasCertificateHint": "This course issues a completion certificate",
       "updatingHint": "This course is being updated (show a notice to learners)"
     },
     "students": {
@@ -944,6 +947,7 @@
         "pending": "Pending",
         "notSubmitted": "Not submitted",
         "notEligible": "Not eligible",
+        "issue": "Issue",
         "paid": "Paid",
         "free": "Free / untracked",
         "issued": "Issued"

@@ -1,5 +1,6 @@
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
+import { triggerLessonEmbeddingInBackground } from "@/lib/lessonEmbedding";
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
 import type {
@@ -1043,6 +1044,8 @@ export async function addLesson(courseId: string, data: CourseLessonInsert): Pro
     data: dataDoc,
   });
   if (error) throw new Error(error.message);
+  // Background-ingest the new lesson into knowledge_chunks so Cora RAG can pick it up.
+  triggerLessonEmbeddingInBackground({ courseId, lessonId: id });
   return { id, ...payload } as CourseLesson;
 }
 
@@ -1157,6 +1160,8 @@ export async function updateLesson(
     .eq("course_id", courseId)
     .eq("id", lessonId);
   if (upErr) throw new Error(upErr.message);
+  // Re-ingest into knowledge_chunks so Cora RAG stays in sync. Checksums skip no-op writes.
+  triggerLessonEmbeddingInBackground({ courseId, lessonId });
 }
 
 export async function reorderCourseLessons(

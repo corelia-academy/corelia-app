@@ -36,6 +36,7 @@ const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
 const RoadmapPage = lazy(() => import("@/pages/roadmap"));
 const CareerList = lazy(() => import("@/pages/career"));
 const CareerDetail = lazy(() => import("@/pages/career/CareerDetailPage"));
+const LearningPathPage = lazy(() => import("@/pages/learning-path/LearningPathPage"));
 const Contests = lazy(() => import("@/pages/hackathon-detail/Contests"));
 const ContestNew = lazy(() => import("@/pages/hackathon-detail/ContestNew"));
 const ContestPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
@@ -317,15 +318,15 @@ export default function App() {
                 }
               />
               <Route
-                path="career/corelia/:slug"
+                path="learning-path"
                 element={
                   <Suspense fallback={<PageFallback />}>
-                    <CareerDetail />
+                    <LearningPathPage />
                   </Suspense>
                 }
               />
               <Route
-                path="career/:handle/:slug"
+                path="career/:slug"
                 element={
                   <Suspense fallback={<PageFallback />}>
                     <CareerDetail />

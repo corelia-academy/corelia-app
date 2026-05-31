@@ -11,8 +11,23 @@
     "includedCourses": "Included courses",
     "prerequisites": "Prerequisites",
     "nextSteps": "Next steps",
+    "description": "About this track",
+    "thumbnailFallback": "No track image yet",
     "emptyWhatYoullLearn": "No information yet.",
-    "emptyPrerequisites": "No prerequisites."
+    "emptyPrerequisites": "No prerequisites.",
+    "courseProgress": "Progress",
+    "continueButton": "Continue",
+    "startButton": "Start learning",
+    "viewCourseButton": "View course",
+    "stats": {
+      "courses": "Courses",
+      "duration": "Total duration"
+    },
+    "actionPanel": {
+      "ready": "Ready to learn",
+      "exploreCopy": "Explore the courses in this track below and begin your journey.",
+      "continueLabel": "Continue from your latest course"
+    }
   },
   "labels": {
     "certificate": "Certificate",
@@ -30,4 +45,3 @@
     "loadFailed": "Could not load data."
   }
 }
-

@@ -196,8 +196,8 @@ export function QuestionGeneratorDialog({
     setGenerateError(null);
 
     const loadPromise = isLessonMode
-      ? getLessonQuestions(courseId, lessonId!)
-      : getSectionQuestions(courseId, section!.id);
+      ? getLessonQuestions(courseId, lessonId!, locale)
+      : getSectionQuestions(courseId, section!.id, locale);
 
     loadPromise
       .then((existing) => {
@@ -299,10 +299,10 @@ export function QuestionGeneratorDialog({
       }));
 
       if (isLessonMode) {
-        await setLessonQuestions(courseId, lessonId!, payload);
+        await setLessonQuestions(courseId, lessonId!, payload, locale);
         toast.success(t("courseEdit.questions.savedLesson", { count: questions.length }));
       } else {
-        await setSectionQuestions(courseId, section!.id, payload);
+        await setSectionQuestions(courseId, section!.id, payload, locale);
         toast.success(t("courseEdit.questions.savedSection", { count: questions.length }));
       }
       onOpenChange(false);

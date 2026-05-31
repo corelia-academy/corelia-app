@@ -43,7 +43,7 @@ export function useFlashcardDeck(params: {
     }
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const deck = await fetchFlashcardDeck({ userId: user.id, lessonId });
+      const deck = await fetchFlashcardDeck({ userId: user.id, lessonId, locale });
       setState({
         deck,
         loading: false,

@@ -7,12 +7,15 @@ import {
   Facebook,
   Instagram,
 } from "lucide-react";
+import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
 import type { InstructorSocialLink, InstructorSocialPlatform, Profile } from "@/types/database";
+import type { CourseCoInstructorSnapshot } from "@/types/courses";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface CourseInstructorSectionProps {
   profile: Profile;
+  coInstructors?: CourseCoInstructorSnapshot[];
 }
 
 function initials(name: string | null): string {
@@ -61,49 +64,45 @@ function getSocialLabel(link: InstructorSocialLink): string {
   return PLATFORM_LABELS[link.platform] ?? "Link";
 }
 
-export function CourseInstructorSection({ profile }: CourseInstructorSectionProps) {
-  const { t } = useTranslation("courses");
-  const translate = (key: string) => String(t(key as never));
-
-  const displayName = profile.full_name?.trim() || translate("detail.courseDetail.instructor.fallbackName");
-  const meta = [profile.instructor_headline, profile.instructor_organization]
-    .filter(Boolean)
-    .join(" • ");
-
-  const bio = profile.instructor_bio?.trim() || profile.bio?.trim();
-
-  const socialLinks: InstructorSocialLink[] = [
-    ...(profile.instructor_social_links ?? []),
-  ];
-  if (profile.instructor_website?.trim()) {
-    const alreadyHasWebsite = socialLinks.some(
-      (l) => l.url === profile.instructor_website,
-    );
-    if (!alreadyHasWebsite) {
-      socialLinks.push({ platform: "website", url: profile.instructor_website });
-    }
-  }
-
+function InstructorCard({
+  avatarUrl,
+  name,
+  meta,
+  bio,
+  socialLinks,
+  profileLink,
+}: {
+  avatarUrl?: string | null;
+  name: string;
+  meta?: string;
+  bio?: string;
+  socialLinks?: InstructorSocialLink[];
+  profileLink?: string;
+}) {
   return (
-    <section className="mt-6 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
-      <h2 className="text-base font-semibold text-foreground">
-        {translate("detail.courseDetail.instructor.title")}
-      </h2>
-
-      <div className="mt-4 flex items-start gap-4">
-        <Avatar className="mt-0.5 size-14 shrink-0 rounded-full border border-border-subtle">
-          <AvatarImage src={profile.avatar_url || undefined} alt={displayName} />
-          <AvatarFallback className="text-base">{initials(profile.full_name)}</AvatarFallback>
+    <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
+      <div className="flex items-start gap-3">
+        <Avatar className="mt-0.5 size-12 shrink-0 rounded-full border border-border-subtle">
+          <AvatarImage src={avatarUrl || undefined} alt={name} />
+          <AvatarFallback>{initials(name)}</AvatarFallback>
         </Avatar>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground">{displayName}</p>
+          <div className="text-sm font-semibold text-foreground">
+            {profileLink ? (
+              <Link to={profileLink} className="hover:underline">
+                {name}
+              </Link>
+            ) : (
+              name
+            )}
+          </div>
           {meta ? (
-            <p className="mt-0.5 text-sm text-foreground-muted">{meta}</p>
+            <div className="mt-0.5 text-sm text-foreground-muted">{meta}</div>
           ) : null}
 
-          {socialLinks.length > 0 ? (
-            <div className="mt-3 flex flex-wrap gap-2">
+          {socialLinks && socialLinks.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-2">
               {socialLinks.map((link, idx) => (
                 <a
                   key={idx}
@@ -122,12 +121,83 @@ export function CourseInstructorSection({ profile }: CourseInstructorSectionProp
       </div>
 
       {bio ? (
-        <div className="mt-4 border-t border-border-subtle pt-4">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+        <div className="mt-3 border-t border-border-subtle pt-3">
+          <p className="line-clamp-4 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
             {bio}
           </p>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+export function CourseInstructorSection({
+  profile,
+  coInstructors,
+}: CourseInstructorSectionProps) {
+  const { t } = useTranslation("courses");
+  const translate = (key: string) => String(t(key as never));
+
+  const mainName = profile.full_name?.trim() || translate("detail.courseDetail.instructor.fallbackName");
+  const mainMeta = [profile.instructor_headline, profile.instructor_organization]
+    .filter(Boolean)
+    .join(" • ");
+  const mainBio = profile.instructor_bio?.trim() || profile.bio?.trim();
+
+  const mainSocialLinks: InstructorSocialLink[] = [...(profile.instructor_social_links ?? [])];
+  if (profile.instructor_website?.trim()) {
+    const alreadyHas = mainSocialLinks.some((l) => l.url === profile.instructor_website);
+    if (!alreadyHas) {
+      mainSocialLinks.push({ platform: "website", url: profile.instructor_website });
+    }
+  }
+
+  const visibleCoInstructors = (coInstructors ?? []).filter(
+    (p) => p.show_on_course_page !== false,
+  );
+  const hasCoInstructors = visibleCoInstructors.length > 0;
+  const title = hasCoInstructors
+    ? translate("detail.courseDetail.instructor.titlePlural")
+    : translate("detail.courseDetail.instructor.title");
+
+  return (
+    <section className="mt-6 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
+      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <InstructorCard
+          avatarUrl={profile.avatar_url}
+          name={mainName}
+          meta={mainMeta}
+          bio={mainBio}
+          socialLinks={mainSocialLinks}
+          profileLink={`/instructors/${profile.id}`}
+        />
+
+        {hasCoInstructors
+          ? visibleCoInstructors.map((p) => {
+              const label =
+                (p.name ?? "").trim() ||
+                translate("detail.courseDetail.coInstructors.fallbackName");
+              const meta = [p.headline, p.organization].filter(Boolean).join(" • ");
+              const coSocialLinks: InstructorSocialLink[] = p.website?.trim()
+                ? [{ platform: "website", url: p.website }]
+                : [];
+
+              return (
+                <InstructorCard
+                  key={p.id}
+                  avatarUrl={p.avatar_url}
+                  name={label}
+                  meta={meta}
+                  bio={p.bio?.trim()}
+                  socialLinks={coSocialLinks}
+                  profileLink={`/instructors/${p.id}`}
+                />
+              );
+            })
+          : null}
+      </div>
     </section>
   );
 }

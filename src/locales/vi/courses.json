@@ -13,7 +13,10 @@
     "declined": "Đã từ chối lời mời.",
     "errorFallback": "Không xử lý được lời mời.",
     "notActionable": "Lời mời này không còn hiệu lực (trạng thái: {{status}}).",
-    "courseFallback": "một khoá học"
+    "courseFallback": "một khoá học",
+    "wrongAccountTitle": "Lời mời này thuộc về một tài khoản khác",
+    "wrongAccountBody": "Bạn đang đăng nhập bằng {{email}}. Đăng xuất rồi đăng nhập lại bằng tài khoản đã nhận lời mời này.",
+    "signOutAndSwitch": "Đăng xuất và chuyển tài khoản"
   },
   "level": {
     "beginner": "Cơ bản",
@@ -182,9 +185,11 @@
         "title": "Tổng quan khoá học"
       },
       "certificateIssued": "Đã cấp chứng nhận",
+      "claimCertificate": "Nhận chứng nhận",
       "instructorLabel": "Giảng viên",
       "instructor": {
         "title": "Giới thiệu giảng viên",
+        "titlePlural": "Giảng viên",
         "fallbackName": "Giảng viên"
       },
       "coInstructors": {
@@ -294,6 +299,23 @@
         "regenerate": "Tóm tắt lại",
         "error": "Cora chưa thể tóm tắt bài học lúc này.",
         "retry": "Thử lại"
+      },
+      "readinessCheck": {
+        "title": "Kiểm tra sẵn sàng",
+        "subtitle": "Cora hỏi nhanh {{count}} câu về kiến thức nền trước khi bắt đầu.",
+        "startAction": "Bắt đầu kiểm tra",
+        "skipAction": "Bỏ qua",
+        "generating": "Cora đang chuẩn bị câu hỏi…",
+        "questionCounter": "Câu {{current}}/{{total}}",
+        "nextAction": "Tiếp",
+        "submitAction": "Nộp bài",
+        "passedTitle": "Sẵn sàng! 🎯",
+        "passedSubtitle": "Bạn nắm vững kiến thức nền cho bài này.",
+        "passedAction": "Bắt đầu học",
+        "failedTitle": "Nên ôn lại trước",
+        "failedSubtitle": "Cora gợi ý bạn xem lại những bài này:",
+        "failedAction": "Vẫn vào học",
+        "retryAction": "Làm lại"
       },
       "flashcards": {
         "title": "Flashcards",

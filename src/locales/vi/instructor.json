@@ -188,7 +188,8 @@
     "editor": {
       "newTitle": "Tạo lộ trình",
       "editTitle": "Chỉnh sửa lộ trình",
-      "subtitle": "Thiết lập nội dung và sắp xếp khoá học theo thứ tự học."
+      "subtitle": "Thiết lập nội dung và sắp xếp khoá học theo thứ tự học.",
+      "translationModeHint": "Đang chỉnh sửa bản dịch {{locale}}. Trường nào để trống sẽ dùng ngôn ngữ gốc làm fallback."
     },
     "sections": {
       "learning": "Nội dung",
@@ -230,7 +231,8 @@
       "unpublish": "Gỡ xuất bản",
       "back": "Quay lại",
       "save": "Lưu",
-      "saving": "Đang lưu…"
+      "saving": "Đang lưu…",
+      "translationSaved": "Đã lưu bản dịch."
     },
     "errors": {
       "loadFailed": "Không thể tải dữ liệu lộ trình.",
@@ -383,6 +385,7 @@
         "certificates": "Xem chứng nhận",
         "pricing": "Xem pricing"
       },
+      "showOnCoursePage": "Hiển thị ở trang chi tiết khoá học",
       "willInviteBadge": "Sẽ gửi lời mời khi lưu",
       "inviteSent": "Đã gửi {{count}} lời mời đồng giảng viên",
       "inviteFailed": "{{count}} lời mời thất bại",
@@ -536,6 +539,7 @@
       "saved": "Đã lưu thay đổi.",
       "assignmentApproved": "Đã duyệt bài. Chứng nhận sẽ được cấp nếu học viên đã hoàn thành 100% bài học.",
       "assignmentRejected": "Đã từ chối bài.",
+      "certificateIssued": "Đã cấp chứng nhận.",
       "certTemplateUploaded": "Đã tải template chứng nhận lên.",
       "partnerContractUploaded": "Đã tải lên hồ sơ hợp đồng.",
       "partnerInvoiceUploaded": "Đã tải lên hồ sơ hoá đơn.",
@@ -864,12 +868,10 @@
       "segmentStartPlaceholder": "VD: 0:00",
       "segmentEndPlaceholder": "VD: 15:30 (để trống = đến hết video)",
       "segmentHint": "Mốc thời gian áp cho đoạn video YouTube của bài học này (M:SS hoặc G:MM:SS).",
-      "progressLockBanner": "Đã có {{count}} học viên có tiến độ trên bài học này. Bạn có thể sửa nội dung chữ và mốc đoạn video, nhưng không đổi sang video khác và không xóa bài học.",
+      "progressLockBanner": "Đã có {{count}} học viên có tiến độ trên bài học này. Bạn có thể sửa nội dung chữ và mốc đoạn video, nhưng không thể đổi sang video khác.",
       "youtubeLockedHint": "Link YouTube bị khóa vì đã có học viên có tiến độ trên bài học này.",
       "cannotChangeVideoWithProgress": "Không thể đổi sang video YouTube khác khi đã có học viên có tiến độ trên bài học này.",
-      "segmentEndInvalid": "Thời điểm kết thúc phải là timestamp hợp lệ và sau thời điểm bắt đầu.",
-      "deleteBlockedHasProgress": "Không thể xóa bài học — đã có {{count}} học viên có tiến độ.",
-      "deleteLockedTooltip": "{{count}} học viên có tiến độ — không cho xóa"
+      "segmentEndInvalid": "Thời điểm kết thúc phải là timestamp hợp lệ và sau thời điểm bắt đầu."
     },
     "longVideo": {
       "title": "Video YouTube dài",
@@ -921,6 +923,7 @@
     },
     "publishing": {
       "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
+      "hasCertificateHint": "Khoá học có cấp chứng nhận hoàn thành",
       "updatingHint": "Khoá học đang được cập nhật (hiện banner cho học viên)"
     },
     "students": {
@@ -943,6 +946,7 @@
         "pending": "Chờ duyệt",
         "notSubmitted": "Chưa nộp",
         "notEligible": "Chưa đủ điều kiện",
+        "issue": "Cấp",
         "paid": "Trả phí",
         "free": "Miễn phí / chưa ghi nhận",
         "issued": "Đã cấp"

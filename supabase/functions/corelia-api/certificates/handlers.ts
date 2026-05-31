@@ -27,7 +27,9 @@ export async function handleIssueCertificate(req: Request, db: SupabaseClient): 
     const course = (courseRow.data ?? {}) as {
       access_model?: string | null;
       final_assignment_title?: string | null;
+      has_certificate?: boolean;
     };
+    if (!course.has_certificate) return json({ issued: false });
     if (enrollment.certificate_issued_at) {
       return json({ issued: true, certificate_issued_at: enrollment.certificate_issued_at });
     }
