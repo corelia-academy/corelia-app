@@ -5,6 +5,7 @@ import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
 import { deleteStorageObjectByPath } from "@/lib/storage";
 import { getProfileForUser } from "@/lib/profile";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
+import { validateContestScoreInput } from "@/lib/hackathonScoreValidation";
 import {
   canManageContests,
   canReviewContestApplications,
@@ -1353,6 +1354,7 @@ export async function scoreContestSubmission(
   input: ContestScoreInput,
 ): Promise<void> {
   const { contest, user } = await requireContestScorer(contestId);
+  validateContestScoreInput(input);
   const now = new Date().toISOString();
   const weights = contest.rubric_weights ?? defaultRubricWeights();
   const roundId = contest.judging?.active_round_id ?? "final";
