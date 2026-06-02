@@ -35,6 +35,7 @@
     "home": "Home",
     "someone": "Someone",
     "courses": "Courses",
+    "feed": "Feed",
     "career": "Career",
     "learningPath": "AI Path",
     "contests": "Hackathons",
@@ -54,6 +55,7 @@
   },
   "header": {
     "publicProfile": "Public profile",
+    "feedAria": "Open activity feed",
     "notifications": "Notifications",
     "notificationsAria": "Open notifications",
     "noNotifications": "No notifications yet.",
@@ -104,7 +106,9 @@
       "ocid": "OCID: {{ocid}}",
       "website": "Website",
       "role": "Role",
-      "memberSince": "Member since"
+      "memberSince": "Member since",
+      "followers": "Followers",
+      "following": "Following"
     },
     "errors": {
       "notFound": "User not found",
@@ -116,6 +120,10 @@
       "quickInfo": "Quick info",
       "empty": "No public info yet.",
       "instructorHeadlineFallback": "Instructor"
+    },
+    "activity": {
+      "title": "Activity",
+      "empty": "No public activity yet."
     },
     "achievements": {
       "selfOnly": "Achievements are only visible to the account owner for now.",
@@ -152,7 +160,10 @@
     "loading": "Loading projects...",
     "loadMore": "Load more",
     "emptyTitle": "No projects found",
-    "emptyDescription": "Try another source filter or come back when the community publishes more work.",
+    "emptyDescription": "No public content matches the current filter yet.",
+    "emptyHackathonDescription": "No public hackathons are available for this view yet.",
+    "emptyCourseDescription": "No public courses are available for this view yet.",
+    "emptyShowcaseDescription": "No public showcases are available for this view yet.",
     "errorTitle": "Could not load projects",
     "errorDescription": "Something went wrong while loading the project gallery.",
     "retry": "Retry",

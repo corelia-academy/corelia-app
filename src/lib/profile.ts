@@ -45,6 +45,8 @@ function rowToProfile(row: Record<string, unknown>): Profile {
     bio: (row.bio as string | null) ?? null,
     website: (row.website as string | null) ?? null,
     profile_public: (row.profile_public as boolean | null) ?? true,
+    follower_count: Number(row.follower_count ?? 0),
+    following_count: Number(row.following_count ?? 0),
     locale: (row.locale as Profile["locale"]) ?? null,
     ocid: (row.ocid as string | null) ?? null,
     ocid_eth_address: (row.ocid_eth_address as string | null) ?? null,
@@ -84,6 +86,8 @@ function rowToPublicProfile(row: Record<string, unknown>): PublicProfile {
     instructor_website: (row.instructor_website as string | null) ?? null,
     instructor_social_links: (row.instructor_social_links as PublicProfile["instructor_social_links"]) ?? null,
     profile_public: (row.profile_public as boolean | null) ?? true,
+    follower_count: Number(row.follower_count ?? 0),
+    following_count: Number(row.following_count ?? 0),
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
   };
@@ -437,11 +441,16 @@ async function fetchPublicProfileByHandleOnce(handle: string): Promise<PublicPro
   const h = handle.trim();
   if (!h) return null;
 
-  // Single query: match lower(username) OR exact ocid
+  const filters = [`username.ilike.${h}`, `ocid.eq.${h}`];
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(h)) {
+    filters.push(`id.eq.${h}`);
+  }
+
+  // Single query: match lower(username), exact OCID, or UUID fallback from feed links.
   const { data, error } = await supabase
     .from("public_profiles")
     .select("*")
-    .or(`username.ilike.${h},ocid.eq.${h}`)
+    .or(filters.join(","))
     .limit(1)
     .maybeSingle();
 

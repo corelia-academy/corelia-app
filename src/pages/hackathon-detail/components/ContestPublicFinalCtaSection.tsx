@@ -27,7 +27,13 @@ export function ContestPublicFinalCtaSection() {
               className="min-h-11 min-w-[200px]"
               variant={publicCta.variant}
               disabled={Boolean(publicCta.disabled)}
-              onClick={() => navigate(publicCta.navigateTo)}
+              onClick={() => {
+                if ("action" in publicCta && publicCta.action === "apply") {
+                  void vm.handleApply();
+                  return;
+                }
+                navigate(publicCta.navigateTo);
+              }}
             >
               {publicCta.label}
             </Button>

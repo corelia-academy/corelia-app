@@ -47,6 +47,18 @@ export function UserProfileOverviewSection({
               {new Date(profile.created_at).toLocaleDateString()}
             </span>
           </div>
+          <div className="flex items-center justify-between gap-3">
+            <span>{t("userProfile.labels.followers")}</span>
+            <span className="font-medium tabular-nums text-foreground">
+              {Number(profile.follower_count ?? 0)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span>{t("userProfile.labels.following")}</span>
+            <span className="font-medium tabular-nums text-foreground">
+              {Number(profile.following_count ?? 0)}
+            </span>
+          </div>
         </div>
       </section>
     </div>

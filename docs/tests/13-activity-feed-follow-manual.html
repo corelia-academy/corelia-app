@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QA #96 - Activity Feed + Follow System</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #17202d;
+      --surface-soft: #1d2837;
+      --border: #314055;
+      --text: #edf4ff;
+      --muted: #9baabd;
+      --accent: #5ca7d8;
+      --accent-strong: #2f7fb9;
+      --ok: #6ed089;
+      --warn: #f3bd5a;
+      --danger: #ff7f8a;
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 290px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 18px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+    }
+    main {
+      width: min(1080px, 100%);
+      padding: 28px 32px 56px;
+    }
+    h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.2; }
+    h2 {
+      margin: 32px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 21px;
+    }
+    h3 { margin: 20px 0 10px; font-size: 16px; color: var(--accent); }
+    p { margin: 8px 0; }
+    a { color: var(--accent); }
+    code {
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 1px 5px;
+      background: var(--surface-soft);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em;
+    }
+    pre {
+      margin: 10px 0;
+      padding: 12px;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+    }
+    nav a {
+      display: block;
+      margin: 3px 0;
+      padding: 7px 8px;
+      border-radius: 7px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    nav a:hover {
+      background: rgba(92, 167, 216, 0.12);
+      color: var(--accent);
+    }
+    .muted { color: var(--muted); }
+    .small { font-size: 13px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: var(--surface-soft);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .callout {
+      margin: 16px 0;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+    .callout.warn { border-left-color: var(--warn); }
+    .toolbar {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    button {
+      width: 100%;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: var(--bg);
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+    }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    button.primary {
+      border-color: var(--accent);
+      background: var(--accent-strong);
+      color: white;
+      font-weight: 650;
+    }
+    .progress { margin-top: 14px; color: var(--muted); font-size: 13px; }
+    .bar {
+      height: 7px;
+      margin: 7px 0 5px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--border);
+    }
+    .bar span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: var(--ok);
+      transition: width 0.2s ease;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    label.field {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+    }
+    textarea { min-height: 82px; resize: vertical; }
+    .section { margin-top: 28px; scroll-margin-top: 12px; }
+    .check {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      margin: 12px 0;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .check:hover { border-color: rgba(92, 167, 216, 0.65); }
+    .check input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 3px;
+      accent-color: var(--accent-strong);
+    }
+    .check-title {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+    .expected { margin: 7px 0; color: var(--muted); font-size: 13px; }
+    .expected strong { color: var(--text); }
+    .result-row {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .result-row select { min-height: 40px; }
+    .export-preview {
+      min-height: 190px;
+      white-space: pre;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      aside {
+        position: relative;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      main { padding: 20px 16px 44px; }
+      .grid, .result-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <h2 style="margin-top:0">QA #96</h2>
+      <p class="small muted">Activity Feed + Follow System</p>
+      <nav id="nav"></nav>
+      <div class="progress">
+        Tiến độ
+        <div class="bar"><span id="progressFill"></span></div>
+        <span id="progressText">0 / 0 pass</span>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="primary" id="exportBtn">Export JSON</button>
+        <button type="button" id="copyBtn">Copy JSON</button>
+        <button type="button" id="importBtn">Import JSON</button>
+        <button type="button" id="resetBtn">Xóa kết quả local</button>
+      </div>
+      <p class="small muted">Kết quả lưu trong localStorage của trình duyệt này. Export JSON để gửi lại cho dev/issue.</p>
+    </aside>
+
+    <main>
+      <h1>Manual QA checklist - Activity Feed + Follow System</h1>
+      <p class="muted">
+        Dùng cho sub-issue QA sau khi PR #183 được merge/deploy lên staging. Checklist này tập trung vào luồng cơ bản nhất; chi tiết sâu nằm ở
+        <code>docs/tests/13-activity-feed-follow-runtime-report.md</code>.
+      </p>
+
+      <section class="section" id="why">
+        <h2>Tại sao cần test?</h2>
+        <div class="callout">
+          Feed là luồng social/public, tách khỏi notification cá nhân. Nếu runtime sai, user có thể không thấy activity từ người/entity đang follow, click sai route, follow không cập nhật, hackathon CTA không đăng ký thật, hoặc realtime không báo event mới.
+        </div>
+        <p><strong>Mục tiêu đạt:</strong> các mục Must pass bên dưới đều có status <code>Pass</code>, không có lỗi blocking trên staging.</p>
+      </section>
+
+      <section class="section" id="meta">
+        <h2>Thông tin test</h2>
+        <div class="grid">
+          <label class="field">Staging URL
+            <input type="text" data-meta="stagingUrl" placeholder="https://..." />
+          </label>
+          <label class="field">Commit/Deploy
+            <input type="text" data-meta="deployCommit" placeholder="commit SHA hoặc deploy id" />
+          </label>
+          <label class="field">Tester
+            <input type="text" data-meta="tester" placeholder="Tên người test" />
+          </label>
+          <label class="field">Browser
+            <input type="text" data-meta="browser" placeholder="Chrome/Brave/Edge + version" />
+          </label>
+          <label class="field">User A / viewer
+            <input type="text" data-meta="userA" placeholder="email/handle" />
+          </label>
+          <label class="field">User B / actor
+            <input type="text" data-meta="userB" placeholder="email/handle" />
+          </label>
+        </div>
+      </section>
+
+      <section class="section" id="prep">
+        <h2>Chuẩn bị nhanh</h2>
+        <div class="callout warn">
+          Trước khi test, hard reload staging bằng <code>Ctrl+Shift+R</code>. Nếu nghi cache, mở DevTools Console và kiểm tra <code>window.__CORELIA_BUILD__</code>.
+        </div>
+        <pre>Expected:
+- Staging đang chạy commit của PR #183 hoặc commit sau khi merge PR.
+- User A và User B login được.
+- Có ít nhất 1 profile public, 1 course published, 1 hackathon public, 1 project public.</pre>
+      </section>
+
+      <section class="section" id="checks">
+        <h2>Checklist cơ bản</h2>
+        <div id="checksRoot"></div>
+      </section>
+
+      <section class="section" id="bug-template">
+        <h2>Bug report template</h2>
+        <p class="muted">Nếu có mục Fail, copy block này vào issue hoặc comment QA.</p>
+        <pre>Lỗi:
+Bước reproduce:
+Expected:
+Actual:
+Account:
+URL:
+Screenshot/video:
+Console/network error nếu có:</pre>
+      </section>
+
+      <section class="section" id="export">
+        <h2>Export JSON</h2>
+        <p class="muted">Bấm Export JSON để tải file, hoặc Copy JSON để dán vào sub-issue/comment.</p>
+        <textarea id="exportPreview" class="export-preview" readonly></textarea>
+      </section>
+    </main>
+  </div>
+
+  <input type="file" id="importFile" accept="application/json" hidden />
+
+  <script>
+    (function () {
+      var STORAGE_KEY = "corelia_issue_96_activity_feed_manual_qa_v1";
+      var sections = [
+        {
+          id: "feed-page",
+          title: "1. Feed page",
+          reason: "Xác nhận route /feed và màn hình feed hoạt động sau login.",
+          items: [
+            { id: "login-user-a", title: "Login bằng User A", expected: "Login thành công, không bị loop auth, refresh vẫn giữ session." },
+            { id: "open-feed", title: "Mở /feed", expected: "URL vẫn là /feed, không redirect sang /u/feed, không hiện profile not found." },
+            { id: "feed-has-activity", title: "Feed hiển thị activity", expected: "Nếu User A đang follow user/entity có hoạt động, feed không empty và không blank/crash." },
+            { id: "feed-separate-notifications", title: "Feed tách khỏi notification", expected: "Feed/badge không bị trộn với notification bell cá nhân." }
+          ]
+        },
+        {
+          id: "links",
+          title: "2. Link trong feed",
+          reason: "Xác nhận các activity mở đúng public route.",
+          items: [
+            { id: "actor-profile-link", title: "Click tên/avatar actor", expected: "Mở đúng profile actor, ví dụ /u/:handle hoặc fallback không 404." },
+            { id: "course-link", title: "Click activity course", expected: "Mở đúng course public." },
+            { id: "hackathon-slug-link", title: "Click activity hackathon", expected: "Mở đúng /hackathons/:slug, không mở route ID sai." },
+            { id: "project-link", title: "Click activity project", expected: "Mở đúng project public." }
+          ]
+        },
+        {
+          id: "follow",
+          title: "3. Follow / Unfollow",
+          reason: "Follow là đầu vào chính để feed biết user quan tâm gì.",
+          items: [
+            { id: "follow-user", title: "Follow/Unfollow profile public", expected: "Nút đổi trạng thái Follow/Following và follower count cập nhật hợp lý." },
+            { id: "follow-course", title: "Follow/Unfollow course published", expected: "Course public cho phép follow/unfollow, không lỗi permission." },
+            { id: "follow-hackathon", title: "Follow/Unfollow hackathon public", expected: "Hackathon public cho phép follow/unfollow, trạng thái cập nhật." },
+            { id: "follow-project", title: "Follow/Unfollow project public", expected: "Project public cho phép follow/unfollow, private project không lộ follow UI sai." }
+          ]
+        },
+        {
+          id: "followers",
+          title: "4. Follower list",
+          reason: "Follower list phải dùng RPC public-safe và link profile đúng.",
+          items: [
+            { id: "open-follower-list", title: "Click follower summary/list", expected: "Dialog/list follower mở được trên profile/course/hackathon/project có follower." },
+            { id: "follower-profile-link", title: "Click một follower", expected: "Mở đúng /u/:handle của follower." }
+          ]
+        },
+        {
+          id: "hackathon-cta",
+          title: "5. Hackathon registration CTA",
+          reason: "CTA từng có rủi ro chỉ nhảy anchor, không tạo registration thật.",
+          items: [
+            { id: "hackathon-cta-click", title: "Click Đăng ký bằng hồ sơ của tôi", expected: "Có toast/trạng thái đăng ký thành công hoặc pending." },
+            { id: "hackathon-cta-refresh", title: "Refresh trang hackathon sau đăng ký", expected: "Vẫn thấy trạng thái đã đăng ký, không quay lại như chưa đăng ký." }
+          ]
+        },
+        {
+          id: "realtime",
+          title: "6. Realtime indicator",
+          reason: "Realtime cần kiểm tra bằng tab browser thật, không chỉ bằng DB insert.",
+          items: [
+            { id: "realtime-indicator", title: "Giữ /feed mở rồi tạo activity liên quan", expected: "Feed báo có activity mới trong tab đang mở." },
+            { id: "realtime-show-new", title: "Click refresh/show new", expected: "Event mới xuất hiện ở đầu feed." }
+          ]
+        },
+        {
+          id: "privacy",
+          title: "7. Privacy nhanh",
+          reason: "Event của content private không được lộ trong feed follower thường.",
+          items: [
+            { id: "project-public-to-private", title: "Đổi project public sang private rồi refresh feed", expected: "Activity của project private không còn hiện với follower thường." }
+          ]
+        },
+        {
+          id: "overall",
+          title: "8. Kết luận QA",
+          reason: "Ghi kết luận ngắn để quyết định close sub-issue hay tạo bug follow-up.",
+          items: [
+            { id: "no-blocker", title: "Không có lỗi blocking", expected: "Không có lỗi blocking trên /feed, follow/unfollow, follower list, hackathon CTA, realtime." },
+            { id: "ready-to-close-subissue", title: "Sẵn sàng close sub-issue QA", expected: "Tất cả mục cơ bản Pass hoặc lỗi nhỏ đã có follow-up issue rõ ràng." }
+          ]
+        }
+      ];
+
+      function defaultState() {
+        var checks = {};
+        sections.forEach(function (section) {
+          section.items.forEach(function (item) {
+            checks[item.id] = { checked: false, status: "untested", actual: "" };
+          });
+        });
+        return {
+          version: 1,
+          updatedAt: new Date().toISOString(),
+          meta: { stagingUrl: "", deployCommit: "", tester: "", browser: "", userA: "", userB: "" },
+          checks: checks
+        };
+      }
+
+      function readState() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return defaultState();
+          var parsed = JSON.parse(raw);
+          var base = defaultState();
+          return {
+            version: 1,
+            updatedAt: parsed.updatedAt || base.updatedAt,
+            meta: Object.assign(base.meta, parsed.meta || {}),
+            checks: Object.assign(base.checks, parsed.checks || {})
+          };
+        } catch (error) {
+          console.warn("Cannot read QA state", error);
+          return defaultState();
+        }
+      }
+
+      var state = readState();
+
+      function saveState() {
+        state.updatedAt = new Date().toISOString();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        updateProgress();
+        updateExportPreview();
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function renderNav() {
+        var nav = document.getElementById("nav");
+        var links = [
+          ["why", "Tại sao cần test"],
+          ["meta", "Thông tin test"],
+          ["prep", "Chuẩn bị nhanh"],
+          ["checks", "Checklist"],
+          ["bug-template", "Bug template"],
+          ["export", "Export JSON"]
+        ];
+        nav.innerHTML = links.map(function (link) {
+          return '<a href="#' + link[0] + '">' + link[1] + '</a>';
+        }).join("");
+      }
+
+      function renderMeta() {
+        document.querySelectorAll("[data-meta]").forEach(function (input) {
+          var key = input.getAttribute("data-meta");
+          input.value = state.meta[key] || "";
+          input.addEventListener("input", function () {
+            state.meta[key] = input.value;
+            saveState();
+          });
+        });
+      }
+
+      function renderChecks() {
+        var root = document.getElementById("checksRoot");
+        root.innerHTML = sections.map(function (section) {
+          var html = '<article class="section" id="' + section.id + '">';
+          html += '<h3>' + escapeHtml(section.title) + '</h3>';
+          html += '<p class="muted">' + escapeHtml(section.reason) + '</p>';
+          section.items.forEach(function (item) {
+            var itemState = state.checks[item.id] || { checked: false, status: "untested", actual: "" };
+            html += '<div class="check" data-check="' + item.id + '">';
+            html += '<input type="checkbox" ' + (itemState.checked ? "checked" : "") + ' aria-label="Pass ' + escapeHtml(item.title) + '" />';
+            html += '<div>';
+            html += '<div class="check-title">' + escapeHtml(item.title) + '<span class="pill">Must pass</span></div>';
+            html += '<div class="expected"><strong>Expected:</strong> ' + escapeHtml(item.expected) + '</div>';
+            html += '<div class="result-row">';
+            html += '<select aria-label="Status"><option value="untested">Untested</option><option value="pass">Pass</option><option value="fail">Fail</option><option value="blocked">Blocked</option><option value="na">N/A</option></select>';
+            html += '<textarea placeholder="Actual/Error: ghi kết quả thực tế hoặc lỗi nếu khác expected"></textarea>';
+            html += '</div></div></div>';
+          });
+          html += '</article>';
+          return html;
+        }).join("");
+
+        root.querySelectorAll("[data-check]").forEach(function (node) {
+          var id = node.getAttribute("data-check");
+          var checkbox = node.querySelector('input[type="checkbox"]');
+          var select = node.querySelector("select");
+          var textarea = node.querySelector("textarea");
+          var itemState = state.checks[id] || { checked: false, status: "untested", actual: "" };
+
+          select.value = itemState.status || "untested";
+          textarea.value = itemState.actual || "";
+
+          checkbox.addEventListener("change", function () {
+            state.checks[id].checked = checkbox.checked;
+            if (checkbox.checked && state.checks[id].status === "untested") {
+              state.checks[id].status = "pass";
+              select.value = "pass";
+            }
+            if (!checkbox.checked && state.checks[id].status === "pass") {
+              state.checks[id].status = "untested";
+              select.value = "untested";
+            }
+            saveState();
+          });
+
+          select.addEventListener("change", function () {
+            state.checks[id].status = select.value;
+            state.checks[id].checked = select.value === "pass";
+            checkbox.checked = state.checks[id].checked;
+            saveState();
+          });
+
+          textarea.addEventListener("input", function () {
+            state.checks[id].actual = textarea.value;
+            saveState();
+          });
+        });
+      }
+
+      function exportData() {
+        var ids = Object.keys(state.checks);
+        var pass = ids.filter(function (id) { return state.checks[id].status === "pass"; }).length;
+        var fail = ids.filter(function (id) { return state.checks[id].status === "fail"; }).length;
+        var blocked = ids.filter(function (id) { return state.checks[id].status === "blocked"; }).length;
+        return {
+          checklist: "Activity Feed + Follow System runtime QA",
+          issue: "#96",
+          pr: "#183",
+          exportedAt: new Date().toISOString(),
+          meta: state.meta,
+          summary: {
+            total: ids.length,
+            pass: pass,
+            fail: fail,
+            blocked: blocked,
+            readyToClose: ids.length > 0 && pass === ids.length
+          },
+          sections: sections.map(function (section) {
+            return {
+              id: section.id,
+              title: section.title,
+              reason: section.reason,
+              items: section.items.map(function (item) {
+                var itemState = state.checks[item.id] || {};
+                return {
+                  id: item.id,
+                  title: item.title,
+                  expected: item.expected,
+                  status: itemState.status || "untested",
+                  checked: Boolean(itemState.checked),
+                  actual: itemState.actual || ""
+                };
+              })
+            };
+          })
+        };
+      }
+
+      function updateProgress() {
+        var checks = Object.keys(state.checks).map(function (id) { return state.checks[id]; });
+        var total = checks.length;
+        var pass = checks.filter(function (item) { return item.status === "pass"; }).length;
+        var fail = checks.filter(function (item) { return item.status === "fail"; }).length;
+        var blocked = checks.filter(function (item) { return item.status === "blocked"; }).length;
+        var pct = total ? Math.round((pass / total) * 100) : 0;
+        document.getElementById("progressFill").style.width = pct + "%";
+        document.getElementById("progressText").textContent = pass + " / " + total + " pass";
+        if (fail || blocked) document.getElementById("progressText").textContent += " · " + fail + " fail · " + blocked + " blocked";
+      }
+
+      function updateExportPreview() {
+        document.getElementById("exportPreview").value = JSON.stringify(exportData(), null, 2);
+      }
+
+      function downloadJson() {
+        var data = JSON.stringify(exportData(), null, 2);
+        var blob = new Blob([data], { type: "application/json" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "activity-feed-follow-runtime-qa.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function copyJson() {
+        var data = JSON.stringify(exportData(), null, 2);
+        navigator.clipboard.writeText(data).then(function () {
+          alert("Đã copy JSON vào clipboard.");
+        }, function () {
+          document.getElementById("exportPreview").select();
+          document.execCommand("copy");
+          alert("Đã copy JSON từ ô preview.");
+        });
+      }
+
+      function importJson(file) {
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            var imported = JSON.parse(String(reader.result || "{}"));
+            var next = defaultState();
+            next.meta = Object.assign(next.meta, imported.meta || {});
+            if (Array.isArray(imported.sections)) {
+              imported.sections.forEach(function (section) {
+                (section.items || []).forEach(function (item) {
+                  if (next.checks[item.id]) {
+                    next.checks[item.id] = {
+                      checked: Boolean(item.checked || item.status === "pass"),
+                      status: item.status || "untested",
+                      actual: item.actual || ""
+                    };
+                  }
+                });
+              });
+            } else if (imported.checks) {
+              next.checks = Object.assign(next.checks, imported.checks);
+            }
+            state = next;
+            saveState();
+            renderMeta();
+            renderChecks();
+            alert("Import JSON thành công.");
+          } catch (error) {
+            alert("Import JSON thất bại: " + error.message);
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      document.getElementById("exportBtn").addEventListener("click", downloadJson);
+      document.getElementById("copyBtn").addEventListener("click", copyJson);
+      document.getElementById("importBtn").addEventListener("click", function () {
+        document.getElementById("importFile").click();
+      });
+      document.getElementById("importFile").addEventListener("change", function (event) {
+        var file = event.target.files && event.target.files[0];
+        if (file) importJson(file);
+        event.target.value = "";
+      });
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (!confirm("Xóa toàn bộ kết quả checklist trong trình duyệt này?")) return;
+        state = defaultState();
+        localStorage.removeItem(STORAGE_KEY);
+        renderMeta();
+        renderChecks();
+        saveState();
+      });
+
+      renderNav();
+      renderMeta();
+      renderChecks();
+      updateProgress();
+      updateExportPreview();
+    })();
+  </script>
+</body>
+</html>

@@ -90,6 +90,9 @@ Client build cần tối thiểu `VITE_SUPABASE_URL` và một trong `VITE_SUPAB
 | [10-instructor-workspace.md](./10-instructor-workspace.md) | Workspace instructor |
 | [11-admin.md](./11-admin.md) | Admin (`admin` / `support_staff`), activity milestones |
 | [12-cross-cutting-i18n-theme-errors.md](./12-cross-cutting-i18n-theme-errors.md) | i18n, theme, 404, lỗi |
+| [13-activity-feed-follow.md](./13-activity-feed-follow.md) | Activity Feed + Follow System |
+| [13-activity-feed-follow-runtime-report.md](./13-activity-feed-follow-runtime-report.md) | Báo cáo QA issue #96, tách phần cần test tay runtime |
+| [13-activity-feed-follow-manual.html](./13-activity-feed-follow-manual.html) | Checklist HTML cơ bản cho sub-issue QA #96, có export/import JSON |
 
 ---
 

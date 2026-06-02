@@ -212,7 +212,13 @@ function PublicHero({
                       variant={publicCta.variant}
                       className="min-h-11 gap-2"
                       disabled={Boolean(publicCta.disabled)}
-                      onClick={() => navigate(publicCta.navigateTo)}
+                      onClick={() => {
+                        if ("action" in publicCta && publicCta.action === "apply") {
+                          void vm.handleApply();
+                          return;
+                        }
+                        navigate(publicCta.navigateTo);
+                      }}
                     >
                       <span className="max-w-[18rem] truncate">
                         {publicCta.label}

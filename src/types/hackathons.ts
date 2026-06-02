@@ -177,6 +177,7 @@ export interface Contest {
   description: string | null;
   rules: string | null;
   status: ContestStatus;
+  follower_count?: number;
   starts_at: string | null;
   ends_at: string | null;
   location: ContestLocation;

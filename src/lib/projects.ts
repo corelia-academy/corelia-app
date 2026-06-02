@@ -1,10 +1,14 @@
 import { supabase } from "@/lib/supabase";
 import { makeTTLCache, removeUndefinedFields } from "@/lib/utils";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
+import { getPublishedCourses } from "@/lib/courses";
+import { listContests } from "@/lib/hackathons";
 import type { ContestLinkedShowcaseProject, Project } from "@/types/projects";
 import type { Locale } from "@/types/database";
 import type { EntityI18nConfig } from "@/types/entityLocales";
 import type { MyProjectEntry } from "@/lib/projectCollaboration";
+import type { Course } from "@/types/courses";
+import type { Contest } from "@/types/hackathons";
 
 export type ProjectI18nContent = {
   title?: string;
@@ -174,6 +178,26 @@ export type PublicProjectListResult = {
   hasMore: boolean;
 };
 
+export type PublicDirectoryItemKind = "hackathon" | "course" | "showcase";
+
+export type PublicDirectoryItem = {
+  id: string;
+  kind: PublicDirectoryItemKind;
+  title: string;
+  summary: string | null;
+  imageUrl: string | null;
+  href: string;
+  updated_at: string;
+  source: Contest | Course | Project;
+  projectOwner: ProjectOwnerPublicProfile | null;
+};
+
+export type PublicDirectoryListResult = {
+  items: PublicDirectoryItem[];
+  nextCursor: string | null;
+  hasMore: boolean;
+};
+
 function normalizePublicProjectSource(
   source: ListPublicProjectsOptions["source"],
 ): Project["source_type"] | null {
@@ -325,6 +349,139 @@ export async function listPublicProjects(
     items: await attachOwners(localizedProjects),
     nextCursor: hasMore ? String(offset + limit) : null,
     hasMore,
+  };
+}
+
+async function listDirectoryProjectEntries(
+  uiLocale?: string | null,
+): Promise<PublicProjectEntry[]> {
+  const select =
+    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+
+  const { data, error } = await supabase
+    .from("projects")
+    .select(select)
+    .eq("visibility", "public")
+    .order("updated_at", { ascending: false })
+    .limit(500);
+
+  if (error) throw new Error(error.message);
+
+  const baseProjects = (data ?? []) as Project[];
+  const commentCounts = await getProjectCommentCounts(baseProjects.map((p) => p.id));
+  const projects = baseProjects.map((project) => ({
+    ...project,
+    comment_count: commentCounts.get(project.id) ?? 0,
+  }));
+  const localizedProjects = await localizeProjects(projects, uiLocale);
+  return attachOwners(localizedProjects);
+}
+
+function publicDirectorySourceFlags(source: ListPublicProjectsOptions["source"]): {
+  includeHackathons: boolean;
+  includeCourses: boolean;
+  includeShowcases: boolean;
+} {
+  if (!source || source === "all") {
+    return { includeHackathons: true, includeCourses: true, includeShowcases: true };
+  }
+  if (source === "hackathon" || source === "contest") {
+    return { includeHackathons: true, includeCourses: false, includeShowcases: false };
+  }
+  if (source === "course") {
+    return { includeHackathons: false, includeCourses: true, includeShowcases: false };
+  }
+  return { includeHackathons: false, includeCourses: false, includeShowcases: true };
+}
+
+function directoryItemTime(item: PublicDirectoryItem): string {
+  return item.updated_at || "";
+}
+
+function directoryProjectMetric(item: PublicDirectoryItem, metric: "like_count" | "comment_count"): number {
+  if (item.kind !== "showcase") return 0;
+  const project = item.source as Project;
+  return Number(project[metric] ?? 0);
+}
+
+function courseSummary(course: Course): string | null {
+  return course.short_description?.trim() || course.description?.trim() || null;
+}
+
+function contestSummary(contest: Contest): string | null {
+  return contest.tagline?.trim() || contest.description?.trim() || null;
+}
+
+export async function listPublicDirectoryItems(
+  options: ListPublicProjectsOptions = {},
+): Promise<PublicDirectoryListResult> {
+  const limit = normalizeProjectLimit(options.limit);
+  const offset = parseProjectCursor(options.cursor);
+  const sort = normalizeProjectListSort(options.sort);
+  const { includeHackathons, includeCourses, includeShowcases } = publicDirectorySourceFlags(
+    options.source,
+  );
+
+  const [projectRows, hackathons, courses] = await Promise.all([
+    includeShowcases ? listDirectoryProjectEntries(options.locale) : Promise.resolve<PublicProjectEntry[]>([]),
+    includeHackathons ? listContests(null, options.locale ?? null) : Promise.resolve<Contest[]>([]),
+    includeCourses ? getPublishedCourses() : Promise.resolve<Course[]>([]),
+  ]);
+
+  const projectItems: PublicDirectoryItem[] = projectRows.map(({ project, owner }) => ({
+    id: `showcase:${project.id}`,
+    kind: "showcase",
+    title: project.title,
+    summary: project.summary ?? null,
+    imageUrl: getProjectCoverImageUrl(project),
+    href: `/projects/${project.id}`,
+    updated_at: project.updated_at,
+    source: project,
+    projectOwner: owner,
+  }));
+
+  const hackathonItems: PublicDirectoryItem[] = hackathons.map((contest) => ({
+    id: `hackathon:${contest.id}`,
+    kind: "hackathon",
+    title: contest.title,
+    summary: contestSummary(contest),
+    imageUrl: contest.thumbnail_url || contest.cover_image_url || null,
+    href: `/hackathons/${contest.slug || contest.id}`,
+    updated_at: contest.updated_at,
+    source: contest,
+    projectOwner: null,
+  }));
+
+  const courseItems: PublicDirectoryItem[] = courses.map((course) => ({
+    id: `course:${course.id}`,
+    kind: "course",
+    title: course.title,
+    summary: courseSummary(course),
+    imageUrl: course.thumbnail_url || null,
+    href: `/courses/${course.id}`,
+    updated_at: course.updated_at,
+    source: course,
+    projectOwner: null,
+  }));
+
+  let items = [...projectItems, ...hackathonItems, ...courseItems];
+
+  if (sort === "most_liked" || sort === "most_commented") {
+    const metric = sort === "most_liked" ? "like_count" : "comment_count";
+    items = items.sort((a, b) => {
+      const metricDiff = directoryProjectMetric(b, metric) - directoryProjectMetric(a, metric);
+      if (metricDiff !== 0) return metricDiff;
+      return directoryItemTime(b).localeCompare(directoryItemTime(a));
+    });
+  } else {
+    items = items.sort((a, b) => directoryItemTime(b).localeCompare(directoryItemTime(a)));
+  }
+
+  const page = items.slice(offset, offset + limit);
+  return {
+    items: page,
+    nextCursor: offset + limit < items.length ? String(offset + limit) : null,
+    hasMore: offset + limit < items.length,
   };
 }
 

@@ -1,0 +1,70 @@
+{
+  "eyebrow": "Hoạt động",
+  "title": "Feed",
+  "description": "Theo dõi hoạt động mới từ người dùng, khóa học, hackathon và dự án bạn quan tâm.",
+  "actions": {
+    "refresh": "Làm mới",
+    "retry": "Thử lại",
+    "showNew": "Có hoạt động mới",
+    "loadMore": "Tải thêm"
+  },
+  "empty": {
+    "title": "Chưa có hoạt động",
+    "description": "Hãy follow hồ sơ, khóa học, hackathon hoặc dự án công khai để feed bắt đầu có nội dung."
+  },
+  "errors": {
+    "title": "Không tải được feed",
+    "load": "Không tải được hoạt động.",
+    "check": "Không kiểm tra được trạng thái follow.",
+    "save": "Không cập nhật được trạng thái follow."
+  },
+  "follow": {
+    "follow": "Follow",
+    "following": "Đang follow",
+    "errors": {
+      "check": "Không kiểm tra được trạng thái follow.",
+      "save": "Không cập nhật được trạng thái follow."
+    }
+  },
+  "followers": {
+    "summary": "{{count}} người theo dõi",
+    "title": "Người theo dõi",
+    "description": "Các hồ sơ công khai đang theo dõi nội dung này.",
+    "loading": "Đang tải người theo dõi...",
+    "empty": "Chưa có người theo dõi công khai.",
+    "errors": {
+      "load": "Không tải được danh sách người theo dõi."
+    }
+  },
+  "item": {
+    "open": "Mở"
+  },
+  "objects": {
+    "course": "khóa học",
+    "hackathon": "hackathon",
+    "project": "dự án",
+    "user": "hồ sơ",
+    "credential": "credential"
+  },
+  "verbs": {
+    "fallback": "{{actor}} có hoạt động mới trên {{object}}.",
+    "user_enrolled_course": "{{actor}} đã đăng ký khóa học {{object}}.",
+    "user_completed_section": "{{actor}} đã hoàn thành một bài học trong {{object}}.",
+    "user_completed_section_bundle": "{{actor}} đã hoàn thành {{count}} bài học trong {{object}}.",
+    "user_completed_course": "{{actor}} đã hoàn tất khóa học {{object}}.",
+    "user_earned_credential": "{{actor}} đã nhận credential {{object}}.",
+    "user_registered_hackathon": "{{actor}} đã đăng ký hackathon {{object}}.",
+    "user_submitted_hackathon": "{{actor}} đã nộp bài cho hackathon {{object}}.",
+    "hackathon_status_changed": "Hackathon {{object}} vừa cập nhật trạng thái.",
+    "course_published": "Khóa học {{object}} đã lên sóng.",
+    "course_new_section": "Khóa học {{object}} vừa có chương mới {{section}}.",
+    "user_published_project": "{{actor}} đã publish dự án {{object}}.",
+    "user_joined_project": "{{actor}} đã tham gia dự án {{object}}.",
+    "project_received_hearts_milestone": "Dự án {{object}} đã đạt {{count}} hearts.",
+    "user_followed_user": "{{actor}} đã follow một hồ sơ.",
+    "user_followed_user_bundle": "{{actor}} đã follow {{count}} hồ sơ.",
+    "user_followed_course": "{{actor}} đã follow khóa học {{object}}.",
+    "user_followed_hackathon": "{{actor}} đã follow hackathon {{object}}.",
+    "user_followed_project": "{{actor}} đã follow dự án {{object}}."
+  }
+}
