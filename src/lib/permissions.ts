@@ -1,15 +1,15 @@
-import type { Profile } from "@/types/database";
-import type { Contest, ContestScopedViewerRole } from "@/types/hackathons";
-import { ROLE_GROUPS } from "@/config/roles";
+import { ROLE_GROUPS } from "../config/roles";
+import type { Profile } from "../types/database";
+import type { Contest, ContestScopedViewerRole } from "../types/hackathons";
 
 export function canManageContests(profile: Profile | null | undefined): boolean {
   if (!profile) return false;
-  return ROLE_GROUPS.admin.includes(profile.role);
+  return ROLE_GROUPS.contestManagers.includes(profile.role);
 }
 
 export function canAccessContestManagementCatalog(profile: Profile | null | undefined): boolean {
   if (!profile) return false;
-  return ROLE_GROUPS.instructorWorkspace.includes(profile.role);
+  return canManageContests(profile);
 }
 
 export function getContestScopedViewerRoles(

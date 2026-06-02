@@ -584,7 +584,10 @@ export async function listContests(
   }
   const profile = user ? await getProfileForUser(user).catch(() => null) : null;
   const isManager = canManageContests(profile);
-  const cacheKey = `${isManager ? "manager" : "public"}:${normalizedUiLocale}`;
+  const visibilityCacheKey = isManager
+    ? `manager:${user?.id ?? "unknown"}`
+    : "public";
+  const cacheKey = `${visibilityCacheKey}:${normalizedUiLocale}`;
 
   const inflight = listContestsInFlight.get(cacheKey);
   if (inflight) return inflight;
