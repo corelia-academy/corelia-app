@@ -94,6 +94,7 @@ const API_ERROR_I18N: Record<string, string> = {
   "not_found:registration": "detail.errors.notFound",
   "not_found:invite": "detail.errors.notFound",
   "invalid_input:invite_email": "detail.errors.invalidInviteEmail",
+  "invalid_input:score_out_of_range": "detail.toasts.scoreCriterionOutOfRange",
   "missing_email:account": "detail.errors.missingAccountEmail",
 };
 
