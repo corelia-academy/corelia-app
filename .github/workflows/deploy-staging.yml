@@ -49,14 +49,7 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
-
-          # TẠM THỜI: reconcile history table bị lệch do các migration 20260702*
-          # có timestamp sớm hơn migration đã apply trên remote.
-          # Sau khi run này xanh, XOÁ block reconcile và quay lại: supabase migration up --linked
-          for v in 20260702000000 20260702010000 20260702020000 20260702030000 20260702040000; do
-            supabase migration repair --status reverted "$v" --linked --dns-resolver https || true
-          done
-          supabase migration up --linked --include-all --dns-resolver https
+          supabase migration up --linked --dns-resolver https
 
       - name: Deploy Edge Function (corelia-api)
         env:
