@@ -163,7 +163,7 @@ export function LessonPlayerCard({
       <div className="px-4 py-4 pb-8 sm:px-6">
         {lesson ? (
           <>
-            {videoLesson && lesson.description_markdown?.trim() ? (
+            {(videoLesson || lesson.lesson_format === "video") && lesson.description_markdown?.trim() ? (
               <SelectableLessonContent
                 className="rounded-2xl border border-border-subtle bg-surface-raised p-5 text-[15px] leading-[1.7]"
                 lessonId={lesson.id}
