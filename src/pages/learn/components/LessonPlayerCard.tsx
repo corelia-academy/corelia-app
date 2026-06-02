@@ -207,22 +207,24 @@ export function LessonPlayerCard({
             ) : null}
 
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-center sm:w-auto"
-                onClick={onMarkComplete}
-                disabled={completed || !hasFullCourseAccess || draftForDisplay}
-              >
-                <CheckCircle2 className="w-4 h-4" aria-hidden />{" "}
-                {completed
-                  ? translate("detail.learn.markComplete.done")
-                  : practiceLesson
-                    ? translate("detail.learn.markComplete.actionPractice")
-                    : articleLesson
-                      ? translate("detail.learn.markComplete.actionArticle")
-                      : translate("detail.learn.markComplete.action")}
-              </Button>
+              {!draftForDisplay ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-center sm:w-auto"
+                  onClick={onMarkComplete}
+                  disabled={completed || !hasFullCourseAccess}
+                >
+                  <CheckCircle2 className="w-4 h-4" aria-hidden />{" "}
+                  {completed
+                    ? translate("detail.learn.markComplete.done")
+                    : practiceLesson
+                      ? translate("detail.learn.markComplete.actionPractice")
+                      : articleLesson
+                        ? translate("detail.learn.markComplete.actionArticle")
+                        : translate("detail.learn.markComplete.action")}
+                </Button>
+              ) : null}
               {previousLesson ? (
                 <Button
                   variant="outline"
