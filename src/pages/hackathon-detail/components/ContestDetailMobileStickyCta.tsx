@@ -42,7 +42,13 @@ export function ContestDetailMobileStickyCta() {
           className="min-h-11 shrink-0 px-4"
           variant={publicCta.variant}
           disabled={Boolean(publicCta.disabled)}
-          onClick={() => navigate(publicCta.navigateTo)}
+          onClick={() => {
+            if ("action" in publicCta && publicCta.action === "apply") {
+              void vm.handleApply();
+              return;
+            }
+            navigate(publicCta.navigateTo);
+          }}
         >
           <span className="max-w-[10rem] truncate">{publicCta.label}</span>
         </Button>

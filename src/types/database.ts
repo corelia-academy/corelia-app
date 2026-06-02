@@ -53,6 +53,8 @@ export interface Profile {
   website?: string | null;
   /** Whether profile is visible publicly */
   profile_public?: boolean;
+  follower_count?: number;
+  following_count?: number;
   /** Ngôn ngữ UI người dùng chọn (vd: vi/en) */
   locale?: Locale | null;
   /** Open Campus ID (OCID) đã liên kết (nếu có) */
@@ -99,6 +101,8 @@ export interface ProfileInsert {
   bio?: string | null;
   website?: string | null;
   profile_public?: boolean;
+  follower_count?: number;
+  following_count?: number;
   locale?: Locale | null;
   ocid?: string | null;
   ocid_eth_address?: string | null;
@@ -128,6 +132,8 @@ export interface ProfileUpdate {
   bio?: string | null;
   website?: string | null;
   profile_public?: boolean;
+  follower_count?: number;
+  following_count?: number;
   locale?: Locale | null;
   ocid?: string | null;
   ocid_eth_address?: string | null;
@@ -190,6 +196,8 @@ export interface PublicProfile {
   instructor_website: string | null;
   instructor_social_links: InstructorSocialLink[] | null;
   profile_public: boolean;
+  follower_count?: number;
+  following_count?: number;
   created_at: string;
   updated_at: string;
 }

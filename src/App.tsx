@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 
 // Lazy-load all routes not needed on the initial render
 const Home = lazy(() => import("@/pages/home/index"));
+const FeedPage = lazy(() => import("@/pages/feed/FeedPage"));
 const Courses = lazy(() => import("@/pages/courses"));
 const Auth = lazy(() => import("@/pages/login/Auth"));
 const OCIDRedirect = lazy(() => import("@/pages/OCIDRedirect"));
@@ -271,6 +272,16 @@ export default function App() {
                   <Suspense fallback={<PageFallback />}>
                     <Home />
                   </Suspense>
+                }
+              />
+              <Route
+                path="feed"
+                element={
+                  <RequireAuth>
+                    <Suspense fallback={<PageFallback />}>
+                      <FeedPage />
+                    </Suspense>
+                  </RequireAuth>
                 }
               />
               <Route

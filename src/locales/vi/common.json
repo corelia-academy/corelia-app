@@ -35,6 +35,7 @@
     "someone": "Một người dùng",
     "home": "Trang chủ",
     "courses": "Khóa học",
+    "feed": "Feed",
     "career": "Lộ trình",
     "learningPath": "Lộ trình AI",
     "contests": "Hackathon",
@@ -54,6 +55,7 @@
   },
   "header": {
     "publicProfile": "Hồ sơ công khai",
+    "feedAria": "Mở feed hoạt động",
     "notifications": "Thông báo",
     "notificationsAria": "Mở thông báo",
     "noNotifications": "Chưa có thông báo.",
@@ -104,7 +106,9 @@
       "ocid": "OCID: {{ocid}}",
       "website": "Website",
       "role": "Vai trò",
-      "memberSince": "Tham gia từ"
+      "memberSince": "Tham gia từ",
+      "followers": "Người theo dõi",
+      "following": "Đang theo dõi"
     },
     "errors": {
       "notFound": "Không tìm thấy người dùng",
@@ -116,6 +120,10 @@
       "quickInfo": "Thông tin nhanh",
       "empty": "Chưa có thông tin công khai.",
       "instructorHeadlineFallback": "Giảng viên"
+    },
+    "activity": {
+      "title": "Hoạt động",
+      "empty": "Chưa có hoạt động public nào."
     },
     "achievements": {
       "selfOnly": "Thành tích hiện chỉ hiển thị cho chính chủ tài khoản.",

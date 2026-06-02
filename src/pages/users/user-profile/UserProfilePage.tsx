@@ -4,11 +4,14 @@ import { ExternalLink, ShieldAlert, User } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { FollowButton } from "@/components/social/FollowButton";
+import { FollowerPreview } from "@/components/social/FollowerPreview";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/stores/authStore";
 import { getRoleLabel } from "@/types/database";
 
 import { UserProfileAchievementsSection } from "./components/UserProfileAchievementsSection";
+import { UserProfileActivitySection } from "./components/UserProfileActivitySection";
 import { UserProfileContestsSection } from "./components/UserProfileContestsSection";
 import { UserProfileCoursesSection } from "./components/UserProfileCoursesSection";
 import { UserProfileOverviewSection } from "./components/UserProfileOverviewSection";
@@ -112,14 +115,29 @@ export default function UserProfileLayout() {
               </div>
             </div>
 
-            <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
-              {loading ? <Skeleton className="h-9 w-28 rounded" /> : null}
-              {!loading && profile && isSelf ? (
-                <NavLink to="/account/profile">
-                  <Button variant="outline" size="lg" type="button">
-                    {t("userProfile.actions.editProfile")}
-                  </Button>
-                </NavLink>
+            <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                {loading ? <Skeleton className="h-9 w-28 rounded" /> : null}
+                {!loading && profile && isSelf ? (
+                  <NavLink to="/account/profile">
+                    <Button variant="outline" size="lg" type="button">
+                      {t("userProfile.actions.editProfile")}
+                    </Button>
+                  </NavLink>
+                ) : null}
+                {!loading && profile && !isSelf && profile.profile_public ? (
+                  <FollowButton
+                    subject={{ type: "user", id: profile.id }}
+                    followerCount={profile.follower_count ?? 0}
+                    size="lg"
+                  />
+                ) : null}
+              </div>
+              {!loading && profile?.profile_public ? (
+                <FollowerPreview
+                  subject={{ type: "user", id: profile.id }}
+                  totalCount={profile.follower_count ?? 0}
+                />
               ) : null}
             </div>
           </div>
@@ -147,6 +165,7 @@ export default function UserProfileLayout() {
         ) : profile ? (
           <div className="space-y-6">
             <UserProfileOverviewSection profile={profile} />
+            <UserProfileActivitySection profile={profile} />
             <UserProfileAchievementsSection isSelf={isSelf} />
             <UserProfileCoursesSection profile={profile} />
             <UserProfileContestsSection profile={profile} isSelf={isSelf} />

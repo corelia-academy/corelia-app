@@ -8,6 +8,7 @@ import account from "@/locales/vi/account.json";
 import instructor from "@/locales/vi/instructor.json";
 import admin from "@/locales/vi/admin.json";
 import career from "@/locales/vi/career.json";
+import feed from "@/locales/vi/feed.json";
 import learningPath from "@/locales/vi/learningPath.json";
 
 declare module "i18next" {
@@ -23,6 +24,7 @@ declare module "i18next" {
       account: typeof account;
       instructor: typeof instructor;
       admin: typeof admin;
+      feed: typeof feed;
     };
   }
 }
