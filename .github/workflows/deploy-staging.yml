@@ -48,8 +48,8 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
-          supabase link --project-ref "$SUPABASE_PROJECT_REF" --use-pooler
-          supabase migration up --linked --include-all
+          supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
+          supabase migration up --linked --dns-resolver https
 
       - name: Deploy Edge Function (corelia-api)
         env:
