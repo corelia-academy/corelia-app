@@ -35,16 +35,19 @@ CREATE INDEX IF NOT EXISTS lrc_user_idx
 
 ALTER TABLE public.lesson_readiness_checks ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS lrc_owner_read ON public.lesson_readiness_checks;
 CREATE POLICY lrc_owner_read
   ON public.lesson_readiness_checks FOR SELECT
   TO authenticated
   USING (user_id = (SELECT auth.uid()));
 
+DROP POLICY IF EXISTS lrc_owner_insert ON public.lesson_readiness_checks;
 CREATE POLICY lrc_owner_insert
   ON public.lesson_readiness_checks FOR INSERT
   TO authenticated
   WITH CHECK (user_id = (SELECT auth.uid()));
 
+DROP POLICY IF EXISTS lrc_owner_update ON public.lesson_readiness_checks;
 CREATE POLICY lrc_owner_update
   ON public.lesson_readiness_checks FOR UPDATE
   TO authenticated
