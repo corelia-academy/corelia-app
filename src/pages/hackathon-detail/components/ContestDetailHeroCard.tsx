@@ -371,7 +371,7 @@ function ManageHero({
           />
 
           {implausibleStart ? (
-            <p className="rounded-md border border-warning bg-warning/15 px-3 py-2 text-xs text-warning-foreground">
+            <p className="rounded-md border border-warning bg-warning/15 px-3 py-2 text-xs text-warning">
               {translate("detail.hero.implausibleStartWarning")}
             </p>
           ) : null}
