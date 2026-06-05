@@ -603,6 +603,7 @@
       "nameLabel": "Badge name",
       "descriptionLabel": "Badge description",
       "imageLabel": "Badge image",
+      "imageHint": "Recommended: 1600×1200 px (landscape) or 1200×1600 px (portrait). This image is also used as the on-chain credential art on OpenCampus.",
       "uploadBadge": "Upload badge image",
       "uploading": "Uploading…",
       "uploadOk": "Badge image uploaded.",

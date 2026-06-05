@@ -602,6 +602,7 @@
       "nameLabel": "Tên huy hiệu",
       "descriptionLabel": "Mô tả huy hiệu",
       "imageLabel": "Ảnh huy hiệu",
+      "imageHint": "Khuyến nghị: 1600×1200 px (ngang) hoặc 1200×1600 px (dọc). Ảnh này cũng được dùng làm hình ảnh credential on-chain trên OpenCampus.",
       "uploadBadge": "Tải ảnh huy hiệu",
       "uploading": "Đang tải…",
       "uploadOk": "Đã tải ảnh huy hiệu.",

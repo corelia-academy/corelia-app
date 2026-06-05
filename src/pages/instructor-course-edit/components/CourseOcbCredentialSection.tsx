@@ -192,6 +192,7 @@ export function CourseOcbCredentialSection({
                 <img src={imageUrl} alt="" className="h-14 w-auto rounded border border-border-subtle" />
               ) : null}
             </div>
+            <p className="mt-1.5 text-xs text-foreground-muted">{t("courseEdit.ocb.imageHint")}</p>
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
