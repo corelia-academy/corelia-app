@@ -1,8 +1,17 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/stores/authStore";
 import { updateOCIDProfileForUser } from "@/lib/profile";
+import { supabase } from "@/lib/supabase";
 import { useTranslation } from "react-i18next";
 
 function truncateMiddle(value: string, head = 6, tail = 4) {
@@ -17,8 +26,24 @@ export default function ConnectOCIDCard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
+  const [mintedCount, setMintedCount] = useState<number>(0);
 
   const connected = Boolean(profile?.ocid);
+
+  // Pre-fetch minted credential count so the dialog can show it instantly.
+  useEffect(() => {
+    if (!user?.id || !connected) {
+      setMintedCount(0);
+      return;
+    }
+    supabase
+      .from("credential_issuances")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("status", "minted")
+      .then(({ count }) => setMintedCount(count ?? 0));
+  }, [user?.id, connected]);
 
   const ocidDisplay = useMemo(() => {
     const ocid = profile?.ocid ?? null;
@@ -47,9 +72,14 @@ export default function ConnectOCIDCard() {
     }
   }
 
-  async function handleDisconnect() {
+  function handleDisconnectClick() {
     setError(null);
     setSuccess(null);
+    setShowDisconnectDialog(true);
+  }
+
+  async function handleDisconnectConfirm() {
+    setShowDisconnectDialog(false);
     setLoading(true);
     try {
       if (!user) return;
@@ -134,7 +164,7 @@ export default function ConnectOCIDCard() {
           <Button
             type="button"
             variant="destructive"
-            onClick={handleDisconnect}
+            onClick={handleDisconnectClick}
             disabled={loading || !isInitialized}
           >
             {loading
@@ -162,6 +192,46 @@ export default function ConnectOCIDCard() {
           </Button>
         )}
       </div>
+
+      <Dialog open={showDisconnectDialog} onOpenChange={setShowDisconnectDialog}>
+        <DialogContent showCloseButton={false} className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("ocid.disconnectDialog.title")}</DialogTitle>
+            <DialogDescription>
+              {mintedCount > 0
+                ? t("ocid.disconnectDialog.bodyWithCredentials", { count: mintedCount })
+                : t("ocid.disconnectDialog.body")}
+            </DialogDescription>
+          </DialogHeader>
+
+          {mintedCount > 0 && (
+            <div className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm text-foreground">
+              <p className="font-medium text-warning-foreground mb-1">
+                {t("ocid.disconnectDialog.warningTitle")}
+              </p>
+              <p className="text-foreground-muted">
+                {t("ocid.disconnectDialog.warningBody")}
+              </p>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDisconnectDialog(false)}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDisconnectConfirm}
+              disabled={loading}
+            >
+              {t("ocid.disconnectDialog.confirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

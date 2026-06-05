@@ -88,6 +88,8 @@ Có **3 loại ảnh** khác nhau với mục đích khác nhau:
 
 > `thumbnail_url` **chỉ lưu trong DB** (`credential_templates.thumbnail_url`), không xuất hiện trong OC payload. Frontend dùng `thumbnail_url ?? image_url` làm fallback.
 
+> **Certificate template = OC badge art:** Với course credentials, ảnh instructor upload làm certificate template (1600×1200 hoặc 1200×1600) **chính là** `credentialSubject.image` gửi lên OC. Instructor chỉ cần upload một ảnh duy nhất đúng tỷ lệ — dùng cho cả bản certificate download và credential on-chain.
+
 ### 3.3 Payload mẫu — OCB Badge (Course online / Activity Milestone)
 
 ```json
@@ -521,21 +523,31 @@ Notification hiển thị trong bell icon ở navbar:
 ```
 Trigger: User hoàn thành activity trong course
   ↓
-Edge Function check_course_completion(user_id, course_id):
-  1. Tìm credential_template active của course_id
-  2. Đánh giá trigger_rule (completion_pct, assignment_pass...)
-  3. Check duplicate: issuer_reference_id đã tồn tại với status='minted'/'pending'?
-     → Nếu có: return
-  4. Tạo row pending → gọi mintCredentialOnce(issuance_id)
+certificates.issue (Edge Function):
+  1. Kiểm tra readiness (completion_pct, assignment_pass, certificate_fee nếu cần)
+  2. Set enrollments.certificate_issued_at  ← user nhận certificate ngay
+  3. [non-fatal] runCourseCredentialCheck → OC mint (xem bên dưới)
+  ↓
+runCourseCredentialCheck(courseId, userId):
+  4. Tìm credential_template active của course_id
+     → Không có: skip (no_active_template)
+  5. Check duplicate: issuer_reference_id đã tồn tại với status='minted'/'pending'?
+     → Có: skip (already_issued_or_pending)
+  6. Tạo row pending → gọi mintCredentialOnce(issuance_id)
   ↓
 mintCredentialOnce(issuance_id):
-  5. Build OC payload (OCB hoặc OCA tuỳ collection_symbol)
-  6. POST OpenCampus API
-  7. Update status='minted' + oc_credential_id
-  8. Promise.all([sendMintEmail, insertCredentialNotification])
+  7. Fetch profile: ocid, ocid_eth_address
+     → Cả hai đều null: UPDATE error_message='awaiting_holder_id', return
+       (issuance giữ pending — xem mục 6.4)
+  8. Build OC payload (OCB hoặc OCA tuỳ collection_symbol)
+  9. POST OpenCampus API
+  10. Update status='minted' + oc_credential_id
+  11. Promise.all([sendMintEmail, insertCredentialNotification])
   ↓
 On fail (non-duplicate): retry với exponential backoff (60s, 120s, 240s)
 ```
+
+> **Certificate trả về ngay (bước 2)** bất kể kết quả OC. OC mint là fire-and-forget trong try/catch — không bao giờ block certificate.
 
 **Payload logic theo loại course:**
 - `collection_symbol = 'ocbadge'` → OCB Badge: không gửi `name`/`email`, có `collectionSymbol`
@@ -580,6 +592,32 @@ emitEvent('course_completed', { user_id, course_id, track });
 emitEvent('login_streak_updated', { user_id, days: streak_days });
 emitEvent('project_submitted', { user_id, project_id });
 ```
+
+### 6.4 No OCID — Deferred Mint
+
+Nếu user chưa connect OCID và chưa có `ocid_eth_address` khi mint được trigger:
+
+```
+mintCredentialOnce(issuance_id):
+  → holderOcId = null, holderAddress = null
+  → UPDATE credential_issuances SET error_message='awaiting_holder_id'
+     (status giữ 'pending', retry_count không tăng)
+  → return { ok: false, error: 'awaiting_holder_id' }
+  → KHÔNG gọi OC API
+
+User connect OCID (/ocid-redirect → updateOCIDProfileForUser):
+  → invokeCoreliaApi('credentials.retryPending')  [fire-and-forget]
+      → query: user_id=X, status='pending', error_message='awaiting_holder_id'
+      → for each issuance: mintCredentialOnce(id)
+          → lần này có holderOcId → POST OC API → minted
+          → email + notification "Bạn vừa nhận credential on-chain"
+```
+
+**Idempotency — 1 mint per user per credential**, enforce ở 3 tầng:
+1. **DB unique constraint**: `UNIQUE (issuer_reference_id, network)` — reject INSERT trùng kể cả race condition
+2. **Application check** trước INSERT: nếu `status='minted'` hoặc `'pending'` → skip
+3. **`mintCredentialOnce` early return**: nếu `row.status === 'minted'` → return `{ ok: true }` ngay
+4. **OC API duplicate detection**: nếu OC trả `duplicate/already exists` → xử lý như minted thành công
 
 ---
 
@@ -706,7 +744,7 @@ Activity Milestone (1D) có volume cao hơn (mọi user đều có thể hit mil
 
 2. **OCA và PII:** OCA payload gửi `name` + `email` lên OpenCampus EduChain. Cần confirm với user rằng data này sẽ on-chain (immutable). Nên có consent UI trước khi mint OCA lần đầu.
 
-3. **Wallet / OC ID requirement:** OCB có thể dùng `holderAddress` fallback. OCA sẽ như thế nào nếu user chưa có OC ID và chưa connect wallet? Có allow mint mà không có `holderOcId`/`holderAddress` không?
+3. ~~**Wallet / OC ID requirement:**~~ **ĐÃ GIẢI QUYẾT** — Nếu user chưa có `ocid` và `ocid_eth_address`, issuance giữ `pending` với `error_message='awaiting_holder_id'`. Certificate vẫn được cấp bình thường. Khi user connect OCID, `credentials.retryPending` tự động retry tất cả issuances đang chờ. Xem mục 6.4.
 
 4. **Default milestones seed:** 8 milestones gợi ý ở spec gốc (streak 7/30 ngày, complete 1/5 courses, AI/App/Blockchain Developer, First Project). Launch đủ 8 hay start nhỏ?
 

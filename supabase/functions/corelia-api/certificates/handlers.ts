@@ -1,6 +1,7 @@
 import { isAuthFailure, canManageCourse } from "../lib/authz.ts";
 import { json, nowIso } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
+import { runCourseCredentialCheck } from "../credentials/check_course.ts";
 
 export async function handleIssueCertificate(req: Request, db: SupabaseClient): Promise<Response> {
   try {
@@ -61,6 +62,15 @@ export async function handleIssueCertificate(req: Request, db: SupabaseClient): 
       enrollmentId,
     );
     if (upErr) throw new Error(upErr.message);
+
+    // Auto-mint OC credential if there's an active credential_template for this course.
+    // Non-fatal: OC mint failure must never block certificate issuance.
+    try {
+      await runCourseCredentialCheck(db, courseId, targetUserId);
+    } catch (ocErr) {
+      console.error("[corelia-api] certificate → OC mint failed (non-fatal)", ocErr);
+    }
+
     return json({ issued: true, certificate_issued_at: issuedAt });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";

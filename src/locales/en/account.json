@@ -540,6 +540,15 @@
       "startConnectFailed": "Unable to start OCID connection.",
       "disconnectSuccess": "OCID disconnected.",
       "disconnectFailed": "Unable to disconnect OCID."
+    },
+    "disconnectDialog": {
+      "title": "Disconnect OCID?",
+      "body": "Are you sure you want to disconnect your OCID from this account?",
+      "bodyWithCredentials_one": "1 on-chain credential has already been minted to your current OCID.",
+      "bodyWithCredentials_other": "{{count}} on-chain credentials have already been minted to your current OCID.",
+      "warningTitle": "These credentials will not transfer.",
+      "warningBody": "If you connect a different OCID afterward, the already-minted credentials will remain tied to your old OCID and cannot be moved to the new one.",
+      "confirm": "Disconnect anyway"
     }
   }
 }

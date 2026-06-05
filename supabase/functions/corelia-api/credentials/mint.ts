@@ -195,6 +195,17 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
   const holderName = profile?.full_name != null ? String(profile.full_name).trim() || null : null;
   const emailLocale = await getUserEmailLocale(db, row.user_id);
 
+  // If user has neither OC ID nor wallet address, hold the issuance instead of
+  // calling the OC API and receiving a guaranteed rejection.
+  // The issuance stays 'pending' with error_message='awaiting_holder_id' so that
+  // credentials.retryPending can re-trigger it once the user connects their OCID.
+  if (!holderOcId?.trim() && !holderAddress?.trim()) {
+    await db.from("credential_issuances").update({
+      error_message: "awaiting_holder_id",
+    }).eq("id", issuanceId);
+    return { ok: false, error: "awaiting_holder_id" };
+  }
+
   const profilePath = username ? `/u/${encodeURIComponent(username)}` : `/account`;
   const profileUrl = `${baseUrl}${profilePath}`;
 
