@@ -17,6 +17,14 @@
 --   Mini / Public Hackathon          → OCB  Award
 --   Activity Milestone               → OCB  Badge
 
+-- ─── migrate existing rows FIRST (before adding new constraints) ─────────────
+-- Old corelia-* symbols → OCB = 'ocbadge'. achievement_type 'Badge'/'Award' already valid for OCB.
+-- Must run before adding the new collection_symbol and vctype_consistency constraints,
+-- otherwise existing rows with 'corelia-*' values will violate them immediately.
+UPDATE public.credential_templates
+  SET collection_symbol = 'ocbadge'
+  WHERE collection_symbol IN ('corelia-courses', 'corelia-hackathons', 'corelia-achievements');
+
 -- ─── credential_templates: relax collection_symbol ───────────────────────────
 
 ALTER TABLE public.credential_templates
@@ -58,9 +66,3 @@ ALTER TABLE public.credential_templates
     OR
     (collection_symbol IS NULL AND achievement_type IN ('MicroCredential', 'Diploma', 'CertificateOfCompletion'))
   );
-
--- ─── migrate existing rows ───────────────────────────────────────────────────
--- Old corelia-* symbols → OCB = 'ocbadge'. achievement_type 'Badge'/'Award' already valid for OCB.
-UPDATE public.credential_templates
-  SET collection_symbol = 'ocbadge'
-  WHERE collection_symbol IN ('corelia-courses', 'corelia-hackathons', 'corelia-achievements');
