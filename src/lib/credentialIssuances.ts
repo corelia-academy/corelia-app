@@ -108,7 +108,10 @@ export function openCampusCredentialExplorerUrl(
   void _network;
   if (!credentialId?.trim()) return null;
   const id = credentialId.trim();
-  return `https://id.opencampus.xyz/public/credentials?id=${encodeURIComponent(id)}`;
+  const base = import.meta.env.VITE_OCID_SANDBOX === "true"
+    ? "https://id.sandbox.opencampus.xyz"
+    : "https://id.opencampus.xyz";
+  return `${base}/public/credentials?id=${encodeURIComponent(id)}`;
 }
 
 type ScopeStyle = {
