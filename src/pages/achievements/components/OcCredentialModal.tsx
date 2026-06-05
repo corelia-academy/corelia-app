@@ -4,6 +4,7 @@ import {
   Loader2,
   Share2,
 } from "lucide-react";
+
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,6 @@ import {
 
 import { BADGE_PLACEHOLDER, CERT_PLACEHOLDER } from "../constants";
 import type { BadgeItem, CertificateItem, ModalItem } from "../types";
-import { CopyButton } from "./CopyButton";
 import { OcClaimBadge } from "./OcClaimBadge";
 
 export function OcCredentialModal({
@@ -130,36 +130,12 @@ export function OcCredentialModal({
               <OcClaimBadge status={d.ocClaimStatus} />
             </div>
 
-            {isClaimed && d.ocTransactionHash && (
-              <div className="space-y-2 border-t border-border pt-3">
-                <div className="min-w-0">
-                  <p className="text-xs text-foreground-muted sm:text-sm">
-                    Transaction Hash
-                  </p>
-                  <div className="mt-0.5 flex items-center gap-2">
-                    <p className="min-w-0 flex-1 truncate font-mono text-xs text-foreground sm:text-sm">
-                      {d.ocTransactionHash}
-                    </p>
-                    <CopyButton text={d.ocTransactionHash} />
-                    <a
-                      href={`https://opencampus-codex.blockscout.com/tx/${d.ocTransactionHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 rounded p-0.5 text-foreground-muted transition hover:bg-surface-raised hover:text-foreground"
-                      title={t("achievements.oc.modal.explorerTooltip")}
-                    >
-                      <ExternalLink className="size-4" aria-hidden />
-                    </a>
-                  </div>
-                </div>
-                {(d as CertificateItem).ocHolderOcId && (
-                  <div>
-                    <p className="text-xs text-foreground-muted">OCID</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {(d as CertificateItem).ocHolderOcId}
-                    </p>
-                  </div>
-                )}
+            {isClaimed && (d as CertificateItem).ocHolderOcId && (
+              <div className="border-t border-border pt-3">
+                <p className="text-xs text-foreground-muted">OCID</p>
+                <p className="text-sm font-medium text-foreground">
+                  {(d as CertificateItem).ocHolderOcId}
+                </p>
               </div>
             )}
           </div>

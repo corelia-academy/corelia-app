@@ -7,9 +7,10 @@
  *   hackathons.notifyRegistrationReview | hackathons.blastEmail |
  *   courses.blastEmail | careerTracks.blastEmail | notifications.unsubscribe |
  *   credentials.checkCourseCompletion | credentials.checkActivityMilestones | credentials.grant |
- *   credentials.retryPending
+ *   credentials.retryPending | credentials.hackathon.listEligible
  */
 import { handleIssueCertificate } from "./certificates/handlers.ts";
+import { handleHackathonListEligible } from "./credentials/hackathon_eligible.ts";
 import { handleCareerTrackBlastEmail } from "./career-tracks/blast_email.ts";
 import { handleCheckActivityMilestones } from "./credentials/check_activity.ts";
 import { handleCheckCourseCompletion } from "./credentials/check_course.ts";
@@ -52,6 +53,7 @@ const PROTECTED_OPS = new Set<string>([
   "credentials.checkActivityMilestones",
   "credentials.grant",
   "credentials.retryPending",
+  "credentials.hackathon.listEligible",
 ]);
 
 function hasBearerAuthHeader(req: Request): boolean {
@@ -121,6 +123,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleGrantCredentials(req, db);
     } else if (op === "credentials.retryPending" && req.method === "POST") {
       response = await handleRetryPendingCredentials(req, db);
+    } else if (op === "credentials.hackathon.listEligible" && req.method === "POST") {
+      response = await handleHackathonListEligible(req, db);
     } else {
       response = json({ message: "Unknown or disallowed op / method", op }, 404);
     }

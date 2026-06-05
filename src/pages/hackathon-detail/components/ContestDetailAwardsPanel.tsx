@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from "react";
-import { Plus } from "lucide-react";
+import { AlertTriangle, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -16,19 +16,48 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const TEXTAREA_CLASS =
   "min-h-[88px] w-full rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15";
+const SELECT_CLASS =
+  "flex h-10 w-full rounded-md border border-border-subtle bg-surface-base px-3 text-sm";
+
 import {
   countIssuancesForTemplate,
   listHackathonCredentialTemplates,
   saveHackathonCredentialTemplate,
   type CredentialTemplateRow,
 } from "@/lib/credentialTemplates";
-import { invokeGrantCredentials } from "@/lib/credentialsEdge";
+import {
+  invokeGrantCredentials,
+  invokeHackathonListEligible,
+  type EligibleUser,
+} from "@/lib/credentialsEdge";
 import { uploadHackathonCredentialBadgeImage } from "@/lib/storage";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 
-type SubTab = "templates" | "grant";
+type SubTab = "templates" | "grant" | "eligibility";
 
-const ROLES = ["winner", "finalist", "participant", "custom"] as const;
+const ROLES = [
+  "participant",
+  "builder",
+  "prototype_submitter",
+  "finalist",
+  "track_winner",
+  "champion",
+  "special_award",
+  "winner",
+  "custom",
+] as const;
+
+type CredentialKind = "ocb" | "oca";
+
+const OCB_ACHIEVEMENT_TYPES = ["Badge", "Award"] as const;
+const OCA_ACHIEVEMENT_TYPES = ["CertificateOfCompletion", "MicroCredential", "Diploma", "Award"] as const;
+
+function statusLabel(s: EligibleUser["issuanceStatus"], translate: (k: string) => string): string {
+  if (s === "minted") return translate("workspace.awards.eligibilityStatusMinted");
+  if (s === "pending") return translate("workspace.awards.eligibilityStatusPending");
+  if (s === "failed") return translate("workspace.awards.eligibilityStatusFailed");
+  return translate("workspace.awards.eligibilityStatusNone");
+}
 
 export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel }) {
   const { contest, translate } = vm;
@@ -41,17 +70,27 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const [formRole, setFormRole] = useState<(typeof ROLES)[number]>("winner");
+  const [formRole, setFormRole] = useState<(typeof ROLES)[number]>("participant");
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formImageUrl, setFormImageUrl] = useState("");
   const [formPrefix, setFormPrefix] = useState("");
   const [formActive, setFormActive] = useState(true);
+  const [formCredentialKind, setFormCredentialKind] = useState<CredentialKind>("ocb");
+  const [formAchievementType, setFormAchievementType] = useState("Award");
+  const [formTriggerType, setFormTriggerType] = useState<"auto" | "manual">("manual");
 
   const [grantTemplateId, setGrantTemplateId] = useState("");
   const [grantUserIds, setGrantUserIds] = useState("");
   const [grantReason, setGrantReason] = useState("");
   const [granting, setGranting] = useState(false);
+
+  // Eligibility tab state
+  const [eligTemplateId, setEligTemplateId] = useState("");
+  const [eligUsers, setEligUsers] = useState<EligibleUser[] | null>(null);
+  const [eligLoading, setEligLoading] = useState(false);
+  const [eligSelected, setEligSelected] = useState<Set<string>>(new Set());
+  const [eligGranting, setEligGranting] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -80,31 +119,42 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
     setGrantTemplateId((prev) => {
       if (prev) return prev;
       const active = templates.find((r) => r.is_active);
-      const pick = active?.id ?? templates[0]?.id ?? "";
-      return pick;
+      return active?.id ?? templates[0]?.id ?? "";
+    });
+    setEligTemplateId((prev) => {
+      if (prev) return prev;
+      const active = templates.find((r) => r.is_active);
+      return active?.id ?? templates[0]?.id ?? "";
     });
   }, [templates]);
 
   const openCreate = () => {
     setEditRow(null);
-    setFormRole("winner");
+    setFormRole("participant");
     setFormName("");
     setFormDescription("");
     setFormImageUrl("");
     const slug = (contest.slug ?? contest.id).toString();
-    setFormPrefix(`corelia:${slug}:winner`.slice(0, 40));
+    setFormPrefix(`corelia:${slug}:participant`.slice(0, 40));
     setFormActive(true);
+    setFormCredentialKind("ocb");
+    setFormAchievementType("Badge");
+    setFormTriggerType("manual");
     setDialogOpen(true);
   };
 
   const openEdit = (row: CredentialTemplateRow) => {
     setEditRow(row);
-    setFormRole((row.hackathon_role as (typeof ROLES)[number]) ?? "winner");
+    setFormRole((row.hackathon_role as (typeof ROLES)[number]) ?? "participant");
     setFormName(row.name);
     setFormDescription(row.description);
     setFormImageUrl(row.image_url);
     setFormPrefix(row.identifier_prefix);
     setFormActive(row.is_active);
+    const kind: CredentialKind = row.collection_symbol == null ? "oca" : "ocb";
+    setFormCredentialKind(kind);
+    setFormAchievementType(row.achievement_type ?? "Award");
+    setFormTriggerType((row.trigger_type as "auto" | "manual") ?? "manual");
     setDialogOpen(true);
   };
 
@@ -115,12 +165,16 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
         hackathonId: contest.id,
         hackathonSlug: contest.slug ?? contest.id,
         templateId: editRow?.id ?? null,
-        hackathonRole: formRole === "custom" ? "custom" : formRole,
+        hackathonRole: formRole,
         isActive: formActive,
         name: formName,
         description: formDescription,
         imageUrl: formImageUrl,
         identifierPrefix: formPrefix,
+        credentialKind: formCredentialKind,
+        achievementType: formAchievementType,
+        triggerType: formTriggerType,
+        triggerRule: null,
       });
       toast.success(translate("workspace.awards.saved"));
       setDialogOpen(false);
@@ -161,6 +215,56 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
     }
   };
 
+  const handleLoadEligible = async () => {
+    if (!eligTemplateId) return;
+    setEligLoading(true);
+    setEligUsers(null);
+    setEligSelected(new Set());
+    try {
+      const res = await invokeHackathonListEligible({
+        hackathonId: contest.id,
+        templateId: eligTemplateId,
+      });
+      if (!res.ok) throw new Error(res.message ?? "Unknown error");
+      setEligUsers(res.users ?? []);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : translate("workspace.awards.loadFailed"));
+    } finally {
+      setEligLoading(false);
+    }
+  };
+
+  const handleEligGrant = async () => {
+    const ids = Array.from(eligSelected);
+    if (!eligTemplateId || ids.length === 0) return;
+    setEligGranting(true);
+    try {
+      const res = await invokeGrantCredentials({
+        templateId: eligTemplateId,
+        userIds: ids,
+      });
+      if (res.errors?.length) {
+        toast.message(res.errors.join("\n"));
+      }
+      toast.success(translate("workspace.awards.eligibilityGrantOk"));
+      setEligSelected(new Set());
+      await handleLoadEligible();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : translate("workspace.awards.eligibilityGrantFailed"));
+    } finally {
+      setEligGranting(false);
+    }
+  };
+
+  const selectAllUnissued = () => {
+    const ids = (eligUsers ?? [])
+      .filter((u) => u.issuanceStatus === "none" || u.issuanceStatus === "failed")
+      .map((u) => u.userId);
+    setEligSelected(new Set(ids));
+  };
+
+  const achievementTypes = formCredentialKind === "oca" ? OCA_ACHIEVEMENT_TYPES : OCB_ACHIEVEMENT_TYPES;
+
   const slugLabel = (contest.slug ?? contest.id).toString();
 
   return (
@@ -171,6 +275,9 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
         </Button>
         <Button type="button" variant={tab === "grant" ? "secondary" : "ghost"} onClick={() => setTab("grant")}>
           {translate("workspace.awards.tabGrant")}
+        </Button>
+        <Button type="button" variant={tab === "eligibility" ? "secondary" : "ghost"} onClick={() => setTab("eligibility")}>
+          {translate("workspace.awards.tabEligibility")}
         </Button>
       </div>
 
@@ -240,12 +347,12 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
             </div>
           )}
         </div>
-      ) : (
+      ) : tab === "grant" ? (
         <div className="max-w-xl space-y-4">
           <Field>
             <FieldLabel>{translate("workspace.awards.grantTemplateLabel")}</FieldLabel>
             <select
-              className="flex h-10 w-full rounded-md border border-border-subtle bg-surface-base px-3 text-sm"
+              className={SELECT_CLASS}
               value={grantTemplateId}
               onChange={(e) => setGrantTemplateId(e.target.value)}
             >
@@ -279,6 +386,135 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
             {granting ? translate("workspace.awards.granting") : translate("workspace.awards.grantCta")}
           </Button>
         </div>
+      ) : (
+        // Eligibility tab
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="w-72">
+              <Field>
+                <FieldLabel>{translate("workspace.awards.eligibilityTemplateLabel")}</FieldLabel>
+                <select
+                  className={SELECT_CLASS}
+                  value={eligTemplateId}
+                  onChange={(e) => {
+                    setEligTemplateId(e.target.value);
+                    setEligUsers(null);
+                    setEligSelected(new Set());
+                  }}
+                >
+                  {templates.map((x) => (
+                    <option key={x.id} value={x.id}>
+                      {x.hackathon_role} — {x.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            <Button type="button" disabled={!eligTemplateId || eligLoading} onClick={() => void handleLoadEligible()}>
+              {eligLoading
+                ? translate("workspace.awards.eligibilityLoading")
+                : translate("workspace.awards.eligibilityLoad")}
+            </Button>
+          </div>
+
+          {eligUsers !== null && (
+            <>
+              {eligUsers.length === 0 ? (
+                <p className="text-sm text-foreground-muted">{translate("workspace.awards.eligibilityEmpty")}</p>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={selectAllUnissued}>
+                      {translate("workspace.awards.eligibilitySelectAll")}
+                    </Button>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setEligSelected(new Set())}>
+                      {translate("workspace.awards.eligibilityDeselectAll")}
+                    </Button>
+                    {eligSelected.size > 0 && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={eligGranting}
+                        onClick={() => void handleEligGrant()}
+                      >
+                        {eligGranting
+                          ? translate("workspace.awards.granting")
+                          : translate("workspace.awards.eligibilityGrant").replace("{{count}}", String(eligSelected.size))}
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="overflow-auto rounded-md border border-border-subtle">
+                    <table className="w-full text-left text-sm">
+                      <thead className="border-b border-border-subtle bg-surface-raised">
+                        <tr>
+                          <th className="w-8 px-3 py-2" />
+                          <th className="px-3 py-2">{translate("workspace.awards.eligibilityColName")}</th>
+                          <th className="px-3 py-2">{translate("workspace.awards.eligibilityColTeam")}</th>
+                          <th className="px-3 py-2">{translate("workspace.awards.eligibilityColOcid")}</th>
+                          <th className="px-3 py-2">{translate("workspace.awards.eligibilityColStatus")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {eligUsers.map((u) => {
+                          const selectable = u.issuanceStatus === "none" || u.issuanceStatus === "failed";
+                          const checked = eligSelected.has(u.userId);
+                          return (
+                            <tr key={u.userId} className="border-b border-border-subtle last:border-0">
+                              <td className="px-3 py-2">
+                                <input
+                                  type="checkbox"
+                                  className="size-4"
+                                  disabled={!selectable}
+                                  checked={checked}
+                                  onChange={(e) => {
+                                    setEligSelected((prev) => {
+                                      const next = new Set(prev);
+                                      if (e.target.checked) next.add(u.userId);
+                                      else next.delete(u.userId);
+                                      return next;
+                                    });
+                                  }}
+                                />
+                              </td>
+                              <td className="px-3 py-2">{u.displayName}</td>
+                              <td className="px-3 py-2 text-foreground-muted">{u.teamName ?? "—"}</td>
+                              <td className="px-3 py-2">
+                                {u.hasOcid ? (
+                                  <span className="text-success">✓</span>
+                                ) : (
+                                  <span className="flex items-center gap-1 text-warning text-xs">
+                                    <AlertTriangle className="size-3" aria-hidden />
+                                    {translate("workspace.awards.eligibilityNoOcid")}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-3 py-2">
+                                <span
+                                  className={
+                                    u.issuanceStatus === "minted"
+                                      ? "text-success"
+                                      : u.issuanceStatus === "failed"
+                                        ? "text-destructive"
+                                        : u.issuanceStatus === "pending"
+                                          ? "text-foreground-muted"
+                                          : ""
+                                  }
+                                >
+                                  {statusLabel(u.issuanceStatus, translate)}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </div>
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -292,7 +528,7 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
             <Field>
               <FieldLabel>{translate("workspace.awards.fieldRole")}</FieldLabel>
               <select
-                className="flex h-10 w-full rounded-md border border-border-subtle bg-surface-base px-3 text-sm"
+                className={SELECT_CLASS}
                 value={formRole}
                 onChange={(e: ChangeEvent<HTMLSelectElement>) =>
                   setFormRole(e.target.value as (typeof ROLES)[number])
@@ -305,6 +541,51 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
                 ))}
               </select>
             </Field>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field>
+                <FieldLabel>{translate("workspace.awards.fieldCredentialKind")}</FieldLabel>
+                <select
+                  className={SELECT_CLASS}
+                  value={formCredentialKind}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                    const kind = e.target.value as CredentialKind;
+                    setFormCredentialKind(kind);
+                    setFormAchievementType(kind === "oca" ? "CertificateOfCompletion" : "Badge");
+                  }}
+                >
+                  <option value="ocb">{translate("workspace.awards.kindOcb")}</option>
+                  <option value="oca">{translate("workspace.awards.kindOca")}</option>
+                </select>
+              </Field>
+              <Field>
+                <FieldLabel>{translate("workspace.awards.fieldAchievementType")}</FieldLabel>
+                <select
+                  className={SELECT_CLASS}
+                  value={formAchievementType}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setFormAchievementType(e.target.value)}
+                >
+                  {achievementTypes.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+
+            <Field>
+              <FieldLabel>{translate("workspace.awards.fieldTriggerType")}</FieldLabel>
+              <select
+                className={SELECT_CLASS}
+                value={formTriggerType}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                  setFormTriggerType(e.target.value as "auto" | "manual")
+                }
+              >
+                <option value="manual">{translate("workspace.awards.triggerManual")}</option>
+                <option value="auto">{translate("workspace.awards.triggerAuto")}</option>
+              </select>
+            </Field>
+
             <Field>
               <FieldLabel>{translate("workspace.awards.fieldName")}</FieldLabel>
               <Input value={formName} onChange={(e: ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} />
@@ -341,6 +622,7 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
               {formImageUrl ? (
                 <img src={formImageUrl} alt="" className="mt-2 h-16 rounded border border-border-subtle" />
               ) : null}
+              <p className="mt-1 text-xs text-foreground-muted">{translate("workspace.awards.imageHint")}</p>
             </Field>
             <Field>
               <FieldLabel>{translate("workspace.awards.fieldPrefix")}</FieldLabel>
@@ -348,7 +630,7 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
                 value={formPrefix}
                 maxLength={40}
                 onChange={(e) => setFormPrefix(e.target.value)}
-                placeholder={`corelia:${slugLabel}:winner`}
+                placeholder={`corelia:${slugLabel}:participant`}
               />
             </Field>
             <label className="flex items-center gap-2 text-sm">

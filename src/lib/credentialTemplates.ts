@@ -17,7 +17,7 @@ export type CredentialTemplateRow = {
   image_url: string;
   achievement_type: string;
   identifier_prefix: string;
-  collection_symbol: string;
+  collection_symbol: string | null;
   custom_metadata: Record<string, unknown>;
   trigger_type: string;
   trigger_rule: CourseCredentialTriggerRule | Record<string, unknown> | null;
@@ -64,7 +64,7 @@ export async function saveCourseCredentialTemplate(params: {
     image_url: params.imageUrl.trim(),
     achievement_type: "Badge" as const,
     identifier_prefix: prefix,
-    collection_symbol: "corelia-courses" as const,
+    collection_symbol: "ocbadge" as const,
     custom_metadata: {} as Record<string, unknown>,
     trigger_type: "auto" as const,
     trigger_rule: params.triggerRule as unknown as Record<string, unknown>,
@@ -125,6 +125,10 @@ export async function saveHackathonCredentialTemplate(params: {
   description: string;
   imageUrl: string;
   identifierPrefix: string;
+  credentialKind: "ocb" | "oca";
+  achievementType: string;
+  triggerType: "auto" | "manual";
+  triggerRule?: Record<string, unknown> | null;
 }): Promise<{ id: string }> {
   const slug = params.hackathonSlug.trim() || "hackathon";
   const defaultPrefix = `corelia:${slug}:${params.hackathonRole}`.replace(/[^a-z0-9:.-]/gi, "-").slice(0, 40);
@@ -138,12 +142,12 @@ export async function saveHackathonCredentialTemplate(params: {
     name: params.name.trim(),
     description: params.description.trim(),
     image_url: params.imageUrl.trim(),
-    achievement_type: "Award" as const,
+    achievement_type: params.achievementType,
     identifier_prefix: prefix,
-    collection_symbol: "corelia-hackathons" as const,
+    collection_symbol: params.credentialKind === "oca" ? null : ("ocbadge" as const),
     custom_metadata: {} as Record<string, unknown>,
-    trigger_type: "manual" as const,
-    trigger_rule: null as null,
+    trigger_type: params.triggerType,
+    trigger_rule: (params.triggerRule ?? null) as Record<string, unknown> | null,
     network_override: null as string | null,
     is_active: params.isActive,
   };
@@ -200,7 +204,7 @@ export async function saveActivityMilestoneTemplate(params: {
     image_url: params.imageUrl.trim(),
     achievement_type: "Badge" as const,
     identifier_prefix: params.identifierPrefix.trim(),
-    collection_symbol: "corelia-achievements" as const,
+    collection_symbol: "ocbadge" as const,
     custom_metadata: {} as Record<string, unknown>,
     trigger_type: params.triggerType,
     trigger_rule: params.triggerRule as Record<string, unknown> | null,

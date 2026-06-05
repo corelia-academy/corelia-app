@@ -24,6 +24,39 @@ function unwrapTemplate(
   return Array.isArray(t) ? t[0] ?? null : t;
 }
 
+export type CourseIssuanceInfo = {
+  issuanceId: string;
+  status: "pending" | "minted" | "failed";
+  oc_credential_id: string | null;
+  error_message: string | null;
+};
+
+export async function fetchCourseIssuanceMapForUser(
+  userId: string,
+): Promise<Map<string, CourseIssuanceInfo>> {
+  const { data, error } = await supabase
+    .from("credential_issuances")
+    .select("id, status, oc_credential_id, error_message, course_id")
+    .eq("user_id", userId)
+    .not("course_id", "is", null)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  const map = new Map<string, CourseIssuanceInfo>();
+  for (const row of data ?? []) {
+    const courseId = String(row.course_id ?? "");
+    if (!courseId || map.has(courseId)) continue;
+    map.set(courseId, {
+      issuanceId: String(row.id),
+      status: (row.status as CourseIssuanceInfo["status"]) ?? "pending",
+      oc_credential_id: row.oc_credential_id ?? null,
+      error_message: row.error_message ?? null,
+    });
+  }
+  return map;
+}
+
 export async function fetchMintedCredentialIssuancesForUser(
   userId: string,
 ): Promise<CredentialIssuanceWithTemplate[]> {

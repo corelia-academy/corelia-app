@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { getProfileForUser, invalidateCurrentProfileCache } from "@/lib/profile";
+import { invokeCheckActivityMilestones } from "@/lib/credentialsEdge";
 import { useAuthStore } from "@/stores/authStore";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
 import type { AuthChangeEvent, User } from "@supabase/supabase-js";
@@ -121,6 +122,14 @@ export function AuthSync() {
         if (prevUser?.id != null && nextUser?.id === prevUser.id) {
           return;
         }
+      }
+
+      // Genuine new sign-in (not a session restore or same-user tab refresh):
+      // fire login_streak check as background task.
+      if (event === "SIGNED_IN" && session?.user) {
+        queueMicrotask(() => {
+          invokeCheckActivityMilestones("login_streak").catch(() => {});
+        });
       }
 
       syncFromSession(session);

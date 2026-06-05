@@ -59,3 +59,27 @@ export async function invokeGrantCredentials(params: {
     ...(params.grantedReason ? { grantedReason: params.grantedReason } : {}),
   });
 }
+
+export type EligibleUser = {
+  userId: string;
+  displayName: string;
+  teamName: string | null;
+  hasOcid: boolean;
+  issuanceStatus: "none" | "pending" | "minted" | "failed";
+  issuanceId: string | null;
+};
+
+export async function invokeHackathonListEligible(params: {
+  hackathonId: string;
+  templateId: string;
+}): Promise<{
+  ok: boolean;
+  users?: EligibleUser[];
+  summary?: { total: number; minted: number; pending: number; failed: number; none: number };
+  message?: string;
+}> {
+  return await postJson("credentials.hackathon.listEligible", {
+    hackathonId: params.hackathonId,
+    templateId: params.templateId,
+  });
+}

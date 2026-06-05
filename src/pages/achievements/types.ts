@@ -2,6 +2,7 @@ export type ClaimStatus = "unclaimed" | "pending" | "claimed" | "failed";
 
 export type CertificateItem = {
   id: string;
+  courseId: string;
   title: string;
   course: string;
   issuedAt: string;
@@ -12,7 +13,7 @@ export type CertificateItem = {
   imageUrl?: string;
   // OpenCampus
   ocClaimStatus: ClaimStatus;
-  ocTransactionHash?: string;
+  ocCredentialId?: string | null;
   ocCredentialUrl?: string;
   ocHolderOcId?: string;
 };
