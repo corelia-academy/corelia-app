@@ -115,7 +115,15 @@ export function BadgeCard({
               badge.bgColor,
             )}
           >
-            {t(`achievements.badgeCategory.${badge.category}` as never)}
+            {badge.credentialScope === "course"
+              ? t("achievements.credentialType.oca", { defaultValue: "OCA" })
+              : badge.credentialScope === "hackathon"
+              ? badge.hackathonRole
+                ? badge.hackathonRole
+                : t("achievements.credentialType.badge", { defaultValue: "Badge" })
+              : badge.credentialScope === "activity_milestone"
+              ? t("achievements.credentialType.milestone", { defaultValue: "Milestone" })
+              : t(`achievements.badgeCategory.${badge.category}` as never)}
           </span>
           <OcClaimBadge status={badge.ocClaimStatus} />
         </div>

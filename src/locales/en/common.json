@@ -90,7 +90,11 @@
     "viewHackathon": "View hackathon",
     "courseAnnouncementTitle": "Course announcement",
     "trackAnnouncementTitle": "Learning path announcement",
-    "markRead": "Mark as read"
+    "markRead": "Mark as read",
+    "ocCredentialMintedTitle": "Open Campus credential issued 🎉",
+    "ocCredentialMintedBody": "You just received: {{name}}",
+    "ocCredentialMintedBodyOca": "Your certificate is ready: {{name}}",
+    "viewCredential": "View achievements"
   },
   "userProfile": {
     "tabs": {
@@ -494,16 +498,46 @@
       ]
     },
     "surfaceContext": {
-      "home": { "title": "Your dashboard", "description": "Progress, courses, and what to do next" },
-      "courses": { "title": "Course library", "description": "Browse and compare courses" },
-      "career": { "title": "Career paths", "description": "Tracks and skills for your goals" },
-      "hackathons": { "title": "Hackathons", "description": "Contests and submissions" },
-      "projects": { "title": "Projects", "description": "Portfolio and collaboration" },
-      "achievements": { "title": "Achievements", "description": "Certificates and badges" },
-      "search": { "title": "Search", "description": "Find courses, people, and content" },
-      "profile": { "title": "Profile", "description": "Public learning profile" },
-      "account": { "title": "Account", "description": "Settings and billing" },
-      "default": { "title": "Corelia", "description": "Learning assistant" }
+      "home": {
+        "title": "Your dashboard",
+        "description": "Progress, courses, and what to do next"
+      },
+      "courses": {
+        "title": "Course library",
+        "description": "Browse and compare courses"
+      },
+      "career": {
+        "title": "Career paths",
+        "description": "Tracks and skills for your goals"
+      },
+      "hackathons": {
+        "title": "Hackathons",
+        "description": "Contests and submissions"
+      },
+      "projects": {
+        "title": "Projects",
+        "description": "Portfolio and collaboration"
+      },
+      "achievements": {
+        "title": "Achievements",
+        "description": "Certificates and badges"
+      },
+      "search": {
+        "title": "Search",
+        "description": "Find courses, people, and content"
+      },
+      "profile": {
+        "title": "Profile",
+        "description": "Public learning profile"
+      },
+      "account": {
+        "title": "Account",
+        "description": "Settings and billing"
+      },
+      "default": {
+        "title": "Corelia",
+        "description": "Learning assistant"
+      }
     },
     "restoreAction": "Reopen Cora AI",
     "chipToast": "Sticky Cora AI is in preview mode.",
@@ -633,6 +667,9 @@
         "subtitle": "Verifiable credential on EDUChain blockchain",
         "kind": {
           "cert": "Certificate",
+          "oca": "OCA · Certificate of Completion",
+          "hackathonBadge": "Hackathon Badge",
+          "milestone": "Milestone",
           "badge": "Badge"
         },
         "date": {
@@ -722,6 +759,19 @@
         "title": "Coming next",
         "allUnlockedNote": "You've unlocked all available milestones. You can now focus on claiming OC credentials and expanding your achievement profile."
       }
+    },
+    "ocVault": {
+      "tabs": {
+        "oca": "OCA",
+        "hackathon": "Badges",
+        "milestones": "Milestones"
+      },
+      "empty": "No credentials in this category yet."
+    },
+    "credentialType": {
+      "oca": "OCA",
+      "badge": "Badge",
+      "milestone": "Milestone"
     }
   },
   "feedback": {

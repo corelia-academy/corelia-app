@@ -42,7 +42,9 @@ export async function fetchMintedCredentialIssuancesForUser(
         name,
         description,
         image_url,
-        achievement_type
+        thumbnail_url,
+        achievement_type,
+        hackathon_role
       )
     `,
     )
@@ -76,14 +78,37 @@ export function openCampusCredentialExplorerUrl(
   return `https://id.opencampus.xyz/public/credentials?id=${encodeURIComponent(id)}`;
 }
 
-function badgeIconForScope(scope: CredentialTemplateSummary["scope_type"]) {
+type ScopeStyle = {
+  icon: ReturnType<typeof createElement>;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+};
+
+function styleForScope(scope: CredentialTemplateSummary["scope_type"]): ScopeStyle {
   switch (scope) {
     case "hackathon":
-      return createElement(Medal, { className: "size-6 text-warning", "aria-hidden": true });
+      return {
+        icon: createElement(Medal, { className: "size-6 text-warning", "aria-hidden": true }),
+        color: "text-warning",
+        bgColor: "bg-warning/10",
+        borderColor: "border-warning/20",
+      };
     case "activity_milestone":
-      return createElement(Sparkles, { className: "size-6 text-violet-600", "aria-hidden": true });
+      return {
+        icon: createElement(Sparkles, { className: "size-6 text-violet-600", "aria-hidden": true }),
+        color: "text-violet-600",
+        bgColor: "bg-violet-500/10",
+        borderColor: "border-violet-500/20",
+      };
     default:
-      return createElement(Award, { className: "size-6 text-primary", "aria-hidden": true });
+      // course → OCA
+      return {
+        icon: createElement(Award, { className: "size-6 text-primary", "aria-hidden": true }),
+        color: "text-primary",
+        bgColor: "bg-primary/10",
+        borderColor: "border-primary/20",
+      };
   }
 }
 
@@ -99,25 +124,35 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate): BadgeI
       ? tpl.scope_type
       : "course";
 
+  const defaultStyle: ScopeStyle = {
+    icon: createElement(Award, { className: "size-6 text-primary", "aria-hidden": true }),
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    borderColor: "border-primary/20",
+  };
+  const { icon, color, bgColor, borderColor } = tpl
+    ? styleForScope(tpl.scope_type)
+    : defaultStyle;
+
   return {
     id: row.id,
     title,
     description,
-    icon: tpl
-      ? badgeIconForScope(tpl.scope_type)
-      : createElement(Award, { className: "size-6 text-primary", "aria-hidden": true }),
-    color: "text-foreground",
-    bgColor: "bg-surface-raised",
-    borderColor: "border-border-subtle",
+    icon,
+    color,
+    bgColor,
+    borderColor,
     earnedAt: minted,
     locked: false,
     category: "milestone",
-    imageUrl: tpl?.image_url,
+    // thumbnail_url for frontend display; image_url (full-res) stays in OC payload only
+    imageUrl: tpl?.thumbnail_url ?? tpl?.image_url,
     ocClaimStatus: "claimed",
     ocCredentialUrl: ocUrl ?? undefined,
     ocTransactionHash: undefined,
     mintCredentialId: row.oc_credential_id,
     credentialScope,
+    hackathonRole: tpl?.hackathon_role ?? undefined,
   };
 }
 

@@ -30,7 +30,8 @@ Phủ các route con account: `profile`, `cv`, `billing`, `settings`, `projects`
    - **Instructor_1**: form instructor hiển thị và lưu được.
 8. **`/cora`**: trang subscription / Cora AI — UI load, không crash khi chưa có gói.
 9. Redirect smoke: `/account/cora` và `/upgrade/cora` → `/cora`.
-10. **`/achievements`**: redirect về `/account` (không có UI achievements riêng — ghi nhận, không test UI).
+10. **`/achievements`**: redirect về `/account` (top-level route dự phòng).
+11. **OC Vault (Badges & Credentials)**: UI hiển thị trên trang public profile `/u/<username>` → section "Huy hiệu & Thành tích" → tabs OCA / Badges / Milestones. Test: mint ít nhất 1 credential trên staging → kiểm tra hiện trên profile. *(Route `/account/achievements` chưa có — in-app notification bell hiện link tạm về đây; sẽ wired ở sprint sau.)*
 
 ## Kết quả mong đợi
 

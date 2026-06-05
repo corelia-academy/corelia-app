@@ -40,6 +40,8 @@ export type BadgeItem = {
   mintCredentialId?: string | null;
   /** Scope grouping for Open Campus badges */
   credentialScope?: CredentialScopeForBadge;
+  /** Role/type within a hackathon (e.g. "winner", "participant") — for multi-type hackathon badges */
+  hackathonRole?: string | null;
 };
 
 export type ModalItem =

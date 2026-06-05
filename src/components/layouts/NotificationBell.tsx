@@ -220,6 +220,7 @@ export function NotificationBell() {
                 const isHackathonRegistrationReview = isRegApproved || isRegRejected;
                 const isCourseAnnouncement = n.type === "course_announcement";
                 const isTrackAnnouncement = n.type === "track_announcement";
+                const isOcCredential = n.type === "oc_credential_minted";
                 const resolved = Boolean(n.resolved_at);
                 const pid =
                   typeof n.payload.project_id === "string" ? n.payload.project_id : "";
@@ -393,6 +394,44 @@ export function NotificationBell() {
                             </Button>
                           </div>
                         ) : null}
+                      </>
+                    ) : isOcCredential ? (
+                      <>
+                        <div className="font-medium text-foreground">
+                          {t("notifications.ocCredentialMintedTitle")}
+                        </div>
+                        <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                          {n.payload.is_oca
+                            ? t("notifications.ocCredentialMintedBodyOca", {
+                                name: payloadString(n.payload, "credential_name"),
+                              })
+                            : t("notifications.ocCredentialMintedBody", {
+                                name: payloadString(n.payload, "credential_name"),
+                              })}
+                        </p>
+                        {typeof n.payload.image_url === "string" && n.payload.image_url ? (
+                          <img
+                            src={n.payload.image_url}
+                            alt=""
+                            className="mt-2 size-12 rounded-md border border-border-subtle object-cover"
+                          />
+                        ) : null}
+                        <div className="mt-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="xs"
+                            className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
+                            render={<NavLink to="/account/achievements" />}
+                            nativeButton={false}
+                            onClick={() => {
+                              setOpen(false);
+                              void markNotificationRead(n.id).then(() => refresh());
+                            }}
+                          >
+                            {t("notifications.viewCredential")}
+                          </Button>
+                        </div>
                       </>
                     ) : isCourseAnnouncement || isTrackAnnouncement ? (
                       <>

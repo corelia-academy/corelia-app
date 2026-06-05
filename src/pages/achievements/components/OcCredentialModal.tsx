@@ -42,6 +42,9 @@ export function OcCredentialModal({
   const isFailed = d.ocClaimStatus === "failed";
   const isUnclaimed = d.ocClaimStatus === "unclaimed";
 
+  const badgeScope = item.kind === "badge" ? (item.data as BadgeItem).credentialScope : undefined;
+  const hackathonRole = item.kind === "badge" ? (item.data as BadgeItem).hackathonRole : undefined;
+
   const name = item.kind === "cert" ? item.data.course : item.data.title;
   const issued =
     item.kind === "cert"
@@ -87,6 +90,14 @@ export function OcCredentialModal({
               <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted sm:text-sm">
                 {item.kind === "cert"
                   ? t("achievements.oc.modal.kind.cert")
+                  : badgeScope === "course"
+                  ? t("achievements.oc.modal.kind.oca")
+                  : badgeScope === "hackathon"
+                  ? hackathonRole
+                    ? `${t("achievements.oc.modal.kind.hackathonBadge")} · ${hackathonRole}`
+                    : t("achievements.oc.modal.kind.hackathonBadge")
+                  : badgeScope === "activity_milestone"
+                  ? t("achievements.oc.modal.kind.milestone")
                   : t("achievements.oc.modal.kind.badge")}
               </p>
               <p className="mt-0.5 text-base font-semibold text-foreground sm:text-lg">
