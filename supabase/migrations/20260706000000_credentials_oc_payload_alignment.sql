@@ -17,10 +17,19 @@
 --   Mini / Public Hackathon          → OCB  Award
 --   Activity Milestone               → OCB  Badge
 
--- ─── migrate existing rows FIRST (before adding new constraints) ─────────────
+-- ─── drop ALL existing constraints on collection_symbol first ────────────────
+-- The remote DB may have a constraint that only allows old 'corelia-*' values.
+-- We must drop it before touching any data or adding new constraints.
+
+ALTER TABLE public.credential_templates
+  DROP CONSTRAINT IF EXISTS credential_templates_collection_symbol_check;
+
+-- Also drop the cross-validation constraint (references collection_symbol) if it exists.
+ALTER TABLE public.credential_templates
+  DROP CONSTRAINT IF EXISTS credential_templates_vctype_consistency_check;
+
+-- ─── migrate existing rows ────────────────────────────────────────────────────
 -- Old corelia-* symbols → OCB = 'ocbadge'. achievement_type 'Badge'/'Award' already valid for OCB.
--- Must run before adding the new collection_symbol and vctype_consistency constraints,
--- otherwise existing rows with 'corelia-*' values will violate them immediately.
 UPDATE public.credential_templates
   SET collection_symbol = 'ocbadge'
   WHERE collection_symbol IN ('corelia-courses', 'corelia-hackathons', 'corelia-achievements');
@@ -29,9 +38,6 @@ UPDATE public.credential_templates
 
 ALTER TABLE public.credential_templates
   ALTER COLUMN collection_symbol DROP NOT NULL;
-
-ALTER TABLE public.credential_templates
-  DROP CONSTRAINT IF EXISTS credential_templates_collection_symbol_check;
 
 ALTER TABLE public.credential_templates
   ADD CONSTRAINT credential_templates_collection_symbol_check
