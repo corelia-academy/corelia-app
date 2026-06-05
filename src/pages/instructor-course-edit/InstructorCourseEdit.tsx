@@ -499,6 +499,7 @@ const InstructorCourseEdit = () => {
   const [partnerDialogLocale, setPartnerDialogLocale] = useState<SupportedCourseLocale>("vi");
   const partnerLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingPartnerLogo, setUploadingPartnerLogo] = useState(false);
+  const [ocbIsActive, setOcbIsActive] = useState(false);
   const [discounts, setDiscounts] = useState<CourseDiscount[]>([]);
   const [loadingDiscounts, setLoadingDiscounts] = useState(false);
   const [creatingDiscount, setCreatingDiscount] = useState(false);
@@ -5867,10 +5868,11 @@ const InstructorCourseEdit = () => {
                   </>
                 ) : null}
                 <Field>
-                  <label className="flex items-center gap-2">
+                  <label className={`flex items-center gap-2 ${ocbIsActive ? "opacity-50 cursor-not-allowed" : ""}`}>
                     <input
                       type="checkbox"
                       checked={form.has_certificate ?? false}
+                      disabled={ocbIsActive}
                       onChange={(e) =>
                         setForm((p) => ({
                           ...p,
@@ -5883,6 +5885,11 @@ const InstructorCourseEdit = () => {
                       {t("courseEdit.publishing.hasCertificateHint")}
                     </span>
                   </label>
+                  {ocbIsActive && (
+                    <p className="mt-1 text-xs text-foreground-muted">
+                      {t("courseEdit.publishing.certBlockedByOcb")}
+                    </p>
+                  )}
                 </Field>
                 <Field>
                   <label className="flex items-center gap-2">
@@ -8586,6 +8593,8 @@ const InstructorCourseEdit = () => {
                   courseId={id}
                   courseSlug={(form.slug || course.slug || "").trim()}
                   canEdit={canManageCourseOcb}
+                  hasCertificate={form.has_certificate ?? false}
+                  onActiveChange={setOcbIsActive}
                 />
               ) : null}
             </section>

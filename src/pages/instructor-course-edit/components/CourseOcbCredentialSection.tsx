@@ -17,10 +17,14 @@ export function CourseOcbCredentialSection({
   courseId,
   courseSlug,
   canEdit,
+  hasCertificate = false,
+  onActiveChange,
 }: {
   courseId: string;
   courseSlug: string;
   canEdit: boolean;
+  hasCertificate?: boolean;
+  onActiveChange?: (active: boolean) => void;
 }) {
   const { t } = useTranslation("instructor");
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -44,6 +48,7 @@ export function CourseOcbCredentialSection({
       if (!row) {
         setTemplateId(null);
         setIsActive(false);
+        onActiveChange?.(false);
         setName("");
         setDescription("");
         setImageUrl("");
@@ -55,6 +60,7 @@ export function CourseOcbCredentialSection({
       }
       setTemplateId(row.id);
       setIsActive(row.is_active);
+      onActiveChange?.(row.is_active);
       setName(row.name ?? "");
       setDescription(row.description ?? "");
       setImageUrl(row.image_url ?? "");
@@ -68,7 +74,7 @@ export function CourseOcbCredentialSection({
     } finally {
       setLoading(false);
     }
-  }, [courseId, courseSlug, t]);
+  }, [courseId, courseSlug, onActiveChange, t]);
 
   useEffect(() => {
     void load();
@@ -141,16 +147,22 @@ export function CourseOcbCredentialSection({
         <p className="mt-1 text-sm text-foreground-muted">{t("courseEdit.ocb.subtitle")}</p>
       </div>
 
-      <label className="flex cursor-pointer items-center gap-2 text-sm">
+      <label className={`flex cursor-pointer items-center gap-2 text-sm ${hasCertificate ? "opacity-50 cursor-not-allowed" : ""}`}>
         <input
           type="checkbox"
           checked={isActive}
-          disabled={!canEdit}
-          onChange={(e) => setIsActive(e.target.checked)}
+          disabled={!canEdit || hasCertificate}
+          onChange={(e) => {
+            setIsActive(e.target.checked);
+            onActiveChange?.(e.target.checked);
+          }}
           className="size-4 rounded border-border"
         />
         <span>{t("courseEdit.ocb.enableLabel")}</span>
       </label>
+      {hasCertificate && (
+        <p className="text-xs text-foreground-muted">{t("courseEdit.ocb.blockedByCertificate")}</p>
+      )}
 
       {isActive ? (
         <div className="space-y-4">

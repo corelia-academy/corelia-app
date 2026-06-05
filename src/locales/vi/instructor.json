@@ -599,6 +599,7 @@
       "loading": "Đang tải cấu hình huy hiệu…",
       "loadFailed": "Không tải được cấu hình huy hiệu.",
       "enableLabel": "Cấp huy hiệu khi đạt điều kiện",
+      "blockedByCertificate": "Khoá học này đã có chứng nhận dạng file. Hãy tắt chứng nhận ở tab General info trước khi bật huy hiệu on-chain.",
       "nameLabel": "Tên huy hiệu",
       "descriptionLabel": "Mô tả huy hiệu",
       "imageLabel": "Ảnh huy hiệu",
@@ -925,6 +926,7 @@
     "publishing": {
       "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
       "hasCertificateHint": "Khoá học có cấp chứng nhận hoàn thành",
+      "certBlockedByOcb": "Khoá học này đang có huy hiệu on-chain (OCB) hoạt động. Vào tab Certificate và tắt huy hiệu trước.",
       "updatingHint": "Khoá học đang được cập nhật (hiện banner cho học viên)"
     },
     "students": {

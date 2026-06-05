@@ -600,6 +600,7 @@
       "loading": "Loading badge configuration…",
       "loadFailed": "Could not load badge configuration.",
       "enableLabel": "Mint badge when requirements are met",
+      "blockedByCertificate": "This course already issues a downloadable certificate. Disable the certificate first (General info tab) before enabling the on-chain badge.",
       "nameLabel": "Badge name",
       "descriptionLabel": "Badge description",
       "imageLabel": "Badge image",
@@ -926,6 +927,7 @@
     "publishing": {
       "publishedHint": "Published (visible on the course page)",
       "hasCertificateHint": "This course issues a completion certificate",
+      "certBlockedByOcb": "This course has an on-chain badge (OCB) active. Go to the Certificate tab and disable the badge first.",
       "updatingHint": "This course is being updated (show a notice to learners)"
     },
     "students": {
