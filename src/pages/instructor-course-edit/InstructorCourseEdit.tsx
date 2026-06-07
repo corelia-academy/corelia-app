@@ -8485,132 +8485,135 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "certificate" && canAccessCertificate && (
-            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-              <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
-                <Award className="size-5" aria-hidden /> {t("courseEdit.certificate.sectionTitle")}
-              </h2>
-              <p className="mb-4 text-sm text-foreground-muted">
-                {t("courseEdit.certificate.sectionDescription")}
-              </p>
-              <p className="mb-4 text-sm text-foreground-muted">
-                Open Campus badge (OCB) chỉ khả dụng cho khoá học Corelia và người Corelia (hoặc admin/support).
-              </p>
+            <div className="space-y-4">
+              {/* Card 1: PDF Certificate template */}
+              <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
+                <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-1">
+                  <Award className="size-5" aria-hidden /> {t("courseEdit.certificate.sectionTitle")}
+                </h2>
+                <p className="mb-6 text-sm text-foreground-muted">
+                  {t("courseEdit.certificate.sectionDescription")}
+                </p>
 
-              <div className="mb-8 space-y-4">
-                <Field>
-                  <FieldLabel>{t("courseEdit.certificate.templateLabel")}</FieldLabel>
-                  <input
-                    ref={certificateInputRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/jpg"
-                    className="hidden"
-                    onChange={handleCertificateTemplateChange}
-                  />
-                  <div className="mt-1 flex flex-wrap items-center gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={uploadingCert}
-                      onClick={() => certificateInputRef.current?.click()}
-                    >
-                      {uploadingCert
-                        ? t("courseEdit.certificate.uploadingTemplate")
-                        : t("courseEdit.certificate.uploadTemplate")}
-                    </Button>
-                    {course.certificate_template_url && (
-                      <a
-                        href={course.certificate_template_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline"
+                <div className="mb-8 space-y-4">
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.templateLabel")}</FieldLabel>
+                    <input
+                      ref={certificateInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg"
+                      className="hidden"
+                      onChange={handleCertificateTemplateChange}
+                    />
+                    <div className="mt-1 flex flex-wrap items-center gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={uploadingCert}
+                        onClick={() => certificateInputRef.current?.click()}
                       >
-                        Xem template hiện tại
-                      </a>
-                    )}
-                  </div>
-                </Field>
-                <Field>
-                  <FieldLabel>{t("courseEdit.certificate.nameXLabel")}</FieldLabel>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={form.certificate_name_x_percent}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      if (!Number.isNaN(v))
-                        setForm((p) => ({
-                          ...p,
-                          certificate_name_x_percent: Math.max(
-                            0,
-                            Math.min(100, v),
-                          ),
-                        }));
-                    }}
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel>{t("courseEdit.certificate.nameYLabel")}</FieldLabel>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={form.certificate_name_y_percent}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      if (!Number.isNaN(v))
-                        setForm((p) => ({
-                          ...p,
-                          certificate_name_y_percent: Math.max(
-                            0,
-                            Math.min(100, v),
-                          ),
-                        }));
-                    }}
-                  />
-                </Field>
-                <Button
-                  onClick={() =>
-                    void saveCourseInfo(t("courseEdit.labels.saveCertificate"))
-                  }
-                  disabled={saving || !canEdit}
-                >
-                  {saving ? t("courseEdit.labels.saving") : t("courseEdit.certificate.saveNamePosition")}
-                </Button>
-              </div>
-
-              <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
-                <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                  <FileText className="size-4" /> {t("courseEdit.certificateGuide.title")}
-                </h3>
-                <ul className="list-inside list-disc space-y-1 text-sm text-foreground-muted">
-                  <li>{t("courseEdit.certificateGuide.sizeHint")}</li>
-                  <li>{t("courseEdit.certificateGuide.nameAreaHint")}</li>
-                  <li>{t("courseEdit.certificateGuide.afterUploadHint")}</li>
-                  <li>{t("courseEdit.certificate.fileFormatHint")}</li>
-                </ul>
-                <div className="mt-4">
-                  <a
-                    href="/certificate-template-sample.svg"
-                    download="certificate-template-sample.svg"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-raised"
+                        {uploadingCert
+                          ? t("courseEdit.certificate.uploadingTemplate")
+                          : t("courseEdit.certificate.uploadTemplate")}
+                      </Button>
+                      {course.certificate_template_url && (
+                        <a
+                          href={course.certificate_template_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline"
+                        >
+                          {t("courseEdit.certificate.viewCurrentTemplate")}
+                        </a>
+                      )}
+                    </div>
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.nameXLabel")}</FieldLabel>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={form.certificate_name_x_percent}
+                      onChange={(e) => {
+                        const v = Number(e.target.value);
+                        if (!Number.isNaN(v))
+                          setForm((p) => ({
+                            ...p,
+                            certificate_name_x_percent: Math.max(
+                              0,
+                              Math.min(100, v),
+                            ),
+                          }));
+                      }}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.nameYLabel")}</FieldLabel>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={form.certificate_name_y_percent}
+                      onChange={(e) => {
+                        const v = Number(e.target.value);
+                        if (!Number.isNaN(v))
+                          setForm((p) => ({
+                            ...p,
+                            certificate_name_y_percent: Math.max(
+                              0,
+                              Math.min(100, v),
+                            ),
+                          }));
+                      }}
+                    />
+                  </Field>
+                  <Button
+                    onClick={() =>
+                      void saveCourseInfo(t("courseEdit.labels.saveCertificate"))
+                    }
+                    disabled={saving || !canEdit}
                   >
-                    <Download className="size-4" aria-hidden /> {t("courseEdit.certificateGuide.downloadSample")}
-                  </a>
+                    {saving ? t("courseEdit.labels.saving") : t("courseEdit.certificate.saveNamePosition")}
+                  </Button>
                 </div>
-              </div>
 
-              {id && canManageCourseOcb ? (
-                <CourseOcbCredentialSection
-                  courseId={id}
-                  courseSlug={(form.slug || course.slug || "").trim()}
-                  canEdit={canManageCourseOcb}
-                  hasCertificate={form.has_certificate ?? false}
-                  onActiveChange={setOcbIsActive}
-                />
-              ) : null}
-            </section>
+                <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
+                  <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                    <FileText className="size-4" /> {t("courseEdit.certificateGuide.title")}
+                  </h3>
+                  <ul className="list-inside list-disc space-y-1 text-sm text-foreground-muted">
+                    <li>{t("courseEdit.certificateGuide.sizeHint")}</li>
+                    <li>{t("courseEdit.certificateGuide.nameAreaHint")}</li>
+                    <li>{t("courseEdit.certificateGuide.afterUploadHint")}</li>
+                    <li>{t("courseEdit.certificate.fileFormatHint")}</li>
+                  </ul>
+                  <div className="mt-4">
+                    <a
+                      href="/certificate-template-sample.svg"
+                      download="certificate-template-sample.svg"
+                      className="inline-flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-raised"
+                    >
+                      <Download className="size-4" aria-hidden /> {t("courseEdit.certificateGuide.downloadSample")}
+                    </a>
+                  </div>
+                </div>
+              </section>
+
+              {/* Card 2: Open Campus On-chain Credential */}
+              {id && canManageCourseOcb && (
+                <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
+                  <CourseOcbCredentialSection
+                    courseId={id}
+                    courseSlug={(form.slug || course.slug || "").trim()}
+                    canEdit={canManageCourseOcb}
+                    hasCertificate={form.has_certificate ?? false}
+                    onActiveChange={setOcbIsActive}
+                  />
+                </section>
+              )}
+            </div>
           )}
 
           {activeSection === "announcements" && canAccessAnnouncements && (

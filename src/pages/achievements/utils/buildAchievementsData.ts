@@ -23,7 +23,7 @@ export function buildCredentialId(prefix: string, seed: string): string {
   return `${prefix}-${seed.slice(0, 8).toUpperCase()}`;
 }
 
-function ocidWithEduSuffix(ocid: string | null | undefined): string | undefined {
+export function ocidWithEduSuffix(ocid: string | null | undefined): string | undefined {
   if (!ocid?.trim()) return undefined;
   const s = ocid.trim();
   return s.endsWith(".edu") ? s : `${s}.edu`;

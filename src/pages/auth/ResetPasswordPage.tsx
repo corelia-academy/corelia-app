@@ -13,7 +13,6 @@ import { useTranslation } from "react-i18next";
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation("auth");
-  const { t: tAuth } = useTranslation("auth");
   const navigate = useNavigate();
   const setPasswordRecovery = useAuthStore((s) => s.setPasswordRecovery);
   const user = useAuthStore((s) => s.user);
@@ -46,7 +45,7 @@ export default function ResetPasswordPage() {
       setTimeout(() => void navigate("/", { replace: true }), 2000);
     } catch (err) {
       const info = getAuthErrorInfo(err, (key, opts) =>
-        String(tAuth(key as never, opts as never)),
+        String(t(key as never, opts as never)),
       );
       setError(info.message || t("resetPassword.errorGeneric"));
     } finally {

@@ -20,13 +20,7 @@ import type {
   ClaimStatus,
   ModalItem,
 } from "../types";
-import { buildCourseCertificates } from "../utils/buildAchievementsData";
-
-function ocidWithEduSuffix(ocid: string | null | undefined): string | undefined {
-  if (!ocid?.trim()) return undefined;
-  const s = ocid.trim();
-  return s.endsWith(".edu") ? s : `${s}.edu`;
-}
+import { buildCourseCertificates, ocidWithEduSuffix } from "../utils/buildAchievementsData";
 
 export function useAchievementsPage() {
   const { user, isAuthenticated, profile } = useAuth();

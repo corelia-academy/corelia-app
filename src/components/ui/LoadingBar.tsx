@@ -9,6 +9,7 @@ export function LoadingBar() {
 
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
+    let hideTimer: NodeJS.Timeout | undefined;
     let progressInterval: NodeJS.Timeout | undefined;
 
     if (isLoading) {
@@ -36,17 +37,16 @@ export function LoadingBar() {
       timer = setTimeout(() => {
         setFade(true);
 
-        const hideTimer = setTimeout(() => {
+        hideTimer = setTimeout(() => {
           setVisible(false);
           setProgress(0);
         }, 300);
-
-        return () => clearTimeout(hideTimer);
       }, 200);
     }
 
     return () => {
       if (timer) clearTimeout(timer);
+      if (hideTimer) clearTimeout(hideTimer);
       if (progressInterval) clearInterval(progressInterval);
     };
   }, [isLoading]);

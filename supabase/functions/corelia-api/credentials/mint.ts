@@ -254,6 +254,16 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
         ? String((ocResponseJson as { message?: unknown }).message)
         : text.slice(0, 500);
       const dup = /duplicate|already exists|unique/i.test(text + msg);
+      if (dup) {
+        // Try to extract the credential ID from the error response body — OC may
+        // return it even on a duplicate rejection.
+        const parsed = ocResponseJson as Record<string, unknown>;
+        ocCredentialId =
+          (parsed.credentialId && String(parsed.credentialId)) ||
+          (parsed.id && String(parsed.id)) ||
+          (parsed.credential_id && String(parsed.credential_id)) ||
+          null;
+      }
       await db.from("credential_issuances").update({
         status: dup ? "minted" : "failed",
         oc_response: ocResponseJson as Record<string, unknown>,

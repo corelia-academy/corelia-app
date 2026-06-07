@@ -41,6 +41,8 @@ export async function getLatestCourseCredentialTemplate(
   return data as CredentialTemplateRow | null;
 }
 
+export type CourseCredentialKind = "oca" | "ocb";
+
 export async function saveCourseCredentialTemplate(params: {
   courseId: string;
   courseSlug: string;
@@ -51,8 +53,10 @@ export async function saveCourseCredentialTemplate(params: {
   imageUrl: string;
   identifierPrefix: string;
   triggerRule: CourseCredentialTriggerRule;
+  credentialKind?: CourseCredentialKind;
 }): Promise<{ id: string }> {
   const prefix = params.identifierPrefix.trim() || `corelia:${params.courseSlug}`.slice(0, 40);
+  const kind = params.credentialKind ?? "ocb";
 
   const row = {
     scope_type: "course" as const,
@@ -62,9 +66,9 @@ export async function saveCourseCredentialTemplate(params: {
     name: params.name.trim(),
     description: params.description.trim(),
     image_url: params.imageUrl.trim(),
-    achievement_type: "Badge" as const,
+    achievement_type: (kind === "oca" ? "CertificateOfCompletion" : "Badge") as string,
     identifier_prefix: prefix,
-    collection_symbol: "ocbadge" as const,
+    collection_symbol: kind === "ocb" ? ("ocbadge" as const) : null,
     custom_metadata: {} as Record<string, unknown>,
     trigger_type: "auto" as const,
     trigger_rule: params.triggerRule as unknown as Record<string, unknown>,
