@@ -1,5 +1,7 @@
 import { Suspense, lazy, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { LoadingBar } from "@/components/ui/LoadingBar";
+import { useLoadingStore } from "@/stores/loadingStore";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
@@ -193,15 +195,27 @@ function ScrollToTop() {
 
 export default function App() {
   const { i18n } = useTranslation();
+  const profileLoading = useAuthStore((s) => s.profileLoading);
+  const startLoading = useLoadingStore((s) => s.startLoading);
+  const stopLoading = useLoadingStore((s) => s.stopLoading);
 
   useEffect(() => {
     document.documentElement.lang =
       i18n.resolvedLanguage ?? i18n.language ?? "vi";
   }, [i18n.resolvedLanguage, i18n.language]);
 
+  useEffect(() => {
+    if (profileLoading) {
+      startLoading("profile-loading");
+    } else {
+      stopLoading("profile-loading");
+    }
+  }, [profileLoading, startLoading, stopLoading]);
+
   return (
     <ErrorBoundary>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <LoadingBar />
       <Toaster />
       <AuthSync />
       <TooltipProvider>

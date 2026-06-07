@@ -131,6 +131,7 @@ import {
 } from "@/lib/lessonFormat";
 import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
+import { trackLoadingPromise } from "@/stores/loadingStore";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -1221,7 +1222,7 @@ const InstructorCourseEdit = () => {
     }
     setSaving(true);
     setError(null);
-    try {
+    const savePromise = (async () => {
       const sanitizedOutcomes = (contentForm.learning_outcomes ?? [])
         .map((item) => item.trim())
         .filter(Boolean)
@@ -1478,6 +1479,10 @@ const InstructorCourseEdit = () => {
           console.error("[co-instructor invite] refresh pending", err);
         }
       }
+    })();
+
+    try {
+      await trackLoadingPromise(savePromise, "save-course-info");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     } finally {
@@ -2498,7 +2503,7 @@ const InstructorCourseEdit = () => {
 
   const handleSaveSectionDetails = async () => {
     if (!id || !editingSection) return;
-    try {
+    const savePromise = (async () => {
       // Flush current dialog locale into draft map before saving
       sectionDraftRef.current.set(dialogSectionLocale, {
         title: editingSectionTitle,
@@ -2535,6 +2540,10 @@ const InstructorCourseEdit = () => {
         }
       }
       setEditingSection(null);
+    })();
+
+    try {
+      await trackLoadingPromise(savePromise, "save-section");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     }
@@ -3303,7 +3312,7 @@ const InstructorCourseEdit = () => {
 
   const handleSaveLessonDetails = async () => {
     if (!id || !editingLesson) return;
-    try {
+    const savePromise = (async () => {
       // Flush current dialog state into draft map
       lessonDraftRef.current.set(dialogLessonLocale, captureLessonDraftFromState());
 
@@ -3526,6 +3535,10 @@ const InstructorCourseEdit = () => {
         .then(setLessonLearnerCounts)
         .catch(() => {});
       setEditingLesson(null);
+    })();
+
+    try {
+      await trackLoadingPromise(savePromise, "save-lesson");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     }

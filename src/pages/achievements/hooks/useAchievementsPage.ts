@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import {
   fetchCourseIssuanceMapForUser,
@@ -35,6 +36,7 @@ export function useAchievementsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [ocidConnectOpen, setOcidConnectOpen] = useState(false);
   const { t } = useTranslation("common");
 
   const loadAchievements = useCallback(async () => {
@@ -106,6 +108,11 @@ export function useAchievementsPage() {
     const cert = certificates.find((c) => c.id === id);
     if (!cert?.courseId) return;
 
+    if (!profile?.ocid?.trim()) {
+      setOcidConnectOpen(true);
+      return;
+    }
+
     setClaiming(true);
     patchCert(id, { ocClaimStatus: "pending" });
 
@@ -130,14 +137,18 @@ export function useAchievementsPage() {
         });
       } else if (info?.status === "failed") {
         patchCert(id, { ocClaimStatus: "failed" });
+        toast.error(t("achievements.oc.modal.claimToast.error.failed"));
       } else if (info?.status === "pending") {
         patchCert(id, { ocClaimStatus: "pending" });
+        toast.info(t("achievements.oc.modal.claimToast.pending"));
       } else {
-        // No issuance — template not active or criteria not met
+        // No issuance record created — template not active or criteria not met
         patchCert(id, { ocClaimStatus: "unclaimed" });
+        toast.error(t("achievements.oc.modal.claimToast.error.notEligible"));
       }
-    } catch {
+    } catch (err) {
       patchCert(id, { ocClaimStatus: "failed" });
+      toast.error(err instanceof Error ? err.message : t("achievements.oc.modal.claimToast.error.failed"));
     } finally {
       setClaiming(false);
     }
@@ -153,5 +164,7 @@ export function useAchievementsPage() {
     claiming,
     openModal,
     handleClaim,
+    ocidConnectOpen,
+    setOcidConnectOpen,
   };
 }

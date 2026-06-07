@@ -687,6 +687,13 @@
           "issue": "Issue on Open Campus",
           "pending": "Đang xử lý trên blockchain..."
         },
+        "claimToast": {
+          "pending": "Credential đang được xử lý trên blockchain. Vui lòng kiểm tra lại sau.",
+          "error": {
+            "failed": "Không thể issue credential. Vui lòng thử lại.",
+            "notEligible": "Không thể issue credential. Hãy đảm bảo bạn đã hoàn thành khóa học và kết nối OCID."
+          }
+        },
         "claimedActions": {
           "downloadPdf": "Tải PDF",
           "share": "Chia sẻ"

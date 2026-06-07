@@ -687,6 +687,13 @@
           "issue": "Issue on Open Campus",
           "pending": "Processing on blockchain..."
         },
+        "claimToast": {
+          "pending": "Your credential is being processed on the blockchain. Please check back shortly.",
+          "error": {
+            "failed": "Failed to issue credential. Please try again.",
+            "notEligible": "Could not issue credential. Make sure you've completed the course and your OCID is connected."
+          }
+        },
         "claimedActions": {
           "downloadPdf": "Download PDF",
           "share": "Share"
