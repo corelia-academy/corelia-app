@@ -12,7 +12,7 @@ import {
   X,
   ZoomIn,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -47,47 +47,51 @@ function hexToRgb(hex: string): [number, number, number] {
   ];
 }
 
+/** Fetch image → blob URL (same-origin) → canvas-safe Image element.
+ *  Avoids CORS canvas taint that occurs with crossOrigin on Supabase Storage. */
+async function loadImageViaBlobUrl(src: string): Promise<{ img: HTMLImageElement; blobUrl: string }> {
+  const res = await fetch(src);
+  if (!res.ok) throw new Error(`Image fetch failed: HTTP ${res.status}`);
+  const blob = await res.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  const img = new Image();
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error("Failed to decode image"));
+    img.src = blobUrl;
+  });
+  return { img, blobUrl };
+}
+
 async function downloadCertificate(cert: CertificateItem): Promise<void> {
   const src = cert.imageUrl;
   if (!src || src === CERT_PLACEHOLDER) return;
 
-  // 1. Load template image → canvas → JPEG data URL (handles CORS)
+  // 1. Fetch image via blob URL to avoid canvas CORS taint
   const canvas = document.createElement("canvas");
   canvas.width = 1600;
   canvas.height = 1200;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const img = new Image();
-  img.crossOrigin = "anonymous";
-  await new Promise<void>((resolve, reject) => {
-    img.onload = () => resolve();
-    img.onerror = () => reject(new Error("Failed to load certificate image"));
-    img.src = src;
-  });
+  const { img, blobUrl } = await loadImageViaBlobUrl(src);
   ctx.drawImage(img, 0, 0, 1600, 1200);
+  URL.revokeObjectURL(blobUrl);
   const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
 
-  // 2. Create PDF — image as background, then render name as vector text
+  // 2. Create PDF — image as background, name rendered as vector text
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-
-  // Background image (no name baked in — text is added as PDF vector below)
   doc.addImage(dataUrl, "JPEG", 0, 0, PDF_W_MM, PDF_H_MM);
 
-  // 3. Overlay name as crisp vector PDF text
   if (cert.holderName?.trim()) {
     const xMm = ((cert.nameXPercent ?? 50) / 100) * PDF_W_MM;
     const yMm = ((cert.nameYPercent ?? 50) / 100) * PDF_H_MM;
     const [r, g, b] = hexToRgb(cert.nameColor ?? "#000000");
-
     doc.setFont("times", "bolditalic");
     doc.setFontSize(42);
     doc.setTextColor(r, g, b);
-    doc.text(cert.holderName.trim(), xMm, yMm, {
-      align: "center",
-      baseline: "middle",
-    });
+    doc.text(cert.holderName.trim(), xMm, yMm, { align: "center", baseline: "middle" });
   }
 
   const filename = `${cert.course.replace(/[^a-z0-9]/gi, "-")}-certificate.pdf`;
@@ -104,14 +108,9 @@ async function downloadCertificatePng(cert: CertificateItem): Promise<void> {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const img = new Image();
-  img.crossOrigin = "anonymous";
-  await new Promise<void>((resolve, reject) => {
-    img.onload = () => resolve();
-    img.onerror = () => reject(new Error("Failed to load certificate image"));
-    img.src = src;
-  });
+  const { img, blobUrl } = await loadImageViaBlobUrl(src);
   ctx.drawImage(img, 0, 0, 1600, 1200);
+  URL.revokeObjectURL(blobUrl);
 
   if (cert.holderName?.trim()) {
     const x = ((cert.nameXPercent ?? 50) / 100) * 1600;
@@ -150,8 +149,56 @@ function CertificatePreviewDialog({
 }) {
   const { t } = useTranslation("common");
   const [downloading, setDownloading] = useState(false);
+  const [renderedUrl, setRenderedUrl] = useState<string | null>(null);
+  const renderedUrlRef = useRef<string | null>(null);
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   const hasTemplate = imageUrl !== CERT_PLACEHOLDER;
+
+  // When dialog opens, render template + name onto canvas → blob URL
+  // so right-click "Open in New Tab" shows the full certificate with name.
+  useEffect(() => {
+    if (!open || !hasTemplate) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 1600;
+        canvas.height = 1200;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        const { img, blobUrl: tmpBlob } = await loadImageViaBlobUrl(imageUrl);
+        ctx.drawImage(img, 0, 0, 1600, 1200);
+        URL.revokeObjectURL(tmpBlob);
+        if (cert.holderName?.trim()) {
+          const x = ((cert.nameXPercent ?? 50) / 100) * 1600;
+          const y = ((cert.nameYPercent ?? 50) / 100) * 1200;
+          const [r, g, b] = hexToRgb(cert.nameColor ?? "#000000");
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
+          ctx.font = "bold 80px 'Times New Roman', Times, serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(cert.holderName.trim(), x, y);
+        }
+        const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/png"));
+        if (!blob || cancelled) return;
+        const url = URL.createObjectURL(blob);
+        renderedUrlRef.current = url;
+        setRenderedUrl(url);
+      } catch {
+        // Fallback to raw template — CSS overlay still shows the name
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (renderedUrlRef.current) {
+        URL.revokeObjectURL(renderedUrlRef.current);
+        renderedUrlRef.current = null;
+        setRenderedUrl(null);
+      }
+    };
+  }, [open, imageUrl, cert.holderName, cert.nameXPercent, cert.nameYPercent, cert.nameColor, hasTemplate]);
 
   async function handleDownload(format: "pdf" | "png") {
     setDownloading(true);
@@ -214,17 +261,18 @@ function CertificatePreviewDialog({
           </div>
         </div>
 
-        {/* Certificate image */}
+        {/* Certificate image — rendered URL has name baked in so right-click works */}
         <div
           className="relative w-full bg-surface-raised"
           style={{ aspectRatio: "4/3" }}
         >
           <img
-            src={imageUrl}
+            src={renderedUrl ?? imageUrl}
             alt={cert.course}
             className="size-full object-contain"
           />
-          {cert.holderName && hasTemplate && (
+          {/* CSS overlay only shown while canvas render is in progress (renderedUrl not ready yet) */}
+          {!renderedUrl && cert.holderName && hasTemplate && (
             <span
               className="pointer-events-none absolute max-w-[70%] text-center font-bold leading-tight"
               style={{
