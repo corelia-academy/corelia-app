@@ -11,6 +11,12 @@ export type CertificateItem = {
   credentialId: string;
   /** Ảnh chứng chỉ (placeholder nếu chưa có) */
   imageUrl?: string;
+  /** Vị trí tên học viên trên certificate (% từ trái, mặc định 50) */
+  nameXPercent?: number;
+  /** Vị trí tên học viên trên certificate (% từ trên, mặc định 50) */
+  nameYPercent?: number;
+  /** Tên học viên để overlay lên certificate */
+  holderName?: string | null;
   // OpenCampus
   ocClaimStatus: ClaimStatus;
   ocCredentialId?: string | null;

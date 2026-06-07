@@ -35,12 +35,28 @@ export function CertificateCard({
         )}
       />
 
-      <div className="relative h-32 w-full shrink-0 overflow-hidden bg-surface-raised sm:h-36">
+      {/* Certificate preview — fixed 4:3 aspect ratio with name overlay */}
+      <div className="relative w-full shrink-0 overflow-hidden bg-surface-raised" style={{ aspectRatio: "4/3" }}>
         <img
           src={imageUrl}
           alt=""
           className="size-full object-cover transition-opacity duration-200 group-hover:opacity-95"
         />
+        {cert.holderName && imageUrl !== CERT_PLACEHOLDER && (
+          <span
+            className="pointer-events-none absolute max-w-[70%] truncate text-center text-[clamp(0.55rem,1.8cqw,0.85rem)] font-semibold leading-tight"
+            style={{
+              left: `${cert.nameXPercent ?? 50}%`,
+              top: `${cert.nameYPercent ?? 50}%`,
+              transform: "translate(-50%, -50%)",
+              color: "inherit",
+              textShadow: "0 0 6px rgba(255,255,255,0.9), 0 0 2px rgba(255,255,255,0.6)",
+              mixBlendMode: "multiply",
+            }}
+          >
+            {cert.holderName}
+          </span>
+        )}
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-6">

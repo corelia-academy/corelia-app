@@ -65,6 +65,7 @@ export function useAchievementsPage() {
         },
         courseIssuanceMap,
         profile?.ocid,
+        profile?.full_name,
       ).sort((a, b) => {
         const aDate = a.issuedAt.split("/").reverse().join("-");
         const bDate = b.issuedAt.split("/").reverse().join("-");

@@ -39,6 +39,7 @@ export function buildCourseCertificates(
   },
   courseIssuanceMap?: Map<string, CourseIssuanceInfo>,
   holderOcid?: string | null,
+  holderName?: string | null,
 ): CertificateItem[] {
   return enrollments
     .filter((item) => !!item.certificate_issued_at)
@@ -66,6 +67,9 @@ export function buildCourseCertificates(
         type: pickCertificateType(course?.owner_type),
         credentialId: ocCredentialId ?? buildCredentialId("COURSE", item.id),
         imageUrl: course?.certificate_template_url || CERT_PLACEHOLDER,
+        nameXPercent: course?.certificate_name_x_percent ?? 50,
+        nameYPercent: course?.certificate_name_y_percent ?? 50,
+        holderName: holderName || null,
         ocClaimStatus,
         ocCredentialId,
         ocCredentialUrl,
