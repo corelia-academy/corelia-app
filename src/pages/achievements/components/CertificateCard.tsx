@@ -182,19 +182,15 @@ function CertificatePreviewDialog({
           <div className="flex items-center gap-2 shrink-0">
             {hasTemplate && (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={downloading}
-                    className="gap-2"
-                  >
-                    {downloading
-                      ? <Loader2 className="size-3.5 animate-spin" aria-hidden />
-                      : <Download className="size-3.5" aria-hidden />}
-                    {t("actions.download")}
-                    <ChevronDown className="size-3.5" aria-hidden />
-                  </Button>
+                <DropdownMenuTrigger
+                  disabled={downloading}
+                  className="inline-flex items-center gap-2 rounded-md border border-border bg-surface-base px-3 py-1.5 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-surface-raised disabled:opacity-50"
+                >
+                  {downloading
+                    ? <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                    : <Download className="size-3.5" aria-hidden />}
+                  {t("actions.download")}
+                  <ChevronDown className="size-3.5" aria-hidden />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => void handleDownload("pdf")} className="gap-2">
@@ -417,17 +413,27 @@ export function CertificateCard({
                   : t("achievements.certificates.ocAction.claim")}
               </span>
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              title={t("actions.download")}
-              disabled={!hasTemplate || downloading}
-              onClick={() => void handleDownload()}
-            >
-              {downloading
-                ? <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
-                : <Download className="size-4 shrink-0" aria-hidden />}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                disabled={!hasTemplate || downloading}
+                className="inline-flex size-9 items-center justify-center rounded-md text-foreground-muted transition-colors hover:bg-surface-raised hover:text-foreground disabled:opacity-40"
+                title={t("actions.download")}
+              >
+                {downloading
+                  ? <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+                  : <Download className="size-4 shrink-0" aria-hidden />}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => void handleDownload("pdf")} className="gap-2">
+                  <FileText className="size-4 shrink-0 text-foreground-muted" aria-hidden />
+                  {t("achievements.certificates.downloadPdf")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => void handleDownload("png")} className="gap-2">
+                  <FileImage className="size-4 shrink-0 text-foreground-muted" aria-hidden />
+                  {t("achievements.certificates.downloadPng")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

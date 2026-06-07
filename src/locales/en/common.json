@@ -624,7 +624,9 @@
         "claim": "Claim OC credential"
       },
       "viewLarge": "View certificate",
-      "downloadError": "Could not generate certificate image. Please try again.",
+      "downloadPdf": "Download as PDF",
+      "downloadPng": "Download as PNG",
+      "downloadError": "Could not generate certificate. Please try again.",
       "noTemplate": "No certificate template has been uploaded for this course yet.",
       "downloadTooltip": "Download"
     },

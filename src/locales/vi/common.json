@@ -624,7 +624,9 @@
         "claim": "Claim OC credential"
       },
       "viewLarge": "Xem chứng nhận",
-      "downloadError": "Không thể tạo ảnh chứng nhận. Vui lòng thử lại.",
+      "downloadPdf": "Tải về dạng PDF",
+      "downloadPng": "Tải về dạng PNG",
+      "downloadError": "Không thể tạo chứng nhận. Vui lòng thử lại.",
       "noTemplate": "Khoá học này chưa có template chứng nhận.",
       "downloadTooltip": "Tải xuống"
     },
