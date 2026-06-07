@@ -63,7 +63,7 @@ export function CourseOcbCredentialSection({
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(true);
   const [credentialKind, setCredentialKind] = useState<CourseCredentialKind>("oca");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -79,8 +79,8 @@ export function CourseOcbCredentialSection({
       const row = await getLatestCourseCredentialTemplate(courseId);
       if (!row) {
         setTemplateId(null);
-        setIsActive(false);
-        onActiveChange?.(false);
+        setIsActive(true);
+        onActiveChange?.(true);
         setCredentialKind("oca");
         setName("");
         setDescription("");
@@ -148,7 +148,7 @@ export function CourseOcbCredentialSection({
         courseId,
         courseSlug,
         templateId,
-        isActive,
+        isActive: credentialKind === "oca" ? true : isActive,
         name: name.trim() || courseSlug,
         description: description.trim() || name.trim() || courseSlug,
         imageUrl: credentialKind === "oca"
@@ -212,7 +212,13 @@ export function CourseOcbCredentialSection({
                 value={opt.value}
                 checked={credentialKind === opt.value}
                 disabled={!canEdit}
-                onChange={() => setCredentialKind(opt.value)}
+                onChange={() => {
+                  setCredentialKind(opt.value);
+                  if (opt.value === "oca") {
+                    setIsActive(true);
+                    onActiveChange?.(true);
+                  }
+                }}
                 className="mt-0.5 accent-primary"
               />
               <div>
@@ -229,23 +235,25 @@ export function CourseOcbCredentialSection({
         )}
       </div>
 
-      {/* Enable toggle */}
-      <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border-subtle bg-surface-raised p-4">
-        <input
-          type="checkbox"
-          checked={isActive}
-          disabled={!canEdit || isOcbBlockedByHasCert}
-          onChange={(e) => {
-            setIsActive(e.target.checked);
-            onActiveChange?.(e.target.checked);
-          }}
-          className="size-4 accent-primary rounded border-border"
-        />
-        <div>
-          <p className="text-sm font-medium text-foreground">{t("courseEdit.ocb.enableLabel")}</p>
-          <p className="text-xs text-foreground-muted">{t("courseEdit.ocb.enableHint")}</p>
-        </div>
-      </label>
+      {/* Enable toggle — OCB only (OCB is auto-minted; OCA is always claimable once saved) */}
+      {credentialKind === "ocb" && (
+        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border-subtle bg-surface-raised p-4">
+          <input
+            type="checkbox"
+            checked={isActive}
+            disabled={!canEdit || isOcbBlockedByHasCert}
+            onChange={(e) => {
+              setIsActive(e.target.checked);
+              onActiveChange?.(e.target.checked);
+            }}
+            className="size-4 accent-primary rounded border-border"
+          />
+          <div>
+            <p className="text-sm font-medium text-foreground">{t("courseEdit.ocb.enableLabel")}</p>
+            <p className="text-xs text-foreground-muted">{t("courseEdit.ocb.enableHint")}</p>
+          </div>
+        </label>
+      )}
 
       {/* Config fields — always visible */}
       <div className="space-y-4 rounded-xl border border-border-subtle bg-surface-raised p-4 sm:p-5">

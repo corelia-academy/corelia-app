@@ -597,7 +597,7 @@
     },
     "ocb": {
       "title": "Open Campus On-chain Credential",
-      "subtitle": "Issue a verifiable on-chain credential to learners who meet the requirements. Learners claim it from their Achievements page.",
+      "subtitle": "Learners who meet the requirements can claim their own verifiable on-chain credential from the Achievements page. They review their name and OCID before minting — nothing is issued automatically.",
       "loading": "Loading credential configuration…",
       "loadFailed": "Could not load credential configuration.",
       "statusActive": "Active",
@@ -613,8 +613,8 @@
           "desc": "A skill badge credential. Ideal for shorter achievements and topic mastery."
         }
       },
-      "enableLabel": "Issue credential automatically when requirements are met",
-      "enableHint": "When active, learners can claim their credential from the Achievements page after completing the course.",
+      "enableLabel": "Enable auto-minting for this course",
+      "enableHint": "When active, badges are automatically minted to learners who meet the requirements.",
       "configTitle": "Credential details",
       "requirementsTitle": "Eligibility requirements",
       "blockedByCertificate": "OCB cannot be enabled when this course already issues a downloadable PDF certificate. Switch to OCA type, or disable the PDF certificate first.",

@@ -596,7 +596,7 @@
     },
     "ocb": {
       "title": "Open Campus Credential (On-chain)",
-      "subtitle": "Cấp credential on-chain cho học viên đạt điều kiện. Học viên tự claim từ trang Thành tích sau khi hoàn thành khoá học.",
+      "subtitle": "Học viên đạt điều kiện tự vào trang Thành tích để claim credential on-chain. Họ sẽ xác nhận tên và OCID trước khi mint — không có gì được tự động phát hành.",
       "loading": "Đang tải cấu hình credential…",
       "loadFailed": "Không tải được cấu hình credential.",
       "statusActive": "Đang hoạt động",
@@ -612,8 +612,8 @@
           "desc": "Credential dạng huy hiệu kỹ năng. Phù hợp cho các thành tích ngắn hạn và thành thạo chủ đề."
         }
       },
-      "enableLabel": "Tự động cấp credential khi học viên đạt điều kiện",
-      "enableHint": "Khi bật, học viên có thể claim credential từ trang Thành tích sau khi hoàn thành khoá học.",
+      "enableLabel": "Bật tự động cấp badge (OCB)",
+      "enableHint": "Khi bật, badge được tự động mint cho học viên đạt đủ điều kiện.",
       "configTitle": "Thông tin credential",
       "requirementsTitle": "Điều kiện nhận credential",
       "blockedByCertificate": "OCB không thể bật khi khoá học đã cấp chứng nhận PDF. Hãy chọn loại OCA, hoặc tắt chứng nhận PDF trước.",
