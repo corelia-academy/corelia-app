@@ -22,16 +22,27 @@ import type { CertificateItem, ModalItem } from "../types";
 import { OcClaimBadge } from "./OcClaimBadge";
 
 // ── PDF download helper ─────────────────────────────────────────────────────
-// Certificate dimensions: 1600×1200 px = 4:3 landscape
-// Map to A4 landscape (297×210 mm) for standard printing
+// A4 landscape: 297 × 210 mm
 const PDF_W_MM = 297;
 const PDF_H_MM = 210;
+
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  const full = h.length === 3
+    ? h.split("").map((c) => c + c).join("")
+    : h.padEnd(6, "0");
+  return [
+    parseInt(full.slice(0, 2), 16),
+    parseInt(full.slice(2, 4), 16),
+    parseInt(full.slice(4, 6), 16),
+  ];
+}
 
 async function downloadCertificate(cert: CertificateItem): Promise<void> {
   const src = cert.imageUrl;
   if (!src || src === CERT_PLACEHOLDER) return;
 
-  // 1. Load template image onto a canvas to get a data URL (handles CORS)
+  // 1. Load template image → canvas → JPEG data URL (handles CORS)
   const canvas = document.createElement("canvas");
   canvas.width = 1600;
   canvas.height = 1200;
@@ -46,24 +57,29 @@ async function downloadCertificate(cert: CertificateItem): Promise<void> {
     img.src = src;
   });
   ctx.drawImage(img, 0, 0, 1600, 1200);
-
-  // 2. Overlay name on canvas so the PDF image already contains it
-  if (cert.holderName?.trim()) {
-    const x = ((cert.nameXPercent ?? 50) / 100) * 1600;
-    const y = ((cert.nameYPercent ?? 50) / 100) * 1200;
-    ctx.fillStyle = cert.nameColor ?? "#000000";
-    ctx.font = "bold 40px serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(cert.holderName.trim(), x, y);
-  }
-
   const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
 
-  // 3. Create PDF (lazy-load jsPDF so it doesn't bloat the initial bundle)
+  // 2. Create PDF — image as background, then render name as vector text
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+  // Background image (no name baked in — text is added as PDF vector below)
   doc.addImage(dataUrl, "JPEG", 0, 0, PDF_W_MM, PDF_H_MM);
+
+  // 3. Overlay name as crisp vector PDF text
+  if (cert.holderName?.trim()) {
+    const xMm = ((cert.nameXPercent ?? 50) / 100) * PDF_W_MM;
+    const yMm = ((cert.nameYPercent ?? 50) / 100) * PDF_H_MM;
+    const [r, g, b] = hexToRgb(cert.nameColor ?? "#000000");
+
+    doc.setFont("times", "bolditalic");
+    doc.setFontSize(30);
+    doc.setTextColor(r, g, b);
+    doc.text(cert.holderName.trim(), xMm, yMm, {
+      align: "center",
+      baseline: "middle",
+    });
+  }
 
   const filename = `${cert.course.replace(/[^a-z0-9]/gi, "-")}-certificate.pdf`;
   doc.save(filename);
