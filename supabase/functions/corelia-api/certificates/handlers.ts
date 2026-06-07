@@ -2,6 +2,9 @@ import { isAuthFailure, canManageCourse } from "../lib/authz.ts";
 import { json, nowIso } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { runCourseCredentialCheck } from "../credentials/check_course.ts";
+import { getAppBaseUrl } from "../credentials/settings.ts";
+import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
+import { buildCertificateIssuedEmail } from "./certificate_emails.ts";
 
 export async function handleIssueCertificate(req: Request, db: SupabaseClient): Promise<Response> {
   try {
@@ -29,6 +32,8 @@ export async function handleIssueCertificate(req: Request, db: SupabaseClient): 
       access_model?: string | null;
       final_assignment_title?: string | null;
       has_certificate?: boolean;
+      title?: string | null;
+      certificate_template_url?: string | null;
     };
     if (!course.has_certificate) return json({ issued: false });
     if (enrollment.certificate_issued_at) {
@@ -62,6 +67,33 @@ export async function handleIssueCertificate(req: Request, db: SupabaseClient): 
       enrollmentId,
     );
     if (upErr) throw new Error(upErr.message);
+
+    // Send congratulatory email (non-fatal).
+    try {
+      const [{ data: authUser }, { data: profileRow }, baseUrl] = await Promise.all([
+        db.auth.admin.getUserById(targetUserId),
+        db.from("profiles").select("full_name, username").eq("id", targetUserId).maybeSingle(),
+        getAppBaseUrl(db),
+      ]);
+      const email = (authUser?.user?.email ?? "").trim();
+      const courseTitle = (course.title ?? "").trim();
+      const locale = (authUser?.user?.user_metadata?.locale as string | undefined) ?? "vi";
+      const profilePath = profileRow?.username
+        ? `/u/${encodeURIComponent(String(profileRow.username))}`
+        : `/account`;
+      const profileUrl = `${baseUrl}${profilePath}`;
+      if (email && courseTitle) {
+        const { subject, html } = buildCertificateIssuedEmail({
+          courseTitle,
+          certImageUrl: course.certificate_template_url ?? null,
+          profileUrl,
+          locale,
+        });
+        await sendTransactionalEmailViaResend({ to: [email], subject, html });
+      }
+    } catch (mailErr) {
+      console.error("[corelia-api] certificate → email failed (non-fatal)", mailErr);
+    }
 
     // Auto-mint OC credential if there's an active credential_template for this course.
     // Non-fatal: OC mint failure must never block certificate issuance.

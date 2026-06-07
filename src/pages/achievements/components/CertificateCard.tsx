@@ -82,7 +82,7 @@ async function downloadCertificate(cert: CertificateItem): Promise<void> {
     const [r, g, b] = hexToRgb(cert.nameColor ?? "#000000");
 
     doc.setFont("times", "bolditalic");
-    doc.setFontSize(30);
+    doc.setFontSize(42);
     doc.setTextColor(r, g, b);
     doc.text(cert.holderName.trim(), xMm, yMm, {
       align: "center",
@@ -118,7 +118,7 @@ async function downloadCertificatePng(cert: CertificateItem): Promise<void> {
     const y = ((cert.nameYPercent ?? 50) / 100) * 1200;
     const [r, g, b] = hexToRgb(cert.nameColor ?? "#000000");
     ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.font = "bold 40px 'Times New Roman', Times, serif";
+    ctx.font = "bold 80px 'Times New Roman', Times, serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(cert.holderName.trim(), x, y);
