@@ -378,6 +378,7 @@ const InstructorCourseEdit = () => {
     certificate_template_path: "",
     certificate_name_x_percent: 50,
     certificate_name_y_percent: 50,
+    certificate_name_color: "#000000",
     access_model: "free" as CourseAccessModel,
     price_vnd: "",
     promo_price_vnd: "",
@@ -900,6 +901,7 @@ const InstructorCourseEdit = () => {
         certificate_template_path: course.certificate_template_path ?? "",
         certificate_name_x_percent: course.certificate_name_x_percent ?? 50,
         certificate_name_y_percent: course.certificate_name_y_percent ?? 50,
+        certificate_name_color: course.certificate_name_color ?? "#000000",
         access_model: course.access_model ?? "free",
         price_vnd:
           course.price_vnd && course.price_vnd > 0
@@ -1331,6 +1333,7 @@ const InstructorCourseEdit = () => {
         certificate_template_path: form.certificate_template_path || null,
         certificate_name_x_percent: form.certificate_name_x_percent,
         certificate_name_y_percent: form.certificate_name_y_percent,
+        certificate_name_color: form.certificate_name_color || "#000000",
         access_model: form.access_model,
         price_vnd:
           form.access_model === "paid_upfront"
@@ -8568,6 +8571,24 @@ const InstructorCourseEdit = () => {
                           }));
                       }}
                     />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.nameColorLabel")}</FieldLabel>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={form.certificate_name_color ?? "#000000"}
+                        disabled={!canEdit}
+                        onChange={(e) =>
+                          setForm((p) => ({ ...p, certificate_name_color: e.target.value }))
+                        }
+                        className="size-9 cursor-pointer rounded border border-border-subtle bg-surface-base p-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                      />
+                      <span className="font-mono text-sm text-foreground-muted">
+                        {form.certificate_name_color ?? "#000000"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.certificate.nameColorHint")}</p>
                   </Field>
                   <Button
                     onClick={() =>

@@ -17,6 +17,8 @@ export type CertificateItem = {
   nameYPercent?: number;
   /** Tên học viên để overlay lên certificate */
   holderName?: string | null;
+  /** Màu chữ tên học viên overlay (hex, mặc định "#000000") */
+  nameColor?: string | null;
   // OpenCampus
   ocClaimStatus: ClaimStatus;
   ocCredentialId?: string | null;

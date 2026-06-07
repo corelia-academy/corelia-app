@@ -584,6 +584,8 @@
       "viewCurrentTemplate": "Xem template hiện tại",
       "nameXLabel": "Vị trí tên học viên ( % từ trái )",
       "nameYLabel": "Vị trí tên học viên ( % từ trên )",
+      "nameColorLabel": "Màu chữ tên học viên",
+      "nameColorHint": "Màu của tên học viên hiển thị trên certificate.",
       "afterUploadHintPrefix": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" ( % từ trái / % từ",
       "fileFormatHint": "Định dạng: PNG hoặc JPG."
     },

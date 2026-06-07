@@ -147,6 +147,8 @@ export interface Course {
   certificate_name_x_percent?: number;
   /** Vị trí tên học viên trên template: % từ trên (0–100) */
   certificate_name_y_percent?: number;
+  /** Màu chữ tên học viên trên template (hex, mặc định "#000000") */
+  certificate_name_color?: string;
   /** Mô hình truy cập khoá học */
   access_model?: CourseAccessModel;
   /** Khoá học có hỗ trợ cấp chứng nhận hoàn thành */
@@ -372,6 +374,7 @@ export interface CourseUpdate {
   certificate_template_path?: string | null;
   certificate_name_x_percent?: number | null;
   certificate_name_y_percent?: number | null;
+  certificate_name_color?: string | null;
   access_model?: CourseAccessModel;
   has_certificate?: boolean;
   is_updating?: boolean;

@@ -585,6 +585,8 @@
       "viewCurrentTemplate": "View current template",
       "nameXLabel": "Learner name position (% from left)",
       "nameYLabel": "Learner name position (% from top)",
+      "nameColorLabel": "Name text color",
+      "nameColorHint": "Color of the learner's name overlaid on the certificate.",
       "afterUploadHintPrefix": "After uploading, adjust the two \"Name position\" fields (% from left / % from",
       "fileFormatHint": "Format: PNG or JPG."
     },

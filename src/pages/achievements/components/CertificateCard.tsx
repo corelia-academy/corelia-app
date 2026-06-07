@@ -35,29 +35,34 @@ export function CertificateCard({
         )}
       />
 
-      {/* Certificate preview — fixed 4:3 aspect ratio with name overlay */}
-      <div className="relative w-full shrink-0 overflow-hidden bg-surface-raised" style={{ aspectRatio: "4/3" }}>
+      {/* Certificate preview — 4:3, name overlay, click to open modal */}
+      <button
+        type="button"
+        className="relative w-full shrink-0 overflow-hidden bg-surface-raised cursor-pointer"
+        style={{ aspectRatio: "4/3" }}
+        onClick={() => onOpenModal({ kind: "cert", data: cert })}
+        aria-label={cert.course}
+      >
         <img
           src={imageUrl}
           alt=""
-          className="size-full object-cover transition-opacity duration-200 group-hover:opacity-95"
+          className="size-full object-cover transition-opacity duration-200 group-hover:opacity-90"
         />
         {cert.holderName && imageUrl !== CERT_PLACEHOLDER && (
           <span
-            className="pointer-events-none absolute max-w-[70%] truncate text-center text-[clamp(0.55rem,1.8cqw,0.85rem)] font-semibold leading-tight"
+            className="pointer-events-none absolute max-w-[70%] truncate text-center font-semibold leading-tight"
             style={{
+              fontSize: "clamp(0.55rem, 1.8cqw, 0.85rem)",
               left: `${cert.nameXPercent ?? 50}%`,
               top: `${cert.nameYPercent ?? 50}%`,
               transform: "translate(-50%, -50%)",
-              color: "inherit",
-              textShadow: "0 0 6px rgba(255,255,255,0.9), 0 0 2px rgba(255,255,255,0.6)",
-              mixBlendMode: "multiply",
+              color: cert.nameColor ?? "#000000",
             }}
           >
             {cert.holderName}
           </span>
         )}
-      </div>
+      </button>
 
       <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-6">
         <div className="flex items-start justify-between gap-2">

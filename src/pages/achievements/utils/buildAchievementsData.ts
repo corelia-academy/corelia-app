@@ -69,6 +69,7 @@ export function buildCourseCertificates(
         imageUrl: course?.certificate_template_url || CERT_PLACEHOLDER,
         nameXPercent: course?.certificate_name_x_percent ?? 50,
         nameYPercent: course?.certificate_name_y_percent ?? 50,
+        nameColor: course?.certificate_name_color ?? "#000000",
         holderName: holderName || null,
         ocClaimStatus,
         ocCredentialId,
