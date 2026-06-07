@@ -3,7 +3,10 @@ import {
   BadgeCheck,
   Calendar,
   CheckCircle2,
+  ChevronDown,
   Download,
+  FileImage,
+  FileText,
   GraduationCap,
   Loader2,
   X,
@@ -15,6 +18,12 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 import { CERT_PLACEHOLDER } from "../constants";
@@ -85,6 +94,50 @@ async function downloadCertificate(cert: CertificateItem): Promise<void> {
   doc.save(filename);
 }
 
+async function downloadCertificatePng(cert: CertificateItem): Promise<void> {
+  const src = cert.imageUrl;
+  if (!src || src === CERT_PLACEHOLDER) return;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 1600;
+  canvas.height = 1200;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error("Failed to load certificate image"));
+    img.src = src;
+  });
+  ctx.drawImage(img, 0, 0, 1600, 1200);
+
+  if (cert.holderName?.trim()) {
+    const x = ((cert.nameXPercent ?? 50) / 100) * 1600;
+    const y = ((cert.nameYPercent ?? 50) / 100) * 1200;
+    const [r, g, b] = hexToRgb(cert.nameColor ?? "#000000");
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.font = "bold 40px 'Times New Roman', Times, serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(cert.holderName.trim(), x, y);
+  }
+
+  await new Promise<void>((resolve) => {
+    canvas.toBlob((blob) => {
+      if (!blob) { resolve(); return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${cert.course.replace(/[^a-z0-9]/gi, "-")}-certificate.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+      resolve();
+    }, "image/png");
+  });
+}
+
 // ── Certificate lightbox ────────────────────────────────────────────────────
 function CertificatePreviewDialog({
   cert,
@@ -100,10 +153,11 @@ function CertificatePreviewDialog({
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   const hasTemplate = imageUrl !== CERT_PLACEHOLDER;
 
-  async function handleDownload() {
+  async function handleDownload(format: "pdf" | "png") {
     setDownloading(true);
     try {
-      await downloadCertificate(cert);
+      if (format === "pdf") await downloadCertificate(cert);
+      else await downloadCertificatePng(cert);
     } catch {
       toast.error(t("achievements.certificates.downloadError"));
     } finally {
@@ -113,7 +167,10 @@ function CertificatePreviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl w-full p-0 overflow-hidden rounded-2xl border-border-subtle bg-surface-base">
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-3xl w-full p-0 overflow-hidden rounded-2xl border-border-subtle bg-surface-base"
+      >
         {/* Header */}
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border-subtle">
           <div className="min-w-0">
@@ -124,18 +181,32 @@ function CertificatePreviewDialog({
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {hasTemplate && (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={downloading}
-                onClick={() => void handleDownload()}
-                className="gap-2"
-              >
-                {downloading
-                  ? <Loader2 className="size-3.5 animate-spin" aria-hidden />
-                  : <Download className="size-3.5" aria-hidden />}
-                {t("actions.download")}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={downloading}
+                    className="gap-2"
+                  >
+                    {downloading
+                      ? <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                      : <Download className="size-3.5" aria-hidden />}
+                    {t("actions.download")}
+                    <ChevronDown className="size-3.5" aria-hidden />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => void handleDownload("pdf")} className="gap-2">
+                    <FileText className="size-4 shrink-0 text-foreground-muted" aria-hidden />
+                    {t("achievements.certificates.downloadPdf")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => void handleDownload("png")} className="gap-2">
+                    <FileImage className="size-4 shrink-0 text-foreground-muted" aria-hidden />
+                    {t("achievements.certificates.downloadPng")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             <button
               onClick={() => onOpenChange(false)}
@@ -198,10 +269,11 @@ export function CertificateCard({
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   const hasTemplate = imageUrl !== CERT_PLACEHOLDER;
 
-  async function handleDownload() {
+  async function handleDownload(format: "pdf" | "png") {
     setDownloading(true);
     try {
-      await downloadCertificate(cert);
+      if (format === "pdf") await downloadCertificate(cert);
+      else await downloadCertificatePng(cert);
     } catch {
       toast.error(t("achievements.certificates.downloadError"));
     } finally {
