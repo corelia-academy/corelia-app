@@ -623,6 +623,9 @@
         "view": "Xem OC credential",
         "claim": "Claim OC credential"
       },
+      "viewLarge": "Xem chứng nhận",
+      "downloadError": "Không thể tạo ảnh chứng nhận. Vui lòng thử lại.",
+      "noTemplate": "Khoá học này chưa có template chứng nhận.",
       "downloadTooltip": "Tải xuống"
     },
     "badges": {
