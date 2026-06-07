@@ -212,8 +212,8 @@ export function CourseOcbCredentialSection({
                 className="mt-0.5 accent-primary"
               />
               <div>
-                <p className="text-sm font-medium text-foreground">{t(opt.labelKey)}</p>
-                <p className="mt-0.5 text-xs text-foreground-muted">{t(opt.descKey)}</p>
+                <p className="text-sm font-medium text-foreground">{t(opt.labelKey as never)}</p>
+                <p className="mt-0.5 text-xs text-foreground-muted">{t(opt.descKey as never)}</p>
               </div>
             </label>
           ))}
