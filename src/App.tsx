@@ -10,6 +10,7 @@ import {
   Route,
   Routes,
   useLocation,
+  useNavigate,
 } from "react-router";
 import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
@@ -18,6 +19,7 @@ import { RequireRole } from "@/components/auth/RequireRole";
 import { RequireContestManager } from "@/components/auth/RequireContestManager";
 import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
+import { useAuthStore } from "@/stores/authStore";
 
 // Lazy-load all routes not needed on the initial render
 const Home = lazy(() => import("@/pages/home/index"));
@@ -56,6 +58,7 @@ const ContestWorkspacePublicRoute = lazy(() =>
 );
 const ConfirmSignup = lazy(() => import("@/pages/auth/ConfirmSignup"));
 const SignupVerified = lazy(() => import("@/pages/auth/SignupVerified"));
+const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"));
 const EmailUnsubscribePage = lazy(() =>
   import("@/pages/EmailUnsubscribePage").then((m) => ({ default: m.EmailUnsubscribePage })),
 );
@@ -118,6 +121,20 @@ const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMi
 const AdminCoraVouchers = lazy(() => import("@/pages/admin/AdminCoraVouchers"));
 
 const PageFallback = () => <AuthGateLoading />;
+
+function RecoveryGuard() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isPasswordRecovery = useAuthStore((s) => s.isPasswordRecovery);
+
+  useEffect(() => {
+    if (isPasswordRecovery && location.pathname !== "/auth/reset-password") {
+      void navigate("/auth/reset-password", { replace: true });
+    }
+  }, [isPasswordRecovery, location.pathname, navigate]);
+
+  return null;
+}
 
 function ScrollToTop() {
   const location = useLocation();
@@ -190,6 +207,7 @@ export default function App() {
       <TooltipProvider>
         <BrowserRouter>
           <ScrollToTop />
+          <RecoveryGuard />
           <Routes>
             <Route
               path="/login"
@@ -212,6 +230,14 @@ export default function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <SignupVerified />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/auth/reset-password"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <ResetPasswordPage />
                 </Suspense>
               }
             />

@@ -38,11 +38,14 @@ interface AuthStore {
   /** True while the signed-in user's profile row is being fetched (not session bootstrap). */
   profileLoading: boolean;
   authInitialized: boolean;
+  /** True when the current session was established via a password-recovery email link. */
+  isPasswordRecovery: boolean;
   setUser: (user: User | null) => void;
   setProfile: (profile: Profile | null) => void;
   setAiSubscription: (aiSubscription: AiSubscription | null) => void;
   setProfileLoading: (profileLoading: boolean) => void;
   setAuthInitialized: (authInitialized: boolean) => void;
+  setPasswordRecovery: (value: boolean) => void;
   signOut: () => Promise<void>;
   refreshProfile: (user?: User | null) => Promise<void>;
   loadAiSubscription: () => Promise<void>;
@@ -56,12 +59,14 @@ export const useAuthStore = create<AuthStore>()(
       aiSubscription: null,
       profileLoading: false,
       authInitialized: false,
+      isPasswordRecovery: false,
 
       setUser: (user) => set({ user }),
       setProfile: (profile) => set({ profile }),
       setAiSubscription: (aiSubscription) => set({ aiSubscription }),
       setProfileLoading: (profileLoading) => set({ profileLoading }),
       setAuthInitialized: (authInitialized) => set({ authInitialized }),
+      setPasswordRecovery: (value) => set({ isPasswordRecovery: value }),
 
       signOut: async () => {
         const signOutDeadlineMs = 12_000;
