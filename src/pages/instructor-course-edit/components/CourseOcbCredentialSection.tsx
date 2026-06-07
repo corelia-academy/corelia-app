@@ -48,12 +48,14 @@ export function CourseOcbCredentialSection({
   canEdit,
   hasCertificate = false,
   onActiveChange,
+  certificateTemplateUrl,
 }: {
   courseId: string;
   courseSlug: string;
   canEdit: boolean;
   hasCertificate?: boolean;
   onActiveChange?: (active: boolean) => void;
+  certificateTemplateUrl?: string | null;
 }) {
   const { t } = useTranslation("instructor");
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -149,7 +151,9 @@ export function CourseOcbCredentialSection({
         isActive,
         name: name.trim() || courseSlug,
         description: description.trim() || name.trim() || courseSlug,
-        imageUrl: imageUrl.trim(),
+        imageUrl: credentialKind === "oca"
+          ? (certificateTemplateUrl?.trim() || imageUrl.trim())
+          : imageUrl.trim(),
         identifierPrefix: identifierPrefix.trim(),
         triggerRule,
         credentialKind,
@@ -267,28 +271,49 @@ export function CourseOcbCredentialSection({
 
         <Field>
           <FieldLabel>{t("courseEdit.ocb.imageLabel")}</FieldLabel>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/png,image/jpeg,image/jpg"
-            className="hidden"
-            onChange={(e) => void handleUpload(e.target.files?.[0] ?? null)}
-          />
-          <div className="mt-1 flex flex-wrap items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={!canEdit || uploading}
-              onClick={() => fileRef.current?.click()}
-            >
-              {uploading ? t("courseEdit.ocb.uploading") : t("courseEdit.ocb.uploadBadge")}
-            </Button>
-            {imageUrl && (
-              <img src={imageUrl} alt="" className="h-14 w-auto rounded border border-border-subtle" />
-            )}
-          </div>
-          <p className="mt-1.5 text-xs text-foreground-muted">{t("courseEdit.ocb.imageHint")}</p>
+          {credentialKind === "oca" ? (
+            <div className="mt-1 flex items-start gap-3 rounded-lg border border-border-subtle bg-surface-base p-3">
+              {certificateTemplateUrl ? (
+                <img
+                  src={certificateTemplateUrl}
+                  alt=""
+                  className="h-16 w-auto rounded border border-border-subtle shrink-0"
+                />
+              ) : (
+                <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded border border-dashed border-border-subtle bg-surface-raised text-xs text-foreground-muted">
+                  {t("courseEdit.ocb.imageOcaNoTemplate")}
+                </div>
+              )}
+              <p className="text-xs text-foreground-muted leading-relaxed">
+                {t("courseEdit.ocb.imageOcaHint")}
+              </p>
+            </div>
+          ) : (
+            <>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg"
+                className="hidden"
+                onChange={(e) => void handleUpload(e.target.files?.[0] ?? null)}
+              />
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!canEdit || uploading}
+                  onClick={() => fileRef.current?.click()}
+                >
+                  {uploading ? t("courseEdit.ocb.uploading") : t("courseEdit.ocb.uploadBadge")}
+                </Button>
+                {imageUrl && (
+                  <img src={imageUrl} alt="" className="h-14 w-auto rounded border border-border-subtle" />
+                )}
+              </div>
+              <p className="mt-1.5 text-xs text-foreground-muted">{t("courseEdit.ocb.imageHint")}</p>
+            </>
+          )}
         </Field>
 
         <Field>

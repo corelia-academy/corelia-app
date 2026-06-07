@@ -687,6 +687,18 @@
           "issue": "Issue on Open Campus",
           "pending": "Đang xử lý trên blockchain..."
         },
+        "review": {
+          "title": "Xác nhận thông tin trước khi issue",
+          "subtitle": "Thông tin này sẽ được ghi vĩnh viễn lên blockchain. Hãy kiểm tra kỹ trước khi xác nhận.",
+          "back": "Quay lại",
+          "confirm": "Xác nhận & Issue",
+          "credentialLabel": "Credential",
+          "nameLabel": "Tên của bạn trên credential",
+          "editName": "Sửa tên",
+          "nameMissing": "Bạn chưa đặt tên hiển thị. Tên sẽ không xuất hiện trên credential.",
+          "setName": "Cập nhật tên",
+          "permanenceWarning": "Sau khi issue, credential này được ghi vĩnh viễn trên blockchain EDUChain và không thể chỉnh sửa hay thu hồi. Hãy chắc chắn tên và OCID của bạn chính xác trước khi xác nhận."
+        },
         "claimToast": {
           "pending": "Credential đang được xử lý trên blockchain. Vui lòng kiểm tra lại sau.",
           "error": {

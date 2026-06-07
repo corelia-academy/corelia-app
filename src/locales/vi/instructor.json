@@ -622,6 +622,8 @@
       "descriptionLabel": "Mô tả",
       "imageLabel": "Ảnh credential",
       "imageHint": "Khuyến nghị: 1600×1200 px (ngang) hoặc 1200×1600 px (dọc). Dùng làm ảnh credential on-chain trên OpenCampus.",
+      "imageOcaHint": "OCA sử dụng ảnh template chứng nhận ở trên làm ảnh credential on-chain. Hãy upload template chứng nhận trước.",
+      "imageOcaNoTemplate": "Chưa có template",
       "uploadBadge": "Tải ảnh lên",
       "uploading": "Đang tải…",
       "uploadOk": "Đã tải ảnh.",

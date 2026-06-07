@@ -623,6 +623,8 @@
       "descriptionLabel": "Description",
       "imageLabel": "Credential image",
       "imageHint": "Recommended: 1600×1200 px (landscape) or 1200×1600 px (portrait). Used as the on-chain credential art on OpenCampus.",
+      "imageOcaHint": "OCA credentials use the certificate template image above as their on-chain credential art. Upload a certificate template first.",
+      "imageOcaNoTemplate": "No template",
       "uploadBadge": "Upload image",
       "uploading": "Uploading…",
       "uploadOk": "Image uploaded.",

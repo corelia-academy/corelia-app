@@ -687,6 +687,18 @@
           "issue": "Issue on Open Campus",
           "pending": "Processing on blockchain..."
         },
+        "review": {
+          "title": "Review your credential info",
+          "subtitle": "This information will be permanently embedded on-chain. Make sure everything is correct before issuing.",
+          "back": "Back",
+          "confirm": "Confirm & Issue",
+          "credentialLabel": "Credential",
+          "nameLabel": "Your name on the credential",
+          "editName": "Edit name",
+          "nameMissing": "You haven't set a display name yet. Your name will not appear on the credential.",
+          "setName": "Set name",
+          "permanenceWarning": "Once issued, this credential is permanently recorded on the EDUChain blockchain and cannot be edited or revoked. Make sure your name and OCID are correct before confirming."
+        },
         "claimToast": {
           "pending": "Your credential is being processed on the blockchain. Please check back shortly.",
           "error": {

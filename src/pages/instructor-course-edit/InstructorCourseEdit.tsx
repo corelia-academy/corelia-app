@@ -8610,6 +8610,7 @@ const InstructorCourseEdit = () => {
                     canEdit={canManageCourseOcb}
                     hasCertificate={form.has_certificate ?? false}
                     onActiveChange={setOcbIsActive}
+                    certificateTemplateUrl={course.certificate_template_url ?? null}
                   />
                 </section>
               )}
