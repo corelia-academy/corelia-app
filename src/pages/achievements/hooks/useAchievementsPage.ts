@@ -10,7 +10,7 @@ import {
   type CourseIssuanceInfo,
 } from "@/lib/credentialIssuances";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
-import { getCourse, getMyEnrollments } from "@/lib/courses";
+import { getCourse, getMyEnrollments, invalidateCourseCache } from "@/lib/courses";
 import { useAuth } from "@/stores/authStore";
 import type { Enrollment } from "@/types/courses";
 
@@ -43,6 +43,8 @@ export function useAchievementsPage() {
 
     try {
       setLoading(true);
+      // Invalidate course cache so certificate template URLs (CDN) are always fresh
+      invalidateCourseCache();
       const [enrollments, courseIssuanceMap, ocRows] = await Promise.all([
         getMyEnrollments(user.id).catch(() => [] as Enrollment[]),
         fetchCourseIssuanceMapForUser(user.id).catch(() => new Map<string, CourseIssuanceInfo>()),
