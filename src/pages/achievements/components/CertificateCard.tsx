@@ -145,10 +145,12 @@ function CertificatePreviewDialog({
   cert,
   open,
   onOpenChange,
+  onRendered,
 }: {
   cert: CertificateItem;
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  onRendered?: (url: string) => void;
 }) {
   const { t } = useTranslation("common");
   const { user } = useAuth();
@@ -190,13 +192,17 @@ function CertificatePreviewDialog({
         // Upload to CDN for a permanent shareable URL
         try {
           const { url } = await uploadRenderedCertificate(user.id, cert.courseId, blob);
-          if (!cancelled) setRenderedUrl(url);
+          if (!cancelled) {
+            setRenderedUrl(url);
+            onRendered?.(url);
+          }
         } catch {
           // CDN upload failed — fall back to local blob URL
           if (cancelled) return;
           const blobUrl = URL.createObjectURL(blob);
           renderedUrlRef.current = blobUrl;
           setRenderedUrl(blobUrl);
+          onRendered?.(blobUrl);
         }
       } catch {
         // Canvas/fetch failed — CSS overlay acts as fallback
@@ -323,8 +329,12 @@ export function CertificateCard({
   const { t } = useTranslation("common");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  // Once the dialog renders and uploads to CDN, cache that URL here too
+  // so the card thumbnail also shows the rendered version with the name.
+  const [renderedCardUrl, setRenderedCardUrl] = useState<string | null>(null);
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   const hasTemplate = imageUrl !== CERT_PLACEHOLDER;
+  const displayUrl = renderedCardUrl ?? imageUrl;
 
   async function handleDownload(format: "pdf" | "png") {
     setDownloading(true);
@@ -359,11 +369,12 @@ export function CertificateCard({
           aria-label={t("achievements.certificates.viewLarge")}
         >
           <img
-            src={imageUrl}
+            src={displayUrl}
             alt=""
             className="size-full object-cover transition-opacity duration-200 group-hover/preview:opacity-90"
           />
-          {cert.holderName && hasTemplate && (
+          {/* CSS overlay only shown before the rendered URL is available */}
+          {!renderedCardUrl && cert.holderName && hasTemplate && (
             <span
               className="pointer-events-none absolute max-w-[70%] truncate text-center font-semibold leading-tight"
               style={{
@@ -503,6 +514,7 @@ export function CertificateCard({
         cert={cert}
         open={previewOpen}
         onOpenChange={setPreviewOpen}
+        onRendered={setRenderedCardUrl}
       />
     </>
   );
