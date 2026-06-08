@@ -26,6 +26,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
+import { uploadRenderedCertificate } from "@/lib/storage";
+import { useAuth } from "@/stores/authStore";
+
 import { CERT_PLACEHOLDER } from "../constants";
 import type { CertificateItem, ModalItem } from "../types";
 import { OcClaimBadge } from "./OcClaimBadge";
@@ -148,16 +151,17 @@ function CertificatePreviewDialog({
   onOpenChange: (v: boolean) => void;
 }) {
   const { t } = useTranslation("common");
+  const { user } = useAuth();
   const [downloading, setDownloading] = useState(false);
   const [renderedUrl, setRenderedUrl] = useState<string | null>(null);
   const renderedUrlRef = useRef<string | null>(null);
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   const hasTemplate = imageUrl !== CERT_PLACEHOLDER;
 
-  // When dialog opens, render template + name onto canvas → blob URL
-  // so right-click "Open in New Tab" shows the full certificate with name.
+  // When dialog opens: render template + name → upload to CDN → use permanent URL.
+  // Falls back to blob URL if upload fails, and to CSS overlay if canvas fails.
   useEffect(() => {
-    if (!open || !hasTemplate) return;
+    if (!open || !hasTemplate || !user?.id || !cert.courseId) return;
     let cancelled = false;
 
     (async () => {
@@ -182,11 +186,20 @@ function CertificatePreviewDialog({
         }
         const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/png"));
         if (!blob || cancelled) return;
-        const url = URL.createObjectURL(blob);
-        renderedUrlRef.current = url;
-        setRenderedUrl(url);
+
+        // Upload to CDN for a permanent shareable URL
+        try {
+          const { url } = await uploadRenderedCertificate(user.id, cert.courseId, blob);
+          if (!cancelled) setRenderedUrl(url);
+        } catch {
+          // CDN upload failed — fall back to local blob URL
+          if (cancelled) return;
+          const blobUrl = URL.createObjectURL(blob);
+          renderedUrlRef.current = blobUrl;
+          setRenderedUrl(blobUrl);
+        }
       } catch {
-        // Fallback to raw template — CSS overlay still shows the name
+        // Canvas/fetch failed — CSS overlay acts as fallback
       }
     })();
 
@@ -195,10 +208,10 @@ function CertificatePreviewDialog({
       if (renderedUrlRef.current) {
         URL.revokeObjectURL(renderedUrlRef.current);
         renderedUrlRef.current = null;
-        setRenderedUrl(null);
       }
+      setRenderedUrl(null);
     };
-  }, [open, imageUrl, cert.holderName, cert.nameXPercent, cert.nameYPercent, cert.nameColor, hasTemplate]);
+  }, [open, imageUrl, cert.holderName, cert.nameXPercent, cert.nameYPercent, cert.nameColor, hasTemplate, user?.id, cert.courseId]);
 
   async function handleDownload(format: "pdf" | "png") {
     setDownloading(true);

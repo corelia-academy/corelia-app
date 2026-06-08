@@ -12,7 +12,7 @@ const SIGNED_URL_SEC = 60 * 60 * 24 * 365; // 1 year
 const CDN_BUCKET = "cdn";
 const CDN_BASE_URL = (import.meta.env.VITE_CDN_BASE_URL as string | undefined)?.replace(/\/$/, "");
 
-function cdnPublicUrl(path: string): string {
+export function cdnPublicUrl(path: string): string {
   if (CDN_BASE_URL) {
     return `${CDN_BASE_URL}/${path}`;
   }
@@ -195,6 +195,25 @@ export function uploadCertificateTemplate(
   if (!courseId) throw new Error("Thiếu courseId");
   const ext = buildSafeExt(file.name, "png");
   return uploadToCdn(`certificate-templates/${courseId}/${Date.now()}.${ext}`, file, previousPath);
+}
+
+/** Permanent CDN URL — rendered certificate PNG with learner name baked in.
+ *  Path: certificates/{userId}/{courseId}.png
+ *  Upserted on every render so the name is always current. */
+export async function uploadRenderedCertificate(
+  userId: string,
+  courseId: string,
+  blob: Blob,
+): Promise<{ url: string; path: string }> {
+  if (!userId) throw new Error("Thiếu userId");
+  if (!courseId) throw new Error("Thiếu courseId");
+  const path = `certificates/${userId}/${courseId}.png`;
+  const { error } = await supabase.storage.from(CDN_BUCKET).upload(path, blob, {
+    contentType: "image/png",
+    upsert: true,
+  });
+  if (error) throw new Error(error.message);
+  return { url: cdnPublicUrl(path), path };
 }
 
 /** Permanent CDN URL — course credential badge (OCB/OCA) for OC payload. */
