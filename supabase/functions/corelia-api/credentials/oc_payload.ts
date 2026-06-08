@@ -112,10 +112,14 @@ export async function buildOpenCampusPayload(params: {
     body.collectionSymbol = template.collection_symbol; // "ocbadge"
   }
 
+  // OC `/issuer/vc` uses a `oneOf` schema for holder identity — it accepts
+  // EXACTLY ONE of holderOcId or holderAddress. Sending both matches two
+  // schema branches and fails with "must match exactly one schema in oneOf".
+  // Prefer the OCID (OC resolves the bound wallet from it); only fall back to
+  // the raw wallet address when the holder has no OCID.
   if (holderOcId?.trim()) {
     body.holderOcId = holderOcId.trim();
-  }
-  if (holderAddress?.trim()) {
+  } else if (holderAddress?.trim()) {
     body.holderAddress = holderAddress.trim();
   }
 
