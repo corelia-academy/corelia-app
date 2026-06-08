@@ -121,12 +121,32 @@ export async function runCourseCredentialCheck(
   );
   const issuerRef = issuerReferenceId(identifierPrefix, targetUserId);
 
-  const { data: existing } = await db.from("credential_issuances").select("id, status").eq(
+  const { data: existing } = await db.from("credential_issuances").select("id, status, retry_count").eq(
     "issuer_reference_id",
     issuerRef,
   ).eq("network", network).maybeSingle();
-  if (existing && (existing.status === "minted" || existing.status === "pending")) {
-    return { ok: true, skipped: true, reason: "already_issued_or_pending", issuanceId: existing.id };
+  if (existing) {
+    if (existing.status === "minted" || existing.status === "pending") {
+      return { ok: true, skipped: true, reason: "already_issued_or_pending", issuanceId: existing.id };
+    }
+    // status === "failed" or "awaiting_holder_id" — reset and retry
+    const { error: resetErr } = await db.from("credential_issuances").update({
+      status: "pending",
+      error_message: null,
+      oc_request_payload: null,
+      oc_response: null,
+      retry_count: Number(existing.retry_count ?? 0) + 1,
+    }).eq("id", existing.id);
+    if (resetErr) throw new Error(resetErr.message);
+    await mintCredentialOnce(db, existing.id);
+    const { data: after } = await db.from("credential_issuances").select("status").eq("id", existing.id).maybeSingle();
+    return {
+      ok: true,
+      issuanceId: existing.id,
+      status: after?.status ?? "unknown",
+      minted: after?.status === "minted",
+      skipped: false,
+    };
   }
 
   const { data: inserted, error: insErr } = await db.from("credential_issuances").insert({

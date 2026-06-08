@@ -144,7 +144,9 @@ export function OcCredentialModal({
                   OCID
                 </p>
                 <p className="text-sm font-medium text-foreground">
-                  {holderOcid ? `${holderOcid}.edu` : "—"}
+                  {holderOcid
+                    ? (holderOcid.endsWith(".edu") ? holderOcid : `${holderOcid}.edu`)
+                    : "—"}
                 </p>
               </div>
             </div>
