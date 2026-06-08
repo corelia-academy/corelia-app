@@ -46,10 +46,12 @@ export function buildCourseCertificates(
     .map((item) => {
       const course = courseMap.get(item.course_id);
       const issuance = courseIssuanceMap?.get(item.course_id);
+      // "claimed" requires status=minted AND oc_credential_id present.
+      // minted without oc_credential_id = incomplete mint → treat as failed.
       const ocClaimStatus = issuance
-        ? issuance.status === "minted"
+        ? issuance.status === "minted" && issuance.oc_credential_id
           ? "claimed"
-          : issuance.status === "failed"
+          : issuance.status === "minted" || issuance.status === "failed"
             ? "failed"
             : "pending"
         : "unclaimed";

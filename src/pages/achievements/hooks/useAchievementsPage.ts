@@ -120,18 +120,21 @@ export function useAchievementsPage() {
       const map = await fetchCourseIssuanceMapForUser(user!.id);
       const info = map.get(cert.courseId);
 
-      if (info?.status === "minted") {
-        const ocCredentialId = info.oc_credential_id ?? null;
-        const ocCredentialUrl = ocCredentialId
-          ? openCampusCredentialExplorerUrl(ocCredentialId) ?? undefined
-          : undefined;
+      if (info?.status === "minted" && info.oc_credential_id) {
+        // oc_credential_id must be present — it is proof the credential exists on-chain
+        const ocCredentialId = info.oc_credential_id;
+        const ocCredentialUrl = openCampusCredentialExplorerUrl(ocCredentialId) ?? undefined;
         patchCert(id, {
           ocClaimStatus: "claimed" as ClaimStatus,
           ocCredentialId,
           ocCredentialUrl,
-          credentialId: ocCredentialId ?? cert.credentialId,
+          credentialId: ocCredentialId,
           ocHolderOcId: ocidWithEduSuffix(profile?.ocid),
         });
+      } else if (info?.status === "minted" && !info.oc_credential_id) {
+        // Minted status without credential ID = incomplete mint, treat as failed
+        patchCert(id, { ocClaimStatus: "failed" });
+        toast.error(t("achievements.oc.modal.claimToast.error.failed"));
       } else if (info?.status === "failed") {
         patchCert(id, { ocClaimStatus: "failed" });
         toast.error(t("achievements.oc.modal.claimToast.error.failed"));

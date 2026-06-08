@@ -183,7 +183,9 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate): BadgeI
     category: "milestone",
     // thumbnail_url for frontend display; image_url (full-res) stays in OC payload only
     imageUrl: tpl?.thumbnail_url ?? tpl?.image_url,
-    ocClaimStatus: "claimed",
+    // Only "claimed" if oc_credential_id is present — proof it exists on-chain.
+    // minted without oc_credential_id = incomplete mint → failed.
+    ocClaimStatus: row.oc_credential_id ? "claimed" : "failed",
     ocCredentialUrl: ocUrl ?? undefined,
     ocTransactionHash: undefined,
     mintCredentialId: row.oc_credential_id,
