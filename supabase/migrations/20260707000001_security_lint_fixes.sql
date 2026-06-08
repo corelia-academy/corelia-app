@@ -144,6 +144,7 @@ BEGIN
 EXCEPTION WHEN undefined_function THEN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS sync_public_profile_on_profiles ON public.profiles;
 DROP FUNCTION IF EXISTS public.sync_public_profile();
 
 DO $$
@@ -152,6 +153,7 @@ BEGIN
 EXCEPTION WHEN undefined_function THEN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS delete_public_profile_on_profiles ON public.profiles;
 DROP FUNCTION IF EXISTS public.delete_public_profile();
 
 -- ============================================================
