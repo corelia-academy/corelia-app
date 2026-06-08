@@ -185,6 +185,8 @@ export function uploadFinalAssignmentFile(
   );
 }
 
+/** Permanent CDN URL — course certificate template image.
+ *  Stored in the public `cdn` bucket so URLs never expire and canvas/fetch work without CORS issues. */
 export function uploadCertificateTemplate(
   courseId: string,
   file: File,
@@ -192,7 +194,7 @@ export function uploadCertificateTemplate(
 ): Promise<{ url: string; path: string }> {
   if (!courseId) throw new Error("Thiếu courseId");
   const ext = buildSafeExt(file.name, "png");
-  return uploadToPath(`certificate-templates/${courseId}/${Date.now()}.${ext}`, file, previousPath);
+  return uploadToCdn(`certificate-templates/${courseId}/${Date.now()}.${ext}`, file, previousPath);
 }
 
 /** Permanent CDN URL — course credential badge (OCB/OCA) for OC payload. */
