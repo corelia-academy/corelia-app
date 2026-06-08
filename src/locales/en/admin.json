@@ -15,6 +15,10 @@
         "label": "Cora vouchers",
         "tooltip": "Voucher management for Cora AI checkout"
       },
+      "branding": {
+        "label": "Branding",
+        "tooltip": "Corelia logo and brand assets"
+      },
       "offlineClasses": { "label": "Offline classes", "tooltip": "Offline classes" },
       "contests": { "label": "Contests", "tooltip": "Contests" }
     },
@@ -38,6 +42,10 @@
       "coraVouchers": {
         "title": "Cora vouchers",
         "description": "Create and monitor percentage-based vouchers for Cora AI payments."
+      },
+      "branding": {
+        "title": "Branding",
+        "description": "Manage the Corelia logo used on certificates and on-chain credentials."
       },
       "contests": {
         "title": "Contest operations",
@@ -326,6 +334,25 @@
       "changeRole": "Change role",
       "notUpdated": "Not updated",
       "dash": "—"
+    }
+  },
+  "branding": {
+    "loading": "Loading branding settings…",
+    "loadFailed": "Could not load branding settings.",
+    "uploading": "Uploading…",
+    "uploaded": "Logo uploaded and saved.",
+    "uploadFailed": "Logo upload failed.",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "saveFailed": "Could not save.",
+    "logo": {
+      "title": "Corelia logo",
+      "subtitle": "Used as the issuer image on certificates and OpenCampus on-chain credentials. Recommended: a square or wide PNG/SVG on a transparent background.",
+      "uploadButton": "Upload logo",
+      "hint": "PNG, JPG or SVG. Stored permanently on the public CDN.",
+      "urlLabel": "Logo URL",
+      "saveUrl": "Save URL",
+      "urlHint": "Set automatically after upload. You can also paste a CDN URL directly."
     }
   },
   "activityMilestones": {

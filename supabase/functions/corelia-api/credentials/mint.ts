@@ -2,6 +2,7 @@ import type { SupabaseClient } from "../lib/supabase.ts";
 import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
 import { buildCredentialMintEmail, type CredentialMintEmailKind } from "./emails.ts";
 import { buildOpenCampusPayload, resolveMintNetwork, type CredentialTemplateRow } from "./oc_payload.ts";
+import { extractOcCredentialId } from "./oc_response.ts";
 import {
   getAppBaseUrl,
   getCoreliaLogoUrl,
@@ -118,6 +119,35 @@ async function sendMintEmail(params: {
   });
 }
 
+/** For course OCA credentials, resolve the name-rendered certificate URL at the
+ *  deterministic CDN path `{cdnOrigin}/certificates/{userId}/{courseId}.png`.
+ *  The origin is derived from the template's image_url (already a CDN URL).
+ *  Returns the URL only if the rendered image actually exists (HEAD 200);
+ *  otherwise null so the caller falls back to the raw template. */
+async function resolveRenderedCertificateUrl(
+  template: CredentialTemplateRow,
+  userId: string,
+): Promise<string | null> {
+  const isOCA = !template.collection_symbol;
+  if (!isOCA || template.scope_type !== "course" || !template.course_id) return null;
+  if (!template.image_url?.trim()) return null;
+
+  let origin: string;
+  try {
+    origin = new URL(template.image_url).origin;
+  } catch {
+    return null;
+  }
+
+  const url = `${origin}/certificates/${userId}/${template.course_id}.png`;
+  try {
+    const res = await fetch(url, { method: "HEAD" });
+    return res.ok ? url : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Insert an in-app notification row for a successfully minted OC credential. */
 async function insertCredentialNotification(
   db: SupabaseClient,
@@ -209,6 +239,12 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
   const profilePath = username ? `/u/${encodeURIComponent(username)}` : `/account`;
   const profileUrl = `${baseUrl}${profilePath}`;
 
+  // For course OCA credentials, prefer the name-rendered certificate
+  // (cdn/certificates/{userId}/{courseId}.png) over the raw template. It is
+  // rendered + uploaded client-side during the claim flow. If it doesn't exist
+  // yet (e.g. auto-issue path), fall back to template.image_url.
+  const subjectImageOverride = await resolveRenderedCertificateUrl(template, row.user_id);
+
   const awardedIso = new Date().toISOString();
   const { body: ocBody } = await buildOpenCampusPayload({
     template,
@@ -221,6 +257,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
     holderName,
     holderEmail: email || null,
     awardedIso,
+    subjectImageOverride,
   });
 
   const isOCA = !template.collection_symbol;
@@ -257,12 +294,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
       if (dup) {
         // Try to extract the credential ID from the error response body — OC may
         // return it even on a duplicate rejection.
-        const parsed = ocResponseJson as Record<string, unknown>;
-        ocCredentialId =
-          (parsed.credentialId && String(parsed.credentialId)) ||
-          (parsed.id && String(parsed.id)) ||
-          (parsed.credential_id && String(parsed.credential_id)) ||
-          null;
+        ocCredentialId = extractOcCredentialId(ocResponseJson);
       }
       await db.from("credential_issuances").update({
         status: dup ? "minted" : "failed",
@@ -306,11 +338,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
     }
 
     const parsed = ocResponseJson as Record<string, unknown>;
-    ocCredentialId =
-      (parsed.credentialId && String(parsed.credentialId)) ||
-      (parsed.id && String(parsed.id)) ||
-      (parsed.credential_id && String(parsed.credential_id)) ||
-      null;
+    ocCredentialId = extractOcCredentialId(parsed);
 
     await db.from("credential_issuances").update({
       status: "minted",

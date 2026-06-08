@@ -21,6 +21,7 @@ import type {
   ModalItem,
 } from "../types";
 import { buildCourseCertificates, ocidWithEduSuffix } from "../utils/buildAchievementsData";
+import { renderAndUploadCertificate } from "../utils/renderCertificate";
 
 export function useAchievementsPage() {
   const { user, isAuthenticated, profile } = useAuth();
@@ -114,6 +115,11 @@ export function useAchievementsPage() {
     patchCert(id, { ocClaimStatus: "pending" });
 
     try {
+      // Render + upload the name-rendered certificate to the deterministic CDN
+      // path BEFORE minting, so the backend can embed it as the OC attachment.
+      // Non-fatal: if it fails, the backend falls back to the raw template.
+      await renderAndUploadCertificate(cert, user!.id).catch(() => null);
+
       await invokeCheckCourseCredential(cert.courseId);
 
       // Reload issuance status from DB
@@ -123,7 +129,10 @@ export function useAchievementsPage() {
       if (info?.status === "minted" && info.oc_credential_id) {
         // oc_credential_id must be present — it is proof the credential exists on-chain
         const ocCredentialId = info.oc_credential_id;
-        const ocCredentialUrl = openCampusCredentialExplorerUrl(ocCredentialId) ?? undefined;
+        const ocCredentialUrl = openCampusCredentialExplorerUrl(ocCredentialId, {
+          username: profile?.ocid,
+          nftCollection: "occredential",
+        }) ?? undefined;
         patchCert(id, {
           ocClaimStatus: "claimed" as ClaimStatus,
           ocCredentialId,

@@ -103,14 +103,26 @@ export async function fetchMintedCredentialIssuancesForUser(
 
 export function openCampusCredentialExplorerUrl(
   credentialId: string | null | undefined,
-  _network?: CredentialIssuanceWithTemplate["network"],
+  opts?: {
+    /** Holder OCID (e.g. "alice.edu") — needed for the credential details page. */
+    username?: string | null;
+    /** "occredential" for OCA, "ocbadge" for OCB. Defaults to "occredential". */
+    nftCollection?: "occredential" | "ocbadge";
+  },
 ): string | null {
-  void _network;
   if (!credentialId?.trim()) return null;
   const id = credentialId.trim();
   const base = import.meta.env.VITE_OCID_SANDBOX === "true"
     ? "https://id.sandbox.opencampus.xyz"
     : "https://id.opencampus.xyz";
+  const username = opts?.username?.trim();
+  const nftCollection = opts?.nftCollection ?? "occredential";
+  // With the holder OCID we can deep-link to the specific credential details page;
+  // otherwise fall back to the holder's public credentials list.
+  if (username) {
+    const u = username.endsWith(".edu") ? username : `${username}.edu`;
+    return `${base}/public/credentials/details?username=${encodeURIComponent(u)}&id=${encodeURIComponent(id)}&nftCollection=${encodeURIComponent(nftCollection)}`;
+  }
   return `${base}/public/credentials?id=${encodeURIComponent(id)}`;
 }
 
@@ -152,7 +164,7 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate): BadgeI
   const tpl = row.template;
   const title = tpl?.name ?? "Credential";
   const description = tpl?.description ?? "";
-  const ocUrl = openCampusCredentialExplorerUrl(row.oc_credential_id, row.network);
+  const ocUrl = openCampusCredentialExplorerUrl(row.oc_credential_id);
   const minted = row.minted_at ? new Date(row.minted_at).toLocaleDateString() : "—";
 
   const credentialScope =

@@ -197,6 +197,13 @@ export function uploadCertificateTemplate(
   return uploadToCdn(`certificate-templates/${courseId}/${Date.now()}.${ext}`, file, previousPath);
 }
 
+/** Permanent CDN URL — Corelia institution logo (issuer image in OC payloads).
+ *  Path: brand/{timestamp}.{ext}. Admin/support only (RLS cdn_brand_insert). */
+export function uploadCoreliaLogo(file: File): Promise<{ url: string; path: string }> {
+  const ext = buildSafeExt(file.name, "png");
+  return uploadToCdn(`brand/${Date.now()}.${ext}`, file);
+}
+
 /** Permanent CDN URL — rendered certificate PNG with learner name baked in.
  *  Path: certificates/{userId}/{courseId}.png
  *  Upserted on every render so the name is always current. */

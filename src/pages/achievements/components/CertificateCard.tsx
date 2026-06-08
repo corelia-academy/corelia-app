@@ -26,45 +26,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-import { uploadRenderedCertificate } from "@/lib/storage";
 import { useAuth } from "@/stores/authStore";
 
 import { CERT_PLACEHOLDER } from "../constants";
 import type { CertificateItem, ModalItem } from "../types";
+import {
+  hexToRgb,
+  loadImageViaBlobUrl,
+  renderAndUploadCertificate,
+  renderCertificateBlob,
+} from "../utils/renderCertificate";
 import { OcClaimBadge } from "./OcClaimBadge";
 
 // ── PDF download helper ─────────────────────────────────────────────────────
 // A4 landscape: 297 × 210 mm
 const PDF_W_MM = 297;
 const PDF_H_MM = 210;
-
-function hexToRgb(hex: string): [number, number, number] {
-  const h = hex.replace("#", "");
-  const full = h.length === 3
-    ? h.split("").map((c) => c + c).join("")
-    : h.padEnd(6, "0");
-  return [
-    parseInt(full.slice(0, 2), 16),
-    parseInt(full.slice(2, 4), 16),
-    parseInt(full.slice(4, 6), 16),
-  ];
-}
-
-/** Fetch image → blob URL (same-origin) → canvas-safe Image element.
- *  Avoids CORS canvas taint that occurs with crossOrigin on Supabase Storage. */
-async function loadImageViaBlobUrl(src: string): Promise<{ img: HTMLImageElement; blobUrl: string }> {
-  const res = await fetch(src);
-  if (!res.ok) throw new Error(`Image fetch failed: HTTP ${res.status}`);
-  const blob = await res.blob();
-  const blobUrl = URL.createObjectURL(blob);
-  const img = new Image();
-  await new Promise<void>((resolve, reject) => {
-    img.onload = () => resolve();
-    img.onerror = () => reject(new Error("Failed to decode image"));
-    img.src = blobUrl;
-  });
-  return { img, blobUrl };
-}
 
 async function downloadCertificate(cert: CertificateItem): Promise<void> {
   const src = cert.imageUrl;
@@ -102,42 +79,14 @@ async function downloadCertificate(cert: CertificateItem): Promise<void> {
 }
 
 async function downloadCertificatePng(cert: CertificateItem): Promise<void> {
-  const src = cert.imageUrl;
-  if (!src || src === CERT_PLACEHOLDER) return;
-
-  const canvas = document.createElement("canvas");
-  canvas.width = 1600;
-  canvas.height = 1200;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-
-  const { img, blobUrl } = await loadImageViaBlobUrl(src);
-  ctx.drawImage(img, 0, 0, 1600, 1200);
-  URL.revokeObjectURL(blobUrl);
-
-  if (cert.holderName?.trim()) {
-    const x = ((cert.nameXPercent ?? 50) / 100) * 1600;
-    const y = ((cert.nameYPercent ?? 50) / 100) * 1200;
-    const [r, g, b] = hexToRgb(cert.nameColor ?? "#000000");
-    ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.font = "bold 80px 'Times New Roman', Times, serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(cert.holderName.trim(), x, y);
-  }
-
-  await new Promise<void>((resolve) => {
-    canvas.toBlob((blob) => {
-      if (!blob) { resolve(); return; }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${cert.course.replace(/[^a-z0-9]/gi, "-")}-certificate.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-      resolve();
-    }, "image/png");
-  });
+  const blob = await renderCertificateBlob(cert);
+  if (!blob) return;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${cert.course.replace(/[^a-z0-9]/gi, "-")}-certificate.png`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ── Certificate lightbox ────────────────────────────────────────────────────
@@ -160,52 +109,30 @@ function CertificatePreviewDialog({
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   const hasTemplate = imageUrl !== CERT_PLACEHOLDER;
 
-  // When dialog opens: render template + name → upload to CDN → use permanent URL.
-  // Falls back to blob URL if upload fails, and to CSS overlay if canvas fails.
+  // When dialog opens: render template + name → upload to CDN → use permanent URL
+  // so right-click "Open in New Tab" shows the full certificate with the name.
+  // Falls back to a local blob URL if the CDN upload fails.
   useEffect(() => {
     if (!open || !hasTemplate || !user?.id || !cert.courseId) return;
     let cancelled = false;
 
     (async () => {
       try {
-        const canvas = document.createElement("canvas");
-        canvas.width = 1600;
-        canvas.height = 1200;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        const { img, blobUrl: tmpBlob } = await loadImageViaBlobUrl(imageUrl);
-        ctx.drawImage(img, 0, 0, 1600, 1200);
-        URL.revokeObjectURL(tmpBlob);
-        if (cert.holderName?.trim()) {
-          const x = ((cert.nameXPercent ?? 50) / 100) * 1600;
-          const y = ((cert.nameYPercent ?? 50) / 100) * 1200;
-          const [r, g, b] = hexToRgb(cert.nameColor ?? "#000000");
-          ctx.fillStyle = `rgb(${r},${g},${b})`;
-          ctx.font = "bold 80px 'Times New Roman', Times, serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(cert.holderName.trim(), x, y);
+        const url = await renderAndUploadCertificate(cert, user.id);
+        if (url && !cancelled) {
+          setRenderedUrl(url);
+          onRendered?.(url);
+          return;
         }
-        const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/png"));
-        if (!blob || cancelled) return;
-
-        // Upload to CDN for a permanent shareable URL
-        try {
-          const { url } = await uploadRenderedCertificate(user.id, cert.courseId, blob);
-          if (!cancelled) {
-            setRenderedUrl(url);
-            onRendered?.(url);
-          }
-        } catch {
-          // CDN upload failed — fall back to local blob URL
-          if (cancelled) return;
+      } catch {
+        // CDN upload failed — fall back to a local blob URL
+        const blob = await renderCertificateBlob(cert).catch(() => null);
+        if (blob && !cancelled) {
           const blobUrl = URL.createObjectURL(blob);
           renderedUrlRef.current = blobUrl;
           setRenderedUrl(blobUrl);
           onRendered?.(blobUrl);
         }
-      } catch {
-        // Canvas/fetch failed — CSS overlay acts as fallback
       }
     })();
 
@@ -217,7 +144,7 @@ function CertificatePreviewDialog({
       }
       setRenderedUrl(null);
     };
-  }, [open, imageUrl, cert.holderName, cert.nameXPercent, cert.nameYPercent, cert.nameColor, hasTemplate, user?.id, cert.courseId]);
+  }, [open, cert, hasTemplate, user?.id, onRendered]);
 
   async function handleDownload(format: "pdf" | "png") {
     setDownloading(true);

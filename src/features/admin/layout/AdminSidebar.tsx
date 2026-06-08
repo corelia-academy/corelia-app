@@ -11,7 +11,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { GraduationCap, Medal, Pin, Settings, TicketPercent, Users } from "lucide-react";
+import { GraduationCap, ImageIcon, Medal, Pin, Settings, TicketPercent, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function AdminSidebar() {
@@ -127,6 +127,22 @@ export function AdminSidebar() {
                     >
                       <TicketPercent className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.coraVouchers.label")}</span>
+                    </NavLink>
+                  }
+                />
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="rounded-md"
+                  tooltip={t("layout.sidebar.branding.tooltip")}
+                  isActive={pathname.startsWith("/admin/branding")}
+                  render={
+                    <NavLink
+                      to="/admin/branding"
+                      className="flex w-full items-center gap-2"
+                    >
+                      <ImageIcon className="size-4" aria-hidden />
+                      <span>{t("layout.sidebar.branding.label")}</span>
                     </NavLink>
                   }
                 />

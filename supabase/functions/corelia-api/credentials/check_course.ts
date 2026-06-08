@@ -4,6 +4,7 @@ import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { runActivityMilestoneCheck } from "./check_activity.ts";
 import { issuerReferenceId } from "./ids.ts";
 import { mintCredentialOnce } from "./mint.ts";
+import { extractOcCredentialId } from "./oc_response.ts";
 import { getDefaultMintNetwork, type MintNetwork } from "./settings.ts";
 import { resolveMintNetwork } from "./oc_payload.ts";
 
@@ -121,12 +122,24 @@ export async function runCourseCredentialCheck(
   );
   const issuerRef = issuerReferenceId(identifierPrefix, targetUserId);
 
-  const { data: existing } = await db.from("credential_issuances").select("id, status, retry_count").eq(
+  const { data: existing } = await db.from("credential_issuances").select(
+    "id, status, retry_count, oc_credential_id, oc_response",
+  ).eq(
     "issuer_reference_id",
     issuerRef,
   ).eq("network", network).maybeSingle();
   if (existing) {
     if (existing.status === "minted" || existing.status === "pending") {
+      // Backfill oc_credential_id for already-minted records that never captured
+      // it (e.g. minted before the id-extraction fix). Re-parse the stored response
+      // instead of re-calling OC (which would just return a duplicate).
+      if (existing.status === "minted" && !existing.oc_credential_id && existing.oc_response) {
+        const backfilled = extractOcCredentialId(existing.oc_response);
+        if (backfilled) {
+          await db.from("credential_issuances").update({ oc_credential_id: backfilled }).eq("id", existing.id);
+          return { ok: true, issuanceId: existing.id, status: "minted", minted: true, skipped: false };
+        }
+      }
       return { ok: true, skipped: true, reason: "already_issued_or_pending", issuanceId: existing.id };
     }
     // status === "failed" or "awaiting_holder_id" — reset and retry

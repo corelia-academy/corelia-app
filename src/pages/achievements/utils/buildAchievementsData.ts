@@ -57,7 +57,10 @@ export function buildCourseCertificates(
         : "unclaimed";
       const ocCredentialId = issuance?.oc_credential_id ?? null;
       const ocCredentialUrl = ocCredentialId
-        ? openCampusCredentialExplorerUrl(ocCredentialId) ?? undefined
+        ? openCampusCredentialExplorerUrl(ocCredentialId, {
+            username: holderOcid,
+            nftCollection: "occredential",
+          }) ?? undefined
         : undefined;
       return {
         id: `course-cert-${item.id}`,
