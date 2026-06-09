@@ -607,7 +607,7 @@
         "label": "Loại credential",
         "oca": {
           "label": "OCA — Chứng nhận hoàn thành",
-          "desc": "Credential dạng chứng nhận on-chain. Phù hợp cho hoàn thành khoá học và các chứng chỉ."
+          "desc": "Credential dạng chứng nhận on-chain. Phù hợp cho hoàn thành khoá học và các chứng nhận."
         },
         "ocb": {
           "label": "OCB — Open Campus Badge",

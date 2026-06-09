@@ -98,7 +98,7 @@ export async function handleIssueCertificate(req: Request, db: SupabaseClient): 
     // Auto-mint OC credential if there's an active credential_template for this course.
     // Non-fatal: OC mint failure must never block certificate issuance.
     try {
-      await runCourseCredentialCheck(db, courseId, targetUserId);
+      await runCourseCredentialCheck(db, courseId, targetUserId, { autoIssue: true });
     } catch (ocErr) {
       console.error("[corelia-api] certificate → OC mint failed (non-fatal)", ocErr);
     }

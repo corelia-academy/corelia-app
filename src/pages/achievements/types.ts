@@ -9,7 +9,7 @@ export type CertificateItem = {
   instructor: string;
   type: "online" | "offline";
   credentialId: string;
-  /** Ảnh chứng chỉ (placeholder nếu chưa có) */
+  /** Ảnh chứng nhận (placeholder nếu chưa có) */
   imageUrl?: string;
   /** Vị trí tên học viên trên certificate (% từ trái, mặc định 50) */
   nameXPercent?: number;

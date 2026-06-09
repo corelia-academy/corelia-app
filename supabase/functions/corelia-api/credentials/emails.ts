@@ -53,14 +53,14 @@ const COPY: Record<
   },
   course_oca: {
     vi: {
-      heroTag: "Chứng chỉ hoàn thành",
-      heroTitle: "Bạn vừa nhận chứng chỉ hoàn thành",
+      heroTag: "Chứng nhận hoàn thành",
+      heroTitle: "Bạn vừa nhận chứng nhận hoàn thành",
       heroSubtitle: "Open Campus Achievement (OCA) đã được ghi nhận trên Corelia.",
       bodyIntro: "Chúc mừng! Bạn đã hoàn thành:",
       credentialLine: "Open Campus Achievement (OCA) của bạn đã được ghi nhận.",
       ctaLabel: "Xem thành tích của tôi →",
-      footerReason: "Bạn nhận email này vì vừa được cấp chứng chỉ trên Corelia Academy.",
-      subjectPrefix: "Chứng chỉ",
+      footerReason: "Bạn nhận email này vì vừa được cấp chứng nhận trên Corelia Academy.",
+      subjectPrefix: "Chứng nhận",
     },
     en: {
       heroTag: "Certificate of completion",

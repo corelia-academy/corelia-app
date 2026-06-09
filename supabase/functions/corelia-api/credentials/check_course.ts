@@ -42,6 +42,12 @@ export async function runCourseCredentialCheck(
   db: SupabaseClient,
   courseId: string,
   targetUserId: string,
+  opts?: {
+    /** When true (auto-issue on certificate issuance), skip OCA credentials.
+     *  OCA must be claimed manually so the learner reviews their name/OCID and
+     *  the name-rendered certificate image is generated first. OCB still auto-mints. */
+    autoIssue?: boolean;
+  },
 ): Promise<
   Record<string, unknown>
 > {
@@ -52,6 +58,13 @@ export async function runCourseCredentialCheck(
   if (tplErr) throw new Error(tplErr.message);
   if (!template) {
     return { ok: true, skipped: true, reason: "no_active_template" };
+  }
+
+  // OCA (collection_symbol null) is never auto-minted — it requires a manual
+  // claim so the learner-name-rendered certificate is produced and reviewed.
+  const isOCA = !template.collection_symbol;
+  if (opts?.autoIssue && isOCA) {
+    return { ok: true, skipped: true, reason: "oca_requires_manual_claim" };
   }
 
   const enrollmentId = `${targetUserId}_${courseId}`;

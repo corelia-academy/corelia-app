@@ -227,7 +227,7 @@
     "fullName": {
       "label": "Họ và tên đầy đủ",
       "placeholder": "Nguyễn Văn A",
-      "hint": "Dùng để hiển thị trên chứng chỉ, bảng điểm và hoá đơn."
+      "hint": "Dùng để hiển thị trên chứng nhận, bảng điểm và hoá đơn."
     },
     "username": {
       "label": "Username",
@@ -277,7 +277,7 @@
       "title": "Gợi ý thông tin nên chuẩn bị",
       "items": {
         "0": "Kinh nghiệm làm việc / dự án cá nhân nổi bật.",
-        "1": "Các khoá học đã hoàn thành, chứng chỉ liên quan.",
+        "1": "Các khoá học đã hoàn thành, chứng nhận liên quan.",
         "2": "Kỹ năng chuyên môn (technical) và kỹ năng mềm."
       }
     }
