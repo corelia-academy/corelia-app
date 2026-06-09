@@ -34,7 +34,11 @@ function payloadString(payload: Record<string, unknown>, key: string): string {
 
 export function NotificationBell() {
   const { t } = useTranslation("common");
-  const { isAuthenticated, authInitialized } = useAuth();
+  const { isAuthenticated, authInitialized, profile } = useAuth();
+  // Achievements (Certificate vault) live on the public profile page.
+  const achievementsPath = profile?.username
+    ? `/u/${encodeURIComponent(profile.username)}`
+    : "/account";
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<UserNotificationRow[]>([]);
@@ -422,7 +426,7 @@ export function NotificationBell() {
                             variant="ghost"
                             size="xs"
                             className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
-                            render={<NavLink to="/account/achievements" />}
+                            render={<NavLink to={achievementsPath} />}
                             nativeButton={false}
                             onClick={() => {
                               setOpen(false);
