@@ -44,7 +44,7 @@ export async function getIntSetting(db: SupabaseClient, key: string, fallback: n
 
 export async function getCoreliaLogoUrl(db: SupabaseClient): Promise<string> {
   return (await getSetting(db, "corelia_logo_url"))?.trim() ||
-    "https://app.corelia.academy/brand/corelia-logo-1300.png";
+    "https://cdn.corelia.academy/brand/corelia-logo-1300.png";
 }
 
 export async function getAppBaseUrl(db: SupabaseClient): Promise<string> {

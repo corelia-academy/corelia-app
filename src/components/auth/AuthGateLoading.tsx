@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useLoadingStore } from "@/stores/loadingStore";
 
 type AuthGateLoadingProps = {
   className?: string;
@@ -14,6 +16,17 @@ export function AuthGateLoading({
   className,
   minHeightClass = "min-h-[200px]",
 }: AuthGateLoadingProps) {
+  const startLoading = useLoadingStore((s) => s.startLoading);
+  const stopLoading = useLoadingStore((s) => s.stopLoading);
+
+  useEffect(() => {
+    const key = `auth-gate-${Math.random().toString(36).substring(2, 9)}`;
+    startLoading(key);
+    return () => {
+      stopLoading(key);
+    };
+  }, [startLoading, stopLoading]);
+
   return (
     <div
       className={cn("flex items-center justify-center", minHeightClass, className)}

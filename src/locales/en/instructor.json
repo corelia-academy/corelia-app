@@ -577,46 +577,70 @@
     },
     "certificate": {
       "sectionTitle": "Certificate template",
-      "sectionDescription": "Upload a certificate template image (PNG/JPG). The learner's name will be shown at the position you choose (as % from left and from top).",
+      "sectionDescription": "Upload a certificate template image (PNG/JPG). The learner's name will be overlaid at the position you set.",
       "saveNamePosition": "Save name position",
       "templateLabel": "Certificate template",
       "uploadTemplate": "Upload template",
       "uploadingTemplate": "Uploading...",
+      "viewCurrentTemplate": "View current template",
       "nameXLabel": "Learner name position (% from left)",
       "nameYLabel": "Learner name position (% from top)",
+      "nameColorLabel": "Name text color",
+      "nameColorHint": "Color of the learner's name overlaid on the certificate.",
       "afterUploadHintPrefix": "After uploading, adjust the two \"Name position\" fields (% from left / % from",
       "fileFormatHint": "Format: PNG or JPG."
     },
     "certificateGuide": {
       "title": "How to create a template",
-      "sizeHint": "Recommended size: 1200×800 px (3:2 ratio) or A4.",
-      "nameAreaHint": "Leave an empty area on the image for the learner name (e.g. center).",
+      "sizeHint": "Recommended size: 1600×1200 px (4:3 landscape) or 1200×1600 px (3:4 portrait). This image is also used as the OpenCampus on-chain credential art.",
+      "nameAreaHint": "Leave an empty area on the image for the learner name (e.g. center or bottom third).",
       "afterUploadHint": "After uploading, adjust the two \"Name position\" fields (% from left / % from top) so the learner name sits in the blank area. 50% = center.",
       "downloadSample": "Download sample template (SVG)"
     },
     "ocb": {
-      "title": "Open Campus badge (OCB)",
-      "subtitle": "Mint an on-chain completion badge when learners meet your rules (PDF certificate settings above stay unchanged).",
-      "loading": "Loading badge configuration…",
-      "loadFailed": "Could not load badge configuration.",
-      "enableLabel": "Mint badge when requirements are met",
-      "nameLabel": "Badge name",
-      "descriptionLabel": "Badge description",
-      "imageLabel": "Badge image",
-      "uploadBadge": "Upload badge image",
+      "title": "Open Campus On-chain Credential",
+      "subtitle": "Learners who meet the requirements can claim their own verifiable on-chain credential from the Achievements page. They review their name and OCID before minting — nothing is issued automatically.",
+      "loading": "Loading credential configuration…",
+      "loadFailed": "Could not load credential configuration.",
+      "statusActive": "Active",
+      "statusInactive": "Not configured",
+      "kind": {
+        "label": "Credential type",
+        "oca": {
+          "label": "OCA — Certificate of Achievement",
+          "desc": "A certificate-style on-chain credential. Ideal for course completions and certifications."
+        },
+        "ocb": {
+          "label": "OCB — Open Campus Badge",
+          "desc": "A skill badge credential. Ideal for shorter achievements and topic mastery."
+        }
+      },
+      "enableLabel": "Enable auto-minting for this course",
+      "enableHint": "When active, badges are automatically minted to learners who meet the requirements.",
+      "configTitle": "Credential details",
+      "requirementsTitle": "Eligibility requirements",
+      "blockedByCertificate": "OCB cannot be enabled when this course already issues a downloadable PDF certificate. Switch to OCA type, or disable the PDF certificate first.",
+      "noPermission": "You don't have permission to configure credentials for this course.",
+      "nameLabel": "Credential name",
+      "descriptionLabel": "Description",
+      "imageLabel": "Credential image",
+      "imageHint": "Recommended: 1600×1200 px (landscape) or 1200×1600 px (portrait). Used as the on-chain credential art on OpenCampus.",
+      "imageOcaHint": "OCA credentials use the certificate template image above as their on-chain credential art. Upload a certificate template first.",
+      "imageOcaNoTemplate": "No template",
+      "uploadBadge": "Upload image",
       "uploading": "Uploading…",
-      "uploadOk": "Badge image uploaded.",
+      "uploadOk": "Image uploaded.",
       "uploadFailed": "Upload failed.",
-      "completionPctLabel": "Minimum lesson completion (%)",
+      "completionPctLabel": "Minimum lesson completion",
       "requireAssignmentPassLabel": "Require final assignment approval",
       "requireAssignmentLabel": "Require final assignment approval",
-      "minScoreLabel": "Minimum assignment score (if tracked)",
+      "minScoreLabel": "Minimum assignment score",
       "identifierPrefixLabel": "Identifier prefix",
-      "identifierHint": "Lowercase, hyphen-separated, max 40 characters; learner suffix is added automatically.",
-      "save": "Save badge configuration",
+      "identifierHint": "Lowercase, hyphen-separated, max 40 characters. A unique learner suffix is appended automatically.",
+      "save": "Save credential configuration",
       "saving": "Saving…",
-      "saved": "Badge configuration saved.",
-      "saveFailed": "Could not save badge configuration."
+      "saved": "Credential configuration saved.",
+      "saveFailed": "Could not save credential configuration."
     },
     "form": {
       "titleLabel": "Course title",
@@ -925,6 +949,7 @@
     "publishing": {
       "publishedHint": "Published (visible on the course page)",
       "hasCertificateHint": "This course issues a completion certificate",
+      "certBlockedByOcb": "This course has an on-chain badge (OCB) active. Go to the Certificate tab and disable the badge first.",
       "updatingHint": "This course is being updated (show a notice to learners)"
     },
     "students": {

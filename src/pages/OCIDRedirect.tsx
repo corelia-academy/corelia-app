@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { LoginCallBack, useOCAuth } from "@opencampus/ocid-connect-js";
 import { updateOCIDProfileForUser } from "@/lib/profile";
 import { supabase } from "@/lib/supabase";
+import { invokeCoreliaApi } from "@/lib/coreliaEdgeApi";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -89,6 +90,8 @@ export default function OCIDRedirect() {
             ocid_eth_address: resolvedEth,
           });
           await refreshProfile(user);
+          // Fire-and-forget: mint any credentials that were held waiting for OCID.
+          void invokeCoreliaApi("credentials.retryPending", {});
           navigate("/account", { replace: true });
         } catch (e) {
           const message =

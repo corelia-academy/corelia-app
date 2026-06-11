@@ -8,13 +8,14 @@ import {
   XCircle,
 } from "lucide-react"
 
-const Toaster = ({ ...props }: ToasterProps) => {
+const Toaster = ({ position = "top-center", ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
 
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      position={position}
       icons={{
         success: (
           <CheckCircle2 className="size-4" aria-hidden />

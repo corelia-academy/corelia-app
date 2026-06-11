@@ -105,8 +105,9 @@ type HackathonDocument = {
 ```ts
 {
   status: 'pending' | 'approved' | 'rejected',
-  awardedBadgeIds?: string[],     // do organizer assign sau Demo Day
-  mintedBadgeIds?: string[],      // subset đã mint on-chain (endpoint sẽ có sau)
+  awardedBadgeIds?: string[],     // do organizer assign sau Demo Day (credential_template IDs)
+  // mintedBadgeIds không lưu ở đây — mint status tra qua bảng credential_issuances
+  // (filter: user_id + hackathon_id + status='minted')
   ...
 }
 ```
@@ -214,8 +215,9 @@ Optional filter pills: All / Livestream / Video / Image / Document / Event.
 
 **Sub 3 — User's earned badges** (chỉ render khi `lifecycle === 'ended'` và current user có `awardedBadgeIds`):
 - Highlight banner "Bạn đã nhận được X badge từ hackathon này"
-- Mỗi badge: big preview + "Mint badge" button (disabled cho tới khi endpoint mint có; show tooltip "Sẽ mở mint sau Demo Day")
-- Khi `mintedBadgeIds` đã chứa badge id → button đổi thành "Xem trên explorer" (link tới EDU Chain explorer).
+- Mỗi badge: big preview + "Xem trên explorer" (link tới `https://id.opencampus.xyz/public/credentials?id=<oc_credential_id>`) khi đã mint.
+- Mint được trigger server-side qua `mintCredentialOnce` (Edge Function `corelia-api`) khi admin grant award — không cần user click mint.
+- Status pending/minted/failed hiển thị trong admin Workspace.
 
 **Sub 4 — On-chain credential block** (giữ nguyên):
 > Mọi participant approved đều nhận on-chain participation badge. Top winners thêm winner badge. Mint trên EDU Chain (OpenCampus), verifiable lifetime.
@@ -301,9 +303,9 @@ Trên mobile, FAB nằm trên sticky bottom bar (z-50, offset bottom-20).
 
 **Workspace UI cần cover** (ngoài các tính năng hiện có):
 - **Resources manager**: add/edit/remove resource (livestream, video, image, document, event). Pin/unpin. Upload file qua Bunny CDN cho media.
-- **Badges manager**: CRUD badges (name, description, image upload, criteria). Preview NFT artwork.
-- **Badge assignment** (chỉ enable khi `lifecycle === 'judging'` hoặc `ended`): bảng users đã `approved` × badges, multi-select cell, save → update `awardedBadgeIds` trong từng registration.
-- **Mint trigger**: button per (user, badge) gọi mint endpoint (sẽ có sau). Khi success → cập nhật `mintedBadgeIds`. Hiện status pending/minted/failed.
+- **Badges manager**: CRUD `credential_templates` cho hackathon (name, description, image upload, `hackathon_role`). Preview badge art. Tất cả hackathon template đều là OCB Award (`collection_symbol = 'ocbadge'`, `achievement_type = 'Award'`).
+- **Badge assignment** (chỉ enable khi `lifecycle === 'judging'` hoặc `ended`): bảng users đã `approved` × templates, multi-select, save → tạo `credential_issuances` row pending → trigger `mintCredentialOnce`.
+- **Mint status**: hiển thị per (user, badge) — `pending` / `minted` / `failed`. Khi minted → link "Xem trên OpenCampus" (`https://id.opencampus.xyz/public/credentials?id=<oc_credential_id>`). User nhận email + in-app notification tự động khi mint thành công.
 - **Linking**: chọn `officialCourseId`, `relatedCourseIds[]`, `relatedCareerTrackIds[]` qua searchable select component. Validate FK tồn tại + published.
 
 ---
@@ -328,7 +330,7 @@ Trên mobile, FAB nằm trên sticky bottom bar (z-50, offset bottom-20).
 6. QuickStats với threshold count ≥ 5.
 7. Mobile sticky bottom CTA.
 8. AdminWorkspaceFAB thay banner.
-9. Workspace UI: resources manager, badges manager + assignment, course/track linking. (Mint trigger để placeholder, enable khi endpoint có.)
+9. Workspace UI: resources manager, badges manager + assignment + mint trigger (endpoint `mintCredentialOnce` đã có), course/track linking.
 10. A11y pass: countdown `aria-live="polite"`, focus visible, semantic `<ol>` cho timeline, color contrast ≥ AA.
 
 Mỗi step PR riêng, kèm screenshot before/after.

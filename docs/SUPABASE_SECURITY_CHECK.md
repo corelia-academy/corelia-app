@@ -7,13 +7,13 @@ too heavily on client-side rules.
 
 - Shared DB authorization helpers for course and hackathon checks
 - Course-domain RLS normalization
-- OCB write enforcement at DB level
+- Credential (OCB + OCA) write enforcement at DB level
 - Inventory snapshot for current write surfaces
 - Storage policy tightening for:
   - course thumbnails
   - course assets
   - certificate templates
-  - course OCB badge images
+  - course credential images (OCB badge art / OCA cert art)
   - hackathon badge images
   - activity milestone badge images
 - final assignment uploads
@@ -39,11 +39,12 @@ too heavily on client-side rules.
   - `src/lib/discounts.ts`
   - `src/lib/finalAssignment.ts`
 
-### Credentials / OCB
+### Credentials (OCB + OCA)
 
 - Tables:
   - `credential_templates`
   - `credential_issuances`
+  - `user_notifications` (in-app bell for mint events)
 - Client write lib:
   - `src/lib/credentialTemplates.ts`
 
@@ -106,9 +107,10 @@ too heavily on client-side rules.
 
 ## Main findings
 
-- `credential_templates` already had a course-specific OCB hardening migration,
+- `credential_templates` already had a course-specific credential hardening migration,
   but the broader course domain still mixed owner/staff and co-instructor access
-  too loosely.
+  too loosely. Templates now support both OCB (`collection_symbol = 'ocbadge'`) and
+  OCA (`collection_symbol IS NULL`) credential types with the same write restrictions.
 - Several course child tables allowed writes based on "has any
   co_instructor_permissions entry" instead of feature-specific permission keys.
 - Storage write coverage was uneven:
@@ -139,10 +141,12 @@ enforced consistently across UI, DB writes, and asset uploads.
 - `final_assignment_submissions` reviewer access now requires `submissions`
   capability.
 
-### Credentials / OCB
+### Credentials (OCB + OCA)
 
-- OCB write access remains strict at `credential_templates`:
+- Credential write access remains strict at `credential_templates`:
   Corelia-owned course only, plus Corelia instructor or admin/support only.
+  Applies equally to OCB templates (`collection_symbol = 'ocbadge'`) and
+  OCA templates (`collection_symbol IS NULL`).
 
 ### Storage
 
@@ -152,8 +156,8 @@ enforced consistently across UI, DB writes, and asset uploads.
   - course partner docs
   - instructor partner docs
   - final assignment files
-- OCB badge image writes now follow the same Corelia-only rule as the DB
-  template write.
+- Credential image writes (both OCB badge art and OCA cert art) follow the
+  same Corelia-only rule as the DB template write.
 
 ## Function and RPC review
 

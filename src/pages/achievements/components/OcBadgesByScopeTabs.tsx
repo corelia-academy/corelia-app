@@ -42,11 +42,11 @@ export function OcBadgesByScopeTabs({
   const tabs: { key: TabKey; label: string }[] = [
     {
       key: "course",
-      label: t("achievements.ocVault.tabs.course", { defaultValue: "Courses" }),
+      label: t("achievements.ocVault.tabs.oca", { defaultValue: "OCA" }),
     },
     {
       key: "hackathon",
-      label: t("achievements.ocVault.tabs.hackathon", { defaultValue: "Hackathons" }),
+      label: t("achievements.ocVault.tabs.hackathon", { defaultValue: "Badges" }),
     },
     {
       key: "activity_milestone",

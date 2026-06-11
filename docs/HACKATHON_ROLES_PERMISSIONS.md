@@ -1016,6 +1016,7 @@ Profile global xuyên suốt platform, hiển thị ở `/u/{username}`:
 - Single track, single round, basic rubric scoring
 - Project entity với public-on-submit
 - Manual payout tracking
+- **On-chain badge minting (OpenCampus/EDU Chain) — ĐÃ CÓ**: hackathon award là OCB (`collectionSymbol: "ocbadge"`, `achievementType: "Award"`). Admin grant award → `credential_issuances` → `mintCredentialOnce` Edge Function → email + in-app notification tự động.
 
 ### Phase 2 — Public Hackathon ready (Corelia tự tổ chức + đối tác cụ thể)
 
@@ -1035,7 +1036,6 @@ Profile global xuyên suốt platform, hiển thị ở `/u/{username}`:
 - Offline check-in (QR)
 - CoI auto-detection
 - Cross-org partnership
-- On-chain badge minting (OpenCampus/EDU Chain)
 - Auto-scan anonymity leak
 
 ### Phase 4 — Platform features

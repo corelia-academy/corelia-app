@@ -20,7 +20,7 @@ const ocidOpts = {
 } as const;
 
 createRoot(document.getElementById("root")!).render(
-  <OCConnect opts={ocidOpts} sandboxMode={import.meta.env.DEV}>
+  <OCConnect opts={ocidOpts} sandboxMode={import.meta.env.VITE_OCID_SANDBOX === "true"}>
     <App />
   </OCConnect>,
 );

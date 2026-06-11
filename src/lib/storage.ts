@@ -1,7 +1,54 @@
 import { supabase } from "@/lib/supabase";
 
+// ─── Private `app` bucket (signed URLs — for non-credential assets) ───────────
 const BUCKET = "app";
-const SIGNED_URL_SEC = 60 * 60 * 24 * 365; // 1 year — private bucket; refresh via re-upload if needed
+const SIGNED_URL_SEC = 60 * 60 * 24 * 365; // 1 year
+
+// ─── Public `cdn` bucket (permanent public URLs — for credential images) ──────
+// VITE_CDN_BASE_URL controls the domain:
+//   Production:   https://cdn.corelia.academy          (Option B, Cloudflare proxy)
+//              OR https://cdn.corelia.academy/storage/v1/object/public/cdn (Option A, Supabase custom domain)
+//   Development:  unset → falls back to raw Supabase public URL
+const CDN_BUCKET = "cdn";
+const CDN_BASE_URL = (import.meta.env.VITE_CDN_BASE_URL as string | undefined)?.replace(/\/$/, "");
+
+export function cdnPublicUrl(path: string): string {
+  if (CDN_BASE_URL) {
+    return `${CDN_BASE_URL}/${path}`;
+  }
+  // Dev fallback: raw Supabase public URL (permanent, no expiry, just less pretty)
+  const { data } = supabase.storage.from(CDN_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+async function uploadToCdn(
+  path: string,
+  file: File,
+  previousPath?: string | null,
+): Promise<{ url: string; path: string }> {
+  if (previousPath) {
+    await deleteCdnObjectByPath(previousPath);
+  }
+  const { error } = await supabase.storage.from(CDN_BUCKET).upload(path, file, {
+    contentType: file.type || "application/octet-stream",
+    upsert: true,
+  });
+  if (error) throw new Error(error.message);
+  return { url: cdnPublicUrl(path), path };
+}
+
+export async function deleteCdnObjectByPath(path?: string | null): Promise<void> {
+  const trimmed = String(path ?? "").trim();
+  if (!trimmed) return;
+  try {
+    const { error } = await supabase.storage.from(CDN_BUCKET).remove([trimmed]);
+    if (error) console.warn("[storage] cdn remove", trimmed, error.message);
+  } catch {
+    // ignore
+  }
+}
+
+// ─── Shared helpers ───────────────────────────────────────────────────────────
 
 function buildSafeExt(filename: string, fallback = "jpg"): string {
   const ext = filename.split(".").pop()?.toLowerCase() ?? "";
@@ -86,6 +133,7 @@ export function uploadContestThumbnail(
   return uploadToPath(`contest-thumbnails/${contestId}/${Date.now()}.${ext}`, file, previousPath);
 }
 
+/** Permanent CDN URL — hackathon credential badge for OC payload. */
 export function uploadHackathonCredentialBadgeImage(
   hackathonId: string,
   file: File,
@@ -93,17 +141,18 @@ export function uploadHackathonCredentialBadgeImage(
 ): Promise<{ url: string; path: string }> {
   if (!hackathonId) throw new Error("Thiếu hackathonId");
   const ext = buildSafeExt(file.name, "png");
-  return uploadToPath(
-    `hackathon-credential-badges/${hackathonId}/${Date.now()}.${ext}`,
+  return uploadToCdn(
+    `credential-badges/hackathon/${hackathonId}/${Date.now()}.${ext}`,
     file,
     previousPath,
   );
 }
 
+/** Permanent CDN URL — activity milestone badge for OC payload. */
 export function uploadActivityMilestoneBadgeImage(file: File): Promise<{ url: string; path: string }> {
   const ext = buildSafeExt(file.name, "png");
   const id = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-  return uploadToPath(`activity-milestone-badges/${id}.${ext}`, file);
+  return uploadToCdn(`credential-badges/activity-milestone/${id}.${ext}`, file);
 }
 
 export function uploadContestOrganizationalPartnerLogo(
@@ -136,6 +185,8 @@ export function uploadFinalAssignmentFile(
   );
 }
 
+/** Permanent CDN URL — course certificate template image.
+ *  Stored in the public `cdn` bucket so URLs never expire and canvas/fetch work without CORS issues. */
 export function uploadCertificateTemplate(
   courseId: string,
   file: File,
@@ -143,10 +194,36 @@ export function uploadCertificateTemplate(
 ): Promise<{ url: string; path: string }> {
   if (!courseId) throw new Error("Thiếu courseId");
   const ext = buildSafeExt(file.name, "png");
-  return uploadToPath(`certificate-templates/${courseId}/${Date.now()}.${ext}`, file, previousPath);
+  return uploadToCdn(`certificate-templates/${courseId}/${Date.now()}.${ext}`, file, previousPath);
 }
 
-/** Image for Open Campus badge (OCB) tied to a course template. */
+/** Permanent CDN URL — Corelia institution logo (issuer image in OC payloads).
+ *  Path: brand/{timestamp}.{ext}. Admin/support only (RLS cdn_brand_insert). */
+export function uploadCoreliaLogo(file: File): Promise<{ url: string; path: string }> {
+  const ext = buildSafeExt(file.name, "png");
+  return uploadToCdn(`brand/${Date.now()}.${ext}`, file);
+}
+
+/** Permanent CDN URL — rendered certificate PNG with learner name baked in.
+ *  Path: certificates/{userId}/{courseId}.png
+ *  Upserted on every render so the name is always current. */
+export async function uploadRenderedCertificate(
+  userId: string,
+  courseId: string,
+  blob: Blob,
+): Promise<{ url: string; path: string }> {
+  if (!userId) throw new Error("Thiếu userId");
+  if (!courseId) throw new Error("Thiếu courseId");
+  const path = `certificates/${userId}/${courseId}.png`;
+  const { error } = await supabase.storage.from(CDN_BUCKET).upload(path, blob, {
+    contentType: "image/png",
+    upsert: true,
+  });
+  if (error) throw new Error(error.message);
+  return { url: cdnPublicUrl(path), path };
+}
+
+/** Permanent CDN URL — course credential badge (OCB/OCA) for OC payload. */
 export function uploadCourseCredentialBadgeImage(
   courseId: string,
   file: File,
@@ -154,7 +231,11 @@ export function uploadCourseCredentialBadgeImage(
 ): Promise<{ url: string; path: string }> {
   if (!courseId) throw new Error("Thiếu courseId");
   const ext = buildSafeExt(file.name, "png");
-  return uploadToPath(`course-credential-badges/${courseId}/${Date.now()}.${ext}`, file, previousPath);
+  return uploadToCdn(
+    `credential-badges/course/${courseId}/${Date.now()}.${ext}`,
+    file,
+    previousPath,
+  );
 }
 
 export function uploadCoursePartnerDocument(

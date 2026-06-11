@@ -228,7 +228,7 @@
 
       /* ── OTP ── */
       .e-otp {
-        margin: 0 30px 20px;
+        margin: 24px 30px 20px;
         text-align: center;
       }
       .e-otp-code {
@@ -343,7 +343,7 @@
         </p>
       </div>
       <div class="e-cta-wrap">
-        <a href="{{ .ConfirmationURL }}" class="e-btn"
+        <a href="{{ .ConfirmationURL }}" class="e-btn e-btn-teal"
           >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Đặt lại mật
           khẩu →{{ else }}Reset Password →{{ end }}</a
         >
@@ -353,12 +353,7 @@
           {{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Thông tin bảo
           mật{{ else }}Security Details{{ end }}
         </div>
-        <div class="e-info-row">
-          <span class="e-info-key"
-            >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Thời gian yêu
-            cầu{{ else }}Request Time{{ end }}</span
-          ><span class="e-info-val">{{ .SentAt }}</span>
-        </div>
+
         <div class="e-info-row">
           <span class="e-info-key"
             >{{ if or (eq .Data.locale "vi") (eq .Data.locale "vn") }}Hiệu lực{{ else }}Expires In{{ end

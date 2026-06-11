@@ -38,7 +38,7 @@ export default function OpenCampusConnectDialog(props: Props) {
               <DialogDescription className="mt-1">
                 {t("openCampusConnect.modal.description")}{" "}
                 <a
-                  href="https://id.opencampus.xyz/"
+                  href={import.meta.env.VITE_OCID_SANDBOX === "true" ? "https://id.sandbox.opencampus.xyz/" : "https://id.opencampus.xyz/"}
                   target="_blank"
                   rel="noreferrer"
                 >

@@ -90,7 +90,11 @@
     "viewHackathon": "Xem hackathon",
     "courseAnnouncementTitle": "Thông báo từ khoá học",
     "trackAnnouncementTitle": "Thông báo từ lộ trình học",
-    "markRead": "Đánh dấu đã đọc"
+    "markRead": "Đánh dấu đã đọc",
+    "ocCredentialMintedTitle": "Đã cấp Open Campus credential 🎉",
+    "ocCredentialMintedBody": "Bạn vừa nhận được: {{name}}",
+    "ocCredentialMintedBodyOca": "Chứng nhận của bạn đã sẵn sàng: {{name}}",
+    "viewCredential": "Xem thành tích"
   },
   "userProfile": {
     "tabs": {
@@ -127,7 +131,7 @@
     },
     "achievements": {
       "selfOnly": "Thành tích hiện chỉ hiển thị cho chính chủ tài khoản.",
-      "openInAchievementsPage": "Mở trang Thành tích để xem chứng chỉ và huy hiệu của bạn.",
+      "openInAchievementsPage": "Mở trang Thành tích để xem chứng nhận và huy hiệu của bạn.",
       "cta": "Mở trang Thành tích"
     },
     "courses": {
@@ -301,9 +305,9 @@
         "emptyNote": "Chưa có hackathon mới"
       },
       "certificates": {
-        "label": "Chứng chỉ đã cấp",
+        "label": "Chứng nhận đã cấp",
         "note": "Theo dõi toàn bộ trong mục Thành tích",
-        "emptyNote": "Chưa có chứng chỉ nào được cấp"
+        "emptyNote": "Chưa có chứng nhận nào được cấp"
       }
     },
     "pinned": {
@@ -331,7 +335,7 @@
       "signIn": "Đăng nhập",
       "openContestsTitle": "Hackathon đang mở",
       "startLearningTitle": "Bắt đầu hành trình học tập",
-      "startLearningSubtitle": "Đăng nhập để lưu tiến độ, theo dõi chứng chỉ và gửi hồ sơ tham gia hackathon.",
+      "startLearningSubtitle": "Đăng nhập để lưu tiến độ, theo dõi chứng nhận và gửi hồ sơ tham gia hackathon.",
       "quickLinksTitle": "Lối đi nhanh",
       "valueProps": {
         "learn": {
@@ -494,16 +498,46 @@
       ]
     },
     "surfaceContext": {
-      "home": { "title": "Dashboard của bạn", "description": "Tiến độ, khoá học và việc làm tiếp theo" },
-      "courses": { "title": "Thư viện khoá học", "description": "Duyệt và so sánh khoá học" },
-      "career": { "title": "Lộ trình nghề nghiệp", "description": "Track và kỹ năng theo mục tiêu" },
-      "hackathons": { "title": "Hackathon", "description": "Cuộc thi và bài nộp" },
-      "projects": { "title": "Dự án", "description": "Portfolio và cộng tác" },
-      "achievements": { "title": "Thành tích", "description": "Chứng chỉ và huy hiệu" },
-      "search": { "title": "Tìm kiếm", "description": "Khoá học, người dùng và nội dung" },
-      "profile": { "title": "Hồ sơ", "description": "Hồ sơ học tập công khai" },
-      "account": { "title": "Tài khoản", "description": "Cài đặt và thanh toán" },
-      "default": { "title": "Corelia", "description": "Trợ lý học tập" }
+      "home": {
+        "title": "Dashboard của bạn",
+        "description": "Tiến độ, khoá học và việc làm tiếp theo"
+      },
+      "courses": {
+        "title": "Thư viện khoá học",
+        "description": "Duyệt và so sánh khoá học"
+      },
+      "career": {
+        "title": "Lộ trình nghề nghiệp",
+        "description": "Track và kỹ năng theo mục tiêu"
+      },
+      "hackathons": {
+        "title": "Hackathon",
+        "description": "Cuộc thi và bài nộp"
+      },
+      "projects": {
+        "title": "Dự án",
+        "description": "Portfolio và cộng tác"
+      },
+      "achievements": {
+        "title": "Thành tích",
+        "description": "Chứng nhận và huy hiệu"
+      },
+      "search": {
+        "title": "Tìm kiếm",
+        "description": "Khoá học, người dùng và nội dung"
+      },
+      "profile": {
+        "title": "Hồ sơ",
+        "description": "Hồ sơ học tập công khai"
+      },
+      "account": {
+        "title": "Tài khoản",
+        "description": "Cài đặt và thanh toán"
+      },
+      "default": {
+        "title": "Corelia",
+        "description": "Trợ lý học tập"
+      }
     },
     "restoreAction": "Mở lại Cora AI",
     "chipToast": "Cora AI sticky đang ở chế độ preview.",
@@ -544,7 +578,7 @@
       ],
       "achievements": [
         "Tóm tắt giúp mình các thành tích học tập hiện tại.",
-        "Mình còn thiếu gì để có thêm chứng chỉ hay badge?",
+        "Mình còn thiếu gì để có thêm chứng nhận hay badge?",
         "Thành tích nào phản ánh tốt nhất hướng học hiện tại của mình?"
       ],
       "search": [
@@ -577,7 +611,7 @@
       "social": "Cộng đồng"
     },
     "certificates": {
-      "courseCompletionTitle": "Chứng chỉ hoàn thành khoá học",
+      "courseCompletionTitle": "Chứng nhận hoàn thành khoá học",
       "fallbackCourseName": "Khoá học Corelia",
       "fallbackInstructorName": "Corelia Academy",
       "issuedOnPrefix": "Cấp ngày {{date}}",
@@ -589,6 +623,11 @@
         "view": "Xem OC credential",
         "claim": "Claim OC credential"
       },
+      "viewLarge": "Xem chứng nhận",
+      "downloadPdf": "Tải về dạng PDF",
+      "downloadPng": "Tải về dạng PNG",
+      "downloadError": "Không thể tạo chứng nhận. Vui lòng thử lại.",
+      "noTemplate": "Khoá học này chưa có template chứng nhận.",
       "downloadTooltip": "Tải xuống"
     },
     "badges": {
@@ -609,12 +648,12 @@
         "description": "Ghi danh 3 khóa học khác nhau để mở cột mốc này."
       },
       "firstCertificate": {
-        "title": "Chứng chỉ đầu tiên",
-        "description": "Nhận chứng chỉ đầu tiên từ một khóa học để mở cột mốc này."
+        "title": "Chứng nhận đầu tiên",
+        "description": "Nhận chứng nhận đầu tiên từ một khóa học để mở cột mốc này."
       },
       "threeCertificates": {
         "title": "Learning portfolio",
-        "description": "Sở hữu 3 chứng chỉ để hoàn thiện hồ sơ thành tích Corelia."
+        "description": "Sở hữu 3 chứng nhận để hoàn thiện hồ sơ thành tích Corelia."
       },
       "next": {
         "titleFallback": "Bạn đã mở khóa tất cả milestone hiện có",
@@ -632,7 +671,10 @@
         "title": "Open Campus Credential",
         "subtitle": "Verifiable credential trên blockchain EDUChain",
         "kind": {
-          "cert": "Chứng chỉ",
+          "cert": "Chứng nhận",
+          "oca": "OCA · Chứng nhận hoàn thành",
+          "hackathonBadge": "Hackathon Badge",
+          "milestone": "Cột mốc",
           "badge": "Huy hiệu"
         },
         "date": {
@@ -650,6 +692,25 @@
           "issue": "Issue on Open Campus",
           "pending": "Đang xử lý trên blockchain..."
         },
+        "review": {
+          "title": "Xác nhận thông tin trước khi issue",
+          "subtitle": "Thông tin này sẽ được ghi vĩnh viễn lên blockchain. Hãy kiểm tra kỹ trước khi xác nhận.",
+          "back": "Quay lại",
+          "confirm": "Xác nhận & Issue",
+          "credentialLabel": "Credential",
+          "nameLabel": "Tên của bạn trên credential",
+          "editName": "Sửa tên",
+          "nameMissing": "Bạn chưa đặt tên hiển thị. Tên sẽ không xuất hiện trên credential.",
+          "setName": "Cập nhật tên",
+          "permanenceWarning": "Sau khi issue, credential này được ghi vĩnh viễn trên blockchain EDUChain và không thể chỉnh sửa hay thu hồi. Hãy chắc chắn tên và OCID của bạn chính xác trước khi xác nhận."
+        },
+        "claimToast": {
+          "pending": "Credential đang được xử lý trên blockchain. Vui lòng kiểm tra lại sau.",
+          "error": {
+            "failed": "Không thể issue credential. Vui lòng thử lại.",
+            "notEligible": "Không thể issue credential. Hãy đảm bảo bạn đã hoàn thành khóa học và kết nối OCID."
+          }
+        },
         "claimedActions": {
           "downloadPdf": "Tải PDF",
           "share": "Chia sẻ"
@@ -658,7 +719,7 @@
       }
     },
     "stats": {
-      "certificates": "Chứng chỉ",
+      "certificates": "Chứng nhận",
       "badges": "Huy hiệu",
       "total": "Tổng thành tích",
       "ocCredential": "OC Credential"
@@ -666,9 +727,9 @@
     "hero": {
       "eyebrow": "Hành trình thành tích",
       "title": "Thành tích của tôi",
-      "subtitlePrefix": "Theo dõi chứng chỉ, huy hiệu và các cột mốc học tập trong một hành trình liền mạch. Khi sẵn sàng, bạn có thể claim từng thành tích lên",
+      "subtitlePrefix": "Theo dõi chứng nhận, huy hiệu và các cột mốc học tập trong một hành trình liền mạch. Khi sẵn sàng, bạn có thể claim từng thành tích lên",
       "subtitleSuffix": "để có verifiable credential trên blockchain.",
-      "certCount": "{{count}} chứng chỉ",
+      "certCount": "{{count}} chứng nhận",
       "badgeUnlockedCount": "{{count}} huy hiệu đã mở",
       "readyToClaimCount": "{{count}} sẵn sàng claim",
       "claimedOnOc": {
@@ -683,8 +744,8 @@
     },
     "meaning": {
       "title": "Ý nghĩa của chứng nhận Corelia",
-      "p1": "Thành tích trong Corelia phản ánh những gì bạn đã thật sự hoàn thành: khóa học đã đi hết, chứng chỉ đã nhận và các cột mốc kỹ thuật đã mở.",
-      "p2": "Chứng chỉ và huy hiệu được xây dựng để hỗ trợ portfolio học tập, workshop, hackathon và hành trình phát triển trong hệ sinh thái Web3, thay vì đóng vai trò như văn bằng học thuật chính thức."
+      "p1": "Thành tích trong Corelia phản ánh những gì bạn đã thật sự hoàn thành: khóa học đã đi hết, chứng nhận đã nhận và các cột mốc kỹ thuật đã mở.",
+      "p2": "Chứng nhận và huy hiệu được xây dựng để hỗ trợ portfolio học tập, workshop, hackathon và hành trình phát triển trong hệ sinh thái Web3, thay vì đóng vai trò như văn bằng học thuật chính thức."
     },
     "useCases": {
       "title": "Nơi bạn có thể dùng chúng",
@@ -704,11 +765,11 @@
     },
     "vaults": {
       "certificates": {
-        "title": "Kho chứng chỉ",
-        "subtitle": "Nơi lưu trữ tất cả chứng chỉ từ các khóa học đã hoàn thành.",
-        "countLabel": "{{count}} chứng chỉ",
-        "loading": "Đang tải kho chứng chỉ của bạn.",
-        "empty": "Bạn chưa có chứng chỉ nào. Hãy hoàn thành một khóa học có chứng nhận để bắt đầu."
+        "title": "Kho chứng nhận",
+        "subtitle": "Nơi lưu trữ tất cả chứng nhận từ các khóa học đã hoàn thành.",
+        "countLabel": "{{count}} chứng nhận",
+        "loading": "Đang tải kho chứng nhận của bạn.",
+        "empty": "Bạn chưa có chứng nhận nào. Hãy hoàn thành một khóa học có chứng nhận để bắt đầu."
       },
       "badges": {
         "title": "Bộ huy hiệu và milestone",
@@ -722,6 +783,19 @@
         "title": "Sắp mở khóa",
         "allUnlockedNote": "Bạn đã mở khóa toàn bộ milestone hiện có. Bây giờ có thể tập trung vào việc claim OC credential và mở rộng hồ sơ thành tích của mình."
       }
+    },
+    "ocVault": {
+      "tabs": {
+        "oca": "OCA",
+        "hackathon": "Badge",
+        "milestones": "Milestones"
+      },
+      "empty": "Chưa có credential nào trong danh mục này."
+    },
+    "credentialType": {
+      "oca": "OCA",
+      "badge": "Badge",
+      "milestone": "Cột mốc"
     }
   },
   "feedback": {
@@ -751,12 +825,12 @@
       "Khu vực tài khoản: hồ sơ, thanh toán cơ bản và tổng quan thành tích",
       "Không gian giảng viên: biên soạn khóa và công cụ tài chính đối tác",
       "Công cụ admin cho người dùng, giảng viên và vận hành nền tảng",
-      "Liên kết Open Campus (OCID) cho chứng chỉ và xác nhận thành tích"
+      "Liên kết Open Campus (OCID) cho chứng nhận và xác nhận thành tích"
     ],
     "inProgressItems": [
       "Quản trị hackathon: tạo nội dung, duyệt và xuất bản mượt hơn",
       "Trang hackathon công khai: timeline, giải thưởng, luật, FAQ và hoàn thiện UI",
-      "Chứng chỉ & huy hiệu: cấp phát và trải nghiệm claim OC ổn định hơn",
+      "Chứng nhận & huy hiệu: cấp phát và trải nghiệm claim OC ổn định hơn",
       "Tối ưu hiệu năng, accessibility và onboarding trên toàn site"
     ],
     "plannedItems": [

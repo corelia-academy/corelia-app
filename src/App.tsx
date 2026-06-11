@@ -1,5 +1,7 @@
 import { Suspense, lazy, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { LoadingBar } from "@/components/ui/LoadingBar";
+import { useLoadingStore } from "@/stores/loadingStore";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
@@ -11,6 +13,7 @@ import {
   Route,
   Routes,
   useLocation,
+  useNavigate,
 } from "react-router";
 import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
@@ -19,6 +22,7 @@ import { RequireRole } from "@/components/auth/RequireRole";
 import { RequireContestManager } from "@/components/auth/RequireContestManager";
 import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
+import { useAuthStore } from "@/stores/authStore";
 
 // Lazy-load all routes not needed on the initial render
 const Home = lazy(() => import("@/pages/home/index"));
@@ -57,6 +61,7 @@ const ContestWorkspacePublicRoute = lazy(() =>
 );
 const ConfirmSignup = lazy(() => import("@/pages/auth/ConfirmSignup"));
 const SignupVerified = lazy(() => import("@/pages/auth/SignupVerified"));
+const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"));
 const EmailUnsubscribePage = lazy(() =>
   import("@/pages/EmailUnsubscribePage").then((m) => ({ default: m.EmailUnsubscribePage })),
 );
@@ -117,8 +122,23 @@ const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDe
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMilestones"));
 const AdminCoraVouchers = lazy(() => import("@/pages/admin/AdminCoraVouchers"));
+const AdminBranding = lazy(() => import("@/pages/admin/AdminBranding"));
 
 const PageFallback = () => <AuthGateLoading />;
+
+function RecoveryGuard() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isPasswordRecovery = useAuthStore((s) => s.isPasswordRecovery);
+
+  useEffect(() => {
+    if (isPasswordRecovery && location.pathname !== "/auth/reset-password") {
+      void navigate("/auth/reset-password", { replace: true });
+    }
+  }, [isPasswordRecovery, location.pathname, navigate]);
+
+  return null;
+}
 
 function ScrollToTop() {
   const location = useLocation();
@@ -177,11 +197,22 @@ function ScrollToTop() {
 
 export default function App() {
   const { i18n } = useTranslation();
+  const profileLoading = useAuthStore((s) => s.profileLoading);
+  const startLoading = useLoadingStore((s) => s.startLoading);
+  const stopLoading = useLoadingStore((s) => s.stopLoading);
 
   useEffect(() => {
     document.documentElement.lang =
       i18n.resolvedLanguage ?? i18n.language ?? "vi";
   }, [i18n.resolvedLanguage, i18n.language]);
+
+  useEffect(() => {
+    if (profileLoading) {
+      startLoading("profile-loading");
+    } else {
+      stopLoading("profile-loading");
+    }
+  }, [profileLoading, startLoading, stopLoading]);
 
   if (import.meta.env.VITE_MAINTENANCE_MODE === "true") {
     return (
@@ -194,11 +225,13 @@ export default function App() {
   return (
     <ErrorBoundary>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <LoadingBar />
       <Toaster />
       <AuthSync />
       <TooltipProvider>
         <BrowserRouter>
           <ScrollToTop />
+          <RecoveryGuard />
           <Routes>
             <Route
               path="/login"
@@ -221,6 +254,14 @@ export default function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <SignupVerified />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/auth/reset-password"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <ResetPasswordPage />
                 </Suspense>
               }
             />
@@ -645,6 +686,14 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <AdminCoraVouchers />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="branding"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminBranding />
                     </Suspense>
                   }
                 />

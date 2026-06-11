@@ -5,10 +5,13 @@ import {
   Lock,
   Trophy,
 } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useOCAuth } from "@opencampus/ocid-connect-js";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
 
 import { OcBadgesByScopeTabs } from "./components/OcBadgesByScopeTabs";
 import { CertificateCard } from "./components/CertificateCard";
@@ -19,6 +22,10 @@ import { useAchievementsPage } from "./hooks/useAchievementsPage";
 
 export default function AchievementsPage() {
   const { t } = useTranslation("common");
+  const { ocAuth, isInitialized } = useOCAuth();
+  const [ocConnectLoading, setOcConnectLoading] = useState(false);
+  const [ocConnectError, setOcConnectError] = useState<string | null>(null);
+
   const {
     certificates,
     badges,
@@ -29,7 +36,21 @@ export default function AchievementsPage() {
     claiming,
     openModal,
     handleClaim,
+    ocidConnectOpen,
+    setOcidConnectOpen,
   } = useAchievementsPage();
+
+  async function handleOcConnect() {
+    setOcConnectError(null);
+    if (!isInitialized || !ocAuth) return;
+    try {
+      setOcConnectLoading(true);
+      await ocAuth.signInWithRedirect({ state: "corelia-ocid-connect" });
+    } catch (e) {
+      setOcConnectError(e instanceof Error ? e.message : t("openCampusConnect.modal.startFailed"));
+      setOcConnectLoading(false);
+    }
+  }
 
   const earnedBadges = badges.filter((b) => !b.locked);
   const lockedBadges = badges.filter((b) => b.locked);
@@ -383,6 +404,15 @@ export default function AchievementsPage() {
         onOpenChange={setModalOpen}
         onClaim={handleClaim}
         claiming={claiming}
+      />
+
+      <OpenCampusConnectDialog
+        open={ocidConnectOpen}
+        onOpenChange={setOcidConnectOpen}
+        onConnect={() => void handleOcConnect()}
+        disabled={!isInitialized || !ocAuth}
+        loading={ocConnectLoading}
+        error={ocConnectError}
       />
     </div>
   );

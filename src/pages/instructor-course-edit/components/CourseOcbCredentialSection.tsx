@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, Shield } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -8,19 +8,54 @@ import { Input } from "@/components/ui/input";
 import {
   getLatestCourseCredentialTemplate,
   saveCourseCredentialTemplate,
+  type CourseCredentialKind,
   type CourseCredentialTriggerRule,
 } from "@/lib/credentialTemplates";
 import { uploadCourseCredentialBadgeImage } from "@/lib/storage";
 import { toast } from "sonner";
 
+function StatusBadge({ active }: { active: boolean }) {
+  const { t } = useTranslation("instructor");
+  if (active) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
+        <CheckCircle2 className="size-3.5" aria-hidden />
+        {t("courseEdit.ocb.statusActive")}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-raised px-2.5 py-1 text-xs font-medium text-foreground-muted border border-border-subtle">
+      {t("courseEdit.ocb.statusInactive")}
+    </span>
+  );
+}
+
+type KindOption = {
+  value: CourseCredentialKind;
+  labelKey: string;
+  descKey: string;
+};
+
+const KIND_OPTIONS: KindOption[] = [
+  { value: "oca", labelKey: "courseEdit.ocb.kind.oca.label", descKey: "courseEdit.ocb.kind.oca.desc" },
+  { value: "ocb", labelKey: "courseEdit.ocb.kind.ocb.label", descKey: "courseEdit.ocb.kind.ocb.desc" },
+];
+
 export function CourseOcbCredentialSection({
   courseId,
   courseSlug,
   canEdit,
+  hasCertificate = false,
+  onActiveChange,
+  certificateTemplateUrl,
 }: {
   courseId: string;
   courseSlug: string;
   canEdit: boolean;
+  hasCertificate?: boolean;
+  onActiveChange?: (active: boolean) => void;
+  certificateTemplateUrl?: string | null;
 }) {
   const { t } = useTranslation("instructor");
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -28,13 +63,14 @@ export function CourseOcbCredentialSection({
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(true);
+  const [credentialKind, setCredentialKind] = useState<CourseCredentialKind>("oca");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [identifierPrefix, setIdentifierPrefix] = useState("");
   const [completionPct, setCompletionPct] = useState(100);
-  const [requireAssignmentPass, setRequireAssignmentPass] = useState(true);
+  const [requireAssignmentPass, setRequireAssignmentPass] = useState(false);
   const [minAssignmentScore, setMinAssignmentScore] = useState(70);
 
   const load = useCallback(async () => {
@@ -43,32 +79,36 @@ export function CourseOcbCredentialSection({
       const row = await getLatestCourseCredentialTemplate(courseId);
       if (!row) {
         setTemplateId(null);
-        setIsActive(false);
+        setIsActive(true);
+        onActiveChange?.(true);
+        setCredentialKind("oca");
         setName("");
         setDescription("");
         setImageUrl("");
         setIdentifierPrefix(`corelia:${courseSlug}`.slice(0, 40));
         setCompletionPct(100);
-        setRequireAssignmentPass(true);
+        setRequireAssignmentPass(false);
         setMinAssignmentScore(70);
         return;
       }
       setTemplateId(row.id);
       setIsActive(row.is_active);
+      onActiveChange?.(row.is_active);
+      setCredentialKind(row.collection_symbol ? "ocb" : "oca");
       setName(row.name ?? "");
       setDescription(row.description ?? "");
       setImageUrl(row.image_url ?? "");
       setIdentifierPrefix(row.identifier_prefix ?? "");
       const tr = row.trigger_rule as CourseCredentialTriggerRule | null;
       setCompletionPct(Number(tr?.completion_pct ?? 100));
-      setRequireAssignmentPass(tr?.require_assignment_pass !== false);
+      setRequireAssignmentPass(tr?.require_assignment_pass === true);
       setMinAssignmentScore(Number(tr?.min_assignment_score ?? 70));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("courseEdit.ocb.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, [courseId, courseSlug, t]);
+  }, [courseId, courseSlug, onActiveChange, t]);
 
   useEffect(() => {
     void load();
@@ -77,7 +117,7 @@ export function CourseOcbCredentialSection({
   const handleUpload = async (file: File | null) => {
     if (!file) return;
     if (!canEdit) {
-      toast.error("Bạn không có quyền cấu hình Open Campus badge cho khoá học này.");
+      toast.error(t("courseEdit.ocb.noPermission"));
       return;
     }
     setUploading(true);
@@ -94,7 +134,7 @@ export function CourseOcbCredentialSection({
 
   const handleSave = async () => {
     if (!canEdit) {
-      toast.error("Bạn không có quyền cấu hình Open Campus badge cho khoá học này.");
+      toast.error(t("courseEdit.ocb.noPermission"));
       return;
     }
     setSaving(true);
@@ -108,12 +148,15 @@ export function CourseOcbCredentialSection({
         courseId,
         courseSlug,
         templateId,
-        isActive,
+        isActive: credentialKind === "oca" ? true : isActive,
         name: name.trim() || courseSlug,
         description: description.trim() || name.trim() || courseSlug,
-        imageUrl: imageUrl.trim(),
+        imageUrl: credentialKind === "oca"
+          ? (certificateTemplateUrl?.trim() || imageUrl.trim())
+          : imageUrl.trim(),
         identifierPrefix: identifierPrefix.trim(),
         triggerRule,
+        credentialKind,
       });
       setTemplateId(id);
       toast.success(t("courseEdit.ocb.saved"));
@@ -127,101 +170,209 @@ export function CourseOcbCredentialSection({
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-foreground-muted">
+      <div className="flex items-center gap-2 text-sm text-foreground-muted py-4">
         <Loader2 className="size-4 animate-spin" aria-hidden />
         {t("courseEdit.ocb.loading")}
       </div>
     );
   }
 
+  const isOcbBlockedByHasCert = credentialKind === "ocb" && hasCertificate;
+
   return (
-    <div className="mt-10 space-y-6 border-t border-border-subtle pt-8">
-      <div>
-        <h3 className="text-base font-medium text-foreground">{t("courseEdit.ocb.title")}</h3>
-        <p className="mt-1 text-sm text-foreground-muted">{t("courseEdit.ocb.subtitle")}</p>
+    <div className="space-y-6">
+      {/* Header row */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+            <Shield className="size-4 text-primary" aria-hidden />
+            {t("courseEdit.ocb.title")}
+          </h3>
+          <p className="mt-1 text-sm text-foreground-muted">{t("courseEdit.ocb.subtitle")}</p>
+        </div>
+        <StatusBadge active={isActive} />
       </div>
 
-      <label className="flex cursor-pointer items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={isActive}
-          disabled={!canEdit}
-          onChange={(e) => setIsActive(e.target.checked)}
-          className="size-4 rounded border-border"
-        />
-        <span>{t("courseEdit.ocb.enableLabel")}</span>
-      </label>
-
-      {isActive ? (
-        <div className="space-y-4">
-          <Field>
-            <FieldLabel>{t("courseEdit.ocb.nameLabel")}</FieldLabel>
-            <Input value={name} disabled={!canEdit} onChange={(e) => setName(e.target.value)} />
-          </Field>
-          <Field>
-            <FieldLabel>{t("courseEdit.ocb.descriptionLabel")}</FieldLabel>
-            <textarea
-              value={description}
-              disabled={!canEdit}
-              rows={3}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                setDescription(e.target.value)}
-              className="min-h-[88px] w-full rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:opacity-60"
-            />
-          </Field>
-          <Field>
-            <FieldLabel>{t("courseEdit.ocb.imageLabel")}</FieldLabel>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/png,image/jpeg,image/jpg"
-              className="hidden"
-              onChange={(e) => void handleUpload(e.target.files?.[0] ?? null)}
-            />
-            <div className="mt-1 flex flex-wrap items-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={!canEdit || uploading}
-                onClick={() => fileRef.current?.click()}
-              >
-                {uploading ? t("courseEdit.ocb.uploading") : t("courseEdit.ocb.uploadBadge")}
-              </Button>
-              {imageUrl ? (
-                <img src={imageUrl} alt="" className="h-14 w-auto rounded border border-border-subtle" />
-              ) : null}
-            </div>
-          </Field>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field>
-              <FieldLabel>{t("courseEdit.ocb.completionPctLabel")}</FieldLabel>
-              <Input
-                type="number"
-                min={0}
-                max={100}
+      {/* Credential type */}
+      <div>
+        <p className="mb-2 text-sm font-medium text-foreground">{t("courseEdit.ocb.kind.label")}</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {KIND_OPTIONS.map((opt) => (
+            <label
+              key={opt.value}
+              className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
+                credentialKind === opt.value
+                  ? "border-primary bg-primary/5"
+                  : "border-border-subtle bg-surface-raised hover:border-border"
+              } ${!canEdit ? "cursor-not-allowed opacity-60" : ""}`}
+            >
+              <input
+                type="radio"
+                name="credentialKind"
+                value={opt.value}
+                checked={credentialKind === opt.value}
                 disabled={!canEdit}
-                value={completionPct}
-                onChange={(e) => setCompletionPct(Number(e.target.value))}
+                onChange={() => {
+                  setCredentialKind(opt.value);
+                  if (opt.value === "oca") {
+                    setIsActive(true);
+                    onActiveChange?.(true);
+                  }
+                }}
+                className="mt-0.5 accent-primary"
               />
-            </Field>
+              <div>
+                <p className="text-sm font-medium text-foreground">{t(opt.labelKey as never)}</p>
+                <p className="mt-0.5 text-xs text-foreground-muted">{t(opt.descKey as never)}</p>
+              </div>
+            </label>
+          ))}
+        </div>
+        {isOcbBlockedByHasCert && (
+          <p className="mt-2 text-xs text-warning-foreground bg-warning/10 border border-warning/20 rounded-md px-3 py-2">
+            {t("courseEdit.ocb.blockedByCertificate")}
+          </p>
+        )}
+      </div>
+
+      {/* Enable toggle — OCB only (OCB is auto-minted; OCA is always claimable once saved) */}
+      {credentialKind === "ocb" && (
+        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border-subtle bg-surface-raised p-4">
+          <input
+            type="checkbox"
+            checked={isActive}
+            disabled={!canEdit || isOcbBlockedByHasCert}
+            onChange={(e) => {
+              setIsActive(e.target.checked);
+              onActiveChange?.(e.target.checked);
+            }}
+            className="size-4 accent-primary rounded border-border"
+          />
+          <div>
+            <p className="text-sm font-medium text-foreground">{t("courseEdit.ocb.enableLabel")}</p>
+            <p className="text-xs text-foreground-muted">{t("courseEdit.ocb.enableHint")}</p>
           </div>
+        </label>
+      )}
 
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={requireAssignmentPass}
+      {/* Config fields — always visible */}
+      <div className="space-y-4 rounded-xl border border-border-subtle bg-surface-raised p-4 sm:p-5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
+          {t("courseEdit.ocb.configTitle")}
+        </p>
+
+        <Field>
+          <FieldLabel>{t("courseEdit.ocb.nameLabel")}</FieldLabel>
+          <Input value={name} disabled={!canEdit} onChange={(e) => setName(e.target.value)} />
+        </Field>
+
+        <Field>
+          <FieldLabel>{t("courseEdit.ocb.descriptionLabel")}</FieldLabel>
+          <textarea
+            value={description}
+            disabled={!canEdit}
+            rows={3}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+            className="min-h-[88px] w-full rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:opacity-60"
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel>{t("courseEdit.ocb.imageLabel")}</FieldLabel>
+          {credentialKind === "oca" ? (
+            <div className="mt-1 flex items-start gap-3 rounded-lg border border-border-subtle bg-surface-base p-3">
+              {certificateTemplateUrl ? (
+                <img
+                  src={certificateTemplateUrl}
+                  alt=""
+                  className="h-16 w-auto rounded border border-border-subtle shrink-0"
+                />
+              ) : (
+                <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded border border-dashed border-border-subtle bg-surface-raised text-xs text-foreground-muted">
+                  {t("courseEdit.ocb.imageOcaNoTemplate")}
+                </div>
+              )}
+              <p className="text-xs text-foreground-muted leading-relaxed">
+                {t("courseEdit.ocb.imageOcaHint")}
+              </p>
+            </div>
+          ) : (
+            <>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg"
+                className="hidden"
+                onChange={(e) => void handleUpload(e.target.files?.[0] ?? null)}
+              />
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!canEdit || uploading}
+                  onClick={() => fileRef.current?.click()}
+                >
+                  {uploading ? t("courseEdit.ocb.uploading") : t("courseEdit.ocb.uploadBadge")}
+                </Button>
+                {imageUrl && (
+                  <img src={imageUrl} alt="" className="h-14 w-auto rounded border border-border-subtle" />
+                )}
+              </div>
+              <p className="mt-1.5 text-xs text-foreground-muted">{t("courseEdit.ocb.imageHint")}</p>
+            </>
+          )}
+        </Field>
+
+        <Field>
+          <FieldLabel>{t("courseEdit.ocb.identifierPrefixLabel")}</FieldLabel>
+          <Input
+            value={identifierPrefix}
+            disabled={!canEdit}
+            onChange={(e) => setIdentifierPrefix(e.target.value.slice(0, 40))}
+            placeholder={`corelia:${courseSlug}`}
+          />
+          <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.ocb.identifierHint")}</p>
+        </Field>
+      </div>
+
+      {/* Requirements */}
+      <div className="space-y-4 rounded-xl border border-border-subtle bg-surface-raised p-4 sm:p-5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
+          {t("courseEdit.ocb.requirementsTitle")}
+        </p>
+
+        <Field>
+          <FieldLabel>{t("courseEdit.ocb.completionPctLabel")}</FieldLabel>
+          <div className="flex items-center gap-3">
+            <Input
+              type="number"
+              min={0}
+              max={100}
               disabled={!canEdit}
-              onChange={(e) => setRequireAssignmentPass(e.target.checked)}
-              className="size-4 rounded border-border"
+              value={completionPct}
+              onChange={(e) => setCompletionPct(Number(e.target.value))}
+              className="w-28"
             />
-            <span>{t("courseEdit.ocb.requireAssignmentLabel")}</span>
-          </label>
+            <span className="text-sm text-foreground-muted">%</span>
+          </div>
+        </Field>
 
-          {requireAssignmentPass ? (
-            <Field>
-              <FieldLabel>{t("courseEdit.ocb.minScoreLabel")}</FieldLabel>
+        <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={requireAssignmentPass}
+            disabled={!canEdit}
+            onChange={(e) => setRequireAssignmentPass(e.target.checked)}
+            className="size-4 accent-primary rounded border-border"
+          />
+          <span>{t("courseEdit.ocb.requireAssignmentLabel")}</span>
+        </label>
+
+        {requireAssignmentPass && (
+          <Field>
+            <FieldLabel>{t("courseEdit.ocb.minScoreLabel")}</FieldLabel>
+            <div className="flex items-center gap-3">
               <Input
                 type="number"
                 min={0}
@@ -229,26 +380,17 @@ export function CourseOcbCredentialSection({
                 disabled={!canEdit}
                 value={minAssignmentScore}
                 onChange={(e) => setMinAssignmentScore(Number(e.target.value))}
+                className="w-28"
               />
-            </Field>
-          ) : null}
-
-          <Field>
-            <FieldLabel>{t("courseEdit.ocb.identifierPrefixLabel")}</FieldLabel>
-            <Input
-              value={identifierPrefix}
-              disabled={!canEdit}
-              onChange={(e) => setIdentifierPrefix(e.target.value.slice(0, 40))}
-              placeholder={`corelia:${courseSlug}`}
-            />
-            <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.ocb.identifierHint")}</p>
+              <span className="text-sm text-foreground-muted">/ 100</span>
+            </div>
           </Field>
+        )}
+      </div>
 
-          <Button type="button" disabled={!canEdit || saving} onClick={() => void handleSave()}>
-            {saving ? t("courseEdit.ocb.saving") : t("courseEdit.ocb.save")}
-          </Button>
-        </div>
-      ) : null}
+      <Button type="button" disabled={!canEdit || saving || isOcbBlockedByHasCert} onClick={() => void handleSave()}>
+        {saving ? t("courseEdit.ocb.saving") : t("courseEdit.ocb.save")}
+      </Button>
     </div>
   );
 }

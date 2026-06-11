@@ -131,6 +131,7 @@ import {
 } from "@/lib/lessonFormat";
 import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
+import { trackLoadingPromise } from "@/stores/loadingStore";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -377,6 +378,7 @@ const InstructorCourseEdit = () => {
     certificate_template_path: "",
     certificate_name_x_percent: 50,
     certificate_name_y_percent: 50,
+    certificate_name_color: "#000000",
     access_model: "free" as CourseAccessModel,
     price_vnd: "",
     promo_price_vnd: "",
@@ -499,6 +501,7 @@ const InstructorCourseEdit = () => {
   const [partnerDialogLocale, setPartnerDialogLocale] = useState<SupportedCourseLocale>("vi");
   const partnerLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingPartnerLogo, setUploadingPartnerLogo] = useState(false);
+  const [ocbIsActive, setOcbIsActive] = useState(false);
   const [discounts, setDiscounts] = useState<CourseDiscount[]>([]);
   const [loadingDiscounts, setLoadingDiscounts] = useState(false);
   const [creatingDiscount, setCreatingDiscount] = useState(false);
@@ -898,6 +901,7 @@ const InstructorCourseEdit = () => {
         certificate_template_path: course.certificate_template_path ?? "",
         certificate_name_x_percent: course.certificate_name_x_percent ?? 50,
         certificate_name_y_percent: course.certificate_name_y_percent ?? 50,
+        certificate_name_color: course.certificate_name_color ?? "#000000",
         access_model: course.access_model ?? "free",
         price_vnd:
           course.price_vnd && course.price_vnd > 0
@@ -1220,7 +1224,7 @@ const InstructorCourseEdit = () => {
     }
     setSaving(true);
     setError(null);
-    try {
+    const savePromise = (async () => {
       const sanitizedOutcomes = (contentForm.learning_outcomes ?? [])
         .map((item) => item.trim())
         .filter(Boolean)
@@ -1329,6 +1333,7 @@ const InstructorCourseEdit = () => {
         certificate_template_path: form.certificate_template_path || null,
         certificate_name_x_percent: form.certificate_name_x_percent,
         certificate_name_y_percent: form.certificate_name_y_percent,
+        certificate_name_color: form.certificate_name_color || "#000000",
         access_model: form.access_model,
         price_vnd:
           form.access_model === "paid_upfront"
@@ -1477,6 +1482,10 @@ const InstructorCourseEdit = () => {
           console.error("[co-instructor invite] refresh pending", err);
         }
       }
+    })();
+
+    try {
+      await trackLoadingPromise(savePromise, "save-course-info");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     } finally {
@@ -2497,7 +2506,7 @@ const InstructorCourseEdit = () => {
 
   const handleSaveSectionDetails = async () => {
     if (!id || !editingSection) return;
-    try {
+    const savePromise = (async () => {
       // Flush current dialog locale into draft map before saving
       sectionDraftRef.current.set(dialogSectionLocale, {
         title: editingSectionTitle,
@@ -2534,6 +2543,10 @@ const InstructorCourseEdit = () => {
         }
       }
       setEditingSection(null);
+    })();
+
+    try {
+      await trackLoadingPromise(savePromise, "save-section");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     }
@@ -3302,7 +3315,7 @@ const InstructorCourseEdit = () => {
 
   const handleSaveLessonDetails = async () => {
     if (!id || !editingLesson) return;
-    try {
+    const savePromise = (async () => {
       // Flush current dialog state into draft map
       lessonDraftRef.current.set(dialogLessonLocale, captureLessonDraftFromState());
 
@@ -3525,6 +3538,10 @@ const InstructorCourseEdit = () => {
         .then(setLessonLearnerCounts)
         .catch(() => {});
       setEditingLesson(null);
+    })();
+
+    try {
+      await trackLoadingPromise(savePromise, "save-lesson");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     }
@@ -5867,10 +5884,11 @@ const InstructorCourseEdit = () => {
                   </>
                 ) : null}
                 <Field>
-                  <label className="flex items-center gap-2">
+                  <label className={`flex items-center gap-2 ${ocbIsActive ? "opacity-50 cursor-not-allowed" : ""}`}>
                     <input
                       type="checkbox"
                       checked={form.has_certificate ?? false}
+                      disabled={ocbIsActive}
                       onChange={(e) =>
                         setForm((p) => ({
                           ...p,
@@ -5883,6 +5901,11 @@ const InstructorCourseEdit = () => {
                       {t("courseEdit.publishing.hasCertificateHint")}
                     </span>
                   </label>
+                  {ocbIsActive && (
+                    <p className="mt-1 text-xs text-foreground-muted">
+                      {t("courseEdit.publishing.certBlockedByOcb")}
+                    </p>
+                  )}
                 </Field>
                 <Field>
                   <label className="flex items-center gap-2">
@@ -8465,130 +8488,154 @@ const InstructorCourseEdit = () => {
           )}
 
           {activeSection === "certificate" && canAccessCertificate && (
-            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-              <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-4">
-                <Award className="size-5" aria-hidden /> {t("courseEdit.certificate.sectionTitle")}
-              </h2>
-              <p className="mb-4 text-sm text-foreground-muted">
-                {t("courseEdit.certificate.sectionDescription")}
-              </p>
-              <p className="mb-4 text-sm text-foreground-muted">
-                Open Campus badge (OCB) chỉ khả dụng cho khoá học Corelia và người Corelia (hoặc admin/support).
-              </p>
+            <div className="space-y-4">
+              {/* Card 1: PDF Certificate template */}
+              <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
+                <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-1">
+                  <Award className="size-5" aria-hidden /> {t("courseEdit.certificate.sectionTitle")}
+                </h2>
+                <p className="mb-6 text-sm text-foreground-muted">
+                  {t("courseEdit.certificate.sectionDescription")}
+                </p>
 
-              <div className="mb-8 space-y-4">
-                <Field>
-                  <FieldLabel>{t("courseEdit.certificate.templateLabel")}</FieldLabel>
-                  <input
-                    ref={certificateInputRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/jpg"
-                    className="hidden"
-                    onChange={handleCertificateTemplateChange}
-                  />
-                  <div className="mt-1 flex flex-wrap items-center gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={uploadingCert}
-                      onClick={() => certificateInputRef.current?.click()}
-                    >
-                      {uploadingCert
-                        ? t("courseEdit.certificate.uploadingTemplate")
-                        : t("courseEdit.certificate.uploadTemplate")}
-                    </Button>
-                    {course.certificate_template_url && (
-                      <a
-                        href={course.certificate_template_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline"
+                <div className="mb-8 space-y-4">
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.templateLabel")}</FieldLabel>
+                    <input
+                      ref={certificateInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg"
+                      className="hidden"
+                      onChange={handleCertificateTemplateChange}
+                    />
+                    <div className="mt-1 flex flex-wrap items-center gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={uploadingCert}
+                        onClick={() => certificateInputRef.current?.click()}
                       >
-                        Xem template hiện tại
-                      </a>
-                    )}
-                  </div>
-                </Field>
-                <Field>
-                  <FieldLabel>{t("courseEdit.certificate.nameXLabel")}</FieldLabel>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={form.certificate_name_x_percent}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      if (!Number.isNaN(v))
-                        setForm((p) => ({
-                          ...p,
-                          certificate_name_x_percent: Math.max(
-                            0,
-                            Math.min(100, v),
-                          ),
-                        }));
-                    }}
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel>{t("courseEdit.certificate.nameYLabel")}</FieldLabel>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={form.certificate_name_y_percent}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      if (!Number.isNaN(v))
-                        setForm((p) => ({
-                          ...p,
-                          certificate_name_y_percent: Math.max(
-                            0,
-                            Math.min(100, v),
-                          ),
-                        }));
-                    }}
-                  />
-                </Field>
-                <Button
-                  onClick={() =>
-                    void saveCourseInfo(t("courseEdit.labels.saveCertificate"))
-                  }
-                  disabled={saving || !canEdit}
-                >
-                  {saving ? t("courseEdit.labels.saving") : t("courseEdit.certificate.saveNamePosition")}
-                </Button>
-              </div>
-
-              <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
-                <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                  <FileText className="size-4" /> {t("courseEdit.certificateGuide.title")}
-                </h3>
-                <ul className="list-inside list-disc space-y-1 text-sm text-foreground-muted">
-                  <li>{t("courseEdit.certificateGuide.sizeHint")}</li>
-                  <li>{t("courseEdit.certificateGuide.nameAreaHint")}</li>
-                  <li>{t("courseEdit.certificateGuide.afterUploadHint")}</li>
-                  <li>{t("courseEdit.certificate.fileFormatHint")}</li>
-                </ul>
-                <div className="mt-4">
-                  <a
-                    href="/certificate-template-sample.svg"
-                    download="certificate-template-sample.svg"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-raised"
+                        {uploadingCert
+                          ? t("courseEdit.certificate.uploadingTemplate")
+                          : t("courseEdit.certificate.uploadTemplate")}
+                      </Button>
+                      {course.certificate_template_url && (
+                        <a
+                          href={course.certificate_template_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline"
+                        >
+                          {t("courseEdit.certificate.viewCurrentTemplate")}
+                        </a>
+                      )}
+                    </div>
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.nameXLabel")}</FieldLabel>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={form.certificate_name_x_percent}
+                      onChange={(e) => {
+                        const v = Number(e.target.value);
+                        if (!Number.isNaN(v))
+                          setForm((p) => ({
+                            ...p,
+                            certificate_name_x_percent: Math.max(
+                              0,
+                              Math.min(100, v),
+                            ),
+                          }));
+                      }}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.nameYLabel")}</FieldLabel>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={form.certificate_name_y_percent}
+                      onChange={(e) => {
+                        const v = Number(e.target.value);
+                        if (!Number.isNaN(v))
+                          setForm((p) => ({
+                            ...p,
+                            certificate_name_y_percent: Math.max(
+                              0,
+                              Math.min(100, v),
+                            ),
+                          }));
+                      }}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.nameColorLabel")}</FieldLabel>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={form.certificate_name_color ?? "#000000"}
+                        disabled={!canEdit}
+                        onChange={(e) =>
+                          setForm((p) => ({ ...p, certificate_name_color: e.target.value }))
+                        }
+                        className="size-9 cursor-pointer rounded border border-border-subtle bg-surface-base p-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                      />
+                      <span className="font-mono text-sm text-foreground-muted">
+                        {form.certificate_name_color ?? "#000000"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.certificate.nameColorHint")}</p>
+                  </Field>
+                  <Button
+                    onClick={() =>
+                      void saveCourseInfo(t("courseEdit.labels.saveCertificate"))
+                    }
+                    disabled={saving || !canEdit}
                   >
-                    <Download className="size-4" aria-hidden /> {t("courseEdit.certificateGuide.downloadSample")}
-                  </a>
+                    {saving ? t("courseEdit.labels.saving") : t("courseEdit.certificate.saveNamePosition")}
+                  </Button>
                 </div>
-              </div>
 
-              {id && canManageCourseOcb ? (
-                <CourseOcbCredentialSection
-                  courseId={id}
-                  courseSlug={(form.slug || course.slug || "").trim()}
-                  canEdit={canManageCourseOcb}
-                />
-              ) : null}
-            </section>
+                <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
+                  <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                    <FileText className="size-4" /> {t("courseEdit.certificateGuide.title")}
+                  </h3>
+                  <ul className="list-inside list-disc space-y-1 text-sm text-foreground-muted">
+                    <li>{t("courseEdit.certificateGuide.sizeHint")}</li>
+                    <li>{t("courseEdit.certificateGuide.nameAreaHint")}</li>
+                    <li>{t("courseEdit.certificateGuide.afterUploadHint")}</li>
+                    <li>{t("courseEdit.certificate.fileFormatHint")}</li>
+                  </ul>
+                  <div className="mt-4">
+                    <a
+                      href="/certificate-template-sample.svg"
+                      download="certificate-template-sample.svg"
+                      className="inline-flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm font-medium text-foreground hover:bg-surface-raised"
+                    >
+                      <Download className="size-4" aria-hidden /> {t("courseEdit.certificateGuide.downloadSample")}
+                    </a>
+                  </div>
+                </div>
+              </section>
+
+              {/* Card 2: Open Campus On-chain Credential */}
+              {id && canManageCourseOcb && (
+                <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
+                  <CourseOcbCredentialSection
+                    courseId={id}
+                    courseSlug={(form.slug || course.slug || "").trim()}
+                    canEdit={canManageCourseOcb}
+                    hasCertificate={form.has_certificate ?? false}
+                    onActiveChange={setOcbIsActive}
+                    certificateTemplateUrl={course.certificate_template_url ?? null}
+                  />
+                </section>
+              )}
+            </div>
           )}
 
           {activeSection === "announcements" && canAccessAnnouncements && (

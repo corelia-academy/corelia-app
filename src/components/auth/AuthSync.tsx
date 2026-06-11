@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { getProfileForUser, invalidateCurrentProfileCache } from "@/lib/profile";
+import { invokeCheckActivityMilestones } from "@/lib/credentialsEdge";
 import { useAuthStore } from "@/stores/authStore";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
 import type { AuthChangeEvent, User } from "@supabase/supabase-js";
 import { timedAsync } from "@/lib/perfTelemetry";
+
 
 /**
  * Đồng bộ session + profile từ Supabase vào auth store.
@@ -15,6 +17,7 @@ export function AuthSync() {
   const setProfile = useAuthStore((s) => s.setProfile);
   const setProfileLoading = useAuthStore((s) => s.setProfileLoading);
   const setAuthInitialized = useAuthStore((s) => s.setAuthInitialized);
+  const setPasswordRecovery = useAuthStore((s) => s.setPasswordRecovery);
 
   useEffect(() => {
     let mounted = true;
@@ -123,6 +126,20 @@ export function AuthSync() {
         }
       }
 
+      if (event === "PASSWORD_RECOVERY") {
+        setPasswordRecovery(true);
+        syncFromSession(session);
+        return;
+      }
+
+      // Genuine new sign-in (not a session restore or same-user tab refresh):
+      // fire login_streak check as background task.
+      if (event === "SIGNED_IN" && session?.user) {
+        queueMicrotask(() => {
+          invokeCheckActivityMilestones("login_streak").catch(() => {});
+        });
+      }
+
       syncFromSession(session);
     });
 
@@ -131,7 +148,7 @@ export function AuthSync() {
       window.clearTimeout(initTimeoutId);
       subscription.unsubscribe();
     };
-  }, [setUser, setProfile, setProfileLoading, setAuthInitialized]);
+  }, [setUser, setProfile, setProfileLoading, setAuthInitialized, setPasswordRecovery]);
 
   return null;
 }

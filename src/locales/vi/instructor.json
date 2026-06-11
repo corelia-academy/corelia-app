@@ -575,47 +575,71 @@
       "uploadingTemplate": "Đang tải lên..."
     },
     "certificate": {
-      "sectionTitle": "Template chứng nhận",
-      "sectionDescription": "Tải lên ảnh template chứng nhận (PNG/JPG). Tên học viên sẽ được hiển thị tại vị trí bạn chọn (theo % từ trái và từ trên).",
+      "sectionTitle": "Template chứng nhận (PDF)",
+      "sectionDescription": "Tải lên ảnh template chứng nhận (PNG/JPG). Tên học viên sẽ được đặt tại vị trí bạn chọn.",
       "saveNamePosition": "Lưu vị trí tên",
       "templateLabel": "Template chứng nhận",
       "uploadTemplate": "Tải template lên",
       "uploadingTemplate": "Đang tải lên...",
+      "viewCurrentTemplate": "Xem template hiện tại",
       "nameXLabel": "Vị trí tên học viên ( % từ trái )",
       "nameYLabel": "Vị trí tên học viên ( % từ trên )",
+      "nameColorLabel": "Màu chữ tên học viên",
+      "nameColorHint": "Màu của tên học viên hiển thị trên certificate.",
       "afterUploadHintPrefix": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" ( % từ trái / % từ",
       "fileFormatHint": "Định dạng: PNG hoặc JPG."
     },
     "certificateGuide": {
       "title": "Hướng dẫn tạo template",
-      "sizeHint": "Kích thước khuyến nghị: 1200×800 px (tỉ lệ 3:2) hoặc A4.",
-      "nameAreaHint": "Để trống một vùng trên ảnh cho tên học viên (ví dụ giữa trang).",
+      "sizeHint": "Kích thước khuyến nghị: 1600×1200 px (4:3 ngang) hoặc 1200×1600 px (3:4 dọc). Ảnh này cũng được dùng làm ảnh credential OpenCampus on-chain.",
+      "nameAreaHint": "Để trống một vùng trên ảnh cho tên học viên (ví dụ giữa trang hoặc 1/3 phía dưới).",
       "afterUploadHint": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" (% từ trái / % từ trên) để tên học viên nằm đúng vùng trống. 50% = giữa.",
       "downloadSample": "Tải template mẫu (SVG)"
     },
     "ocb": {
-      "title": "Huy hiệu Open Campus (OCB)",
-      "subtitle": "Mint huy hiệu on-chain khi học viên đạt điều kiện (template chứng nhận PDF phía trên giữ nguyên).",
-      "loading": "Đang tải cấu hình huy hiệu…",
-      "loadFailed": "Không tải được cấu hình huy hiệu.",
-      "enableLabel": "Cấp huy hiệu khi đạt điều kiện",
-      "nameLabel": "Tên huy hiệu",
-      "descriptionLabel": "Mô tả huy hiệu",
-      "imageLabel": "Ảnh huy hiệu",
-      "uploadBadge": "Tải ảnh huy hiệu",
+      "title": "Open Campus Credential (On-chain)",
+      "subtitle": "Học viên đạt điều kiện tự vào trang Thành tích để claim credential on-chain. Họ sẽ xác nhận tên và OCID trước khi mint — không có gì được tự động phát hành.",
+      "loading": "Đang tải cấu hình credential…",
+      "loadFailed": "Không tải được cấu hình credential.",
+      "statusActive": "Đang hoạt động",
+      "statusInactive": "Chưa cấu hình",
+      "kind": {
+        "label": "Loại credential",
+        "oca": {
+          "label": "OCA — Chứng nhận hoàn thành",
+          "desc": "Credential dạng chứng nhận on-chain. Phù hợp cho hoàn thành khoá học và các chứng nhận."
+        },
+        "ocb": {
+          "label": "OCB — Open Campus Badge",
+          "desc": "Credential dạng huy hiệu kỹ năng. Phù hợp cho các thành tích ngắn hạn và thành thạo chủ đề."
+        }
+      },
+      "enableLabel": "Bật tự động cấp badge (OCB)",
+      "enableHint": "Khi bật, badge được tự động mint cho học viên đạt đủ điều kiện.",
+      "configTitle": "Thông tin credential",
+      "requirementsTitle": "Điều kiện nhận credential",
+      "blockedByCertificate": "OCB không thể bật khi khoá học đã cấp chứng nhận PDF. Hãy chọn loại OCA, hoặc tắt chứng nhận PDF trước.",
+      "noPermission": "Bạn không có quyền cấu hình credential cho khoá học này.",
+      "nameLabel": "Tên credential",
+      "descriptionLabel": "Mô tả",
+      "imageLabel": "Ảnh credential",
+      "imageHint": "Khuyến nghị: 1600×1200 px (ngang) hoặc 1200×1600 px (dọc). Dùng làm ảnh credential on-chain trên OpenCampus.",
+      "imageOcaHint": "OCA sử dụng ảnh template chứng nhận ở trên làm ảnh credential on-chain. Hãy upload template chứng nhận trước.",
+      "imageOcaNoTemplate": "Chưa có template",
+      "uploadBadge": "Tải ảnh lên",
       "uploading": "Đang tải…",
-      "uploadOk": "Đã tải ảnh huy hiệu.",
+      "uploadOk": "Đã tải ảnh.",
       "uploadFailed": "Tải ảnh thất bại.",
       "completionPctLabel": "% bài học hoàn thành tối thiểu",
       "requireAssignmentPassLabel": "Yêu cầu duyệt bài tập cuối khóa",
       "requireAssignmentLabel": "Yêu cầu duyệt bài tập cuối khóa",
-      "minScoreLabel": "Điểm bài tập tối thiểu (nếu có theo dõi điểm)",
+      "minScoreLabel": "Điểm bài tập tối thiểu",
       "identifierPrefixLabel": "Tiền tố identifier",
-      "identifierHint": "Chữ thường, phân tách bằng gạch ngang, tối đa 40 ký tự; hệ thống sẽ thêm hậu tố học viên.",
-      "save": "Lưu cấu hình huy hiệu",
+      "identifierHint": "Chữ thường, phân tách bằng gạch ngang, tối đa 40 ký tự. Hậu tố học viên được thêm tự động.",
+      "save": "Lưu cấu hình credential",
       "saving": "Đang lưu…",
-      "saved": "Đã lưu cấu hình huy hiệu.",
-      "saveFailed": "Không lưu được cấu hình huy hiệu."
+      "saved": "Đã lưu cấu hình credential.",
+      "saveFailed": "Không lưu được cấu hình credential."
     },
     "form": {
       "titleLabel": "Tên khoá học",
@@ -924,6 +948,7 @@
     "publishing": {
       "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
       "hasCertificateHint": "Khoá học có cấp chứng nhận hoàn thành",
+      "certBlockedByOcb": "Khoá học này đang có huy hiệu on-chain (OCB) hoạt động. Vào tab Certificate và tắt huy hiệu trước.",
       "updatingHint": "Khoá học đang được cập nhật (hiện banner cho học viên)"
     },
     "students": {

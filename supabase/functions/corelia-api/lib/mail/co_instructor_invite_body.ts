@@ -59,7 +59,7 @@ const PERMISSION_LABELS: Record<EmailLocale, Record<string, string>> = {
     content: "Chỉnh sửa nội dung khoá học",
     students: "Xem học viên và phân tích",
     submissions: "Chấm bài nộp",
-    certificates: "Quản lý chứng chỉ",
+    certificates: "Quản lý chứng nhận",
     pricing: "Quản lý giá khoá học",
   },
 };

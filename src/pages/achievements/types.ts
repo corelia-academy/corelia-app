@@ -2,17 +2,26 @@ export type ClaimStatus = "unclaimed" | "pending" | "claimed" | "failed";
 
 export type CertificateItem = {
   id: string;
+  courseId: string;
   title: string;
   course: string;
   issuedAt: string;
   instructor: string;
   type: "online" | "offline";
   credentialId: string;
-  /** Ảnh chứng chỉ (placeholder nếu chưa có) */
+  /** Ảnh chứng nhận (placeholder nếu chưa có) */
   imageUrl?: string;
+  /** Vị trí tên học viên trên certificate (% từ trái, mặc định 50) */
+  nameXPercent?: number;
+  /** Vị trí tên học viên trên certificate (% từ trên, mặc định 50) */
+  nameYPercent?: number;
+  /** Tên học viên để overlay lên certificate */
+  holderName?: string | null;
+  /** Màu chữ tên học viên overlay (hex, mặc định "#000000") */
+  nameColor?: string | null;
   // OpenCampus
   ocClaimStatus: ClaimStatus;
-  ocTransactionHash?: string;
+  ocCredentialId?: string | null;
   ocCredentialUrl?: string;
   ocHolderOcId?: string;
 };
@@ -40,6 +49,8 @@ export type BadgeItem = {
   mintCredentialId?: string | null;
   /** Scope grouping for Open Campus badges */
   credentialScope?: CredentialScopeForBadge;
+  /** Role/type within a hackathon (e.g. "winner", "participant") — for multi-type hackathon badges */
+  hackathonRole?: string | null;
 };
 
 export type ModalItem =

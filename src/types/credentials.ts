@@ -9,8 +9,13 @@ export type CredentialTemplateSummary = {
   scope_type: CredentialScopeType;
   name: string;
   description: string;
+  /** Full-resolution art sent to OpenCampus (credentialSubject.image). 1600×1200 or 1200×1600. */
   image_url: string;
+  /** Smaller preview for in-app cards and notification bell. 800×600 or 600×800. Fallback to image_url if null. */
+  thumbnail_url?: string | null;
   achievement_type: "Badge" | "Award";
+  /** Role/type label for hackathon badges (e.g. "winner", "participant") */
+  hackathon_role?: string | null;
 };
 
 export type CredentialIssuanceWithTemplate = {

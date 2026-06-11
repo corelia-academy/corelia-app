@@ -227,7 +227,7 @@
     "fullName": {
       "label": "Họ và tên đầy đủ",
       "placeholder": "Nguyễn Văn A",
-      "hint": "Dùng để hiển thị trên chứng chỉ, bảng điểm và hoá đơn."
+      "hint": "Dùng để hiển thị trên chứng nhận, bảng điểm và hoá đơn."
     },
     "username": {
       "label": "Username",
@@ -277,7 +277,7 @@
       "title": "Gợi ý thông tin nên chuẩn bị",
       "items": {
         "0": "Kinh nghiệm làm việc / dự án cá nhân nổi bật.",
-        "1": "Các khoá học đã hoàn thành, chứng chỉ liên quan.",
+        "1": "Các khoá học đã hoàn thành, chứng nhận liên quan.",
         "2": "Kỹ năng chuyên môn (technical) và kỹ năng mềm."
       }
     }
@@ -540,6 +540,15 @@
       "startConnectFailed": "Không thể bắt đầu kết nối OCID.",
       "disconnectSuccess": "Đã hủy liên kết OCID.",
       "disconnectFailed": "Không thể hủy liên kết OCID."
+    },
+    "disconnectDialog": {
+      "title": "Hủy liên kết OCID?",
+      "body": "Bạn có chắc chắn muốn hủy liên kết OCID khỏi tài khoản này không?",
+      "bodyWithCredentials_one": "1 credential on-chain đã được mint vào OCID hiện tại của bạn.",
+      "bodyWithCredentials_other": "{{count}} credential on-chain đã được mint vào OCID hiện tại của bạn.",
+      "warningTitle": "Các credential này sẽ không chuyển được sang OCID mới.",
+      "warningBody": "Nếu bạn kết nối OCID khác sau này, các credential đã mint sẽ vẫn gắn với OCID cũ và không thể chuyển sang OCID mới.",
+      "confirm": "Vẫn hủy liên kết"
     }
   }
 }

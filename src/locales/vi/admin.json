@@ -15,6 +15,10 @@
         "label": "Voucher Cora",
         "tooltip": "Quản lý voucher cho thanh toán Cora AI"
       },
+      "branding": {
+        "label": "Thương hiệu",
+        "tooltip": "Logo Corelia và tài nguyên thương hiệu"
+      },
       "offlineClasses": { "label": "Lớp học trực tiếp", "tooltip": "Lớp học trực tiếp" },
       "contests": { "label": "Cuộc thi", "tooltip": "Cuộc thi" }
     },
@@ -38,6 +42,10 @@
       "coraVouchers": {
         "title": "Voucher Cora",
         "description": "Tạo và theo dõi voucher giảm giá theo % cho thanh toán Cora AI."
+      },
+      "branding": {
+        "title": "Thương hiệu",
+        "description": "Quản lý logo Corelia dùng trên chứng nhận và credential on-chain."
       },
       "contests": {
         "title": "Vận hành cuộc thi",
@@ -326,6 +334,25 @@
       "changeRole": "Thay đổi vai trò",
       "notUpdated": "Chưa cập nhật",
       "dash": "—"
+    }
+  },
+  "branding": {
+    "loading": "Đang tải cấu hình thương hiệu…",
+    "loadFailed": "Không tải được cấu hình thương hiệu.",
+    "uploading": "Đang tải lên…",
+    "uploaded": "Đã tải lên và lưu logo.",
+    "uploadFailed": "Tải logo thất bại.",
+    "saving": "Đang lưu…",
+    "saved": "Đã lưu.",
+    "saveFailed": "Không lưu được.",
+    "logo": {
+      "title": "Logo Corelia",
+      "subtitle": "Dùng làm ảnh đơn vị cấp trên chứng nhận và credential on-chain OpenCampus. Khuyến nghị: PNG/SVG vuông hoặc ngang, nền trong suốt.",
+      "uploadButton": "Tải logo lên",
+      "hint": "PNG, JPG hoặc SVG. Lưu vĩnh viễn trên CDN public.",
+      "urlLabel": "URL logo",
+      "saveUrl": "Lưu URL",
+      "urlHint": "Tự điền sau khi tải lên. Bạn cũng có thể dán URL CDN trực tiếp."
     }
   },
   "activityMilestones": {

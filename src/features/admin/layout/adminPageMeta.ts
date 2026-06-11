@@ -38,6 +38,11 @@ const PAGE_META: Array<{
     titleKey: "layout.pageMeta.coraVouchers.title",
     descriptionKey: "layout.pageMeta.coraVouchers.description",
   },
+  {
+    match: (pathname) => pathname === "/admin/branding",
+    titleKey: "layout.pageMeta.branding.title",
+    descriptionKey: "layout.pageMeta.branding.description",
+  },
 ];
 
 export function resolveAdminPageMeta(pathname: string): AdminPageMeta {

@@ -1,10 +1,14 @@
 import {
+  AlertTriangle,
+  ArrowLeft,
   Download,
   ExternalLink,
   Loader2,
   Share2,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +18,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useAuth } from "@/stores/authStore";
 
 import { BADGE_PLACEHOLDER, CERT_PLACEHOLDER } from "../constants";
 import type { BadgeItem, CertificateItem, ModalItem } from "../types";
-import { CopyButton } from "./CopyButton";
 import { OcClaimBadge } from "./OcClaimBadge";
 
 export function OcCredentialModal({
@@ -34,6 +38,17 @@ export function OcCredentialModal({
   claiming: boolean;
 }) {
   const { t } = useTranslation("common");
+  const { profile } = useAuth();
+  const [reviewing, setReviewing] = useState(false);
+
+  // Reset review step whenever modal closes or item changes
+  useEffect(() => {
+    if (!open) setReviewing(false);
+  }, [open]);
+  useEffect(() => {
+    setReviewing(false);
+  }, [item?.data.id]);
+
   if (!item) return null;
 
   const d = item.data;
@@ -42,7 +57,10 @@ export function OcCredentialModal({
   const isFailed = d.ocClaimStatus === "failed";
   const isUnclaimed = d.ocClaimStatus === "unclaimed";
 
-  const name = item.kind === "cert" ? item.data.course : item.data.title;
+  const badgeScope = item.kind === "badge" ? (item.data as BadgeItem).credentialScope : undefined;
+  const hackathonRole = item.kind === "badge" ? (item.data as BadgeItem).hackathonRole : undefined;
+
+  const credentialName = item.kind === "cert" ? item.data.course : item.data.title;
   const issued =
     item.kind === "cert"
       ? item.data.issuedAt
@@ -50,9 +68,139 @@ export function OcCredentialModal({
   const credId =
     item.kind === "cert"
       ? item.data.credentialId
-      : item.data.mintCredentialId?.trim() ||
-        `CRL-BADGE-${item.data.id}`;
+      : item.data.mintCredentialId?.trim() || `CRL-BADGE-${item.data.id}`;
 
+  const holderName = profile?.full_name?.trim() || null;
+  const holderOcid = profile?.ocid?.trim() || null;
+  const hasName = Boolean(holderName);
+
+  // ── Review step ────────────────────────────────────────────────────────────
+  if (reviewing) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-xl w-full min-w-0 rounded-3xl p-0 overflow-hidden">
+          <div className="h-1.5 w-full bg-linear-to-r from-[#00e5b4] via-[#0047ff] to-[#00e5b4]" />
+
+          <div className="min-w-0 p-4 sm:p-6">
+            <button
+              onClick={() => setReviewing(false)}
+              className="mb-4 flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="size-4" aria-hidden />
+              {t("achievements.oc.modal.review.back")}
+            </button>
+
+            <h2 className="text-base font-semibold text-foreground sm:text-lg">
+              {t("achievements.oc.modal.review.title")}
+            </h2>
+            <p className="mt-1 mb-5 text-sm text-foreground-muted">
+              {t("achievements.oc.modal.review.subtitle")}
+            </p>
+
+            {/* Credential info preview */}
+            <div className="mb-4 space-y-3 rounded-xl border border-border-subtle bg-surface-raised p-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-0.5">
+                  {t("achievements.oc.modal.review.credentialLabel")}
+                </p>
+                <p className="text-sm font-medium text-foreground">{credentialName}</p>
+              </div>
+
+              {/* Full name */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-0.5">
+                  {t("achievements.oc.modal.review.nameLabel")}
+                </p>
+                {hasName ? (
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-foreground">{holderName}</p>
+                    <Link
+                      to="/account"
+                      onClick={() => onOpenChange(false)}
+                      className="text-xs text-primary underline-offset-2 hover:underline shrink-0"
+                    >
+                      {t("achievements.oc.modal.review.editName")}
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2">
+                    <p className="text-xs text-warning-foreground">
+                      {t("achievements.oc.modal.review.nameMissing")}
+                    </p>
+                    <Link
+                      to="/account"
+                      onClick={() => onOpenChange(false)}
+                      className="text-xs font-medium text-primary underline-offset-2 hover:underline shrink-0"
+                    >
+                      {t("achievements.oc.modal.review.setName")}
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* OCID */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-0.5">
+                  OCID
+                </p>
+                <p className="text-sm font-medium text-foreground">
+                  {holderOcid
+                    ? (holderOcid.endsWith(".edu") ? holderOcid : `${holderOcid}.edu`)
+                    : "—"}
+                </p>
+              </div>
+            </div>
+
+            {/* Permanence warning */}
+            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-warning/25 bg-warning/8 px-3 py-3">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+              <p className="text-xs leading-relaxed text-foreground-muted">
+                {t("achievements.oc.modal.review.permanenceWarning")}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <Button
+                className="w-full gap-3 text-base font-semibold"
+                size="lg"
+                disabled={claiming || !hasName}
+                onClick={() => onClaim(d.id, item.kind)}
+              >
+                {claiming ? (
+                  <>
+                    <Loader2 className="size-5 shrink-0 animate-spin" aria-hidden />
+                    <span>{t("achievements.oc.modal.claim.issuing")}</span>
+                  </>
+                ) : (
+                  <>
+                    <img
+                      src="/open-campus-edu-logo.png"
+                      alt=""
+                      className="size-5 shrink-0 rounded-full brightness-0 invert"
+                    />
+                    <span>
+                      {isFailed
+                        ? t("achievements.oc.modal.claim.retry")
+                        : t("achievements.oc.modal.review.confirm")}
+                    </span>
+                  </>
+                )}
+              </Button>
+
+              <button
+                onClick={() => setReviewing(false)}
+                className="py-2 text-sm text-foreground-muted underline-offset-4 hover:text-foreground hover:underline transition-colors"
+              >
+                {t("actions.cancel")}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // ── Main credential view ────────────────────────────────────────────────────
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl w-full min-w-0 rounded-3xl p-0 overflow-hidden">
@@ -87,10 +235,18 @@ export function OcCredentialModal({
               <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted sm:text-sm">
                 {item.kind === "cert"
                   ? t("achievements.oc.modal.kind.cert")
+                  : badgeScope === "course"
+                  ? t("achievements.oc.modal.kind.oca")
+                  : badgeScope === "hackathon"
+                  ? hackathonRole
+                    ? `${t("achievements.oc.modal.kind.hackathonBadge")} · ${hackathonRole}`
+                    : t("achievements.oc.modal.kind.hackathonBadge")
+                  : badgeScope === "activity_milestone"
+                  ? t("achievements.oc.modal.kind.milestone")
                   : t("achievements.oc.modal.kind.badge")}
               </p>
               <p className="mt-0.5 text-base font-semibold text-foreground sm:text-lg">
-                {name}
+                {credentialName}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-2 text-sm">
@@ -119,36 +275,12 @@ export function OcCredentialModal({
               <OcClaimBadge status={d.ocClaimStatus} />
             </div>
 
-            {isClaimed && d.ocTransactionHash && (
-              <div className="space-y-2 border-t border-border pt-3">
-                <div className="min-w-0">
-                  <p className="text-xs text-foreground-muted sm:text-sm">
-                    Transaction Hash
-                  </p>
-                  <div className="mt-0.5 flex items-center gap-2">
-                    <p className="min-w-0 flex-1 truncate font-mono text-xs text-foreground sm:text-sm">
-                      {d.ocTransactionHash}
-                    </p>
-                    <CopyButton text={d.ocTransactionHash} />
-                    <a
-                      href={`https://opencampus-codex.blockscout.com/tx/${d.ocTransactionHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 rounded p-0.5 text-foreground-muted transition hover:bg-surface-raised hover:text-foreground"
-                      title={t("achievements.oc.modal.explorerTooltip")}
-                    >
-                      <ExternalLink className="size-4" aria-hidden />
-                    </a>
-                  </div>
-                </div>
-                {(d as CertificateItem).ocHolderOcId && (
-                  <div>
-                    <p className="text-xs text-foreground-muted">OCID</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {(d as CertificateItem).ocHolderOcId}
-                    </p>
-                  </div>
-                )}
+            {isClaimed && (d as CertificateItem).ocHolderOcId && (
+              <div className="border-t border-border pt-3">
+                <p className="text-xs text-foreground-muted">OCID</p>
+                <p className="text-sm font-medium text-foreground">
+                  {(d as CertificateItem).ocHolderOcId}
+                </p>
               </div>
             )}
           </div>
@@ -192,7 +324,7 @@ export function OcCredentialModal({
                 className="w-full gap-3 text-base font-semibold"
                 size="lg"
                 disabled={claiming}
-                onClick={() => onClaim(d.id, item.kind)}
+                onClick={() => setReviewing(true)}
               >
                 {claiming ? (
                   <>

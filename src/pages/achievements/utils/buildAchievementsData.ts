@@ -1,4 +1,5 @@
 import { getCourse } from "@/lib/courses";
+import { openCampusCredentialExplorerUrl, type CourseIssuanceInfo } from "@/lib/credentialIssuances";
 import { intlLocale } from "@/lib/intl";
 import type { Enrollment } from "@/types/courses";
 
@@ -22,6 +23,12 @@ export function buildCredentialId(prefix: string, seed: string): string {
   return `${prefix}-${seed.slice(0, 8).toUpperCase()}`;
 }
 
+export function ocidWithEduSuffix(ocid: string | null | undefined): string | undefined {
+  if (!ocid?.trim()) return undefined;
+  const s = ocid.trim();
+  return s.endsWith(".edu") ? s : `${s}.edu`;
+}
+
 export function buildCourseCertificates(
   enrollments: Enrollment[],
   courseMap: Map<string, Awaited<ReturnType<typeof getCourse>>>,
@@ -30,21 +37,49 @@ export function buildCourseCertificates(
     fallbackCourseName: string;
     fallbackInstructorName: string;
   },
+  courseIssuanceMap?: Map<string, CourseIssuanceInfo>,
+  holderOcid?: string | null,
+  holderName?: string | null,
 ): CertificateItem[] {
   return enrollments
     .filter((item) => !!item.certificate_issued_at)
     .map((item) => {
       const course = courseMap.get(item.course_id);
+      const issuance = courseIssuanceMap?.get(item.course_id);
+      // "claimed" requires status=minted AND oc_credential_id present.
+      // minted without oc_credential_id = incomplete mint → treat as failed.
+      const ocClaimStatus = issuance
+        ? issuance.status === "minted" && issuance.oc_credential_id
+          ? "claimed"
+          : issuance.status === "minted" || issuance.status === "failed"
+            ? "failed"
+            : "pending"
+        : "unclaimed";
+      const ocCredentialId = issuance?.oc_credential_id ?? null;
+      const ocCredentialUrl = ocCredentialId
+        ? openCampusCredentialExplorerUrl(ocCredentialId, {
+            username: holderOcid,
+            nftCollection: "occredential",
+          }) ?? undefined
+        : undefined;
       return {
         id: `course-cert-${item.id}`,
+        courseId: item.course_id,
         title: labels.courseCompletionTitle,
         course: course?.title || labels.fallbackCourseName,
         issuedAt: formatDate(item.certificate_issued_at),
         instructor: course?.instructor_name || labels.fallbackInstructorName,
         type: pickCertificateType(course?.owner_type),
-        credentialId: buildCredentialId("COURSE", item.id),
+        credentialId: ocCredentialId ?? buildCredentialId("COURSE", item.id),
         imageUrl: course?.certificate_template_url || CERT_PLACEHOLDER,
-        ocClaimStatus: "unclaimed",
+        nameXPercent: course?.certificate_name_x_percent ?? 50,
+        nameYPercent: course?.certificate_name_y_percent ?? 50,
+        nameColor: course?.certificate_name_color ?? "#000000",
+        holderName: holderName || null,
+        ocClaimStatus,
+        ocCredentialId,
+        ocCredentialUrl,
+        ocHolderOcId: ocClaimStatus === "claimed" ? ocidWithEduSuffix(holderOcid) : undefined,
       } satisfies CertificateItem;
     })
     .sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));

@@ -1,11 +1,16 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import {
+  fetchCourseIssuanceMapForUser,
   fetchMintedCredentialIssuancesForUser,
   issuanceToBadgeItem,
+  openCampusCredentialExplorerUrl,
+  type CourseIssuanceInfo,
 } from "@/lib/credentialIssuances";
-import { getCourse, getMyEnrollments } from "@/lib/courses";
+import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
+import { getCourse, getMyEnrollments, invalidateCourseCache } from "@/lib/courses";
 import { useAuth } from "@/stores/authStore";
 import type { Enrollment } from "@/types/courses";
 
@@ -15,153 +20,147 @@ import type {
   ClaimStatus,
   ModalItem,
 } from "../types";
-import { buildCourseCertificates } from "../utils/buildAchievementsData";
+import { buildCourseCertificates, ocidWithEduSuffix } from "../utils/buildAchievementsData";
+import { renderAndUploadCertificate } from "../utils/renderCertificate";
 
 export function useAchievementsPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, profile } = useAuth();
   const [certificates, setCertificates] = useState<CertificateItem[]>([]);
   const [badges, setBadges] = useState<BadgeItem[]>([]);
   const [modalItem, setModalItem] = useState<ModalItem | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [ocidConnectOpen, setOcidConnectOpen] = useState(false);
   const { t } = useTranslation("common");
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadAchievements() {
-      if (!user || !isAuthenticated) {
-        if (!cancelled) {
-          setCertificates([]);
-          setBadges([]);
-          setLoading(false);
-        }
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const enrollments = await getMyEnrollments(user.id).catch(
-          () => [] as Enrollment[],
-        );
-
-        const courseIds = Array.from(
-          new Set(enrollments.map((item) => item.course_id)),
-        );
-
-        const courseRows = await Promise.all(
-          courseIds.map(
-            async (courseId) => [courseId, await getCourse(courseId)] as const,
-          ),
-        );
-
-        let ocBadges: BadgeItem[] = [];
-        try {
-          const ocRows = await fetchMintedCredentialIssuancesForUser(user.id);
-          ocBadges = ocRows.map(issuanceToBadgeItem);
-        } catch {
-          ocBadges = [];
-        }
-
-        if (cancelled) return;
-
-        const courseMap = new Map(courseRows);
-        const nextCertificates = buildCourseCertificates(
-          enrollments,
-          courseMap,
-          {
-            courseCompletionTitle: t(
-              "achievements.certificates.courseCompletionTitle",
-            ),
-            fallbackCourseName: t(
-              "achievements.certificates.fallbackCourseName",
-            ),
-            fallbackInstructorName: t(
-              "achievements.certificates.fallbackInstructorName",
-            ),
-          },
-        ).sort((a, b) => {
-          const aDate = a.issuedAt.split("/").reverse().join("-");
-          const bDate = b.issuedAt.split("/").reverse().join("-");
-          return bDate.localeCompare(aDate);
-        });
-
-        setCertificates(nextCertificates);
-        setBadges(ocBadges);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+  const loadAchievements = useCallback(async () => {
+    if (!user || !isAuthenticated) {
+      setCertificates([]);
+      setBadges([]);
+      setLoading(false);
+      return;
     }
 
-    void loadAchievements();
-    return () => {
-      cancelled = true;
-    };
+    try {
+      setLoading(true);
+      // Invalidate course cache so certificate template URLs (CDN) are always fresh
+      invalidateCourseCache();
+      const [enrollments, courseIssuanceMap, ocRows] = await Promise.all([
+        getMyEnrollments(user.id).catch(() => [] as Enrollment[]),
+        fetchCourseIssuanceMapForUser(user.id).catch(() => new Map<string, CourseIssuanceInfo>()),
+        fetchMintedCredentialIssuancesForUser(user.id).catch(() => []),
+      ]);
+
+      const courseIds = Array.from(new Set(enrollments.map((item) => item.course_id)));
+      const courseRows = await Promise.all(
+        courseIds.map(async (courseId) => [courseId, await getCourse(courseId)] as const),
+      );
+      const courseMap = new Map(courseRows);
+
+      const nextCertificates = buildCourseCertificates(
+        enrollments,
+        courseMap,
+        {
+          courseCompletionTitle: t("achievements.certificates.courseCompletionTitle"),
+          fallbackCourseName: t("achievements.certificates.fallbackCourseName"),
+          fallbackInstructorName: t("achievements.certificates.fallbackInstructorName"),
+        },
+        courseIssuanceMap,
+        profile?.ocid,
+        profile?.full_name,
+      ).sort((a, b) => {
+        const aDate = a.issuedAt.split("/").reverse().join("-");
+        const bDate = b.issuedAt.split("/").reverse().join("-");
+        return bDate.localeCompare(aDate);
+      });
+
+      setCertificates(nextCertificates);
+      setBadges(ocRows.map(issuanceToBadgeItem));
+    } finally {
+      setLoading(false);
+    }
   }, [isAuthenticated, t, user]);
+
+  useEffect(() => {
+    void loadAchievements();
+  }, [loadAchievements]);
 
   const openModal = (item: ModalItem) => {
     setModalItem(item);
     setModalOpen(true);
   };
 
+  const patchCert = (id: string, patch: Partial<CertificateItem>) => {
+    setCertificates((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+    setModalItem((prev) =>
+      prev?.kind === "cert" && prev.data.id === id
+        ? { kind: "cert", data: { ...prev.data, ...patch } }
+        : prev,
+    );
+  };
+
   const handleClaim = async (id: string, kind: "cert" | "badge") => {
-    setClaiming(true);
+    if (kind === "badge") return;
 
-    const setPending = (status: ClaimStatus) => {
-      if (kind === "cert") {
-        setCertificates((prev) =>
-          prev.map((c) => (c.id === id ? { ...c, ocClaimStatus: status } : c)),
-        );
-        setModalItem((prev) =>
-          prev?.kind === "cert" && prev.data.id === id
-            ? { kind: "cert", data: { ...prev.data, ocClaimStatus: status } }
-            : prev,
-        );
-      } else {
-        setBadges((prev) =>
-          prev.map((b) => (b.id === id ? { ...b, ocClaimStatus: status } : b)),
-        );
-        setModalItem((prev) =>
-          prev?.kind === "badge" && prev.data.id === id
-            ? { kind: "badge", data: { ...prev.data, ocClaimStatus: status } }
-            : prev,
-        );
-      }
-    };
+    const cert = certificates.find((c) => c.id === id);
+    if (!cert?.courseId) return;
 
-    if (kind === "badge") {
-      setClaiming(false);
+    if (!profile?.ocid?.trim()) {
+      setOcidConnectOpen(true);
       return;
     }
 
-    setPending("pending");
-    await new Promise((res) => setTimeout(res, 2500));
+    setClaiming(true);
+    patchCert(id, { ocClaimStatus: "pending" });
 
-    const mockTxHash = `0x${Array.from({ length: 64 }, () =>
-      Math.floor(Math.random() * 16).toString(16),
-    ).join("")}`;
-    const mockOcUrl =
-      "https://id.opencampus.xyz/public/credentials?username=student.edu";
+    try {
+      // Render + upload the name-rendered certificate to the deterministic CDN
+      // path BEFORE minting, so the backend can embed it as the OC attachment.
+      // Non-fatal: if it fails, the backend falls back to the raw template.
+      await renderAndUploadCertificate(cert, user!.id).catch(() => null);
 
-    setCertificates((prev) => {
-      const next = prev.map((c) =>
-        c.id === id
-          ? {
-              ...c,
-              ocClaimStatus: "claimed" as ClaimStatus,
-              ocTransactionHash: mockTxHash,
-              ocCredentialUrl: mockOcUrl,
-              ocHolderOcId: "student.edu",
-            }
-          : c,
-      );
-      const updated = next.find((c) => c.id === id);
-      if (updated) setModalItem({ kind: "cert", data: updated });
-      return next;
-    });
+      await invokeCheckCourseCredential(cert.courseId);
 
-    setClaiming(false);
+      // Reload issuance status from DB
+      const map = await fetchCourseIssuanceMapForUser(user!.id);
+      const info = map.get(cert.courseId);
+
+      if (info?.status === "minted" && info.oc_credential_id) {
+        // oc_credential_id must be present — it is proof the credential exists on-chain
+        const ocCredentialId = info.oc_credential_id;
+        const ocCredentialUrl = openCampusCredentialExplorerUrl(ocCredentialId, {
+          username: profile?.ocid,
+          nftCollection: "occredential",
+        }) ?? undefined;
+        patchCert(id, {
+          ocClaimStatus: "claimed" as ClaimStatus,
+          ocCredentialId,
+          ocCredentialUrl,
+          credentialId: ocCredentialId,
+          ocHolderOcId: ocidWithEduSuffix(profile?.ocid),
+        });
+      } else if (info?.status === "minted" && !info.oc_credential_id) {
+        // Minted status without credential ID = incomplete mint, treat as failed
+        patchCert(id, { ocClaimStatus: "failed" });
+        toast.error(t("achievements.oc.modal.claimToast.error.failed"));
+      } else if (info?.status === "failed") {
+        patchCert(id, { ocClaimStatus: "failed" });
+        toast.error(t("achievements.oc.modal.claimToast.error.failed"));
+      } else if (info?.status === "pending") {
+        patchCert(id, { ocClaimStatus: "pending" });
+        toast.info(t("achievements.oc.modal.claimToast.pending"));
+      } else {
+        // No issuance record created — template not active or criteria not met
+        patchCert(id, { ocClaimStatus: "unclaimed" });
+        toast.error(t("achievements.oc.modal.claimToast.error.notEligible"));
+      }
+    } catch (err) {
+      patchCert(id, { ocClaimStatus: "failed" });
+      toast.error(err instanceof Error ? err.message : t("achievements.oc.modal.claimToast.error.failed"));
+    } finally {
+      setClaiming(false);
+    }
   };
 
   return {
@@ -174,5 +173,7 @@ export function useAchievementsPage() {
     claiming,
     openModal,
     handleClaim,
+    ocidConnectOpen,
+    setOcidConnectOpen,
   };
 }

@@ -6,7 +6,12 @@ import {
   wrapTransactionalEmail,
 } from "../lib/mail/layout.ts";
 
-export type CredentialMintEmailKind = "course" | "hackathon" | "milestone";
+/** course    = OCB single course (achievementType: Badge)
+ *  course_oca = OCA course/bootcamp/track (achievementType: CertificateOfCompletion / MicroCredential / Diploma)
+ *  hackathon  = OCB hackathon award
+ *  milestone  = OCB activity milestone
+ */
+export type CredentialMintEmailKind = "course" | "course_oca" | "hackathon" | "milestone";
 
 const COPY: Record<
   CredentialMintEmailKind,
@@ -17,7 +22,7 @@ const COPY: Record<
       heroTitle: string;
       heroSubtitle: string;
       bodyIntro: string;
-      ocbLine: string;
+      credentialLine: string;
       ctaLabel: string;
       footerReason: string;
       subjectPrefix: string;
@@ -28,64 +33,86 @@ const COPY: Record<
     vi: {
       heroTag: "Huy hiệu khóa học",
       heroTitle: "Bạn vừa nhận huy hiệu hoàn thành",
-      heroSubtitle: "Chứng nhận Open Campus (OCB) đã được ghi nhận trên Corelia.",
+      heroSubtitle: "Open Campus Badge (OCB) đã được ghi nhận trên Corelia.",
       bodyIntro: "Chúc mừng! Bạn đã hoàn thành:",
-      ocbLine: "Chứng nhận Open Campus (OCB) của bạn đã được ghi nhận.",
-      ctaLabel: "Xem trên hồ sơ Corelia →",
-      footerReason: "Bạn nhận email này vì vừa được cấp huy hiệu trên Corelia Academy.",
+      credentialLine: "Open Campus Badge (OCB) của bạn đã được ghi nhận.",
+      ctaLabel: "Xem thành tích của tôi →",
+      footerReason: "Bạn nhận email này vì vừa được cấp badge trên Corelia Academy.",
       subjectPrefix: "Huy hiệu",
     },
     en: {
       heroTag: "Course badge",
       heroTitle: "You earned a completion badge",
-      heroSubtitle: "Your Open Campus (OCB) credential is now on record at Corelia.",
+      heroSubtitle: "Your Open Campus Badge (OCB) is now on record at Corelia.",
       bodyIntro: "Congratulations! You completed:",
-      ocbLine: "Your Open Campus (OCB) credential has been recorded.",
-      ctaLabel: "View on your Corelia profile →",
+      credentialLine: "Your Open Campus Badge (OCB) credential has been recorded.",
+      ctaLabel: "View my achievements →",
       footerReason: "You received this because a badge was issued on Corelia Academy.",
       subjectPrefix: "Badge",
+    },
+  },
+  course_oca: {
+    vi: {
+      heroTag: "Chứng nhận hoàn thành",
+      heroTitle: "Bạn vừa nhận chứng nhận hoàn thành",
+      heroSubtitle: "Open Campus Achievement (OCA) đã được ghi nhận trên Corelia.",
+      bodyIntro: "Chúc mừng! Bạn đã hoàn thành:",
+      credentialLine: "Open Campus Achievement (OCA) của bạn đã được ghi nhận.",
+      ctaLabel: "Xem thành tích của tôi →",
+      footerReason: "Bạn nhận email này vì vừa được cấp chứng nhận trên Corelia Academy.",
+      subjectPrefix: "Chứng nhận",
+    },
+    en: {
+      heroTag: "Certificate of completion",
+      heroTitle: "You earned a certificate",
+      heroSubtitle: "Your Open Campus Achievement (OCA) is now on record at Corelia.",
+      bodyIntro: "Congratulations! You completed:",
+      credentialLine: "Your Open Campus Achievement (OCA) credential has been recorded.",
+      ctaLabel: "View my achievements →",
+      footerReason: "You received this because a certificate was issued on Corelia Academy.",
+      subjectPrefix: "Certificate",
     },
   },
   hackathon: {
     vi: {
       heroTag: "Giải thưởng hackathon",
       heroTitle: "Bạn vừa nhận giải thưởng",
-      heroSubtitle: "Chứng nhận Open Campus (OCB) đã được ghi nhận trên Corelia.",
+      heroSubtitle: "Open Campus Badge (OCB) đã được ghi nhận trên Corelia.",
       bodyIntro: "Chúc mừng! Giải thưởng của bạn:",
-      ocbLine: "Chứng nhận Open Campus (OCB) của bạn đã được ghi nhận.",
-      ctaLabel: "Xem trên hồ sơ Corelia →",
+      credentialLine: "Open Campus Badge (OCB) của bạn đã được ghi nhận.",
+      ctaLabel: "Xem thành tích của tôi →",
       footerReason: "Bạn nhận email này vì vừa được trao giải hackathon trên Corelia Academy.",
       subjectPrefix: "Giải thưởng",
     },
     en: {
       heroTag: "Hackathon award",
       heroTitle: "You received a hackathon award",
-      heroSubtitle: "Your Open Campus (OCB) credential is now on record at Corelia.",
+      heroSubtitle: "Your Open Campus Badge (OCB) is now on record at Corelia.",
       bodyIntro: "Congratulations! Your award:",
-      ocbLine: "Your Open Campus (OCB) credential has been recorded.",
-      ctaLabel: "View on your Corelia profile →",
+      credentialLine: "Your Open Campus Badge (OCB) credential has been recorded.",
+      ctaLabel: "View my achievements →",
       footerReason: "You received this because a hackathon award was issued on Corelia Academy.",
       subjectPrefix: "Award",
     },
   },
   milestone: {
     vi: {
-      heroTag: "Thành tích",
-      heroTitle: "Bạn vừa đạt một thành tích",
-      heroSubtitle: "Chứng nhận Open Campus (OCB) đã được ghi nhận trên Corelia.",
-      bodyIntro: "Chúc mừng! Thành tích mới:",
-      ocbLine: "Chứng nhận Open Campus (OCB) của bạn đã được ghi nhận.",
-      ctaLabel: "Xem trên hồ sơ Corelia →",
-      footerReason: "Bạn nhận email này vì vừa đạt thành tích trên Corelia Academy.",
-      subjectPrefix: "Thành tích",
+      heroTag: "Cột mốc thành tích",
+      heroTitle: "Bạn vừa đạt một cột mốc",
+      heroSubtitle: "Open Campus Badge (OCB) đã được ghi nhận trên Corelia.",
+      bodyIntro: "Chúc mừng! Cột mốc mới:",
+      credentialLine: "Open Campus Badge (OCB) của bạn đã được ghi nhận.",
+      ctaLabel: "Xem thành tích của tôi →",
+      footerReason: "Bạn nhận email này vì vừa đạt cột mốc trên Corelia Academy.",
+      subjectPrefix: "Cột mốc",
     },
     en: {
-      heroTag: "Milestone",
+      heroTag: "Achievement milestone",
       heroTitle: "You reached a new milestone",
-      heroSubtitle: "Your Open Campus (OCB) credential is now on record at Corelia.",
+      heroSubtitle: "Your Open Campus Badge (OCB) is now on record at Corelia.",
       bodyIntro: "Congratulations! New milestone:",
-      ocbLine: "Your Open Campus (OCB) credential has been recorded.",
-      ctaLabel: "View on your Corelia profile →",
+      credentialLine: "Your Open Campus Badge (OCB) credential has been recorded.",
+      ctaLabel: "View my achievements →",
       footerReason: "You received this because a milestone was issued on Corelia Academy.",
       subjectPrefix: "Milestone",
     },
@@ -118,7 +145,7 @@ export function buildCredentialMintEmail(params: {
     <p>${escapeHtml(copy.bodyIntro)}</p>
     <p><strong>${escapeHtml(params.badgeName)}</strong></p>
     ${img}
-    <p>${escapeHtml(copy.ocbLine)}</p>
+    <p>${escapeHtml(copy.credentialLine)}</p>
     ${cred}
   `.trim();
 
