@@ -49,7 +49,14 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_is_admin     boolean := public.is_admin_or_support();
+  v_uid          uuid    := auth.uid();
+  -- A "privileged" caller is either an admin/support acting through the app
+  -- (JWT present) OR a trusted backend context with no end-user JWT:
+  -- service_role / SQL editor / migrations (auth.uid() IS NULL). The latter is
+  -- safe because RLS already blocks anon/non-admin authenticated UPDATEs before
+  -- this trigger can fire — only RLS-exempt backend roles reach here with a NULL
+  -- uid. Without this, admins could not change roles from the Supabase dashboard.
+  v_is_privileged boolean := (v_uid IS NULL) OR public.is_admin_or_support();
   v_role_changed boolean := NEW.role IS DISTINCT FROM OLD.role;
   v_tier_changed boolean := NEW.tier IS DISTINCT FROM OLD.tier;
 BEGIN
@@ -57,11 +64,11 @@ BEGIN
     INSERT INTO private.profile_privilege_audit
       (target_id, actor_id, old_role, new_role, old_tier, new_tier, was_admin_caller, blocked)
     VALUES
-      (OLD.id, auth.uid(), OLD.role, NEW.role, OLD.tier, NEW.tier, v_is_admin, NOT v_is_admin);
+      (OLD.id, v_uid, OLD.role, NEW.role, OLD.tier, NEW.tier, v_is_privileged, NOT v_is_privileged);
   END IF;
 
-  -- Non-admins may never change privileged columns: revert them silently.
-  IF NOT v_is_admin THEN
+  -- Non-privileged callers may never change privileged columns: revert silently.
+  IF NOT v_is_privileged THEN
     NEW.role := OLD.role;
     NEW.tier := OLD.tier;
   END IF;
