@@ -112,7 +112,8 @@
       "role": "Role",
       "memberSince": "Member since",
       "followers": "Followers",
-      "following": "Following"
+      "following": "Following",
+      "profile": "Profile"
     },
     "errors": {
       "notFound": "User not found",

@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getActorActivity } from "@/lib/feed";
 import type { PublicProfile } from "@/types/database";
 import type { ActivityEvent } from "@/types/feed";
+import { profileTitle } from "../utils/profileDisplay";
 
 const PAGE_SIZE = 8;
 
@@ -25,12 +26,7 @@ function verbKey(verb: string): string {
 }
 
 function profileLabel(profile: PublicProfile): string {
-  return (
-    profile.full_name?.trim() ||
-    profile.username?.trim() ||
-    profile.ocid?.trim() ||
-    "Corelia"
-  );
+  return profileTitle(profile);
 }
 
 function objectHref(event: ActivityEvent): string | null {
@@ -153,9 +149,9 @@ export function UserProfileActivitySection({
         if (cancelled) return;
         setItems(next.slice(0, PAGE_SIZE));
         setHasMore(next.length > PAGE_SIZE);
-      } catch (e) {
+      } catch {
         if (cancelled) return;
-        setError(e instanceof Error ? e.message : t("userProfile.errors.loadFailed"));
+        setError(t("userProfile.errors.loadFailed"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -180,8 +176,8 @@ export function UserProfileActivitySection({
       });
       setItems((current) => [...current, ...next.slice(0, PAGE_SIZE)]);
       setHasMore(next.length > PAGE_SIZE);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("userProfile.errors.loadFailed"));
+    } catch {
+      setError(t("userProfile.errors.loadFailed"));
     } finally {
       setLoadingMore(false);
     }

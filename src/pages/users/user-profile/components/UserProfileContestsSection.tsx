@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
+import { Trophy } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
@@ -8,6 +9,24 @@ import type { PublicProfile } from "@/types/database";
 import type { Contest } from "@/types/hackathons";
 
 import { contestFromRow } from "../utils/contestFromRow";
+
+function isMissingRelationError(error: unknown): boolean {
+  const message =
+    typeof error === "object" && error && "message" in error
+      ? String((error as { message?: unknown }).message ?? "")
+      : "";
+  const code =
+    typeof error === "object" && error && "code" in error
+      ? String((error as { code?: unknown }).code ?? "")
+      : "";
+
+  return (
+    code === "PGRST205" ||
+    (message.includes("schema cache") &&
+      (message.includes("public.contests") ||
+        message.includes("public.contest_submissions")))
+  );
+}
 
 export function UserProfileContestsSection({
   profile,
@@ -28,23 +47,23 @@ export function UserProfileContestsSection({
       setLoading(true);
       setError(null);
       try {
-        const [{ data, error: dbErr }, participationResult] = await Promise.all([
-          supabase
-            .from("contests")
-            .select("*")
-            .in("status", ["published", "running", "ended"])
-            .eq("document->>created_by", profile.id)
-            .order("updated_at", { ascending: false }),
-          isSelf
-            ? supabase
-                .from("contest_submissions")
-                .select("contest_id")
-                .eq("user_id", profile.id)
-            : Promise.resolve({ data: null as Array<{ contest_id: string }> | null, error: null }),
-        ]);
+        const { data, error: dbErr } = await supabase
+          .from("contests")
+          .select("*")
+          .in("status", ["published", "running", "ended"])
+          .eq("document->>created_by", profile.id)
+          .order("updated_at", { ascending: false });
 
-        if (dbErr) throw new Error(dbErr.message);
-        if (participationResult.error) throw new Error(participationResult.error.message);
+        if (dbErr) {
+          if (isMissingRelationError(dbErr)) {
+            if (!cancelled) {
+              setContests([]);
+              setParticipations([]);
+            }
+            return;
+          }
+          throw dbErr;
+        }
         if (cancelled) return;
 
         const rows = ((data ?? []) as Array<{
@@ -56,8 +75,27 @@ export function UserProfileContestsSection({
         }>).map((row) => contestFromRow(row, profile.id));
         setContests(rows);
 
+        if (!isSelf) {
+          setParticipations([]);
+          return;
+        }
+
+        const { data: participationData, error: participationErr } = await supabase
+          .from("contest_submissions")
+          .select("contest_id")
+          .eq("user_id", profile.id);
+
+        if (participationErr) {
+          if (isMissingRelationError(participationErr)) {
+            setParticipations([]);
+            return;
+          }
+          throw participationErr;
+        }
+        if (cancelled) return;
+
         const contestIds = Array.from(
-          new Set((participationResult.data ?? []).map((r) => r.contest_id)),
+          new Set((participationData ?? []).map((r) => r.contest_id)),
         ).filter(Boolean);
         if (contestIds.length === 0) {
           setParticipations([]);
@@ -70,7 +108,13 @@ export function UserProfileContestsSection({
           .in("id", contestIds)
           .in("status", ["published", "running", "ended"])
           .order("updated_at", { ascending: false });
-        if (pErr) throw new Error(pErr.message);
+        if (pErr) {
+          if (isMissingRelationError(pErr)) {
+            setParticipations([]);
+            return;
+          }
+          throw pErr;
+        }
         if (cancelled) return;
 
         const pRows = (pData ?? []) as Array<{
@@ -81,11 +125,9 @@ export function UserProfileContestsSection({
           document: Record<string, unknown> | null;
         }>;
         setParticipations(pRows.map((row) => contestFromRow(row, profile.id)));
-      } catch (e) {
+      } catch {
         if (cancelled) return;
-        setError(
-          e instanceof Error ? e.message : t("userProfile.errors.loadFailed"),
-        );
+        setError(t("userProfile.errors.loadFailed"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -98,31 +140,65 @@ export function UserProfileContestsSection({
 
   if (loading) {
     return (
-      <div className="space-y-3">
-        <Skeleton className="h-20 w-full rounded-md" />
-        <Skeleton className="h-20 w-full rounded-md" />
-      </div>
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Trophy className="size-4 text-foreground-muted" aria-hidden />
+          <h2 className="text-base font-semibold text-foreground">
+            {t("userProfile.tabs.contests")}
+          </h2>
+        </div>
+        <Skeleton className="h-20 w-full rounded-2xl" />
+        <Skeleton className="h-20 w-full rounded-2xl" />
+      </section>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
-        {error}
-      </div>
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Trophy className="size-4 text-foreground-muted" aria-hidden />
+          <h2 className="text-base font-semibold text-foreground">
+            {t("userProfile.tabs.contests")}
+          </h2>
+        </div>
+        <div className="rounded-2xl border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted shadow-card sm:p-6">
+          {error}
+        </div>
+      </section>
     );
   }
 
   if (contests.length === 0 && (!isSelf || participations.length === 0)) {
     return (
-      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
-        {t("userProfile.contests.empty")}
-      </div>
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Trophy className="size-4 text-foreground-muted" aria-hidden />
+          <h2 className="text-base font-semibold text-foreground">
+            {t("userProfile.tabs.contests")}
+          </h2>
+        </div>
+        <div className="rounded-2xl border border-dashed border-border-subtle bg-surface-base p-6 text-sm text-foreground-muted shadow-card">
+          {t("userProfile.contests.empty")}
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <section className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Trophy className="size-4 text-foreground-muted" aria-hidden />
+          <h2 className="text-base font-semibold text-foreground">
+            {t("userProfile.tabs.contests")}
+          </h2>
+        </div>
+        <span className="rounded-full border border-border-subtle bg-surface-raised px-2.5 py-1 text-xs font-medium tabular-nums text-foreground-muted">
+          {contests.length + (isSelf ? participations.length : 0)}
+        </span>
+      </div>
+
       <div>
         <div className="mb-3 text-sm font-semibold text-foreground">
           {t("userProfile.contests.organizedTitle")}
@@ -143,7 +219,7 @@ export function UserProfileContestsSection({
                 <NavLink
                   key={id}
                   to={`/hackathons/${id}/overview`}
-                  className="block rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 transition-colors duration-150 hover:bg-surface-raised"
+                  className="block rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card transition-[background-color,border-color] duration-150 hover:border-border hover:bg-surface-raised"
                 >
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold text-foreground">
@@ -186,7 +262,7 @@ export function UserProfileContestsSection({
                   <NavLink
                     key={`p-${id}`}
                     to={`/hackathons/${id}/overview`}
-                    className="block rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 transition-colors duration-150 hover:bg-surface-raised"
+                    className="block rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card transition-[background-color,border-color] duration-150 hover:border-border hover:bg-surface-raised"
                   >
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold text-foreground">
@@ -207,6 +283,6 @@ export function UserProfileContestsSection({
           )}
         </div>
       ) : null}
-    </div>
+    </section>
   );
 }

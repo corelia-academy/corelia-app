@@ -112,7 +112,8 @@
       "role": "Vai trò",
       "memberSince": "Tham gia từ",
       "followers": "Người theo dõi",
-      "following": "Đang theo dõi"
+      "following": "Đang theo dõi",
+      "profile": "Hồ sơ"
     },
     "errors": {
       "notFound": "Không tìm thấy người dùng",

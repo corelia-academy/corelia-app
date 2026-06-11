@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, FolderGit2 } from "lucide-react";
 
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { Button } from "@/components/ui/button";
@@ -114,11 +114,9 @@ export function UserProfileProjectsSection({
             return applyProjectLocaleContent(p, localized);
           }),
         );
-      } catch (e) {
+      } catch {
         if (cancelled) return;
-        setError(
-          e instanceof Error ? e.message : t("userProfile.errors.loadFailed"),
-        );
+        setError(t("userProfile.errors.loadFailed"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -149,156 +147,220 @@ export function UserProfileProjectsSection({
 
   if (loading) {
     return (
-      <div className="space-y-3">
-        <Skeleton className="h-20 w-full rounded-md" />
-        <Skeleton className="h-20 w-full rounded-md" />
-      </div>
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
+          <h2 className="text-base font-semibold text-foreground">
+            {t("projects.title")}
+          </h2>
+        </div>
+        <Skeleton className="h-56 w-full rounded-2xl" />
+        <Skeleton className="h-40 w-full rounded-2xl" />
+      </section>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
-        {error}
-      </div>
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
+          <h2 className="text-base font-semibold text-foreground">
+            {t("projects.title")}
+          </h2>
+        </div>
+        <div className="rounded-2xl border border-border-subtle bg-surface-base p-4 text-sm text-foreground-muted shadow-card sm:p-6">
+          {error}
+        </div>
+      </section>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
-        {t("userProfile.projects.empty")}
-      </div>
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
+          <h2 className="text-base font-semibold text-foreground">
+            {t("projects.title")}
+          </h2>
+        </div>
+        <div className="rounded-2xl border border-dashed border-border-subtle bg-surface-base p-6 text-sm text-foreground-muted shadow-card">
+          {t("userProfile.projects.empty")}
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="grid gap-3">
-      {items.map((project) => {
-        const href = sourceLink(project);
-        return (
-          <div
-            key={project.id}
-            className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4"
-          >
-            {getProjectCoverImageUrl(project) ? (
-              <div className="mb-4 overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
-                <img
-                  src={getProjectCoverImageUrl(project) ?? ""}
-                  alt={project.title}
-                  className="h-48 w-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-            ) : null}
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="truncate text-sm font-semibold text-foreground">
-                  {project.title}
+    <section className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <FolderGit2 className="size-4 text-foreground-muted" aria-hidden />
+          <h2 className="text-base font-semibold text-foreground">
+            {t("projects.title")}
+          </h2>
+        </div>
+        <span className="rounded-full border border-border-subtle bg-surface-raised px-2.5 py-1 text-xs font-medium tabular-nums text-foreground-muted">
+          {items.length}
+        </span>
+      </div>
+
+      <div className="grid gap-4">
+        {items.map((project) => {
+          const href = sourceLink(project);
+          const coverUrl = getProjectCoverImageUrl(project);
+
+          return (
+            <article
+              key={project.id}
+              className="group overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card transition-[background-color,border-color,box-shadow] duration-200 hover:border-border hover:bg-surface-raised"
+            >
+              <div className="grid min-w-0 gap-0 md:grid-cols-[minmax(220px,0.42fr)_minmax(0,1fr)]">
+                <div className="relative aspect-video overflow-hidden border-b border-border-subtle bg-surface-raised md:aspect-auto md:min-h-56 md:border-r md:border-b-0">
+                  {coverUrl ? (
+                    <img
+                      src={coverUrl}
+                      alt={project.title}
+                      className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex size-full items-center justify-center p-6 text-center">
+                      <div>
+                        <FolderGit2
+                          className="mx-auto size-8 text-foreground-subtle"
+                          aria-hidden
+                        />
+                        <div className="mt-3 line-clamp-2 text-sm font-medium text-foreground-muted">
+                          {project.title}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <span className="shrink-0 rounded-full border border-border-subtle bg-surface-raised px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-foreground-muted">
-                  {t(projectSourceLabelKey(project.source_type))}
-                </span>
-              </div>
-              {project.summary ? (
-                <div className="mt-1 line-clamp-2 text-sm text-foreground-muted">
-                  {project.summary}
+
+                <div className="flex min-w-0 flex-col p-4 sm:p-5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="min-w-0 flex-1 truncate text-base font-semibold text-foreground">
+                      {project.title}
+                    </h3>
+                    <span className="shrink-0 rounded-full border border-border-subtle bg-surface-raised px-2 py-0.5 text-[10px] font-medium uppercase text-foreground-muted">
+                      {t(projectSourceLabelKey(project.source_type))}
+                    </span>
+                  </div>
+
+                  {project.summary ? (
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-foreground-muted">
+                      {project.summary}
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-sm leading-6 text-foreground-muted">
+                      {t("projects.card.noSummary")}
+                    </p>
+                  )}
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {href ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        render={<NavLink to={href} />}
+                        nativeButton={false}
+                      >
+                        {t("userProfile.projects.viewSource")}
+                      </Button>
+                    ) : null}
+                    {project.demo_url ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        render={
+                          <a href={project.demo_url} target="_blank" rel="noreferrer" />
+                        }
+                        nativeButton={false}
+                        className="gap-1"
+                      >
+                        <ExternalLink className="size-4" aria-hidden />
+                        {t("userProfile.projects.demo")}
+                      </Button>
+                    ) : null}
+                    {project.repo_url ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        render={
+                          <a href={project.repo_url} target="_blank" rel="noreferrer" />
+                        }
+                        nativeButton={false}
+                        className="gap-1"
+                      >
+                        <ExternalLink className="size-4" aria-hidden />
+                        {t("userProfile.projects.repo")}
+                      </Button>
+                    ) : null}
+                    {project.slide_url ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        render={
+                          <a href={project.slide_url} target="_blank" rel="noreferrer" />
+                        }
+                        nativeButton={false}
+                        className="gap-1"
+                      >
+                        <ExternalLink className="size-4" aria-hidden />
+                        {t("userProfile.projects.slides")}
+                      </Button>
+                    ) : null}
+                    {project.screenshot_url ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        render={
+                          <a
+                            href={project.screenshot_url}
+                            target="_blank"
+                            rel="noreferrer"
+                          />
+                        }
+                        nativeButton={false}
+                        className="gap-1"
+                      >
+                        <ExternalLink className="size-4" aria-hidden />
+                        {t("userProfile.projects.screenshot")}
+                      </Button>
+                    ) : null}
+                    {project.video_url ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        render={
+                          <a href={project.video_url} target="_blank" rel="noreferrer" />
+                        }
+                        nativeButton={false}
+                        className="gap-1"
+                      >
+                        <ExternalLink className="size-4" aria-hidden />
+                        {t("userProfile.projects.video")}
+                      </Button>
+                    ) : null}
+                  </div>
+
+                  <ProjectSocialBlock
+                    projectId={project.id}
+                    ownerId={project.owner_id}
+                    likeCount={Number(project.like_count ?? 0)}
+                    hearted={heartedByProjectId[project.id] ?? false}
+                    variant="default"
+                    className="mt-4"
+                  />
                 </div>
-              ) : null}
-              <div className="mt-3 flex flex-wrap gap-2">
-                {href ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    render={<NavLink to={href} />}
-                    nativeButton={false}
-                  >
-                    {t("userProfile.projects.viewSource")}
-                  </Button>
-                ) : null}
-                {project.demo_url ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    render={
-                      <a href={project.demo_url} target="_blank" rel="noreferrer" />
-                    }
-                    nativeButton={false}
-                    className="gap-1"
-                  >
-                    <ExternalLink className="size-4" aria-hidden />
-                    {t("userProfile.projects.demo")}
-                  </Button>
-                ) : null}
-                {project.repo_url ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    render={
-                      <a href={project.repo_url} target="_blank" rel="noreferrer" />
-                    }
-                    nativeButton={false}
-                    className="gap-1"
-                  >
-                    <ExternalLink className="size-4" aria-hidden />
-                    {t("userProfile.projects.repo")}
-                  </Button>
-                ) : null}
-                {project.slide_url ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    render={
-                      <a href={project.slide_url} target="_blank" rel="noreferrer" />
-                    }
-                    nativeButton={false}
-                    className="gap-1"
-                  >
-                    <ExternalLink className="size-4" aria-hidden />
-                    {t("userProfile.projects.slides")}
-                  </Button>
-                ) : null}
-                {project.screenshot_url ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    render={
-                      <a href={project.screenshot_url} target="_blank" rel="noreferrer" />
-                    }
-                    nativeButton={false}
-                    className="gap-1"
-                  >
-                    <ExternalLink className="size-4" aria-hidden />
-                    {t("userProfile.projects.screenshot")}
-                  </Button>
-                ) : null}
-                {project.video_url ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    render={
-                      <a href={project.video_url} target="_blank" rel="noreferrer" />
-                    }
-                    nativeButton={false}
-                    className="gap-1"
-                  >
-                    <ExternalLink className="size-4" aria-hidden />
-                    {t("userProfile.projects.video")}
-                  </Button>
-                ) : null}
               </div>
-              <ProjectSocialBlock
-                projectId={project.id}
-                ownerId={project.owner_id}
-                likeCount={Number(project.like_count ?? 0)}
-                hearted={heartedByProjectId[project.id] ?? false}
-                variant="default"
-                className="mt-3"
-              />
-            </div>
-          </div>
-        );
-      })}
-    </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }

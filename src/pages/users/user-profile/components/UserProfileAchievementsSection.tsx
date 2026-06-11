@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Award } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -25,9 +26,17 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
 
   if (!isSelf) {
     return (
-      <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted sm:p-6">
-        {t("userProfile.achievements.selfOnly")}
-      </div>
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Award className="size-4 text-foreground-muted" aria-hidden />
+          <h2 className="text-base font-semibold text-foreground">
+            {t("userProfile.tabs.achievements")}
+          </h2>
+        </div>
+        <div className="rounded-2xl border border-dashed border-border-subtle bg-surface-base p-6 text-sm text-foreground-muted shadow-card">
+          {t("userProfile.achievements.selfOnly")}
+        </div>
+      </section>
     );
   }
 
@@ -35,7 +44,14 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
   const recentCertificates = certificates.slice(0, 6);
 
   return (
-    <div className="space-y-4">
+    <section className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Award className="size-4 text-foreground-muted" aria-hidden />
+        <h2 className="text-base font-semibold text-foreground">
+          {t("userProfile.tabs.achievements")}
+        </h2>
+      </div>
+
       <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
         {loading ? (
           <div className="space-y-3">
@@ -109,6 +125,6 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
         onClaim={handleClaim}
         claiming={claiming}
       />
-    </div>
+    </section>
   );
 }
