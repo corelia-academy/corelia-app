@@ -115,7 +115,7 @@ function actorLabel(actor: FeedActor | undefined): string {
 
 function actorHref(actor: FeedActor | undefined, fallbackId: string): string {
   const handle = actor?.username?.trim() || actor?.ocid?.trim() || fallbackId;
-  return `/u/${handle}`;
+  return `/@${handle}`;
 }
 
 function objectHref(event: ActivityEvent): string | null {
@@ -131,7 +131,7 @@ function objectHref(event: ActivityEvent): string | null {
     return `/hackathons/${slug ?? id}`;
   }
   if (type === "project") return `/projects/${id}`;
-  if (type === "user") return `/u/${id}`;
+  if (type === "user") return `/@${id}`;
   return null;
 }
 

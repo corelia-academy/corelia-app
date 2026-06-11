@@ -444,10 +444,15 @@ export async function updateProfileAdmin(userId: string, updates: ProfileUpdate)
 }
 
 async function fetchPublicProfileByHandleOnce(handle: string): Promise<PublicProfile | null> {
-  const h = handle.trim();
+  // Accept both `@handle` (canonical URL) and bare `handle`.
+  const h = handle.trim().replace(/^@+/, "");
   if (!h) return null;
 
-  const filters = [`username.ilike.${h}`, `ocid.eq.${h}`];
+  // Escape LIKE wildcards: a username like `corelia_edu` contains `_`, which in
+  // ILIKE matches any single character. Without escaping it can match multiple
+  // rows, and `.maybeSingle()` then errors → the profile shows "User not found".
+  const likeSafe = h.replace(/[\\%_]/g, (c) => `\\${c}`);
+  const filters = [`username.ilike.${likeSafe}`, `ocid.eq.${h}`];
   if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(h)) {
     filters.push(`id.eq.${h}`);
   }
@@ -465,7 +470,7 @@ async function fetchPublicProfileByHandleOnce(handle: string): Promise<PublicPro
 }
 
 export async function getPublicProfileByHandle(handle: string): Promise<PublicProfile | null> {
-  const key = handle.trim().toLowerCase();
+  const key = handle.trim().replace(/^@+/, "").toLowerCase();
   if (!key) return null;
   const inflight = publicProfileByHandleInFlight.get(key);
   if (inflight) return inflight;

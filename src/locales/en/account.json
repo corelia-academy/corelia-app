@@ -207,7 +207,7 @@
         "public": "Public",
         "private": "Private"
       },
-      "hint": "Your public profile link: /{{handle}}",
+      "hint": "Your public profile link: /@{{handle}}",
       "actions": {
         "makePrivate": "Make private",
         "makePublic": "Make public"

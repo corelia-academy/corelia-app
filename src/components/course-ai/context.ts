@@ -48,7 +48,8 @@ export function resolveAssistantContext(pathname: string): AssistantContext {
   if (pathname.startsWith("/career")) return "career";
   if (pathname.startsWith("/achievements")) return "achievements";
   if (pathname.startsWith("/account")) return "account";
-  if (pathname.startsWith("/u/") || pathname.startsWith("/users/")) return "profile";
+  if (pathname.startsWith("/@") || pathname.startsWith("/u/") || pathname.startsWith("/users/"))
+    return "profile";
   return "default";
 }
 

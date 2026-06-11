@@ -26,7 +26,7 @@ function followerLabel(row: FollowerPreviewRow): string {
 
 function followerHref(row: FollowerPreviewRow): string {
   const handle = row.username?.trim() || row.ocid?.trim() || row.id;
-  return `/u/${handle}`;
+  return `/@${handle}`;
 }
 
 export function FollowerPreview({

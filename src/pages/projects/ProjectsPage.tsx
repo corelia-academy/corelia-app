@@ -149,7 +149,7 @@ function DirectoryCard({ item }: { item: PublicDirectoryItem }) {
             {ownerHandle ? (
               <NavLink
                 className="font-medium text-foreground underline underline-offset-4 hover:no-underline"
-                to={`/u/${ownerHandle}`}
+                to={`/@${ownerHandle}`}
                 onClick={(event) => event.stopPropagation()}
               >
                 {ownerText}

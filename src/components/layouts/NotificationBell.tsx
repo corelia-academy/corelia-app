@@ -37,7 +37,7 @@ export function NotificationBell() {
   const { isAuthenticated, authInitialized, profile } = useAuth();
   // Achievements (Certificate vault) live on the public profile page.
   const achievementsPath = profile?.username
-    ? `/u/${encodeURIComponent(profile.username)}`
+    ? `/@${encodeURIComponent(profile.username)}`
     : "/account";
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);

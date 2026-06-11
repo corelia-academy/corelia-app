@@ -16,7 +16,6 @@ import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
 import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
-import { FeedUnreadButton } from "@/components/layouts/FeedUnreadButton";
 import { NotificationBell } from "@/components/layouts/NotificationBell";
 import { useTheme } from "next-themes";
 import {
@@ -164,11 +163,11 @@ export default function Header() {
     () => [
       {
         to: profile?.username?.trim()
-          ? `/u/${profile.username.trim()}`
+          ? `/@${profile.username.trim()}`
           : profile?.ocid?.trim()
-            ? `/u/${profile.ocid.trim()}`
+            ? `/@${profile.ocid.trim()}`
             : profile?.id
-              ? `/u/${profile.id}`
+              ? `/@${profile.id}`
               : "/account",
         label: t("header.publicProfile"),
         icon: <UserCircle className="mr-2 size-4 shrink-0" aria-hidden />,
@@ -581,7 +580,6 @@ export default function Header() {
             <div className="h-9 w-28 animate-pulse rounded-full bg-surface-raised md:h-10" />
           ) : isAuthenticated ? (
             <div className="flex items-center gap-3">
-              <FeedUnreadButton />
               <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger

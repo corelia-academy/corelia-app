@@ -48,7 +48,6 @@ const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"));
 const EmailUnsubscribePage = lazy(() =>
   import("@/pages/EmailUnsubscribePage").then((m) => ({ default: m.EmailUnsubscribePage })),
 );
-const UserProfileLayout = lazy(() => import("@/pages/users/user-profile"));
 const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
 
 const Account = lazy(() => import("@/pages/account/Account"));
@@ -412,10 +411,10 @@ export default function App() {
                 }
               />
               <Route
-                path="u/:handle"
+                path="u/:handle/*"
                 element={
                   <Suspense fallback={<PageFallback />}>
-                    <UserProfileLayout />
+                    <UserHandleRedirect />
                   </Suspense>
                 }
               />

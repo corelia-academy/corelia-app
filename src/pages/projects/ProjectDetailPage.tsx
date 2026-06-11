@@ -277,7 +277,7 @@ export default function ProjectDetailPage() {
                 {owner.handle ? (
                   <NavLink
                     className="font-medium text-foreground underline underline-offset-4 hover:no-underline"
-                    to={`/u/${owner.handle}`}
+                    to={`/@${owner.handle}`}
                   >
                     @{owner.handle}
                   </NavLink>

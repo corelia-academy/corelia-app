@@ -49,7 +49,7 @@ function objectHref(event: ActivityEvent): string | null {
   }
 
   if (type === "project") return `/projects/${id}`;
-  if (type === "user") return `/u/${id}`;
+  if (type === "user") return `/@${id}`;
 
   return null;
 }

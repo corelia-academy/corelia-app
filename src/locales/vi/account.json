@@ -207,7 +207,7 @@
         "public": "Công khai",
         "private": "Riêng tư"
       },
-      "hint": "Link hồ sơ công khai: /{{handle}}",
+      "hint": "Link hồ sơ công khai: /@{{handle}}",
       "actions": {
         "makePrivate": "Đặt riêng tư",
         "makePublic": "Đặt công khai"
