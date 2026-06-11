@@ -276,6 +276,10 @@ export default function Learn() {
     : -1;
   const previousLesson =
     currentLessonIndex > 0 ? visibleLessons[currentLessonIndex - 1] : null;
+  const nextLessonInSequence =
+    currentLessonIndex >= 0 && currentLessonIndex < visibleLessons.length - 1
+      ? visibleLessons[currentLessonIndex + 1]
+      : null;
 
   const lessonIndexForPlayer = currentLesson ? currentLessonIndex : null;
 
@@ -448,7 +452,7 @@ export default function Learn() {
         }
         hasFullCourseAccess={hasFullCourseAccess}
         previousLesson={previousLesson}
-        nextLesson={nextLesson}
+        nextLesson={nextLessonInSequence}
         translate={translate}
         onMarkComplete={() => void markComplete()}
         onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}

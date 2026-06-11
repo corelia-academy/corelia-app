@@ -27,16 +27,14 @@ function LessonItem({
   const active = currentLessonId === lesson.id;
   const locked = !hasFullCourseAccess && !lesson.is_preview_free;
   const article = isArticleLesson(lesson);
-  return (
-    <div
-      className={cn(
-        "border-t border-border-subtle border-l-[3px] pl-[calc(1rem-3px)] pr-4 py-3 transition-colors duration-150",
-        active ? "bg-primary-muted text-primary border-l-brand-accent" : "border-l-transparent",
-        !locked && "hover:bg-surface-raised",
-        locked && "opacity-75",
-      )}
-    >
-      {locked ? (
+  const rowClassName = cn(
+    "border-t border-border-subtle border-l-[3px] pl-[calc(1rem-3px)] pr-4 py-3 transition-colors duration-150",
+    active ? "bg-primary-muted text-primary border-l-brand-accent" : "border-l-transparent",
+  );
+
+  if (locked) {
+    return (
+      <div className={cn(rowClassName, "opacity-75")}>
         <div className="flex items-start gap-3">
           <Lock className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted" aria-hidden />
           <span className="min-w-0 flex-1 line-clamp-2 text-sm leading-5 text-foreground-muted">
@@ -46,45 +44,50 @@ function LessonItem({
             {translate("detail.learn.lessonLockedBadge")}
           </span>
         </div>
-      ) : (
-        <Link
-          to={`/learn/${courseId}/lesson/${lesson.id}`}
-          className="flex items-start gap-3 sm:items-center"
-        >
-          {done ? (
-            <CheckCircle2 className="mt-0.5 w-4 h-4 shrink-0 text-success sm:mt-0" aria-hidden />
-          ) : getLessonFormat(lesson) === "practice" ? (
-            <PenLine className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
-          ) : getLessonFormat(lesson) === "quiz" ? (
-            <CheckSquare className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
-          ) : article ? (
-            <FileText className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
-          ) : (
-            <PlayCircle className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
-          )}
-          <div className="min-w-0 flex-1">
-            <span
-              className={cn(
-                "block line-clamp-2 text-sm leading-5 sm:line-clamp-1",
-                active ? "font-medium text-primary" : "text-foreground",
-              )}
-            >
-              {lesson.title}
-            </span>
-            {lesson.duration_seconds > 0 ? (
-              <span className="mt-1 block text-xs text-foreground-muted sm:hidden">
-                {formatDuration(lesson.duration_seconds)}
-              </span>
-            ) : null}
-          </div>
-          {lesson.duration_seconds > 0 ? (
-            <span className="hidden shrink-0 text-xs text-foreground-muted sm:inline">
-              {formatDuration(lesson.duration_seconds)}
-            </span>
-          ) : null}
-        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      to={`/learn/${courseId}/lesson/${lesson.id}`}
+      className={cn(
+        rowClassName,
+        "flex w-full items-start gap-3 hover:bg-surface-raised sm:items-center",
       )}
-    </div>
+    >
+      {done ? (
+        <CheckCircle2 className="mt-0.5 w-4 h-4 shrink-0 text-success sm:mt-0" aria-hidden />
+      ) : getLessonFormat(lesson) === "practice" ? (
+        <PenLine className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
+      ) : getLessonFormat(lesson) === "quiz" ? (
+        <CheckSquare className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
+      ) : article ? (
+        <FileText className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
+      ) : (
+        <PlayCircle className="mt-0.5 w-4 h-4 shrink-0 text-foreground-muted sm:mt-0" aria-hidden />
+      )}
+      <div className="min-w-0 flex-1">
+        <span
+          className={cn(
+            "block line-clamp-2 text-sm leading-5 sm:line-clamp-1",
+            active ? "font-medium text-primary" : "text-foreground",
+          )}
+        >
+          {lesson.title}
+        </span>
+        {lesson.duration_seconds > 0 ? (
+          <span className="mt-1 block text-xs text-foreground-muted sm:hidden">
+            {formatDuration(lesson.duration_seconds)}
+          </span>
+        ) : null}
+      </div>
+      {lesson.duration_seconds > 0 ? (
+        <span className="hidden shrink-0 text-xs text-foreground-muted sm:inline">
+          {formatDuration(lesson.duration_seconds)}
+        </span>
+      ) : null}
+    </Link>
   );
 }
 
