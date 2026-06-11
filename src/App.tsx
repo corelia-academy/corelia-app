@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
+import MaintenancePage from "@/pages/MaintenancePage";
 import {
   BrowserRouter,
   Navigate,
@@ -181,6 +182,14 @@ export default function App() {
     document.documentElement.lang =
       i18n.resolvedLanguage ?? i18n.language ?? "vi";
   }, [i18n.resolvedLanguage, i18n.language]);
+
+  if (import.meta.env.VITE_MAINTENANCE_MODE === "true") {
+    return (
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <MaintenancePage />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ErrorBoundary>
