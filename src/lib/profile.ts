@@ -427,6 +427,12 @@ export async function uploadAvatar(file: File): Promise<string> {
   return uploadAvatarForUser(user, file);
 }
 
+// Admin-only profile mutation (can set `role`/`tier`). Authorization is enforced
+// at the database layer: the `guard_profile_privileged_columns` BEFORE UPDATE
+// trigger on public.profiles silently reverts role/tier changes unless the caller
+// passes public.is_admin_or_support(), so a non-admin reaching this code path
+// cannot escalate. The self-service path (updateProfileForUser) additionally
+// allow-lists columns and never forwards role/tier.
 export async function updateProfileAdmin(userId: string, updates: ProfileUpdate): Promise<void> {
   const payload: Record<string, unknown> = { ...updates, updated_at: new Date().toISOString() };
   Object.keys(payload).forEach((k) => {
