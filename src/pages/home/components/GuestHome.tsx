@@ -2,20 +2,15 @@ import { ArrowRight, BookOpen, Trophy } from "lucide-react";
 import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
-import { intlLocale } from "@/lib/intl";
 import { getCourseLevelLabel } from "@/types/courses";
-import type { Contest } from "@/types/hackathons";
-import { contestListImageUrl } from "@/lib/hackathonVisuals";
 import type { Course } from "@/types/courses";
 
 export function GuestHome({
   t,
   courseCatalog,
-  contests,
 }: {
   t: TFunction<"common">;
   courseCatalog: Course[];
-  contests: Contest[];
 }) {
   const featuredCourses = (courseCatalog ?? []).slice(0, 6);
 
@@ -154,69 +149,6 @@ export function GuestHome({
             </div>
           </section>
 
-          {contests.length > 0 ? (
-            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-5">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                  {t("home.guest.openContestsTitle")}
-                </h2>
-                <Button
-                  render={<NavLink to="/hackathons" />}
-                  nativeButton={false}
-                  variant="ghost"
-                  size="sm"
-                  className="-mr-2"
-                >
-                  {t("home.sections.seeAll")}
-                  <ArrowRight className="size-4" aria-hidden />
-                </Button>
-              </div>
-
-              <div className="mt-3 space-y-2">
-                {contests.slice(0, 3).map((contest) => {
-                  const rowImg = contestListImageUrl(contest);
-                  const contestSlug = contest.slug?.trim() || null;
-                  return (
-                  <NavLink
-                    key={contest.id}
-                    to={contestSlug ? `/hackathons/${contestSlug}/overview` : "/hackathons"}
-                    className="flex cursor-pointer items-start justify-between gap-3 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-3 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:bg-surface-raised hover:border-border hover:-translate-y-0.5"
-                  >
-                    <div className="relative size-14 shrink-0 overflow-hidden rounded-lg border border-border-subtle bg-surface-raised">
-                      {rowImg ? (
-                        <img
-                          src={rowImg}
-                          alt=""
-                          className="size-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex size-full items-center justify-center bg-primary-muted text-primary">
-                          <Trophy className="size-6" aria-hidden />
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="line-clamp-1 text-sm font-medium text-foreground">
-                        {contest.title}
-                      </div>
-                      <div className="mt-1 line-clamp-2 text-xs leading-relaxed text-foreground-muted">
-                        {contest.tagline}
-                      </div>
-                      {contest.registration_deadline ? (
-                        <div className="mt-2 text-xs text-foreground-muted">
-                          {t("home.pinned.contest.registrationDeadline", {
-                            date: new Date(contest.registration_deadline).toLocaleDateString(intlLocale()),
-                          })}
-                        </div>
-                      ) : null}
-                    </div>
-                    <ArrowRight className="mt-0.5 size-4 shrink-0 text-foreground-muted" aria-hidden />
-                  </NavLink>
-                  );
-                })}
-              </div>
-            </section>
-          ) : null}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
@@ -255,7 +187,6 @@ export function GuestHome({
             <div className="mt-4 space-y-2">
               {[
                 { label: t("home.allCourses"), to: "/courses" },
-                { label: t("home.guest.quickLinks.contests"), to: "/hackathons" },
               ].map((item) => (
                 <NavLink
                   key={item.to}

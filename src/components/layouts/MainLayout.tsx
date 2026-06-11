@@ -1,4 +1,4 @@
-import { Briefcase, BookOpen, Home, List, LogIn, Trophy } from "lucide-react";
+import { Briefcase, BookOpen, Home, List, LogIn } from "lucide-react";
 import React, { Suspense, lazy } from "react";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
@@ -52,7 +52,6 @@ const MainLayout = () => {
     { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
     { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
     { labelKey: "nav.career" as const, href: "/career", icon: Briefcase },
-    { labelKey: "nav.contests" as const, href: "/hackathons", icon: Trophy },
     isAuthenticated
       ? { labelKey: "tabs.menu" as const, href: "/menu", icon: List }
       : { labelKey: "tabs.signIn" as const, href: "/login", icon: LogIn },
@@ -114,7 +113,7 @@ const MainLayout = () => {
         <ExplainSelectionButton />
       </Suspense>
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface-float pb-[env(safe-area-inset-bottom,0px)] md:hidden">
-        <div className="container-app grid grid-cols-5 gap-1 px-2 py-2">
+        <div className="container-app grid grid-cols-4 gap-1 px-2 py-2">
           {mobilePrimaryNav.map((item) => {
             const Icon = item.icon;
             if (item.href === "/menu") {

@@ -9,7 +9,6 @@ import MaintenancePage from "@/pages/MaintenancePage";
 import {
   BrowserRouter,
   Navigate,
-  Outlet,
   Route,
   Routes,
   useLocation,
@@ -19,7 +18,6 @@ import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
-import { RequireContestManager } from "@/components/auth/RequireContestManager";
 import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
@@ -41,24 +39,9 @@ const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
 const RoadmapPage = lazy(() => import("@/pages/roadmap"));
 const CareerList = lazy(() => import("@/pages/career"));
 const CareerDetail = lazy(() => import("@/pages/career/CareerDetailPage"));
-const LearningPathPage = lazy(() => import("@/pages/learning-path/LearningPathPage"));
-const Contests = lazy(() => import("@/pages/hackathon-detail/Contests"));
-const ContestNew = lazy(() => import("@/pages/hackathon-detail/ContestNew"));
-const ContestPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
-const ContestPublicPage = lazy(() => import("@/pages/hackathon-detail/ContestPublicPage"));
-const Projects = lazy(() => import("@/pages/projects"));
-const ProjectDetail = lazy(() => import("@/pages/projects/ProjectDetailPage"));
 const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
 const CoInstructorInvitePage = lazy(() => import("@/pages/invites/CoInstructorInvitePage"));
 const SearchPage = lazy(() => import("@/pages/search"));
-import { ContestManageIndexRedirect } from "@/pages/hackathon-detail/ContestManageIndexRedirect";
-import { ContestPublicLegacyRedirect } from "@/pages/hackathon-detail/ContestPublicLegacyRedirect";
-
-const ContestWorkspacePublicRoute = lazy(() =>
-  import("@/pages/hackathon-detail/ContestDetail").then((m) => ({
-    default: m.ContestDetailManagePage,
-  })),
-);
 const ConfirmSignup = lazy(() => import("@/pages/auth/ConfirmSignup"));
 const SignupVerified = lazy(() => import("@/pages/auth/SignupVerified"));
 const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"));
@@ -82,9 +65,6 @@ const AccountBillingRoute = lazy(() =>
 const AccountSettingsRoute = lazy(() =>
   import("@/pages/account/AccountSettingsRoute").then((m) => ({ default: m.AccountSettingsRoute })),
 );
-const AccountProjectsRoute = lazy(() =>
-  import("@/pages/account/AccountProjectsRoute").then((m) => ({ default: m.AccountProjectsRoute })),
-);
 const AccountInstructorProfileRoute = lazy(() =>
   import("@/pages/account/AccountInstructorRoutes").then((m) => ({
     default: m.AccountInstructorProfileRoute,
@@ -98,7 +78,6 @@ const InstructorWorkspaceProfileRoute = lazy(() =>
 
 const InstructorLayout = lazy(() => import("@/pages/instructor/InstructorLayout"));
 const InstructorCourses = lazy(() => import("@/pages/InstructorCourses"));
-const InstructorContests = lazy(() => import("@/pages/hackathon-detail/InstructorContests"));
 const InstructorCourseNew = lazy(() => import("@/pages/instructor-course-new"));
 const InstructorCourseEdit = lazy(() => import("@/pages/instructor-course-edit"));
 const InstructorCareerTracks = lazy(() => import("@/pages/instructor-career-tracks"));
@@ -367,14 +346,7 @@ export default function App() {
                   </Suspense>
                 }
               />
-              <Route
-                path="learning-path"
-                element={
-                  <Suspense fallback={<PageFallback />}>
-                    <LearningPathPage />
-                  </Suspense>
-                }
-              />
+              <Route path="learning-path/*" element={<Navigate to="/" replace />} />
               <Route
                 path="career/:slug"
                 element={
@@ -429,54 +401,8 @@ export default function App() {
                   </Suspense>
                 }
               />
-              <Route
-                path="hackathons"
-                element={
-                  <Suspense fallback={<PageFallback />}>
-                    <Contests />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="hackathons/manage"
-                element={
-                  <RequireAuth>
-                    <RequireContestManager>
-                      <Suspense fallback={<PageFallback />}>
-                        <InstructorContests />
-                      </Suspense>
-                    </RequireContestManager>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="hackathons/new"
-                element={
-                  <RequireAuth>
-                    <RequireContestManager>
-                      <Suspense fallback={<PageFallback />}>
-                        <ContestNew />
-                      </Suspense>
-                    </RequireContestManager>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="projects"
-                element={
-                  <Suspense fallback={<PageFallback />}>
-                    <Projects />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="projects/:id"
-                element={
-                  <Suspense fallback={<PageFallback />}>
-                    <ProjectDetail />
-                  </Suspense>
-                }
-              />
+              <Route path="hackathons/*" element={<Navigate to="/" replace />} />
+              <Route path="projects/*" element={<Navigate to="/" replace />} />
               <Route
                 path="search"
                 element={
@@ -485,69 +411,6 @@ export default function App() {
                   </Suspense>
                 }
               />
-              <Route
-                path="hackathons/:slug/manage"
-                element={
-                  <RequireAuth>
-                    <Outlet />
-                  </RequireAuth>
-                }
-              >
-                <Route index element={<ContestManageIndexRedirect />} />
-                <Route
-                  path=":section"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestWorkspacePublicRoute />
-                    </Suspense>
-                  }
-                />
-              </Route>
-              <Route
-                path="hackathons/:slug"
-                element={
-                  <Suspense fallback={<PageFallback />}>
-                    <ContestPublicLayout />
-                  </Suspense>
-                }
-              >
-                <Route
-                  index
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <ContestPublicPage />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="overview"
-                  element={<ContestPublicLegacyRedirect tab="overview" />}
-                />
-                <Route
-                  path="timeline"
-                  element={<ContestPublicLegacyRedirect tab="timeline" />}
-                />
-                <Route
-                  path="prizes"
-                  element={<ContestPublicLegacyRedirect tab="prizes" />}
-                />
-                <Route
-                  path="partners"
-                  element={<ContestPublicLegacyRedirect tab="partners" />}
-                />
-                <Route
-                  path="rules"
-                  element={<ContestPublicLegacyRedirect tab="rules" />}
-                />
-                <Route
-                  path="faqs"
-                  element={<ContestPublicLegacyRedirect tab="faqs" />}
-                />
-                <Route
-                  path="projects"
-                  element={<ContestPublicLegacyRedirect tab="projects" />}
-                />
-              </Route>
               <Route
                 path="u/:handle"
                 element={
@@ -599,14 +462,7 @@ export default function App() {
                     </Suspense>
                   }
                 />
-                <Route
-                  path="projects"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <AccountProjectsRoute />
-                    </Suspense>
-                  }
-                />
+                <Route path="projects" element={<Navigate to="/account" replace />} />
                 <Route
                   path="instructor"
                   element={

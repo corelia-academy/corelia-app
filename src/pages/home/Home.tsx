@@ -1,8 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/stores/authStore";
-import { Award, PlaySquare, Trophy } from "lucide-react";
-import { intlLocale } from "@/lib/intl";
+import { Award, PlaySquare } from "lucide-react";
 
 import { useHomeCatalogAndContests } from "./hooks/useHomeCatalogAndContests";
 import { useHomeUserDashboard } from "./hooks/useHomeUserDashboard";
@@ -19,7 +18,7 @@ export default function Home() {
   const { t } = useTranslation("common");
   const { profile, user, isAuthenticated } = useAuth();
 
-  const { courseCatalog, contests } = useHomeCatalogAndContests();
+  const { courseCatalog } = useHomeCatalogAndContests();
   const {
     loading,
     focusCards,
@@ -50,15 +49,6 @@ export default function Home() {
         icon: PlaySquare,
       },
       {
-        label: t("home.momentum.contests.label"),
-        value: String(contests.length),
-        note:
-          contests.length > 0
-            ? t("home.momentum.contests.note")
-            : t("home.momentum.contests.emptyNote"),
-        icon: Trophy,
-      },
-      {
         label: t("home.momentum.certificates.label"),
         value: String(issuedCertificates),
         note:
@@ -68,7 +58,7 @@ export default function Home() {
         icon: Award,
       },
     ],
-    [contests.length, focusCards, issuedCertificates, t],
+    [focusCards, issuedCertificates, t],
   );
 
   const featuredFocus = focusCards[0] ?? null;
@@ -112,30 +102,16 @@ export default function Home() {
           return null;
         }
 
+        // Contest pinned cards are hidden (Hackathons feature removed from UI).
         if (item.type === "contest") {
-          const contest = contests.find((entry) => entry.id === item.ref_id);
-          if (!contest) return null;
-          return {
-            id: item.id,
-            badge: item.badge || t("home.pinned.badges.ecosystemPlayground"),
-            title: item.title_override || contest.title,
-            description: item.description_override || contest.tagline,
-            to: contest.slug ? `/hackathons/${contest.slug}` : "/hackathons",
-            cta: item.cta_label || t("home.pinned.cta.viewContest"),
-            meta:
-              contest.registration_deadline != null
-                ? t("home.pinned.contest.registrationDeadline", {
-                    date: new Date(contest.registration_deadline).toLocaleDateString(intlLocale()),
-                  })
-                : t("home.pinned.contest.openInEcosystem"),
-          };
+          return null;
         }
 
         return null;
       })
       .filter((item): item is PinnedProgramCard => item != null)
       .slice(0, 1);
-  }, [contests, courseCatalog, dashboardConfig, focusCards, t]);
+  }, [courseCatalog, dashboardConfig, focusCards, t]);
 
   const activePinnedProgram = pinnedPrograms[0] ?? null;
 
@@ -147,7 +123,7 @@ export default function Home() {
     : focusCards.slice(1);
 
   if (!isAuthenticated) {
-    return <GuestHome t={t} courseCatalog={courseCatalog} contests={contests} />;
+    return <GuestHome t={t} courseCatalog={courseCatalog} />;
   }
 
   return (

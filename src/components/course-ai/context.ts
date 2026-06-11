@@ -46,8 +46,6 @@ export function resolveAssistantContext(pathname: string): AssistantContext {
   if (pathname.startsWith("/search")) return "search";
   if (pathname.startsWith("/courses")) return "courses";
   if (pathname.startsWith("/career")) return "career";
-  if (pathname.startsWith("/hackathons")) return "hackathons";
-  if (pathname.startsWith("/projects")) return "projects";
   if (pathname.startsWith("/achievements")) return "achievements";
   if (pathname.startsWith("/account")) return "account";
   if (pathname.startsWith("/u/") || pathname.startsWith("/users/")) return "profile";
@@ -92,13 +90,16 @@ const ASSISTANT_SURFACE_META: Record<AssistantContext, AssistantSurfaceMeta> = {
     suggestionsKey: "coraWidget.suggestions.career",
     action: { to: "/career", label: "coraWidget.actions.viewPaths" },
   },
+  // Hackathons & Projects features are hidden from the UI; these contexts are
+  // no longer reachable but kept to satisfy the AssistantContext union. Their
+  // CTAs fall back to course browsing.
   hackathons: {
     suggestionsKey: "coraWidget.suggestions.hackathons",
-    action: { to: "/hackathons", label: "coraWidget.actions.viewHackathons" },
+    action: { to: "/courses", label: "coraWidget.actions.browseCourses" },
   },
   projects: {
     suggestionsKey: "coraWidget.suggestions.projects",
-    action: { to: "/projects", label: "coraWidget.actions.viewProjects" },
+    action: { to: "/courses", label: "coraWidget.actions.browseCourses" },
   },
   achievements: {
     suggestionsKey: "coraWidget.suggestions.achievements",

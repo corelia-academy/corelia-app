@@ -2,13 +2,10 @@ import { NavLink, useLocation } from "react-router";
 import {
   Briefcase,
   BookOpen,
-  Compass,
   GraduationCap,
   Home,
-  Package,
   Rss,
   Settings,
-  Trophy,
 } from "lucide-react";
 import {
   Sidebar,
@@ -33,9 +30,6 @@ const primaryNav = [
   { labelKey: "nav.feed" as const, href: "/feed", icon: Rss },
   { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
   { labelKey: "nav.career" as const, href: "/career", icon: Briefcase },
-  { labelKey: "nav.learningPath" as const, href: "/learning-path", icon: Compass },
-  { labelKey: "nav.contests" as const, href: "/hackathons", icon: Trophy },
-  { labelKey: "nav.projects" as const, href: "/projects", icon: Package },
 ] as const;
 
 export default function AppSidebar({

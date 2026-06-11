@@ -2,8 +2,6 @@ const LEARNER_FACING_EXACT_PATHS = new Set<string>([
   "/",
   "/courses",
   "/career",
-  "/hackathons",
-  "/projects",
   "/search",
 ]);
 
@@ -12,7 +10,6 @@ const LEARNER_FACING_PATTERNS: RegExp[] = [
   /^\/learn\/.+$/,
   /^\/career\/corelia\/[^/]+$/,
   /^\/career\/[^/]+\/[^/]+$/,
-  /^\/hackathons\/[^/]+$/,
   /^\/u\/[^/]+$/,
 ];
 

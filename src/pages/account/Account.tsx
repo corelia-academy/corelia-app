@@ -6,7 +6,6 @@ import {
   CreditCard,
   GraduationCap,
   IdCard,
-  Languages,
   Settings,
   UserCircle,
 } from "lucide-react";
@@ -58,12 +57,6 @@ export default function Account() {
       title: t("nav.settings.title"),
       description: t("nav.settings.description"),
       icon: <Settings className="size-4 shrink-0" aria-hidden />,
-    },
-    {
-      to: "/account/projects",
-      title: "Projects",
-      description: "Manage project translations",
-      icon: <Languages className="size-4 shrink-0" aria-hidden />,
     },
   ];
 
