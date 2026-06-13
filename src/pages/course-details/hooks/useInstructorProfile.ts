@@ -7,25 +7,14 @@ export function useInstructorProfile(instructorId: string | undefined) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!instructorId) return;
     let cancelled = false;
 
-    if (!instructorId) {
-      queueMicrotask(() => {
-        if (!cancelled) {
-          setProfile(null);
-          setLoading(false);
-        }
-      });
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    queueMicrotask(() => {
-      if (!cancelled) setLoading(true);
-    });
-
-    getProfile(instructorId)
+    Promise.resolve()
+      .then(() => {
+        if (!cancelled) setLoading(true);
+        return getProfile(instructorId);
+      })
       .then((p) => {
         if (!cancelled) setProfile(p);
       })

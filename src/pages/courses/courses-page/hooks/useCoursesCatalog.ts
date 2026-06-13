@@ -55,17 +55,16 @@ export function useCoursesCatalog() {
 
   // Apply locale translations whenever raw courses or locale changes.
   useEffect(() => {
-    let cancelled = false;
-
     if (rawCourses.length === 0 || currentLocale === "vi") {
-      queueMicrotask(() => {
+      let cancelled = false;
+      Promise.resolve().then(() => {
         if (!cancelled) setCourses(rawCourses);
       });
       return () => {
         cancelled = true;
       };
     }
-
+    let cancelled = false;
     const ids = rawCourses.map((c) => c.id);
     getBatchCourseLocaleContent(ids, currentLocale).then((localeMap) => {
       if (cancelled) return;

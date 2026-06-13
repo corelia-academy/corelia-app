@@ -52,22 +52,36 @@ export function CourseAiTutorPanel(props: {
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const attachmentPreviewRef = useRef<string | null>(null);
   const hasLessonContext = Boolean(lessonId?.trim());
 
-  // Build/cleanup local preview URL
+  const setAttachment = (file: File | null) => {
+    if (attachmentPreviewRef.current) {
+      URL.revokeObjectURL(attachmentPreviewRef.current);
+      attachmentPreviewRef.current = null;
+    }
+
+    if (!file) {
+      setAttachedFile(null);
+      setAttachmentPreview(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    attachmentPreviewRef.current = previewUrl;
+    setAttachedFile(file);
+    setAttachmentPreview(previewUrl);
+  };
+
+  // Release any selected preview URL when the panel unmounts.
   useEffect(() => {
-    const url = attachedFile ? URL.createObjectURL(attachedFile) : null;
-    let cancelled = false;
-
-    queueMicrotask(() => {
-      if (!cancelled) setAttachmentPreview(url);
-    });
-
     return () => {
-      cancelled = true;
-      if (url) URL.revokeObjectURL(url);
+      if (attachmentPreviewRef.current) {
+        URL.revokeObjectURL(attachmentPreviewRef.current);
+        attachmentPreviewRef.current = null;
+      }
     };
-  }, [attachedFile]);
+  }, []);
   const {
     messages,
     sendMessage,
@@ -157,7 +171,7 @@ export function CourseAiTutorPanel(props: {
       toast.error(String(tCommon("coraWidget.attachImageTooLarge")));
       return;
     }
-    setAttachedFile(file);
+    setAttachment(file);
   };
 
   const handleAttachClick = () => {
@@ -195,7 +209,7 @@ export function CourseAiTutorPanel(props: {
     }
 
     setDraft("");
-    setAttachedFile(null);
+    setAttachment(null);
     await sendMessage(text, {
       attachments: uploadedAttachment ? [uploadedAttachment] : undefined,
     });
@@ -294,7 +308,7 @@ export function CourseAiTutorPanel(props: {
               </div>
               <button
                 type="button"
-                onClick={() => setAttachedFile(null)}
+                onClick={() => setAttachment(null)}
                 className="ml-auto rounded p-1 text-foreground-muted hover:bg-surface-base"
                 aria-label={String(tCommon("coraWidget.removeAttachment"))}
                 disabled={uploading}
