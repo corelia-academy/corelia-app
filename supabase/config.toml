@@ -24,6 +24,16 @@ verify_jwt = false
 # workspace Edge Functions and verify the bearer token inside the handler.
 verify_jwt = false
 
+[functions.generate-course]
+# Creator-facing AI course builder. The handler verifies the user bearer token
+# itself so preflight and reservation error handling stay consistent.
+verify_jwt = false
+
+[functions.refund-stale-course-generations]
+# Internal cleanup endpoint for scheduled jobs. It uses a shared cron secret and
+# service role client in the handler, not Supabase gateway JWTs.
+verify_jwt = false
+
 [api]
 enabled = true
 # Port to use for the API URL.
