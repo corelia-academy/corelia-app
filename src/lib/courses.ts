@@ -114,6 +114,44 @@ function courseQuotaMessage(quota: CourseQuotaResult): string {
   return "Ban chua the thuc hien thao tac nay voi goi hien tai.";
 }
 
+function coursePublishModerationMessage(reason: string): string {
+  if (reason === "publish_title_too_short") {
+    return "Tieu de khoa hoc qua ngan de publish. Vui long bo sung tieu de ro rang hon.";
+  }
+  if (reason === "publish_description_too_short") {
+    return "Mo ta khoa hoc qua ngan de publish. Vui long bo sung mo ta noi dung ro rang hon.";
+  }
+  if (reason === "publish_requires_lesson") {
+    return "Can co it nhat 1 bai hoc truoc khi publish khoa hoc.";
+  }
+  if (reason === "publish_link_farm") {
+    return "Khoa hoc co qua nhieu lien ket nen can duoc don dep truoc khi publish.";
+  }
+  if (reason === "publish_blocked_content") {
+    return "Noi dung khoa hoc co dau hieu spam/vi pham nen chua the publish. Vui long ra soat lai tieu de, mo ta va bai hoc.";
+  }
+  return "Khoa hoc chua vuot qua kiem tra an toan truoc khi publish.";
+}
+
+function courseWriteErrorMessage(message?: string | null): string | null {
+  if (!message) return null;
+  const moderationMatch = message.match(/course_publish_moderation_failed:([a-z0-9_]+)/i);
+  if (moderationMatch?.[1]) {
+    return coursePublishModerationMessage(moderationMatch[1]);
+  }
+  const quotaMatch = message.match(/course_quota_exceeded:([a-z0-9_]+)/i);
+  if (quotaMatch?.[1]) {
+    return courseQuotaMessage({ allowed: false, reason: quotaMatch[1] });
+  }
+  if (message.includes("new_courses_must_start_as_draft")) {
+    return "Khoa hoc moi phai bat dau o trang thai draft truoc khi publish.";
+  }
+  if (message.includes("course_owner_must_match_current_user")) {
+    return "Ban chi co the chinh sua khoa hoc cua chinh minh.";
+  }
+  return null;
+}
+
 export async function checkCourseQuota(
   action: CourseQuotaAction,
 ): Promise<CourseQuotaResult> {
@@ -1031,7 +1069,9 @@ export async function createCourse(data: CourseInsert, viewer?: User | null): Pr
     })
     .select("*")
     .single();
-  if (error || !inserted) throw new Error(error?.message ?? "Tạo khoá học thất bại");
+  if (error || !inserted) {
+    throw new Error(courseWriteErrorMessage(error?.message) ?? error?.message ?? "Tạo khoá học thất bại");
+  }
   return rowToCourse(inserted as CourseRow);
 }
 
@@ -1179,7 +1219,7 @@ export async function updateCourse(courseId: string, data: CourseUpdate): Promis
     .from("courses")
     .update({ ...top, data: nextData })
     .eq("id", courseId);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(courseWriteErrorMessage(error.message) ?? error.message);
 }
 
 export async function refreshCourseTotalDuration(courseId: string): Promise<void> {
