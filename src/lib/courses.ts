@@ -84,6 +84,21 @@ function courseQuotaMessage(quota: CourseQuotaResult): string {
   if (quota.reason === "published_course_limit") {
     return `Ban da dat gioi han ${quota.limit ?? ""} khoa cong khai cho goi hien tai.`;
   }
+  if (quota.reason === "email_unverified") {
+    return "Vui long xac minh email truoc khi publish khoa hoc.";
+  }
+  if (quota.reason === "account_too_new") {
+    return "Tai khoan free can du 24 gio tuoi truoc khi publish khoa hoc dau tien.";
+  }
+  if (quota.reason === "publishing_blocked") {
+    return "Tai khoan dang bi tam chan publish. Vui long lien he Corelia neu can ho tro.";
+  }
+  if (quota.reason === "spam_strikes") {
+    return "Tai khoan da co qua nhieu canh bao spam nen chua the publish khoa hoc.";
+  }
+  if (quota.reason === "trust_score_too_low") {
+    return "Tai khoan chua du tin cay de publish khoa hoc.";
+  }
   if (quota.reason === "course_create_hourly_limit") {
     return "Ban dang tao khoa qua nhanh. Vui long thu lai sau it phut.";
   }
