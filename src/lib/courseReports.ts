@@ -54,6 +54,9 @@ export async function submitCourseReport(input: SubmitCourseReportInput): Promis
     if (error.code === "23505") {
       throw new Error("Ban da gui report cho khoa hoc nay. Doi ngu Corelia se xem xet.");
     }
+    if (error.message.toLowerCase().includes("own course")) {
+      throw new Error("Ban khong the report khoa hoc cua chinh minh.");
+    }
     if (error.message.toLowerCase().includes("limit exceeded")) {
       throw new Error("Ban da gui qua nhieu report. Vui long thu lai sau.");
     }
