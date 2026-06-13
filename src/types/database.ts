@@ -56,6 +56,10 @@ export interface Profile {
   /** User has published at least one public course. */
   is_creator?: boolean;
   creator_first_published_at?: string | null;
+  /** Trust/safety fields are backend-managed; clients should treat them as read-only. */
+  trust_score?: number;
+  spam_strikes?: number;
+  publishing_blocked_until?: string | null;
   follower_count?: number;
   following_count?: number;
   /** Ngôn ngữ UI người dùng chọn (vd: vi/en) */
@@ -106,6 +110,9 @@ export interface ProfileInsert {
   profile_public?: boolean;
   is_creator?: boolean;
   creator_first_published_at?: string | null;
+  trust_score?: number;
+  spam_strikes?: number;
+  publishing_blocked_until?: string | null;
   follower_count?: number;
   following_count?: number;
   locale?: Locale | null;
@@ -139,6 +146,9 @@ export interface ProfileUpdate {
   profile_public?: boolean;
   is_creator?: boolean;
   creator_first_published_at?: string | null;
+  trust_score?: number;
+  spam_strikes?: number;
+  publishing_blocked_until?: string | null;
   follower_count?: number;
   following_count?: number;
   locale?: Locale | null;
