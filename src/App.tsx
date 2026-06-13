@@ -103,6 +103,7 @@ const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMilestones"));
 const AdminCoraVouchers = lazy(() => import("@/pages/admin/AdminCoraVouchers"));
 const AdminBranding = lazy(() => import("@/pages/admin/AdminBranding"));
+const AdminCourseReports = lazy(() => import("@/pages/admin/AdminCourseReports"));
 
 const PageFallback = () => <AuthGateLoading />;
 
@@ -543,6 +544,14 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <AdminCoraVouchers />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="course-reports"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminCourseReports />
                     </Suspense>
                   }
                 />

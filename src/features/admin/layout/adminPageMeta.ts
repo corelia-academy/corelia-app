@@ -39,6 +39,11 @@ const PAGE_META: Array<{
     descriptionKey: "layout.pageMeta.coraVouchers.description",
   },
   {
+    match: (pathname) => pathname === "/admin/course-reports",
+    titleKey: "layout.pageMeta.courseReports.title",
+    descriptionKey: "layout.pageMeta.courseReports.description",
+  },
+  {
     match: (pathname) => pathname === "/admin/branding",
     titleKey: "layout.pageMeta.branding.title",
     descriptionKey: "layout.pageMeta.branding.description",
