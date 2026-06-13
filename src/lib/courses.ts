@@ -1163,7 +1163,12 @@ export async function addLesson(courseId: string, data: CourseLessonInsert): Pro
     sort_order: sortOrder,
     data: dataDoc,
   });
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.message.includes("course_lesson_limit_exceeded")) {
+      throw new Error("Khoa hoc da dat gioi han so bai hoc cua goi hien tai.");
+    }
+    throw new Error(error.message);
+  }
   // Background-ingest the new lesson into knowledge_chunks so Cora RAG can pick it up.
   triggerLessonEmbeddingInBackground({ courseId, lessonId: id });
   return { id, ...payload } as CourseLesson;
