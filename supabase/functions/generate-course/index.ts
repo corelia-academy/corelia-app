@@ -476,13 +476,31 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const { data: generation, error: generationError } = await db
       .from("ai_course_generations")
-      .select("id,user_id,mode,status,model_used")
+      .select("id,user_id,mode,status,model_used,videos_count,sections_count,payload")
       .eq("id", body.generationId)
       .eq("user_id", user.id)
-      .maybeSingle<{ id: number; user_id: string; mode: Mode; status: string; model_used: string }>();
+      .maybeSingle<{
+        id: number;
+        user_id: string;
+        mode: Mode;
+        status: string;
+        model_used: string;
+        videos_count: number;
+        sections_count: number;
+        payload: Record<string, unknown> | null;
+      }>();
     if (generationError) throw new Error(generationError.message);
     if (!generation || generation.status !== "pending" || generation.mode !== body.mode) {
       throw new Error("Generation reservation is invalid or already used");
+    }
+    if (body.sectionsCount > Number(generation.sections_count ?? 0)) {
+      throw new Error("Requested sections exceed the reserved generation quota");
+    }
+    if (body.mode === "youtube_playlist" && body.maxVideos > Number(generation.videos_count ?? 0)) {
+      throw new Error("Requested playlist size exceeds the reserved generation quota");
+    }
+    if (body.mode === "youtube_video_list" && body.videoUrls.length > Number(generation.videos_count ?? 0)) {
+      throw new Error("Requested video list exceeds the reserved generation quota");
     }
 
     const videos =
