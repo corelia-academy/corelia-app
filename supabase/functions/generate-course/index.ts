@@ -158,6 +158,41 @@ function createServiceClient(): SupabaseClient {
   );
 }
 
+function clientIpForRateLimit(req: Request): string {
+  const cfIp = req.headers.get("cf-connecting-ip")?.trim();
+  if (cfIp) return cfIp.slice(0, 128);
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  if (forwarded) return forwarded.slice(0, 128);
+  const realIp = req.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp.slice(0, 128);
+  return "unknown";
+}
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function courseGenerationIpHash(req: Request): Promise<string> {
+  const salt = readOptionalEnv("CORELIA_IP_HASH_SALT") || readSupabaseSecretKey();
+  return sha256Hex(`${salt}:${clientIpForRateLimit(req)}`);
+}
+
+async function enforceIpRateLimit(db: SupabaseClient, req: Request, generationId: number): Promise<void> {
+  const ipHash = await courseGenerationIpHash(req);
+  const { data, error } = await db.rpc("attach_course_generation_ip_and_check", {
+    p_generation_id: generationId,
+    p_ip_hash: ipHash,
+  });
+  if (error) throw new Error(error.message);
+  const result = (data ?? {}) as { allowed?: boolean; reason?: string };
+  if (!result.allowed) {
+    throw new Error(result.reason || "ip_generation_rate_limited");
+  }
+}
+
 async function verifyBearerUser(req: Request, db: SupabaseClient): Promise<User> {
   const header = req.headers.get("authorization") ?? req.headers.get("Authorization");
   const match = header?.match(/^Bearer\s+(.+)$/i);
@@ -502,6 +537,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (body.mode === "youtube_video_list" && body.videoUrls.length > Number(generation.videos_count ?? 0)) {
       throw new Error("Requested video list exceeds the reserved generation quota");
     }
+
+    await enforceIpRateLimit(db, req, body.generationId);
 
     const videos =
       body.mode === "youtube_playlist"
