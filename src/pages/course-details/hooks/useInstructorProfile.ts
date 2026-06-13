@@ -9,8 +9,12 @@ export function useInstructorProfile(instructorId: string | undefined) {
   useEffect(() => {
     if (!instructorId) return;
     let cancelled = false;
-    setLoading(true);
-    getProfile(instructorId)
+
+    Promise.resolve()
+      .then(() => {
+        if (!cancelled) setLoading(true);
+        return getProfile(instructorId);
+      })
       .then((p) => {
         if (!cancelled) setProfile(p);
       })

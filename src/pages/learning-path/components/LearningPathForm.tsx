@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2, Sparkles } from "lucide-react";
 
@@ -13,11 +13,8 @@ type Props = {
 
 export function LearningPathForm({ initialGoal, generating, onSubmit, error }: Props) {
   const { t } = useTranslation("learningPath");
-  const [goal, setGoal] = useState(initialGoal ?? "");
-
-  useEffect(() => {
-    if (initialGoal && !goal) setGoal(initialGoal);
-  }, [initialGoal, goal]);
+  const [goalDraft, setGoalDraft] = useState<string | null>(null);
+  const goal = goalDraft ?? initialGoal ?? "";
 
   const handle = () => {
     const trimmed = goal.trim();
@@ -44,7 +41,7 @@ export function LearningPathForm({ initialGoal, generating, onSubmit, error }: P
         rows={3}
         value={goal}
         disabled={generating}
-        onChange={(e) => setGoal(e.target.value)}
+        onChange={(e) => setGoalDraft(e.target.value)}
         placeholder={String(
           t("form.goalPlaceholder", {
             defaultValue: "ví dụ: trở thành full-stack developer trong 6 tháng",

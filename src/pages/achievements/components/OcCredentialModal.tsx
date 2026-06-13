@@ -6,7 +6,7 @@ import {
   Loader2,
   Share2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -39,19 +39,16 @@ export function OcCredentialModal({
 }) {
   const { t } = useTranslation("common");
   const { profile } = useAuth();
-  const [reviewing, setReviewing] = useState(false);
-
-  // Reset review step whenever modal closes or item changes
-  useEffect(() => {
-    if (!open) setReviewing(false);
-  }, [open]);
-  useEffect(() => {
-    setReviewing(false);
-  }, [item?.data.id]);
+  const [reviewingForId, setReviewingForId] = useState<string | null>(null);
 
   if (!item) return null;
 
   const d = item.data;
+  const reviewing = open && reviewingForId === d.id;
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) setReviewingForId(null);
+    onOpenChange(nextOpen);
+  };
   const isClaimed = d.ocClaimStatus === "claimed";
   const isPending = d.ocClaimStatus === "pending";
   const isFailed = d.ocClaimStatus === "failed";
@@ -77,13 +74,13 @@ export function OcCredentialModal({
   // ── Review step ────────────────────────────────────────────────────────────
   if (reviewing) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-xl w-full min-w-0 rounded-3xl p-0 overflow-hidden">
           <div className="h-1.5 w-full bg-linear-to-r from-[#00e5b4] via-[#0047ff] to-[#00e5b4]" />
 
           <div className="min-w-0 p-4 sm:p-6">
             <button
-              onClick={() => setReviewing(false)}
+              onClick={() => setReviewingForId(null)}
               className="mb-4 flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors"
             >
               <ArrowLeft className="size-4" aria-hidden />
@@ -188,7 +185,7 @@ export function OcCredentialModal({
               </Button>
 
               <button
-                onClick={() => setReviewing(false)}
+                onClick={() => setReviewingForId(null)}
                 className="py-2 text-sm text-foreground-muted underline-offset-4 hover:text-foreground hover:underline transition-colors"
               >
                 {t("actions.cancel")}
@@ -202,7 +199,7 @@ export function OcCredentialModal({
 
   // ── Main credential view ────────────────────────────────────────────────────
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-xl w-full min-w-0 rounded-3xl p-0 overflow-hidden">
         <div className="h-1.5 w-full bg-linear-to-r from-[#00e5b4] via-[#0047ff] to-[#00e5b4]" />
 
@@ -324,7 +321,7 @@ export function OcCredentialModal({
                 className="w-full gap-3 text-base font-semibold"
                 size="lg"
                 disabled={claiming}
-                onClick={() => setReviewing(true)}
+                onClick={() => setReviewingForId(d.id)}
               >
                 {claiming ? (
                   <>

@@ -60,7 +60,7 @@ export function useFlashcardDeck(params: {
         error: error instanceof Error ? error.message : "Không tải được flashcards.",
       });
     }
-  }, [isAuthenticated, lessonId, user?.id]);
+  }, [isAuthenticated, lessonId, locale, user?.id]);
 
   useEffect(() => {
     void fetchExisting();

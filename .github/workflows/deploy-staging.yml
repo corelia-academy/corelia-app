@@ -98,3 +98,15 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy generate-learning-path --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy Edge Function (generate-course)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy generate-course --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy Edge Function (refund-stale-course-generations)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy refund-stale-course-generations --project-ref "$SUPABASE_PROJECT_REF"

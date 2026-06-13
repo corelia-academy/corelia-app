@@ -80,7 +80,7 @@ export function useAchievementsPage() {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, t, user]);
+  }, [isAuthenticated, profile?.full_name, profile?.ocid, t, user]);
 
   useEffect(() => {
     void loadAchievements();

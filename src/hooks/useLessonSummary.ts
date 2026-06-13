@@ -81,7 +81,7 @@ export function useLessonSummary(params: {
       generating: false,
       error: null,
     });
-  }, [isAuthenticated, lessonId, user?.id]);
+  }, [isAuthenticated, lessonId, locale, user?.id]);
 
   useEffect(() => {
     void fetchExisting();
