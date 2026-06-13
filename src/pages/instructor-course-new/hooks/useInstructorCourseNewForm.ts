@@ -55,16 +55,24 @@ export function useInstructorCourseNewForm() {
   const canManageBusinessSettings =
     profile?.role === "admin" || profile?.role === "support_staff";
   const showBusinessSettingsSection =
-    canManageBusinessSettings || profile?.instructor_origin !== "external";
+    canManageBusinessSettings || profile?.instructor_origin === "corelia";
 
   useEffect(() => {
-    if (!profile || canManageBusinessSettings) return;
-    if (profile.instructor_origin === "external") {
-      setForm((prev) => ({ ...prev, owner_type: "external_partner" }));
+    if (!profile) return;
+    if (!showBusinessSettingsSection) {
+      setForm((prev) => ({
+        ...prev,
+        access_model: "free",
+        price_vnd: "",
+        certificate_fee_vnd: "",
+        owner_type: "external_partner",
+        platform_revenue_share_percent: "100",
+        published: false,
+      }));
     } else if (profile.instructor_origin === "corelia") {
       setForm((prev) => ({ ...prev, owner_type: "corelia" }));
     }
-  }, [profile, canManageBusinessSettings]);
+  }, [profile, showBusinessSettingsSection]);
 
   useEffect(() => {
     return () => {
@@ -125,6 +133,12 @@ export function useInstructorCourseNewForm() {
     setSaving(true);
     setError(null);
     try {
+      const effectiveAccessModel = showBusinessSettingsSection
+        ? form.access_model
+        : "free";
+      const effectiveOwnerType = showBusinessSettingsSection
+        ? form.owner_type
+        : "external_partner";
       const sanitizedOutcomes = (form.learning_outcomes ?? [])
         .map((item) => item.trim())
         .filter(Boolean)
@@ -145,7 +159,7 @@ export function useInstructorCourseNewForm() {
           instructor_name: profile.full_name,
           level: form.level,
           total_duration_seconds: 0,
-          published: form.published,
+          published: showBusinessSettingsSection ? form.published : false,
           is_external_aggregated: form.is_external_aggregated,
           external_source_urls: form.external_source_urls_text
             .split("\n")
@@ -159,18 +173,18 @@ export function useInstructorCourseNewForm() {
             default_video_primary_locale: form.default_video_primary_locale,
             subtitle_note_policy: "suggest",
           },
-          access_model: form.access_model,
+          access_model: effectiveAccessModel,
           price_vnd:
-            form.access_model === "paid_upfront"
+            effectiveAccessModel === "paid_upfront"
               ? Number(form.price_vnd || 0)
               : null,
           certificate_fee_vnd:
-            form.access_model === "free_with_paid_certificate"
+            effectiveAccessModel === "free_with_paid_certificate"
               ? Number(form.certificate_fee_vnd || 0)
               : null,
-          owner_type: form.owner_type,
+          owner_type: effectiveOwnerType,
           platform_revenue_share_percent:
-            form.owner_type === "corelia"
+            effectiveOwnerType === "corelia"
               ? 100
               : Number(form.platform_revenue_share_percent || 0),
         },

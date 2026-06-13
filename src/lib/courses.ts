@@ -50,6 +50,17 @@ type CourseRow = {
   data: Record<string, unknown> | null;
 };
 
+export type CourseQuotaAction = "create_course" | "publish_course";
+
+export interface CourseQuotaResult {
+  allowed: boolean;
+  reason: string | null;
+  tier?: string | null;
+  current?: number | null;
+  limit?: number | null;
+  retry_after_seconds?: number | null;
+}
+
 /** Columns needed for `rowToCourse` (avoid `select("*")` on hot list paths). */
 const COURSE_ROW_SELECT =
   "id,instructor_id,published,slug,updated_at,created_at,data" as const;
@@ -64,6 +75,50 @@ function rowToCourse(row: CourseRow): Course {
     updated_at: row.updated_at,
     created_at: row.created_at,
   } as Course;
+}
+
+function courseQuotaMessage(quota: CourseQuotaResult): string {
+  if (quota.reason === "draft_course_limit") {
+    return `Ban da dat gioi han ${quota.limit ?? ""} khoa nhap cho goi hien tai.`;
+  }
+  if (quota.reason === "published_course_limit") {
+    return `Ban da dat gioi han ${quota.limit ?? ""} khoa cong khai cho goi hien tai.`;
+  }
+  if (quota.reason === "course_create_hourly_limit") {
+    return "Ban dang tao khoa qua nhanh. Vui long thu lai sau it phut.";
+  }
+  if (quota.reason === "course_create_daily_limit") {
+    return "Ban da dat gioi han tao khoa trong 24 gio cho goi hien tai.";
+  }
+  return "Ban chua the thuc hien thao tac nay voi goi hien tai.";
+}
+
+export async function checkCourseQuota(
+  action: CourseQuotaAction,
+): Promise<CourseQuotaResult> {
+  const { data, error } = await supabase.rpc("check_course_quota", {
+    p_action: action,
+  });
+  if (error) throw new Error(error.message);
+  const quota = (data ?? {}) as CourseQuotaResult;
+  return {
+    allowed: Boolean(quota.allowed),
+    reason: quota.reason ?? null,
+    tier: quota.tier ?? null,
+    current: quota.current == null ? null : Number(quota.current),
+    limit: quota.limit == null ? null : Number(quota.limit),
+    retry_after_seconds:
+      quota.retry_after_seconds == null
+        ? null
+        : Number(quota.retry_after_seconds),
+  };
+}
+
+async function assertCourseQuota(action: CourseQuotaAction): Promise<void> {
+  const quota = await checkCourseQuota(action);
+  if (!quota.allowed) {
+    throw new Error(courseQuotaMessage(quota));
+  }
 }
 
 function sectionRowToSection(
@@ -447,16 +502,18 @@ export async function getPublishedCourses(): Promise<Course[]> {
   return promise;
 }
 
-export async function getPublishedCoursesByInstructor(instructorId: string): Promise<Course[]> {
+export async function getPublishedCoursesByOwner(ownerId: string): Promise<Course[]> {
   const { data, error } = await supabase
     .from("courses")
     .select(COURSE_ROW_SELECT)
     .eq("published", true)
-    .eq("instructor_id", instructorId)
+    .eq("instructor_id", ownerId)
     .order("updated_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []).map((r) => rowToCourse(r as CourseRow));
 }
+
+export const getPublishedCoursesByInstructor = getPublishedCoursesByOwner;
 
 export async function getCourse(courseId: string): Promise<Course | null> {
   const cached = courseByIdCache.get(courseId);
@@ -911,6 +968,7 @@ export async function createCourse(data: CourseInsert, viewer?: User | null): Pr
   const now = new Date().toISOString();
   const id = crypto.randomUUID();
   const instructorId = data.instructor_id || user.id;
+  await assertCourseQuota("create_course");
 
   const dataDoc = removeUndefinedFields({
     title: data.title,
@@ -1085,6 +1143,9 @@ function splitCourseUpdate(updates: CourseUpdate): {
 export async function updateCourse(courseId: string, data: CourseUpdate): Promise<void> {
   const { data: row, error: fetchErr } = await supabase.from("courses").select("*").eq("id", courseId).single();
   if (fetchErr || !row) throw new Error(fetchErr?.message ?? "Không tìm thấy khoá học");
+  if ((row as CourseRow).published !== true && data.published === true) {
+    await assertCourseQuota("publish_course");
+  }
   const prevData = ((row as CourseRow).data ?? {}) as Record<string, unknown>;
   const { top, dataPatch } = splitCourseUpdate(data);
   const nextData = { ...prevData, ...dataPatch };

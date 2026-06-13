@@ -28,6 +28,7 @@ import { CourseSpotlightSection } from "./components/CourseSpotlightSection";
 import { CourseLanguagePanel } from "./components/CourseLanguagePanel";
 import { CoursePartnerBrandPanel } from "./components/CoursePartnerBrandPanel";
 import { CourseSponsorsPanel } from "./components/CourseSponsorsPanel";
+import { CourseReportDialog } from "./components/CourseReportDialog";
 import { CourseInstructorSection } from "./components/CourseInstructorSection";
 import { useInstructorProfile } from "./hooks/useInstructorProfile";
 import { useCoraStore } from "@/stores/coraStore";
@@ -301,6 +302,10 @@ export default function CourseDetail() {
         <CourseLanguagePanel course={course} lessons={lessons} />
         <CoursePartnerBrandPanel course={course} />
         <CourseSponsorsPanel sponsors={course.sponsors} />
+        <CourseReportDialog
+          courseId={courseLoad.resolvedCourseId}
+          courseTitle={course.title ?? ""}
+        />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
@@ -360,6 +365,10 @@ export default function CourseDetail() {
           <CourseLanguagePanel course={course} lessons={lessons} />
           <CoursePartnerBrandPanel course={course} />
           <CourseSponsorsPanel sponsors={course.sponsors} />
+          <CourseReportDialog
+            courseId={courseLoad.resolvedCourseId}
+            courseTitle={course.title ?? ""}
+          />
         </aside>
       </div>
     </div>

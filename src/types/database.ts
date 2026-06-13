@@ -53,6 +53,9 @@ export interface Profile {
   website?: string | null;
   /** Whether profile is visible publicly */
   profile_public?: boolean;
+  /** User has published at least one public course. */
+  is_creator?: boolean;
+  creator_first_published_at?: string | null;
   follower_count?: number;
   following_count?: number;
   /** Ngôn ngữ UI người dùng chọn (vd: vi/en) */
@@ -101,6 +104,8 @@ export interface ProfileInsert {
   bio?: string | null;
   website?: string | null;
   profile_public?: boolean;
+  is_creator?: boolean;
+  creator_first_published_at?: string | null;
   follower_count?: number;
   following_count?: number;
   locale?: Locale | null;
@@ -132,6 +137,8 @@ export interface ProfileUpdate {
   bio?: string | null;
   website?: string | null;
   profile_public?: boolean;
+  is_creator?: boolean;
+  creator_first_published_at?: string | null;
   follower_count?: number;
   following_count?: number;
   locale?: Locale | null;
@@ -195,6 +202,8 @@ export interface PublicProfile {
   instructor_organization: string | null;
   instructor_website: string | null;
   instructor_social_links: InstructorSocialLink[] | null;
+  is_creator: boolean;
+  creator_first_published_at: string | null;
   profile_public: boolean;
   follower_count?: number;
   following_count?: number;
