@@ -18,6 +18,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
+import { RequireAuthenticated } from "@/components/auth/RequireAuthenticated";
 import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
@@ -78,6 +79,7 @@ const InstructorWorkspaceProfileRoute = lazy(() =>
 const InstructorLayout = lazy(() => import("@/pages/instructor/InstructorLayout"));
 const InstructorCourses = lazy(() => import("@/pages/InstructorCourses"));
 const InstructorCourseNew = lazy(() => import("@/pages/instructor-course-new"));
+const InstructorCourseAiNew = lazy(() => import("@/pages/instructor-course-ai-new"));
 const InstructorCourseEdit = lazy(() => import("@/pages/instructor-course-edit"));
 const InstructorCareerTracks = lazy(() => import("@/pages/instructor-career-tracks"));
 const InstructorCareerTrackEditor = lazy(
@@ -564,11 +566,11 @@ export default function App() {
               <Route
                 path="instructor"
                 element={
-                  <RequireRole roles={ROLE_GROUPS.instructorWorkspace}>
+                  <RequireAuthenticated>
                     <Suspense fallback={<PageFallback />}>
                       <InstructorLayout />
                     </Suspense>
-                  </RequireRole>
+                  </RequireAuthenticated>
                 }
               >
                 <Route
@@ -582,25 +584,31 @@ export default function App() {
                 <Route
                   path="career-tracks"
                   element={
-                    <Suspense fallback={<PageFallback />}>
-                      <InstructorCareerTracks />
-                    </Suspense>
+                    <RequireRole roles={ROLE_GROUPS.instructorWorkspace}>
+                      <Suspense fallback={<PageFallback />}>
+                        <InstructorCareerTracks />
+                      </Suspense>
+                    </RequireRole>
                   }
                 />
                 <Route
                   path="career-tracks/new"
                   element={
-                    <Suspense fallback={<PageFallback />}>
-                      <InstructorCareerTrackEditor />
-                    </Suspense>
+                    <RequireRole roles={ROLE_GROUPS.instructorWorkspace}>
+                      <Suspense fallback={<PageFallback />}>
+                        <InstructorCareerTrackEditor />
+                      </Suspense>
+                    </RequireRole>
                   }
                 />
                 <Route
                   path="career-tracks/:id/edit"
                   element={
-                    <Suspense fallback={<PageFallback />}>
-                      <InstructorCareerTrackEditor />
-                    </Suspense>
+                    <RequireRole roles={ROLE_GROUPS.instructorWorkspace}>
+                      <Suspense fallback={<PageFallback />}>
+                        <InstructorCareerTrackEditor />
+                      </Suspense>
+                    </RequireRole>
                   }
                 />
                 <Route
@@ -620,6 +628,14 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <InstructorCourseNew />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="courses/new-ai"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <InstructorCourseAiNew />
                     </Suspense>
                   }
                 />

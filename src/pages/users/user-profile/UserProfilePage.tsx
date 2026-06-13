@@ -246,6 +246,11 @@ export default function UserProfileLayout() {
                       <span className="rounded-full border border-border-subtle bg-surface-base/80 px-2.5 py-1 text-xs font-medium text-foreground shadow-card">
                         {getRoleLabel(profile.role)}
                       </span>
+                      {profile.is_creator ? (
+                        <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary shadow-card">
+                          Creator
+                        </span>
+                      ) : null}
                       {profileOcid ? (
                         <span className="truncate">
                           {t("userProfile.labels.ocid", { ocid: profileOcid })}

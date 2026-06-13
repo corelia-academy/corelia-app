@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { BookOpen } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { getPublishedCoursesByInstructor } from "@/lib/courses";
+import { getPublishedCoursesByOwner } from "@/lib/courses";
 import type { PublicProfile } from "@/types/database";
 import type { Course } from "@/types/courses";
 
@@ -18,16 +18,13 @@ export function UserProfileCoursesSection({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const canShow = profile.role === "instructor";
-
   useEffect(() => {
-    if (!canShow) return;
     let cancelled = false;
     async function load() {
       setLoading(true);
       setError(null);
       try {
-        const rows = await getPublishedCoursesByInstructor(profile.id);
+        const rows = await getPublishedCoursesByOwner(profile.id);
         if (cancelled) return;
         setCourses(rows);
       } catch {
@@ -41,23 +38,7 @@ export function UserProfileCoursesSection({
     return () => {
       cancelled = true;
     };
-  }, [canShow, profile.id, t]);
-
-  if (!canShow) {
-    return (
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <BookOpen className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
-            {t("userProfile.tabs.courses")}
-          </h2>
-        </div>
-        <div className="rounded-2xl border border-dashed border-border-subtle bg-surface-base p-6 text-sm text-foreground-muted shadow-card">
-          {t("userProfile.courses.privateByDefault")}
-        </div>
-      </section>
-    );
-  }
+  }, [profile.id, t]);
 
   if (loading) {
     return (

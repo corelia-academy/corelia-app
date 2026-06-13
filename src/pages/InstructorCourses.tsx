@@ -9,6 +9,7 @@ import {
   DollarSign,
   EyeOff,
   Pencil,
+  Sparkles,
 } from "lucide-react";
 import { getCoursesForManagement } from "@/lib/courses";
 import {
@@ -182,14 +183,25 @@ const InstructorCourses = () => {
               {t("courseListPage.hero.description")}
             </p>
           </div>
-          <Button
-            type="button"
-            className="inline-flex items-center gap-2"
-            onClick={() => navigate("/instructor/courses/new")}
-          >
-            <PlusCircle className="size-4" aria-hidden />
-            {t("courseListPage.hero.create")}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              className="inline-flex items-center gap-2"
+              onClick={() => navigate("/instructor/courses/new-ai")}
+            >
+              <Sparkles className="size-4" aria-hidden />
+              {t("courseListPage.hero.createAi", { defaultValue: "Tao bang AI" })}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="inline-flex items-center gap-2"
+              onClick={() => navigate("/instructor/courses/new")}
+            >
+              <PlusCircle className="size-4" aria-hidden />
+              {t("courseListPage.hero.create")}
+            </Button>
+          </div>
         </div>
       </PageSectionCard>
 

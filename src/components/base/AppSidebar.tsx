@@ -24,6 +24,7 @@ import {
 import { ShowForRole } from "@/components/auth/ShowForRole";
 import { useTranslation } from "react-i18next";
 import { ROLE_GROUPS } from "@/config/roles";
+import { useAuth } from "@/stores/authStore";
 
 const primaryNav = [
   { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
@@ -42,6 +43,7 @@ export default function AppSidebar({
   const { t } = useTranslation("common");
   const location = useLocation();
   const pathname = location.pathname;
+  const { isAuthenticated } = useAuth();
   const { isMobile } = useSidebar();
 
   return (
@@ -109,7 +111,7 @@ export default function AppSidebar({
         <SidebarGroup>
           <SidebarGroupContent className="px-1">
             <SidebarMenu className="gap-1">
-              <ShowForRole roles={ROLE_GROUPS.instructorWorkspace}>
+              {isAuthenticated ? (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     className="rounded-md"
@@ -126,7 +128,7 @@ export default function AppSidebar({
                     }
                   />
                 </SidebarMenuItem>
-              </ShowForRole>
+              ) : null}
               <ShowForRole roles={ROLE_GROUPS.admin}>
                 <SidebarMenuItem>
                   <SidebarMenuButton

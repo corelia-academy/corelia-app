@@ -19,6 +19,7 @@ import {
   UserCircle,
   Video,
   Layers,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
@@ -30,6 +31,10 @@ export function InstructorSidebar() {
   const { profile } = useAuth();
   const isExternalInstructor =
     profile?.role === "instructor" && profile?.instructor_origin === "external";
+  const canManageInstructorPrograms =
+    profile?.role === "instructor" ||
+    profile?.role === "support_staff" ||
+    profile?.role === "admin";
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
@@ -58,10 +63,21 @@ export function InstructorSidebar() {
           <SidebarGroupContent className="flex flex-col gap-2 px-1">
             <SidebarMenu className="flex flex-col gap-2">
               <SidebarMenuItem className="flex items-center gap-2">
+                <NavLink to="/instructor/courses/new-ai" className="flex w-full">
+                  <SidebarMenuButton
+                    tooltip={t("sidebar.createCourseAi", { defaultValue: "Tao bang AI" })}
+                    className="min-w-8 w-full cursor-pointer rounded-xl bg-primary text-sm font-medium text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
+                  >
+                    <Sparkles className="size-4" aria-hidden />
+                    <span>{t("sidebar.createCourseAi", { defaultValue: "Tao bang AI" })}</span>
+                  </SidebarMenuButton>
+                </NavLink>
+              </SidebarMenuItem>
+              <SidebarMenuItem className="flex items-center gap-2">
                 <NavLink to="/instructor/courses/new" className="flex w-full">
                   <SidebarMenuButton
                     tooltip={t("sidebar.createCourse")}
-                    className="min-w-8 w-full cursor-pointer rounded-xl bg-primary text-sm font-medium text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
+                    className="min-w-8 w-full cursor-pointer rounded-xl border border-sidebar-border/70 bg-sidebar-accent/50 text-sm font-medium text-sidebar-foreground duration-200 ease-linear hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   >
                     <PlusCircle className="size-4" aria-hidden />
                     <span>{t("sidebar.createCourse")}</span>
@@ -75,7 +91,8 @@ export function InstructorSidebar() {
                   isActive={
                     pathname === "/instructor/courses" ||
                     (pathname.startsWith("/instructor/courses/") &&
-                      pathname !== "/instructor/courses/new")
+                      pathname !== "/instructor/courses/new" &&
+                      pathname !== "/instructor/courses/new-ai")
                   }
                   render={
                     <NavLink
@@ -89,23 +106,25 @@ export function InstructorSidebar() {
                   }
                 />
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  className="rounded-xl"
-                  tooltip={t("sidebar.careerTracks")}
-                  isActive={pathname.startsWith("/instructor/career-tracks")}
-                  render={
-                    <NavLink
-                      to="/instructor/career-tracks"
-                      end
-                      className="flex w-full items-center gap-2"
-                    >
-                      <Layers className="size-4" aria-hidden />
-                      <span>{t("sidebar.careerTracks")}</span>
-                    </NavLink>
-                  }
-                />
-              </SidebarMenuItem>
+              {canManageInstructorPrograms ? (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className="rounded-xl"
+                    tooltip={t("sidebar.careerTracks")}
+                    isActive={pathname.startsWith("/instructor/career-tracks")}
+                    render={
+                      <NavLink
+                        to="/instructor/career-tracks"
+                        end
+                        className="flex w-full items-center gap-2"
+                      >
+                        <Layers className="size-4" aria-hidden />
+                        <span>{t("sidebar.careerTracks")}</span>
+                      </NavLink>
+                    }
+                  />
+                </SidebarMenuItem>
+              ) : null}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   className="rounded-xl"

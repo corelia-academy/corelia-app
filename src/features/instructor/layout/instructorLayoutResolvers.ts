@@ -20,6 +20,8 @@ export function buildInstructorCrumbs({
 
   if (pathname === "/instructor/courses/new") {
     list.push({ label: translate("layout.crumbs.createCourse") });
+  } else if (pathname === "/instructor/courses/new-ai") {
+    list.push({ label: translate("layout.crumbs.createCourseAi", { defaultValue: "Tao bang AI" }) });
   } else if (pathname === "/instructor/career-tracks") {
     list.push({ label: translate("layout.crumbs.careerTracks") });
   } else if (pathname === "/instructor/career-tracks/new") {
@@ -59,6 +61,14 @@ export function resolveInstructorShellMeta({
     return {
       title: translate("layout.shell.newCourse.title"),
       description: translate("layout.shell.newCourse.description"),
+    };
+  }
+  if (pathname === "/instructor/courses/new-ai") {
+    return {
+      title: translate("layout.shell.newCourseAi.title", { defaultValue: "Tao course bang AI" }),
+      description: translate("layout.shell.newCourseAi.description", {
+        defaultValue: "Tao draft course tu prompt hoac YouTube, sau do review va publish thu cong.",
+      }),
     };
   }
   if (pathname === "/instructor/career-tracks") {
