@@ -158,8 +158,12 @@ export default function InstructorCourseAiNewPage() {
 
     setGenerating(true);
     try {
-      const quota = await checkCourseQuota("create_course");
-      if (!quota.allowed) {
+      const generationQuota = await checkCourseQuota("generate_course");
+      if (!generationQuota.allowed) {
+        throw new Error("Ban da cham gioi han tao course bang AI cua goi hien tai.");
+      }
+      const courseQuota = await checkCourseQuota("create_course");
+      if (!courseQuota.allowed) {
         throw new Error("Ban da cham gioi han tao course cua goi hien tai.");
       }
       const generated = await invokeGenerateCourse({

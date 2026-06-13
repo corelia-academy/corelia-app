@@ -50,7 +50,7 @@ type CourseRow = {
   data: Record<string, unknown> | null;
 };
 
-export type CourseQuotaAction = "create_course" | "publish_course";
+export type CourseQuotaAction = "create_course" | "publish_course" | "generate_course";
 
 export interface CourseQuotaResult {
   allowed: boolean;
@@ -89,6 +89,12 @@ function courseQuotaMessage(quota: CourseQuotaResult): string {
   }
   if (quota.reason === "course_create_daily_limit") {
     return "Ban da dat gioi han tao khoa trong 24 gio cho goi hien tai.";
+  }
+  if (quota.reason === "course_generate_hourly_limit") {
+    return "Ban dang tao khoa bang AI qua nhanh. Vui long thu lai sau it phut.";
+  }
+  if (quota.reason === "course_generate_daily_limit") {
+    return "Ban da dat gioi han tao khoa bang AI trong 24 gio cho goi hien tai.";
   }
   return "Ban chua the thuc hien thao tac nay voi goi hien tai.";
 }
