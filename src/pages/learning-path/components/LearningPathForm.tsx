@@ -16,7 +16,16 @@ export function LearningPathForm({ initialGoal, generating, onSubmit, error }: P
   const [goal, setGoal] = useState(initialGoal ?? "");
 
   useEffect(() => {
-    if (initialGoal && !goal) setGoal(initialGoal);
+    if (!initialGoal || goal) return;
+
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) setGoal(initialGoal);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [initialGoal, goal]);
 
   const handle = () => {

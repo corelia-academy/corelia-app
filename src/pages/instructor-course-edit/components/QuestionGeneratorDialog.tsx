@@ -230,7 +230,7 @@ export function QuestionGeneratorDialog({
               : [];
       setSelectedSourceIds(new Set(defaults.map((l) => l.id)));
     }
-  }, [open, section, courseId, isLessonMode, lessonId, sectionLessons]);
+  }, [open, section, courseId, isLessonMode, lessonId, locale, sectionLessons]);
 
   // Reset when closed
   useEffect(() => {

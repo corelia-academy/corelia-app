@@ -7,6 +7,7 @@ import type { CredentialIssuanceWithTemplate, CredentialTemplateSummary } from "
 
 type IssuanceRow = {
   id: string;
+  course_id: string | null;
   minted_at: string | null;
   oc_credential_id: string | null;
   network: string;
@@ -65,6 +66,7 @@ export async function fetchMintedCredentialIssuancesForUser(
     .select(
       `
       id,
+      course_id,
       minted_at,
       oc_credential_id,
       network,
@@ -92,6 +94,7 @@ export async function fetchMintedCredentialIssuancesForUser(
     const template = unwrapTemplate(row.credential_templates);
     return {
       id: row.id,
+      course_id: row.course_id ?? null,
       minted_at: row.minted_at,
       oc_credential_id: row.oc_credential_id,
       network: row.network === "mainnet" ? "mainnet" : "staging",

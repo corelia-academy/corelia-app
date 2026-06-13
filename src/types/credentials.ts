@@ -13,13 +13,14 @@ export type CredentialTemplateSummary = {
   image_url: string;
   /** Smaller preview for in-app cards and notification bell. 800×600 or 600×800. Fallback to image_url if null. */
   thumbnail_url?: string | null;
-  achievement_type: "Badge" | "Award";
+  achievement_type: "Badge" | "Award" | "MicroCredential" | "Diploma" | "CertificateOfCompletion";
   /** Role/type label for hackathon badges (e.g. "winner", "participant") */
   hackathon_role?: string | null;
 };
 
 export type CredentialIssuanceWithTemplate = {
   id: string;
+  course_id: string | null;
   minted_at: string | null;
   oc_credential_id: string | null;
   network: CredentialIssuanceNetwork;

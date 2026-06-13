@@ -20,6 +20,7 @@ export async function handleCheckCourseCompletion(req: Request, db: SupabaseClie
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
     const courseId = String(body.courseId ?? "").trim();
     const targetUserId = String(body.userId ?? user.id).trim();
+    const autoIssue = body.autoIssue === true;
     if (!courseId) return json({ ok: false, message: "Thiếu courseId" }, 400);
 
     if (user.id !== targetUserId) {
@@ -28,7 +29,7 @@ export async function handleCheckCourseCompletion(req: Request, db: SupabaseClie
       }
     }
 
-    const result = await runCourseCredentialCheck(db, courseId, targetUserId);
+    const result = await runCourseCredentialCheck(db, courseId, targetUserId, { autoIssue });
     return json(result);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";

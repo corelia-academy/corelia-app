@@ -3,48 +3,58 @@ import { useLoadingStore } from "@/stores/loadingStore";
 
 export function LoadingBar() {
   const isLoading = useLoadingStore((s) => s.isLoading);
-  const [progress, setProgress] = useState(0);
-  const [visible, setVisible] = useState(false);
-  const [fade, setFade] = useState(false);
+  const [barState, setBarState] = useState({
+    progress: 0,
+    visible: false,
+    fade: false,
+  });
+  const { progress, visible, fade } = barState;
 
   useEffect(() => {
-    let timer: NodeJS.Timeout | undefined;
-    let hideTimer: NodeJS.Timeout | undefined;
-    let progressInterval: NodeJS.Timeout | undefined;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
+    let progressInterval: ReturnType<typeof setInterval> | undefined;
 
     if (isLoading) {
-      setVisible(true);
-      setFade(false);
-      setProgress(5);
+      queueMicrotask(() => {
+        if (!cancelled) {
+          setBarState({ progress: 5, visible: true, fade: false });
+        }
+      });
 
       timer = setTimeout(() => {
-        setProgress(20);
+        setBarState((prev) => ({ ...prev, progress: 20 }));
       }, 100);
 
       progressInterval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 90) {
+        setBarState((prev) => {
+          if (prev.progress >= 90) {
             return prev;
           }
-          const diff = 90 - prev;
+          const diff = 90 - prev.progress;
           const step = Math.max(1, diff * 0.1);
-          return Math.min(90, prev + step);
+          return { ...prev, progress: Math.min(90, prev.progress + step) };
         });
       }, 200);
     } else {
-      setProgress(100);
+      queueMicrotask(() => {
+        if (!cancelled) {
+          setBarState((prev) => ({ ...prev, progress: 100 }));
+        }
+      });
 
       timer = setTimeout(() => {
-        setFade(true);
+        setBarState((prev) => ({ ...prev, fade: true }));
 
         hideTimer = setTimeout(() => {
-          setVisible(false);
-          setProgress(0);
+          setBarState({ progress: 0, visible: false, fade: false });
         }, 300);
       }, 200);
     }
 
     return () => {
+      cancelled = true;
       if (timer) clearTimeout(timer);
       if (hideTimer) clearTimeout(hideTimer);
       if (progressInterval) clearInterval(progressInterval);

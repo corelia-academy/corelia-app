@@ -239,11 +239,19 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
   const profilePath = username ? `/u/${encodeURIComponent(username)}` : `/account`;
   const profileUrl = `${baseUrl}${profilePath}`;
 
-  // For course OCA credentials, prefer the name-rendered certificate
-  // (cdn/certificates/{userId}/{courseId}.png) over the raw template. It is
-  // rendered + uploaded client-side during the claim flow. If it doesn't exist
-  // yet (e.g. auto-issue path), fall back to template.image_url.
+  // Course OCA credentials must use the learner-name-rendered certificate.
+  // If it is missing, fail before calling Open Campus so we never mint the
+  // raw template as the permanent credential art.
   const subjectImageOverride = await resolveRenderedCertificateUrl(template, row.user_id);
+  const isOCA = !template.collection_symbol;
+  if (isOCA && template.scope_type === "course" && !subjectImageOverride) {
+    await db.from("credential_issuances").update({
+      status: "failed",
+      error_message: "missing_rendered_certificate",
+      retry_count: row.retry_count + 1,
+    }).eq("id", issuanceId);
+    return { ok: false, error: "missing_rendered_certificate" };
+  }
 
   const awardedIso = new Date().toISOString();
   const { body: ocBody } = await buildOpenCampusPayload({
@@ -259,8 +267,6 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
     awardedIso,
     subjectImageOverride,
   });
-
-  const isOCA = !template.collection_symbol;
 
   const { error: pendingErr } = await db.from("credential_issuances").update({
     oc_request_payload: ocBody as Record<string, unknown>,

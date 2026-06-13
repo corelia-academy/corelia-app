@@ -27,12 +27,15 @@ async function postJson<T>(op: string, body: Record<string, unknown>): Promise<T
   return parsed;
 }
 
-export async function invokeCheckCourseCredential(courseId: string, userId?: string): Promise<
-  Record<string, unknown>
-> {
+export async function invokeCheckCourseCredential(
+  courseId: string,
+  userId?: string,
+  opts?: { autoIssue?: boolean },
+): Promise<Record<string, unknown>> {
   return await postJson("credentials.checkCourseCompletion", {
     courseId,
     ...(userId ? { userId } : {}),
+    ...(opts?.autoIssue ? { autoIssue: true } : {}),
   });
 }
 

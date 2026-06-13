@@ -6,7 +6,7 @@ import {
   Loader2,
   Share2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -39,15 +39,16 @@ export function OcCredentialModal({
 }) {
   const { t } = useTranslation("common");
   const { profile } = useAuth();
-  const [reviewing, setReviewing] = useState(false);
-
-  // Reset review step whenever modal closes or item changes
-  useEffect(() => {
-    if (!open) setReviewing(false);
-  }, [open]);
-  useEffect(() => {
-    setReviewing(false);
-  }, [item?.data.id]);
+  const reviewKey = open && item ? item.data.id : null;
+  const [reviewState, setReviewState] = useState<{
+    key: string | null;
+    reviewing: boolean;
+  }>({ key: null, reviewing: false });
+  const reviewing =
+    reviewState.key === reviewKey ? reviewState.reviewing : false;
+  const setReviewing = (next: boolean) => {
+    setReviewState({ key: reviewKey, reviewing: next });
+  };
 
   if (!item) return null;
 

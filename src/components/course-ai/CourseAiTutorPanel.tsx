@@ -56,13 +56,17 @@ export function CourseAiTutorPanel(props: {
 
   // Build/cleanup local preview URL
   useEffect(() => {
-    if (!attachedFile) {
-      setAttachmentPreview(null);
-      return;
-    }
-    const url = URL.createObjectURL(attachedFile);
-    setAttachmentPreview(url);
-    return () => URL.revokeObjectURL(url);
+    const url = attachedFile ? URL.createObjectURL(attachedFile) : null;
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (!cancelled) setAttachmentPreview(url);
+    });
+
+    return () => {
+      cancelled = true;
+      if (url) URL.revokeObjectURL(url);
+    };
   }, [attachedFile]);
   const {
     messages,

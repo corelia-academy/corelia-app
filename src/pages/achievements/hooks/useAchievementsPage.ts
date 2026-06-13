@@ -20,7 +20,11 @@ import type {
   ClaimStatus,
   ModalItem,
 } from "../types";
-import { buildCourseCertificates, ocidWithEduSuffix } from "../utils/buildAchievementsData";
+import {
+  buildCourseCertificates,
+  buildCourseCertificatesFromIssuances,
+  ocidWithEduSuffix,
+} from "../utils/buildAchievementsData";
 import { renderAndUploadCertificate } from "../utils/renderCertificate";
 
 export function useAchievementsPage() {
@@ -52,24 +56,42 @@ export function useAchievementsPage() {
         fetchMintedCredentialIssuancesForUser(user.id).catch(() => []),
       ]);
 
-      const courseIds = Array.from(new Set(enrollments.map((item) => item.course_id)));
+      const courseIds = Array.from(
+        new Set([
+          ...enrollments.map((item) => item.course_id),
+          ...ocRows
+            .filter((row) => row.template?.scope_type === "course" && row.course_id)
+            .map((row) => row.course_id!),
+        ]),
+      );
       const courseRows = await Promise.all(
         courseIds.map(async (courseId) => [courseId, await getCourse(courseId)] as const),
       );
       const courseMap = new Map(courseRows);
 
-      const nextCertificates = buildCourseCertificates(
+      const certificateLabels = {
+        courseCompletionTitle: t("achievements.certificates.courseCompletionTitle"),
+        fallbackCourseName: t("achievements.certificates.fallbackCourseName"),
+        fallbackInstructorName: t("achievements.certificates.fallbackInstructorName"),
+      };
+      const enrollmentCertificates = buildCourseCertificates(
         enrollments,
         courseMap,
-        {
-          courseCompletionTitle: t("achievements.certificates.courseCompletionTitle"),
-          fallbackCourseName: t("achievements.certificates.fallbackCourseName"),
-          fallbackInstructorName: t("achievements.certificates.fallbackInstructorName"),
-        },
+        certificateLabels,
         courseIssuanceMap,
         profile?.ocid,
         profile?.full_name,
-      ).sort((a, b) => {
+      );
+      const certificateCourseIds = new Set(enrollmentCertificates.map((item) => item.courseId));
+      const issuanceCertificates = buildCourseCertificatesFromIssuances(
+        ocRows,
+        courseMap,
+        certificateCourseIds,
+        certificateLabels,
+        profile?.ocid,
+        profile?.full_name,
+      );
+      const nextCertificates = [...enrollmentCertificates, ...issuanceCertificates].sort((a, b) => {
         const aDate = a.issuedAt.split("/").reverse().join("-");
         const bDate = b.issuedAt.split("/").reverse().join("-");
         return bDate.localeCompare(aDate);
@@ -80,7 +102,7 @@ export function useAchievementsPage() {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, t, user]);
+  }, [isAuthenticated, profile?.full_name, profile?.ocid, t, user]);
 
   useEffect(() => {
     void loadAchievements();
@@ -117,8 +139,10 @@ export function useAchievementsPage() {
     try {
       // Render + upload the name-rendered certificate to the deterministic CDN
       // path BEFORE minting, so the backend can embed it as the OC attachment.
-      // Non-fatal: if it fails, the backend falls back to the raw template.
-      await renderAndUploadCertificate(cert, user!.id).catch(() => null);
+      const renderedUrl = await renderAndUploadCertificate(cert, user!.id);
+      if (!renderedUrl) {
+        throw new Error(t("achievements.oc.modal.claimToast.error.failed"));
+      }
 
       await invokeCheckCourseCredential(cert.courseId);
 

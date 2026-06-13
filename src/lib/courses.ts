@@ -789,7 +789,7 @@ export async function setLessonProgress(
 
   if (completed) {
     checkAndIssueCertificate(user.id, courseId).catch(() => {});
-    invokeCheckCourseCredential(courseId).catch(() => {});
+    invokeCheckCourseCredential(courseId, undefined, { autoIssue: true }).catch(() => {});
   }
 }
 
