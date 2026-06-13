@@ -1,0 +1,60 @@
+name: Cleanup Stale Course Generations
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Environment to clean up"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - staging
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cleanup-stale-course-generations-${{ github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup-staging:
+    if: github.event_name == 'schedule' || inputs.target == 'all' || inputs.target == 'staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+    steps:
+      - name: Refund stale pending course generations
+        env:
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          CORELIA_CRON_SECRET: ${{ secrets.CORELIA_CRON_SECRET }}
+        run: |
+          curl --fail-with-body --show-error --silent \
+            --request POST \
+            "https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/refund-stale-course-generations" \
+            --header "Authorization: Bearer ${CORELIA_CRON_SECRET}" \
+            --header "Content-Type: application/json" \
+            --data '{"olderThanMinutes":10,"limit":100}'
+
+  cleanup-production:
+    if: github.event_name == 'schedule' || inputs.target == 'all' || inputs.target == 'production'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - name: Refund stale pending course generations
+        env:
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          CORELIA_CRON_SECRET: ${{ secrets.CORELIA_CRON_SECRET }}
+        run: |
+          curl --fail-with-body --show-error --silent \
+            --request POST \
+            "https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/refund-stale-course-generations" \
+            --header "Authorization: Bearer ${CORELIA_CRON_SECRET}" \
+            --header "Content-Type: application/json" \
+            --data '{"olderThanMinutes":10,"limit":100}'
