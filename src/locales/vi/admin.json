@@ -15,6 +15,10 @@
         "label": "Voucher Cora",
         "tooltip": "Quản lý voucher cho thanh toán Cora AI"
       },
+      "courseReports": {
+        "label": "Course reports",
+        "tooltip": "Review course reports and DMCA claims"
+      },
       "branding": {
         "label": "Thương hiệu",
         "tooltip": "Logo Corelia và tài nguyên thương hiệu"
@@ -42,6 +46,10 @@
       "coraVouchers": {
         "title": "Voucher Cora",
         "description": "Tạo và theo dõi voucher giảm giá theo % cho thanh toán Cora AI."
+      },
+      "courseReports": {
+        "title": "Course reports",
+        "description": "Review course reports, DMCA claims, spam, and safety issues."
       },
       "branding": {
         "title": "Thương hiệu",
