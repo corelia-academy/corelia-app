@@ -9,6 +9,7 @@ import {
 import { Link, useNavigate, useParams } from "react-router";
 import {
   AlertCircle,
+  Award,
   CheckCircle2,
   ChevronLeft,
   List,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import {
   checkAndIssueCertificate,
+  ensureEnrollmentForProgress,
   getNextLesson,
   setLessonProgress,
   sortLessonsByCurriculum,
@@ -113,6 +115,8 @@ export default function Learn() {
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
   const coraPanelRef = useRef<ResizablePanelHandle | null>(null);
   const autoIssueAttemptedRef = useRef<Set<string>>(new Set());
+  const [certificateAutoIssuing, setCertificateAutoIssuing] = useState(false);
+  const [certificateJustIssued, setCertificateJustIssued] = useState(false);
   const [sectionQuestions, setSectionQuestions] = useState<SectionQuestion[]>(
     [],
   );
@@ -165,9 +169,8 @@ export default function Learn() {
 
   useEffect(() => {
     const course = courseLoad.course;
-    const enrollment = access.enrollment;
-    if (!courseId || !profile?.id || !course || !enrollment) return;
-    if (!course.has_certificate || enrollment.certificate_issued_at) return;
+    if (!courseId || !profile?.id || !course) return;
+    if (!course.has_certificate || access.enrollment?.certificate_issued_at) return;
     if (progress.progressPercent < 100) return;
     if (
       course.access_model === "free_with_paid_certificate" &&
@@ -182,12 +185,21 @@ export default function Learn() {
     const key = `${profile.id}:${courseId}`;
     if (autoIssueAttemptedRef.current.has(key)) return;
     autoIssueAttemptedRef.current.add(key);
+    queueMicrotask(() => setCertificateAutoIssuing(true));
 
-    void checkAndIssueCertificate(profile.id, courseId)
+    void ensureEnrollmentForProgress(profile.id, courseId, new Date().toISOString())
+      .then((enrollment) => {
+        if (enrollment) access.setEnrollment(enrollment);
+        return checkAndIssueCertificate(profile.id, courseId).then((issued) => ({ issued, enrollment }));
+      })
       .then((issued) => {
-        if (!issued) return;
+        if (!issued.issued) return;
         const issuedAt = new Date().toISOString();
-        access.setEnrollment({ ...enrollment, certificate_issued_at: issuedAt });
+        const baseEnrollment = issued.enrollment ?? access.enrollment;
+        if (baseEnrollment) {
+          access.setEnrollment({ ...baseEnrollment, certificate_issued_at: issuedAt });
+        }
+        setCertificateJustIssued(true);
         void progress.refresh();
       })
       .catch((err) => {
@@ -196,6 +208,9 @@ export default function Learn() {
           courseId,
           error: err instanceof Error ? err.message : err,
         });
+      })
+      .finally(() => {
+        setCertificateAutoIssuing(false);
       });
   }, [
     access,
@@ -398,6 +413,11 @@ export default function Learn() {
   const course = courseLoad.course;
   const accessModel = course.access_model ?? "free";
   const hasFullCourseAccess = access.hasFullCourseAccess;
+  const courseCompleted = progress.progressPercent >= 100 && visibleLessons.length > 0;
+  const certificateIssued = Boolean(access.enrollment?.certificate_issued_at || certificateJustIssued);
+  const profileAchievementsPath = profile?.username
+    ? `/@${encodeURIComponent(profile.username)}`
+    : "/account";
 
   const shouldShowFinalAssignment =
     !nextLesson && hasFullCourseAccess && !!course.final_assignment_title;
@@ -490,6 +510,47 @@ export default function Learn() {
         locale={currentLocale}
         onJumpToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
       />
+
+      {courseCompleted ? (
+        <div className="mx-4 mb-4 rounded-2xl border border-success/25 bg-success/10 p-4 shadow-card sm:mx-6 sm:p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex min-w-0 gap-3">
+              <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
+                {course.has_certificate ? (
+                  <Award className="size-5" aria-hidden />
+                ) : (
+                  <CheckCircle2 className="size-5" aria-hidden />
+                )}
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-foreground">
+                  {translate("detail.learn.completion.title")}
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
+                  {course.has_certificate
+                    ? certificateIssued
+                      ? translate("detail.learn.completion.certificateReady")
+                      : certificateAutoIssuing
+                        ? translate("detail.learn.completion.certificateIssuing")
+                        : translate("detail.learn.completion.certificatePending")
+                    : translate("detail.learn.completion.noCertificate")}
+                </p>
+              </div>
+            </div>
+            {course.has_certificate && certificateIssued ? (
+              <Button
+                type="button"
+                size="sm"
+                className="shrink-0"
+                render={<Link to={profileAchievementsPath} />}
+                nativeButton={false}
+              >
+                {translate("detail.learn.completion.viewCertificate")}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <LessonPlayerCard
         lesson={currentLesson}

@@ -364,6 +364,14 @@
         "previous": "Bài trước",
         "next": "Bài tiếp theo"
       },
+      "completion": {
+        "title": "Chúc mừng, bạn đã hoàn thành khoá học!",
+        "noCertificate": "Tiến độ học tập của bạn đã được lưu. Hãy tiếp tục khám phá các nội dung tiếp theo trên Corelia.",
+        "certificateIssuing": "Khoá học này có chứng nhận. Corelia đang cấp chứng nhận cho bạn...",
+        "certificatePending": "Khoá học này có chứng nhận. Corelia sẽ tự động cấp chứng nhận khi hệ thống xác nhận đủ điều kiện.",
+        "certificateReady": "Chứng nhận Corelia của bạn đã sẵn sàng. Bạn có thể xem trong kho chứng nhận và claim Open Campus certificate sau khi kết nối OCID.",
+        "viewCertificate": "Xem chứng nhận"
+      },
       "finalAssignment": {
         "status": {
           "approved": "Đã duyệt — Chứng nhận sẽ được cấp.",

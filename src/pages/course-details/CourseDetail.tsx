@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/stores/authStore";
-import { sortLessonsByCurriculum } from "@/lib/courses";
+import {
+  checkAndIssueCertificate,
+  ensureEnrollmentForProgress,
+  sortLessonsByCurriculum,
+} from "@/lib/courses";
 import { isActivityLesson, splitLessonCounts } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseLessons } from "./hooks/useCourseLessons";
@@ -42,6 +46,7 @@ export default function CourseDetail() {
     [t],
   );
   const setSidebarMeta = useCoraStore((s) => s.setSidebarMeta);
+  const certificateIssueAttemptedRef = useRef<Set<string>>(new Set());
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -101,6 +106,51 @@ export default function CourseDetail() {
     setEnrollment: access.setEnrollment,
     translate,
   });
+
+  useEffect(() => {
+    const course = courseLoad.course;
+    const courseId = courseLoad.resolvedCourseId;
+    if (!course || !courseId || !profile?.id || !isAuthenticated) return;
+    if (!course.has_certificate || access.enrollment?.certificate_issued_at) return;
+    if (progress.progressPercent < 100) return;
+
+    const key = `${profile.id}:${courseId}`;
+    if (certificateIssueAttemptedRef.current.has(key)) return;
+    certificateIssueAttemptedRef.current.add(key);
+
+    void ensureEnrollmentForProgress(profile.id, courseId, new Date().toISOString())
+      .then((enrollment) => {
+        if (enrollment) {
+          access.setEnrolled(true);
+          access.setEnrollment(enrollment);
+        }
+        return checkAndIssueCertificate(profile.id, courseId).then((issued) => ({ issued, enrollment }));
+      })
+      .then(({ issued, enrollment }) => {
+        if (!issued) return;
+        const issuedAt = new Date().toISOString();
+        const baseEnrollment = enrollment ?? access.enrollment;
+        if (baseEnrollment) {
+          access.setEnrolled(true);
+          access.setEnrollment({ ...baseEnrollment, certificate_issued_at: issuedAt });
+        }
+      })
+      .catch((err) => {
+        console.warn("[course-detail] certificate auto-issue failed", {
+          userId: profile.id,
+          courseId,
+          error: err instanceof Error ? err.message : err,
+        });
+      });
+  }, [
+    access,
+    access.enrollment,
+    courseLoad.course,
+    courseLoad.resolvedCourseId,
+    isAuthenticated,
+    profile?.id,
+    progress.progressPercent,
+  ]);
 
   const sortedLessons = useMemo(
     () => sortLessonsByCurriculum(lessons, courseLoad.sections),

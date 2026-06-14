@@ -813,11 +813,11 @@ export async function setLessonProgress(
   }
 }
 
-async function ensureEnrollmentForProgress(
+export async function ensureEnrollmentForProgress(
   userId: string,
   courseId: string,
   now: string,
-): Promise<void> {
+): Promise<Enrollment | null> {
   try {
     const enrollmentId = `${userId}_${courseId}`;
     const { error } = await supabase
@@ -838,15 +838,17 @@ async function ensureEnrollmentForProgress(
         courseId,
         error,
       });
-      return;
+      return null;
     }
     invalidateEnrollmentsCache(userId);
+    return await getEnrollment(userId, courseId);
   } catch (err) {
     console.error("[ensureEnrollmentForProgress] unexpected error", {
       userId,
       courseId,
       err,
     });
+    return null;
   }
 }
 

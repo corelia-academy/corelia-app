@@ -369,6 +369,14 @@
         "previous": "Previous",
         "next": "Next"
       },
+      "completion": {
+        "title": "Congratulations, you completed the course!",
+        "noCertificate": "Your learning progress has been saved. Keep exploring what is next on Corelia.",
+        "certificateIssuing": "This course includes a certificate. Corelia is issuing it for you...",
+        "certificatePending": "This course includes a certificate. Corelia will issue it automatically once eligibility is confirmed.",
+        "certificateReady": "Your Corelia certificate is ready. You can view it in your certificate vault and claim the Open Campus certificate after connecting OCID.",
+        "viewCertificate": "View certificate"
+      },
       "finalAssignment": {
         "status": {
           "approved": "Approved — your certificate will be issued.",
