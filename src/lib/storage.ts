@@ -215,11 +215,16 @@ export async function uploadRenderedCertificate(
   if (!userId) throw new Error("Thiếu userId");
   if (!courseId) throw new Error("Thiếu courseId");
   const path = `certificates/${userId}/${courseId}.png`;
-  const { error } = await supabase.storage.from(CDN_BUCKET).upload(path, blob, {
+  const options = {
     contentType: "image/png",
-    upsert: true,
-  });
-  if (error) throw new Error(error.message);
+  };
+  const { error } = await supabase.storage.from(CDN_BUCKET).upload(path, blob, options);
+  if (error) {
+    const message = error.message ?? "";
+    if (!/already exists|duplicate/i.test(message)) throw new Error(message);
+    const { error: updateError } = await supabase.storage.from(CDN_BUCKET).update(path, blob, options);
+    if (updateError) throw new Error(updateError.message);
+  }
   return { url: cdnPublicUrl(path), path };
 }
 
