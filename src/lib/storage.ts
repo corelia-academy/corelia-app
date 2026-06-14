@@ -29,11 +29,16 @@ async function uploadToCdn(
   if (previousPath) {
     await deleteCdnObjectByPath(previousPath);
   }
-  const { error } = await supabase.storage.from(CDN_BUCKET).upload(path, file, {
+  const options = {
     contentType: file.type || "application/octet-stream",
-    upsert: true,
-  });
-  if (error) throw new Error(error.message);
+  };
+  const { error } = await supabase.storage.from(CDN_BUCKET).upload(path, file, options);
+  if (error) {
+    const message = error.message ?? "";
+    if (!/already exists|duplicate/i.test(message)) throw new Error(message);
+    const { error: updateError } = await supabase.storage.from(CDN_BUCKET).update(path, file, options);
+    if (updateError) throw new Error(updateError.message);
+  }
   return { url: cdnPublicUrl(path), path };
 }
 
