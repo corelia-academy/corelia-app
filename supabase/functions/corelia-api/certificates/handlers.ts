@@ -6,6 +6,30 @@ import { getAppBaseUrl } from "../credentials/settings.ts";
 import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
 import { buildCertificateIssuedEmail } from "./certificate_emails.ts";
 
+async function insertCertificateIssuedNotification(
+  db: SupabaseClient,
+  params: {
+    userId: string;
+    courseId: string;
+    courseTitle: string;
+    certificateTemplateUrl?: string | null;
+    targetPath: string;
+  },
+): Promise<void> {
+  const { error } = await db.from("user_notifications").insert({
+    user_id: params.userId,
+    type: "course_certificate_issued",
+    payload: {
+      course_id: params.courseId,
+      course_title: params.courseTitle,
+      certificate_template_url: params.certificateTemplateUrl ?? null,
+      requires_ocid: true,
+      target_path: params.targetPath,
+    },
+  });
+  if (error) throw new Error(error.message);
+}
+
 export async function handleIssueCertificate(req: Request, db: SupabaseClient): Promise<Response> {
   try {
     const user = await verifyBearerUser(req, db);
@@ -93,6 +117,29 @@ export async function handleIssueCertificate(req: Request, db: SupabaseClient): 
       }
     } catch (mailErr) {
       console.error("[corelia-api] certificate → email failed (non-fatal)", mailErr);
+    }
+
+    // Let learners know the certificate is ready even when OCID minting needs a manual claim.
+    // Non-fatal: notification failure must never block certificate issuance.
+    try {
+      const courseTitle = (course.title ?? "").trim();
+      if (courseTitle) {
+        const { data: profileRow, error: profileErr } = await db.from("profiles")
+          .select("username")
+          .eq("id", targetUserId)
+          .maybeSingle();
+        if (profileErr) throw new Error(profileErr.message);
+        const username = typeof profileRow?.username === "string" ? profileRow.username.trim() : "";
+        await insertCertificateIssuedNotification(db, {
+          userId: targetUserId,
+          courseId,
+          courseTitle,
+          certificateTemplateUrl: course.certificate_template_url ?? null,
+          targetPath: username ? `/@${encodeURIComponent(username)}` : "/achievements",
+        });
+      }
+    } catch (notificationErr) {
+      console.error("[corelia-api] certificate → notification failed (non-fatal)", notificationErr);
     }
 
     // Auto-mint OC credential if there's an active credential_template for this course.
