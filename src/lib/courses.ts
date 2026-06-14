@@ -750,8 +750,13 @@ export async function checkAndIssueCertificate(userId: string, courseId: string)
     body: JSON.stringify({ userId, courseId }),
   });
 
-  const body = (await res.json().catch(() => ({}))) as Partial<{ issued: boolean; message: string }>;
+  const body = (await res.json().catch(() => ({}))) as Partial<{
+    issued: boolean;
+    message: string;
+    reason: string;
+  }>;
   if (!res.ok) throw new Error(body.message || "Không thể cấp chứng nhận lúc này.");
+  if (body.issued === true) invalidateEnrollmentsCache(userId);
   return body.issued === true;
 }
 
@@ -785,11 +790,26 @@ export async function setLessonProgress(
 
   invalidateLessonProgressCache(user.id, courseId);
 
-  void ensureEnrollmentForProgress(user.id, courseId, now);
-
   if (completed) {
-    checkAndIssueCertificate(user.id, courseId).catch(() => {});
-    invokeCheckCourseCredential(courseId, undefined, { autoIssue: true }).catch(() => {});
+    await ensureEnrollmentForProgress(user.id, courseId, now);
+    checkAndIssueCertificate(user.id, courseId).catch((err) => {
+      console.warn("[courses] certificate issue after lesson completion failed", {
+        userId: user.id,
+        courseId,
+        lessonId,
+        error: err instanceof Error ? err.message : err,
+      });
+    });
+    invokeCheckCourseCredential(courseId, undefined, { autoIssue: true }).catch((err) => {
+      console.warn("[courses] credential check after lesson completion failed", {
+        userId: user.id,
+        courseId,
+        lessonId,
+        error: err instanceof Error ? err.message : err,
+      });
+    });
+  } else {
+    void ensureEnrollmentForProgress(user.id, courseId, now);
   }
 }
 

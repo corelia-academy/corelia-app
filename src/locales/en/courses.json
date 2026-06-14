@@ -187,6 +187,7 @@
       },
       "certificateIssued": "Certificate issued",
       "claimCertificate": "Claim certificate",
+      "claimCertificateFailed": "Could not issue the certificate right now. Please try again.",
       "instructorLabel": "Instructor",
       "instructor": {
         "title": "About the instructor",

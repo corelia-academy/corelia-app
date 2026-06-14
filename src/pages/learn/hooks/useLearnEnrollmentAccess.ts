@@ -4,6 +4,7 @@ import {
   getCoursePaymentAccess,
   type CoursePaymentAccess,
 } from "@/lib/payments";
+import type { Enrollment } from "@/types/courses";
 
 interface UseLearnEnrollmentAccessInput {
   courseId: string | undefined;
@@ -14,9 +15,11 @@ interface UseLearnEnrollmentAccessInput {
 
 interface UseLearnEnrollmentAccessResult {
   enrolled: boolean;
+  enrollment: Enrollment | null;
   paymentAccess: CoursePaymentAccess | null;
   hasFullCourseAccess: boolean;
   setEnrolled: (value: boolean) => void;
+  setEnrollment: (value: Enrollment | null) => void;
   setPaymentAccess: (value: CoursePaymentAccess | null) => void;
 }
 
@@ -27,6 +30,7 @@ export function useLearnEnrollmentAccess({
   role,
 }: UseLearnEnrollmentAccessInput): UseLearnEnrollmentAccessResult {
   const [enrolled, setEnrolled] = useState(false);
+  const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [paymentAccess, setPaymentAccess] =
     useState<CoursePaymentAccess | null>(null);
   const hasContext = !!courseId && !!profileId;
@@ -40,7 +44,13 @@ export function useLearnEnrollmentAccess({
     ]).then(([enrollmentRow, paymentRow]) => {
       if (cancelled) return;
       setEnrolled(!!enrollmentRow);
+      setEnrollment(enrollmentRow ?? null);
       setPaymentAccess(paymentRow ?? null);
+    }).catch(() => {
+      if (cancelled) return;
+      setEnrolled(false);
+      setEnrollment(null);
+      setPaymentAccess(null);
     });
     return () => {
       cancelled = true;
@@ -48,6 +58,7 @@ export function useLearnEnrollmentAccess({
   }, [courseId, profileId]);
 
   const effectiveEnrolled = hasContext ? enrolled : false;
+  const effectiveEnrollment = hasContext ? enrollment : null;
   const effectivePaymentAccess = hasContext ? paymentAccess : null;
 
   const hasFullCourseAccess = useMemo(() => {
@@ -67,10 +78,11 @@ export function useLearnEnrollmentAccess({
 
   return {
     enrolled: effectiveEnrolled,
+    enrollment: effectiveEnrollment,
     paymentAccess: effectivePaymentAccess,
     hasFullCourseAccess,
     setEnrolled,
+    setEnrollment,
     setPaymentAccess,
   };
 }
-

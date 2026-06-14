@@ -3,13 +3,13 @@
  * Invoke: GET/POST {SUPABASE_URL}/functions/v1/corelia-api?op=<operation>
  *
  * Operations: health | payments.sepay.checkout | payments.transactions |
- *   payments.sepay.verify | payments.sepay.ipn | certificates.issue |
+ *   payments.sepay.verify | payments.sepay.ipn | certificates.issue | certificates.backfillEligible |
  *   hackathons.notifyRegistrationReview | hackathons.blastEmail |
  *   courses.blastEmail | careerTracks.blastEmail | notifications.unsubscribe |
  *   credentials.checkCourseCompletion | credentials.checkActivityMilestones | credentials.grant |
  *   credentials.retryPending | credentials.hackathon.listEligible
  */
-import { handleIssueCertificate } from "./certificates/handlers.ts";
+import { handleBackfillEligibleCertificates, handleIssueCertificate } from "./certificates/handlers.ts";
 import { handleHackathonListEligible } from "./credentials/hackathon_eligible.ts";
 import { handleCareerTrackBlastEmail } from "./career-tracks/blast_email.ts";
 import { handleCheckActivityMilestones } from "./credentials/check_activity.ts";
@@ -42,6 +42,7 @@ const PROTECTED_OPS = new Set<string>([
   "payments.transactions",
   "payments.sepay.debugLookup",
   "certificates.issue",
+  "certificates.backfillEligible",
   "payments.sepay.verify",
   "hackathons.notifyRegistrationReview",
   "hackathons.blastEmail",
@@ -99,6 +100,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleSePayDebugLookup(req, db);
     } else if (op === "certificates.issue" && req.method === "POST") {
       response = await handleIssueCertificate(req, db);
+    } else if (op === "certificates.backfillEligible" && req.method === "POST") {
+      response = await handleBackfillEligibleCertificates(req, db);
     } else if (op === "payments.sepay.verify" && req.method === "POST") {
       response = await handleVerifySePayPayment(req, db);
     } else if (op === "payments.sepay.ipn" && req.method === "POST") {

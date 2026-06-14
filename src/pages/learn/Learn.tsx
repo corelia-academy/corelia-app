@@ -16,6 +16,7 @@ import {
   PanelRight,
 } from "lucide-react";
 import {
+  checkAndIssueCertificate,
   getNextLesson,
   setLessonProgress,
   sortLessonsByCurriculum,
@@ -111,6 +112,7 @@ export default function Learn() {
   const [curricOpen, setCurricOpen] = useState(true);
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
   const coraPanelRef = useRef<ResizablePanelHandle | null>(null);
+  const autoIssueAttemptedRef = useRef<Set<string>>(new Set());
   const [sectionQuestions, setSectionQuestions] = useState<SectionQuestion[]>(
     [],
   );
@@ -160,6 +162,52 @@ export default function Learn() {
     profileId: profile?.id,
     viewer: user,
   });
+
+  useEffect(() => {
+    const course = courseLoad.course;
+    const enrollment = access.enrollment;
+    if (!courseId || !profile?.id || !course || !enrollment) return;
+    if (!course.has_certificate || enrollment.certificate_issued_at) return;
+    if (progress.progressPercent < 100) return;
+    if (
+      course.access_model === "free_with_paid_certificate" &&
+      access.paymentAccess?.certificate_fee_paid !== true
+    ) {
+      return;
+    }
+    if (course.final_assignment_title && submission.submission?.status !== "approved") {
+      return;
+    }
+
+    const key = `${profile.id}:${courseId}`;
+    if (autoIssueAttemptedRef.current.has(key)) return;
+    autoIssueAttemptedRef.current.add(key);
+
+    void checkAndIssueCertificate(profile.id, courseId)
+      .then((issued) => {
+        if (!issued) return;
+        const issuedAt = new Date().toISOString();
+        access.setEnrollment({ ...enrollment, certificate_issued_at: issuedAt });
+        void progress.refresh();
+      })
+      .catch((err) => {
+        console.warn("[learn] certificate auto-issue failed", {
+          userId: profile.id,
+          courseId,
+          error: err instanceof Error ? err.message : err,
+        });
+      });
+  }, [
+    access,
+    access.enrollment,
+    access.paymentAccess?.certificate_fee_paid,
+    courseId,
+    courseLoad.course,
+    profile?.id,
+    progress,
+    progress.progressPercent,
+    submission.submission?.status,
+  ]);
 
   useEffect(() => {
     if (!courseId || visibleLessons.length === 0) return;

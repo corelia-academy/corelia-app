@@ -186,6 +186,7 @@
       },
       "certificateIssued": "Đã cấp chứng nhận",
       "claimCertificate": "Nhận chứng nhận",
+      "claimCertificateFailed": "Không thể cấp chứng nhận lúc này. Vui lòng thử lại.",
       "instructorLabel": "Giảng viên",
       "instructor": {
         "title": "Giới thiệu giảng viên",

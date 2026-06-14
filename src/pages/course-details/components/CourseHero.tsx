@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BookOpen, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { CourseBadge } from "./CourseBadge";
 import i18n from "@/i18n";
 import {
@@ -57,8 +58,8 @@ export function CourseHero({
       if (issued) {
         onCertificateClaimed?.(new Date().toISOString());
       }
-    } catch {
-      // silently ignore — user can retry
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : translate("detail.courseDetail.claimCertificateFailed"));
     } finally {
       setClaiming(false);
     }
