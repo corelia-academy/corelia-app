@@ -5,6 +5,7 @@ import {
   getProfile,
   incrementQuotaSnapshot,
   resolveEffectiveTier,
+  requireLessonAccess,
 } from "./accessGuards.ts";
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { encodeSse, sseHeaders } from "./lib/sse.ts";
@@ -1241,6 +1242,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     const sessionId = await ensureSession(db, user.id, contextType, body.sessionId, body.courseId, body.lessonId);
+
+    if (body.lessonId && (contextType === "lesson" || contextType === "course")) {
+      await requireLessonAccess(db, user.id, body.lessonId);
+    }
+
     const loadedContextData = await loadContextData(db, user.id, contextType, profile, {
       lessonId: body.lessonId,
     });
@@ -1623,7 +1629,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
         ? 401
         : message === "Rate limit exceeded" || message === "Too many concurrent AI requests"
           ? 429
-          : 500;
+          : message === "Lesson access denied"
+            ? 403
+            : 500;
     console.error("[ai-tutor] unhandled", error);
     const clientMessage =
       status === 500

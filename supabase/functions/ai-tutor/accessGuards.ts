@@ -346,3 +346,63 @@ export function incrementQuotaSnapshot(quota: QuotaResult, tokensUsed = 0): Quot
     throttled,
   };
 }
+
+export async function requireLessonAccess(
+  db: SupabaseClient,
+  userId: string,
+  lessonId: string,
+): Promise<void> {
+  const { data: lesson, error: lessonError } = await db
+    .from("course_lessons")
+    .select("course_id, data")
+    .eq("id", lessonId)
+    .maybeSingle();
+
+  if (lessonError || !lesson) throw new Error("Lesson not found");
+
+  const courseId = lesson.course_id;
+  const lessonData = lesson.data as Record<string, unknown> | null;
+  const isPreviewFree = lessonData?.is_preview_free === true;
+
+  const { data: course, error: courseError } = await db
+    .from("courses")
+    .select("published, instructor_id, data")
+    .eq("id", courseId)
+    .maybeSingle();
+
+  if (courseError || !course) throw new Error("Course not found");
+
+  if (course.published && isPreviewFree) return;
+
+  const courseData = course.data as Record<string, unknown> | null;
+  const accessModel = courseData?.access_model as string | undefined;
+  const isFreeCourse = accessModel === "free" || accessModel === "free_with_paid_certificate";
+
+  if (course.published && isFreeCourse) return;
+
+  const { data: enrollment } = await db
+    .from("enrollments")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("course_id", courseId)
+    .maybeSingle();
+
+  if (enrollment) return;
+
+  const { data: profile } = await db
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
+
+  const role = profile?.role;
+  if (role === "admin" || role === "support_staff") return;
+
+  if (role === "instructor") {
+    if (course.instructor_id === userId) return;
+    const coInstructors = courseData?.co_instructor_permissions as Record<string, unknown> | undefined;
+    if (coInstructors && Object.prototype.hasOwnProperty.call(coInstructors, userId)) return;
+  }
+
+  throw new Error("Lesson access denied");
+}
