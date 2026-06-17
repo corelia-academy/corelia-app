@@ -354,12 +354,6 @@ CREATE POLICY hackathon_scores_select_phase2
         AND (h.document->>'created_by') = ((SELECT auth.uid())::text)
     )
     OR public.has_hackathon_invite_role(hackathon_id, ARRAY['judge', 'co_organizer'])
-    OR EXISTS (
-      SELECT 1
-      FROM public.hackathons h
-      WHERE h.id = hackathon_id
-        AND h.status IN ('published', 'running', 'ended')
-    )
   );
 
 CREATE POLICY hackathon_scores_insert_judge_or_co_organizer
