@@ -774,7 +774,13 @@
         "subtitle": "Nơi lưu trữ tất cả chứng nhận từ các khóa học đã hoàn thành.",
         "countLabel": "{{count}} chứng nhận",
         "loading": "Đang tải kho chứng nhận của bạn.",
-        "empty": "Bạn chưa có chứng nhận nào. Hãy hoàn thành một khóa học có chứng nhận để bắt đầu."
+        "empty": "Bạn chưa có chứng nhận nào. Hãy hoàn thành một khóa học có chứng nhận để bắt đầu.",
+        "syncTitle": "Chứng nhận đang chờ đồng bộ",
+        "syncDescription": "Corelia thấy bạn đã hoàn thành khoá học có chứng nhận nhưng vault chưa có bản ghi. Hãy đồng bộ để cấp chứng nhận gốc trước; OCID chỉ cần cho bước claim Open Campus sau đó.",
+        "syncCourse": "Đồng bộ {{course}}",
+        "syncSuccess": "Đã cấp chứng nhận. Vault sẽ được cập nhật ngay.",
+        "syncPending": "Chứng nhận đang chờ hệ thống xác nhận đủ điều kiện.",
+        "syncError": "Không thể đồng bộ chứng nhận lúc này."
       },
       "badges": {
         "title": "Bộ huy hiệu và milestone",

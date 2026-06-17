@@ -1529,12 +1529,12 @@ const InstructorCourseEdit = () => {
         }));
       }
       if (status === "approved" && sub) {
-        const issued = await checkAndIssueCertificate(sub.user_id, id ?? "");
-        if (issued) {
+        const result = await checkAndIssueCertificate(sub.user_id, id ?? "");
+        if (result.issued) {
           setEnrollments((prev) =>
             prev.map((e) =>
               e.user_id === sub.user_id
-                ? { ...e, certificate_issued_at: new Date().toISOString() }
+                ? { ...e, certificate_issued_at: result.certificate_issued_at || new Date().toISOString() }
                 : e,
             ),
           );
@@ -1556,12 +1556,12 @@ const InstructorCourseEdit = () => {
     if (!id) return;
     setIssuingCertForUser(userId);
     try {
-      const issued = await checkAndIssueCertificate(userId, id);
-      if (issued) {
+      const result = await checkAndIssueCertificate(userId, id);
+      if (result.issued) {
         setEnrollments((prev) =>
           prev.map((e) =>
             e.user_id === userId
-              ? { ...e, certificate_issued_at: new Date().toISOString() }
+              ? { ...e, certificate_issued_at: result.certificate_issued_at || new Date().toISOString() }
               : e,
           ),
         );

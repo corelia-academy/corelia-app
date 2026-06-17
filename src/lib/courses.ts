@@ -735,7 +735,29 @@ export function getCompletedLessonIds(lessons: CourseLesson[], progressList: Les
   );
 }
 
-export async function checkAndIssueCertificate(userId: string, courseId: string): Promise<boolean> {
+export type CertificateIssueReason =
+  | "no_certificate"
+  | "already_issued"
+  | "no_course"
+  | "no_enrollment"
+  | "fee_unpaid"
+  | "lessons_incomplete"
+  | "assignment_not_approved"
+  | "issued"
+  | "unknown";
+
+export interface CertificateIssueResult {
+  issued: boolean;
+  reason: CertificateIssueReason;
+  certificate_issued_at?: string | null;
+  message?: string;
+  course_title?: string | null;
+}
+
+export async function checkAndIssueCertificate(
+  userId: string,
+  courseId: string,
+): Promise<CertificateIssueResult> {
   const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token;
   if (!token) throw new Error("Chưa đăng nhập");
@@ -753,11 +775,19 @@ export async function checkAndIssueCertificate(userId: string, courseId: string)
   const body = (await res.json().catch(() => ({}))) as Partial<{
     issued: boolean;
     message: string;
-    reason: string;
+    reason: CertificateIssueReason;
+    certificate_issued_at: string | null;
+    course_title: string | null;
   }>;
   if (!res.ok) throw new Error(body.message || "Không thể cấp chứng nhận lúc này.");
   if (body.issued === true) invalidateEnrollmentsCache(userId);
-  return body.issued === true;
+  return {
+    issued: body.issued === true,
+    reason: body.reason ?? (body.issued ? "issued" : "unknown"),
+    certificate_issued_at: body.certificate_issued_at ?? null,
+    message: body.message,
+    course_title: body.course_title ?? null,
+  };
 }
 
 export async function setLessonProgress(

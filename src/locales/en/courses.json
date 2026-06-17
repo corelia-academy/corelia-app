@@ -374,8 +374,21 @@
         "noCertificate": "Your learning progress has been saved. Keep exploring what is next on Corelia.",
         "certificateIssuing": "This course includes a certificate. Corelia is issuing it for you...",
         "certificatePending": "This course includes a certificate. Corelia will issue it automatically once eligibility is confirmed.",
+        "certificateSyncFailed": "The certificate could not be synced yet. You can try again in a moment.",
         "certificateReady": "Your Corelia certificate is ready. You can view it in your certificate vault and claim the Open Campus certificate after connecting OCID.",
-        "viewCertificate": "View certificate"
+        "viewCertificate": "View certificate",
+        "retryCertificateSync": "Sync again",
+        "reasons": {
+          "no_certificate": "This course is not configured to issue certificates yet.",
+          "already_issued": "Your Corelia certificate is ready.",
+          "no_course": "The course could not be found for certificate issuance.",
+          "no_enrollment": "Corelia is creating your enrollment record before issuing the certificate. Try syncing again.",
+          "fee_unpaid": "This course requires the certificate review fee before issuance.",
+          "lessons_incomplete": "Corelia has not confirmed 100% lesson completion yet.",
+          "assignment_not_approved": "The final assignment must be approved before the certificate can be issued.",
+          "issued": "Your Corelia certificate is ready.",
+          "unknown": "The certificate is waiting for eligibility confirmation."
+        }
       },
       "finalAssignment": {
         "status": {

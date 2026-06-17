@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   Loader2,
   Lock,
+  RefreshCw,
   Trophy,
 } from "lucide-react";
 import { useState } from "react";
@@ -30,12 +31,15 @@ export default function AchievementsPage() {
     certificates,
     badges,
     loading,
+    certificateSyncCandidates,
+    syncingCourseId,
     modalItem,
     modalOpen,
     setModalOpen,
     claiming,
     openModal,
     handleClaim,
+    handleSyncCertificate,
     ocidConnectOpen,
     setOcidConnectOpen,
   } = useAchievementsPage();
@@ -344,9 +348,42 @@ export default function AchievementsPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-foreground">
-                {t("achievements.vaults.certificates.empty")}
+                {certificateSyncCandidates.length > 0
+                  ? t("achievements.vaults.certificates.syncTitle")
+                  : t("achievements.vaults.certificates.empty")}
               </p>
+              {certificateSyncCandidates.length > 0 ? (
+                <p className="mt-1 max-w-md text-sm leading-6 text-foreground-muted">
+                  {t("achievements.vaults.certificates.syncDescription")}
+                </p>
+              ) : null}
             </div>
+            {certificateSyncCandidates.length > 0 ? (
+              <div className="mt-2 flex flex-wrap justify-center gap-2">
+                {certificateSyncCandidates.map((item) => {
+                  const syncing = syncingCourseId === item.courseId;
+                  return (
+                    <Button
+                      key={item.courseId}
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      disabled={!!syncingCourseId}
+                      onClick={() => void handleSyncCertificate(item.courseId)}
+                    >
+                      {syncing ? (
+                        <Loader2 className="size-4 animate-spin" aria-hidden />
+                      ) : (
+                        <RefreshCw className="size-4" aria-hidden />
+                      )}
+                      {t("achievements.vaults.certificates.syncCourse", {
+                        course: item.courseTitle,
+                      })}
+                    </Button>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

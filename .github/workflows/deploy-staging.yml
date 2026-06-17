@@ -1,15 +1,20 @@
-# Deploys Supabase (migrations + Edge functions) only.
-# The Vite SPA / Workers frontend is NOT published by this workflow — deploy it separately
-# (e.g. Cloudflare Pages/Workers) or staging may keep serving an older JS bundle.
+# Deploys Supabase (migrations + Edge functions) and the staging Vite/Workers frontend.
 name: Deploy Staging
 
 on:
   push:
     branches: [staging]
     paths:
+      - "src/**"
+      - "public/**"
       - "supabase/migrations/**"
       - "supabase/functions/**"
       - "supabase/config.toml"
+      - "index.html"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "vite.config.ts"
+      - "wrangler.jsonc"
       - ".github/workflows/deploy-staging.yml"
   workflow_dispatch: {}
 
@@ -33,9 +38,17 @@ jobs:
           # Needed for git diff between github.event.before and github.sha
           fetch-depth: 0
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          cache: pnpm
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
@@ -98,3 +111,21 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy generate-learning-path --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Build staging frontend
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_OCID_CLIENT_ID: ${{ secrets.VITE_OCID_CLIENT_ID || vars.VITE_OCID_CLIENT_ID }}
+          VITE_OCID_REDIRECT_URI: ${{ secrets.VITE_OCID_REDIRECT_URI || vars.VITE_OCID_REDIRECT_URI }}
+          VITE_YOUTUBE_API_KEY: ${{ secrets.VITE_YOUTUBE_API_KEY || vars.VITE_YOUTUBE_API_KEY }}
+          VITE_BETA_FEEDBACK_FORM_URL: ${{ secrets.VITE_BETA_FEEDBACK_FORM_URL || vars.VITE_BETA_FEEDBACK_FORM_URL }}
+          VITE_HCAPTCHA_SITEKEY: ${{ secrets.VITE_HCAPTCHA_SITEKEY || vars.VITE_HCAPTCHA_SITEKEY }}
+          VITE_CDN_BASE_URL: ${{ secrets.VITE_CDN_BASE_URL || vars.VITE_CDN_BASE_URL }}
+        run: pnpm build:staging
+
+      - name: Deploy staging frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec wrangler deploy --env staging

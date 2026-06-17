@@ -54,9 +54,11 @@ export function CourseHero({
     if (!enrollment || claiming) return;
     setClaiming(true);
     try {
-      const issued = await checkAndIssueCertificate(enrollment.user_id, course.id);
-      if (issued) {
-        onCertificateClaimed?.(new Date().toISOString());
+      const result = await checkAndIssueCertificate(enrollment.user_id, course.id);
+      if (result.issued) {
+        onCertificateClaimed?.(result.certificate_issued_at || new Date().toISOString());
+      } else if (result.message) {
+        toast.error(result.message);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : translate("detail.courseDetail.claimCertificateFailed"));

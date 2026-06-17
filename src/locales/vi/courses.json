@@ -369,8 +369,21 @@
         "noCertificate": "Tiến độ học tập của bạn đã được lưu. Hãy tiếp tục khám phá các nội dung tiếp theo trên Corelia.",
         "certificateIssuing": "Khoá học này có chứng nhận. Corelia đang cấp chứng nhận cho bạn...",
         "certificatePending": "Khoá học này có chứng nhận. Corelia sẽ tự động cấp chứng nhận khi hệ thống xác nhận đủ điều kiện.",
+        "certificateSyncFailed": "Chưa đồng bộ được chứng nhận. Bạn có thể thử lại sau ít phút.",
         "certificateReady": "Chứng nhận Corelia của bạn đã sẵn sàng. Bạn có thể xem trong kho chứng nhận và claim Open Campus certificate sau khi kết nối OCID.",
-        "viewCertificate": "Xem chứng nhận"
+        "viewCertificate": "Xem chứng nhận",
+        "retryCertificateSync": "Thử đồng bộ",
+        "reasons": {
+          "no_certificate": "Khoá học này chưa bật cấu hình chứng nhận.",
+          "already_issued": "Chứng nhận Corelia của bạn đã sẵn sàng.",
+          "no_course": "Không tìm thấy khoá học để cấp chứng nhận.",
+          "no_enrollment": "Corelia đang tạo hồ sơ ghi danh trước khi cấp chứng nhận. Hãy thử đồng bộ lại.",
+          "fee_unpaid": "Khoá học này cần thanh toán phí xét chứng nhận trước khi cấp.",
+          "lessons_incomplete": "Corelia chưa xác nhận đủ 100% bài học để cấp chứng nhận.",
+          "assignment_not_approved": "Bài cuối khoá cần được duyệt trước khi cấp chứng nhận.",
+          "issued": "Chứng nhận Corelia của bạn đã sẵn sàng.",
+          "unknown": "Chứng nhận đang chờ hệ thống xác nhận đủ điều kiện."
+        }
       },
       "finalAssignment": {
         "status": {

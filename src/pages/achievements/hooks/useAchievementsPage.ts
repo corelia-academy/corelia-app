@@ -10,7 +10,17 @@ import {
   type CourseIssuanceInfo,
 } from "@/lib/credentialIssuances";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
-import { getCourse, getMyEnrollments, invalidateCourseCache } from "@/lib/courses";
+import {
+  backfillMissingEnrollmentsForUser,
+  checkAndIssueCertificate,
+  computeProgressPercent,
+  ensureEnrollmentForProgress,
+  getCourse,
+  getCourseLessons,
+  getLessonProgressForCourse,
+  getMyEnrollments,
+  invalidateCourseCache,
+} from "@/lib/courses";
 import { useAuth } from "@/stores/authStore";
 import type { Enrollment } from "@/types/courses";
 
@@ -27,6 +37,11 @@ import {
 } from "../utils/buildAchievementsData";
 import { renderAndUploadCertificate } from "../utils/renderCertificate";
 
+export interface CertificateSyncCandidate {
+  courseId: string;
+  courseTitle: string;
+}
+
 export function useAchievementsPage() {
   const { user, isAuthenticated, profile } = useAuth();
   const [certificates, setCertificates] = useState<CertificateItem[]>([]);
@@ -35,6 +50,10 @@ export function useAchievementsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [syncingCourseId, setSyncingCourseId] = useState<string | null>(null);
+  const [certificateSyncCandidates, setCertificateSyncCandidates] = useState<
+    CertificateSyncCandidate[]
+  >([]);
   const [ocidConnectOpen, setOcidConnectOpen] = useState(false);
   const { t } = useTranslation("common");
 
@@ -42,6 +61,7 @@ export function useAchievementsPage() {
     if (!user || !isAuthenticated) {
       setCertificates([]);
       setBadges([]);
+      setCertificateSyncCandidates([]);
       setLoading(false);
       return;
     }
@@ -50,6 +70,7 @@ export function useAchievementsPage() {
       setLoading(true);
       // Invalidate course cache so certificate template URLs (CDN) are always fresh
       invalidateCourseCache();
+      await backfillMissingEnrollmentsForUser(user.id).catch(() => 0);
       const [enrollments, courseIssuanceMap, ocRows] = await Promise.all([
         getMyEnrollments(user.id).catch(() => [] as Enrollment[]),
         fetchCourseIssuanceMapForUser(user.id).catch(() => new Map<string, CourseIssuanceInfo>()),
@@ -96,9 +117,30 @@ export function useAchievementsPage() {
         const bDate = b.issuedAt.split("/").reverse().join("-");
         return bDate.localeCompare(aDate);
       });
+      const pendingCandidates = await Promise.all(
+        enrollments
+          .filter((item) => !item.certificate_issued_at)
+          .map(async (item): Promise<CertificateSyncCandidate | null> => {
+            const course = courseMap.get(item.course_id);
+            if (!course?.has_certificate) return null;
+            const [lessons, progressRows] = await Promise.all([
+              getCourseLessons(item.course_id).catch(() => []),
+              getLessonProgressForCourse(user.id, item.course_id).catch(() => []),
+            ]);
+            if (lessons.length === 0) return null;
+            if (computeProgressPercent(lessons, progressRows) < 100) return null;
+            return {
+              courseId: item.course_id,
+              courseTitle: course.title || t("achievements.certificates.fallbackCourseName"),
+            };
+          }),
+      );
 
       setCertificates(nextCertificates);
       setBadges(ocRows.map(issuanceToBadgeItem));
+      setCertificateSyncCandidates(
+        pendingCandidates.filter((item): item is CertificateSyncCandidate => !!item),
+      );
     } finally {
       setLoading(false);
     }
@@ -187,16 +229,42 @@ export function useAchievementsPage() {
     }
   };
 
+  const handleSyncCertificate = async (courseId: string) => {
+    if (!user) return;
+    setSyncingCourseId(courseId);
+    try {
+      await ensureEnrollmentForProgress(user.id, courseId, new Date().toISOString());
+      const result = await checkAndIssueCertificate(user.id, courseId);
+      if (result.issued) {
+        toast.success(t("achievements.vaults.certificates.syncSuccess"));
+      } else {
+        toast.info(result.message || t("achievements.vaults.certificates.syncPending"));
+      }
+      await loadAchievements();
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : t("achievements.vaults.certificates.syncError"),
+      );
+    } finally {
+      setSyncingCourseId(null);
+    }
+  };
+
   return {
     certificates,
     badges,
     loading,
+    certificateSyncCandidates,
+    syncingCourseId,
     modalItem,
     modalOpen,
     setModalOpen,
     claiming,
     openModal,
     handleClaim,
+    handleSyncCertificate,
     ocidConnectOpen,
     setOcidConnectOpen,
   };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/stores/authStore";
@@ -37,6 +37,8 @@ import { useInstructorProfile } from "./hooks/useInstructorProfile";
 import { useCoraStore } from "@/stores/coraStore";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { FollowerPreview } from "@/components/social/FollowerPreview";
+import { CourseCompletionCertificatePanel } from "@/components/courses/CourseCompletionCertificatePanel";
+import type { CertificateIssueReason } from "@/lib/courses";
 
 export default function CourseDetail() {
   const { t } = useTranslation("courses");
@@ -47,6 +49,11 @@ export default function CourseDetail() {
   );
   const setSidebarMeta = useCoraStore((s) => s.setSidebarMeta);
   const certificateIssueAttemptedRef = useRef<Set<string>>(new Set());
+  const [certificateIssuing, setCertificateIssuing] = useState(false);
+  const [certificateJustIssued, setCertificateJustIssued] = useState(false);
+  const [certificateIssueReason, setCertificateIssueReason] =
+    useState<CertificateIssueReason | null>(null);
+  const [certificateIssueError, setCertificateIssueError] = useState<string | null>(null);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -107,6 +114,64 @@ export default function CourseDetail() {
     translate,
   });
 
+  const syncCertificate = useCallback(async () => {
+    const course = courseLoad.course;
+    const courseId = courseLoad.resolvedCourseId;
+    if (!course || !courseId || !profile?.id || !isAuthenticated || !course.has_certificate) {
+      return null;
+    }
+    setCertificateIssuing(true);
+    setCertificateIssueReason(null);
+    setCertificateIssueError(null);
+    try {
+      const enrollment = await ensureEnrollmentForProgress(
+        profile.id,
+        courseId,
+        new Date().toISOString(),
+      );
+      if (enrollment) {
+        access.setEnrolled(true);
+        access.setEnrollment(enrollment);
+      }
+      const result = await checkAndIssueCertificate(profile.id, courseId);
+      setCertificateIssueReason(result.reason);
+      if (result.issued) {
+        const issuedAt = result.certificate_issued_at || new Date().toISOString();
+        const baseEnrollment = enrollment ?? access.enrollment;
+        if (baseEnrollment) {
+          access.setEnrolled(true);
+          access.setEnrollment({ ...baseEnrollment, certificate_issued_at: issuedAt });
+        }
+        setCertificateJustIssued(true);
+        void progress.refresh();
+      } else if (result.message) {
+        setCertificateIssueError(result.message);
+      }
+      return result;
+    } catch (err) {
+      const message = err instanceof Error
+        ? err.message
+        : translate("detail.courseDetail.claimCertificateFailed");
+      setCertificateIssueError(message);
+      console.warn("[course-detail] certificate sync failed", {
+        userId: profile.id,
+        courseId,
+        error: message,
+      });
+      return null;
+    } finally {
+      setCertificateIssuing(false);
+    }
+  }, [
+    access,
+    courseLoad.course,
+    courseLoad.resolvedCourseId,
+    isAuthenticated,
+    profile?.id,
+    progress,
+    translate,
+  ]);
+
   useEffect(() => {
     const course = courseLoad.course;
     const courseId = courseLoad.resolvedCourseId;
@@ -117,39 +182,15 @@ export default function CourseDetail() {
     const key = `${profile.id}:${courseId}`;
     if (certificateIssueAttemptedRef.current.has(key)) return;
     certificateIssueAttemptedRef.current.add(key);
-
-    void ensureEnrollmentForProgress(profile.id, courseId, new Date().toISOString())
-      .then((enrollment) => {
-        if (enrollment) {
-          access.setEnrolled(true);
-          access.setEnrollment(enrollment);
-        }
-        return checkAndIssueCertificate(profile.id, courseId).then((issued) => ({ issued, enrollment }));
-      })
-      .then(({ issued, enrollment }) => {
-        if (!issued) return;
-        const issuedAt = new Date().toISOString();
-        const baseEnrollment = enrollment ?? access.enrollment;
-        if (baseEnrollment) {
-          access.setEnrolled(true);
-          access.setEnrollment({ ...baseEnrollment, certificate_issued_at: issuedAt });
-        }
-      })
-      .catch((err) => {
-        console.warn("[course-detail] certificate auto-issue failed", {
-          userId: profile.id,
-          courseId,
-          error: err instanceof Error ? err.message : err,
-        });
-      });
+    void syncCertificate();
   }, [
-    access,
     access.enrollment,
     courseLoad.course,
     courseLoad.resolvedCourseId,
     isAuthenticated,
     profile?.id,
     progress.progressPercent,
+    syncCertificate,
   ]);
 
   const sortedLessons = useMemo(
@@ -217,6 +258,13 @@ export default function CourseDetail() {
     () => computePricing(courseLoad.course),
     [courseLoad.course],
   );
+  const courseCompleted = progress.progressPercent >= 100 && sortedLessons.length > 0;
+  const certificateIssued = Boolean(
+    access.enrollment?.certificate_issued_at || certificateJustIssued,
+  );
+  const profileAchievementsPath = profile?.username
+    ? `/@${encodeURIComponent(profile.username)}`
+    : "/account";
 
   const handleEnroll = useCallback(async () => {
     const courseId = courseLoad.resolvedCourseId;
@@ -318,6 +366,19 @@ export default function CourseDetail() {
           )
         }
       />
+
+      {courseCompleted ? (
+        <CourseCompletionCertificatePanel
+          className="mt-4"
+          hasCertificate={!!course.has_certificate}
+          certificateIssued={certificateIssued}
+          issuing={certificateIssuing}
+          issueReason={certificateIssueReason}
+          issueError={certificateIssueError}
+          achievementsPath={profileAchievementsPath}
+          onRetry={course.has_certificate ? () => void syncCertificate() : undefined}
+        />
+      ) : null}
 
       {course.published && courseLoad.resolvedCourseId ? (
         <div className="mt-4 flex flex-col items-end gap-2">

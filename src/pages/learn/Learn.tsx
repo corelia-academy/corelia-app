@@ -9,7 +9,6 @@ import {
 import { Link, useNavigate, useParams } from "react-router";
 import {
   AlertCircle,
-  Award,
   CheckCircle2,
   ChevronLeft,
   List,
@@ -55,8 +54,10 @@ import { useLearnProgress } from "./hooks/useLearnProgress";
 import { useLearnSubmission } from "./hooks/useLearnSubmission";
 import { useCoraStore } from "@/stores/coraStore";
 import { Button } from "@/components/ui/button";
+import { CourseCompletionCertificatePanel } from "@/components/courses/CourseCompletionCertificatePanel";
 import { CoraSidebarPanel } from "@/components/course-ai/CoraSidebarPanel";
 import { cn } from "@/lib/utils";
+import type { CertificateIssueReason } from "@/lib/courses";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -117,6 +118,9 @@ export default function Learn() {
   const autoIssueAttemptedRef = useRef<Set<string>>(new Set());
   const [certificateAutoIssuing, setCertificateAutoIssuing] = useState(false);
   const [certificateJustIssued, setCertificateJustIssued] = useState(false);
+  const [certificateIssueReason, setCertificateIssueReason] =
+    useState<CertificateIssueReason | null>(null);
+  const [certificateIssueError, setCertificateIssueError] = useState<string | null>(null);
   const [sectionQuestions, setSectionQuestions] = useState<SectionQuestion[]>(
     [],
   );
@@ -167,6 +171,56 @@ export default function Learn() {
     viewer: user,
   });
 
+  const syncCertificate = useCallback(async () => {
+    const course = courseLoad.course;
+    if (!courseId || !profile?.id || !course?.has_certificate) return null;
+    setCertificateAutoIssuing(true);
+    setCertificateIssueReason(null);
+    setCertificateIssueError(null);
+    try {
+      const enrollment = await ensureEnrollmentForProgress(
+        profile.id,
+        courseId,
+        new Date().toISOString(),
+      );
+      if (enrollment) access.setEnrollment(enrollment);
+      const result = await checkAndIssueCertificate(profile.id, courseId);
+      setCertificateIssueReason(result.reason);
+      if (result.issued) {
+        const issuedAt = result.certificate_issued_at || new Date().toISOString();
+        const baseEnrollment = enrollment ?? access.enrollment;
+        if (baseEnrollment) {
+          access.setEnrollment({ ...baseEnrollment, certificate_issued_at: issuedAt });
+        }
+        setCertificateJustIssued(true);
+        void progress.refresh();
+      } else if (result.message) {
+        setCertificateIssueError(result.message);
+      }
+      return result;
+    } catch (err) {
+      const message = err instanceof Error
+        ? err.message
+        : translate("detail.courseDetail.claimCertificateFailed");
+      setCertificateIssueError(message);
+      console.warn("[learn] certificate sync failed", {
+        userId: profile.id,
+        courseId,
+        error: message,
+      });
+      return null;
+    } finally {
+      setCertificateAutoIssuing(false);
+    }
+  }, [
+    access,
+    courseId,
+    courseLoad.course,
+    profile?.id,
+    progress,
+    translate,
+  ]);
+
   useEffect(() => {
     const course = courseLoad.course;
     if (!courseId || !profile?.id || !course) return;
@@ -185,43 +239,16 @@ export default function Learn() {
     const key = `${profile.id}:${courseId}`;
     if (autoIssueAttemptedRef.current.has(key)) return;
     autoIssueAttemptedRef.current.add(key);
-    queueMicrotask(() => setCertificateAutoIssuing(true));
-
-    void ensureEnrollmentForProgress(profile.id, courseId, new Date().toISOString())
-      .then((enrollment) => {
-        if (enrollment) access.setEnrollment(enrollment);
-        return checkAndIssueCertificate(profile.id, courseId).then((issued) => ({ issued, enrollment }));
-      })
-      .then((issued) => {
-        if (!issued.issued) return;
-        const issuedAt = new Date().toISOString();
-        const baseEnrollment = issued.enrollment ?? access.enrollment;
-        if (baseEnrollment) {
-          access.setEnrollment({ ...baseEnrollment, certificate_issued_at: issuedAt });
-        }
-        setCertificateJustIssued(true);
-        void progress.refresh();
-      })
-      .catch((err) => {
-        console.warn("[learn] certificate auto-issue failed", {
-          userId: profile.id,
-          courseId,
-          error: err instanceof Error ? err.message : err,
-        });
-      })
-      .finally(() => {
-        setCertificateAutoIssuing(false);
-      });
+    void syncCertificate();
   }, [
-    access,
     access.enrollment,
     access.paymentAccess?.certificate_fee_paid,
     courseId,
     courseLoad.course,
     profile?.id,
-    progress,
     progress.progressPercent,
     submission.submission?.status,
+    syncCertificate,
   ]);
 
   useEffect(() => {
@@ -512,44 +539,16 @@ export default function Learn() {
       />
 
       {courseCompleted ? (
-        <div className="mx-4 mb-4 rounded-2xl border border-success/25 bg-success/10 p-4 shadow-card sm:mx-6 sm:p-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex min-w-0 gap-3">
-              <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
-                {course.has_certificate ? (
-                  <Award className="size-5" aria-hidden />
-                ) : (
-                  <CheckCircle2 className="size-5" aria-hidden />
-                )}
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-base font-semibold text-foreground">
-                  {translate("detail.learn.completion.title")}
-                </h2>
-                <p className="mt-1 text-sm leading-relaxed text-foreground-muted">
-                  {course.has_certificate
-                    ? certificateIssued
-                      ? translate("detail.learn.completion.certificateReady")
-                      : certificateAutoIssuing
-                        ? translate("detail.learn.completion.certificateIssuing")
-                        : translate("detail.learn.completion.certificatePending")
-                    : translate("detail.learn.completion.noCertificate")}
-                </p>
-              </div>
-            </div>
-            {course.has_certificate && certificateIssued ? (
-              <Button
-                type="button"
-                size="sm"
-                className="shrink-0"
-                render={<Link to={profileAchievementsPath} />}
-                nativeButton={false}
-              >
-                {translate("detail.learn.completion.viewCertificate")}
-              </Button>
-            ) : null}
-          </div>
-        </div>
+        <CourseCompletionCertificatePanel
+          className="mx-4 mb-4 sm:mx-6"
+          hasCertificate={!!course.has_certificate}
+          certificateIssued={certificateIssued}
+          issuing={certificateAutoIssuing}
+          issueReason={certificateIssueReason}
+          issueError={certificateIssueError}
+          achievementsPath={profileAchievementsPath}
+          onRetry={course.has_certificate ? () => void syncCertificate() : undefined}
+        />
       ) : null}
 
       <LessonPlayerCard

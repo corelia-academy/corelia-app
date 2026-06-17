@@ -774,7 +774,13 @@
         "subtitle": "A place to store all certificates from completed courses.",
         "countLabel": "{{count}} certificates",
         "loading": "Loading your certificate vault.",
-        "empty": "You don't have any certificates yet. Complete a course with certification to get started."
+        "empty": "You don't have any certificates yet. Complete a course with certification to get started.",
+        "syncTitle": "Certificate waiting to sync",
+        "syncDescription": "Corelia sees that you completed a certificated course, but the vault has no issued record yet. Sync to issue the Corelia certificate first; OCID is only needed later for Open Campus claim.",
+        "syncCourse": "Sync {{course}}",
+        "syncSuccess": "Certificate issued. Your vault will update now.",
+        "syncPending": "The certificate is waiting for eligibility confirmation.",
+        "syncError": "Could not sync the certificate right now."
       },
       "badges": {
         "title": "Badges & milestones",
