@@ -14,6 +14,7 @@ import {
   backfillMissingEnrollmentsForUser,
   checkAndIssueCertificate,
   computeProgressPercent,
+  courseHasCertificate,
   ensureEnrollmentForProgress,
   getCourse,
   getCourseLessons,
@@ -122,7 +123,7 @@ export function useAchievementsPage() {
           .filter((item) => !item.certificate_issued_at)
           .map(async (item): Promise<CertificateSyncCandidate | null> => {
             const course = courseMap.get(item.course_id);
-            if (!course?.has_certificate) return null;
+            if (!courseHasCertificate(course)) return null;
             const [lessons, progressRows] = await Promise.all([
               getCourseLessons(item.course_id).catch(() => []),
               getLessonProgressForCourse(user.id, item.course_id).catch(() => []),
@@ -131,7 +132,7 @@ export function useAchievementsPage() {
             if (computeProgressPercent(lessons, progressRows) < 100) return null;
             return {
               courseId: item.course_id,
-              courseTitle: course.title || t("achievements.certificates.fallbackCourseName"),
+              courseTitle: course?.title || t("achievements.certificates.fallbackCourseName"),
             };
           }),
       );

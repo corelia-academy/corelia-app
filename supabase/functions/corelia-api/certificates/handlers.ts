@@ -31,6 +31,10 @@ type CertificateIssueResult = {
   course_title?: string | null;
 };
 
+function courseHasCertificate(course: CourseCertificateData): boolean {
+  return course.has_certificate === true || !!course.certificate_template_url?.trim();
+}
+
 async function insertCertificateIssuedNotification(
   db: SupabaseClient,
   params: {
@@ -143,7 +147,7 @@ export async function issueCourseCertificateIfReady(
   if (!enrollment) return { issued: false, reason: "no_enrollment" };
 
   const course = (courseRow.data ?? {}) as CourseCertificateData;
-  if (!course.has_certificate) {
+  if (!courseHasCertificate(course)) {
     return { issued: false, reason: "no_certificate", course_title: course.title ?? null };
   }
   if (enrollment.certificate_issued_at) {
@@ -326,7 +330,7 @@ async function issueCourseCertificateIfReadyDryRun(
   if (!enrollment) return { issued: false, reason: "no_enrollment" };
 
   const course = (courseRow.data ?? {}) as CourseCertificateData;
-  if (!course.has_certificate) return { issued: false, reason: "no_certificate" };
+  if (!courseHasCertificate(course)) return { issued: false, reason: "no_certificate" };
   if (enrollment.certificate_issued_at) {
     return { issued: true, reason: "already_issued", certificate_issued_at: enrollment.certificate_issued_at };
   }

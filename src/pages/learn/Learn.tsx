@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import {
   checkAndIssueCertificate,
+  courseHasCertificate,
   ensureEnrollmentForProgress,
   getNextLesson,
   setLessonProgress,
@@ -173,7 +174,7 @@ export default function Learn() {
 
   const syncCertificate = useCallback(async () => {
     const course = courseLoad.course;
-    if (!courseId || !profile?.id || !course?.has_certificate) return null;
+    if (!courseId || !profile?.id || !courseHasCertificate(course)) return null;
     setCertificateAutoIssuing(true);
     setCertificateIssueReason(null);
     setCertificateIssueError(null);
@@ -224,7 +225,7 @@ export default function Learn() {
   useEffect(() => {
     const course = courseLoad.course;
     if (!courseId || !profile?.id || !course) return;
-    if (!course.has_certificate || access.enrollment?.certificate_issued_at) return;
+    if (!courseHasCertificate(course) || access.enrollment?.certificate_issued_at) return;
     if (progress.progressPercent < 100) return;
     if (
       course.access_model === "free_with_paid_certificate" &&
@@ -439,6 +440,7 @@ export default function Learn() {
 
   const course = courseLoad.course;
   const accessModel = course.access_model ?? "free";
+  const hasCourseCertificate = courseHasCertificate(course);
   const hasFullCourseAccess = access.hasFullCourseAccess;
   const courseCompleted = progress.progressPercent >= 100 && visibleLessons.length > 0;
   const certificateIssued = Boolean(access.enrollment?.certificate_issued_at || certificateJustIssued);
@@ -541,13 +543,13 @@ export default function Learn() {
       {courseCompleted ? (
         <CourseCompletionCertificatePanel
           className="mx-4 mb-4 sm:mx-6"
-          hasCertificate={!!course.has_certificate}
+          hasCertificate={hasCourseCertificate}
           certificateIssued={certificateIssued}
           issuing={certificateAutoIssuing}
           issueReason={certificateIssueReason}
           issueError={certificateIssueError}
           achievementsPath={profileAchievementsPath}
-          onRetry={course.has_certificate ? () => void syncCertificate() : undefined}
+          onRetry={hasCourseCertificate ? () => void syncCertificate() : undefined}
         />
       ) : null}
 

@@ -62,6 +62,7 @@ import {
   deleteCourse,
   refreshCourseTotalDuration,
   sortLessonsByCurriculum,
+  courseHasCertificate,
 } from "@/lib/courses";
 import {
   getSubmissionsForCourse,
@@ -895,7 +896,7 @@ const InstructorCourseEdit = () => {
         published: course.published,
         is_external_aggregated: course.is_external_aggregated ?? false,
         is_updating: course.is_updating ?? false,
-        has_certificate: course.has_certificate ?? false,
+        has_certificate: course.has_certificate === true || !!course.certificate_template_url,
         has_sections: course.has_sections ?? true,
         certificate_template_url: course.certificate_template_url ?? "",
         certificate_template_path: course.certificate_template_path ?? "",
@@ -1588,6 +1589,7 @@ const InstructorCourseEdit = () => {
         course.certificate_template_path,
       );
       await updateCourse(id, {
+        has_certificate: true,
         certificate_template_url: result.url,
         certificate_template_path: result.path,
       });
@@ -1595,6 +1597,7 @@ const InstructorCourseEdit = () => {
         prev
           ? {
               ...prev,
+              has_certificate: true,
               certificate_template_url: result.url,
               certificate_template_path: result.path,
             }
@@ -1602,6 +1605,7 @@ const InstructorCourseEdit = () => {
       );
       setForm((p) => ({
         ...p,
+        has_certificate: true,
         certificate_template_url: result.url,
         certificate_template_path: result.path,
       }));
@@ -8752,7 +8756,7 @@ const InstructorCourseEdit = () => {
                               )}
                             </td>
                             <td className="px-4 py-3">
-                              {!course.has_certificate ? (
+                              {!courseHasCertificate(course) ? (
                                 <span className="text-foreground-muted text-xs">—</span>
                               ) : hasCert ? (
                                 <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">

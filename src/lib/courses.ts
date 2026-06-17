@@ -735,6 +735,10 @@ export function getCompletedLessonIds(lessons: CourseLesson[], progressList: Les
   );
 }
 
+export function courseHasCertificate(course?: Pick<Course, "has_certificate" | "certificate_template_url"> | null): boolean {
+  return course?.has_certificate === true || !!course?.certificate_template_url?.trim();
+}
+
 export type CertificateIssueReason =
   | "no_certificate"
   | "already_issued"

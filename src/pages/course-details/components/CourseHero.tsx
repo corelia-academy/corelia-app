@@ -6,6 +6,7 @@ import { CourseBadge } from "./CourseBadge";
 import i18n from "@/i18n";
 import {
   checkAndIssueCertificate,
+  courseHasCertificate,
   getCoursePrimaryLocale,
   normalizeCourseLocale,
   pickCourseContentLocale,
@@ -49,6 +50,7 @@ export function CourseHero({
     String(t(`common:${key}` as never, options as never));
   const [failedThumbnailSrc, setFailedThumbnailSrc] = useState<string | null>(null);
   const [claiming, setClaiming] = useState(false);
+  const hasCourseCertificate = courseHasCertificate(course);
 
   const handleClaimCertificate = async () => {
     if (!enrollment || claiming) return;
@@ -118,7 +120,7 @@ export function CourseHero({
               <CourseBadge variant="success">
                 {translate("detail.courseDetail.certificateIssued")}
               </CourseBadge>
-            ) : course.has_certificate && enrollment && progressPercent >= 100 ? (
+            ) : hasCourseCertificate && enrollment && progressPercent >= 100 ? (
               <button
                 type="button"
                 onClick={() => void handleClaimCertificate()}

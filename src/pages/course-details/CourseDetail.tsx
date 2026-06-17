@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/stores/authStore";
 import {
   checkAndIssueCertificate,
+  courseHasCertificate,
   ensureEnrollmentForProgress,
   sortLessonsByCurriculum,
 } from "@/lib/courses";
@@ -117,7 +118,7 @@ export default function CourseDetail() {
   const syncCertificate = useCallback(async () => {
     const course = courseLoad.course;
     const courseId = courseLoad.resolvedCourseId;
-    if (!course || !courseId || !profile?.id || !isAuthenticated || !course.has_certificate) {
+    if (!course || !courseId || !profile?.id || !isAuthenticated || !courseHasCertificate(course)) {
       return null;
     }
     setCertificateIssuing(true);
@@ -176,7 +177,7 @@ export default function CourseDetail() {
     const course = courseLoad.course;
     const courseId = courseLoad.resolvedCourseId;
     if (!course || !courseId || !profile?.id || !isAuthenticated) return;
-    if (!course.has_certificate || access.enrollment?.certificate_issued_at) return;
+    if (!courseHasCertificate(course) || access.enrollment?.certificate_issued_at) return;
     if (progress.progressPercent < 100) return;
 
     const key = `${profile.id}:${courseId}`;
@@ -259,6 +260,7 @@ export default function CourseDetail() {
     [courseLoad.course],
   );
   const courseCompleted = progress.progressPercent >= 100 && sortedLessons.length > 0;
+  const hasCourseCertificate = courseHasCertificate(courseLoad.course);
   const certificateIssued = Boolean(
     access.enrollment?.certificate_issued_at || certificateJustIssued,
   );
@@ -370,13 +372,13 @@ export default function CourseDetail() {
       {courseCompleted ? (
         <CourseCompletionCertificatePanel
           className="mt-4"
-          hasCertificate={!!course.has_certificate}
+          hasCertificate={hasCourseCertificate}
           certificateIssued={certificateIssued}
           issuing={certificateIssuing}
           issueReason={certificateIssueReason}
           issueError={certificateIssueError}
           achievementsPath={profileAchievementsPath}
-          onRetry={course.has_certificate ? () => void syncCertificate() : undefined}
+          onRetry={hasCourseCertificate ? () => void syncCertificate() : undefined}
         />
       ) : null}
 
