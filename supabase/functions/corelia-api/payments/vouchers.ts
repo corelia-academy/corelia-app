@@ -248,25 +248,22 @@ export async function reserveAiVoucherForPayment(
   });
   const now = new Date();
   const reservedUntil = new Date(now.getTime() + RESERVATION_TTL_MS).toISOString();
-  const updatedAt = now.toISOString();
 
-  const { error } = await db.from("ai_voucher_redemptions").upsert(
-    {
-      voucher_id: preview.voucherId,
-      user_id: params.userId,
-      payment_transaction_id: params.paymentTransactionId,
-      status: "reserved",
-      base_amount_vnd: preview.baseAmountVnd,
-      discount_amount_vnd: preview.discountAmountVnd,
-      final_amount_vnd: preview.finalAmountVnd,
-      reserved_until: reservedUntil,
-      paid_at: null,
-      released_at: null,
-      updated_at: updatedAt,
-    },
-    { onConflict: "payment_transaction_id" },
-  );
+  const { error, data: reservedAtomically } = await db.rpc("reserve_ai_voucher_atomically", {
+    p_voucher_id: preview.voucherId,
+    p_payment_tx_id: params.paymentTransactionId,
+    p_user_id: params.userId,
+    p_base_amount: preview.baseAmountVnd,
+    p_discount_amount: preview.discountAmountVnd,
+    p_final_amount: preview.finalAmountVnd,
+    p_reserved_until: reservedUntil,
+  });
+
   if (error) throw new Error(error.message);
+  if (!reservedAtomically) {
+    throw new Error("Voucher này đang được giữ chỗ hoặc đã được sử dụng cho checkout khác.");
+  }
+
   return preview;
 }
 

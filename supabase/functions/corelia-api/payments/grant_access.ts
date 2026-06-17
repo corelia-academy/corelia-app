@@ -9,6 +9,8 @@ export async function grantPaymentAccessForTransaction(
   updatedAt: string,
   providerPayload: unknown,
 ): Promise<void> {
+  await markVoucherPaidForPayment(db, invoiceNumber, updatedAt);
+
   if (tx.purpose === "ai_subscription") {
     const meta = ((providerPayload as { subscription_meta?: AiSubscriptionMeta } | null)?.subscription_meta ??
       (tx.provider_payload as { subscription_meta?: AiSubscriptionMeta } | null)?.subscription_meta ??
@@ -78,7 +80,6 @@ export async function grantPaymentAccessForTransaction(
       updated_at: updatedAt,
     }).eq("id", invoiceNumber);
     if (txErr) throw new Error(txErr.message);
-    await markVoucherPaidForPayment(db, invoiceNumber, updatedAt);
     return;
   }
 
@@ -131,5 +132,4 @@ export async function grantPaymentAccessForTransaction(
     updated_at: updatedAt,
   }).eq("id", invoiceNumber);
   if (txErr) throw new Error(txErr.message);
-  await markVoucherPaidForPayment(db, invoiceNumber, updatedAt);
 }
