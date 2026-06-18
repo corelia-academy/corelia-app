@@ -61,6 +61,9 @@ const CoraCheckoutPage = lazy(() => import("@/pages/cora/CoraCheckoutPage"));
 const AccountBillingRoute = lazy(() =>
   import("@/pages/account/AccountBillingRoute").then((m) => ({ default: m.AccountBillingRoute })),
 );
+const AccountFollowingRoute = lazy(() =>
+  import("@/pages/account/AccountFollowingRoute").then((m) => ({ default: m.AccountFollowingRoute })),
+);
 const AccountSettingsRoute = lazy(() =>
   import("@/pages/account/AccountSettingsRoute").then((m) => ({ default: m.AccountSettingsRoute })),
 );
@@ -450,6 +453,14 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <AccountBillingRoute />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="following"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AccountFollowingRoute />
                     </Suspense>
                   }
                 />

@@ -8,9 +8,11 @@ import {
   IdCard,
   Settings,
   UserCircle,
+  Users,
 } from "lucide-react";
 export { AccountBillingRoute } from "./AccountBillingRoute";
 export { AccountCvRoute } from "./AccountCvRoute";
+export { AccountFollowingRoute } from "./AccountFollowingRoute";
 export {
   AccountInstructorProfileRoute,
   InstructorWorkspaceProfileRoute,
@@ -57,6 +59,12 @@ export default function Account() {
       title: t("nav.settings.title"),
       description: t("nav.settings.description"),
       icon: <Settings className="size-4 shrink-0" aria-hidden />,
+    },
+    {
+      to: "/account/following",
+      title: "Đang theo dõi",
+      description: "Quản lý đối tượng theo dõi",
+      icon: <Users className="size-4 shrink-0" aria-hidden />,
     },
   ];
 

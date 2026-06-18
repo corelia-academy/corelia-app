@@ -26,6 +26,31 @@ interface FeedActor {
 const PAGE_SIZE = 20;
 const FOLLOW_SUBJECT_TYPES: FollowSubjectType[] = ["user", "course", "hackathon", "project"];
 
+type FeedCategory = "all" | "learning" | "events" | "community";
+
+const CATEGORY_VERBS: Record<FeedCategory, string[] | null> = {
+  all: null,
+  learning: [
+    "user.enrolled_course",
+    "user.completed_section",
+    "user.completed_course",
+    "user.earned_credential",
+    "course.published",
+    "course.new_section",
+  ],
+  events: [
+    "user.registered_hackathon",
+    "user.submitted_hackathon",
+    "hackathon.status_changed",
+  ],
+  community: [
+    "user.published_project",
+    "user.joined_project",
+    "project.received_hearts_milestone",
+    "user.followed_user",
+  ],
+};
+
 type FollowedSubjects = Record<FollowSubjectType, Set<string>>;
 
 function createFollowedSubjects(): FollowedSubjects {
@@ -244,6 +269,7 @@ export default function FeedPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasNewEvents, setHasNewEvents] = useState(false);
+  const [category, setCategory] = useState<FeedCategory>("all");
   const cursorRef = useRef<string | null>(null);
   const followedRef = useRef<FollowedSubjects>(createFollowedSubjects());
 
@@ -289,6 +315,7 @@ export default function FeedPage() {
         const nextEvents = await getFeed({
           cursor: append ? cursorRef.current : null,
           limit: PAGE_SIZE,
+          filter: CATEGORY_VERBS[category],
         });
         await loadActors(nextEvents);
         setEvents((current) => {
@@ -312,7 +339,7 @@ export default function FeedPage() {
 
   useEffect(() => {
     void load();
-  }, [load]);
+  }, [load, category]);
 
   useEffect(() => {
     cursorRef.current = events.at(-1)?.created_at ?? null;
@@ -330,7 +357,10 @@ export default function FeedPage() {
           const event = activityEventFromRecord(payload.new);
           if (!event) return;
           if (eventMatchesFollowedSubjects(event, followedRef.current, user.id)) {
-            setHasNewEvents(true);
+            const allowedVerbs = CATEGORY_VERBS[category];
+            if (!allowedVerbs || allowedVerbs.includes(event.verb)) {
+              setHasNewEvents(true);
+            }
           }
         },
       )
@@ -360,6 +390,13 @@ export default function FeedPage() {
 
   const groupedEvents = useMemo(() => bundleFeedEvents(events), [events]);
 
+  const categoryOptions: { id: FeedCategory; label: string }[] = [
+    { id: "all", label: t("categories.all", { defaultValue: "Tất cả" }) },
+    { id: "learning", label: t("categories.learning", { defaultValue: "Học tập" }) },
+    { id: "community", label: t("categories.community", { defaultValue: "Cộng đồng" }) },
+    { id: "events", label: t("categories.events", { defaultValue: "Sự kiện" }) },
+  ];
+
   return (
     <div className="container-app py-6 sm:py-8">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -385,6 +422,21 @@ export default function FeedPage() {
           <RefreshCw className={cn("size-4", loading ? "animate-spin" : "")} aria-hidden />
           {t("actions.refresh")}
         </Button>
+      </div>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        {categoryOptions.map((opt) => (
+          <Button
+            key={opt.id}
+            type="button"
+            variant={category === opt.id ? "default" : "secondary"}
+            size="sm"
+            className="rounded-full"
+            onClick={() => setCategory(opt.id)}
+          >
+            {opt.label}
+          </Button>
+        ))}
       </div>
 
       {hasNewEvents ? (
