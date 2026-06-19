@@ -16,6 +16,7 @@ import { AnnouncementBodyField } from "@/components/email/AnnouncementBodyField"
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
 import { announcementMessageToHtml } from "@/lib/email/announcementBody";
 import type { BlastEmailFilter } from "@/lib/hackathons";
+import { supabase } from "@/lib/supabase";
 
 const SUBJECT_MAX = 200;
 
@@ -44,6 +45,7 @@ export function ContestDetailBlastEmailPanel({
     registrations,
     blasting,
     handleBlastEmail,
+    contest,
   } = vm;
 
   const [recipientFilter, setRecipientFilter] = useState<BlastEmailFilter>("all");
@@ -73,6 +75,22 @@ export function ContestDetailBlastEmailPanel({
 
   async function submitBlast() {
     setConfirmOpen(false);
+
+    try {
+      if (contest?.id) {
+        const { error: rpcError } = await supabase.rpc("post_hackathon_announcement", {
+          p_hackathon_id: contest.id,
+          p_title: subject.trim(),
+          p_content: body.trim(),
+        });
+        if (rpcError) {
+          console.error("Failed to post hackathon announcement to feed:", rpcError);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
     const result = await handleBlastEmail({
       subject: subject.trim(),
       html: announcementMessageToHtml(body),

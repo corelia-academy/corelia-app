@@ -15,6 +15,7 @@ import {
 import { AnnouncementBodyField } from "@/components/email/AnnouncementBodyField";
 import { blastCourseEmail, type BlastEmailResult } from "@/lib/courseBlast";
 import { announcementMessageToHtml } from "@/lib/email/announcementBody";
+import { supabase } from "@/lib/supabase";
 
 const SUBJECT_MAX = 200;
 
@@ -44,6 +45,15 @@ export function AnnouncementsSection({ courseId, enrollmentCount }: Props) {
     setConfirmOpen(false);
     setSending(true);
     try {
+      const { error: rpcError } = await supabase.rpc("post_course_announcement", {
+        p_course_id: courseId,
+        p_title: subject.trim(),
+        p_content: body.trim(),
+      });
+      if (rpcError) {
+        console.error("Failed to post announcement to feed:", rpcError);
+      }
+
       const result = await blastCourseEmail(courseId, {
         subject: subject.trim(),
         html: announcementMessageToHtml(body),

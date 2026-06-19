@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Bell, ChevronDown, Loader2, RefreshCw, Rss } from "lucide-react";
-import { NavLink } from "react-router";
+import { Bell, ChevronDown, Loader2, Megaphone, RefreshCw, Rss } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
+import { Markdown } from "@/components/markdown/Markdown";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -201,6 +202,60 @@ function FeedItem({
     section: payloadText(event.payload, ["section_title"]) ?? "",
     defaultValue: t("verbs.fallback", { actor: actorName, object }),
   });
+
+  if (event.verb === "announcement") {
+    const title = String(event.payload.title || "");
+    const content = String(event.payload.content || "");
+    
+    return (
+      <article className="relative overflow-hidden rounded-lg border-2 border-primary bg-primary/5 p-5 shadow-card">
+        <div className="absolute top-0 right-0 rounded-bl-lg bg-primary px-3 py-1 text-xs font-bold text-primary-foreground flex items-center gap-1.5 shadow-sm">
+          <Megaphone className="size-3.5" />
+          THÔNG BÁO TỪ {event.object_type === 'hackathon' ? 'BAN TỔ CHỨC' : 'GIẢNG VIÊN'}
+        </div>
+        <div className="flex gap-4">
+          <NavLink to={actorHref(actor, event.actor_id)} className="shrink-0 mt-1">
+            <Avatar className="size-12 border-2 border-background shadow-sm">
+              <AvatarImage src={actor?.avatar_url ?? undefined} alt="" />
+              <AvatarFallback>{actorName.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+          </NavLink>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="font-semibold text-foreground text-base">
+                {actorName}
+              </span>
+              <span className="text-sm text-foreground-muted">
+                đã đăng trong <span className="font-medium text-foreground">{object}</span>
+              </span>
+            </div>
+            
+            <div className="mt-3 rounded-md bg-background/50 border border-primary/20 p-4">
+              {title && <h3 className="text-lg font-bold text-foreground mb-2">{title}</h3>}
+              <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
+                <Markdown content={content} />
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
+              <span>{formatDate(event.created_at, locale)}</span>
+              {href ? (
+                <>
+                  <span aria-hidden>-</span>
+                  <NavLink
+                    to={href}
+                    className="font-medium text-primary underline underline-offset-4 hover:no-underline"
+                  >
+                    Đến {event.object_type === 'hackathon' ? 'Cuộc thi' : 'Khóa học'}
+                  </NavLink>
+                </>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article className="rounded-lg border border-border-subtle bg-surface-base p-4 shadow-card">

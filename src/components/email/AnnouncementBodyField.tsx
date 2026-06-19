@@ -3,6 +3,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { plainTextToAnnouncementHtml } from "@/lib/email/announcementBody";
 import { cn } from "@/lib/utils";
+import { MarkdownTextarea } from "@/components/ui/markdown-textarea";
 
 type Props = {
   id: string;
@@ -56,13 +57,13 @@ export function AnnouncementBodyField({
         </Button>
       </div>
       {hint ? <p className="text-xs text-foreground-muted">{hint}</p> : null}
-      <textarea
+      <MarkdownTextarea
         id={id}
         rows={rows}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onValueChange={onChange}
         placeholder={placeholder}
-        className="w-full resize-y rounded-md border border-border bg-surface-base px-3 py-2 text-sm leading-relaxed text-foreground outline-hidden transition-colors duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+        className="w-full"
       />
       {showPreview && previewHtml ? (
         <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-[#f5f0eb] p-3">
