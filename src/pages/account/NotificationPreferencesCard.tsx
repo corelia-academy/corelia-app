@@ -9,6 +9,7 @@ type Prefs = {
   email_track_blast: boolean;
   in_app_course_blast: boolean;
   in_app_track_blast: boolean;
+  email_activity_digest: boolean;
 };
 
 const DEFAULT_PREFS: Prefs = {
@@ -16,6 +17,7 @@ const DEFAULT_PREFS: Prefs = {
   email_track_blast: true,
   in_app_course_blast: true,
   in_app_track_blast: true,
+  email_activity_digest: true,
 };
 
 function Toggle({
@@ -75,7 +77,7 @@ export function NotificationPreferencesCard() {
     let cancelled = false;
     void supabase
       .from("notification_preferences")
-      .select("email_course_blast, email_track_blast, in_app_course_blast, in_app_track_blast")
+      .select("email_course_blast, email_track_blast, in_app_course_blast, in_app_track_blast, email_activity_digest")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
@@ -86,6 +88,7 @@ export function NotificationPreferencesCard() {
             email_track_blast: data.email_track_blast ?? true,
             in_app_course_blast: data.in_app_course_blast ?? true,
             in_app_track_blast: data.in_app_track_blast ?? true,
+            email_activity_digest: data.email_activity_digest ?? true,
           });
         }
         setLoading(false);
@@ -153,6 +156,13 @@ export function NotificationPreferencesCard() {
           checked={prefs.in_app_track_blast}
           onChange={() => !saving && toggle("in_app_track_blast")}
           label={t("settings.notifications.inAppTrackBlast")}
+        />
+        <Toggle
+          id="pref-email-activity"
+          checked={prefs.email_activity_digest}
+          onChange={() => !saving && toggle("email_activity_digest")}
+          label={"Nhận báo cáo hoạt động nổi bật hàng tuần"}
+          description={"Gửi danh sách 3 sự kiện hot nhất tuần vào mỗi sáng Thứ Hai."}
         />
       </div>
     </section>
