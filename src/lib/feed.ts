@@ -17,6 +17,15 @@ export async function getFeed(options: GetFeedOptions = {}): Promise<ActivityEve
   return (data ?? []) as ActivityEvent[];
 }
 
+export async function getDiscoveryFeed(options: GetFeedOptions = {}): Promise<ActivityEvent[]> {
+  const { data, error } = await supabase.rpc("get_discovery_feed", {
+    p_cursor: options.cursor ?? null,
+    p_limit: options.limit ?? 20,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ActivityEvent[];
+}
+
 export async function getActorActivity(
   actorId: string,
   options: GetFeedOptions = {},

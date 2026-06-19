@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Bell, ChevronDown, Loader2, RefreshCw, Rss } from "lucide-react";
+import { Bell, ChevronDown, Compass, Loader2, RefreshCw, Rss, Users } from "lucide-react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getFeed } from "@/lib/feed";
+import { getFeed, getDiscoveryFeed } from "@/lib/feed";
 import { bundleFeedEvents } from "@/lib/feedBundling";
 import { markFeedRead } from "@/lib/feedUnread";
 import { listFollowing } from "@/lib/follows";
@@ -243,6 +243,7 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [feedMode, setFeedMode] = useState<"following" | "discovery">("discovery");
   const [hasNewEvents, setHasNewEvents] = useState(false);
   const cursorRef = useRef<string | null>(null);
   const followedRef = useRef<FollowedSubjects>(createFollowedSubjects());
@@ -286,7 +287,8 @@ export default function FeedPage() {
       setError(null);
       try {
         await refreshFollowedSubjects();
-        const nextEvents = await getFeed({
+        const fetchFn = feedMode === "discovery" ? getDiscoveryFeed : getFeed;
+        const nextEvents = await fetchFn({
           cursor: append ? cursorRef.current : null,
           limit: PAGE_SIZE,
         });
@@ -307,7 +309,7 @@ export default function FeedPage() {
         setLoadingMore(false);
       }
     },
-    [loadActors, refreshFollowedSubjects, t, user?.id],
+    [loadActors, refreshFollowedSubjects, t, user?.id, feedMode],
   );
 
   useEffect(() => {
@@ -362,7 +364,7 @@ export default function FeedPage() {
 
   return (
     <div className="container-app py-6 sm:py-8">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-2 text-sm font-medium text-foreground-muted">
             <Rss className="size-4" aria-hidden />
@@ -375,16 +377,42 @@ export default function FeedPage() {
             {t("description")}
           </p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          className="gap-1.5 self-start sm:self-auto"
-          onClick={() => void load()}
-          disabled={loading}
-        >
-          <RefreshCw className={cn("size-4", loading ? "animate-spin" : "")} aria-hidden />
-          {t("actions.refresh")}
-        </Button>
+        
+        <div className="flex flex-col gap-3 sm:items-end">
+          <div className="flex bg-surface-raised p-1 rounded-lg border border-border-subtle self-start sm:self-end">
+            <button
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                feedMode === "following" ? "bg-surface-base text-foreground shadow-sm" : "text-foreground-muted hover:text-foreground"
+              )}
+              onClick={() => setFeedMode("following")}
+            >
+              <Users className="size-4" />
+              Đang theo dõi
+            </button>
+            <button
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                feedMode === "discovery" ? "bg-surface-base text-foreground shadow-sm" : "text-foreground-muted hover:text-foreground"
+              )}
+              onClick={() => setFeedMode("discovery")}
+            >
+              <Compass className="size-4" />
+              Khám phá
+            </button>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="gap-1.5 self-start sm:self-auto"
+            onClick={() => void load()}
+            disabled={loading}
+          >
+            <RefreshCw className={cn("size-4", loading ? "animate-spin" : "")} aria-hidden />
+            {t("actions.refresh")}
+          </Button>
+        </div>
       </div>
 
       {hasNewEvents ? (
