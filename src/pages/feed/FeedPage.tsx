@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Bell, ChevronDown, Loader2, RefreshCw, Rss } from "lucide-react";
+import { Bell, ChevronDown, ChevronUp, Loader2, RefreshCw, Rss } from "lucide-react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 
@@ -12,6 +12,7 @@ import { markFeedRead } from "@/lib/feedUnread";
 import { listFollowing } from "@/lib/follows";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { useAuth } from "@/stores/authStore";
 import type { ActivityEvent, FeedBundle, FollowRow, FollowSubjectType } from "@/types/feed";
 
@@ -180,6 +181,8 @@ function FeedItem({
   locale: string;
 }) {
   const { t } = useTranslation("feed");
+  const [expanded, setExpanded] = useState(false);
+  
   const event = bundle.events[0];
   if (!event) return null;
 
@@ -189,13 +192,16 @@ function FeedItem({
   const object = objectLabel(event, fallbackObject);
   const actorName = actorLabel(actor);
   const href = objectHref(event);
-  const i18nKey = bundle.kind === "bundle"
+  const isBundle = bundle.kind === "bundle";
+  
+  const i18nKey = isBundle
     ? `verbs.${verbKey(event.verb)}_bundle`
     : `verbs.${verbKey(event.verb)}`;
+    
   const text = t(i18nKey, {
     actor: actorName,
     object,
-    count: bundle.kind === "bundle"
+    count: isBundle
       ? bundle.events.length
       : Number(event.payload.milestone ?? event.payload.like_count ?? 0),
     section: payloadText(event.payload, ["section_title"]) ?? "",
@@ -212,9 +218,22 @@ function FeedItem({
           </Avatar>
         </NavLink>
         <div className="min-w-0 flex-1">
-          <p className="text-sm leading-6 text-foreground">
-            {text}
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <p className="text-sm leading-6 text-foreground">
+              {text}
+            </p>
+            {isBundle && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 w-8 p-0 shrink-0" 
+                onClick={() => setExpanded(!expanded)}
+                aria-label={expanded ? t("actions.collapse", { defaultValue: "Thu gọn" }) : t("actions.expand", { defaultValue: "Mở rộng" })}
+              >
+                {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+              </Button>
+            )}
+          </div>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
             <span>{formatDate(event.created_at, locale)}</span>
             {href ? (
@@ -229,6 +248,50 @@ function FeedItem({
               </>
             ) : null}
           </div>
+          
+          {expanded && isBundle && (
+            <div className="mt-4 space-y-3 border-t border-border-subtle pt-3">
+               {bundle.events.map(ev => {
+                  const evHref = objectHref(ev);
+                  const evObj = objectLabel(ev, t(`objects.${ev.object_type}`, { defaultValue: ev.object_type }));
+                  const itemText = t(`verbs.${verbKey(ev.verb)}`, { 
+                    actor: actorName, 
+                    object: evObj, 
+                    section: payloadText(ev.payload, ["section_title"]) ?? "",
+                    count: Number(ev.payload.milestone ?? ev.payload.like_count ?? 0),
+                    defaultValue: t("verbs.fallback", { actor: actorName, object: evObj }) 
+                  });
+                  return (
+                     <div key={ev.id} className="text-sm text-foreground flex justify-between items-center gap-4">
+                       <span className="truncate">
+                         {evHref ? (
+                           <NavLink to={evHref} className="hover:underline hover:text-primary">
+                             {itemText}
+                           </NavLink>
+                         ) : (
+                           itemText
+                         )}
+                       </span>
+                       <span className="text-foreground-muted text-xs whitespace-nowrap">
+                         {formatDate(ev.created_at, locale)}
+                       </span>
+                     </div>
+                  );
+               })}
+            </div>
+          )}
+
+          {event.object_type === "project" && !isBundle && (
+             <div className="mt-3 -mx-2">
+               <ProjectSocialBlock 
+                 projectId={event.object_id}
+                 ownerId={event.actor_id}
+                 likeCount={Number(event.payload?.like_count ?? 0)}
+                 variant="compact"
+                 className="border-none pt-0"
+               />
+             </div>
+          )}
         </div>
       </div>
     </article>
