@@ -29,17 +29,21 @@ export function CourseCompletionCertificatePanel({
 }: CourseCompletionCertificatePanelProps) {
   const { t } = useTranslation("courses");
   const bodyKey = (() => {
-    if (!hasCertificate) return "detail.learn.completion.noCertificate";
+    if (issueError) return "detail.learn.completion.certificateSyncFailed";
+    if (!hasCertificate) {
+      return issuing
+        ? "detail.learn.completion.completionSaving"
+        : "detail.learn.completion.noCertificate";
+    }
     if (certificateIssued) return "detail.learn.completion.certificateReady";
     if (issuing) return "detail.learn.completion.certificateIssuing";
-    if (issueError) return "detail.learn.completion.certificateSyncFailed";
     if (issueReason && issueReason !== "unknown") {
       return `detail.learn.completion.reasons.${issueReason}`;
     }
     return "detail.learn.completion.certificatePending";
   })();
 
-  const showRetry = hasCertificate && !certificateIssued && !issuing && !!onRetry;
+  const showRetry = !certificateIssued && !issuing && !!onRetry && (hasCertificate || !!issueError);
 
   return (
     <div

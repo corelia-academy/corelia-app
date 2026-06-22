@@ -440,6 +440,10 @@ export default function AchievementsPage() {
         open={modalOpen}
         onOpenChange={setModalOpen}
         onClaim={handleClaim}
+        onConnectOcid={() => {
+          setModalOpen(false);
+          setOcidConnectOpen(true);
+        }}
         claiming={claiming}
       />
 

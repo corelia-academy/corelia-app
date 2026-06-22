@@ -11,11 +11,20 @@ export function StatsBar({
   badges: BadgeItem[];
 }) {
   const { t } = useTranslation("common");
-  const earnedBadges = badges.filter((b) => !b.locked).length;
-  const claimedOc = [
-    ...certificates.filter((c) => c.ocClaimStatus === "claimed"),
-    ...badges.filter((b) => !b.locked && b.ocClaimStatus === "claimed"),
-  ].length;
+  // OCA (course), Badges/OCB (hackathon) and Milestones (activity_milestone)
+  // are distinct OpenCampus scopes — never lump them into one "badges" count.
+  // Each is counted only when the credential is actually on-chain
+  // (ocClaimStatus === "claimed", i.e. oc_credential_id present).
+  const claimedInScope = (scope: BadgeItem["credentialScope"]) =>
+    badges.filter(
+      (b) =>
+        !b.locked &&
+        b.ocClaimStatus === "claimed" &&
+        (b.credentialScope ?? "course") === scope,
+    ).length;
+  const ocaCount = claimedInScope("course");
+  const badgeCount = claimedInScope("hackathon");
+  const milestoneCount = claimedInScope("activity_milestone");
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
@@ -26,18 +35,8 @@ export function StatsBar({
           icon: <Award className="size-5 text-foreground-muted" aria-hidden />,
         },
         {
-          label: t("achievements.stats.badges"),
-          value: `${earnedBadges}/${badges.length}`,
-          icon: <Medal className="size-5 text-warning" aria-hidden />,
-        },
-        {
-          label: t("achievements.stats.total"),
-          value: certificates.length + earnedBadges,
-          icon: <Trophy className="size-5 text-primary" aria-hidden />,
-        },
-        {
-          label: t("achievements.stats.ocCredential"),
-          value: claimedOc,
+          label: t("achievements.stats.oca"),
+          value: ocaCount,
           icon: (
             <img
               src="/open-campus-edu-logo.png"
@@ -45,6 +44,16 @@ export function StatsBar({
               className="size-5 rounded-full"
             />
           ),
+        },
+        {
+          label: t("achievements.stats.badges"),
+          value: badgeCount,
+          icon: <Medal className="size-5 text-warning" aria-hidden />,
+        },
+        {
+          label: t("achievements.stats.milestones"),
+          value: milestoneCount,
+          icon: <Trophy className="size-5 text-primary" aria-hidden />,
         },
       ].map((stat) => (
         <div

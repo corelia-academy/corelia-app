@@ -233,6 +233,7 @@ export function NotificationBell() {
                 const isHackathonRegistrationReview = isRegApproved || isRegRejected;
                 const isCourseAnnouncement = n.type === "course_announcement";
                 const isTrackAnnouncement = n.type === "track_announcement";
+                const isCourseCompleted = n.type === "course_completed";
                 const isCourseCertificateIssued = n.type === "course_certificate_issued";
                 const isOcCredential = n.type === "oc_credential_minted";
                 const resolved = Boolean(n.resolved_at);
@@ -408,6 +409,44 @@ export function NotificationBell() {
                             </Button>
                           </div>
                         ) : null}
+                      </>
+                    ) : isCourseCompleted ? (
+                      <>
+                        <div className="font-medium text-foreground">
+                          {t("notifications.courseCompletedTitle")}
+                        </div>
+                        <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                          {t(
+                            payloadString(n.payload, "has_certificate") === "true" ||
+                              n.payload.has_certificate === true
+                              ? "notifications.courseCompletedWithCertificateBody"
+                              : "notifications.courseCompletedBody",
+                            {
+                              course: payloadString(n.payload, "course_title") ||
+                                t("notifications.courseCompletedCourseFallback"),
+                            },
+                          )}
+                        </p>
+                        <div className="mt-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="xs"
+                            className="h-auto px-0 py-0 text-xs font-medium underline-offset-4 hover:underline"
+                            render={
+                              <NavLink
+                                to={payloadInternalPath(n.payload, "target_path", achievementsPath)}
+                              />
+                            }
+                            nativeButton={false}
+                            onClick={() => {
+                              setOpen(false);
+                              void markNotificationRead(n.id).then(() => refresh());
+                            }}
+                          >
+                            {t("notifications.viewCompletion")}
+                          </Button>
+                        </div>
                       </>
                     ) : isCourseCertificateIssued ? (
                       <>

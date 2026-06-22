@@ -91,6 +91,11 @@
     "courseAnnouncementTitle": "Course announcement",
     "trackAnnouncementTitle": "Learning path announcement",
     "markRead": "Mark as read",
+    "courseCompletedTitle": "Course completed",
+    "courseCompletedBody": "Congratulations! Your progress for \"{{course}}\" has been saved as complete.",
+    "courseCompletedWithCertificateBody": "Congratulations! You completed \"{{course}}\". Your Corelia certificate will appear in the vault once it is issued.",
+    "courseCompletedCourseFallback": "your course",
+    "viewCompletion": "View achievements",
     "courseCertificateIssuedTitle": "Course completed 🎉",
     "courseCertificateIssuedBody": "Your certificate for \"{{course}}\" is ready. Connect OCID to issue your Open Campus certificate.",
     "courseCertificateIssuedCourseFallback": "your course",
@@ -697,6 +702,11 @@
           "issue": "Issue on Open Campus",
           "pending": "Processing on blockchain..."
         },
+        "connectRequired": {
+          "title": "OCID connection required",
+          "body": "Connect your OCID before issuing this Open Campus certificate. Your original Corelia certificate remains saved in your certificate vault.",
+          "cta": "Connect OCID"
+        },
         "review": {
           "title": "Review your credential info",
           "subtitle": "This information will be permanently embedded on-chain. Make sure everything is correct before issuing.",
@@ -725,7 +735,9 @@
     },
     "stats": {
       "certificates": "Certificates",
+      "oca": "OCA",
       "badges": "Badges",
+      "milestones": "Milestones",
       "total": "Total achievements",
       "ocCredential": "OC Credential"
     },

@@ -252,6 +252,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
     }).eq("id", issuanceId);
     return { ok: false, error: "missing_rendered_certificate" };
   }
+  const mintEmailImageUrl = subjectImageOverride?.trim() || template.image_url;
 
   const awardedIso = new Date().toISOString();
   const { body: ocBody } = await buildOpenCampusPayload({
@@ -324,7 +325,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
               badgeName: template.name,
               profileUrl,
               credentialId: ocCredentialId,
-              imageUrl: template.image_url,
+              imageUrl: mintEmailImageUrl,
               locale: emailLocale,
             })
             : Promise.resolve(),
@@ -364,7 +365,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
           badgeName: template.name,
           profileUrl,
           credentialId: ocCredentialId,
-          imageUrl: template.image_url,
+          imageUrl: mintEmailImageUrl,
           locale: emailLocale,
         })
         : Promise.resolve(),

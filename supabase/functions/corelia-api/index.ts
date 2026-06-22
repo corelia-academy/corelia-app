@@ -5,7 +5,7 @@
  * Operations: health | payments.sepay.checkout | payments.transactions |
  *   payments.sepay.verify | payments.sepay.ipn | certificates.issue | certificates.backfillEligible |
  *   hackathons.notifyRegistrationReview | hackathons.blastEmail |
- *   courses.blastEmail | careerTracks.blastEmail | notifications.unsubscribe |
+ *   courses.syncCompletion | courses.blastEmail | careerTracks.blastEmail | notifications.unsubscribe |
  *   credentials.checkCourseCompletion | credentials.checkActivityMilestones | credentials.grant |
  *   credentials.retryPending | credentials.hackathon.listEligible
  */
@@ -18,6 +18,7 @@ import { handleGrantCredentials } from "./credentials/grant.ts";
 import { handleRetryPendingCredentials } from "./credentials/retry_pending.ts";
 import { handleCourseBlastEmail } from "./courses/blast_email.ts";
 import { handleCoInstructorInviteEmail } from "./courses/co_instructor_invite_email.ts";
+import { handleSyncCourseCompletion } from "./courses/completion.ts";
 import { handleHackathonBlastEmail } from "./hackathons/blast_email.ts";
 import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.ts";
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
@@ -46,6 +47,7 @@ const PROTECTED_OPS = new Set<string>([
   "payments.sepay.verify",
   "hackathons.notifyRegistrationReview",
   "hackathons.blastEmail",
+  "courses.syncCompletion",
   "courses.blastEmail",
   "courses.coInstructorInvite.sendEmail",
   "careerTracks.blastEmail",
@@ -110,6 +112,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleHackathonNotifyRegistrationReview(req, db);
     } else if (op === "hackathons.blastEmail" && req.method === "POST") {
       response = await handleHackathonBlastEmail(req, db);
+    } else if (op === "courses.syncCompletion" && req.method === "POST") {
+      response = await handleSyncCourseCompletion(req, db);
     } else if (op === "courses.blastEmail" && req.method === "POST") {
       response = await handleCourseBlastEmail(req, db);
     } else if (op === "courses.coInstructorInvite.sendEmail" && req.method === "POST") {

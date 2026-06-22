@@ -4,6 +4,7 @@ import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { runCourseCredentialCheck } from "../credentials/check_course.ts";
 import { getAppBaseUrl } from "../credentials/settings.ts";
 import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
+import { syncCourseCompletionIfReady } from "../courses/completion.ts";
 import { buildCertificateIssuedEmail } from "./certificate_emails.ts";
 
 type CertificateIssueReason =
@@ -182,6 +183,11 @@ export async function issueCourseCertificateIfReady(
   } | null;
   if (!readiness?.all_lessons_complete) {
     return { issued: false, reason: "lessons_incomplete", course_title: course.title ?? null };
+  }
+  try {
+    await syncCourseCompletionIfReady(db, { courseId, targetUserId });
+  } catch (completionErr) {
+    console.error("[corelia-api] certificate → completion sync failed (non-fatal)", completionErr);
   }
   if (readiness.final_assignment_required && readiness.final_submission_status !== "approved") {
     return { issued: false, reason: "assignment_not_approved", course_title: course.title ?? null };

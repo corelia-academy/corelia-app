@@ -1,6 +1,9 @@
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
+import { useOCAuth } from "@opencampus/ocid-connect-js";
 import { Award } from "lucide-react";
 
+import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { OcBadgesByScopeTabs } from "@/pages/achievements/components/OcBadgesByScopeTabs";
@@ -11,6 +14,9 @@ import { useAchievementsPage } from "@/pages/achievements/hooks/useAchievementsP
 
 export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) {
   const { t } = useTranslation("common");
+  const { ocAuth, isInitialized } = useOCAuth();
+  const [ocConnectLoading, setOcConnectLoading] = useState(false);
+  const [ocConnectError, setOcConnectError] = useState<string | null>(null);
 
   const {
     certificates,
@@ -22,7 +28,21 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
     claiming,
     openModal,
     handleClaim,
+    ocidConnectOpen,
+    setOcidConnectOpen,
   } = useAchievementsPage();
+
+  async function handleOcConnect() {
+    setOcConnectError(null);
+    if (!isInitialized || !ocAuth) return;
+    try {
+      setOcConnectLoading(true);
+      await ocAuth.signInWithRedirect({ state: "corelia-ocid-connect" });
+    } catch (e) {
+      setOcConnectError(e instanceof Error ? e.message : t("openCampusConnect.modal.startFailed"));
+      setOcConnectLoading(false);
+    }
+  }
 
   if (!isSelf) {
     return (
@@ -123,7 +143,20 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
         open={modalOpen}
         onOpenChange={setModalOpen}
         onClaim={handleClaim}
+        onConnectOcid={() => {
+          setModalOpen(false);
+          setOcidConnectOpen(true);
+        }}
         claiming={claiming}
+      />
+
+      <OpenCampusConnectDialog
+        open={ocidConnectOpen}
+        onOpenChange={setOcidConnectOpen}
+        onConnect={() => void handleOcConnect()}
+        disabled={!isInitialized || !ocAuth}
+        loading={ocConnectLoading}
+        error={ocConnectError}
       />
     </section>
   );

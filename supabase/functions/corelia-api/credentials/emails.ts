@@ -132,10 +132,12 @@ export function buildCredentialMintEmail(params: {
 
   const subject = `${copy.subjectPrefix}: ${params.badgeName}`;
 
-  const img =
-    params.imageUrl?.trim()
-      ? `<p><img src="${escapeHtml(params.imageUrl.trim())}" alt="" width="200" style="max-width:100%;border-radius:8px" /></p>`
-      : "";
+  const imageUrl = params.imageUrl?.trim() ?? "";
+  const img = imageUrl
+    ? params.kind === "course_oca"
+      ? `<p><img src="${escapeHtml(imageUrl)}" alt="" width="480" style="max-width:100%;border-radius:8px;border:1px solid #e5e7eb;height:auto;display:block" /></p>`
+      : `<p><img src="${escapeHtml(imageUrl)}" alt="" width="200" style="max-width:100%;border-radius:8px;height:auto" /></p>`
+    : "";
 
   const cred = params.credentialId?.trim()
     ? `<p style="font-family:monospace;font-size:12px;color:#8a8fa8">Credential ID: ${escapeHtml(params.credentialId.trim())}</p>`

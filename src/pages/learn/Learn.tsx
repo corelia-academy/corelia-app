@@ -22,6 +22,7 @@ import {
   getNextLesson,
   setLessonProgress,
   sortLessonsByCurriculum,
+  syncCourseCompletion,
 } from "@/lib/courses";
 import {
   isLessonDraftForLearners,
@@ -116,7 +117,10 @@ export default function Learn() {
   const [curricOpen, setCurricOpen] = useState(true);
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
   const coraPanelRef = useRef<ResizablePanelHandle | null>(null);
-  const autoIssueAttemptedRef = useRef<Set<string>>(new Set());
+  const completionSyncAttemptedRef = useRef<Set<string>>(new Set());
+  const [completionSyncing, setCompletionSyncing] = useState(false);
+  const [completionJustSynced, setCompletionJustSynced] = useState(false);
+  const [completionSyncError, setCompletionSyncError] = useState<string | null>(null);
   const [certificateAutoIssuing, setCertificateAutoIssuing] = useState(false);
   const [certificateJustIssued, setCertificateJustIssued] = useState(false);
   const [certificateIssueReason, setCertificateIssueReason] =
@@ -174,8 +178,8 @@ export default function Learn() {
 
   const syncCertificate = useCallback(async () => {
     const course = courseLoad.course;
-    if (!courseId || !profile?.id || !courseHasCertificate(course)) return null;
-    setCertificateAutoIssuing(true);
+    if (!courseId || !profile?.id || !course) return null;
+    let phase: "completion" | "certificate" = "completion";
     setCertificateIssueReason(null);
     setCertificateIssueError(null);
     try {
@@ -185,11 +189,33 @@ export default function Learn() {
         new Date().toISOString(),
       );
       if (enrollment) access.setEnrollment(enrollment);
+      setCompletionSyncing(true);
+      setCompletionSyncError(null);
+      const completion = await syncCourseCompletion(profile.id, courseId);
+      let baseEnrollment = enrollment ?? access.enrollment;
+      if (completion.completed) {
+        const completedAt = completion.completed_at || baseEnrollment?.completed_at || new Date().toISOString();
+        if (baseEnrollment) {
+          baseEnrollment = { ...baseEnrollment, completed_at: completedAt };
+          access.setEnrollment(baseEnrollment);
+        }
+        setCompletionJustSynced(true);
+      } else {
+        setCompletionSyncError(
+          completion.message || translate("detail.learn.completion.completionSyncFailed"),
+        );
+        return null;
+      }
+      setCompletionSyncing(false);
+      if (!courseHasCertificate(course)) {
+        return null;
+      }
+      phase = "certificate";
+      setCertificateAutoIssuing(true);
       const result = await checkAndIssueCertificate(profile.id, courseId);
       setCertificateIssueReason(result.reason);
       if (result.issued) {
         const issuedAt = result.certificate_issued_at || new Date().toISOString();
-        const baseEnrollment = enrollment ?? access.enrollment;
         if (baseEnrollment) {
           access.setEnrollment({ ...baseEnrollment, certificate_issued_at: issuedAt });
         }
@@ -203,7 +229,8 @@ export default function Learn() {
       const message = err instanceof Error
         ? err.message
         : translate("detail.courseDetail.claimCertificateFailed");
-      setCertificateIssueError(message);
+      if (phase === "certificate") setCertificateIssueError(message);
+      else setCompletionSyncError(message);
       console.warn("[learn] certificate sync failed", {
         userId: profile.id,
         courseId,
@@ -211,6 +238,7 @@ export default function Learn() {
       });
       return null;
     } finally {
+      setCompletionSyncing(false);
       setCertificateAutoIssuing(false);
     }
   }, [
@@ -225,30 +253,20 @@ export default function Learn() {
   useEffect(() => {
     const course = courseLoad.course;
     if (!courseId || !profile?.id || !course) return;
-    if (!courseHasCertificate(course) || access.enrollment?.certificate_issued_at) return;
     if (progress.progressPercent < 100) return;
-    if (
-      course.access_model === "free_with_paid_certificate" &&
-      access.paymentAccess?.certificate_fee_paid !== true
-    ) {
+    if (access.enrollment?.completed_at && (!courseHasCertificate(course) || access.enrollment.certificate_issued_at)) {
       return;
     }
-    if (course.final_assignment_title && submission.submission?.status !== "approved") {
-      return;
-    }
-
     const key = `${profile.id}:${courseId}`;
-    if (autoIssueAttemptedRef.current.has(key)) return;
-    autoIssueAttemptedRef.current.add(key);
+    if (completionSyncAttemptedRef.current.has(key)) return;
+    completionSyncAttemptedRef.current.add(key);
     void syncCertificate();
   }, [
     access.enrollment,
-    access.paymentAccess?.certificate_fee_paid,
     courseId,
     courseLoad.course,
     profile?.id,
     progress.progressPercent,
-    submission.submission?.status,
     syncCertificate,
   ]);
 
@@ -443,6 +461,7 @@ export default function Learn() {
   const hasCourseCertificate = courseHasCertificate(course);
   const hasFullCourseAccess = access.hasFullCourseAccess;
   const courseCompleted = progress.progressPercent >= 100 && visibleLessons.length > 0;
+  const completionSynced = Boolean(access.enrollment?.completed_at || completionJustSynced);
   const certificateIssued = Boolean(access.enrollment?.certificate_issued_at || certificateJustIssued);
   const profileAchievementsPath = profile?.username
     ? `/@${encodeURIComponent(profile.username)}`
@@ -545,11 +564,15 @@ export default function Learn() {
           className="mx-4 mb-4 sm:mx-6"
           hasCertificate={hasCourseCertificate}
           certificateIssued={certificateIssued}
-          issuing={certificateAutoIssuing}
+          issuing={completionSyncing || certificateAutoIssuing}
           issueReason={certificateIssueReason}
-          issueError={certificateIssueError}
+          issueError={completionSyncError || certificateIssueError}
           achievementsPath={profileAchievementsPath}
-          onRetry={hasCourseCertificate ? () => void syncCertificate() : undefined}
+          onRetry={
+            hasCourseCertificate || !completionSynced || completionSyncError
+              ? () => void syncCertificate()
+              : undefined
+          }
         />
       ) : null}
 

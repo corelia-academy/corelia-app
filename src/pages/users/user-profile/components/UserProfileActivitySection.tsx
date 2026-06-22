@@ -29,18 +29,20 @@ function profileLabel(profile: PublicProfile): string {
   return profileTitle(profile);
 }
 
-function objectHref(event: ActivityEvent): string | null {
-  const type = event.target_type ?? event.object_type;
-  const id = event.target_id ?? event.object_id;
-  if (!id) return null;
+function subjectHref(
+  type: string | null,
+  id: string | null,
+  payload: Record<string, unknown>,
+): string | null {
+  if (!type || !id) return null;
 
   if (type === "course") {
-    const slug = payloadText(event.payload, ["course_slug", "slug"]);
+    const slug = payloadText(payload, ["course_slug", "slug"]);
     return `/courses/${slug ?? id}`;
   }
 
   if (type === "hackathon") {
-    const slug = payloadText(event.payload, ["hackathon_slug", "slug"]);
+    const slug = payloadText(payload, ["hackathon_slug", "slug"]);
     return `/hackathons/${slug ?? id}`;
   }
 
@@ -48,6 +50,21 @@ function objectHref(event: ActivityEvent): string | null {
   if (type === "user") return `/@${id}`;
 
   return null;
+}
+
+function objectHref(event: ActivityEvent): string | null {
+  // Prefer the object (the thing acted upon, e.g. the course completed).
+  // Skip when the object is the actor themselves (follow events store the
+  // actor as the object) or a route-less type (e.g. credential), then fall
+  // back to the target (e.g. the course a credential was earned for).
+  const objectIsActor =
+    event.object_type === "user" && event.object_id === event.actor_id;
+  const objectHrefValue = objectIsActor
+    ? null
+    : subjectHref(event.object_type, event.object_id, event.payload);
+  if (objectHrefValue) return objectHrefValue;
+
+  return subjectHref(event.target_type, event.target_id, event.payload);
 }
 
 function objectLabel(event: ActivityEvent, fallback: string): string {

@@ -29,12 +29,14 @@ export function OcCredentialModal({
   open,
   onOpenChange,
   onClaim,
+  onConnectOcid,
   claiming,
 }: {
   item: ModalItem | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onClaim: (id: string, kind: "cert" | "badge") => void;
+  onConnectOcid: () => void;
   claiming: boolean;
 }) {
   const { t } = useTranslation("common");
@@ -74,6 +76,7 @@ export function OcCredentialModal({
   const holderName = profile?.full_name?.trim() || null;
   const holderOcid = profile?.ocid?.trim() || null;
   const hasName = Boolean(holderName);
+  const hasOcid = Boolean(holderOcid);
 
   // ── Review step ────────────────────────────────────────────────────────────
   if (reviewing) {
@@ -152,6 +155,25 @@ export function OcCredentialModal({
               </div>
             </div>
 
+            {!hasOcid && (
+              <div className="mb-5 rounded-xl border border-warning/25 bg-warning/8 px-3 py-3">
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle
+                    className="mt-0.5 size-4 shrink-0 text-warning"
+                    aria-hidden
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      {t("achievements.oc.modal.connectRequired.title")}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                      {t("achievements.oc.modal.connectRequired.body")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Permanence warning */}
             <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-warning/25 bg-warning/8 px-3 py-3">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
@@ -161,32 +183,47 @@ export function OcCredentialModal({
             </div>
 
             <div className="flex flex-col gap-3">
-              <Button
-                className="w-full gap-3 text-base font-semibold"
-                size="lg"
-                disabled={claiming || !hasName}
-                onClick={() => onClaim(d.id, item.kind)}
-              >
-                {claiming ? (
-                  <>
-                    <Loader2 className="size-5 shrink-0 animate-spin" aria-hidden />
-                    <span>{t("achievements.oc.modal.claim.issuing")}</span>
-                  </>
-                ) : (
-                  <>
-                    <img
-                      src="/open-campus-edu-logo.png"
-                      alt=""
-                      className="size-5 shrink-0 rounded-full brightness-0 invert"
-                    />
-                    <span>
-                      {isFailed
-                        ? t("achievements.oc.modal.claim.retry")
-                        : t("achievements.oc.modal.review.confirm")}
-                    </span>
-                  </>
-                )}
-              </Button>
+              {!hasOcid ? (
+                <Button
+                  className="w-full gap-3 text-base font-semibold"
+                  size="lg"
+                  onClick={onConnectOcid}
+                >
+                  <img
+                    src="/open-campus-edu-logo.png"
+                    alt=""
+                    className="size-5 shrink-0 rounded-full brightness-0 invert"
+                  />
+                  <span>{t("achievements.oc.modal.connectRequired.cta")}</span>
+                </Button>
+              ) : (
+                <Button
+                  className="w-full gap-3 text-base font-semibold"
+                  size="lg"
+                  disabled={claiming || !hasName}
+                  onClick={() => onClaim(d.id, item.kind)}
+                >
+                  {claiming ? (
+                    <>
+                      <Loader2 className="size-5 shrink-0 animate-spin" aria-hidden />
+                      <span>{t("achievements.oc.modal.claim.issuing")}</span>
+                    </>
+                  ) : (
+                    <>
+                      <img
+                        src="/open-campus-edu-logo.png"
+                        alt=""
+                        className="size-5 shrink-0 rounded-full brightness-0 invert"
+                      />
+                      <span>
+                        {isFailed
+                          ? t("achievements.oc.modal.claim.retry")
+                          : t("achievements.oc.modal.review.confirm")}
+                      </span>
+                    </>
+                  )}
+                </Button>
+              )}
 
               <button
                 onClick={() => setReviewing(false)}
@@ -325,7 +362,13 @@ export function OcCredentialModal({
                 className="w-full gap-3 text-base font-semibold"
                 size="lg"
                 disabled={claiming}
-                onClick={() => setReviewing(true)}
+                onClick={() => {
+                  if (!hasOcid) {
+                    onConnectOcid();
+                    return;
+                  }
+                  setReviewing(true);
+                }}
               >
                 {claiming ? (
                   <>
@@ -343,7 +386,9 @@ export function OcCredentialModal({
                       className="size-5 shrink-0 rounded-full brightness-0 invert"
                     />
                     <span>
-                      {isFailed
+                      {!hasOcid
+                        ? t("achievements.oc.modal.connectRequired.cta")
+                        : isFailed
                         ? t("achievements.oc.modal.claim.retry")
                         : t("achievements.oc.modal.claim.issue")}
                     </span>

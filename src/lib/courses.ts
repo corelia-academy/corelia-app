@@ -24,6 +24,7 @@ import type { User } from "@supabase/supabase-js";
 
 const CERTIFICATE_API =
   import.meta.env.VITE_CERTIFICATE_ISSUE_API || coreliaEdgeUrl("certificates.issue");
+const COURSE_COMPLETION_API = coreliaEdgeUrl("courses.syncCompletion");
 
 const LOCALE_CACHE_TTL = 5 * 60 * 1000;
 const courseLocaleCache = makeTTLCache<CourseLocaleContent | null>(LOCALE_CACHE_TTL);
@@ -758,6 +759,26 @@ export interface CertificateIssueResult {
   course_title?: string | null;
 }
 
+export type CourseCompletionReason =
+  | "completed"
+  | "already_completed"
+  | "no_course"
+  | "no_enrollment"
+  | "lessons_incomplete"
+  | "unknown";
+
+export interface CourseCompletionSyncResult {
+  ok: boolean;
+  completed: boolean;
+  reason: CourseCompletionReason;
+  completed_at?: string | null;
+  course_title?: string | null;
+  has_certificate?: boolean;
+  lesson_total?: number;
+  completed_distinct?: number;
+  message?: string;
+}
+
 export async function checkAndIssueCertificate(
   userId: string,
   courseId: string,
@@ -794,6 +815,41 @@ export async function checkAndIssueCertificate(
   };
 }
 
+export async function syncCourseCompletion(
+  userId: string,
+  courseId: string,
+): Promise<CourseCompletionSyncResult> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) throw new Error("Chưa đăng nhập");
+  if (!COURSE_COMPLETION_API) throw new Error("Thiếu cấu hình Corelia Edge URL.");
+
+  const res = await fetch(COURSE_COMPLETION_API, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...supabaseFunctionHeaders(token),
+    },
+    credentials: "include",
+    body: JSON.stringify({ userId, courseId }),
+  });
+
+  const body = (await res.json().catch(() => ({}))) as Partial<CourseCompletionSyncResult>;
+  if (!res.ok) throw new Error(body.message || "Không thể đồng bộ hoàn thành khoá học.");
+  if (body.completed === true) invalidateEnrollmentsCache(userId);
+  return {
+    ok: body.ok === true,
+    completed: body.completed === true,
+    reason: body.reason ?? (body.completed ? "completed" : "unknown"),
+    completed_at: body.completed_at ?? null,
+    course_title: body.course_title ?? null,
+    has_certificate: body.has_certificate === true,
+    lesson_total: body.lesson_total,
+    completed_distinct: body.completed_distinct,
+    message: body.message,
+  };
+}
+
 export async function setLessonProgress(
   lessonId: string,
   courseId: string,
@@ -826,8 +882,11 @@ export async function setLessonProgress(
 
   if (completed) {
     await ensureEnrollmentForProgress(user.id, courseId, now);
-    checkAndIssueCertificate(user.id, courseId).catch((err) => {
-      console.warn("[courses] certificate issue after lesson completion failed", {
+    syncCourseCompletion(user.id, courseId).then((completion) => {
+      if (!completion.completed || !completion.has_certificate) return null;
+      return checkAndIssueCertificate(user.id, courseId);
+    }).catch((err) => {
+      console.warn("[courses] completion/certificate sync after lesson completion failed", {
         userId: user.id,
         courseId,
         lessonId,

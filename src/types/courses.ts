@@ -275,6 +275,8 @@ export interface Enrollment {
   course_id: string;
   enrolled_at: string;
   last_accessed_at: string;
+  /** Thời điểm hoàn thành toàn bộ bài học trong khoá (không phụ thuộc chứng nhận) */
+  completed_at?: string | null;
   /** Thời điểm cấp chứng nhận hoàn thành (null = chưa đủ điều kiện) */
   certificate_issued_at?: string | null;
   /** Metadata thanh toán (chỉ có khi khoá trả phí/có phí) */

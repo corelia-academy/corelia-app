@@ -21,6 +21,7 @@ import {
   getLessonProgressForCourse,
   getMyEnrollments,
   invalidateCourseCache,
+  syncCourseCompletion,
 } from "@/lib/courses";
 import { useAuth } from "@/stores/authStore";
 import type { Enrollment } from "@/types/courses";
@@ -235,6 +236,13 @@ export function useAchievementsPage() {
     setSyncingCourseId(courseId);
     try {
       await ensureEnrollmentForProgress(user.id, courseId, new Date().toISOString());
+      await syncCourseCompletion(user.id, courseId).catch((err) => {
+        console.warn("[achievements] course completion sync before certificate failed", {
+          userId: user.id,
+          courseId,
+          error: err instanceof Error ? err.message : err,
+        });
+      });
       const result = await checkAndIssueCertificate(user.id, courseId);
       if (result.issued) {
         toast.success(t("achievements.vaults.certificates.syncSuccess"));

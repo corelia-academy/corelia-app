@@ -366,6 +366,8 @@
       },
       "completion": {
         "title": "Chúc mừng, bạn đã hoàn thành khoá học!",
+        "completionSaving": "Corelia đang lưu trạng thái hoàn thành khoá học của bạn...",
+        "completionSyncFailed": "Chưa đồng bộ được trạng thái hoàn thành. Hãy thử lại sau ít phút.",
         "noCertificate": "Tiến độ học tập của bạn đã được lưu. Hãy tiếp tục khám phá các nội dung tiếp theo trên Corelia.",
         "certificateIssuing": "Khoá học này có chứng nhận. Corelia đang cấp chứng nhận cho bạn...",
         "certificatePending": "Khoá học này có chứng nhận. Corelia sẽ tự động cấp chứng nhận khi hệ thống xác nhận đủ điều kiện.",
