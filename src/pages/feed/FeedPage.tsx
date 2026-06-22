@@ -204,8 +204,8 @@ function FeedItem({
   });
 
   if (event.verb === "announcement") {
-    const title = String(event.payload.title || "");
-    const content = String(event.payload.content || "");
+    const title = String(event.payload?.title || "");
+    const content = String(event.payload?.content || "");
     
     return (
       <article className="relative overflow-hidden rounded-lg border-2 border-primary bg-primary/5 p-5 shadow-card">
