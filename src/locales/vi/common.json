@@ -733,6 +733,14 @@
         "learnMore": "Tìm hiểu về Open Campus Achievements"
       }
     },
+    "sync": {
+      "mintedTitle": "Tạo chứng nhận thành công!",
+      "mintedDescription": "OCB của bạn đã được tạo thành công và lưu trên blockchain.",
+      "failedTitle": "Tạo chứng nhận thất bại",
+      "failedDescription": "Có lỗi xảy ra khi cấp phát OCB. Vui lòng thử lại sau.",
+      "retrySuccess": "Đã gửi yêu cầu tạo lại!",
+      "retryError": "Lỗi khi thử lại."
+    },
     "stats": {
       "certificates": "Chứng nhận",
       "oca": "OCA",

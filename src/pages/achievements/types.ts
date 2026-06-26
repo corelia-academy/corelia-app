@@ -47,10 +47,18 @@ export type BadgeItem = {
   ocCredentialUrl?: string;
   /** On-chain credential id when minted via Corelia credentials pipeline */
   mintCredentialId?: string | null;
+  /** Issuance row id from DB for retry operations */
+  issuanceId?: string;
+  /** Status of the credential issuance */
+  status?: "pending" | "minted" | "failed" | "awaiting_holder_id";
   /** Scope grouping for Open Campus badges */
   credentialScope?: CredentialScopeForBadge;
   /** Role/type within a hackathon (e.g. "winner", "participant") — for multi-type hackathon badges */
   hackathonRole?: string | null;
+  /** Issuance ID for the badge (used for internal tracking) */
+  issuanceId?: string;
+  /** Status of the badge issuance */
+  status?: string;
 };
 
 export type ModalItem =

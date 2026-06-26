@@ -4,11 +4,12 @@ import { toast } from "sonner";
 
 import {
   fetchCourseIssuanceMapForUser,
-  fetchMintedCredentialIssuancesForUser,
+  fetchMyCredentialIssuances,
   issuanceToBadgeItem,
   openCampusCredentialExplorerUrl,
   type CourseIssuanceInfo,
 } from "@/lib/credentialIssuances";
+import { CREDENTIAL_SYNC_EVENT } from "@/components/base/CredentialRealtimeSync";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import {
   backfillMissingEnrollmentsForUser,
@@ -76,13 +77,15 @@ export function useAchievementsPage() {
       const [enrollments, courseIssuanceMap, ocRows] = await Promise.all([
         getMyEnrollments(user.id).catch(() => [] as Enrollment[]),
         fetchCourseIssuanceMapForUser(user.id).catch(() => new Map<string, CourseIssuanceInfo>()),
-        fetchMintedCredentialIssuancesForUser(user.id).catch(() => []),
+        fetchMyCredentialIssuances(user.id).catch(() => []),
       ]);
+
+      const mintedOcRows = ocRows.filter((r) => r.status === "minted");
 
       const courseIds = Array.from(
         new Set([
           ...enrollments.map((item) => item.course_id),
-          ...ocRows
+          ...mintedOcRows
             .filter((row) => row.template?.scope_type === "course" && row.course_id)
             .map((row) => row.course_id!),
         ]),
@@ -107,7 +110,7 @@ export function useAchievementsPage() {
       );
       const certificateCourseIds = new Set(enrollmentCertificates.map((item) => item.courseId));
       const issuanceCertificates = buildCourseCertificatesFromIssuances(
-        ocRows,
+        mintedOcRows,
         courseMap,
         certificateCourseIds,
         certificateLabels,
@@ -150,6 +153,13 @@ export function useAchievementsPage() {
 
   useEffect(() => {
     void loadAchievements();
+    const handleSync = () => {
+      void loadAchievements();
+    };
+    window.addEventListener(CREDENTIAL_SYNC_EVENT, handleSync);
+    return () => {
+      window.removeEventListener(CREDENTIAL_SYNC_EVENT, handleSync);
+    };
   }, [loadAchievements]);
 
   const openModal = (item: ModalItem) => {
