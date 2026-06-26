@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Upload, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -255,26 +255,53 @@ export default function AdminActivityMilestones() {
             </Field>
             <Field>
               <FieldLabel>{t("activityMilestones.field.image")}</FieldLabel>
-              <Input
-                type="file"
-                accept="image/png,image/jpeg"
-                disabled={uploading}
-                onChange={async (e: ChangeEvent<HTMLInputElement>) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  setUploading(true);
-                  try {
-                    const { url } = await uploadActivityMilestoneBadgeImage(file);
-                    setImageUrl(url);
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : "Upload failed");
-                  } finally {
-                    setUploading(false);
-                  }
-                }}
-              />
+              <div className="relative flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-border-subtle bg-surface-base p-6 text-center transition-colors hover:bg-surface-raised focus-within:border-primary">
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  disabled={uploading}
+                  className="absolute inset-0 cursor-pointer opacity-0"
+                  onChange={async (e: ChangeEvent<HTMLInputElement>) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploading(true);
+                    try {
+                      const { url } = await uploadActivityMilestoneBadgeImage(file);
+                      setImageUrl(url);
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : "Upload failed");
+                    } finally {
+                      setUploading(false);
+                    }
+                  }}
+                />
+                <div className="flex flex-col items-center gap-2 text-sm text-foreground-muted">
+                  {uploading ? (
+                    <>
+                      <Loader2 className="size-6 animate-spin text-primary" aria-hidden />
+                      <span className="font-medium text-primary">Đang tải ảnh lên...</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="rounded-full bg-surface-raised p-3">
+                        <Upload className="size-5" aria-hidden />
+                      </div>
+                      <div>
+                        <span className="font-medium text-primary">Nhấn để tải lên</span> hoặc kéo thả ảnh vào đây
+                      </div>
+                      <div className="text-xs opacity-70">Hỗ trợ định dạng PNG, JPG</div>
+                    </>
+                  )}
+                </div>
+              </div>
               {imageUrl ? (
-                <img src={imageUrl} alt="" className="mt-2 h-16 rounded border border-border-subtle" />
+                <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-surface-raised p-2">
+                  <div className="flex items-center gap-2 mb-2 text-xs font-medium text-foreground-muted">
+                    <ImageIcon className="size-4" />
+                    Bản xem trước
+                  </div>
+                  <img src={imageUrl} alt="Badge Preview" className="h-32 w-full object-contain" />
+                </div>
               ) : null}
             </Field>
             <Field>
