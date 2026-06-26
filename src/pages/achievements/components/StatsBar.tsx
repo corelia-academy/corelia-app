@@ -27,7 +27,8 @@ export function StatsBar({
     (b) =>
       !b.locked &&
       b.ocClaimStatus === "claimed" &&
-      (b.credentialScope === "hackathon" || b.collectionSymbol === "ocbadge"),
+      (b.credentialScope === "hackathon" || b.collectionSymbol === "ocbadge") &&
+      b.credentialScope !== "activity_milestone",
   ).length;
 
   const milestoneCount = badges.filter(

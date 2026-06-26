@@ -33,8 +33,9 @@ export function OcBadgesByScopeTabs({
       ),
       hackathon: badges.filter(
         (b) =>
-          b.credentialScope === "hackathon" ||
-          b.collectionSymbol === "ocbadge",
+          (b.credentialScope === "hackathon" ||
+          b.collectionSymbol === "ocbadge") &&
+          b.credentialScope !== "activity_milestone",
       ),
       activity_milestone: badges.filter((b) => b.credentialScope === "activity_milestone"),
     };
