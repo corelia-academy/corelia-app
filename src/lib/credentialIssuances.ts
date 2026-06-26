@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { Award, Medal, Sparkles } from "lucide-react";
 
-import type { BadgeItem } from "@/pages/achievements/types";
+import type { BadgeItem, ClaimStatus } from "@/pages/achievements/types";
 import { supabase } from "@/lib/supabase";
 import type { CredentialIssuanceWithTemplate, CredentialTemplateSummary } from "@/types/credentials";
 
@@ -56,6 +56,51 @@ export async function fetchCourseIssuanceMapForUser(
     });
   }
   return map;
+}
+
+export async function fetchMyCredentialIssuances(
+  userId: string,
+): Promise<CredentialIssuanceWithTemplate[]> {
+  const { data, error } = await supabase
+    .from("credential_issuances")
+    .select(
+      `
+      id,
+      course_id,
+      minted_at,
+      oc_credential_id,
+      network,
+      status,
+      credential_templates (
+        id,
+        scope_type,
+        name,
+        description,
+        image_url,
+        thumbnail_url,
+        achievement_type,
+        hackathon_role
+      )
+    `,
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((raw) => {
+    const row = raw as IssuanceRow;
+    const template = unwrapTemplate(row.credential_templates);
+    return {
+      id: row.id,
+      course_id: row.course_id ?? null,
+      minted_at: row.minted_at,
+      oc_credential_id: row.oc_credential_id,
+      network: row.network === "mainnet" ? "mainnet" : "staging",
+      status: row.status,
+      template,
+    };
+  });
 }
 
 export async function fetchMintedCredentialIssuancesForUser(
@@ -198,12 +243,13 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate): BadgeI
     category: "milestone",
     // thumbnail_url for frontend display; image_url (full-res) stays in OC payload only
     imageUrl: tpl?.thumbnail_url ?? tpl?.image_url,
-    // Only "claimed" if oc_credential_id is present — proof it exists on-chain.
-    // minted without oc_credential_id = incomplete mint → failed.
-    ocClaimStatus: row.oc_credential_id ? "claimed" : "failed",
+    // Claim status is derived from row status for our realtime pipeline
+    ocClaimStatus: row.status === "minted" ? "claimed" : (row.status as ClaimStatus) ?? "failed",
     ocCredentialUrl: ocUrl ?? undefined,
     ocTransactionHash: undefined,
     mintCredentialId: row.oc_credential_id,
+    issuanceId: row.id,
+    status: (row.status as "pending" | "minted" | "failed" | "awaiting_holder_id") ?? "failed",
     credentialScope,
     hackathonRole: tpl?.hackathon_role ?? undefined,
   };
