@@ -32,13 +32,11 @@ type MilestoneEventKey =
   | "projects_submitted";
 
 function buildTriggerRule(
-  triggerType: "auto" | "manual",
   event: MilestoneEventKey,
   days: number,
   count: number,
   track: string,
 ): Record<string, unknown> | null {
-  if (triggerType === "manual") return { manual: true };
   switch (event) {
     case "login_streak":
       return { event: "login_streak", days };
@@ -59,11 +57,6 @@ export default function AdminActivityMilestones() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [grantOpen, setGrantOpen] = useState(false);
-  const [grantTemplateId, setGrantTemplateId] = useState<string | null>(null);
-  const [grantUsers, setGrantUsers] = useState("");
-  const [grantReason, setGrantReason] = useState("");
-  const [granting, setGranting] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -72,7 +65,6 @@ export default function AdminActivityMilestones() {
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [identifierPrefix, setIdentifierPrefix] = useState("");
-  const [triggerType, setTriggerType] = useState<"auto" | "manual">("manual");
   const [eventKey, setEventKey] = useState<MilestoneEventKey>("courses_completed");
   const [days, setDays] = useState(7);
   const [count, setCount] = useState(5);
@@ -131,7 +123,6 @@ export default function AdminActivityMilestones() {
     setDescription("");
     setImageUrl("");
     setIdentifierPrefix("");
-    setTriggerType("manual");
     setEventKey("courses_completed");
     setDays(7);
     setCount(5);
@@ -146,7 +137,6 @@ export default function AdminActivityMilestones() {
     setDescription(row.description);
     setImageUrl(row.image_url);
     setIdentifierPrefix(row.identifier_prefix);
-    setTriggerType(row.trigger_type === "auto" ? "auto" : "manual");
     const rule = row.trigger_rule as Record<string, unknown> | null;
     const ev = String(rule?.event ?? "courses_completed") as MilestoneEventKey;
     if (
@@ -169,7 +159,7 @@ export default function AdminActivityMilestones() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const triggerRule = buildTriggerRule(triggerType, eventKey, days, count, track);
+      const triggerRule = buildTriggerRule(eventKey, days, count, track);
       await saveActivityMilestoneTemplate({
         templateId: editId,
         isActive,
@@ -177,7 +167,7 @@ export default function AdminActivityMilestones() {
         description,
         imageUrl,
         identifierPrefix: identifierPrefix.trim() || `corelia:milestone-${Date.now()}`.slice(0, 40),
-        triggerType,
+        triggerType: "auto",
         triggerRule,
       });
       toast.success(t("activityMilestones.saved"));
@@ -190,34 +180,7 @@ export default function AdminActivityMilestones() {
     }
   };
 
-  const handleGrant = async () => {
-    if (!grantTemplateId) return;
-    const ids = grantUsers
-      .split(/[\s,;]+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (ids.length === 0) {
-      toast.error(t("activityMilestones.grantNeedUsers"));
-      return;
-    }
-    setGranting(true);
-    try {
-      const res = await invokeGrantCredentials({
-        templateId: grantTemplateId,
-        userIds: ids,
-        grantedReason: grantReason.trim() || null,
-      });
-      if (res.errors?.length) toast.message(res.errors.join("\n"));
-      toast.success(t("activityMilestones.grantOk"));
-      setGrantOpen(false);
-      setGrantUsers("");
-      await refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("activityMilestones.grantFailed"));
-    } finally {
-      setGranting(false);
-    }
-  };
+
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6">
@@ -264,18 +227,6 @@ export default function AdminActivityMilestones() {
                     <Button type="button" variant="outline" size="sm" onClick={() => openEdit(r)}>
                       {t("activityMilestones.edit")}
                     </Button>
-                    {r.trigger_type === "manual" ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => {
-                          setGrantTemplateId(r.id);
-                          setGrantOpen(true);
-                        }}
-                      >
-                        {t("activityMilestones.grant")}
-                      </Button>
-                    ) : null}
                   </td>
                 </tr>
               ))}
@@ -335,84 +286,62 @@ export default function AdminActivityMilestones() {
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setIdentifierPrefix(e.target.value)}
               />
             </Field>
-            <div className="flex gap-4 text-sm">
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  checked={triggerType === "auto"}
-                  onChange={() => setTriggerType("auto")}
+            <Field>
+              <FieldLabel>{t("activityMilestones.field.event")}</FieldLabel>
+              <select
+                className="flex h-10 w-full rounded-md border border-border-subtle bg-surface-base px-3 text-sm"
+                value={eventKey}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                  setEventKey(e.target.value as MilestoneEventKey)
+                }
+              >
+                <option value="login_streak">{t("activityMilestones.event.loginStreak")}</option>
+                <option value="courses_completed">{t("activityMilestones.event.coursesCompleted")}</option>
+                <option value="courses_completed_in_track">{t("activityMilestones.event.trackCourses")}</option>
+                <option value="projects_submitted">{t("activityMilestones.event.projects")}</option>
+              </select>
+            </Field>
+            {eventKey === "login_streak" ? (
+              <Field>
+                <FieldLabel>{t("activityMilestones.field.days")}</FieldLabel>
+                <Input
+                  type="number"
+                  min={1}
+                  value={days}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setDays(Number(e.target.value))}
                 />
-                {t("activityMilestones.field.triggerAuto")}
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  checked={triggerType === "manual"}
-                  onChange={() => setTriggerType("manual")}
+              </Field>
+            ) : null}
+            {eventKey === "courses_completed" || eventKey === "projects_submitted" ? (
+              <Field>
+                <FieldLabel>{t("activityMilestones.field.count")}</FieldLabel>
+                <Input
+                  type="number"
+                  min={1}
+                  value={count}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setCount(Number(e.target.value))}
                 />
-                {t("activityMilestones.field.triggerManual")}
-              </label>
-            </div>
-            {triggerType === "auto" ? (
+              </Field>
+            ) : null}
+            {eventKey === "courses_completed_in_track" ? (
               <>
                 <Field>
-                  <FieldLabel>{t("activityMilestones.field.event")}</FieldLabel>
-                  <select
-                    className="flex h-10 w-full rounded-md border border-border-subtle bg-surface-base px-3 text-sm"
-                    value={eventKey}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setEventKey(e.target.value as MilestoneEventKey)
-                    }
-                  >
-                    <option value="login_streak">{t("activityMilestones.event.loginStreak")}</option>
-                    <option value="courses_completed">{t("activityMilestones.event.coursesCompleted")}</option>
-                    <option value="courses_completed_in_track">{t("activityMilestones.event.trackCourses")}</option>
-                    <option value="projects_submitted">{t("activityMilestones.event.projects")}</option>
-                  </select>
+                  <FieldLabel>{t("activityMilestones.field.track")}</FieldLabel>
+                  <Input
+                    value={track}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setTrack(e.target.value)}
+                    placeholder="ai | app | blockchain"
+                  />
                 </Field>
-                {eventKey === "login_streak" ? (
-                  <Field>
-                    <FieldLabel>{t("activityMilestones.field.days")}</FieldLabel>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={days}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => setDays(Number(e.target.value))}
-                    />
-                  </Field>
-                ) : null}
-                {eventKey === "courses_completed" || eventKey === "projects_submitted" ? (
-                  <Field>
-                    <FieldLabel>{t("activityMilestones.field.count")}</FieldLabel>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={count}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => setCount(Number(e.target.value))}
-                    />
-                  </Field>
-                ) : null}
-                {eventKey === "courses_completed_in_track" ? (
-                  <>
-                    <Field>
-                      <FieldLabel>{t("activityMilestones.field.track")}</FieldLabel>
-                      <Input
-                        value={track}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => setTrack(e.target.value)}
-                        placeholder="ai | app | blockchain"
-                      />
-                    </Field>
-                    <Field>
-                      <FieldLabel>{t("activityMilestones.field.count")}</FieldLabel>
-                      <Input
-                        type="number"
-                        min={1}
-                        value={count}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => setCount(Number(e.target.value))}
-                      />
-                    </Field>
-                  </>
-                ) : null}
+                <Field>
+                  <FieldLabel>{t("activityMilestones.field.count")}</FieldLabel>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={count}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setCount(Number(e.target.value))}
+                  />
+                </Field>
               </>
             ) : null}
             <label className="flex items-center gap-2 text-sm">
@@ -430,40 +359,6 @@ export default function AdminActivityMilestones() {
             </Button>
             <Button type="button" disabled={saving || !name.trim() || !imageUrl.trim()} onClick={() => void handleSave()}>
               {saving ? t("activityMilestones.saving") : t("activityMilestones.save")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={grantOpen} onOpenChange={setGrantOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("activityMilestones.grantTitle")}</DialogTitle>
-          </DialogHeader>
-          <Field>
-            <FieldLabel>{t("activityMilestones.grantUsersLabel")}</FieldLabel>
-            <textarea
-              rows={4}
-              value={grantUsers}
-              className={TEXTAREA_CLASS}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setGrantUsers(e.target.value)}
-            />
-          </Field>
-          <Field>
-            <FieldLabel>{t("activityMilestones.grantReasonLabel")}</FieldLabel>
-            <textarea
-              rows={2}
-              value={grantReason}
-              className={TEXTAREA_CLASS}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setGrantReason(e.target.value)}
-            />
-          </Field>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setGrantOpen(false)}>
-              {t("activityMilestones.cancel")}
-            </Button>
-            <Button type="button" disabled={granting} onClick={() => void handleGrant()}>
-              {granting ? t("activityMilestones.granting") : t("activityMilestones.grantSubmit")}
             </Button>
           </DialogFooter>
         </DialogContent>
