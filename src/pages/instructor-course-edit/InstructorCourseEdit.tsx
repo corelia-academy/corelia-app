@@ -1225,7 +1225,7 @@ const InstructorCourseEdit = () => {
     }
 
     if (form.has_certificate && !form.certificate_template_url) {
-      setError(t("courseEdit.errors.missingCertificateTemplate", { defaultValue: "Vui lòng tải lên ảnh phôi chứng chỉ khi bật Cấp chứng chỉ." }));
+      setError(t("courseEdit.errors.missingCertificateTemplate", { defaultValue: "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ." }));
       return;
     }
 

@@ -499,6 +499,7 @@
       "invalidRevenueShare": "Platform revenue share must be between 0 and 100%.",
       "updateFailed": "Update failed",
       "processFailed": "Action failed",
+      "missingCertificateTemplate": "Please upload a certificate template image when Certificate Issuance is enabled.",
       "uploadCertTemplateFailed": "Failed to upload certificate template",
       "clearCertTemplateFailed": "Failed to clear legacy certificate / OCA",
       "uploadPartnerDocsFailed": "Failed to upload partner documents",
