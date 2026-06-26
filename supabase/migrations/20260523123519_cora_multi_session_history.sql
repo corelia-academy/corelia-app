@@ -1,10 +1,7 @@
 -- Cora chat history: allow multiple sessions per user × course,
 -- and track which lesson each session was started from for UI labelling.
 
--- 1. Add course_id and lesson_id columns to ai_chat_sessions
-ALTER TABLE public.ai_chat_sessions
-  ADD COLUMN IF NOT EXISTS course_id text NULL;
-
+-- 1. Add lesson_id column to ai_chat_sessions
 ALTER TABLE public.ai_chat_sessions
   ADD COLUMN IF NOT EXISTS lesson_id text NULL;
 
