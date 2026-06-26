@@ -500,6 +500,7 @@
       "updateFailed": "Update failed",
       "processFailed": "Action failed",
       "uploadCertTemplateFailed": "Failed to upload certificate template",
+      "clearCertTemplateFailed": "Failed to clear legacy certificate / OCA",
       "uploadPartnerDocsFailed": "Failed to upload partner documents",
       "addSectionFailed": "Failed to add section",
       "addLessonFailed": "Failed to add lesson",
@@ -542,6 +543,7 @@
       "assignmentRejected": "Submission rejected.",
       "certificateIssued": "Certificate issued.",
       "certTemplateUploaded": "Certificate template uploaded.",
+      "certTemplateCleared": "Legacy certificate / OCA cleared.",
       "partnerContractUploaded": "Partner contract document uploaded.",
       "partnerInvoiceUploaded": "Partner invoice document uploaded.",
       "discountCreated": "Discount code created."
