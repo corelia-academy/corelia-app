@@ -152,8 +152,9 @@ export function CourseOcbCredentialSection({
         min_assignment_score: Math.min(100, Math.max(0, minAssignmentScore)),
       };
 
+      // [TC-03 FIX] OCA must use the course certificate template - no imageUrl fallback
       const finalImageUrl = credentialKind === "oca"
-        ? (certificateTemplateUrl?.trim() || imageUrl.trim())
+        ? certificateTemplateUrl!.trim()
         : imageUrl.trim();
 
       if (!finalImageUrl) {

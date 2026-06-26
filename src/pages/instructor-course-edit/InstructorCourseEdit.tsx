@@ -8675,7 +8675,7 @@ const InstructorCourseEdit = () => {
                     canEdit={canManageCourseOcb}
                     hasCertificate={form.has_certificate ?? false}
                     onActiveChange={setOcbIsActive}
-                    certificateTemplateUrl={course.certificate_template_url ?? null}
+                    certificateTemplateUrl={form.certificate_template_url || null}
                     onClearLegacyCertificate={handleClearLegacyCertificate}
                   />
                 </section>
