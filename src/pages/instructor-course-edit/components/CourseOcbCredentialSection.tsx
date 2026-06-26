@@ -139,6 +139,11 @@ export function CourseOcbCredentialSection({
       toast.error(t("courseEdit.ocb.noPermission"));
       return;
     }
+
+    if (credentialKind === "oca" && (!certificateTemplateUrl || !certificateTemplateUrl.trim())) {
+      toast.error("Vui lòng tải lên ảnh template chứng chỉ khi bật cấu hình Open Campus (OCA).");
+      return;
+    }
     setSaving(true);
     try {
       const triggerRule: CourseCredentialTriggerRule = {
