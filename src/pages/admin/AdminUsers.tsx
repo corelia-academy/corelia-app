@@ -6,7 +6,8 @@ import { getRoleLabel } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { GraduationCap, ShieldCheck, User } from "lucide-react";
+import { GraduationCap, ShieldCheck, User, Copy } from "lucide-react";
+import { toast } from "sonner";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import { useAdminProfiles } from "@/features/admin/users/hooks/useAdminProfiles";
@@ -266,9 +267,20 @@ export default function AdminUsers() {
                     <p className="truncate text-sm font-medium text-foreground">
                       {p.full_name || t("users.mobile.notUpdated")}
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-foreground-muted">
-                      {t("users.mobile.uid", { uid: p.id.substring(0, 8) })}
-                    </p>
+                    <div className="mt-0.5 flex items-center gap-1.5 text-xs text-foreground-muted">
+                      <span className="truncate">{t("users.mobile.uid", { uid: p.id.substring(0, 8) })}</span>
+                      <button
+                        type="button"
+                        className="hover:text-foreground transition-colors"
+                        onClick={() => {
+                          navigator.clipboard.writeText(p.id).catch(() => {});
+                          toast.success("Đã copy UID!");
+                        }}
+                        title="Copy UID"
+                      >
+                        <Copy className="size-3" aria-hidden />
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -424,12 +436,22 @@ export default function AdminUsers() {
                           <p className="truncate text-sm font-medium text-foreground">
                             {p.full_name || t("users.mobile.notUpdated")}
                           </p>
-                          <p
-                            className="mt-0.5 truncate text-xs text-foreground-muted"
-                            title={p.id}
-                          >
-                            {t("users.mobile.uid", { uid: p.id.substring(0, 8) })}
-                          </p>
+                          <div className="mt-0.5 flex items-center gap-1.5 text-xs text-foreground-muted">
+                            <span className="truncate" title={p.id}>
+                              {t("users.mobile.uid", { uid: p.id.substring(0, 8) })}
+                            </span>
+                            <button
+                              type="button"
+                              className="hover:text-foreground transition-colors"
+                              onClick={() => {
+                                navigator.clipboard.writeText(p.id).catch(() => {});
+                                toast.success("Đã copy UID!");
+                              }}
+                              title="Copy UID"
+                            >
+                              <Copy className="size-3" aria-hidden />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </td>

@@ -34,3 +34,6 @@ dist-ssr
 .wrangler
 .dev.vars*
 !.dev.vars.example
+
+# AI Agents configuration
+.agents/
