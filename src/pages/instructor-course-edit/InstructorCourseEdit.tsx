@@ -1622,6 +1622,40 @@ const InstructorCourseEdit = () => {
     }
   };
 
+  const handleClearLegacyCertificate = async () => {
+    if (!id) return;
+    try {
+      await updateCourse(id, {
+        has_certificate: false,
+        certificate_template_url: null,
+        certificate_template_path: null,
+      });
+      setCourse((prev) =>
+        prev
+          ? {
+              ...prev,
+              has_certificate: false,
+              certificate_template_url: null,
+              certificate_template_path: null,
+            }
+          : prev
+      );
+      setForm((p) => ({
+        ...p,
+        has_certificate: false,
+        certificate_template_url: "",
+        certificate_template_path: "",
+      }));
+      toast.success(String(t("courseEdit.toasts.certTemplateCleared" as never) || "Đã hủy chứng chỉ/OCA cũ"));
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : String(t("courseEdit.errors.clearCertTemplateFailed" as never) || "Lỗi khi hủy chứng chỉ/OCA cũ")
+      );
+    }
+  };
+
   const persistSponsors = async (
     nextSponsors: CourseSponsor[],
     toastKey?: string,
@@ -8636,6 +8670,7 @@ const InstructorCourseEdit = () => {
                     hasCertificate={form.has_certificate ?? false}
                     onActiveChange={setOcbIsActive}
                     certificateTemplateUrl={course.certificate_template_url ?? null}
+                    onClearLegacyCertificate={handleClearLegacyCertificate}
                   />
                 </section>
               )}

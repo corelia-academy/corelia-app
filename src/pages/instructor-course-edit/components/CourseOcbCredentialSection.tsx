@@ -49,6 +49,7 @@ export function CourseOcbCredentialSection({
   hasCertificate = false,
   onActiveChange,
   certificateTemplateUrl,
+  onClearLegacyCertificate,
 }: {
   courseId: string;
   courseSlug: string;
@@ -56,6 +57,7 @@ export function CourseOcbCredentialSection({
   hasCertificate?: boolean;
   onActiveChange?: (active: boolean) => void;
   certificateTemplateUrl?: string | null;
+  onClearLegacyCertificate?: () => void;
 }) {
   const { t } = useTranslation("instructor");
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -144,16 +146,25 @@ export function CourseOcbCredentialSection({
         require_assignment_pass: requireAssignmentPass,
         min_assignment_score: Math.min(100, Math.max(0, minAssignmentScore)),
       };
+
+      const finalImageUrl = credentialKind === "oca"
+        ? (certificateTemplateUrl?.trim() || imageUrl.trim())
+        : imageUrl.trim();
+
+      if (!finalImageUrl) {
+        toast.error("Vui lòng tải lên hình ảnh cho chứng chỉ/huy hiệu trước khi lưu.");
+        setSaving(false);
+        return;
+      }
+
       const { id } = await saveCourseCredentialTemplate({
         courseId,
         courseSlug,
         templateId,
-        isActive: credentialKind === "oca" ? true : isActive,
+        isActive: true, // ALWAYS make the saved template the active one for this course
         name: name.trim() || courseSlug,
         description: description.trim() || name.trim() || courseSlug,
-        imageUrl: credentialKind === "oca"
-          ? (certificateTemplateUrl?.trim() || imageUrl.trim())
-          : imageUrl.trim(),
+        imageUrl: finalImageUrl,
         identifierPrefix: identifierPrefix.trim(),
         triggerRule,
         credentialKind,
@@ -229,9 +240,21 @@ export function CourseOcbCredentialSection({
           ))}
         </div>
         {isOcbBlockedByHasCert && (
-          <p className="mt-2 text-xs text-warning-foreground bg-warning/10 border border-warning/20 rounded-md px-3 py-2">
-            {t("courseEdit.ocb.blockedByCertificate")}
-          </p>
+          <div className="mt-2 flex items-center justify-between bg-warning/10 border border-warning/20 rounded-md px-3 py-2">
+            <p className="text-xs text-warning-foreground">
+              {t("courseEdit.ocb.blockedByCertificate")}
+            </p>
+            {onClearLegacyCertificate && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={onClearLegacyCertificate}
+              >
+                Hủy OCA
+              </Button>
+            )}
+          </div>
         )}
       </div>
 
