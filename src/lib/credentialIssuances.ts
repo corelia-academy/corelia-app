@@ -79,7 +79,8 @@ export async function fetchMyCredentialIssuances(
         image_url,
         thumbnail_url,
         achievement_type,
-        hackathon_role
+        hackathon_role,
+        collection_symbol
       )
     `,
     )
@@ -124,7 +125,8 @@ export async function fetchMintedCredentialIssuancesForUser(
         image_url,
         thumbnail_url,
         achievement_type,
-        hackathon_role
+        hackathon_role,
+        collection_symbol
       )
     `,
     )
@@ -252,6 +254,7 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate): BadgeI
     status: (row.status as "pending" | "minted" | "failed" | "awaiting_holder_id") ?? "failed",
     credentialScope,
     hackathonRole: tpl?.hackathon_role ?? undefined,
+    collectionSymbol: tpl?.collection_symbol,
   };
 }
 

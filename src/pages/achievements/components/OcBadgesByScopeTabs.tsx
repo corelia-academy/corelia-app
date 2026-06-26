@@ -10,12 +10,7 @@ import type { BadgeItem, ModalItem } from "../types";
 
 type TabKey = "course" | "hackathon" | "activity_milestone";
 
-function scopeFilter(tab: TabKey): (b: BadgeItem) => boolean {
-  return (b) => {
-    const s = b.credentialScope ?? "course";
-    return s === tab;
-  };
-}
+
 
 export function OcBadgesByScopeTabs({
   badges,
@@ -31,9 +26,17 @@ export function OcBadgesByScopeTabs({
 
   const buckets = useMemo(() => {
     return {
-      course: badges.filter(scopeFilter("course")),
-      hackathon: badges.filter(scopeFilter("hackathon")),
-      activity_milestone: badges.filter(scopeFilter("activity_milestone")),
+      course: badges.filter(
+        (b) =>
+          (b.credentialScope ?? "course") === "course" &&
+          b.collectionSymbol !== "ocbadge",
+      ),
+      hackathon: badges.filter(
+        (b) =>
+          b.credentialScope === "hackathon" ||
+          b.collectionSymbol === "ocbadge",
+      ),
+      activity_milestone: badges.filter((b) => b.credentialScope === "activity_milestone"),
     };
   }, [badges]);
 
