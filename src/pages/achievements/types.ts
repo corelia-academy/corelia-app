@@ -55,10 +55,6 @@ export type BadgeItem = {
   credentialScope?: CredentialScopeForBadge;
   /** Role/type within a hackathon (e.g. "winner", "participant") — for multi-type hackathon badges */
   hackathonRole?: string | null;
-  /** Issuance ID for the badge (used for internal tracking) */
-  issuanceId?: string;
-  /** Status of the badge issuance */
-  status?: string;
 };
 
 export type ModalItem =
