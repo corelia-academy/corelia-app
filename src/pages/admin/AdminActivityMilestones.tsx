@@ -22,7 +22,6 @@ import {
   saveActivityMilestoneTemplate,
   type CredentialTemplateRow,
 } from "@/lib/credentialTemplates";
-import { invokeGrantCredentials } from "@/lib/credentialsEdge";
 import { uploadActivityMilestoneBadgeImage } from "@/lib/storage";
 
 type MilestoneEventKey =
