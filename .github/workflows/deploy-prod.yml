@@ -63,6 +63,8 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
+          # Mark orphaned migration (reverted via PR #225) so history matches local files
+          supabase migration repair --status reverted 20260709000009 --dns-resolver https || true
           supabase migration up --linked --dns-resolver https
 
       - name: Deploy Edge Function (corelia-api)
