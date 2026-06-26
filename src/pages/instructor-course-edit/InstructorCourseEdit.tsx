@@ -1635,8 +1635,8 @@ const InstructorCourseEdit = () => {
           ? {
               ...prev,
               has_certificate: false,
-              certificate_template_url: null,
-              certificate_template_path: null,
+              certificate_template_url: undefined,
+              certificate_template_path: undefined,
             }
           : prev
       );
