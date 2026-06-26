@@ -58,14 +58,14 @@ export async function runCourseCredentialCheck(
   ).eq("course_id", courseId).eq("is_active", true).maybeSingle();
   if (tplErr) throw new Error(tplErr.message);
   if (!template) {
-    return { ok: true, skipped: true, reason: "no_active_template", duplicate: false };
+    return { ok: true, skipped: true, reason: "no_active_template" };
   }
 
   // OCA (collection_symbol null) is never auto-minted — it requires a manual
   // claim so the learner-name-rendered certificate is produced and reviewed.
   const isOCA = !template.collection_symbol;
   if (opts?.autoIssue && isOCA) {
-    return { ok: true, skipped: true, reason: "oca_requires_manual_claim", duplicate: false };
+    return { ok: true, skipped: true, reason: "oca_requires_manual_claim" };
   }
 
   const enrollmentId = `${targetUserId}_${courseId}`;
@@ -76,7 +76,7 @@ export async function runCourseCredentialCheck(
   if (courseErr) throw new Error(courseErr.message);
   if (enrErr) throw new Error(enrErr.message);
   if (!courseRow || !enrollment) {
-    return { ok: true, skipped: true, reason: "no_enrollment", duplicate: false };
+    return { ok: true, skipped: true, reason: "no_enrollment" };
   }
 
   const course = (courseRow.data ?? {}) as {
@@ -91,7 +91,7 @@ export async function runCourseCredentialCheck(
     ).eq("id", accessId).maybeSingle();
     if (payErr) throw new Error(payErr.message);
     if (payAccess?.certificate_fee_paid !== true) {
-      return { ok: true, skipped: true, reason: "certificate_fee_unpaid", duplicate: false };
+      return { ok: true, skipped: true, reason: "certificate_fee_unpaid" };
     }
   }
 
@@ -116,14 +116,14 @@ export async function runCourseCredentialCheck(
   const rule = (template.trigger_rule ?? {}) as CourseTriggerRule;
   const needPct = Number(rule.completion_pct ?? 100);
   if (completionPct < needPct) {
-    return { ok: true, skipped: true, reason: "completion_pct_not_met", completionPct, needPct, duplicate: false };
+    return { ok: true, skipped: true, reason: "completion_pct_not_met", completionPct, needPct };
   }
 
   if (rule.require_assignment_pass === true) {
     const faRequired = readiness?.final_assignment_required === true;
     const status = readiness?.final_submission_status ?? null;
     if (faRequired && status !== "approved") {
-      return { ok: true, skipped: true, reason: "assignment_not_approved", duplicate: false };
+      return { ok: true, skipped: true, reason: "assignment_not_approved" };
     }
     void rule.min_assignment_score;
   }
@@ -151,10 +151,10 @@ export async function runCourseCredentialCheck(
         const backfilled = extractOcCredentialId(existing.oc_response);
         if (backfilled) {
           await db.from("credential_issuances").update({ oc_credential_id: backfilled }).eq("id", existing.id);
-          return { ok: true, issuanceId: existing.id, status: "minted", minted: true, skipped: false, duplicate: false };
+          return { ok: true, issuanceId: existing.id, status: "minted", minted: true, skipped: false };
         }
       }
-      return { ok: true, skipped: true, reason: "already_issued_or_pending", issuanceId: existing.id, duplicate: false };
+      return { ok: true, skipped: true, reason: "already_issued_or_pending", issuanceId: existing.id };
     }
     // status === "failed" or "awaiting_holder_id" — reset and retry
     const { error: resetErr } = await db.from("credential_issuances").update({
@@ -165,27 +165,14 @@ export async function runCourseCredentialCheck(
       retry_count: Number(existing.retry_count ?? 0) + 1,
     }).eq("id", existing.id);
     if (resetErr) throw new Error(resetErr.message);
-    const mintResult = await mintCredentialOnce(db, existing.id);
-    const { data: after } = await db.from("credential_issuances").select("status, oc_credential_id").eq(
-      "id",
-      existing.id,
-    ).maybeSingle();
-    const duplicate = mintResult.duplicate === true;
-    const missingDuplicateCredentialId = duplicate && !after?.oc_credential_id;
-    if (missingDuplicateCredentialId) {
-      console.warn("[corelia-api] duplicate course credential missing oc_credential_id", {
-        issuanceId: existing.id,
-        issuerReferenceId: issuerRef,
-      });
-    }
+    await mintCredentialOnce(db, existing.id);
+    const { data: after } = await db.from("credential_issuances").select("status").eq("id", existing.id).maybeSingle();
     return {
       ok: true,
       issuanceId: existing.id,
       status: after?.status ?? "unknown",
       minted: after?.status === "minted",
       skipped: false,
-      duplicate,
-      ...(missingDuplicateCredentialId ? { warning: "duplicate_missing_oc_credential_id" } : {}),
     };
   }
 
@@ -208,16 +195,16 @@ export async function runCourseCredentialCheck(
   }).select("id").maybeSingle();
   if (insErr) {
     if (/duplicate key|unique constraint/i.test(insErr.message)) {
-      return { ok: true, skipped: true, reason: "duplicate_issuance", duplicate: false };
+      return { ok: true, skipped: true, reason: "duplicate_issuance" };
     }
     throw new Error(insErr.message);
   }
   const issuanceId = inserted?.id != null ? String(inserted.id) : null;
   if (!issuanceId) {
-    return { ok: false, message: "Không tạo được issuance.", duplicate: false };
+    return { ok: false, message: "Không tạo được issuance." };
   }
 
-  const mintResult = await mintCredentialOnce(db, issuanceId);
+  await mintCredentialOnce(db, issuanceId);
 
   try {
     await runActivityMilestoneCheck(db, targetUserId, "courses_completed", { course_id: courseId });
@@ -225,26 +212,13 @@ export async function runCourseCredentialCheck(
     console.error("[corelia-api] activity milestone after course credential", actErr);
   }
 
-  const { data: after } = await db.from("credential_issuances").select("status, oc_credential_id").eq(
-    "id",
-    issuanceId,
-  ).maybeSingle();
-  const duplicate = mintResult.duplicate === true;
-  const missingDuplicateCredentialId = duplicate && !after?.oc_credential_id;
-  if (missingDuplicateCredentialId) {
-    console.warn("[corelia-api] duplicate course credential missing oc_credential_id", {
-      issuanceId,
-      issuerReferenceId: issuerRef,
-    });
-  }
+  const { data: after } = await db.from("credential_issuances").select("status").eq("id", issuanceId).maybeSingle();
   return {
     ok: true,
     issuanceId,
     status: after?.status ?? "unknown",
     minted: after?.status === "minted",
     skipped: false,
-    duplicate,
-    ...(missingDuplicateCredentialId ? { warning: "duplicate_missing_oc_credential_id" } : {}),
     evaluatedAt: nowIso(),
   };
 }
