@@ -1223,6 +1223,12 @@ const InstructorCourseEdit = () => {
         return;
       }
     }
+
+    if (form.has_certificate && !form.certificate_template_url) {
+      setError(t("courseEdit.errors.missingCertificateTemplate", { defaultValue: "Vui lòng tải lên ảnh phôi chứng chỉ khi bật Cấp chứng chỉ." }));
+      return;
+    }
+
     setSaving(true);
     setError(null);
     const savePromise = (async () => {
