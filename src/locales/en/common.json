@@ -734,6 +734,8 @@
       }
     },
     "sync": {
+      "pendingTitle": "Creating credential...",
+      "pendingDescription": "The system is recording and creating your OCB on the blockchain.",
       "mintedTitle": "Credential minted successfully!",
       "mintedDescription": "Your OCB has been successfully minted and stored on the blockchain.",
       "failedTitle": "Credential minting failed",

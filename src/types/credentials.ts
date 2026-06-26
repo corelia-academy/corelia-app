@@ -16,6 +16,7 @@ export type CredentialTemplateSummary = {
   achievement_type: "Badge" | "Award" | "MicroCredential" | "Diploma" | "CertificateOfCompletion";
   /** Role/type label for hackathon badges (e.g. "winner", "participant") */
   hackathon_role?: string | null;
+  collection_symbol?: "ocbadge" | null;
 };
 
 export type CredentialIssuanceWithTemplate = {

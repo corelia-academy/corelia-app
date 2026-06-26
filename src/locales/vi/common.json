@@ -734,6 +734,8 @@
       }
     },
     "sync": {
+      "pendingTitle": "Đang tạo chứng nhận...",
+      "pendingDescription": "Hệ thống đang ghi nhận và tạo OCB của bạn trên blockchain.",
       "mintedTitle": "Tạo chứng nhận thành công!",
       "mintedDescription": "OCB của bạn đã được tạo thành công và lưu trên blockchain.",
       "failedTitle": "Tạo chứng nhận thất bại",

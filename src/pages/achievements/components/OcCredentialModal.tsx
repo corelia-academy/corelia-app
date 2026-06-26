@@ -62,6 +62,7 @@ export function OcCredentialModal({
 
   const badgeScope = item.kind === "badge" ? (item.data as BadgeItem).credentialScope : undefined;
   const hackathonRole = item.kind === "badge" ? (item.data as BadgeItem).hackathonRole : undefined;
+  const isOcb = item.kind === "badge" && (item.data as BadgeItem).collectionSymbol === "ocbadge";
 
   const credentialName = item.kind === "cert" ? item.data.course : item.data.title;
   const issued =
@@ -273,6 +274,8 @@ export function OcCredentialModal({
               <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted sm:text-sm">
                 {item.kind === "cert"
                   ? t("achievements.oc.modal.kind.cert")
+                  : isOcb
+                  ? t("achievements.oc.modal.kind.badge")
                   : badgeScope === "course"
                   ? t("achievements.oc.modal.kind.oca")
                   : badgeScope === "hackathon"
