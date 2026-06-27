@@ -21,9 +21,13 @@ export function CanvasCropperModal({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
   const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null);
+  // Snapshot the imageFile on open so closing the dialog doesn't re-trigger
+  // the image-load effect mid-animation (which causes removeChild crashes).
+  const [activeFile, setActiveFile] = useState<File | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
+  const objectUrlRef = useRef<string | null>(null);
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -91,22 +95,43 @@ export function CanvasCropperModal({
     ctx.restore();
   }, [scale, offset, loadedImage]);
 
-  // Load image when file changes
+  // Only snapshot the file when the modal opens; ignore changes while closing.
   useEffect(() => {
     if (open && imageFile) {
-      const img = new Image();
-      img.onload = () => {
-        setLoadedImage(img);
+      setActiveFile(imageFile);
+    }
+    if (!open) {
+      // Defer clearing so the close animation can finish without DOM conflict.
+      const t = setTimeout(() => {
+        setActiveFile(null);
+        setLoadedImage(null);
         setScale(1);
         setOffset({ x: 0, y: 0 });
-      };
-      img.src = URL.createObjectURL(imageFile);
-      return () => {
-        URL.revokeObjectURL(img.src);
-        setLoadedImage(null);
-      };
+        if (objectUrlRef.current) {
+          URL.revokeObjectURL(objectUrlRef.current);
+          objectUrlRef.current = null;
+        }
+      }, 200);
+      return () => clearTimeout(t);
     }
   }, [open, imageFile]);
+
+  // Load image from the snapshotted file.
+  useEffect(() => {
+    if (!activeFile) return;
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+    }
+    const url = URL.createObjectURL(activeFile);
+    objectUrlRef.current = url;
+    const img = new Image();
+    img.onload = () => {
+      setLoadedImage(img);
+      setScale(1);
+      setOffset({ x: 0, y: 0 });
+    };
+    img.src = url;
+  }, [activeFile]);
 
   // Redraw when scale, offset or image loads
   useEffect(() => {
