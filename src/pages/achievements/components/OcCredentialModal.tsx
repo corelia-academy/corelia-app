@@ -457,6 +457,34 @@ export function OcCredentialModal({
                   variant="outline"
                   className="flex-1 gap-2 text-sm sm:text-base"
                   size="lg"
+                  onClick={async () => {
+                    const shareUrl = d.ocCredentialUrl || `${window.location.origin}/u/${profile?.username || ""}`;
+                    const shareTitle = item.kind === "cert" ? (d as CertificateItem).course : (d as BadgeItem).title;
+                    const shareText = `Tôi vừa nhận được thành tích "${shareTitle}" từ Corelia Academy trên chuỗi khối Open Campus!`;
+
+                    if (navigator.share) {
+                      try {
+                        await navigator.share({
+                          title: shareTitle,
+                          text: shareText,
+                          url: shareUrl,
+                        });
+                        toast.success(t("achievements.share.success", { defaultValue: "Đã chia sẻ thành công!" }));
+                      } catch (err) {
+                        if ((err as Error).name !== "AbortError") {
+                          console.error("Error sharing:", err);
+                        }
+                      }
+                    } else {
+                      try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        toast.success(t("achievements.share.copied", { defaultValue: "Đã sao chép liên kết vào bộ nhớ tạm!" }));
+                      } catch (err) {
+                        console.error("Clipboard copy failed:", err);
+                        toast.error(t("achievements.share.error", { defaultValue: "Không thể sao chép liên kết." }));
+                      }
+                    }
+                  }}
                 >
                   <Share2 className="size-4 shrink-0" aria-hidden />
                   <span>{t("actions.share")}</span>

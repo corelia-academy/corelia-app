@@ -24,6 +24,7 @@ export type CredentialIssuanceWithTemplate = {
   course_id: string | null;
   minted_at: string | null;
   oc_credential_id: string | null;
+  oc_response?: unknown;
   network: CredentialIssuanceNetwork;
   status: string;
   template: CredentialTemplateSummary | null;
