@@ -9,6 +9,7 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,10 @@ import { useAuth } from "@/stores/authStore";
 
 import { BADGE_PLACEHOLDER, CERT_PLACEHOLDER } from "../constants";
 import type { BadgeItem, CertificateItem, ModalItem } from "../types";
+import {
+  downloadBadgeImage,
+  downloadCertificate,
+} from "../utils/renderCertificate";
 import { OcClaimBadge } from "./OcClaimBadge";
 
 export function OcCredentialModal({
@@ -51,6 +56,7 @@ export function OcCredentialModal({
   const setReviewing = (next: boolean) => {
     setReviewState({ key: reviewKey, reviewing: next });
   };
+  const [downloading, setDownloading] = useState(false);
 
   if (!item) return null;
 
@@ -419,10 +425,32 @@ export function OcCredentialModal({
                   variant="outline"
                   className="flex-1 gap-2 text-sm sm:text-base"
                   size="lg"
+                  disabled={downloading}
+                  onClick={async () => {
+                    setDownloading(true);
+                    try {
+                      if (item.kind === "cert") {
+                        await downloadCertificate(d as CertificateItem);
+                      } else {
+                        await downloadBadgeImage(d as BadgeItem);
+                      }
+                    } catch (error) {
+                      console.error("Failed to download", error);
+                      toast.error(t("achievements.certificates.downloadError"));
+                    } finally {
+                      setDownloading(false);
+                    }
+                  }}
                 >
-                  <Download className="size-4 shrink-0" aria-hidden />
+                  {downloading ? (
+                    <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+                  ) : (
+                    <Download className="size-4 shrink-0" aria-hidden />
+                  )}
                   <span>
-                    {t("achievements.oc.modal.claimedActions.downloadPdf")}
+                    {item.kind === "cert"
+                      ? t("achievements.oc.modal.claimedActions.downloadPdf")
+                      : t("achievements.certificates.downloadPng")}
                   </span>
                 </Button>
                 <Button
