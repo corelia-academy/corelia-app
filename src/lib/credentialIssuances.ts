@@ -237,7 +237,7 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, usernam
 
   const ocUrl = openCampusCredentialExplorerUrl(resolvedCredentialId, {
     username,
-    nftCollection: tpl?.collection_symbol === "ocbadge" ? "ocbadge" : "occredential",
+    nftCollection: "occredential", // Hardcode to 'occredential' to prevent OC Sandbox Next.js crash
   });
   const minted = row.minted_at ? new Date(row.minted_at).toLocaleDateString() : "—";
 
