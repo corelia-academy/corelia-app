@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { BadgeCard } from "./BadgeCard";
 import type { BadgeItem, ModalItem } from "../types";
 
-type TabKey = "course" | "hackathon" | "activity_milestone";
+type TabKey = "all" | "course" | "hackathon" | "activity_milestone";
 
 
 
@@ -22,10 +22,11 @@ export function OcBadgesByScopeTabs({
   onOpenModal: (item: ModalItem) => void;
 }) {
   const { t } = useTranslation("common");
-  const [tab, setTab] = useState<TabKey>("course");
+  const [tab, setTab] = useState<TabKey>("all");
 
   const buckets = useMemo(() => {
     return {
+      all: badges,
       course: badges.filter(
         (b) =>
           (b.credentialScope ?? "course") === "course" &&
@@ -44,6 +45,10 @@ export function OcBadgesByScopeTabs({
   const current = buckets[tab];
 
   const tabs: { key: TabKey; label: string }[] = [
+    {
+      key: "all",
+      label: t("achievements.ocVault.tabs.all", { defaultValue: "Tất cả" }),
+    },
     {
       key: "course",
       label: t("achievements.ocVault.tabs.oca", { defaultValue: "OCA" }),

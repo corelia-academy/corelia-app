@@ -1,5 +1,5 @@
 import { getCourse } from "@/lib/courses";
-import { openCampusCredentialExplorerUrl, type CourseIssuanceInfo } from "@/lib/credentialIssuances";
+import { openCampusCredentialExplorerUrl, type CourseIssuanceInfo, extractOcCredentialId } from "@/lib/credentialIssuances";
 import { intlLocale } from "@/lib/intl";
 import type { Enrollment } from "@/types/courses";
 import type { CredentialIssuanceWithTemplate } from "@/types/credentials";
@@ -109,7 +109,10 @@ export function buildCourseCertificatesFromIssuances(
     .map((row) => {
       const courseId = row.course_id!;
       const course = courseMap.get(courseId);
-      const ocCredentialId = row.oc_credential_id ?? null;
+      let ocCredentialId = row.oc_credential_id ?? null;
+      if (!ocCredentialId?.trim() && row.oc_response) {
+        ocCredentialId = extractOcCredentialId(row.oc_response);
+      }
       const ocCredentialUrl = ocCredentialId
         ? openCampusCredentialExplorerUrl(ocCredentialId, {
             username: holderOcid,
