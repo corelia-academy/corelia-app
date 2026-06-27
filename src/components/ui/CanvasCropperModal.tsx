@@ -20,14 +20,14 @@ export function CanvasCropperModal({
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
+  const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const imageRef = useRef<HTMLImageElement | null>(null);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
-    const img = imageRef.current;
+    const img = loadedImage;
     if (!canvas || !img) return;
 
     const ctx = canvas.getContext("2d");
@@ -89,31 +89,31 @@ export function CanvasCropperModal({
     ctx.strokeRect(cropX, cropY, cropSize, cropSize);
 
     ctx.restore();
-  }, [scale, offset]);
+  }, [scale, offset, loadedImage]);
 
-  // Reset state when file changes
+  // Load image when file changes
   useEffect(() => {
     if (open && imageFile) {
       const img = new Image();
       img.onload = () => {
-        imageRef.current = img;
+        setLoadedImage(img);
         setScale(1);
         setOffset({ x: 0, y: 0 });
-        drawCanvas();
       };
       img.src = URL.createObjectURL(imageFile);
       return () => {
         URL.revokeObjectURL(img.src);
+        setLoadedImage(null);
       };
     }
-  }, [open, imageFile, drawCanvas]);
+  }, [open, imageFile]);
 
-  // Redraw when scale or offset changes
+  // Redraw when scale, offset or image loads
   useEffect(() => {
-    if (imageRef.current) {
+    if (loadedImage) {
       drawCanvas();
     }
-  }, [scale, offset, drawCanvas]);
+  }, [scale, offset, loadedImage, drawCanvas]);
 
   const getEventCoords = (e: MouseEvent | TouchEvent | ReactMouseEvent | ReactTouchEvent) => {
     if ("touches" in e) {
@@ -148,7 +148,7 @@ export function CanvasCropperModal({
   };
 
   const handleCrop = async () => {
-    const img = imageRef.current;
+    const img = loadedImage;
     const canvas = canvasRef.current;
     if (!img || !canvas || !imageFile) return;
 

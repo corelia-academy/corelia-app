@@ -383,7 +383,18 @@ export function CourseOcbCredentialSection({
                   {uploading ? t("courseEdit.ocb.uploading") : t("courseEdit.ocb.uploadBadge")}
                 </Button>
                 {imageUrl && (
-                  <img src={imageUrl} alt="" className="h-14 w-auto rounded border border-border-subtle" />
+                  <div className="relative size-14 shrink-0 rounded border border-border-subtle bg-surface-raised">
+                    <img src={imageUrl} alt="" className="size-full rounded object-cover" />
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => setImageUrl("")}
+                        className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        <span className="text-[10px] font-bold">×</span>
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
               <p className="mt-1.5 text-xs text-foreground-muted">{t("courseEdit.ocb.imageHint")}</p>
