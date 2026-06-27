@@ -326,10 +326,19 @@ export default function AdminActivityMilestones() {
                 </div>
               </div>
               {imageUrl ? (
-                <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-surface-raised p-2">
-                  <div className="flex items-center gap-2 mb-2 text-xs font-medium text-foreground-muted">
-                    <ImageIcon className="size-4" />
-                    Bản xem trước
+                <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-surface-raised p-2 relative">
+                  <div className="flex items-center justify-between gap-2 mb-2 text-xs font-medium text-foreground-muted">
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="size-4" />
+                      Bản xem trước
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setImageUrl("")}
+                      className="flex size-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      <span className="text-[10px] font-bold">×</span>
+                    </button>
                   </div>
                   <img src={imageUrl} alt="Badge Preview" className="h-32 w-full object-contain" />
                 </div>
