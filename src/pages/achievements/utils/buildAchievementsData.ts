@@ -102,13 +102,12 @@ export function buildCourseCertificatesFromIssuances(
     .filter(
       (row) =>
         row.template?.scope_type === "course" &&
-        row.course_id &&
-        !existingCourseIds.has(row.course_id) &&
+        (!row.course_id || !existingCourseIds.has(row.course_id)) &&
         row.template?.collection_symbol !== "ocbadge",
     )
     .map((row) => {
-      const courseId = row.course_id!;
-      const course = courseMap.get(courseId);
+      const courseId = row.course_id ?? `deleted-${row.id}`;
+      const course = row.course_id ? courseMap.get(row.course_id) : undefined;
       let ocCredentialId = row.oc_credential_id ?? null;
       if (!ocCredentialId?.trim() && row.oc_response) {
         ocCredentialId = extractOcCredentialId(row.oc_response);
