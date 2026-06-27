@@ -187,9 +187,11 @@ export function openCampusCredentialExplorerUrl(
     const u = username.endsWith(".edu") ? username : `${username}.edu`;
     
     // Workaround: OC Sandbox frontend currently crashes when viewing details for OCB badges.
-    // Fall back to the public profile grid where badges render successfully.
+    // Fall back to the old URL format that was proven to work.
     if (nftCollection === "ocbadge") {
-      return `${base}/public/credentials?username=${encodeURIComponent(u)}`;
+      return id 
+        ? `${base}/public/credentials?id=${encodeURIComponent(id)}`
+        : `${base}/public/credentials?username=${encodeURIComponent(u)}`;
     }
 
     return `${base}/public/credentials/details?username=${encodeURIComponent(u)}&id=${encodeURIComponent(id)}&nftCollection=${encodeURIComponent(nftCollection)}`;
