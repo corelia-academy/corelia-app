@@ -13,6 +13,8 @@ import {
 } from "@/lib/credentialTemplates";
 import { uploadCourseCredentialBadgeImage } from "@/lib/storage";
 import { toast } from "sonner";
+import { validatePngSignature, checkImageDimensions } from "@/lib/imageValidation";
+import { CanvasCropperModal } from "@/components/ui/CanvasCropperModal";
 
 function StatusBadge({ active }: { active: boolean }) {
   const { t } = useTranslation("instructor");
@@ -64,6 +66,8 @@ export function CourseOcbCredentialSection({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [cropperOpen, setCropperOpen] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(true);
   const [credentialKind, setCredentialKind] = useState<CourseCredentialKind>("oca");
@@ -132,6 +136,40 @@ export function CourseOcbCredentialSection({
     } finally {
       setUploading(false);
     }
+  };
+
+  const onFileSelect = async (file: File | null) => {
+    if (!file) return;
+    if (!canEdit) {
+      toast.error(t("courseEdit.ocb.noPermission"));
+      return;
+    }
+
+    const isPng = await validatePngSignature(file);
+    if (!isPng) {
+      toast.error(t("courseEdit.ocb.invalidPng", { defaultValue: "Định dạng file không phải PNG hợp lệ." }));
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+
+    try {
+      const { isSquare } = await checkImageDimensions(file);
+      if (isSquare) {
+        await handleUpload(file);
+      } else {
+        setPendingFile(file);
+        setCropperOpen(true);
+      }
+    } catch {
+      toast.error(t("courseEdit.ocb.invalidImage", { defaultValue: "Không thể đọc tệp hình ảnh." }));
+    }
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const handleCroppedUpload = async (croppedFile: File) => {
+    setCropperOpen(false);
+    setPendingFile(null);
+    await handleUpload(croppedFile);
   };
 
   const handleSave = async () => {
@@ -330,9 +368,9 @@ export function CourseOcbCredentialSection({
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/png,image/jpeg,image/jpg"
+                accept="image/png"
                 className="hidden"
-                onChange={(e) => void handleUpload(e.target.files?.[0] ?? null)}
+                onChange={(e) => void onFileSelect(e.target.files?.[0] ?? null)}
               />
               <div className="mt-1 flex flex-wrap items-center gap-3">
                 <Button
@@ -420,6 +458,16 @@ export function CourseOcbCredentialSection({
       <Button type="button" disabled={!canEdit || saving || isOcbBlockedByHasCert} onClick={() => void handleSave()}>
         {saving ? t("courseEdit.ocb.saving") : t("courseEdit.ocb.save")}
       </Button>
+
+      <CanvasCropperModal
+        open={cropperOpen}
+        imageFile={pendingFile}
+        onCrop={(cropped) => void handleCroppedUpload(cropped)}
+        onCancel={() => {
+          setCropperOpen(false);
+          setPendingFile(null);
+        }}
+      />
     </div>
   );
 }

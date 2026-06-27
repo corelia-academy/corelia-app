@@ -23,6 +23,8 @@ import {
   type CredentialTemplateRow,
 } from "@/lib/credentialTemplates";
 import { uploadActivityMilestoneBadgeImage } from "@/lib/storage";
+import { validatePngSignature, checkImageDimensions } from "@/lib/imageValidation";
+import { CanvasCropperModal } from "@/components/ui/CanvasCropperModal";
 
 type MilestoneEventKey =
   | "login_streak"
@@ -59,7 +61,8 @@ export default function AdminActivityMilestones() {
   const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [cropperOpen, setCropperOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -88,6 +91,46 @@ export default function AdminActivityMilestones() {
       setLoading(false);
     }
   }, [t]);
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const { url } = await uploadActivityMilestoneBadgeImage(file);
+      setImageUrl(url);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const onFileSelect = async (file: File | null) => {
+    if (!file) return;
+
+    const isPng = await validatePngSignature(file);
+    if (!isPng) {
+      toast.error("Định dạng file không phải PNG hợp lệ.");
+      return;
+    }
+
+    try {
+      const { isSquare } = await checkImageDimensions(file);
+      if (isSquare) {
+        await handleUpload(file);
+      } else {
+        setPendingFile(file);
+        setCropperOpen(true);
+      }
+    } catch {
+      toast.error("Không thể đọc tệp hình ảnh.");
+    }
+  };
+
+  const handleCroppedUpload = async (croppedFile: File) => {
+    setCropperOpen(false);
+    setPendingFile(null);
+    await handleUpload(croppedFile);
+  };
 
   useEffect(() => {
     void refresh();
@@ -258,22 +301,10 @@ export default function AdminActivityMilestones() {
               <div className="relative flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-border-subtle bg-surface-base p-6 text-center transition-colors hover:bg-surface-raised focus-within:border-primary">
                 <input
                   type="file"
-                  accept="image/png,image/jpeg"
+                  accept="image/png"
                   disabled={uploading}
                   className="absolute inset-0 cursor-pointer opacity-0"
-                  onChange={async (e: ChangeEvent<HTMLInputElement>) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    setUploading(true);
-                    try {
-                      const { url } = await uploadActivityMilestoneBadgeImage(file);
-                      setImageUrl(url);
-                    } catch (err) {
-                      toast.error(err instanceof Error ? err.message : "Upload failed");
-                    } finally {
-                      setUploading(false);
-                    }
-                  }}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => void onFileSelect(e.target.files?.[0] ?? null)}
                 />
                 <div className="flex flex-col items-center gap-2 text-sm text-foreground-muted">
                   {uploading ? (
@@ -389,6 +420,16 @@ export default function AdminActivityMilestones() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CanvasCropperModal
+        open={cropperOpen}
+        imageFile={pendingFile}
+        onCrop={(cropped) => void handleCroppedUpload(cropped)}
+        onCancel={() => {
+          setCropperOpen(false);
+          setPendingFile(null);
+        }}
+      />
     </div>
   );
 }
