@@ -192,8 +192,6 @@ export function CanvasCropperModal({
 
       const outCtx = outputCanvas.getContext("2d");
       if (outCtx) {
-        outCtx.fillStyle = "#ffffff";
-        outCtx.fillRect(0, 0, targetSize, targetSize);
         outCtx.drawImage(
           img,
           sx,
