@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Loader2, Shield } from "lucide-react";
+import { CheckCircle2, Loader2, LockKeyhole, Shield } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
+  countIssuancesForTemplate,
   getLatestCourseCredentialTemplate,
   saveCourseCredentialTemplate,
   type CourseCredentialKind,
@@ -75,6 +76,7 @@ export function CourseOcbCredentialSection({
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [identifierPrefix, setIdentifierPrefix] = useState("");
+  const [issuanceCount, setIssuanceCount] = useState(0);
   const [completionPct, setCompletionPct] = useState(100);
   const [requireAssignmentPass, setRequireAssignmentPass] = useState(false);
   const [minAssignmentScore, setMinAssignmentScore] = useState(70);
@@ -95,6 +97,7 @@ export function CourseOcbCredentialSection({
         setCompletionPct(100);
         setRequireAssignmentPass(false);
         setMinAssignmentScore(70);
+        setIssuanceCount(0);
         return;
       }
       setTemplateId(row.id);
@@ -109,6 +112,9 @@ export function CourseOcbCredentialSection({
       setCompletionPct(Number(tr?.completion_pct ?? 100));
       setRequireAssignmentPass(tr?.require_assignment_pass === true);
       setMinAssignmentScore(Number(tr?.min_assignment_score ?? 70));
+      // Load issuance count to determine if identifierPrefix can be edited
+      const count = await countIssuancesForTemplate(row.id).catch(() => 0);
+      setIssuanceCount(count);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("courseEdit.ocb.loadFailed"));
     } finally {
@@ -411,13 +417,28 @@ export function CourseOcbCredentialSection({
 
         <Field>
           <FieldLabel>{t("courseEdit.ocb.identifierPrefixLabel")}</FieldLabel>
-          <Input
-            value={identifierPrefix}
-            disabled={!canEdit}
-            onChange={(e) => setIdentifierPrefix(e.target.value.slice(0, 40))}
-            placeholder={`corelia:${courseSlug}`}
-          />
-          <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.ocb.identifierHint")}</p>
+          <div className="relative">
+            <Input
+              value={identifierPrefix}
+              disabled={!canEdit || issuanceCount > 0}
+              onChange={(e) => setIdentifierPrefix(e.target.value.slice(0, 40))}
+              placeholder={`corelia:${courseSlug}`}
+              className={issuanceCount > 0 ? "pr-8" : ""}
+            />
+            {issuanceCount > 0 && (
+              <LockKeyhole
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-foreground-muted"
+                aria-hidden
+              />
+            )}
+          </div>
+          {issuanceCount > 0 ? (
+            <p className="mt-1 text-xs text-warning">
+              Đã có {issuanceCount} credential được tạo. Tiền tố đã bị khoá để tránh mint trùng.
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.ocb.identifierHint")}</p>
+          )}
         </Field>
       </div>
 
