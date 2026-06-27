@@ -165,13 +165,22 @@ export function openCampusCredentialExplorerUrl(
     nftCollection?: "occredential" | "ocbadge";
   },
 ): string | null {
-  if (!credentialId?.trim()) return null;
-  const id = credentialId.trim();
   const base = import.meta.env.VITE_OCID_SANDBOX === "true"
     ? "https://id.sandbox.opencampus.xyz"
     : "https://id.opencampus.xyz";
+
+  const id = credentialId?.trim();
   const username = opts?.username?.trim();
   const nftCollection = opts?.nftCollection ?? "occredential";
+
+  if (!id) {
+    if (username) {
+      const u = username.endsWith(".edu") ? username : `${username}.edu`;
+      return `${base}/public/credentials?username=${encodeURIComponent(u)}`;
+    }
+    return null;
+  }
+
   // With the holder OCID we can deep-link to the specific credential details page;
   // otherwise fall back to the holder's public credentials list.
   if (username) {
