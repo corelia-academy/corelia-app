@@ -109,7 +109,14 @@ export default function AdminActivityMilestones() {
 
     const isPng = await validatePngSignature(file);
     if (!isPng) {
-      toast.error("Định dạng file không phải PNG hợp lệ.");
+      toast.error(
+        <span>
+          Định dạng file không phải PNG. Vui lòng tách nền hoặc chuyển đổi ảnh tại{" "}
+          <a href="https://www.remove.bg" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-primary-foreground hover:opacity-85">
+            remove.bg
+          </a>
+        </span>
+      );
       return;
     }
 
