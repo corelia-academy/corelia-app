@@ -185,6 +185,13 @@ export function openCampusCredentialExplorerUrl(
   // otherwise fall back to the holder's public credentials list.
   if (username) {
     const u = username.endsWith(".edu") ? username : `${username}.edu`;
+    
+    // Workaround: OC Sandbox frontend currently crashes when viewing details for OCB badges.
+    // Fall back to the public profile grid where badges render successfully.
+    if (nftCollection === "ocbadge") {
+      return `${base}/public/credentials?username=${encodeURIComponent(u)}`;
+    }
+
     return `${base}/public/credentials/details?username=${encodeURIComponent(u)}&id=${encodeURIComponent(id)}&nftCollection=${encodeURIComponent(nftCollection)}`;
   }
   return `${base}/public/credentials?id=${encodeURIComponent(id)}`;
@@ -237,7 +244,7 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, usernam
 
   const ocUrl = openCampusCredentialExplorerUrl(resolvedCredentialId, {
     username,
-    nftCollection: "occredential", // Hardcode to 'occredential' to prevent OC Sandbox Next.js crash
+    nftCollection: tpl?.collection_symbol === "ocbadge" ? "ocbadge" : "occredential",
   });
   const minted = row.minted_at ? new Date(row.minted_at).toLocaleDateString() : "—";
 
