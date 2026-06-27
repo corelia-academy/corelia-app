@@ -210,11 +210,14 @@ function styleForScope(scope: CredentialTemplateSummary["scope_type"]): ScopeSty
   }
 }
 
-export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate): BadgeItem {
+export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, username?: string | null): BadgeItem {
   const tpl = row.template;
   const title = tpl?.name ?? "Credential";
   const description = tpl?.description ?? "";
-  const ocUrl = openCampusCredentialExplorerUrl(row.oc_credential_id);
+  const ocUrl = openCampusCredentialExplorerUrl(row.oc_credential_id, {
+    username,
+    nftCollection: tpl?.collection_symbol === "ocbadge" ? "ocbadge" : "occredential",
+  });
   const minted = row.minted_at ? new Date(row.minted_at).toLocaleDateString() : "—";
 
   const credentialScope =
