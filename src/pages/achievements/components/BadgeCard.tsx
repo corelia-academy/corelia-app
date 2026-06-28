@@ -92,7 +92,7 @@ export function BadgeCard({
 
       <div
         className={cn(
-          "relative size-14 overflow-hidden rounded-md border-2 sm:size-20",
+          "relative h-14 min-w-[3.5rem] shrink-0 overflow-hidden rounded-md border-2 sm:h-20 sm:min-w-[5rem]",
           badge.locked
             ? "border-border bg-surface-raised"
             : cn("border-2", badge.borderColor, badge.bgColor),
@@ -102,7 +102,7 @@ export function BadgeCard({
           src={imageUrl}
           alt=""
           className={cn(
-            "size-full object-contain transition-opacity duration-200 group-hover:opacity-95",
+            "h-full w-auto object-contain transition-opacity duration-200 group-hover:opacity-95",
             badge.locked && "opacity-60",
             isPending && "opacity-60"
           )}

@@ -257,14 +257,14 @@ export function OcCredentialModal({
         <div className="min-w-0 p-4 sm:p-6">
           <DialogHeader className="mb-4">
             <div className="flex items-start gap-3">
-              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-raised border border-border-subtle sm:size-14">
+              <div className="flex h-12 shrink-0 min-w-[3rem] items-center justify-center overflow-hidden rounded-md bg-surface-raised border border-border-subtle sm:h-14 sm:min-w-[3.5rem]">
                 <img
                   src={
                     item.data.imageUrl ||
                     (item.kind === "cert" ? CERT_PLACEHOLDER : BADGE_PLACEHOLDER)
                   }
                   alt=""
-                  className="size-full object-contain"
+                  className="h-full w-auto object-contain"
                 />
               </div>
               <div className="min-w-0 flex-1">
