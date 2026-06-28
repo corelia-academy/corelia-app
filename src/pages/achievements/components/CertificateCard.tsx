@@ -157,14 +157,11 @@ function CertificatePreviewDialog({
         </div>
 
         {/* Certificate image — rendered URL has name baked in so right-click works */}
-        <div
-          className="relative w-full bg-surface-raised"
-          style={{ aspectRatio: "4/3" }}
-        >
+        <div className="relative w-full bg-surface-raised">
           <img
             src={renderedUrl ?? imageUrl}
             alt={cert.course}
-            className="size-full object-contain"
+            className="w-full h-auto object-contain"
           />
           {/* CSS overlay only shown while canvas render is in progress (renderedUrl not ready yet) */}
           {!renderedUrl && cert.holderName && hasTemplate && (
@@ -236,18 +233,17 @@ export function CertificateCard({
           )}
         />
 
-        {/* Certificate preview — 4:3, name overlay, click to open lightbox */}
+        {/* Certificate preview — name overlay, click to open lightbox */}
         <button
           type="button"
           className="group/preview relative w-full shrink-0 overflow-hidden bg-surface-raised cursor-zoom-in"
-          style={{ aspectRatio: "4/3" }}
           onClick={() => setPreviewOpen(true)}
           aria-label={t("achievements.certificates.viewLarge")}
         >
           <img
             src={displayUrl}
             alt=""
-            className="size-full object-cover transition-opacity duration-200 group-hover/preview:opacity-90"
+            className="w-full h-auto transition-opacity duration-200 group-hover/preview:opacity-90"
           />
           {/* CSS overlay only shown before the rendered URL is available */}
           {!renderedCardUrl && cert.holderName && hasTemplate && (
