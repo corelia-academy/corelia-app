@@ -142,7 +142,14 @@ export function useAchievementsPage() {
       );
 
       setCertificates(nextCertificates);
-      setBadges(ocRows.map((row) => issuanceToBadgeItem(row, profile?.ocid)));
+      setBadges(
+        ocRows
+          .filter((row) => {
+            const atype = row.template?.achievement_type;
+            return atype === "Badge" || atype === "Award";
+          })
+          .map((row) => issuanceToBadgeItem(row, profile?.ocid)),
+      );
       setCertificateSyncCandidates(
         pendingCandidates.filter((item): item is CertificateSyncCandidate => !!item),
       );
