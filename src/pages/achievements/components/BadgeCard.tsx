@@ -102,7 +102,7 @@ export function BadgeCard({
           src={imageUrl}
           alt=""
           className={cn(
-            "size-full object-cover transition-opacity duration-200 group-hover:opacity-95",
+            "size-full object-contain transition-opacity duration-200 group-hover:opacity-95",
             badge.locked && "opacity-60",
             isPending && "opacity-60"
           )}

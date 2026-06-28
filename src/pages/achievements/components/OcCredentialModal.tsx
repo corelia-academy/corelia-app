@@ -264,7 +264,7 @@ export function OcCredentialModal({
                     (item.kind === "cert" ? CERT_PLACEHOLDER : BADGE_PLACEHOLDER)
                   }
                   alt=""
-                  className="size-full object-cover"
+                  className="size-full object-contain"
                 />
               </div>
               <div className="min-w-0 flex-1">
