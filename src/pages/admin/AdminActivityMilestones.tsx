@@ -24,7 +24,6 @@ import {
 } from "@/lib/credentialTemplates";
 import { uploadActivityMilestoneBadgeImage } from "@/lib/storage";
 import { validatePngSignature, checkImageDimensions } from "@/lib/imageValidation";
-import { CanvasCropperModal } from "@/components/ui/CanvasCropperModal";
 
 type MilestoneEventKey =
   | "login_streak"
@@ -61,8 +60,6 @@ export default function AdminActivityMilestones() {
   const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [cropperOpen, setCropperOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -125,18 +122,11 @@ export default function AdminActivityMilestones() {
       if (isSquare) {
         await handleUpload(file);
       } else {
-        setPendingFile(file);
-        setCropperOpen(true);
+        toast.error("Hình ảnh bắt buộc phải có tỷ lệ 1:1 (hình vuông). Vui lòng chọn ảnh khác.");
       }
     } catch {
       toast.error("Không thể đọc tệp hình ảnh.");
     }
-  };
-
-  const handleCroppedUpload = async (croppedFile: File) => {
-    setCropperOpen(false);
-    setPendingFile(null);
-    await handleUpload(croppedFile);
   };
 
   useEffect(() => {
@@ -436,16 +426,6 @@ export default function AdminActivityMilestones() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <CanvasCropperModal
-        open={cropperOpen}
-        imageFile={pendingFile}
-        onCrop={(cropped) => void handleCroppedUpload(cropped)}
-        onCancel={() => {
-          setCropperOpen(false);
-          setPendingFile(null);
-        }}
-      />
     </div>
   );
 }
