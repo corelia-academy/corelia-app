@@ -6,7 +6,7 @@ import {
   Loader2,
   Share2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -58,6 +58,14 @@ export function OcCredentialModal({
   };
   const [downloading, setDownloading] = useState(false);
 
+  const isClaimedSafe = item?.data?.ocClaimStatus === "claimed";
+  // Auto-close review screen if claim succeeds
+  useEffect(() => {
+    if (isClaimedSafe && reviewing) {
+      setReviewState({ key: null, reviewing: false });
+    }
+  }, [isClaimedSafe, reviewing]);
+
   if (!item) return null;
 
   const d = item.data;
@@ -65,6 +73,8 @@ export function OcCredentialModal({
   const isPending = d.ocClaimStatus === "pending";
   const isFailed = d.ocClaimStatus === "failed";
   const isUnclaimed = d.ocClaimStatus === "unclaimed";
+
+
 
   const badgeScope = item.kind === "badge" ? (item.data as BadgeItem).credentialScope : undefined;
   const hackathonRole = item.kind === "badge" ? (item.data as BadgeItem).hackathonRole : undefined;
@@ -210,7 +220,7 @@ export function OcCredentialModal({
                 <Button
                   className="w-full gap-3 text-base font-semibold"
                   size="lg"
-                  disabled={claiming || !hasName}
+                  disabled={claiming || !hasName || isClaimed || isPending}
                   onClick={() => onClaim(d.id, item.kind)}
                 >
                   {claiming ? (
