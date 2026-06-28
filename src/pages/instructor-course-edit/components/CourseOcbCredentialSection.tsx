@@ -14,7 +14,7 @@ import {
 } from "@/lib/credentialTemplates";
 import { uploadCourseCredentialBadgeImage } from "@/lib/storage";
 import { toast } from "sonner";
-import { validatePngSignature, checkImageDimensions } from "@/lib/imageValidation";
+import { validatePngSignature } from "@/lib/imageValidation";
 
 function StatusBadge({ active }: { active: boolean }) {
   const { t } = useTranslation("instructor");
@@ -162,16 +162,7 @@ export function CourseOcbCredentialSection({
       return;
     }
 
-    try {
-      const { isSquare } = await checkImageDimensions(file);
-      if (isSquare) {
-        await handleUpload(file);
-      } else {
-        toast.error("Hình ảnh bắt buộc phải có tỷ lệ 1:1 (hình vuông). Vui lòng chọn ảnh khác.");
-      }
-    } catch {
-      toast.error(t("courseEdit.ocb.invalidImage", { defaultValue: "Không thể đọc tệp hình ảnh." }));
-    }
+    await handleUpload(file);
     if (fileRef.current) fileRef.current.value = "";
   };
 

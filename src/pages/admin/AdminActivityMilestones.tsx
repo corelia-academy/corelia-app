@@ -23,7 +23,7 @@ import {
   type CredentialTemplateRow,
 } from "@/lib/credentialTemplates";
 import { uploadActivityMilestoneBadgeImage } from "@/lib/storage";
-import { validatePngSignature, checkImageDimensions } from "@/lib/imageValidation";
+import { validatePngSignature } from "@/lib/imageValidation";
 
 type MilestoneEventKey =
   | "login_streak"
@@ -117,16 +117,7 @@ export default function AdminActivityMilestones() {
       return;
     }
 
-    try {
-      const { isSquare } = await checkImageDimensions(file);
-      if (isSquare) {
-        await handleUpload(file);
-      } else {
-        toast.error("Hình ảnh bắt buộc phải có tỷ lệ 1:1 (hình vuông). Vui lòng chọn ảnh khác.");
-      }
-    } catch {
-      toast.error("Không thể đọc tệp hình ảnh.");
-    }
+    await handleUpload(file);
   };
 
   useEffect(() => {
