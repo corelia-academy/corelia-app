@@ -103,7 +103,8 @@ export function buildCourseCertificatesFromIssuances(
       (row) =>
         row.template?.scope_type === "course" &&
         (!row.course_id || !existingCourseIds.has(row.course_id)) &&
-        row.template?.collection_symbol !== "ocbadge",
+        row.template?.achievement_type !== "Badge" &&
+        row.template?.achievement_type !== "Award",
     )
     .map((row) => {
       const courseId = row.course_id ?? `deleted-${row.id}`;
