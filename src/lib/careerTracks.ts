@@ -265,6 +265,9 @@ export async function listCareerTracks(uiLocale?: string | null): Promise<Career
           what_youll_learn,
           prerequisites,
           has_certificate,
+          hero_media_type,
+          hero_youtube_url,
+          hero_youtube_video_id,
           thumbnail_url,
           thumbnail_path,
           short_description,
@@ -360,6 +363,9 @@ export async function getCareerTrackBySlug(
           what_youll_learn,
           prerequisites,
           has_certificate,
+          hero_media_type,
+          hero_youtube_url,
+          hero_youtube_video_id,
           thumbnail_url,
           thumbnail_path,
           short_description,
@@ -422,6 +428,9 @@ export type CareerTrackUpsertInput = Pick<
   | "what_youll_learn"
   | "prerequisites"
   | "has_certificate"
+  | "hero_media_type"
+  | "hero_youtube_url"
+  | "hero_youtube_video_id"
   | "i18n"
 > & {
   published?: boolean;
@@ -450,6 +459,15 @@ export async function listCareerTracksForInstructor(): Promise<CareerTrackDetail
         what_youll_learn,
         prerequisites,
         has_certificate,
+        hero_media_type,
+        hero_youtube_url,
+        hero_youtube_video_id,
+        thumbnail_url,
+        thumbnail_path,
+        short_description,
+        sponsors,
+        partner_brand,
+        partners,
         created_at,
         updated_at,
         career_track_courses (
@@ -491,6 +509,9 @@ export async function createInstructorCareerTrack(
     what_youll_learn: input.what_youll_learn ?? [],
     prerequisites: input.prerequisites ?? [],
     has_certificate: Boolean(input.has_certificate),
+    hero_media_type: input.hero_media_type ?? "image",
+    hero_youtube_url: input.hero_youtube_url ?? null,
+    hero_youtube_video_id: input.hero_youtube_video_id ?? null,
     short_description: input.short_description ?? null,
     thumbnail_url: input.thumbnail_url ?? null,
     thumbnail_path: input.thumbnail_path ?? null,
@@ -517,6 +538,9 @@ export async function createInstructorCareerTrack(
         what_youll_learn,
         prerequisites,
         has_certificate,
+        hero_media_type,
+        hero_youtube_url,
+        hero_youtube_video_id,
         thumbnail_url,
         thumbnail_path,
         short_description,
@@ -549,6 +573,9 @@ export async function updateInstructorCareerTrack(
   if (Array.isArray(patch.what_youll_learn)) updates.what_youll_learn = patch.what_youll_learn;
   if (Array.isArray(patch.prerequisites)) updates.prerequisites = patch.prerequisites;
   if (typeof patch.has_certificate === "boolean") updates.has_certificate = patch.has_certificate;
+  if (patch.hero_media_type !== undefined) updates.hero_media_type = patch.hero_media_type ?? "image";
+  if (patch.hero_youtube_url !== undefined) updates.hero_youtube_url = patch.hero_youtube_url;
+  if (patch.hero_youtube_video_id !== undefined) updates.hero_youtube_video_id = patch.hero_youtube_video_id;
   if (typeof patch.published === "boolean") updates.published = patch.published;
   if (patch.short_description !== undefined) updates.short_description = patch.short_description;
   if (patch.thumbnail_url !== undefined) updates.thumbnail_url = patch.thumbnail_url;
@@ -633,4 +660,3 @@ export async function setInstructorCareerTrackCourses(
     if (error) throw new Error(error.message);
   }
 }
-

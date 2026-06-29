@@ -17,6 +17,15 @@ describe("normalizeYoutubeVideoId", () => {
     expect(normalizeYoutubeVideoId("https://youtu.be/dQw4w9WgXcQ")).toBe("dQw4w9WgXcQ");
   });
 
+  it("extracts from embed and shorts URLs", () => {
+    expect(normalizeYoutubeVideoId("https://www.youtube.com/embed/dQw4w9WgXcQ")).toBe(
+      "dQw4w9WgXcQ",
+    );
+    expect(normalizeYoutubeVideoId("https://www.youtube.com/shorts/dQw4w9WgXcQ")).toBe(
+      "dQw4w9WgXcQ",
+    );
+  });
+
   it("returns null for invalid input", () => {
     expect(normalizeYoutubeVideoId("not-a-youtube-link")).toBeNull();
   });

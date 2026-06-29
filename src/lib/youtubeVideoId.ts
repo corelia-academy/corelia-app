@@ -10,7 +10,9 @@ export function normalizeYoutubeVideoId(value: string): string | null {
     const watchId = url.searchParams.get("v");
     if (watchId && /^[a-zA-Z0-9_-]{11}$/.test(watchId)) return watchId;
     const embedId = url.pathname.match(/\/embed\/([a-zA-Z0-9_-]{11})/)?.[1];
-    return embedId && /^[a-zA-Z0-9_-]{11}$/.test(embedId) ? embedId : null;
+    if (embedId && /^[a-zA-Z0-9_-]{11}$/.test(embedId)) return embedId;
+    const shortsId = url.pathname.match(/\/shorts\/([a-zA-Z0-9_-]{11})/)?.[1];
+    return shortsId && /^[a-zA-Z0-9_-]{11}$/.test(shortsId) ? shortsId : null;
   } catch {
     return null;
   }

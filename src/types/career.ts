@@ -16,6 +16,9 @@ export type CareerTrack = {
   what_youll_learn: string[];
   prerequisites: string[];
   has_certificate: boolean;
+  hero_media_type?: "image" | "youtube";
+  hero_youtube_url?: string | null;
+  hero_youtube_video_id?: string | null;
   thumbnail_url?: string | null;
   thumbnail_path?: string | null;
   sponsors?: CourseSponsor[];
@@ -47,4 +50,3 @@ export type CareerTrackDetail = CareerTrack & {
   courseCount: number;
   totalDurationSeconds: number;
 };
-
