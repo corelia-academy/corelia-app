@@ -101,6 +101,7 @@ export async function buildOpenCampusPayload(params: {
   const credentialPayload: Record<string, unknown> = {
     validFrom: awardedIso,
     awardedDate: awardedIso,
+    name: template.name,
     description: template.description,
     image: logoUrl,
     credentialSubject,
