@@ -37,3 +37,12 @@ dist-ssr
 
 # AI Agents configuration
 .agents/
+
+# pnpm local cache
+.pnpm-store/
+
+# Supabase CLI local metadata
+supabase/.temp/
+
+# Supabase Studio scratch queries
+supabase/snippets/Untitled query *.sql
