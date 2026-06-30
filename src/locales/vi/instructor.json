@@ -498,7 +498,9 @@
       "invalidRevenueShare": "Tỷ lệ chia sẻ cho nền tảng phải từ 0 đến 100%.",
       "updateFailed": "Lỗi cập nhật",
       "processFailed": "Lỗi xử lý",
+      "missingCertificateTemplate": "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ.",
       "uploadCertTemplateFailed": "Lỗi tải template chứng nhận",
+      "clearCertTemplateFailed": "Lỗi khi hủy chứng nhận / OCA cũ",
       "uploadPartnerDocsFailed": "Lỗi tải tài liệu đối tác",
       "addSectionFailed": "Lỗi thêm chương",
       "addLessonFailed": "Lỗi thêm bài học",
@@ -541,6 +543,7 @@
       "assignmentRejected": "Đã từ chối bài.",
       "certificateIssued": "Đã cấp chứng nhận.",
       "certTemplateUploaded": "Đã tải template chứng nhận lên.",
+      "certTemplateCleared": "Đã hủy chứng nhận / OCA cũ.",
       "partnerContractUploaded": "Đã tải lên hồ sơ hợp đồng.",
       "partnerInvoiceUploaded": "Đã tải lên hồ sơ hoá đơn.",
       "discountCreated": "Đã tạo mã giảm giá."

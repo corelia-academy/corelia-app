@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { Award, Medal, Sparkles } from "lucide-react";
 
-import type { BadgeItem } from "@/pages/achievements/types";
+import type { BadgeItem, ClaimStatus } from "@/pages/achievements/types";
 import { supabase } from "@/lib/supabase";
 import type { CredentialIssuanceWithTemplate, CredentialTemplateSummary } from "@/types/credentials";
 
@@ -10,6 +10,7 @@ type IssuanceRow = {
   course_id: string | null;
   minted_at: string | null;
   oc_credential_id: string | null;
+  oc_response: unknown;
   network: string;
   status: string;
   credential_templates:
@@ -58,6 +59,54 @@ export async function fetchCourseIssuanceMapForUser(
   return map;
 }
 
+export async function fetchMyCredentialIssuances(
+  userId: string,
+): Promise<CredentialIssuanceWithTemplate[]> {
+  const { data, error } = await supabase
+    .from("credential_issuances")
+    .select(
+      `
+      id,
+      course_id,
+      minted_at,
+      oc_credential_id,
+      oc_response,
+      network,
+      status,
+      credential_templates (
+        id,
+        scope_type,
+        name,
+        description,
+        image_url,
+        thumbnail_url,
+        achievement_type,
+        hackathon_role,
+        collection_symbol
+      )
+    `,
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((raw) => {
+    const row = raw as IssuanceRow;
+    const template = unwrapTemplate(row.credential_templates);
+    return {
+      id: row.id,
+      course_id: row.course_id ?? null,
+      minted_at: row.minted_at,
+      oc_credential_id: row.oc_credential_id,
+      oc_response: row.oc_response,
+      network: row.network === "mainnet" ? "mainnet" : "staging",
+      status: row.status,
+      template,
+    };
+  });
+}
+
 export async function fetchMintedCredentialIssuancesForUser(
   userId: string,
 ): Promise<CredentialIssuanceWithTemplate[]> {
@@ -69,6 +118,7 @@ export async function fetchMintedCredentialIssuancesForUser(
       course_id,
       minted_at,
       oc_credential_id,
+      oc_response,
       network,
       status,
       credential_templates (
@@ -79,7 +129,8 @@ export async function fetchMintedCredentialIssuancesForUser(
         image_url,
         thumbnail_url,
         achievement_type,
-        hackathon_role
+        hackathon_role,
+        collection_symbol
       )
     `,
     )
@@ -97,6 +148,7 @@ export async function fetchMintedCredentialIssuancesForUser(
       course_id: row.course_id ?? null,
       minted_at: row.minted_at,
       oc_credential_id: row.oc_credential_id,
+      oc_response: row.oc_response,
       network: row.network === "mainnet" ? "mainnet" : "staging",
       status: row.status,
       template,
@@ -113,13 +165,22 @@ export function openCampusCredentialExplorerUrl(
     nftCollection?: "occredential" | "ocbadge";
   },
 ): string | null {
-  if (!credentialId?.trim()) return null;
-  const id = credentialId.trim();
   const base = import.meta.env.VITE_OCID_SANDBOX === "true"
     ? "https://id.sandbox.opencampus.xyz"
     : "https://id.opencampus.xyz";
+
+  const id = credentialId?.trim();
   const username = opts?.username?.trim();
   const nftCollection = opts?.nftCollection ?? "occredential";
+
+  if (!id) {
+    if (username) {
+      const u = username.endsWith(".edu") ? username : `${username}.edu`;
+      return `${base}/public/credentials?username=${encodeURIComponent(u)}`;
+    }
+    return null;
+  }
+
   // With the holder OCID we can deep-link to the specific credential details page;
   // otherwise fall back to the holder's public credentials list.
   if (username) {
@@ -163,11 +224,21 @@ function styleForScope(scope: CredentialTemplateSummary["scope_type"]): ScopeSty
   }
 }
 
-export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate): BadgeItem {
+export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, username?: string | null): BadgeItem {
   const tpl = row.template;
   const title = tpl?.name ?? "Credential";
   const description = tpl?.description ?? "";
-  const ocUrl = openCampusCredentialExplorerUrl(row.oc_credential_id);
+
+  // Backfill oc_credential_id on-the-fly from oc_response if missing in DB
+  let resolvedCredentialId = row.oc_credential_id;
+  if (!resolvedCredentialId?.trim() && row.oc_response) {
+    resolvedCredentialId = extractOcCredentialId(row.oc_response);
+  }
+
+  const ocUrl = openCampusCredentialExplorerUrl(resolvedCredentialId, {
+    username,
+    nftCollection: tpl?.collection_symbol === "ocbadge" ? "ocbadge" : "occredential",
+  });
   const minted = row.minted_at ? new Date(row.minted_at).toLocaleDateString() : "—";
 
   const credentialScope =
@@ -198,14 +269,23 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate): BadgeI
     category: "milestone",
     // thumbnail_url for frontend display; image_url (full-res) stays in OC payload only
     imageUrl: tpl?.thumbnail_url ?? tpl?.image_url,
-    // Only "claimed" if oc_credential_id is present — proof it exists on-chain.
-    // minted without oc_credential_id = incomplete mint → failed.
-    ocClaimStatus: row.oc_credential_id ? "claimed" : "failed",
+    // Claim status is derived from row status for our realtime pipeline.
+    // "claimed" requires status=minted AND a valid resolvedCredentialId.
+    // minted without oc_credential_id = incomplete mint → treat as failed.
+    ocClaimStatus:
+      row.status === "minted"
+        ? resolvedCredentialId
+          ? "claimed"
+          : "failed"
+        : (row.status as ClaimStatus) ?? "failed",
     ocCredentialUrl: ocUrl ?? undefined,
     ocTransactionHash: undefined,
-    mintCredentialId: row.oc_credential_id,
+    mintCredentialId: resolvedCredentialId,
+    issuanceId: row.id,
+    status: (row.status as "pending" | "minted" | "failed" | "awaiting_holder_id") ?? "failed",
     credentialScope,
     hackathonRole: tpl?.hackathon_role ?? undefined,
+    collectionSymbol: tpl?.collection_symbol,
   };
 }
 
@@ -226,4 +306,78 @@ export function groupIssuancesByScope(rows: CredentialIssuanceWithTemplate[]): {
   }
 
   return { course, hackathon, activity };
+}
+
+export function uuidToTokenId(value: string): string | null {
+  const hex = value.replace(/^urn:uuid:/i, "").replace(/-/g, "").toLowerCase();
+  if (!/^[0-9a-f]{32}$/.test(hex)) return null;
+  try {
+    return BigInt("0x" + hex).toString();
+  } catch {
+    return null;
+  }
+}
+
+function extractOcCredentialIdFromText(text: string): string | null {
+  const numeric = text.match(/\b(?:credentialId|credential_id|tokenId|token_id)\s*[:=]\s*(\d+)\b/i)?.[1];
+  if (numeric) return numeric;
+
+  const urn = text.match(/\burn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i)?.[0];
+  if (urn) return uuidToTokenId(urn) ?? urn;
+
+  return null;
+}
+
+function collectNestedStrings(value: unknown, out: string[], seen: WeakSet<object>): void {
+  if (typeof value === "string") {
+    out.push(value);
+    return;
+  }
+  if (value == null || typeof value !== "object") return;
+  if (seen.has(value)) return;
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    for (const item of value) collectNestedStrings(item, out, seen);
+    return;
+  }
+
+  for (const item of Object.values(value as Record<string, unknown>)) {
+    collectNestedStrings(item, out, seen);
+  }
+}
+
+export function extractOcCredentialId(response: unknown): string | null {
+  if (typeof response === "string") return extractOcCredentialIdFromText(response);
+  if (response == null || typeof response !== "object") return null;
+  const root = response as Record<string, unknown>;
+  const vc = (root.vc && typeof root.vc === "object" ? root.vc : root) as Record<string, unknown>;
+
+  const directVal =
+    vc.tokenId ||
+    vc.token_id ||
+    vc.credentialId ||
+    vc.credential_id ||
+    root.tokenId ||
+    root.token_id ||
+    root.credentialId ||
+    root.credential_id ||
+    null;
+  const direct: string | null = directVal ? String(directVal) : null;
+  if (direct && /^\d+$/.test(direct.trim())) return direct.trim();
+
+  const rawIdVal = vc.id || root.id || direct || "";
+  const rawId: string = String(rawIdVal);
+  if (rawId.trim()) {
+    return uuidToTokenId(rawId.trim()) ?? rawId.trim();
+  }
+
+  const nestedStrings: string[] = [];
+  collectNestedStrings(root, nestedStrings, new WeakSet<object>());
+  for (const candidate of nestedStrings) {
+    const extracted = extractOcCredentialIdFromText(candidate);
+    if (extracted) return extracted;
+  }
+
+  return null;
 }

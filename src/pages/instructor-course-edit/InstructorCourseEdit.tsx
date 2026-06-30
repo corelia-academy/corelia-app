@@ -1223,6 +1223,12 @@ const InstructorCourseEdit = () => {
         return;
       }
     }
+
+    if (form.has_certificate && !form.certificate_template_url) {
+      setError(t("courseEdit.errors.missingCertificateTemplate", { defaultValue: "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ." }));
+      return;
+    }
+
     setSaving(true);
     setError(null);
     const savePromise = (async () => {
@@ -1619,6 +1625,40 @@ const InstructorCourseEdit = () => {
     } finally {
       setUploadingCert(false);
       e.target.value = "";
+    }
+  };
+
+  const handleClearLegacyCertificate = async () => {
+    if (!id) return;
+    try {
+      await updateCourse(id, {
+        has_certificate: false,
+        certificate_template_url: null,
+        certificate_template_path: null,
+      });
+      setCourse((prev) =>
+        prev
+          ? {
+              ...prev,
+              has_certificate: false,
+              certificate_template_url: undefined,
+              certificate_template_path: undefined,
+            }
+          : prev
+      );
+      setForm((p) => ({
+        ...p,
+        has_certificate: false,
+        certificate_template_url: "",
+        certificate_template_path: "",
+      }));
+      toast.success(String(t("courseEdit.toasts.certTemplateCleared" as never) || "Đã hủy chứng chỉ/OCA cũ"));
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : String(t("courseEdit.errors.clearCertTemplateFailed" as never) || "Lỗi khi hủy chứng chỉ/OCA cũ")
+      );
     }
   };
 
@@ -8635,7 +8675,8 @@ const InstructorCourseEdit = () => {
                     canEdit={canManageCourseOcb}
                     hasCertificate={form.has_certificate ?? false}
                     onActiveChange={setOcbIsActive}
-                    certificateTemplateUrl={course.certificate_template_url ?? null}
+                    certificateTemplateUrl={form.certificate_template_url || null}
+                    onClearLegacyCertificate={handleClearLegacyCertificate}
                   />
                 </section>
               )}

@@ -16,6 +16,7 @@ import {
 } from "react-router";
 import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
+import CredentialRealtimeSync from "@/components/base/CredentialRealtimeSync";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
 import { ROLE_GROUPS } from "@/config/roles";
@@ -206,6 +207,7 @@ export default function App() {
       <LoadingBar />
       <Toaster />
       <AuthSync />
+      <CredentialRealtimeSync />
       <TooltipProvider>
         <BrowserRouter>
           <ScrollToTop />

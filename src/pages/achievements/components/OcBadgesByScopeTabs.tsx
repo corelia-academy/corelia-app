@@ -8,14 +8,9 @@ import { cn } from "@/lib/utils";
 import { BadgeCard } from "./BadgeCard";
 import type { BadgeItem, ModalItem } from "../types";
 
-type TabKey = "course" | "hackathon" | "activity_milestone";
+type TabKey = "all" | "hackathon" | "activity_milestone";
 
-function scopeFilter(tab: TabKey): (b: BadgeItem) => boolean {
-  return (b) => {
-    const s = b.credentialScope ?? "course";
-    return s === tab;
-  };
-}
+
 
 export function OcBadgesByScopeTabs({
   badges,
@@ -27,13 +22,15 @@ export function OcBadgesByScopeTabs({
   onOpenModal: (item: ModalItem) => void;
 }) {
   const { t } = useTranslation("common");
-  const [tab, setTab] = useState<TabKey>("course");
+  const [tab, setTab] = useState<TabKey>("all");
 
   const buckets = useMemo(() => {
     return {
-      course: badges.filter(scopeFilter("course")),
-      hackathon: badges.filter(scopeFilter("hackathon")),
-      activity_milestone: badges.filter(scopeFilter("activity_milestone")),
+      all: badges,
+      hackathon: badges.filter(
+        (b) => b.credentialScope !== "activity_milestone",
+      ),
+      activity_milestone: badges.filter((b) => b.credentialScope === "activity_milestone"),
     };
   }, [badges]);
 
@@ -41,8 +38,8 @@ export function OcBadgesByScopeTabs({
 
   const tabs: { key: TabKey; label: string }[] = [
     {
-      key: "course",
-      label: t("achievements.ocVault.tabs.oca", { defaultValue: "OCA" }),
+      key: "all",
+      label: t("achievements.ocVault.tabs.all", { defaultValue: "Tất cả" }),
     },
     {
       key: "hackathon",

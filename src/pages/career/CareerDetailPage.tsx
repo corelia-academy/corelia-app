@@ -22,6 +22,7 @@ import { useAuth } from "@/stores/authStore";
 import { useCareerTrackDetail } from "./hooks/useCareerTrackDetail";
 import { useCareerTrackProgress } from "./hooks/useCareerTrackProgress";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { normalizeYoutubeVideoId } from "@/lib/youtubeVideoId";
 
 export default function CareerDetailPage() {
   const { t } = useTranslation("career");
@@ -199,6 +200,10 @@ function CareerHero({
     track.thumbnail_url && track.thumbnail_url.trim() && !thumbnailFailed
       ? track.thumbnail_url
       : null;
+  const youtubeVideoId =
+    track.hero_media_type === "youtube"
+      ? normalizeYoutubeVideoId(track.hero_youtube_video_id ?? track.hero_youtube_url ?? "")
+      : null;
 
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card">
@@ -245,32 +250,44 @@ function CareerHero({
           </dl>
         </div>
 
-        <div className="relative aspect-video w-full self-start overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
-          <img
-            src="/Corelia_Banner_Square.png"
-            alt=""
-            aria-hidden
-            decoding="async"
-            className="absolute inset-0 size-full object-cover opacity-90"
-          />
-          {thumbnailSrc ? (
-            <img
-              src={thumbnailSrc}
-              alt={track.title}
-              loading="lazy"
-              decoding="async"
-              onError={() => setThumbnailFailed(true)}
-              className="absolute inset-0 size-full object-cover"
+        {youtubeVideoId ? (
+          <div className="aspect-video w-full self-start overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+            <iframe
+              src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0`}
+              title={`${track.title} video`}
+              className="size-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
             />
-          ) : (
-            <div className="absolute inset-0 grid place-items-center">
-              <div className="flex items-center gap-2 rounded-full bg-surface-base/70 px-3 py-1 text-xs font-medium text-foreground-muted backdrop-blur">
-                <Layers className="size-4" aria-hidden />
-                {t("detail.thumbnailFallback")}
+          </div>
+        ) : (
+          <div className="relative aspect-video w-full self-start overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+            <img
+              src="/Corelia_Banner_Square.png"
+              alt=""
+              aria-hidden
+              decoding="async"
+              className="absolute inset-0 size-full object-cover opacity-90"
+            />
+            {thumbnailSrc ? (
+              <img
+                src={thumbnailSrc}
+                alt={track.title}
+                loading="lazy"
+                decoding="async"
+                onError={() => setThumbnailFailed(true)}
+                className="absolute inset-0 size-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 grid place-items-center">
+                <div className="flex items-center gap-2 rounded-full bg-surface-base/70 px-3 py-1 text-xs font-medium text-foreground-muted backdrop-blur">
+                  <Layers className="size-4" aria-hidden />
+                  {t("detail.thumbnailFallback")}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Loader2, Shield } from "lucide-react";
+import { CheckCircle2, Loader2, LockKeyhole, Shield } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
+  countIssuancesForTemplate,
   getLatestCourseCredentialTemplate,
   saveCourseCredentialTemplate,
   type CourseCredentialKind,
@@ -13,6 +14,7 @@ import {
 } from "@/lib/credentialTemplates";
 import { uploadCourseCredentialBadgeImage } from "@/lib/storage";
 import { toast } from "sonner";
+import { validatePngSignature } from "@/lib/imageValidation";
 
 function StatusBadge({ active }: { active: boolean }) {
   const { t } = useTranslation("instructor");
@@ -49,6 +51,7 @@ export function CourseOcbCredentialSection({
   hasCertificate = false,
   onActiveChange,
   certificateTemplateUrl,
+  onClearLegacyCertificate,
 }: {
   courseId: string;
   courseSlug: string;
@@ -56,6 +59,7 @@ export function CourseOcbCredentialSection({
   hasCertificate?: boolean;
   onActiveChange?: (active: boolean) => void;
   certificateTemplateUrl?: string | null;
+  onClearLegacyCertificate?: () => void;
 }) {
   const { t } = useTranslation("instructor");
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -69,6 +73,7 @@ export function CourseOcbCredentialSection({
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [identifierPrefix, setIdentifierPrefix] = useState("");
+  const [issuanceCount, setIssuanceCount] = useState(0);
   const [completionPct, setCompletionPct] = useState(100);
   const [requireAssignmentPass, setRequireAssignmentPass] = useState(false);
   const [minAssignmentScore, setMinAssignmentScore] = useState(70);
@@ -89,6 +94,7 @@ export function CourseOcbCredentialSection({
         setCompletionPct(100);
         setRequireAssignmentPass(false);
         setMinAssignmentScore(70);
+        setIssuanceCount(0);
         return;
       }
       setTemplateId(row.id);
@@ -103,6 +109,9 @@ export function CourseOcbCredentialSection({
       setCompletionPct(Number(tr?.completion_pct ?? 100));
       setRequireAssignmentPass(tr?.require_assignment_pass === true);
       setMinAssignmentScore(Number(tr?.min_assignment_score ?? 70));
+      // Load issuance count to determine if identifierPrefix can be edited
+      const count = await countIssuancesForTemplate(row.id).catch(() => 0);
+      setIssuanceCount(count);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("courseEdit.ocb.loadFailed"));
     } finally {
@@ -132,9 +141,39 @@ export function CourseOcbCredentialSection({
     }
   };
 
+  const onFileSelect = async (file: File | null) => {
+    if (!file) return;
+    if (!canEdit) {
+      toast.error(t("courseEdit.ocb.noPermission"));
+      return;
+    }
+
+    const isPng = await validatePngSignature(file);
+    if (!isPng) {
+      toast.error(
+        <span>
+          Định dạng file không phải PNG. Vui lòng tách nền hoặc chuyển đổi ảnh tại{" "}
+          <a href="https://www.remove.bg" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-primary-foreground hover:opacity-85">
+            remove.bg
+          </a>
+        </span>
+      );
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+
+    await handleUpload(file);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
   const handleSave = async () => {
     if (!canEdit) {
       toast.error(t("courseEdit.ocb.noPermission"));
+      return;
+    }
+
+    if (credentialKind === "oca" && (!certificateTemplateUrl || !certificateTemplateUrl.trim())) {
+      toast.error("Vui lòng tải lên ảnh template chứng chỉ khi bật cấu hình Open Campus (OCA).");
       return;
     }
     setSaving(true);
@@ -144,16 +183,26 @@ export function CourseOcbCredentialSection({
         require_assignment_pass: requireAssignmentPass,
         min_assignment_score: Math.min(100, Math.max(0, minAssignmentScore)),
       };
+
+      // [TC-03 FIX] OCA must use the course certificate template - no imageUrl fallback
+      const finalImageUrl = credentialKind === "oca"
+        ? certificateTemplateUrl!.trim()
+        : imageUrl.trim();
+
+      if (!finalImageUrl) {
+        toast.error("Vui lòng tải lên hình ảnh cho chứng chỉ/huy hiệu trước khi lưu.");
+        setSaving(false);
+        return;
+      }
+
       const { id } = await saveCourseCredentialTemplate({
         courseId,
         courseSlug,
         templateId,
-        isActive: credentialKind === "oca" ? true : isActive,
+        isActive: true, // ALWAYS make the saved template the active one for this course
         name: name.trim() || courseSlug,
         description: description.trim() || name.trim() || courseSlug,
-        imageUrl: credentialKind === "oca"
-          ? (certificateTemplateUrl?.trim() || imageUrl.trim())
-          : imageUrl.trim(),
+        imageUrl: finalImageUrl,
         identifierPrefix: identifierPrefix.trim(),
         triggerRule,
         credentialKind,
@@ -229,9 +278,21 @@ export function CourseOcbCredentialSection({
           ))}
         </div>
         {isOcbBlockedByHasCert && (
-          <p className="mt-2 text-xs text-warning-foreground bg-warning/10 border border-warning/20 rounded-md px-3 py-2">
-            {t("courseEdit.ocb.blockedByCertificate")}
-          </p>
+          <div className="mt-2 flex items-center justify-between bg-warning/10 border border-warning/20 rounded-md px-3 py-2">
+            <p className="text-xs text-warning-foreground">
+              {t("courseEdit.ocb.blockedByCertificate")}
+            </p>
+            {onClearLegacyCertificate && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={onClearLegacyCertificate}
+              >
+                Hủy OCA
+              </Button>
+            )}
+          </div>
         )}
       </div>
 
@@ -301,9 +362,9 @@ export function CourseOcbCredentialSection({
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/png,image/jpeg,image/jpg"
+                accept="image/png"
                 className="hidden"
-                onChange={(e) => void handleUpload(e.target.files?.[0] ?? null)}
+                onChange={(e) => void onFileSelect(e.target.files?.[0] ?? null)}
               />
               <div className="mt-1 flex flex-wrap items-center gap-3">
                 <Button
@@ -316,7 +377,18 @@ export function CourseOcbCredentialSection({
                   {uploading ? t("courseEdit.ocb.uploading") : t("courseEdit.ocb.uploadBadge")}
                 </Button>
                 {imageUrl && (
-                  <img src={imageUrl} alt="" className="h-14 w-auto rounded border border-border-subtle" />
+                  <div className="relative size-14 shrink-0 rounded border border-border-subtle bg-surface-raised">
+                    <img src={imageUrl} alt="" className="size-full rounded object-cover" />
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => setImageUrl("")}
+                        className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        <span className="text-[10px] font-bold">×</span>
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
               <p className="mt-1.5 text-xs text-foreground-muted">{t("courseEdit.ocb.imageHint")}</p>
@@ -326,13 +398,28 @@ export function CourseOcbCredentialSection({
 
         <Field>
           <FieldLabel>{t("courseEdit.ocb.identifierPrefixLabel")}</FieldLabel>
-          <Input
-            value={identifierPrefix}
-            disabled={!canEdit}
-            onChange={(e) => setIdentifierPrefix(e.target.value.slice(0, 40))}
-            placeholder={`corelia:${courseSlug}`}
-          />
-          <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.ocb.identifierHint")}</p>
+          <div className="relative">
+            <Input
+              value={identifierPrefix}
+              disabled={!canEdit || issuanceCount > 0}
+              onChange={(e) => setIdentifierPrefix(e.target.value.slice(0, 40))}
+              placeholder={`corelia:${courseSlug}`}
+              className={issuanceCount > 0 ? "pr-8" : ""}
+            />
+            {issuanceCount > 0 && (
+              <LockKeyhole
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-foreground-muted"
+                aria-hidden
+              />
+            )}
+          </div>
+          {issuanceCount > 0 ? (
+            <p className="mt-1 text-xs text-warning">
+              Đã có {issuanceCount} credential được tạo. Tiền tố đã bị khoá để tránh mint trùng.
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.ocb.identifierHint")}</p>
+          )}
         </Field>
       </div>
 

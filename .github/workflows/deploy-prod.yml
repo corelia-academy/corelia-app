@@ -54,7 +54,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.98.1
 
       - name: Apply Supabase migrations
         env:
@@ -65,7 +65,8 @@ jobs:
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
           # Mark orphaned migration (reverted via PR #225) so history matches local files
           supabase migration repair --status reverted 20260709000009 --dns-resolver https || true
-          supabase migration up --linked --dns-resolver https
+          # --include-all applies out-of-order local migrations (e.g. late-June files added after July ones)
+          supabase migration up --linked --dns-resolver https --include-all
 
       - name: Deploy Edge Function (corelia-api)
         env:

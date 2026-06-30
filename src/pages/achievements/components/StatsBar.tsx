@@ -15,16 +15,22 @@ export function StatsBar({
   // are distinct OpenCampus scopes — never lump them into one "badges" count.
   // Each is counted only when the credential is actually on-chain
   // (ocClaimStatus === "claimed", i.e. oc_credential_id present).
-  const claimedInScope = (scope: BadgeItem["credentialScope"]) =>
-    badges.filter(
-      (b) =>
-        !b.locked &&
-        b.ocClaimStatus === "claimed" &&
-        (b.credentialScope ?? "course") === scope,
-    ).length;
-  const ocaCount = claimedInScope("course");
-  const badgeCount = claimedInScope("hackathon");
-  const milestoneCount = claimedInScope("activity_milestone");
+  const ocaCount = certificates.filter((c) => c.ocClaimStatus === "claimed").length;
+
+  const badgeCount = badges.filter(
+    (b) =>
+      !b.locked &&
+      b.ocClaimStatus === "claimed" &&
+      (b.credentialScope === "hackathon" || b.collectionSymbol === "ocbadge") &&
+      b.credentialScope !== "activity_milestone",
+  ).length;
+
+  const milestoneCount = badges.filter(
+    (b) =>
+      !b.locked &&
+      b.ocClaimStatus === "claimed" &&
+      b.credentialScope === "activity_milestone",
+  ).length;
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">

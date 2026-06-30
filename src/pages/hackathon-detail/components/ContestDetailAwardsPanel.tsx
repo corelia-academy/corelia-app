@@ -203,7 +203,8 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
         grantedReason: grantReason.trim() || null,
       });
       if (res.errors?.length) {
-        toast.message(res.errors.join("\n"));
+        toast.error(res.errors.join("\n"));
+        if (!res.issuanceIds?.length) return;
       }
       toast.success(translate("workspace.awards.grantOk"));
       setGrantUserIds("");
@@ -244,7 +245,8 @@ export function ContestDetailAwardsPanel({ vm }: { vm: ContestDetailViewModel })
         userIds: ids,
       });
       if (res.errors?.length) {
-        toast.message(res.errors.join("\n"));
+        toast.error(res.errors.join("\n"));
+        if (!res.issuanceIds?.length) return;
       }
       toast.success(translate("workspace.awards.eligibilityGrantOk"));
       setEligSelected(new Set());

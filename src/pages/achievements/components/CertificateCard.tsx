@@ -31,63 +31,12 @@ import { useAuth } from "@/stores/authStore";
 import { CERT_PLACEHOLDER } from "../constants";
 import type { CertificateItem, ModalItem } from "../types";
 import {
-  hexToRgb,
-  loadImageViaBlobUrl,
+  downloadCertificate,
+  downloadCertificatePng,
   renderAndUploadCertificate,
   renderCertificateBlob,
 } from "../utils/renderCertificate";
 import { OcClaimBadge } from "./OcClaimBadge";
-
-// ── PDF download helper ─────────────────────────────────────────────────────
-// A4 landscape: 297 × 210 mm
-const PDF_W_MM = 297;
-const PDF_H_MM = 210;
-
-async function downloadCertificate(cert: CertificateItem): Promise<void> {
-  const src = cert.imageUrl;
-  if (!src || src === CERT_PLACEHOLDER) return;
-
-  // 1. Fetch image via blob URL to avoid canvas CORS taint
-  const canvas = document.createElement("canvas");
-  canvas.width = 1600;
-  canvas.height = 1200;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-
-  const { img, blobUrl } = await loadImageViaBlobUrl(src);
-  ctx.drawImage(img, 0, 0, 1600, 1200);
-  URL.revokeObjectURL(blobUrl);
-  const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
-
-  // 2. Create PDF — image as background, name rendered as vector text
-  const { jsPDF } = await import("jspdf");
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-  doc.addImage(dataUrl, "JPEG", 0, 0, PDF_W_MM, PDF_H_MM);
-
-  if (cert.holderName?.trim()) {
-    const xMm = ((cert.nameXPercent ?? 50) / 100) * PDF_W_MM;
-    const yMm = ((cert.nameYPercent ?? 50) / 100) * PDF_H_MM;
-    const [r, g, b] = hexToRgb(cert.nameColor ?? "#000000");
-    doc.setFont("times", "bolditalic");
-    doc.setFontSize(42);
-    doc.setTextColor(r, g, b);
-    doc.text(cert.holderName.trim(), xMm, yMm, { align: "center", baseline: "middle" });
-  }
-
-  const filename = `${cert.course.replace(/[^a-z0-9]/gi, "-")}-certificate.pdf`;
-  doc.save(filename);
-}
-
-async function downloadCertificatePng(cert: CertificateItem): Promise<void> {
-  const blob = await renderCertificateBlob(cert);
-  if (!blob) return;
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${cert.course.replace(/[^a-z0-9]/gi, "-")}-certificate.png`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 // ── Certificate lightbox ────────────────────────────────────────────────────
 function CertificatePreviewDialog({
@@ -208,14 +157,11 @@ function CertificatePreviewDialog({
         </div>
 
         {/* Certificate image — rendered URL has name baked in so right-click works */}
-        <div
-          className="relative w-full bg-surface-raised"
-          style={{ aspectRatio: "4/3" }}
-        >
+        <div className="relative w-full bg-surface-raised">
           <img
             src={renderedUrl ?? imageUrl}
             alt={cert.course}
-            className="size-full object-contain"
+            className="w-full h-auto object-contain"
           />
           {/* CSS overlay only shown while canvas render is in progress (renderedUrl not ready yet) */}
           {!renderedUrl && cert.holderName && hasTemplate && (
@@ -287,18 +233,17 @@ export function CertificateCard({
           )}
         />
 
-        {/* Certificate preview — 4:3, name overlay, click to open lightbox */}
+        {/* Certificate preview — name overlay, click to open lightbox */}
         <button
           type="button"
           className="group/preview relative w-full shrink-0 overflow-hidden bg-surface-raised cursor-zoom-in"
-          style={{ aspectRatio: "4/3" }}
           onClick={() => setPreviewOpen(true)}
           aria-label={t("achievements.certificates.viewLarge")}
         >
           <img
             src={displayUrl}
             alt=""
-            className="size-full object-cover transition-opacity duration-200 group-hover/preview:opacity-90"
+            className="w-full h-auto transition-opacity duration-200 group-hover/preview:opacity-90"
           />
           {/* CSS overlay only shown before the rendered URL is available */}
           {!renderedCardUrl && cert.holderName && hasTemplate && (

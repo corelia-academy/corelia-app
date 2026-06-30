@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { ArrowDown, ArrowUp, ImagePlus, Plus, Save, Sparkles, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ImagePlus, Plus, Save, Sparkles, Trash2, Youtube } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CareerTrackBlastEmailPanel } from "./CareerTrackBlastEmailPanel";
@@ -11,6 +11,7 @@ import { Field, FieldGroup, FieldLabel, FieldDescription, FieldSeparator } from 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { invokeGenerateDescription } from "@/lib/descriptionGenerator";
+import { normalizeYoutubeVideoId } from "@/lib/youtubeVideoId";
 import { useAuth } from "@/stores/authStore";
 import { getCoursesForManagement } from "@/lib/courses";
 import { uploadCareerTrackThumbnail } from "@/lib/storage";
@@ -32,6 +33,8 @@ import {
 } from "@/lib/careerTracks";
 import type { Locale } from "@/types/database";
 import type { EntityI18nConfig } from "@/types/entityLocales";
+
+type HeroMediaType = "image" | "youtube";
 
 function normalizeLocale(value: string | null | undefined): Locale {
   return value === "en" ? "en" : "vi";
@@ -82,6 +85,9 @@ export default function InstructorCareerTrackEditorPage() {
     prerequisitesText: "",
     hasCertificate: false,
     published: false,
+    heroMediaType: "image" as HeroMediaType,
+    heroYoutubeUrl: "",
+    heroYoutubeVideoId: "",
     thumbnailUrl: "" as string,
     thumbnailPath: "" as string,
   });
@@ -149,6 +155,9 @@ export default function InstructorCareerTrackEditorPage() {
           prerequisitesText: (found.prerequisites ?? []).join("\n"),
           hasCertificate: Boolean(found.has_certificate),
           published: Boolean(found.published),
+          heroMediaType: found.hero_media_type === "youtube" ? "youtube" : "image",
+          heroYoutubeUrl: found.hero_youtube_url ?? "",
+          heroYoutubeVideoId: found.hero_youtube_video_id ?? "",
           thumbnailUrl: found.thumbnail_url ?? "",
           thumbnailPath: found.thumbnail_path ?? "",
         });
@@ -177,6 +186,7 @@ export default function InstructorCareerTrackEditorPage() {
     [i18nConfigDraft],
   );
   const isTranslating = activeContentLocale !== primaryLocale;
+  const previewYoutubeVideoId = normalizeYoutubeVideoId(form.heroYoutubeUrl);
 
   // Load translation content when switching to a non-primary locale
   useEffect(() => {
@@ -245,6 +255,13 @@ export default function InstructorCareerTrackEditorPage() {
     setError(null);
     setSaving(true);
     try {
+      const heroMediaType = form.heroMediaType === "youtube" ? "youtube" : "image";
+      const heroYoutubeUrl = form.heroYoutubeUrl.trim();
+      const heroYoutubeVideoId =
+        heroMediaType === "youtube" ? normalizeYoutubeVideoId(heroYoutubeUrl) : null;
+      if (heroMediaType === "youtube" && !heroYoutubeVideoId) {
+        throw new Error("Link YouTube không hợp lệ.");
+      }
       const payload: CareerTrackUpsertInput = {
         title: form.title.trim(),
         slug: form.slug.trim(),
@@ -254,6 +271,9 @@ export default function InstructorCareerTrackEditorPage() {
         prerequisites: splitLines(form.prerequisitesText),
         has_certificate: form.hasCertificate,
         published: form.published,
+        hero_media_type: heroMediaType,
+        hero_youtube_url: heroMediaType === "youtube" ? heroYoutubeUrl : null,
+        hero_youtube_video_id: heroMediaType === "youtube" ? heroYoutubeVideoId : null,
         thumbnail_url: form.thumbnailUrl || null,
         thumbnail_path: form.thumbnailPath || null,
         sponsors,
@@ -591,56 +611,123 @@ export default function InstructorCareerTrackEditorPage() {
               />
             </Field>
 
-            <Field>
-              <FieldLabel>Ảnh bìa (thumbnail)</FieldLabel>
-              <FieldDescription>
-                Tỷ lệ 16:9. Hiển thị ở hero trang chi tiết. Cần lưu lộ trình trước khi upload.
-              </FieldDescription>
-              <div className="flex items-start gap-3">
-                <div className="aspect-video w-40 shrink-0 overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
-                  {form.thumbnailUrl ? (
-                    <img
-                      src={form.thumbnailUrl}
-                      alt=""
-                      className="size-full object-cover"
-                    />
-                  ) : (
-                    <div className="grid size-full place-items-center text-foreground-subtle">
-                      <ImagePlus className="size-6" aria-hidden />
-                    </div>
-                  )}
+            {!isTranslating && (
+              <Field>
+                <FieldLabel>Hero media</FieldLabel>
+                <FieldDescription>
+                  Chọn ảnh bìa hoặc video YouTube cho hero trang chi tiết. Ảnh vẫn được dùng cho danh sách và preview chia sẻ.
+                </FieldDescription>
+                <div className="inline-flex rounded-md border border-border-subtle bg-surface-raised p-1">
+                  <button
+                    type="button"
+                    onClick={() => setForm((p) => ({ ...p, heroMediaType: "image" }))}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-semibold transition-colors",
+                      form.heroMediaType === "image"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-foreground-muted hover:text-foreground",
+                    )}
+                  >
+                    <ImagePlus className="size-3.5" aria-hidden />
+                    Ảnh
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm((p) => ({ ...p, heroMediaType: "youtube" }))}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-semibold transition-colors",
+                      form.heroMediaType === "youtube"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-foreground-muted hover:text-foreground",
+                    )}
+                  >
+                    <Youtube className="size-3.5" aria-hidden />
+                    YouTube
+                  </button>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={uploadingThumbnail || !id}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) void handleThumbnailUpload(file);
-                      e.target.value = "";
-                    }}
-                    className="text-xs"
-                  />
-                  {uploadingThumbnail ? (
-                    <span className="text-xs text-foreground-muted">Đang tải lên…</span>
-                  ) : null}
-                  {form.thumbnailUrl ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() =>
-                        setForm((p) => ({ ...p, thumbnailUrl: "", thumbnailPath: "" }))
+
+                {form.heroMediaType === "youtube" ? (
+                  <div className="space-y-3">
+                    <Input
+                      value={form.heroYoutubeUrl}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          heroYoutubeUrl: e.target.value,
+                          heroYoutubeVideoId: normalizeYoutubeVideoId(e.target.value) ?? "",
+                        }))
                       }
-                    >
-                      <Trash2 className="size-3.5" aria-hidden />
-                      Gỡ ảnh
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            </Field>
+                      placeholder="https://www.youtube.com/watch?v=..."
+                    />
+                    <div className="aspect-video w-full max-w-xl overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+                      {previewYoutubeVideoId ? (
+                        <iframe
+                          src={`https://www.youtube.com/embed/${previewYoutubeVideoId}?rel=0`}
+                          title="Learning track hero video preview"
+                          className="size-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <div className="grid size-full place-items-center px-4 text-center text-xs text-foreground-subtle">
+                          Dán link YouTube hợp lệ để xem preview.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-3">
+                    <div className="aspect-video w-40 shrink-0 overflow-hidden rounded-md border border-border-subtle bg-surface-raised">
+                      {form.thumbnailUrl ? (
+                        <img
+                          src={form.thumbnailUrl}
+                          alt=""
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        <div className="grid size-full place-items-center text-foreground-subtle">
+                          <ImagePlus className="size-6" aria-hidden />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        disabled={uploadingThumbnail || !id}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) void handleThumbnailUpload(file);
+                          e.target.value = "";
+                        }}
+                        className="text-xs"
+                      />
+                      {!id ? (
+                        <span className="text-xs text-foreground-muted">
+                          Lưu lộ trình trước khi tải ảnh.
+                        </span>
+                      ) : null}
+                      {uploadingThumbnail ? (
+                        <span className="text-xs text-foreground-muted">Đang tải lên…</span>
+                      ) : null}
+                      {form.thumbnailUrl ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() =>
+                            setForm((p) => ({ ...p, thumbnailUrl: "", thumbnailPath: "" }))
+                          }
+                        >
+                          <Trash2 className="size-3.5" aria-hidden />
+                          Gỡ ảnh
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
+              </Field>
+            )}
 
             <FieldSeparator>{t("careerTracks.sections.learning")}</FieldSeparator>
 
@@ -1053,4 +1140,3 @@ export default function InstructorCareerTrackEditorPage() {
     </PageContainer>
   );
 }
-

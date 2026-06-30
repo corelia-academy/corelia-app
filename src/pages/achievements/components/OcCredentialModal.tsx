@@ -6,9 +6,10 @@ import {
   Loader2,
   Share2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,10 @@ import { useAuth } from "@/stores/authStore";
 
 import { BADGE_PLACEHOLDER, CERT_PLACEHOLDER } from "../constants";
 import type { BadgeItem, CertificateItem, ModalItem } from "../types";
+import {
+  downloadBadgeImage,
+  downloadCertificate,
+} from "../utils/renderCertificate";
 import { OcClaimBadge } from "./OcClaimBadge";
 
 export function OcCredentialModal({
@@ -51,6 +56,15 @@ export function OcCredentialModal({
   const setReviewing = (next: boolean) => {
     setReviewState({ key: reviewKey, reviewing: next });
   };
+  const [downloading, setDownloading] = useState(false);
+
+  const isClaimedSafe = item?.data?.ocClaimStatus === "claimed";
+  // Auto-close review screen if claim succeeds
+  useEffect(() => {
+    if (isClaimedSafe && reviewing) {
+      setReviewState({ key: null, reviewing: false });
+    }
+  }, [isClaimedSafe, reviewing]);
 
   if (!item) return null;
 
@@ -60,8 +74,14 @@ export function OcCredentialModal({
   const isFailed = d.ocClaimStatus === "failed";
   const isUnclaimed = d.ocClaimStatus === "unclaimed";
 
+
+
   const badgeScope = item.kind === "badge" ? (item.data as BadgeItem).credentialScope : undefined;
   const hackathonRole = item.kind === "badge" ? (item.data as BadgeItem).hackathonRole : undefined;
+  const isOcb =
+    item.kind === "badge" &&
+    (item.data as BadgeItem).collectionSymbol === "ocbadge" &&
+    (item.data as BadgeItem).credentialScope !== "activity_milestone";
 
   const credentialName = item.kind === "cert" ? item.data.course : item.data.title;
   const issued =
@@ -200,7 +220,7 @@ export function OcCredentialModal({
                 <Button
                   className="w-full gap-3 text-base font-semibold"
                   size="lg"
-                  disabled={claiming || !hasName}
+                  disabled={claiming || !hasName || isClaimed || isPending}
                   onClick={() => onClaim(d.id, item.kind)}
                 >
                   {claiming ? (
@@ -247,14 +267,14 @@ export function OcCredentialModal({
         <div className="min-w-0 p-4 sm:p-6">
           <DialogHeader className="mb-4">
             <div className="flex items-start gap-3">
-              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-raised border border-border-subtle sm:size-14">
+              <div className="flex h-12 shrink-0 min-w-[3rem] items-center justify-center overflow-hidden rounded-md bg-surface-raised border border-border-subtle sm:h-14 sm:min-w-[3.5rem]">
                 <img
                   src={
                     item.data.imageUrl ||
                     (item.kind === "cert" ? CERT_PLACEHOLDER : BADGE_PLACEHOLDER)
                   }
                   alt=""
-                  className="size-full object-cover"
+                  className="h-full w-auto object-contain"
                 />
               </div>
               <div className="min-w-0 flex-1">
@@ -273,6 +293,8 @@ export function OcCredentialModal({
               <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted sm:text-sm">
                 {item.kind === "cert"
                   ? t("achievements.oc.modal.kind.cert")
+                  : isOcb
+                  ? t("achievements.oc.modal.kind.badge")
                   : badgeScope === "course"
                   ? t("achievements.oc.modal.kind.oca")
                   : badgeScope === "hackathon"
@@ -413,16 +435,66 @@ export function OcCredentialModal({
                   variant="outline"
                   className="flex-1 gap-2 text-sm sm:text-base"
                   size="lg"
+                  disabled={downloading}
+                  onClick={async () => {
+                    setDownloading(true);
+                    try {
+                      if (item.kind === "cert") {
+                        await downloadCertificate(d as CertificateItem);
+                      } else {
+                        await downloadBadgeImage(d as BadgeItem);
+                      }
+                    } catch (error) {
+                      console.error("Failed to download", error);
+                      toast.error(t("achievements.certificates.downloadError"));
+                    } finally {
+                      setDownloading(false);
+                    }
+                  }}
                 >
-                  <Download className="size-4 shrink-0" aria-hidden />
+                  {downloading ? (
+                    <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+                  ) : (
+                    <Download className="size-4 shrink-0" aria-hidden />
+                  )}
                   <span>
-                    {t("achievements.oc.modal.claimedActions.downloadPdf")}
+                    {item.kind === "cert"
+                      ? t("achievements.oc.modal.claimedActions.downloadPdf")
+                      : t("achievements.certificates.downloadPng")}
                   </span>
                 </Button>
                 <Button
                   variant="outline"
                   className="flex-1 gap-2 text-sm sm:text-base"
                   size="lg"
+                  onClick={async () => {
+                    const shareUrl = d.ocCredentialUrl || `${window.location.origin}/u/${profile?.username || ""}`;
+                    const shareTitle = item.kind === "cert" ? (d as CertificateItem).course : (d as BadgeItem).title;
+                    const shareText = `Tôi vừa nhận được thành tích "${shareTitle}" từ Corelia Academy trên chuỗi khối Open Campus!`;
+
+                    if (navigator.share) {
+                      try {
+                        await navigator.share({
+                          title: shareTitle,
+                          text: shareText,
+                          url: shareUrl,
+                        });
+                        toast.success(t("achievements.share.success", { defaultValue: "Đã chia sẻ thành công!" }));
+                      } catch (err) {
+                        if ((err as Error).name !== "AbortError") {
+                          console.error("Error sharing:", err);
+                        }
+                      }
+                    } else {
+                      try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        toast.success(t("achievements.share.copied", { defaultValue: "Đã sao chép liên kết vào bộ nhớ tạm!" }));
+                      } catch (err) {
+                        console.error("Clipboard copy failed:", err);
+                        toast.error(t("achievements.share.error", { defaultValue: "Không thể sao chép liên kết." }));
+                      }
+                    }
+                  }}
                 >
                   <Share2 className="size-4 shrink-0" aria-hidden />
                   <span>{t("actions.share")}</span>
