@@ -469,6 +469,24 @@ async function fetchPublicProfileByHandleOnce(handle: string): Promise<PublicPro
   return rowToPublicProfile(data as Record<string, unknown>);
 }
 
+/**
+ * Read another user's profile for PUBLIC display (instructor section, instructor
+ * page). Must hit `public_profiles`, not `profiles`: RLS on `profiles` restricts
+ * SELECT to the row owner or admin/support (profiles_select_self_or_staff), so a
+ * regular viewer querying someone else's `profiles` row gets nothing back.
+ */
+export async function getPublicProfileById(id: string): Promise<PublicProfile | null> {
+  const trimmed = id?.trim();
+  if (!trimmed) return null;
+  const { data, error } = await supabase
+    .from("public_profiles")
+    .select("*")
+    .eq("id", trimmed)
+    .maybeSingle();
+  if (error || !data) return null;
+  return rowToPublicProfile(data as Record<string, unknown>);
+}
+
 export async function getPublicProfileByHandle(handle: string): Promise<PublicProfile | null> {
   const key = handle.trim().replace(/^@+/, "").toLowerCase();
   if (!key) return null;

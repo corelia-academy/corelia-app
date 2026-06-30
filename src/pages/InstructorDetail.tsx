@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { Globe, GraduationCap, Loader2, MapPin } from "lucide-react";
-import { getProfile } from "@/lib/profile";
+import { getPublicProfileById } from "@/lib/profile";
 import { getPublishedCoursesByInstructor } from "@/lib/courses";
-import type { Profile } from "@/types/database";
+import type { PublicProfile } from "@/types/database";
 import type { Course } from "@/types/courses";
 import { getCourseLevelLabel, formatDuration } from "@/types/courses";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,7 +27,7 @@ const InstructorDetail = () => {
     [t],
   );
   const { id } = useParams<{ id: string }>();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ const InstructorDetail = () => {
     if (!id) return;
     let cancelled = false;
 
-    Promise.all([getProfile(id), getPublishedCoursesByInstructor(id)])
+    Promise.all([getPublicProfileById(id), getPublishedCoursesByInstructor(id)])
       .then(([prof, list]) => {
         if (cancelled) return;
         if (!prof || prof.role !== "instructor") {
@@ -129,7 +129,8 @@ const InstructorDetail = () => {
 
   const initials =
     profile.full_name?.trim().slice(0, 2).toUpperCase() ||
-    (profile.email?.[0]?.toUpperCase() ?? "?");
+    profile.username?.[0]?.toUpperCase() ||
+    "?";
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
