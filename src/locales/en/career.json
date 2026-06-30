@@ -38,7 +38,8 @@
   },
   "actions": {
     "browseCourses": "Browse courses",
-    "backToList": "Back to list"
+    "backToList": "Back to list",
+    "viewTrack": "View track"
   },
   "errors": {
     "loadErrorTitle": "Could not load track",
