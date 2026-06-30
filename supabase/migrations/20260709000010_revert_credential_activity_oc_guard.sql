@@ -1,6 +1,5 @@
--- Guard earned-credential activity events behind the same on-chain proof used by
--- the Achievements UI: a minted issuance must also have a non-empty OC id.
--- This also lets backfills emit the event when oc_credential_id is repaired.
+-- Revert: remove oc_credential_id guard added in 20260709000009.
+-- Restores emit_activity_on_credential_issuance to only gate on status = 'minted'.
 
 CREATE OR REPLACE FUNCTION private.emit_activity_on_credential_issuance()
 RETURNS trigger
@@ -14,21 +13,7 @@ DECLARE
   v_target_type text;
   v_target_id text;
 BEGIN
-  IF NEW.status <> 'minted'
-    OR NEW.oc_credential_id IS NULL
-    OR trim(NEW.oc_credential_id) = ''
-  THEN
-    RETURN NEW;
-  END IF;
-
-  IF EXISTS (
-    SELECT 1
-    FROM public.activity_events e
-    WHERE e.actor_id = NEW.user_id
-      AND e.verb = 'user.earned_credential'
-      AND e.object_type = v_object_type
-      AND e.object_id = v_object_id
-  ) THEN
+  IF NEW.status <> 'minted' THEN
     RETURN NEW;
   END IF;
 
@@ -69,11 +54,7 @@ $$;
 
 DROP TRIGGER IF EXISTS trg_activity_credential_issuance ON public.credential_issuances;
 CREATE TRIGGER trg_activity_credential_issuance
-  AFTER INSERT OR UPDATE OF status, oc_credential_id ON public.credential_issuances
+  AFTER INSERT OR UPDATE OF status ON public.credential_issuances
   FOR EACH ROW
-  WHEN (
-    NEW.status = 'minted'
-    AND NEW.oc_credential_id IS NOT NULL
-    AND trim(NEW.oc_credential_id) <> ''
-  )
+  WHEN (NEW.status = 'minted')
   EXECUTE FUNCTION private.emit_activity_on_credential_issuance();
