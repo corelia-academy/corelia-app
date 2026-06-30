@@ -9,12 +9,12 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
-import type { InstructorSocialLink, InstructorSocialPlatform, Profile } from "@/types/database";
+import type { InstructorSocialLink, InstructorSocialPlatform, PublicProfile } from "@/types/database";
 import type { CourseCoInstructorSnapshot } from "@/types/courses";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface CourseInstructorSectionProps {
-  profile: Profile;
+  profile: PublicProfile;
   coInstructors?: CourseCoInstructorSnapshot[];
 }
 
