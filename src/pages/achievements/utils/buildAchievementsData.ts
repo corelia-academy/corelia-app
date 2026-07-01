@@ -107,8 +107,9 @@ export function buildCourseCertificatesFromIssuances(
         row.template?.achievement_type !== "Award",
     )
     .map((row) => {
-      const courseId = row.course_id ?? `deleted-${row.id}`;
+      const courseId = row.course_id ?? null;
       const course = row.course_id ? courseMap.get(row.course_id) : undefined;
+      const snapshot = row.display_snapshot;
       let ocCredentialId = row.oc_credential_id ?? null;
       if (!ocCredentialId?.trim() && row.oc_response) {
         ocCredentialId = extractOcCredentialId(row.oc_response);
@@ -124,12 +125,25 @@ export function buildCourseCertificatesFromIssuances(
         id: `course-oca-${row.id}`,
         courseId,
         title: labels.courseCompletionTitle,
-        course: course?.title || row.template?.name || labels.fallbackCourseName,
-        issuedAt: formatDate(row.minted_at),
-        instructor: course?.instructor_name || labels.fallbackInstructorName,
+        course:
+          course?.title ||
+          snapshot?.course_title ||
+          row.template?.name ||
+          snapshot?.credential_title ||
+          labels.fallbackCourseName,
+        issuedAt: formatDate(row.minted_at ?? snapshot?.issued_at ?? row.created_at),
+        instructor:
+          course?.instructor_name ||
+          snapshot?.instructor_name ||
+          labels.fallbackInstructorName,
         type: pickCertificateType(course?.owner_type),
         credentialId: ocCredentialId ?? buildCredentialId("COURSE", row.id),
-        imageUrl: course?.certificate_template_url || row.template?.image_url || CERT_PLACEHOLDER,
+        imageUrl:
+          course?.certificate_template_url ||
+          row.template?.image_url ||
+          snapshot?.image_url ||
+          snapshot?.thumbnail_url ||
+          CERT_PLACEHOLDER,
         nameXPercent: course?.certificate_name_x_percent ?? 50,
         nameYPercent: course?.certificate_name_y_percent ?? 50,
         nameColor: course?.certificate_name_color ?? "#000000",
