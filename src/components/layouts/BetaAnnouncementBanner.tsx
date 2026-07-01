@@ -22,10 +22,10 @@ export function BetaAnnouncementBanner() {
     <>
       <div
         role="status"
-        className="flex min-h-9 w-full flex-wrap items-center justify-center gap-x-2 gap-y-0.5 bg-[#1f5be7] px-3 py-1.5 text-center text-xs font-semibold leading-4 text-white sm:text-sm sm:leading-5"
+        className="flex min-h-5 w-full flex-wrap items-center justify-center gap-x-1 bg-primary-foreground px-2 py-0.5 text-center text-[9px] font-semibold leading-3 text-foreground sm:text-[10px]"
       >
-        <span className="flex size-5 shrink-0 items-center justify-center rounded bg-white/15">
-          <Info className="size-3.5" aria-hidden />
+        <span className="flex size-3 shrink-0 items-center justify-center rounded-sm bg-foreground/15">
+          <Info className="size-2" aria-hidden />
         </span>
 
         <span className="sm:hidden">{t("betaAnnouncement.summaryCompact")}</span>
@@ -34,7 +34,7 @@ export function BetaAnnouncementBanner() {
         <button
           type="button"
           aria-haspopup="dialog"
-          className="shrink-0 cursor-pointer underline underline-offset-2 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+          className="shrink-0 cursor-pointer underline underline-offset-2 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/70"
           onClick={() => setOpen(true)}
         >
           {t("betaAnnouncement.seeMore")}
