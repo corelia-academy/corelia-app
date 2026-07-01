@@ -62,6 +62,16 @@
     "accept": "Accept",
     "decline": "Decline"
   },
+  "betaAnnouncement": {
+    "summary": "Corelia is currently in beta. Some features may be incomplete or contain bugs.",
+    "summaryCompact": "Beta version — features may be incomplete or contain bugs.",
+    "seeMore": "See more",
+    "modal": {
+      "title": "About the beta version",
+      "description": "Corelia is still being developed and improved.",
+      "details": "Some features may be unavailable, unstable, or contain bugs. The interface and functionality may change in future updates."
+    }
+  },
   "notifications": {
     "projectInviteTitle": "Team invite",
     "projectInviteBody": "You were invited to join a hackathon project.",

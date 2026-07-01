@@ -30,6 +30,7 @@ import { CoraPlanSummary } from "@/components/course-ai/CoraPlanSummary";
 import { shouldShowGlobalCoraAssistant } from "@/components/course-ai/visibility";
 import { useCoraStore } from "@/stores/coraStore";
 import { cn } from "@/lib/utils";
+import { BetaAnnouncementBanner } from "@/components/layouts/BetaAnnouncementBanner";
 
 type SearchEntityType =
   | "project"
@@ -368,7 +369,8 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex w-full border-b border-border-subtle bg-surface-raised">
+    <header className="sticky top-0 z-40 w-full border-b border-border-subtle bg-surface-raised">
+      <BetaAnnouncementBanner />
       <div className="mx-auto flex h-14 w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="hidden md:inline-flex shrink-0 size-7">
