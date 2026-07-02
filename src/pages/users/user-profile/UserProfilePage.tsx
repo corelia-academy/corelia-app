@@ -370,20 +370,32 @@ export default function UserProfileLayout() {
             </div>
           </div>
         ) : profile ? (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+          <div className={`grid gap-6 lg:items-start ${profile.profile_public || isSelf ? 'lg:grid-cols-[minmax(0,1fr)_320px]' : 'lg:grid-cols-1'}`}>
             <main className="min-w-0 space-y-6">
-              <UserProfileProjectsSection profile={profile} />
-              <UserProfileActivitySection profile={profile} />
-              <UserProfileAchievementsSection isSelf={isSelf} />
-              <UserProfileCoursesSection profile={profile} />
-              <UserProfileContestsSection profile={profile} isSelf={isSelf} />
+              {profile.profile_public || isSelf ? (
+                <>
+                  <UserProfileProjectsSection profile={profile} />
+                  <UserProfileActivitySection profile={profile} />
+                </>
+              ) : null}
+              
+              <UserProfileAchievementsSection isSelf={isSelf} profileId={profile.id} />
+              
+              {profile.profile_public || isSelf ? (
+                <>
+                  <UserProfileCoursesSection profile={profile} />
+                  <UserProfileContestsSection profile={profile} isSelf={isSelf} />
+                </>
+              ) : null}
             </main>
-            <ProfileSidebar
-              profile={profile}
-              bio={bio}
-              website={website}
-              headerHandle={headerHandle}
-            />
+            {profile.profile_public || isSelf ? (
+              <ProfileSidebar
+                profile={profile}
+                bio={bio}
+                website={website}
+                headerHandle={headerHandle}
+              />
+            ) : null}
           </div>
         ) : null}
       </div>
