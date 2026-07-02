@@ -98,6 +98,7 @@ export function CanvasCropperModal({
   // Only snapshot the file when the modal opens; ignore changes while closing.
   useEffect(() => {
     if (open && imageFile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveFile(imageFile);
     }
     if (!open) {

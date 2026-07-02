@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { getProfile } from "@/lib/profile";
-import type { Profile } from "@/types/database";
+import { getPublicProfileById } from "@/lib/profile";
+import type { PublicProfile } from "@/types/database";
 
 export function useInstructorProfile(instructorId: string | undefined) {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export function useInstructorProfile(instructorId: string | undefined) {
       if (!cancelled) setLoading(true);
     });
 
-    getProfile(instructorId)
+    getPublicProfileById(instructorId)
       .then((p) => {
         if (!cancelled) setProfile(p);
       })

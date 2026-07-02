@@ -11,12 +11,16 @@ import { CertificateCard } from "@/pages/achievements/components/CertificateCard
 import { OcCredentialModal } from "@/pages/achievements/components/OcCredentialModal";
 import { StatsBar } from "@/pages/achievements/components/StatsBar";
 import { useAchievementsPage } from "@/pages/achievements/hooks/useAchievementsPage";
+import { usePublicAchievements } from "../hooks/usePublicAchievements";
 
-export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) {
+export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: boolean; profileId?: string }) {
   const { t } = useTranslation("common");
   const { ocAuth, isInitialized } = useOCAuth();
   const [ocConnectLoading, setOcConnectLoading] = useState(false);
   const [ocConnectError, setOcConnectError] = useState<string | null>(null);
+
+  const privateAchievements = useAchievementsPage();
+  const publicAchievements = usePublicAchievements(isSelf ? undefined : profileId);
 
   const {
     certificates,
@@ -30,7 +34,15 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
     handleClaim,
     ocidConnectOpen,
     setOcidConnectOpen,
-  } = useAchievementsPage();
+  } = isSelf 
+    ? privateAchievements 
+    : { 
+        ...publicAchievements, 
+        claiming: false, 
+        handleClaim: async () => {}, 
+        ocidConnectOpen: false, 
+        setOcidConnectOpen: () => {} 
+      };
 
   async function handleOcConnect() {
     setOcConnectError(null);
@@ -44,21 +56,7 @@ export function UserProfileAchievementsSection({ isSelf }: { isSelf: boolean }) 
     }
   }
 
-  if (!isSelf) {
-    return (
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Award className="size-4 text-foreground-muted" aria-hidden />
-          <h2 className="text-base font-semibold text-foreground">
-            {t("userProfile.tabs.achievements")}
-          </h2>
-        </div>
-        <div className="rounded-2xl border border-dashed border-border-subtle bg-surface-base p-6 text-sm text-foreground-muted shadow-card">
-          {t("userProfile.achievements.selfOnly")}
-        </div>
-      </section>
-    );
-  }
+
 
   const earnedBadges = badges.filter((b) => !b.locked);
   const recentCertificates = certificates.slice(0, 6);
