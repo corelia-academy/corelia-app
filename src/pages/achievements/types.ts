@@ -56,6 +56,8 @@ export type BadgeItem = {
   /** Role/type within a hackathon (e.g. "winner", "participant") — for multi-type hackathon badges */
   hackathonRole?: string | null;
   collectionSymbol?: "ocbadge" | null;
+  /** Tiêu chuẩn Achievement Type (e.g. Badge, Award, CertificateOfCompletion) */
+  achievementType?: string;
 };
 
 export type ModalItem =

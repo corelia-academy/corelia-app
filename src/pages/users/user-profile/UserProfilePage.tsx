@@ -182,10 +182,12 @@ function ProfileSidebar({
 export default function UserProfileLayout() {
   const { t, i18n } = useTranslation("common");
   const { handle } = useParams<{ handle: string }>();
-  const { user } = useAuth();
-  const { profile, loading, error } = useUserProfileLayoutData(handle);
+  const { user, profile: currentUserProfile } = useAuth();
+  const { profile: fetchedProfile, loading, error } = useUserProfileLayoutData(handle);
 
-  const isSelf = Boolean(user && profile && user.id === profile.id);
+  const isSelf = Boolean(user && fetchedProfile && user.id === fetchedProfile.id);
+  const profile = (isSelf && currentUserProfile ? currentUserProfile : fetchedProfile) as PublicProfile | null;
+
   const headerHandle = profile ? profileHandle(profile) : null;
   const profileOcid = profile ? readableProfileText(profile.ocid) : null;
   const website =

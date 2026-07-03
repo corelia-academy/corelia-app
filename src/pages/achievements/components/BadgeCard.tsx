@@ -160,7 +160,7 @@ export function BadgeCard({
             )}
           >
             {badge.credentialScope === "course"
-              ? badge.collectionSymbol === "ocbadge"
+              ? badge.achievementType === "Badge" || badge.achievementType === "Award"
                 ? t("achievements.credentialType.badge", { defaultValue: "Badge" })
                 : t("achievements.credentialType.oca", { defaultValue: "OCA" })
               : badge.credentialScope === "hackathon"
