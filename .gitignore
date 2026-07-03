@@ -38,6 +38,10 @@ dist-ssr
 # AI Agents configuration
 .agents/
 
+# Local AI project context
+# Ngữ cảnh dự án dành cho trợ lý cục bộ
+AGENTS.md
+
 # pnpm local cache
 .pnpm-store/
 
