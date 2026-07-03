@@ -1,13 +1,20 @@
--- Restore the missing trigger for public.public_profiles sync
--- This trigger was dropped in 20260707000001_security_lint_fixes.sql but forgot to be recreated
--- when the function was moved to internal.sync_public_profile().
+-- Restore the missing triggers for public.public_profiles sync.
+-- 20260707000001_security_lint_fixes.sql dropped the legacy public.sync_public_profile()/
+-- public.delete_public_profile() duplicates, but the DROP TRIGGER IF EXISTS statements there
+-- were unqualified by schema and collaterally dropped the real triggers bound to
+-- internal.sync_public_profile()/internal.delete_public_profile() -- they were never recreated.
+-- As a result, profiles.profile_public updates stopped propagating to public_profiles at all,
+-- which is also why the scrub-logic fix in 20260712000000_fix_sync_public_profile_scrubbing.sql
+-- (and its "touch to re-trigger" backfill) had no effect: there was no trigger left to fire.
 
+DROP TRIGGER IF EXISTS sync_public_profile_on_profiles ON public.profiles;
 CREATE TRIGGER sync_public_profile_on_profiles
   AFTER INSERT OR UPDATE
   ON public.profiles
   FOR EACH ROW
   EXECUTE FUNCTION internal.sync_public_profile();
 
+DROP TRIGGER IF EXISTS delete_public_profile_on_profiles ON public.profiles;
 CREATE TRIGGER delete_public_profile_on_profiles
   AFTER DELETE
   ON public.profiles
