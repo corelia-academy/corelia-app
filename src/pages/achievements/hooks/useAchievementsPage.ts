@@ -108,7 +108,11 @@ export function useAchievementsPage() {
         profile?.ocid,
         profile?.full_name,
       );
-      const certificateCourseIds = new Set(enrollmentCertificates.map((item) => item.courseId));
+      const certificateCourseIds = new Set(
+        enrollmentCertificates
+          .map((item) => item.courseId)
+          .filter((courseId): courseId is string => !!courseId),
+      );
       const issuanceCertificates = buildCourseCertificatesFromIssuances(
         mintedOcRows,
         courseMap,
