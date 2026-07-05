@@ -37,7 +37,8 @@
   },
   "actions": {
     "browseCourses": "Xem khóa học",
-    "backToList": "Quay lại danh sách"
+    "backToList": "Quay lại danh sách",
+    "viewTrack": "Xem lộ trình"
   },
   "errors": {
     "loadErrorTitle": "Không thể tải lộ trình",

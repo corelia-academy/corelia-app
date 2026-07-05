@@ -62,6 +62,16 @@
     "accept": "Chấp nhận",
     "decline": "Từ chối"
   },
+  "betaAnnouncement": {
+    "summary": "Corelia hiện đang trong phiên bản thử nghiệm. Một số tính năng có thể chưa đầy đủ hoặc phát sinh lỗi.",
+    "summaryCompact": "Phiên bản thử nghiệm — có thể thiếu tính năng hoặc phát sinh lỗi.",
+    "seeMore": "Xem thêm",
+    "modal": {
+      "title": "Thông tin về phiên bản thử nghiệm",
+      "description": "Corelia hiện vẫn đang trong quá trình phát triển và hoàn thiện.",
+      "details": "Một số tính năng có thể chưa khả dụng, hoạt động chưa ổn định hoặc phát sinh lỗi. Giao diện và chức năng có thể được thay đổi trong các bản cập nhật tiếp theo."
+    }
+  },
   "notifications": {
     "projectInviteTitle": "Lời mời nhóm dự án",
     "projectInviteBody": "Bạn được mời tham gia một dự án hackathon.",

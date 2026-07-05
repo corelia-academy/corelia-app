@@ -2,17 +2,29 @@ import { createElement } from "react";
 import { Award, Medal, Sparkles } from "lucide-react";
 
 import type { BadgeItem, ClaimStatus } from "@/pages/achievements/types";
+import {
+  normalizeCredentialDisplaySnapshot,
+  templateSummaryFromSnapshot,
+} from "@/lib/credentialDisplaySnapshot";
 import { supabase } from "@/lib/supabase";
-import type { CredentialIssuanceWithTemplate, CredentialTemplateSummary } from "@/types/credentials";
+import type {
+  CredentialDisplaySnapshot,
+  CredentialIssuanceWithTemplate,
+  CredentialTemplateSummary,
+} from "@/types/credentials";
 
 type IssuanceRow = {
   id: string;
+  template_id: string | null;
   course_id: string | null;
+  hackathon_id: string | null;
+  created_at: string | null;
   minted_at: string | null;
   oc_credential_id: string | null;
   oc_response: unknown;
   network: string;
   status: string;
+  display_snapshot: unknown;
   credential_templates:
     | CredentialTemplateSummary
     | CredentialTemplateSummary[]
@@ -24,6 +36,30 @@ function unwrapTemplate(
 ): CredentialTemplateSummary | null {
   if (!t) return null;
   return Array.isArray(t) ? t[0] ?? null : t;
+}
+
+function mapIssuanceRow(raw: unknown): CredentialIssuanceWithTemplate {
+  const row = raw as IssuanceRow;
+  const snapshot: CredentialDisplaySnapshot | null =
+    normalizeCredentialDisplaySnapshot(row.display_snapshot);
+  const template =
+    unwrapTemplate(row.credential_templates) ??
+    templateSummaryFromSnapshot(snapshot, row.template_id ?? null);
+
+  return {
+    id: row.id,
+    template_id: row.template_id ?? null,
+    course_id: row.course_id ?? null,
+    hackathon_id: row.hackathon_id ?? null,
+    created_at: row.created_at ?? null,
+    minted_at: row.minted_at,
+    oc_credential_id: row.oc_credential_id,
+    oc_response: row.oc_response,
+    network: row.network === "mainnet" ? "mainnet" : "staging",
+    status: row.status,
+    display_snapshot: snapshot,
+    template,
+  };
 }
 
 export type CourseIssuanceInfo = {
@@ -67,12 +103,16 @@ export async function fetchMyCredentialIssuances(
     .select(
       `
       id,
+      template_id,
       course_id,
+      hackathon_id,
+      created_at,
       minted_at,
       oc_credential_id,
       oc_response,
       network,
       status,
+      display_snapshot,
       credential_templates (
         id,
         scope_type,
@@ -91,20 +131,7 @@ export async function fetchMyCredentialIssuances(
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((raw) => {
-    const row = raw as IssuanceRow;
-    const template = unwrapTemplate(row.credential_templates);
-    return {
-      id: row.id,
-      course_id: row.course_id ?? null,
-      minted_at: row.minted_at,
-      oc_credential_id: row.oc_credential_id,
-      oc_response: row.oc_response,
-      network: row.network === "mainnet" ? "mainnet" : "staging",
-      status: row.status,
-      template,
-    };
-  });
+  return (data ?? []).map(mapIssuanceRow);
 }
 
 export async function fetchMintedCredentialIssuancesForUser(
@@ -115,12 +142,16 @@ export async function fetchMintedCredentialIssuancesForUser(
     .select(
       `
       id,
+      template_id,
       course_id,
+      hackathon_id,
+      created_at,
       minted_at,
       oc_credential_id,
       oc_response,
       network,
       status,
+      display_snapshot,
       credential_templates (
         id,
         scope_type,
@@ -140,20 +171,7 @@ export async function fetchMintedCredentialIssuancesForUser(
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((raw) => {
-    const row = raw as IssuanceRow;
-    const template = unwrapTemplate(row.credential_templates);
-    return {
-      id: row.id,
-      course_id: row.course_id ?? null,
-      minted_at: row.minted_at,
-      oc_credential_id: row.oc_credential_id,
-      oc_response: row.oc_response,
-      network: row.network === "mainnet" ? "mainnet" : "staging",
-      status: row.status,
-      template,
-    };
-  });
+  return (data ?? []).map(mapIssuanceRow);
 }
 
 export function openCampusCredentialExplorerUrl(
@@ -239,7 +257,8 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, usernam
     username,
     nftCollection: tpl?.collection_symbol === "ocbadge" ? "ocbadge" : "occredential",
   });
-  const minted = row.minted_at ? new Date(row.minted_at).toLocaleDateString() : "—";
+  const issuedAt = row.minted_at ?? row.display_snapshot?.issued_at ?? row.created_at;
+  const minted = issuedAt ? new Date(issuedAt).toLocaleDateString() : "—";
 
   const credentialScope =
     tpl?.scope_type === "hackathon" || tpl?.scope_type === "activity_milestone"
@@ -268,7 +287,7 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, usernam
     locked: false,
     category: "milestone",
     // thumbnail_url for frontend display; image_url (full-res) stays in OC payload only
-    imageUrl: tpl?.thumbnail_url ?? tpl?.image_url,
+    imageUrl: tpl?.thumbnail_url || tpl?.image_url || undefined,
     // Claim status is derived from row status for our realtime pipeline.
     // "claimed" requires status=minted AND a valid resolvedCredentialId.
     // minted without oc_credential_id = incomplete mint → treat as failed.

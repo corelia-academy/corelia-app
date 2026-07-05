@@ -2,7 +2,8 @@ export type ClaimStatus = "unclaimed" | "pending" | "claimed" | "failed";
 
 export type CertificateItem = {
   id: string;
-  courseId: string;
+  /** Null when the source course has been deleted. */
+  courseId: string | null;
   title: string;
   course: string;
   issuedAt: string;
