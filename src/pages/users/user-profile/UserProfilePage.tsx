@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
@@ -9,6 +10,9 @@ import {
   Sparkles,
   User,
   Users,
+  Eye,
+  EyeOff,
+  Lock,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -186,7 +190,9 @@ export default function UserProfileLayout() {
   const { profile: fetchedProfile, loading, error } = useUserProfileLayoutData(handle);
 
   const isSelf = Boolean(user && fetchedProfile && user.id === fetchedProfile.id);
-  const profile = (isSelf && currentUserProfile ? currentUserProfile : fetchedProfile) as PublicProfile | null;
+  const [previewAsGuest, setPreviewAsGuest] = useState(false);
+  const effectiveIsSelf = isSelf && !previewAsGuest;
+  const profile = (effectiveIsSelf && currentUserProfile ? currentUserProfile : fetchedProfile) as PublicProfile | null;
 
   const headerHandle = profile ? profileHandle(profile) : null;
   const profileOcid = profile ? readableProfileText(profile.ocid) : null;
@@ -288,6 +294,22 @@ export default function UserProfileLayout() {
             <div className="flex min-w-0 flex-col gap-4">
               <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 {loading ? <Skeleton className="h-9 w-28 rounded" /> : null}
+                
+                {!loading && profile && isSelf ? (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => setPreviewAsGuest(!previewAsGuest)}
+                    className={previewAsGuest ? "border-primary text-primary hover:text-primary hover:bg-primary/10 bg-primary/5" : "text-foreground-muted"}
+                  >
+                    {previewAsGuest ? (
+                      <><EyeOff className="mr-2 size-4" aria-hidden /> {t("userProfile.actions.exitPreview", "Thoát xem trước")}</>
+                    ) : (
+                      <><Eye className="mr-2 size-4" aria-hidden /> {t("userProfile.actions.previewAsGuest", "Xem tư cách khách")}</>
+                    )}
+                  </Button>
+                ) : null}
+
                 {!loading && profile && isSelf ? (
                   <NavLink to="/account/profile">
                     <Button variant="outline" size="lg" type="button">
@@ -372,25 +394,37 @@ export default function UserProfileLayout() {
             </div>
           </div>
         ) : profile ? (
-          <div className={`grid gap-6 lg:items-start ${profile.profile_public || isSelf ? 'lg:grid-cols-[minmax(0,1fr)_320px]' : 'lg:grid-cols-1'}`}>
+          <div className={`grid gap-6 lg:items-start ${profile.profile_public || effectiveIsSelf ? 'lg:grid-cols-[minmax(0,1fr)_320px]' : 'lg:grid-cols-1'}`}>
             <main className="min-w-0 space-y-6">
-              {profile.profile_public || isSelf ? (
+              {profile.profile_public || effectiveIsSelf ? (
                 <>
                   <UserProfileProjectsSection profile={profile} />
                   <UserProfileActivitySection profile={profile} />
                 </>
-              ) : null}
+              ) : (
+                <div className="rounded-2xl border border-border-subtle bg-surface-base p-8 text-center shadow-card">
+                  <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-surface-raised">
+                    <Lock className="size-5 text-foreground-subtle" aria-hidden />
+                  </div>
+                  <h3 className="mt-4 text-base font-semibold text-foreground">
+                    {t("userProfile.private.title", "Hồ sơ riêng tư")}
+                  </h3>
+                  <p className="mt-2 text-sm text-foreground-muted max-w-sm mx-auto">
+                    {t("userProfile.private.description", "Người dùng này đã hạn chế hiển thị thông tin cá nhân. Chỉ các thành tựu công khai được hiển thị.")}
+                  </p>
+                </div>
+              )}
               
-              <UserProfileAchievementsSection isSelf={isSelf} profileId={profile.id} />
+              <UserProfileAchievementsSection isSelf={effectiveIsSelf} profileId={profile.id} />
               
-              {profile.profile_public || isSelf ? (
+              {profile.profile_public || effectiveIsSelf ? (
                 <>
                   <UserProfileCoursesSection profile={profile} />
-                  <UserProfileContestsSection profile={profile} isSelf={isSelf} />
+                  <UserProfileContestsSection profile={profile} isSelf={effectiveIsSelf} />
                 </>
               ) : null}
             </main>
-            {profile.profile_public || isSelf ? (
+            {profile.profile_public || effectiveIsSelf ? (
               <ProfileSidebar
                 profile={profile}
                 bio={bio}
