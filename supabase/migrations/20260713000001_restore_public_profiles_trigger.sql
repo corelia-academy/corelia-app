@@ -6,6 +6,23 @@
 -- As a result, profiles.profile_public updates stopped propagating to public_profiles at all,
 -- which is also why the scrub-logic fix in 20260712000000_fix_sync_public_profile_scrubbing.sql
 -- (and its "touch to re-trigger" backfill) had no effect: there was no trigger left to fire.
+--
+-- internal.delete_public_profile() is recreated here (unlike sync_public_profile, which every
+-- later migration already re-creates via CREATE OR REPLACE) because on production it was never
+-- actually applied by 20260606143900_public_user_profiles.sql -- prod and staging are separate
+-- projects whose migration history had independently drifted, so this function silently never
+-- existed on prod even though local migration files were identical on both.
+CREATE OR REPLACE FUNCTION internal.delete_public_profile()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  DELETE FROM public.public_profiles WHERE id = OLD.id;
+  RETURN OLD;
+END;
+$$;
 
 DROP TRIGGER IF EXISTS sync_public_profile_on_profiles ON public.profiles;
 CREATE TRIGGER sync_public_profile_on_profiles
