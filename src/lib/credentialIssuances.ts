@@ -305,6 +305,7 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, usernam
     credentialScope,
     hackathonRole: tpl?.hackathon_role ?? undefined,
     collectionSymbol: tpl?.collection_symbol,
+    achievementType: tpl?.achievement_type ?? undefined,
   };
 }
 
