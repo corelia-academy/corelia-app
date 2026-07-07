@@ -6,11 +6,10 @@ import {
   fetchCourseIssuanceMapForUser,
   fetchMyCredentialIssuances,
   issuanceToBadgeItem,
-  openCampusCredentialExplorerUrl,
   type CourseIssuanceInfo,
 } from "@/lib/credentialIssuances";
 import { CREDENTIAL_SYNC_EVENT } from "@/components/base/CredentialRealtimeSync";
-import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
+import { invokeCheckCourseCredential, invokeListActiveOcaTemplates } from "@/lib/credentialsEdge";
 import {
   backfillMissingEnrollmentsForUser,
   checkAndIssueCertificate,
@@ -35,10 +34,9 @@ import type {
 } from "../types";
 import {
   buildCourseCertificates,
-  buildCourseCertificatesFromIssuances,
+  buildUnclaimedOcaBadges,
   ocidWithEduSuffix,
 } from "../utils/buildAchievementsData";
-import { renderAndUploadCertificate } from "../utils/renderCertificate";
 
 export interface CertificateSyncCandidate {
   courseId: string;
@@ -80,19 +78,14 @@ export function useAchievementsPage() {
         fetchMyCredentialIssuances(user.id).catch(() => []),
       ]);
 
-      const mintedOcRows = ocRows.filter((r) => r.status === "minted");
-
-      const courseIds = Array.from(
-        new Set([
-          ...enrollments.map((item) => item.course_id),
-          ...mintedOcRows
-            .filter((row) => row.template?.scope_type === "course" && row.course_id)
-            .map((row) => row.course_id!),
-        ]),
-      );
-      const courseRows = await Promise.all(
-        courseIds.map(async (courseId) => [courseId, await getCourse(courseId)] as const),
-      );
+      const courseIds = Array.from(new Set(enrollments.map((item) => item.course_id)));
+      const [courseRows, ocaTemplateMap] = await Promise.all([
+        Promise.all(courseIds.map(async (courseId) => [courseId, await getCourse(courseId)] as const)),
+        invokeListActiveOcaTemplates(courseIds).catch((e) => {
+          console.error("OCA Template Fetch Error:", e);
+          return new Map();
+        }),
+      ]);
       const courseMap = new Map(courseRows);
 
       const certificateLabels = {
@@ -107,21 +100,9 @@ export function useAchievementsPage() {
         courseIssuanceMap,
         profile?.ocid,
         profile?.full_name,
+        ocaTemplateMap,
       );
-      const certificateCourseIds = new Set(
-        enrollmentCertificates
-          .map((item) => item.courseId)
-          .filter((courseId): courseId is string => !!courseId),
-      );
-      const issuanceCertificates = buildCourseCertificatesFromIssuances(
-        mintedOcRows,
-        courseMap,
-        certificateCourseIds,
-        certificateLabels,
-        profile?.ocid,
-        profile?.full_name,
-      );
-      const nextCertificates = [...enrollmentCertificates, ...issuanceCertificates].sort((a, b) => {
+      const nextCertificates = [...enrollmentCertificates].sort((a, b) => {
         const aDate = a.issuedAt.split("/").reverse().join("-");
         const bDate = b.issuedAt.split("/").reverse().join("-");
         return bDate.localeCompare(aDate);
@@ -145,15 +126,22 @@ export function useAchievementsPage() {
           }),
       );
 
-      setCertificates(nextCertificates);
-      setBadges(
+      const courseIdsWithOcaIssuance = new Set(
         ocRows
-          .filter((row) => {
-            const atype = row.template?.achievement_type;
-            return atype === "Badge" || atype === "Award";
-          })
-          .map((row) => issuanceToBadgeItem(row, profile?.ocid)),
+          .filter((row) => row.course_id && !row.template?.collection_symbol)
+          .map((row) => row.course_id!),
       );
+      const virtualOcaBadges = buildUnclaimedOcaBadges(
+        enrollmentCertificates,
+        ocaTemplateMap,
+        courseIdsWithOcaIssuance,
+      );
+
+      setCertificates(nextCertificates);
+      setBadges([
+        ...ocRows.map((row) => issuanceToBadgeItem(row, profile?.ocid)),
+        ...virtualOcaBadges,
+      ]);
       setCertificateSyncCandidates(
         pendingCandidates.filter((item): item is CertificateSyncCandidate => !!item),
       );
@@ -174,6 +162,10 @@ export function useAchievementsPage() {
   }, [loadAchievements]);
 
   const openModal = (item: ModalItem) => {
+    // Virtual "unclaimed" OCA cards have no real issuance behind them yet —
+    // block opening the modal from any entry point (BadgeCard, the "Recent
+    // achievements" list, etc.) and route the user to the Certificate card.
+    if (item.kind === "badge" && item.data.ocClaimStatus === "unclaimed_virtual") return;
     setModalItem(item);
     setModalOpen(true);
   };
@@ -202,47 +194,45 @@ export function useAchievementsPage() {
     patchCert(id, { ocClaimStatus: "pending" });
 
     try {
-      // Render + upload the name-rendered certificate to the deterministic CDN
-      // path BEFORE minting, so the backend can embed it as the OC attachment.
-      const renderedUrl = await renderAndUploadCertificate(cert, user!.id);
-      if (!renderedUrl) {
-        throw new Error(t("achievements.oc.modal.claimToast.error.failed"));
-      }
-
       await invokeCheckCourseCredential(cert.courseId);
 
-      // Reload issuance status from DB
-      const map = await fetchCourseIssuanceMapForUser(user!.id);
-      const info = map.get(cert.courseId);
+      // Reload issuances (with template info) so we can both patch the cert
+      // status and replace the virtual badge with the real minted one.
+      const issuances = await fetchMyCredentialIssuances(user!.id);
+      const row = issuances.find(
+        (r) => r.course_id === cert.courseId && !r.template?.collection_symbol,
+      );
 
-      if (info?.status === "minted" && info.oc_credential_id) {
-        // oc_credential_id must be present — it is proof the credential exists on-chain
-        const ocCredentialId = info.oc_credential_id;
-        const ocCredentialUrl = openCampusCredentialExplorerUrl(ocCredentialId, {
-          username: profile?.ocid,
-          nftCollection: "occredential",
-        }) ?? undefined;
-        patchCert(id, {
-          ocClaimStatus: "claimed" as ClaimStatus,
-          ocCredentialId,
-          ocCredentialUrl,
-          credentialId: ocCredentialId,
-          ocHolderOcId: ocidWithEduSuffix(profile?.ocid),
-        });
-      } else if (info?.status === "minted" && !info.oc_credential_id) {
-        // Minted status without credential ID = incomplete mint, treat as failed
-        patchCert(id, { ocClaimStatus: "failed" });
-        toast.error(t("achievements.oc.modal.claimToast.error.failed"));
-      } else if (info?.status === "failed") {
-        patchCert(id, { ocClaimStatus: "failed" });
-        toast.error(t("achievements.oc.modal.claimToast.error.failed"));
-      } else if (info?.status === "pending") {
-        patchCert(id, { ocClaimStatus: "pending" });
-        toast.info(t("achievements.oc.modal.claimToast.pending"));
-      } else {
+      if (!row) {
         // No issuance record created — template not active or criteria not met
         patchCert(id, { ocClaimStatus: "unclaimed" });
         toast.error(t("achievements.oc.modal.claimToast.error.notEligible"));
+        return;
+      }
+
+      const newBadge = issuanceToBadgeItem(row, profile?.ocid);
+      setBadges((prev) => [
+        newBadge,
+        ...prev.filter((b) => b.id !== `virtual-${cert.courseId}`),
+      ]);
+
+      if (newBadge.ocClaimStatus === "claimed") {
+        patchCert(id, {
+          ocClaimStatus: "claimed" as ClaimStatus,
+          ocCredentialId: newBadge.mintCredentialId,
+          ocCredentialUrl: newBadge.ocCredentialUrl,
+          credentialId: newBadge.mintCredentialId ?? cert.credentialId,
+          ocHolderOcId: ocidWithEduSuffix(profile?.ocid),
+        });
+        openModal({ kind: "badge", data: newBadge });
+      } else if (newBadge.status === "pending") {
+        patchCert(id, { ocClaimStatus: "pending" });
+        toast.info(t("achievements.oc.modal.claimToast.pending"));
+      } else {
+        // minted without oc_credential_id, or failed — issuanceToBadgeItem
+        // already resolved ocClaimStatus to "failed" for both cases.
+        patchCert(id, { ocClaimStatus: "failed" });
+        toast.error(t("achievements.oc.modal.claimToast.error.failed"));
       }
     } catch (err) {
       patchCert(id, { ocClaimStatus: "failed" });

@@ -80,8 +80,9 @@ export function OcCredentialModal({
   const hackathonRole = item.kind === "badge" ? (item.data as BadgeItem).hackathonRole : undefined;
   const isOcb =
     item.kind === "badge" &&
-    (item.data as BadgeItem).collectionSymbol === "ocbadge" &&
-    (item.data as BadgeItem).credentialScope !== "activity_milestone";
+    (item.data as BadgeItem).credentialScope !== "activity_milestone" &&
+    ((item.data as BadgeItem).achievementType === "Badge" ||
+      (item.data as BadgeItem).achievementType === "Award");
 
   const credentialName = item.kind === "cert" ? item.data.course : item.data.title;
   const issued =

@@ -606,6 +606,7 @@
       "loadFailed": "Không tải được cấu hình credential.",
       "statusActive": "Đang hoạt động",
       "statusInactive": "Chưa cấu hình",
+      "toggleSectionLabel": "Hiển thị cấu hình",
       "kind": {
         "label": "Loại credential",
         "oca": {

@@ -1,4 +1,12 @@
-export type ClaimStatus = "unclaimed" | "pending" | "claimed" | "failed";
+export type ClaimStatus =
+  | "unclaimed"
+  /** Course has an active OCA template but no issuance row exists yet — a
+   *  placeholder "virtual" badge card prompting the user to claim on the
+   *  Certificate card, not a real DB-backed status. */
+  | "unclaimed_virtual"
+  | "pending"
+  | "claimed"
+  | "failed";
 
 export type CertificateItem = {
   id: string;
@@ -20,6 +28,8 @@ export type CertificateItem = {
   holderName?: string | null;
   /** Màu chữ tên học viên overlay (hex, mặc định "#000000") */
   nameColor?: string | null;
+  /** Course có credential_templates active với collection_symbol IS NULL (OCA) */
+  hasOcaTemplate: boolean;
   // OpenCampus
   ocClaimStatus: ClaimStatus;
   ocCredentialId?: string | null;

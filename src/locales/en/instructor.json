@@ -607,6 +607,7 @@
       "loadFailed": "Could not load credential configuration.",
       "statusActive": "Active",
       "statusInactive": "Not configured",
+      "toggleSectionLabel": "Show settings",
       "kind": {
         "label": "Credential type",
         "oca": {

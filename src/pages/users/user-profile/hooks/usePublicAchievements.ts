@@ -18,10 +18,7 @@ import type {
   CertificateItem,
   ModalItem,
 } from "../../../achievements/types";
-import {
-  buildCourseCertificates,
-  buildCourseCertificatesFromIssuances,
-} from "../../../achievements/utils/buildAchievementsData";
+import { buildCourseCertificates } from "../../../achievements/utils/buildAchievementsData";
 import { getPublicProfileById } from "@/lib/profile";
 
 export function usePublicAchievements(profileId: string | undefined) {
@@ -47,12 +44,7 @@ export function usePublicAchievements(profileId: string | undefined) {
       const mintedOcRows = ocRows.filter((r) => r.status === "minted");
 
       const courseIds = Array.from(
-        new Set([
-          ...enrollments.filter(e => e.certificate_issued_at).map((item) => item.course_id),
-          ...mintedOcRows
-            .filter((row) => row.template?.scope_type === "course" && row.course_id)
-            .map((row) => row.course_id!),
-        ]),
+        new Set(enrollments.filter((e) => e.certificate_issued_at).map((item) => item.course_id)),
       );
       const courseRows = await Promise.all(
         courseIds.map(async (courseId) => [courseId, await getCourse(courseId)] as const),
@@ -76,34 +68,14 @@ export function usePublicAchievements(profileId: string | undefined) {
         profile?.ocid,
         profile?.full_name,
       );
-      const certificateCourseIds = new Set<string>(
-        enrollmentCertificates
-          .map((item) => item.courseId)
-          .filter((courseId): courseId is string => courseId !== null),
-      );
-      const issuanceCertificates = buildCourseCertificatesFromIssuances(
-        mintedOcRows,
-        courseMap,
-        certificateCourseIds,
-        certificateLabels,
-        profile?.ocid,
-        profile?.full_name,
-      );
-      const nextCertificates = [...enrollmentCertificates, ...issuanceCertificates].sort((a, b) => {
+      const nextCertificates = [...enrollmentCertificates].sort((a, b) => {
         const aDate = a.issuedAt.split("/").reverse().join("-");
         const bDate = b.issuedAt.split("/").reverse().join("-");
         return bDate.localeCompare(aDate);
       });
 
       setCertificates(nextCertificates);
-      setBadges(
-        mintedOcRows
-          .filter((row) => {
-            const atype = row.template?.achievement_type;
-            return atype === "Badge" || atype === "Award";
-          })
-          .map((row) => issuanceToBadgeItem(row, profile?.ocid)),
-      );
+      setBadges(mintedOcRows.map((row) => issuanceToBadgeItem(row, profile?.ocid)));
     } finally {
       setLoading(false);
     }

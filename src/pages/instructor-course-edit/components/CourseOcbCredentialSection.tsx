@@ -44,6 +44,35 @@ function StatusBadge({ active }: { active: boolean }) {
   );
 }
 
+function SectionToggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
+        checked ? "bg-primary" : "bg-border"
+      }`}
+    >
+      <span
+        className={`pointer-events-none inline-block size-5 rounded-full bg-primary-foreground shadow-sm transition-transform duration-200 ${
+          checked ? "translate-x-5" : "translate-x-0"
+        }`}
+      />
+    </button>
+  );
+}
+
 type KindOption = {
   value: CourseCredentialKind;
   labelKey: string;
@@ -88,6 +117,7 @@ export function CourseOcbCredentialSection({
   const [uploading, setUploading] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [credentialKind, setCredentialKind] = useState<CourseCredentialKind>("oca");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -297,10 +327,30 @@ export function CourseOcbCredentialSection({
           </h3>
           <p className="mt-1 text-sm text-foreground-muted">{t("courseEdit.ocb.subtitle")}</p>
         </div>
-        <StatusBadge active={isActive} />
+        <div className="flex items-center gap-3">
+          <StatusBadge active={isActive} />
+          <div className="flex items-center gap-2 border-l border-border-subtle pl-3">
+            <span className="text-xs font-medium text-foreground-muted">
+              {t("courseEdit.ocb.toggleSectionLabel")}
+            </span>
+            <SectionToggle
+              checked={isExpanded}
+              onChange={setIsExpanded}
+              label={t("courseEdit.ocb.toggleSectionLabel")}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Credential type */}
+      {/* Collapsible body — collapsed until the section switch above is turned on */}
+      <div
+        className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+          isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        }`}
+        aria-hidden={!isExpanded}
+      >
+        <div className="space-y-6 overflow-hidden">
+          {/* Credential type */}
       <div>
         <p className="mb-2 text-sm font-medium text-foreground">{t("courseEdit.ocb.kind.label")}</p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -556,6 +606,8 @@ export function CourseOcbCredentialSection({
       <Button type="button" disabled={!canEdit || saving || isOcbBlockedByHasCert} onClick={() => void handleSave()}>
         {saving ? t("courseEdit.ocb.saving") : t("courseEdit.ocb.save")}
       </Button>
+        </div>
+      </div>
     </div>
   );
 }

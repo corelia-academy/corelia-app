@@ -653,6 +653,7 @@
     "badges": {
       "earnedPrefix": "Earned: {{date}}",
       "locked": "Locked",
+      "pendingClaim": "Pending Claim",
       "ocDot": {
         "claimedTooltip": "OC credential claimed",
         "unclaimedTooltip": "OC credential not claimed"
@@ -815,7 +816,7 @@
         "syncError": "Could not sync the certificate right now."
       },
       "badges": {
-        "title": "Badges & milestones",
+        "title": "Achievements, Badges & Milestones",
         "subtitle": "Includes learning milestones and progress you’re gradually unlocking.",
         "summaryUnlocked": "{{earned}}/{{total}} unlocked",
         "loading": "Loading your badges and milestones.",
@@ -829,8 +830,9 @@
     },
     "ocVault": {
       "tabs": {
-        "oca": "OCA",
-        "hackathon": "Badges",
+        "all": "All",
+        "oca": "Achievements (OCA)",
+        "ocb": "Badges (OCB)",
         "milestones": "Milestones"
       },
       "empty": "No credentials in this category yet."

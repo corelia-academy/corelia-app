@@ -22,6 +22,7 @@ export function BadgeCard({
   const imageUrl = badge.imageUrl ?? BADGE_PLACEHOLDER;
   const isPending = badge.status === "pending" || retrying;
   const isFailed = badge.status === "failed";
+  const isUnclaimedVirtual = badge.ocClaimStatus === "unclaimed_virtual";
 
   const handleRetry = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -42,7 +43,9 @@ export function BadgeCard({
         "group relative flex min-w-0 flex-col items-center gap-2 rounded-md border p-3 text-center transition-[transform,background-color,border-color,box-shadow] duration-200 sm:gap-3 sm:p-4",
         badge.locked
           ? "border-border bg-surface-raised opacity-60 grayscale"
-          : isFailed 
+          : isUnclaimedVirtual
+          ? "border-warning/50 bg-warning/10 cursor-default"
+          : isFailed
           ? "border-red-500/50 bg-red-500/10 cursor-pointer"
           : cn(
               badge.bgColor,
@@ -51,7 +54,7 @@ export function BadgeCard({
             ),
       )}
       onClick={() => {
-        if (!badge.locked && badge.status !== "pending") {
+        if (!badge.locked && badge.status !== "pending" && !isUnclaimedVirtual) {
           onOpenModal({ kind: "badge", data: badge });
         }
       }}
@@ -142,6 +145,11 @@ export function BadgeCard({
           <p className="text-xs font-medium text-primary animate-pulse">
             {t("achievements.badges.pendingPrefix", { defaultValue: "Đang tạo..." })}
           </p>
+        )}
+        {!badge.locked && isUnclaimedVirtual && (
+          <span className="inline-block rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning">
+            {t("achievements.badges.pendingClaim")}
+          </span>
         )}
         {badge.locked && (
           <span className="inline-block rounded-full border border-border bg-surface-base px-2 py-0.5 text-xs text-foreground-muted">
