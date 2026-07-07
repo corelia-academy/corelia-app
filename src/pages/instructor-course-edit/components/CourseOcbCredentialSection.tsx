@@ -12,9 +12,20 @@ import {
   type CourseCredentialKind,
   type CourseCredentialTriggerRule,
 } from "@/lib/credentialTemplates";
-import { uploadCourseCredentialBadgeImage } from "@/lib/storage";
+import { uploadCourseCredentialBadgeImage, uploadOnchainCertificateTemplate } from "@/lib/storage";
 import { toast } from "sonner";
 import { validatePngSignature } from "@/lib/imageValidation";
+
+function InvalidPngToast() {
+  return (
+    <span>
+      Định dạng file không phải PNG. Vui lòng tách nền hoặc chuyển đổi ảnh tại{" "}
+      <a href="https://www.remove.bg" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-primary-foreground hover:opacity-85">
+        remove.bg
+      </a>
+    </span>
+  );
+}
 
 function StatusBadge({ active }: { active: boolean }) {
   const { t } = useTranslation("instructor");
@@ -50,16 +61,25 @@ export function CourseOcbCredentialSection({
   canEdit,
   hasCertificate = false,
   onActiveChange,
-  certificateTemplateUrl,
   onClearLegacyCertificate,
+  onchainCertificateTemplateUrl,
+  onchainCertificateTemplatePath,
+  onOnchainCertificateUploaded,
+  onClearOnchainCertificate,
 }: {
   courseId: string;
   courseSlug: string;
   canEdit: boolean;
   hasCertificate?: boolean;
   onActiveChange?: (active: boolean) => void;
-  certificateTemplateUrl?: string | null;
   onClearLegacyCertificate?: () => void;
+  /** On-chain OCA (Open Campus Achievement) art — must stay name-free (OC privacy rules),
+   *  minted to Open Campus/IPFS. Distinct from the off-chain `certificate_template_url`
+   *  (Card 1), which gets the learner's name stamped client-side for social sharing. */
+  onchainCertificateTemplateUrl?: string | null;
+  onchainCertificateTemplatePath?: string | null;
+  onOnchainCertificateUploaded?: (result: { url: string; path: string }) => void;
+  onClearOnchainCertificate?: () => void;
 }) {
   const { t } = useTranslation("instructor");
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -150,14 +170,7 @@ export function CourseOcbCredentialSection({
 
     const isPng = await validatePngSignature(file);
     if (!isPng) {
-      toast.error(
-        <span>
-          Định dạng file không phải PNG. Vui lòng tách nền hoặc chuyển đổi ảnh tại{" "}
-          <a href="https://www.remove.bg" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-primary-foreground hover:opacity-85">
-            remove.bg
-          </a>
-        </span>
-      );
+      toast.error(<InvalidPngToast />);
       if (fileRef.current) fileRef.current.value = "";
       return;
     }
@@ -166,14 +179,57 @@ export function CourseOcbCredentialSection({
     if (fileRef.current) fileRef.current.value = "";
   };
 
+  const onchainFileRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingOnchain, setUploadingOnchain] = useState(false);
+
+  const handleUploadOnchain = async (file: File | null) => {
+    if (!file) return;
+    if (!canEdit) {
+      toast.error(t("courseEdit.ocb.noPermission"));
+      return;
+    }
+    setUploadingOnchain(true);
+    try {
+      const result = await uploadOnchainCertificateTemplate(
+        courseId,
+        file,
+        onchainCertificateTemplatePath,
+      );
+      onOnchainCertificateUploaded?.(result);
+      toast.success(t("courseEdit.ocb.onchainCertUploaded"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("courseEdit.ocb.onchainCertUploadFailed"));
+    } finally {
+      setUploadingOnchain(false);
+    }
+  };
+
+  const onOnchainFileSelect = async (file: File | null) => {
+    if (!file) return;
+    if (!canEdit) {
+      toast.error(t("courseEdit.ocb.noPermission"));
+      return;
+    }
+
+    const isPng = await validatePngSignature(file);
+    if (!isPng) {
+      toast.error(<InvalidPngToast />);
+      if (onchainFileRef.current) onchainFileRef.current.value = "";
+      return;
+    }
+
+    await handleUploadOnchain(file);
+    if (onchainFileRef.current) onchainFileRef.current.value = "";
+  };
+
   const handleSave = async () => {
     if (!canEdit) {
       toast.error(t("courseEdit.ocb.noPermission"));
       return;
     }
 
-    if (credentialKind === "oca" && (!certificateTemplateUrl || !certificateTemplateUrl.trim())) {
-      toast.error("Vui lòng tải lên ảnh template chứng chỉ khi bật cấu hình Open Campus (OCA).");
+    if (credentialKind === "oca" && (!onchainCertificateTemplateUrl || !onchainCertificateTemplateUrl.trim())) {
+      toast.error(t("courseEdit.ocb.onchainCertRequired"));
       return;
     }
     setSaving(true);
@@ -184,9 +240,11 @@ export function CourseOcbCredentialSection({
         min_assignment_score: Math.min(100, Math.max(0, minAssignmentScore)),
       };
 
-      // [TC-03 FIX] OCA must use the course certificate template - no imageUrl fallback
+      // OCA mints on-chain using the dedicated name-free onchain template, not the
+      // off-chain `certificateTemplateUrl` (which is meant to get the learner's name
+      // stamped on it and must never be pushed on-chain).
       const finalImageUrl = credentialKind === "oca"
-        ? certificateTemplateUrl!.trim()
+        ? onchainCertificateTemplateUrl!.trim()
         : imageUrl.trim();
 
       if (!finalImageUrl) {
@@ -341,22 +399,42 @@ export function CourseOcbCredentialSection({
         <Field>
           <FieldLabel>{t("courseEdit.ocb.imageLabel")}</FieldLabel>
           {credentialKind === "oca" ? (
-            <div className="mt-1 flex items-start gap-3 rounded-lg border border-border-subtle bg-surface-base p-3">
-              {certificateTemplateUrl ? (
-                <img
-                  src={certificateTemplateUrl}
-                  alt=""
-                  className="h-16 w-auto rounded border border-border-subtle shrink-0"
-                />
-              ) : (
-                <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded border border-dashed border-border-subtle bg-surface-raised text-xs text-foreground-muted">
-                  {t("courseEdit.ocb.imageOcaNoTemplate")}
-                </div>
-              )}
-              <p className="text-xs text-foreground-muted leading-relaxed">
-                {t("courseEdit.ocb.imageOcaHint")}
-              </p>
-            </div>
+            <>
+              <p className="text-xs font-medium text-foreground">{t("courseEdit.ocb.onchainCertLabel")}</p>
+              <input
+                ref={onchainFileRef}
+                type="file"
+                accept="image/png"
+                className="hidden"
+                onChange={(e) => void onOnchainFileSelect(e.target.files?.[0] ?? null)}
+              />
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!canEdit || uploadingOnchain}
+                  onClick={() => onchainFileRef.current?.click()}
+                >
+                  {uploadingOnchain ? t("courseEdit.ocb.uploading") : t("courseEdit.ocb.uploadOnchainCert")}
+                </Button>
+                {onchainCertificateTemplateUrl && (
+                  <div className="relative size-14 shrink-0 rounded border border-border-subtle bg-surface-raised">
+                    <img src={onchainCertificateTemplateUrl} alt="" className="size-full rounded object-cover" />
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => onClearOnchainCertificate?.()}
+                        className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        <span className="text-[10px] font-bold">×</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+              <p className="mt-1.5 text-xs text-foreground-muted">{t("courseEdit.ocb.onchainCertHint")}</p>
+            </>
           ) : (
             <>
               <input

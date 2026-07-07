@@ -202,6 +202,24 @@ export function uploadCertificateTemplate(
   return uploadToCdn(`certificate-templates/${courseId}/${Date.now()}.${ext}`, file, previousPath);
 }
 
+/** Permanent CDN URL — on-chain OCA credential template (must stay name-free per OC
+ *  privacy rules; minted to Open Campus/IPFS). Distinct from the off-chain
+ *  `certificate_template_url`, which gets the learner's name stamped client-side.
+ *  Reuses the `certificate-templates/{courseId}/` RLS-covered path with a `-onchain` suffix. */
+export function uploadOnchainCertificateTemplate(
+  courseId: string,
+  file: File,
+  previousPath?: string | null,
+): Promise<{ url: string; path: string }> {
+  if (!courseId) throw new Error("Thiếu courseId");
+  const ext = buildSafeExt(file.name, "png");
+  return uploadToCdn(
+    `certificate-templates/${courseId}/${Date.now()}-onchain.${ext}`,
+    file,
+    previousPath,
+  );
+}
+
 /** Permanent CDN URL — Corelia institution logo (issuer image in OC payloads).
  *  Path: brand/{timestamp}.{ext}. Admin/support only (RLS cdn_brand_insert). */
 export function uploadCoreliaLogo(file: File): Promise<{ url: string; path: string }> {
