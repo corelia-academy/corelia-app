@@ -4449,9 +4449,30 @@ const InstructorCourseEdit = () => {
             <li>
               <button
                 type="button"
-                onClick={() => setSection("certificate")}
+                onClick={() => {
+                  if (!form.has_certificate) {
+                    toast.error("Vui lòng cho phép cấp chứng nhận hoàn thành ở mục \"Thông tin chung\".", {
+                      action: {
+                        label: "Cho phép",
+                        onClick: () => {
+                          setSection("info");
+                          setTimeout(() => {
+                            document.getElementById("has-certificate-checkbox")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                            document.getElementById("has-certificate-checkbox")?.focus();
+                          }, 100);
+                        },
+                      },
+                      classNames: {
+                        actionButton: "!bg-primary !text-primary-foreground hover:!bg-primary/90",
+                      },
+                    });
+                  } else {
+                    setSection("certificate");
+                  }
+                }}
                 className={cn(
                   "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                  !form.has_certificate && "opacity-50 cursor-not-allowed",
                   activeSection === "certificate"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
@@ -5928,24 +5949,40 @@ const InstructorCourseEdit = () => {
                   </>
                 ) : null}
                 <Field>
-                  <label className={`flex items-center gap-2 ${ocbIsActive ? "opacity-50 cursor-not-allowed" : ""}`}>
+                  <label className={`flex items-center gap-2 ${ocbIsActive && !form.has_certificate ? "opacity-50 cursor-not-allowed" : ""}`}>
                     <input
+                      id="has-certificate-checkbox"
                       type="checkbox"
                       checked={form.has_certificate ?? false}
-                      disabled={ocbIsActive}
-                      onChange={(e) =>
+                      disabled={ocbIsActive && !form.has_certificate}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
                         setForm((p) => ({
                           ...p,
-                          has_certificate: e.target.checked,
-                        }))
-                      }
-                      className="rounded border-border"
+                          has_certificate: checked,
+                        }));
+                        if (checked) {
+                          toast.success("Khóa học sẽ cấp chứng nhận hoàn thành", {
+                            action: {
+                              label: "Tùy chỉnh chứng nhận",
+                              onClick: () => {
+                                setSection("certificate");
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                              },
+                            },
+                            classNames: {
+                              actionButton: "!bg-primary !text-primary-foreground hover:!bg-primary/90",
+                            },
+                          });
+                        }
+                      }}
+                      className="rounded border-border scroll-mt-20"
                     />
                     <span className="text-sm font-medium">
                       {t("courseEdit.publishing.hasCertificateHint")}
                     </span>
                   </label>
-                  {ocbIsActive && (
+                  {ocbIsActive && !form.has_certificate && (
                     <p className="mt-1 text-xs text-foreground-muted">
                       {t("courseEdit.publishing.certBlockedByOcb")}
                     </p>

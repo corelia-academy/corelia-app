@@ -85,7 +85,7 @@ export function CourseOcbCredentialSection({
       if (!row) {
         setTemplateId(null);
         setIsActive(true);
-        onActiveChange?.(true);
+        onActiveChange?.(false); // No row means NO OCB is active
         setCredentialKind("oca");
         setName("");
         setDescription("");
@@ -99,8 +99,9 @@ export function CourseOcbCredentialSection({
       }
       setTemplateId(row.id);
       setIsActive(row.is_active);
-      onActiveChange?.(row.is_active);
-      setCredentialKind(row.collection_symbol ? "ocb" : "oca");
+      const isOcb = !!row.collection_symbol;
+      onActiveChange?.(isOcb ? row.is_active : false); // Only true if it's an OCB and it's active
+      setCredentialKind(isOcb ? "ocb" : "oca");
       setName(row.name ?? "");
       setDescription(row.description ?? "");
       setImageUrl(row.image_url ?? "");
@@ -265,7 +266,9 @@ export function CourseOcbCredentialSection({
                   setCredentialKind(opt.value);
                   if (opt.value === "oca") {
                     setIsActive(true);
-                    onActiveChange?.(true);
+                    onActiveChange?.(false); // OCA means OCB is not active
+                  } else {
+                    onActiveChange?.(isActive); // For OCB, reflect its active state
                   }
                 }}
                 className="mt-0.5 accent-primary"
