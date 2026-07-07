@@ -400,7 +400,7 @@ export function CourseOcbCredentialSection({
           <FieldLabel>{t("courseEdit.ocb.imageLabel")}</FieldLabel>
           {credentialKind === "oca" ? (
             <>
-              <p className="text-xs font-medium text-foreground">{t("courseEdit.ocb.onchainCertLabel")}</p>
+
               <input
                 ref={onchainFileRef}
                 type="file"
