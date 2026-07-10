@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { getProfileForUser, invalidateCurrentProfileCache } from "@/lib/profile";
 import { invokeCheckActivityMilestones } from "@/lib/credentialsEdge";
+import { invokeCoreliaApi } from "@/lib/coreliaEdgeApi";
 import { useAuthStore } from "@/stores/authStore";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
 import type { AuthChangeEvent, User } from "@supabase/supabase-js";
@@ -137,6 +138,12 @@ export function AuthSync() {
       if (event === "SIGNED_IN" && session?.user) {
         queueMicrotask(() => {
           invokeCheckActivityMilestones("login_streak").catch(() => {});
+          // Best-effort: picks up any credential_issuances left at
+          // awaiting_holder_id (e.g. ghost-mint rows claimed by
+          // private.handle_new_user() at signup) once the user has an OCID.
+          // Usually a no-op right after signup — the real trigger point is
+          // OCIDRedirect.tsx after they connect OCID — but harmless to try.
+          invokeCoreliaApi("credentials.retryPending", {}).catch(() => {});
         });
       }
 
