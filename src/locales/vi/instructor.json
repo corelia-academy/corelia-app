@@ -579,7 +579,7 @@
     },
     "certificate": {
       "sectionTitle": "Template chứng nhận (PDF)",
-      "sectionDescription": "Tải lên ảnh template chứng nhận (PNG/JPG). Tên học viên sẽ được đặt tại vị trí bạn chọn.",
+      "sectionDescription": "Tải lên nền chứng nhận (PNG/JPG). Tên học viên sẽ được đặt tại vị trí bạn chọn để họ tải về và chia sẻ lên MXH.",
       "saveNamePosition": "Lưu vị trí tên",
       "templateLabel": "Template chứng nhận",
       "uploadTemplate": "Tải template lên",
@@ -594,7 +594,7 @@
     },
     "certificateGuide": {
       "title": "Hướng dẫn tạo template",
-      "sizeHint": "Kích thước khuyến nghị: 1600×1200 px (4:3 ngang) hoặc 1200×1600 px (3:4 dọc). Ảnh này cũng được dùng làm ảnh credential OpenCampus on-chain.",
+      "sizeHint": "Kích thước khuyến nghị: 1600×1200 px (4:3 ngang) hoặc 1200×1600 px (3:4 dọc).",
       "nameAreaHint": "Để trống một vùng trên ảnh cho tên học viên (ví dụ giữa trang hoặc 1/3 phía dưới).",
       "afterUploadHint": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" (% từ trái / % từ trên) để tên học viên nằm đúng vùng trống. 50% = giữa.",
       "downloadSample": "Tải template mẫu (SVG)"
@@ -606,6 +606,7 @@
       "loadFailed": "Không tải được cấu hình credential.",
       "statusActive": "Đang hoạt động",
       "statusInactive": "Chưa cấu hình",
+      "toggleSectionLabel": "Hiển thị cấu hình",
       "kind": {
         "label": "Loại credential",
         "oca": {
@@ -627,12 +628,16 @@
       "descriptionLabel": "Mô tả",
       "imageLabel": "Ảnh credential",
       "imageHint": "Khuyến nghị: 1600×1200 px (ngang) hoặc 1200×1600 px (dọc). Dùng làm ảnh credential on-chain trên OpenCampus.",
-      "imageOcaHint": "OCA sử dụng ảnh template chứng nhận ở trên làm ảnh credential on-chain. Hãy upload template chứng nhận trước.",
-      "imageOcaNoTemplate": "Chưa có template",
       "uploadBadge": "Tải ảnh lên",
       "uploading": "Đang tải…",
       "uploadOk": "Đã tải ảnh.",
       "uploadFailed": "Tải ảnh thất bại.",
+      "onchainCertLabel": "Phôi chứng nhận On-chain (Web3)",
+      "onchainCertHint": "Ảnh dùng để đúc chứng chỉ lên blockchain. Tuyệt đối KHÔNG chứa khoảng trống chèn tên học viên để bảo vệ quyền riêng tư.",
+      "uploadOnchainCert": "Tải phôi On-chain lên",
+      "onchainCertUploaded": "Đã tải phôi OCA On-chain.",
+      "onchainCertUploadFailed": "Tải phôi On-chain thất bại.",
+      "onchainCertRequired": "Vui lòng tải lên phôi On-chain trước khi lưu cấu hình OCA.",
       "completionPctLabel": "% bài học hoàn thành tối thiểu",
       "requireAssignmentPassLabel": "Yêu cầu duyệt bài tập cuối khóa",
       "requireAssignmentLabel": "Yêu cầu duyệt bài tập cuối khóa",

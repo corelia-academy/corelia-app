@@ -336,27 +336,29 @@ export function CertificateCard({
           </div>
 
           <div className="mt-3 flex min-w-0 flex-wrap items-stretch gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenModal({ kind: "cert", data: cert })}
-              className={cn(
-                cert.ocClaimStatus === "claimed"
-                  ? "border-success/20 bg-success/10 text-success hover:bg-success/15"
-                  : "border-border bg-surface-base hover:bg-surface-raised",
-              )}
-            >
-              <img
-                src="/open-campus-edu-logo.png"
-                alt="OC"
-                className="size-3.5 shrink-0 rounded-full sm:size-4"
-              />
-              <span className="truncate">
-                {cert.ocClaimStatus === "claimed"
-                  ? t("achievements.certificates.ocAction.view")
-                  : t("achievements.certificates.ocAction.claim")}
-              </span>
-            </Button>
+            {(cert.ocClaimStatus === "claimed" || cert.hasOcaTemplate) && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenModal({ kind: "cert", data: cert })}
+                className={cn(
+                  cert.ocClaimStatus === "claimed"
+                    ? "border-success/20 bg-success/10 text-success hover:bg-success/15"
+                    : "border-border bg-surface-base hover:bg-surface-raised",
+                )}
+              >
+                <img
+                  src="/open-campus-edu-logo.png"
+                  alt="OC"
+                  className="size-3.5 shrink-0 rounded-full sm:size-4"
+                />
+                <span className="truncate">
+                  {cert.ocClaimStatus === "claimed"
+                    ? t("achievements.certificates.ocAction.view")
+                    : t("achievements.certificates.ocAction.claim")}
+                </span>
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger
                 disabled={!hasTemplate || downloading}

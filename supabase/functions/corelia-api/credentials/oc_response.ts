@@ -20,22 +20,25 @@ export function uuidToTokenId(value: string): string | null {
  *
  *  A few direct numeric fields (tokenId/credentialId) are also checked first to
  *  stay forward-compatible if OC changes the response shape. */
+function truthyString(value: unknown): string | null {
+  return value ? String(value) : null;
+}
+
 export function extractOcCredentialId(response: unknown): string | null {
   if (response == null || typeof response !== "object") return null;
   const root = response as Record<string, unknown>;
   const vc = (root.vc && typeof root.vc === "object" ? root.vc : root) as Record<string, unknown>;
 
   // Forward-compatible: a direct numeric token id, if OC ever returns one.
-  const direct =
-    (vc.tokenId && String(vc.tokenId)) ||
-    (vc.credentialId && String(vc.credentialId)) ||
-    (root.tokenId && String(root.tokenId)) ||
-    (root.credentialId && String(root.credentialId)) ||
-    null;
+  const direct: string | null =
+    truthyString(vc.tokenId) ??
+    truthyString(vc.credentialId) ??
+    truthyString(root.tokenId) ??
+    truthyString(root.credentialId);
   if (direct && /^\d+$/.test(direct.trim())) return direct.trim();
 
   // The credential id is a urn:uuid — convert to the numeric NFT token id.
-  const rawId = (vc.id && String(vc.id)) || (root.id && String(root.id)) || (direct ?? "");
+  const rawId: string = truthyString(vc.id) ?? truthyString(root.id) ?? direct ?? "";
   if (rawId.trim()) {
     return uuidToTokenId(rawId.trim()) ?? rawId.trim();
   }

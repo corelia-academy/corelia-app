@@ -50,3 +50,9 @@ supabase/.temp/
 
 # Supabase Studio scratch queries
 supabase/snippets/Untitled query *.sql
+
+# AI Agent config files
+.cursorrules
+.cursor/
+.clinerules
+.windsurfrules

@@ -43,9 +43,6 @@ export async function buildOpenCampusPayload(params: {
   holderName: string | null;
   holderEmail: string | null;
   awardedIso: string;
-  /** Override for credentialSubject.image (e.g. name-rendered certificate).
-   *  When null, falls back to template.image_url. */
-  subjectImageOverride?: string | null;
 }): Promise<{ body: Record<string, unknown>; issuerReferenceId: string; achievementIdentifier: string }> {
   const {
     template,
@@ -58,7 +55,6 @@ export async function buildOpenCampusPayload(params: {
     holderName,
     holderEmail,
     awardedIso,
-    subjectImageOverride,
   } = params;
 
   const isOCA = !template.collection_symbol;
@@ -76,7 +72,7 @@ export async function buildOpenCampusPayload(params: {
   // credentialSubject — OCA includes name + email; OCB does not
   const credentialSubject: Record<string, unknown> = {
     type: "Person",
-    image: subjectImageOverride?.trim() || template.image_url,
+    image: template.image_url,
     profileUrl,
     achievement: {
       name: template.name,

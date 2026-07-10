@@ -380,6 +380,8 @@ const InstructorCourseEdit = () => {
     certificate_name_x_percent: 50,
     certificate_name_y_percent: 50,
     certificate_name_color: "#000000",
+    onchain_certificate_template_url: "",
+    onchain_certificate_template_path: "",
     access_model: "free" as CourseAccessModel,
     price_vnd: "",
     promo_price_vnd: "",
@@ -903,6 +905,8 @@ const InstructorCourseEdit = () => {
         certificate_name_x_percent: course.certificate_name_x_percent ?? 50,
         certificate_name_y_percent: course.certificate_name_y_percent ?? 50,
         certificate_name_color: course.certificate_name_color ?? "#000000",
+        onchain_certificate_template_url: course.onchain_certificate_template_url ?? "",
+        onchain_certificate_template_path: course.onchain_certificate_template_path ?? "",
         access_model: course.access_model ?? "free",
         price_vnd:
           course.price_vnd && course.price_vnd > 0
@@ -1341,6 +1345,8 @@ const InstructorCourseEdit = () => {
         certificate_name_x_percent: form.certificate_name_x_percent,
         certificate_name_y_percent: form.certificate_name_y_percent,
         certificate_name_color: form.certificate_name_color || "#000000",
+        onchain_certificate_template_url: form.onchain_certificate_template_url || null,
+        onchain_certificate_template_path: form.onchain_certificate_template_path || null,
         access_model: form.access_model,
         price_vnd:
           form.access_model === "paid_upfront"
@@ -1407,6 +1413,8 @@ const InstructorCourseEdit = () => {
               certificate_template_path: form.certificate_template_path,
               certificate_name_x_percent: form.certificate_name_x_percent,
               certificate_name_y_percent: form.certificate_name_y_percent,
+              onchain_certificate_template_url: form.onchain_certificate_template_url,
+              onchain_certificate_template_path: form.onchain_certificate_template_path,
               access_model: form.access_model,
               price_vnd:
                 form.access_model === "paid_upfront"
@@ -1659,6 +1667,58 @@ const InstructorCourseEdit = () => {
           ? err.message
           : String(t("courseEdit.errors.clearCertTemplateFailed" as never) || "Lỗi khi hủy chứng chỉ/OCA cũ")
       );
+    }
+  };
+
+  const handleOnchainCertificateUploaded = async (result: { url: string; path: string }) => {
+    if (!id) return;
+    try {
+      await updateCourse(id, {
+        onchain_certificate_template_url: result.url,
+        onchain_certificate_template_path: result.path,
+      });
+      setCourse((prev) =>
+        prev
+          ? {
+              ...prev,
+              onchain_certificate_template_url: result.url,
+              onchain_certificate_template_path: result.path,
+            }
+          : prev,
+      );
+      setForm((p) => ({
+        ...p,
+        onchain_certificate_template_url: result.url,
+        onchain_certificate_template_path: result.path,
+      }));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("courseEdit.errors.uploadCertTemplateFailed"));
+    }
+  };
+
+  const handleClearOnchainCertificate = async () => {
+    if (!id) return;
+    try {
+      await updateCourse(id, {
+        onchain_certificate_template_url: null,
+        onchain_certificate_template_path: null,
+      });
+      setCourse((prev) =>
+        prev
+          ? {
+              ...prev,
+              onchain_certificate_template_url: undefined,
+              onchain_certificate_template_path: undefined,
+            }
+          : prev,
+      );
+      setForm((p) => ({
+        ...p,
+        onchain_certificate_template_url: "",
+        onchain_certificate_template_path: "",
+      }));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("courseEdit.errors.clearCertTemplateFailed"));
     }
   };
 
@@ -8675,8 +8735,11 @@ const InstructorCourseEdit = () => {
                     canEdit={canManageCourseOcb}
                     hasCertificate={form.has_certificate ?? false}
                     onActiveChange={setOcbIsActive}
-                    certificateTemplateUrl={form.certificate_template_url || null}
                     onClearLegacyCertificate={handleClearLegacyCertificate}
+                    onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
+                    onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}
+                    onOnchainCertificateUploaded={handleOnchainCertificateUploaded}
+                    onClearOnchainCertificate={handleClearOnchainCertificate}
                   />
                 </section>
               )}

@@ -139,7 +139,7 @@ export interface Course {
   final_assignment_description?: string;
   /** Hướng dẫn chi tiết (tùy chọn) */
   final_assignment_instructions?: string;
-  /** URL template chứng nhận (ảnh) */
+  /** Ảnh nền Off-chain (dành cho canvas chèn tên học viên, để tải về/share MXH) */
   certificate_template_url?: string;
   /** Đường dẫn Storage template chứng nhận */
   certificate_template_path?: string;
@@ -149,6 +149,10 @@ export interface Course {
   certificate_name_y_percent?: number;
   /** Màu chữ tên học viên trên template (hex, mặc định "#000000") */
   certificate_name_color?: string;
+  /** Phôi OCA On-chain (không in tên, bảo mật) — dùng khi đúc chứng chỉ lên Open Campus/IPFS */
+  onchain_certificate_template_url?: string;
+  /** Đường dẫn Storage của phôi OCA on-chain */
+  onchain_certificate_template_path?: string;
   /** Mô hình truy cập khoá học */
   access_model?: CourseAccessModel;
   /** Khoá học có hỗ trợ cấp chứng nhận hoàn thành */
@@ -377,6 +381,8 @@ export interface CourseUpdate {
   certificate_name_x_percent?: number | null;
   certificate_name_y_percent?: number | null;
   certificate_name_color?: string | null;
+  onchain_certificate_template_url?: string | null;
+  onchain_certificate_template_path?: string | null;
   access_model?: CourseAccessModel;
   has_certificate?: boolean;
   is_updating?: boolean;

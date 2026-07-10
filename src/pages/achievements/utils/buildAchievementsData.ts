@@ -1,8 +1,11 @@
+import { createElement } from "react";
+import { Award } from "lucide-react";
+
 import { getCourse } from "@/lib/courses";
-import { openCampusCredentialExplorerUrl, type CourseIssuanceInfo, extractOcCredentialId } from "@/lib/credentialIssuances";
+import type { CourseOcaTemplateSummary } from "@/lib/credentialsEdge";
+import { openCampusCredentialExplorerUrl, type CourseIssuanceInfo } from "@/lib/credentialIssuances";
 import { intlLocale } from "@/lib/intl";
 import type { Enrollment } from "@/types/courses";
-import type { CredentialIssuanceWithTemplate } from "@/types/credentials";
 
 import { BADGE_PLACEHOLDER, BADGE_STYLES, CERT_PLACEHOLDER } from "../constants";
 import type { BadgeItem, CertificateItem } from "../types";
@@ -41,6 +44,7 @@ export function buildCourseCertificates(
   courseIssuanceMap?: Map<string, CourseIssuanceInfo>,
   holderOcid?: string | null,
   holderName?: string | null,
+  ocaTemplateMap?: Map<string, CourseOcaTemplateSummary>,
 ): CertificateItem[] {
   return enrollments
     .filter((item) => !!item.certificate_issued_at)
@@ -77,6 +81,7 @@ export function buildCourseCertificates(
         nameYPercent: course?.certificate_name_y_percent ?? 50,
         nameColor: course?.certificate_name_color ?? "#000000",
         holderName: holderName || null,
+        hasOcaTemplate: ocaTemplateMap?.has(item.course_id) ?? false,
         ocClaimStatus,
         ocCredentialId,
         ocCredentialUrl,
@@ -86,75 +91,43 @@ export function buildCourseCertificates(
     .sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));
 }
 
-export function buildCourseCertificatesFromIssuances(
-  issuances: CredentialIssuanceWithTemplate[],
-  courseMap: Map<string, Awaited<ReturnType<typeof getCourse>>>,
-  existingCourseIds: Set<string>,
-  labels: {
-    courseCompletionTitle: string;
-    fallbackCourseName: string;
-    fallbackInstructorName: string;
-  },
-  holderOcid?: string | null,
-  holderName?: string | null,
-): CertificateItem[] {
-  return issuances
+/** Placeholder "virtual" badge cards for courses that have an active OCA
+ *  template and an issued certificate, but no credential_issuances row yet
+ *  (OCA is never auto-minted — it requires the user to claim manually via
+ *  the Certificate card). Lets the Badges/OCA tab show something instead of
+ *  staying empty while the credential is claimable but unclaimed. */
+export function buildUnclaimedOcaBadges(
+  certificates: CertificateItem[],
+  ocaTemplateMap: Map<string, CourseOcaTemplateSummary>,
+  courseIdsWithOcaIssuance: Set<string>,
+): BadgeItem[] {
+  return certificates
     .filter(
-      (row) =>
-        row.template?.scope_type === "course" &&
-        (!row.course_id || !existingCourseIds.has(row.course_id)) &&
-        row.template?.achievement_type !== "Badge" &&
-        row.template?.achievement_type !== "Award",
+      (cert): cert is CertificateItem & { courseId: string } =>
+        cert.hasOcaTemplate &&
+        !!cert.courseId &&
+        !courseIdsWithOcaIssuance.has(cert.courseId),
     )
-    .map((row) => {
-      const courseId = row.course_id ?? null;
-      const course = row.course_id ? courseMap.get(row.course_id) : undefined;
-      const snapshot = row.display_snapshot;
-      let ocCredentialId = row.oc_credential_id ?? null;
-      if (!ocCredentialId?.trim() && row.oc_response) {
-        ocCredentialId = extractOcCredentialId(row.oc_response);
-      }
-      const ocCredentialUrl = ocCredentialId
-        ? openCampusCredentialExplorerUrl(ocCredentialId, {
-            username: holderOcid,
-            nftCollection: "occredential",
-          }) ?? undefined
-        : undefined;
-
+    .map((cert) => {
+      const tpl = ocaTemplateMap.get(cert.courseId)!;
       return {
-        id: `course-oca-${row.id}`,
-        courseId,
-        title: labels.courseCompletionTitle,
-        course:
-          course?.title ||
-          snapshot?.course_title ||
-          row.template?.name ||
-          snapshot?.credential_title ||
-          labels.fallbackCourseName,
-        issuedAt: formatDate(row.minted_at ?? snapshot?.issued_at ?? row.created_at),
-        instructor:
-          course?.instructor_name ||
-          snapshot?.instructor_name ||
-          labels.fallbackInstructorName,
-        type: pickCertificateType(course?.owner_type),
-        credentialId: ocCredentialId ?? buildCredentialId("COURSE", row.id),
-        imageUrl:
-          course?.certificate_template_url ||
-          row.template?.image_url ||
-          snapshot?.image_url ||
-          snapshot?.thumbnail_url ||
-          CERT_PLACEHOLDER,
-        nameXPercent: course?.certificate_name_x_percent ?? 50,
-        nameYPercent: course?.certificate_name_y_percent ?? 50,
-        nameColor: course?.certificate_name_color ?? "#000000",
-        holderName: holderName || null,
-        ocClaimStatus: ocCredentialId ? "claimed" : "failed",
-        ocCredentialId,
-        ocCredentialUrl,
-        ocHolderOcId: ocCredentialId ? ocidWithEduSuffix(holderOcid) : undefined,
-      } satisfies CertificateItem;
-    })
-    .sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));
+        id: `virtual-${cert.courseId}`,
+        title: tpl.name || cert.course,
+        description: tpl.description,
+        icon: createElement(Award, { className: "size-6 text-warning", "aria-hidden": true }),
+        color: "text-warning",
+        bgColor: "bg-warning/10",
+        borderColor: "border-warning/30",
+        earnedAt: null,
+        locked: false,
+        category: "milestone",
+        imageUrl: tpl.thumbnailUrl || tpl.imageUrl || undefined,
+        ocClaimStatus: "unclaimed_virtual",
+        credentialScope: "course",
+        collectionSymbol: null,
+        achievementType: tpl.achievementType,
+      } satisfies BadgeItem;
+    });
 }
 
 export function buildMilestoneBadges(
