@@ -11,7 +11,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { GraduationCap, ImageIcon, Medal, Pin, Settings, TicketPercent, Users } from "lucide-react";
+import { Award, GraduationCap, ImageIcon, Medal, Pin, Settings, TicketPercent, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function AdminSidebar() {
@@ -143,6 +143,22 @@ export function AdminSidebar() {
                     >
                       <ImageIcon className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.branding.label")}</span>
+                    </NavLink>
+                  }
+                />
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="rounded-md"
+                  tooltip={t("layout.sidebar.manualMint.tooltip")}
+                  isActive={pathname.startsWith("/admin/manual-mint")}
+                  render={
+                    <NavLink
+                      to="/admin/manual-mint"
+                      className="flex w-full items-center gap-2"
+                    >
+                      <Award className="size-4" aria-hidden />
+                      <span>{t("layout.sidebar.manualMint.label")}</span>
                     </NavLink>
                   }
                 />
