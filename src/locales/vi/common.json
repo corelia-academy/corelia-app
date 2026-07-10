@@ -913,5 +913,21 @@
     "managePreferences": "Quản lý tuỳ chọn thông báo",
     "errorTitle": "Không thể xử lý yêu cầu",
     "errorBody": "Link huỷ đăng ký không hợp lệ hoặc đã hết hạn. Vui lòng vào Cài đặt để quản lý thông báo."
+  },
+  "claim": {
+    "loading": "Đang tra cứu...",
+    "title": "Bạn có chứng nhận đang chờ",
+    "subtitle": "Các chứng nhận sau đang chờ được lưu vào tài khoản của {{email}}.",
+    "pendingBadge": "Đang chờ",
+    "cta": "Tham gia Corelia để nhận tất cả",
+    "emptyTitle": "Không có chứng nhận đang chờ",
+    "emptyBody": "Không tìm thấy chứng nhận nào đang chờ cho email này. Nếu bạn nghĩ đây là nhầm lẫn, hãy liên hệ đội ngũ Corelia.",
+    "errorTitle": "Không thể tra cứu",
+    "errorBody": "Link không hợp lệ hoặc đã xảy ra lỗi. Vui lòng thử lại từ email bạn đã nhận."
+  },
+  "pendingCredentialsWelcome": {
+    "title": "Bạn vừa nhận thành công các chứng nhận!",
+    "body": "Các chứng nhận đã được cấp cho email của bạn giờ đã lưu vào tài khoản Corelia.",
+    "cta": "Xem chứng nhận của tôi"
   }
 }

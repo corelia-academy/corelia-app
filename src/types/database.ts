@@ -63,6 +63,8 @@ export interface Profile {
   ocid_eth_address?: string | null;
   /** Thời điểm liên kết OCID (ISO string) */
   ocid_connected_at?: string | null;
+  /** Set bởi private.handle_new_user() khi ghost-mint credential được claim lúc đăng ký (ISO string) */
+  pending_credentials_claimed_at?: string | null;
   /** Loại giảng viên: nội bộ Corelia hay đối tác bên ngoài (chỉ dùng khi role = instructor) */
   instructor_origin?: "corelia" | "external";
   /** Tiêu đề ngắn hiển thị dưới tên giảng viên (ví dụ: Senior Frontend Engineer, Data Analyst) */

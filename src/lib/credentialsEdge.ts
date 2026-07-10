@@ -27,6 +27,29 @@ async function postJson<T>(op: string, body: Record<string, unknown>): Promise<T
   return parsed;
 }
 
+/** Like postJson, but for ops NOT in PROTECTED_OPS (verify_jwt is off for this
+ *  function, see supabase/config.toml) — no session/bearer token required, only
+ *  the anon apikey header. Used by the public /claim page. */
+async function postPublicJson<T>(op: string, body: Record<string, unknown>): Promise<T> {
+  const url = coreliaEdgeUrl(op);
+  if (!url) throw new Error("Thiếu cấu hình Corelia Edge URL.");
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      ...supabaseFunctionHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const parsed = (await res.json().catch(() => ({}))) as T & { message?: string };
+  if (!res.ok) {
+    throw new Error(typeof parsed.message === "string" ? parsed.message : `HTTP ${res.status}`);
+  }
+  return parsed;
+}
+
 export async function invokeCheckCourseCredential(
   courseId: string,
   userId?: string,
@@ -116,4 +139,22 @@ export async function invokeListActiveOcaTemplates(
     map.set(tpl.courseId, tpl);
   }
   return map;
+}
+
+export async function invokeGrantPendingCredential(params: {
+  templateId: string;
+  email: string;
+  grantedReason?: string | null;
+}): Promise<{ ok?: boolean; mode?: "direct" | "pending"; issuanceIds?: string[]; errors?: string[]; emailSent?: boolean; message?: string }> {
+  return await postJson("credentials.grantPending", {
+    templateId: params.templateId,
+    email: params.email,
+    ...(params.grantedReason ? { grantedReason: params.grantedReason } : {}),
+  });
+}
+
+export type PendingClaimItem = { name: string; imageUrl: string | null; isOCA: boolean };
+
+export async function invokeClaimLookup(email: string): Promise<{ ok: boolean; items?: PendingClaimItem[]; message?: string }> {
+  return await postPublicJson("credentials.claimLookup", { email });
 }

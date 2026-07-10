@@ -11,6 +11,10 @@
         "label": "Milestone hoạt động",
         "tooltip": "Huy hiệu milestone Open Campus toàn cục"
       },
+      "manualMint": {
+        "label": "Cấp thủ công OCA/OCB",
+        "tooltip": "Cấp OCA/OCB thủ công cho cá nhân, không gắn khóa học"
+      },
       "coraVouchers": {
         "label": "Voucher Cora",
         "tooltip": "Quản lý voucher cho thanh toán Cora AI"
@@ -38,6 +42,10 @@
       "activityMilestones": {
         "title": "Milestone hoạt động",
         "description": "Cấu hình huy hiệu Open Campus tự động hoặc cấp tay, không gắn một khóa học cố định."
+      },
+      "manualMint": {
+        "title": "Cấp chứng chỉ/huy hiệu thủ công",
+        "description": "Cấp OCA hoặc OCB thủ công cho một cá nhân cụ thể, không gắn khóa học hay hackathon."
       },
       "coraVouchers": {
         "title": "Voucher Cora",
@@ -412,6 +420,46 @@
       "coursesCompleted": "Hoàn thành {{count}} khóa học",
       "trackCourses": "{{count}} khóa trong track “{{track}}”",
       "projects": "{{count}} project đã nộp"
+    }
+  },
+  "manualMint": {
+    "heading": "Cấp thủ công OCA/OCB",
+    "subheading": "Cấp OCA/OCB cho một cá nhân cụ thể như phần thưởng ngoài khóa học, không ảnh hưởng trạng thái khóa học/hackathon.",
+    "lookup": {
+      "heading": "Tra cứu học viên",
+      "uidPlaceholder": "UID (copy từ trang Tài khoản)",
+      "emailPlaceholder": "Email học viên",
+      "submit": "Tra cứu",
+      "loading": "Đang tra cứu…",
+      "notFoundUid": "Không tìm thấy UID này trong hệ thống.",
+      "ghostNotice": "Email {{email}} chưa có tài khoản. Sau khi cấp, hệ thống sẽ gửi email mời họ tham gia Corelia để nhận.",
+      "error": "Tra cứu thất bại.",
+      "previewProfile": "Xem trước hồ sơ"
+    },
+    "preview": {
+      "title": "Xem trước hồ sơ",
+      "loading": "Đang tải…",
+      "notFound": "Không tải được hồ sơ.",
+      "noName": "Chưa đặt tên",
+      "role": "Vai trò",
+      "followers": "Người theo dõi",
+      "fullPageLink": "Xem trang đầy đủ →"
+    },
+    "form": {
+      "kind": "Loại chứng nhận",
+      "name": "Tên chứng chỉ/huy hiệu",
+      "image": "Ảnh phôi",
+      "uploadCta": "Nhấn để tải ảnh lên",
+      "uploading": "Đang tải ảnh lên…",
+      "imagePreview": "Bản xem trước",
+      "invalidPng": "Định dạng file không phải PNG. Vui lòng tách nền hoặc chuyển đổi ảnh tại",
+      "uploadFailed": "Tải ảnh thất bại.",
+      "reason": "Lý do cấp",
+      "submit": "Cấp phát",
+      "submitting": "Đang cấp…",
+      "success": "Đã cấp thành công.",
+      "successGhost": "Đã lưu chờ cấp và gửi email mời cho học viên.",
+      "submitFailed": "Cấp phát thất bại."
     }
   },
   "coraVoucherBatches": {

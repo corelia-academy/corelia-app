@@ -51,6 +51,7 @@ function rowToProfile(row: Record<string, unknown>): Profile {
     ocid: (row.ocid as string | null) ?? null,
     ocid_eth_address: (row.ocid_eth_address as string | null) ?? null,
     ocid_connected_at: (row.ocid_connected_at as string | null) ?? null,
+    pending_credentials_claimed_at: (row.pending_credentials_claimed_at as string | null) ?? null,
     instructor_origin: row.instructor_origin as Profile["instructor_origin"],
     instructor_headline: (row.instructor_headline as string | null) ?? null,
     instructor_bio: (row.instructor_bio as string | null) ?? null,
@@ -258,6 +259,16 @@ function fallbackProfile(user: { id: string; email?: string | null; user_metadat
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  if (error || !data) return null;
+  return rowToProfile(data as Record<string, unknown>);
+}
+
+/** Admin/support_staff only — profiles_select_self_or_staff RLS gates this to staff for
+ *  any id other than the caller's own. Used by the manual credential grant lookup flow. */
+export async function getProfileByEmail(email: string): Promise<Profile | null> {
+  const trimmed = email.trim();
+  if (!trimmed) return null;
+  const { data, error } = await supabase.from("profiles").select("*").ilike("email", trimmed).maybeSingle();
   if (error || !data) return null;
   return rowToProfile(data as Record<string, unknown>);
 }

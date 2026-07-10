@@ -3,11 +3,15 @@ INSERT INTO auth.users (
   id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, recovery_sent_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_change, email_change_token_new, recovery_token
 ) VALUES
 ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@test.com', crypt('123456', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"full_name": "Admin Tester"}', now(), now(), '', '', '', ''),
-('22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'student@test.com', crypt('123456', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"full_name": "Student Tester"}', now(), now(), '', '', '', '')
+('22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'student@test.com', crypt('123456', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"full_name": "Student Tester"}', now(), now(), '', '', '', ''),
+('33333333-3333-3333-3333-333333333333', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'staff@test.com', crypt('123456', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"full_name": "Staff Tester"}', now(), now(), '', '', '', '')
 ON CONFLICT (id) DO NOTHING;
 
 -- Give the first user admin role (assuming there's a trigger that created public.profiles)
 UPDATE public.profiles SET role = 'admin' WHERE id = '11111111-1111-1111-1111-111111111111';
+
+-- Give the third user support_staff role (for admin/support_staff RLS+role gate testing)
+UPDATE public.profiles SET role = 'support_staff' WHERE id = '33333333-3333-3333-3333-333333333333';
 
 -- 1. Create 3 Courses
 INSERT INTO public.courses (id, instructor_id, published, slug, data) VALUES

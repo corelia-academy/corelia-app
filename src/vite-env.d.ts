@@ -9,6 +9,4 @@ interface ImportMetaEnv {
   readonly VITE_HCAPTCHA_SITEKEY?: string;
   /** When "true", enables console performance marks for fetch/auth flows (staging debugging). */
   readonly VITE_PERF_DEBUG?: string;
-  /** When "true", displays the beta announcement above the main header. */
-  readonly VITE_BETA_BANNER_ENABLED?: string;
 }

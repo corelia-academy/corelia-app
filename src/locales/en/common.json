@@ -913,5 +913,21 @@
     "managePreferences": "Manage notification preferences",
     "errorTitle": "Could not process request",
     "errorBody": "The unsubscribe link is invalid or has expired. Please go to Settings to manage your notifications."
+  },
+  "claim": {
+    "loading": "Looking up...",
+    "title": "You have credentials waiting",
+    "subtitle": "The following credentials are waiting to be saved to {{email}}'s account.",
+    "pendingBadge": "Pending",
+    "cta": "Join Corelia to claim them all",
+    "emptyTitle": "No pending credentials",
+    "emptyBody": "No pending credentials were found for this email. If you think this is a mistake, contact the Corelia team.",
+    "errorTitle": "Could not look this up",
+    "errorBody": "This link is invalid or something went wrong. Please try again from the email you received."
+  },
+  "pendingCredentialsWelcome": {
+    "title": "You just received your credentials!",
+    "body": "The credentials granted to your email are now saved to your Corelia account.",
+    "cta": "View my credentials"
   }
 }
