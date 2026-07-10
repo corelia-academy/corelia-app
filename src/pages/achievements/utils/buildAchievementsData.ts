@@ -101,7 +101,11 @@ export function buildCourseCertificatesFromIssuances(
   return issuances
     .filter(
       (row) =>
-        row.template?.scope_type === "course" &&
+        // "course" = OCA tied to a course. "activity_milestone" also covers OCA
+        // granted manually by an admin (Admin Manual Mint), unrelated to any
+        // course — those rows have course_id=null so the existingCourseIds
+        // check below is a no-op for them.
+        (row.template?.scope_type === "course" || row.template?.scope_type === "activity_milestone") &&
         (!row.course_id || !existingCourseIds.has(row.course_id)) &&
         row.template?.achievement_type !== "Badge" &&
         row.template?.achievement_type !== "Award",
