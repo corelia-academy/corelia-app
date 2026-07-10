@@ -121,35 +121,6 @@ async function sendMintEmail(params: {
   });
 }
 
-/** For course OCA credentials, resolve the name-rendered certificate URL at the
- *  deterministic CDN path `{cdnOrigin}/certificates/{userId}/{courseId}.png`.
- *  The origin is derived from the template's image_url (already a CDN URL).
- *  Returns the URL only if the rendered image actually exists (HEAD 200);
- *  otherwise null so the caller falls back to the raw template. */
-async function resolveRenderedCertificateUrl(
-  template: CredentialTemplateRow,
-  userId: string,
-): Promise<string | null> {
-  const isOCA = !template.collection_symbol;
-  if (!isOCA || template.scope_type !== "course" || !template.course_id) return null;
-  if (!template.image_url?.trim()) return null;
-
-  let origin: string;
-  try {
-    origin = new URL(template.image_url).origin;
-  } catch {
-    return null;
-  }
-
-  const url = `${origin}/certificates/${userId}/${template.course_id}.png`;
-  try {
-    const res = await fetch(url, { method: "HEAD" });
-    return res.ok ? url : null;
-  } catch {
-    return null;
-  }
-}
-
 /** Insert an in-app notification row for a successfully minted OC credential. */
 async function insertCredentialNotification(
   db: SupabaseClient,
@@ -241,20 +212,12 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
   const profilePath = username ? `/u/${encodeURIComponent(username)}` : `/account`;
   const profileUrl = `${baseUrl}${profilePath}`;
 
-  // Course OCA credentials must use the learner-name-rendered certificate.
-  // If it is missing, fail before calling Open Campus so we never mint the
-  // raw template as the permanent credential art.
-  const subjectImageOverride = await resolveRenderedCertificateUrl(template, row.user_id);
+  // OCA credential art is always the generic template image — never a
+  // learner-name-rendered certificate. Printing the holder's name on an
+  // image attached to an immutable on-chain credential would leak PII
+  // permanently onto the public ledger.
   const isOCA = !template.collection_symbol;
-  if (isOCA && template.scope_type === "course" && !subjectImageOverride) {
-    await db.from("credential_issuances").update({
-      status: "failed",
-      error_message: "missing_rendered_certificate",
-      retry_count: row.retry_count + 1,
-    }).eq("id", issuanceId);
-    return { ok: false, error: "missing_rendered_certificate" };
-  }
-  const mintEmailImageUrl = subjectImageOverride?.trim() || template.image_url;
+  const mintEmailImageUrl = template.image_url;
 
   const awardedIso = new Date().toISOString();
   const { body: ocBody } = await buildOpenCampusPayload({
@@ -268,7 +231,6 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
     holderName,
     holderEmail: email || null,
     awardedIso,
-    subjectImageOverride,
   });
 
   const { error: pendingErr } = await db.from("credential_issuances").update({
@@ -376,6 +338,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
         credentialName: template.name,
         scopeType: template.scope_type,
         imageUrl: template.image_url,
+        thumbnailUrl: template.thumbnail_url,
         ocCredentialId,
         isOCA,
       }),

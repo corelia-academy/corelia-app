@@ -627,7 +627,7 @@
     "badgeCategory": {
       "learning": "Học tập",
       "streak": "Kiên trì",
-      "milestone": "Cột mốc",
+      "milestone": "Milestone",
       "social": "Cộng đồng"
     },
     "certificates": {
@@ -653,6 +653,7 @@
     "badges": {
       "earnedPrefix": "Đạt: {{date}}",
       "locked": "Chưa mở khoá",
+      "pendingClaim": "Chưa nhận",
       "ocDot": {
         "claimedTooltip": "Đã claim OC credential",
         "unclaimedTooltip": "Chưa claim OC credential"
@@ -661,15 +662,15 @@
     "milestones": {
       "courseFirst": {
         "title": "Khoá học đầu tiên",
-        "description": "Ghi danh khóa học đầu tiên để mở cột mốc này."
+        "description": "Ghi danh khóa học đầu tiên để mở milestone này."
       },
       "courseThree": {
         "title": "Người học bền bỉ",
-        "description": "Ghi danh 3 khóa học khác nhau để mở cột mốc này."
+        "description": "Ghi danh 3 khóa học khác nhau để mở milestone này."
       },
       "firstCertificate": {
         "title": "Chứng nhận đầu tiên",
-        "description": "Nhận chứng nhận đầu tiên từ một khóa học để mở cột mốc này."
+        "description": "Nhận chứng nhận đầu tiên từ một khóa học để mở milestone này."
       },
       "threeCertificates": {
         "title": "Learning portfolio",
@@ -694,7 +695,7 @@
           "cert": "Chứng nhận",
           "oca": "OCA · Chứng nhận hoàn thành",
           "hackathonBadge": "Hackathon Badge",
-          "milestone": "Cột mốc",
+          "milestone": "Milestone",
           "badge": "Huy hiệu"
         },
         "date": {
@@ -764,7 +765,7 @@
     "hero": {
       "eyebrow": "Hành trình thành tích",
       "title": "Thành tích của tôi",
-      "subtitlePrefix": "Theo dõi chứng nhận, huy hiệu và các cột mốc học tập trong một hành trình liền mạch. Khi sẵn sàng, bạn có thể claim từng thành tích lên",
+      "subtitlePrefix": "Theo dõi chứng nhận, huy hiệu và các milestone học tập trong một hành trình liền mạch. Khi sẵn sàng, bạn có thể claim từng thành tích lên",
       "subtitleSuffix": "để có verifiable credential trên blockchain.",
       "certCount": "{{count}} chứng nhận",
       "badgeUnlockedCount": "{{count}} huy hiệu đã mở",
@@ -781,7 +782,7 @@
     },
     "meaning": {
       "title": "Ý nghĩa của chứng nhận Corelia",
-      "p1": "Thành tích trong Corelia phản ánh những gì bạn đã thật sự hoàn thành: khóa học đã đi hết, chứng nhận đã nhận và các cột mốc kỹ thuật đã mở.",
+      "p1": "Thành tích trong Corelia phản ánh những gì bạn đã thật sự hoàn thành: khóa học đã đi hết, chứng nhận đã nhận và các milestone kỹ thuật đã mở.",
       "p2": "Chứng nhận và huy hiệu được xây dựng để hỗ trợ portfolio học tập, workshop, hackathon và hành trình phát triển trong hệ sinh thái Web3, thay vì đóng vai trò như văn bằng học thuật chính thức."
     },
     "useCases": {
@@ -815,8 +816,8 @@
         "syncError": "Không thể đồng bộ chứng nhận lúc này."
       },
       "badges": {
-        "title": "Bộ huy hiệu và milestone",
-        "subtitle": "Gồm các milestone học tập và những cột mốc bạn đang mở khóa dần.",
+        "title": "Thành tựu, Huy hiệu và Milestone",
+        "subtitle": "Gồm các milestone học tập và những milestone bạn đang mở khóa dần.",
         "summaryUnlocked": "{{earned}}/{{total}} đã mở",
         "loading": "Đang tải huy hiệu và milestone của bạn.",
         "earnedSectionTitle": "Đã đạt được ({{count}})",
@@ -829,8 +830,9 @@
     },
     "ocVault": {
       "tabs": {
-        "oca": "OCA",
-        "hackathon": "Badge",
+        "all": "Tất cả",
+        "oca": "Achievements (OCA)",
+        "ocb": "Badges (OCB)",
         "milestones": "Milestones"
       },
       "empty": "Chưa có credential nào trong danh mục này."
@@ -838,7 +840,7 @@
     "credentialType": {
       "oca": "OCA",
       "badge": "Badge",
-      "milestone": "Cột mốc"
+      "milestone": "Milestone"
     }
   },
   "feedback": {

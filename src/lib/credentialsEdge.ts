@@ -110,6 +110,37 @@ export async function invokeHackathonListEligible(params: {
   });
 }
 
+export type CourseOcaTemplateSummary = {
+  id: string;
+  courseId: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  thumbnailUrl: string | null;
+  achievementType: string;
+};
+
+/** Active OCA (collection_symbol IS NULL) course templates for the given
+ *  course ids. Runs server-side (service-role) — credential_templates RLS
+ *  only lets a student read a row once they already have an issuance for
+ *  it, so a direct client-side query would return nothing for the
+ *  "not claimed yet" case this is meant to serve. */
+export async function invokeListActiveOcaTemplates(
+  courseIds: string[],
+): Promise<Map<string, CourseOcaTemplateSummary>> {
+  const map = new Map<string, CourseOcaTemplateSummary>();
+  if (courseIds.length === 0) return map;
+
+  const res = await postJson<{ ok: boolean; templates?: CourseOcaTemplateSummary[]; message?: string }>(
+    "credentials.listActiveOcaTemplates",
+    { courseIds },
+  );
+  for (const tpl of res.templates ?? []) {
+    map.set(tpl.courseId, tpl);
+  }
+  return map;
+}
+
 export async function invokeGrantPendingCredential(params: {
   templateId: string;
   email: string;
