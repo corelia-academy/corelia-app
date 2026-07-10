@@ -87,7 +87,9 @@ async function getUserEmailLocale(db: SupabaseClient, userId: string): Promise<s
 /** Resolve the email kind from scope_type + whether the credential is OCA. */
 function resolveMintEmailKind(scopeType: string, isOCA: boolean): CredentialMintEmailKind {
   if (scopeType === "hackathon") return "hackathon";
-  if (scopeType === "activity_milestone") return "milestone";
+  // activity_milestone covers both auto milestone badges (OCB) and manual OCA/OCB grants —
+  // OCA must use the certificate wording, not the generic badge one.
+  if (scopeType === "activity_milestone") return isOCA ? "course_oca" : "milestone";
   // course — OCB uses generic "course", OCA uses "course_oca"
   return isOCA ? "course_oca" : "course";
 }

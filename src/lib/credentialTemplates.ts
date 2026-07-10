@@ -197,7 +197,11 @@ export async function saveActivityMilestoneTemplate(params: {
   identifierPrefix: string;
   triggerType: "auto" | "manual";
   triggerRule: Record<string, unknown> | null;
+  /** "ocb" (default) = Badge/ocbadge, matches existing auto milestone badges.
+   *  "oca" = CertificateOfCompletion/no collection symbol, for manual OCA grants. */
+  credentialKind?: CourseCredentialKind;
 }): Promise<{ id: string }> {
+  const kind = params.credentialKind ?? "ocb";
   const row = {
     scope_type: "activity_milestone" as const,
     course_id: null,
@@ -206,9 +210,9 @@ export async function saveActivityMilestoneTemplate(params: {
     name: params.name.trim(),
     description: params.description.trim(),
     image_url: params.imageUrl.trim(),
-    achievement_type: "Badge" as const,
+    achievement_type: (kind === "oca" ? "CertificateOfCompletion" : "Badge") as string,
     identifier_prefix: params.identifierPrefix.trim(),
-    collection_symbol: "ocbadge" as const,
+    collection_symbol: kind === "oca" ? null : ("ocbadge" as const),
     custom_metadata: {} as Record<string, unknown>,
     trigger_type: params.triggerType,
     trigger_rule: params.triggerRule as Record<string, unknown> | null,

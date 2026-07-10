@@ -28,16 +28,18 @@ type Translate = (key: string, options?: { defaultValue?: string }) => string;
 
 export function LoginForm({
   className,
+  initialEmail,
+  initialMode,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div"> & { initialEmail?: string; initialMode?: AuthMode }) {
   const { t, i18n } = useTranslation("auth");
   const translate = useCallback<Translate>(
     (key, options) => String(t(key as never, options as never)),
     [t],
   );
-  const [mode, setMode] = useState<AuthMode>("sign_in");
+  const [mode, setMode] = useState<AuthMode>(initialMode ?? "sign_in");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");

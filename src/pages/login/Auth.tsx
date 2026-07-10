@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Navigate, NavLink, useLocation } from "react-router";
+import { Navigate, NavLink, useLocation, useSearchParams } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import { supabase } from "@/lib/supabase";
@@ -18,9 +18,13 @@ type MfaGateState = "unchecked" | "mfa" | "clear";
 export default function Auth() {
   const { user, authInitialized, signOut } = useAuth();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation("common");
   const from =
     (location.state as { from?: { pathname: string } })?.from?.pathname ?? "/";
+  // Prefill from /claim's CTA link (?mode=signup&email=...).
+  const initialEmail = searchParams.get("email")?.trim() || undefined;
+  const initialMode = searchParams.get("mode") === "signup" ? "sign_up" : undefined;
 
   const [mfaGate, setMfaGate] = useState<MfaGateState>("unchecked");
   const prevUserIdRef = useRef<string | undefined>(undefined);
@@ -116,7 +120,7 @@ export default function Auth() {
           </NavLink>
           <LanguageSwitcher />
         </div>
-        <LoginForm />
+        <LoginForm initialEmail={initialEmail} initialMode={initialMode} />
       </div>
     </div>
   );

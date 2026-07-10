@@ -11,12 +11,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+export const BETA_BANNER_ENABLED = true;
+
 export function BetaAnnouncementBanner() {
   const [open, setOpen] = useState(false);
   const { t } = useTranslation("common");
-  const enabled = import.meta.env.VITE_BETA_BANNER_ENABLED === "true";
 
-  if (!enabled) return null;
+  if (!BETA_BANNER_ENABLED) return null;
 
   return (
     <>
