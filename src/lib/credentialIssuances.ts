@@ -122,7 +122,8 @@ export async function fetchMyCredentialIssuances(
         thumbnail_url,
         achievement_type,
         hackathon_role,
-        collection_symbol
+        collection_symbol,
+        trigger_type
       )
     `,
     )
@@ -161,7 +162,8 @@ export async function fetchMintedCredentialIssuancesForUser(
         thumbnail_url,
         achievement_type,
         hackathon_role,
-        collection_symbol
+        collection_symbol,
+        trigger_type
       )
     `,
     )
@@ -260,8 +262,15 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, usernam
   const issuedAt = row.minted_at ?? row.display_snapshot?.issued_at ?? row.created_at;
   const minted = issuedAt ? new Date(issuedAt).toLocaleDateString() : "—";
 
+  // Admin Manual Mint reuses scope_type="activity_milestone" for OCA/OCB grants with
+  // no course/hackathon anchor (see saveActivityMilestoneTemplate) — but those are not
+  // auto-earned milestone badges, so trigger_type="manual" must not land in the
+  // Milestones tab. Falling through to "course" lets the existing achievement_type
+  // check (Badge/Award vs MicroCredential/Diploma/CertificateOfCompletion) route it
+  // into the OCA/OCB tabs like any other credential.
   const credentialScope =
-    tpl?.scope_type === "hackathon" || tpl?.scope_type === "activity_milestone"
+    tpl?.trigger_type !== "manual" &&
+    (tpl?.scope_type === "hackathon" || tpl?.scope_type === "activity_milestone")
       ? tpl.scope_type
       : "course";
 
@@ -272,7 +281,7 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, usernam
     borderColor: "border-primary/20",
   };
   const { icon, color, bgColor, borderColor } = tpl
-    ? styleForScope(tpl.scope_type)
+    ? styleForScope(credentialScope)
     : defaultStyle;
 
   return {
