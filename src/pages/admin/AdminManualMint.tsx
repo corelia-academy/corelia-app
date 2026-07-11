@@ -23,6 +23,8 @@ const TEXTAREA_CLASS =
 
 type IdentifierType = "uid" | "email";
 
+const EMAIL_FORMAT_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function AdminManualMint() {
   const { t } = useTranslation("admin");
 
@@ -59,6 +61,10 @@ export default function AdminManualMint() {
   const handleLookup = async () => {
     const value = identifierValue.trim();
     if (!value) return;
+    if (identifierType === "email" && !EMAIL_FORMAT_REGEX.test(value)) {
+      setLookupError(t("manualMint.lookup.invalidEmailFormat"));
+      return;
+    }
     setLooking(true);
     setLookupError(null);
     setMatchedProfile(null);

@@ -432,6 +432,7 @@
       "submit": "Look up",
       "loading": "Looking up…",
       "notFoundUid": "No user found with this UID.",
+      "invalidEmailFormat": "Invalid email format (e.g. name@example.com). Please re-enter.",
       "ghostNotice": "{{email}} has no account yet. After granting, we'll email them an invite to join Corelia and claim it.",
       "error": "Lookup failed.",
       "previewProfile": "Preview profile"

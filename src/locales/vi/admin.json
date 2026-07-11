@@ -432,6 +432,7 @@
       "submit": "Tra cứu",
       "loading": "Đang tra cứu…",
       "notFoundUid": "Không tìm thấy UID này trong hệ thống.",
+      "invalidEmailFormat": "Email không đúng định dạng (vd: ten@vidu.com). Vui lòng nhập lại.",
       "ghostNotice": "Email {{email}} chưa có tài khoản. Sau khi cấp, hệ thống sẽ gửi email mời họ tham gia Corelia để nhận.",
       "error": "Tra cứu thất bại.",
       "previewProfile": "Xem trước hồ sơ"
