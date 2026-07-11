@@ -34,6 +34,9 @@ export type CredentialTemplateSummary = {
   /** Role/type label for hackathon badges (e.g. "winner", "participant") */
   hackathon_role?: string | null;
   collection_symbol?: "ocbadge" | null;
+  /** "manual" = granted via Admin Manual Mint, unrelated to auto milestone badges
+   *  that also use scope_type="activity_milestone". */
+  trigger_type?: string | null;
 };
 
 export type CredentialIssuanceWithTemplate = {
