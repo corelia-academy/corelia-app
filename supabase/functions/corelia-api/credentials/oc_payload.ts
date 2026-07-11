@@ -25,6 +25,9 @@ export type CredentialTemplateRow = {
   collection_symbol: string | null;
   custom_metadata: Record<string, unknown>;
   network_override?: string | null;
+  /** 'manual' = granted via Admin Manual Mint, unrelated to auto milestone badges
+   *  that also use scope_type="activity_milestone". */
+  trigger_type?: string | null;
 };
 
 /**

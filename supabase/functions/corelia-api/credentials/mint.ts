@@ -52,7 +52,8 @@ async function fetchIssuanceWithTemplate(
       identifier_prefix,
       collection_symbol,
       custom_metadata,
-      network_override
+      network_override,
+      trigger_type
     )
   `).eq("id", issuanceId).maybeSingle();
   if (error) throw new Error(error.message);
@@ -85,10 +86,17 @@ async function getUserEmailLocale(db: SupabaseClient, userId: string): Promise<s
 }
 
 /** Resolve the email kind from scope_type + whether the credential is OCA. */
-function resolveMintEmailKind(scopeType: string, isOCA: boolean): CredentialMintEmailKind {
+function resolveMintEmailKind(
+  scopeType: string,
+  isOCA: boolean,
+  triggerType?: string | null,
+): CredentialMintEmailKind {
+  // Admin Manual Mint grants reuse scope_type="activity_milestone" (no course/hackathon
+  // anchor) but are not auto-earned milestones — must not get the "cột mốc" wording.
+  // OCA already uses the certificate copy; OCB falls back to the generic badge copy
+  // ("course" kind), same treatment as a course-tied OCB.
+  if (triggerType === "manual") return isOCA ? "course_oca" : "course";
   if (scopeType === "hackathon") return "hackathon";
-  // activity_milestone covers both auto milestone badges (OCB) and manual OCA/OCB grants —
-  // OCA must use the certificate wording, not the generic badge one.
   if (scopeType === "activity_milestone") return isOCA ? "course_oca" : "milestone";
   // course — OCB uses generic "course", OCA uses "course_oca"
   return isOCA ? "course_oca" : "course";
@@ -98,13 +106,14 @@ async function sendMintEmail(params: {
   to: string;
   scopeType: string;
   isOCA: boolean;
+  triggerType?: string | null;
   badgeName: string;
   profileUrl: string;
   credentialId?: string | null;
   imageUrl?: string | null;
   locale?: string | null;
 }): Promise<void> {
-  const kind = resolveMintEmailKind(params.scopeType, params.isOCA);
+  const kind = resolveMintEmailKind(params.scopeType, params.isOCA, params.triggerType);
   const { subject, html } = buildCredentialMintEmail({
     kind,
     badgeName: params.badgeName,
@@ -286,6 +295,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
               to: email,
               scopeType: template.scope_type,
               isOCA,
+              triggerType: template.trigger_type,
               badgeName: template.name,
               profileUrl,
               credentialId: ocCredentialId,
@@ -326,6 +336,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
           to: email,
           scopeType: template.scope_type,
           isOCA,
+          triggerType: template.trigger_type,
           badgeName: template.name,
           profileUrl,
           credentialId: ocCredentialId,
