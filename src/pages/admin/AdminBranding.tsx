@@ -10,6 +10,14 @@ import { uploadCoreliaLogo } from "@/lib/storage";
 import { getSystemSetting, setSystemSetting } from "@/lib/systemSettings";
 
 const LOGO_KEY = "corelia_logo_url";
+const APP_BASE_URL_KEY = "corelia_app_base_url";
+
+// Must be a bare origin (scheme://host, optional port) — no trailing slash,
+// path, query, or fragment. Templates append their own leading "/" when
+// building links, so a stray trailing "/" or "@" here corrupts every
+// generated URL (course cert emails, mint notifications, ghost-mint claim
+// links all share this same setting via getAppBaseUrl()).
+const APP_BASE_URL_REGEX = /^https:\/\/[a-z0-9.-]+(:\d+)?$/i;
 
 export default function AdminBranding() {
   const { t } = useTranslation("admin");
@@ -18,12 +26,18 @@ export default function AdminBranding() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [logoUrl, setLogoUrl] = useState("");
+  const [appBaseUrl, setAppBaseUrl] = useState("");
+  const [savingAppBaseUrl, setSavingAppBaseUrl] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const v = await getSystemSetting(LOGO_KEY);
+      const [v, base] = await Promise.all([
+        getSystemSetting(LOGO_KEY),
+        getSystemSetting(APP_BASE_URL_KEY),
+      ]);
       setLogoUrl(v ?? "");
+      setAppBaseUrl(base ?? "");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("branding.loadFailed"));
     } finally {
@@ -59,6 +73,24 @@ export default function AdminBranding() {
       toast.error(e instanceof Error ? e.message : t("branding.saveFailed"));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveAppBaseUrl = async () => {
+    const trimmed = appBaseUrl.trim();
+    if (!APP_BASE_URL_REGEX.test(trimmed)) {
+      toast.error(t("branding.appBaseUrl.invalidUrl"));
+      return;
+    }
+    setSavingAppBaseUrl(true);
+    try {
+      await setSystemSetting(APP_BASE_URL_KEY, trimmed);
+      setAppBaseUrl(trimmed);
+      toast.success(t("branding.saved"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("branding.saveFailed"));
+    } finally {
+      setSavingAppBaseUrl(false);
     }
   };
 
@@ -126,6 +158,28 @@ export default function AdminBranding() {
             </Button>
           </div>
           <p className="mt-1 text-xs text-foreground-muted">{t("branding.logo.urlHint")}</p>
+        </Field>
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold text-foreground">{t("branding.appBaseUrl.title")}</h2>
+        <p className="mt-1 text-sm text-foreground-muted">{t("branding.appBaseUrl.subtitle")}</p>
+      </div>
+
+      <div className="rounded-xl border border-border-subtle bg-surface-base p-4 sm:p-6">
+        <Field>
+          <FieldLabel>{t("branding.appBaseUrl.urlLabel")}</FieldLabel>
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              value={appBaseUrl}
+              onChange={(e) => setAppBaseUrl(e.target.value)}
+              placeholder="https://staging.corelia.academy"
+              className="min-w-0 flex-1"
+            />
+            <Button type="button" disabled={savingAppBaseUrl} onClick={() => void handleSaveAppBaseUrl()}>
+              {savingAppBaseUrl ? t("branding.saving") : t("branding.appBaseUrl.saveUrl")}
+            </Button>
+          </div>
         </Field>
       </div>
     </div>

@@ -361,6 +361,13 @@
       "urlLabel": "URL logo",
       "saveUrl": "Lưu URL",
       "urlHint": "Tự điền sau khi tải lên. Bạn cũng có thể dán URL CDN trực tiếp."
+    },
+    "appBaseUrl": {
+      "title": "Đường dẫn ứng dụng",
+      "subtitle": "Domain gốc dùng để build link trong email hệ thống (chứng nhận, mời claim...). Ví dụ staging: https://staging.corelia.academy — production: https://app.corelia.academy. Sai domain này sẽ khiến link trong mọi email gửi đi trỏ nhầm môi trường.",
+      "urlLabel": "Base URL",
+      "saveUrl": "Lưu URL",
+      "invalidUrl": "URL không hợp lệ — phải dạng https://domain, không có dấu / hoặc ký tự thừa ở cuối."
     }
   },
   "activityMilestones": {
