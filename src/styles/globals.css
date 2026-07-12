@@ -79,154 +79,146 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.65rem;
   --content-px: clamp(1rem, 3vw, 2rem);
   --app-max-width: 80rem;
 
   /* ==========================================
-     LIGHT MODE: DORA Aesthetic (Warm Sand + Slate)
+     LIGHT MODE: Material You (Google) — sáng, đơn giản, rực rỡ có kiểm soát
      ========================================== */
 
   /* ── Background & Surfaces ── */
-  /* Nền màu Cát Ấm nhạt (Warm Sand) - Đặc trưng của thiết kế gốc */
-  --background: oklch(0.965 0.012 75);
-  /* Chữ màu Xanh Slate Đậm - Sắc nét, cực kỳ dễ đọc */
-  --foreground: oklch(0.2 0.04 235);
-  --foreground-muted: oklch(0.55 0.03 235);
-  --foreground-subtle: oklch(0.7 0.02 235);
+  /* Nền trắng gần như tuyệt đối, hơi ánh xanh mát kiểu Google */
+  --background: oklch(0.99 0.003 250);
+  /* Chữ xám đậm trung tính kiểu Google (#202124) */
+  --foreground: oklch(0.22 0.006 260);
+  --foreground-muted: oklch(0.48 0.012 260);
+  --foreground-subtle: oklch(0.66 0.01 260);
 
-  /* Thẻ Card Trắng Thuần: Tự động tách lớp nổi bật trên nền cát */
+  /* Thẻ Card trắng thuần */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.04 235);
+  --card-foreground: oklch(0.22 0.006 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.04 235);
+  --popover-foreground: oklch(0.22 0.006 260);
 
-  /* ── Brand Colors (Deep Slate Blue) ── */
-  --primary: oklch(0.25 0.05 235); /* Màu của khối "Calculated ROI" */
+  /* ── Brand Colors (Google Blue) ── */
+  --primary: oklch(0.58 0.19 255); /* Google Blue ≈ #4285F4 */
   --primary-foreground: oklch(1 0 0);
   --primary-muted: color-mix(in oklch, var(--primary) 10%, transparent);
-  --primary-container: oklch(0.93 0.015 235);
-  --on-primary-container: oklch(0.2 0.04 235);
+  --primary-container: oklch(0.93 0.045 255);
+  --on-primary-container: oklch(0.32 0.15 255);
 
-  /* ── Secondary / Muted (Cho các tab, badge đang active) ── */
-  --secondary: oklch(0.93 0.01 75); /* Nền xám be đậm hơn nền tảng */
-  --secondary-foreground: oklch(0.25 0.04 235);
-  --muted: oklch(0.93 0.01 75);
-  --muted-foreground: oklch(0.55 0.03 235);
-  --accent: oklch(0.93 0.01 75);
-  --accent-foreground: oklch(0.2 0.04 235);
+  /* ── Secondary / Muted (Xám nhạt kiểu Google buttons) ── */
+  --secondary: oklch(0.96 0.004 260);
+  --secondary-foreground: oklch(0.28 0.01 260);
+  --muted: oklch(0.96 0.004 260);
+  --muted-foreground: oklch(0.5 0.012 260);
+  --accent: oklch(0.94 0.035 255);
+  --accent-foreground: oklch(0.32 0.15 255);
   --accent-muted: color-mix(in oklch, var(--accent) 15%, transparent);
 
-  /* ── Semantic Colors (Đã tinh chỉnh UX) ── */
-  --destructive: oklch(
-    0.58 0.16 35
-  ); /* San hô đậm (Deep Coral) - Không bị chói */
+  /* ── Semantic Colors (Bộ màu logo Google) ── */
+  --destructive: oklch(0.63 0.22 25); /* Google Red ≈ #EA4335 */
   --destructive-foreground: oklch(1 0 0);
   --destructive-muted: color-mix(in oklch, var(--destructive) 10%, transparent);
 
-  --success: oklch(0.6 0.12 150); /* Xanh ngọc trầm */
+  --success: oklch(0.64 0.16 145); /* Google Green ≈ #34A853 */
   --success-foreground: oklch(1 0 0);
   --success-muted: color-mix(in oklch, var(--success) 10%, transparent);
 
-  /* 🚨 UX WARNING FIX: 
-     --warning: Cam vàng đậm (Dùng làm viền, chữ hoặc icon) 
-     --warning-muted: Vàng pastel nhạt (Dùng làm nền banner) */
-  --warning: oklch(0.65 0.16 65); /* Deep Gold/Amber -> Đọc rất rõ */
-  --warning-foreground: oklch(1 0 0);
-  --warning-muted: oklch(0.96 0.04 85); /* Nền banner màu vàng êm dịu */
+  --warning: oklch(0.78 0.16 85); /* Google Yellow ≈ #FBBC05 */
+  --warning-foreground: oklch(0.25 0.02 260);
+  --warning-muted: oklch(0.96 0.05 90); /* Nền banner vàng nhạt */
 
   /* ── Borders & Inputs ── */
-  --border: oklch(0.88 0.015 75); /* Viền màu be nhạt, tinh tế nhưng rõ khối */
-  --border-subtle: oklch(0.92 0.01 75);
-  --border-strong: oklch(0.75 0.02 75);
-  --input: oklch(0.88 0.015 75);
-  --ring: oklch(0.25 0.05 235);
+  --border: oklch(0.89 0.004 260); /* Viền xám nhạt kiểu Google (#dadce0) */
+  --border-subtle: oklch(0.93 0.003 260);
+  --border-strong: oklch(0.76 0.006 260);
+  --input: oklch(0.89 0.004 260);
+  --ring: oklch(0.58 0.19 255);
 
-  /* ── Shadows ── */
-  --elevation-1: 0 1px 2px 0 oklch(0.2 0.04 235 / 0.05);
+  /* ── Shadows (rất nhẹ, đúng chất Material) ── */
+  --elevation-1: 0 1px 2px 0 oklch(0.22 0.02 260 / 0.05);
   --elevation-2:
-    0 4px 6px -1px oklch(0.2 0.04 235 / 0.08),
+    0 4px 6px -1px oklch(0.22 0.02 260 / 0.08),
     0 2px 4px -2px oklch(0 0 0 / 0.04);
   --elevation-3: var(--elevation-2);
-  --elevation-card: 0 8px 24px oklch(0.15 0.04 235 / 0.04);
+  --elevation-card: 0 8px 24px oklch(0.2 0.02 260 / 0.04);
 
   /* ── Brand ── */
-  --brand-navy: oklch(0.17 0.055 235);   /* ≈ #0B2533 */
-  --brand-accent: oklch(0.44 0.22 263);  /* ≈ #2D5BE3 */
+  --brand-navy: oklch(0.2 0.03 255);
+  --brand-accent: oklch(0.58 0.19 255); /* Google Blue */
 
   /* ── Sidebar ── */
-  --sidebar: oklch(0.98 0.005 75);
-  --sidebar-foreground: oklch(0.2 0.04 235);
-  --sidebar-primary: oklch(0.25 0.05 235);
+  --sidebar: oklch(0.98 0.003 260); /* ≈ #f8f9fa */
+  --sidebar-foreground: oklch(0.22 0.006 260);
+  --sidebar-primary: oklch(0.58 0.19 255);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.93 0.01 75);
-  --sidebar-accent-foreground: oklch(0.2 0.04 235);
-  --sidebar-border: oklch(0.88 0.015 75);
-  --sidebar-ring: oklch(0.25 0.05 235);
+  --sidebar-accent: oklch(0.94 0.035 255);
+  --sidebar-accent-foreground: oklch(0.32 0.15 255);
+  --sidebar-border: oklch(0.89 0.004 260);
+  --sidebar-ring: oklch(0.58 0.19 255);
 
   /* ── Corelia DS v2 surfaces ── */
   --surface-base: var(--card);
-  --surface-raised: oklch(0.98 0.005 75);
-  --surface-overlay: oklch(0.96 0.01 75);
+  --surface-raised: oklch(0.98 0.003 260);
+  --surface-overlay: oklch(0.96 0.004 260);
   --surface-float: var(--popover);
 }
 
 .dark {
   /* ==========================================
-     DARK MODE: Slate Navy Sâu Thẳm + Điểm nhấn Gold
+     DARK MODE: Material You (Google) — nền xám navy trung tính + Blue sáng
      ========================================== */
   --content-px: clamp(1rem, 3vw, 2rem);
   --app-max-width: 80rem;
 
   /* ── Background & Surfaces ── */
-  --background: oklch(0.18 0.03 240); /* Navy Slate Đậm */
-  --foreground: oklch(
-    0.95 0.01 75
-  ); /* Trắng ngà (Warm Off-white) -> Chống lóa */
-  --foreground-muted: oklch(0.65 0.02 240);
-  --foreground-subtle: oklch(0.5 0.02 240);
+  --background: oklch(0.19 0.006 260); /* ≈ #202124 kiểu Google Dark */
+  --foreground: oklch(0.92 0.004 260);
+  --foreground-muted: oklch(0.68 0.008 260);
+  --foreground-subtle: oklch(0.52 0.008 260);
 
-  --card: oklch(0.22 0.035 240); /* Card sáng hơn nền một chút để tạo độ nổi */
-  --card-foreground: oklch(0.95 0.01 75);
-  --popover: oklch(0.22 0.035 240);
-  --popover-foreground: oklch(0.95 0.01 75);
+  --card: oklch(0.23 0.007 260); /* Card sáng hơn nền một chút để tạo độ nổi */
+  --card-foreground: oklch(0.92 0.004 260);
+  --popover: oklch(0.23 0.007 260);
+  --popover-foreground: oklch(0.92 0.004 260);
 
-  /* ── Brand Colors ── */
-  --primary: oklch(0.82 0.12 95); /* Màu Vàng Gold đặc trưng trên nền tối */
-  --primary-foreground: oklch(0.18 0.03 240); /* Chữ đen/navy trên nền vàng */
+  /* ── Brand Colors (Google Blue sáng hơn cho nền tối) ── */
+  --primary: oklch(0.75 0.13 255); /* ≈ #8ab4f8 */
+  --primary-foreground: oklch(0.19 0.03 255); /* Chữ navy đậm trên nền xanh */
   --primary-muted: color-mix(in oklch, var(--primary) 15%, transparent);
-  --primary-container: oklch(0.28 0.04 240);
-  --on-primary-container: oklch(0.82 0.12 95);
+  --primary-container: oklch(0.3 0.05 255);
+  --on-primary-container: oklch(0.85 0.1 255);
 
   /* ── Secondary / Muted ── */
-  --secondary: oklch(0.26 0.03 240);
-  --secondary-foreground: oklch(0.95 0.01 75);
-  --muted: oklch(0.26 0.03 240);
-  --muted-foreground: oklch(0.65 0.02 240);
-  --accent: oklch(0.26 0.03 240);
-  --accent-foreground: oklch(0.95 0.01 75);
+  --secondary: oklch(0.27 0.007 260);
+  --secondary-foreground: oklch(0.92 0.004 260);
+  --muted: oklch(0.27 0.007 260);
+  --muted-foreground: oklch(0.68 0.008 260);
+  --accent: oklch(0.3 0.05 255);
+  --accent-foreground: oklch(0.85 0.1 255);
   --accent-muted: color-mix(in oklch, var(--accent) 15%, transparent);
 
-  /* ── Semantic Colors (Chỉnh rực lên một chút cho Dark Mode) ── */
-  --destructive: oklch(0.68 0.15 35); /* Coral sáng hơn */
-  --destructive-foreground: oklch(0.18 0.03 240);
+  /* ── Semantic Colors (Bộ màu Google, sáng hơn cho Dark Mode) ── */
+  --destructive: oklch(0.72 0.18 25); /* ≈ #f28b82 */
+  --destructive-foreground: oklch(0.19 0.03 25);
   --destructive-muted: color-mix(in oklch, var(--destructive) 15%, transparent);
 
-  --success: oklch(0.7 0.13 150);
-  --success-foreground: oklch(0.18 0.03 240);
+  --success: oklch(0.75 0.14 145); /* ≈ #81c995 */
+  --success-foreground: oklch(0.19 0.03 145);
   --success-muted: color-mix(in oklch, var(--success) 15%, transparent);
 
-  /* Warning: Gold trên nền Dark Mode tương phản CỰC TỐT tự nhiên */
-  --warning: oklch(0.85 0.14 85);
-  --warning-foreground: oklch(0.18 0.03 240);
-  --warning-muted: oklch(0.28 0.06 85); /* Nền banner vàng sẫm */
+  --warning: oklch(0.85 0.14 85); /* ≈ #fdd663 */
+  --warning-foreground: oklch(0.19 0.03 85);
+  --warning-muted: oklch(0.28 0.05 85); /* Nền banner vàng sẫm */
 
   /* ── Borders & Inputs ── */
-  --border: oklch(0.28 0.025 240);
-  --border-subtle: oklch(0.24 0.02 240);
-  --border-strong: oklch(0.4 0.03 240);
-  --input: oklch(0.28 0.025 240);
-  --ring: oklch(0.82 0.12 95);
+  --border: oklch(0.32 0.007 260);
+  --border-subtle: oklch(0.27 0.006 260);
+  --border-strong: oklch(0.42 0.008 260);
+  --input: oklch(0.32 0.007 260);
+  --ring: oklch(0.75 0.13 255);
 
   /* ── Shadows ── */
   --elevation-1: 0 1px 2px 0 oklch(0 0 0 / 0.35);
@@ -236,24 +228,24 @@
   --elevation-card: 0 8px 24px oklch(0 0 0 / 0.2);
 
   /* ── Brand ── */
-  --brand-navy: oklch(0.12 0.04 240);
-  --brand-accent: oklch(0.62 0.2 263); /* Sáng hơn cho dark mode */
+  --brand-navy: oklch(0.14 0.01 260);
+  --brand-accent: oklch(0.75 0.13 255); /* Google Blue sáng cho dark mode */
 
   /* ── Sidebar ── */
-  --sidebar: oklch(0.16 0.03 240);
-  --sidebar-foreground: oklch(0.95 0.01 75);
-  --sidebar-primary: oklch(0.82 0.12 95);
-  --sidebar-primary-foreground: oklch(0.18 0.03 240);
-  --sidebar-accent: oklch(0.24 0.03 240);
-  --sidebar-accent-foreground: oklch(0.95 0.01 75);
-  --sidebar-border: oklch(0.28 0.025 240);
-  --sidebar-ring: oklch(0.82 0.12 95);
+  --sidebar: oklch(0.16 0.006 260);
+  --sidebar-foreground: oklch(0.92 0.004 260);
+  --sidebar-primary: oklch(0.75 0.13 255);
+  --sidebar-primary-foreground: oklch(0.19 0.03 255);
+  --sidebar-accent: oklch(0.3 0.05 255);
+  --sidebar-accent-foreground: oklch(0.85 0.1 255);
+  --sidebar-border: oklch(0.32 0.007 260);
+  --sidebar-ring: oklch(0.75 0.13 255);
 
   /* ── Corelia DS v2 surfaces ── */
-  --surface-base: oklch(0.18 0.03 240);
-  --surface-raised: oklch(0.22 0.035 240);
-  --surface-overlay: oklch(0.26 0.035 240);
-  --surface-float: oklch(0.3 0.035 240);
+  --surface-base: oklch(0.19 0.006 260);
+  --surface-raised: oklch(0.23 0.007 260);
+  --surface-overlay: oklch(0.27 0.007 260);
+  --surface-float: oklch(0.3 0.007 260);
 }
 
 @layer base {
@@ -295,15 +287,15 @@
 
 /* Trang login: Midnight Blue gradient + electric blue dot pattern */
 .bg-auth-page {
-  --auth-dot: oklch(0.55 0.25 252 / 0.08); /* electric blue dot */
+  --auth-dot: oklch(0.58 0.19 255 / 0.08); /* Google blue dot */
   background-color: var(--background);
   background-image:
     radial-gradient(circle at 50% 50%, var(--auth-dot) 1px, transparent 1px),
     linear-gradient(
       160deg,
       var(--background) 0%,
-      oklch(0.945 0.025 252) 35%,
-      oklch(0.962 0.014 248) 70%,
+      oklch(0.95 0.03 255) 35%,
+      oklch(0.97 0.015 255) 70%,
       var(--background) 100%
     );
   background-size:
@@ -315,14 +307,14 @@
 }
 
 .dark .bg-auth-page {
-  --auth-dot: oklch(0.635 0.245 252 / 0.1); /* blue-400 dot */
+  --auth-dot: oklch(0.75 0.13 255 / 0.1); /* Google blue dot (dark) */
   background-image:
     radial-gradient(circle at 50% 50%, var(--auth-dot) 1px, transparent 1px),
     linear-gradient(
       160deg,
       var(--background) 0%,
-      oklch(0.19 0.06 252) 40%,
-      oklch(0.17 0.04 260) 70%,
+      oklch(0.24 0.05 255) 40%,
+      oklch(0.21 0.03 260) 70%,
       var(--background) 100%
     );
   background-size:
