@@ -590,7 +590,9 @@
       "nameColorLabel": "Màu chữ tên học viên",
       "nameColorHint": "Màu của tên học viên hiển thị trên certificate.",
       "afterUploadHintPrefix": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" ( % từ trái / % từ",
-      "fileFormatHint": "Định dạng: PNG hoặc JPG."
+      "fileFormatHint": "Định dạng: PNG hoặc JPG.",
+      "disabledHint": "Bật \"Khoá học này có cấp chứng nhận hoàn thành\" ở tab General info trước khi cấu hình template chứng nhận.",
+      "disabledCta": "Đi tới General info"
     },
     "certificateGuide": {
       "title": "Hướng dẫn tạo template",
@@ -606,7 +608,7 @@
       "loadFailed": "Không tải được cấu hình credential.",
       "statusActive": "Đang hoạt động",
       "statusInactive": "Chưa cấu hình",
-      "toggleSectionLabel": "Hiển thị cấu hình",
+      "disablePdfCertificate": "Tắt chứng chỉ PDF",
       "kind": {
         "label": "Loại credential",
         "oca": {
@@ -622,7 +624,7 @@
       "enableHint": "Khi bật, badge được tự động mint cho học viên đạt đủ điều kiện.",
       "configTitle": "Thông tin credential",
       "requirementsTitle": "Điều kiện nhận credential",
-      "blockedByCertificate": "OCB không thể bật khi khoá học đã cấp chứng nhận PDF. Hãy chọn loại OCA, hoặc tắt chứng nhận PDF trước.",
+      "blockedByCertificate": "OCB không thể bật khi khoá học đã cấp chứng nhận PDF. Hãy tắt chứng nhận PDF trước.",
       "noPermission": "Bạn không có quyền cấu hình credential cho khoá học này.",
       "nameLabel": "Tên credential",
       "descriptionLabel": "Mô tả",

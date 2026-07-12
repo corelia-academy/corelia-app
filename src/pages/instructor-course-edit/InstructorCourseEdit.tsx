@@ -8593,7 +8593,7 @@ const InstructorCourseEdit = () => {
 
           {activeSection === "certificate" && canAccessCertificate && (
             <div className="space-y-4">
-              {/* Card 1: PDF Certificate template */}
+              {/* Card 1: PDF Certificate template — only usable once "has_certificate" is enabled in General info */}
               <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
                 <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-1">
                   <Award className="size-5" aria-hidden /> {t("courseEdit.certificate.sectionTitle")}
@@ -8602,6 +8602,23 @@ const InstructorCourseEdit = () => {
                   {t("courseEdit.certificate.sectionDescription")}
                 </p>
 
+                {!form.has_certificate ? (
+                  <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
+                    <p className="text-sm text-foreground-muted">
+                      {t("courseEdit.certificate.disabledHint")}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-3"
+                      onClick={() => setSection("info")}
+                    >
+                      {t("courseEdit.certificate.disabledCta")}
+                    </Button>
+                  </div>
+                ) : (
+                <>
                 <div className="mb-8 space-y-4">
                   <Field>
                     <FieldLabel>{t("courseEdit.certificate.templateLabel")}</FieldLabel>
@@ -8724,24 +8741,24 @@ const InstructorCourseEdit = () => {
                     </a>
                   </div>
                 </div>
+                </>
+                )}
               </section>
 
-              {/* Card 2: Open Campus On-chain Credential */}
+              {/* Card 2 & 3: Open Campus On-chain Credential — OCA and OCB, each its own card */}
               {id && canManageCourseOcb && (
-                <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-                  <CourseOcbCredentialSection
-                    courseId={id}
-                    courseSlug={(form.slug || course.slug || "").trim()}
-                    canEdit={canManageCourseOcb}
-                    hasCertificate={form.has_certificate ?? false}
-                    onActiveChange={setOcbIsActive}
-                    onClearLegacyCertificate={handleClearLegacyCertificate}
-                    onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
-                    onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}
-                    onOnchainCertificateUploaded={handleOnchainCertificateUploaded}
-                    onClearOnchainCertificate={handleClearOnchainCertificate}
-                  />
-                </section>
+                <CourseOcbCredentialSection
+                  courseId={id}
+                  courseSlug={(form.slug || course.slug || "").trim()}
+                  canEdit={canManageCourseOcb}
+                  hasCertificate={form.has_certificate ?? false}
+                  onActiveChange={setOcbIsActive}
+                  onClearLegacyCertificate={handleClearLegacyCertificate}
+                  onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
+                  onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}
+                  onOnchainCertificateUploaded={handleOnchainCertificateUploaded}
+                  onClearOnchainCertificate={handleClearOnchainCertificate}
+                />
               )}
             </div>
           )}

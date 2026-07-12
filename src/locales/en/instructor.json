@@ -591,7 +591,9 @@
       "nameColorLabel": "Name text color",
       "nameColorHint": "Color of the learner's name overlaid on the certificate.",
       "afterUploadHintPrefix": "After uploading, adjust the two \"Name position\" fields (% from left / % from",
-      "fileFormatHint": "Format: PNG or JPG."
+      "fileFormatHint": "Format: PNG or JPG.",
+      "disabledHint": "Enable \"This course issues a completion certificate\" in the General info tab before configuring the certificate template.",
+      "disabledCta": "Go to General info"
     },
     "certificateGuide": {
       "title": "How to create a template",
@@ -607,7 +609,7 @@
       "loadFailed": "Could not load credential configuration.",
       "statusActive": "Active",
       "statusInactive": "Not configured",
-      "toggleSectionLabel": "Show settings",
+      "disablePdfCertificate": "Disable PDF certificate",
       "kind": {
         "label": "Credential type",
         "oca": {
@@ -623,7 +625,7 @@
       "enableHint": "When active, badges are automatically minted to learners who meet the requirements.",
       "configTitle": "Credential details",
       "requirementsTitle": "Eligibility requirements",
-      "blockedByCertificate": "OCB cannot be enabled when this course already issues a downloadable PDF certificate. Switch to OCA type, or disable the PDF certificate first.",
+      "blockedByCertificate": "OCB cannot be enabled when this course already issues a downloadable PDF certificate. Disable the PDF certificate first.",
       "noPermission": "You don't have permission to configure credentials for this course.",
       "nameLabel": "Credential name",
       "descriptionLabel": "Description",

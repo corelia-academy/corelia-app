@@ -39,6 +39,178 @@ export async function handleCheckCourseCompletion(req: Request, db: SupabaseClie
   }
 }
 
+type Readiness = {
+  lesson_total?: number;
+  completed_distinct?: number;
+  all_lessons_complete?: boolean;
+  final_assignment_required?: boolean;
+  final_submission_status?: string | null;
+} | null;
+
+type CredentialTemplateRow = {
+  id: string;
+  collection_symbol: string | null;
+  trigger_rule: unknown;
+  network_override: string | null;
+  identifier_prefix: string | null;
+};
+
+/** Evaluate + (if eligible) issue a single active template. A course can have
+ *  both an OCA and an OCB template active at once (separate partial unique
+ *  indexes per kind), so this runs once per template instead of assuming one
+ *  template per course. */
+async function evaluateTemplate(
+  db: SupabaseClient,
+  template: CredentialTemplateRow,
+  ctx: {
+    courseId: string;
+    targetUserId: string;
+    completionPct: number;
+    readiness: Readiness;
+    autoIssue?: boolean;
+  },
+): Promise<Record<string, unknown>> {
+  const { courseId, targetUserId, completionPct, readiness } = ctx;
+
+  // OCA (collection_symbol null) is never auto-minted — it requires a manual
+  // claim so the learner-name-rendered certificate is produced and reviewed.
+  const isOCA = !template.collection_symbol;
+  if (ctx.autoIssue && isOCA) {
+    return { ok: true, skipped: true, reason: "oca_requires_manual_claim", templateId: template.id };
+  }
+
+  const rule = (template.trigger_rule ?? {}) as CourseTriggerRule;
+  const needPct = Number(rule.completion_pct ?? 100);
+  if (completionPct < needPct) {
+    return {
+      ok: true,
+      skipped: true,
+      reason: "completion_pct_not_met",
+      completionPct,
+      needPct,
+      templateId: template.id,
+    };
+  }
+
+  if (rule.require_assignment_pass === true) {
+    const faRequired = readiness?.final_assignment_required === true;
+    const status = readiness?.final_submission_status ?? null;
+    if (faRequired && status !== "approved") {
+      return { ok: true, skipped: true, reason: "assignment_not_approved", templateId: template.id };
+    }
+    void rule.min_assignment_score;
+  }
+
+  const identifierPrefix = String(template.identifier_prefix ?? "").trim();
+  const defaultNet = await getDefaultMintNetwork(db);
+  const network = resolveMintNetwork(
+    template.network_override as string | null | undefined,
+    defaultNet as MintNetwork,
+  );
+  const issuerRef = issuerReferenceId(identifierPrefix, targetUserId);
+
+  const { data: existing } = await db.from("credential_issuances").select(
+    "id, status, retry_count, oc_credential_id, oc_response",
+  ).eq(
+    "issuer_reference_id",
+    issuerRef,
+  ).eq("network", network).maybeSingle();
+  if (existing) {
+    if (existing.status === "minted" || existing.status === "pending") {
+      // Backfill oc_credential_id for already-minted records that never captured
+      // it (e.g. minted before the id-extraction fix). Re-parse the stored response
+      // instead of re-calling OC (which would just return a duplicate).
+      if (existing.status === "minted" && !existing.oc_credential_id && existing.oc_response) {
+        const backfilled = extractOcCredentialId(existing.oc_response);
+        if (backfilled) {
+          await db.from("credential_issuances").update({ oc_credential_id: backfilled }).eq("id", existing.id);
+          return {
+            ok: true,
+            issuanceId: existing.id,
+            status: "minted",
+            minted: true,
+            skipped: false,
+            templateId: template.id,
+          };
+        }
+      }
+      return {
+        ok: true,
+        skipped: true,
+        reason: "already_issued_or_pending",
+        issuanceId: existing.id,
+        templateId: template.id,
+      };
+    }
+    // status === "failed" or "awaiting_holder_id" — reset and retry
+    const { error: resetErr } = await db.from("credential_issuances").update({
+      status: "pending",
+      error_message: null,
+      oc_request_payload: null,
+      oc_response: null,
+      retry_count: Number(existing.retry_count ?? 0) + 1,
+    }).eq("id", existing.id);
+    if (resetErr) throw new Error(resetErr.message);
+    await mintCredentialOnce(db, existing.id);
+    const { data: after } = await db.from("credential_issuances").select("status").eq("id", existing.id).maybeSingle();
+    return {
+      ok: true,
+      issuanceId: existing.id,
+      status: after?.status ?? "unknown",
+      minted: after?.status === "minted",
+      skipped: false,
+      templateId: template.id,
+    };
+  }
+
+  const { data: inserted, error: insErr } = await db.from("credential_issuances").insert({
+    template_id: template.id,
+    user_id: targetUserId,
+    course_id: courseId,
+    hackathon_id: null,
+    issuer_reference_id: issuerRef,
+    network,
+    status: "pending",
+    oc_request_payload: null,
+    oc_response: null,
+    oc_credential_id: null,
+    minted_at: null,
+    error_message: null,
+    retry_count: 0,
+    granted_by: null,
+    granted_reason: null,
+  }).select("id").maybeSingle();
+  if (insErr) {
+    if (/duplicate key|unique constraint/i.test(insErr.message)) {
+      return { ok: true, skipped: true, reason: "duplicate_issuance", templateId: template.id };
+    }
+    throw new Error(insErr.message);
+  }
+  const issuanceId = inserted?.id != null ? String(inserted.id) : null;
+  if (!issuanceId) {
+    return { ok: false, message: "Không tạo được issuance.", templateId: template.id };
+  }
+
+  await mintCredentialOnce(db, issuanceId);
+
+  try {
+    await runActivityMilestoneCheck(db, targetUserId, "courses_completed", { course_id: courseId });
+  } catch (actErr) {
+    console.error("[corelia-api] activity milestone after course credential", actErr);
+  }
+
+  const { data: after } = await db.from("credential_issuances").select("status").eq("id", issuanceId).maybeSingle();
+  return {
+    ok: true,
+    issuanceId,
+    status: after?.status ?? "unknown",
+    minted: after?.status === "minted",
+    skipped: false,
+    templateId: template.id,
+    evaluatedAt: nowIso(),
+  };
+}
+
 export async function runCourseCredentialCheck(
   db: SupabaseClient,
   courseId: string,
@@ -52,20 +224,16 @@ export async function runCourseCredentialCheck(
 ): Promise<
   Record<string, unknown>
 > {
-  const { data: template, error: tplErr } = await db.from("credential_templates").select("*").eq(
+  // A course can have an active OCA template and an active OCB template at
+  // the same time (see credential_templates_unique_active_course_{oca,ocb}_idx),
+  // so this fetches every active row rather than assuming a single template.
+  const { data: templates, error: tplErr } = await db.from("credential_templates").select("*").eq(
     "scope_type",
     "course",
-  ).eq("course_id", courseId).eq("is_active", true).maybeSingle();
+  ).eq("course_id", courseId).eq("is_active", true);
   if (tplErr) throw new Error(tplErr.message);
-  if (!template) {
+  if (!templates || templates.length === 0) {
     return { ok: true, skipped: true, reason: "no_active_template" };
-  }
-
-  // OCA (collection_symbol null) is never auto-minted — it requires a manual
-  // claim so the learner-name-rendered certificate is produced and reviewed.
-  const isOCA = !template.collection_symbol;
-  if (opts?.autoIssue && isOCA) {
-    return { ok: true, skipped: true, reason: "oca_requires_manual_claim" };
   }
 
   const enrollmentId = `${targetUserId}_${courseId}`;
@@ -100,125 +268,25 @@ export async function runCourseCredentialCheck(
     p_user_id: targetUserId,
   });
   if (readyErr) throw new Error(readyErr.message);
-  const readiness = readinessRaw as {
-    lesson_total?: number;
-    completed_distinct?: number;
-    all_lessons_complete?: boolean;
-    final_assignment_required?: boolean;
-    final_submission_status?: string | null;
-  } | null;
+  const readiness = readinessRaw as Readiness;
 
   const lessonTotal = Number(readiness?.lesson_total ?? 0);
   const completedDistinct = Number(readiness?.completed_distinct ?? 0);
   const completionPct =
     lessonTotal > 0 ? Math.min(100, Math.round((completedDistinct / lessonTotal) * 100)) : 0;
 
-  const rule = (template.trigger_rule ?? {}) as CourseTriggerRule;
-  const needPct = Number(rule.completion_pct ?? 100);
-  if (completionPct < needPct) {
-    return { ok: true, skipped: true, reason: "completion_pct_not_met", completionPct, needPct };
+  const results: Record<string, unknown>[] = [];
+  for (const template of templates) {
+    results.push(
+      await evaluateTemplate(db, template, {
+        courseId,
+        targetUserId,
+        completionPct,
+        readiness,
+        autoIssue: opts?.autoIssue,
+      }),
+    );
   }
 
-  if (rule.require_assignment_pass === true) {
-    const faRequired = readiness?.final_assignment_required === true;
-    const status = readiness?.final_submission_status ?? null;
-    if (faRequired && status !== "approved") {
-      return { ok: true, skipped: true, reason: "assignment_not_approved" };
-    }
-    void rule.min_assignment_score;
-  }
-
-  const identifierPrefix = String(template.identifier_prefix ?? "").trim();
-  const defaultNet = await getDefaultMintNetwork(db);
-  const network = resolveMintNetwork(
-    template.network_override as string | null | undefined,
-    defaultNet as MintNetwork,
-  );
-  const issuerRef = issuerReferenceId(identifierPrefix, targetUserId);
-
-  const { data: existing } = await db.from("credential_issuances").select(
-    "id, status, retry_count, oc_credential_id, oc_response",
-  ).eq(
-    "issuer_reference_id",
-    issuerRef,
-  ).eq("network", network).maybeSingle();
-  if (existing) {
-    if (existing.status === "minted" || existing.status === "pending") {
-      // Backfill oc_credential_id for already-minted records that never captured
-      // it (e.g. minted before the id-extraction fix). Re-parse the stored response
-      // instead of re-calling OC (which would just return a duplicate).
-      if (existing.status === "minted" && !existing.oc_credential_id && existing.oc_response) {
-        const backfilled = extractOcCredentialId(existing.oc_response);
-        if (backfilled) {
-          await db.from("credential_issuances").update({ oc_credential_id: backfilled }).eq("id", existing.id);
-          return { ok: true, issuanceId: existing.id, status: "minted", minted: true, skipped: false };
-        }
-      }
-      return { ok: true, skipped: true, reason: "already_issued_or_pending", issuanceId: existing.id };
-    }
-    // status === "failed" or "awaiting_holder_id" — reset and retry
-    const { error: resetErr } = await db.from("credential_issuances").update({
-      status: "pending",
-      error_message: null,
-      oc_request_payload: null,
-      oc_response: null,
-      retry_count: Number(existing.retry_count ?? 0) + 1,
-    }).eq("id", existing.id);
-    if (resetErr) throw new Error(resetErr.message);
-    await mintCredentialOnce(db, existing.id);
-    const { data: after } = await db.from("credential_issuances").select("status").eq("id", existing.id).maybeSingle();
-    return {
-      ok: true,
-      issuanceId: existing.id,
-      status: after?.status ?? "unknown",
-      minted: after?.status === "minted",
-      skipped: false,
-    };
-  }
-
-  const { data: inserted, error: insErr } = await db.from("credential_issuances").insert({
-    template_id: template.id,
-    user_id: targetUserId,
-    course_id: courseId,
-    hackathon_id: null,
-    issuer_reference_id: issuerRef,
-    network,
-    status: "pending",
-    oc_request_payload: null,
-    oc_response: null,
-    oc_credential_id: null,
-    minted_at: null,
-    error_message: null,
-    retry_count: 0,
-    granted_by: null,
-    granted_reason: null,
-  }).select("id").maybeSingle();
-  if (insErr) {
-    if (/duplicate key|unique constraint/i.test(insErr.message)) {
-      return { ok: true, skipped: true, reason: "duplicate_issuance" };
-    }
-    throw new Error(insErr.message);
-  }
-  const issuanceId = inserted?.id != null ? String(inserted.id) : null;
-  if (!issuanceId) {
-    return { ok: false, message: "Không tạo được issuance." };
-  }
-
-  await mintCredentialOnce(db, issuanceId);
-
-  try {
-    await runActivityMilestoneCheck(db, targetUserId, "courses_completed", { course_id: courseId });
-  } catch (actErr) {
-    console.error("[corelia-api] activity milestone after course credential", actErr);
-  }
-
-  const { data: after } = await db.from("credential_issuances").select("status").eq("id", issuanceId).maybeSingle();
-  return {
-    ok: true,
-    issuanceId,
-    status: after?.status ?? "unknown",
-    minted: after?.status === "minted",
-    skipped: false,
-    evaluatedAt: nowIso(),
-  };
+  return { ok: true, results };
 }
