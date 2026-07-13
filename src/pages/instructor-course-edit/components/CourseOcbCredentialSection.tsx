@@ -258,6 +258,11 @@ export function CourseOcbCredentialSection({
       return;
     }
 
+    if (credentialKind === "ocb" && isActive && hasCertificate) {
+      toast.error(t("courseEdit.ocb.blockedByCertificate"));
+      return;
+    }
+
     if (credentialKind === "oca" && (!onchainCertificateTemplateUrl || !onchainCertificateTemplateUrl.trim())) {
       toast.error(t("courseEdit.ocb.onchainCertRequired"));
       return;
@@ -287,7 +292,8 @@ export function CourseOcbCredentialSection({
         courseId,
         courseSlug,
         templateId,
-        isActive: true, // ALWAYS make the saved template the active one for this course
+        // OCA is always claimable once saved; OCB's active state follows the toggle.
+        isActive: credentialKind === "ocb" ? isActive : true,
         name: name.trim() || courseSlug,
         description: description.trim() || name.trim() || courseSlug,
         imageUrl: finalImageUrl,
@@ -374,6 +380,13 @@ export function CourseOcbCredentialSection({
                   if (opt.value === "oca") {
                     setIsActive(true);
                     onActiveChange?.(false);
+                  } else if (hasCertificate) {
+                    // PDF certificate is on — OCB can't be active at the same time,
+                    // so force the toggle off instead of leaving it checked+disabled.
+                    setIsActive(false);
+                    onActiveChange?.(false);
+                  } else {
+                    onActiveChange?.(isActive);
                   }
                 }}
                 className="mt-0.5 accent-primary"
