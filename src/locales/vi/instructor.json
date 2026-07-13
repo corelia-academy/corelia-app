@@ -609,7 +609,7 @@
       "loadFailed": "Không tải được cấu hình credential.",
       "statusActive": "Đang hoạt động",
       "statusInactive": "Chưa cấu hình",
-      "toggleSectionLabel": "Hiển thị cấu hình",
+      "mintToggleLabel": "Cho phép mint on-chain",
       "kind": {
         "label": "Loại credential",
         "oca": {
@@ -621,8 +621,6 @@
           "desc": "Credential dạng huy hiệu kỹ năng. Phù hợp cho các thành tích ngắn hạn và thành thạo chủ đề."
         }
       },
-      "enableLabel": "Bật tự động cấp badge (OCB)",
-      "enableHint": "Khi bật, badge được tự động mint cho học viên đạt đủ điều kiện.",
       "configTitle": "Thông tin credential",
       "requirementsTitle": "Điều kiện nhận credential",
       "blockedByCertificate": "Huy hiệu OCB không thể bật cùng lúc với Chứng nhận PDF. Vui lòng hủy chứng nhận PDF trước khi chọn OCB.",

@@ -48,10 +48,12 @@ function SectionToggle({
   checked,
   onChange,
   label,
+  disabled = false,
 }: {
   checked: boolean;
   onChange: (value: boolean) => void;
   label: string;
+  disabled?: boolean;
 }) {
   return (
     <button
@@ -59,10 +61,11 @@ function SectionToggle({
       role="switch"
       aria-checked={checked}
       aria-label={label}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
-        checked ? "bg-primary" : "bg-border"
-      }`}
+      className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
+        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+      } ${checked ? "bg-primary" : "bg-border"}`}
     >
       <span
         className={`pointer-events-none inline-block size-5 rounded-full bg-primary-foreground shadow-sm transition-transform duration-200 ${
@@ -117,7 +120,6 @@ export function CourseOcbCredentialSection({
   const [uploading, setUploading] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(true);
-  const [isExpanded, setIsExpanded] = useState(true);
   const [credentialKind, setCredentialKind] = useState<CourseCredentialKind>("oca");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -135,7 +137,6 @@ export function CourseOcbCredentialSection({
       if (!row) {
         setTemplateId(null);
         setIsActive(true);
-        onActiveChange?.(false);
         setCredentialKind("oca");
         setName("");
         setDescription("");
@@ -149,7 +150,6 @@ export function CourseOcbCredentialSection({
       }
       setTemplateId(row.id);
       setIsActive(row.is_active);
-      onActiveChange?.(Boolean(row.collection_symbol) && row.is_active);
       setCredentialKind(row.collection_symbol ? "ocb" : "oca");
       setName(row.name ?? "");
       setDescription(row.description ?? "");
@@ -167,11 +167,18 @@ export function CourseOcbCredentialSection({
     } finally {
       setLoading(false);
     }
-  }, [courseId, courseSlug, onActiveChange, t]);
+  }, [courseId, courseSlug, t]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Single source of truth for reporting "is OCB active" up to the parent —
+  // only OCB activity blocks the course's has_certificate checkbox (OCA and
+  // PDF certificates are allowed to coexist), so this stays kind-scoped.
+  useEffect(() => {
+    onActiveChange?.(credentialKind === "ocb" && isActive);
+  }, [credentialKind, isActive, onActiveChange]);
 
   const handleUpload = async (file: File | null) => {
     if (!file) return;
@@ -292,8 +299,7 @@ export function CourseOcbCredentialSection({
         courseId,
         courseSlug,
         templateId,
-        // OCA is always claimable once saved; OCB's active state follows the toggle.
-        isActive: credentialKind === "ocb" ? isActive : true,
+        isActive,
         name: name.trim() || courseSlug,
         description: description.trim() || name.trim() || courseSlug,
         imageUrl: finalImageUrl,
@@ -325,35 +331,32 @@ export function CourseOcbCredentialSection({
   return (
     <div className="space-y-6">
       {/* Header row */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Shield className="size-4 text-primary" aria-hidden />
+            <Shield className="size-4 shrink-0 text-primary" aria-hidden />
             {t("courseEdit.ocb.title")}
           </h3>
           <p className="mt-1 text-sm text-foreground-muted">{t("courseEdit.ocb.subtitle")}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <SectionToggle
+            checked={isActive}
+            disabled={!canEdit}
+            onChange={setIsActive}
+            label={t("courseEdit.ocb.mintToggleLabel")}
+          />
           <StatusBadge active={isActive} />
-          <div className="flex items-center gap-2 border-l border-border-subtle pl-3">
-            <span className="text-xs font-medium text-foreground-muted">
-              {t("courseEdit.ocb.toggleSectionLabel")}
-            </span>
-            <SectionToggle
-              checked={isExpanded}
-              onChange={setIsExpanded}
-              label={t("courseEdit.ocb.toggleSectionLabel")}
-            />
-          </div>
         </div>
       </div>
 
-      {/* Collapsible body — collapsed until the section switch above is turned on */}
+      {/* Collapsible body — the master switch above both enables on-chain minting
+          and reveals its setup fields; turning it off disallows minting for this course. */}
       <div
         className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
-          isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          isActive ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
         }`}
-        aria-hidden={!isExpanded}
+        aria-hidden={!isActive}
       >
         <div className="space-y-6 overflow-hidden">
           {/* Credential type */}
@@ -375,20 +378,7 @@ export function CourseOcbCredentialSection({
                 value={opt.value}
                 checked={credentialKind === opt.value}
                 disabled={!canEdit}
-                onChange={() => {
-                  setCredentialKind(opt.value);
-                  if (opt.value === "oca") {
-                    setIsActive(true);
-                    onActiveChange?.(false);
-                  } else if (hasCertificate) {
-                    // PDF certificate is on — OCB can't be active at the same time,
-                    // so force the toggle off instead of leaving it checked+disabled.
-                    setIsActive(false);
-                    onActiveChange?.(false);
-                  } else {
-                    onActiveChange?.(isActive);
-                  }
-                }}
+                onChange={() => setCredentialKind(opt.value)}
                 className="mt-0.5 accent-primary"
               />
               <div>
@@ -416,26 +406,6 @@ export function CourseOcbCredentialSection({
           </div>
         )}
       </div>
-
-      {/* Enable toggle — OCB only (OCB is auto-minted; OCA is always claimable once saved) */}
-      {credentialKind === "ocb" && (
-        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border-subtle bg-surface-raised p-4">
-          <input
-            type="checkbox"
-            checked={isActive}
-            disabled={!canEdit || isOcbBlockedByHasCert}
-            onChange={(e) => {
-              setIsActive(e.target.checked);
-              onActiveChange?.(e.target.checked);
-            }}
-            className="size-4 accent-primary rounded border-border"
-          />
-          <div>
-            <p className="text-sm font-medium text-foreground">{t("courseEdit.ocb.enableLabel")}</p>
-            <p className="text-xs text-foreground-muted">{t("courseEdit.ocb.enableHint")}</p>
-          </div>
-        </label>
-      )}
 
       {/* Config fields — always visible */}
       <div className="space-y-4 rounded-xl border border-border-subtle bg-surface-raised p-4 sm:p-5">

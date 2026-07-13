@@ -34,6 +34,7 @@ import type {
 } from "../types";
 import {
   buildCourseCertificates,
+  buildStandaloneOcaBadges,
   buildUnclaimedOcaBadges,
   ocidWithEduSuffix,
 } from "../utils/buildAchievementsData";
@@ -136,11 +137,18 @@ export function useAchievementsPage() {
         ocaTemplateMap,
         courseIdsWithOcaIssuance,
       );
+      const standaloneOcaBadges = buildStandaloneOcaBadges(
+        courseIds,
+        courseMap,
+        ocaTemplateMap,
+        courseIdsWithOcaIssuance,
+      );
 
       setCertificates(nextCertificates);
       setBadges([
         ...ocRows.map((row) => issuanceToBadgeItem(row, profile?.ocid)),
         ...virtualOcaBadges,
+        ...standaloneOcaBadges,
       ]);
       setCertificateSyncCandidates(
         pendingCandidates.filter((item): item is CertificateSyncCandidate => !!item),
@@ -179,8 +187,68 @@ export function useAchievementsPage() {
     );
   };
 
+  const patchBadge = (id: string, patch: Partial<BadgeItem>) => {
+    setBadges((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+    setModalItem((prev) =>
+      prev?.kind === "badge" && prev.data.id === id
+        ? { kind: "badge", data: { ...prev.data, ...patch } }
+        : prev,
+    );
+  };
+
+  // Standalone OCA badges (course has an OCA template but no offchain
+  // certificate) carry their own `courseId` and are claimed directly here,
+  // without routing through a Certificate card. Other badge kinds (OCB,
+  // hackathon, milestone) have no `courseId` and stay non-claimable.
+  const handleClaimStandaloneOca = async (id: string) => {
+    const badge = badges.find((b) => b.id === id);
+    if (!badge?.courseId) return;
+
+    if (!profile?.ocid?.trim()) {
+      setOcidConnectOpen(true);
+      return;
+    }
+
+    setClaiming(true);
+    patchBadge(id, { ocClaimStatus: "pending" });
+
+    try {
+      await invokeCheckCourseCredential(badge.courseId);
+
+      const issuances = await fetchMyCredentialIssuances(user!.id);
+      const row = issuances.find(
+        (r) => r.course_id === badge.courseId && !r.template?.collection_symbol,
+      );
+
+      if (!row) {
+        patchBadge(id, { ocClaimStatus: "unclaimed" });
+        toast.error(t("achievements.oc.modal.claimToast.error.notEligible"));
+        return;
+      }
+
+      const newBadge = issuanceToBadgeItem(row, profile?.ocid);
+      setBadges((prev) => [newBadge, ...prev.filter((b) => b.id !== id)]);
+
+      if (newBadge.ocClaimStatus === "claimed") {
+        openModal({ kind: "badge", data: newBadge });
+      } else if (newBadge.status === "pending") {
+        toast.info(t("achievements.oc.modal.claimToast.pending"));
+      } else {
+        toast.error(t("achievements.oc.modal.claimToast.error.failed"));
+      }
+    } catch (err) {
+      patchBadge(id, { ocClaimStatus: "failed" });
+      toast.error(err instanceof Error ? err.message : t("achievements.oc.modal.claimToast.error.failed"));
+    } finally {
+      setClaiming(false);
+    }
+  };
+
   const handleClaim = async (id: string, kind: "cert" | "badge") => {
-    if (kind === "badge") return;
+    if (kind === "badge") {
+      await handleClaimStandaloneOca(id);
+      return;
+    }
 
     const cert = certificates.find((c) => c.id === id);
     if (!cert?.courseId) return;

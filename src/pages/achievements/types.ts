@@ -52,6 +52,9 @@ export type BadgeItem = {
   category: "learning" | "streak" | "milestone" | "social";
   /** Ảnh huy hiệu (placeholder nếu chưa có) */
   imageUrl?: string;
+  /** Course id backing a standalone (no offchain certificate) OCA badge —
+   *  needed so handleClaim knows which course to check/mint for. */
+  courseId?: string | null;
   // OpenCampus
   ocClaimStatus: ClaimStatus;
   ocTransactionHash?: string;

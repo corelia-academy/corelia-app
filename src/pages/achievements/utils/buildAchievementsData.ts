@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { Award } from "lucide-react";
 
-import { getCourse } from "@/lib/courses";
+import { courseHasCertificate, getCourse } from "@/lib/courses";
 import type { CourseOcaTemplateSummary } from "@/lib/credentialsEdge";
 import { openCampusCredentialExplorerUrl, type CourseIssuanceInfo } from "@/lib/credentialIssuances";
 import { intlLocale } from "@/lib/intl";
@@ -123,6 +123,48 @@ export function buildUnclaimedOcaBadges(
         category: "milestone",
         imageUrl: tpl.thumbnailUrl || tpl.imageUrl || undefined,
         ocClaimStatus: "unclaimed_virtual",
+        credentialScope: "course",
+        collectionSymbol: null,
+        achievementType: tpl.achievementType,
+      } satisfies BadgeItem;
+    });
+}
+
+/** Standalone claimable OCA badge cards for enrolled courses that have an
+ *  active OCA template but no offchain PDF certificate at all — those never
+ *  appear in `certificates` (which requires `certificate_issued_at`), so
+ *  without this they'd never surface anywhere for the learner to claim.
+ *  Unlike `buildUnclaimedOcaBadges`, these use plain "unclaimed" status so
+ *  the modal opens directly and the claim happens on the badge itself. */
+export function buildStandaloneOcaBadges(
+  courseIds: string[],
+  courseMap: Map<string, Awaited<ReturnType<typeof getCourse>>>,
+  ocaTemplateMap: Map<string, CourseOcaTemplateSummary>,
+  courseIdsWithOcaIssuance: Set<string>,
+): BadgeItem[] {
+  return courseIds
+    .filter((courseId) => {
+      const tpl = ocaTemplateMap.get(courseId);
+      if (!tpl) return false;
+      if (courseIdsWithOcaIssuance.has(courseId)) return false;
+      return !courseHasCertificate(courseMap.get(courseId));
+    })
+    .map((courseId) => {
+      const tpl = ocaTemplateMap.get(courseId)!;
+      return {
+        id: `oca-standalone-${courseId}`,
+        courseId,
+        title: tpl.name || courseMap.get(courseId)?.title || "",
+        description: tpl.description,
+        icon: createElement(Award, { className: "size-6 text-primary", "aria-hidden": true }),
+        color: "text-primary",
+        bgColor: "bg-primary/10",
+        borderColor: "border-primary/20",
+        earnedAt: null,
+        locked: false,
+        category: "milestone",
+        imageUrl: tpl.thumbnailUrl || tpl.imageUrl || undefined,
+        ocClaimStatus: "unclaimed",
         credentialScope: "course",
         collectionSymbol: null,
         achievementType: tpl.achievementType,

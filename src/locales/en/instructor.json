@@ -610,7 +610,7 @@
       "loadFailed": "Could not load credential configuration.",
       "statusActive": "Active",
       "statusInactive": "Not configured",
-      "toggleSectionLabel": "Show settings",
+      "mintToggleLabel": "Allow on-chain minting",
       "kind": {
         "label": "Credential type",
         "oca": {
@@ -622,8 +622,6 @@
           "desc": "A skill badge credential. Ideal for shorter achievements and topic mastery."
         }
       },
-      "enableLabel": "Enable auto-minting for this course",
-      "enableHint": "When active, badges are automatically minted to learners who meet the requirements.",
       "configTitle": "Credential details",
       "requirementsTitle": "Eligibility requirements",
       "blockedByCertificate": "OCB cannot be enabled alongside a PDF Certificate. Please cancel the PDF certificate first.",
