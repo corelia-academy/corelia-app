@@ -135,7 +135,7 @@ export function CourseOcbCredentialSection({
       if (!row) {
         setTemplateId(null);
         setIsActive(true);
-        onActiveChange?.(true);
+        onActiveChange?.(false);
         setCredentialKind("oca");
         setName("");
         setDescription("");
@@ -149,7 +149,7 @@ export function CourseOcbCredentialSection({
       }
       setTemplateId(row.id);
       setIsActive(row.is_active);
-      onActiveChange?.(row.is_active);
+      onActiveChange?.(Boolean(row.collection_symbol) && row.is_active);
       setCredentialKind(row.collection_symbol ? "ocb" : "oca");
       setName(row.name ?? "");
       setDescription(row.description ?? "");
@@ -373,7 +373,7 @@ export function CourseOcbCredentialSection({
                   setCredentialKind(opt.value);
                   if (opt.value === "oca") {
                     setIsActive(true);
-                    onActiveChange?.(true);
+                    onActiveChange?.(false);
                   }
                 }}
                 className="mt-0.5 accent-primary"

@@ -499,6 +499,7 @@
       "updateFailed": "Lỗi cập nhật",
       "processFailed": "Lỗi xử lý",
       "missingCertificateTemplate": "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ.",
+      "missingCertificateTemplateCta": "Đi tới tab Certificate",
       "uploadCertTemplateFailed": "Lỗi tải template chứng nhận",
       "clearCertTemplateFailed": "Lỗi khi hủy chứng nhận / OCA cũ",
       "uploadPartnerDocsFailed": "Lỗi tải tài liệu đối tác",
@@ -959,6 +960,7 @@
       "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
       "hasCertificateHint": "Khoá học có cấp chứng nhận hoàn thành",
       "certBlockedByOcb": "Khoá học này đang có huy hiệu on-chain (OCB) hoạt động. Vào tab Certificate và tắt huy hiệu trước.",
+      "certBlockedByOcbCta": "Đi tới tab Certificate",
       "updatingHint": "Khoá học đang được cập nhật (hiện banner cho học viên)"
     },
     "students": {

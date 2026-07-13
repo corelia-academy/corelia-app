@@ -500,6 +500,7 @@
       "updateFailed": "Update failed",
       "processFailed": "Action failed",
       "missingCertificateTemplate": "Please upload a certificate template image when Certificate Issuance is enabled.",
+      "missingCertificateTemplateCta": "Go to Certificate tab",
       "uploadCertTemplateFailed": "Failed to upload certificate template",
       "clearCertTemplateFailed": "Failed to clear legacy certificate / OCA",
       "uploadPartnerDocsFailed": "Failed to upload partner documents",
@@ -960,6 +961,7 @@
       "publishedHint": "Published (visible on the course page)",
       "hasCertificateHint": "This course issues a completion certificate",
       "certBlockedByOcb": "This course has an on-chain badge (OCB) active. Go to the Certificate tab and disable the badge first.",
+      "certBlockedByOcbCta": "Go to Certificate tab",
       "updatingHint": "This course is being updated (show a notice to learners)"
     },
     "students": {

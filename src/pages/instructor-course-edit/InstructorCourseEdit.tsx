@@ -538,6 +538,7 @@ const InstructorCourseEdit = () => {
   const setSection = (id: SectionId) => {
     setActiveSection(id);
     window.location.hash = id;
+    window.scrollTo({ top: 0 });
   };
 
   useEffect(() => {
@@ -1229,7 +1230,14 @@ const InstructorCourseEdit = () => {
     }
 
     if (form.has_certificate && !form.certificate_template_url) {
-      setError(t("courseEdit.errors.missingCertificateTemplate", { defaultValue: "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ." }));
+      const message = t("courseEdit.errors.missingCertificateTemplate", { defaultValue: "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ." });
+      setError(message);
+      toast.error(message, {
+        action: {
+          label: t("courseEdit.errors.missingCertificateTemplateCta"),
+          onClick: () => setSection("certificate"),
+        },
+      });
       return;
     }
 
@@ -6006,9 +6014,19 @@ const InstructorCourseEdit = () => {
                     </span>
                   </label>
                   {ocbIsActive && (
-                    <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseEdit.publishing.certBlockedByOcb")}
-                    </p>
+                    <div className="mt-2 flex items-center justify-between gap-3 rounded-md border border-warning/20 bg-warning/10 px-3 py-2">
+                      <p className="text-xs text-warning-foreground">
+                        {t("courseEdit.publishing.certBlockedByOcb")}
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSection("certificate")}
+                      >
+                        {t("courseEdit.publishing.certBlockedByOcbCta")}
+                      </Button>
+                    </div>
                   )}
                 </Field>
                 <Field>
@@ -8744,25 +8762,31 @@ const InstructorCourseEdit = () => {
                 </>
                 )}
               </section>
-
-              {/* Card 2: Open Campus On-chain Credential */}
-              {id && canManageCourseOcb && (
-                <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-                  <CourseOcbCredentialSection
-                    courseId={id}
-                    courseSlug={(form.slug || course.slug || "").trim()}
-                    canEdit={canManageCourseOcb}
-                    hasCertificate={form.has_certificate ?? false}
-                    onActiveChange={setOcbIsActive}
-                    onClearLegacyCertificate={handleClearLegacyCertificate}
-                    onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
-                    onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}
-                    onOnchainCertificateUploaded={handleOnchainCertificateUploaded}
-                    onClearOnchainCertificate={handleClearOnchainCertificate}
-                  />
-                </section>
-              )}
             </div>
+          )}
+
+          {/* Card 2: Open Campus On-chain Credential — kept mounted across tab switches
+              (not gated by activeSection) so unsaved OCA/OCB edits inside
+              CourseOcbCredentialSection survive navigating to another tab and back. */}
+          {canAccessCertificate && id && canManageCourseOcb && (
+            <section
+              className={`rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 ${
+                activeSection === "certificate" ? "mt-4" : "hidden"
+              }`}
+            >
+              <CourseOcbCredentialSection
+                courseId={id}
+                courseSlug={(form.slug || course.slug || "").trim()}
+                canEdit={canManageCourseOcb}
+                hasCertificate={form.has_certificate ?? false}
+                onActiveChange={setOcbIsActive}
+                onClearLegacyCertificate={handleClearLegacyCertificate}
+                onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
+                onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}
+                onOnchainCertificateUploaded={handleOnchainCertificateUploaded}
+                onClearOnchainCertificate={handleClearOnchainCertificate}
+              />
+            </section>
           )}
 
           {activeSection === "announcements" && canAccessAnnouncements && (
