@@ -386,18 +386,18 @@ export function CourseOcbCredentialSection({
           ))}
         </div>
         {isOcbBlockedByHasCert && (
-          <div className="mt-2 flex items-center justify-between bg-warning/10 border border-warning/20 rounded-md px-3 py-2">
-            <p className="text-xs text-warning-foreground">
+          <div className="mt-2 flex items-center justify-between rounded-xl border border-border-subtle bg-surface-raised px-4 py-3">
+            <p className="text-sm text-foreground-muted">
               {t("courseEdit.ocb.blockedByCertificate")}
             </p>
             {onClearLegacyCertificate && (
               <Button
                 type="button"
-                variant="destructive"
+                variant="outline"
                 size="sm"
                 onClick={onClearLegacyCertificate}
               >
-                Hủy OCA
+                {t("courseEdit.ocb.cancelCertificateButton", { defaultValue: "Hủy Chứng nhận" })}
               </Button>
             )}
           </div>
