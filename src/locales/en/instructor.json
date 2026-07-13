@@ -609,7 +609,7 @@
       "loadFailed": "Could not load credential configuration.",
       "statusActive": "Active",
       "statusInactive": "Not configured",
-      "disablePdfCertificate": "Disable PDF certificate",
+      "toggleSectionLabel": "Show settings",
       "kind": {
         "label": "Credential type",
         "oca": {
@@ -625,7 +625,7 @@
       "enableHint": "When active, badges are automatically minted to learners who meet the requirements.",
       "configTitle": "Credential details",
       "requirementsTitle": "Eligibility requirements",
-      "blockedByCertificate": "OCB cannot be enabled when this course already issues a downloadable PDF certificate. Disable the PDF certificate first.",
+      "blockedByCertificate": "OCB cannot be enabled when this course already issues a downloadable PDF certificate. Switch to OCA type, or disable the PDF certificate first.",
       "noPermission": "You don't have permission to configure credentials for this course.",
       "nameLabel": "Credential name",
       "descriptionLabel": "Description",
@@ -720,7 +720,7 @@
         "pricing": "Pricing & payment",
         "content": "Content & lessons",
         "assignments": "Final assignment",
-        "certificate": "Certificate",
+        "certificate": "OpenCampus Credentials",
         "students": "Manage students",
         "danger": "Delete course",
         "announcements": "Announcements"

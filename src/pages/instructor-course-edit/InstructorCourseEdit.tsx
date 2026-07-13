@@ -8745,20 +8745,22 @@ const InstructorCourseEdit = () => {
                 )}
               </section>
 
-              {/* Card 2 & 3: Open Campus On-chain Credential — OCA and OCB, each its own card */}
+              {/* Card 2: Open Campus On-chain Credential */}
               {id && canManageCourseOcb && (
-                <CourseOcbCredentialSection
-                  courseId={id}
-                  courseSlug={(form.slug || course.slug || "").trim()}
-                  canEdit={canManageCourseOcb}
-                  hasCertificate={form.has_certificate ?? false}
-                  onActiveChange={setOcbIsActive}
-                  onClearLegacyCertificate={handleClearLegacyCertificate}
-                  onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
-                  onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}
-                  onOnchainCertificateUploaded={handleOnchainCertificateUploaded}
-                  onClearOnchainCertificate={handleClearOnchainCertificate}
-                />
+                <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
+                  <CourseOcbCredentialSection
+                    courseId={id}
+                    courseSlug={(form.slug || course.slug || "").trim()}
+                    canEdit={canManageCourseOcb}
+                    hasCertificate={form.has_certificate ?? false}
+                    onActiveChange={setOcbIsActive}
+                    onClearLegacyCertificate={handleClearLegacyCertificate}
+                    onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
+                    onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}
+                    onOnchainCertificateUploaded={handleOnchainCertificateUploaded}
+                    onClearOnchainCertificate={handleClearOnchainCertificate}
+                  />
+                </section>
               )}
             </div>
           )}

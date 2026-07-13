@@ -608,7 +608,7 @@
       "loadFailed": "Không tải được cấu hình credential.",
       "statusActive": "Đang hoạt động",
       "statusInactive": "Chưa cấu hình",
-      "disablePdfCertificate": "Tắt chứng chỉ PDF",
+      "toggleSectionLabel": "Hiển thị cấu hình",
       "kind": {
         "label": "Loại credential",
         "oca": {
@@ -624,7 +624,7 @@
       "enableHint": "Khi bật, badge được tự động mint cho học viên đạt đủ điều kiện.",
       "configTitle": "Thông tin credential",
       "requirementsTitle": "Điều kiện nhận credential",
-      "blockedByCertificate": "OCB không thể bật khi khoá học đã cấp chứng nhận PDF. Hãy tắt chứng nhận PDF trước.",
+      "blockedByCertificate": "OCB không thể bật khi khoá học đã cấp chứng nhận PDF. Hãy chọn loại OCA, hoặc tắt chứng nhận PDF trước.",
       "noPermission": "Bạn không có quyền cấu hình credential cho khoá học này.",
       "nameLabel": "Tên credential",
       "descriptionLabel": "Mô tả",
@@ -719,7 +719,7 @@
         "pricing": "Giá & thanh toán",
         "content": "Nội dung & bài học",
         "assignments": "Bài tập cuối khoá",
-        "certificate": "Chứng nhận",
+        "certificate": "OpenCampus Credentials",
         "students": "Quản lý học viên",
         "danger": "Xoá khoá học",
         "announcements": "Thông báo"

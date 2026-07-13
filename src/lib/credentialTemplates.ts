@@ -41,22 +41,6 @@ export async function getLatestCourseCredentialTemplate(
   return data as CredentialTemplateRow | null;
 }
 
-/** All course-scoped credential templates for a course — OCA and OCB can both
- *  exist (and both be active) independently, so callers must not assume a
- *  single row. */
-export async function listCourseCredentialTemplates(
-  courseId: string,
-): Promise<CredentialTemplateRow[]> {
-  const { data, error } = await supabase
-    .from("credential_templates")
-    .select("*")
-    .eq("scope_type", "course")
-    .eq("course_id", courseId)
-    .order("updated_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  return (data ?? []) as CredentialTemplateRow[];
-}
-
 export type CourseCredentialKind = "oca" | "ocb";
 
 export async function saveCourseCredentialTemplate(params: {
@@ -92,18 +76,13 @@ export async function saveCourseCredentialTemplate(params: {
     is_active: params.isActive,
   };
 
-  // Only deactivate other rows of the SAME kind — OCA and OCB now have separate
-  // partial unique indexes (credential_templates_unique_active_course_{oca,ocb}_idx)
-  // and can both be active for the same course at once.
   const deactivateOthers = async (keepId: string) => {
-    let query = supabase
+    await supabase
       .from("credential_templates")
       .update({ is_active: false })
       .eq("course_id", params.courseId)
       .eq("scope_type", "course")
       .neq("id", keepId);
-    query = kind === "oca" ? query.is("collection_symbol", null) : query.eq("collection_symbol", "ocbadge");
-    await query;
   };
 
   if (params.templateId) {
