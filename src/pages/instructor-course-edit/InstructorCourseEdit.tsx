@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   ArrowLeft,
+  ArrowRight,
   Plus,
   List,
   Mail,
@@ -1232,12 +1233,27 @@ const InstructorCourseEdit = () => {
     if (form.has_certificate && !form.certificate_template_url) {
       const message = t("courseEdit.errors.missingCertificateTemplate", { defaultValue: "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ." });
       setError(message);
-      toast.error(message, {
-        action: {
-          label: t("courseEdit.errors.missingCertificateTemplateCta"),
-          onClick: () => setSection("certificate"),
-        },
-      });
+      if (activeSection === "certificate") {
+        // Already on the tab that hosts the template upload — a "go to" action here
+        // would just re-select the current tab, so show a plain toast instead.
+        toast.error(message);
+      } else {
+        toast.error(message, {
+          style: { "--width": "min(480px, calc(100vw - 32px))" } as React.CSSProperties,
+          classNames: {
+            actionButton: "!bg-primary !text-primary-foreground hover:!bg-primary/90",
+          },
+          action: {
+            label: (
+              <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                {t("courseEdit.errors.missingCertificateTemplateCta")}
+                <ArrowRight className="size-3.5" aria-hidden />
+              </span>
+            ),
+            onClick: () => setSection("certificate"),
+          },
+        });
+      }
       return;
     }
 

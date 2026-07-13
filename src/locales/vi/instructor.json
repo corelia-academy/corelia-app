@@ -499,7 +499,7 @@
       "updateFailed": "Lỗi cập nhật",
       "processFailed": "Lỗi xử lý",
       "missingCertificateTemplate": "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ.",
-      "missingCertificateTemplateCta": "Đi tới tab Certificate",
+      "missingCertificateTemplateCta": "OpenCampus Credentials",
       "uploadCertTemplateFailed": "Lỗi tải template chứng nhận",
       "clearCertTemplateFailed": "Lỗi khi hủy chứng nhận / OCA cũ",
       "uploadPartnerDocsFailed": "Lỗi tải tài liệu đối tác",
@@ -592,8 +592,8 @@
       "nameColorHint": "Màu của tên học viên hiển thị trên certificate.",
       "afterUploadHintPrefix": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" ( % từ trái / % từ",
       "fileFormatHint": "Định dạng: PNG hoặc JPG.",
-      "disabledHint": "Bật \"Khoá học này có cấp chứng nhận hoàn thành\" ở tab General info trước khi cấu hình template chứng nhận.",
-      "disabledCta": "Đi tới General info"
+      "disabledHint": "Bật \"Khoá học này có cấp chứng nhận hoàn thành\" ở tab Thông tin chung trước khi cấu hình template chứng nhận.",
+      "disabledCta": "Đi tới Thông tin chung"
     },
     "certificateGuide": {
       "title": "Hướng dẫn tạo template",
@@ -960,7 +960,7 @@
       "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
       "hasCertificateHint": "Khoá học có cấp chứng nhận hoàn thành",
       "certBlockedByOcb": "Khoá học này đang có huy hiệu on-chain (OCB) hoạt động. Vào tab Certificate và tắt huy hiệu trước.",
-      "certBlockedByOcbCta": "Đi tới tab Certificate",
+      "certBlockedByOcbCta": "Đi tới OpenCampus Credentials",
       "updatingHint": "Khoá học đang được cập nhật (hiện banner cho học viên)"
     },
     "students": {
