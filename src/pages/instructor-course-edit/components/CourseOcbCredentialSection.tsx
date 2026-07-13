@@ -430,7 +430,11 @@ export function CourseOcbCredentialSection({
         </Field>
 
         <Field>
-          <FieldLabel>{t("courseEdit.ocb.imageLabel")}</FieldLabel>
+          <FieldLabel>
+            {credentialKind === "oca"
+              ? t("courseEdit.ocb.onchainCertLabel")
+              : t("courseEdit.ocb.badgeImageLabel")}
+          </FieldLabel>
           {credentialKind === "oca" ? (
             <>
 
