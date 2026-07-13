@@ -625,6 +625,8 @@
       "configTitle": "Credential details",
       "requirementsTitle": "Eligibility requirements",
       "blockedByCertificate": "OCB cannot be enabled alongside a PDF Certificate. Please cancel the PDF certificate first.",
+      "confirmDeactivateWithIssuances": "{{count}} learner(s) already hold this credential. Turning it off stops issuing to new learners — it does NOT revoke what's already been issued. Continue turning it off?",
+      "leaveWithoutSavingWarning": "You have unsaved OpenCampus Credentials changes. Leaving now will NOT issue the on-chain credential to learners. Leave anyway?",
       "cancelCertificateButton": "Cancel Certificate",
       "noPermission": "You don't have permission to configure credentials for this course.",
       "nameLabel": "Credential name",

@@ -624,6 +624,8 @@
       "configTitle": "Thông tin credential",
       "requirementsTitle": "Điều kiện nhận credential",
       "blockedByCertificate": "Huy hiệu OCB không thể bật cùng lúc với Chứng nhận PDF. Vui lòng hủy chứng nhận PDF trước khi chọn OCB.",
+      "confirmDeactivateWithIssuances": "Đã có {{count}} học viên nhận credential này. Tắt sẽ ngừng cấp cho học viên mới, KHÔNG thu hồi credential đã cấp cho học viên cũ. Tiếp tục tắt?",
+      "leaveWithoutSavingWarning": "Bạn có thay đổi cấu hình OpenCampus Credentials chưa lưu. Rời trang bây giờ sẽ KHÔNG cấp chứng chỉ on-chain cho học viên. Rời trang?",
       "cancelCertificateButton": "Hủy Chứng nhận",
       "noPermission": "Bạn không có quyền cấu hình credential cho khoá học này.",
       "nameLabel": "Tên credential",

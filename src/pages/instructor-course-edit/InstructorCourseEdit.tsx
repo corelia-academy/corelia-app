@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   ArrowLeft,
@@ -506,6 +506,7 @@ const InstructorCourseEdit = () => {
   const partnerLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingPartnerLogo, setUploadingPartnerLogo] = useState(false);
   const [ocbIsActive, setOcbIsActive] = useState(false);
+  const [ocbDirty, setOcbDirty] = useState(false);
   const [discounts, setDiscounts] = useState<CourseDiscount[]>([]);
   const [loadingDiscounts, setLoadingDiscounts] = useState(false);
   const [creatingDiscount, setCreatingDiscount] = useState(false);
@@ -536,7 +537,24 @@ const InstructorCourseEdit = () => {
     ) as SectionId;
   });
 
+  // Confirms before leaving the OCC tab with unsaved OCA/OCB edits — the
+  // credential template's own Save button no longer auto-persists on every
+  // toggle flip, so this is the safety net against silently losing a draft.
+  const confirmLeaveOcbDirty = useCallback(
+    () =>
+      window.confirm(
+        t("courseEdit.ocb.leaveWithoutSavingWarning", {
+          defaultValue:
+            "Bạn có thay đổi cấu hình OpenCampus Credentials chưa lưu. Rời trang bây giờ sẽ KHÔNG cấp chứng chỉ on-chain cho học viên. Rời trang?",
+        }),
+      ),
+    [t],
+  );
+
   const setSection = (id: SectionId) => {
+    if (activeSection === "certificate" && id !== "certificate" && ocbDirty) {
+      if (!confirmLeaveOcbDirty()) return;
+    }
     setActiveSection(id);
     window.location.hash = id;
     window.scrollTo({ top: 0 });
@@ -545,12 +563,32 @@ const InstructorCourseEdit = () => {
   useEffect(() => {
     const onHash = () => {
       const hash = window.location.hash.slice(1);
-      if (sectionIds.includes(hash as SectionId))
-        setActiveSection(hash as SectionId);
+      if (!sectionIds.includes(hash as SectionId)) return;
+      if (activeSection === "certificate" && hash !== "certificate" && ocbDirty) {
+        if (!confirmLeaveOcbDirty()) {
+          // Undo the browser's hash change (e.g. back/forward button) and
+          // stay put — best-effort, since we can't cancel it outright.
+          window.location.hash = "certificate";
+          return;
+        }
+      }
+      setActiveSection(hash as SectionId);
     };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
-  }, [sectionIds]);
+  }, [sectionIds, activeSection, ocbDirty, confirmLeaveOcbDirty]);
+
+  // Covers actual browser-level "leave" (reload, close tab, external nav) —
+  // the in-app tab guards above can't catch these.
+  useEffect(() => {
+    if (!ocbDirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [ocbDirty]);
 
   const isAdmin = profile?.role === "admin";
   const isSupportStaff = profile?.role === "support_staff";
@@ -8796,6 +8834,7 @@ const InstructorCourseEdit = () => {
                 canEdit={canManageCourseOcb}
                 hasCertificate={form.has_certificate ?? false}
                 onActiveChange={setOcbIsActive}
+                onDirtyChange={setOcbDirty}
                 onClearLegacyCertificate={handleClearLegacyCertificate}
                 onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
                 onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}

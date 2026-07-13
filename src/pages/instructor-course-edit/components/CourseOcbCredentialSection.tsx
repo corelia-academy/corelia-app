@@ -93,6 +93,7 @@ export function CourseOcbCredentialSection({
   canEdit,
   hasCertificate = false,
   onActiveChange,
+  onDirtyChange,
   onClearLegacyCertificate,
   onchainCertificateTemplateUrl,
   onchainCertificateTemplatePath,
@@ -104,6 +105,9 @@ export function CourseOcbCredentialSection({
   canEdit: boolean;
   hasCertificate?: boolean;
   onActiveChange?: (active: boolean) => void;
+  /** Reports whether there are unsaved OCA/OCB edits, so the parent can warn
+   *  before switching away from this tab. */
+  onDirtyChange?: (dirty: boolean) => void;
   onClearLegacyCertificate?: () => void;
   /** On-chain OCA (Open Campus Achievement) art — must stay name-free (OC privacy rules),
    *  minted to Open Campus/IPFS. Distinct from the off-chain `certificate_template_url`
@@ -119,7 +123,12 @@ export function CourseOcbCredentialSection({
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(false);
+  /** Lets the Save button reveal the (never-configured) body for viewing
+   *  without touching `isActive` — purely local, never persisted. Only
+   *  matters while `templateId` is null; reset once the master toggle turns
+   *  on for real so it can't linger and force-expand the card later. */
+  const [peekExpanded, setPeekExpanded] = useState(false);
   const [credentialKind, setCredentialKind] = useState<CourseCredentialKind>("oca");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -130,35 +139,83 @@ export function CourseOcbCredentialSection({
   const [requireAssignmentPass, setRequireAssignmentPass] = useState(false);
   const [minAssignmentScore, setMinAssignmentScore] = useState(70);
 
+  /** Snapshot of the last loaded/saved field values, used to detect unsaved
+   *  edits (`isDirty` below). A ref because it's only ever read during
+   *  render, not something that should itself trigger a re-render. */
+  const savedSnapshotRef = useRef<{
+    isActive: boolean;
+    credentialKind: CourseCredentialKind;
+    name: string;
+    description: string;
+    imageUrl: string;
+    identifierPrefix: string;
+    completionPct: number;
+    requireAssignmentPass: boolean;
+    minAssignmentScore: number;
+  } | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const row = await getLatestCourseCredentialTemplate(courseId);
       if (!row) {
+        const freshIdentifierPrefix = `corelia:${courseSlug}`.slice(0, 40);
         setTemplateId(null);
-        setIsActive(true);
+        setIsActive(false);
         setCredentialKind("oca");
         setName("");
         setDescription("");
         setImageUrl("");
-        setIdentifierPrefix(`corelia:${courseSlug}`.slice(0, 40));
+        setIdentifierPrefix(freshIdentifierPrefix);
         setCompletionPct(100);
         setRequireAssignmentPass(false);
         setMinAssignmentScore(70);
         setIssuanceCount(0);
+        savedSnapshotRef.current = {
+          isActive: false,
+          credentialKind: "oca",
+          name: "",
+          description: "",
+          imageUrl: "",
+          identifierPrefix: freshIdentifierPrefix,
+          completionPct: 100,
+          requireAssignmentPass: false,
+          minAssignmentScore: 70,
+        };
+        // Report against the *saved* state, not whatever's being drafted in
+        // the form — a brand-new course has nothing active yet regardless.
+        onActiveChange?.(false);
         return;
       }
-      setTemplateId(row.id);
-      setIsActive(row.is_active);
-      setCredentialKind(row.collection_symbol ? "ocb" : "oca");
-      setName(row.name ?? "");
-      setDescription(row.description ?? "");
-      setImageUrl(row.image_url ?? "");
-      setIdentifierPrefix(row.identifier_prefix ?? "");
+      const kind: CourseCredentialKind = row.collection_symbol ? "ocb" : "oca";
       const tr = row.trigger_rule as CourseCredentialTriggerRule | null;
-      setCompletionPct(Number(tr?.completion_pct ?? 100));
-      setRequireAssignmentPass(tr?.require_assignment_pass === true);
-      setMinAssignmentScore(Number(tr?.min_assignment_score ?? 70));
+      const loaded = {
+        isActive: row.is_active,
+        credentialKind: kind,
+        name: row.name ?? "",
+        description: row.description ?? "",
+        imageUrl: row.image_url ?? "",
+        identifierPrefix: row.identifier_prefix ?? "",
+        completionPct: Number(tr?.completion_pct ?? 100),
+        requireAssignmentPass: tr?.require_assignment_pass === true,
+        minAssignmentScore: Number(tr?.min_assignment_score ?? 70),
+      };
+      setTemplateId(row.id);
+      setIsActive(loaded.isActive);
+      setCredentialKind(loaded.credentialKind);
+      setName(loaded.name);
+      setDescription(loaded.description);
+      setImageUrl(loaded.imageUrl);
+      setIdentifierPrefix(loaded.identifierPrefix);
+      setCompletionPct(loaded.completionPct);
+      setRequireAssignmentPass(loaded.requireAssignmentPass);
+      setMinAssignmentScore(loaded.minAssignmentScore);
+      savedSnapshotRef.current = loaded;
+      // Only OCB activity that's actually saved should block the course's
+      // has_certificate checkbox (OCA + PDF certs are allowed to coexist) —
+      // reporting the live/draft value here would let an unsaved toggle flip
+      // block the other tab before anything was really persisted.
+      onActiveChange?.(kind === "ocb" && loaded.isActive);
       // Load issuance count to determine if identifierPrefix can be edited
       const count = await countIssuancesForTemplate(row.id).catch(() => 0);
       setIssuanceCount(count);
@@ -167,18 +224,37 @@ export function CourseOcbCredentialSection({
     } finally {
       setLoading(false);
     }
-  }, [courseId, courseSlug, t]);
+  }, [courseId, courseSlug, t, onActiveChange]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  // Single source of truth for reporting "is OCB active" up to the parent —
-  // only OCB activity blocks the course's has_certificate checkbox (OCA and
-  // PDF certificates are allowed to coexist), so this stays kind-scoped.
+  // The real toggle takes over from here — drop the "peek" so it doesn't
+  // linger and force the card to stay expanded after a later off-toggle.
   useEffect(() => {
-    onActiveChange?.(credentialKind === "ocb" && isActive);
-  }, [credentialKind, isActive, onActiveChange]);
+    if (isActive) setPeekExpanded(false);
+  }, [isActive]);
+
+  // True whenever any field differs from what's actually saved in the DB —
+  // drives both the Save button's visual state and the parent's
+  // "leave without saving" warning when switching away from this tab.
+  const snap = savedSnapshotRef.current;
+  const isDirty = snap
+    ? isActive !== snap.isActive ||
+      credentialKind !== snap.credentialKind ||
+      name !== snap.name ||
+      description !== snap.description ||
+      imageUrl !== snap.imageUrl ||
+      identifierPrefix !== snap.identifierPrefix ||
+      completionPct !== snap.completionPct ||
+      requireAssignmentPass !== snap.requireAssignmentPass ||
+      minAssignmentScore !== snap.minAssignmentScore
+    : false;
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const handleUpload = async (file: File | null) => {
     if (!file) return;
@@ -259,21 +335,41 @@ export function CourseOcbCredentialSection({
     if (onchainFileRef.current) onchainFileRef.current.value = "";
   };
 
-  const handleSave = async () => {
+  /** The only path that persists OCA/OCB config — the master toggle itself
+   *  just flips local `isActive` (see the toggle below) so it never fires a
+   *  validation error before the instructor has had a chance to fill in
+   *  anything. Returns whether the save actually went through, so the Save
+   *  button's dirty styling knows to clear. */
+  const handleSave = async (): Promise<boolean> => {
     if (!canEdit) {
       toast.error(t("courseEdit.ocb.noPermission"));
-      return;
+      return false;
     }
 
     if (credentialKind === "ocb" && isActive && hasCertificate) {
       toast.error(t("courseEdit.ocb.blockedByCertificate"));
-      return;
+      return false;
     }
 
     if (credentialKind === "oca" && (!onchainCertificateTemplateUrl || !onchainCertificateTemplateUrl.trim())) {
       toast.error(t("courseEdit.ocb.onchainCertRequired"));
-      return;
+      return false;
     }
+
+    // Turning off a credential that real learners already hold doesn't
+    // revoke anything already minted (on-chain issuance is immutable) — it
+    // only stops *future* learners from getting it. Confirm rather than
+    // silently changing that policy out from under in-progress students.
+    if (!isActive && issuanceCount > 0) {
+      const proceed = window.confirm(
+        t("courseEdit.ocb.confirmDeactivateWithIssuances", {
+          count: issuanceCount,
+          defaultValue: `Đã có ${issuanceCount} học viên nhận credential này. Tắt sẽ ngừng cấp cho học viên mới, KHÔNG thu hồi credential đã cấp cho học viên cũ. Tiếp tục tắt?`,
+        }),
+      );
+      if (!proceed) return false;
+    }
+
     setSaving(true);
     try {
       const triggerRule: CourseCredentialTriggerRule = {
@@ -291,8 +387,7 @@ export function CourseOcbCredentialSection({
 
       if (!finalImageUrl) {
         toast.error("Vui lòng tải lên hình ảnh cho chứng chỉ/huy hiệu trước khi lưu.");
-        setSaving(false);
-        return;
+        return false;
       }
 
       const { id } = await saveCourseCredentialTemplate({
@@ -310,8 +405,10 @@ export function CourseOcbCredentialSection({
       setTemplateId(id);
       toast.success(t("courseEdit.ocb.saved"));
       await load();
+      return true;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("courseEdit.ocb.saveFailed"));
+      return false;
     } finally {
       setSaving(false);
     }
@@ -342,7 +439,7 @@ export function CourseOcbCredentialSection({
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           <SectionToggle
             checked={isActive}
-            disabled={!canEdit}
+            disabled={!canEdit || saving}
             onChange={setIsActive}
             label={t("courseEdit.ocb.mintToggleLabel")}
           />
@@ -351,12 +448,14 @@ export function CourseOcbCredentialSection({
       </div>
 
       {/* Collapsible body — the master switch above both enables on-chain minting
-          and reveals its setup fields; turning it off disallows minting for this course. */}
+          and reveals its setup fields; turning it off disallows minting for this course.
+          `peekExpanded` additionally reveals it (view-only, no persistence) when the
+          Save button is clicked on a never-configured template. */}
       <div
         className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
-          isActive ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          isActive || peekExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
         }`}
-        aria-hidden={!isActive}
+        aria-hidden={!isActive && !peekExpanded}
       >
         <div className="space-y-6 overflow-hidden">
           {/* Credential type */}
@@ -589,12 +688,32 @@ export function CourseOcbCredentialSection({
           </Field>
         )}
       </div>
-
-      <Button type="button" disabled={!canEdit || saving || isOcbBlockedByHasCert} onClick={() => void handleSave()}>
-        {saving ? t("courseEdit.ocb.saving") : t("courseEdit.ocb.save")}
-      </Button>
         </div>
       </div>
+
+      {/* Outside the collapsible body on purpose — must stay reachable even
+          while the master switch above is off, otherwise there'd be no way
+          to save other field edits (or re-enable) without expanding first.
+          Outline + blue-on-hover while there are unsaved edits; solid blue
+          once everything is actually persisted. */}
+      <Button
+        type="button"
+        variant={isDirty ? "outline" : "default"}
+        className={isDirty ? "hover:!border-primary hover:!bg-primary hover:!text-primary-foreground" : ""}
+        disabled={!canEdit || saving || isOcbBlockedByHasCert}
+        onClick={() => {
+          // Never-configured + collapsed: nothing valid to save yet (no
+          // image/template picked), so reveal the fields instead of firing
+          // a confusing validation error on a form the user hasn't seen.
+          if (!isActive && !templateId) {
+            setPeekExpanded(true);
+            return;
+          }
+          void handleSave();
+        }}
+      >
+        {saving ? t("courseEdit.ocb.saving") : t("courseEdit.ocb.save")}
+      </Button>
     </div>
   );
 }
