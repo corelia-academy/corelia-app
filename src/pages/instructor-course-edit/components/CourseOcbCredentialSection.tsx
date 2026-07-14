@@ -335,23 +335,23 @@ export function CourseOcbCredentialSection({
     if (onchainFileRef.current) onchainFileRef.current.value = "";
   };
 
-  /** The only path that persists OCA/OCB config — the master toggle itself
-   *  just flips local `isActive` (see the toggle below) so it never fires a
-   *  validation error before the instructor has had a chance to fill in
-   *  anything. Returns whether the save actually went through, so the Save
-   *  button's dirty styling knows to clear. */
-  const handleSave = async (): Promise<boolean> => {
+  /** The only path that persists OCA/OCB config. Accepts an explicit `active`
+   *  override so the toggle-OFF auto-save path can pass the new value before
+   *  React has flushed the state update. Defaults to the current `isActive`
+   *  state for the manual Save button path. Returns whether the save went
+   *  through, so callers can roll back optimistic UI on failure. */
+  const handleSave = async (active = isActive): Promise<boolean> => {
     if (!canEdit) {
       toast.error(t("courseEdit.ocb.noPermission"));
       return false;
     }
 
-    if (credentialKind === "ocb" && isActive && hasCertificate) {
+    if (credentialKind === "ocb" && active && hasCertificate) {
       toast.error(t("courseEdit.ocb.blockedByCertificate"));
       return false;
     }
 
-    if (isActive && credentialKind === "oca" && (!onchainCertificateTemplateUrl || !onchainCertificateTemplateUrl.trim())) {
+    if (active && credentialKind === "oca" && (!onchainCertificateTemplateUrl || !onchainCertificateTemplateUrl.trim())) {
       toast.error(t("courseEdit.ocb.onchainCertRequired"));
       return false;
     }
@@ -360,7 +360,7 @@ export function CourseOcbCredentialSection({
     // revoke anything already minted (on-chain issuance is immutable) — it
     // only stops *future* learners from getting it. Confirm rather than
     // silently changing that policy out from under in-progress students.
-    if (!isActive && issuanceCount > 0) {
+    if (!active && issuanceCount > 0) {
       const proceed = window.confirm(
         t("courseEdit.ocb.confirmDeactivateWithIssuances", {
           count: issuanceCount,
@@ -385,7 +385,7 @@ export function CourseOcbCredentialSection({
         ? (onchainCertificateTemplateUrl?.trim() || imageUrl.trim())
         : imageUrl.trim();
 
-      if (isActive && !finalImageUrl) {
+      if (active && !finalImageUrl) {
         toast.error(t("courseEdit.ocb.imageRequired"));
         return false;
       }
@@ -394,7 +394,7 @@ export function CourseOcbCredentialSection({
         courseId,
         courseSlug,
         templateId,
-        isActive,
+        isActive: active,
         name: name.trim() || courseSlug,
         description: description.trim() || name.trim() || courseSlug,
         imageUrl: finalImageUrl,
@@ -411,6 +411,17 @@ export function CourseOcbCredentialSection({
       return false;
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Toggling OFF saves immediately — no need to hit the Save button for a
+  // simple deactivation. If the save fails or the user cancels the confirm,
+  // roll the toggle back to ON so UI and DB stay in sync.
+  const handleToggleChange = async (value: boolean) => {
+    setIsActive(value);
+    if (!value) {
+      const saved = await handleSave(false);
+      if (!saved) setIsActive(true);
     }
   };
 
@@ -440,7 +451,7 @@ export function CourseOcbCredentialSection({
           <SectionToggle
             checked={isActive}
             disabled={!canEdit || saving}
-            onChange={setIsActive}
+            onChange={handleToggleChange}
             label={t("courseEdit.ocb.mintToggleLabel")}
           />
           <StatusBadge active={isActive} />
