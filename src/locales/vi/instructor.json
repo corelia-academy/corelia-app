@@ -642,6 +642,7 @@
       "onchainCertUploaded": "Đã tải phôi OCA On-chain.",
       "onchainCertUploadFailed": "Tải phôi On-chain thất bại.",
       "onchainCertRequired": "Vui lòng tải lên phôi On-chain trước khi lưu cấu hình OCA.",
+      "imageRequired": "Vui lòng tải lên hình ảnh cho chứng chỉ/huy hiệu trước khi lưu.",
       "completionPctLabel": "% bài học hoàn thành tối thiểu",
       "requireAssignmentPassLabel": "Yêu cầu duyệt bài tập cuối khóa",
       "requireAssignmentLabel": "Yêu cầu duyệt bài tập cuối khóa",

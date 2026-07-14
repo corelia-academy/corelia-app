@@ -351,7 +351,7 @@ export function CourseOcbCredentialSection({
       return false;
     }
 
-    if (credentialKind === "oca" && (!onchainCertificateTemplateUrl || !onchainCertificateTemplateUrl.trim())) {
+    if (isActive && credentialKind === "oca" && (!onchainCertificateTemplateUrl || !onchainCertificateTemplateUrl.trim())) {
       toast.error(t("courseEdit.ocb.onchainCertRequired"));
       return false;
     }
@@ -382,11 +382,11 @@ export function CourseOcbCredentialSection({
       // off-chain `certificateTemplateUrl` (which is meant to get the learner's name
       // stamped on it and must never be pushed on-chain).
       const finalImageUrl = credentialKind === "oca"
-        ? onchainCertificateTemplateUrl!.trim()
+        ? (onchainCertificateTemplateUrl?.trim() || imageUrl.trim())
         : imageUrl.trim();
 
-      if (!finalImageUrl) {
-        toast.error("Vui lòng tải lên hình ảnh cho chứng chỉ/huy hiệu trước khi lưu.");
+      if (isActive && !finalImageUrl) {
+        toast.error(t("courseEdit.ocb.imageRequired"));
         return false;
       }
 

@@ -643,6 +643,7 @@
       "onchainCertUploaded": "On-chain OCA template uploaded.",
       "onchainCertUploadFailed": "Failed to upload the on-chain template.",
       "onchainCertRequired": "Please upload the on-chain template before saving the OCA configuration.",
+      "imageRequired": "Please upload a credential image before saving.",
       "completionPctLabel": "Minimum lesson completion",
       "requireAssignmentPassLabel": "Require final assignment approval",
       "requireAssignmentLabel": "Require final assignment approval",
