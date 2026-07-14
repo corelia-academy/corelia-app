@@ -9,7 +9,10 @@ import {
   type CourseIssuanceInfo,
 } from "@/lib/credentialIssuances";
 import { CREDENTIAL_SYNC_EVENT } from "@/components/base/CredentialRealtimeSync";
-import { invokeCheckCourseCredential, invokeListActiveOcaTemplates } from "@/lib/credentialsEdge";
+import {
+  invokeCheckCourseCredential,
+  invokeListActiveCourseCredentialTemplates,
+} from "@/lib/credentialsEdge";
 import {
   backfillMissingEnrollmentsForUser,
   checkAndIssueCertificate,
@@ -34,7 +37,7 @@ import type {
 } from "../types";
 import {
   buildCourseCertificates,
-  buildStandaloneOcaBadges,
+  buildStandaloneCourseCredentialBadges,
   ocidWithEduSuffix,
 } from "../utils/buildAchievementsData";
 
@@ -79,10 +82,10 @@ export function useAchievementsPage() {
       ]);
 
       const courseIds = Array.from(new Set(enrollments.map((item) => item.course_id)));
-      const [courseRows, ocaTemplateMap] = await Promise.all([
+      const [courseRows, courseCredentialTemplateMap] = await Promise.all([
         Promise.all(courseIds.map(async (courseId) => [courseId, await getCourse(courseId)] as const)),
-        invokeListActiveOcaTemplates(courseIds).catch((e) => {
-          console.error("OCA Template Fetch Error:", e);
+        invokeListActiveCourseCredentialTemplates(courseIds).catch((e) => {
+          console.error("Course credential template fetch error:", e);
           return new Map();
         }),
       ]);
@@ -100,7 +103,7 @@ export function useAchievementsPage() {
         courseIssuanceMap,
         profile?.ocid,
         profile?.full_name,
-        ocaTemplateMap,
+        courseCredentialTemplateMap,
       );
       const nextCertificates = [...enrollmentCertificates].sort((a, b) => {
         const aDate = a.issuedAt.split("/").reverse().join("-");
@@ -126,22 +129,22 @@ export function useAchievementsPage() {
           }),
       );
 
-      const courseIdsWithOcaIssuance = new Set(
+      const courseIdsWithCredentialIssuance = new Set(
         ocRows
-          .filter((row) => row.course_id && !row.template?.collection_symbol)
+          .filter((row) => row.course_id)
           .map((row) => row.course_id!),
       );
-      const standaloneOcaBadges = buildStandaloneOcaBadges(
+      const standaloneCourseCredentialBadges = buildStandaloneCourseCredentialBadges(
         courseIds,
         courseMap,
-        ocaTemplateMap,
-        courseIdsWithOcaIssuance,
+        courseCredentialTemplateMap,
+        courseIdsWithCredentialIssuance,
       );
 
       setCertificates(nextCertificates);
       setBadges([
         ...ocRows.map((row) => issuanceToBadgeItem(row, profile?.ocid)),
-        ...standaloneOcaBadges,
+        ...standaloneCourseCredentialBadges,
       ]);
       setCertificateSyncCandidates(
         pendingCandidates.filter((item): item is CertificateSyncCandidate => !!item),
@@ -185,11 +188,9 @@ export function useAchievementsPage() {
     );
   };
 
-  // Standalone OCA badges (course has an OCA template but no offchain
-  // certificate) carry their own `courseId` and are claimed directly here,
-  // without routing through a Certificate card. Other badge kinds (OCB,
-  // hackathon, milestone) have no `courseId` and stay non-claimable.
-  const handleClaimStandaloneOca = async (id: string) => {
+  // Standalone course credentials have no offchain certificate, so their
+  // claim is initiated directly from the OCA/OCB card.
+  const handleClaimStandaloneCourseCredential = async (id: string) => {
     const badge = badges.find((b) => b.id === id);
     if (!badge?.courseId) return;
 
@@ -206,7 +207,7 @@ export function useAchievementsPage() {
 
       const issuances = await fetchMyCredentialIssuances(user!.id);
       const row = issuances.find(
-        (r) => r.course_id === badge.courseId && !r.template?.collection_symbol,
+        (r) => r.course_id === badge.courseId && r.template_id === badge.templateId,
       );
 
       if (!row) {
@@ -235,7 +236,7 @@ export function useAchievementsPage() {
 
   const handleClaim = async (id: string, kind: "cert" | "badge") => {
     if (kind === "badge") {
-      await handleClaimStandaloneOca(id);
+      await handleClaimStandaloneCourseCredential(id);
       return;
     }
 
@@ -254,10 +255,10 @@ export function useAchievementsPage() {
       await invokeCheckCourseCredential(cert.courseId);
 
       // Reload issuances (with template info) so we can patch the certificate
-      // status and add the newly minted OCA card.
+      // status and add the newly minted OCA or OCB card.
       const issuances = await fetchMyCredentialIssuances(user!.id);
       const row = issuances.find(
-        (r) => r.course_id === cert.courseId && !r.template?.collection_symbol,
+        (r) => r.course_id === cert.courseId && r.template_id === cert.onchainTemplateId,
       );
 
       if (!row) {

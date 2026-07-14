@@ -502,7 +502,7 @@
       "missingCertificateTemplate": "Please upload a certificate template image when Certificate Issuance is enabled.",
       "missingCertificateTemplateCta": "Certificate",
       "uploadCertTemplateFailed": "Failed to upload certificate template",
-      "clearCertTemplateFailed": "Failed to clear legacy certificate / OCA",
+      "clearCertTemplateFailed": "Failed to cancel the certificate",
       "uploadPartnerDocsFailed": "Failed to upload partner documents",
       "addSectionFailed": "Failed to add section",
       "addLessonFailed": "Failed to add lesson",
@@ -544,8 +544,9 @@
       "assignmentApproved": "Submission approved. A certificate will be issued when the learner reaches 100% completion.",
       "assignmentRejected": "Submission rejected.",
       "certificateIssued": "Certificate issued.",
+      "assignmentConfigSaved": "Assignment settings saved.",
       "certTemplateUploaded": "Certificate template uploaded.",
-      "certTemplateCleared": "Legacy certificate / OCA cleared.",
+      "certTemplateCleared": "Certificate cancelled.",
       "partnerContractUploaded": "Partner contract document uploaded.",
       "partnerInvoiceUploaded": "Partner invoice document uploaded.",
       "discountCreated": "Discount code created."
@@ -564,7 +565,7 @@
       "saving": "Saving...",
       "saveInfo": "General info saved.",
       "savePricing": "Pricing & payment saved.",
-      "saveAssignment": "Assignment settings saved.",
+      "saveAssignment": "Save assignment settings",
       "saveCertificate": "Certificate settings saved.",
       "reload": "Reload",
       "loading": "Loading...",
@@ -594,7 +595,8 @@
       "afterUploadHintPrefix": "After uploading, adjust the two \"Name position\" fields (% from left / % from",
       "fileFormatHint": "Format: PNG or JPG.",
       "disabledHint": "Enable \"This course issues a completion certificate\" in the General info tab before configuring the certificate template.",
-      "disabledCta": "Go to General info"
+      "disabledCta": "Go to General info",
+      "setupLeaveWarning": "Certificate setup will be cancelled. You will need to start over. Leave this page?"
     },
     "certificateGuide": {
       "title": "How to create a template",
@@ -624,10 +626,8 @@
       },
       "configTitle": "Credential details",
       "requirementsTitle": "Eligibility requirements",
-      "blockedByCertificate": "OCB cannot be enabled alongside a PDF Certificate. Please cancel the PDF certificate first.",
       "confirmDeactivateWithIssuances": "{{count}} learner(s) already hold this credential. Turning it off stops issuing to new learners — it does NOT revoke what's already been issued. Continue turning it off?",
       "leaveWithoutSavingWarning": "You have unsaved OpenCampus Credentials changes. Leaving now will NOT issue the on-chain credential to learners. Leave anyway?",
-      "cancelCertificateButton": "Cancel Certificate",
       "noPermission": "You don't have permission to configure credentials for this course.",
       "nameLabel": "Credential name",
       "descriptionLabel": "Description",
@@ -964,8 +964,6 @@
       "publishedHint": "Published (visible on the course page)",
       "hasCertificateHint": "This course issues a completion certificate",
       "certificateConfiguredLockedHint": "A certificate template is configured. Certificate issuance cannot be disabled here.",
-      "certBlockedByOcb": "This course has an on-chain badge (OCB) active. Go to the OpenCampus Credentials tab and disable the badge first.",
-      "certBlockedByOcbCta": "Go to OpenCampus Credentials",
       "updatingHint": "This course is being updated (show a notice to learners)"
     },
     "students": {

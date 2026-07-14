@@ -240,7 +240,7 @@ export default function AchievementsPage() {
                       {cert.title} · {cert.issuedAt}
                     </div>
                   </div>
-                  {(cert.hasOcaTemplate || cert.ocClaimStatus !== "unclaimed") && (
+                  {(cert.hasOnchainCredentialTemplate || cert.ocClaimStatus !== "unclaimed") && (
                     <OcClaimBadge status={cert.ocClaimStatus} />
                   )}
                 </Button>

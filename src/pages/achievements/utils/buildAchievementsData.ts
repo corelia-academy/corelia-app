@@ -2,7 +2,7 @@ import { createElement } from "react";
 import { Award } from "lucide-react";
 
 import { courseHasCertificate, getCourse } from "@/lib/courses";
-import type { CourseOcaTemplateSummary } from "@/lib/credentialsEdge";
+import type { CourseCredentialTemplateSummary } from "@/lib/credentialsEdge";
 import { openCampusCredentialExplorerUrl, type CourseIssuanceInfo } from "@/lib/credentialIssuances";
 import { intlLocale } from "@/lib/intl";
 import type { Enrollment } from "@/types/courses";
@@ -44,13 +44,17 @@ export function buildCourseCertificates(
   courseIssuanceMap?: Map<string, CourseIssuanceInfo>,
   holderOcid?: string | null,
   holderName?: string | null,
-  ocaTemplateMap?: Map<string, CourseOcaTemplateSummary>,
+  courseCredentialTemplateMap?: Map<string, CourseCredentialTemplateSummary>,
 ): CertificateItem[] {
   return enrollments
     .filter((item) => !!item.certificate_issued_at)
     .map((item) => {
       const course = courseMap.get(item.course_id);
-      const issuance = courseIssuanceMap?.get(item.course_id);
+      const credentialTemplate = courseCredentialTemplateMap?.get(item.course_id);
+      const savedIssuance = courseIssuanceMap?.get(item.course_id);
+      const issuance = credentialTemplate && savedIssuance?.templateId !== credentialTemplate.id
+        ? undefined
+        : savedIssuance;
       // "claimed" requires status=minted AND oc_credential_id present.
       // minted without oc_credential_id = incomplete mint → treat as failed.
       const ocClaimStatus = issuance
@@ -64,7 +68,7 @@ export function buildCourseCertificates(
       const ocCredentialUrl = ocCredentialId
         ? openCampusCredentialExplorerUrl(ocCredentialId, {
             username: holderOcid,
-            nftCollection: "occredential",
+            nftCollection: issuance?.collectionSymbol === "ocbadge" ? "ocbadge" : "occredential",
           }) ?? undefined
         : undefined;
       return {
@@ -81,7 +85,8 @@ export function buildCourseCertificates(
         nameYPercent: course?.certificate_name_y_percent ?? 50,
         nameColor: course?.certificate_name_color ?? "#000000",
         holderName: holderName || null,
-        hasOcaTemplate: ocaTemplateMap?.has(item.course_id) ?? false,
+        hasOnchainCredentialTemplate: Boolean(credentialTemplate),
+        onchainTemplateId: credentialTemplate?.id ?? issuance?.templateId ?? null,
         ocClaimStatus,
         ocCredentialId,
         ocCredentialUrl,
@@ -91,35 +96,31 @@ export function buildCourseCertificates(
     .sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));
 }
 
-/** Placeholder "virtual" badge cards for courses that have an active OCA
- *  template and an issued certificate, but no credential_issuances row yet
- *  (OCA is never auto-minted — it requires the user to claim manually via
- *  the Certificate card). Lets the Badges/OCA tab show something instead of
- *  staying empty while the credential is claimable but unclaimed. */
-/** Standalone claimable OCA badge cards for enrolled courses that have an
- *  active OCA template but no offchain PDF certificate at all — those never
+/** Standalone claimable credential cards for enrolled courses that have an
+ *  active OCA or OCB template but no offchain PDF certificate at all — those never
  *  appear in `certificates` (which requires `certificate_issued_at`), so
  *  without this they'd never surface anywhere for the learner to claim.
  *  These use plain "unclaimed" status so the modal opens directly and the
  *  claim happens on the badge itself. */
-export function buildStandaloneOcaBadges(
+export function buildStandaloneCourseCredentialBadges(
   courseIds: string[],
   courseMap: Map<string, Awaited<ReturnType<typeof getCourse>>>,
-  ocaTemplateMap: Map<string, CourseOcaTemplateSummary>,
-  courseIdsWithOcaIssuance: Set<string>,
+  courseCredentialTemplateMap: Map<string, CourseCredentialTemplateSummary>,
+  courseIdsWithCredentialIssuance: Set<string>,
 ): BadgeItem[] {
   return courseIds
     .filter((courseId) => {
-      const tpl = ocaTemplateMap.get(courseId);
+      const tpl = courseCredentialTemplateMap.get(courseId);
       if (!tpl) return false;
-      if (courseIdsWithOcaIssuance.has(courseId)) return false;
+      if (courseIdsWithCredentialIssuance.has(courseId)) return false;
       return !courseHasCertificate(courseMap.get(courseId));
     })
     .map((courseId) => {
-      const tpl = ocaTemplateMap.get(courseId)!;
+      const tpl = courseCredentialTemplateMap.get(courseId)!;
       return {
-        id: `oca-standalone-${courseId}`,
+        id: `course-credential-standalone-${courseId}`,
         courseId,
+        templateId: tpl.id,
         title: tpl.name || courseMap.get(courseId)?.title || "",
         description: tpl.description,
         icon: createElement(Award, { className: "size-6 text-primary", "aria-hidden": true }),
@@ -132,7 +133,7 @@ export function buildStandaloneOcaBadges(
         imageUrl: tpl.thumbnailUrl || tpl.imageUrl || undefined,
         ocClaimStatus: "unclaimed",
         credentialScope: "course",
-        collectionSymbol: null,
+        collectionSymbol: tpl.collectionSymbol,
         achievementType: tpl.achievementType,
       } satisfies BadgeItem;
     });

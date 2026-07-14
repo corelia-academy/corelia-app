@@ -91,10 +91,7 @@ export function CourseOcbCredentialSection({
   courseId,
   courseSlug,
   canEdit,
-  hasCertificate = false,
-  onActiveChange,
   onDirtyChange,
-  onClearLegacyCertificate,
   onchainCertificateTemplateUrl,
   onchainCertificateTemplatePath,
   onOnchainCertificateUploaded,
@@ -103,12 +100,9 @@ export function CourseOcbCredentialSection({
   courseId: string;
   courseSlug: string;
   canEdit: boolean;
-  hasCertificate?: boolean;
-  onActiveChange?: (active: boolean) => void;
   /** Reports whether there are unsaved OCA/OCB edits, so the parent can warn
    *  before switching away from this tab. */
   onDirtyChange?: (dirty: boolean) => void;
-  onClearLegacyCertificate?: () => void;
   /** On-chain OCA (Open Campus Achievement) art — must stay name-free (OC privacy rules),
    *  minted to Open Campus/IPFS. Distinct from the off-chain `certificate_template_url`
    *  (Card 1), which gets the learner's name stamped client-side for social sharing. */
@@ -183,9 +177,6 @@ export function CourseOcbCredentialSection({
           requireAssignmentPass: false,
           minAssignmentScore: 70,
         };
-        // Report against the *saved* state, not whatever's being drafted in
-        // the form — a brand-new course has nothing active yet regardless.
-        onActiveChange?.(false);
         return;
       }
       const kind: CourseCredentialKind = row.collection_symbol ? "ocb" : "oca";
@@ -212,11 +203,6 @@ export function CourseOcbCredentialSection({
       setRequireAssignmentPass(loaded.requireAssignmentPass);
       setMinAssignmentScore(loaded.minAssignmentScore);
       savedSnapshotRef.current = loaded;
-      // Only OCB activity that's actually saved should block the course's
-      // has_certificate checkbox (OCA + PDF certs are allowed to coexist) —
-      // reporting the live/draft value here would let an unsaved toggle flip
-      // block the other tab before anything was really persisted.
-      onActiveChange?.(kind === "ocb" && loaded.isActive);
       // Load issuance count to determine if identifierPrefix can be edited
       const count = await countIssuancesForTemplate(row.id).catch(() => 0);
       setIssuanceCount(count);
@@ -225,7 +211,7 @@ export function CourseOcbCredentialSection({
     } finally {
       setLoading(false);
     }
-  }, [courseId, courseSlug, t, onActiveChange]);
+  }, [courseId, courseSlug, t]);
 
   useEffect(() => {
     void load();
@@ -358,11 +344,6 @@ export function CourseOcbCredentialSection({
       return false;
     }
 
-    if (credentialKind === "ocb" && active && hasCertificate) {
-      toast.error(t("courseEdit.ocb.blockedByCertificate"));
-      return false;
-    }
-
     if (active && credentialKind === "oca" && (!onchainCertificateTemplateUrl || !onchainCertificateTemplateUrl.trim())) {
       toast.error(t("courseEdit.ocb.onchainCertRequired"));
       return false;
@@ -381,15 +362,6 @@ export function CourseOcbCredentialSection({
       );
       if (!proceed) return false;
     }
-
-    // Optimistically report the state that is being persisted. This closes
-    // the window where the parent Info tab could enable PDF certificates while
-    // an OCB activation/deactivation request is still in flight. On failure,
-    // restore the last known persisted OCB state below.
-    const savedOcbIsActive =
-      savedSnapshotRef.current?.credentialKind === "ocb" &&
-      savedSnapshotRef.current.isActive;
-    onActiveChange?.(savedOcbIsActive || (credentialKind === "ocb" && active));
 
     setSaving(true);
     try {
@@ -428,7 +400,6 @@ export function CourseOcbCredentialSection({
       await load();
       return true;
     } catch (e) {
-      onActiveChange?.(savedOcbIsActive);
       toast.error(e instanceof Error ? e.message : t("courseEdit.ocb.saveFailed"));
       return false;
     } finally {
@@ -457,8 +428,6 @@ export function CourseOcbCredentialSection({
       </div>
     );
   }
-
-  const isOcbBlockedByHasCert = credentialKind === "ocb" && hasCertificate;
 
   return (
     <div className="space-y-6">
@@ -522,23 +491,6 @@ export function CourseOcbCredentialSection({
             </label>
           ))}
         </div>
-        {isOcbBlockedByHasCert && (
-          <div className="mt-2 flex items-center justify-between rounded-xl border border-border-subtle bg-surface-raised px-4 py-3">
-            <p className="text-sm text-foreground-muted">
-              {t("courseEdit.ocb.blockedByCertificate")}
-            </p>
-            {onClearLegacyCertificate && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onClearLegacyCertificate}
-              >
-                {t("courseEdit.ocb.cancelCertificateButton", { defaultValue: "Hủy Chứng nhận" })}
-              </Button>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Config fields — always visible */}
@@ -735,7 +687,7 @@ export function CourseOcbCredentialSection({
         type="button"
         variant={isDirty ? "outline" : "default"}
         className={isDirty ? "hover:!border-primary hover:!bg-primary hover:!text-primary-foreground" : ""}
-        disabled={!canEdit || saving || isOcbBlockedByHasCert}
+        disabled={!canEdit || saving}
         onClick={() => {
           // Never-configured + collapsed: nothing valid to save yet (no
           // image/template picked), so reveal the fields instead of firing

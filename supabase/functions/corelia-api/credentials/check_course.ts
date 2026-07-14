@@ -143,11 +143,31 @@ export async function runCourseCredentialCheck(
     return { ok: true, skipped: true, reason: "no_active_template" };
   }
 
-  // OCA (collection_symbol null) is never auto-minted — it requires a manual
-  // claim so the learner-name-rendered certificate is produced and reviewed.
+  // OCA is never auto-minted. OCB remains auto-minted only for badge-only
+  // courses; when the course also has an off-chain PDF certificate, OCB uses
+  // the same manual claim flow as OCA through the certificate card.
   const isOCA = !template.collection_symbol;
-  if (opts?.autoIssue && isOCA) {
-    return { ok: true, skipped: true, reason: "oca_requires_manual_claim" };
+  if (opts?.autoIssue) {
+    const { data: courseRow, error: courseErr } = await db
+      .from("courses")
+      .select("data")
+      .eq("id", courseId)
+      .maybeSingle();
+    if (courseErr) throw new Error(courseErr.message);
+    const courseData = (courseRow?.data ?? {}) as {
+      has_certificate?: boolean;
+      certificate_template_url?: string | null;
+    };
+    const hasPdfCertificate =
+      courseData.has_certificate === true ||
+      Boolean(courseData.certificate_template_url?.trim());
+    if (isOCA || hasPdfCertificate) {
+      return {
+        ok: true,
+        skipped: true,
+        reason: isOCA ? "oca_requires_manual_claim" : "certificate_requires_manual_claim",
+      };
+    }
   }
 
   const eligibility = await evaluateCourseCredentialEligibility(
