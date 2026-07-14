@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   ArrowLeft,
+  ArrowRight,
   Plus,
   List,
   Mail,
@@ -395,6 +396,10 @@ const InstructorCourseEdit = () => {
     external_source_urls_text: "",
     external_source_attribution_note: "",
   });
+  // A PDF template means the certificate has been configured. Keep the
+  // issuance switch immutable from this point so it cannot be saved as false
+  // while the template remains and then appear enabled again after reload.
+  const certificateTemplateConfigured = Boolean(form.certificate_template_url.trim());
 
   const [coInstructorIds, setCoInstructorIds] = useState<string[]>([]);
   const [coInstructorPermissions, setCoInstructorPermissions] = useState<
@@ -504,7 +509,7 @@ const InstructorCourseEdit = () => {
   const [partnerDialogLocale, setPartnerDialogLocale] = useState<SupportedCourseLocale>("vi");
   const partnerLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingPartnerLogo, setUploadingPartnerLogo] = useState(false);
-  const [ocbIsActive, setOcbIsActive] = useState(false);
+  const [ocbDirty, setOcbDirty] = useState(false);
   const [discounts, setDiscounts] = useState<CourseDiscount[]>([]);
   const [loadingDiscounts, setLoadingDiscounts] = useState(false);
   const [creatingDiscount, setCreatingDiscount] = useState(false);
@@ -523,6 +528,7 @@ const InstructorCourseEdit = () => {
     | "content"
     | "assignments"
     | "certificate"
+    | "credentials"
     | "announcements"
     | "students"
     | "danger";
@@ -534,21 +540,139 @@ const InstructorCourseEdit = () => {
       sectionIds.includes(hash as SectionId) ? hash : "info"
     ) as SectionId;
   });
+  const certificateIssuanceToggleRef = useRef<HTMLDivElement | null>(null);
+  const [scrollToCertificateIssuanceToggle, setScrollToCertificateIssuanceToggle] =
+    useState(false);
+  // The certificate checkbox starts an in-memory setup flow. It becomes a
+  // persisted course setting only after the PDF template upload succeeds.
+  const [certificateSetupPending, setCertificateSetupPending] = useState(false);
+  const skipCertificateSetupHashGuardRef = useRef(false);
+
+  // Confirms before leaving the OCC tab with unsaved OCA/OCB edits — the
+  // credential template's own Save button no longer auto-persists on every
+  // toggle flip, so this is the safety net against silently losing a draft.
+  const confirmLeaveOcbDirty = useCallback(
+    () =>
+      window.confirm(
+        t("courseEdit.ocb.leaveWithoutSavingWarning", {
+          defaultValue:
+            "Bạn có thay đổi cấu hình OpenCampus Credentials chưa lưu. Rời trang bây giờ sẽ KHÔNG cấp chứng chỉ on-chain cho học viên. Rời trang?",
+        }),
+      ),
+    [t],
+  );
+
+  const abandonCertificateSetup = useCallback(() => {
+    setCertificateSetupPending(false);
+    setForm((previous) => ({ ...previous, has_certificate: false }));
+  }, []);
+
+  const confirmLeaveCertificateSetup = useCallback(
+    () =>
+      window.confirm(
+        t("courseEdit.certificate.setupLeaveWarning", {
+          defaultValue:
+            "Quá trình khởi tạo chứng nhận sẽ bị hủy. Bạn sẽ phải khởi tạo lại từ đầu. Rời trang?",
+        }),
+      ),
+    [t],
+  );
 
   const setSection = (id: SectionId) => {
+    if (activeSection === "credentials" && id !== "credentials" && ocbDirty) {
+      if (!confirmLeaveOcbDirty()) return false;
+    }
+    if (activeSection === "certificate" && id !== "certificate" && certificateSetupPending) {
+      if (!confirmLeaveCertificateSetup()) return false;
+      abandonCertificateSetup();
+      // Updating location.hash below emits a second navigation event. Its
+      // guard must not ask the same confirmation again.
+      skipCertificateSetupHashGuardRef.current = true;
+    }
     setActiveSection(id);
     window.location.hash = id;
+    window.scrollTo({ top: 0 });
+    return true;
+  };
+
+  const goToCertificateIssuanceToggle = () => {
+    if (setSection("info")) setScrollToCertificateIssuanceToggle(true);
+  };
+
+  const showCertificateLockedToast = () => {
+    toast.error(t("courseEdit.certificate.disabledHint"), {
+      style: { "--width": "min(480px, calc(100vw - 32px))" } as React.CSSProperties,
+      classNames: {
+        actionButton: "!bg-primary !text-primary-foreground hover:!bg-primary/90",
+      },
+      action: {
+        label: t("courseEdit.certificate.disabledCta"),
+        onClick: goToCertificateIssuanceToggle,
+      },
+    });
   };
 
   useEffect(() => {
     const onHash = () => {
       const hash = window.location.hash.slice(1);
-      if (sectionIds.includes(hash as SectionId))
+      if (!sectionIds.includes(hash as SectionId)) return;
+      if (skipCertificateSetupHashGuardRef.current) {
+        skipCertificateSetupHashGuardRef.current = false;
         setActiveSection(hash as SectionId);
+        return;
+      }
+      if (activeSection === "credentials" && hash !== "credentials" && ocbDirty) {
+        if (!confirmLeaveOcbDirty()) {
+          // Undo the browser's hash change (e.g. back/forward button) and
+          // stay put — best-effort, since we can't cancel it outright.
+          window.location.hash = "credentials";
+          return;
+        }
+      }
+      if (activeSection === "certificate" && hash !== "certificate" && certificateSetupPending) {
+        if (!confirmLeaveCertificateSetup()) {
+          window.location.hash = "certificate";
+          return;
+        }
+        abandonCertificateSetup();
+      }
+      setActiveSection(hash as SectionId);
     };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
-  }, [sectionIds]);
+  }, [
+    sectionIds,
+    activeSection,
+    ocbDirty,
+    certificateSetupPending,
+    confirmLeaveOcbDirty,
+    confirmLeaveCertificateSetup,
+    abandonCertificateSetup,
+  ]);
+
+  useEffect(() => {
+    if (activeSection !== "info" || !scrollToCertificateIssuanceToggle) return;
+    const frame = window.requestAnimationFrame(() => {
+      certificateIssuanceToggleRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      setScrollToCertificateIssuanceToggle(false);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeSection, scrollToCertificateIssuanceToggle]);
+
+  // Covers actual browser-level "leave" (reload, close tab, external nav) —
+  // the in-app tab guards above can't catch these.
+  useEffect(() => {
+    if (!ocbDirty && !certificateSetupPending) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [ocbDirty, certificateSetupPending]);
 
   const isAdmin = profile?.role === "admin";
   const isSupportStaff = profile?.role === "support_staff";
@@ -593,6 +717,7 @@ const InstructorCourseEdit = () => {
     if (canAccessContent) allowed.push("content");
     if (canAccessAssignments) allowed.push("assignments");
     if (canAccessCertificate) allowed.push("certificate");
+    if (canAccessCertificate) allowed.push("credentials");
     if (canAccessAnnouncements) allowed.push("announcements");
     if (canAccessStudents) allowed.push("students");
     if (canAccessDanger) allowed.push("danger");
@@ -1229,7 +1354,29 @@ const InstructorCourseEdit = () => {
     }
 
     if (form.has_certificate && !form.certificate_template_url) {
-      setError(t("courseEdit.errors.missingCertificateTemplate", { defaultValue: "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ." }));
+      const message = t("courseEdit.errors.missingCertificateTemplate", { defaultValue: "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ." });
+      setError(message);
+      if (activeSection === "certificate") {
+        // Already on the tab that hosts the template upload — a "go to" action here
+        // would just re-select the current tab, so show a plain toast instead.
+        toast.error(message);
+      } else {
+        toast.error(message, {
+          style: { "--width": "min(480px, calc(100vw - 32px))" } as React.CSSProperties,
+          classNames: {
+            actionButton: "!bg-primary !text-primary-foreground hover:!bg-primary/90",
+          },
+          action: {
+            label: (
+              <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                {t("courseEdit.errors.missingCertificateTemplateCta")}
+                <ArrowRight className="size-3.5" aria-hidden />
+              </span>
+            ),
+            onClick: () => setSection("certificate"),
+          },
+        });
+      }
       return;
     }
 
@@ -1623,6 +1770,7 @@ const InstructorCourseEdit = () => {
         certificate_template_url: result.url,
         certificate_template_path: result.path,
       }));
+      setCertificateSetupPending(false);
       toast.success(t("courseEdit.toasts.certTemplateUploaded"));
     } catch (err) {
       setError(
@@ -1633,40 +1781,6 @@ const InstructorCourseEdit = () => {
     } finally {
       setUploadingCert(false);
       e.target.value = "";
-    }
-  };
-
-  const handleClearLegacyCertificate = async () => {
-    if (!id) return;
-    try {
-      await updateCourse(id, {
-        has_certificate: false,
-        certificate_template_url: null,
-        certificate_template_path: null,
-      });
-      setCourse((prev) =>
-        prev
-          ? {
-              ...prev,
-              has_certificate: false,
-              certificate_template_url: undefined,
-              certificate_template_path: undefined,
-            }
-          : prev
-      );
-      setForm((p) => ({
-        ...p,
-        has_certificate: false,
-        certificate_template_url: "",
-        certificate_template_path: "",
-      }));
-      toast.success(String(t("courseEdit.toasts.certTemplateCleared" as never) || "Đã hủy chứng chỉ/OCA cũ"));
-    } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : String(t("courseEdit.errors.clearCertTemplateFailed" as never) || "Lỗi khi hủy chứng chỉ/OCA cũ")
-      );
     }
   };
 
@@ -4509,16 +4623,42 @@ const InstructorCourseEdit = () => {
             <li>
               <button
                 type="button"
-                onClick={() => setSection("certificate")}
+                aria-disabled={!form.has_certificate}
+                onClick={() => {
+                  if (!form.has_certificate) {
+                    showCertificateLockedToast();
+                    return;
+                  }
+                  setSection("certificate");
+                }}
                 className={cn(
                   "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
                   activeSection === "certificate"
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+                    : form.has_certificate
+                      ? "text-foreground-muted hover:bg-surface-raised hover:text-foreground"
+                      : "cursor-not-allowed opacity-50",
                 )}
               >
                 <Award className="size-4 shrink-0" aria-hidden />
                 {t("courseEdit.sidebar.nav.certificate")}
+              </button>
+            </li>
+            ) : null}
+            {canAccessCertificate ? (
+            <li>
+              <button
+                type="button"
+                onClick={() => setSection("credentials")}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                  activeSection === "credentials"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
+                )}
+              >
+                <CheckSquare className="size-4 shrink-0" aria-hidden />
+                {t("courseEdit.sidebar.nav.credentials")}
               </button>
             </li>
             ) : null}
@@ -5987,30 +6127,36 @@ const InstructorCourseEdit = () => {
                     </Field>
                   </>
                 ) : null}
-                <Field>
-                  <label className={`flex items-center gap-2 ${ocbIsActive ? "opacity-50 cursor-not-allowed" : ""}`}>
+                <div ref={certificateIssuanceToggleRef} className="scroll-mt-6">
+                  <Field>
+                    <label className={`flex items-center gap-2 ${certificateTemplateConfigured ? "opacity-50 cursor-not-allowed" : ""}`}>
                     <input
                       type="checkbox"
                       checked={form.has_certificate ?? false}
-                      disabled={ocbIsActive}
-                      onChange={(e) =>
-                        setForm((p) => ({
-                          ...p,
-                          has_certificate: e.target.checked,
-                        }))
-                      }
+                      disabled={certificateTemplateConfigured}
+                      onChange={(e) => {
+                        const enabled = e.target.checked;
+                        setForm((p) => ({ ...p, has_certificate: enabled }));
+                        if (enabled) {
+                          setCertificateSetupPending(true);
+                          setSection("certificate");
+                        } else {
+                          setCertificateSetupPending(false);
+                        }
+                      }}
                       className="rounded border-border"
                     />
                     <span className="text-sm font-medium">
                       {t("courseEdit.publishing.hasCertificateHint")}
                     </span>
-                  </label>
-                  {ocbIsActive && (
-                    <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseEdit.publishing.certBlockedByOcb")}
-                    </p>
-                  )}
-                </Field>
+                    </label>
+                    {certificateTemplateConfigured && (
+                      <p className="mt-1 text-xs text-foreground-muted">
+                        {t("courseEdit.publishing.certificateConfiguredLockedHint")}
+                      </p>
+                    )}
+                  </Field>
+                </div>
                 <Field>
                   <label className="flex items-center gap-2">
                     <input
@@ -8446,7 +8592,7 @@ const InstructorCourseEdit = () => {
                   </div>
                   <Button
                     onClick={() =>
-                      void saveCourseInfo(t("courseEdit.labels.saveAssignment"))
+                      void saveCourseInfo(t("courseEdit.toasts.assignmentConfigSaved"))
                     }
                     disabled={saving || !canEdit}
                   >
@@ -8591,9 +8737,9 @@ const InstructorCourseEdit = () => {
             </section>
           )}
 
-          {activeSection === "certificate" && canAccessCertificate && (
+          {activeSection === "certificate" && canAccessCertificate && form.has_certificate && (
             <div className="space-y-4">
-              {/* Card 1: PDF Certificate template — only usable once "has_certificate" is enabled in General info */}
+              {/* PDF certificate template — enabled through General info. */}
               <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
                 <h2 className="text-lg font-medium text-foreground flex items-center gap-2 mb-1">
                   <Award className="size-5" aria-hidden /> {t("courseEdit.certificate.sectionTitle")}
@@ -8602,22 +8748,6 @@ const InstructorCourseEdit = () => {
                   {t("courseEdit.certificate.sectionDescription")}
                 </p>
 
-                {!form.has_certificate ? (
-                  <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
-                    <p className="text-sm text-foreground-muted">
-                      {t("courseEdit.certificate.disabledHint")}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="mt-3"
-                      onClick={() => setSection("info")}
-                    >
-                      {t("courseEdit.certificate.disabledCta")}
-                    </Button>
-                  </div>
-                ) : (
                 <>
                 <div className="mb-8 space-y-4">
                   <Field>
@@ -8742,27 +8872,30 @@ const InstructorCourseEdit = () => {
                   </div>
                 </div>
                 </>
-                )}
               </section>
-
-              {/* Card 2: Open Campus On-chain Credential */}
-              {id && canManageCourseOcb && (
-                <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-                  <CourseOcbCredentialSection
-                    courseId={id}
-                    courseSlug={(form.slug || course.slug || "").trim()}
-                    canEdit={canManageCourseOcb}
-                    hasCertificate={form.has_certificate ?? false}
-                    onActiveChange={setOcbIsActive}
-                    onClearLegacyCertificate={handleClearLegacyCertificate}
-                    onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
-                    onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}
-                    onOnchainCertificateUploaded={handleOnchainCertificateUploaded}
-                    onClearOnchainCertificate={handleClearOnchainCertificate}
-                  />
-                </section>
-              )}
             </div>
+          )}
+
+          {/* Card 2: Open Campus On-chain Credential — kept mounted across tab switches
+              (not gated by activeSection) so unsaved OCA/OCB edits inside
+              CourseOcbCredentialSection survive navigating to another tab and back. */}
+          {canAccessCertificate && id && canManageCourseOcb && (
+            <section
+              className={`rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 ${
+                activeSection === "credentials" ? "" : "hidden"
+              }`}
+            >
+              <CourseOcbCredentialSection
+                courseId={id}
+                courseSlug={(form.slug || course.slug || "").trim()}
+                canEdit={canManageCourseOcb}
+                onDirtyChange={setOcbDirty}
+                onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}
+                onchainCertificateTemplatePath={form.onchain_certificate_template_path || null}
+                onOnchainCertificateUploaded={handleOnchainCertificateUploaded}
+                onClearOnchainCertificate={handleClearOnchainCertificate}
+              />
+            </section>
           )}
 
           {activeSection === "announcements" && canAccessAnnouncements && (

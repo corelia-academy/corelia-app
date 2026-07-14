@@ -64,9 +64,11 @@ function mapIssuanceRow(raw: unknown): CredentialIssuanceWithTemplate {
 
 export type CourseIssuanceInfo = {
   issuanceId: string;
+  templateId: string | null;
   status: "pending" | "minted" | "failed";
   oc_credential_id: string | null;
   error_message: string | null;
+  collectionSymbol: "ocbadge" | null;
 };
 
 export async function fetchCourseIssuanceMapForUser(
@@ -74,7 +76,15 @@ export async function fetchCourseIssuanceMapForUser(
 ): Promise<Map<string, CourseIssuanceInfo>> {
   const { data, error } = await supabase
     .from("credential_issuances")
-    .select("id, status, oc_credential_id, error_message, course_id")
+    .select(`
+      id,
+      template_id,
+      status,
+      oc_credential_id,
+      error_message,
+      course_id,
+      credential_templates!inner (collection_symbol)
+    `)
     .eq("user_id", userId)
     .not("course_id", "is", null)
     .order("created_at", { ascending: false });
@@ -87,9 +97,12 @@ export async function fetchCourseIssuanceMapForUser(
     if (!courseId || map.has(courseId)) continue;
     map.set(courseId, {
       issuanceId: String(row.id),
+      templateId: row.template_id ? String(row.template_id) : null,
       status: (row.status as CourseIssuanceInfo["status"]) ?? "pending",
       oc_credential_id: row.oc_credential_id ?? null,
       error_message: row.error_message ?? null,
+      collectionSymbol:
+        row.credential_templates?.[0]?.collection_symbol === "ocbadge" ? "ocbadge" : null,
     });
   }
   return map;

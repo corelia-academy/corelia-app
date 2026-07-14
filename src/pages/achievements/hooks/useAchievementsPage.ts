@@ -9,7 +9,10 @@ import {
   type CourseIssuanceInfo,
 } from "@/lib/credentialIssuances";
 import { CREDENTIAL_SYNC_EVENT } from "@/components/base/CredentialRealtimeSync";
-import { invokeCheckCourseCredential, invokeListActiveOcaTemplates } from "@/lib/credentialsEdge";
+import {
+  invokeCheckCourseCredential,
+  invokeListActiveCourseCredentialTemplates,
+} from "@/lib/credentialsEdge";
 import {
   backfillMissingEnrollmentsForUser,
   checkAndIssueCertificate,
@@ -34,7 +37,7 @@ import type {
 } from "../types";
 import {
   buildCourseCertificates,
-  buildUnclaimedOcaBadges,
+  buildStandaloneCourseCredentialBadges,
   ocidWithEduSuffix,
 } from "../utils/buildAchievementsData";
 
@@ -79,10 +82,10 @@ export function useAchievementsPage() {
       ]);
 
       const courseIds = Array.from(new Set(enrollments.map((item) => item.course_id)));
-      const [courseRows, ocaTemplateMap] = await Promise.all([
+      const [courseRows, courseCredentialTemplateMap] = await Promise.all([
         Promise.all(courseIds.map(async (courseId) => [courseId, await getCourse(courseId)] as const)),
-        invokeListActiveOcaTemplates(courseIds).catch((e) => {
-          console.error("OCA Template Fetch Error:", e);
+        invokeListActiveCourseCredentialTemplates(courseIds).catch((e) => {
+          console.error("Course credential template fetch error:", e);
           return new Map();
         }),
       ]);
@@ -100,7 +103,7 @@ export function useAchievementsPage() {
         courseIssuanceMap,
         profile?.ocid,
         profile?.full_name,
-        ocaTemplateMap,
+        courseCredentialTemplateMap,
       );
       const nextCertificates = [...enrollmentCertificates].sort((a, b) => {
         const aDate = a.issuedAt.split("/").reverse().join("-");
@@ -126,21 +129,22 @@ export function useAchievementsPage() {
           }),
       );
 
-      const courseIdsWithOcaIssuance = new Set(
+      const courseIdsWithCredentialIssuance = new Set(
         ocRows
-          .filter((row) => row.course_id && !row.template?.collection_symbol)
+          .filter((row) => row.course_id)
           .map((row) => row.course_id!),
       );
-      const virtualOcaBadges = buildUnclaimedOcaBadges(
-        enrollmentCertificates,
-        ocaTemplateMap,
-        courseIdsWithOcaIssuance,
+      const standaloneCourseCredentialBadges = buildStandaloneCourseCredentialBadges(
+        courseIds,
+        courseMap,
+        courseCredentialTemplateMap,
+        courseIdsWithCredentialIssuance,
       );
 
       setCertificates(nextCertificates);
       setBadges([
         ...ocRows.map((row) => issuanceToBadgeItem(row, profile?.ocid)),
-        ...virtualOcaBadges,
+        ...standaloneCourseCredentialBadges,
       ]);
       setCertificateSyncCandidates(
         pendingCandidates.filter((item): item is CertificateSyncCandidate => !!item),
@@ -162,10 +166,6 @@ export function useAchievementsPage() {
   }, [loadAchievements]);
 
   const openModal = (item: ModalItem) => {
-    // Virtual "unclaimed" OCA cards have no real issuance behind them yet —
-    // block opening the modal from any entry point (BadgeCard, the "Recent
-    // achievements" list, etc.) and route the user to the Certificate card.
-    if (item.kind === "badge" && item.data.ocClaimStatus === "unclaimed_virtual") return;
     setModalItem(item);
     setModalOpen(true);
   };
@@ -179,11 +179,72 @@ export function useAchievementsPage() {
     );
   };
 
+  const patchBadge = (id: string, patch: Partial<BadgeItem>) => {
+    setBadges((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+    setModalItem((prev) =>
+      prev?.kind === "badge" && prev.data.id === id
+        ? { kind: "badge", data: { ...prev.data, ...patch } }
+        : prev,
+    );
+  };
+
+  // Standalone course credentials have no offchain certificate, so their
+  // claim is initiated directly from the OCA/OCB card.
+  const handleClaimStandaloneCourseCredential = async (id: string) => {
+    const badge = badges.find((b) => b.id === id);
+    if (!badge?.courseId) return;
+
+    if (!profile?.ocid?.trim()) {
+      setOcidConnectOpen(true);
+      return;
+    }
+
+    setClaiming(true);
+    patchBadge(id, { ocClaimStatus: "pending" });
+
+    try {
+      await invokeCheckCourseCredential(badge.courseId);
+
+      const issuances = await fetchMyCredentialIssuances(user!.id);
+      const row = issuances.find(
+        (r) => r.course_id === badge.courseId && r.template_id === badge.templateId,
+      );
+
+      if (!row) {
+        patchBadge(id, { ocClaimStatus: "unclaimed" });
+        toast.error(t("achievements.oc.modal.claimToast.error.notEligible"));
+        return;
+      }
+
+      const newBadge = issuanceToBadgeItem(row, profile?.ocid);
+      setBadges((prev) => [newBadge, ...prev.filter((b) => b.id !== id)]);
+
+      if (newBadge.ocClaimStatus === "claimed") {
+        openModal({ kind: "badge", data: newBadge });
+      } else if (newBadge.status === "pending") {
+        toast.info(t("achievements.oc.modal.claimToast.pending"));
+      } else {
+        toast.error(t("achievements.oc.modal.claimToast.error.failed"));
+      }
+    } catch (err) {
+      patchBadge(id, { ocClaimStatus: "failed" });
+      toast.error(err instanceof Error ? err.message : t("achievements.oc.modal.claimToast.error.failed"));
+    } finally {
+      setClaiming(false);
+    }
+  };
+
   const handleClaim = async (id: string, kind: "cert" | "badge") => {
-    if (kind === "badge") return;
+    if (kind === "badge") {
+      await handleClaimStandaloneCourseCredential(id);
+      return;
+    }
 
     const cert = certificates.find((c) => c.id === id);
     if (!cert?.courseId) return;
+    // Certi + OCB is auto-issued at completion. Its card can only View the
+    // resulting OCB and must never enter the manual OCA claim path.
+    if (cert.onchainCredentialAutoIssued) return;
 
     if (!profile?.ocid?.trim()) {
       setOcidConnectOpen(true);
@@ -196,11 +257,11 @@ export function useAchievementsPage() {
     try {
       await invokeCheckCourseCredential(cert.courseId);
 
-      // Reload issuances (with template info) so we can both patch the cert
-      // status and replace the virtual badge with the real minted one.
+      // Reload issuances (with template info) so we can patch the certificate
+      // status and add the newly minted OCA or OCB card.
       const issuances = await fetchMyCredentialIssuances(user!.id);
       const row = issuances.find(
-        (r) => r.course_id === cert.courseId && !r.template?.collection_symbol,
+        (r) => r.course_id === cert.courseId && r.template_id === cert.onchainTemplateId,
       );
 
       if (!row) {
@@ -213,7 +274,7 @@ export function useAchievementsPage() {
       const newBadge = issuanceToBadgeItem(row, profile?.ocid);
       setBadges((prev) => [
         newBadge,
-        ...prev.filter((b) => b.id !== `virtual-${cert.courseId}`),
+        ...prev,
       ]);
 
       if (newBadge.ocClaimStatus === "claimed") {

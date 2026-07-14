@@ -3,7 +3,7 @@ import { json } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { evaluateCourseCredentialEligibility } from "./check_course.ts";
 
-export type CourseOcaTemplateSummary = {
+export type CourseCredentialTemplateSummary = {
   id: string;
   courseId: string;
   name: string;
@@ -11,24 +11,23 @@ export type CourseOcaTemplateSummary = {
   imageUrl: string;
   thumbnailUrl: string | null;
   achievementType: string;
+  collectionSymbol: "ocbadge" | null;
 };
 
 /**
- * Active OCA (collection_symbol IS NULL) course templates for a batch of
- * course ids — runs server-side (service-role) because credential_templates
- * RLS only lets a student read a row once they already have an issuance for
- * it, which is exactly the "not claimed yet" case this endpoint serves.
+ * Active OCA and OCB course templates for a batch of course ids. This runs
+ * with service-role access because the learner cannot read an unclaimed
+ * template through RLS, yet needs it to start the claim flow from Profile.
  */
-export async function handleListActiveOcaTemplates(
+export async function handleListActiveCourseCredentialTemplates(
   req: Request,
   db: SupabaseClient,
 ): Promise<Response> {
   try {
     const user = await verifyBearerUser(req, db);
-
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
     const courseIds = Array.isArray(body.courseIds)
-      ? body.courseIds.map((v) => String(v)).filter((v) => v.trim().length > 0)
+      ? body.courseIds.map((value) => String(value)).filter((value) => value.trim().length > 0)
       : [];
     if (courseIds.length === 0) return json({ ok: true, templates: [] });
 
@@ -37,7 +36,6 @@ export async function handleListActiveOcaTemplates(
       .select("id, course_id, name, description, image_url, thumbnail_url, achievement_type, collection_symbol, trigger_rule")
       .eq("scope_type", "course")
       .eq("is_active", true)
-      .is("collection_symbol", null)
       .in("course_id", courseIds);
     if (error) throw new Error(error.message);
 
@@ -60,18 +58,18 @@ export async function handleListActiveOcaTemplates(
             imageUrl: String(row.image_url ?? ""),
             thumbnailUrl: row.thumbnail_url ? String(row.thumbnail_url) : null,
             achievementType: String(row.achievement_type ?? "CertificateOfCompletion"),
-          } satisfies CourseOcaTemplateSummary;
+            collectionSymbol: row.collection_symbol === "ocbadge" ? "ocbadge" : null,
+          } satisfies CourseCredentialTemplateSummary;
         }),
     );
     const templates = eligibleTemplates.filter(
-      (template): template is CourseOcaTemplateSummary => template !== null,
+      (template): template is CourseCredentialTemplateSummary => template !== null,
     );
-
     return json({ ok: true, templates });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Unknown error";
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập", ok: false }, 401);
-    console.error("[corelia-api] credentials.listActiveOcaTemplates", e);
-    return json({ message: "Không thể tải template OCA.", ok: false }, 500);
+    console.error("[corelia-api] credentials.listActiveCourseCredentialTemplates", error);
+    return json({ message: "Không thể tải template credential.", ok: false }, 500);
   }
 }

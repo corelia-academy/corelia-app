@@ -499,8 +499,9 @@
       "updateFailed": "Lỗi cập nhật",
       "processFailed": "Lỗi xử lý",
       "missingCertificateTemplate": "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ.",
+      "missingCertificateTemplateCta": "Chứng nhận",
       "uploadCertTemplateFailed": "Lỗi tải template chứng nhận",
-      "clearCertTemplateFailed": "Lỗi khi hủy chứng nhận / OCA cũ",
+      "clearCertTemplateFailed": "Lỗi khi hủy chứng nhận",
       "uploadPartnerDocsFailed": "Lỗi tải tài liệu đối tác",
       "addSectionFailed": "Lỗi thêm chương",
       "addLessonFailed": "Lỗi thêm bài học",
@@ -542,8 +543,9 @@
       "assignmentApproved": "Đã duyệt bài. Chứng nhận sẽ được cấp nếu học viên đã hoàn thành 100% bài học.",
       "assignmentRejected": "Đã từ chối bài.",
       "certificateIssued": "Đã cấp chứng nhận.",
+      "assignmentConfigSaved": "Đã lưu cấu hình bài tập.",
       "certTemplateUploaded": "Đã tải template chứng nhận lên.",
-      "certTemplateCleared": "Đã hủy chứng nhận / OCA cũ.",
+      "certTemplateCleared": "Đã hủy chứng nhận.",
       "partnerContractUploaded": "Đã tải lên hồ sơ hợp đồng.",
       "partnerInvoiceUploaded": "Đã tải lên hồ sơ hoá đơn.",
       "discountCreated": "Đã tạo mã giảm giá."
@@ -562,7 +564,7 @@
       "saving": "Đang lưu...",
       "saveInfo": "Đã lưu thông tin chung.",
       "savePricing": "Đã lưu thay đổi giá & thanh toán.",
-      "saveAssignment": "Đã lưu cấu hình bài tập.",
+      "saveAssignment": "Lưu cấu hình bài tập",
       "saveCertificate": "Đã lưu cấu hình chứng nhận.",
       "reload": "Tải lại",
       "loading": "Đang tải...",
@@ -591,8 +593,9 @@
       "nameColorHint": "Màu của tên học viên hiển thị trên certificate.",
       "afterUploadHintPrefix": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" ( % từ trái / % từ",
       "fileFormatHint": "Định dạng: PNG hoặc JPG.",
-      "disabledHint": "Bật \"Khoá học này có cấp chứng nhận hoàn thành\" ở tab General info trước khi cấu hình template chứng nhận.",
-      "disabledCta": "Đi tới General info"
+      "disabledHint": "Bật \"Khoá học này có cấp chứng nhận hoàn thành\" ở tab Thông tin chung trước khi cấu hình template chứng nhận.",
+      "disabledCta": "Đi tới Thông tin chung",
+      "setupLeaveWarning": "Quá trình khởi tạo chứng nhận sẽ bị hủy. Bạn sẽ phải khởi tạo lại từ đầu. Rời trang?"
     },
     "certificateGuide": {
       "title": "Hướng dẫn tạo template",
@@ -608,7 +611,7 @@
       "loadFailed": "Không tải được cấu hình credential.",
       "statusActive": "Đang hoạt động",
       "statusInactive": "Chưa cấu hình",
-      "toggleSectionLabel": "Hiển thị cấu hình",
+      "mintToggleLabel": "Cho phép mint on-chain",
       "kind": {
         "label": "Loại credential",
         "oca": {
@@ -620,16 +623,15 @@
           "desc": "Credential dạng huy hiệu kỹ năng. Phù hợp cho các thành tích ngắn hạn và thành thạo chủ đề."
         }
       },
-      "enableLabel": "Bật tự động cấp badge (OCB)",
-      "enableHint": "Khi bật, badge được tự động mint cho học viên đạt đủ điều kiện.",
       "configTitle": "Thông tin credential",
       "requirementsTitle": "Điều kiện nhận credential",
-      "blockedByCertificate": "OCB không thể bật khi khoá học đã cấp chứng nhận PDF. Hãy chọn loại OCA, hoặc tắt chứng nhận PDF trước.",
+      "confirmDeactivateWithIssuances": "Đã có {{count}} học viên nhận credential này. Tắt sẽ ngừng cấp cho học viên mới, KHÔNG thu hồi credential đã cấp cho học viên cũ. Tiếp tục tắt?",
+      "leaveWithoutSavingWarning": "Bạn có thay đổi cấu hình OpenCampus Credentials chưa lưu. Rời trang bây giờ sẽ KHÔNG cấp chứng chỉ on-chain cho học viên. Rời trang?",
       "noPermission": "Bạn không có quyền cấu hình credential cho khoá học này.",
       "nameLabel": "Tên credential",
       "descriptionLabel": "Mô tả",
-      "imageLabel": "Ảnh credential",
-      "imageHint": "Khuyến nghị: 1600×1200 px (ngang) hoặc 1200×1600 px (dọc). Dùng làm ảnh credential on-chain trên OpenCampus.",
+      "badgeImageLabel": "Ảnh huy hiệu (Badge)",
+      "imageHint": "Khuyến nghị: 1600×1200 px (ngang) hoặc 1200×1600 px (dọc). Dùng làm ảnh huy hiệu on-chain trên OpenCampus.",
       "uploadBadge": "Tải ảnh lên",
       "uploading": "Đang tải…",
       "uploadOk": "Đã tải ảnh.",
@@ -640,6 +642,7 @@
       "onchainCertUploaded": "Đã tải phôi OCA On-chain.",
       "onchainCertUploadFailed": "Tải phôi On-chain thất bại.",
       "onchainCertRequired": "Vui lòng tải lên phôi On-chain trước khi lưu cấu hình OCA.",
+      "imageRequired": "Vui lòng tải lên hình ảnh cho chứng chỉ/huy hiệu trước khi lưu.",
       "completionPctLabel": "% bài học hoàn thành tối thiểu",
       "requireAssignmentPassLabel": "Yêu cầu duyệt bài tập cuối khóa",
       "requireAssignmentLabel": "Yêu cầu duyệt bài tập cuối khóa",
@@ -719,7 +722,8 @@
         "pricing": "Giá & thanh toán",
         "content": "Nội dung & bài học",
         "assignments": "Bài tập cuối khoá",
-        "certificate": "OpenCampus Credentials",
+        "certificate": "Chứng nhận",
+        "credentials": "OpenCampus Credentials",
         "students": "Quản lý học viên",
         "danger": "Xoá khoá học",
         "announcements": "Thông báo"
@@ -958,7 +962,7 @@
     "publishing": {
       "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
       "hasCertificateHint": "Khoá học có cấp chứng nhận hoàn thành",
-      "certBlockedByOcb": "Khoá học này đang có huy hiệu on-chain (OCB) hoạt động. Vào tab Certificate và tắt huy hiệu trước.",
+      "certificateConfiguredLockedHint": "Đã cấu hình template chứng nhận. Không thể tắt cấp chứng nhận tại đây.",
       "updatingHint": "Khoá học đang được cập nhật (hiện banner cho học viên)"
     },
     "students": {
