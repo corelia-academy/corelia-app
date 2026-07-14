@@ -14,6 +14,88 @@ type CourseTriggerRule = {
   min_assignment_score?: number;
 };
 
+export type CourseCredentialEligibility =
+  | { eligible: true }
+  | {
+    eligible: false;
+    reason: string;
+    completionPct?: number;
+    needPct?: number;
+  };
+
+/**
+ * Evaluate the same enrollment, payment, completion, and assignment rules
+ * used for issuing a course credential without creating an issuance. The
+ * achievements endpoint uses this to avoid advertising an OCA before it can
+ * actually be claimed.
+ */
+export async function evaluateCourseCredentialEligibility(
+  db: SupabaseClient,
+  courseId: string,
+  targetUserId: string,
+  triggerRule: unknown,
+): Promise<CourseCredentialEligibility> {
+  const enrollmentId = `${targetUserId}_${courseId}`;
+  const [{ data: courseRow, error: courseErr }, { data: enrollment, error: enrErr }] = await Promise.all([
+    db.from("courses").select("data").eq("id", courseId).maybeSingle(),
+    db.from("enrollments").select("id").eq("id", enrollmentId).maybeSingle(),
+  ]);
+  if (courseErr) throw new Error(courseErr.message);
+  if (enrErr) throw new Error(enrErr.message);
+  if (!courseRow || !enrollment) {
+    return { eligible: false, reason: "no_enrollment" };
+  }
+
+  const course = (courseRow.data ?? {}) as {
+    access_model?: string | null;
+  };
+
+  if (course.access_model === "free_with_paid_certificate") {
+    const accessId = `${targetUserId}_${courseId}`;
+    const { data: payAccess, error: payErr } = await db.from("course_payment_access").select(
+      "certificate_fee_paid",
+    ).eq("id", accessId).maybeSingle();
+    if (payErr) throw new Error(payErr.message);
+    if (payAccess?.certificate_fee_paid !== true) {
+      return { eligible: false, reason: "certificate_fee_unpaid" };
+    }
+  }
+
+  const { data: readinessRaw, error: readyErr } = await db.rpc("corelia_certificate_readiness", {
+    p_course_id: courseId,
+    p_user_id: targetUserId,
+  });
+  if (readyErr) throw new Error(readyErr.message);
+  const readiness = readinessRaw as {
+    lesson_total?: number;
+    completed_distinct?: number;
+    final_assignment_required?: boolean;
+    final_submission_status?: string | null;
+  } | null;
+
+  const lessonTotal = Number(readiness?.lesson_total ?? 0);
+  const completedDistinct = Number(readiness?.completed_distinct ?? 0);
+  const completionPct =
+    lessonTotal > 0 ? Math.min(100, Math.round((completedDistinct / lessonTotal) * 100)) : 0;
+
+  const rule = (triggerRule ?? {}) as CourseTriggerRule;
+  const needPct = Number(rule.completion_pct ?? 100);
+  if (completionPct < needPct) {
+    return { eligible: false, reason: "completion_pct_not_met", completionPct, needPct };
+  }
+
+  if (rule.require_assignment_pass === true) {
+    const finalAssignmentRequired = readiness?.final_assignment_required === true;
+    const status = readiness?.final_submission_status ?? null;
+    if (finalAssignmentRequired && status !== "approved") {
+      return { eligible: false, reason: "assignment_not_approved" };
+    }
+    void rule.min_assignment_score;
+  }
+
+  return { eligible: true };
+}
+
 export async function handleCheckCourseCompletion(req: Request, db: SupabaseClient): Promise<Response> {
   try {
     const user = await verifyBearerUser(req, db);
@@ -68,64 +150,14 @@ export async function runCourseCredentialCheck(
     return { ok: true, skipped: true, reason: "oca_requires_manual_claim" };
   }
 
-  const enrollmentId = `${targetUserId}_${courseId}`;
-  const [{ data: courseRow, error: courseErr }, { data: enrollment, error: enrErr }] = await Promise.all([
-    db.from("courses").select("data").eq("id", courseId).maybeSingle(),
-    db.from("enrollments").select("*").eq("id", enrollmentId).maybeSingle(),
-  ]);
-  if (courseErr) throw new Error(courseErr.message);
-  if (enrErr) throw new Error(enrErr.message);
-  if (!courseRow || !enrollment) {
-    return { ok: true, skipped: true, reason: "no_enrollment" };
-  }
-
-  const course = (courseRow.data ?? {}) as {
-    access_model?: string | null;
-    final_assignment_title?: string | null;
-  };
-
-  if (course.access_model === "free_with_paid_certificate") {
-    const accessId = `${targetUserId}_${courseId}`;
-    const { data: payAccess, error: payErr } = await db.from("course_payment_access").select(
-      "certificate_fee_paid",
-    ).eq("id", accessId).maybeSingle();
-    if (payErr) throw new Error(payErr.message);
-    if (payAccess?.certificate_fee_paid !== true) {
-      return { ok: true, skipped: true, reason: "certificate_fee_unpaid" };
-    }
-  }
-
-  const { data: readinessRaw, error: readyErr } = await db.rpc("corelia_certificate_readiness", {
-    p_course_id: courseId,
-    p_user_id: targetUserId,
-  });
-  if (readyErr) throw new Error(readyErr.message);
-  const readiness = readinessRaw as {
-    lesson_total?: number;
-    completed_distinct?: number;
-    all_lessons_complete?: boolean;
-    final_assignment_required?: boolean;
-    final_submission_status?: string | null;
-  } | null;
-
-  const lessonTotal = Number(readiness?.lesson_total ?? 0);
-  const completedDistinct = Number(readiness?.completed_distinct ?? 0);
-  const completionPct =
-    lessonTotal > 0 ? Math.min(100, Math.round((completedDistinct / lessonTotal) * 100)) : 0;
-
-  const rule = (template.trigger_rule ?? {}) as CourseTriggerRule;
-  const needPct = Number(rule.completion_pct ?? 100);
-  if (completionPct < needPct) {
-    return { ok: true, skipped: true, reason: "completion_pct_not_met", completionPct, needPct };
-  }
-
-  if (rule.require_assignment_pass === true) {
-    const faRequired = readiness?.final_assignment_required === true;
-    const status = readiness?.final_submission_status ?? null;
-    if (faRequired && status !== "approved") {
-      return { ok: true, skipped: true, reason: "assignment_not_approved" };
-    }
-    void rule.min_assignment_score;
+  const eligibility = await evaluateCourseCredentialEligibility(
+    db,
+    courseId,
+    targetUserId,
+    template.trigger_rule,
+  );
+  if (!eligibility.eligible) {
+    return { ok: true, skipped: true, ...eligibility };
   }
 
   const identifierPrefix = String(template.identifier_prefix ?? "").trim();

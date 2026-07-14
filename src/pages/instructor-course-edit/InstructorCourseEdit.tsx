@@ -506,6 +506,10 @@ const InstructorCourseEdit = () => {
   const partnerLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingPartnerLogo, setUploadingPartnerLogo] = useState(false);
   const [ocbIsActive, setOcbIsActive] = useState(false);
+  // The credential section stays mounted even when its tab is hidden, so the
+  // course certificate control must stay disabled until that section has read
+  // the persisted OCB state at least once.
+  const [ocbStatusLoading, setOcbStatusLoading] = useState(true);
   const [ocbDirty, setOcbDirty] = useState(false);
   const [discounts, setDiscounts] = useState<CourseDiscount[]>([]);
   const [loadingDiscounts, setLoadingDiscounts] = useState(false);
@@ -536,6 +540,9 @@ const InstructorCourseEdit = () => {
       sectionIds.includes(hash as SectionId) ? hash : "info"
     ) as SectionId;
   });
+  const certificateIssuanceToggleRef = useRef<HTMLDivElement | null>(null);
+  const [scrollToCertificateIssuanceToggle, setScrollToCertificateIssuanceToggle] =
+    useState(false);
 
   // Confirms before leaving the OCC tab with unsaved OCA/OCB edits — the
   // credential template's own Save button no longer auto-persists on every
@@ -551,13 +558,23 @@ const InstructorCourseEdit = () => {
     [t],
   );
 
+  const handleOcbActiveChange = useCallback((active: boolean) => {
+    setOcbIsActive(active);
+    setOcbStatusLoading(false);
+  }, []);
+
   const setSection = (id: SectionId) => {
     if (activeSection === "certificate" && id !== "certificate" && ocbDirty) {
-      if (!confirmLeaveOcbDirty()) return;
+      if (!confirmLeaveOcbDirty()) return false;
     }
     setActiveSection(id);
     window.location.hash = id;
     window.scrollTo({ top: 0 });
+    return true;
+  };
+
+  const goToCertificateIssuanceToggle = () => {
+    if (setSection("info")) setScrollToCertificateIssuanceToggle(true);
   };
 
   useEffect(() => {
@@ -577,6 +594,18 @@ const InstructorCourseEdit = () => {
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, [sectionIds, activeSection, ocbDirty, confirmLeaveOcbDirty]);
+
+  useEffect(() => {
+    if (activeSection !== "info" || !scrollToCertificateIssuanceToggle) return;
+    const frame = window.requestAnimationFrame(() => {
+      certificateIssuanceToggleRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      setScrollToCertificateIssuanceToggle(false);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeSection, scrollToCertificateIssuanceToggle]);
 
   // Covers actual browser-level "leave" (reload, close tab, external nav) —
   // the in-app tab guards above can't catch these.
@@ -1266,6 +1295,13 @@ const InstructorCourseEdit = () => {
         setError(t("courseEdit.errors.externalSourcesRequired"));
         return;
       }
+    }
+
+    if (form.has_certificate && (ocbIsActive || (canManageCourseOcb && ocbStatusLoading))) {
+      const message = t("courseEdit.publishing.certBlockedByOcb");
+      setError(message);
+      toast.error(message);
+      return;
     }
 
     if (form.has_certificate && !form.certificate_template_url) {
@@ -6049,12 +6085,13 @@ const InstructorCourseEdit = () => {
                     </Field>
                   </>
                 ) : null}
-                <Field>
-                  <label className={`flex items-center gap-2 ${ocbIsActive ? "opacity-50 cursor-not-allowed" : ""}`}>
+                <div ref={certificateIssuanceToggleRef} className="scroll-mt-6">
+                  <Field>
+                    <label className={`flex items-center gap-2 ${ocbIsActive || (canManageCourseOcb && ocbStatusLoading) ? "opacity-50 cursor-not-allowed" : ""}`}>
                     <input
                       type="checkbox"
                       checked={form.has_certificate ?? false}
-                      disabled={ocbIsActive}
+                      disabled={ocbIsActive || (canManageCourseOcb && ocbStatusLoading)}
                       onChange={(e) =>
                         setForm((p) => ({
                           ...p,
@@ -6066,8 +6103,8 @@ const InstructorCourseEdit = () => {
                     <span className="text-sm font-medium">
                       {t("courseEdit.publishing.hasCertificateHint")}
                     </span>
-                  </label>
-                  {ocbIsActive && (
+                    </label>
+                    {ocbIsActive && (
                     <div className="mt-2 flex items-center justify-between gap-3 rounded-md border border-warning/20 bg-warning/10 px-3 py-2">
                       <p className="text-xs text-warning-foreground">
                         {t("courseEdit.publishing.certBlockedByOcb")}
@@ -6081,8 +6118,9 @@ const InstructorCourseEdit = () => {
                         {t("courseEdit.publishing.certBlockedByOcbCta")}
                       </Button>
                     </div>
-                  )}
-                </Field>
+                    )}
+                  </Field>
+                </div>
                 <Field>
                   <label className="flex items-center gap-2">
                     <input
@@ -8684,7 +8722,7 @@ const InstructorCourseEdit = () => {
                       variant="outline"
                       size="sm"
                       className="mt-3"
-                      onClick={() => setSection("info")}
+                      onClick={goToCertificateIssuanceToggle}
                     >
                       {t("courseEdit.certificate.disabledCta")}
                     </Button>
@@ -8833,7 +8871,7 @@ const InstructorCourseEdit = () => {
                 courseSlug={(form.slug || course.slug || "").trim()}
                 canEdit={canManageCourseOcb}
                 hasCertificate={form.has_certificate ?? false}
-                onActiveChange={setOcbIsActive}
+                onActiveChange={handleOcbActiveChange}
                 onDirtyChange={setOcbDirty}
                 onClearLegacyCertificate={handleClearLegacyCertificate}
                 onchainCertificateTemplateUrl={form.onchain_certificate_template_url || null}

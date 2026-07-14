@@ -236,6 +236,14 @@ export function CourseOcbCredentialSection({
     if (isActive) setPeekExpanded(false);
   }, [isActive]);
 
+  // The OCA image lives in the parent course form because it is uploaded to
+  // course storage first, but it is only copied into the credential template
+  // when this form is saved. Compare its current URL to the saved template
+  // image so an upload/clear cannot be mistaken for a clean OCC form.
+  const currentImageUrl = credentialKind === "oca"
+    ? (onchainCertificateTemplateUrl?.trim() || imageUrl.trim())
+    : imageUrl.trim();
+
   // True whenever any field differs from what's actually saved in the DB —
   // drives both the Save button's visual state and the parent's
   // "leave without saving" warning when switching away from this tab.
@@ -245,7 +253,7 @@ export function CourseOcbCredentialSection({
       credentialKind !== snap.credentialKind ||
       name !== snap.name ||
       description !== snap.description ||
-      imageUrl !== snap.imageUrl ||
+      currentImageUrl !== snap.imageUrl ||
       identifierPrefix !== snap.identifierPrefix ||
       completionPct !== snap.completionPct ||
       requireAssignmentPass !== snap.requireAssignmentPass ||
@@ -370,6 +378,15 @@ export function CourseOcbCredentialSection({
       if (!proceed) return false;
     }
 
+    // Optimistically report the state that is being persisted. This closes
+    // the window where the parent Info tab could enable PDF certificates while
+    // an OCB activation/deactivation request is still in flight. On failure,
+    // restore the last known persisted OCB state below.
+    const savedOcbIsActive =
+      savedSnapshotRef.current?.credentialKind === "ocb" &&
+      savedSnapshotRef.current.isActive;
+    onActiveChange?.(savedOcbIsActive || (credentialKind === "ocb" && active));
+
     setSaving(true);
     try {
       const triggerRule: CourseCredentialTriggerRule = {
@@ -407,6 +424,7 @@ export function CourseOcbCredentialSection({
       await load();
       return true;
     } catch (e) {
+      onActiveChange?.(savedOcbIsActive);
       toast.error(e instanceof Error ? e.message : t("courseEdit.ocb.saveFailed"));
       return false;
     } finally {
