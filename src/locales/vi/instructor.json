@@ -499,7 +499,7 @@
       "updateFailed": "Lỗi cập nhật",
       "processFailed": "Lỗi xử lý",
       "missingCertificateTemplate": "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ.",
-      "missingCertificateTemplateCta": "OpenCampus Credentials",
+      "missingCertificateTemplateCta": "Chứng nhận",
       "uploadCertTemplateFailed": "Lỗi tải template chứng nhận",
       "clearCertTemplateFailed": "Lỗi khi hủy chứng nhận / OCA cũ",
       "uploadPartnerDocsFailed": "Lỗi tải tài liệu đối tác",
@@ -722,7 +722,8 @@
         "pricing": "Giá & thanh toán",
         "content": "Nội dung & bài học",
         "assignments": "Bài tập cuối khoá",
-        "certificate": "OpenCampus Credentials",
+        "certificate": "Chứng nhận",
+        "credentials": "OpenCampus Credentials",
         "students": "Quản lý học viên",
         "danger": "Xoá khoá học",
         "announcements": "Thông báo"
@@ -961,7 +962,8 @@
     "publishing": {
       "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
       "hasCertificateHint": "Khoá học có cấp chứng nhận hoàn thành",
-      "certBlockedByOcb": "Khoá học này đang có huy hiệu on-chain (OCB) hoạt động. Vào tab Certificate và tắt huy hiệu trước.",
+      "certificateConfiguredLockedHint": "Đã cấu hình template chứng nhận. Không thể tắt cấp chứng nhận tại đây.",
+      "certBlockedByOcb": "Khoá học này đang có huy hiệu on-chain (OCB) hoạt động. Vào tab OpenCampus Credentials và tắt huy hiệu trước.",
       "certBlockedByOcbCta": "Đi tới OpenCampus Credentials",
       "updatingHint": "Khoá học đang được cập nhật (hiện banner cho học viên)"
     },

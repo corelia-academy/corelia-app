@@ -500,7 +500,7 @@
       "updateFailed": "Update failed",
       "processFailed": "Action failed",
       "missingCertificateTemplate": "Please upload a certificate template image when Certificate Issuance is enabled.",
-      "missingCertificateTemplateCta": "OpenCampus Credentials",
+      "missingCertificateTemplateCta": "Certificate",
       "uploadCertTemplateFailed": "Failed to upload certificate template",
       "clearCertTemplateFailed": "Failed to clear legacy certificate / OCA",
       "uploadPartnerDocsFailed": "Failed to upload partner documents",
@@ -723,7 +723,8 @@
         "pricing": "Pricing & payment",
         "content": "Content & lessons",
         "assignments": "Final assignment",
-        "certificate": "OpenCampus Credentials",
+        "certificate": "Certificate",
+        "credentials": "OpenCampus Credentials",
         "students": "Manage students",
         "danger": "Delete course",
         "announcements": "Announcements"
@@ -962,7 +963,8 @@
     "publishing": {
       "publishedHint": "Published (visible on the course page)",
       "hasCertificateHint": "This course issues a completion certificate",
-      "certBlockedByOcb": "This course has an on-chain badge (OCB) active. Go to the Certificate tab and disable the badge first.",
+      "certificateConfiguredLockedHint": "A certificate template is configured. Certificate issuance cannot be disabled here.",
+      "certBlockedByOcb": "This course has an on-chain badge (OCB) active. Go to the OpenCampus Credentials tab and disable the badge first.",
       "certBlockedByOcbCta": "Go to OpenCampus Credentials",
       "updatingHint": "This course is being updated (show a notice to learners)"
     },
