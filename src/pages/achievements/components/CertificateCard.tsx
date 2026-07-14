@@ -213,6 +213,12 @@ export function CertificateCard({
   // was later deactivated, hence the persisted status is also considered here.
   const hasOnchainCredentialAccess =
     cert.hasOnchainCredentialTemplate || cert.ocClaimStatus !== "unclaimed";
+  const canClaimOnchainCredential =
+    hasOnchainCredentialAccess &&
+    !cert.onchainCredentialAutoIssued &&
+    cert.ocClaimStatus !== "claimed";
+  const canViewOnchainCredential =
+    cert.ocClaimStatus === "claimed" && Boolean(cert.ocCredentialUrl);
 
   async function handleDownload(format: "pdf" | "png") {
     setDownloading(true);
@@ -343,16 +349,14 @@ export function CertificateCard({
           )}
 
           <div className="mt-3 flex min-w-0 flex-wrap items-stretch gap-2">
-            {hasOnchainCredentialAccess && (
+            {canViewOnchainCredential ? (
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenModal({ kind: "cert", data: cert })}
-                className={cn(
-                  cert.ocClaimStatus === "claimed"
-                    ? "border-success/20 bg-success/10 text-success hover:bg-success/15"
-                    : "border-border bg-surface-base hover:bg-surface-raised",
-                )}
+                className="border-success/20 bg-success/10 text-success hover:bg-success/15"
+                onClick={() =>
+                  window.open(cert.ocCredentialUrl, "_blank", "noopener,noreferrer")
+                }
               >
                 <img
                   src="/open-campus-edu-logo.png"
@@ -360,9 +364,23 @@ export function CertificateCard({
                   className="size-3.5 shrink-0 rounded-full sm:size-4"
                 />
                 <span className="truncate">
-                  {cert.ocClaimStatus === "claimed"
-                    ? t("achievements.certificates.ocAction.view")
-                    : t("achievements.certificates.ocAction.claim")}
+                  {t("achievements.certificates.ocAction.view")}
+                </span>
+              </Button>
+            ) : canClaimOnchainCredential && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenModal({ kind: "cert", data: cert })}
+                className="border-border bg-surface-base hover:bg-surface-raised"
+              >
+                <img
+                  src="/open-campus-edu-logo.png"
+                  alt="OC"
+                  className="size-3.5 shrink-0 rounded-full sm:size-4"
+                />
+                <span className="truncate">
+                  {t("achievements.certificates.ocAction.claim")}
                 </span>
               </Button>
             )}

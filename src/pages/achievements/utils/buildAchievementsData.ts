@@ -87,6 +87,9 @@ export function buildCourseCertificates(
         holderName: holderName || null,
         hasOnchainCredentialTemplate: Boolean(credentialTemplate),
         onchainTemplateId: credentialTemplate?.id ?? issuance?.templateId ?? null,
+        onchainCredentialAutoIssued:
+          credentialTemplate?.collectionSymbol === "ocbadge" ||
+          issuance?.collectionSymbol === "ocbadge",
         ocClaimStatus,
         ocCredentialId,
         ocCredentialUrl,

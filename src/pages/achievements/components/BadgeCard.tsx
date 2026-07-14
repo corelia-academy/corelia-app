@@ -52,6 +52,14 @@ export function BadgeCard({
       )}
       onClick={() => {
         if (!badge.locked && badge.status !== "pending") {
+          if (
+            badge.collectionSymbol === "ocbadge" &&
+            badge.ocClaimStatus === "claimed" &&
+            badge.ocCredentialUrl
+          ) {
+            window.open(badge.ocCredentialUrl, "_blank", "noopener,noreferrer");
+            return;
+          }
           onOpenModal({ kind: "badge", data: badge });
         }
       }}

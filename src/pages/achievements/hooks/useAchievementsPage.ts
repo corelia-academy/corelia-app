@@ -242,6 +242,9 @@ export function useAchievementsPage() {
 
     const cert = certificates.find((c) => c.id === id);
     if (!cert?.courseId) return;
+    // Certi + OCB is auto-issued at completion. Its card can only View the
+    // resulting OCB and must never enter the manual OCA claim path.
+    if (cert.onchainCredentialAutoIssued) return;
 
     if (!profile?.ocid?.trim()) {
       setOcidConnectOpen(true);

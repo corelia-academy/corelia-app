@@ -28,6 +28,8 @@ export type CertificateItem = {
   hasOnchainCredentialTemplate: boolean;
   /** Template gắn với hành động claim/view trên card certificate. */
   onchainTemplateId?: string | null;
+  /** OCB cấp tự động sau khi hoàn thành; certificate card chỉ được View. */
+  onchainCredentialAutoIssued?: boolean;
   // OpenCampus
   ocClaimStatus: ClaimStatus;
   ocCredentialId?: string | null;
