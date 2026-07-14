@@ -96,46 +96,12 @@ export function buildCourseCertificates(
  *  (OCA is never auto-minted — it requires the user to claim manually via
  *  the Certificate card). Lets the Badges/OCA tab show something instead of
  *  staying empty while the credential is claimable but unclaimed. */
-export function buildUnclaimedOcaBadges(
-  certificates: CertificateItem[],
-  ocaTemplateMap: Map<string, CourseOcaTemplateSummary>,
-  courseIdsWithOcaIssuance: Set<string>,
-): BadgeItem[] {
-  return certificates
-    .filter(
-      (cert): cert is CertificateItem & { courseId: string } =>
-        cert.hasOcaTemplate &&
-        !!cert.courseId &&
-        !courseIdsWithOcaIssuance.has(cert.courseId),
-    )
-    .map((cert) => {
-      const tpl = ocaTemplateMap.get(cert.courseId)!;
-      return {
-        id: `virtual-${cert.courseId}`,
-        title: tpl.name || cert.course,
-        description: tpl.description,
-        icon: createElement(Award, { className: "size-6 text-warning", "aria-hidden": true }),
-        color: "text-warning",
-        bgColor: "bg-warning/10",
-        borderColor: "border-warning/30",
-        earnedAt: null,
-        locked: false,
-        category: "milestone",
-        imageUrl: tpl.thumbnailUrl || tpl.imageUrl || undefined,
-        ocClaimStatus: "unclaimed_virtual",
-        credentialScope: "course",
-        collectionSymbol: null,
-        achievementType: tpl.achievementType,
-      } satisfies BadgeItem;
-    });
-}
-
 /** Standalone claimable OCA badge cards for enrolled courses that have an
  *  active OCA template but no offchain PDF certificate at all — those never
  *  appear in `certificates` (which requires `certificate_issued_at`), so
  *  without this they'd never surface anywhere for the learner to claim.
- *  Unlike `buildUnclaimedOcaBadges`, these use plain "unclaimed" status so
- *  the modal opens directly and the claim happens on the badge itself. */
+ *  These use plain "unclaimed" status so the modal opens directly and the
+ *  claim happens on the badge itself. */
 export function buildStandaloneOcaBadges(
   courseIds: string[],
   courseMap: Map<string, Awaited<ReturnType<typeof getCourse>>>,

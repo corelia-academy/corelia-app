@@ -124,6 +124,7 @@ export function CourseOcbCredentialSection({
   const [uploading, setUploading] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
   /** Lets the Save button reveal the (never-configured) body for viewing
    *  without touching `isActive` — purely local, never persisted. Only
    *  matters while `templateId` is null; reset once the master toggle turns
@@ -261,8 +262,11 @@ export function CourseOcbCredentialSection({
     : false;
 
   useEffect(() => {
-    onDirtyChange?.(isDirty);
-  }, [isDirty, onDirtyChange]);
+    // Deactivation is persisted immediately. While that write is in flight the
+    // draft differs from the saved snapshot, but it is not a user draft that
+    // should block navigation with a leave-without-saving warning.
+    onDirtyChange?.(isDirty && !isDeactivating);
+  }, [isDeactivating, isDirty, onDirtyChange]);
 
   const handleUpload = async (file: File | null) => {
     if (!file) return;
@@ -438,7 +442,9 @@ export function CourseOcbCredentialSection({
   const handleToggleChange = async (value: boolean) => {
     setIsActive(value);
     if (!value) {
+      setIsDeactivating(true);
       const saved = await handleSave(false);
+      setIsDeactivating(false);
       if (!saved) setIsActive(true);
     }
   };

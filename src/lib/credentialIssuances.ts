@@ -74,9 +74,19 @@ export async function fetchCourseIssuanceMapForUser(
 ): Promise<Map<string, CourseIssuanceInfo>> {
   const { data, error } = await supabase
     .from("credential_issuances")
-    .select("id, status, oc_credential_id, error_message, course_id")
+    .select(`
+      id,
+      status,
+      oc_credential_id,
+      error_message,
+      course_id,
+      credential_templates!inner (collection_symbol)
+    `)
     .eq("user_id", userId)
     .not("course_id", "is", null)
+    // Certificate cards link only to their associated OCA. An OCB issuance
+    // must never make a certificate-only card appear claimable/viewable.
+    .is("credential_templates.collection_symbol", null)
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);

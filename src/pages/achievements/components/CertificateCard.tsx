@@ -208,6 +208,10 @@ export function CertificateCard({
   const imageUrl = cert.imageUrl ?? CERT_PLACEHOLDER;
   const hasTemplate = imageUrl !== CERT_PLACEHOLDER;
   const displayUrl = renderedCardUrl ?? imageUrl;
+  // Certificate-only courses do not have an Open Campus credential to claim
+  // or view. A previously minted OCA remains viewable even if its template was
+  // later deactivated, hence the persisted status is also considered here.
+  const hasOcaAccess = cert.hasOcaTemplate || cert.ocClaimStatus !== "unclaimed";
 
   async function handleDownload(format: "pdf" | "png") {
     setDownloading(true);
@@ -331,12 +335,14 @@ export function CertificateCard({
             </div>
           </div>
 
-          <div className="mt-2">
-            <OcClaimBadge status={cert.ocClaimStatus} />
-          </div>
+          {hasOcaAccess && (
+            <div className="mt-2">
+              <OcClaimBadge status={cert.ocClaimStatus} />
+            </div>
+          )}
 
           <div className="mt-3 flex min-w-0 flex-wrap items-stretch gap-2">
-            {(cert.ocClaimStatus === "claimed" || cert.hasOcaTemplate) && (
+            {hasOcaAccess && (
               <Button
                 type="button"
                 variant="outline"

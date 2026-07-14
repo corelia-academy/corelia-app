@@ -1,9 +1,5 @@
 export type ClaimStatus =
   | "unclaimed"
-  /** Course has an active OCA template but no issuance row exists yet — a
-   *  placeholder "virtual" badge card prompting the user to claim on the
-   *  Certificate card, not a real DB-backed status. */
-  | "unclaimed_virtual"
   | "pending"
   | "claimed"
   | "failed";

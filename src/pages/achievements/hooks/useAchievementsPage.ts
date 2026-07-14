@@ -35,7 +35,6 @@ import type {
 import {
   buildCourseCertificates,
   buildStandaloneOcaBadges,
-  buildUnclaimedOcaBadges,
   ocidWithEduSuffix,
 } from "../utils/buildAchievementsData";
 
@@ -132,11 +131,6 @@ export function useAchievementsPage() {
           .filter((row) => row.course_id && !row.template?.collection_symbol)
           .map((row) => row.course_id!),
       );
-      const virtualOcaBadges = buildUnclaimedOcaBadges(
-        enrollmentCertificates,
-        ocaTemplateMap,
-        courseIdsWithOcaIssuance,
-      );
       const standaloneOcaBadges = buildStandaloneOcaBadges(
         courseIds,
         courseMap,
@@ -147,7 +141,6 @@ export function useAchievementsPage() {
       setCertificates(nextCertificates);
       setBadges([
         ...ocRows.map((row) => issuanceToBadgeItem(row, profile?.ocid)),
-        ...virtualOcaBadges,
         ...standaloneOcaBadges,
       ]);
       setCertificateSyncCandidates(
@@ -170,10 +163,6 @@ export function useAchievementsPage() {
   }, [loadAchievements]);
 
   const openModal = (item: ModalItem) => {
-    // Virtual "unclaimed" OCA cards have no real issuance behind them yet —
-    // block opening the modal from any entry point (BadgeCard, the "Recent
-    // achievements" list, etc.) and route the user to the Certificate card.
-    if (item.kind === "badge" && item.data.ocClaimStatus === "unclaimed_virtual") return;
     setModalItem(item);
     setModalOpen(true);
   };
@@ -264,8 +253,8 @@ export function useAchievementsPage() {
     try {
       await invokeCheckCourseCredential(cert.courseId);
 
-      // Reload issuances (with template info) so we can both patch the cert
-      // status and replace the virtual badge with the real minted one.
+      // Reload issuances (with template info) so we can patch the certificate
+      // status and add the newly minted OCA card.
       const issuances = await fetchMyCredentialIssuances(user!.id);
       const row = issuances.find(
         (r) => r.course_id === cert.courseId && !r.template?.collection_symbol,
@@ -281,7 +270,7 @@ export function useAchievementsPage() {
       const newBadge = issuanceToBadgeItem(row, profile?.ocid);
       setBadges((prev) => [
         newBadge,
-        ...prev.filter((b) => b.id !== `virtual-${cert.courseId}`),
+        ...prev,
       ]);
 
       if (newBadge.ocClaimStatus === "claimed") {
