@@ -131,38 +131,38 @@ export function OcCredentialModal({
                 <p className="text-sm font-medium text-foreground">{credentialName}</p>
               </div>
 
-              {/* Full name */}
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-0.5">
-                  {t("achievements.oc.modal.review.nameLabel")}
-                </p>
-                {hasName ? (
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-foreground">{holderName}</p>
-                    <Link
-                      to="/account"
-                      onClick={() => onOpenChange(false)}
-                      className="text-xs text-primary underline-offset-2 hover:underline shrink-0"
-                    >
-                      {t("achievements.oc.modal.review.editName")}
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2">
-                    <p className="text-xs text-warning-foreground">
-                      {t("achievements.oc.modal.review.nameMissing")}
-                    </p>
-                    <Link
-                      to="/account"
-                      onClick={() => onOpenChange(false)}
-                      className="text-xs font-medium text-primary underline-offset-2 hover:underline shrink-0"
-                    >
-                      {t("achievements.oc.modal.review.setName")}
-                    </Link>
-                  </div>
-                )}
-              </div>
-
+              {item?.kind === "cert" && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-0.5">
+                    {t("achievements.oc.modal.review.nameLabel")}
+                  </p>
+                  {hasName ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-foreground">{holderName}</p>
+                      <Link
+                        to="/account"
+                        onClick={() => onOpenChange(false)}
+                        className="text-xs text-primary underline-offset-2 hover:underline shrink-0"
+                      >
+                        {t("achievements.oc.modal.review.editName")}
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2">
+                      <p className="text-xs text-warning-foreground">
+                        {t("achievements.oc.modal.review.nameMissing")}
+                      </p>
+                      <Link
+                        to="/account"
+                        onClick={() => onOpenChange(false)}
+                        className="text-xs font-medium text-primary underline-offset-2 hover:underline shrink-0"
+                      >
+                        {t("achievements.oc.modal.review.setName")}
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
               {/* OCID */}
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-0.5">
