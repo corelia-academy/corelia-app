@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { useAuth } from "@/stores/authStore";
 import {
   checkAndIssueCertificate,
@@ -172,6 +173,12 @@ export default function CourseDetail() {
         }
         setCertificateJustIssued(true);
         void progress.refresh();
+        toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
+          action: {
+            label: translate("detail.courseDetail.viewCertificate"),
+            onClick: () => navigate(profile?.username ? `/@${encodeURIComponent(profile.username)}` : "/account"),
+          },
+        });
       } else if (result.message) {
         setCertificateIssueError(result.message);
       }
@@ -198,7 +205,9 @@ export default function CourseDetail() {
     courseLoad.resolvedCourseId,
     isAuthenticated,
     profile?.id,
+    profile?.username,
     progress,
+    navigate,
     translate,
   ]);
 

@@ -310,6 +310,11 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, usernam
     category: "milestone",
     // thumbnail_url for frontend display; image_url (full-res) stays in OC payload only
     imageUrl: tpl?.thumbnail_url || tpl?.image_url || undefined,
+    // Preserve the course/template identity so a standalone course card, whose
+    // optimistic id differs from the issuance UUID, can be reconciled after a
+    // realtime refresh.
+    courseId: row.course_id,
+    templateId: row.template_id,
     // Claim status is derived from row status for our realtime pipeline.
     // "claimed" requires status=minted AND a valid resolvedCredentialId.
     // minted without oc_credential_id = incomplete mint → treat as failed.

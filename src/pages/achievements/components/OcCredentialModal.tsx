@@ -221,7 +221,7 @@ export function OcCredentialModal({
                 <Button
                   className="w-full gap-3 text-base font-semibold"
                   size="lg"
-                  disabled={claiming || !hasName || isClaimed || isPending}
+                  disabled={claiming || (item.kind === "cert" && !hasName) || isClaimed || isPending}
                   onClick={() => onClaim(d.id, item.kind)}
                 >
                   {claiming ? (

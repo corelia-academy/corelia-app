@@ -140,12 +140,31 @@ export function useAchievementsPage() {
         courseCredentialTemplateMap,
         courseIdsWithCredentialIssuance,
       );
-
-      setCertificates(nextCertificates);
-      setBadges([
+      const nextBadges = [
         ...ocRows.map((row) => issuanceToBadgeItem(row, profile?.ocid)),
         ...standaloneCourseCredentialBadges,
-      ]);
+      ];
+
+      setCertificates(nextCertificates);
+      setBadges(nextBadges);
+      setModalItem((current) => {
+        if (!current) return current;
+
+        if (current.kind === "cert") {
+          const nextCertificate = nextCertificates.find((item) => item.id === current.data.id);
+          return nextCertificate ? { kind: "cert", data: nextCertificate } : current;
+        }
+
+        const nextBadge = nextBadges.find(
+          (item) =>
+            item.id === current.data.id ||
+            (Boolean(current.data.courseId) &&
+              Boolean(current.data.templateId) &&
+              item.courseId === current.data.courseId &&
+              item.templateId === current.data.templateId),
+        );
+        return nextBadge ? { kind: "badge", data: nextBadge } : current;
+      });
       setCertificateSyncCandidates(
         pendingCandidates.filter((item): item is CertificateSyncCandidate => !!item),
       );

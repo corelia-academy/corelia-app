@@ -221,6 +221,12 @@ export default function Learn() {
         }
         setCertificateJustIssued(true);
         void progress.refresh();
+        toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
+          action: {
+            label: translate("detail.courseDetail.viewCertificate"),
+            onClick: () => navigate(profile?.username ? `/@${encodeURIComponent(profile.username)}` : "/account"),
+          },
+        });
       } else if (result.message) {
         setCertificateIssueError(result.message);
       }
@@ -246,7 +252,9 @@ export default function Learn() {
     courseId,
     courseLoad.course,
     profile?.id,
+    profile?.username,
     progress,
+    navigate,
     translate,
   ]);
 

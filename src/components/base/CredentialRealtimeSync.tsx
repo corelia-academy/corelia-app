@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Sparkles, XCircle } from "lucide-react";
 import React from "react";
@@ -10,8 +11,12 @@ import { useAuth } from "@/stores/authStore";
 export const CREDENTIAL_SYNC_EVENT = "corelia:credential-sync";
 
 export default function CredentialRealtimeSync() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, profile } = useAuth();
   const { t } = useTranslation("common");
+  const navigate = useNavigate();
+  const achievementsPath = profile?.username
+    ? `/@${encodeURIComponent(profile.username)}`
+    : "/account";
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
@@ -51,6 +56,10 @@ export default function CredentialRealtimeSync() {
                     defaultValue: "OCB của bạn đã được tạo thành công và lưu trên blockchain." 
                   }),
                   icon: React.createElement(Sparkles, { className: "w-5 h-5 text-yellow-500" }),
+                  action: {
+                    label: t("notifications.viewCredential"),
+                    onClick: () => navigate(achievementsPath),
+                  },
                   duration: 6000,
                 }
               );
@@ -72,6 +81,10 @@ export default function CredentialRealtimeSync() {
                       defaultValue: "OCB của bạn đã được tạo thành công và lưu trên blockchain." 
                     }),
                     icon: React.createElement(Sparkles, { className: "w-5 h-5 text-yellow-500" }),
+                    action: {
+                      label: t("notifications.viewCredential"),
+                      onClick: () => navigate(achievementsPath),
+                    },
                     duration: 6000,
                   }
                 );
@@ -96,7 +109,7 @@ export default function CredentialRealtimeSync() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAuthenticated, user?.id, t]);
+  }, [achievementsPath, isAuthenticated, navigate, t, user?.id]);
 
   return null;
 }
