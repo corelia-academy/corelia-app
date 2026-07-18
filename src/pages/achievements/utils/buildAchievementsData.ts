@@ -3,16 +3,17 @@ import { Award } from "lucide-react";
 
 import { courseHasCertificate, getCourse } from "@/lib/courses";
 import type { CourseCredentialTemplateSummary } from "@/lib/credentialsEdge";
-import {
-  claimStatusFromIssuance,
-  openCampusCredentialExplorerUrl,
-  type CourseIssuanceInfo,
-} from "@/lib/credentialIssuances";
+import { openCampusCredentialExplorerUrl } from "@/lib/credentialIssuances";
+import type { CourseIssuanceInfo } from "@/lib/credentialIssuances";
 import { intlLocale } from "@/lib/intl";
 import type { Enrollment } from "@/types/courses";
 
 import { BADGE_PLACEHOLDER, BADGE_STYLES, CERT_PLACEHOLDER } from "../constants";
 import type { BadgeItem, CertificateItem } from "../types";
+import {
+  claimStatusFromIssuance,
+  shouldUseSavedCourseIssuance,
+} from "./credentialState";
 
 export function formatDate(value?: string | null): string {
   if (!value) return "—";
@@ -56,10 +57,12 @@ export function buildCourseCertificates(
       const course = courseMap.get(item.course_id);
       const credentialTemplate = courseCredentialTemplateMap?.get(item.course_id);
       const savedIssuance = courseIssuanceMap?.get(item.course_id);
-      // Preserve an already-issued credential even when an admin later replaces
-      // the active course template. The active template only governs future
-      // issuance; it must not remove the learner's historical View state.
-      const issuance = savedIssuance;
+      const issuance = shouldUseSavedCourseIssuance(
+        savedIssuance,
+        credentialTemplate?.id,
+      )
+        ? savedIssuance
+        : undefined;
       const ocClaimStatus = issuance
         ? claimStatusFromIssuance({
             status: issuance.status,

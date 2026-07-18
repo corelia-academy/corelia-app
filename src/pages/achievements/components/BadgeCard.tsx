@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { BADGE_PLACEHOLDER } from "../constants";
 import type { BadgeItem, ModalItem } from "../types";
 import { OcClaimBadge } from "./OcClaimBadge";
-import { invokeCoreliaApi } from "@/lib/coreliaEdgeApi";
+import { callCoreliaApi } from "@/lib/coreliaEdgeApi";
 import { toast } from "sonner";
 
 export function BadgeCard({
@@ -30,10 +30,23 @@ export function BadgeCard({
     if (!badge.issuanceId || retrying) return;
     setRetrying(true);
     try {
-      await invokeCoreliaApi("credentials.retryPending", { issuanceId: badge.issuanceId });
-      toast.success(t("achievements.sync.retrySuccess", { defaultValue: "Đã gửi yêu cầu đúc lại!" }));
+      const result = await callCoreliaApi<{
+        status: string;
+        ocCredentialId: string | null;
+        message?: string;
+      }>("credentials.retryPending", { issuanceId: badge.issuanceId });
+      if (result.status === "failed") {
+        throw new Error(result.message ?? t("achievements.sync.retryError"));
+      }
+      window.dispatchEvent(new Event("corelia:credential-sync"));
+      if (result.status === "minted" && !result.ocCredentialId?.trim()) {
+        toast.info(t("achievements.oc.modal.reconciliation.title"));
+      } else {
+        toast.success(t("achievements.sync.retrySuccess"));
+      }
     } catch (error) {
-      toast.error((error as Error).message || t("achievements.sync.retryError", { defaultValue: "Lỗi khi thử lại." }));
+      toast.error((error as Error).message || t("achievements.sync.retryError"));
+    } finally {
       setRetrying(false);
     }
   };
@@ -192,7 +205,8 @@ export function BadgeCard({
               : t(`achievements.badgeCategory.${badge.category}` as never)}
           </span>
           {isFailed ? (
-            <button 
+            <button
+              type="button"
               onClick={handleRetry}
               disabled={retrying}
               className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-[10px] sm:text-xs font-medium rounded transition-colors disabled:opacity-50 flex items-center gap-1"

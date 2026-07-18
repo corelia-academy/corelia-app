@@ -5,13 +5,11 @@ import {
   fetchCourseIssuanceMapForUser,
   fetchMyCredentialIssuances,
   issuanceToBadgeItem,
-  type CourseIssuanceInfo,
 } from "@/lib/credentialIssuances";
 import {
   getCourse,
   getMyEnrollments,
 } from "@/lib/courses";
-import type { Enrollment } from "@/types/courses";
 
 import type {
   BadgeItem,
@@ -27,18 +25,20 @@ export function usePublicAchievements(profileId: string | undefined) {
   const [modalItem, setModalItem] = useState<ModalItem | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const { t } = useTranslation("common");
 
   const loadAchievements = useCallback(async () => {
     if (!profileId) return;
     try {
       setLoading(true);
+      setLoadError(null);
       const profile = await getPublicProfileById(profileId);
       
       const [enrollments, courseIssuanceMap, ocRows] = await Promise.all([
-        getMyEnrollments(profileId).catch(() => [] as Enrollment[]),
-        fetchCourseIssuanceMapForUser(profileId).catch(() => new Map<string, CourseIssuanceInfo>()),
-        fetchMyCredentialIssuances(profileId).catch(() => []),
+        getMyEnrollments(profileId),
+        fetchCourseIssuanceMapForUser(profileId),
+        fetchMyCredentialIssuances(profileId),
       ]);
 
       const mintedOcRows = ocRows.filter((r) => r.status === "minted");
@@ -76,6 +76,9 @@ export function usePublicAchievements(profileId: string | undefined) {
 
       setCertificates(nextCertificates);
       setBadges(mintedOcRows.map((row) => issuanceToBadgeItem(row, profile?.ocid)));
+    } catch (error) {
+      console.error("[public achievements] load failed", error);
+      setLoadError(t("achievements.loadError.body"));
     } finally {
       setLoading(false);
     }
@@ -94,6 +97,8 @@ export function usePublicAchievements(profileId: string | undefined) {
     certificates,
     badges,
     loading,
+    loadError,
+    reloadAchievements: loadAchievements,
     modalItem,
     modalOpen,
     setModalOpen,

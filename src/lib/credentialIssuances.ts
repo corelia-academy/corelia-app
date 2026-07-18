@@ -1,7 +1,8 @@
 import { createElement } from "react";
 import { Award, Medal, Sparkles } from "lucide-react";
 
-import type { BadgeItem, ClaimStatus } from "@/pages/achievements/types";
+import type { BadgeItem } from "@/pages/achievements/types";
+import { claimStatusFromIssuance } from "@/pages/achievements/utils/credentialState";
 import {
   normalizeCredentialDisplaySnapshot,
   templateSummaryFromSnapshot,
@@ -72,23 +73,6 @@ export type CourseIssuanceInfo = {
   error_message: string | null;
   collectionSymbol: "ocbadge" | null;
 };
-
-export function claimStatusFromIssuance({
-  status,
-  ocCredentialId,
-  errorMessage,
-}: {
-  status: string;
-  ocCredentialId: string | null | undefined;
-  errorMessage?: string | null;
-}): ClaimStatus {
-  if (errorMessage === "awaiting_holder_id") return "awaiting_holder_id";
-  if (status === "minted") {
-    return ocCredentialId?.trim() ? "claimed" : "needs_reconciliation";
-  }
-  if (status === "failed") return "failed";
-  return "pending";
-}
 
 function courseIssuancePriority(issuance: CourseIssuanceInfo): number {
   switch (

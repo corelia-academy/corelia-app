@@ -726,8 +726,8 @@
           "cta": "Connect OCID"
         },
         "reconciliation": {
-          "title": "Verifying your credential",
-          "body": "The issuance was accepted, but its on-chain credential ID is still being confirmed. Retrying now could create duplicate requests."
+          "title": "Credential ID needs verification",
+          "body": "The issuance was accepted, but its on-chain credential ID was not returned. Retrying could create a duplicate request; Corelia support can verify the ID."
         },
         "review": {
           "title": "Review your credential info",

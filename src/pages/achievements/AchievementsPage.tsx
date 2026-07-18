@@ -64,9 +64,14 @@ export default function AchievementsPage() {
     ...certificates.filter((c) => c.ocClaimStatus === "claimed"),
     ...earnedBadges.filter((b) => b.ocClaimStatus === "claimed"),
   ].length;
+  const pendingStatuses = new Set([
+    "pending",
+    "awaiting_holder_id",
+    "needs_reconciliation",
+  ]);
   const pendingCount = [
-    ...certificates.filter((c) => c.ocClaimStatus === "pending"),
-    ...earnedBadges.filter((b) => b.ocClaimStatus === "pending"),
+    ...certificates.filter((c) => pendingStatuses.has(c.ocClaimStatus)),
+    ...earnedBadges.filter((b) => pendingStatuses.has(b.ocClaimStatus)),
   ].length;
   const unclaimedCount = [
     ...certificates.filter((c) => c.ocClaimStatus === "unclaimed"),

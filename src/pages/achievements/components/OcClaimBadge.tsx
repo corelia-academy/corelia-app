@@ -43,7 +43,7 @@ export function OcClaimBadge({ status }: { status: ClaimStatus }) {
   if (status === "needs_reconciliation") {
     return (
       <span className={cn(base, "bg-primary/10 text-primary")}>
-        <Loader2 className="size-3.5 shrink-0 animate-spin sm:size-4" aria-hidden />
+        <AlertTriangle className="size-3.5 shrink-0 sm:size-4" aria-hidden />
         {t("achievements.oc.badge.reconciling")}
       </span>
     );

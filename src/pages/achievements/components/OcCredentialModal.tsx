@@ -403,7 +403,7 @@ export function OcCredentialModal({
           {isReconciling && (
             <div className="mb-4 rounded-xl border border-primary/25 bg-primary/5 px-3 py-3">
               <div className="flex items-start gap-2.5">
-                <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin text-primary" aria-hidden />
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
                 <div>
                   <p className="text-sm font-semibold text-foreground">
                     {t("achievements.oc.modal.reconciliation.title")}

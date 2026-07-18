@@ -43,7 +43,7 @@ export interface CertificateSyncCandidate {
   courseTitle: string;
 }
 
-export function useAchievementsPage() {
+export function useAchievementsPage(enabled = true) {
   const { user, isAuthenticated, profile } = useAuth();
   const [certificates, setCertificates] = useState<CertificateItem[]>([]);
   const [badges, setBadges] = useState<BadgeItem[]>([]);
@@ -60,7 +60,7 @@ export function useAchievementsPage() {
   const { t } = useTranslation("common");
 
   const loadAchievements = useCallback(async () => {
-    if (!user || !isAuthenticated) {
+    if (!enabled || !user || !isAuthenticated) {
       setCertificates([]);
       setBadges([]);
       setCertificateSyncCandidates([]);
@@ -174,7 +174,7 @@ export function useAchievementsPage() {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, profile?.full_name, profile?.ocid, t, user]);
+  }, [enabled, isAuthenticated, profile?.full_name, profile?.ocid, t, user]);
 
   useEffect(() => {
     void loadAchievements();
@@ -243,8 +243,13 @@ export function useAchievementsPage() {
 
       if (newBadge.ocClaimStatus === "claimed") {
         openModal({ kind: "badge", data: newBadge });
-      } else if (newBadge.status === "pending") {
+      } else if (
+        newBadge.ocClaimStatus === "pending" ||
+        newBadge.ocClaimStatus === "awaiting_holder_id"
+      ) {
         toast.info(t("achievements.oc.modal.claimToast.pending"));
+      } else if (newBadge.ocClaimStatus === "needs_reconciliation") {
+        toast.info(t("achievements.oc.modal.reconciliation.title"));
       } else {
         toast.error(t("achievements.oc.modal.claimToast.error.failed"));
       }
@@ -308,9 +313,15 @@ export function useAchievementsPage() {
           ocHolderOcId: ocidWithEduSuffix(profile?.ocid),
         });
         openModal({ kind: "badge", data: newBadge });
-      } else if (newBadge.status === "pending") {
-        patchCert(id, { ocClaimStatus: "pending" });
+      } else if (
+        newBadge.ocClaimStatus === "pending" ||
+        newBadge.ocClaimStatus === "awaiting_holder_id"
+      ) {
+        patchCert(id, { ocClaimStatus: newBadge.ocClaimStatus });
         toast.info(t("achievements.oc.modal.claimToast.pending"));
+      } else if (newBadge.ocClaimStatus === "needs_reconciliation") {
+        patchCert(id, { ocClaimStatus: "needs_reconciliation" });
+        toast.info(t("achievements.oc.modal.reconciliation.title"));
       } else {
         // minted without oc_credential_id, or failed — issuanceToBadgeItem
         // already resolved ocClaimStatus to "failed" for both cases.

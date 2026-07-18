@@ -726,8 +726,8 @@
           "cta": "Kết nối OCID"
         },
         "reconciliation": {
-          "title": "Đang xác minh credential",
-          "body": "Yêu cầu cấp đã được chấp nhận nhưng hệ thống đang xác nhận mã credential on-chain. Không nên thử lại lúc này để tránh tạo yêu cầu trùng lặp."
+          "title": "Cần xác minh mã credential",
+          "body": "Yêu cầu cấp đã được chấp nhận nhưng chưa trả về mã credential on-chain. Không nên thử lại để tránh tạo yêu cầu trùng lặp; Corelia hỗ trợ xác minh mã này."
         },
         "review": {
           "title": "Xác nhận thông tin trước khi issue",

@@ -1,10 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
-import { Award } from "lucide-react";
+import { Award, RefreshCw } from "lucide-react";
 
 import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 import { OcBadgesByScopeTabs } from "@/pages/achievements/components/OcBadgesByScopeTabs";
 import { CertificateCard } from "@/pages/achievements/components/CertificateCard";
@@ -19,13 +20,15 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
   const [ocConnectLoading, setOcConnectLoading] = useState(false);
   const [ocConnectError, setOcConnectError] = useState<string | null>(null);
 
-  const privateAchievements = useAchievementsPage();
+  const privateAchievements = useAchievementsPage(isSelf);
   const publicAchievements = usePublicAchievements(isSelf ? undefined : profileId);
 
   const {
     certificates,
     badges,
     loading,
+    loadError,
+    reloadAchievements,
     modalItem,
     modalOpen,
     setModalOpen,
@@ -69,6 +72,26 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
           {t("userProfile.tabs.achievements")}
         </h2>
       </div>
+
+      {loadError && (
+        <div
+          role="alert"
+          className="flex flex-col gap-3 rounded-xl border border-warning/30 bg-warning/8 p-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="text-sm text-foreground">{loadError}</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0 gap-2"
+            disabled={loading}
+            onClick={() => void reloadAchievements()}
+          >
+            <RefreshCw className="size-4" aria-hidden />
+            {t("achievements.loadError.retry")}
+          </Button>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
         {loading ? (
