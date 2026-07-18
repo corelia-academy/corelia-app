@@ -50,12 +50,76 @@ export async function retryPendingIssuancesForUser(
   return { retried: pending.length, minted, stillFailed };
 }
 
+async function retryFailedIssuanceForUser(
+  db: SupabaseClient,
+  userId: string,
+  issuanceId: string,
+): Promise<{
+  retried: number;
+  minted: number;
+  stillFailed: number;
+  status: string;
+  ocCredentialId: string | null;
+  message?: string;
+}> {
+  const { data: issuance, error } = await db
+    .from("credential_issuances")
+    .select("id, status")
+    .eq("id", issuanceId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!issuance) throw new Error("Credential issuance not found");
+  if (issuance.status !== "failed") {
+    throw new Error("Only failed credential issuances can be retried");
+  }
+
+  const { error: resetError } = await db
+    .from("credential_issuances")
+    .update({
+      status: "pending",
+      error_message: null,
+      oc_request_payload: null,
+      oc_response: null,
+    })
+    .eq("id", issuanceId)
+    .eq("user_id", userId);
+  if (resetError) throw new Error(resetError.message);
+
+  const result = await mintCredentialOnce(db, issuanceId);
+  const { data: after, error: afterError } = await db
+    .from("credential_issuances")
+    .select("status, oc_credential_id, error_message")
+    .eq("id", issuanceId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (afterError) throw new Error(afterError.message);
+
+  const status = String(after?.status ?? "unknown");
+  return {
+    retried: 1,
+    minted: result.ok ? 1 : 0,
+    stillFailed: status === "failed" ? 1 : 0,
+    status,
+    ocCredentialId: after?.oc_credential_id ?? null,
+    ...(status === "failed" && after?.error_message
+      ? { message: String(after.error_message) }
+      : {}),
+  };
+}
+
 export async function handleRetryPendingCredentials(
   req: Request,
   db: SupabaseClient,
 ): Promise<Response> {
   try {
     const user = await verifyBearerUser(req, db);
+    const body = (await req.json().catch(() => ({}))) as { issuanceId?: unknown };
+    const issuanceId = typeof body.issuanceId === "string" ? body.issuanceId.trim() : "";
+    if (issuanceId) {
+      const result = await retryFailedIssuanceForUser(db, user.id, issuanceId);
+      return json({ ok: true, ...result });
+    }
     const result = await retryPendingIssuancesForUser(db, user.id);
     return json({ ok: true, ...result });
   } catch (e) {
