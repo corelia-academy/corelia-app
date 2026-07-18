@@ -67,11 +67,20 @@ export default function CredentialRealtimeSync() {
           } else if (payload.eventType === "UPDATE") {
             const newStatus = payload.new.status;
             const oldStatus = payload.old?.status;
+            const holderStateChanged =
+              payload.new.error_message !== payload.old?.error_message;
+            const statusChanged = newStatus !== oldStatus;
 
-            if (newStatus !== oldStatus) {
+            if (statusChanged || holderStateChanged) {
               window.dispatchEvent(
                 new CustomEvent(CREDENTIAL_SYNC_EVENT, { detail: payload.new })
               );
+
+              // Error metadata can change a pending issuance into an actionable
+              // UI state (for example awaiting_holder_id) without changing the
+              // database status. Reload achievements, but do not repeat a mint
+              // toast unless the status itself changed.
+              if (!statusChanged) return;
 
               if (newStatus === "minted") {
                 toast.success(

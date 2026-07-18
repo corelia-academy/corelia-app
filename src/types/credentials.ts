@@ -48,6 +48,7 @@ export type CredentialIssuanceWithTemplate = {
   minted_at: string | null;
   oc_credential_id: string | null;
   oc_response?: unknown;
+  error_message?: string | null;
   network: CredentialIssuanceNetwork;
   status: string;
   display_snapshot: CredentialDisplaySnapshot | null;

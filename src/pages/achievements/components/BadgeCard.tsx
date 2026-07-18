@@ -20,8 +20,10 @@ export function BadgeCard({
   const { t } = useTranslation("common");
   const [retrying, setRetrying] = useState(false);
   const imageUrl = badge.imageUrl ?? BADGE_PLACEHOLDER;
-  const isPending = badge.status === "pending" || retrying;
-  const isFailed = badge.status === "failed";
+  const isPending = badge.ocClaimStatus === "pending" || retrying;
+  const isAwaitingHolder = badge.ocClaimStatus === "awaiting_holder_id";
+  const isReconciling = badge.ocClaimStatus === "needs_reconciliation";
+  const isFailed = badge.ocClaimStatus === "failed";
 
   const handleRetry = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -51,7 +53,7 @@ export function BadgeCard({
             ),
       )}
       onClick={() => {
-        if (!badge.locked && badge.status !== "pending") {
+        if (!badge.locked && !isPending) {
           if (
             badge.collectionSymbol === "ocbadge" &&
             badge.ocClaimStatus === "claimed" &&
@@ -139,16 +141,26 @@ export function BadgeCard({
         <p className="line-clamp-2 text-xs text-foreground-muted">
           {badge.description}
         </p>
-        {!badge.locked && badge.earnedAt && badge.status !== "pending" && (
+        {!badge.locked && badge.earnedAt && !isPending && (
           <p className={cn("text-xs font-medium", isFailed ? "text-red-500" : badge.color)}>
             {isFailed 
               ? t("achievements.badges.failedPrefix", { defaultValue: "Lỗi tạo OCB" })
               : t("achievements.badges.earnedPrefix", { date: badge.earnedAt })}
           </p>
         )}
-        {!badge.locked && badge.status === "pending" && (
+        {!badge.locked && isPending && (
           <p className="text-xs font-medium text-primary animate-pulse">
             {t("achievements.badges.pendingPrefix", { defaultValue: "Đang tạo..." })}
+          </p>
+        )}
+        {!badge.locked && isAwaitingHolder && (
+          <p className="text-xs font-medium text-warning">
+            {t("achievements.oc.badge.awaitingHolder")}
+          </p>
+        )}
+        {!badge.locked && isReconciling && (
+          <p className="text-xs font-medium text-primary">
+            {t("achievements.oc.badge.reconciling")}
           </p>
         )}
         {badge.locked && (

@@ -22,6 +22,7 @@ type IssuanceRow = {
   minted_at: string | null;
   oc_credential_id: string | null;
   oc_response: unknown;
+  error_message: string | null;
   network: string;
   status: string;
   display_snapshot: unknown;
@@ -55,6 +56,7 @@ function mapIssuanceRow(raw: unknown): CredentialIssuanceWithTemplate {
     minted_at: row.minted_at,
     oc_credential_id: row.oc_credential_id,
     oc_response: row.oc_response,
+    error_message: row.error_message ?? null,
     network: row.network === "mainnet" ? "mainnet" : "staging",
     status: row.status,
     display_snapshot: snapshot,
@@ -71,6 +73,45 @@ export type CourseIssuanceInfo = {
   collectionSymbol: "ocbadge" | null;
 };
 
+export function claimStatusFromIssuance({
+  status,
+  ocCredentialId,
+  errorMessage,
+}: {
+  status: string;
+  ocCredentialId: string | null | undefined;
+  errorMessage?: string | null;
+}): ClaimStatus {
+  if (errorMessage === "awaiting_holder_id") return "awaiting_holder_id";
+  if (status === "minted") {
+    return ocCredentialId?.trim() ? "claimed" : "needs_reconciliation";
+  }
+  if (status === "failed") return "failed";
+  return "pending";
+}
+
+function courseIssuancePriority(issuance: CourseIssuanceInfo): number {
+  switch (
+    claimStatusFromIssuance({
+      status: issuance.status,
+      ocCredentialId: issuance.oc_credential_id,
+      errorMessage: issuance.error_message,
+    })
+  ) {
+    case "claimed":
+      return 4;
+    case "needs_reconciliation":
+      return 3;
+    case "awaiting_holder_id":
+    case "pending":
+      return 2;
+    case "failed":
+      return 1;
+    default:
+      return 0;
+  }
+}
+
 export async function fetchCourseIssuanceMapForUser(
   userId: string,
 ): Promise<Map<string, CourseIssuanceInfo>> {
@@ -81,6 +122,7 @@ export async function fetchCourseIssuanceMapForUser(
       template_id,
       status,
       oc_credential_id,
+      oc_response,
       error_message,
       course_id,
       credential_templates!inner (collection_symbol)
@@ -94,16 +136,25 @@ export async function fetchCourseIssuanceMapForUser(
   const map = new Map<string, CourseIssuanceInfo>();
   for (const row of data ?? []) {
     const courseId = String(row.course_id ?? "");
-    if (!courseId || map.has(courseId)) continue;
-    map.set(courseId, {
+    if (!courseId) continue;
+    const ocCredentialId =
+      row.oc_credential_id ?? extractOcCredentialId(row.oc_response);
+    const next = {
       issuanceId: String(row.id),
       templateId: row.template_id ? String(row.template_id) : null,
       status: (row.status as CourseIssuanceInfo["status"]) ?? "pending",
-      oc_credential_id: row.oc_credential_id ?? null,
+      oc_credential_id: ocCredentialId,
       error_message: row.error_message ?? null,
       collectionSymbol:
         row.credential_templates?.[0]?.collection_symbol === "ocbadge" ? "ocbadge" : null,
-    });
+    } satisfies CourseIssuanceInfo;
+    const current = map.get(courseId);
+    // One certificate card represents one course credential. Preserve a minted
+    // historical credential over a newer failed/pending reissue so learners do
+    // not lose the ability to view what was already issued to them.
+    if (!current || courseIssuancePriority(next) > courseIssuancePriority(current)) {
+      map.set(courseId, next);
+    }
   }
   return map;
 }
@@ -123,6 +174,7 @@ export async function fetchMyCredentialIssuances(
       minted_at,
       oc_credential_id,
       oc_response,
+      error_message,
       network,
       status,
       display_snapshot,
@@ -163,6 +215,7 @@ export async function fetchMintedCredentialIssuancesForUser(
       minted_at,
       oc_credential_id,
       oc_response,
+      error_message,
       network,
       status,
       display_snapshot,
@@ -315,15 +368,14 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, usernam
     // realtime refresh.
     courseId: row.course_id,
     templateId: row.template_id,
-    // Claim status is derived from row status for our realtime pipeline.
-    // "claimed" requires status=minted AND a valid resolvedCredentialId.
-    // minted without oc_credential_id = incomplete mint → treat as failed.
-    ocClaimStatus:
-      row.status === "minted"
-        ? resolvedCredentialId
-          ? "claimed"
-          : "failed"
-        : (row.status as ClaimStatus) ?? "failed",
+    // A mint response without a credential id can still represent an on-chain
+    // credential (notably the OpenCampus duplicate path). Do not present it as
+    // retryable failure until reconciliation has established the actual result.
+    ocClaimStatus: claimStatusFromIssuance({
+      status: row.status,
+      ocCredentialId: resolvedCredentialId,
+      errorMessage: row.error_message,
+    }),
     ocCredentialUrl: ocUrl ?? undefined,
     ocTransactionHash: undefined,
     mintCredentialId: resolvedCredentialId,

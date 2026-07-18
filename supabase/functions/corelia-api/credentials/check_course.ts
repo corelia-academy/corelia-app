@@ -182,7 +182,10 @@ export async function runCourseCredentialCheck(
       if (existing.status === "minted" && !existing.oc_credential_id && existing.oc_response) {
         const backfilled = extractOcCredentialId(existing.oc_response);
         if (backfilled) {
-          await db.from("credential_issuances").update({ oc_credential_id: backfilled }).eq("id", existing.id);
+          await db.from("credential_issuances").update({
+            oc_credential_id: backfilled,
+            error_message: null,
+          }).eq("id", existing.id);
           return { ok: true, issuanceId: existing.id, status: "minted", minted: true, skipped: false };
         }
       }

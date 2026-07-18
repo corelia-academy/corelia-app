@@ -685,6 +685,8 @@
       "badge": {
         "claimed": "Đã claim OC",
         "pending": "Đang xử lý",
+        "awaitingHolder": "Cần kết nối OCID",
+        "reconciling": "Đang xác minh credential",
         "failed": "Thất bại",
         "unclaimed": "Chưa claim OC"
       },
@@ -717,6 +719,15 @@
           "title": "Cần kết nối OCID",
           "body": "Bạn cần kết nối OCID trước khi issue Open Campus certificate. Chứng nhận gốc của bạn vẫn được lưu trong kho chứng nhận.",
           "cta": "Kết nối OCID"
+        },
+        "awaitingHolder": {
+          "title": "Credential đang chờ OCID của bạn",
+          "body": "Credential này sẽ được cấp ngay khi bạn kết nối OCID hoặc địa chỉ ví.",
+          "cta": "Kết nối OCID"
+        },
+        "reconciliation": {
+          "title": "Đang xác minh credential",
+          "body": "Yêu cầu cấp đã được chấp nhận nhưng hệ thống đang xác nhận mã credential on-chain. Không nên thử lại lúc này để tránh tạo yêu cầu trùng lặp."
         },
         "review": {
           "title": "Xác nhận thông tin trước khi issue",
@@ -753,6 +764,10 @@
       "failedDescription": "Có lỗi xảy ra khi cấp phát OCB. Vui lòng thử lại sau.",
       "retrySuccess": "Đã gửi yêu cầu tạo lại!",
       "retryError": "Lỗi khi thử lại."
+    },
+    "loadError": {
+      "body": "Không thể làm mới thành tích. Hệ thống vẫn đang hiển thị trạng thái credential đã xác nhận gần nhất.",
+      "retry": "Thử lại"
     },
     "stats": {
       "certificates": "Chứng nhận",

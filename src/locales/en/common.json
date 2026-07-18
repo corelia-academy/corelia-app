@@ -685,6 +685,8 @@
       "badge": {
         "claimed": "OC claimed",
         "pending": "Processing",
+        "awaitingHolder": "OCID connection required",
+        "reconciling": "Verifying credential",
         "failed": "Failed",
         "unclaimed": "Not claimed"
       },
@@ -717,6 +719,15 @@
           "title": "OCID connection required",
           "body": "Connect your OCID before issuing this Open Campus certificate. Your original Corelia certificate remains saved in your certificate vault.",
           "cta": "Connect OCID"
+        },
+        "awaitingHolder": {
+          "title": "Credential is waiting for your OCID",
+          "body": "This credential is ready to be issued as soon as you connect an OCID or wallet address.",
+          "cta": "Connect OCID"
+        },
+        "reconciliation": {
+          "title": "Verifying your credential",
+          "body": "The issuance was accepted, but its on-chain credential ID is still being confirmed. Retrying now could create duplicate requests."
         },
         "review": {
           "title": "Review your credential info",
@@ -753,6 +764,10 @@
       "failedDescription": "An error occurred while issuing OCB. Please try again later.",
       "retrySuccess": "Retry request sent!",
       "retryError": "Error when retrying."
+    },
+    "loadError": {
+      "body": "We could not refresh your achievements. Your last confirmed credential status is still shown.",
+      "retry": "Retry"
     },
     "stats": {
       "certificates": "Certificates",

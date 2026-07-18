@@ -1,6 +1,8 @@
 export type ClaimStatus =
   | "unclaimed"
   | "pending"
+  | "awaiting_holder_id"
+  | "needs_reconciliation"
   | "claimed"
   | "failed";
 
