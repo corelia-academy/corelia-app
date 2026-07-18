@@ -189,7 +189,13 @@ export async function runCourseCredentialCheck(
           return { ok: true, issuanceId: existing.id, status: "minted", minted: true, skipped: false };
         }
       }
-      return { ok: true, skipped: true, reason: "already_issued_or_pending", issuanceId: existing.id };
+      return {
+        ok: true,
+        skipped: true,
+        reason: existing.status === "minted" ? "needs_reconciliation" : "already_issued_or_pending",
+        issuanceId: existing.id,
+        status: existing.status,
+      };
     }
     // status === "failed" or "awaiting_holder_id" — reset and retry
     const { error: resetErr } = await db.from("credential_issuances").update({

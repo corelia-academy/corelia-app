@@ -10,6 +10,15 @@ import { useAuth } from "@/stores/authStore";
 
 export const CREDENTIAL_SYNC_EVENT = "corelia:credential-sync";
 
+function isResolvedMint(issuance: Record<string, unknown>) {
+  return (
+    issuance.status === "minted" &&
+    typeof issuance.oc_credential_id === "string" &&
+    issuance.oc_credential_id.trim().length > 0 &&
+    issuance.error_message !== "credential_id_unresolved"
+  );
+}
+
 export default function CredentialRealtimeSync() {
   const { user, isAuthenticated, profile } = useAuth();
   const { t } = useTranslation("common");
@@ -48,7 +57,7 @@ export default function CredentialRealtimeSync() {
                   duration: 4000,
                 }
               );
-            } else if (status === "minted") {
+            } else if (isResolvedMint(payload.new)) {
               toast.success(
                 t("achievements.sync.mintedTitle", { defaultValue: "Tạo chứng nhận thành công!" }),
                 {
@@ -63,6 +72,11 @@ export default function CredentialRealtimeSync() {
                   duration: 6000,
                 }
               );
+            } else if (status === "minted") {
+              toast.info(t("achievements.oc.modal.reconciliation.title"), {
+                description: t("achievements.oc.modal.reconciliation.body"),
+                duration: 6000,
+              });
             }
           } else if (payload.eventType === "UPDATE") {
             const newStatus = payload.new.status;
@@ -82,7 +96,7 @@ export default function CredentialRealtimeSync() {
               // toast unless the status itself changed.
               if (!statusChanged) return;
 
-              if (newStatus === "minted") {
+              if (isResolvedMint(payload.new)) {
                 toast.success(
                   t("achievements.sync.mintedTitle", { defaultValue: "Tạo chứng nhận thành công!" }),
                   {
@@ -97,6 +111,11 @@ export default function CredentialRealtimeSync() {
                     duration: 6000,
                   }
                 );
+              } else if (newStatus === "minted") {
+                toast.info(t("achievements.oc.modal.reconciliation.title"), {
+                  description: t("achievements.oc.modal.reconciliation.body"),
+                  duration: 6000,
+                });
               } else if (newStatus === "failed") {
                 toast.error(
                   t("achievements.sync.failedTitle", { defaultValue: "Tạo chứng nhận thất bại" }),
