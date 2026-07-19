@@ -111,7 +111,7 @@ async function _fetchProfileForUser(user: User): Promise<Profile | null> {
       role: "student",
       locale: "vi",
       profile_public: true,
-      full_name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? null,
+      full_name: String(user.user_metadata?.full_name ?? user.user_metadata?.name ?? "").trim() || null,
       avatar_url: user.user_metadata?.avatar_url ?? null,
       phone: user.phone ?? null,
       email: user.email ?? null,
@@ -139,7 +139,7 @@ async function _fetchProfileForUser(user: User): Promise<Profile | null> {
     (pWithUsername.full_name == null || pWithUsername.full_name === "") &&
     user.user_metadata?.full_name
   ) {
-    updates.full_name = String(user.user_metadata.full_name);
+    updates.full_name = String(user.user_metadata.full_name).trim();
   }
   if (Object.keys(updates).length > 0) {
     updates.updated_at = new Date().toISOString();
@@ -243,7 +243,7 @@ function fallbackProfile(user: { id: string; email?: string | null; user_metadat
     id: user.id,
     role: "student",
     username: null,
-    full_name: (user.user_metadata?.full_name as string) ?? null,
+    full_name: String(user.user_metadata?.full_name ?? "").trim() || null,
     avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
     phone: null,
     email: user.email ?? null,
@@ -275,7 +275,7 @@ export async function setNewUserProfileForUser(
       id: user.id,
       role: "student",
       locale: "vi",
-      full_name: data.full_name ?? (user.user_metadata?.full_name as string) ?? null,
+      full_name: String(data.full_name ?? user.user_metadata?.full_name ?? "").trim() || null,
       email: data.email ?? user.email ?? null,
       avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
       phone: user.phone ?? null,

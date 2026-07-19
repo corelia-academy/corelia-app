@@ -117,8 +117,8 @@ export function AccountProfileRoute() {
 
       await updateProfileForUser(user, {
         ...(usernameChanged ? { username: newUsername } : {}),
-        full_name: fullName || null,
-        phone: phone || null,
+        full_name: fullName.trim() || null,
+        phone: phone.trim() || null,
         avatar_url: avatarUrl || null,
         bio: bio.trim() || null,
         website: website.trim() || null,
