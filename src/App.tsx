@@ -212,9 +212,9 @@ export default function App() {
       <LoadingBar />
       <Toaster />
       <AuthSync />
-      <CredentialRealtimeSync />
       <TooltipProvider>
         <BrowserRouter>
+          <CredentialRealtimeSync />
           <ScrollToTop />
           <RecoveryGuard />
           <PendingCredentialsWelcomeModal />
