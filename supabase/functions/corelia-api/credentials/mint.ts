@@ -276,10 +276,15 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
         // return it even on a duplicate rejection.
         ocCredentialId = extractOcCredentialId(ocResponseJson);
       }
+      const credentialIdUnresolved = dup && !ocCredentialId?.trim();
       await db.from("credential_issuances").update({
         status: dup ? "minted" : "failed",
         oc_response: ocResponseJson as Record<string, unknown>,
-        error_message: dup ? null : `HTTP ${res.status}: ${msg}`,
+        error_message: dup
+          ? credentialIdUnresolved
+            ? "credential_id_unresolved"
+            : null
+          : `HTTP ${res.status}: ${msg}`,
         retry_count: row.retry_count + 1,
         ...(dup
           ? {
@@ -289,6 +294,10 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
           : {}),
       }).eq("id", issuanceId);
       if (dup) {
+        // A duplicate response proves the credential may already exist, but we
+        // cannot safely send a success notification or expose retry until its
+        // on-chain id has been reconciled from a response/lookup.
+        if (credentialIdUnresolved) return { ok: true, duplicate: true };
         await Promise.all([
           email
             ? sendMintEmail({
@@ -320,15 +329,23 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
 
     const parsed = ocResponseJson as Record<string, unknown>;
     ocCredentialId = extractOcCredentialId(parsed);
+    const credentialIdUnresolved = !ocCredentialId?.trim();
 
     await db.from("credential_issuances").update({
       status: "minted",
       minted_at: awardedIso,
       oc_response: parsed,
       oc_credential_id: ocCredentialId,
-      error_message: null,
+      error_message: credentialIdUnresolved ? "credential_id_unresolved" : null,
       retry_count: row.retry_count,
     }).eq("id", issuanceId);
+
+    if (credentialIdUnresolved) {
+      // The issuer accepted the request but did not include a parsable id. Keep
+      // the terminal mint result and let the UI show reconciliation rather than
+      // falsely inviting the learner to retry.
+      return { ok: true };
+    }
 
     await Promise.all([
       email

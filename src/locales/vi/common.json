@@ -724,7 +724,7 @@
           "back": "Quay lại",
           "confirm": "Xác nhận & Issue",
           "credentialLabel": "Credential",
-          "nameLabel": "Tên của bạn trên credential",
+          "nameLabel": "Tên xuất hiện trên chứng nhận",
           "editName": "Sửa tên",
           "nameMissing": "Bạn chưa đặt tên hiển thị. Tên sẽ không xuất hiện trên credential.",
           "setName": "Cập nhật tên",
