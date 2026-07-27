@@ -97,12 +97,14 @@ function ProfileStat({
 
 function ProfileSidebar({
   profile,
+  followerCount,
   followingProfileCount,
   bio,
   website,
   headerHandle,
 }: {
   profile: PublicProfile;
+  followerCount: number;
   followingProfileCount: number | null;
   bio: string | null;
   website: string | null;
@@ -130,7 +132,7 @@ function ProfileSidebar({
     },
     {
       label: t("userProfile.labels.followers"),
-      value: Number(profile.follower_count ?? 0),
+      value: followerCount,
     },
     {
       label: t("userProfile.labels.following"),
@@ -224,8 +226,16 @@ export default function UserProfileLayout() {
   const [previewAsGuest, setPreviewAsGuest] = useState(false);
   const [followerDialogOpen, setFollowerDialogOpen] = useState(false);
   const [followingDialogOpen, setFollowingDialogOpen] = useState(false);
+  const [followerCountOverride, setFollowerCountOverride] = useState<{
+    profileId: string;
+    count: number;
+  } | null>(null);
   const effectiveIsSelf = isSelf && !previewAsGuest;
   const profile = (effectiveIsSelf && currentUserProfile ? currentUserProfile : fetchedProfile) as PublicProfile | null;
+  const followerCount =
+    followerCountOverride && followerCountOverride.profileId === profile?.id
+      ? followerCountOverride.count
+      : Number(profile?.follower_count ?? 0);
 
   const headerHandle = profile ? profileHandle(profile) : null;
   const profileOcid = profile ? readableProfileText(profile.ocid) : null;
@@ -362,8 +372,11 @@ export default function UserProfileLayout() {
                 {!loading && profile && !isSelf && profile.profile_public ? (
                   <FollowButton
                     subject={{ type: "user", id: profile.id }}
-                    followerCount={profile.follower_count ?? 0}
+                    followerCount={followerCount}
                     size="lg"
+                    onFollowerCountChange={(count) =>
+                      setFollowerCountOverride({ profileId: profile.id, count })
+                    }
                   />
                 ) : null}
               </div>
@@ -371,7 +384,7 @@ export default function UserProfileLayout() {
                 <div className="sm:self-end">
                   <FollowerPreview
                     subject={{ type: "user", id: profile.id }}
-                    totalCount={profile.follower_count ?? 0}
+                    totalCount={followerCount}
                     open={followerDialogOpen}
                     onOpenChange={setFollowerDialogOpen}
                   />
@@ -390,7 +403,7 @@ export default function UserProfileLayout() {
                   <>
                     <ProfileStat
                       label={t("userProfile.labels.followers")}
-                      value={Number(profile.follower_count ?? 0)}
+                      value={followerCount}
                       icon={Users}
                       onClick={
                         profile.profile_public
@@ -490,6 +503,7 @@ export default function UserProfileLayout() {
             {profile.profile_public || effectiveIsSelf ? (
               <ProfileSidebar
                 profile={profile}
+                followerCount={followerCount}
                 followingProfileCount={followingProfileCount}
                 bio={bio}
                 website={website}
