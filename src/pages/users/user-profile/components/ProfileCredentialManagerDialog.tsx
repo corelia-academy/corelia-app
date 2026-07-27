@@ -129,45 +129,53 @@ export function ProfileCredentialManagerDialog({
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && closeWithoutSaving()}>
       <DialogContent
         showCloseButton={!saving}
-        className="flex h-[min(50rem,calc(100svh-2rem))] max-w-6xl flex-col gap-0 overflow-hidden p-0"
+        className="flex h-[min(42rem,calc(100svh-2rem))] max-w-5xl flex-col gap-0 overflow-hidden p-0"
       >
-        <DialogHeader className="shrink-0 border-b border-border-subtle px-5 py-4 sm:px-6">
-          <DialogTitle>{t("achievements.profileVisibility.title")}</DialogTitle>
+        <DialogHeader className="shrink-0 border-b border-border-subtle px-5 py-4 pr-12 sm:px-6 sm:pr-14">
+          <DialogTitle className="text-lg tracking-tight">
+            {t("achievements.profileVisibility.title")}
+          </DialogTitle>
           <DialogDescription>
             {t("achievements.profileVisibility.description")}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
           {eligibleBadges.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border-subtle bg-surface-base p-8 text-center text-sm text-foreground-muted">
+            <div className="rounded-xl border border-dashed border-border-subtle bg-surface-base p-8 text-center text-sm text-foreground-muted">
               {t("achievements.profileVisibility.empty")}
             </div>
           ) : (
             <>
-              <div className="flex flex-wrap gap-2 border-b border-border-subtle pb-3">
+              <div className="flex max-w-full gap-1 overflow-x-auto rounded-xl bg-surface-raised p-1">
                 {tabs.map((tab) => (
-                  <Button
+                  <button
                     key={tab.key}
                     type="button"
-                    size="sm"
-                    variant={activeTab === tab.key ? "secondary" : "ghost"}
-                    className={cn("rounded-full", activeTab !== tab.key && "text-foreground-muted")}
+                    aria-pressed={activeTab === tab.key}
+                    className={cn(
+                      "shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      activeTab === tab.key
+                        ? "bg-surface-base text-foreground shadow-sm"
+                        : "text-foreground-muted hover:text-foreground",
+                    )}
                     onClick={() => setActiveTab(tab.key)}
                     disabled={saving}
                   >
                     {tab.label}
-                    <span className="tabular-nums text-foreground-muted">({tab.count})</span>
-                  </Button>
+                    <span className="ml-1.5 tabular-nums text-xs text-foreground-muted">
+                      {tab.count}
+                    </span>
+                  </button>
                 ))}
               </div>
 
               {visibleBadges.length === 0 ? (
-                <div className="mt-5 rounded-2xl border border-dashed border-border-subtle bg-surface-base p-6 text-sm text-foreground-muted">
+                <div className="mt-4 rounded-xl border border-dashed border-border-subtle bg-surface-base p-6 text-sm text-foreground-muted">
                   {t("achievements.ocVault.empty")}
                 </div>
               ) : (
-                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   {visibleBadges.map((badge) => {
                     const selected = draftIds.has(badge.issuanceId);
                     return (
@@ -178,43 +186,41 @@ export function ProfileCredentialManagerDialog({
                         disabled={saving}
                         onClick={() => toggleCredential(badge.issuanceId)}
                         className={cn(
-                          "group relative overflow-hidden rounded-2xl border bg-surface-base text-left shadow-card transition-[transform,border-color] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-wait",
+                          "group relative overflow-hidden rounded-xl border bg-surface-base text-left transition-[transform,border-color,background-color] hover:-translate-y-0.5 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-wait disabled:hover:translate-y-0",
                           selected
-                            ? "border-success/60"
+                            ? "border-success/70 bg-success/5"
                             : "border-border-subtle hover:border-border",
                         )}
                       >
-                        <div className={cn("transition-opacity", selected && "opacity-60")}>
-                          <div className="aspect-square bg-surface-raised">
+                        <div>
+                          <div className="aspect-[4/3] bg-surface-raised p-3">
                             {badge.imageUrl ? (
                               <img
                                 src={badge.imageUrl}
                                 alt=""
-                                className="size-full object-cover"
+                                className="size-full object-contain"
                               />
                             ) : (
-                              <div className={cn("flex size-full items-center justify-center", badge.bgColor, badge.color)}>
+                              <div className={cn("flex size-full items-center justify-center rounded-lg", badge.bgColor, badge.color)}>
                                 {badge.icon}
                               </div>
                             )}
                           </div>
-                          <div className="min-w-0 p-3">
-                            <p className="line-clamp-2 text-sm font-semibold text-foreground">
+                          <div className="min-w-0 px-3 pb-3 pt-2.5">
+                            <p className="line-clamp-1 text-sm font-semibold text-foreground">
                               {badge.title}
                             </p>
-                            <p className="mt-1 line-clamp-2 text-xs leading-5 text-foreground-muted">
+                            <p className="mt-1 line-clamp-1 text-xs leading-4 text-foreground-muted">
                               {badge.description}
                             </p>
                           </div>
                         </div>
                         {selected ? (
-                          <span className="absolute inset-0 flex items-center justify-center bg-black/20">
-                            <span className="flex size-12 items-center justify-center rounded-full bg-success text-white shadow-lg">
-                              <Check className="size-6" aria-hidden />
+                          <span className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-success text-white shadow-sm ring-2 ring-surface-base">
+                              <Check className="size-4" aria-hidden />
                               <span className="sr-only">
                                 {t("achievements.profileVisibility.selected")}
                               </span>
-                            </span>
                           </span>
                         ) : null}
                       </button>
@@ -226,8 +232,8 @@ export function ProfileCredentialManagerDialog({
           )}
         </div>
 
-        <DialogFooter className="shrink-0 border-t border-border-subtle bg-surface-float px-5 py-4 sm:px-6">
-          <p className="mr-auto text-sm text-foreground-muted">
+        <DialogFooter className="relative shrink-0 border-t border-border-subtle bg-surface-float px-5 py-3 sm:px-6">
+          <p className="self-start rounded-full bg-surface-raised px-2.5 py-1 text-xs font-medium text-foreground-muted sm:absolute sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2">
             {t("achievements.profileVisibility.selectedCount", { count: draftIds.size })}
           </p>
           <Button type="button" variant="outline" onClick={closeWithoutSaving} disabled={saving}>
