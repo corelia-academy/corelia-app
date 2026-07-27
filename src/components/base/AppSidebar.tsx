@@ -17,9 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarSeparator,
   SidebarTrigger,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { ShowForRole } from "@/components/auth/ShowForRole";
 import { useTranslation } from "react-i18next";
