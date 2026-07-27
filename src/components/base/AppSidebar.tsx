@@ -72,34 +72,32 @@ export default function AppSidebar({
         <SidebarGroup>
           <SidebarGroupContent className="px-1">
             <SidebarMenu className="gap-1">
-              {!isMobile
-                ? primaryNav.map((item) => {
-                    const Icon = item.icon;
-                    const isActive =
-                      item.href === "/"
-                        ? pathname === "/"
-                        : pathname.startsWith(item.href);
-                    return (
-                      <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton
-                          className="rounded-md"
-                          tooltip={t(item.labelKey)}
-                          isActive={isActive}
-                          render={
-                            <NavLink
-                              to={item.href}
-                              end={"end" in item ? item.end : undefined}
-                              className="flex w-full items-center gap-2"
-                            >
-                              <Icon className="size-5 shrink-0" aria-hidden />
-                              <span>{t(item.labelKey)}</span>
-                            </NavLink>
-                          }
-                        />
-                      </SidebarMenuItem>
-                    );
-                  })
-                : null}
+              {primaryNav.map((item) => {
+                const Icon = item.icon;
+                const isActive =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(item.href);
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      className="rounded-md"
+                      tooltip={t(item.labelKey)}
+                      isActive={isActive}
+                      render={
+                        <NavLink
+                          to={item.href}
+                          end={"end" in item ? item.end : undefined}
+                          className="flex w-full items-center gap-2"
+                        >
+                          <Icon className="size-5 shrink-0" aria-hidden />
+                          <span>{t(item.labelKey)}</span>
+                        </NavLink>
+                      }
+                    />
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
