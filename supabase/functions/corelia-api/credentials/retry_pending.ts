@@ -7,22 +7,38 @@ import { mintCredentialOnce } from "./mint.ts";
  * Retry all credential_issuances that are held at 'pending' with
  * error_message='awaiting_holder_id' for a specific user.
  *
+ * Also picks up 'pending' rows with error_message=NULL that are older than
+ * ORPHAN_AGE_MS: mintCredentialOnce() briefly clears error_message right
+ * before it POSTs to OpenCampus (see mint.ts), so a NULL value can mean
+ * either a genuinely in-flight attempt or a row orphaned by an unexpected
+ * exception before that fix landed. The age guard keeps this from re-firing
+ * a mint that is still actually running.
+ *
  * Called automatically after a user successfully connects their OCID
  * (see OCIDRedirect.tsx → credentials.retryPending).
  *
  * Each mint is attempted independently; partial failures are logged but do
  * not abort the others.
  */
+const ORPHAN_AGE_MS = 2 * 60 * 1000;
+
 export async function retryPendingIssuancesForUser(
   db: SupabaseClient,
   userId: string,
 ): Promise<{ retried: number; minted: number; stillFailed: number }> {
+  // Rows explicitly marked awaiting_holder_id are always retried immediately
+  // (the whole point of calling this right after connecting OCID). The
+  // error_message IS NULL branch only matches once it's old enough to no
+  // longer be a mint that's still genuinely in flight — see ORPHAN_AGE_MS doc
+  // above. Kept as a single nested-or so the age check does not also gate
+  // the awaiting_holder_id branch.
+  const orphanCutoffIso = new Date(Date.now() - ORPHAN_AGE_MS).toISOString();
   const { data: pending, error } = await db
     .from("credential_issuances")
     .select("id")
     .eq("user_id", userId)
     .eq("status", "pending")
-    .eq("error_message", "awaiting_holder_id");
+    .or(`error_message.eq.awaiting_holder_id,and(error_message.is.null,updated_at.lt.${orphanCutoffIso})`);
 
   if (error) throw new Error(error.message);
   if (!pending?.length) return { retried: 0, minted: 0, stillFailed: 0 };
