@@ -26,6 +26,7 @@ type IssuanceRow = {
   error_message: string | null;
   network: string;
   status: string;
+  show_on_profile: boolean | null;
   display_snapshot: unknown;
   credential_templates:
     | CredentialTemplateSummary
@@ -60,6 +61,7 @@ function mapIssuanceRow(raw: unknown): CredentialIssuanceWithTemplate {
     error_message: row.error_message ?? null,
     network: row.network === "mainnet" ? "mainnet" : "staging",
     status: row.status,
+    show_on_profile: row.show_on_profile === true,
     display_snapshot: snapshot,
     template,
   };
@@ -161,6 +163,7 @@ export async function fetchMyCredentialIssuances(
       error_message,
       network,
       status,
+      show_on_profile,
       display_snapshot,
       credential_templates (
         id,
@@ -184,7 +187,8 @@ export async function fetchMyCredentialIssuances(
   return (data ?? []).map(mapIssuanceRow);
 }
 
-export async function fetchMintedCredentialIssuancesForUser(
+/** Credentials deliberately selected by a profile owner for public display. */
+export async function fetchPublicProfileCredentialIssuances(
   userId: string,
 ): Promise<CredentialIssuanceWithTemplate[]> {
   const { data, error } = await supabase
@@ -202,6 +206,7 @@ export async function fetchMintedCredentialIssuancesForUser(
       error_message,
       network,
       status,
+      show_on_profile,
       display_snapshot,
       credential_templates (
         id,
@@ -219,11 +224,33 @@ export async function fetchMintedCredentialIssuancesForUser(
     )
     .eq("user_id", userId)
     .eq("status", "minted")
+    .eq("show_on_profile", true)
+    .not("oc_credential_id", "is", null)
     .order("minted_at", { ascending: false });
 
   if (error) throw new Error(error.message);
 
   return (data ?? []).map(mapIssuanceRow);
+}
+
+export async function setMyProfileCredentialVisibility(
+  issuanceIds: string[],
+): Promise<string[]> {
+  type ProfileCredentialVisibilityRow = {
+    issuance_id: string;
+    show_on_profile: boolean;
+  };
+  const deduplicatedIds = [...new Set(issuanceIds)];
+  const { data, error } = await supabase.rpc(
+    "set_my_profile_credential_visibility",
+    { p_issuance_ids: deduplicatedIds },
+  );
+
+  if (error) throw new Error(error.message);
+
+  return ((data ?? []) as ProfileCredentialVisibilityRow[])
+    .filter((row) => row.show_on_profile === true)
+    .map((row) => String(row.issuance_id));
 }
 
 export function openCampusCredentialExplorerUrl(
@@ -364,6 +391,7 @@ export function issuanceToBadgeItem(row: CredentialIssuanceWithTemplate, usernam
     ocTransactionHash: undefined,
     mintCredentialId: resolvedCredentialId,
     issuanceId: row.id,
+    showOnProfile: row.show_on_profile,
     status: (row.status as "pending" | "minted" | "failed" | "awaiting_holder_id") ?? "failed",
     credentialScope,
     hackathonRole: tpl?.hackathon_role ?? undefined,

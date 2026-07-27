@@ -123,7 +123,12 @@
       "contests": "Hackathons"
     },
     "actions": {
-      "editProfile": "Edit profile"
+      "editProfile": "Edit profile",
+      "previewAsGuest": "Preview as guest",
+      "exitPreview": "Exit preview",
+      "exitPreviewShort": "Exit preview",
+      "viewFollowers": "View followers",
+      "viewFollowing": "View profiles this user follows"
     },
     "labels": {
       "ocid": "OCID: {{ocid}}",
@@ -152,7 +157,10 @@
     "achievements": {
       "selfOnly": "Achievements are only visible to the account owner for now.",
       "openInAchievementsPage": "Open Achievements to view your certificates and badges.",
-      "cta": "Open Achievements"
+      "cta": "Open Achievements",
+      "privateTitle": "Achievement details are private",
+      "privateDescription": "Achievement details are not displayed publicly on this profile.",
+      "openVault": "Open achievements vault"
     },
     "courses": {
       "privateByDefault": "Courses are private for students by default.",
@@ -851,6 +859,21 @@
         "milestones": "Milestones"
       },
       "empty": "No credentials in this category yet."
+    },
+    "profileVisibility": {
+      "manage": "Manage credentials",
+      "title": "Manage profile credentials",
+      "description": "Choose the resolved Open Campus credentials that appear on your public Corelia profile.",
+      "selected": "Shown on profile",
+      "selectedCount": "Showing on profile: {{count}} credentials",
+      "apply": "Apply changes",
+      "applying": "Applying...",
+      "ok": "OK",
+      "empty": "You do not have any claimed Open Campus credentials to show yet.",
+      "saveSuccess": "Your public credential vault has been updated.",
+      "saveError": "Could not update your public credential vault.",
+      "publicVaultTitle": "Open Campus credentials",
+      "publicVaultDescription": "Credentials this member chose to show on their profile."
     },
     "credentialType": {
       "oca": "OCA",

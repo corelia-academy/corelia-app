@@ -51,6 +51,8 @@ export type CredentialIssuanceWithTemplate = {
   error_message?: string | null;
   network: CredentialIssuanceNetwork;
   status: string;
+  /** Whether the resolved OCC appears on the owner's public Corelia profile. */
+  show_on_profile: boolean;
   display_snapshot: CredentialDisplaySnapshot | null;
   template: CredentialTemplateSummary | null;
 };

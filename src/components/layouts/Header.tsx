@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
+  Award,
   CreditCard,
   GraduationCap,
   IdCard,
@@ -193,6 +194,11 @@ export default function Header() {
         to: "/account/cv",
         label: tAccount("nav.cv.title"),
         icon: <IdCard className="mr-2 size-4 shrink-0" aria-hidden />,
+      },
+      {
+        to: "/achievements",
+        label: tAccount("nav.achievements.title"),
+        icon: <Award className="mr-2 size-4 shrink-0" aria-hidden />,
       },
       {
         to: "/account/billing",

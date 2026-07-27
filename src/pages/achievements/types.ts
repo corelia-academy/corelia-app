@@ -66,6 +66,8 @@ export type BadgeItem = {
   mintCredentialId?: string | null;
   /** Issuance row id from DB for retry operations */
   issuanceId?: string;
+  /** Owner preference for displaying this resolved OCC on their public profile. */
+  showOnProfile?: boolean;
   /** Status of the credential issuance */
   status?: "pending" | "minted" | "failed" | "awaiting_holder_id";
   /** Scope grouping for Open Campus badges */

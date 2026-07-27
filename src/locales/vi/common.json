@@ -123,7 +123,12 @@
       "contests": "Hackathon"
     },
     "actions": {
-      "editProfile": "Chỉnh sửa hồ sơ"
+      "editProfile": "Chỉnh sửa hồ sơ",
+      "previewAsGuest": "Xem tư cách khách",
+      "exitPreview": "Thoát xem trước",
+      "exitPreviewShort": "Thoát preview",
+      "viewFollowers": "Xem danh sách người theo dõi",
+      "viewFollowing": "Xem danh sách đang theo dõi"
     },
     "labels": {
       "ocid": "OCID: {{ocid}}",
@@ -152,7 +157,10 @@
     "achievements": {
       "selfOnly": "Thành tích hiện chỉ hiển thị cho chính chủ tài khoản.",
       "openInAchievementsPage": "Mở trang Thành tích để xem chứng nhận và huy hiệu của bạn.",
-      "cta": "Mở trang Thành tích"
+      "cta": "Mở trang Thành tích",
+      "privateTitle": "Chi tiết thành tích không công khai",
+      "privateDescription": "Chi tiết thành tích không được hiển thị công khai trên hồ sơ này.",
+      "openVault": "Mở Kho thành tích"
     },
     "courses": {
       "privateByDefault": "Danh sách khóa học của học viên mặc định là riêng tư.",
@@ -851,6 +859,21 @@
         "milestones": "Milestones"
       },
       "empty": "Chưa có credential nào trong danh mục này."
+    },
+    "profileVisibility": {
+      "manage": "Quản lý chứng nhận",
+      "title": "Quản lý chứng nhận trên hồ sơ",
+      "description": "Chọn các Open Campus credential đã hoàn tất để hiển thị trên hồ sơ Corelia công khai của bạn.",
+      "selected": "Đang hiển thị trên hồ sơ",
+      "selectedCount": "Đang hiển thị trên hồ sơ: {{count}} chứng nhận",
+      "apply": "Áp dụng thay đổi",
+      "applying": "Đang áp dụng...",
+      "ok": "OK",
+      "empty": "Bạn chưa có Open Campus credential đã claim để hiển thị.",
+      "saveSuccess": "Đã cập nhật kho credential công khai của bạn.",
+      "saveError": "Không thể cập nhật kho credential công khai.",
+      "publicVaultTitle": "Open Campus credentials",
+      "publicVaultDescription": "Các credential thành viên này đã chọn hiển thị trên hồ sơ."
     },
     "credentialType": {
       "oca": "OCA",
