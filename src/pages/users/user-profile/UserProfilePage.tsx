@@ -97,11 +97,13 @@ function ProfileStat({
 
 function ProfileSidebar({
   profile,
+  followingProfileCount,
   bio,
   website,
   headerHandle,
 }: {
   profile: PublicProfile;
+  followingProfileCount: number | null;
   bio: string | null;
   website: string | null;
   headerHandle: string | null;
@@ -132,7 +134,7 @@ function ProfileSidebar({
     },
     {
       label: t("userProfile.labels.following"),
-      value: Number(profile.following_count ?? 0),
+      value: followingProfileCount ?? "—",
     },
   ];
 
@@ -211,7 +213,12 @@ export default function UserProfileLayout() {
   const { t, i18n } = useTranslation("common");
   const { handle } = useParams<{ handle: string }>();
   const { user, profile: currentUserProfile } = useAuth();
-  const { profile: fetchedProfile, loading, error } = useUserProfileLayoutData(handle);
+  const {
+    profile: fetchedProfile,
+    followingProfileCount,
+    loading,
+    error,
+  } = useUserProfileLayoutData(handle);
 
   const isSelf = Boolean(user && fetchedProfile && user.id === fetchedProfile.id);
   const [previewAsGuest, setPreviewAsGuest] = useState(false);
@@ -394,7 +401,7 @@ export default function UserProfileLayout() {
                     />
                     <ProfileStat
                       label={t("userProfile.labels.following")}
-                      value={Number(profile.following_count ?? 0)}
+                      value={followingProfileCount ?? "—"}
                       icon={Users}
                       onClick={
                         profile.profile_public
@@ -483,6 +490,7 @@ export default function UserProfileLayout() {
             {profile.profile_public || effectiveIsSelf ? (
               <ProfileSidebar
                 profile={profile}
+                followingProfileCount={followingProfileCount}
                 bio={bio}
                 website={website}
                 headerHandle={headerHandle}
