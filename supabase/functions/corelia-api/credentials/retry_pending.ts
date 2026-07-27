@@ -22,7 +22,8 @@ export async function retryPendingIssuancesForUser(
     .select("id")
     .eq("user_id", userId)
     .eq("status", "pending")
-    .eq("error_message", "awaiting_holder_id");
+    .or("error_message.eq.awaiting_holder_id,error_message.is.null")
+    .lt("updated_at", new Date(Date.now() - 2 * 60 * 1000).toISOString());
 
   if (error) throw new Error(error.message);
   if (!pending?.length) return { retried: 0, minted: 0, stillFailed: 0 };
