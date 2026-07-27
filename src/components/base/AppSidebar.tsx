@@ -42,7 +42,6 @@ export default function AppSidebar({
   const { t } = useTranslation("common");
   const location = useLocation();
   const pathname = location.pathname;
-  const { isMobile } = useSidebar();
 
   return (
     <Sidebar collapsible={collapsible} variant="sidebar">
