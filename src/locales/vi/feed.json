@@ -36,6 +36,15 @@
       "load": "Không tải được danh sách người theo dõi."
     }
   },
+  "following": {
+    "title": "Đang theo dõi",
+    "description": "Các hồ sơ công khai mà người dùng này đang theo dõi.",
+    "loading": "Đang tải danh sách đang theo dõi...",
+    "empty": "Chưa theo dõi hồ sơ công khai nào.",
+    "errors": {
+      "load": "Không tải được danh sách đang theo dõi."
+    }
+  },
   "item": {
     "open": "Mở"
   },

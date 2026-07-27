@@ -34,19 +34,25 @@ export function FollowerPreview({
   totalCount,
   limit = 5,
   className = "",
+  open,
+  onOpenChange,
 }: {
   subject: FollowSubject;
   totalCount?: number | null;
   limit?: number;
   className?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const { t } = useTranslation("feed");
   const [items, setItems] = useState<FollowerPreviewRow[]>([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [internalDialogOpen, setInternalDialogOpen] = useState(false);
   const [dialogItems, setDialogItems] = useState<FollowerPreviewRow[]>([]);
   const [dialogLoading, setDialogLoading] = useState(false);
   const [dialogError, setDialogError] = useState<string | null>(null);
   const { type, id } = subject;
+  const dialogOpen = open ?? internalDialogOpen;
+  const setDialogOpen = onOpenChange ?? setInternalDialogOpen;
 
   useEffect(() => {
     let cancelled = false;
@@ -67,40 +73,42 @@ export function FollowerPreview({
   }, [id, limit, type]);
 
   const count = typeof totalCount === "number" ? totalCount : items.length;
-  if (count <= 0) return null;
+  if (count <= 0 && !dialogOpen) return null;
 
   return (
     <div className={className}>
-      <div className="flex items-center gap-2 text-xs text-foreground-muted">
-        {items.length > 0 ? (
-          <AvatarGroup>
-            {items.slice(0, limit).map((row) => {
-              const label = followerLabel(row);
-              return (
-                <NavLink key={row.id} to={followerHref(row)} title={label}>
-                  <Avatar size="sm">
-                    <AvatarImage src={row.avatar_url ?? undefined} alt="" />
-                    <AvatarFallback>{label.charAt(0).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                </NavLink>
-              );
+      {count > 0 ? (
+        <div className="flex items-center gap-2 text-xs text-foreground-muted">
+          {items.length > 0 ? (
+            <AvatarGroup>
+              {items.slice(0, limit).map((row) => {
+                const label = followerLabel(row);
+                return (
+                  <NavLink key={row.id} to={followerHref(row)} title={label}>
+                    <Avatar size="sm">
+                      <AvatarImage src={row.avatar_url ?? undefined} alt="" />
+                      <AvatarFallback>{label.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </NavLink>
+                );
+              })}
+              {count > items.length ? (
+                <AvatarGroupCount>+{Math.min(count - items.length, 99)}</AvatarGroupCount>
+              ) : null}
+            </AvatarGroup>
+          ) : null}
+          <button
+            type="button"
+            className="font-medium underline-offset-4 hover:text-foreground hover:underline"
+            onClick={() => setDialogOpen(true)}
+          >
+            {t("followers.summary", {
+              count,
+              defaultValue: "{{count}} followers",
             })}
-            {count > items.length ? (
-              <AvatarGroupCount>+{Math.min(count - items.length, 99)}</AvatarGroupCount>
-            ) : null}
-          </AvatarGroup>
-        ) : null}
-        <button
-          type="button"
-          className="font-medium underline-offset-4 hover:text-foreground hover:underline"
-          onClick={() => setDialogOpen(true)}
-        >
-          {t("followers.summary", {
-            count,
-            defaultValue: "{{count}} followers",
-          })}
-        </button>
-      </div>
+          </button>
+        </div>
+      ) : null}
       <FollowerListDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
