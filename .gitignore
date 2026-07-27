@@ -47,6 +47,7 @@ AGENTS.md
 
 # Supabase CLI local metadata
 supabase/.temp/
+supabase/seed.sql
 
 # Supabase Studio scratch queries
 supabase/snippets/Untitled query *.sql

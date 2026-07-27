@@ -130,12 +130,35 @@ export async function invokeListActiveCourseCredentialTemplates(
   const map = new Map<string, CourseCredentialTemplateSummary>();
   if (courseIds.length === 0) return map;
 
-  const res = await postJson<{ ok: boolean; templates?: CourseCredentialTemplateSummary[]; message?: string }>(
-    "credentials.listActiveCourseCredentialTemplates",
-    { courseIds },
-  );
-  for (const tpl of res.templates ?? []) {
-    map.set(tpl.courseId, tpl);
+  try {
+    const res = await postJson<{ ok: boolean; templates?: CourseCredentialTemplateSummary[]; message?: string }>(
+      "credentials.listActiveCourseCredentialTemplates",
+      { courseIds },
+    );
+    for (const tpl of res.templates ?? []) {
+      map.set(tpl.courseId, tpl);
+    }
+  } catch (err) {
+    console.warn("[credentialsEdge] invokeListActiveCourseCredentialTemplates edge call failed, falling back to direct DB query:", err);
+    const { data } = await supabase
+      .from("credential_templates")
+      .select("id, course_id, name, description, image_url, thumbnail_url, achievement_type, collection_symbol")
+      .in("course_id", courseIds)
+      .eq("is_active", true);
+
+    for (const row of data ?? []) {
+      if (!row.course_id) continue;
+      map.set(row.course_id, {
+        id: row.id,
+        courseId: row.course_id,
+        name: row.name,
+        description: row.description,
+        imageUrl: row.image_url,
+        thumbnailUrl: row.thumbnail_url ?? null,
+        achievementType: row.achievement_type,
+        collectionSymbol: row.collection_symbol === "ocbadge" ? "ocbadge" : null,
+      });
+    }
   }
   return map;
 }
