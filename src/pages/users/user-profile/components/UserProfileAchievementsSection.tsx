@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
 import { OcBadgesByScopeTabs } from "@/pages/achievements/components/OcBadgesByScopeTabs";
-import { CertificateCard } from "@/pages/achievements/components/CertificateCard";
 import { OcCredentialModal } from "@/pages/achievements/components/OcCredentialModal";
 import { StatsBar } from "@/pages/achievements/components/StatsBar";
 import { useAchievementsPage } from "@/pages/achievements/hooks/useAchievementsPage";
@@ -69,8 +68,7 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
     await reloadAchievements();
   }
 
-  const earnedBadges = badges.filter((b) => !b.locked);
-  const recentCertificates = certificates.slice(0, 6);
+  const earnedBadges = badges.filter((b) => !b.locked && b.showOnProfile);
   const shouldShowPublicPrivacyState = !isSelf && !loading && !loadError && badges.length === 0;
   const shouldHidePublicAchievementContent = !isSelf && Boolean(loadError);
 
@@ -142,53 +140,16 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
         </div>
       )}
 
-      {isSelf ? (
-        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
-          <div className="text-sm font-medium text-foreground">
-            {t("achievements.vaults.certificates.title")}
-          </div>
-          <p className="mt-1 text-sm text-foreground-muted">
-            {t("achievements.vaults.certificates.subtitle")}
-          </p>
-
-          <div className="mt-4">
-            {loading ? (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <Skeleton className="h-28 w-full rounded-md" />
-                <Skeleton className="h-28 w-full rounded-md" />
-                <Skeleton className="h-28 w-full rounded-md" />
-              </div>
-            ) : recentCertificates.length === 0 ? (
-              <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 text-sm text-foreground-muted">
-                {t("achievements.vaults.certificates.empty")}
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {recentCertificates.map((cert) => (
-                  <CertificateCard
-                    key={cert.id}
-                    cert={cert}
-                    onOpenModal={openModal}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      ) : null}
-
       {!shouldShowPublicPrivacyState && !shouldHidePublicAchievementContent ? (
       <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-sm font-medium text-foreground">
-              {isSelf
-                ? t("achievements.vaults.badges.title")
-                : t("achievements.profileVisibility.publicVaultTitle")}
+              {t("achievements.profileVisibility.publicVaultTitle")}
             </div>
             <p className="mt-1 text-sm text-foreground-muted">
               {isSelf
-                ? t("achievements.vaults.badges.subtitle")
+                ? t("achievements.profileVisibility.selfVaultDescription")
                 : t("achievements.profileVisibility.publicVaultDescription")}
             </p>
           </div>

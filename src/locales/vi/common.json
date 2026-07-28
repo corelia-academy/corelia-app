@@ -873,7 +873,8 @@
       "saveSuccess": "Đã cập nhật kho credential công khai của bạn.",
       "saveError": "Không thể cập nhật kho credential công khai.",
       "publicVaultTitle": "Open Campus credentials",
-      "publicVaultDescription": "Các credential thành viên này đã chọn hiển thị trên hồ sơ."
+      "publicVaultDescription": "Các credential thành viên này đã chọn hiển thị trên hồ sơ.",
+      "selfVaultDescription": "Các credential bạn đã chọn hiển thị công khai trên hồ sơ."
     },
     "credentialType": {
       "oca": "OCA",

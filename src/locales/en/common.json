@@ -873,7 +873,8 @@
       "saveSuccess": "Your public credential vault has been updated.",
       "saveError": "Could not update your public credential vault.",
       "publicVaultTitle": "Open Campus credentials",
-      "publicVaultDescription": "Credentials this member chose to show on their profile."
+      "publicVaultDescription": "Credentials this member chose to show on their profile.",
+      "selfVaultDescription": "Credentials you chose to show publicly on your profile."
     },
     "credentialType": {
       "oca": "OCA",
