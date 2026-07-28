@@ -179,33 +179,34 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
   }
 
   const template = row.credential_templates as CredentialTemplateRow & { network_override?: string | null };
-  const defaultNet = await getDefaultMintNetwork(db);
-  const network = resolveMintNetwork(template.network_override, defaultNet);
 
-  const apiKey = openCampusApiKey(network);
-  if (!apiKey) {
+  // Resolve the holder before touching any settings lookup (network, mint
+  // endpoint, logo, base URL, email locale) — those calls throw on missing
+  // config, and doing them ahead of the holder check used to leave a
+  // freshly-inserted issuance orphaned at status='pending', error_message=NULL
+  // (invisible to credentials.retryPending, which only matches the literal
+  // 'awaiting_holder_id') whenever a setting was missing. Fetching the holder
+  // first, and gating everything else behind a single try/catch, guarantees
+  // the row always lands on a terminal, retry-visible state.
+  const { data: profile, error: profErr } = await db
+    .from("profiles")
+    .select("username, email, full_name, ocid, ocid_eth_address")
+    .eq("id", row.user_id)
+    .maybeSingle();
+  if (profErr) {
     await db.from("credential_issuances").update({
       status: "failed",
-      error_message: "Missing OPENCAMPUS_API_KEY_* secret",
+      error_message: profErr.message,
       retry_count: row.retry_count + 1,
     }).eq("id", issuanceId);
-    return { ok: false, error: "Missing API key" };
+    return { ok: false, error: profErr.message };
   }
-
-  const [{ data: profile, error: profErr }, logoUrl, baseUrl, endpoint] = await Promise.all([
-    db.from("profiles").select("username, email, full_name, ocid, ocid_eth_address").eq("id", row.user_id).maybeSingle(),
-    getCoreliaLogoUrl(db),
-    getAppBaseUrl(db),
-    getMintEndpoint(db, network),
-  ]);
-  if (profErr) throw new Error(profErr.message);
 
   const username = profile?.username != null ? String(profile.username) : null;
   const holderOcId = profile?.ocid != null ? String(profile.ocid) : null;
   const holderAddress = profile?.ocid_eth_address != null ? String(profile.ocid_eth_address) : null;
   const email = profile?.email != null ? String(profile.email).trim() : "";
   const holderName = profile?.full_name != null ? String(profile.full_name).trim() || null : null;
-  const emailLocale = await getUserEmailLocale(db, row.user_id);
 
   // If user has neither OC ID nor wallet address, hold the issuance instead of
   // calling the OC API and receiving a guaranteed rejection.
@@ -218,40 +219,60 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
     return { ok: false, error: "awaiting_holder_id" };
   }
 
-  const profilePath = username ? `/u/${encodeURIComponent(username)}` : `/account`;
-  const profileUrl = `${baseUrl}${profilePath}`;
-
-  // OCA credential art is always the generic template image — never a
-  // learner-name-rendered certificate. Printing the holder's name on an
-  // image attached to an immutable on-chain credential would leak PII
-  // permanently onto the public ledger.
-  const isOCA = !template.collection_symbol;
-  const mintEmailImageUrl = template.image_url;
-
-  const awardedIso = new Date().toISOString();
-  const { body: ocBody } = await buildOpenCampusPayload({
-    template,
-    userId: row.user_id,
-    username,
-    profileUrl,
-    logoUrl,
-    holderOcId,
-    holderAddress,
-    holderName,
-    holderEmail: email || null,
-    awardedIso,
-  });
-
-  const { error: pendingErr } = await db.from("credential_issuances").update({
-    oc_request_payload: ocBody as Record<string, unknown>,
-    network,
-    error_message: null,
-  }).eq("id", issuanceId);
-  if (pendingErr) throw new Error(pendingErr.message);
-
   let ocResponseJson: unknown = null;
   let ocCredentialId: string | null = null;
   try {
+    const defaultNet = await getDefaultMintNetwork(db);
+    const network = resolveMintNetwork(template.network_override, defaultNet);
+
+    const apiKey = openCampusApiKey(network);
+    if (!apiKey) {
+      await db.from("credential_issuances").update({
+        status: "failed",
+        error_message: "Missing OPENCAMPUS_API_KEY_* secret",
+        retry_count: row.retry_count + 1,
+      }).eq("id", issuanceId);
+      return { ok: false, error: "Missing API key" };
+    }
+
+    const [logoUrl, baseUrl, endpoint, emailLocale] = await Promise.all([
+      getCoreliaLogoUrl(db),
+      getAppBaseUrl(db),
+      getMintEndpoint(db, network),
+      getUserEmailLocale(db, row.user_id),
+    ]);
+
+    const profilePath = username ? `/u/${encodeURIComponent(username)}` : `/account`;
+    const profileUrl = `${baseUrl}${profilePath}`;
+
+    // OCA credential art is always the generic template image — never a
+    // learner-name-rendered certificate. Printing the holder's name on an
+    // image attached to an immutable on-chain credential would leak PII
+    // permanently onto the public ledger.
+    const isOCA = !template.collection_symbol;
+    const mintEmailImageUrl = template.image_url;
+
+    const awardedIso = new Date().toISOString();
+    const { body: ocBody } = await buildOpenCampusPayload({
+      template,
+      userId: row.user_id,
+      username,
+      profileUrl,
+      logoUrl,
+      holderOcId,
+      holderAddress,
+      holderName,
+      holderEmail: email || null,
+      awardedIso,
+    });
+
+    const { error: pendingErr } = await db.from("credential_issuances").update({
+      oc_request_payload: ocBody as Record<string, unknown>,
+      network,
+      error_message: null,
+    }).eq("id", issuanceId);
+    if (pendingErr) throw new Error(pendingErr.message);
+
     const res = await fetch(endpoint, {
       method: "POST",
       headers: {

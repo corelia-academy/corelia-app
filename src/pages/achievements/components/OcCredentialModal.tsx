@@ -71,6 +71,8 @@ export function OcCredentialModal({
   const d = item.data;
   const isClaimed = d.ocClaimStatus === "claimed";
   const isPending = d.ocClaimStatus === "pending";
+  const isAwaitingHolder = d.ocClaimStatus === "awaiting_holder_id";
+  const isReconciling = d.ocClaimStatus === "needs_reconciliation";
   const isFailed = d.ocClaimStatus === "failed";
   const isUnclaimed = d.ocClaimStatus === "unclaimed";
 
@@ -221,7 +223,14 @@ export function OcCredentialModal({
                 <Button
                   className="w-full gap-3 text-base font-semibold"
                   size="lg"
-                  disabled={claiming || (item.kind === "cert" && !hasName) || isClaimed || isPending}
+                  disabled={
+                    claiming ||
+                    (item.kind === "cert" && !hasName) ||
+                    isClaimed ||
+                    isPending ||
+                    isAwaitingHolder ||
+                    isReconciling
+                  }
                   onClick={() => onClaim(d.id, item.kind)}
                 >
                   {claiming ? (
@@ -375,11 +384,58 @@ export function OcCredentialModal({
             </a>
           )}
 
+          {isAwaitingHolder && (
+            <div className="mb-4 rounded-xl border border-warning/25 bg-warning/8 px-3 py-3">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {t("achievements.oc.modal.awaitingHolder.title")}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                    {t("achievements.oc.modal.awaitingHolder.body")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isReconciling && (
+            <div className="mb-4 rounded-xl border border-primary/25 bg-primary/5 px-3 py-3">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {t("achievements.oc.modal.reconciliation.title")}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                    {t("achievements.oc.modal.reconciliation.body")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <p className="mb-4 text-xs leading-relaxed text-foreground-muted sm:text-sm">
             {t("achievements.oc.modal.standardsNote")}
           </p>
 
           <div className="flex flex-col gap-3 mt-2">
+            {isAwaitingHolder && (
+              <Button
+                className="w-full gap-3 text-base font-semibold"
+                size="lg"
+                onClick={onConnectOcid}
+              >
+                <img
+                  src="/open-campus-edu-logo.png"
+                  alt=""
+                  className="size-5 shrink-0 rounded-full brightness-0 invert"
+                />
+                <span>{t("achievements.oc.modal.awaitingHolder.cta")}</span>
+              </Button>
+            )}
+
             {(isUnclaimed || isFailed) && (
               <Button
                 className="w-full gap-3 text-base font-semibold"

@@ -72,6 +72,11 @@ export default function CredentialRealtimeSync() {
                   duration: 6000,
                 }
               );
+            } else if (status === "minted") {
+              toast.info(t("achievements.oc.modal.reconciliation.title"), {
+                description: t("achievements.oc.modal.reconciliation.body"),
+                duration: 6000,
+              });
             }
           } else if (payload.eventType === "UPDATE") {
             const newStatus = payload.new.status;
@@ -106,6 +111,11 @@ export default function CredentialRealtimeSync() {
                     duration: 6000,
                   }
                 );
+              } else if (newStatus === "minted") {
+                toast.info(t("achievements.oc.modal.reconciliation.title"), {
+                  description: t("achievements.oc.modal.reconciliation.body"),
+                  duration: 6000,
+                });
               } else if (newStatus === "failed") {
                 toast.error(
                   t("achievements.sync.failedTitle", { defaultValue: "Tạo chứng nhận thất bại" }),

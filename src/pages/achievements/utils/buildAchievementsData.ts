@@ -3,12 +3,17 @@ import { Award } from "lucide-react";
 
 import { courseHasCertificate, getCourse } from "@/lib/courses";
 import type { CourseCredentialTemplateSummary } from "@/lib/credentialsEdge";
-import { openCampusCredentialExplorerUrl, type CourseIssuanceInfo } from "@/lib/credentialIssuances";
+import { openCampusCredentialExplorerUrl } from "@/lib/credentialIssuances";
+import type { CourseIssuanceInfo } from "@/lib/credentialIssuances";
 import { intlLocale } from "@/lib/intl";
 import type { Enrollment } from "@/types/courses";
 
 import { BADGE_PLACEHOLDER, BADGE_STYLES, CERT_PLACEHOLDER } from "../constants";
 import type { BadgeItem, CertificateItem } from "../types";
+import {
+  claimStatusFromIssuance,
+  shouldUseSavedCourseIssuance,
+} from "./credentialState";
 
 export function formatDate(value?: string | null): string {
   if (!value) return "—";
@@ -52,17 +57,18 @@ export function buildCourseCertificates(
       const course = courseMap.get(item.course_id);
       const credentialTemplate = courseCredentialTemplateMap?.get(item.course_id);
       const savedIssuance = courseIssuanceMap?.get(item.course_id);
-      const issuance = credentialTemplate && savedIssuance?.templateId !== credentialTemplate.id
-        ? undefined
-        : savedIssuance;
-      // "claimed" requires status=minted AND oc_credential_id present.
-      // minted without oc_credential_id = incomplete mint → treat as failed.
+      const issuance = shouldUseSavedCourseIssuance(
+        savedIssuance,
+        credentialTemplate?.id,
+      )
+        ? savedIssuance
+        : undefined;
       const ocClaimStatus = issuance
-        ? issuance.status === "minted" && issuance.oc_credential_id
-          ? "claimed"
-          : issuance.status === "minted" || issuance.status === "failed"
-            ? "failed"
-            : "pending"
+        ? claimStatusFromIssuance({
+            status: issuance.status,
+            ocCredentialId: issuance.oc_credential_id,
+            errorMessage: issuance.error_message,
+          })
         : "unclaimed";
       const ocCredentialId = issuance?.oc_credential_id ?? null;
       const ocCredentialUrl = ocCredentialId
@@ -86,7 +92,7 @@ export function buildCourseCertificates(
         nameColor: course?.certificate_name_color ?? "#000000",
         holderName: holderName || null,
         hasOnchainCredentialTemplate: Boolean(credentialTemplate),
-        onchainTemplateId: credentialTemplate?.id ?? issuance?.templateId ?? null,
+        onchainTemplateId: issuance?.templateId ?? credentialTemplate?.id ?? null,
         onchainCredentialAutoIssued:
           credentialTemplate?.collectionSymbol === "ocbadge" ||
           issuance?.collectionSymbol === "ocbadge",

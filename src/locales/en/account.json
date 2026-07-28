@@ -18,6 +18,10 @@
       "title": "Learning profile & CV",
       "description": "Info for advising & career support"
     },
+    "achievements": {
+      "title": "Achievements Vault",
+      "description": "Manage certificates & badges"
+    },
     "cora": {
       "title": "Cora AI",
       "description": "AI plans, limits, and upgrade history"

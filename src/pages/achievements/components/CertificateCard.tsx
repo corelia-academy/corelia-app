@@ -216,7 +216,7 @@ export function CertificateCard({
   const canClaimOnchainCredential =
     hasOnchainCredentialAccess &&
     !cert.onchainCredentialAutoIssued &&
-    cert.ocClaimStatus !== "claimed";
+    (cert.ocClaimStatus === "unclaimed" || cert.ocClaimStatus === "failed");
   const canViewOnchainCredential =
     cert.ocClaimStatus === "claimed" && Boolean(cert.ocCredentialUrl);
 
@@ -367,7 +367,7 @@ export function CertificateCard({
                   {t("achievements.certificates.ocAction.view")}
                 </span>
               </Button>
-            ) : canClaimOnchainCredential && (
+            ) : canClaimOnchainCredential ? (
               <Button
                 type="button"
                 variant="outline"
@@ -383,7 +383,23 @@ export function CertificateCard({
                   {t("achievements.certificates.ocAction.claim")}
                 </span>
               </Button>
-            )}
+            ) : cert.ocClaimStatus === "awaiting_holder_id" ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenModal({ kind: "cert", data: cert })}
+                className="border-warning/30 bg-warning/10 text-warning-foreground hover:bg-warning/15"
+              >
+                <img
+                  src="/open-campus-edu-logo.png"
+                  alt="OC"
+                  className="size-3.5 shrink-0 rounded-full sm:size-4"
+                />
+                <span className="truncate">
+                  {t("achievements.oc.modal.awaitingHolder.cta")}
+                </span>
+              </Button>
+            ) : null}
             <DropdownMenu>
               <DropdownMenuTrigger
                 disabled={!hasTemplate || downloading}

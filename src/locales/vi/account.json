@@ -18,6 +18,10 @@
       "title": "Hồ sơ học tập & CV",
       "description": "Thông tin phục vụ tư vấn & việc làm"
     },
+    "achievements": {
+      "title": "Kho thành tích",
+      "description": "Quản lý chứng nhận & huy hiệu"
+    },
     "cora": {
       "title": "Cora AI",
       "description": "Gói AI, hạn mức và lịch sử nâng cấp"

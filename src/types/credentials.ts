@@ -48,8 +48,11 @@ export type CredentialIssuanceWithTemplate = {
   minted_at: string | null;
   oc_credential_id: string | null;
   oc_response?: unknown;
+  error_message?: string | null;
   network: CredentialIssuanceNetwork;
   status: string;
+  /** Whether the resolved OCC appears on the owner's public Corelia profile. */
+  show_on_profile: boolean;
   display_snapshot: CredentialDisplaySnapshot | null;
   template: CredentialTemplateSummary | null;
 };

@@ -54,6 +54,7 @@ const ClaimPage = lazy(() =>
   import("@/pages/claim/ClaimPage").then((m) => ({ default: m.ClaimPage })),
 );
 const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
+const AchievementsPage = lazy(() => import("@/pages/achievements"));
 
 const Account = lazy(() => import("@/pages/account/Account"));
 const AccountProfileRoute = lazy(() =>
@@ -407,7 +408,16 @@ export default function App() {
                   </Suspense>
                 }
               />
-              <Route path="achievements" element={<Navigate to="/account" replace />} />
+              <Route
+                path="achievements"
+                element={
+                  <RequireAuth>
+                    <Suspense fallback={<PageFallback />}>
+                      <AchievementsPage />
+                    </Suspense>
+                  </RequireAuth>
+                }
+              />
               <Route
                 path="roadmap"
                 element={

@@ -17,6 +17,7 @@ interface FollowButtonProps {
   className?: string;
   size?: "sm" | "default" | "lg";
   showCount?: boolean;
+  onFollowerCountChange?: (nextCount: number) => void;
 }
 
 export function FollowButton({
@@ -27,6 +28,7 @@ export function FollowButton({
   className,
   size = "default",
   showCount = true,
+  onFollowerCountChange,
 }: FollowButtonProps) {
   const { t } = useTranslation("feed");
   const { isAuthenticated } = useAuth();
@@ -82,17 +84,20 @@ export function FollowButton({
 
     const nextFollowing = !following;
     const previousCount = count;
+    const nextCount =
+      previousCount === null
+        ? null
+        : Math.max(0, previousCount + (nextFollowing ? 1 : -1));
     setSaving(true);
     setError(null);
     setFollowing(nextFollowing);
-    setCount((current) =>
-      current === null ? current : Math.max(0, current + (nextFollowing ? 1 : -1)),
-    );
+    setCount(nextCount);
 
     try {
       const nextSubject = { type: subjectType, id: subjectId };
       if (nextFollowing) await followSubject(nextSubject);
       else await unfollowSubject(nextSubject);
+      if (nextCount !== null) onFollowerCountChange?.(nextCount);
     } catch (e) {
       setFollowing(following);
       setCount(previousCount);
@@ -107,6 +112,7 @@ export function FollowButton({
     isAuthenticated,
     location,
     navigate,
+    onFollowerCountChange,
     saving,
     subjectId,
     subjectType,

@@ -6,7 +6,6 @@ import {
   fetchCourseIssuanceMapForUser,
   fetchMyCredentialIssuances,
   issuanceToBadgeItem,
-  type CourseIssuanceInfo,
 } from "@/lib/credentialIssuances";
 import { CREDENTIAL_SYNC_EVENT } from "@/components/base/CredentialRealtimeSync";
 import {
@@ -27,8 +26,6 @@ import {
   syncCourseCompletion,
 } from "@/lib/courses";
 import { useAuth } from "@/stores/authStore";
-import type { Enrollment } from "@/types/courses";
-
 import type {
   BadgeItem,
   CertificateItem,
@@ -46,7 +43,7 @@ export interface CertificateSyncCandidate {
   courseTitle: string;
 }
 
-export function useAchievementsPage() {
+export function useAchievementsPage(enabled = true) {
   const { user, isAuthenticated, profile } = useAuth();
   const [certificates, setCertificates] = useState<CertificateItem[]>([]);
   const [badges, setBadges] = useState<BadgeItem[]>([]);
@@ -54,6 +51,7 @@ export function useAchievementsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [syncingCourseId, setSyncingCourseId] = useState<string | null>(null);
   const [certificateSyncCandidates, setCertificateSyncCandidates] = useState<
     CertificateSyncCandidate[]
@@ -62,32 +60,31 @@ export function useAchievementsPage() {
   const { t } = useTranslation("common");
 
   const loadAchievements = useCallback(async () => {
-    if (!user || !isAuthenticated) {
+    if (!enabled || !user || !isAuthenticated) {
       setCertificates([]);
       setBadges([]);
       setCertificateSyncCandidates([]);
+      setLoadError(null);
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
+      setLoadError(null);
       // Invalidate course cache so certificate template URLs (CDN) are always fresh
       invalidateCourseCache();
       await backfillMissingEnrollmentsForUser(user.id).catch(() => 0);
       const [enrollments, courseIssuanceMap, ocRows] = await Promise.all([
-        getMyEnrollments(user.id).catch(() => [] as Enrollment[]),
-        fetchCourseIssuanceMapForUser(user.id).catch(() => new Map<string, CourseIssuanceInfo>()),
-        fetchMyCredentialIssuances(user.id).catch(() => []),
+        getMyEnrollments(user.id),
+        fetchCourseIssuanceMapForUser(user.id),
+        fetchMyCredentialIssuances(user.id),
       ]);
 
       const courseIds = Array.from(new Set(enrollments.map((item) => item.course_id)));
       const [courseRows, courseCredentialTemplateMap] = await Promise.all([
         Promise.all(courseIds.map(async (courseId) => [courseId, await getCourse(courseId)] as const)),
-        invokeListActiveCourseCredentialTemplates(courseIds).catch((e) => {
-          console.error("Course credential template fetch error:", e);
-          return new Map();
-        }),
+        invokeListActiveCourseCredentialTemplates(courseIds),
       ]);
       const courseMap = new Map(courseRows);
 
@@ -168,10 +165,16 @@ export function useAchievementsPage() {
       setCertificateSyncCandidates(
         pendingCandidates.filter((item): item is CertificateSyncCandidate => !!item),
       );
+    } catch (error) {
+      console.error("[achievements] load failed", error);
+      // Do not replace already-rendered achievements with empty collections on
+      // a transient Supabase/Edge failure; that would falsely expose minted
+      // credentials as unclaimed.
+      setLoadError(t("achievements.loadError.body"));
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, profile?.full_name, profile?.ocid, t, user]);
+  }, [enabled, isAuthenticated, profile?.full_name, profile?.ocid, t, user]);
 
   useEffect(() => {
     void loadAchievements();
@@ -240,8 +243,13 @@ export function useAchievementsPage() {
 
       if (newBadge.ocClaimStatus === "claimed") {
         openModal({ kind: "badge", data: newBadge });
-      } else if (newBadge.status === "pending") {
+      } else if (
+        newBadge.ocClaimStatus === "pending" ||
+        newBadge.ocClaimStatus === "awaiting_holder_id"
+      ) {
         toast.info(t("achievements.oc.modal.claimToast.pending"));
+      } else if (newBadge.ocClaimStatus === "needs_reconciliation") {
+        toast.info(t("achievements.oc.modal.reconciliation.title"));
       } else {
         toast.error(t("achievements.oc.modal.claimToast.error.failed"));
       }
@@ -305,9 +313,15 @@ export function useAchievementsPage() {
           ocHolderOcId: ocidWithEduSuffix(profile?.ocid),
         });
         openModal({ kind: "badge", data: newBadge });
-      } else if (newBadge.status === "pending") {
-        patchCert(id, { ocClaimStatus: "pending" });
+      } else if (
+        newBadge.ocClaimStatus === "pending" ||
+        newBadge.ocClaimStatus === "awaiting_holder_id"
+      ) {
+        patchCert(id, { ocClaimStatus: newBadge.ocClaimStatus });
         toast.info(t("achievements.oc.modal.claimToast.pending"));
+      } else if (newBadge.ocClaimStatus === "needs_reconciliation") {
+        patchCert(id, { ocClaimStatus: "needs_reconciliation" });
+        toast.info(t("achievements.oc.modal.reconciliation.title"));
       } else {
         // minted without oc_credential_id, or failed — issuanceToBadgeItem
         // already resolved ocClaimStatus to "failed" for both cases.
@@ -356,6 +370,8 @@ export function useAchievementsPage() {
     certificates,
     badges,
     loading,
+    loadError,
+    reloadAchievements: loadAchievements,
     certificateSyncCandidates,
     syncingCourseId,
     modalItem,

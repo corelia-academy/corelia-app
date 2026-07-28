@@ -31,6 +31,8 @@ export default function AchievementsPage() {
     certificates,
     badges,
     loading,
+    loadError,
+    reloadAchievements,
     certificateSyncCandidates,
     syncingCourseId,
     modalItem,
@@ -62,9 +64,14 @@ export default function AchievementsPage() {
     ...certificates.filter((c) => c.ocClaimStatus === "claimed"),
     ...earnedBadges.filter((b) => b.ocClaimStatus === "claimed"),
   ].length;
+  const pendingStatuses = new Set([
+    "pending",
+    "awaiting_holder_id",
+    "needs_reconciliation",
+  ]);
   const pendingCount = [
-    ...certificates.filter((c) => c.ocClaimStatus === "pending"),
-    ...earnedBadges.filter((b) => b.ocClaimStatus === "pending"),
+    ...certificates.filter((c) => pendingStatuses.has(c.ocClaimStatus)),
+    ...earnedBadges.filter((b) => pendingStatuses.has(b.ocClaimStatus)),
   ].length;
   const unclaimedCount = [
     ...certificates.filter((c) => c.ocClaimStatus === "unclaimed"),
@@ -76,6 +83,26 @@ export default function AchievementsPage() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      {loadError && (
+        <div
+          role="alert"
+          className="mb-4 flex flex-col gap-3 rounded-xl border border-warning/30 bg-warning/8 p-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="text-sm text-foreground">{loadError}</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0 gap-2"
+            disabled={loading}
+            onClick={() => void reloadAchievements()}
+          >
+            <RefreshCw className={cn("size-4", loading && "animate-spin")} aria-hidden />
+            {t("achievements.loadError.retry")}
+          </Button>
+        </div>
+      )}
+
       <section className="mb-6 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
         <div className="relative p-4 sm:p-6">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--primary)_15%,transparent),transparent_38%),linear-gradient(180deg,color-mix(in_oklch,var(--primary-container)_58%,transparent),transparent_72%)]" />

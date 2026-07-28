@@ -69,6 +69,26 @@ export async function listFollowers(
   return (data ?? []) as FollowerPreviewRow[];
 }
 
+export async function listUserFollowing(
+  userId: string,
+  limit = 50,
+): Promise<FollowerPreviewRow[]> {
+  const { data, error } = await supabase.rpc("list_user_following_v1", {
+    p_user_id: userId,
+    p_limit: limit,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as FollowerPreviewRow[];
+}
+
+export async function getUserFollowingProfileCount(userId: string): Promise<number> {
+  const { data, error } = await supabase.rpc("get_user_following_profile_count_v1", {
+    p_user_id: userId,
+  });
+  if (error) throw new Error(error.message);
+  return Number(data ?? 0);
+}
+
 export async function isFollowing(subject: FollowSubject): Promise<boolean> {
   const { data, error } = await supabase
     .from("follows")
