@@ -255,7 +255,8 @@ export function useAchievementsPage(enabled = true) {
       }
     } catch (err) {
       patchBadge(id, { ocClaimStatus: "failed" });
-      toast.error(err instanceof Error ? err.message : t("achievements.oc.modal.claimToast.error.failed"));
+      console.error("[achievements] standalone credential claim failed", err);
+      toast.error(t("achievements.oc.modal.claimToast.error.failed"));
     } finally {
       setClaiming(false);
     }
@@ -330,7 +331,8 @@ export function useAchievementsPage(enabled = true) {
       }
     } catch (err) {
       patchCert(id, { ocClaimStatus: "failed" });
-      toast.error(err instanceof Error ? err.message : t("achievements.oc.modal.claimToast.error.failed"));
+      console.error("[achievements] certificate credential claim failed", err);
+      toast.error(t("achievements.oc.modal.claimToast.error.failed"));
     } finally {
       setClaiming(false);
     }
