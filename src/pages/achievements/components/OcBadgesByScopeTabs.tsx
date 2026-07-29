@@ -15,11 +15,13 @@ export function OcBadgesByScopeTabs({
   loading,
   onOpenModal,
   onRetry,
+  emptyLabel,
 }: {
   badges: BadgeItem[];
   loading: boolean;
   onOpenModal: (item: ModalItem) => void;
   onRetry?: (badge: BadgeItem) => Promise<void>;
+  emptyLabel?: string;
 }) {
   const { t } = useTranslation("common");
   const [tab, setTab] = useState<TabKey>("all");
@@ -95,7 +97,7 @@ export function OcBadgesByScopeTabs({
 
       {current.length === 0 ? (
         <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 text-sm text-foreground-muted">
-          {t("achievements.ocVault.empty", { defaultValue: "No badges in this category yet." })}
+          {emptyLabel ?? t("achievements.ocVault.empty", { defaultValue: "No badges in this category yet." })}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
