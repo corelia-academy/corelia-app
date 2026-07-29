@@ -36,7 +36,8 @@ export function BadgeCard({
         message?: string;
       }>("credentials.retryPending", { issuanceId: badge.issuanceId });
       if (result.status === "failed") {
-        throw new Error(result.message ?? t("achievements.sync.retryError"));
+        toast.error(t("achievements.sync.retryError"));
+        return;
       }
       window.dispatchEvent(new Event("corelia:credential-sync"));
       if (result.status === "minted" && !result.ocCredentialId?.trim()) {
@@ -45,7 +46,8 @@ export function BadgeCard({
         toast.success(t("achievements.sync.retrySuccess"));
       }
     } catch (error) {
-      toast.error((error as Error).message || t("achievements.sync.retryError"));
+      console.error("[achievements] credential retry failed", error);
+      toast.error(t("achievements.sync.retryError"));
     } finally {
       setRetrying(false);
     }

@@ -5,7 +5,6 @@ import { buildOpenCampusPayload, resolveMintNetwork, type CredentialTemplateRow 
 import { extractOcCredentialId } from "./oc_response.ts";
 import {
   getAppBaseUrl,
-  getCoreliaLogoUrl,
   getDefaultMintNetwork,
   getMintEndpoint,
   openCampusApiKey,
@@ -235,8 +234,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
       return { ok: false, error: "Missing API key" };
     }
 
-    const [logoUrl, baseUrl, endpoint, emailLocale] = await Promise.all([
-      getCoreliaLogoUrl(db),
+    const [baseUrl, endpoint, emailLocale] = await Promise.all([
       getAppBaseUrl(db),
       getMintEndpoint(db, network),
       getUserEmailLocale(db, row.user_id),
@@ -258,7 +256,6 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
       userId: row.user_id,
       username,
       profileUrl,
-      logoUrl,
       holderOcId,
       holderAddress,
       holderName,
