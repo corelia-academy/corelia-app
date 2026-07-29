@@ -739,7 +739,7 @@
         },
         "reconciliation": {
           "title": "Cần xác minh mã credential",
-          "body": "Yêu cầu cấp đã được chấp nhận nhưng chưa trả về mã credential on-chain. Không nên thử lại để tránh tạo yêu cầu trùng lặp; Corelia hỗ trợ xác minh mã này."
+          "body": "Không thể xác định mã credential on-chain từ phản hồi cấp phát. Credential có thể đã tồn tại hoặc phản hồi chưa đủ dữ liệu. Không nên thử lại để tránh yêu cầu trùng lặp; Corelia cần xác minh mã này."
         },
         "review": {
           "title": "Xác nhận thông tin trước khi issue",

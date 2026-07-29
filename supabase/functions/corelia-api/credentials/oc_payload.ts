@@ -60,8 +60,8 @@ export async function buildOpenCampusPayload(params: {
 
   const isOCA = !template.collection_symbol;
 
-  const issuerRef = issuerReferenceId(template.identifier_prefix, userId);
-  const achId = await achievementIdentifier(template.identifier_prefix, userId);
+  const issuerRef = issuerReferenceId(template.id, userId);
+  const achId = await achievementIdentifier(template.identifier_prefix, template.id, userId);
 
   const scopeId =
     template.scope_type === "course"
