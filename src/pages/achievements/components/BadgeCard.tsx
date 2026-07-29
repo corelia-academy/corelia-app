@@ -7,15 +7,15 @@ import { cn } from "@/lib/utils";
 import { BADGE_PLACEHOLDER } from "../constants";
 import type { BadgeItem, ModalItem } from "../types";
 import { OcClaimBadge } from "./OcClaimBadge";
-import { callCoreliaApi } from "@/lib/coreliaEdgeApi";
-import { toast } from "sonner";
 
 export function BadgeCard({
   badge,
   onOpenModal,
+  onRetry,
 }: {
   badge: BadgeItem;
   onOpenModal: (item: ModalItem) => void;
+  onRetry?: (badge: BadgeItem) => Promise<void>;
 }) {
   const { t } = useTranslation("common");
   const [retrying, setRetrying] = useState(false);
@@ -27,27 +27,10 @@ export function BadgeCard({
 
   const handleRetry = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!badge.issuanceId || retrying) return;
+    if (retrying || !onRetry) return;
     setRetrying(true);
     try {
-      const result = await callCoreliaApi<{
-        status: string;
-        ocCredentialId: string | null;
-        message?: string;
-      }>("credentials.retryPending", { issuanceId: badge.issuanceId });
-      if (result.status === "failed") {
-        toast.error(t("achievements.sync.retryError"));
-        return;
-      }
-      window.dispatchEvent(new Event("corelia:credential-sync"));
-      if (result.status === "minted" && !result.ocCredentialId?.trim()) {
-        toast.info(t("achievements.oc.modal.reconciliation.title"));
-      } else {
-        toast.success(t("achievements.sync.retrySuccess"));
-      }
-    } catch (error) {
-      console.error("[achievements] credential retry failed", error);
-      toast.error(t("achievements.sync.retryError"));
+      await onRetry(badge);
     } finally {
       setRetrying(false);
     }
@@ -69,14 +52,6 @@ export function BadgeCard({
       )}
       onClick={() => {
         if (!badge.locked && !isPending) {
-          if (
-            badge.collectionSymbol === "ocbadge" &&
-            badge.ocClaimStatus === "claimed" &&
-            badge.ocCredentialUrl
-          ) {
-            window.open(badge.ocCredentialUrl, "_blank", "noopener,noreferrer");
-            return;
-          }
           onOpenModal({ kind: "badge", data: badge });
         }
       }}
@@ -206,7 +181,7 @@ export function BadgeCard({
               ? t("achievements.credentialType.milestone", { defaultValue: "Milestone" })
               : t(`achievements.badgeCategory.${badge.category}` as never)}
           </span>
-          {isFailed ? (
+          {isFailed && onRetry ? (
             <button
               type="button"
               onClick={handleRetry}

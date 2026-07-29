@@ -12,6 +12,7 @@ import {
   invokeCheckCourseCredential,
   invokeListActiveCourseCredentialTemplates,
 } from "@/lib/credentialsEdge";
+import { callCoreliaApi } from "@/lib/coreliaEdgeApi";
 import {
   backfillMissingEnrollmentsForUser,
   checkAndIssueCertificate,
@@ -210,6 +211,45 @@ export function useAchievementsPage(enabled = true) {
     );
   };
 
+  // A failed issuance already has an OC request. Retrying it must reuse that
+  // issuance, rather than submitting a new course-eligibility claim.
+  const handleRetryBadge = async (badge: BadgeItem) => {
+    if (!badge.issuanceId) {
+      toast.error(t("achievements.sync.retryError"));
+      return;
+    }
+
+    setClaiming(true);
+    patchBadge(badge.id, { ocClaimStatus: "pending" });
+    try {
+      const result = await callCoreliaApi<{
+        status: string;
+        ocCredentialId: string | null;
+      }>("credentials.retryPending", { issuanceId: badge.issuanceId });
+
+      if (result.status === "failed") {
+        patchBadge(badge.id, { ocClaimStatus: "failed" });
+        toast.error(t("achievements.sync.retryError"));
+        return;
+      }
+
+      window.dispatchEvent(new Event(CREDENTIAL_SYNC_EVENT));
+      if (result.status === "minted" && !result.ocCredentialId?.trim()) {
+        toast.info(t("achievements.oc.modal.reconciliation.title"));
+      } else if (result.status === "minted") {
+        toast.success(t("achievements.sync.retrySuccess"));
+      } else {
+        toast.info(t("achievements.oc.modal.claimToast.pending"));
+      }
+    } catch (error) {
+      patchBadge(badge.id, { ocClaimStatus: "failed" });
+      console.error("[achievements] credential retry failed", error);
+      toast.error(t("achievements.sync.retryError"));
+    } finally {
+      setClaiming(false);
+    }
+  };
+
   // Standalone course credentials have no offchain certificate, so their
   // claim is initiated directly from the OCA/OCB card.
   const handleClaimStandaloneCourseCredential = async (id: string) => {
@@ -264,6 +304,11 @@ export function useAchievementsPage(enabled = true) {
 
   const handleClaim = async (id: string, kind: "cert" | "badge") => {
     if (kind === "badge") {
+      const badge = badges.find((item) => item.id === id);
+      if (badge?.ocClaimStatus === "failed" && badge.issuanceId) {
+        await handleRetryBadge(badge);
+        return;
+      }
       await handleClaimStandaloneCourseCredential(id);
       return;
     }
@@ -382,6 +427,7 @@ export function useAchievementsPage(enabled = true) {
     claiming,
     openModal,
     handleClaim,
+    handleRetryBadge,
     handleSyncCertificate,
     ocidConnectOpen,
     setOcidConnectOpen,

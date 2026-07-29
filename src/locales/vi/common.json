@@ -850,6 +850,10 @@
         "earnedSectionTitle": "Đã đạt được ({{count}})",
         "progressGood": "Tiến triển tốt"
       },
+      "onchain": {
+        "title": "Kho on-chain",
+        "subtitle": "Các thành tựu và huy hiệu Open Campus được ghi nhận on-chain."
+      },
       "nextUnlock": {
         "title": "Sắp mở khóa",
         "allUnlockedNote": "Bạn đã mở khóa toàn bộ milestone hiện có. Bây giờ có thể tập trung vào việc claim OC credential và mở rộng hồ sơ thành tích của mình."

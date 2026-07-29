@@ -594,13 +594,13 @@ export default function Header() {
                   render={
                     <button
                       type="button"
-                      className={`inline-flex h-10 items-center gap-2 rounded-full border border-border pr-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:pr-3 ${
+                      className={`group inline-flex size-10 items-center justify-center rounded-full border-0 bg-transparent p-0 text-left text-sm transition-colors duration-150 hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:h-10 md:w-auto md:gap-2 md:border md:pr-3 md:hover:bg-surface-raised ${
                         isOcidConnected
-                          ? "bg-primary-muted text-primary hover:bg-primary-muted"
-                          : "bg-surface-base"
+                          ? "text-primary md:bg-primary-muted md:hover:bg-primary-muted"
+                          : "text-foreground md:bg-surface-base"
                       } cursor-pointer`}
                     >
-                      <Avatar className="size-10 -ml-1">
+                      <Avatar className="size-10 transition-[box-shadow,background-color] group-hover:bg-surface-raised group-hover:ring-2 group-hover:ring-primary/20 md:-ml-1">
                         <AvatarImage src={avatarUrl} alt={displayName} />
                         <AvatarFallback>{avatarFallback}</AvatarFallback>
                       </Avatar>

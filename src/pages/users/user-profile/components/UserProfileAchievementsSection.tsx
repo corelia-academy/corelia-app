@@ -39,6 +39,7 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
     claiming,
     openModal,
     handleClaim,
+    handleRetryBadge,
     ocidConnectOpen,
     setOcidConnectOpen,
   } = isSelf 
@@ -47,6 +48,7 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
         ...publicAchievements, 
         claiming: false, 
         handleClaim: async () => {}, 
+        handleRetryBadge: undefined,
         ocidConnectOpen: false, 
         setOcidConnectOpen: () => {} 
       };
@@ -177,7 +179,12 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
               <Skeleton className="h-32 w-full rounded-md" />
             </div>
           ) : (
-            <OcBadgesByScopeTabs badges={earnedBadges} loading={loading} onOpenModal={openModal} />
+            <OcBadgesByScopeTabs
+              badges={earnedBadges}
+              loading={loading}
+              onOpenModal={openModal}
+              onRetry={handleRetryBadge}
+            />
           )}
         </div>
       </div>

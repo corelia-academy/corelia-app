@@ -20,12 +20,10 @@ function isResolvedMint(issuance: Record<string, unknown>) {
 }
 
 export default function CredentialRealtimeSync() {
-  const { user, isAuthenticated, profile } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { t } = useTranslation("common");
   const navigate = useNavigate();
-  const achievementsPath = profile?.username
-    ? `/@${encodeURIComponent(profile.username)}`
-    : "/account";
+  const achievementsPath = "/achievements";
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
@@ -116,6 +114,10 @@ export default function CredentialRealtimeSync() {
                   {
                     description: t("achievements.sync.failedDescription"),
                     icon: React.createElement(XCircle, { className: "w-5 h-5 text-red-500" }),
+                    action: {
+                      label: t("notifications.viewCompletion"),
+                      onClick: () => navigate(achievementsPath),
+                    },
                     duration: 6000,
                   }
                 );

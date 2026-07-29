@@ -850,6 +850,10 @@
         "earnedSectionTitle": "Earned ({{count}})",
         "progressGood": "Great progress"
       },
+      "onchain": {
+        "title": "On-chain vault",
+        "subtitle": "Open Campus achievements and badges recorded on-chain."
+      },
       "nextUnlock": {
         "title": "Coming next",
         "allUnlockedNote": "You've unlocked all available milestones. You can now focus on claiming OC credentials and expanding your achievement profile."
