@@ -14,10 +14,12 @@ export function OcBadgesByScopeTabs({
   badges,
   loading,
   onOpenModal,
+  onRetry,
 }: {
   badges: BadgeItem[];
   loading: boolean;
   onOpenModal: (item: ModalItem) => void;
+  onRetry?: (badge: BadgeItem) => Promise<void>;
 }) {
   const { t } = useTranslation("common");
   const [tab, setTab] = useState<TabKey>("all");
@@ -98,7 +100,12 @@ export function OcBadgesByScopeTabs({
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
           {current.map((badge) => (
-            <BadgeCard key={badge.id} badge={badge} onOpenModal={onOpenModal} />
+            <BadgeCard
+              key={badge.id}
+              badge={badge}
+              onOpenModal={onOpenModal}
+              onRetry={onRetry}
+            />
           ))}
         </div>
       )}

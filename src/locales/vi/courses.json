@@ -189,6 +189,8 @@
       "claimCertificateFailed": "Không thể cấp chứng nhận lúc này. Vui lòng thử lại.",
       "certificateIssuedSuccess": "Vừa nhận chứng nhận!",
       "viewCertificate": "Xem",
+      "ocaReady": "Thành tựu Open Campus của bạn đã sẵn sàng để claim!",
+      "viewAchievements": "Xem thành tựu",
       "instructorLabel": "Giảng viên",
       "instructor": {
         "title": "Giới thiệu giảng viên",

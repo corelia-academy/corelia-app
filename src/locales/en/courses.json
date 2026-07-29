@@ -190,6 +190,8 @@
       "claimCertificateFailed": "Could not issue certificate at this time. Please try again.",
       "certificateIssuedSuccess": "Just received a certificate!",
       "viewCertificate": "View",
+      "ocaReady": "Your Open Campus achievement is ready to claim!",
+      "viewAchievements": "View achievements",
       "instructorLabel": "Instructor",
       "instructor": {
         "title": "About the instructor",
