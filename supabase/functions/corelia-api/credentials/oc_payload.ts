@@ -40,6 +40,8 @@ export async function buildOpenCampusPayload(params: {
   userId: string;
   username: string | null;
   profileUrl: string;
+  /** Issuer artwork used by the Open Campus VC's top-level image field. */
+  logoUrl: string;
   holderOcId: string | null;
   holderAddress: string | null;
   holderName: string | null;
@@ -51,6 +53,7 @@ export async function buildOpenCampusPayload(params: {
     userId,
     username,
     profileUrl,
+    logoUrl,
     holderOcId,
     holderAddress,
     holderName,
@@ -100,10 +103,10 @@ export async function buildOpenCampusPayload(params: {
     awardedDate: awardedIso,
     name: template.name,
     description: template.description,
-    // Open Campus requires this public image URI to match
-    // credentialSubject.image. A separate institution logo is not part of the
-    // issuance contract and can cause the issuer's dry-run to reject the VC.
-    image: template.image_url,
+    // OC's top-level image represents the issuer. Historical successful
+    // issuances use the Corelia logo here, while credentialSubject.image holds
+    // the badge/certificate artwork.
+    image: logoUrl,
     credentialSubject,
   };
 
