@@ -49,21 +49,17 @@ export default function CredentialRealtimeSync() {
 
             if (status === "pending") {
               toast.info(
-                t("achievements.sync.pendingTitle", { defaultValue: "Đang tạo chứng nhận..." }),
+                t("achievements.sync.pendingTitle"),
                 {
-                  description: t("achievements.sync.pendingDescription", { 
-                    defaultValue: "Hệ thống đang ghi nhận và tạo OCB của bạn trên blockchain." 
-                  }),
+                  description: t("achievements.sync.pendingDescription"),
                   duration: 4000,
                 }
               );
             } else if (isResolvedMint(payload.new)) {
               toast.success(
-                t("achievements.sync.mintedTitle", { defaultValue: "Tạo chứng nhận thành công!" }),
+                t("achievements.sync.mintedTitle"),
                 {
-                  description: t("achievements.sync.mintedDescription", { 
-                    defaultValue: "OCB của bạn đã được tạo thành công và lưu trên blockchain." 
-                  }),
+                  description: t("achievements.sync.mintedDescription"),
                   icon: React.createElement(Sparkles, { className: "w-5 h-5 text-yellow-500" }),
                   action: {
                     label: t("notifications.viewCredential"),
@@ -98,11 +94,9 @@ export default function CredentialRealtimeSync() {
 
               if (isResolvedMint(payload.new)) {
                 toast.success(
-                  t("achievements.sync.mintedTitle", { defaultValue: "Tạo chứng nhận thành công!" }),
+                  t("achievements.sync.mintedTitle"),
                   {
-                    description: t("achievements.sync.mintedDescription", { 
-                      defaultValue: "OCB của bạn đã được tạo thành công và lưu trên blockchain." 
-                    }),
+                    description: t("achievements.sync.mintedDescription"),
                     icon: React.createElement(Sparkles, { className: "w-5 h-5 text-yellow-500" }),
                     action: {
                       label: t("notifications.viewCredential"),
@@ -118,11 +112,9 @@ export default function CredentialRealtimeSync() {
                 });
               } else if (newStatus === "failed") {
                 toast.error(
-                  t("achievements.sync.failedTitle", { defaultValue: "Tạo chứng nhận thất bại" }),
+                  t("achievements.sync.failedTitle"),
                   {
-                    description: t("achievements.sync.failedDescription", { 
-                      defaultValue: "Có lỗi xảy ra khi cấp phát OCB. Vui lòng thử lại sau." 
-                    }),
+                    description: t("achievements.sync.failedDescription"),
                     icon: React.createElement(XCircle, { className: "w-5 h-5 text-red-500" }),
                     duration: 6000,
                   }

@@ -95,7 +95,7 @@ export function BadgeCard({
               />
             </span>
           ) : isFailed ? (
-            <span title={t("achievements.badges.ocDot.failedTooltip", { defaultValue: "Tạo thất bại" })}>
+            <span title={t("achievements.badges.ocDot.failedTooltip")}>
               <AlertCircle
                 className="size-4 text-red-500 sm:size-5"
                 aria-hidden
@@ -157,13 +157,13 @@ export function BadgeCard({
         {!badge.locked && badge.earnedAt && !isPending && (
           <p className={cn("text-xs font-medium", isFailed ? "text-red-500" : badge.color)}>
             {isFailed 
-              ? t("achievements.badges.failedPrefix", { defaultValue: "Lỗi tạo OCB" })
+              ? t("achievements.badges.failedPrefix")
               : t("achievements.badges.earnedPrefix", { date: badge.earnedAt })}
           </p>
         )}
         {!badge.locked && isPending && (
           <p className="text-xs font-medium text-primary animate-pulse">
-            {t("achievements.badges.pendingPrefix", { defaultValue: "Đang tạo..." })}
+            {t("achievements.badges.pendingPrefix")}
           </p>
         )}
         {!badge.locked && isAwaitingHolder && (
@@ -212,7 +212,7 @@ export function BadgeCard({
               className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-[10px] sm:text-xs font-medium rounded transition-colors disabled:opacity-50 flex items-center gap-1"
             >
               {retrying && <Loader2 className="size-3 animate-spin" />}
-              {t("achievements.badges.retry", { defaultValue: "Thử lại" })}
+              {t("achievements.badges.retry")}
             </button>
           ) : (
             <OcClaimBadge status={badge.ocClaimStatus} />

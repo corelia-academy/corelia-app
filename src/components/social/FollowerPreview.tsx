@@ -34,6 +34,7 @@ export function FollowerPreview({
   totalCount,
   limit = 5,
   className = "",
+  showSummary = true,
   open,
   onOpenChange,
 }: {
@@ -41,6 +42,7 @@ export function FollowerPreview({
   totalCount?: number | null;
   limit?: number;
   className?: string;
+  showSummary?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
@@ -55,6 +57,10 @@ export function FollowerPreview({
   const setDialogOpen = onOpenChange ?? setInternalDialogOpen;
 
   useEffect(() => {
+    if (!showSummary) {
+      return;
+    }
+
     let cancelled = false;
 
     async function load() {
@@ -70,10 +76,27 @@ export function FollowerPreview({
     return () => {
       cancelled = true;
     };
-  }, [id, limit, type]);
+  }, [id, limit, showSummary, type]);
 
   const count = typeof totalCount === "number" ? totalCount : items.length;
-  if (count <= 0 && !dialogOpen) return null;
+  if (showSummary && count <= 0 && !dialogOpen) return null;
+
+  const dialog = (
+    <FollowerListDialog
+      open={dialogOpen}
+      onOpenChange={setDialogOpen}
+      subject={{ type, id }}
+      fallbackItems={items}
+      items={dialogItems}
+      setItems={setDialogItems}
+      loading={dialogLoading}
+      setLoading={setDialogLoading}
+      error={dialogError}
+      setError={setDialogError}
+    />
+  );
+
+  if (!showSummary) return dialog;
 
   return (
     <div className={className}>
@@ -109,18 +132,7 @@ export function FollowerPreview({
           </button>
         </div>
       ) : null}
-      <FollowerListDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        subject={{ type, id }}
-        fallbackItems={items}
-        items={dialogItems}
-        setItems={setDialogItems}
-        loading={dialogLoading}
-        setLoading={setDialogLoading}
-        error={dialogError}
-        setError={setDialogError}
-      />
+      {dialog}
     </div>
   );
 }
