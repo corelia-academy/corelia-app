@@ -3,7 +3,7 @@ import { json } from "../lib/http.ts";
 import { sendTransactionalEmailViaResend } from "../lib/mail/resend.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { buildCredentialMintEmail } from "./emails.ts";
-import { issuerReferenceId } from "./ids.ts";
+import { issuerReferenceId, legacyIssuerReferenceId } from "./ids.ts";
 import { mintCredentialOnce } from "./mint.ts";
 import { resolveMintNetwork } from "./oc_payload.ts";
 import { getAppBaseUrl, getDefaultMintNetwork, type MintNetwork } from "./settings.ts";
@@ -59,12 +59,14 @@ export async function handleGrantPendingCredential(req: Request, db: SupabaseCli
 
     if (existingProfile?.id) {
       const uid = String(existingProfile.id);
-      const issuerRef = issuerReferenceId(identifierPrefix, uid);
+      const issuerRef = issuerReferenceId(String(template.id), uid);
+      const legacyIssuerRef = legacyIssuerReferenceId(identifierPrefix, uid);
 
-      const { data: existing } = await db.from("credential_issuances").select("id, status").eq(
-        "issuer_reference_id",
-        issuerRef,
-      ).eq("network", network).maybeSingle();
+      const { data: existing } = await db.from("credential_issuances").select("id, status")
+        .in("issuer_reference_id", [issuerRef, legacyIssuerRef])
+        .eq("network", network)
+        .limit(1)
+        .maybeSingle();
       if (existing && (existing.status === "minted" || existing.status === "pending")) {
         return json({ ok: true, mode: "direct", issuanceIds: [], errors: [`${email}: đã có issuance`] });
       }

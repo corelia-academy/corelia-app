@@ -1,7 +1,7 @@
 import { getUserRole, isAuthFailure } from "../lib/authz.ts";
 import { json, nowIso } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
-import { issuerReferenceId } from "./ids.ts";
+import { issuerReferenceId, legacyIssuerReferenceId } from "./ids.ts";
 import { mintCredentialOnce } from "./mint.ts";
 import { getDefaultMintNetwork, type MintNetwork } from "./settings.ts";
 import { resolveMintNetwork } from "./oc_payload.ts";
@@ -165,12 +165,14 @@ export async function runActivityMilestoneCheck(
       template.network_override as string | null | undefined,
       defaultNet as MintNetwork,
     );
-    const issuerRef = issuerReferenceId(identifierPrefix, userId);
+    const issuerRef = issuerReferenceId(String(template.id), userId);
+    const legacyIssuerRef = legacyIssuerReferenceId(identifierPrefix, userId);
 
-    const { data: existing } = await db.from("credential_issuances").select("id, status").eq(
-      "issuer_reference_id",
-      issuerRef,
-    ).eq("network", network).maybeSingle();
+    const { data: existing } = await db.from("credential_issuances").select("id, status")
+      .in("issuer_reference_id", [issuerRef, legacyIssuerRef])
+      .eq("network", network)
+      .limit(1)
+      .maybeSingle();
     if (existing && (existing.status === "minted" || existing.status === "pending")) {
       skipped.push(String(template.id));
       continue;

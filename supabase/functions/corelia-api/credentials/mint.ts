@@ -263,7 +263,12 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
       awardedIso,
     });
 
+    const issuerReferenceId = String(ocBody.issuerReferenceId ?? "");
+    if (!issuerReferenceId) throw new Error("Missing issuer reference id");
+
     const { error: pendingErr } = await db.from("credential_issuances").update({
+      // Failed legacy issuances are retried with the collision-safe V2 reference.
+      issuer_reference_id: issuerReferenceId,
       oc_request_payload: ocBody as Record<string, unknown>,
       network,
       error_message: null,
@@ -300,7 +305,7 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
         oc_response: ocResponseJson as Record<string, unknown>,
         error_message: dup
           ? credentialIdUnresolved
-            ? "credential_id_unresolved"
+            ? "duplicate_issuance_unresolved"
             : null
           : `HTTP ${res.status}: ${msg}`,
         retry_count: row.retry_count + 1,
@@ -359,9 +364,8 @@ export async function mintCredentialOnce(db: SupabaseClient, issuanceId: string)
     }).eq("id", issuanceId);
 
     if (credentialIdUnresolved) {
-      // The issuer accepted the request but did not include a parsable id. Keep
-      // the terminal mint result and let the UI show reconciliation rather than
-      // falsely inviting the learner to retry.
+      // The issuer response did not include a parsable ID. Keep the terminal
+      // result and show reconciliation rather than inviting a blind retry.
       return { ok: true };
     }
 

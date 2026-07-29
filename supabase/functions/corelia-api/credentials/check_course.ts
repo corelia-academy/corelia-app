@@ -2,7 +2,7 @@ import { canManageCourse, isAuthFailure } from "../lib/authz.ts";
 import { json, nowIso } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { runActivityMilestoneCheck } from "./check_activity.ts";
-import { issuerReferenceId } from "./ids.ts";
+import { issuerReferenceId, legacyIssuerReferenceId } from "./ids.ts";
 import { mintCredentialOnce } from "./mint.ts";
 import { extractOcCredentialId } from "./oc_response.ts";
 import { getDefaultMintNetwork, type MintNetwork } from "./settings.ts";
@@ -166,14 +166,12 @@ export async function runCourseCredentialCheck(
     template.network_override as string | null | undefined,
     defaultNet as MintNetwork,
   );
-  const issuerRef = issuerReferenceId(identifierPrefix, targetUserId);
+  const issuerRef = issuerReferenceId(String(template.id), targetUserId);
+  const legacyIssuerRef = legacyIssuerReferenceId(identifierPrefix, targetUserId);
 
   const { data: existing } = await db.from("credential_issuances").select(
     "id, status, retry_count, oc_credential_id, oc_response",
-  ).eq(
-    "issuer_reference_id",
-    issuerRef,
-  ).eq("network", network).maybeSingle();
+  ).in("issuer_reference_id", [issuerRef, legacyIssuerRef]).eq("network", network).limit(1).maybeSingle();
   if (existing) {
     if (existing.status === "minted" || existing.status === "pending") {
       // Backfill oc_credential_id for already-minted records that never captured

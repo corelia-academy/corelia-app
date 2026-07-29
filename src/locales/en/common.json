@@ -739,7 +739,7 @@
         },
         "reconciliation": {
           "title": "Credential ID needs verification",
-          "body": "The issuance was accepted, but its on-chain credential ID was not returned. Retrying could create a duplicate request; Corelia support can verify the ID."
+          "body": "The issuance response did not provide a verifiable on-chain credential ID. The credential may already exist or the response may be incomplete. Do not retry to avoid a duplicate request; Corelia must verify this ID."
         },
         "review": {
           "title": "Review your credential info",
