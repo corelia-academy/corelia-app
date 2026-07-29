@@ -662,8 +662,12 @@
       "earnedPrefix": "Đạt: {{date}}",
       "locked": "Chưa mở khoá",
       "pendingClaim": "Chưa nhận",
+      "failedPrefix": "Không thể tạo chứng nhận",
+      "pendingPrefix": "Đang tạo chứng nhận...",
+      "retry": "Thử lại",
       "ocDot": {
         "claimedTooltip": "Đã claim OC credential",
+        "failedTooltip": "Không thể tạo chứng nhận",
         "unclaimedTooltip": "Chưa claim OC credential"
       }
     },
@@ -765,11 +769,11 @@
     },
     "sync": {
       "pendingTitle": "Đang tạo chứng nhận...",
-      "pendingDescription": "Hệ thống đang ghi nhận và tạo OCB của bạn trên blockchain.",
+      "pendingDescription": "Hệ thống đang ghi nhận và tạo chứng nhận của bạn trên blockchain.",
       "mintedTitle": "Tạo chứng nhận thành công!",
-      "mintedDescription": "OCB của bạn đã được tạo thành công và lưu trên blockchain.",
+      "mintedDescription": "Chứng nhận của bạn đã được tạo thành công và lưu trên blockchain.",
       "failedTitle": "Tạo chứng nhận thất bại",
-      "failedDescription": "Có lỗi xảy ra khi cấp phát OCB. Vui lòng thử lại sau.",
+      "failedDescription": "Có lỗi xảy ra khi cấp phát chứng nhận. Vui lòng thử lại sau.",
       "retrySuccess": "Đã gửi yêu cầu tạo lại!",
       "retryError": "Lỗi khi thử lại."
     },
@@ -873,7 +877,8 @@
       "saveSuccess": "Đã cập nhật kho credential công khai của bạn.",
       "saveError": "Không thể cập nhật kho credential công khai.",
       "publicVaultTitle": "Open Campus credentials",
-      "publicVaultDescription": "Các credential thành viên này đã chọn hiển thị trên hồ sơ."
+      "publicVaultDescription": "Các credential thành viên này đã chọn hiển thị trên hồ sơ.",
+      "selfVaultDescription": "Các credential bạn đã chọn hiển thị công khai trên hồ sơ."
     },
     "credentialType": {
       "oca": "OCA",

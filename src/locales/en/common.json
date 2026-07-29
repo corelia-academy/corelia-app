@@ -662,8 +662,12 @@
       "earnedPrefix": "Earned: {{date}}",
       "locked": "Locked",
       "pendingClaim": "Pending Claim",
+      "failedPrefix": "Could not create credential",
+      "pendingPrefix": "Creating credential...",
+      "retry": "Retry",
       "ocDot": {
         "claimedTooltip": "OC credential claimed",
+        "failedTooltip": "Could not create credential",
         "unclaimedTooltip": "OC credential not claimed"
       }
     },
@@ -765,11 +769,11 @@
     },
     "sync": {
       "pendingTitle": "Creating credential...",
-      "pendingDescription": "The system is recording and creating your OCB on the blockchain.",
+      "pendingDescription": "The system is recording and creating your credential on the blockchain.",
       "mintedTitle": "Credential minted successfully!",
-      "mintedDescription": "Your OCB has been successfully minted and stored on the blockchain.",
+      "mintedDescription": "Your credential has been successfully created and stored on the blockchain.",
       "failedTitle": "Credential minting failed",
-      "failedDescription": "An error occurred while issuing OCB. Please try again later.",
+      "failedDescription": "An error occurred while issuing your credential. Please try again later.",
       "retrySuccess": "Retry request sent!",
       "retryError": "Error when retrying."
     },
@@ -873,7 +877,8 @@
       "saveSuccess": "Your public credential vault has been updated.",
       "saveError": "Could not update your public credential vault.",
       "publicVaultTitle": "Open Campus credentials",
-      "publicVaultDescription": "Credentials this member chose to show on their profile."
+      "publicVaultDescription": "Credentials this member chose to show on their profile.",
+      "selfVaultDescription": "Credentials you chose to show publicly on your profile."
     },
     "credentialType": {
       "oca": "OCA",

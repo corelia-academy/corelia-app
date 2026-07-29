@@ -385,6 +385,7 @@ export default function UserProfileLayout() {
                   <FollowerPreview
                     subject={{ type: "user", id: profile.id }}
                     totalCount={followerCount}
+                    showSummary={false}
                     open={followerDialogOpen}
                     onOpenChange={setFollowerDialogOpen}
                   />
