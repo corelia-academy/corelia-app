@@ -869,8 +869,8 @@
       "empty": "Chưa có credential nào trong danh mục này."
     },
     "profileVisibility": {
-      "manage": "Quản lý chứng nhận",
-      "title": "Quản lý chứng nhận trên hồ sơ",
+      "manage": "Quản lý hiển thị",
+      "title": "Thành tích công khai",
       "description": "Chọn các Open Campus credential đã hoàn tất để hiển thị trên hồ sơ Corelia công khai của bạn.",
       "selected": "Đang hiển thị trên hồ sơ",
       "selectedCount": "Đang hiển thị trên hồ sơ: {{count}} chứng nhận",
@@ -878,6 +878,7 @@
       "applying": "Đang áp dụng...",
       "ok": "OK",
       "empty": "Bạn chưa có Open Campus credential đã claim để hiển thị.",
+      "emptyPublic": "Bạn đang không công khai bất kỳ chứng nhận nào của bản thân.",
       "saveSuccess": "Đã cập nhật kho credential công khai của bạn.",
       "saveError": "Không thể cập nhật kho credential công khai.",
       "publicVaultTitle": "Open Campus credentials",

@@ -85,11 +85,12 @@ export default function AchievementsPage() {
             </span>
             <span className="flex shrink-0 items-center gap-2">
               <span className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted tabular-nums">{t("achievements.vaults.certificates.countLabel", { count: certificates.length })}</span>
-              <ChevronDown className={cn("size-5 text-foreground-muted transition-transform duration-200", openVault === "certificates" && "rotate-180")} aria-hidden />
+              <ChevronDown className={cn("size-5 text-foreground-muted transition-transform duration-200 md:hidden", openVault === "certificates" && "rotate-180")} aria-hidden />
             </span>
           </button>
-          {openVault === "certificates" && (
-            <div id="certificate-vault" className="border-t border-border-subtle p-4 sm:p-6">
+          <div className={cn("grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none md:grid-rows-[1fr]", openVault === "certificates" && "grid-rows-[1fr]")}>
+            <div className="min-h-0 overflow-hidden">
+              <div id="certificate-vault" className="border-t border-border-subtle p-4 sm:p-6">
               {loading ? (
                 <div className="flex flex-col items-center gap-3 py-12 text-center">
                   <Loader2 className="size-6 animate-spin text-foreground-muted" aria-hidden />
@@ -121,8 +122,9 @@ export default function AchievementsPage() {
                   {certificates.map((cert) => <CertificateCard key={cert.id} cert={cert} onOpenModal={openModal} />)}
                 </div>
               )}
+              </div>
             </div>
-          )}
+          </div>
         </section>
 
         <section className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
@@ -138,11 +140,12 @@ export default function AchievementsPage() {
             </span>
             <span className="flex shrink-0 items-center gap-2">
               <span className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted tabular-nums">{t("achievements.vaults.badges.summaryOcOnly", { count: earnedBadges.length, defaultValue: "{{count}} on-chain" })}</span>
-              <ChevronDown className={cn("size-5 text-foreground-muted transition-transform duration-200", openVault === "onchain" && "rotate-180")} aria-hidden />
+              <ChevronDown className={cn("size-5 text-foreground-muted transition-transform duration-200 md:hidden", openVault === "onchain" && "rotate-180")} aria-hidden />
             </span>
           </button>
-          {openVault === "onchain" && (
-            <div id="onchain-vault" className="border-t border-border-subtle p-4 sm:p-6">
+          <div className={cn("grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none md:grid-rows-[1fr]", openVault === "onchain" && "grid-rows-[1fr]")}>
+            <div className="min-h-0 overflow-hidden">
+              <div id="onchain-vault" className="border-t border-border-subtle p-4 sm:p-6">
               {loading ? (
                 <div className="flex flex-col items-center gap-3 py-12 text-center">
                   <Loader2 className="size-6 animate-spin text-foreground-muted" aria-hidden />
@@ -151,8 +154,9 @@ export default function AchievementsPage() {
               ) : (
                 <OcBadgesByScopeTabs badges={earnedBadges} loading={false} onOpenModal={openModal} onRetry={handleRetryBadge} />
               )}
+              </div>
             </div>
-          )}
+          </div>
         </section>
       </main>
 

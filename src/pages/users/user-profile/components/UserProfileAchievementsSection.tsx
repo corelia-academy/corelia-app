@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 
 import { OcBadgesByScopeTabs } from "@/pages/achievements/components/OcBadgesByScopeTabs";
 import { OcCredentialModal } from "@/pages/achievements/components/OcCredentialModal";
-import { StatsBar } from "@/pages/achievements/components/StatsBar";
 import { useAchievementsPage } from "@/pages/achievements/hooks/useAchievementsPage";
 import { setMyProfileCredentialVisibility } from "@/lib/credentialIssuances";
 import { usePublicAchievements } from "../hooks/usePublicAchievements";
@@ -28,7 +27,6 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
   const publicAchievements = usePublicAchievements(isSelf ? undefined : profileId);
 
   const {
-    certificates,
     badges,
     loading,
     loadError,
@@ -129,29 +127,20 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
             {t("userProfile.achievements.privateDescription")}
           </p>
         </div>
-      ) : shouldHidePublicAchievementContent ? null : (
-        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
-          {loading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-10 w-full rounded-md" />
-              <Skeleton className="h-10 w-full rounded-md" />
-            </div>
-          ) : (
-            <StatsBar certificates={certificates} badges={badges} />
-          )}
-        </div>
-      )}
+      ) : null}
 
       {!shouldShowPublicPrivacyState && !shouldHidePublicAchievementContent ? (
       <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
             <div className="text-sm font-medium text-foreground">
-              {t("achievements.profileVisibility.publicVaultTitle")}
+              {isSelf
+                ? t("achievements.profileVisibility.title")
+                : t("achievements.profileVisibility.publicVaultTitle")}
             </div>
             <p className="mt-1 text-sm text-foreground-muted">
               {isSelf
-                ? t("achievements.profileVisibility.selfVaultDescription")
+                ? t("achievements.profileVisibility.description")
                 : t("achievements.profileVisibility.publicVaultDescription")}
             </p>
           </div>
@@ -160,7 +149,7 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
               type="button"
               variant="outline"
               size="sm"
-              className="gap-2"
+              className="shrink-0 gap-2 sm:self-start"
               onClick={() => setCredentialManagerOpen(true)}
               disabled={loading}
             >
@@ -184,6 +173,11 @@ export function UserProfileAchievementsSection({ isSelf, profileId }: { isSelf: 
               loading={loading}
               onOpenModal={openModal}
               onRetry={handleRetryBadge}
+              emptyLabel={
+                isSelf && earnedBadges.length === 0
+                  ? t("achievements.profileVisibility.emptyPublic")
+                  : undefined
+              }
             />
           )}
         </div>

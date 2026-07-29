@@ -869,8 +869,8 @@
       "empty": "No credentials in this category yet."
     },
     "profileVisibility": {
-      "manage": "Manage credentials",
-      "title": "Manage profile credentials",
+      "manage": "Manage visibility",
+      "title": "Public achievements",
       "description": "Choose the resolved Open Campus credentials that appear on your public Corelia profile.",
       "selected": "Shown on profile",
       "selectedCount": "Showing on profile: {{count}} credentials",
@@ -878,6 +878,7 @@
       "applying": "Applying...",
       "ok": "OK",
       "empty": "You do not have any claimed Open Campus credentials to show yet.",
+      "emptyPublic": "You are not publicly displaying any of your credentials.",
       "saveSuccess": "Your public credential vault has been updated.",
       "saveError": "Could not update your public credential vault.",
       "publicVaultTitle": "Open Campus credentials",
