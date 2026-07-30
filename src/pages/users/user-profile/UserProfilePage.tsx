@@ -105,7 +105,7 @@ function ProfileSidebar({
 }: {
   profile: PublicProfile;
   followerCount: number;
-  followingProfileCount: number | null;
+  followingProfileCount: number;
   bio: string | null;
   website: string | null;
   headerHandle: string | null;
@@ -136,7 +136,7 @@ function ProfileSidebar({
     },
     {
       label: t("userProfile.labels.following"),
-      value: followingProfileCount ?? "—",
+      value: followingProfileCount,
     },
   ];
 
@@ -362,7 +362,7 @@ export default function UserProfileLayout() {
                   </Button>
                 ) : null}
 
-                {!loading && profile && isSelf ? (
+                {!loading && profile && effectiveIsSelf ? (
                   <NavLink to="/account/profile">
                     <Button variant="outline" size="lg" type="button">
                       {t("userProfile.actions.editProfile")}
@@ -415,7 +415,7 @@ export default function UserProfileLayout() {
                     />
                     <ProfileStat
                       label={t("userProfile.labels.following")}
-                      value={followingProfileCount ?? "—"}
+                      value={followingProfileCount}
                       icon={Users}
                       onClick={
                         profile.profile_public

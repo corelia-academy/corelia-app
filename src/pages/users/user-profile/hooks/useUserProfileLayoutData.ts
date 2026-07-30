@@ -8,7 +8,7 @@ import type { PublicProfile } from "@/types/database";
 export function useUserProfileLayoutData(handle: string | undefined) {
   const { t } = useTranslation("common");
   const [profile, setProfile] = useState<PublicProfile | null>(null);
-  const [followingProfileCount, setFollowingProfileCount] = useState<number | null>(null);
+  const [followingProfileCount, setFollowingProfileCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +19,7 @@ export function useUserProfileLayoutData(handle: string | undefined) {
       setLoading(true);
       setError(null);
       setProfile(null);
-      setFollowingProfileCount(null);
+      setFollowingProfileCount(0);
 
       try {
         const h = handle?.trim() ?? "";
@@ -32,9 +32,9 @@ export function useUserProfileLayoutData(handle: string | undefined) {
         const profileFollowingCount = p.profile_public
           ? await getUserFollowingProfileCount(p.id).catch((reason) => {
               console.warn("[user profile] could not load following profile count", reason);
-              return null;
+              return 0;
             })
-          : null;
+          : 0;
         if (cancelled) return;
         setFollowingProfileCount(profileFollowingCount);
         setProfile(p);
