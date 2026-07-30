@@ -21,7 +21,8 @@ export function ProfileSection(props: {
   setUsername: (v: string) => void;
   setBio: (v: string) => void;
   setWebsite: (v: string) => void;
-  setProfilePublic: (v: boolean) => void;
+  onProfileVisibilityChange: (v: boolean) => void | Promise<void>;
+  visibilitySaving: boolean;
   saving: boolean;
   uploadingAvatar: boolean;
   onAvatarUpload: (file: File) => Promise<void>;
@@ -44,7 +45,8 @@ export function ProfileSection(props: {
     setUsername,
     setBio,
     setWebsite,
-    setProfilePublic,
+    onProfileVisibilityChange,
+    visibilitySaving,
     saving,
     uploadingAvatar,
     onAvatarUpload,
@@ -87,8 +89,8 @@ export function ProfileSection(props: {
             </div>
             <button
               type="button"
-              disabled={saving || uploadingAvatar}
-              onClick={() => setProfilePublic(!profilePublic)}
+              disabled={saving || uploadingAvatar || visibilitySaving}
+              onClick={() => void onProfileVisibilityChange(!profilePublic)}
               className={[
                 "min-h-11 rounded-full border px-3 py-1 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                 profilePublic
@@ -96,7 +98,9 @@ export function ProfileSection(props: {
                   : "border-border-subtle bg-surface-base text-foreground-muted hover:bg-surface-raised hover:text-foreground",
               ].join(" ")}
             >
-              {profilePublic
+              {visibilitySaving
+                ? t("profile.publicProfile.actions.saving")
+                : profilePublic
                 ? t("profile.publicProfile.actions.makePrivate")
                 : t("profile.publicProfile.actions.makePublic")}
             </button>
@@ -254,7 +258,7 @@ export function ProfileSection(props: {
       ) : null}
 
       <div className="flex items-center justify-end gap-3">
-        <Button type="submit" disabled={saving}>
+        <Button type="submit" disabled={saving || visibilitySaving}>
           {saving ? t("profile.actions.saving") : t("profile.actions.save")}
         </Button>
       </div>

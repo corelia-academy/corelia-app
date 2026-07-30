@@ -40,6 +40,7 @@ export function AccountProfileRoute() {
   const { t } = useTranslation("account");
   const { user, profile, profileLoading, authInitialized, refreshProfile } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [visibilitySaving, setVisibilitySaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -98,6 +99,34 @@ export function AccountProfileRoute() {
       setError(message);
     } finally {
       setUploadingAvatar(false);
+    }
+  }
+
+  async function onProfileVisibilityChange(nextProfilePublic: boolean) {
+    if (!user || visibilitySaving) return;
+
+    const previousProfilePublic = profilePublic;
+    setError(null);
+    setSuccess(null);
+    setProfilePublic(nextProfilePublic);
+    setVisibilitySaving(true);
+
+    try {
+      const updated = await updateProfileForUser(user, {
+        profile_public: nextProfilePublic,
+      });
+      setProfilePublic(updated.profile_public ?? nextProfilePublic);
+      await refreshProfile(user);
+      setSuccess(t("profile.success.visibilityUpdated"));
+    } catch (err) {
+      setProfilePublic(previousProfilePublic);
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : t("profile.errors.visibilityUpdateFailed"),
+      );
+    } finally {
+      setVisibilitySaving(false);
     }
   }
 
@@ -244,7 +273,8 @@ export function AccountProfileRoute() {
         setUsername={setUsername}
         setBio={setBio}
         setWebsite={setWebsite}
-        setProfilePublic={setProfilePublic}
+        onProfileVisibilityChange={onProfileVisibilityChange}
+        visibilitySaving={visibilitySaving}
         error={error}
         success={success}
         onSubmit={onSubmitProfile}
