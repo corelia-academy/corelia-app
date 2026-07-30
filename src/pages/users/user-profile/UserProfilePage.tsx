@@ -484,10 +484,10 @@ export default function UserProfileLayout() {
                     <Lock className="size-5 text-foreground-subtle" aria-hidden />
                   </div>
                   <h3 className="mt-4 text-base font-semibold text-foreground">
-                    {t("userProfile.private.title", "Hồ sơ riêng tư")}
+                    {t("userProfile.private.title")}
                   </h3>
                   <p className="mt-2 text-sm text-foreground-muted max-w-sm mx-auto">
-                    {t("userProfile.private.description", "Người dùng này đã hạn chế hiển thị thông tin cá nhân. Chỉ các thành tựu công khai được hiển thị.")}
+                    {t("userProfile.private.description")}
                   </p>
                 </div>
               )}

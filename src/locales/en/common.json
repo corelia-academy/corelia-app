@@ -154,6 +154,10 @@
       "title": "Activity",
       "empty": "No public activity yet."
     },
+    "private": {
+      "title": "Private profile",
+      "description": "This account is private. Only public content selected by the profile owner is shown here."
+    },
     "achievements": {
       "selfOnly": "Achievements are only visible to the account owner for now.",
       "openInAchievementsPage": "Open Achievements to view your certificates and badges.",

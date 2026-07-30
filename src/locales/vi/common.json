@@ -154,6 +154,10 @@
       "title": "Hoạt động",
       "empty": "Chưa có hoạt động public nào."
     },
+    "private": {
+      "title": "Hồ sơ riêng tư",
+      "description": "Tài khoản này đang ở chế độ riêng tư. Chỉ các nội dung công khai do chủ hồ sơ chọn hiển thị mới xuất hiện tại đây."
+    },
     "achievements": {
       "selfOnly": "Thành tích hiện chỉ hiển thị cho chính chủ tài khoản.",
       "openInAchievementsPage": "Mở trang Thành tích để xem chứng nhận và huy hiệu của bạn.",
