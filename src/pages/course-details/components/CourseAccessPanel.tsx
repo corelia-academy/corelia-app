@@ -20,6 +20,7 @@ interface CourseAccessPanelProps {
   enrolled: boolean;
   paymentAccess: CoursePaymentAccess | null;
   progressPercent: number;
+  hasStarted: boolean;
   nextLesson: CourseLesson | null;
   pricing: CoursePricing;
   previewLessons: CourseLesson[];
@@ -41,6 +42,7 @@ export function CourseAccessPanel({
   enrolled,
   paymentAccess,
   progressPercent,
+  hasStarted,
   nextLesson,
   pricing,
   previewLessons,
@@ -117,7 +119,9 @@ export function CourseAccessPanel({
               disabled={!resolvedCourseId}
             >
               {nextLesson
-                ? translate("detail.spotlight.continueLearning")
+                ? hasStarted
+                  ? translate("detail.spotlight.continueLearning")
+                  : translate("catalog.card.startLearning")
                 : translate("detail.spotlight.enterLearningPage")}
               <ArrowRight className="size-4" />
             </Button>

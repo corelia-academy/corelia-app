@@ -455,6 +455,7 @@ export default function CourseDetail() {
           enrolled={access.enrolled}
           paymentAccess={access.paymentAccess}
           progressPercent={progress.progressPercent}
+          hasStarted={progress.hasStarted}
           nextLesson={progress.nextLesson}
           pricing={pricing}
           previewLessons={previewLessons}
@@ -514,6 +515,7 @@ export default function CourseDetail() {
             enrolled={access.enrolled}
             paymentAccess={access.paymentAccess}
             progressPercent={progress.progressPercent}
+            hasStarted={progress.hasStarted}
             nextLesson={progress.nextLesson}
             pricing={pricing}
             previewLessons={previewLessons}
