@@ -206,7 +206,10 @@ export default function Header() {
         icon: <CreditCard className="mr-2 size-4 shrink-0" aria-hidden />,
       },
       {
-        to: "/account/settings",
+        // "Cài đặt" trong menu hồ sơ là lối vào khu vực tài khoản; route gốc
+        // sẽ mở tab Thông tin cá nhân trước. Tab /account/settings vẫn dành cho
+        // các deep link có chủ đích như unsubscribe hoặc đổi mật khẩu.
+        to: "/account",
         label: tAccount("nav.settings.title"),
         icon: <Settings className="mr-2 size-4 shrink-0" aria-hidden />,
       },
