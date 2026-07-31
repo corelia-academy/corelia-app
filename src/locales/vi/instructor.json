@@ -275,14 +275,45 @@
     "toasts": {
       "created": "Tạo khoá học thành công. Bạn có thể tiếp tục chỉnh sửa."
     },
+    "header": {
+      "subtitle": "Thiết lập nhanh cấu hình khởi tạo trước khi chuyển sang màn chỉnh sửa chi tiết.",
+      "step1": "Bước 1: Khởi tạo"
+    },
+    "stats": {
+      "statusLabel": "Trạng thái",
+      "accessLabel": "Loại truy cập",
+      "ownerLabel": "Sở hữu doanh thu",
+      "levelLabel": "Cấp độ"
+    },
+    "nav": {
+      "heading": "Lộ trình thiết lập",
+      "description": "Sau bước khởi tạo này, bạn sẽ tiếp tục hoàn thiện nội dung và cấu hình nâng cao.",
+      "generalInfo": "Thông tin chung",
+      "content": "Nội dung & bài học",
+      "finalAssignment": "Bài tập cuối khoá",
+      "certificate": "Chứng nhận",
+      "studentManagement": "Quản lý học viên",
+      "deleteCourse": "Xoá khoá học"
+    },
+    "tip": {
+      "title": "Mẹo khởi tạo nhanh",
+      "description": "Tên, slug, ảnh bìa và mô hình giá là 4 trường nên chốt sớm để bước chỉnh sửa sau nhanh hơn."
+    },
+    "section": {
+      "description": "Điền thông tin cơ bản. Sau khi tạo, bạn sẽ được chuyển sang trang chỉnh sửa để thêm chương, bài học và các cấu hình nâng cao.",
+      "startBadge": "Bước bắt đầu"
+    },
     "labels": {
       "draft": "Bản nháp",
       "originExternal": "Đối tác bên ngoài",
       "originCorelia": "Giảng viên Corelia",
       "title": "Tên khoá học",
+      "slug": "Slug",
       "shortDescription": "Mô tả ngắn",
       "description": "Mô tả",
       "descriptionMarkdownHint": "Hỗ trợ Markdown (heading, danh sách, link, code block).",
+      "sources": "Nguồn (URL bên ngoài)",
+      "sourceAttributionNote": "Ghi chú nguồn công khai",
       "learningOutcomes": "Bạn sẽ học được gì",
       "learningOutcomesSubtitle": "Khoá học này sẽ giúp học viên đạt được các kết quả sau (mỗi dòng là một ý).",
       "learningOutcomesAdd": "Thêm ý",
@@ -296,12 +327,23 @@
       "contentLocales": "Ngôn ngữ nội dung khoá học",
       "contentLocalesHint": "Chọn những ngôn ngữ mà khoá học sẽ có nội dung riêng (hiện hỗ trợ VI/EN).",
       "primaryContentLocale": "Ngôn ngữ nội dung chính (fallback)",
-      "defaultVideoLocale": "Ngôn ngữ chính của video (mặc định)"
+      "defaultVideoLocale": "Ngôn ngữ chính của video (mặc định)",
+      "publishedCheckbox": "Đã xuất bản (hiển thị trên trang Khoá học)",
+      "externalAggregatedCheckbox": "Khoá học tổng hợp công khai"
+    },
+    "hints": {
+      "businessSettingsRestricted": "Chỉ học vụ/admin được đổi cấu hình sở hữu doanh thu.",
+      "partnerRevenueRemainder": "Phần còn lại thuộc giảng viên đối tác.",
+      "vndFormat": "Đơn vị VND (đ), tự động định dạng khi nhập.",
+      "externalAggregatedDescription": "Course này tổng hợp nội dung từ nguồn bên ngoài (YouTube/reference link tới kênh của creator)."
     },
     "placeholders": {
       "title": "Ví dụ: React từ cơ bản đến nâng cao",
+      "slug": "react-tu-co-ban-den-nang-cao",
       "shortDescription": "Một dòng mô tả (tuỳ chọn)",
       "description": "Mô tả đầy đủ về khoá học...",
+      "sources": "Mỗi dòng 1 URL nguồn\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourceAttributionNote": "Ghi chú công khai về nguồn tổng hợp (ví dụ: curated từ playlist YouTube của các creator).",
       "learningOutcomesItem": "Nhập một ý (mỗi dòng một ý)",
       "priceVnd": "Ví dụ: 499.000",
       "certificateFeeVnd": "Ví dụ: 199.000"
@@ -310,7 +352,8 @@
       "uploadThumb": "Tải ảnh bìa lên",
       "uploadingThumb": "Đang tải ảnh...",
       "create": "Tạo khoá học",
-      "creating": "Đang tạo..."
+      "creating": "Đang tạo...",
+      "cancel": "Huỷ"
     }
   },
   "courseListPage": {
@@ -649,6 +692,7 @@
       "minScoreLabel": "Điểm bài tập tối thiểu",
       "identifierPrefixLabel": "Tiền tố identifier",
       "identifierHint": "Chữ thường, phân tách bằng gạch ngang, tối đa 40 ký tự. Hậu tố học viên được thêm tự động.",
+      "identifierLocked": "Đã có {{count}} credential được tạo. Tiền tố đã bị khóa để tránh mint trùng.",
       "save": "Lưu cấu hình credential",
       "saving": "Đang lưu…",
       "saved": "Đã lưu cấu hình credential.",
