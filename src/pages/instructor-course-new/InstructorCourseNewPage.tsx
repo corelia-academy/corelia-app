@@ -50,12 +50,12 @@ export default function InstructorCourseNewPage() {
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
             <p className="max-w-3xl text-sm text-foreground-muted sm:text-sm">
-              Thiết lập nhanh cấu hình khởi tạo trước khi chuyển sang màn chỉnh sửa chi tiết.
+              {t("courseNew.header.subtitle")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
-              Bước 1: Khởi tạo
+              {t("courseNew.header.step1")}
             </span>
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
               {profile?.instructor_origin === "external"
@@ -68,7 +68,7 @@ export default function InstructorCourseNewPage() {
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
-              Trạng thái
+              {t("courseNew.stats.statusLabel")}
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
               {t("courseNew.labels.draft")}
@@ -76,7 +76,7 @@ export default function InstructorCourseNewPage() {
           </div>
           <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
-              Loại truy cập
+              {t("courseNew.stats.accessLabel")}
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
               {getCourseAccessModelLabel(form.access_model)}
@@ -84,7 +84,7 @@ export default function InstructorCourseNewPage() {
           </div>
           <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
-              Sở hữu doanh thu
+              {t("courseNew.stats.ownerLabel")}
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
               {getCourseOwnerTypeLabel(form.owner_type)}
@@ -92,7 +92,7 @@ export default function InstructorCourseNewPage() {
           </div>
           <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
-              Cấp độ
+              {t("courseNew.stats.levelLabel")}
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
               {getCourseLevelLabel(form.level)}
@@ -111,11 +111,10 @@ export default function InstructorCourseNewPage() {
         <nav className="h-fit rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3 xl:sticky xl:top-24">
           <div className="mb-3 px-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
-              Lộ trình thiết lập
+              {t("courseNew.nav.heading")}
             </p>
             <p className="mt-1 text-sm text-foreground-muted">
-              Sau bước khởi tạo này, bạn sẽ tiếp tục hoàn thiện nội dung và cấu hình nâng cao.
-              
+              {t("courseNew.nav.description")}
             </p>
           </div>
           <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
@@ -125,7 +124,7 @@ export default function InstructorCourseNewPage() {
                 className="flex w-full items-center gap-2 rounded-md bg-sidebar-accent px-3 py-2 text-left text-sm font-medium text-sidebar-accent-foreground"
               >
                 <Settings className="size-4 shrink-0" aria-hidden />
-                Thông tin chung
+                {t("courseNew.nav.generalInfo")}
               </button>
             </li>
             <li>
@@ -135,7 +134,7 @@ export default function InstructorCourseNewPage() {
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground-muted opacity-60"
               >
                 <List className="size-4 shrink-0" aria-hidden />
-                Nội dung & bài học
+                {t("courseNew.nav.content")}
               </button>
             </li>
             <li>
@@ -145,7 +144,7 @@ export default function InstructorCourseNewPage() {
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground-muted opacity-60"
               >
                 <FileText className="size-4 shrink-0" aria-hidden />
-                Bài tập cuối khoá
+                {t("courseNew.nav.finalAssignment")}
               </button>
             </li>
             <li>
@@ -155,7 +154,7 @@ export default function InstructorCourseNewPage() {
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground-muted opacity-60"
               >
                 <Award className="size-4 shrink-0" aria-hidden />
-                Chứng nhận
+                {t("courseNew.nav.certificate")}
               </button>
             </li>
             <li>
@@ -165,7 +164,7 @@ export default function InstructorCourseNewPage() {
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground-muted opacity-60"
               >
                 <Users className="size-4 shrink-0" aria-hidden />
-                Quản lý học viên
+                {t("courseNew.nav.studentManagement")}
               </button>
             </li>
             <li className="border-t border-border-subtle mt-2 pt-2">
@@ -175,17 +174,17 @@ export default function InstructorCourseNewPage() {
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground-muted opacity-60"
               >
                 <AlertTriangle className="size-4 shrink-0" aria-hidden />
-                Xoá khoá học
+                {t("courseNew.nav.deleteCourse")}
               </button>
             </li>
           </ul>
 
           <div className="mt-4 rounded-lg border border-border-subtle bg-surface-raised p-4">
             <p className="text-xs font-medium text-foreground">
-              Mẹo khởi tạo nhanh
+              {t("courseNew.tip.title")}
             </p>
             <p className="mt-1 text-sm text-foreground-muted">
-              Tên, slug, ảnh bìa và mô hình giá là 4 trường nên chốt sớm để bước chỉnh sửa sau nhanh hơn.
+              {t("courseNew.tip.description")}
             </p>
           </div>
         </nav>
@@ -195,15 +194,14 @@ export default function InstructorCourseNewPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-lg font-medium text-foreground">
-                  Thông tin chung
+                  {t("courseNew.nav.generalInfo")}
                 </h2>
                 <p className="mt-2 text-sm text-foreground-muted">
-                  Điền thông tin cơ bản. Sau khi tạo, bạn sẽ được chuyển sang trang
-                  chỉnh sửa để thêm chương, bài học và các cấu hình nâng cao.
+                  {t("courseNew.section.description")}
                 </p>
               </div>
               <div className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
-                Bước bắt đầu
+                {t("courseNew.section.startBadge")}
               </div>
             </div>
 
@@ -298,13 +296,13 @@ export default function InstructorCourseNewPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Slug</FieldLabel>
+                  <FieldLabel>{t("courseNew.labels.slug")}</FieldLabel>
                   <Input
                     value={form.slug}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, slug: e.target.value }))
                     }
-                    placeholder="react-tu-co-ban-den-nang-cao"
+                    placeholder={t("courseNew.placeholders.slug")}
                   />
                 </Field>
                 <Field>
@@ -336,7 +334,7 @@ export default function InstructorCourseNewPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Sources (external URLs)</FieldLabel>
+                  <FieldLabel>{t("courseNew.labels.sources")}</FieldLabel>
                   <textarea
                     value={form.external_source_urls_text}
                     onChange={(e) =>
@@ -347,11 +345,11 @@ export default function InstructorCourseNewPage() {
                     }
                     className="min-h-[100px] w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     rows={4}
-                    placeholder={"Mỗi dòng 1 URL nguồn\nhttps://youtube.com/...\nhttps://youtube.com/..."}
+                    placeholder={t("courseNew.placeholders.sources")}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Source attribution note</FieldLabel>
+                  <FieldLabel>{t("courseNew.labels.sourceAttributionNote")}</FieldLabel>
                   <textarea
                     value={form.external_source_attribution_note}
                     onChange={(e) =>
@@ -362,7 +360,7 @@ export default function InstructorCourseNewPage() {
                     }
                     className="min-h-[80px] w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
                     rows={3}
-                    placeholder="Ghi chú công khai về nguồn tổng hợp (ví dụ: curated từ playlist YouTube của các creator)."
+                    placeholder={t("courseNew.placeholders.sourceAttributionNote")}
                   />
                 </Field>
                 <Field>
@@ -474,7 +472,7 @@ export default function InstructorCourseNewPage() {
                       </select>
                       {!canManageBusinessSettings && (
                         <p className="mt-1 text-xs text-foreground-muted">
-                          Chỉ học vụ/admin được đổi cấu hình sở hữu doanh thu.
+                          {t("courseNew.hints.businessSettingsRestricted")}
                         </p>
                       )}
                     </Field>
@@ -495,7 +493,7 @@ export default function InstructorCourseNewPage() {
                           }
                         />
                         <p className="mt-1 text-xs text-foreground-muted">
-                          Phần còn lại thuộc giảng viên đối tác.
+                          {t("courseNew.hints.partnerRevenueRemainder")}
                         </p>
                       </Field>
                     )}
@@ -545,7 +543,7 @@ export default function InstructorCourseNewPage() {
                       placeholder={t("courseNew.placeholders.priceVnd")}
                     />
                     <p className="mt-1 text-xs text-foreground-muted">
-                      Đơn vị VND (đ), tự động định dạng khi nhập.
+                      {t("courseNew.hints.vndFormat")}
                     </p>
                   </Field>
                 )}
@@ -567,7 +565,7 @@ export default function InstructorCourseNewPage() {
                       placeholder={t("courseNew.placeholders.certificateFeeVnd")}
                     />
                     <p className="mt-1 text-xs text-foreground-muted">
-                      Đơn vị VND (đ), tự động định dạng khi nhập.
+                      {t("courseNew.hints.vndFormat")}
                     </p>
                   </Field>
                 )}
@@ -611,7 +609,7 @@ export default function InstructorCourseNewPage() {
                       className="rounded border-border"
                     />
                     <span className="text-sm font-medium text-foreground">
-                      Đã xuất bản (hiển thị trên trang Khoá học)
+                      {t("courseNew.labels.publishedCheckbox")}
                     </span>
                   </label>
                 </Field>
@@ -629,9 +627,9 @@ export default function InstructorCourseNewPage() {
                       className="mt-0.5 rounded border-border"
                     />
                     <span className="text-sm text-foreground">
-                      <span className="font-medium">Public external course</span>
+                      <span className="font-medium">{t("courseNew.labels.externalAggregatedCheckbox")}</span>
                       <span className="mt-1 block text-xs text-foreground-muted">
-                        Course này tổng hợp nội dung từ nguồn bên ngoài (YouTube/reference link tới kênh của creator).
+                        {t("courseNew.hints.externalAggregatedDescription")}
                       </span>
                     </span>
                   </label>
@@ -648,7 +646,7 @@ export default function InstructorCourseNewPage() {
                   onClick={() => navigate("/instructor/courses")}
                   disabled={saving || uploadingThumb}
                 >
-                  Huỷ
+                  {t("courseNew.actions.cancel")}
                 </Button>
               </div>
             </form>

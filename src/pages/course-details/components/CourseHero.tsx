@@ -51,6 +51,11 @@ export function CourseHero({
   const [failedThumbnailSrc, setFailedThumbnailSrc] = useState<string | null>(null);
   const [claiming, setClaiming] = useState(false);
   const hasCourseCertificate = courseHasCertificate(course);
+  const isCertificateIssued = !!enrollment?.certificate_issued_at;
+  const canClaimCertificate =
+    !isCertificateIssued && hasCourseCertificate && !!enrollment && progressPercent >= 100;
+  const showCertificateAvailableBadge =
+    hasCourseCertificate && !isCertificateIssued && !canClaimCertificate;
 
   const handleClaimCertificate = async () => {
     if (!enrollment || claiming) return;
@@ -101,6 +106,11 @@ export function CourseHero({
             <CourseBadge variant="secondary">
               {getCourseAccessModelLabel(course.access_model)}
             </CourseBadge>
+            {showCertificateAvailableBadge ? (
+              <CourseBadge variant="secondary">
+                {translate("detail.courseDetail.certificateAvailable")}
+              </CourseBadge>
+            ) : null}
             {isPaidUpfront && previewLessons.length > 0 ? (
               <CourseBadge variant="success">
                 {translate("detail.courseDetail.lessonCountPreview", {
@@ -116,11 +126,11 @@ export function CourseHero({
             {course.is_external_aggregated ? (
               <CourseBadge variant="outline">External Source</CourseBadge>
             ) : null}
-            {enrollment?.certificate_issued_at ? (
+            {isCertificateIssued ? (
               <CourseBadge variant="success">
                 {translate("detail.courseDetail.certificateIssued")}
               </CourseBadge>
-            ) : hasCourseCertificate && enrollment && progressPercent >= 100 ? (
+            ) : canClaimCertificate ? (
               <button
                 type="button"
                 onClick={() => void handleClaimCertificate()}

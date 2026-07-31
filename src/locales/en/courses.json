@@ -186,6 +186,7 @@
         "title": "Course overview"
       },
       "certificateIssued": "Certificate issued",
+      "certificateAvailable": "Certificate of completion",
       "claimCertificate": "Claim certificate",
       "claimCertificateFailed": "Could not issue certificate at this time. Please try again.",
       "certificateIssuedSuccess": "Just received a certificate!",
@@ -484,5 +485,23 @@
     "freeLearning": "Free learning",
     "fromPrice": "From {{price}}",
     "certificateFee": "Certificate {{price}}"
+  },
+  "errors": {
+    "mustLoginQuiz": "You need to sign in to take the quiz.",
+    "mustLoginFeature": "You need to sign in to use this feature.",
+    "flashcards": {
+      "loadFailed": "Could not load flashcards.",
+      "generateFailed": "Could not generate flashcards right now.",
+      "saveFailed": "Could not save your progress."
+    },
+    "readiness": {
+      "loadFailed": "Could not load the readiness check.",
+      "generateFailed": "Could not create the check right now.",
+      "submitFailed": "Could not save your results.",
+      "skipFailed": "Could not skip right now."
+    },
+    "lessonSummary": {
+      "generateFailed": "Could not summarize this lesson right now."
+    }
   }
 }

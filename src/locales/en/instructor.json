@@ -276,14 +276,45 @@
     "toasts": {
       "created": "Course created successfully. You can continue editing."
     },
+    "header": {
+      "subtitle": "Quickly set up the initial configuration before moving to the detailed edit screen.",
+      "step1": "Step 1: Setup"
+    },
+    "stats": {
+      "statusLabel": "Status",
+      "accessLabel": "Access type",
+      "ownerLabel": "Revenue ownership",
+      "levelLabel": "Level"
+    },
+    "nav": {
+      "heading": "Setup roadmap",
+      "description": "After this initial setup, you'll continue completing the content and advanced configuration.",
+      "generalInfo": "General information",
+      "content": "Content & lessons",
+      "finalAssignment": "Final assignment",
+      "certificate": "Certificate",
+      "studentManagement": "Student management",
+      "deleteCourse": "Delete course"
+    },
+    "tip": {
+      "title": "Quick setup tip",
+      "description": "Title, slug, cover image, and pricing model are the 4 fields worth locking in early so later edits go faster."
+    },
+    "section": {
+      "description": "Fill in the basic information. After creating, you'll be moved to the edit page to add chapters, lessons, and advanced configuration.",
+      "startBadge": "Starting step"
+    },
     "labels": {
       "draft": "Draft",
       "originExternal": "External partner",
       "originCorelia": "Corelia instructor",
       "title": "Course title",
+      "slug": "Slug",
       "shortDescription": "Short description",
       "description": "Description",
       "descriptionMarkdownHint": "Supports Markdown (headings, lists, links, code blocks).",
+      "sources": "Sources (external URLs)",
+      "sourceAttributionNote": "Source attribution note",
       "learningOutcomes": "What you'll learn",
       "learningOutcomesSubtitle": "This course will help learners achieve these outcomes.",
       "learningOutcomesAdd": "Add outcome",
@@ -297,12 +328,23 @@
       "contentLocales": "Course content languages",
       "contentLocalesHint": "Select languages that this course will have separate content for (currently VI/EN).",
       "primaryContentLocale": "Primary content language (fallback)",
-      "defaultVideoLocale": "Default video primary language"
+      "defaultVideoLocale": "Default video primary language",
+      "publishedCheckbox": "Published (visible on the Courses page)",
+      "externalAggregatedCheckbox": "Public external course"
+    },
+    "hints": {
+      "businessSettingsRestricted": "Only academic staff/admin can change revenue ownership settings.",
+      "partnerRevenueRemainder": "The remainder belongs to the partner instructor.",
+      "vndFormat": "Unit: VND (₫), formatted automatically as you type.",
+      "externalAggregatedDescription": "This course aggregates content from external sources (YouTube/reference links to the creator's channel)."
     },
     "placeholders": {
       "title": "e.g. React from beginner to advanced",
+      "slug": "react-from-beginner-to-advanced",
       "shortDescription": "One-line description (optional)",
       "description": "Full course description...",
+      "sources": "One URL per line\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourceAttributionNote": "Public note about aggregated sources (e.g., curated from a YouTube playlist by creators).",
       "learningOutcomesItem": "Add an outcome (one per line)",
       "priceVnd": "e.g. 499,000",
       "certificateFeeVnd": "e.g. 199,000"
@@ -311,7 +353,8 @@
       "uploadThumb": "Upload cover image",
       "uploadingThumb": "Uploading...",
       "create": "Create course",
-      "creating": "Creating..."
+      "creating": "Creating...",
+      "cancel": "Cancel"
     }
   },
   "courseListPage": {
@@ -650,6 +693,7 @@
       "minScoreLabel": "Minimum assignment score",
       "identifierPrefixLabel": "Identifier prefix",
       "identifierHint": "Lowercase, hyphen-separated, max 40 characters. A unique learner suffix is appended automatically.",
+      "identifierLocked": "{{count}} credential(s) already exist. The prefix is locked to prevent duplicate minting.",
       "save": "Save credential configuration",
       "saving": "Saving…",
       "saved": "Credential configuration saved.",

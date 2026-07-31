@@ -185,6 +185,7 @@
         "title": "Tổng quan khoá học"
       },
       "certificateIssued": "Đã cấp chứng nhận",
+      "certificateAvailable": "Có chứng nhận hoàn thành",
       "claimCertificate": "Nhận chứng nhận",
       "claimCertificateFailed": "Không thể cấp chứng nhận lúc này. Vui lòng thử lại.",
       "certificateIssuedSuccess": "Vừa nhận chứng nhận!",
@@ -479,5 +480,23 @@
     "freeLearning": "Học miễn phí",
     "fromPrice": "Từ {{price}}",
     "certificateFee": "Chứng nhận {{price}}"
+  },
+  "errors": {
+    "mustLoginQuiz": "Bạn cần đăng nhập để làm bài.",
+    "mustLoginFeature": "Bạn cần đăng nhập để dùng tính năng này.",
+    "flashcards": {
+      "loadFailed": "Không tải được flashcards.",
+      "generateFailed": "Không tạo được flashcards lúc này.",
+      "saveFailed": "Lưu tiến độ thất bại."
+    },
+    "readiness": {
+      "loadFailed": "Không tải được readiness check.",
+      "generateFailed": "Không tạo được bài kiểm tra lúc này.",
+      "submitFailed": "Lưu kết quả thất bại.",
+      "skipFailed": "Bỏ qua không thành công."
+    },
+    "lessonSummary": {
+      "generateFailed": "Không thể tóm tắt bài học lúc này."
+    }
   }
 }

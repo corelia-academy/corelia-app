@@ -1,3 +1,5 @@
+import i18n from "@/i18n";
+
 import { supabase } from "./supabase";
 import type { SectionQuestionAttempt, SectionQuizResult } from "../types/questions";
 
@@ -15,7 +17,7 @@ export async function submitQuizAttempt(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Bạn cần đăng nhập để làm bài.");
+  if (!user) throw new Error(i18n.t("courses:errors.mustLoginQuiz"));
 
   const { data, error } = await supabase
     .from("section_question_attempts")
@@ -41,7 +43,7 @@ export async function submitSectionQuizAttempts(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Bạn cần đăng nhập để làm bài.");
+  if (!user) throw new Error(i18n.t("courses:errors.mustLoginQuiz"));
 
   const rows = attempts.map((a) => ({
     user_id: user.id,
@@ -113,7 +115,7 @@ export async function submitLessonQuizAttempts(
 ): Promise<SectionQuestionAttempt[]> {
   if (attempts.length === 0) return [];
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Bạn cần đăng nhập để làm bài.");
+  if (!user) throw new Error(i18n.t("courses:errors.mustLoginQuiz"));
 
   const rows = attempts.map((a) => ({
     user_id: user.id,

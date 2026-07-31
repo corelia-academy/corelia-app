@@ -616,7 +616,7 @@ export function CourseOcbCredentialSection({
           </div>
           {issuanceCount > 0 ? (
             <p className="mt-1 text-xs text-warning">
-              Đã có {issuanceCount} credential được tạo. Tiền tố đã bị khoá để tránh mint trùng.
+              {t("courseEdit.ocb.identifierLocked", { count: issuanceCount })}
             </p>
           ) : (
             <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.ocb.identifierHint")}</p>

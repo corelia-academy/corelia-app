@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import i18n from "@/i18n";
 import {
   mapAssistantContextToBackendContext,
   type AssistantContext,
@@ -465,19 +466,19 @@ export function useCoraAI(options: UseCoraAIOptions) {
       return;
     }
     createSession().catch((createError) => {
-      setError({ type: "generic", message: createError instanceof Error ? createError.message : "Không thể tạo phiên Cora." });
+      setError({ type: "generic", message: createError instanceof Error ? createError.message : i18n.t("common:coraAi.errors.createSessionFailed") });
     });
   }, [backendContext, createSession, isAuthenticated, options.autoCreateSession, sessionId]);
 
   useEffect(() => {
     loadHistory().catch((historyError) => {
-      setError({ type: "generic", message: historyError instanceof Error ? historyError.message : "Không thể tải lịch sử Cora." });
+      setError({ type: "generic", message: historyError instanceof Error ? historyError.message : i18n.t("common:coraAi.errors.loadHistoryFailed") });
     });
   }, [historyKey, loadHistory]);
 
   useEffect(() => {
     loadLearningMemory().catch((memoryError) => {
-      setError({ type: "generic", message: memoryError instanceof Error ? memoryError.message : "Không thể tải memory của Cora." });
+      setError({ type: "generic", message: memoryError instanceof Error ? memoryError.message : i18n.t("common:coraAi.errors.loadMemoryFailed") });
     });
   }, [loadLearningMemory]);
 
@@ -494,7 +495,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
       const attachments = extras?.attachments?.filter((a) => a.url) ?? [];
       if (!trimmed && attachments.length === 0) return;
       if (!isAuthenticated) {
-        setError({ type: "auth", message: "Bạn cần đăng nhập để dùng Cora AI." });
+        setError({ type: "auth", message: i18n.t("common:coraAi.errors.mustLogin") });
         return;
       }
 
@@ -589,22 +590,22 @@ export function useCoraAI(options: UseCoraAIOptions) {
           if (response.status === 429 && (payload.used != null || payload.limit != null)) {
             throw {
               type: "quota_exceeded",
-              message: String(payload.message ?? "Bạn đã chạm giới hạn Cora AI."),
+              message: String(payload.message ?? i18n.t("common:coraAi.errors.quotaExceeded")),
               used: payload.used,
               limit: payload.limit,
               tier: payload.tier,
             } satisfies CoraError;
           }
           if (response.status === 401) {
-            throw { type: "auth", message: "Bạn cần đăng nhập để dùng Cora AI." } satisfies CoraError;
+            throw { type: "auth", message: i18n.t("common:coraAi.errors.mustLogin") } satisfies CoraError;
           }
           if (response.status === 429) {
-            throw new Error("Cora AI đang nhận quá nhiều yêu cầu, thử lại sau một lát giúp mình.");
+            throw new Error(i18n.t("common:coraAi.errors.rateLimited"));
           }
           if (response.status >= 500) {
-            throw new Error("Cora AI đang gặp trục trặc, thử lại sau ít phút giúp mình.");
+            throw new Error(i18n.t("common:coraAi.errors.serverError"));
           }
-          throw new Error(String(payload.message ?? "Cora AI chưa phản hồi được."));
+          throw new Error(String(payload.message ?? i18n.t("common:coraAi.errors.noResponse")));
         }
 
         if (payload.sessionId && payload.sessionId !== sessionId) {
@@ -648,7 +649,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
         } else {
           setError({
             type: "generic",
-            message: sendError instanceof Error ? sendError.message : "Cora AI đang bận, thử lại giúp mình.",
+            message: sendError instanceof Error ? sendError.message : i18n.t("common:coraAi.errors.busy"),
           });
         }
       } finally {
@@ -676,7 +677,7 @@ export function useCoraAI(options: UseCoraAIOptions) {
       const snippet = trimmed.length > 80 ? `${trimmed.slice(0, 80)}…` : trimmed;
       const bubble = userBubbleLabel
         ? userBubbleLabel.replace("{{snippet}}", snippet)
-        : `Giải thích đoạn: "${snippet}"`;
+        : i18n.t("common:coraWidget.explainUserBubble", { snippet });
       await sendMessage(bubble, {
         action: "explain_selected_text",
         selectedText: trimmed,
