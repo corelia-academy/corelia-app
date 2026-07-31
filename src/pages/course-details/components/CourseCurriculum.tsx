@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { BookOpen, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CourseBadge } from "./CourseBadge";
 import { isLessonDraftForLearners } from "@/lib/lessonFormat";
@@ -101,35 +100,11 @@ export function CourseCurriculum({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {hasSections && (
-            <>
-              <div className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
-                {translate("detail.courseDetail.sectionCount", {
-                  count: visibleLessonGroups.length,
-                })}
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-8 rounded-full px-3 text-xs"
-                onClick={() => {
-                  setCollapsedSections((prev) => {
-                    const next = new Set(prev);
-                    const allIds = visibleLessonGroups.map((g) => g.section.id);
-                    const allCollapsed =
-                      allIds.length > 0 && allIds.every((sid) => next.has(sid));
-                    if (allCollapsed) {
-                      allIds.forEach((sid) => next.delete(sid));
-                      return next;
-                    }
-                    allIds.forEach((sid) => next.add(sid));
-                    return next;
-                  });
-                }}
-              >
-                {translate("detail.courseDetail.curriculum.collapseAll")}
-              </Button>
-            </>
+            <div className="rounded-full bg-surface-raised px-3 py-1 text-xs text-foreground-muted">
+              {translate("detail.courseDetail.sectionCount", {
+                count: visibleLessonGroups.length,
+              })}
+            </div>
           )}
         </div>
       </div>
