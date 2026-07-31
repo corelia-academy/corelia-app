@@ -981,5 +981,22 @@
     "title": "Bạn vừa nhận thành công các chứng nhận!",
     "body": "Các chứng nhận đã được cấp cho email của bạn giờ đã lưu vào tài khoản Corelia.",
     "cta": "Xem chứng nhận của tôi"
+  },
+  "maintenance": {
+    "title": "Đang bảo trì hệ thống",
+    "body": "Corelia đang được nâng cấp. Chúng tôi sẽ trở lại sớm. Cảm ơn bạn đã kiên nhẫn chờ đợi!"
+  },
+  "coraAi": {
+    "errors": {
+      "createSessionFailed": "Không thể tạo phiên Cora.",
+      "loadHistoryFailed": "Không thể tải lịch sử Cora.",
+      "loadMemoryFailed": "Không thể tải memory của Cora.",
+      "mustLogin": "Bạn cần đăng nhập để dùng Cora AI.",
+      "quotaExceeded": "Bạn đã chạm giới hạn Cora AI.",
+      "rateLimited": "Cora AI đang nhận quá nhiều yêu cầu, thử lại sau một lát giúp mình.",
+      "serverError": "Cora AI đang gặp trục trặc, thử lại sau ít phút giúp mình.",
+      "noResponse": "Cora AI chưa phản hồi được.",
+      "busy": "Cora AI đang bận, thử lại giúp mình."
+    }
   }
 }

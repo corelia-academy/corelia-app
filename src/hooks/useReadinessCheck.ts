@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import i18n from "@/i18n";
 import {
   computeReadinessScore,
   fetchReadinessCheck,
@@ -59,7 +60,7 @@ export function useReadinessCheck(params: {
         generating: false,
         submitting: false,
         error:
-          error instanceof Error ? error.message : "Không tải được readiness check.",
+          error instanceof Error ? error.message : i18n.t("courses:errors.readiness.loadFailed"),
       });
     }
   }, [isAuthenticated, lessonId, user?.id]);
@@ -97,7 +98,7 @@ export function useReadinessCheck(params: {
           error:
             error instanceof Error
               ? error.message
-              : "Không tạo được bài kiểm tra lúc này.",
+              : i18n.t("courses:errors.readiness.generateFailed"),
         }));
         return null;
       }
@@ -132,7 +133,7 @@ export function useReadinessCheck(params: {
         setState((prev) => ({
           ...prev,
           submitting: false,
-          error: error instanceof Error ? error.message : "Lưu kết quả thất bại.",
+          error: error instanceof Error ? error.message : i18n.t("courses:errors.readiness.submitFailed"),
         }));
         return null;
       }
@@ -176,7 +177,7 @@ export function useReadinessCheck(params: {
       setState((prev) => ({
         ...prev,
         submitting: false,
-        error: error instanceof Error ? error.message : "Bỏ qua không thành công.",
+        error: error instanceof Error ? error.message : i18n.t("courses:errors.readiness.skipFailed"),
       }));
     }
   }, [courseId, lessonId, locale, user?.id]);

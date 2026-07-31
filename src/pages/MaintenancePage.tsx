@@ -1,4 +1,8 @@
+import { useTranslation } from "react-i18next";
+
 export default function MaintenancePage() {
+  const { t } = useTranslation("common");
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-4 text-center">
       <img
@@ -13,10 +17,10 @@ export default function MaintenancePage() {
       />
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold text-foreground">
-          Đang bảo trì hệ thống
+          {t("maintenance.title")}
         </h1>
         <p className="max-w-sm text-sm text-foreground-muted">
-          Corelia đang được nâng cấp. Chúng tôi sẽ trở lại sớm. Cảm ơn bạn đã kiên nhẫn chờ đợi!
+          {t("maintenance.body")}
         </p>
       </div>
     </div>

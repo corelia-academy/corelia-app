@@ -981,5 +981,22 @@
     "title": "You just received your credentials!",
     "body": "The credentials granted to your email are now saved to your Corelia account.",
     "cta": "View my credentials"
+  },
+  "maintenance": {
+    "title": "System under maintenance",
+    "body": "Corelia is being upgraded. We'll be back soon. Thanks for your patience!"
+  },
+  "coraAi": {
+    "errors": {
+      "createSessionFailed": "Could not start a Cora session.",
+      "loadHistoryFailed": "Could not load Cora's history.",
+      "loadMemoryFailed": "Could not load Cora's memory.",
+      "mustLogin": "You need to sign in to use Cora AI.",
+      "quotaExceeded": "You've reached the Cora AI limit.",
+      "rateLimited": "Cora AI is getting a lot of requests right now — please try again in a moment.",
+      "serverError": "Cora AI is having trouble right now — please try again shortly.",
+      "noResponse": "Cora AI couldn't respond right now.",
+      "busy": "Cora AI is busy right now — please try again."
+    }
   }
 }
