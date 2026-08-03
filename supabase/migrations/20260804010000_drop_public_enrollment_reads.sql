@@ -1,0 +1,32 @@
+-- Close the anonymous read leak on `public.enrollments`.
+--
+-- `enrollments_select_public_certificates` (20260702214400_private_profile_occ.sql)
+-- granted anon + authenticated SELECT on every enrollment row whose
+-- `certificate_issued_at` was set. Postgres RLS is row-level, not column-level,
+-- so that policy exposed the WHOLE row — `user_id`, `paid_provider`,
+-- `paid_amount_vnd`, `paid_order_id`, `paid_at`, `enrolled_at`,
+-- `last_accessed_at` — to unauthenticated PostgREST queries. Anyone could page
+-- through payment amounts and payment order ids for real learners.
+--
+-- The policy was added so the public profile page could render a learner's
+-- course certificates. That feature no longer exists: 04b5796
+-- ("feat(profile): manage public OCC visibility", 2026-07-27) rewrote
+-- `usePublicAchievements` to drop the `getMyEnrollments(profileId)` read and
+-- show only owner-opted-in on-chain credentials, which are served by
+-- `credential_issuances_select_public_minted` and `public_profiles`. No
+-- frontend or edge reader has depended on anon access to `enrollments` since.
+--
+-- So this drops the policy outright rather than replacing it with a narrowed
+-- projection (e.g. a `public_course_completions` view). Publishing which
+-- courses a user has completed would contradict the deliberate product
+-- decision recorded in that commit — off-chain course completion is private,
+-- and only the learner chooses what becomes public via OCC. If public
+-- completions are wanted later, add a column-limited view then, not a
+-- row-level policy on this table.
+--
+-- Learner, instructor, co-instructor, and admin/support reads are unaffected:
+-- they come from `enrollments_select_own_or_course_staff`
+-- (20260506071954_tighten_rls_and_lockdown_functions.sql), which stays in
+-- place. Edge functions use the service role and bypass RLS entirely.
+
+DROP POLICY IF EXISTS enrollments_select_public_certificates ON public.enrollments;
