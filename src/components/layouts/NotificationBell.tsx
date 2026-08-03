@@ -14,6 +14,7 @@ import {
   acceptProjectInviteById,
   declineProjectInviteById,
   listMyNotifications,
+  markAllNotificationsRead,
   markNotificationRead,
   type UserNotificationRow,
 } from "@/lib/notifications";
@@ -105,8 +106,20 @@ export function NotificationBell() {
   }, [authInitialized, isAuthenticated, refresh]);
 
   useEffect(() => {
-    if (open && isAuthenticated) void refresh();
-  }, [open, isAuthenticated, refresh]);
+    if (open && isAuthenticated) {
+      void markAllNotificationsRead()
+        .then(() => {
+          setItems((prev) =>
+            prev.map((item) =>
+              item.read_at ? item : { ...item, read_at: new Date().toISOString() }
+            )
+          );
+        })
+        .catch((e) => {
+          console.error("[NotificationBell] markAllNotificationsRead failed", e);
+        });
+    }
+  }, [open, isAuthenticated]);
 
   const unreadCount = items.filter((n) => !n.read_at && !n.resolved_at).length;
 

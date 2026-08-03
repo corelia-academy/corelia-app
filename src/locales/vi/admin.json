@@ -468,6 +468,23 @@
       "success": "Đã cấp thành công.",
       "successGhost": "Đã lưu chờ cấp và gửi email mời cho học viên.",
       "submitFailed": "Cấp phát thất bại."
+    },
+    "pendingList": {
+      "heading": "Danh sách cấp chờ (Ghost Minting)",
+      "subheading": "Các email chưa có tài khoản đã được Admin cấp chứng nhận. Hệ thống sẽ tự động gán khi họ đăng ký.",
+      "emailCol": "Email người nhận",
+      "badgeCol": "Tên huy hiệu",
+      "networkCol": "Mạng",
+      "reasonCol": "Lý do",
+      "dateCol": "Ngày cấp",
+      "statusCol": "Trạng thái",
+      "statusAwaiting": "Chờ tạo tài khoản",
+      "actionsCol": "Thao tác",
+      "revokeBtn": "Thu hồi",
+      "revokeConfirm": "Thu hồi cấp chờ cho \"{{email}}\"? Hành động này không thể hoàn tác.",
+      "revokeSuccess": "Đã thu hồi cấp chờ thành công.",
+      "revokeFailed": "Thu hồi thất bại.",
+      "empty": "Hiện không có chứng nhận nào đang ở trạng thái cấp chờ."
     }
   },
   "coraVoucherBatches": {

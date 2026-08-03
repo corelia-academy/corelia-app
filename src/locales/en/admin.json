@@ -468,6 +468,23 @@
       "success": "Granted successfully.",
       "successGhost": "Saved as pending and emailed the recipient an invite.",
       "submitFailed": "Grant failed."
+    },
+    "pendingList": {
+      "heading": "Pending Grants (Ghost Minting)",
+      "subheading": "Emails without an account that have been granted a credential. The system will automatically claim it upon sign-up.",
+      "emailCol": "Recipient email",
+      "badgeCol": "Badge name",
+      "networkCol": "Network",
+      "reasonCol": "Reason",
+      "dateCol": "Granted date",
+      "statusCol": "Status",
+      "statusAwaiting": "Awaiting account creation",
+      "actionsCol": "Actions",
+      "revokeBtn": "Revoke",
+      "revokeConfirm": "Revoke the pending grant for \"{{email}}\"? This action cannot be undone.",
+      "revokeSuccess": "Successfully revoked pending grant.",
+      "revokeFailed": "Failed to revoke.",
+      "empty": "No pending credential grants at this time."
     }
   },
   "coraVoucherBatches": {
