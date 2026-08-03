@@ -28,6 +28,17 @@ export async function markNotificationRead(notificationId: string): Promise<void
   if (error) throw new Error(error.message);
 }
 
+export async function markAllNotificationsRead(): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user?.id) return;
+  const { error } = await supabase
+    .from("user_notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("user_id", session.user.id)
+    .is("read_at", null);
+  if (error) throw new Error(error.message);
+}
+
 export type AcceptProjectInviteRpcPayload = {
   ok?: boolean;
   project_id?: string;
