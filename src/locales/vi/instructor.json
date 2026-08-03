@@ -275,14 +275,45 @@
     "toasts": {
       "created": "Tạo khoá học thành công. Bạn có thể tiếp tục chỉnh sửa."
     },
+    "header": {
+      "subtitle": "Thiết lập nhanh cấu hình khởi tạo trước khi chuyển sang màn chỉnh sửa chi tiết.",
+      "step1": "Bước 1: Khởi tạo"
+    },
+    "stats": {
+      "statusLabel": "Trạng thái",
+      "accessLabel": "Loại truy cập",
+      "ownerLabel": "Sở hữu doanh thu",
+      "levelLabel": "Cấp độ"
+    },
+    "nav": {
+      "heading": "Lộ trình thiết lập",
+      "description": "Sau bước khởi tạo này, bạn sẽ tiếp tục hoàn thiện nội dung và cấu hình nâng cao.",
+      "generalInfo": "Thông tin chung",
+      "content": "Nội dung & bài học",
+      "finalAssignment": "Bài tập cuối khoá",
+      "certificate": "Chứng nhận",
+      "studentManagement": "Quản lý học viên",
+      "deleteCourse": "Xoá khoá học"
+    },
+    "tip": {
+      "title": "Mẹo khởi tạo nhanh",
+      "description": "Tên, slug, ảnh bìa và mô hình giá là 4 trường nên chốt sớm để bước chỉnh sửa sau nhanh hơn."
+    },
+    "section": {
+      "description": "Điền thông tin cơ bản. Sau khi tạo, bạn sẽ được chuyển sang trang chỉnh sửa để thêm chương, bài học và các cấu hình nâng cao.",
+      "startBadge": "Bước bắt đầu"
+    },
     "labels": {
       "draft": "Bản nháp",
       "originExternal": "Đối tác bên ngoài",
       "originCorelia": "Giảng viên Corelia",
       "title": "Tên khoá học",
+      "slug": "Slug",
       "shortDescription": "Mô tả ngắn",
       "description": "Mô tả",
       "descriptionMarkdownHint": "Hỗ trợ Markdown (heading, danh sách, link, code block).",
+      "sources": "Nguồn (URL bên ngoài)",
+      "sourceAttributionNote": "Ghi chú nguồn công khai",
       "learningOutcomes": "Bạn sẽ học được gì",
       "learningOutcomesSubtitle": "Khoá học này sẽ giúp học viên đạt được các kết quả sau (mỗi dòng là một ý).",
       "learningOutcomesAdd": "Thêm ý",
@@ -296,12 +327,23 @@
       "contentLocales": "Ngôn ngữ nội dung khoá học",
       "contentLocalesHint": "Chọn những ngôn ngữ mà khoá học sẽ có nội dung riêng (hiện hỗ trợ VI/EN).",
       "primaryContentLocale": "Ngôn ngữ nội dung chính (fallback)",
-      "defaultVideoLocale": "Ngôn ngữ chính của video (mặc định)"
+      "defaultVideoLocale": "Ngôn ngữ chính của video (mặc định)",
+      "publishedCheckbox": "Đã xuất bản (hiển thị trên trang Khoá học)",
+      "externalAggregatedCheckbox": "Khoá học tổng hợp công khai"
+    },
+    "hints": {
+      "businessSettingsRestricted": "Chỉ học vụ/admin được đổi cấu hình sở hữu doanh thu.",
+      "partnerRevenueRemainder": "Phần còn lại thuộc giảng viên đối tác.",
+      "vndFormat": "Đơn vị VND (đ), tự động định dạng khi nhập.",
+      "externalAggregatedDescription": "Course này tổng hợp nội dung từ nguồn bên ngoài (YouTube/reference link tới kênh của creator)."
     },
     "placeholders": {
       "title": "Ví dụ: React từ cơ bản đến nâng cao",
+      "slug": "react-tu-co-ban-den-nang-cao",
       "shortDescription": "Một dòng mô tả (tuỳ chọn)",
       "description": "Mô tả đầy đủ về khoá học...",
+      "sources": "Mỗi dòng 1 URL nguồn\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourceAttributionNote": "Ghi chú công khai về nguồn tổng hợp (ví dụ: curated từ playlist YouTube của các creator).",
       "learningOutcomesItem": "Nhập một ý (mỗi dòng một ý)",
       "priceVnd": "Ví dụ: 499.000",
       "certificateFeeVnd": "Ví dụ: 199.000"
@@ -310,7 +352,8 @@
       "uploadThumb": "Tải ảnh bìa lên",
       "uploadingThumb": "Đang tải ảnh...",
       "create": "Tạo khoá học",
-      "creating": "Đang tạo..."
+      "creating": "Đang tạo...",
+      "cancel": "Huỷ"
     }
   },
   "courseListPage": {
@@ -499,8 +542,9 @@
       "updateFailed": "Lỗi cập nhật",
       "processFailed": "Lỗi xử lý",
       "missingCertificateTemplate": "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ.",
+      "missingCertificateTemplateCta": "Chứng nhận",
       "uploadCertTemplateFailed": "Lỗi tải template chứng nhận",
-      "clearCertTemplateFailed": "Lỗi khi hủy chứng nhận / OCA cũ",
+      "clearCertTemplateFailed": "Lỗi khi hủy chứng nhận",
       "uploadPartnerDocsFailed": "Lỗi tải tài liệu đối tác",
       "addSectionFailed": "Lỗi thêm chương",
       "addLessonFailed": "Lỗi thêm bài học",
@@ -542,8 +586,9 @@
       "assignmentApproved": "Đã duyệt bài. Chứng nhận sẽ được cấp nếu học viên đã hoàn thành 100% bài học.",
       "assignmentRejected": "Đã từ chối bài.",
       "certificateIssued": "Đã cấp chứng nhận.",
+      "assignmentConfigSaved": "Đã lưu cấu hình bài tập.",
       "certTemplateUploaded": "Đã tải template chứng nhận lên.",
-      "certTemplateCleared": "Đã hủy chứng nhận / OCA cũ.",
+      "certTemplateCleared": "Đã hủy chứng nhận.",
       "partnerContractUploaded": "Đã tải lên hồ sơ hợp đồng.",
       "partnerInvoiceUploaded": "Đã tải lên hồ sơ hoá đơn.",
       "discountCreated": "Đã tạo mã giảm giá."
@@ -562,7 +607,7 @@
       "saving": "Đang lưu...",
       "saveInfo": "Đã lưu thông tin chung.",
       "savePricing": "Đã lưu thay đổi giá & thanh toán.",
-      "saveAssignment": "Đã lưu cấu hình bài tập.",
+      "saveAssignment": "Lưu cấu hình bài tập",
       "saveCertificate": "Đã lưu cấu hình chứng nhận.",
       "reload": "Tải lại",
       "loading": "Đang tải...",
@@ -579,7 +624,7 @@
     },
     "certificate": {
       "sectionTitle": "Template chứng nhận (PDF)",
-      "sectionDescription": "Tải lên ảnh template chứng nhận (PNG/JPG). Tên học viên sẽ được đặt tại vị trí bạn chọn.",
+      "sectionDescription": "Tải lên nền chứng nhận (PNG/JPG). Tên học viên sẽ được đặt tại vị trí bạn chọn để họ tải về và chia sẻ lên MXH.",
       "saveNamePosition": "Lưu vị trí tên",
       "templateLabel": "Template chứng nhận",
       "uploadTemplate": "Tải template lên",
@@ -590,11 +635,14 @@
       "nameColorLabel": "Màu chữ tên học viên",
       "nameColorHint": "Màu của tên học viên hiển thị trên certificate.",
       "afterUploadHintPrefix": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" ( % từ trái / % từ",
-      "fileFormatHint": "Định dạng: PNG hoặc JPG."
+      "fileFormatHint": "Định dạng: PNG hoặc JPG.",
+      "disabledHint": "Bật \"Khoá học này có cấp chứng nhận hoàn thành\" ở tab Thông tin chung trước khi cấu hình template chứng nhận.",
+      "disabledCta": "Đi tới Thông tin chung",
+      "setupLeaveWarning": "Quá trình khởi tạo chứng nhận sẽ bị hủy. Bạn sẽ phải khởi tạo lại từ đầu. Rời trang?"
     },
     "certificateGuide": {
       "title": "Hướng dẫn tạo template",
-      "sizeHint": "Kích thước khuyến nghị: 1600×1200 px (4:3 ngang) hoặc 1200×1600 px (3:4 dọc). Ảnh này cũng được dùng làm ảnh credential OpenCampus on-chain.",
+      "sizeHint": "Kích thước khuyến nghị: 1600×1200 px (4:3 ngang) hoặc 1200×1600 px (3:4 dọc).",
       "nameAreaHint": "Để trống một vùng trên ảnh cho tên học viên (ví dụ giữa trang hoặc 1/3 phía dưới).",
       "afterUploadHint": "Sau khi tải lên, chỉnh hai ô \"Vị trí tên\" (% từ trái / % từ trên) để tên học viên nằm đúng vùng trống. 50% = giữa.",
       "downloadSample": "Tải template mẫu (SVG)"
@@ -606,6 +654,7 @@
       "loadFailed": "Không tải được cấu hình credential.",
       "statusActive": "Đang hoạt động",
       "statusInactive": "Chưa cấu hình",
+      "mintToggleLabel": "Cho phép mint on-chain",
       "kind": {
         "label": "Loại credential",
         "oca": {
@@ -617,28 +666,33 @@
           "desc": "Credential dạng huy hiệu kỹ năng. Phù hợp cho các thành tích ngắn hạn và thành thạo chủ đề."
         }
       },
-      "enableLabel": "Bật tự động cấp badge (OCB)",
-      "enableHint": "Khi bật, badge được tự động mint cho học viên đạt đủ điều kiện.",
       "configTitle": "Thông tin credential",
       "requirementsTitle": "Điều kiện nhận credential",
-      "blockedByCertificate": "OCB không thể bật khi khoá học đã cấp chứng nhận PDF. Hãy chọn loại OCA, hoặc tắt chứng nhận PDF trước.",
+      "confirmDeactivateWithIssuances": "Đã có {{count}} học viên nhận credential này. Tắt sẽ ngừng cấp cho học viên mới, KHÔNG thu hồi credential đã cấp cho học viên cũ. Tiếp tục tắt?",
+      "leaveWithoutSavingWarning": "Bạn có thay đổi cấu hình OpenCampus Credentials chưa lưu. Rời trang bây giờ sẽ KHÔNG cấp chứng chỉ on-chain cho học viên. Rời trang?",
       "noPermission": "Bạn không có quyền cấu hình credential cho khoá học này.",
       "nameLabel": "Tên credential",
       "descriptionLabel": "Mô tả",
-      "imageLabel": "Ảnh credential",
-      "imageHint": "Khuyến nghị: 1600×1200 px (ngang) hoặc 1200×1600 px (dọc). Dùng làm ảnh credential on-chain trên OpenCampus.",
-      "imageOcaHint": "OCA sử dụng ảnh template chứng nhận ở trên làm ảnh credential on-chain. Hãy upload template chứng nhận trước.",
-      "imageOcaNoTemplate": "Chưa có template",
+      "badgeImageLabel": "Ảnh huy hiệu (Badge)",
+      "imageHint": "Khuyến nghị: 1600×1200 px (ngang) hoặc 1200×1600 px (dọc). Dùng làm ảnh huy hiệu on-chain trên OpenCampus.",
       "uploadBadge": "Tải ảnh lên",
       "uploading": "Đang tải…",
       "uploadOk": "Đã tải ảnh.",
       "uploadFailed": "Tải ảnh thất bại.",
+      "onchainCertLabel": "Phôi chứng nhận On-chain (Web3)",
+      "onchainCertHint": "Ảnh dùng để đúc chứng chỉ lên blockchain. Tuyệt đối KHÔNG chứa khoảng trống chèn tên học viên để bảo vệ quyền riêng tư.",
+      "uploadOnchainCert": "Tải phôi On-chain lên",
+      "onchainCertUploaded": "Đã tải phôi OCA On-chain.",
+      "onchainCertUploadFailed": "Tải phôi On-chain thất bại.",
+      "onchainCertRequired": "Vui lòng tải lên phôi On-chain trước khi lưu cấu hình OCA.",
+      "imageRequired": "Vui lòng tải lên hình ảnh cho chứng chỉ/huy hiệu trước khi lưu.",
       "completionPctLabel": "% bài học hoàn thành tối thiểu",
       "requireAssignmentPassLabel": "Yêu cầu duyệt bài tập cuối khóa",
       "requireAssignmentLabel": "Yêu cầu duyệt bài tập cuối khóa",
       "minScoreLabel": "Điểm bài tập tối thiểu",
       "identifierPrefixLabel": "Tiền tố identifier",
       "identifierHint": "Chữ thường, phân tách bằng gạch ngang, tối đa 40 ký tự. Hậu tố học viên được thêm tự động.",
+      "identifierLocked": "Đã có {{count}} credential được tạo. Tiền tố đã bị khóa để tránh mint trùng.",
       "save": "Lưu cấu hình credential",
       "saving": "Đang lưu…",
       "saved": "Đã lưu cấu hình credential.",
@@ -713,6 +767,7 @@
         "content": "Nội dung & bài học",
         "assignments": "Bài tập cuối khoá",
         "certificate": "Chứng nhận",
+        "credentials": "OpenCampus Credentials",
         "students": "Quản lý học viên",
         "danger": "Xoá khoá học",
         "announcements": "Thông báo"
@@ -951,7 +1006,7 @@
     "publishing": {
       "publishedHint": "Đã xuất bản (hiển thị trên trang Khoá học)",
       "hasCertificateHint": "Khoá học có cấp chứng nhận hoàn thành",
-      "certBlockedByOcb": "Khoá học này đang có huy hiệu on-chain (OCB) hoạt động. Vào tab Certificate và tắt huy hiệu trước.",
+      "certificateConfiguredLockedHint": "Đã cấu hình template chứng nhận. Không thể tắt cấp chứng nhận tại đây.",
       "updatingHint": "Khoá học đang được cập nhật (hiện banner cho học viên)"
     },
     "students": {

@@ -36,6 +36,15 @@
       "load": "Could not load followers."
     }
   },
+  "following": {
+    "title": "Following",
+    "description": "Public profiles this user follows.",
+    "loading": "Loading following...",
+    "empty": "No public profiles followed yet.",
+    "errors": {
+      "load": "Could not load following."
+    }
+  },
   "item": {
     "open": "Open"
   },

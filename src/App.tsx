@@ -17,6 +17,7 @@ import {
 import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
 import CredentialRealtimeSync from "@/components/base/CredentialRealtimeSync";
+import { PendingCredentialsWelcomeModal } from "@/components/base/PendingCredentialsWelcomeModal";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireRole } from "@/components/auth/RequireRole";
 import { ROLE_GROUPS } from "@/config/roles";
@@ -49,7 +50,11 @@ const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"));
 const EmailUnsubscribePage = lazy(() =>
   import("@/pages/EmailUnsubscribePage").then((m) => ({ default: m.EmailUnsubscribePage })),
 );
+const ClaimPage = lazy(() =>
+  import("@/pages/claim/ClaimPage").then((m) => ({ default: m.ClaimPage })),
+);
 const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
+const AchievementsPage = lazy(() => import("@/pages/achievements"));
 
 const Account = lazy(() => import("@/pages/account/Account"));
 const AccountProfileRoute = lazy(() =>
@@ -100,6 +105,7 @@ const AdminInstructors = lazy(() => import("@/pages/admin/AdminInstructors"));
 const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMilestones"));
+const AdminManualMint = lazy(() => import("@/pages/admin/AdminManualMint"));
 const AdminCoraVouchers = lazy(() => import("@/pages/admin/AdminCoraVouchers"));
 const AdminBranding = lazy(() => import("@/pages/admin/AdminBranding"));
 
@@ -207,11 +213,12 @@ export default function App() {
       <LoadingBar />
       <Toaster />
       <AuthSync />
-      <CredentialRealtimeSync />
       <TooltipProvider>
         <BrowserRouter>
+          <CredentialRealtimeSync />
           <ScrollToTop />
           <RecoveryGuard />
+          <PendingCredentialsWelcomeModal />
           <Routes>
             <Route
               path="/login"
@@ -258,6 +265,14 @@ export default function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <EmailUnsubscribePage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/claim"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <ClaimPage />
                 </Suspense>
               }
             />
@@ -393,7 +408,16 @@ export default function App() {
                   </Suspense>
                 }
               />
-              <Route path="achievements" element={<Navigate to="/account" replace />} />
+              <Route
+                path="achievements"
+                element={
+                  <RequireAuth>
+                    <Suspense fallback={<PageFallback />}>
+                      <AchievementsPage />
+                    </Suspense>
+                  </RequireAuth>
+                }
+              />
               <Route
                 path="roadmap"
                 element={
@@ -535,6 +559,14 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <AdminActivityMilestones />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="manual-mint"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <AdminManualMint />
                     </Suspense>
                   }
                 />

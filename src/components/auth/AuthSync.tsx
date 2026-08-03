@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { getProfileForUser, invalidateCurrentProfileCache } from "@/lib/profile";
 import { invokeCheckActivityMilestones } from "@/lib/credentialsEdge";
+import { invokeCoreliaApi } from "@/lib/coreliaEdgeApi";
 import { useAuthStore } from "@/stores/authStore";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
 import type { AuthChangeEvent, User } from "@supabase/supabase-js";
@@ -137,16 +138,67 @@ export function AuthSync() {
       if (event === "SIGNED_IN" && session?.user) {
         queueMicrotask(() => {
           invokeCheckActivityMilestones("login_streak").catch(() => {});
+          // Best-effort: picks up any credential_issuances left at
+          // awaiting_holder_id (e.g. ghost-mint rows claimed by
+          // private.handle_new_user() at signup) once the user has an OCID.
+          // Usually a no-op right after signup — the real trigger point is
+          // OCIDRedirect.tsx after they connect OCID — but harmless to try.
+          invokeCoreliaApi("credentials.retryPending", {}).catch(() => {});
         });
       }
 
       syncFromSession(session);
     });
 
+    // ┌─── Tab-focus proactive refresh ───────────────────────────────────────────────
+    // When the browser throttles timers (inactive tab), `autoRefreshToken` may
+    // miss its scheduled refresh window.  When the user returns to the tab, we
+    // call `supabase.auth.getSession()` — now patched in supabase.ts — which
+    // automatically refreshes an expired token before returning.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "visible" || !mounted) return;
+      void (async () => {
+        try {
+          const { data: { session: freshSession } } = await supabase.auth.getSession();
+          if (!mounted) return;
+          // If the session is gone after we had a user, the session-expired
+          // event will have been dispatched by the patch; nothing more to do here.
+          if (!freshSession) return;
+          // Re-sync user if the identity changed (e.g., token rotated with new claims).
+          const prevUser = useAuthStore.getState().user;
+          if (prevUser?.id && freshSession.user.id !== prevUser.id) {
+            syncFromSession(freshSession);
+          }
+        } catch {
+          // Non-fatal — Supabase will retry on the next API call.
+        }
+      })();
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // ┌─── Session-expired forced sign-out ──────────────────────────────
+    // Emitted by the patched supabase.auth.getSession() (in supabase.ts) when
+    // refreshSession() itself fails (refresh token revoked or expired after
+    // many days of inactivity).
+    const handleSessionExpired = () => {
+      if (!mounted) return;
+      console.warn("[AuthSync] Session expired and could not be refreshed — signing out.");
+      void useAuthStore.getState().signOut();
+      // Redirect to login without reloading the SPA bundle.
+      try {
+        window.location.assign("/login");
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener("corelia:session-expired", handleSessionExpired);
+
     return () => {
       mounted = false;
       window.clearTimeout(initTimeoutId);
       subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("corelia:session-expired", handleSessionExpired);
     };
   }, [setUser, setProfile, setProfileLoading, setAuthInitialized, setPasswordRecovery]);
 

@@ -663,7 +663,7 @@ export async function getLessonDistinctLearnerCountsForCourse(
 ): Promise<Record<string, number>> {
   const byLesson = new Map<string, Set<string>>();
   let from = 0;
-  for (;;) {
+  for (; ;) {
     const { data, error } = await supabase
       .from("lesson_progress")
       .select("lesson_id, user_id")

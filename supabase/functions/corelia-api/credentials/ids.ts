@@ -1,26 +1,29 @@
-/** Deterministic IDs for OpenCampus (issuer_reference_id + VC achievement.identifier ≤ 50 chars). */
-
-export function issuerReferenceId(identifierPrefix: string, userId: string): string {
-  const p = identifierPrefix.trim();
-  const compact = userId.replace(/-/g, "");
-  return `${p}:${compact}`;
+/** Deterministic OpenCampus IDs.
+ *
+ * OC requires issuerReferenceId to be unique for every credential issued by an
+ * issuer. The historical `${identifierPrefix}:${userId}` format collided when
+ * two templates reused a prefix for the same learner. V2 includes both stable
+ * UUIDs, while remaining compact enough for OC's public identifier fields.
+ */
+function idFragment(value: string): string {
+  return value.replace(/-/g, "").toLowerCase().slice(0, 16);
 }
 
-async function sha256Hex(input: string): Promise<string> {
-  const data = new TextEncoder().encode(input);
-  const buf = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+/** V1 reference retained only to find already-stored legacy issuances. */
+export function legacyIssuerReferenceId(identifierPrefix: string, userId: string): string {
+  return `${identifierPrefix.trim()}:${userId.replace(/-/g, "")}`;
+}
+
+export function issuerReferenceId(templateId: string, userId: string): string {
+  return `ocv2:${idFragment(templateId)}:${idFragment(userId)}`;
 }
 
 /** Achievement identifier in VC payload (max 50 chars per Corelia spec). */
-export async function achievementIdentifier(identifierPrefix: string, userId: string): Promise<string> {
-  const p = identifierPrefix.trim();
-  const compact = userId.replace(/-/g, "");
-  const full = `${p}:${compact}`;
-  if (full.length <= 50) return full;
-  const h = (await sha256Hex(`${p}:${userId}`)).slice(0, 14);
-  const shortened = `${p}:${h}`;
-  return shortened.length <= 50 ? shortened : shortened.slice(0, 50);
+export async function achievementIdentifier(
+  identifierPrefix: string,
+  templateId: string,
+  userId: string,
+): Promise<string> {
+  const prefix = identifierPrefix.trim().slice(0, 14);
+  return `${prefix}:v2:${idFragment(templateId)}:${idFragment(userId)}`.slice(0, 50);
 }

@@ -1,7 +1,7 @@
 import { canManageHackathon, getUserRole, isAuthFailure } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
-import { issuerReferenceId } from "./ids.ts";
+import { issuerReferenceId, legacyIssuerReferenceId } from "./ids.ts";
 import { mintCredentialOnce } from "./mint.ts";
 import { getDefaultMintNetwork, type MintNetwork } from "./settings.ts";
 import { resolveMintNetwork } from "./oc_payload.ts";
@@ -61,11 +61,13 @@ export async function handleGrantCredentials(req: Request, db: SupabaseClient): 
     const errors: string[] = [];
 
     for (const uid of userIds) {
-      const issuerRef = issuerReferenceId(identifierPrefix, uid);
-      const { data: existing } = await db.from("credential_issuances").select("id, status").eq(
-        "issuer_reference_id",
-        issuerRef,
-      ).eq("network", network).maybeSingle();
+      const issuerRef = issuerReferenceId(String(template.id), uid);
+      const legacyIssuerRef = legacyIssuerReferenceId(identifierPrefix, uid);
+      const { data: existing } = await db.from("credential_issuances").select("id, status")
+        .in("issuer_reference_id", [issuerRef, legacyIssuerRef])
+        .eq("network", network)
+        .limit(1)
+        .maybeSingle();
       if (existing && (existing.status === "minted" || existing.status === "pending")) {
         errors.push(`${uid}: đã có issuance`);
         continue;

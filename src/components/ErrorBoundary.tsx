@@ -15,6 +15,12 @@ interface State {
   error: Error | null;
 }
 
+function isStaleChunkLoadError(error: Error): boolean {
+  return /failed to fetch dynamically imported module|error loading dynamically imported module|importing a module script failed|loading chunk \d+ failed/i.test(
+    `${error.name} ${error.message}`,
+  );
+}
+
 /** Lightweight boundary for individual page sections — keeps other sections alive on error. */
 class SectionErrorBoundaryInner extends Component<BoundaryProps, State> {
   state: State = { error: null };
@@ -68,6 +74,15 @@ class ErrorBoundaryInner extends Component<BoundaryProps, State> {
     console.error("[ErrorBoundary]", error, info.componentStack);
   }
 
+  handleRetry = () => {
+    if (this.state.error && isStaleChunkLoadError(this.state.error)) {
+      window.location.reload();
+      return;
+    }
+
+    this.setState({ error: null });
+  };
+
   render() {
     if (this.state.error) {
       return (
@@ -82,7 +97,7 @@ class ErrorBoundaryInner extends Component<BoundaryProps, State> {
             <button
               type="button"
               className="rounded-md border border-border px-4 py-2 text-sm transition-colors duration-150 hover:bg-surface-raised"
-              onClick={() => this.setState({ error: null })}
+              onClick={this.handleRetry}
             >
               {this.props.t("actions.retry")}
             </button>

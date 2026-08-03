@@ -139,12 +139,12 @@ export async function fetchFlashcardDeck(args: {
     .eq("lesson_id", args.lessonId);
   if (args.locale) query = query.eq("locale", args.locale);
   const { data, error } = await query.maybeSingle<{
-      id: string;
-      cards: unknown;
-      locale: "vi" | "en";
-      created_at: string;
-      updated_at: string;
-    }>();
+    id: string;
+    cards: unknown;
+    locale: "vi" | "en";
+    created_at: string;
+    updated_at: string;
+  }>();
   if (error) throw new Error(error.message);
   if (!data) return null;
   return {

@@ -25,6 +25,9 @@ export type CredentialTemplateRow = {
   collection_symbol: string | null;
   custom_metadata: Record<string, unknown>;
   network_override?: string | null;
+  /** 'manual' = granted via Admin Manual Mint, unrelated to auto milestone badges
+   *  that also use scope_type="activity_milestone". */
+  trigger_type?: string | null;
 };
 
 /**
@@ -37,15 +40,13 @@ export async function buildOpenCampusPayload(params: {
   userId: string;
   username: string | null;
   profileUrl: string;
+  /** Issuer artwork used by the Open Campus VC's top-level image field. */
   logoUrl: string;
   holderOcId: string | null;
   holderAddress: string | null;
   holderName: string | null;
   holderEmail: string | null;
   awardedIso: string;
-  /** Override for credentialSubject.image (e.g. name-rendered certificate).
-   *  When null, falls back to template.image_url. */
-  subjectImageOverride?: string | null;
 }): Promise<{ body: Record<string, unknown>; issuerReferenceId: string; achievementIdentifier: string }> {
   const {
     template,
@@ -58,13 +59,12 @@ export async function buildOpenCampusPayload(params: {
     holderName,
     holderEmail,
     awardedIso,
-    subjectImageOverride,
   } = params;
 
   const isOCA = !template.collection_symbol;
 
-  const issuerRef = issuerReferenceId(template.identifier_prefix, userId);
-  const achId = await achievementIdentifier(template.identifier_prefix, userId);
+  const issuerRef = issuerReferenceId(template.id, userId);
+  const achId = await achievementIdentifier(template.identifier_prefix, template.id, userId);
 
   const scopeId =
     template.scope_type === "course"
@@ -76,7 +76,7 @@ export async function buildOpenCampusPayload(params: {
   // credentialSubject — OCA includes name + email; OCB does not
   const credentialSubject: Record<string, unknown> = {
     type: "Person",
-    image: subjectImageOverride?.trim() || template.image_url,
+    image: template.image_url,
     profileUrl,
     achievement: {
       name: template.name,
@@ -103,6 +103,9 @@ export async function buildOpenCampusPayload(params: {
     awardedDate: awardedIso,
     name: template.name,
     description: template.description,
+    // OC's top-level image represents the issuer. Historical successful
+    // issuances use the Corelia logo here, while credentialSubject.image holds
+    // the badge/certificate artwork.
     image: logoUrl,
     credentialSubject,
   };

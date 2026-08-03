@@ -1,11 +1,19 @@
-import { getCourse } from "@/lib/courses";
-import { openCampusCredentialExplorerUrl, type CourseIssuanceInfo, extractOcCredentialId } from "@/lib/credentialIssuances";
+import { createElement } from "react";
+import { Award } from "lucide-react";
+
+import { courseHasCertificate, getCourse } from "@/lib/courses";
+import type { CourseCredentialTemplateSummary } from "@/lib/credentialsEdge";
+import { openCampusCredentialExplorerUrl } from "@/lib/credentialIssuances";
+import type { CourseIssuanceInfo } from "@/lib/credentialIssuances";
 import { intlLocale } from "@/lib/intl";
 import type { Enrollment } from "@/types/courses";
-import type { CredentialIssuanceWithTemplate } from "@/types/credentials";
 
 import { BADGE_PLACEHOLDER, BADGE_STYLES, CERT_PLACEHOLDER } from "../constants";
 import type { BadgeItem, CertificateItem } from "../types";
+import {
+  claimStatusFromIssuance,
+  shouldUseSavedCourseIssuance,
+} from "./credentialState";
 
 export function formatDate(value?: string | null): string {
   if (!value) return "—";
@@ -41,26 +49,32 @@ export function buildCourseCertificates(
   courseIssuanceMap?: Map<string, CourseIssuanceInfo>,
   holderOcid?: string | null,
   holderName?: string | null,
+  courseCredentialTemplateMap?: Map<string, CourseCredentialTemplateSummary>,
 ): CertificateItem[] {
   return enrollments
     .filter((item) => !!item.certificate_issued_at)
     .map((item) => {
       const course = courseMap.get(item.course_id);
-      const issuance = courseIssuanceMap?.get(item.course_id);
-      // "claimed" requires status=minted AND oc_credential_id present.
-      // minted without oc_credential_id = incomplete mint → treat as failed.
+      const credentialTemplate = courseCredentialTemplateMap?.get(item.course_id);
+      const savedIssuance = courseIssuanceMap?.get(item.course_id);
+      const issuance = shouldUseSavedCourseIssuance(
+        savedIssuance,
+        credentialTemplate?.id,
+      )
+        ? savedIssuance
+        : undefined;
       const ocClaimStatus = issuance
-        ? issuance.status === "minted" && issuance.oc_credential_id
-          ? "claimed"
-          : issuance.status === "minted" || issuance.status === "failed"
-            ? "failed"
-            : "pending"
+        ? claimStatusFromIssuance({
+            status: issuance.status,
+            ocCredentialId: issuance.oc_credential_id,
+            errorMessage: issuance.error_message,
+          })
         : "unclaimed";
       const ocCredentialId = issuance?.oc_credential_id ?? null;
       const ocCredentialUrl = ocCredentialId
         ? openCampusCredentialExplorerUrl(ocCredentialId, {
             username: holderOcid,
-            nftCollection: "occredential",
+            nftCollection: issuance?.collectionSymbol === "ocbadge" ? "ocbadge" : "occredential",
           }) ?? undefined
         : undefined;
       return {
@@ -77,6 +91,11 @@ export function buildCourseCertificates(
         nameYPercent: course?.certificate_name_y_percent ?? 50,
         nameColor: course?.certificate_name_color ?? "#000000",
         holderName: holderName || null,
+        hasOnchainCredentialTemplate: Boolean(credentialTemplate),
+        onchainTemplateId: issuance?.templateId ?? credentialTemplate?.id ?? null,
+        onchainCredentialAutoIssued:
+          credentialTemplate?.collectionSymbol === "ocbadge" ||
+          issuance?.collectionSymbol === "ocbadge",
         ocClaimStatus,
         ocCredentialId,
         ocCredentialUrl,
@@ -86,75 +105,47 @@ export function buildCourseCertificates(
     .sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));
 }
 
-export function buildCourseCertificatesFromIssuances(
-  issuances: CredentialIssuanceWithTemplate[],
+/** Standalone claimable credential cards for enrolled courses that have an
+ *  active OCA or OCB template but no offchain PDF certificate at all — those never
+ *  appear in `certificates` (which requires `certificate_issued_at`), so
+ *  without this they'd never surface anywhere for the learner to claim.
+ *  These use plain "unclaimed" status so the modal opens directly and the
+ *  claim happens on the badge itself. */
+export function buildStandaloneCourseCredentialBadges(
+  courseIds: string[],
   courseMap: Map<string, Awaited<ReturnType<typeof getCourse>>>,
-  existingCourseIds: Set<string>,
-  labels: {
-    courseCompletionTitle: string;
-    fallbackCourseName: string;
-    fallbackInstructorName: string;
-  },
-  holderOcid?: string | null,
-  holderName?: string | null,
-): CertificateItem[] {
-  return issuances
-    .filter(
-      (row) =>
-        row.template?.scope_type === "course" &&
-        (!row.course_id || !existingCourseIds.has(row.course_id)) &&
-        row.template?.achievement_type !== "Badge" &&
-        row.template?.achievement_type !== "Award",
-    )
-    .map((row) => {
-      const courseId = row.course_id ?? null;
-      const course = row.course_id ? courseMap.get(row.course_id) : undefined;
-      const snapshot = row.display_snapshot;
-      let ocCredentialId = row.oc_credential_id ?? null;
-      if (!ocCredentialId?.trim() && row.oc_response) {
-        ocCredentialId = extractOcCredentialId(row.oc_response);
-      }
-      const ocCredentialUrl = ocCredentialId
-        ? openCampusCredentialExplorerUrl(ocCredentialId, {
-            username: holderOcid,
-            nftCollection: "occredential",
-          }) ?? undefined
-        : undefined;
-
-      return {
-        id: `course-oca-${row.id}`,
-        courseId,
-        title: labels.courseCompletionTitle,
-        course:
-          course?.title ||
-          snapshot?.course_title ||
-          row.template?.name ||
-          snapshot?.credential_title ||
-          labels.fallbackCourseName,
-        issuedAt: formatDate(row.minted_at ?? snapshot?.issued_at ?? row.created_at),
-        instructor:
-          course?.instructor_name ||
-          snapshot?.instructor_name ||
-          labels.fallbackInstructorName,
-        type: pickCertificateType(course?.owner_type),
-        credentialId: ocCredentialId ?? buildCredentialId("COURSE", row.id),
-        imageUrl:
-          course?.certificate_template_url ||
-          row.template?.image_url ||
-          snapshot?.image_url ||
-          snapshot?.thumbnail_url ||
-          CERT_PLACEHOLDER,
-        nameXPercent: course?.certificate_name_x_percent ?? 50,
-        nameYPercent: course?.certificate_name_y_percent ?? 50,
-        nameColor: course?.certificate_name_color ?? "#000000",
-        holderName: holderName || null,
-        ocClaimStatus: ocCredentialId ? "claimed" : "failed",
-        ocCredentialId,
-        ocCredentialUrl,
-        ocHolderOcId: ocCredentialId ? ocidWithEduSuffix(holderOcid) : undefined,
-      } satisfies CertificateItem;
+  courseCredentialTemplateMap: Map<string, CourseCredentialTemplateSummary>,
+  courseIdsWithCredentialIssuance: Set<string>,
+): BadgeItem[] {
+  return courseIds
+    .filter((courseId) => {
+      const tpl = courseCredentialTemplateMap.get(courseId);
+      if (!tpl) return false;
+      if (courseIdsWithCredentialIssuance.has(courseId)) return false;
+      return !courseHasCertificate(courseMap.get(courseId));
     })
-    .sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));
+    .map((courseId) => {
+      const tpl = courseCredentialTemplateMap.get(courseId)!;
+      return {
+        id: `course-credential-standalone-${courseId}`,
+        courseId,
+        templateId: tpl.id,
+        title: tpl.name || courseMap.get(courseId)?.title || "",
+        description: tpl.description,
+        icon: createElement(Award, { className: "size-6 text-primary", "aria-hidden": true }),
+        color: "text-primary",
+        bgColor: "bg-primary/10",
+        borderColor: "border-primary/20",
+        earnedAt: null,
+        locked: false,
+        category: "milestone",
+        imageUrl: tpl.thumbnailUrl || tpl.imageUrl || undefined,
+        ocClaimStatus: "unclaimed",
+        credentialScope: "course",
+        collectionSymbol: tpl.collectionSymbol,
+        achievementType: tpl.achievementType,
+      } satisfies BadgeItem;
+    });
 }
 
 export function buildMilestoneBadges(

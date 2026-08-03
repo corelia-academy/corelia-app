@@ -123,7 +123,12 @@
       "contests": "Hackathon"
     },
     "actions": {
-      "editProfile": "Chỉnh sửa hồ sơ"
+      "editProfile": "Chỉnh sửa hồ sơ",
+      "previewAsGuest": "Xem tư cách khách",
+      "exitPreview": "Thoát xem trước",
+      "exitPreviewShort": "Thoát preview",
+      "viewFollowers": "Xem danh sách người theo dõi",
+      "viewFollowing": "Xem danh sách đang theo dõi"
     },
     "labels": {
       "ocid": "OCID: {{ocid}}",
@@ -149,10 +154,17 @@
       "title": "Hoạt động",
       "empty": "Chưa có hoạt động public nào."
     },
+    "private": {
+      "title": "Hồ sơ riêng tư",
+      "description": "Tài khoản này đang ở chế độ riêng tư. Chỉ các nội dung công khai do chủ hồ sơ chọn hiển thị mới xuất hiện tại đây."
+    },
     "achievements": {
       "selfOnly": "Thành tích hiện chỉ hiển thị cho chính chủ tài khoản.",
       "openInAchievementsPage": "Mở trang Thành tích để xem chứng nhận và huy hiệu của bạn.",
-      "cta": "Mở trang Thành tích"
+      "cta": "Mở trang Thành tích",
+      "privateTitle": "Chi tiết thành tích không công khai",
+      "privateDescription": "Chi tiết thành tích không được hiển thị công khai trên hồ sơ này.",
+      "openVault": "Mở Kho thành tích"
     },
     "courses": {
       "privateByDefault": "Danh sách khóa học của học viên mặc định là riêng tư.",
@@ -627,7 +639,7 @@
     "badgeCategory": {
       "learning": "Học tập",
       "streak": "Kiên trì",
-      "milestone": "Cột mốc",
+      "milestone": "Milestone",
       "social": "Cộng đồng"
     },
     "certificates": {
@@ -653,23 +665,28 @@
     "badges": {
       "earnedPrefix": "Đạt: {{date}}",
       "locked": "Chưa mở khoá",
+      "pendingClaim": "Chưa nhận",
+      "failedPrefix": "Không thể tạo chứng nhận",
+      "pendingPrefix": "Đang tạo chứng nhận...",
+      "retry": "Thử lại",
       "ocDot": {
         "claimedTooltip": "Đã claim OC credential",
+        "failedTooltip": "Không thể tạo chứng nhận",
         "unclaimedTooltip": "Chưa claim OC credential"
       }
     },
     "milestones": {
       "courseFirst": {
         "title": "Khoá học đầu tiên",
-        "description": "Ghi danh khóa học đầu tiên để mở cột mốc này."
+        "description": "Ghi danh khóa học đầu tiên để mở milestone này."
       },
       "courseThree": {
         "title": "Người học bền bỉ",
-        "description": "Ghi danh 3 khóa học khác nhau để mở cột mốc này."
+        "description": "Ghi danh 3 khóa học khác nhau để mở milestone này."
       },
       "firstCertificate": {
         "title": "Chứng nhận đầu tiên",
-        "description": "Nhận chứng nhận đầu tiên từ một khóa học để mở cột mốc này."
+        "description": "Nhận chứng nhận đầu tiên từ một khóa học để mở milestone này."
       },
       "threeCertificates": {
         "title": "Learning portfolio",
@@ -684,6 +701,8 @@
       "badge": {
         "claimed": "Đã claim OC",
         "pending": "Đang xử lý",
+        "awaitingHolder": "Cần kết nối OCID",
+        "reconciling": "Đang xác minh credential",
         "failed": "Thất bại",
         "unclaimed": "Chưa claim OC"
       },
@@ -694,7 +713,7 @@
           "cert": "Chứng nhận",
           "oca": "OCA · Chứng nhận hoàn thành",
           "hackathonBadge": "Hackathon Badge",
-          "milestone": "Cột mốc",
+          "milestone": "Milestone",
           "badge": "Huy hiệu"
         },
         "date": {
@@ -717,13 +736,22 @@
           "body": "Bạn cần kết nối OCID trước khi issue Open Campus certificate. Chứng nhận gốc của bạn vẫn được lưu trong kho chứng nhận.",
           "cta": "Kết nối OCID"
         },
+        "awaitingHolder": {
+          "title": "Credential đang chờ OCID của bạn",
+          "body": "Credential này sẽ được cấp ngay khi bạn kết nối OCID hoặc địa chỉ ví.",
+          "cta": "Kết nối OCID"
+        },
+        "reconciliation": {
+          "title": "Cần xác minh mã credential",
+          "body": "Không thể xác định mã credential on-chain từ phản hồi cấp phát. Credential có thể đã tồn tại hoặc phản hồi chưa đủ dữ liệu. Không nên thử lại để tránh yêu cầu trùng lặp; Corelia cần xác minh mã này."
+        },
         "review": {
           "title": "Xác nhận thông tin trước khi issue",
           "subtitle": "Thông tin này sẽ được ghi vĩnh viễn lên blockchain. Hãy kiểm tra kỹ trước khi xác nhận.",
           "back": "Quay lại",
           "confirm": "Xác nhận & Issue",
           "credentialLabel": "Credential",
-          "nameLabel": "Tên của bạn trên credential",
+          "nameLabel": "Tên xuất hiện trên chứng nhận",
           "editName": "Sửa tên",
           "nameMissing": "Bạn chưa đặt tên hiển thị. Tên sẽ không xuất hiện trên credential.",
           "setName": "Cập nhật tên",
@@ -745,13 +773,17 @@
     },
     "sync": {
       "pendingTitle": "Đang tạo chứng nhận...",
-      "pendingDescription": "Hệ thống đang ghi nhận và tạo OCB của bạn trên blockchain.",
+      "pendingDescription": "Hệ thống đang ghi nhận và tạo chứng nhận của bạn trên blockchain.",
       "mintedTitle": "Tạo chứng nhận thành công!",
-      "mintedDescription": "OCB của bạn đã được tạo thành công và lưu trên blockchain.",
+      "mintedDescription": "Chứng nhận của bạn đã được tạo thành công và lưu trên blockchain.",
       "failedTitle": "Tạo chứng nhận thất bại",
-      "failedDescription": "Có lỗi xảy ra khi cấp phát OCB. Vui lòng thử lại sau.",
+      "failedDescription": "Có lỗi xảy ra khi cấp phát chứng nhận. Vui lòng thử lại sau.",
       "retrySuccess": "Đã gửi yêu cầu tạo lại!",
       "retryError": "Lỗi khi thử lại."
+    },
+    "loadError": {
+      "body": "Không thể làm mới thành tích. Hệ thống vẫn đang hiển thị trạng thái credential đã xác nhận gần nhất.",
+      "retry": "Thử lại"
     },
     "stats": {
       "certificates": "Chứng nhận",
@@ -764,7 +796,7 @@
     "hero": {
       "eyebrow": "Hành trình thành tích",
       "title": "Thành tích của tôi",
-      "subtitlePrefix": "Theo dõi chứng nhận, huy hiệu và các cột mốc học tập trong một hành trình liền mạch. Khi sẵn sàng, bạn có thể claim từng thành tích lên",
+      "subtitlePrefix": "Theo dõi chứng nhận, huy hiệu và các milestone học tập trong một hành trình liền mạch. Khi sẵn sàng, bạn có thể claim từng thành tích lên",
       "subtitleSuffix": "để có verifiable credential trên blockchain.",
       "certCount": "{{count}} chứng nhận",
       "badgeUnlockedCount": "{{count}} huy hiệu đã mở",
@@ -781,7 +813,7 @@
     },
     "meaning": {
       "title": "Ý nghĩa của chứng nhận Corelia",
-      "p1": "Thành tích trong Corelia phản ánh những gì bạn đã thật sự hoàn thành: khóa học đã đi hết, chứng nhận đã nhận và các cột mốc kỹ thuật đã mở.",
+      "p1": "Thành tích trong Corelia phản ánh những gì bạn đã thật sự hoàn thành: khóa học đã đi hết, chứng nhận đã nhận và các milestone kỹ thuật đã mở.",
       "p2": "Chứng nhận và huy hiệu được xây dựng để hỗ trợ portfolio học tập, workshop, hackathon và hành trình phát triển trong hệ sinh thái Web3, thay vì đóng vai trò như văn bằng học thuật chính thức."
     },
     "useCases": {
@@ -815,12 +847,16 @@
         "syncError": "Không thể đồng bộ chứng nhận lúc này."
       },
       "badges": {
-        "title": "Bộ huy hiệu và milestone",
-        "subtitle": "Gồm các milestone học tập và những cột mốc bạn đang mở khóa dần.",
+        "title": "Thành tựu, Huy hiệu và Milestone",
+        "subtitle": "Gồm các milestone học tập và những milestone bạn đang mở khóa dần.",
         "summaryUnlocked": "{{earned}}/{{total}} đã mở",
         "loading": "Đang tải huy hiệu và milestone của bạn.",
         "earnedSectionTitle": "Đã đạt được ({{count}})",
         "progressGood": "Tiến triển tốt"
+      },
+      "onchain": {
+        "title": "Kho on-chain",
+        "subtitle": "Các thành tựu và huy hiệu Open Campus được ghi nhận on-chain."
       },
       "nextUnlock": {
         "title": "Sắp mở khóa",
@@ -829,16 +865,34 @@
     },
     "ocVault": {
       "tabs": {
-        "oca": "OCA",
-        "hackathon": "Badge",
+        "all": "Tất cả",
+        "oca": "Achievements (OCA)",
+        "ocb": "Badges (OCB)",
         "milestones": "Milestones"
       },
       "empty": "Chưa có credential nào trong danh mục này."
     },
+    "profileVisibility": {
+      "manage": "Quản lý hiển thị",
+      "title": "Thành tích công khai",
+      "description": "Chọn các Open Campus credential đã hoàn tất để hiển thị trên hồ sơ Corelia công khai của bạn.",
+      "selected": "Đang hiển thị trên hồ sơ",
+      "selectedCount": "Đang hiển thị trên hồ sơ: {{count}} chứng nhận",
+      "apply": "Áp dụng thay đổi",
+      "applying": "Đang áp dụng...",
+      "ok": "OK",
+      "empty": "Bạn chưa có Open Campus credential đã claim để hiển thị.",
+      "emptyPublic": "Bạn đang không công khai bất kỳ chứng nhận nào của bản thân.",
+      "saveSuccess": "Đã cập nhật kho credential công khai của bạn.",
+      "saveError": "Không thể cập nhật kho credential công khai.",
+      "publicVaultTitle": "Open Campus credentials",
+      "publicVaultDescription": "Các credential thành viên này đã chọn hiển thị trên hồ sơ.",
+      "selfVaultDescription": "Các credential bạn đã chọn hiển thị công khai trên hồ sơ."
+    },
     "credentialType": {
       "oca": "OCA",
       "badge": "Badge",
-      "milestone": "Cột mốc"
+      "milestone": "Milestone"
     }
   },
   "feedback": {
@@ -911,5 +965,38 @@
     "managePreferences": "Quản lý tuỳ chọn thông báo",
     "errorTitle": "Không thể xử lý yêu cầu",
     "errorBody": "Link huỷ đăng ký không hợp lệ hoặc đã hết hạn. Vui lòng vào Cài đặt để quản lý thông báo."
+  },
+  "claim": {
+    "loading": "Đang tra cứu...",
+    "title": "Bạn có chứng nhận đang chờ",
+    "subtitle": "Các chứng nhận sau đang chờ được lưu vào tài khoản của {{email}}.",
+    "pendingBadge": "Đang chờ",
+    "cta": "Tham gia Corelia để nhận tất cả",
+    "emptyTitle": "Không có chứng nhận đang chờ",
+    "emptyBody": "Không tìm thấy chứng nhận nào đang chờ cho email này. Nếu bạn nghĩ đây là nhầm lẫn, hãy liên hệ đội ngũ Corelia.",
+    "errorTitle": "Không thể tra cứu",
+    "errorBody": "Link không hợp lệ hoặc đã xảy ra lỗi. Vui lòng thử lại từ email bạn đã nhận."
+  },
+  "pendingCredentialsWelcome": {
+    "title": "Bạn vừa nhận thành công các chứng nhận!",
+    "body": "Các chứng nhận đã được cấp cho email của bạn giờ đã lưu vào tài khoản Corelia.",
+    "cta": "Xem chứng nhận của tôi"
+  },
+  "maintenance": {
+    "title": "Đang bảo trì hệ thống",
+    "body": "Corelia đang được nâng cấp. Chúng tôi sẽ trở lại sớm. Cảm ơn bạn đã kiên nhẫn chờ đợi!"
+  },
+  "coraAi": {
+    "errors": {
+      "createSessionFailed": "Không thể tạo phiên Cora.",
+      "loadHistoryFailed": "Không thể tải lịch sử Cora.",
+      "loadMemoryFailed": "Không thể tải memory của Cora.",
+      "mustLogin": "Bạn cần đăng nhập để dùng Cora AI.",
+      "quotaExceeded": "Bạn đã chạm giới hạn Cora AI.",
+      "rateLimited": "Cora AI đang nhận quá nhiều yêu cầu, thử lại sau một lát giúp mình.",
+      "serverError": "Cora AI đang gặp trục trặc, thử lại sau ít phút giúp mình.",
+      "noResponse": "Cora AI chưa phản hồi được.",
+      "busy": "Cora AI đang bận, thử lại giúp mình."
+    }
   }
 }

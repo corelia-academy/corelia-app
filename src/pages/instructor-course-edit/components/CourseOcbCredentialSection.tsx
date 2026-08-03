@@ -12,9 +12,20 @@ import {
   type CourseCredentialKind,
   type CourseCredentialTriggerRule,
 } from "@/lib/credentialTemplates";
-import { uploadCourseCredentialBadgeImage } from "@/lib/storage";
+import { uploadCourseCredentialBadgeImage, uploadOnchainCertificateTemplate } from "@/lib/storage";
 import { toast } from "sonner";
 import { validatePngSignature } from "@/lib/imageValidation";
+
+function InvalidPngToast() {
+  return (
+    <span>
+      Định dạng file không phải PNG. Vui lòng tách nền hoặc chuyển đổi ảnh tại{" "}
+      <a href="https://www.remove.bg" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-primary-foreground hover:opacity-85">
+        remove.bg
+      </a>
+    </span>
+  );
+}
 
 function StatusBadge({ active }: { active: boolean }) {
   const { t } = useTranslation("instructor");
@@ -33,6 +44,38 @@ function StatusBadge({ active }: { active: boolean }) {
   );
 }
 
+function SectionToggle({
+  checked,
+  onChange,
+  label,
+  disabled = false,
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  label: string;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
+        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+      } ${checked ? "bg-primary" : "bg-border"}`}
+    >
+      <span
+        className={`pointer-events-none inline-block size-5 rounded-full bg-primary-foreground shadow-sm transition-transform duration-200 ${
+          checked ? "translate-x-5" : "translate-x-0"
+        }`}
+      />
+    </button>
+  );
+}
+
 type KindOption = {
   value: CourseCredentialKind;
   labelKey: string;
@@ -48,18 +91,25 @@ export function CourseOcbCredentialSection({
   courseId,
   courseSlug,
   canEdit,
-  hasCertificate = false,
-  onActiveChange,
-  certificateTemplateUrl,
-  onClearLegacyCertificate,
+  onDirtyChange,
+  onchainCertificateTemplateUrl,
+  onchainCertificateTemplatePath,
+  onOnchainCertificateUploaded,
+  onClearOnchainCertificate,
 }: {
   courseId: string;
   courseSlug: string;
   canEdit: boolean;
-  hasCertificate?: boolean;
-  onActiveChange?: (active: boolean) => void;
-  certificateTemplateUrl?: string | null;
-  onClearLegacyCertificate?: () => void;
+  /** Reports whether there are unsaved OCA/OCB edits, so the parent can warn
+   *  before switching away from this tab. */
+  onDirtyChange?: (dirty: boolean) => void;
+  /** On-chain OCA (Open Campus Achievement) art — must stay name-free (OC privacy rules),
+   *  minted to Open Campus/IPFS. Distinct from the off-chain `certificate_template_url`
+   *  (Card 1), which gets the learner's name stamped client-side for social sharing. */
+  onchainCertificateTemplateUrl?: string | null;
+  onchainCertificateTemplatePath?: string | null;
+  onOnchainCertificateUploaded?: (result: { url: string; path: string }) => void;
+  onClearOnchainCertificate?: () => void;
 }) {
   const { t } = useTranslation("instructor");
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -67,7 +117,13 @@ export function CourseOcbCredentialSection({
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  /** Lets the Save button reveal the (never-configured) body for viewing
+   *  without touching `isActive` — purely local, never persisted. Only
+   *  matters while `templateId` is null; reset once the master toggle turns
+   *  on for real so it can't linger and force-expand the card later. */
+  const [peekExpanded, setPeekExpanded] = useState(false);
   const [credentialKind, setCredentialKind] = useState<CourseCredentialKind>("oca");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -78,37 +134,75 @@ export function CourseOcbCredentialSection({
   const [requireAssignmentPass, setRequireAssignmentPass] = useState(false);
   const [minAssignmentScore, setMinAssignmentScore] = useState(70);
 
+  /** Snapshot of the last loaded/saved field values, used to detect unsaved
+   *  edits (`isDirty` below). A ref because it's only ever read during
+   *  render, not something that should itself trigger a re-render. */
+  const savedSnapshotRef = useRef<{
+    isActive: boolean;
+    credentialKind: CourseCredentialKind;
+    name: string;
+    description: string;
+    imageUrl: string;
+    identifierPrefix: string;
+    completionPct: number;
+    requireAssignmentPass: boolean;
+    minAssignmentScore: number;
+  } | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const row = await getLatestCourseCredentialTemplate(courseId);
       if (!row) {
+        const freshIdentifierPrefix = `corelia:${courseSlug}`.slice(0, 40);
         setTemplateId(null);
-        setIsActive(true);
-        onActiveChange?.(true);
+        setIsActive(false);
         setCredentialKind("oca");
         setName("");
         setDescription("");
         setImageUrl("");
-        setIdentifierPrefix(`corelia:${courseSlug}`.slice(0, 40));
+        setIdentifierPrefix(freshIdentifierPrefix);
         setCompletionPct(100);
         setRequireAssignmentPass(false);
         setMinAssignmentScore(70);
         setIssuanceCount(0);
+        savedSnapshotRef.current = {
+          isActive: false,
+          credentialKind: "oca",
+          name: "",
+          description: "",
+          imageUrl: "",
+          identifierPrefix: freshIdentifierPrefix,
+          completionPct: 100,
+          requireAssignmentPass: false,
+          minAssignmentScore: 70,
+        };
         return;
       }
-      setTemplateId(row.id);
-      setIsActive(row.is_active);
-      onActiveChange?.(row.is_active);
-      setCredentialKind(row.collection_symbol ? "ocb" : "oca");
-      setName(row.name ?? "");
-      setDescription(row.description ?? "");
-      setImageUrl(row.image_url ?? "");
-      setIdentifierPrefix(row.identifier_prefix ?? "");
+      const kind: CourseCredentialKind = row.collection_symbol ? "ocb" : "oca";
       const tr = row.trigger_rule as CourseCredentialTriggerRule | null;
-      setCompletionPct(Number(tr?.completion_pct ?? 100));
-      setRequireAssignmentPass(tr?.require_assignment_pass === true);
-      setMinAssignmentScore(Number(tr?.min_assignment_score ?? 70));
+      const loaded = {
+        isActive: row.is_active,
+        credentialKind: kind,
+        name: row.name ?? "",
+        description: row.description ?? "",
+        imageUrl: row.image_url ?? "",
+        identifierPrefix: row.identifier_prefix ?? "",
+        completionPct: Number(tr?.completion_pct ?? 100),
+        requireAssignmentPass: tr?.require_assignment_pass === true,
+        minAssignmentScore: Number(tr?.min_assignment_score ?? 70),
+      };
+      setTemplateId(row.id);
+      setIsActive(loaded.isActive);
+      setCredentialKind(loaded.credentialKind);
+      setName(loaded.name);
+      setDescription(loaded.description);
+      setImageUrl(loaded.imageUrl);
+      setIdentifierPrefix(loaded.identifierPrefix);
+      setCompletionPct(loaded.completionPct);
+      setRequireAssignmentPass(loaded.requireAssignmentPass);
+      setMinAssignmentScore(loaded.minAssignmentScore);
+      savedSnapshotRef.current = loaded;
       // Load issuance count to determine if identifierPrefix can be edited
       const count = await countIssuancesForTemplate(row.id).catch(() => 0);
       setIssuanceCount(count);
@@ -117,11 +211,48 @@ export function CourseOcbCredentialSection({
     } finally {
       setLoading(false);
     }
-  }, [courseId, courseSlug, onActiveChange, t]);
+  }, [courseId, courseSlug, t]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  // The real toggle takes over from here — drop the "peek" so it doesn't
+  // linger and force the card to stay expanded after a later off-toggle.
+  useEffect(() => {
+    if (isActive) setPeekExpanded(false);
+  }, [isActive]);
+
+  // The OCA image lives in the parent course form because it is uploaded to
+  // course storage first, but it is only copied into the credential template
+  // when this form is saved. Compare its current URL to the saved template
+  // image so an upload/clear cannot be mistaken for a clean OCC form.
+  const currentImageUrl = credentialKind === "oca"
+    ? (onchainCertificateTemplateUrl?.trim() || imageUrl.trim())
+    : imageUrl.trim();
+
+  // True whenever any field differs from what's actually saved in the DB —
+  // drives both the Save button's visual state and the parent's
+  // "leave without saving" warning when switching away from this tab.
+  const snap = savedSnapshotRef.current;
+  const isDirty = snap
+    ? isActive !== snap.isActive ||
+      credentialKind !== snap.credentialKind ||
+      name !== snap.name ||
+      description !== snap.description ||
+      currentImageUrl !== snap.imageUrl ||
+      identifierPrefix !== snap.identifierPrefix ||
+      completionPct !== snap.completionPct ||
+      requireAssignmentPass !== snap.requireAssignmentPass ||
+      minAssignmentScore !== snap.minAssignmentScore
+    : false;
+
+  useEffect(() => {
+    // Deactivation is persisted immediately. While that write is in flight the
+    // draft differs from the saved snapshot, but it is not a user draft that
+    // should block navigation with a leave-without-saving warning.
+    onDirtyChange?.(isDirty && !isDeactivating);
+  }, [isDeactivating, isDirty, onDirtyChange]);
 
   const handleUpload = async (file: File | null) => {
     if (!file) return;
@@ -150,14 +281,7 @@ export function CourseOcbCredentialSection({
 
     const isPng = await validatePngSignature(file);
     if (!isPng) {
-      toast.error(
-        <span>
-          Định dạng file không phải PNG. Vui lòng tách nền hoặc chuyển đổi ảnh tại{" "}
-          <a href="https://www.remove.bg" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-primary-foreground hover:opacity-85">
-            remove.bg
-          </a>
-        </span>
-      );
+      toast.error(<InvalidPngToast />);
       if (fileRef.current) fileRef.current.value = "";
       return;
     }
@@ -166,16 +290,79 @@ export function CourseOcbCredentialSection({
     if (fileRef.current) fileRef.current.value = "";
   };
 
-  const handleSave = async () => {
+  const onchainFileRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingOnchain, setUploadingOnchain] = useState(false);
+
+  const handleUploadOnchain = async (file: File | null) => {
+    if (!file) return;
+    if (!canEdit) {
+      toast.error(t("courseEdit.ocb.noPermission"));
+      return;
+    }
+    setUploadingOnchain(true);
+    try {
+      const result = await uploadOnchainCertificateTemplate(
+        courseId,
+        file,
+        onchainCertificateTemplatePath,
+      );
+      onOnchainCertificateUploaded?.(result);
+      toast.success(t("courseEdit.ocb.onchainCertUploaded"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("courseEdit.ocb.onchainCertUploadFailed"));
+    } finally {
+      setUploadingOnchain(false);
+    }
+  };
+
+  const onOnchainFileSelect = async (file: File | null) => {
+    if (!file) return;
     if (!canEdit) {
       toast.error(t("courseEdit.ocb.noPermission"));
       return;
     }
 
-    if (credentialKind === "oca" && (!certificateTemplateUrl || !certificateTemplateUrl.trim())) {
-      toast.error("Vui lòng tải lên ảnh template chứng chỉ khi bật cấu hình Open Campus (OCA).");
+    const isPng = await validatePngSignature(file);
+    if (!isPng) {
+      toast.error(<InvalidPngToast />);
+      if (onchainFileRef.current) onchainFileRef.current.value = "";
       return;
     }
+
+    await handleUploadOnchain(file);
+    if (onchainFileRef.current) onchainFileRef.current.value = "";
+  };
+
+  /** The only path that persists OCA/OCB config. Accepts an explicit `active`
+   *  override so the toggle-OFF auto-save path can pass the new value before
+   *  React has flushed the state update. Defaults to the current `isActive`
+   *  state for the manual Save button path. Returns whether the save went
+   *  through, so callers can roll back optimistic UI on failure. */
+  const handleSave = async (active = isActive): Promise<boolean> => {
+    if (!canEdit) {
+      toast.error(t("courseEdit.ocb.noPermission"));
+      return false;
+    }
+
+    if (active && credentialKind === "oca" && (!onchainCertificateTemplateUrl || !onchainCertificateTemplateUrl.trim())) {
+      toast.error(t("courseEdit.ocb.onchainCertRequired"));
+      return false;
+    }
+
+    // Turning off a credential that real learners already hold doesn't
+    // revoke anything already minted (on-chain issuance is immutable) — it
+    // only stops *future* learners from getting it. Confirm rather than
+    // silently changing that policy out from under in-progress students.
+    if (!active && issuanceCount > 0) {
+      const proceed = window.confirm(
+        t("courseEdit.ocb.confirmDeactivateWithIssuances", {
+          count: issuanceCount,
+          defaultValue: `Đã có ${issuanceCount} học viên nhận credential này. Tắt sẽ ngừng cấp cho học viên mới, KHÔNG thu hồi credential đã cấp cho học viên cũ. Tiếp tục tắt?`,
+        }),
+      );
+      if (!proceed) return false;
+    }
+
     setSaving(true);
     try {
       const triggerRule: CourseCredentialTriggerRule = {
@@ -184,22 +371,23 @@ export function CourseOcbCredentialSection({
         min_assignment_score: Math.min(100, Math.max(0, minAssignmentScore)),
       };
 
-      // [TC-03 FIX] OCA must use the course certificate template - no imageUrl fallback
+      // OCA mints on-chain using the dedicated name-free onchain template, not the
+      // off-chain `certificateTemplateUrl` (which is meant to get the learner's name
+      // stamped on it and must never be pushed on-chain).
       const finalImageUrl = credentialKind === "oca"
-        ? certificateTemplateUrl!.trim()
+        ? (onchainCertificateTemplateUrl?.trim() || imageUrl.trim())
         : imageUrl.trim();
 
-      if (!finalImageUrl) {
-        toast.error("Vui lòng tải lên hình ảnh cho chứng chỉ/huy hiệu trước khi lưu.");
-        setSaving(false);
-        return;
+      if (active && !finalImageUrl) {
+        toast.error(t("courseEdit.ocb.imageRequired"));
+        return false;
       }
 
       const { id } = await saveCourseCredentialTemplate({
         courseId,
         courseSlug,
         templateId,
-        isActive: true, // ALWAYS make the saved template the active one for this course
+        isActive: active,
         name: name.trim() || courseSlug,
         description: description.trim() || name.trim() || courseSlug,
         imageUrl: finalImageUrl,
@@ -210,10 +398,25 @@ export function CourseOcbCredentialSection({
       setTemplateId(id);
       toast.success(t("courseEdit.ocb.saved"));
       await load();
+      return true;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("courseEdit.ocb.saveFailed"));
+      return false;
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Toggling OFF saves immediately — no need to hit the Save button for a
+  // simple deactivation. If the save fails or the user cancels the confirm,
+  // roll the toggle back to ON so UI and DB stay in sync.
+  const handleToggleChange = async (value: boolean) => {
+    setIsActive(value);
+    if (!value) {
+      setIsDeactivating(true);
+      const saved = await handleSave(false);
+      setIsDeactivating(false);
+      if (!saved) setIsActive(true);
     }
   };
 
@@ -226,23 +429,40 @@ export function CourseOcbCredentialSection({
     );
   }
 
-  const isOcbBlockedByHasCert = credentialKind === "ocb" && hasCertificate;
-
   return (
     <div className="space-y-6">
       {/* Header row */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Shield className="size-4 text-primary" aria-hidden />
+            <Shield className="size-4 shrink-0 text-primary" aria-hidden />
             {t("courseEdit.ocb.title")}
           </h3>
           <p className="mt-1 text-sm text-foreground-muted">{t("courseEdit.ocb.subtitle")}</p>
         </div>
-        <StatusBadge active={isActive} />
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <SectionToggle
+            checked={isActive}
+            disabled={!canEdit || saving}
+            onChange={handleToggleChange}
+            label={t("courseEdit.ocb.mintToggleLabel")}
+          />
+          <StatusBadge active={isActive} />
+        </div>
       </div>
 
-      {/* Credential type */}
+      {/* Collapsible body — the master switch above both enables on-chain minting
+          and reveals its setup fields; turning it off disallows minting for this course.
+          `peekExpanded` additionally reveals it (view-only, no persistence) when the
+          Save button is clicked on a never-configured template. */}
+      <div
+        className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+          isActive || peekExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        }`}
+        aria-hidden={!isActive && !peekExpanded}
+      >
+        <div className="space-y-6 overflow-hidden">
+          {/* Credential type */}
       <div>
         <p className="mb-2 text-sm font-medium text-foreground">{t("courseEdit.ocb.kind.label")}</p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -261,13 +481,7 @@ export function CourseOcbCredentialSection({
                 value={opt.value}
                 checked={credentialKind === opt.value}
                 disabled={!canEdit}
-                onChange={() => {
-                  setCredentialKind(opt.value);
-                  if (opt.value === "oca") {
-                    setIsActive(true);
-                    onActiveChange?.(true);
-                  }
-                }}
+                onChange={() => setCredentialKind(opt.value)}
                 className="mt-0.5 accent-primary"
               />
               <div>
@@ -277,44 +491,7 @@ export function CourseOcbCredentialSection({
             </label>
           ))}
         </div>
-        {isOcbBlockedByHasCert && (
-          <div className="mt-2 flex items-center justify-between bg-warning/10 border border-warning/20 rounded-md px-3 py-2">
-            <p className="text-xs text-warning-foreground">
-              {t("courseEdit.ocb.blockedByCertificate")}
-            </p>
-            {onClearLegacyCertificate && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                onClick={onClearLegacyCertificate}
-              >
-                Hủy OCA
-              </Button>
-            )}
-          </div>
-        )}
       </div>
-
-      {/* Enable toggle — OCB only (OCB is auto-minted; OCA is always claimable once saved) */}
-      {credentialKind === "ocb" && (
-        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border-subtle bg-surface-raised p-4">
-          <input
-            type="checkbox"
-            checked={isActive}
-            disabled={!canEdit || isOcbBlockedByHasCert}
-            onChange={(e) => {
-              setIsActive(e.target.checked);
-              onActiveChange?.(e.target.checked);
-            }}
-            className="size-4 accent-primary rounded border-border"
-          />
-          <div>
-            <p className="text-sm font-medium text-foreground">{t("courseEdit.ocb.enableLabel")}</p>
-            <p className="text-xs text-foreground-muted">{t("courseEdit.ocb.enableHint")}</p>
-          </div>
-        </label>
-      )}
 
       {/* Config fields — always visible */}
       <div className="space-y-4 rounded-xl border border-border-subtle bg-surface-raised p-4 sm:p-5">
@@ -339,24 +516,48 @@ export function CourseOcbCredentialSection({
         </Field>
 
         <Field>
-          <FieldLabel>{t("courseEdit.ocb.imageLabel")}</FieldLabel>
+          <FieldLabel>
+            {credentialKind === "oca"
+              ? t("courseEdit.ocb.onchainCertLabel")
+              : t("courseEdit.ocb.badgeImageLabel")}
+          </FieldLabel>
           {credentialKind === "oca" ? (
-            <div className="mt-1 flex items-start gap-3 rounded-lg border border-border-subtle bg-surface-base p-3">
-              {certificateTemplateUrl ? (
-                <img
-                  src={certificateTemplateUrl}
-                  alt=""
-                  className="h-16 w-auto rounded border border-border-subtle shrink-0"
-                />
-              ) : (
-                <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded border border-dashed border-border-subtle bg-surface-raised text-xs text-foreground-muted">
-                  {t("courseEdit.ocb.imageOcaNoTemplate")}
-                </div>
-              )}
-              <p className="text-xs text-foreground-muted leading-relaxed">
-                {t("courseEdit.ocb.imageOcaHint")}
-              </p>
-            </div>
+            <>
+
+              <input
+                ref={onchainFileRef}
+                type="file"
+                accept="image/png"
+                className="hidden"
+                onChange={(e) => void onOnchainFileSelect(e.target.files?.[0] ?? null)}
+              />
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!canEdit || uploadingOnchain}
+                  onClick={() => onchainFileRef.current?.click()}
+                >
+                  {uploadingOnchain ? t("courseEdit.ocb.uploading") : t("courseEdit.ocb.uploadOnchainCert")}
+                </Button>
+                {onchainCertificateTemplateUrl && (
+                  <div className="relative size-14 shrink-0 rounded border border-border-subtle bg-surface-raised">
+                    <img src={onchainCertificateTemplateUrl} alt="" className="size-full rounded object-cover" />
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => onClearOnchainCertificate?.()}
+                        className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        <span className="text-[10px] font-bold">×</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+              <p className="mt-1.5 text-xs text-foreground-muted">{t("courseEdit.ocb.onchainCertHint")}</p>
+            </>
           ) : (
             <>
               <input
@@ -415,7 +616,7 @@ export function CourseOcbCredentialSection({
           </div>
           {issuanceCount > 0 ? (
             <p className="mt-1 text-xs text-warning">
-              Đã có {issuanceCount} credential được tạo. Tiền tố đã bị khoá để tránh mint trùng.
+              {t("courseEdit.ocb.identifierLocked", { count: issuanceCount })}
             </p>
           ) : (
             <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.ocb.identifierHint")}</p>
@@ -474,8 +675,30 @@ export function CourseOcbCredentialSection({
           </Field>
         )}
       </div>
+        </div>
+      </div>
 
-      <Button type="button" disabled={!canEdit || saving || isOcbBlockedByHasCert} onClick={() => void handleSave()}>
+      {/* Outside the collapsible body on purpose — must stay reachable even
+          while the master switch above is off, otherwise there'd be no way
+          to save other field edits (or re-enable) without expanding first.
+          Outline + blue-on-hover while there are unsaved edits; solid blue
+          once everything is actually persisted. */}
+      <Button
+        type="button"
+        variant={isDirty ? "outline" : "default"}
+        className={isDirty ? "hover:!border-primary hover:!bg-primary hover:!text-primary-foreground" : ""}
+        disabled={!canEdit || saving}
+        onClick={() => {
+          // Never-configured + collapsed: nothing valid to save yet (no
+          // image/template picked), so reveal the fields instead of firing
+          // a confusing validation error on a form the user hasn't seen.
+          if (!isActive && !templateId) {
+            setPeekExpanded(true);
+            return;
+          }
+          void handleSave();
+        }}
+      >
         {saving ? t("courseEdit.ocb.saving") : t("courseEdit.ocb.save")}
       </Button>
     </div>

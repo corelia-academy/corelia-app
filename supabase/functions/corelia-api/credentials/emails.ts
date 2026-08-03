@@ -6,12 +6,14 @@ import {
   wrapTransactionalEmail,
 } from "../lib/mail/layout.ts";
 
-/** course    = OCB single course (achievementType: Badge)
- *  course_oca = OCA course/bootcamp/track (achievementType: CertificateOfCompletion / MicroCredential / Diploma)
- *  hackathon  = OCB hackathon award
- *  milestone  = OCB activity milestone
+/** course        = OCB single course (achievementType: Badge)
+ *  course_oca    = OCA course/bootcamp/track (achievementType: CertificateOfCompletion / MicroCredential / Diploma)
+ *  hackathon     = OCB hackathon award
+ *  milestone     = OCB activity milestone
+ *  pending_claim = manually granted (OCA or OCB) to an email with no Corelia account yet —
+ *                  distinct wording since the credential isn't "on record" in a profile until signup.
  */
-export type CredentialMintEmailKind = "course" | "course_oca" | "hackathon" | "milestone";
+export type CredentialMintEmailKind = "course" | "course_oca" | "hackathon" | "milestone" | "pending_claim";
 
 const COPY: Record<
   CredentialMintEmailKind,
@@ -115,6 +117,28 @@ const COPY: Record<
       ctaLabel: "View my achievements →",
       footerReason: "You received this because a milestone was issued on Corelia Academy.",
       subjectPrefix: "Milestone",
+    },
+  },
+  pending_claim: {
+    vi: {
+      heroTag: "Chứng nhận đang chờ",
+      heroTitle: "Bạn vừa nhận một chứng nhận từ Corelia",
+      heroSubtitle: "Tham gia Corelia để lưu chứng nhận này vào hồ sơ của bạn.",
+      bodyIntro: "Bạn vừa được trao:",
+      credentialLine: "Chứng nhận đang chờ được lưu vào tài khoản Corelia của bạn.",
+      ctaLabel: "Xem ngay trên Corelia →",
+      footerReason: "Bạn nhận email này vì vừa được cấp một chứng nhận/huy hiệu trên Corelia Academy.",
+      subjectPrefix: "Chứng nhận đang chờ",
+    },
+    en: {
+      heroTag: "Pending credential",
+      heroTitle: "You just received a credential from Corelia",
+      heroSubtitle: "Join Corelia to save this credential to your profile.",
+      bodyIntro: "You were just awarded:",
+      credentialLine: "This credential is waiting to be saved to your Corelia account.",
+      ctaLabel: "View it on Corelia →",
+      footerReason: "You received this because a credential was issued to you on Corelia Academy.",
+      subjectPrefix: "Pending credential",
     },
   },
 };

@@ -71,6 +71,8 @@ export function OcCredentialModal({
   const d = item.data;
   const isClaimed = d.ocClaimStatus === "claimed";
   const isPending = d.ocClaimStatus === "pending";
+  const isAwaitingHolder = d.ocClaimStatus === "awaiting_holder_id";
+  const isReconciling = d.ocClaimStatus === "needs_reconciliation";
   const isFailed = d.ocClaimStatus === "failed";
   const isUnclaimed = d.ocClaimStatus === "unclaimed";
 
@@ -80,8 +82,9 @@ export function OcCredentialModal({
   const hackathonRole = item.kind === "badge" ? (item.data as BadgeItem).hackathonRole : undefined;
   const isOcb =
     item.kind === "badge" &&
-    (item.data as BadgeItem).collectionSymbol === "ocbadge" &&
-    (item.data as BadgeItem).credentialScope !== "activity_milestone";
+    (item.data as BadgeItem).credentialScope !== "activity_milestone" &&
+    ((item.data as BadgeItem).achievementType === "Badge" ||
+      (item.data as BadgeItem).achievementType === "Award");
 
   const credentialName = item.kind === "cert" ? item.data.course : item.data.title;
   const issued =
@@ -130,38 +133,38 @@ export function OcCredentialModal({
                 <p className="text-sm font-medium text-foreground">{credentialName}</p>
               </div>
 
-              {/* Full name */}
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-0.5">
-                  {t("achievements.oc.modal.review.nameLabel")}
-                </p>
-                {hasName ? (
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-foreground">{holderName}</p>
-                    <Link
-                      to="/account"
-                      onClick={() => onOpenChange(false)}
-                      className="text-xs text-primary underline-offset-2 hover:underline shrink-0"
-                    >
-                      {t("achievements.oc.modal.review.editName")}
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2">
-                    <p className="text-xs text-warning-foreground">
-                      {t("achievements.oc.modal.review.nameMissing")}
-                    </p>
-                    <Link
-                      to="/account"
-                      onClick={() => onOpenChange(false)}
-                      className="text-xs font-medium text-primary underline-offset-2 hover:underline shrink-0"
-                    >
-                      {t("achievements.oc.modal.review.setName")}
-                    </Link>
-                  </div>
-                )}
-              </div>
-
+              {item?.kind === "cert" && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-0.5">
+                    {t("achievements.oc.modal.review.nameLabel")}
+                  </p>
+                  {hasName ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-foreground">{holderName}</p>
+                      <Link
+                        to="/account"
+                        onClick={() => onOpenChange(false)}
+                        className="text-xs text-primary underline-offset-2 hover:underline shrink-0"
+                      >
+                        {t("achievements.oc.modal.review.editName")}
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2">
+                      <p className="text-xs text-warning-foreground">
+                        {t("achievements.oc.modal.review.nameMissing")}
+                      </p>
+                      <Link
+                        to="/account"
+                        onClick={() => onOpenChange(false)}
+                        className="text-xs font-medium text-primary underline-offset-2 hover:underline shrink-0"
+                      >
+                        {t("achievements.oc.modal.review.setName")}
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
               {/* OCID */}
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-0.5">
@@ -220,7 +223,14 @@ export function OcCredentialModal({
                 <Button
                   className="w-full gap-3 text-base font-semibold"
                   size="lg"
-                  disabled={claiming || !hasName || isClaimed || isPending}
+                  disabled={
+                    claiming ||
+                    (item.kind === "cert" && !hasName) ||
+                    isClaimed ||
+                    isPending ||
+                    isAwaitingHolder ||
+                    isReconciling
+                  }
                   onClick={() => onClaim(d.id, item.kind)}
                 >
                   {claiming ? (
@@ -374,11 +384,58 @@ export function OcCredentialModal({
             </a>
           )}
 
+          {isAwaitingHolder && (
+            <div className="mb-4 rounded-xl border border-warning/25 bg-warning/8 px-3 py-3">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {t("achievements.oc.modal.awaitingHolder.title")}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                    {t("achievements.oc.modal.awaitingHolder.body")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isReconciling && (
+            <div className="mb-4 rounded-xl border border-primary/25 bg-primary/5 px-3 py-3">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {t("achievements.oc.modal.reconciliation.title")}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-foreground-muted">
+                    {t("achievements.oc.modal.reconciliation.body")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <p className="mb-4 text-xs leading-relaxed text-foreground-muted sm:text-sm">
             {t("achievements.oc.modal.standardsNote")}
           </p>
 
           <div className="flex flex-col gap-3 mt-2">
+            {isAwaitingHolder && (
+              <Button
+                className="w-full gap-3 text-base font-semibold"
+                size="lg"
+                onClick={onConnectOcid}
+              >
+                <img
+                  src="/open-campus-edu-logo.png"
+                  alt=""
+                  className="size-5 shrink-0 rounded-full brightness-0 invert"
+                />
+                <span>{t("achievements.oc.modal.awaitingHolder.cta")}</span>
+              </Button>
+            )}
+
             {(isUnclaimed || isFailed) && (
               <Button
                 className="w-full gap-3 text-base font-semibold"

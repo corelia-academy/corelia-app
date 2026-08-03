@@ -34,6 +34,9 @@ export type CredentialTemplateSummary = {
   /** Role/type label for hackathon badges (e.g. "winner", "participant") */
   hackathon_role?: string | null;
   collection_symbol?: "ocbadge" | null;
+  /** "manual" = granted via Admin Manual Mint, unrelated to auto milestone badges
+   *  that also use scope_type="activity_milestone". */
+  trigger_type?: string | null;
 };
 
 export type CredentialIssuanceWithTemplate = {
@@ -45,8 +48,11 @@ export type CredentialIssuanceWithTemplate = {
   minted_at: string | null;
   oc_credential_id: string | null;
   oc_response?: unknown;
+  error_message?: string | null;
   network: CredentialIssuanceNetwork;
   status: string;
+  /** Whether the resolved OCC appears on the owner's public Corelia profile. */
+  show_on_profile: boolean;
   display_snapshot: CredentialDisplaySnapshot | null;
   template: CredentialTemplateSummary | null;
 };

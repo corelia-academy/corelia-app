@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
+  Award,
   CreditCard,
   GraduationCap,
   IdCard,
@@ -195,12 +196,20 @@ export default function Header() {
         icon: <IdCard className="mr-2 size-4 shrink-0" aria-hidden />,
       },
       {
+        to: "/achievements",
+        label: tAccount("nav.achievements.title"),
+        icon: <Award className="mr-2 size-4 shrink-0" aria-hidden />,
+      },
+      {
         to: "/account/billing",
         label: tAccount("nav.billing.title"),
         icon: <CreditCard className="mr-2 size-4 shrink-0" aria-hidden />,
       },
       {
-        to: "/account/settings",
+        // "Cài đặt" trong menu hồ sơ là lối vào khu vực tài khoản; route gốc
+        // sẽ mở tab Thông tin cá nhân trước. Tab /account/settings vẫn dành cho
+        // các deep link có chủ đích như unsubscribe hoặc đổi mật khẩu.
+        to: "/account",
         label: tAccount("nav.settings.title"),
         icon: <Settings className="mr-2 size-4 shrink-0" aria-hidden />,
       },
@@ -588,13 +597,13 @@ export default function Header() {
                   render={
                     <button
                       type="button"
-                      className={`inline-flex h-10 items-center gap-2 rounded-full border border-border pr-2 text-left text-sm transition-colors duration-150 hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:pr-3 ${
+                      className={`group inline-flex size-10 items-center justify-center rounded-full border-0 bg-transparent p-0 text-left text-sm transition-colors duration-150 hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:h-10 md:w-auto md:gap-2 md:border md:pr-3 md:hover:bg-surface-raised ${
                         isOcidConnected
-                          ? "bg-primary-muted text-primary hover:bg-primary-muted"
-                          : "bg-surface-base"
+                          ? "text-primary md:bg-primary-muted md:hover:bg-primary-muted"
+                          : "text-foreground md:bg-surface-base"
                       } cursor-pointer`}
                     >
-                      <Avatar className="size-10 -ml-1">
+                      <Avatar className="size-10 transition-[box-shadow,background-color] group-hover:bg-surface-raised group-hover:ring-2 group-hover:ring-primary/20 md:-ml-1">
                         <AvatarImage src={avatarUrl} alt={displayName} />
                         <AvatarFallback>{avatarFallback}</AvatarFallback>
                       </Avatar>

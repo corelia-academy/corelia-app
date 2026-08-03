@@ -7,14 +7,20 @@
  *   hackathons.notifyRegistrationReview | hackathons.blastEmail |
  *   courses.syncCompletion | courses.blastEmail | careerTracks.blastEmail | notifications.unsubscribe |
  *   credentials.checkCourseCompletion | credentials.checkActivityMilestones | credentials.grant |
- *   credentials.retryPending | credentials.hackathon.listEligible
+ *   credentials.retryPending | credentials.hackathon.listEligible | credentials.listActiveOcaTemplates |
+ *   credentials.listActiveCourseCredentialTemplates |
+ *   credentials.grantPending | credentials.claimLookup
  */
 import { handleBackfillEligibleCertificates, handleIssueCertificate } from "./certificates/handlers.ts";
 import { handleHackathonListEligible } from "./credentials/hackathon_eligible.ts";
 import { handleCareerTrackBlastEmail } from "./career-tracks/blast_email.ts";
 import { handleCheckActivityMilestones } from "./credentials/check_activity.ts";
 import { handleCheckCourseCompletion } from "./credentials/check_course.ts";
+import { handleClaimLookup } from "./credentials/claim_lookup.ts";
 import { handleGrantCredentials } from "./credentials/grant.ts";
+import { handleListActiveOcaTemplates } from "./credentials/list_active_oca_templates.ts";
+import { handleListActiveCourseCredentialTemplates } from "./credentials/list_active_course_credential_templates.ts";
+import { handleGrantPendingCredential } from "./credentials/grant_pending.ts";
 import { handleRetryPendingCredentials } from "./credentials/retry_pending.ts";
 import { handleCourseBlastEmail } from "./courses/blast_email.ts";
 import { handleCoInstructorInviteEmail } from "./courses/co_instructor_invite_email.ts";
@@ -57,6 +63,10 @@ const PROTECTED_OPS = new Set<string>([
   "credentials.grant",
   "credentials.retryPending",
   "credentials.hackathon.listEligible",
+  "credentials.listActiveOcaTemplates",
+  "credentials.listActiveCourseCredentialTemplates",
+  "credentials.grantPending",
+  // credentials.claimLookup is PUBLIC — intentionally omitted from PROTECTED_OPS
 ]);
 
 function hasBearerAuthHeader(req: Request): boolean {
@@ -132,6 +142,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleRetryPendingCredentials(req, db);
     } else if (op === "credentials.hackathon.listEligible" && req.method === "POST") {
       response = await handleHackathonListEligible(req, db);
+    } else if (op === "credentials.listActiveOcaTemplates" && req.method === "POST") {
+      response = await handleListActiveOcaTemplates(req, db);
+    } else if (op === "credentials.listActiveCourseCredentialTemplates" && req.method === "POST") {
+      response = await handleListActiveCourseCredentialTemplates(req, db);
+    } else if (op === "credentials.grantPending" && req.method === "POST") {
+      response = await handleGrantPendingCredential(req, db);
+    } else if (op === "credentials.claimLookup" && req.method === "POST") {
+      response = await handleClaimLookup(req, db);
     } else {
       response = json({ message: "Unknown or disallowed op / method", op }, 404);
     }

@@ -32,6 +32,22 @@ export function OcClaimBadge({ status }: { status: ClaimStatus }) {
       </span>
     );
   }
+  if (status === "awaiting_holder_id") {
+    return (
+      <span className={cn(base, "bg-warning/15 text-warning")}>
+        <AlertTriangle className="size-3.5 shrink-0 sm:size-4" aria-hidden />
+        {t("achievements.oc.badge.awaitingHolder")}
+      </span>
+    );
+  }
+  if (status === "needs_reconciliation") {
+    return (
+      <span className={cn(base, "bg-primary/10 text-primary")}>
+        <AlertTriangle className="size-3.5 shrink-0 sm:size-4" aria-hidden />
+        {t("achievements.oc.badge.reconciling")}
+      </span>
+    );
+  }
   if (status === "failed") {
     return (
       <span className={cn(base, "bg-destructive/15 text-destructive")}>

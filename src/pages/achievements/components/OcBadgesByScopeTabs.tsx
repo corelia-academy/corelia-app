@@ -8,18 +8,20 @@ import { cn } from "@/lib/utils";
 import { BadgeCard } from "./BadgeCard";
 import type { BadgeItem, ModalItem } from "../types";
 
-type TabKey = "all" | "hackathon" | "activity_milestone";
-
-
+type TabKey = "all" | "oca" | "ocb" | "activity_milestone";
 
 export function OcBadgesByScopeTabs({
   badges,
   loading,
   onOpenModal,
+  onRetry,
+  emptyLabel,
 }: {
   badges: BadgeItem[];
   loading: boolean;
   onOpenModal: (item: ModalItem) => void;
+  onRetry?: (badge: BadgeItem) => Promise<void>;
+  emptyLabel?: string;
 }) {
   const { t } = useTranslation("common");
   const [tab, setTab] = useState<TabKey>("all");
@@ -27,8 +29,16 @@ export function OcBadgesByScopeTabs({
   const buckets = useMemo(() => {
     return {
       all: badges,
-      hackathon: badges.filter(
-        (b) => b.credentialScope !== "activity_milestone",
+      oca: badges.filter(
+        (b) =>
+          b.credentialScope !== "activity_milestone" &&
+          b.achievementType !== "Badge" &&
+          b.achievementType !== "Award",
+      ),
+      ocb: badges.filter(
+        (b) =>
+          b.credentialScope !== "activity_milestone" &&
+          (b.achievementType === "Badge" || b.achievementType === "Award"),
       ),
       activity_milestone: badges.filter((b) => b.credentialScope === "activity_milestone"),
     };
@@ -42,8 +52,12 @@ export function OcBadgesByScopeTabs({
       label: t("achievements.ocVault.tabs.all", { defaultValue: "Tất cả" }),
     },
     {
-      key: "hackathon",
-      label: t("achievements.ocVault.tabs.hackathon", { defaultValue: "Badges" }),
+      key: "oca",
+      label: t("achievements.ocVault.tabs.oca", { defaultValue: "Achievements (OCA)" }),
+    },
+    {
+      key: "ocb",
+      label: t("achievements.ocVault.tabs.ocb", { defaultValue: "Badges (OCB)" }),
     },
     {
       key: "activity_milestone",
@@ -83,12 +97,17 @@ export function OcBadgesByScopeTabs({
 
       {current.length === 0 ? (
         <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6 text-sm text-foreground-muted">
-          {t("achievements.ocVault.empty", { defaultValue: "No badges in this category yet." })}
+          {emptyLabel ?? t("achievements.ocVault.empty", { defaultValue: "No badges in this category yet." })}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
           {current.map((badge) => (
-            <BadgeCard key={badge.id} badge={badge} onOpenModal={onOpenModal} />
+            <BadgeCard
+              key={badge.id}
+              badge={badge}
+              onOpenModal={onOpenModal}
+              onRetry={onRetry}
+            />
           ))}
         </div>
       )}

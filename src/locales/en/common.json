@@ -123,7 +123,12 @@
       "contests": "Hackathons"
     },
     "actions": {
-      "editProfile": "Edit profile"
+      "editProfile": "Edit profile",
+      "previewAsGuest": "Preview as guest",
+      "exitPreview": "Exit preview",
+      "exitPreviewShort": "Exit preview",
+      "viewFollowers": "View followers",
+      "viewFollowing": "View profiles this user follows"
     },
     "labels": {
       "ocid": "OCID: {{ocid}}",
@@ -149,10 +154,17 @@
       "title": "Activity",
       "empty": "No public activity yet."
     },
+    "private": {
+      "title": "Private profile",
+      "description": "This account is private. Only public content selected by the profile owner is shown here."
+    },
     "achievements": {
       "selfOnly": "Achievements are only visible to the account owner for now.",
       "openInAchievementsPage": "Open Achievements to view your certificates and badges.",
-      "cta": "Open Achievements"
+      "cta": "Open Achievements",
+      "privateTitle": "Achievement details are private",
+      "privateDescription": "Achievement details are not displayed publicly on this profile.",
+      "openVault": "Open achievements vault"
     },
     "courses": {
       "privateByDefault": "Courses are private for students by default.",
@@ -653,8 +665,13 @@
     "badges": {
       "earnedPrefix": "Earned: {{date}}",
       "locked": "Locked",
+      "pendingClaim": "Pending Claim",
+      "failedPrefix": "Could not create credential",
+      "pendingPrefix": "Creating credential...",
+      "retry": "Retry",
       "ocDot": {
         "claimedTooltip": "OC credential claimed",
+        "failedTooltip": "Could not create credential",
         "unclaimedTooltip": "OC credential not claimed"
       }
     },
@@ -684,6 +701,8 @@
       "badge": {
         "claimed": "OC claimed",
         "pending": "Processing",
+        "awaitingHolder": "OCID connection required",
+        "reconciling": "Verifying credential",
         "failed": "Failed",
         "unclaimed": "Not claimed"
       },
@@ -717,6 +736,15 @@
           "body": "Connect your OCID before issuing this Open Campus certificate. Your original Corelia certificate remains saved in your certificate vault.",
           "cta": "Connect OCID"
         },
+        "awaitingHolder": {
+          "title": "Credential is waiting for your OCID",
+          "body": "This credential is ready to be issued as soon as you connect an OCID or wallet address.",
+          "cta": "Connect OCID"
+        },
+        "reconciliation": {
+          "title": "Credential ID needs verification",
+          "body": "The issuance response did not provide a verifiable on-chain credential ID. The credential may already exist or the response may be incomplete. Do not retry to avoid a duplicate request; Corelia must verify this ID."
+        },
         "review": {
           "title": "Review your credential info",
           "subtitle": "This information will be permanently embedded on-chain. Make sure everything is correct before issuing.",
@@ -745,13 +773,17 @@
     },
     "sync": {
       "pendingTitle": "Creating credential...",
-      "pendingDescription": "The system is recording and creating your OCB on the blockchain.",
+      "pendingDescription": "The system is recording and creating your credential on the blockchain.",
       "mintedTitle": "Credential minted successfully!",
-      "mintedDescription": "Your OCB has been successfully minted and stored on the blockchain.",
+      "mintedDescription": "Your credential has been successfully created and stored on the blockchain.",
       "failedTitle": "Credential minting failed",
-      "failedDescription": "An error occurred while issuing OCB. Please try again later.",
+      "failedDescription": "An error occurred while issuing your credential. Please try again later.",
       "retrySuccess": "Retry request sent!",
       "retryError": "Error when retrying."
+    },
+    "loadError": {
+      "body": "We could not refresh your achievements. Your last confirmed credential status is still shown.",
+      "retry": "Retry"
     },
     "stats": {
       "certificates": "Certificates",
@@ -815,12 +847,16 @@
         "syncError": "Could not sync the certificate right now."
       },
       "badges": {
-        "title": "Badges & milestones",
+        "title": "Achievements, Badges & Milestones",
         "subtitle": "Includes learning milestones and progress you’re gradually unlocking.",
         "summaryUnlocked": "{{earned}}/{{total}} unlocked",
         "loading": "Loading your badges and milestones.",
         "earnedSectionTitle": "Earned ({{count}})",
         "progressGood": "Great progress"
+      },
+      "onchain": {
+        "title": "On-chain vault",
+        "subtitle": "Open Campus achievements and badges recorded on-chain."
       },
       "nextUnlock": {
         "title": "Coming next",
@@ -829,11 +865,29 @@
     },
     "ocVault": {
       "tabs": {
-        "oca": "OCA",
-        "hackathon": "Badges",
+        "all": "All",
+        "oca": "Achievements (OCA)",
+        "ocb": "Badges (OCB)",
         "milestones": "Milestones"
       },
       "empty": "No credentials in this category yet."
+    },
+    "profileVisibility": {
+      "manage": "Manage visibility",
+      "title": "Public achievements",
+      "description": "Choose the resolved Open Campus credentials that appear on your public Corelia profile.",
+      "selected": "Shown on profile",
+      "selectedCount": "Showing on profile: {{count}} credentials",
+      "apply": "Apply changes",
+      "applying": "Applying...",
+      "ok": "OK",
+      "empty": "You do not have any claimed Open Campus credentials to show yet.",
+      "emptyPublic": "You are not publicly displaying any of your credentials.",
+      "saveSuccess": "Your public credential vault has been updated.",
+      "saveError": "Could not update your public credential vault.",
+      "publicVaultTitle": "Open Campus credentials",
+      "publicVaultDescription": "Credentials this member chose to show on their profile.",
+      "selfVaultDescription": "Credentials you chose to show publicly on your profile."
     },
     "credentialType": {
       "oca": "OCA",
@@ -911,5 +965,38 @@
     "managePreferences": "Manage notification preferences",
     "errorTitle": "Could not process request",
     "errorBody": "The unsubscribe link is invalid or has expired. Please go to Settings to manage your notifications."
+  },
+  "claim": {
+    "loading": "Looking up...",
+    "title": "You have credentials waiting",
+    "subtitle": "The following credentials are waiting to be saved to {{email}}'s account.",
+    "pendingBadge": "Pending",
+    "cta": "Join Corelia to claim them all",
+    "emptyTitle": "No pending credentials",
+    "emptyBody": "No pending credentials were found for this email. If you think this is a mistake, contact the Corelia team.",
+    "errorTitle": "Could not look this up",
+    "errorBody": "This link is invalid or something went wrong. Please try again from the email you received."
+  },
+  "pendingCredentialsWelcome": {
+    "title": "You just received your credentials!",
+    "body": "The credentials granted to your email are now saved to your Corelia account.",
+    "cta": "View my credentials"
+  },
+  "maintenance": {
+    "title": "System under maintenance",
+    "body": "Corelia is being upgraded. We'll be back soon. Thanks for your patience!"
+  },
+  "coraAi": {
+    "errors": {
+      "createSessionFailed": "Could not start a Cora session.",
+      "loadHistoryFailed": "Could not load Cora's history.",
+      "loadMemoryFailed": "Could not load Cora's memory.",
+      "mustLogin": "You need to sign in to use Cora AI.",
+      "quotaExceeded": "You've reached the Cora AI limit.",
+      "rateLimited": "Cora AI is getting a lot of requests right now — please try again in a moment.",
+      "serverError": "Cora AI is having trouble right now — please try again shortly.",
+      "noResponse": "Cora AI couldn't respond right now.",
+      "busy": "Cora AI is busy right now — please try again."
+    }
   }
 }

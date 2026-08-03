@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import i18n from "@/i18n";
 import {
   invokeGenerateLessonSummary,
   type LessonSummary,
@@ -93,7 +94,7 @@ export function useLessonSummary(params: {
       if (!isAuthenticated) {
         setState((prev) => ({
           ...prev,
-          error: "Bạn cần đăng nhập để dùng tính năng này.",
+          error: i18n.t("courses:errors.mustLoginFeature"),
         }));
         return null;
       }
@@ -119,7 +120,7 @@ export function useLessonSummary(params: {
           error:
             error instanceof Error
               ? error.message
-              : "Không thể tóm tắt bài học lúc này.",
+              : i18n.t("courses:errors.lessonSummary.generateFailed"),
         }));
         return null;
       }

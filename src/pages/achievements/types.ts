@@ -1,4 +1,10 @@
-export type ClaimStatus = "unclaimed" | "pending" | "claimed" | "failed";
+export type ClaimStatus =
+  | "unclaimed"
+  | "pending"
+  | "awaiting_holder_id"
+  | "needs_reconciliation"
+  | "claimed"
+  | "failed";
 
 export type CertificateItem = {
   id: string;
@@ -20,6 +26,12 @@ export type CertificateItem = {
   holderName?: string | null;
   /** Màu chữ tên học viên overlay (hex, mặc định "#000000") */
   nameColor?: string | null;
+  /** Course có credential template on-chain đang hoạt động (OCA hoặc OCB). */
+  hasOnchainCredentialTemplate: boolean;
+  /** Template gắn với hành động claim/view trên card certificate. */
+  onchainTemplateId?: string | null;
+  /** OCB cấp tự động sau khi hoàn thành; certificate card chỉ được View. */
+  onchainCredentialAutoIssued?: boolean;
   // OpenCampus
   ocClaimStatus: ClaimStatus;
   ocCredentialId?: string | null;
@@ -42,6 +54,10 @@ export type BadgeItem = {
   category: "learning" | "streak" | "milestone" | "social";
   /** Ảnh huy hiệu (placeholder nếu chưa có) */
   imageUrl?: string;
+  /** Course id backing a standalone (no offchain certificate) credential —
+   *  needed so handleClaim knows which course to check/mint for. */
+  courseId?: string | null;
+  templateId?: string | null;
   // OpenCampus
   ocClaimStatus: ClaimStatus;
   ocTransactionHash?: string;
@@ -50,6 +66,8 @@ export type BadgeItem = {
   mintCredentialId?: string | null;
   /** Issuance row id from DB for retry operations */
   issuanceId?: string;
+  /** Owner preference for displaying this resolved OCC on their public profile. */
+  showOnProfile?: boolean;
   /** Status of the credential issuance */
   status?: "pending" | "minted" | "failed" | "awaiting_holder_id";
   /** Scope grouping for Open Campus badges */

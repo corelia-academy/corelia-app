@@ -276,14 +276,45 @@
     "toasts": {
       "created": "Course created successfully. You can continue editing."
     },
+    "header": {
+      "subtitle": "Quickly set up the initial configuration before moving to the detailed edit screen.",
+      "step1": "Step 1: Setup"
+    },
+    "stats": {
+      "statusLabel": "Status",
+      "accessLabel": "Access type",
+      "ownerLabel": "Revenue ownership",
+      "levelLabel": "Level"
+    },
+    "nav": {
+      "heading": "Setup roadmap",
+      "description": "After this initial setup, you'll continue completing the content and advanced configuration.",
+      "generalInfo": "General information",
+      "content": "Content & lessons",
+      "finalAssignment": "Final assignment",
+      "certificate": "Certificate",
+      "studentManagement": "Student management",
+      "deleteCourse": "Delete course"
+    },
+    "tip": {
+      "title": "Quick setup tip",
+      "description": "Title, slug, cover image, and pricing model are the 4 fields worth locking in early so later edits go faster."
+    },
+    "section": {
+      "description": "Fill in the basic information. After creating, you'll be moved to the edit page to add chapters, lessons, and advanced configuration.",
+      "startBadge": "Starting step"
+    },
     "labels": {
       "draft": "Draft",
       "originExternal": "External partner",
       "originCorelia": "Corelia instructor",
       "title": "Course title",
+      "slug": "Slug",
       "shortDescription": "Short description",
       "description": "Description",
       "descriptionMarkdownHint": "Supports Markdown (headings, lists, links, code blocks).",
+      "sources": "Sources (external URLs)",
+      "sourceAttributionNote": "Source attribution note",
       "learningOutcomes": "What you'll learn",
       "learningOutcomesSubtitle": "This course will help learners achieve these outcomes.",
       "learningOutcomesAdd": "Add outcome",
@@ -297,12 +328,23 @@
       "contentLocales": "Course content languages",
       "contentLocalesHint": "Select languages that this course will have separate content for (currently VI/EN).",
       "primaryContentLocale": "Primary content language (fallback)",
-      "defaultVideoLocale": "Default video primary language"
+      "defaultVideoLocale": "Default video primary language",
+      "publishedCheckbox": "Published (visible on the Courses page)",
+      "externalAggregatedCheckbox": "Public external course"
+    },
+    "hints": {
+      "businessSettingsRestricted": "Only academic staff/admin can change revenue ownership settings.",
+      "partnerRevenueRemainder": "The remainder belongs to the partner instructor.",
+      "vndFormat": "Unit: VND (₫), formatted automatically as you type.",
+      "externalAggregatedDescription": "This course aggregates content from external sources (YouTube/reference links to the creator's channel)."
     },
     "placeholders": {
       "title": "e.g. React from beginner to advanced",
+      "slug": "react-from-beginner-to-advanced",
       "shortDescription": "One-line description (optional)",
       "description": "Full course description...",
+      "sources": "One URL per line\nhttps://youtube.com/...\nhttps://youtube.com/...",
+      "sourceAttributionNote": "Public note about aggregated sources (e.g., curated from a YouTube playlist by creators).",
       "learningOutcomesItem": "Add an outcome (one per line)",
       "priceVnd": "e.g. 499,000",
       "certificateFeeVnd": "e.g. 199,000"
@@ -311,7 +353,8 @@
       "uploadThumb": "Upload cover image",
       "uploadingThumb": "Uploading...",
       "create": "Create course",
-      "creating": "Creating..."
+      "creating": "Creating...",
+      "cancel": "Cancel"
     }
   },
   "courseListPage": {
@@ -500,8 +543,9 @@
       "updateFailed": "Update failed",
       "processFailed": "Action failed",
       "missingCertificateTemplate": "Please upload a certificate template image when Certificate Issuance is enabled.",
+      "missingCertificateTemplateCta": "Certificate",
       "uploadCertTemplateFailed": "Failed to upload certificate template",
-      "clearCertTemplateFailed": "Failed to clear legacy certificate / OCA",
+      "clearCertTemplateFailed": "Failed to cancel the certificate",
       "uploadPartnerDocsFailed": "Failed to upload partner documents",
       "addSectionFailed": "Failed to add section",
       "addLessonFailed": "Failed to add lesson",
@@ -543,8 +587,9 @@
       "assignmentApproved": "Submission approved. A certificate will be issued when the learner reaches 100% completion.",
       "assignmentRejected": "Submission rejected.",
       "certificateIssued": "Certificate issued.",
+      "assignmentConfigSaved": "Assignment settings saved.",
       "certTemplateUploaded": "Certificate template uploaded.",
-      "certTemplateCleared": "Legacy certificate / OCA cleared.",
+      "certTemplateCleared": "Certificate cancelled.",
       "partnerContractUploaded": "Partner contract document uploaded.",
       "partnerInvoiceUploaded": "Partner invoice document uploaded.",
       "discountCreated": "Discount code created."
@@ -563,7 +608,7 @@
       "saving": "Saving...",
       "saveInfo": "General info saved.",
       "savePricing": "Pricing & payment saved.",
-      "saveAssignment": "Assignment settings saved.",
+      "saveAssignment": "Save assignment settings",
       "saveCertificate": "Certificate settings saved.",
       "reload": "Reload",
       "loading": "Loading...",
@@ -580,7 +625,7 @@
     },
     "certificate": {
       "sectionTitle": "Certificate template",
-      "sectionDescription": "Upload a certificate template image (PNG/JPG). The learner's name will be overlaid at the position you set.",
+      "sectionDescription": "Upload a certificate background (PNG/JPG). The learner's name will be placed at the position you set so they can download and share it on social media.",
       "saveNamePosition": "Save name position",
       "templateLabel": "Certificate template",
       "uploadTemplate": "Upload template",
@@ -591,11 +636,14 @@
       "nameColorLabel": "Name text color",
       "nameColorHint": "Color of the learner's name overlaid on the certificate.",
       "afterUploadHintPrefix": "After uploading, adjust the two \"Name position\" fields (% from left / % from",
-      "fileFormatHint": "Format: PNG or JPG."
+      "fileFormatHint": "Format: PNG or JPG.",
+      "disabledHint": "Enable \"This course issues a completion certificate\" in the General info tab before configuring the certificate template.",
+      "disabledCta": "Go to General info",
+      "setupLeaveWarning": "Certificate setup will be cancelled. You will need to start over. Leave this page?"
     },
     "certificateGuide": {
       "title": "How to create a template",
-      "sizeHint": "Recommended size: 1600×1200 px (4:3 landscape) or 1200×1600 px (3:4 portrait). This image is also used as the OpenCampus on-chain credential art.",
+      "sizeHint": "Recommended size: 1600×1200 px (4:3 landscape) or 1200×1600 px (3:4 portrait).",
       "nameAreaHint": "Leave an empty area on the image for the learner name (e.g. center or bottom third).",
       "afterUploadHint": "After uploading, adjust the two \"Name position\" fields (% from left / % from top) so the learner name sits in the blank area. 50% = center.",
       "downloadSample": "Download sample template (SVG)"
@@ -607,6 +655,7 @@
       "loadFailed": "Could not load credential configuration.",
       "statusActive": "Active",
       "statusInactive": "Not configured",
+      "mintToggleLabel": "Allow on-chain minting",
       "kind": {
         "label": "Credential type",
         "oca": {
@@ -618,28 +667,33 @@
           "desc": "A skill badge credential. Ideal for shorter achievements and topic mastery."
         }
       },
-      "enableLabel": "Enable auto-minting for this course",
-      "enableHint": "When active, badges are automatically minted to learners who meet the requirements.",
       "configTitle": "Credential details",
       "requirementsTitle": "Eligibility requirements",
-      "blockedByCertificate": "OCB cannot be enabled when this course already issues a downloadable PDF certificate. Switch to OCA type, or disable the PDF certificate first.",
+      "confirmDeactivateWithIssuances": "{{count}} learner(s) already hold this credential. Turning it off stops issuing to new learners — it does NOT revoke what's already been issued. Continue turning it off?",
+      "leaveWithoutSavingWarning": "You have unsaved OpenCampus Credentials changes. Leaving now will NOT issue the on-chain credential to learners. Leave anyway?",
       "noPermission": "You don't have permission to configure credentials for this course.",
       "nameLabel": "Credential name",
       "descriptionLabel": "Description",
-      "imageLabel": "Credential image",
-      "imageHint": "Recommended: 1600×1200 px (landscape) or 1200×1600 px (portrait). Used as the on-chain credential art on OpenCampus.",
-      "imageOcaHint": "OCA credentials use the certificate template image above as their on-chain credential art. Upload a certificate template first.",
-      "imageOcaNoTemplate": "No template",
+      "badgeImageLabel": "Badge image",
+      "imageHint": "Recommended: 1600×1200 px (landscape) or 1200×1600 px (portrait). Used as the on-chain badge art on OpenCampus.",
       "uploadBadge": "Upload image",
       "uploading": "Uploading…",
       "uploadOk": "Image uploaded.",
       "uploadFailed": "Upload failed.",
+      "onchainCertLabel": "On-chain certificate template (Web3)",
+      "onchainCertHint": "Used to mint the credential on-chain. Must NOT contain any space reserved for the learner's name, to protect their privacy.",
+      "uploadOnchainCert": "Upload on-chain template",
+      "onchainCertUploaded": "On-chain OCA template uploaded.",
+      "onchainCertUploadFailed": "Failed to upload the on-chain template.",
+      "onchainCertRequired": "Please upload the on-chain template before saving the OCA configuration.",
+      "imageRequired": "Please upload a credential image before saving.",
       "completionPctLabel": "Minimum lesson completion",
       "requireAssignmentPassLabel": "Require final assignment approval",
       "requireAssignmentLabel": "Require final assignment approval",
       "minScoreLabel": "Minimum assignment score",
       "identifierPrefixLabel": "Identifier prefix",
       "identifierHint": "Lowercase, hyphen-separated, max 40 characters. A unique learner suffix is appended automatically.",
+      "identifierLocked": "{{count}} credential(s) already exist. The prefix is locked to prevent duplicate minting.",
       "save": "Save credential configuration",
       "saving": "Saving…",
       "saved": "Credential configuration saved.",
@@ -714,6 +768,7 @@
         "content": "Content & lessons",
         "assignments": "Final assignment",
         "certificate": "Certificate",
+        "credentials": "OpenCampus Credentials",
         "students": "Manage students",
         "danger": "Delete course",
         "announcements": "Announcements"
@@ -952,7 +1007,7 @@
     "publishing": {
       "publishedHint": "Published (visible on the course page)",
       "hasCertificateHint": "This course issues a completion certificate",
-      "certBlockedByOcb": "This course has an on-chain badge (OCB) active. Go to the Certificate tab and disable the badge first.",
+      "certificateConfiguredLockedHint": "A certificate template is configured. Certificate issuance cannot be disabled here.",
       "updatingHint": "This course is being updated (show a notice to learners)"
     },
     "students": {

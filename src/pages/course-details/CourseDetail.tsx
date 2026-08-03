@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { useAuth } from "@/stores/authStore";
 import {
   checkAndIssueCertificate,
@@ -9,6 +10,7 @@ import {
   sortLessonsByCurriculum,
   syncCourseCompletion,
 } from "@/lib/courses";
+import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import { isActivityLesson, splitLessonCounts } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseLessons } from "./hooks/useCourseLessons";
@@ -157,6 +159,17 @@ export default function CourseDetail() {
         return null;
       }
       setCompletionSyncing(false);
+      const credentialCheck = await invokeCheckCourseCredential(courseId, undefined, {
+        autoIssue: true,
+      });
+      if (credentialCheck.reason === "oca_requires_manual_claim") {
+        toast.success(translate("detail.courseDetail.ocaReady"), {
+          action: {
+            label: translate("detail.courseDetail.viewAchievements"),
+            onClick: () => navigate("/achievements"),
+          },
+        });
+      }
       if (!courseHasCertificate(course)) {
         return null;
       }
@@ -172,6 +185,12 @@ export default function CourseDetail() {
         }
         setCertificateJustIssued(true);
         void progress.refresh();
+        toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
+          action: {
+            label: translate("detail.courseDetail.viewCertificate"),
+            onClick: () => navigate("/achievements"),
+          },
+        });
       } else if (result.message) {
         setCertificateIssueError(result.message);
       }
@@ -199,6 +218,7 @@ export default function CourseDetail() {
     isAuthenticated,
     profile?.id,
     progress,
+    navigate,
     translate,
   ]);
 
@@ -296,9 +316,7 @@ export default function CourseDetail() {
   const certificateIssued = Boolean(
     access.enrollment?.certificate_issued_at || certificateJustIssued,
   );
-  const profileAchievementsPath = profile?.username
-    ? `/@${encodeURIComponent(profile.username)}`
-    : "/account";
+  const achievementsPath = "/achievements";
 
   const handleEnroll = useCallback(async () => {
     const courseId = courseLoad.resolvedCourseId;
@@ -409,7 +427,7 @@ export default function CourseDetail() {
           issuing={completionSyncing || certificateIssuing}
           issueReason={certificateIssueReason}
           issueError={completionSyncError || certificateIssueError}
-          achievementsPath={profileAchievementsPath}
+          achievementsPath={achievementsPath}
           onRetry={
             hasCourseCertificate || !completionSynced || completionSyncError
               ? () => void syncCertificate()
@@ -437,6 +455,7 @@ export default function CourseDetail() {
           enrolled={access.enrolled}
           paymentAccess={access.paymentAccess}
           progressPercent={progress.progressPercent}
+          hasStarted={progress.hasStarted}
           nextLesson={progress.nextLesson}
           pricing={pricing}
           previewLessons={previewLessons}
@@ -496,6 +515,7 @@ export default function CourseDetail() {
             enrolled={access.enrolled}
             paymentAccess={access.paymentAccess}
             progressPercent={progress.progressPercent}
+            hasStarted={progress.hasStarted}
             nextLesson={progress.nextLesson}
             pricing={pricing}
             previewLessons={previewLessons}

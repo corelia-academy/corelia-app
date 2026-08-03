@@ -18,6 +18,10 @@
       "title": "Hồ sơ học tập & CV",
       "description": "Thông tin phục vụ tư vấn & việc làm"
     },
+    "achievements": {
+      "title": "Kho thành tích",
+      "description": "Quản lý chứng nhận & huy hiệu"
+    },
     "cora": {
       "title": "Cora AI",
       "description": "Gói AI, hạn mức và lịch sử nâng cấp"
@@ -210,7 +214,8 @@
       "hint": "Link hồ sơ công khai: /@{{handle}}",
       "actions": {
         "makePrivate": "Đặt riêng tư",
-        "makePublic": "Đặt công khai"
+        "makePublic": "Đặt công khai",
+        "saving": "Đang lưu..."
       }
     },
     "setupWarning": {
@@ -255,11 +260,13 @@
     },
     "success": {
       "avatarUpdated": "Đã cập nhật ảnh đại diện.",
-      "updated": "Thông tin tài khoản đã được cập nhật."
+      "updated": "Thông tin tài khoản đã được cập nhật.",
+      "visibilityUpdated": "Đã cập nhật trạng thái hiển thị hồ sơ."
     },
     "errors": {
       "avatarUploadFailed": "Không thể tải ảnh lên.",
       "updateFailed": "Không thể cập nhật thông tin.",
+      "visibilityUpdateFailed": "Không thể cập nhật trạng thái hiển thị hồ sơ.",
       "usernameTaken": "Username này đã được sử dụng. Vui lòng chọn username khác.",
       "loadFailed": "Không thể tải thông tin tài khoản. Kiểm tra kết nối và thử lại."
     },

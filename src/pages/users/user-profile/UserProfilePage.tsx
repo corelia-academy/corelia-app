@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FollowButton } from "@/components/social/FollowButton";
 import { FollowerPreview } from "@/components/social/FollowerPreview";
+import { FollowingListDialog } from "@/components/social/FollowingListDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/stores/authStore";
 import { getRoleLabel, type PublicProfile } from "@/types/database";
@@ -53,13 +54,17 @@ function ProfileStat({
   label,
   value,
   icon: Icon,
+  onClick,
+  ariaLabel,
 }: {
   label: string;
   value: string | number;
   icon: typeof Users;
+  onClick?: () => void;
+  ariaLabel?: string;
 }) {
-  return (
-    <div className="rounded-xl border border-border-subtle bg-surface-base/80 px-3 py-3 shadow-card backdrop-blur">
+  const content = (
+    <>
       <div className="flex items-center gap-2 text-xs font-medium text-foreground-muted">
         <Icon className="size-3.5" aria-hidden />
         <span className="truncate">{label}</span>
@@ -67,17 +72,40 @@ function ProfileStat({
       <div className="mt-1 truncate text-lg font-semibold tabular-nums text-foreground">
         {value}
       </div>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={ariaLabel}
+        className="rounded-xl border border-border-subtle bg-surface-base/80 px-3 py-3 text-left shadow-card backdrop-blur transition-colors hover:border-border hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-border-subtle bg-surface-base/80 px-3 py-3 shadow-card backdrop-blur">
+      {content}
     </div>
   );
 }
 
 function ProfileSidebar({
   profile,
+  followerCount,
+  followingProfileCount,
   bio,
   website,
   headerHandle,
 }: {
   profile: PublicProfile;
+  followerCount: number;
+  followingProfileCount: number;
   bio: string | null;
   website: string | null;
   headerHandle: string | null;
@@ -104,11 +132,11 @@ function ProfileSidebar({
     },
     {
       label: t("userProfile.labels.followers"),
-      value: Number(profile.follower_count ?? 0),
+      value: followerCount,
     },
     {
       label: t("userProfile.labels.following"),
-      value: Number(profile.following_count ?? 0),
+      value: followingProfileCount,
     },
   ];
 
@@ -187,12 +215,27 @@ export default function UserProfileLayout() {
   const { t, i18n } = useTranslation("common");
   const { handle } = useParams<{ handle: string }>();
   const { user, profile: currentUserProfile } = useAuth();
-  const { profile: fetchedProfile, loading, error } = useUserProfileLayoutData(handle);
+  const {
+    profile: fetchedProfile,
+    followingProfileCount,
+    loading,
+    error,
+  } = useUserProfileLayoutData(handle);
 
   const isSelf = Boolean(user && fetchedProfile && user.id === fetchedProfile.id);
   const [previewAsGuest, setPreviewAsGuest] = useState(false);
+  const [followerDialogOpen, setFollowerDialogOpen] = useState(false);
+  const [followingDialogOpen, setFollowingDialogOpen] = useState(false);
+  const [followerCountOverride, setFollowerCountOverride] = useState<{
+    profileId: string;
+    count: number;
+  } | null>(null);
   const effectiveIsSelf = isSelf && !previewAsGuest;
   const profile = (effectiveIsSelf && currentUserProfile ? currentUserProfile : fetchedProfile) as PublicProfile | null;
+  const followerCount =
+    followerCountOverride && followerCountOverride.profileId === profile?.id
+      ? followerCountOverride.count
+      : Number(profile?.follower_count ?? 0);
 
   const headerHandle = profile ? profileHandle(profile) : null;
   const profileOcid = profile ? readableProfileText(profile.ocid) : null;
@@ -298,19 +341,28 @@ export default function UserProfileLayout() {
                 {!loading && profile && isSelf ? (
                   <Button
                     variant="outline"
-                    size="lg"
+                    size={previewAsGuest ? "sm" : "lg"}
                     onClick={() => setPreviewAsGuest(!previewAsGuest)}
-                    className={previewAsGuest ? "border-primary text-primary hover:text-primary hover:bg-primary/10 bg-primary/5" : "text-foreground-muted"}
+                    aria-label={previewAsGuest ? t("userProfile.actions.exitPreview") : undefined}
+                    className={previewAsGuest
+                      ? "fixed right-2 top-20 z-50 max-w-[calc(100vw-1rem)] gap-1 border-primary bg-surface-base px-2 text-xs text-primary shadow-lg hover:bg-primary/10 hover:text-primary sm:right-3"
+                      : "text-foreground-muted"
+                    }
                   >
                     {previewAsGuest ? (
-                      <><EyeOff className="mr-2 size-4" aria-hidden /> {t("userProfile.actions.exitPreview", "Thoát xem trước")}</>
+                      <>
+                        <EyeOff className="size-3.5" aria-hidden />
+                        <span className="sr-only sm:not-sr-only">
+                          {t("userProfile.actions.exitPreviewShort")}
+                        </span>
+                      </>
                     ) : (
                       <><Eye className="mr-2 size-4" aria-hidden /> {t("userProfile.actions.previewAsGuest", "Xem tư cách khách")}</>
                     )}
                   </Button>
                 ) : null}
 
-                {!loading && profile && isSelf ? (
+                {!loading && profile && effectiveIsSelf ? (
                   <NavLink to="/account/profile">
                     <Button variant="outline" size="lg" type="button">
                       {t("userProfile.actions.editProfile")}
@@ -320,8 +372,11 @@ export default function UserProfileLayout() {
                 {!loading && profile && !isSelf && profile.profile_public ? (
                   <FollowButton
                     subject={{ type: "user", id: profile.id }}
-                    followerCount={profile.follower_count ?? 0}
+                    followerCount={followerCount}
                     size="lg"
+                    onFollowerCountChange={(count) =>
+                      setFollowerCountOverride({ profileId: profile.id, count })
+                    }
                   />
                 ) : null}
               </div>
@@ -329,7 +384,10 @@ export default function UserProfileLayout() {
                 <div className="sm:self-end">
                   <FollowerPreview
                     subject={{ type: "user", id: profile.id }}
-                    totalCount={profile.follower_count ?? 0}
+                    totalCount={followerCount}
+                    showSummary={false}
+                    open={followerDialogOpen}
+                    onOpenChange={setFollowerDialogOpen}
                   />
                 </div>
               ) : null}
@@ -346,13 +404,25 @@ export default function UserProfileLayout() {
                   <>
                     <ProfileStat
                       label={t("userProfile.labels.followers")}
-                      value={Number(profile.follower_count ?? 0)}
+                      value={followerCount}
                       icon={Users}
+                      onClick={
+                        profile.profile_public
+                          ? () => setFollowerDialogOpen(true)
+                          : undefined
+                      }
+                      ariaLabel={t("userProfile.actions.viewFollowers")}
                     />
                     <ProfileStat
                       label={t("userProfile.labels.following")}
-                      value={Number(profile.following_count ?? 0)}
+                      value={followingProfileCount}
                       icon={Users}
+                      onClick={
+                        profile.profile_public
+                          ? () => setFollowingDialogOpen(true)
+                          : undefined
+                      }
+                      ariaLabel={t("userProfile.actions.viewFollowing")}
                     />
                     <ProfileStat
                       label={t("userProfile.labels.memberSince")}
@@ -370,6 +440,13 @@ export default function UserProfileLayout() {
                   </>
                 ) : null}
               </div>
+              {profile?.profile_public ? (
+                <FollowingListDialog
+                  userId={profile.id}
+                  open={followingDialogOpen}
+                  onOpenChange={setFollowingDialogOpen}
+                />
+              ) : null}
             </div>
           </div>
         </div>
@@ -407,10 +484,10 @@ export default function UserProfileLayout() {
                     <Lock className="size-5 text-foreground-subtle" aria-hidden />
                   </div>
                   <h3 className="mt-4 text-base font-semibold text-foreground">
-                    {t("userProfile.private.title", "Hồ sơ riêng tư")}
+                    {t("userProfile.private.title")}
                   </h3>
                   <p className="mt-2 text-sm text-foreground-muted max-w-sm mx-auto">
-                    {t("userProfile.private.description", "Người dùng này đã hạn chế hiển thị thông tin cá nhân. Chỉ các thành tựu công khai được hiển thị.")}
+                    {t("userProfile.private.description")}
                   </p>
                 </div>
               )}
@@ -427,6 +504,8 @@ export default function UserProfileLayout() {
             {profile.profile_public || effectiveIsSelf ? (
               <ProfileSidebar
                 profile={profile}
+                followerCount={followerCount}
+                followingProfileCount={followingProfileCount}
                 bio={bio}
                 website={website}
                 headerHandle={headerHandle}

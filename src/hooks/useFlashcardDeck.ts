@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import i18n from "@/i18n";
 import {
   applyReview,
   fetchFlashcardDeck,
@@ -57,7 +58,7 @@ export function useFlashcardDeck(params: {
         loading: false,
         generating: false,
         saving: false,
-        error: error instanceof Error ? error.message : "Không tải được flashcards.",
+        error: error instanceof Error ? error.message : i18n.t("courses:errors.flashcards.loadFailed"),
       });
     }
   }, [isAuthenticated, lessonId, locale, user?.id]);
@@ -72,7 +73,7 @@ export function useFlashcardDeck(params: {
       if (!isAuthenticated) {
         setState((prev) => ({
           ...prev,
-          error: "Bạn cần đăng nhập để dùng tính năng này.",
+          error: i18n.t("courses:errors.mustLoginFeature"),
         }));
         return null;
       }
@@ -100,7 +101,7 @@ export function useFlashcardDeck(params: {
           error:
             error instanceof Error
               ? error.message
-              : "Không tạo được flashcards lúc này.",
+              : i18n.t("courses:errors.flashcards.generateFailed"),
         }));
         return null;
       }
@@ -123,7 +124,7 @@ export function useFlashcardDeck(params: {
         setState((prev) => ({
           ...prev,
           saving: false,
-          error: error instanceof Error ? error.message : "Lưu tiến độ thất bại.",
+          error: error instanceof Error ? error.message : i18n.t("courses:errors.flashcards.saveFailed"),
         }));
       }
     },

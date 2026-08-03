@@ -24,6 +24,7 @@ import {
   sortLessonsByCurriculum,
   syncCourseCompletion,
 } from "@/lib/courses";
+import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import {
   isLessonDraftForLearners,
   isLessonPublishedForLearners,
@@ -207,6 +208,17 @@ export default function Learn() {
         return null;
       }
       setCompletionSyncing(false);
+      const credentialCheck = await invokeCheckCourseCredential(courseId, undefined, {
+        autoIssue: true,
+      });
+      if (credentialCheck.reason === "oca_requires_manual_claim") {
+        toast.success(translate("detail.courseDetail.ocaReady"), {
+          action: {
+            label: translate("detail.courseDetail.viewAchievements"),
+            onClick: () => navigate("/achievements"),
+          },
+        });
+      }
       if (!courseHasCertificate(course)) {
         return null;
       }
@@ -221,6 +233,12 @@ export default function Learn() {
         }
         setCertificateJustIssued(true);
         void progress.refresh();
+        toast.success(translate("detail.courseDetail.certificateIssuedSuccess"), {
+          action: {
+            label: translate("detail.courseDetail.viewCertificate"),
+            onClick: () => navigate("/achievements"),
+          },
+        });
       } else if (result.message) {
         setCertificateIssueError(result.message);
       }
@@ -247,6 +265,7 @@ export default function Learn() {
     courseLoad.course,
     profile?.id,
     progress,
+    navigate,
     translate,
   ]);
 
@@ -463,9 +482,7 @@ export default function Learn() {
   const courseCompleted = progress.progressPercent >= 100 && visibleLessons.length > 0;
   const completionSynced = Boolean(access.enrollment?.completed_at || completionJustSynced);
   const certificateIssued = Boolean(access.enrollment?.certificate_issued_at || certificateJustIssued);
-  const profileAchievementsPath = profile?.username
-    ? `/@${encodeURIComponent(profile.username)}`
-    : "/account";
+  const achievementsPath = "/achievements";
 
   const shouldShowFinalAssignment =
     !nextLesson && hasFullCourseAccess && !!course.final_assignment_title;
@@ -567,7 +584,7 @@ export default function Learn() {
           issuing={completionSyncing || certificateAutoIssuing}
           issueReason={certificateIssueReason}
           issueError={completionSyncError || certificateIssueError}
-          achievementsPath={profileAchievementsPath}
+          achievementsPath={achievementsPath}
           onRetry={
             hasCourseCertificate || !completionSynced || completionSyncError
               ? () => void syncCertificate()

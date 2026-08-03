@@ -11,6 +11,10 @@
         "label": "Activity milestones",
         "tooltip": "Global Open Campus milestone badges"
       },
+      "manualMint": {
+        "label": "Manual OCA/OCB grant",
+        "tooltip": "Manually grant OCA/OCB to an individual, unrelated to a course"
+      },
       "coraVouchers": {
         "label": "Cora vouchers",
         "tooltip": "Voucher management for Cora AI checkout"
@@ -38,6 +42,10 @@
       "activityMilestones": {
         "title": "Activity milestones",
         "description": "Configure automatic and manual Open Campus badges unrelated to a single course."
+      },
+      "manualMint": {
+        "title": "Manual credential grant",
+        "description": "Manually grant an OCA or OCB to a specific individual, unrelated to any course or hackathon."
       },
       "coraVouchers": {
         "title": "Cora vouchers",
@@ -353,6 +361,13 @@
       "urlLabel": "Logo URL",
       "saveUrl": "Save URL",
       "urlHint": "Set automatically after upload. You can also paste a CDN URL directly."
+    },
+    "appBaseUrl": {
+      "title": "App base URL",
+      "subtitle": "Root domain used to build links in system emails (certificates, claim invites...). Example staging: https://staging.corelia.academy — production: https://app.corelia.academy. A wrong value here sends every outgoing email link to the wrong environment.",
+      "urlLabel": "Base URL",
+      "saveUrl": "Save URL",
+      "invalidUrl": "Invalid URL — must look like https://domain, with no trailing slash or extra characters."
     }
   },
   "activityMilestones": {
@@ -412,6 +427,47 @@
       "coursesCompleted": "{{count}} courses completed",
       "trackCourses": "{{count}} courses in track “{{track}}”",
       "projects": "{{count}} projects submitted"
+    }
+  },
+  "manualMint": {
+    "heading": "Manual OCA/OCB grant",
+    "subheading": "Grant an OCA/OCB to a specific individual as a reward outside course completion — does not affect course/hackathon state.",
+    "lookup": {
+      "heading": "Look up student",
+      "uidPlaceholder": "UID (copy from the Account page)",
+      "emailPlaceholder": "Student email",
+      "submit": "Look up",
+      "loading": "Looking up…",
+      "notFoundUid": "No user found with this UID.",
+      "invalidEmailFormat": "Invalid email format (e.g. name@example.com). Please re-enter.",
+      "ghostNotice": "{{email}} has no account yet. After granting, we'll email them an invite to join Corelia and claim it.",
+      "error": "Lookup failed.",
+      "previewProfile": "Preview profile"
+    },
+    "preview": {
+      "title": "Profile preview",
+      "loading": "Loading…",
+      "notFound": "Could not load this profile.",
+      "noName": "No name set",
+      "role": "Role",
+      "followers": "Followers",
+      "fullPageLink": "View full page →"
+    },
+    "form": {
+      "kind": "Credential type",
+      "name": "Credential/badge name",
+      "image": "Template image",
+      "uploadCta": "Click to upload",
+      "uploading": "Uploading…",
+      "imagePreview": "Preview",
+      "invalidPng": "This file is not a valid PNG. Please remove the background or convert the image at",
+      "uploadFailed": "Image upload failed.",
+      "reason": "Grant reason",
+      "submit": "Grant",
+      "submitting": "Granting…",
+      "success": "Granted successfully.",
+      "successGhost": "Saved as pending and emailed the recipient an invite.",
+      "submitFailed": "Grant failed."
     }
   },
   "coraVoucherBatches": {

@@ -74,7 +74,10 @@ export default function AdminActivityMilestones() {
     setLoading(true);
     try {
       const list = await listActivityMilestoneTemplates();
-      setRows(list);
+      // One-off manual OCA/OCB grants (Admin Manual Mint tab) reuse this same
+      // scope+table but aren't recurring milestones — keep them off this list.
+      const milestonesOnly = list.filter((r) => r.trigger_type !== "manual");
+      setRows(milestonesOnly);
       const next: Record<string, number> = {};
       await Promise.all(
         list.map(async (r) => {

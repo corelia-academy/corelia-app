@@ -18,6 +18,10 @@
       "title": "Learning profile & CV",
       "description": "Info for advising & career support"
     },
+    "achievements": {
+      "title": "Achievements Vault",
+      "description": "Manage certificates & badges"
+    },
     "cora": {
       "title": "Cora AI",
       "description": "AI plans, limits, and upgrade history"
@@ -210,7 +214,8 @@
       "hint": "Your public profile link: /@{{handle}}",
       "actions": {
         "makePrivate": "Make private",
-        "makePublic": "Make public"
+        "makePublic": "Make public",
+        "saving": "Saving..."
       }
     },
     "setupWarning": {
@@ -255,11 +260,13 @@
     },
     "success": {
       "avatarUpdated": "Avatar updated.",
-      "updated": "Account information updated."
+      "updated": "Account information updated.",
+      "visibilityUpdated": "Profile visibility updated."
     },
     "errors": {
       "avatarUploadFailed": "Unable to upload image.",
       "updateFailed": "Unable to update information.",
+      "visibilityUpdateFailed": "Unable to update profile visibility.",
       "usernameTaken": "This username is already taken. Please choose a different one.",
       "loadFailed": "Could not load your profile. Please check your connection."
     },
