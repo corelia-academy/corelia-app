@@ -177,6 +177,8 @@ import { DescriptionGeneratorDialog } from "@/pages/instructor-course-edit/compo
 
 import { CourseOcbCredentialSection } from "@/pages/instructor-course-edit/components/CourseOcbCredentialSection";
 import { QuestionGeneratorDialog } from "@/pages/instructor-course-edit/components/QuestionGeneratorDialog";
+import { CertificateLayoutPreview } from "@/pages/instructor-course-edit/components/CertificateLayoutPreview";
+import { CERTIFICATE_LAYOUT_DEFAULTS } from "@/pages/achievements/utils/certificateLayout";
 import { CO_INSTRUCTOR_PERMISSION_KEYS, EDIT_SECTION_IDS } from "./constants";
 import { AnnouncementsSection } from "./components/AnnouncementsSection";
 import type {
@@ -378,9 +380,17 @@ const InstructorCourseEdit = () => {
     has_sections: true,
     certificate_template_url: "",
     certificate_template_path: "",
-    certificate_name_x_percent: 50,
-    certificate_name_y_percent: 50,
+    certificate_name_x_percent: CERTIFICATE_LAYOUT_DEFAULTS.nameXPercent,
+    certificate_name_y_percent: CERTIFICATE_LAYOUT_DEFAULTS.nameYPercent,
+    certificate_name_size_percent: CERTIFICATE_LAYOUT_DEFAULTS.nameSizePercent,
     certificate_name_color: "#000000",
+    certificate_footer_x_percent: CERTIFICATE_LAYOUT_DEFAULTS.footerXPercent,
+    certificate_footer_y_percent: CERTIFICATE_LAYOUT_DEFAULTS.footerYPercent,
+    certificate_footer_size_percent: CERTIFICATE_LAYOUT_DEFAULTS.footerSizePercent,
+    certificate_footer_color: "#000000",
+    certificate_qr_x_percent: CERTIFICATE_LAYOUT_DEFAULTS.qrXPercent,
+    certificate_qr_y_percent: CERTIFICATE_LAYOUT_DEFAULTS.qrYPercent,
+    certificate_qr_size_percent: CERTIFICATE_LAYOUT_DEFAULTS.qrSizePercent,
     onchain_certificate_template_url: "",
     onchain_certificate_template_path: "",
     access_model: "free" as CourseAccessModel,
@@ -1027,9 +1037,26 @@ const InstructorCourseEdit = () => {
         has_sections: course.has_sections ?? true,
         certificate_template_url: course.certificate_template_url ?? "",
         certificate_template_path: course.certificate_template_path ?? "",
-        certificate_name_x_percent: course.certificate_name_x_percent ?? 50,
-        certificate_name_y_percent: course.certificate_name_y_percent ?? 50,
+        certificate_name_x_percent:
+          course.certificate_name_x_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.nameXPercent,
+        certificate_name_y_percent:
+          course.certificate_name_y_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.nameYPercent,
+        certificate_name_size_percent:
+          course.certificate_name_size_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.nameSizePercent,
         certificate_name_color: course.certificate_name_color ?? "#000000",
+        certificate_footer_x_percent:
+          course.certificate_footer_x_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.footerXPercent,
+        certificate_footer_y_percent:
+          course.certificate_footer_y_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.footerYPercent,
+        certificate_footer_size_percent:
+          course.certificate_footer_size_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.footerSizePercent,
+        certificate_footer_color: course.certificate_footer_color ?? "#000000",
+        certificate_qr_x_percent:
+          course.certificate_qr_x_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.qrXPercent,
+        certificate_qr_y_percent:
+          course.certificate_qr_y_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.qrYPercent,
+        certificate_qr_size_percent:
+          course.certificate_qr_size_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.qrSizePercent,
         onchain_certificate_template_url: course.onchain_certificate_template_url ?? "",
         onchain_certificate_template_path: course.onchain_certificate_template_path ?? "",
         access_model: course.access_model ?? "free",
@@ -1306,6 +1333,17 @@ const InstructorCourseEdit = () => {
     }
   };
 
+  /** Clamped percentage input for the certificate layout fields. The render-time
+   *  clamp in certificateLayout() is the real guard — this just keeps the form from
+   *  showing values the renderer would silently ignore. */
+  const pctHandler =
+    (key: keyof typeof form, min = 0, max = 100) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const v = Number(e.target.value);
+      if (Number.isNaN(v)) return;
+      setForm((p) => ({ ...p, [key]: Math.max(min, Math.min(max, v)) }));
+    };
+
   const saveCourseInfo = async (successMessage = t("courseEdit.toasts.saved")) => {
     if (!id || !course) return;
     if (form.access_model === "paid_upfront" && Number(form.price_vnd) <= 0) {
@@ -1458,6 +1496,26 @@ const InstructorCourseEdit = () => {
         return next;
       })();
 
+      // One object for BOTH the DB payload and the optimistic local patch below.
+      // Keeping two hand-maintained lists is what let certificate_name_color get
+      // saved but never patched locally — with a live layout preview reading this
+      // state, a missed field shows stale geometry right after a successful save.
+      const certificatePatch = {
+        certificate_template_url: form.certificate_template_url || null,
+        certificate_template_path: form.certificate_template_path || null,
+        certificate_name_x_percent: form.certificate_name_x_percent,
+        certificate_name_y_percent: form.certificate_name_y_percent,
+        certificate_name_size_percent: form.certificate_name_size_percent,
+        certificate_name_color: form.certificate_name_color || "#000000",
+        certificate_footer_x_percent: form.certificate_footer_x_percent,
+        certificate_footer_y_percent: form.certificate_footer_y_percent,
+        certificate_footer_size_percent: form.certificate_footer_size_percent,
+        certificate_footer_color: form.certificate_footer_color || "#000000",
+        certificate_qr_x_percent: form.certificate_qr_x_percent,
+        certificate_qr_y_percent: form.certificate_qr_y_percent,
+        certificate_qr_size_percent: form.certificate_qr_size_percent,
+      };
+
       await updateCourse(id, {
         slug: form.slug,
         thumbnail_url: form.thumbnail_url,
@@ -1487,11 +1545,7 @@ const InstructorCourseEdit = () => {
           final_assignment_instructions:
             contentForm.final_assignment_instructions.trim() || null,
         }),
-        certificate_template_url: form.certificate_template_url || null,
-        certificate_template_path: form.certificate_template_path || null,
-        certificate_name_x_percent: form.certificate_name_x_percent,
-        certificate_name_y_percent: form.certificate_name_y_percent,
-        certificate_name_color: form.certificate_name_color || "#000000",
+        ...certificatePatch,
         onchain_certificate_template_url: form.onchain_certificate_template_url || null,
         onchain_certificate_template_path: form.onchain_certificate_template_path || null,
         access_model: form.access_model,
@@ -1556,10 +1610,11 @@ const InstructorCourseEdit = () => {
                 final_assignment_description: contentForm.final_assignment_description,
                 final_assignment_instructions: contentForm.final_assignment_instructions,
               }),
+              ...certificatePatch,
+              // Course (read shape) uses optional-undefined where CourseUpdate is
+              // nullable; the layout numbers above are shared, these two are not.
               certificate_template_url: form.certificate_template_url,
               certificate_template_path: form.certificate_template_path,
-              certificate_name_x_percent: form.certificate_name_x_percent,
-              certificate_name_y_percent: form.certificate_name_y_percent,
               onchain_certificate_template_url: form.onchain_certificate_template_url,
               onchain_certificate_template_path: form.onchain_certificate_template_path,
               access_model: form.access_model,
@@ -8783,44 +8838,61 @@ const InstructorCourseEdit = () => {
                       )}
                     </div>
                   </Field>
+                  <CertificateLayoutPreview
+                    templateUrl={form.certificate_template_url}
+                    nameColor={form.certificate_name_color ?? "#000000"}
+                    footerColor={form.certificate_footer_color ?? "#000000"}
+                    settings={{
+                      nameXPercent: form.certificate_name_x_percent,
+                      nameYPercent: form.certificate_name_y_percent,
+                      nameSizePercent: form.certificate_name_size_percent,
+                      footerXPercent: form.certificate_footer_x_percent,
+                      footerYPercent: form.certificate_footer_y_percent,
+                      footerSizePercent: form.certificate_footer_size_percent,
+                      qrXPercent: form.certificate_qr_x_percent,
+                      qrYPercent: form.certificate_qr_y_percent,
+                      qrSizePercent: form.certificate_qr_size_percent,
+                    }}
+                  />
+
+                  {/* Learner name */}
+                  <p className="text-sm font-semibold text-foreground">
+                    {t("courseEdit.certificate.nameGroupTitle")}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.nameXLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_name_x_percent}
+                        onChange={pctHandler("certificate_name_x_percent")}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.nameYLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_name_y_percent}
+                        onChange={pctHandler("certificate_name_y_percent")}
+                      />
+                    </Field>
+                  </div>
                   <Field>
-                    <FieldLabel>{t("courseEdit.certificate.nameXLabel")}</FieldLabel>
+                    <FieldLabel>{t("courseEdit.certificate.nameSizeLabel")}</FieldLabel>
                     <Input
                       type="number"
-                      min={0}
-                      max={100}
-                      value={form.certificate_name_x_percent}
-                      onChange={(e) => {
-                        const v = Number(e.target.value);
-                        if (!Number.isNaN(v))
-                          setForm((p) => ({
-                            ...p,
-                            certificate_name_x_percent: Math.max(
-                              0,
-                              Math.min(100, v),
-                            ),
-                          }));
-                      }}
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>{t("courseEdit.certificate.nameYLabel")}</FieldLabel>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={form.certificate_name_y_percent}
-                      onChange={(e) => {
-                        const v = Number(e.target.value);
-                        if (!Number.isNaN(v))
-                          setForm((p) => ({
-                            ...p,
-                            certificate_name_y_percent: Math.max(
-                              0,
-                              Math.min(100, v),
-                            ),
-                          }));
-                      }}
+                      min={1}
+                      max={15}
+                      step={0.25}
+                      disabled={!canEdit}
+                      value={form.certificate_name_size_percent}
+                      onChange={pctHandler("certificate_name_size_percent", 1, 15)}
                     />
                   </Field>
                   <Field>
@@ -8841,13 +8913,115 @@ const InstructorCourseEdit = () => {
                     </div>
                     <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.certificate.nameColorHint")}</p>
                   </Field>
+
+                  {/* Date of Issue / Certificate ID footer */}
+                  <p className="pt-2 text-sm font-semibold text-foreground">
+                    {t("courseEdit.certificate.footerGroupTitle")}
+                  </p>
+                  <p className="text-xs text-foreground-muted">
+                    {t("courseEdit.certificate.footerGroupHint")}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.footerXLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_footer_x_percent}
+                        onChange={pctHandler("certificate_footer_x_percent")}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.footerYLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_footer_y_percent}
+                        onChange={pctHandler("certificate_footer_y_percent")}
+                      />
+                    </Field>
+                  </div>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.footerSizeLabel")}</FieldLabel>
+                    <Input
+                      type="number"
+                      min={0.5}
+                      max={6}
+                      step={0.25}
+                      disabled={!canEdit}
+                      value={form.certificate_footer_size_percent}
+                      onChange={pctHandler("certificate_footer_size_percent", 0.5, 6)}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.footerColorLabel")}</FieldLabel>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={form.certificate_footer_color ?? "#000000"}
+                        disabled={!canEdit}
+                        onChange={(e) =>
+                          setForm((p) => ({ ...p, certificate_footer_color: e.target.value }))
+                        }
+                        className="size-9 cursor-pointer rounded border border-border-subtle bg-surface-base p-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                      />
+                      <span className="font-mono text-sm text-foreground-muted">
+                        {form.certificate_footer_color ?? "#000000"}
+                      </span>
+                    </div>
+                  </Field>
+
+                  {/* Verification QR */}
+                  <p className="pt-2 text-sm font-semibold text-foreground">
+                    {t("courseEdit.certificate.qrGroupTitle")}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.qrXLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_qr_x_percent}
+                        onChange={pctHandler("certificate_qr_x_percent")}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.qrYLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_qr_y_percent}
+                        onChange={pctHandler("certificate_qr_y_percent")}
+                      />
+                    </Field>
+                  </div>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.qrSizeLabel")}</FieldLabel>
+                    <Input
+                      type="number"
+                      min={3}
+                      max={30}
+                      step={0.25}
+                      disabled={!canEdit}
+                      value={form.certificate_qr_size_percent}
+                      onChange={pctHandler("certificate_qr_size_percent", 3, 30)}
+                    />
+                  </Field>
                   <Button
                     onClick={() =>
                       void saveCourseInfo(t("courseEdit.labels.saveCertificate"))
                     }
                     disabled={saving || !canEdit}
                   >
-                    {saving ? t("courseEdit.labels.saving") : t("courseEdit.certificate.saveNamePosition")}
+                    {saving ? t("courseEdit.labels.saving") : t("courseEdit.certificate.saveLayout")}
                   </Button>
                 </div>
 

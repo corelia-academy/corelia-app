@@ -13,19 +13,36 @@ export type CertificateItem = {
   title: string;
   course: string;
   issuedAt: string;
+  /** Raw timestamp for the printed "Date of Issue" line. `issuedAt` above is already
+   *  formatted for the UI locale and so cannot be used on the artifact itself. */
+  issuedAtIso?: string | null;
   instructor: string;
   type: "online" | "offline";
   credentialId: string;
+  /** Mã xác minh công khai (CRL-XXXXXXXXXX). Null với chứng nhận cũ chưa backfill. */
+  verificationCode?: string | null;
   /** Ảnh chứng nhận (placeholder nếu chưa có) */
   imageUrl?: string;
   /** Vị trí tên học viên trên certificate (% từ trái, mặc định 50) */
-  nameXPercent?: number;
+  nameXPercent?: number | null;
   /** Vị trí tên học viên trên certificate (% từ trên, mặc định 50) */
-  nameYPercent?: number;
+  nameYPercent?: number | null;
   /** Tên học viên để overlay lên certificate */
   holderName?: string | null;
   /** Màu chữ tên học viên overlay (hex, mặc định "#000000") */
   nameColor?: string | null;
+  /** Cỡ chữ tên theo % chiều rộng (mặc định 5 = 80px). */
+  nameSizePercent?: number | null;
+  /** Khối footer "Date of Issue" / "Certificate ID" — vị trí, cỡ, màu.
+   *  Xem certificateLayout.ts để biết mặc định và biên kẹp. */
+  footerXPercent?: number | null;
+  footerYPercent?: number | null;
+  footerSizePercent?: number | null;
+  footerColor?: string | null;
+  /** Mã QR xác minh — tâm và cạnh, tính theo % chiều rộng. */
+  qrXPercent?: number | null;
+  qrYPercent?: number | null;
+  qrSizePercent?: number | null;
   /** Course có credential template on-chain đang hoạt động (OCA hoặc OCB). */
   hasOnchainCredentialTemplate: boolean;
   /** Template gắn với hành động claim/view trên card certificate. */

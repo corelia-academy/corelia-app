@@ -625,7 +625,6 @@
     "certificate": {
       "sectionTitle": "Template chứng nhận (PDF)",
       "sectionDescription": "Tải lên nền chứng nhận (PNG/JPG). Tên học viên sẽ được đặt tại vị trí bạn chọn để họ tải về và chia sẻ lên MXH.",
-      "saveNamePosition": "Lưu vị trí tên",
       "templateLabel": "Template chứng nhận",
       "uploadTemplate": "Tải template lên",
       "uploadingTemplate": "Đang tải lên...",
@@ -638,7 +637,24 @@
       "fileFormatHint": "Định dạng: PNG hoặc JPG.",
       "disabledHint": "Bật \"Khoá học này có cấp chứng nhận hoàn thành\" ở tab Thông tin chung trước khi cấu hình template chứng nhận.",
       "disabledCta": "Đi tới Thông tin chung",
-      "setupLeaveWarning": "Quá trình khởi tạo chứng nhận sẽ bị hủy. Bạn sẽ phải khởi tạo lại từ đầu. Rời trang?"
+      "setupLeaveWarning": "Quá trình khởi tạo chứng nhận sẽ bị hủy. Bạn sẽ phải khởi tạo lại từ đầu. Rời trang?",
+      "saveLayout": "Lưu bố cục chứng nhận",
+      "nameGroupTitle": "Tên học viên",
+      "nameSizeLabel": "Cỡ chữ tên (% chiều rộng)",
+      "footerGroupTitle": "Khối footer (Date of Issue / Certificate ID)",
+      "footerGroupHint": "In bằng font Google Sans. Mã xác minh hiển thị ở đây chính là mã mà QR trỏ tới.",
+      "footerXLabel": "Vị trí footer (% từ trái)",
+      "footerYLabel": "Vị trí footer (% từ trên)",
+      "footerSizeLabel": "Cỡ chữ footer (% chiều rộng)",
+      "footerColorLabel": "Màu chữ footer",
+      "qrGroupTitle": "Mã QR xác minh",
+      "qrXLabel": "Tâm QR (% từ trái)",
+      "qrYLabel": "Tâm QR (% từ trên)",
+      "qrSizeLabel": "Cỡ QR (% chiều rộng)",
+      "previewTitle": "Xem trước bố cục",
+      "previewNoTemplate": "Tải lên phôi chứng nhận để xem trước.",
+      "previewHint": "Dữ liệu mẫu. Chứng nhận thật dùng tên học viên, ngày cấp và mã xác minh thực tế.",
+      "previewSampleName": "Nguyễn Văn A"
     },
     "certificateGuide": {
       "title": "Hướng dẫn tạo template",

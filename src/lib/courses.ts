@@ -595,6 +595,25 @@ export function invalidateEnrollmentsCache(userId: string) {
   enrollmentsCache.delete(userId);
 }
 
+/** Public verification codes for the signed-in learner's own certificates,
+ *  keyed by course_id. Readable thanks to the certificate_records_select_own policy;
+ *  the table has no anon policy, so codes can never be enumerated. */
+export async function getMyCertificateCodes(userId: string): Promise<Map<string, string>> {
+  if (!userId) return new Map();
+  const { data, error } = await supabase
+    .from("certificate_records")
+    .select("code, course_id")
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+  const map = new Map<string, string>();
+  for (const row of data ?? []) {
+    const courseId = typeof row.course_id === "string" ? row.course_id : "";
+    const code = typeof row.code === "string" ? row.code : "";
+    if (courseId && code) map.set(courseId, code);
+  }
+  return map;
+}
+
 export async function getEnrollmentsForCourse(courseId: string): Promise<Enrollment[]> {
   const { data, error } = await supabase
     .from("enrollments")

@@ -626,7 +626,6 @@
     "certificate": {
       "sectionTitle": "Certificate template",
       "sectionDescription": "Upload a certificate background (PNG/JPG). The learner's name will be placed at the position you set so they can download and share it on social media.",
-      "saveNamePosition": "Save name position",
       "templateLabel": "Certificate template",
       "uploadTemplate": "Upload template",
       "uploadingTemplate": "Uploading...",
@@ -639,7 +638,24 @@
       "fileFormatHint": "Format: PNG or JPG.",
       "disabledHint": "Enable \"This course issues a completion certificate\" in the General info tab before configuring the certificate template.",
       "disabledCta": "Go to General info",
-      "setupLeaveWarning": "Certificate setup will be cancelled. You will need to start over. Leave this page?"
+      "setupLeaveWarning": "Certificate setup will be cancelled. You will need to start over. Leave this page?",
+      "saveLayout": "Save certificate layout",
+      "nameGroupTitle": "Learner name",
+      "nameSizeLabel": "Name text size (% of width)",
+      "footerGroupTitle": "Footer block (Date of Issue / Certificate ID)",
+      "footerGroupHint": "Printed in Google Sans. The verification code shown here is what the QR links to.",
+      "footerXLabel": "Footer position (% from left)",
+      "footerYLabel": "Footer position (% from top)",
+      "footerSizeLabel": "Footer text size (% of width)",
+      "footerColorLabel": "Footer text color",
+      "qrGroupTitle": "Verification QR code",
+      "qrXLabel": "QR centre (% from left)",
+      "qrYLabel": "QR centre (% from top)",
+      "qrSizeLabel": "QR size (% of width)",
+      "previewTitle": "Layout preview",
+      "previewNoTemplate": "Upload a certificate template to see the preview.",
+      "previewHint": "Sample data. The real certificate uses the learner's name, issue date and verification code.",
+      "previewSampleName": "Alex Morgan"
     },
     "certificateGuide": {
       "title": "How to create a template",

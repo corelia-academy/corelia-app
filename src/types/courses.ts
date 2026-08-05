@@ -149,6 +149,22 @@ export interface Course {
   certificate_name_y_percent?: number;
   /** Màu chữ tên học viên trên template (hex, mặc định "#000000") */
   certificate_name_color?: string;
+  /** Cỡ chữ tên học viên: % chiều rộng (mặc định 5 = 80px trên canvas 1600) */
+  certificate_name_size_percent?: number;
+  /** Khối footer "Date of Issue" / "Certificate ID": mép trái, % từ trái (0–100) */
+  certificate_footer_x_percent?: number;
+  /** Khối footer: giữa theo chiều dọc, % từ trên (0–100) */
+  certificate_footer_y_percent?: number;
+  /** Cỡ chữ footer: % chiều rộng (mặc định 1.75 = 28px) */
+  certificate_footer_size_percent?: number;
+  /** Màu chữ footer (hex, mặc định "#000000") */
+  certificate_footer_color?: string;
+  /** Tâm mã QR xác minh: % từ trái (0–100) */
+  certificate_qr_x_percent?: number;
+  /** Tâm mã QR xác minh: % từ trên (0–100) */
+  certificate_qr_y_percent?: number;
+  /** Cạnh mã QR: % chiều rộng (mặc định 11.25 = 180px) */
+  certificate_qr_size_percent?: number;
   /** Phôi OCA On-chain (không in tên, bảo mật) — dùng khi đúc chứng chỉ lên Open Campus/IPFS */
   onchain_certificate_template_url?: string;
   /** Đường dẫn Storage của phôi OCA on-chain */
@@ -381,6 +397,14 @@ export interface CourseUpdate {
   certificate_name_x_percent?: number | null;
   certificate_name_y_percent?: number | null;
   certificate_name_color?: string | null;
+  certificate_name_size_percent?: number | null;
+  certificate_footer_x_percent?: number | null;
+  certificate_footer_y_percent?: number | null;
+  certificate_footer_size_percent?: number | null;
+  certificate_footer_color?: string | null;
+  certificate_qr_x_percent?: number | null;
+  certificate_qr_y_percent?: number | null;
+  certificate_qr_size_percent?: number | null;
   onchain_certificate_template_url?: string | null;
   onchain_certificate_template_path?: string | null;
   access_model?: CourseAccessModel;

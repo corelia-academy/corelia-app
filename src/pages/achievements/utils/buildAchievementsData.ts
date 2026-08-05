@@ -50,6 +50,9 @@ export function buildCourseCertificates(
   holderOcid?: string | null,
   holderName?: string | null,
   courseCredentialTemplateMap?: Map<string, CourseCredentialTemplateSummary>,
+  /** course_id → public verification code. Empty for certificates issued before
+   *  certificate_records existed and not yet backfilled. */
+  certificateCodeMap?: Map<string, string>,
 ): CertificateItem[] {
   return enrollments
     .filter((item) => !!item.certificate_issued_at)
@@ -83,13 +86,25 @@ export function buildCourseCertificates(
         title: labels.courseCompletionTitle,
         course: course?.title || labels.fallbackCourseName,
         issuedAt: formatDate(item.certificate_issued_at),
+        issuedAtIso: item.certificate_issued_at ?? null,
         instructor: course?.instructor_name || labels.fallbackInstructorName,
         type: pickCertificateType(course?.owner_type),
         credentialId: ocCredentialId ?? buildCredentialId("COURSE", item.id),
+        verificationCode: certificateCodeMap?.get(item.course_id) ?? null,
         imageUrl: course?.certificate_template_url || CERT_PLACEHOLDER,
-        nameXPercent: course?.certificate_name_x_percent ?? 50,
-        nameYPercent: course?.certificate_name_y_percent ?? 50,
+        // Pass raw values through — certificateLayout() owns the defaults and the
+        // clamping, so they live in exactly one place instead of every reader.
+        nameXPercent: course?.certificate_name_x_percent ?? null,
+        nameYPercent: course?.certificate_name_y_percent ?? null,
+        nameSizePercent: course?.certificate_name_size_percent ?? null,
         nameColor: course?.certificate_name_color ?? "#000000",
+        footerXPercent: course?.certificate_footer_x_percent ?? null,
+        footerYPercent: course?.certificate_footer_y_percent ?? null,
+        footerSizePercent: course?.certificate_footer_size_percent ?? null,
+        footerColor: course?.certificate_footer_color ?? "#000000",
+        qrXPercent: course?.certificate_qr_x_percent ?? null,
+        qrYPercent: course?.certificate_qr_y_percent ?? null,
+        qrSizePercent: course?.certificate_qr_size_percent ?? null,
         holderName: holderName || null,
         hasOnchainCredentialTemplate: Boolean(credentialTemplate),
         onchainTemplateId: issuance?.templateId ?? credentialTemplate?.id ?? null,

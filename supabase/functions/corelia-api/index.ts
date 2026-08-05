@@ -4,6 +4,7 @@
  *
  * Operations: health | payments.sepay.checkout | payments.transactions |
  *   payments.sepay.verify | payments.sepay.ipn | certificates.issue | certificates.backfillEligible |
+ *   certificates.verify | certificates.revoke |
  *   hackathons.notifyRegistrationReview | hackathons.blastEmail |
  *   courses.syncCompletion | courses.blastEmail | careerTracks.blastEmail | notifications.unsubscribe |
  *   credentials.checkCourseCompletion | credentials.checkActivityMilestones | credentials.grant |
@@ -12,6 +13,8 @@
  *   credentials.grantPending | credentials.claimLookup
  */
 import { handleBackfillEligibleCertificates, handleIssueCertificate } from "./certificates/handlers.ts";
+import { handleRevokeCertificate } from "./certificates/revoke.ts";
+import { handleVerifyCertificate } from "./certificates/verify.ts";
 import { handleHackathonListEligible } from "./credentials/hackathon_eligible.ts";
 import { handleCareerTrackBlastEmail } from "./career-tracks/blast_email.ts";
 import { handleCheckActivityMilestones } from "./credentials/check_activity.ts";
@@ -50,6 +53,8 @@ const PROTECTED_OPS = new Set<string>([
   "payments.sepay.debugLookup",
   "certificates.issue",
   "certificates.backfillEligible",
+  "certificates.revoke",
+  // certificates.verify is PUBLIC — intentionally omitted from PROTECTED_OPS
   "payments.sepay.verify",
   "hackathons.notifyRegistrationReview",
   "hackathons.blastEmail",
@@ -114,6 +119,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleIssueCertificate(req, db);
     } else if (op === "certificates.backfillEligible" && req.method === "POST") {
       response = await handleBackfillEligibleCertificates(req, db);
+    } else if (op === "certificates.verify" && req.method === "POST") {
+      response = await handleVerifyCertificate(req, db);
+    } else if (op === "certificates.revoke" && req.method === "POST") {
+      response = await handleRevokeCertificate(req, db);
     } else if (op === "payments.sepay.verify" && req.method === "POST") {
       response = await handleVerifySePayPayment(req, db);
     } else if (op === "payments.sepay.ipn" && req.method === "POST") {
