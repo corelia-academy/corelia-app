@@ -5,6 +5,7 @@ alwaysApply: true
 
 # Corelia baseline
 
+- Target Repository Location: `G:\Documents\CORELIA\corelia-app` (thư mục làm việc và git duy nhất của dự án CORELIA).
 - Use **Vite + React 19 + TypeScript (strict)**. Prefer type-safe changes; do not weaken TS config.
 - Use path alias **`@/…` → `src/…`** for internal imports.
 - Routing is **React Router v7** with nested routes (see `src/App.tsx`). Keep route structure consistent.

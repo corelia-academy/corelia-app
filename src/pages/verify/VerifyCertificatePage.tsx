@@ -240,7 +240,7 @@ export function VerifyCertificatePage() {
                   content length. min-w-0 on the truncated span is load-bearing: without
                   it a flex child won't shrink below its text's natural width and
                   `truncate` has nothing to clip against. */}
-              <dl className="mt-3 flex flex-col gap-2 rounded-lg border border-border-subtle bg-surface-raised p-3 text-left md:flex-row md:justify-between md:gap-x-4 md:gap-y-3">
+              <dl className="mx-auto mt-3 flex w-full max-w-4xl flex-col gap-2 rounded-lg border border-border-subtle bg-surface-raised p-3 text-left md:flex-row md:items-center md:justify-between md:gap-x-4 md:gap-y-0">
                 <div className="min-w-0 md:max-w-[13rem]">
                   <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
                     {t("verify.holderLabel")}
