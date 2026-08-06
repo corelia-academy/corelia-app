@@ -12,8 +12,16 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 const rateLimitBuckets = new Map<string, { count: number; windowStart: number }>();
 
 function clientKey(req: Request): string {
+  // The FIRST entry of X-Forwarded-For is whatever the original request claimed —
+  // trivially spoofable by the caller, since nothing strips it before this function
+  // sees it. Proxies APPEND to the chain as a request passes through them, so the
+  // LAST entry is the one set by the hop closest to us (Deno Deploy's own edge),
+  // which the caller cannot override. Still just a cost/scraping brake (see above),
+  // not a security boundary — but taking the first entry made it bypassable with a
+  // single spoofed header, which defeated even that modest purpose.
   const forwarded = req.headers.get("x-forwarded-for") ?? "";
-  return forwarded.split(",")[0]?.trim() || "unknown";
+  const hops = forwarded.split(",").map((h) => h.trim()).filter(Boolean);
+  return hops[hops.length - 1] || "unknown";
 }
 
 function isRateLimited(req: Request): boolean {
