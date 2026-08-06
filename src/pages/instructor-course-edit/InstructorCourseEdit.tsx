@@ -1503,6 +1503,19 @@ const InstructorCourseEdit = () => {
         return next;
       })();
 
+      // pctHandler stores "" (a string, despite the `number` form type — see its
+      // "as unknown as number" cast) while a certificate layout field is cleared
+      // mid-edit, so the user can retype without the input's leading-zero bug. That
+      // must never reach the DB as-is: courses.data is jsonb, which accepts "" with
+      // no error at write time, but private.corelia_verify_certificate() casts it
+      // right back with `(data->>'...')::numeric` on every /verify read — a saved ""
+      // turns into `invalid input syntax for type numeric` there, i.e. a public HTTP
+      // 500 on EVERY certificate under this course, not just a local form glitch.
+      // Falling back to the same default the field renders at when unset keeps the
+      // save a no-op for that field instead of corrupting it.
+      const numOrDefault = (value: number, fallback: number): number =>
+        typeof value === "number" && Number.isFinite(value) ? value : fallback;
+
       // One object for BOTH the DB payload and the optimistic local patch below.
       // Keeping two hand-maintained lists is what let certificate_name_color get
       // saved but never patched locally — with a live layout preview reading this
@@ -1510,17 +1523,44 @@ const InstructorCourseEdit = () => {
       const certificatePatch = {
         certificate_template_url: form.certificate_template_url || null,
         certificate_template_path: form.certificate_template_path || null,
-        certificate_name_x_percent: form.certificate_name_x_percent,
-        certificate_name_y_percent: form.certificate_name_y_percent,
-        certificate_name_size_percent: form.certificate_name_size_percent,
+        certificate_name_x_percent: numOrDefault(
+          form.certificate_name_x_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.nameXPercent,
+        ),
+        certificate_name_y_percent: numOrDefault(
+          form.certificate_name_y_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.nameYPercent,
+        ),
+        certificate_name_size_percent: numOrDefault(
+          form.certificate_name_size_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.nameSizePercent,
+        ),
         certificate_name_color: form.certificate_name_color || "#000000",
-        certificate_footer_x_percent: form.certificate_footer_x_percent,
-        certificate_footer_y_percent: form.certificate_footer_y_percent,
-        certificate_footer_size_percent: form.certificate_footer_size_percent,
+        certificate_footer_x_percent: numOrDefault(
+          form.certificate_footer_x_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.footerXPercent,
+        ),
+        certificate_footer_y_percent: numOrDefault(
+          form.certificate_footer_y_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.footerYPercent,
+        ),
+        certificate_footer_size_percent: numOrDefault(
+          form.certificate_footer_size_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.footerSizePercent,
+        ),
         certificate_footer_color: form.certificate_footer_color || "#000000",
-        certificate_qr_x_percent: form.certificate_qr_x_percent,
-        certificate_qr_y_percent: form.certificate_qr_y_percent,
-        certificate_qr_size_percent: form.certificate_qr_size_percent,
+        certificate_qr_x_percent: numOrDefault(
+          form.certificate_qr_x_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.qrXPercent,
+        ),
+        certificate_qr_y_percent: numOrDefault(
+          form.certificate_qr_y_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.qrYPercent,
+        ),
+        certificate_qr_size_percent: numOrDefault(
+          form.certificate_qr_size_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.qrSizePercent,
+        ),
       };
 
       await updateCourse(id, {

@@ -99,24 +99,28 @@ export function certificateLayout(settings: CertificateLayoutSettings): Certific
     clampPercent(settings.footerSizePercent, d.footerSizePercent, FOOTER_SIZE_RANGE) / 100;
   const qrSizeFrac = clampPercent(settings.qrSizePercent, d.qrSizePercent, QR_SIZE_RANGE) / 100;
 
-  // Bounding math: Tính bán kính QR chính xác theo 2 chiều X (Width) và Y (Height) với tỷ lệ Aspect Ratio 4:3 (1600x1200).
-  // qrSizeFrac tính theo chiều rộng (Width). Bán kính X = qrSizeFrac / 2. Bán kính Y = (qrSizeFrac * (1600/1200)) / 2 = qrSizeFrac * (2/3).
-  // Không cộng thêm padding dư thừa vì QR generator đã có sẵn lớp lề trắng margin 1.
+  // QR X bound: a width-relative size maps 1:1 to a width-relative X margin on every
+  // surface, so this half is safe to fix here. The Y half is NOT — the vertical extent
+  // of a WIDTH-relative square, expressed as a fraction of HEIGHT, scales with the
+  // surface's own aspect ratio (canvas 1600x1200 = 4:3 ≈1.333, the PDF page 297x210mm
+  // ≈1.414:1 — different). Bounding cyFrac once here with either ratio leaves the
+  // OTHER surface's QR able to cross its edge, so cyFrac is left unbounded here and
+  // clamped per-surface instead, in layoutForCanvas/layoutForPdf (boundQrCyForAspectRatio).
   const rQrXFrac = qrSizeFrac / 2;
-  const rQrYFrac = (qrSizeFrac * (4 / 3)) / 2;
   const rawQrCx = clampPercent(settings.qrXPercent, d.qrXPercent, POSITION_RANGE) / 100;
   const rawQrCy = clampPercent(settings.qrYPercent, d.qrYPercent, POSITION_RANGE) / 100;
   const boundedQrCx = Math.max(rQrXFrac, Math.min(1 - rQrXFrac, rawQrCx));
-  const boundedQrCy = Math.max(rQrYFrac, Math.min(1 - rQrYFrac, rawQrCy));
 
-  // Bounding math: Khối Footer 2 dòng (Date of Issue & Certificate ID) sát lề an toàn 1% X và 2% Y
+  // Footer block safe margin — a flat percentage buffer, not derived from an
+  // aspect-ratio conversion, so (unlike the QR) it's correct as-is on every surface.
   const rawFooterX = clampPercent(settings.footerXPercent, d.footerXPercent, POSITION_RANGE) / 100;
   const rawFooterY = clampPercent(settings.footerYPercent, d.footerYPercent, POSITION_RANGE) / 100;
   const boundedFooterX = Math.max(0.01, Math.min(0.70, rawFooterX));
   const boundedFooterY = Math.max(0.02, Math.min(0.96, rawFooterY));
 
-  // Bounding math: Tên học viên được căn giữa (textAlign = center).
-  // Bán kính lề an toàn tối thiểu nameMarginFrac tính theo cỡ chữ (fontFrac * 3.5) để đảm bảo chuỗi chữ không bao giờ bị khuyết ở lề trái/phải.
+  // Learner name — centred text; the margin is a function of font size, and both the
+  // font size and the margin are width fractions, so (also unlike the QR) no
+  // aspect-ratio conversion is needed for it to hold on every surface.
   const nameMarginFrac = Math.max(0.15, fontFrac * 3.5);
   const rawNameX = clampPercent(settings.nameXPercent, d.nameXPercent, POSITION_RANGE) / 100;
   const rawNameY = clampPercent(settings.nameYPercent, d.nameYPercent, POSITION_RANGE) / 100;
@@ -137,10 +141,20 @@ export function certificateLayout(settings: CertificateLayoutSettings): Certific
     },
     qr: {
       cxFrac: boundedQrCx,
-      cyFrac: boundedQrCy,
+      // Unbounded on Y until a surface applies its own aspect ratio — see above.
+      cyFrac: rawQrCy,
       sizeFrac: qrSizeFrac,
     },
   };
+}
+
+/** Clamps a width-relative square's vertical centre so it can never cross the top or
+ *  bottom edge of a surface with the given aspect ratio (width / height). Shared by
+ *  layoutForCanvas and layoutForPdf so each surface bounds the QR against its OWN
+ *  shape instead of inheriting a bound computed for the other one. */
+function boundQrCyForAspectRatio(cyFrac: number, sizeFrac: number, aspectRatio: number): number {
+  const rQrYFrac = (sizeFrac * aspectRatio) / 2;
+  return Math.max(rQrYFrac, Math.min(1 - rQrYFrac, cyFrac));
 }
 
 export type CanvasLayout = {
@@ -156,6 +170,7 @@ export function layoutForCanvas(
   height = CANVAS_H,
 ): CanvasLayout {
   const qrSize = layout.qr.sizeFrac * width;
+  const qrCyFrac = boundQrCyForAspectRatio(layout.qr.cyFrac, layout.qr.sizeFrac, width / height);
   return {
     name: {
       x: layout.name.xFrac * width,
@@ -170,7 +185,7 @@ export function layoutForCanvas(
     },
     qr: {
       left: layout.qr.cxFrac * width - qrSize / 2,
-      top: layout.qr.cyFrac * height - qrSize / 2,
+      top: qrCyFrac * height - qrSize / 2,
       size: qrSize,
     },
   };
@@ -188,6 +203,7 @@ export function layoutForPdf(
   heightMm = PDF_H_MM,
 ): PdfLayout {
   const qrSizeMm = layout.qr.sizeFrac * widthMm;
+  const qrCyFrac = boundQrCyForAspectRatio(layout.qr.cyFrac, layout.qr.sizeFrac, widthMm / heightMm);
   // jsPDF sizes fonts in points no matter what unit the document uses, so font is
   // the one value that changes unit here. Sanity check: the default 5% of 297mm
   // works out to 42.09pt — the exact figure the PDF path hardcoded before.
@@ -206,7 +222,7 @@ export function layoutForPdf(
     },
     qr: {
       leftMm: layout.qr.cxFrac * widthMm - qrSizeMm / 2,
-      topMm: layout.qr.cyFrac * heightMm - qrSizeMm / 2,
+      topMm: qrCyFrac * heightMm - qrSizeMm / 2,
       sizeMm: qrSizeMm,
     },
   };

@@ -85,6 +85,23 @@ describe("cross-surface consistency", () => {
     expect(layoutForPdf(layout).qr.sizeMm).toBeCloseTo(26.73, 10);
   });
 
+  it("bounds the QR against each surface's OWN aspect ratio, not just canvas's", () => {
+    // Regression case: canvas is 4:3 (1.333), the PDF page is 297:210mm (≈1.414) —
+    // a centre that's exactly canvas-safe is NOT far enough from the edge for the
+    // taller-relative-to-width PDF page, and used to render ~1.7mm past the bottom
+    // edge there even though the canvas/preview/verify render looked fine.
+    const qrSizePercent = 20;
+    const canvasSafeCy = 100 - (qrSizePercent * (CANVAS_W / CANVAS_H)) / 2; // exactly canvas's own bound
+    const layout = certificateLayout({ qrSizePercent, qrYPercent: canvasSafeCy });
+
+    const canvas = layoutForCanvas(layout);
+    expect(canvas.qr.top + canvas.qr.size).toBeLessThanOrEqual(CANVAS_H + 1e-9);
+
+    const pdf = layoutForPdf(layout);
+    expect(pdf.qr.topMm + pdf.qr.sizeMm).toBeLessThanOrEqual(PDF_H_MM + 1e-9);
+    expect(pdf.qr.topMm).toBeGreaterThanOrEqual(0 - 1e-9);
+  });
+
   it("places the footer at the same relative spot on both surfaces", () => {
     const layout = certificateLayout({ footerXPercent: 12, footerYPercent: 91 });
     const canvas = layoutForCanvas(layout);
