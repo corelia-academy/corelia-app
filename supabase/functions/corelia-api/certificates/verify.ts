@@ -11,6 +11,14 @@ const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const rateLimitBuckets = new Map<string, { count: number; windowStart: number }>();
 
+/** The only thing this endpoint ever needs is `{"code": "<=64 chars>"}` — but that
+ *  64-char cap is applied to `body.code` AFTER `req.json()` has already parsed the
+ *  whole body, so it does nothing to stop a huge request from costing full parse time
+ *  first. Confirmed live: a 5MB body was accepted (HTTP 200) and took ~2.3s to
+ *  process. 8KB is generous — ~128x more than the code field could ever legitimately
+ *  need — while still rejecting anything in that class before `req.json()` runs. */
+const MAX_BODY_BYTES = 8 * 1024;
+
 function clientKey(req: Request): string {
   const forwarded = req.headers.get("x-forwarded-for") ?? "";
   return forwarded.split(",")[0]?.trim() || "unknown";
@@ -46,6 +54,20 @@ export async function handleVerifyCertificate(req: Request, db: SupabaseClient):
       return new Response(
         JSON.stringify({ ok: false, message: "Bạn đã tra cứu quá nhiều lần. Vui lòng thử lại sau." }),
         { status: 429, headers: { "Content-Type": "application/json", "Retry-After": "60" } },
+      );
+    }
+
+    // Content-Length is what curl/fetch send for a plain JSON POST (confirmed against
+    // the live endpoint), so this catches the case actually tested. It is NOT
+    // authoritative for a chunked-encoding request with no Content-Length header —
+    // that case still reaches req.json() below uncapped. Not verified whether Deno
+    // Deploy/Supabase's own gateway enforces a body-size ceiling ahead of this
+    // function for that case; treat it as an open gap, not a covered one.
+    const contentLength = Number(req.headers.get("content-length") ?? "");
+    if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+      return new Response(
+        JSON.stringify({ ok: false, message: "Yêu cầu quá lớn." }),
+        { status: 413, headers: { "Content-Type": "application/json" } },
       );
     }
 
