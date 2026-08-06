@@ -233,61 +233,71 @@ export function VerifyCertificatePage() {
                   list, one field per row — a horizontal-scrolling strip is bad UX on
                   touch, it hides fields off-screen with no visible affordance. At md+
                   there's room to lay all 5 out in one row: flex-row + justify-between
-                  spreads them across the width, flex-wrap catches the case where they
-                  still don't fit, and max-w-[13rem] on each field stops one long value
-                  (a long course title) from swallowing the row and squeezing the rest —
-                  it wraps inside its own column instead. */}
-              <dl className="mt-3 flex flex-col gap-2 rounded-lg border border-border-subtle bg-surface-raised p-3 text-left md:flex-row md:flex-wrap md:justify-between md:gap-x-4 md:gap-y-3">
-                <div className="md:max-w-[13rem]">
+                  spreads them across the width. max-w-[13rem] stops one long value (a
+                  long course title) from swallowing the row — but it truncates with an
+                  ellipsis (title= gives the full text on hover) rather than wrapping to
+                  a second line, so every row stays exactly one line tall regardless of
+                  content length. min-w-0 on the truncated span is load-bearing: without
+                  it a flex child won't shrink below its text's natural width and
+                  `truncate` has nothing to clip against. */}
+              <dl className="mt-3 flex flex-col gap-2 rounded-lg border border-border-subtle bg-surface-raised p-3 text-left md:flex-row md:justify-between md:gap-x-4 md:gap-y-3">
+                <div className="min-w-0 md:max-w-[13rem]">
                   <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
                     {t("verify.holderLabel")}
                   </dt>
-                  <dd className="text-xs font-semibold text-foreground md:text-sm">
-                    {result.holder_name || t("verify.unknownHolder")}
+                  <dd className="flex items-baseline gap-2 text-xs font-semibold text-foreground md:text-sm">
+                    <span className="min-w-0 truncate" title={result.holder_name || undefined}>
+                      {result.holder_name || t("verify.unknownHolder")}
+                    </span>
                     {result.holder_path && (
                       <Link
                         to={result.holder_path}
-                        className="ml-2 text-xs font-normal text-primary hover:underline"
+                        className="shrink-0 text-xs font-normal text-primary hover:underline"
                       >
                         {t("verify.viewProfile")}
                       </Link>
                     )}
                   </dd>
                 </div>
-                <div className="md:max-w-[13rem]">
+                <div className="min-w-0 md:max-w-[13rem]">
                   <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
                     {t("verify.courseLabel")}
                   </dt>
-                  <dd className="text-xs text-foreground md:text-sm">
-                    {result.course_title || t("verify.unknownCourse")}
+                  <dd className="flex items-baseline gap-2 text-xs text-foreground md:text-sm">
+                    <span className="min-w-0 truncate" title={result.course_title || undefined}>
+                      {result.course_title || t("verify.unknownCourse")}
+                    </span>
                     {result.course_path && (
-                      <Link to={result.course_path} className="ml-2 text-xs text-primary hover:underline">
+                      <Link to={result.course_path} className="shrink-0 text-xs text-primary hover:underline">
                         {t("verify.viewCourse")}
                       </Link>
                     )}
                   </dd>
                 </div>
-                <div className="md:max-w-[13rem]">
+                <div className="min-w-0 md:max-w-[13rem]">
                   <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
                     {t("verify.instructorLabel")}
                   </dt>
-                  <dd className="text-xs text-foreground md:text-sm">
+                  <dd
+                    className="truncate text-xs text-foreground md:text-sm"
+                    title={result.instructor_name || undefined}
+                  >
                     {result.instructor_name || t("verify.unknownInstructor")}
                   </dd>
                 </div>
-                <div className="md:max-w-[13rem]">
+                <div className="min-w-0 md:max-w-[13rem]">
                   <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
                     {t("verify.issuedLabel")}
                   </dt>
-                  <dd className="text-xs text-foreground md:text-sm">
+                  <dd className="truncate text-xs text-foreground md:text-sm">
                     {formatDate(result.issued_at)}
                   </dd>
                 </div>
-                <div className="md:max-w-[13rem]">
+                <div className="min-w-0 md:max-w-[13rem]">
                   <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
                     {t("verify.codeLabel")}
                   </dt>
-                  <dd className="font-mono text-xs text-foreground md:text-sm">
+                  <dd className="truncate font-mono text-xs text-foreground md:text-sm">
                     {result.code}
                   </dd>
                 </div>
