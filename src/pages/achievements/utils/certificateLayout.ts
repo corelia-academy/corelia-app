@@ -94,24 +94,51 @@ export type CertificateLayout = {
 
 export function certificateLayout(settings: CertificateLayoutSettings): CertificateLayout {
   const d = CERTIFICATE_LAYOUT_DEFAULTS;
+  const fontFrac = clampPercent(settings.nameSizePercent, d.nameSizePercent, NAME_SIZE_RANGE) / 100;
   const footerFontFrac =
     clampPercent(settings.footerSizePercent, d.footerSizePercent, FOOTER_SIZE_RANGE) / 100;
+  const qrSizeFrac = clampPercent(settings.qrSizePercent, d.qrSizePercent, QR_SIZE_RANGE) / 100;
+
+  // Bounding math: Tính bán kính QR chính xác theo 2 chiều X (Width) và Y (Height) với tỷ lệ Aspect Ratio 4:3 (1600x1200).
+  // qrSizeFrac tính theo chiều rộng (Width). Bán kính X = qrSizeFrac / 2. Bán kính Y = (qrSizeFrac * (1600/1200)) / 2 = qrSizeFrac * (2/3).
+  // Không cộng thêm padding dư thừa vì QR generator đã có sẵn lớp lề trắng margin 1.
+  const rQrXFrac = qrSizeFrac / 2;
+  const rQrYFrac = (qrSizeFrac * (4 / 3)) / 2;
+  const rawQrCx = clampPercent(settings.qrXPercent, d.qrXPercent, POSITION_RANGE) / 100;
+  const rawQrCy = clampPercent(settings.qrYPercent, d.qrYPercent, POSITION_RANGE) / 100;
+  const boundedQrCx = Math.max(rQrXFrac, Math.min(1 - rQrXFrac, rawQrCx));
+  const boundedQrCy = Math.max(rQrYFrac, Math.min(1 - rQrYFrac, rawQrCy));
+
+  // Bounding math: Khối Footer 2 dòng (Date of Issue & Certificate ID) sát lề an toàn 1% X và 2% Y
+  const rawFooterX = clampPercent(settings.footerXPercent, d.footerXPercent, POSITION_RANGE) / 100;
+  const rawFooterY = clampPercent(settings.footerYPercent, d.footerYPercent, POSITION_RANGE) / 100;
+  const boundedFooterX = Math.max(0.01, Math.min(0.70, rawFooterX));
+  const boundedFooterY = Math.max(0.02, Math.min(0.96, rawFooterY));
+
+  // Bounding math: Tên học viên được căn giữa (textAlign = center).
+  // Bán kính lề an toàn tối thiểu nameMarginFrac tính theo cỡ chữ (fontFrac * 3.5) để đảm bảo chuỗi chữ không bao giờ bị khuyết ở lề trái/phải.
+  const nameMarginFrac = Math.max(0.15, fontFrac * 3.5);
+  const rawNameX = clampPercent(settings.nameXPercent, d.nameXPercent, POSITION_RANGE) / 100;
+  const rawNameY = clampPercent(settings.nameYPercent, d.nameYPercent, POSITION_RANGE) / 100;
+  const boundedNameX = Math.max(nameMarginFrac, Math.min(1 - nameMarginFrac, rawNameX));
+  const boundedNameY = Math.max(0.08, Math.min(0.92, rawNameY));
+
   return {
     name: {
-      xFrac: clampPercent(settings.nameXPercent, d.nameXPercent, POSITION_RANGE) / 100,
-      yFrac: clampPercent(settings.nameYPercent, d.nameYPercent, POSITION_RANGE) / 100,
-      fontFrac: clampPercent(settings.nameSizePercent, d.nameSizePercent, NAME_SIZE_RANGE) / 100,
+      xFrac: boundedNameX,
+      yFrac: boundedNameY,
+      fontFrac: fontFrac,
     },
     footer: {
-      xFrac: clampPercent(settings.footerXPercent, d.footerXPercent, POSITION_RANGE) / 100,
-      yFrac: clampPercent(settings.footerYPercent, d.footerYPercent, POSITION_RANGE) / 100,
+      xFrac: boundedFooterX,
+      yFrac: boundedFooterY,
       fontFrac: footerFontFrac,
       lineFrac: footerFontFrac * FOOTER_LINE_RATIO,
     },
     qr: {
-      cxFrac: clampPercent(settings.qrXPercent, d.qrXPercent, POSITION_RANGE) / 100,
-      cyFrac: clampPercent(settings.qrYPercent, d.qrYPercent, POSITION_RANGE) / 100,
-      sizeFrac: clampPercent(settings.qrSizePercent, d.qrSizePercent, QR_SIZE_RANGE) / 100,
+      cxFrac: boundedQrCx,
+      cyFrac: boundedQrCy,
+      sizeFrac: qrSizeFrac,
     },
   };
 }

@@ -1339,7 +1339,14 @@ const InstructorCourseEdit = () => {
   const pctHandler =
     (key: keyof typeof form, min = 0, max = 100) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const v = Number(e.target.value);
+      const raw = e.target.value;
+      if (raw === "") {
+        setForm((p) => ({ ...p, [key]: "" as unknown as number }));
+        return;
+      }
+      // Khắc phục bug '00x' prefix: Loại bỏ các số 0 thừa ở đầu khi người dùng gõ đè
+      const sanitized = raw.replace(/^0+(?=\d)/, "");
+      const v = Number(sanitized);
       if (Number.isNaN(v)) return;
       setForm((p) => ({ ...p, [key]: Math.max(min, Math.min(max, v)) }));
     };
@@ -8978,6 +8985,9 @@ const InstructorCourseEdit = () => {
                   {/* Verification QR */}
                   <p className="pt-2 text-sm font-semibold text-foreground">
                     {t("courseEdit.certificate.qrGroupTitle")}
+                  </p>
+                  <p className="text-xs text-foreground-muted">
+                    {t("courseEdit.certificate.qrGroupHint")}
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     <Field>

@@ -95,10 +95,10 @@ describe("cross-surface consistency", () => {
 });
 
 describe("certificateLayout — clamping", () => {
-  it("clamps positions into 0-100", () => {
+  it("clamps positions into safe bounded margin ranges", () => {
     const layout = certificateLayout({ nameXPercent: -10, nameYPercent: 150 });
-    expect(layout.name.xFrac).toBe(0);
-    expect(layout.name.yFrac).toBe(1);
+    expect(layout.name.xFrac).toBeGreaterThanOrEqual(0.15);
+    expect(layout.name.yFrac).toBeCloseTo(0.92, 10);
   });
 
   it("clamps the QR size into a sane band", () => {

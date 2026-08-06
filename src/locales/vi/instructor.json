@@ -648,6 +648,7 @@
       "footerSizeLabel": "Cỡ chữ footer (% chiều rộng)",
       "footerColorLabel": "Màu chữ footer",
       "qrGroupTitle": "Mã QR xác minh",
+      "qrGroupHint": "Mã QR cho phép quét để xác thực chứng nhận. Kích cỡ tối thiểu là 3% và tối đa là 30%.",
       "qrXLabel": "Tâm QR (% từ trái)",
       "qrYLabel": "Tâm QR (% từ trên)",
       "qrSizeLabel": "Cỡ QR (% chiều rộng)",
