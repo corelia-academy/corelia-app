@@ -33,7 +33,8 @@
     "certificate": "Certificate",
     "certificateIncluded": "Có certificate",
     "certificateNotIncluded": "Không có certificate",
-    "coursesCount": "{{count}} khóa học"
+    "coursesCount": "{{count}} khóa học",
+    "coursesCount_plural": "{{count}} khóa học"
   },
   "actions": {
     "browseCourses": "Xem khóa học",

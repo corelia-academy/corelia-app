@@ -1,5 +1,12 @@
 {
   "layout": {
+    "activityMilestones": {
+      "uploading": "Uploading image...",
+      "clickToUpload": "Click to upload",
+      "orDragDrop": "or drag and drop here",
+      "supportFormats": "PNG, JPG formats supported",
+      "preview": "Preview"
+    },
     "sidebar": {
       "brandTitle": "Corelia Admin",
       "brandSubtitle": "Roles, instructors, and daily system operations in one place.",

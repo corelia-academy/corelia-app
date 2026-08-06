@@ -656,7 +656,29 @@
       "previewTitle": "Layout preview",
       "previewNoTemplate": "Upload a certificate template to see the preview.",
       "previewHint": "Sample data. The real certificate uses the learner's name, issue date and verification code.",
-      "previewSampleName": "Alex Morgan"
+      "previewSampleName": "John Doe"
+    },
+    "questionGenerator": {
+      "deleteQuestion": "Delete question",
+      "questionContentPlaceholder": "Question content...",
+      "optionIsCorrect": "Option {{id}} is correct",
+      "optionPlaceholder": "Option {{id}}...",
+      "explanationToggle": "Answer explanation",
+      "explanationPlaceholder": "Explain why the answer is correct (optional)..."
+    },
+    "careerTracks": {
+      "shortDescriptionLabel": "Short description",
+      "shortDescriptionDesc": "Displayed directly below title on detail page. ~1–2 sentences.",
+      "shortDescriptionPlaceholder": "8-week Web3 learning journey…",
+      "uploading": "Uploading…",
+      "saveBeforeUpload": "Please save track before uploading image.",
+      "uploadFailed": "Upload failed",
+      "namePlaceholder": "Name",
+      "shortDescOptionalPlaceholder": "Short description (optional)",
+      "labels": {
+        "courseCount": "{{count}} course",
+        "courseCount_plural": "{{count}} courses"
+      }
     },
     "certificateGuide": {
       "title": "How to create a template",

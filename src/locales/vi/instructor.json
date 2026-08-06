@@ -222,7 +222,8 @@
       "draft": "Draft",
       "published": "Published",
       "noCourses": "Chưa có khoá học nào trong lộ trình.",
-      "courseCount": "{{count}} khoá học"
+      "courseCount": "{{count}} khoá học",
+      "courseCount_plural": "{{count}} khoá học"
     },
     "actions": {
       "create": "Tạo lộ trình",
@@ -656,6 +657,28 @@
       "previewNoTemplate": "Tải lên phôi chứng nhận để xem trước.",
       "previewHint": "Dữ liệu mẫu. Chứng nhận thật dùng tên học viên, ngày cấp và mã xác minh thực tế.",
       "previewSampleName": "Nguyễn Văn A"
+    },
+    "questionGenerator": {
+      "deleteQuestion": "Xóa câu hỏi",
+      "questionContentPlaceholder": "Nội dung câu hỏi...",
+      "optionIsCorrect": "Đáp án {{id}} là đúng",
+      "optionPlaceholder": "Lựa chọn {{id}}...",
+      "explanationToggle": "Giải thích đáp án",
+      "explanationPlaceholder": "Giải thích vì sao đáp án đúng (tùy chọn)..."
+    },
+    "careerTracks": {
+      "shortDescriptionLabel": "Mô tả ngắn",
+      "shortDescriptionDesc": "Hiển thị ngay dưới tiêu đề ở trang chi tiết. ~1–2 câu.",
+      "shortDescriptionPlaceholder": "Hành trình học Web3 trong 8 tuần…",
+      "uploading": "Đang tải lên…",
+      "saveBeforeUpload": "Hãy lưu lộ trình trước khi tải ảnh.",
+      "uploadFailed": "Upload thất bại",
+      "namePlaceholder": "Tên",
+      "shortDescOptionalPlaceholder": "Mô tả ngắn (tuỳ chọn)",
+      "labels": {
+        "courseCount": "{{count}} khóa học",
+        "courseCount_plural": "{{count}} khóa học"
+      }
     },
     "certificateGuide": {
       "title": "Hướng dẫn tạo template",

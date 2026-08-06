@@ -1,5 +1,12 @@
 {
   "layout": {
+    "activityMilestones": {
+      "uploading": "Đang tải ảnh lên...",
+      "clickToUpload": "Nhấn để tải lên",
+      "orDragDrop": "hoặc kéo thả ảnh vào đây",
+      "supportFormats": "Hỗ trợ định dạng PNG, JPG",
+      "preview": "Bản xem trước"
+    },
     "sidebar": {
       "brandTitle": "Corelia Admin",
       "brandSubtitle": "Phân quyền, giảng viên và các tác vụ điều hành hệ thống hằng ngày.",

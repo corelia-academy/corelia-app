@@ -4,6 +4,12 @@
     "vi": "Vietnamese",
     "en": "English"
   },
+  "cropper": {
+    "title": "Crop image to 1:1 (Square)",
+    "hint": "Drag to move image, use slider to zoom.",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
   "actions": {
     "save": "Save",
     "cancel": "Cancel",

@@ -59,6 +59,8 @@
     "duration": {
       "lessThanOneMinute": "< 1 phút",
       "minutes": "{{count}} phút",
+      "minutes_one": "{{count}} phút",
+      "minutes_other": "{{count}} phút",
       "hoursMinutes": "{{hours}} giờ {{minutes}} phút"
     },
     "payment": {
@@ -231,10 +233,18 @@
         "fullLessons": "100% bài học"
       },
       "sectionCount": "{{count}} chương",
+      "sectionCount_one": "{{count}} chương",
+      "sectionCount_other": "{{count}} chương",
       "sectionLabel": "Chương {{index}}",
       "lessonCount": "{{count}} bài học",
+      "lessonCount_one": "{{count}} bài học",
+      "lessonCount_other": "{{count}} bài học",
       "lessonCountPreview": "{{count}} bài học thử",
+      "lessonCountPreview_one": "{{count}} bài học thử",
+      "lessonCountPreview_other": "{{count}} bài học thử",
       "lessonCountShort": "{{count}} bài",
+      "lessonCountShort_one": "{{count}} bài",
+      "lessonCountShort_other": "{{count}} bài",
       "previewLessonBadge": "Học thử",
       "curriculum": {
         "title": "Lộ trình học",

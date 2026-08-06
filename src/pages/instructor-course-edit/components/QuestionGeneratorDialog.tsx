@@ -53,6 +53,7 @@ type QuestionEditorProps = {
 };
 
 function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorProps) {
+  const { t } = useTranslation("instructor");
   const [showExplanation, setShowExplanation] = useState(!!question.explanation);
 
   function setField<K extends keyof DraftQuestion>(key: K, value: DraftQuestion[K]) {
@@ -76,14 +77,14 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
           type="button"
           onClick={onDelete}
           className="ml-auto text-foreground-muted hover:text-destructive transition-colors"
-          aria-label="Xoá câu hỏi"
+          aria-label={t("courseEdit.questionGenerator.deleteQuestion", "Xóa câu hỏi")}
         >
           <Trash2 className="size-4" />
         </button>
       </div>
 
       <textarea
-        placeholder="Nội dung câu hỏi..."
+        placeholder={t("courseEdit.questionGenerator.questionContentPlaceholder", "Nội dung câu hỏi...")}
         value={question.question}
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setField("question", e.target.value)}
         rows={2}
@@ -103,7 +104,7 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
               }
               className="shrink-0 accent-primary"
               id={`${question._key}-opt-${i}`}
-              aria-label={`Đáp án ${opt.id.toUpperCase()} là đúng`}
+              aria-label={t("courseEdit.questionGenerator.optionIsCorrect", `Đáp án ${opt.id.toUpperCase()} là đúng`, { id: opt.id.toUpperCase() })}
             />
             <span className="shrink-0 w-5 text-xs font-medium text-foreground-muted uppercase">
               {opt.id}
@@ -111,7 +112,7 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
             <Input
               value={opt.text}
               onChange={(e) => setOptionText(i, e.target.value)}
-              placeholder={`Lựa chọn ${opt.id.toUpperCase()}...`}
+              placeholder={t("courseEdit.questionGenerator.optionPlaceholder", `Lựa chọn ${opt.id.toUpperCase()}...`, { id: opt.id.toUpperCase() })}
               className="h-8 text-sm flex-1"
             />
           </div>
@@ -129,11 +130,11 @@ function QuestionEditor({ question, index, onChange, onDelete }: QuestionEditorP
           ) : (
             <ChevronDown className="size-3" />
           )}
-          Giải thích đáp án
+          {t("courseEdit.questionGenerator.explanationToggle", "Giải thích đáp án")}
         </button>
         {showExplanation && (
           <textarea
-            placeholder="Giải thích vì sao đáp án đúng (tuỳ chọn)..."
+            placeholder={t("courseEdit.questionGenerator.explanationPlaceholder", "Giải thích vì sao đáp án đúng (tùy chọn)...")}
             value={question.explanation ?? ""}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setField("explanation", e.target.value)}
             rows={2}

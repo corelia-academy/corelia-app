@@ -4,6 +4,12 @@
     "vi": "Tiếng Việt",
     "en": "English"
   },
+  "cropper": {
+    "title": "Cắt ảnh tỷ lệ 1:1 (Hình vuông)",
+    "hint": "Kéo để di chuyển ảnh, sử dụng thanh trượt để thu phóng.",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận"
+  },
   "actions": {
     "save": "Lưu",
     "cancel": "Hủy",
