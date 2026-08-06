@@ -135,122 +135,160 @@ export function VerifyCertificatePage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-md rounded-2xl border border-border-subtle bg-surface-base shadow-card p-8 text-center">
+    // h-dvh (not min-h-screen) + no page scroll on mobile: the card fills the viewport
+    // exactly and everything below the info strip (the certificate image) flexes to
+    // whatever room is left. md+ reverts to the original centered, natural-height card.
+    <div className="flex h-dvh flex-col bg-background p-4 md:h-auto md:min-h-screen md:items-center md:justify-center md:py-10">
+      <div className="flex w-full flex-1 flex-col rounded-2xl border border-border-subtle bg-surface-base shadow-card p-5 text-center md:max-w-md md:flex-none md:p-8">
         {status === "loading" && (
-          <div className="flex flex-col items-center gap-3 py-6">
+          <div className="flex flex-1 flex-col items-center justify-center gap-3">
             <Loader2 className="size-6 animate-spin text-primary" aria-hidden />
             <p className="text-sm text-foreground-muted">{t("verify.loading")}</p>
           </div>
         )}
 
         {status === "idle" && (
-          <>
+          <div className="flex flex-1 flex-col items-center justify-center">
             <h1 className="text-xl font-semibold text-foreground">{t("verify.formTitle")}</h1>
             <p className="mt-2 text-sm text-foreground-muted">{t("verify.formHint")}</p>
             {searchForm}
-          </>
+          </div>
         )}
 
         {status === "error" && (
-          <>
+          <div className="flex flex-1 flex-col items-center justify-center">
             <h1 className="text-xl font-semibold text-foreground">{t("verify.errorTitle")}</h1>
             <p className="mt-2 text-sm text-foreground-muted">{t("verify.errorBody")}</p>
             {searchForm}
-          </>
+          </div>
         )}
 
         {status === "notfound" && (
-          <>
+          <div className="flex flex-1 flex-col items-center justify-center">
             <SearchX className="mx-auto size-10 text-foreground-muted" aria-hidden />
             <h1 className="mt-3 text-xl font-semibold text-foreground">{t("verify.notFoundTitle")}</h1>
             <p className="mt-2 text-sm text-foreground-muted">{t("verify.notFoundBody")}</p>
             {searchForm}
-          </>
+          </div>
         )}
 
         {(status === "valid" || status === "revoked") && result && (
-          <>
-            {status === "valid" ? (
-              <>
-                <CheckCircle2 className="mx-auto size-10 text-success" aria-hidden />
-                <h1 className="mt-3 text-xl font-semibold text-foreground">{t("verify.validTitle")}</h1>
-                <p className="mt-2 text-sm text-foreground-muted">{t("verify.validSubtitle")}</p>
-              </>
-            ) : (
-              <>
-                <ShieldX className="mx-auto size-10 text-destructive" aria-hidden />
-                <h1 className="mt-3 text-xl font-semibold text-foreground">{t("verify.revokedTitle")}</h1>
-                <p className="mt-2 text-sm text-foreground-muted">
-                  {t("verify.revokedBody", { date: formatDate(result.revoked_at) })}
-                </p>
-                {result.revoked_reason && (
-                  <p className="mt-1 text-sm text-foreground-muted">
-                    {t("verify.revokedReason", { reason: result.revoked_reason })}
+          <div className="flex min-h-0 flex-1 flex-col">
+            {/* Fixed-height header + info strip. Never flexes — the image below eats
+                whatever height this leaves. */}
+            <div className="shrink-0">
+              {status === "valid" ? (
+                <>
+                  <CheckCircle2 className="mx-auto size-8 text-success md:size-10" aria-hidden />
+                  <h1 className="mt-2 text-lg font-semibold text-foreground md:mt-3 md:text-xl">
+                    {t("verify.validTitle")}
+                  </h1>
+                  <p className="mt-1 text-xs text-foreground-muted md:mt-2 md:text-sm">
+                    {t("verify.validSubtitle")}
                   </p>
-                )}
-              </>
-            )}
-
-            <dl className="mt-5 space-y-3 rounded-lg border border-border-subtle bg-surface-raised p-4 text-left">
-              <div>
-                <dt className="text-xs font-medium text-foreground-muted">{t("verify.holderLabel")}</dt>
-                <dd className="text-sm font-semibold text-foreground">
-                  {result.holder_name || t("verify.unknownHolder")}
-                  {result.holder_path && (
-                    <Link to={result.holder_path} className="ml-2 text-xs font-normal text-primary hover:underline">
-                      {t("verify.viewProfile")}
-                    </Link>
+                </>
+              ) : (
+                <>
+                  <ShieldX className="mx-auto size-8 text-destructive md:size-10" aria-hidden />
+                  <h1 className="mt-2 text-lg font-semibold text-foreground md:mt-3 md:text-xl">
+                    {t("verify.revokedTitle")}
+                  </h1>
+                  <p className="mt-1 text-xs text-foreground-muted md:mt-2 md:text-sm">
+                    {t("verify.revokedBody", { date: formatDate(result.revoked_at) })}
+                  </p>
+                  {result.revoked_reason && (
+                    <p className="mt-1 text-xs text-foreground-muted md:text-sm">
+                      {t("verify.revokedReason", { reason: result.revoked_reason })}
+                    </p>
                   )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium text-foreground-muted">{t("verify.courseLabel")}</dt>
-                <dd className="text-sm text-foreground">
-                  {result.course_title || t("verify.unknownCourse")}
-                  {result.course_path && (
-                    <Link to={result.course_path} className="ml-2 text-xs text-primary hover:underline">
-                      {t("verify.viewCourse")}
-                    </Link>
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium text-foreground-muted">{t("verify.instructorLabel")}</dt>
-                <dd className="text-sm text-foreground">
-                  {result.instructor_name || t("verify.unknownInstructor")}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium text-foreground-muted">{t("verify.issuedLabel")}</dt>
-                <dd className="text-sm text-foreground">{formatDate(result.issued_at)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium text-foreground-muted">{t("verify.codeLabel")}</dt>
-                <dd className="font-mono text-sm text-foreground">{result.code}</dd>
-              </div>
-            </dl>
+                </>
+              )}
 
-            {ocUrl && (
-              <a
-                href={ocUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-border-subtle px-4 text-sm font-semibold text-foreground hover:bg-surface-raised"
-              >
-                {t("verify.viewOnchain")}
-                <ExternalLink className="size-4" aria-hidden />
-              </a>
-            )}
+              {/* Mobile: one horizontal-scrolling strip (nothing truncated — it scrolls
+                  instead) so the 5 fields cost a single row, not five. md+: back to the
+                  original stacked list. */}
+              <dl className="mt-3 flex gap-4 overflow-x-auto rounded-lg border border-border-subtle bg-surface-raised p-3 text-left md:mt-5 md:block md:space-y-3 md:overflow-visible md:p-4">
+                <div className="shrink-0">
+                  <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
+                    {t("verify.holderLabel")}
+                  </dt>
+                  <dd className="whitespace-nowrap text-xs font-semibold text-foreground md:text-sm">
+                    {result.holder_name || t("verify.unknownHolder")}
+                    {result.holder_path && (
+                      <Link
+                        to={result.holder_path}
+                        className="ml-2 text-xs font-normal text-primary hover:underline"
+                      >
+                        {t("verify.viewProfile")}
+                      </Link>
+                    )}
+                  </dd>
+                </div>
+                <div className="shrink-0">
+                  <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
+                    {t("verify.courseLabel")}
+                  </dt>
+                  <dd className="whitespace-nowrap text-xs text-foreground md:text-sm">
+                    {result.course_title || t("verify.unknownCourse")}
+                    {result.course_path && (
+                      <Link to={result.course_path} className="ml-2 text-xs text-primary hover:underline">
+                        {t("verify.viewCourse")}
+                      </Link>
+                    )}
+                  </dd>
+                </div>
+                <div className="shrink-0">
+                  <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
+                    {t("verify.instructorLabel")}
+                  </dt>
+                  <dd className="whitespace-nowrap text-xs text-foreground md:text-sm">
+                    {result.instructor_name || t("verify.unknownInstructor")}
+                  </dd>
+                </div>
+                <div className="shrink-0">
+                  <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
+                    {t("verify.issuedLabel")}
+                  </dt>
+                  <dd className="whitespace-nowrap text-xs text-foreground md:text-sm">
+                    {formatDate(result.issued_at)}
+                  </dd>
+                </div>
+                <div className="shrink-0">
+                  <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
+                    {t("verify.codeLabel")}
+                  </dt>
+                  <dd className="whitespace-nowrap font-mono text-xs text-foreground md:text-sm">
+                    {result.code}
+                  </dd>
+                </div>
+              </dl>
 
+              {ocUrl && (
+                <a
+                  href={ocUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-md border border-border-subtle px-4 text-xs font-semibold text-foreground hover:bg-surface-raised md:mt-4 md:min-h-11 md:text-sm"
+                >
+                  {t("verify.viewOnchain")}
+                  <ExternalLink className="size-4" aria-hidden />
+                </a>
+              )}
+            </div>
+
+            {/* Takes whatever vertical room the fixed block above left. min-h-0 is load-
+                bearing: without it a flex child won't shrink below its image's intrinsic
+                size, and the certificate would push the page into scrolling again. */}
             {previewUrl && (
-              <img
-                src={previewUrl}
-                alt=""
-                className="mt-5 w-full rounded-lg border border-border-subtle"
-              />
+              <div className="mt-3 min-h-0 flex-1 md:mt-5 md:flex-none">
+                <img
+                  src={previewUrl}
+                  alt=""
+                  className="mx-auto h-full max-h-full w-auto max-w-full rounded-lg border border-border-subtle object-contain md:h-auto md:w-full md:max-h-none md:max-w-none"
+                />
+              </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>
