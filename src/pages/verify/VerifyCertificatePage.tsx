@@ -229,17 +229,20 @@ export function VerifyCertificatePage() {
                 </>
               )}
 
-              {/* One horizontal strip (nothing truncated — scrolls on overflow instead)
-                  so the 5 fields always cost a single row, not five — same on phone and
-                  on a full laptop window. justify-between spreads the 5 fields across
-                  the full width instead of clumping them against the left edge once the
-                  card is wide enough for them to fit without scrolling. */}
-              <dl className="mt-3 flex justify-between gap-4 overflow-x-auto rounded-lg border border-border-subtle bg-surface-raised p-3 text-left">
-                <div className="shrink-0">
-                  <dt className="text-[11px] font-medium text-foreground-muted">
+              {/* Below md (real mobile-width windows, not just narrow desktop): stacked
+                  list, one field per row — a horizontal-scrolling strip is bad UX on
+                  touch, it hides fields off-screen with no visible affordance. At md+
+                  there's room to lay all 5 out in one row: flex-row + justify-between
+                  spreads them across the width, flex-wrap catches the case where they
+                  still don't fit, and max-w-[13rem] on each field stops one long value
+                  (a long course title) from swallowing the row and squeezing the rest —
+                  it wraps inside its own column instead. */}
+              <dl className="mt-3 flex flex-col gap-2 rounded-lg border border-border-subtle bg-surface-raised p-3 text-left md:flex-row md:flex-wrap md:justify-between md:gap-x-4 md:gap-y-3">
+                <div className="md:max-w-[13rem]">
+                  <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
                     {t("verify.holderLabel")}
                   </dt>
-                  <dd className="whitespace-nowrap text-xs font-semibold text-foreground">
+                  <dd className="text-xs font-semibold text-foreground md:text-sm">
                     {result.holder_name || t("verify.unknownHolder")}
                     {result.holder_path && (
                       <Link
@@ -251,11 +254,11 @@ export function VerifyCertificatePage() {
                     )}
                   </dd>
                 </div>
-                <div className="shrink-0">
-                  <dt className="text-[11px] font-medium text-foreground-muted">
+                <div className="md:max-w-[13rem]">
+                  <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
                     {t("verify.courseLabel")}
                   </dt>
-                  <dd className="whitespace-nowrap text-xs text-foreground">
+                  <dd className="text-xs text-foreground md:text-sm">
                     {result.course_title || t("verify.unknownCourse")}
                     {result.course_path && (
                       <Link to={result.course_path} className="ml-2 text-xs text-primary hover:underline">
@@ -264,27 +267,27 @@ export function VerifyCertificatePage() {
                     )}
                   </dd>
                 </div>
-                <div className="shrink-0">
-                  <dt className="text-[11px] font-medium text-foreground-muted">
+                <div className="md:max-w-[13rem]">
+                  <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
                     {t("verify.instructorLabel")}
                   </dt>
-                  <dd className="whitespace-nowrap text-xs text-foreground">
+                  <dd className="text-xs text-foreground md:text-sm">
                     {result.instructor_name || t("verify.unknownInstructor")}
                   </dd>
                 </div>
-                <div className="shrink-0">
-                  <dt className="text-[11px] font-medium text-foreground-muted">
+                <div className="md:max-w-[13rem]">
+                  <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
                     {t("verify.issuedLabel")}
                   </dt>
-                  <dd className="whitespace-nowrap text-xs text-foreground">
+                  <dd className="text-xs text-foreground md:text-sm">
                     {formatDate(result.issued_at)}
                   </dd>
                 </div>
-                <div className="shrink-0">
-                  <dt className="text-[11px] font-medium text-foreground-muted">
+                <div className="md:max-w-[13rem]">
+                  <dt className="text-[11px] font-medium text-foreground-muted md:text-xs">
                     {t("verify.codeLabel")}
                   </dt>
-                  <dd className="whitespace-nowrap font-mono text-xs text-foreground">
+                  <dd className="font-mono text-xs text-foreground md:text-sm">
                     {result.code}
                   </dd>
                 </div>
