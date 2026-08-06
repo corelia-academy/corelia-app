@@ -1,8 +1,9 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, ExternalLink, Loader2, SearchX, ShieldX } from "lucide-react";
 
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { invokeVerifyCertificate, type VerifiedCertificate } from "@/lib/certificatesEdge";
 import { openCampusCredentialExplorerUrl } from "@/lib/credentialIssuances";
 import { intlLocale } from "@/lib/intl";
@@ -39,6 +40,29 @@ export function VerifyCertificatePage() {
   }>({ code: "", status: "idle", result: null });
   const [input, setInput] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imageZoomOpen, setImageZoomOpen] = useState(false);
+
+  // CSS shrink-to-fit (width: fit-content around an aspect-ratio'd <img> plus a
+  // w-full sibling) does NOT resolve to the image's rendered width in practice —
+  // measured it stretching to the full flex track instead. Measuring the actual
+  // rendered width directly is the reliable way to make the "View on Open Campus"
+  // link match the certificate image's width exactly.
+  //
+  // Deliberately NOT a ResizeObserver: its notification delivery is tied to the
+  // rendering/paint pipeline, so it never fires on a backgrounded/non-composited
+  // tab. onLoad + a resize listener both fire from ordinary DOM event dispatch —
+  // decode-completion and the viewport resize event respectively — independent of
+  // whether the tab is actually painting, so they work everywhere onLoad/resize do.
+  const [imageWidth, setImageWidth] = useState<number | null>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const measureImage = () => {
+    const width = imageRef.current?.getBoundingClientRect().width;
+    if (width) setImageWidth(width);
+  };
+  useEffect(() => {
+    window.addEventListener("resize", measureImage);
+    return () => window.removeEventListener("resize", measureImage);
+  }, []);
 
   const settled = fetched.code === code;
   const status: Status = !code ? "idle" : settled ? fetched.status : "loading";
@@ -205,10 +229,12 @@ export function VerifyCertificatePage() {
                 </>
               )}
 
-              {/* One horizontal-scrolling strip (nothing truncated — it scrolls instead)
+              {/* One horizontal strip (nothing truncated — scrolls on overflow instead)
                   so the 5 fields always cost a single row, not five — same on phone and
-                  on a full laptop window. */}
-              <dl className="mt-3 flex gap-4 overflow-x-auto rounded-lg border border-border-subtle bg-surface-raised p-3 text-left">
+                  on a full laptop window. justify-between spreads the 5 fields across
+                  the full width instead of clumping them against the left edge once the
+                  card is wide enough for them to fit without scrolling. */}
+              <dl className="mt-3 flex justify-between gap-4 overflow-x-auto rounded-lg border border-border-subtle bg-surface-raised p-3 text-left">
                 <div className="shrink-0">
                   <dt className="text-[11px] font-medium text-foreground-muted">
                     {t("verify.holderLabel")}
@@ -263,26 +289,14 @@ export function VerifyCertificatePage() {
                   </dd>
                 </div>
               </dl>
-
-              {ocUrl && (
-                <a
-                  href={ocUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-md border border-border-subtle px-4 text-xs font-semibold text-foreground hover:bg-surface-raised"
-                >
-                  {t("verify.viewOnchain")}
-                  <ExternalLink className="size-4" aria-hidden />
-                </a>
-              )}
             </div>
 
             {/* Takes whatever vertical room the fixed block above left. min-h-0 is load-
                 bearing: without it a flex child won't shrink below its image's intrinsic
                 size, and the certificate would push the page into scrolling again.
-                items-center + justify-center centers the aspect-locked image inside it. */}
+                items-center + justify-center centers the [image + OC link] group inside it. */}
             {previewUrl && (
-              <div className="mt-3 flex min-h-0 flex-1 items-center justify-center">
+              <div className="mt-3 flex min-h-0 flex-1 flex-col items-center justify-center gap-3">
                 {/* aspect-[4/3] matches CANVAS_W/CANVAS_H in certificateLayout.ts exactly
                     (renderCertificateBlob always draws onto a 1600x1200 canvas) — the
                     <img> box itself is pre-shaped to the right ratio, so max-h-full/
@@ -290,16 +304,56 @@ export function VerifyCertificatePage() {
                     border. (Previously: h-full forced the box to full height regardless
                     of the width max-w-full then clamped it to, producing a stretched,
                     wrong-ratio box with visible empty space inside its own border.) */}
-                <img
-                  src={previewUrl}
-                  alt=""
-                  className="aspect-[4/3] max-h-full max-w-full rounded-lg border border-border-subtle object-contain"
-                />
+                <button
+                  type="button"
+                  onClick={() => setImageZoomOpen(true)}
+                  className="min-h-0 flex-1 cursor-zoom-in"
+                  aria-label={t("verify.zoomImage")}
+                >
+                  <img
+                    ref={imageRef}
+                    src={previewUrl}
+                    alt=""
+                    onLoad={measureImage}
+                    className="aspect-[4/3] max-h-full max-w-full rounded-lg border border-border-subtle object-contain"
+                  />
+                </button>
+
+                {/* Width pinned to the image's measured render width (see ResizeObserver
+                    above) so the link sits directly under the certificate's footprint
+                    instead of stretching the full card. */}
+                {ocUrl && (
+                  <a
+                    href={ocUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={imageWidth ? { width: imageWidth } : undefined}
+                    className="inline-flex min-h-9 w-full max-w-full shrink-0 items-center justify-center gap-2 rounded-md border border-border-subtle px-4 text-xs font-semibold text-foreground hover:bg-surface-raised"
+                  >
+                    {t("verify.viewOnchain")}
+                    <ExternalLink className="size-4" aria-hidden />
+                  </a>
+                )}
               </div>
             )}
           </div>
         )}
       </div>
+
+      {previewUrl && (
+        <Dialog open={imageZoomOpen} onOpenChange={setImageZoomOpen}>
+          <DialogContent
+            showCloseButton
+            className="max-w-[calc(100vw-2rem)] w-fit border-none bg-transparent p-0 shadow-none sm:max-w-[calc(100vw-4rem)]"
+          >
+            <img
+              src={previewUrl}
+              alt=""
+              className="max-h-[calc(100dvh-4rem)] max-w-full rounded-lg object-contain"
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

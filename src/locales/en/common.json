@@ -1003,7 +1003,8 @@
     "unknownInstructor": "Instructor not recorded",
     "viewCourse": "View course",
     "viewProfile": "View profile",
-    "viewOnchain": "View on Open Campus"
+    "viewOnchain": "View on Open Campus",
+    "zoomImage": "Zoom into certificate image"
   },
   "pendingCredentialsWelcome": {
     "title": "You just received your credentials!",

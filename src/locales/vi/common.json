@@ -1003,7 +1003,8 @@
     "unknownInstructor": "Không rõ giảng viên",
     "viewCourse": "Xem khoá học",
     "viewProfile": "Xem hồ sơ",
-    "viewOnchain": "Xem trên Open Campus"
+    "viewOnchain": "Xem trên Open Campus",
+    "zoomImage": "Phóng to ảnh chứng nhận"
   },
   "pendingCredentialsWelcome": {
     "title": "Bạn vừa nhận thành công các chứng nhận!",
