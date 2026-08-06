@@ -140,7 +140,7 @@ export function VerifyCertificatePage() {
     // flexes to whatever room is left. Same behaviour on phone and on a full laptop
     // window — no md: fallback to a taller, scrollable layout.
     <div className="flex h-dvh flex-col items-center justify-center bg-background p-4">
-      <div className="flex h-full max-h-[min(48rem,calc(100dvh-2rem))] w-full max-w-md flex-col rounded-2xl border border-border-subtle bg-surface-base shadow-card p-5 text-center">
+      <div className="flex h-full max-h-[min(48rem,calc(100dvh-2rem))] w-full flex-col rounded-2xl border border-border-subtle bg-surface-base shadow-card p-5 text-center">
         {status === "loading" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
             <Loader2 className="size-6 animate-spin text-primary" aria-hidden />
@@ -279,13 +279,21 @@ export function VerifyCertificatePage() {
 
             {/* Takes whatever vertical room the fixed block above left. min-h-0 is load-
                 bearing: without it a flex child won't shrink below its image's intrinsic
-                size, and the certificate would push the page into scrolling again. */}
+                size, and the certificate would push the page into scrolling again.
+                items-center + justify-center centers the aspect-locked image inside it. */}
             {previewUrl && (
-              <div className="mt-3 min-h-0 flex-1">
+              <div className="mt-3 flex min-h-0 flex-1 items-center justify-center">
+                {/* aspect-[4/3] matches CANVAS_W/CANVAS_H in certificateLayout.ts exactly
+                    (renderCertificateBlob always draws onto a 1600x1200 canvas) — the
+                    <img> box itself is pre-shaped to the right ratio, so max-h-full/
+                    max-w-full alone pick the largest fit with no letterboxing inside the
+                    border. (Previously: h-full forced the box to full height regardless
+                    of the width max-w-full then clamped it to, producing a stretched,
+                    wrong-ratio box with visible empty space inside its own border.) */}
                 <img
                   src={previewUrl}
                   alt=""
-                  className="mx-auto h-full max-h-full w-auto max-w-full rounded-lg border border-border-subtle object-contain"
+                  className="aspect-[4/3] max-h-full max-w-full rounded-lg border border-border-subtle object-contain"
                 />
               </div>
             )}
