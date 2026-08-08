@@ -246,6 +246,10 @@
       "lessonCountShort_one": "{{count}} lesson",
       "lessonCountShort_other": "{{count}} lessons",
       "previewLessonBadge": "Preview",
+      "lessonType": {
+        "quiz": "Quiz",
+        "practice": "Practice"
+      },
       "curriculum": {
         "title": "Curriculum",
         "previewDescription": "You're viewing the preview curriculum. Unlock to see the full curriculum.",
