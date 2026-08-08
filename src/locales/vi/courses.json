@@ -246,6 +246,10 @@
       "lessonCountShort_one": "{{count}} bài",
       "lessonCountShort_other": "{{count}} bài",
       "previewLessonBadge": "Học thử",
+      "lessonType": {
+        "quiz": "Bài kiểm tra",
+        "practice": "Bài thực hành"
+      },
       "curriculum": {
         "title": "Lộ trình học",
         "previewDescription": "Bạn đang xem phần preview. Mở khoá để thấy toàn bộ curriculum.",

@@ -11,7 +11,6 @@ import {
   syncCourseCompletion,
 } from "@/lib/courses";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
-import { isActivityLesson, splitLessonCounts } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseLessons } from "./hooks/useCourseLessons";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
@@ -258,9 +257,7 @@ export default function CourseDetail() {
     () =>
       courseLoad.sections.map((section) => ({
         section,
-        lessons: sortedLessons.filter(
-          (lesson) => lesson.section_id === section.id && !isActivityLesson(lesson),
-        ),
+        lessons: sortedLessons.filter((lesson) => lesson.section_id === section.id),
       })),
     [courseLoad.sections, sortedLessons],
   );
@@ -269,12 +266,16 @@ export default function CourseDetail() {
   );
 
   const isPreviewOnlyCurriculum = isPaidUpfront && !hasFullCourseAccess;
-  const { contentCount } = splitLessonCounts(lessons);
+  const curriculumLessonCount = isPreviewOnlyCurriculum
+    ? previewLessons.length
+    : lessons.length;
   const curriculumCountLabel = isPreviewOnlyCurriculum
     ? translate("detail.courseDetail.lessonCountPreview", {
-        count: contentCount,
+        count: curriculumLessonCount,
       })
-    : translate("detail.courseDetail.lessonCount", { count: contentCount });
+    : translate("detail.courseDetail.lessonCount", {
+        count: curriculumLessonCount,
+      });
 
   const canReviewDraft =
     courseLoad.course &&
