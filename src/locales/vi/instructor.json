@@ -222,7 +222,8 @@
       "draft": "Draft",
       "published": "Published",
       "noCourses": "Chưa có khoá học nào trong lộ trình.",
-      "courseCount": "{{count}} khoá học"
+      "courseCount": "{{count}} khoá học",
+      "courseCount_plural": "{{count}} khoá học"
     },
     "actions": {
       "create": "Tạo lộ trình",
@@ -432,6 +433,7 @@
       "willInviteBadge": "Sẽ gửi lời mời khi lưu",
       "inviteSent": "Đã gửi {{count}} lời mời đồng giảng viên",
       "inviteFailed": "{{count}} lời mời thất bại",
+      "inviteEmailFailed": "Đã tạo lời mời trong ứng dụng, nhưng không gửi được email cho {{count}} người.",
       "inviteRevoked": "Đã thu hồi lời mời",
       "pendingTitle": "Lời mời đang chờ",
       "pendingHint": "Những người này đã được mời nhưng chưa đồng ý. Họ chưa thể truy cập khoá học cho tới khi accept.",
@@ -625,7 +627,6 @@
     "certificate": {
       "sectionTitle": "Template chứng nhận (PDF)",
       "sectionDescription": "Tải lên nền chứng nhận (PNG/JPG). Tên học viên sẽ được đặt tại vị trí bạn chọn để họ tải về và chia sẻ lên MXH.",
-      "saveNamePosition": "Lưu vị trí tên",
       "templateLabel": "Template chứng nhận",
       "uploadTemplate": "Tải template lên",
       "uploadingTemplate": "Đang tải lên...",
@@ -638,7 +639,47 @@
       "fileFormatHint": "Định dạng: PNG hoặc JPG.",
       "disabledHint": "Bật \"Khoá học này có cấp chứng nhận hoàn thành\" ở tab Thông tin chung trước khi cấu hình template chứng nhận.",
       "disabledCta": "Đi tới Thông tin chung",
-      "setupLeaveWarning": "Quá trình khởi tạo chứng nhận sẽ bị hủy. Bạn sẽ phải khởi tạo lại từ đầu. Rời trang?"
+      "setupLeaveWarning": "Quá trình khởi tạo chứng nhận sẽ bị hủy. Bạn sẽ phải khởi tạo lại từ đầu. Rời trang?",
+      "saveLayout": "Lưu bố cục chứng nhận",
+      "nameGroupTitle": "Tên học viên",
+      "nameSizeLabel": "Cỡ chữ tên (% chiều rộng)",
+      "footerGroupTitle": "Khối footer (Date of Issue / Certificate ID)",
+      "footerGroupHint": "In bằng font Google Sans. Mã xác minh hiển thị ở đây chính là mã mà QR trỏ tới.",
+      "footerXLabel": "Vị trí footer (% từ trái)",
+      "footerYLabel": "Vị trí footer (% từ trên)",
+      "footerSizeLabel": "Cỡ chữ footer (% chiều rộng)",
+      "footerColorLabel": "Màu chữ footer",
+      "qrGroupTitle": "Mã QR xác minh",
+      "qrGroupHint": "Mã QR cho phép quét để xác thực chứng nhận. Kích cỡ tối thiểu là 3% và tối đa là 30%.",
+      "qrXLabel": "Tâm QR (% từ trái)",
+      "qrYLabel": "Tâm QR (% từ trên)",
+      "qrSizeLabel": "Cỡ QR (% chiều rộng)",
+      "previewTitle": "Xem trước bố cục",
+      "previewNoTemplate": "Tải lên phôi chứng nhận để xem trước.",
+      "previewHint": "Dữ liệu mẫu. Chứng nhận thật dùng tên học viên, ngày cấp và mã xác minh thực tế.",
+      "previewSampleName": "Nguyễn Văn A"
+    },
+    "questionGenerator": {
+      "deleteQuestion": "Xóa câu hỏi",
+      "questionContentPlaceholder": "Nội dung câu hỏi...",
+      "optionIsCorrect": "Đáp án {{id}} là đúng",
+      "optionPlaceholder": "Lựa chọn {{id}}...",
+      "explanationToggle": "Giải thích đáp án",
+      "explanationPlaceholder": "Giải thích vì sao đáp án đúng (tùy chọn)..."
+    },
+    "careerTracks": {
+      "shortDescriptionLabel": "Mô tả ngắn",
+      "shortDescriptionDesc": "Hiển thị ngay dưới tiêu đề ở trang chi tiết. ~1–2 câu.",
+      "shortDescriptionPlaceholder": "Hành trình học Web3 trong 8 tuần…",
+      "uploading": "Đang tải lên…",
+      "saveBeforeUpload": "Hãy lưu lộ trình trước khi tải ảnh.",
+      "uploadFailed": "Upload thất bại",
+      "namePlaceholder": "Tên",
+      "shortDescOptionalPlaceholder": "Mô tả ngắn (tuỳ chọn)",
+      "labels": {
+        "courseCount": "{{count}} khóa học",
+        "courseCount_plural": "{{count}} khóa học"
+      }
     },
     "certificateGuide": {
       "title": "Hướng dẫn tạo template",

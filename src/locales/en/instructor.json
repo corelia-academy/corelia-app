@@ -433,6 +433,7 @@
       "willInviteBadge": "Will invite on save",
       "inviteSent": "Sent {{count}} co-instructor invite(s)",
       "inviteFailed": "{{count}} co-instructor invite(s) failed",
+      "inviteEmailFailed": "The in-app invite was created, but email could not be sent to {{count}} recipient(s).",
       "inviteRevoked": "Invite revoked",
       "pendingTitle": "Pending invites",
       "pendingHint": "These people have been invited but haven't accepted yet. They can't access the course until they accept.",
@@ -626,7 +627,6 @@
     "certificate": {
       "sectionTitle": "Certificate template",
       "sectionDescription": "Upload a certificate background (PNG/JPG). The learner's name will be placed at the position you set so they can download and share it on social media.",
-      "saveNamePosition": "Save name position",
       "templateLabel": "Certificate template",
       "uploadTemplate": "Upload template",
       "uploadingTemplate": "Uploading...",
@@ -639,7 +639,47 @@
       "fileFormatHint": "Format: PNG or JPG.",
       "disabledHint": "Enable \"This course issues a completion certificate\" in the General info tab before configuring the certificate template.",
       "disabledCta": "Go to General info",
-      "setupLeaveWarning": "Certificate setup will be cancelled. You will need to start over. Leave this page?"
+      "setupLeaveWarning": "Certificate setup will be cancelled. You will need to start over. Leave this page?",
+      "saveLayout": "Save certificate layout",
+      "nameGroupTitle": "Learner name",
+      "nameSizeLabel": "Name text size (% of width)",
+      "footerGroupTitle": "Footer block (Date of Issue / Certificate ID)",
+      "footerGroupHint": "Printed in Google Sans. The verification code shown here is what the QR links to.",
+      "footerXLabel": "Footer position (% from left)",
+      "footerYLabel": "Footer position (% from top)",
+      "footerSizeLabel": "Footer text size (% of width)",
+      "footerColorLabel": "Footer text color",
+      "qrGroupTitle": "Verification QR Code",
+      "qrGroupHint": "QR code allows scanning to verify the certificate. Minimum size is 3% and maximum is 30%.",
+      "qrXLabel": "QR centre (% from left)",
+      "qrYLabel": "QR centre (% from top)",
+      "qrSizeLabel": "QR size (% of width)",
+      "previewTitle": "Layout preview",
+      "previewNoTemplate": "Upload a certificate template to see the preview.",
+      "previewHint": "Sample data. The real certificate uses the learner's name, issue date and verification code.",
+      "previewSampleName": "John Doe"
+    },
+    "questionGenerator": {
+      "deleteQuestion": "Delete question",
+      "questionContentPlaceholder": "Question content...",
+      "optionIsCorrect": "Option {{id}} is correct",
+      "optionPlaceholder": "Option {{id}}...",
+      "explanationToggle": "Answer explanation",
+      "explanationPlaceholder": "Explain why the answer is correct (optional)..."
+    },
+    "careerTracks": {
+      "shortDescriptionLabel": "Short description",
+      "shortDescriptionDesc": "Displayed directly below title on detail page. ~1–2 sentences.",
+      "shortDescriptionPlaceholder": "8-week Web3 learning journey…",
+      "uploading": "Uploading…",
+      "saveBeforeUpload": "Please save track before uploading image.",
+      "uploadFailed": "Upload failed",
+      "namePlaceholder": "Name",
+      "shortDescOptionalPlaceholder": "Short description (optional)",
+      "labels": {
+        "courseCount": "{{count}} course",
+        "courseCount_plural": "{{count}} courses"
+      }
     },
     "certificateGuide": {
       "title": "How to create a template",

@@ -53,6 +53,9 @@ const EmailUnsubscribePage = lazy(() =>
 const ClaimPage = lazy(() =>
   import("@/pages/claim/ClaimPage").then((m) => ({ default: m.ClaimPage })),
 );
+const VerifyCertificatePage = lazy(() =>
+  import("@/pages/verify/VerifyCertificatePage").then((m) => ({ default: m.VerifyCertificatePage })),
+);
 const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
 const AchievementsPage = lazy(() => import("@/pages/achievements"));
 
@@ -273,6 +276,22 @@ export default function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <ClaimPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/verify/:code"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <VerifyCertificatePage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/verify"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <VerifyCertificatePage />
                 </Suspense>
               }
             />

@@ -4,6 +4,12 @@
     "vi": "Tiếng Việt",
     "en": "English"
   },
+  "cropper": {
+    "title": "Cắt ảnh tỷ lệ 1:1 (Hình vuông)",
+    "hint": "Kéo để di chuyển ảnh, sử dụng thanh trượt để thu phóng.",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận"
+  },
   "actions": {
     "save": "Lưu",
     "cancel": "Hủy",
@@ -976,6 +982,35 @@
     "emptyBody": "Không tìm thấy chứng nhận nào đang chờ cho email này. Nếu bạn nghĩ đây là nhầm lẫn, hãy liên hệ đội ngũ Corelia.",
     "errorTitle": "Không thể tra cứu",
     "errorBody": "Link không hợp lệ hoặc đã xảy ra lỗi. Vui lòng thử lại từ email bạn đã nhận."
+  },
+  "verify": {
+    "loading": "Đang xác minh...",
+    "formTitle": "Xác minh chứng nhận",
+    "formHint": "Nhập mã in trên chứng nhận để kiểm tra tính xác thực.",
+    "inputLabel": "Mã chứng nhận",
+    "inputPlaceholder": "CRL-XXXXXXXXXX",
+    "submit": "Xác minh",
+    "validTitle": "Chứng nhận hợp lệ",
+    "validSubtitle": "Chứng nhận này do Corelia cấp và vẫn còn hiệu lực.",
+    "revokedTitle": "Chứng nhận đã bị thu hồi",
+    "revokedBody": "Chứng nhận này đã bị thu hồi ngày {{date}} và không còn hiệu lực.",
+    "revokedReason": "Lý do: {{reason}}",
+    "notFoundTitle": "Không tìm thấy chứng nhận",
+    "notFoundBody": "Không có chứng nhận nào ứng với mã này. Hãy kiểm tra lại mã in trên chứng nhận.",
+    "errorTitle": "Không thể xác minh",
+    "errorBody": "Đã xảy ra lỗi khi xác minh. Vui lòng thử lại sau.",
+    "holderLabel": "Người được cấp",
+    "courseLabel": "Khoá học",
+    "instructorLabel": "Giảng viên",
+    "issuedLabel": "Ngày cấp",
+    "codeLabel": "Mã chứng nhận",
+    "unknownHolder": "Không có tên",
+    "unknownCourse": "Không rõ khoá học",
+    "unknownInstructor": "Không rõ giảng viên",
+    "viewCourse": "Xem khoá học",
+    "viewProfile": "Xem hồ sơ",
+    "viewOnchain": "Xem trên Open Campus",
+    "zoomImage": "Phóng to ảnh chứng nhận"
   },
   "pendingCredentialsWelcome": {
     "title": "Bạn vừa nhận thành công các chứng nhận!",

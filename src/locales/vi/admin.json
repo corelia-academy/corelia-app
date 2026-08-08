@@ -1,5 +1,12 @@
 {
   "layout": {
+    "activityMilestones": {
+      "uploading": "Đang tải ảnh lên...",
+      "clickToUpload": "Nhấn để tải lên",
+      "orDragDrop": "hoặc kéo thả ảnh vào đây",
+      "supportFormats": "Hỗ trợ định dạng PNG, JPG",
+      "preview": "Bản xem trước"
+    },
     "sidebar": {
       "brandTitle": "Corelia Admin",
       "brandSubtitle": "Phân quyền, giảng viên và các tác vụ điều hành hệ thống hằng ngày.",
@@ -321,6 +328,7 @@
     "empty": "Không tìm thấy người dùng nào khớp bộ lọc hiện tại.",
     "unknownError": "Đã có lỗi xảy ra",
     "confirmChangeRole": "Bạn có chắc muốn đổi role thành {{role}}?",
+    "updateRoleSuccess": "Cập nhật vai trò thành công!",
     "updateRoleErrorPrefix": "Lỗi khi cập nhật role: ",
     "unknown": "Lỗi không xác định",
     "showing": "Đang hiển thị {{shown}} / {{total}} tài khoản",
@@ -468,6 +476,23 @@
       "success": "Đã cấp thành công.",
       "successGhost": "Đã lưu chờ cấp và gửi email mời cho học viên.",
       "submitFailed": "Cấp phát thất bại."
+    },
+    "pendingList": {
+      "heading": "Danh sách cấp chờ (Ghost Minting)",
+      "subheading": "Các email chưa có tài khoản đã được Admin cấp chứng nhận. Hệ thống sẽ tự động gán khi họ đăng ký.",
+      "emailCol": "Email người nhận",
+      "badgeCol": "Tên huy hiệu",
+      "networkCol": "Mạng",
+      "reasonCol": "Lý do",
+      "dateCol": "Ngày cấp",
+      "statusCol": "Trạng thái",
+      "statusAwaiting": "Chờ tạo tài khoản",
+      "actionsCol": "Thao tác",
+      "revokeBtn": "Thu hồi",
+      "revokeConfirm": "Thu hồi cấp chờ cho \"{{email}}\"? Hành động này không thể hoàn tác.",
+      "revokeSuccess": "Đã thu hồi cấp chờ thành công.",
+      "revokeFailed": "Thu hồi thất bại.",
+      "empty": "Hiện không có chứng nhận nào đang ở trạng thái cấp chờ."
     }
   },
   "coraVoucherBatches": {

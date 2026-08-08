@@ -24,9 +24,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { certificateVerifyUrl } from "@/lib/certificatesEdge";
 import { cn } from "@/lib/utils";
 
 import { useAuth } from "@/stores/authStore";
+import { CopyButton } from "./CopyButton";
 
 import { CERT_PLACEHOLDER } from "../constants";
 import type { CertificateItem, ModalItem } from "../types";
@@ -120,6 +122,14 @@ function CertificatePreviewDialog({
             <p className="text-xs text-foreground-muted">
               {t("achievements.certificates.issuedOnPrefix", { date: cert.issuedAt })}
             </p>
+            {cert.verificationCode && (
+              <div className="mt-0.5 flex items-center gap-1">
+                <span className="font-mono text-xs text-foreground-muted">
+                  {cert.verificationCode}
+                </span>
+                <CopyButton text={certificateVerifyUrl(cert.verificationCode)} />
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {hasTemplate && (

@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type KeyboardEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { ImageIcon, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -12,6 +12,11 @@ import { cn } from "@/lib/utils";
 import { saveActivityMilestoneTemplate, type CourseCredentialKind } from "@/lib/credentialTemplates";
 import { invokeGrantCredentials, invokeGrantPendingCredential } from "@/lib/credentialsEdge";
 import { validatePngSignature } from "@/lib/imageValidation";
+import {
+  listPendingCredentialsForAdmin,
+  revokePendingCredential,
+  type PendingCredentialRow,
+} from "@/lib/pendingCredentials";
 import { getProfile, getProfileByEmail } from "@/lib/profile";
 import { uploadActivityMilestoneBadgeImage } from "@/lib/storage";
 import type { Profile } from "@/types/database";
@@ -47,6 +52,27 @@ export default function AdminManualMint() {
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Step 3 — pending grants list
+  const [pendingList, setPendingList] = useState<PendingCredentialRow[]>([]);
+  const [loadingPending, setLoadingPending] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+
+  const fetchPending = async () => {
+    setLoadingPending(true);
+    try {
+      const list = await listPendingCredentialsForAdmin();
+      setPendingList(list);
+    } catch {
+      setPendingList([]);
+    } finally {
+      setLoadingPending(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetchPending();
+  }, []);
+
   const resetAll = () => {
     setIdentifierValue("");
     setLookupError(null);
@@ -56,6 +82,7 @@ export default function AdminManualMint() {
     setName("");
     setImageUrl("");
     setReason("");
+    void fetchPending();
   };
 
   const handleLookup = async () => {
@@ -194,8 +221,30 @@ export default function AdminManualMint() {
     }
   };
 
+  const handleRevoke = async (item: PendingCredentialRow) => {
+    const confirmed = window.confirm(
+      t("manualMint.pendingList.revokeConfirm", {
+        email: item.email,
+        defaultValue: `Thu hồi cấp chờ cho "${item.email}"? Hành động này không thể hoàn tác.`,
+      }),
+    );
+    if (!confirmed) return;
+
+    const id = item.id;
+    setRevokingId(id);
+    try {
+      await revokePendingCredential(id);
+      toast.success(t("manualMint.pendingList.revokeSuccess"));
+      await fetchPending();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("manualMint.pendingList.revokeFailed"));
+    } finally {
+      setRevokingId(null);
+    }
+  };
+
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-6 md:px-6">
+    <div className="mx-auto w-full max-w-4xl px-4 py-6 md:px-6">
       <LoadingOverlay show={looking} label={t("manualMint.lookup.loading")} />
 
       <div className="mb-6">
@@ -237,8 +286,6 @@ export default function AdminManualMint() {
             value={identifierValue}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               setIdentifierValue(e.target.value);
-              // Edited after a match was already found — force a fresh lookup before
-              // the business form (and Submit) can be used again for the new value.
               if (matchedProfile) setMatchedProfile(null);
               if (ghostEmail) setGhostEmail(null);
               if (lookupError) setLookupError(null);
@@ -278,7 +325,7 @@ export default function AdminManualMint() {
         ) : null}
       </div>
 
-      {/* Step 2 — business form, only actionable once a user or ghost email is targeted */}
+      {/* Step 2 — business form */}
       <div
         className={cn(
           "mt-4 space-y-3 rounded-md border border-border-subtle p-4",
@@ -377,6 +424,72 @@ export default function AdminManualMint() {
             t("manualMint.form.submit")
           )}
         </Button>
+      </div>
+
+      {/* Step 3 — Pending credential issuances (Ghost Minting Dashboard) */}
+      <div className="mt-8 space-y-3 rounded-md border border-border-subtle p-4">
+        <div>
+          <h2 className="text-base font-semibold text-foreground">{t("manualMint.pendingList.heading")}</h2>
+          <p className="mt-1 text-xs text-foreground-muted">{t("manualMint.pendingList.subheading")}</p>
+        </div>
+
+        {loadingPending ? (
+          <div className="flex items-center justify-center py-6 text-sm text-foreground-muted">
+            <Loader2 className="mr-2 size-4 animate-spin text-primary" />
+            {t("manualMint.lookup.loading")}
+          </div>
+        ) : pendingList.length === 0 ? (
+          <p className="py-4 text-center text-sm text-foreground-muted">{t("manualMint.pendingList.empty")}</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-border-subtle text-foreground-muted">
+                <tr>
+                  <th className="pb-2 font-medium">{t("manualMint.pendingList.emailCol")}</th>
+                  <th className="pb-2 font-medium">{t("manualMint.pendingList.badgeCol")}</th>
+                  <th className="pb-2 font-medium">{t("manualMint.pendingList.reasonCol")}</th>
+                  <th className="pb-2 font-medium">{t("manualMint.pendingList.dateCol")}</th>
+                  <th className="pb-2 font-medium">{t("manualMint.pendingList.statusCol")}</th>
+                  <th className="pb-2 text-right font-medium">{t("manualMint.pendingList.actionsCol")}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border-subtle">
+                {pendingList.map((item) => (
+                  <tr key={item.id} className="hover:bg-surface-raised/50 transition-colors">
+                    <td className="py-2.5 font-medium text-foreground">{item.email}</td>
+                    <td className="py-2.5 text-foreground-muted">{item.template_name || item.template_id}</td>
+                    <td className="py-2.5 text-foreground-muted max-w-[180px] truncate">
+                      {item.granted_reason || "—"}
+                    </td>
+                    <td className="py-2.5 text-foreground-muted">
+                      {new Date(item.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="py-2.5">
+                      <span className="inline-flex items-center rounded-full bg-warning/15 px-2 py-0.5 text-[11px] font-medium text-warning">
+                        {t("manualMint.pendingList.statusAwaiting")}
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-right">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="xs"
+                        disabled={revokingId === item.id}
+                        onClick={() => void handleRevoke(item)}
+                      >
+                        {revokingId === item.id ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : (
+                          t("manualMint.pendingList.revokeBtn")
+                        )}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <ManualMintProfilePreviewDialog

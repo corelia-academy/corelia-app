@@ -4,6 +4,12 @@
     "vi": "Vietnamese",
     "en": "English"
   },
+  "cropper": {
+    "title": "Crop image to 1:1 (Square)",
+    "hint": "Drag to move image, use slider to zoom.",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
   "actions": {
     "save": "Save",
     "cancel": "Cancel",
@@ -976,6 +982,35 @@
     "emptyBody": "No pending credentials were found for this email. If you think this is a mistake, contact the Corelia team.",
     "errorTitle": "Could not look this up",
     "errorBody": "This link is invalid or something went wrong. Please try again from the email you received."
+  },
+  "verify": {
+    "loading": "Verifying...",
+    "formTitle": "Verify a certificate",
+    "formHint": "Enter the code printed on the certificate to check that it is genuine.",
+    "inputLabel": "Certificate code",
+    "inputPlaceholder": "CRL-XXXXXXXXXX",
+    "submit": "Verify",
+    "validTitle": "Certificate is valid",
+    "validSubtitle": "This certificate was issued by Corelia and is still in good standing.",
+    "revokedTitle": "Certificate has been revoked",
+    "revokedBody": "This certificate was revoked on {{date}} and is no longer valid.",
+    "revokedReason": "Reason: {{reason}}",
+    "notFoundTitle": "Certificate not found",
+    "notFoundBody": "No certificate matches this code. Please double-check the code printed on the certificate.",
+    "errorTitle": "Could not verify",
+    "errorBody": "Something went wrong while verifying. Please try again later.",
+    "holderLabel": "Issued to",
+    "courseLabel": "Course",
+    "instructorLabel": "Instructor",
+    "issuedLabel": "Issued on",
+    "codeLabel": "Certificate code",
+    "unknownHolder": "Name not recorded",
+    "unknownCourse": "Course not recorded",
+    "unknownInstructor": "Instructor not recorded",
+    "viewCourse": "View course",
+    "viewProfile": "View profile",
+    "viewOnchain": "View on Open Campus",
+    "zoomImage": "Zoom into certificate image"
   },
   "pendingCredentialsWelcome": {
     "title": "You just received your credentials!",

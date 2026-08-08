@@ -595,6 +595,25 @@ export function invalidateEnrollmentsCache(userId: string) {
   enrollmentsCache.delete(userId);
 }
 
+/** Public verification codes for the signed-in learner's own certificates,
+ *  keyed by course_id. Readable thanks to the certificate_records_select_own policy;
+ *  the table has no anon policy, so codes can never be enumerated. */
+export async function getMyCertificateCodes(userId: string): Promise<Map<string, string>> {
+  if (!userId) return new Map();
+  const { data, error } = await supabase
+    .from("certificate_records")
+    .select("code, course_id")
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+  const map = new Map<string, string>();
+  for (const row of data ?? []) {
+    const courseId = typeof row.course_id === "string" ? row.course_id : "";
+    const code = typeof row.code === "string" ? row.code : "";
+    if (courseId && code) map.set(courseId, code);
+  }
+  return map;
+}
+
 export async function getEnrollmentsForCourse(courseId: string): Promise<Enrollment[]> {
   const { data, error } = await supabase
     .from("enrollments")
@@ -1116,6 +1135,7 @@ export async function addSection(courseId: string, data: CourseSectionInsert): P
     data: dataDoc,
   });
   if (error) throw new Error(error.message);
+  invalidateSectionsCache(courseId);
   return { id, ...payload } as CourseSection;
 }
 
@@ -1159,6 +1179,7 @@ export async function addLesson(courseId: string, data: CourseLessonInsert): Pro
     data: dataDoc,
   });
   if (error) throw new Error(error.message);
+  invalidateSectionsCache(courseId);
   // Background-ingest the new lesson into knowledge_chunks so Cora RAG can pick it up.
   triggerLessonEmbeddingInBackground({ courseId, lessonId: id });
   return { id, ...payload } as CourseLesson;
@@ -1208,6 +1229,7 @@ export async function updateCourse(courseId: string, data: CourseUpdate): Promis
     .update({ ...top, data: nextData })
     .eq("id", courseId);
   if (error) throw new Error(error.message);
+  invalidateCourseCache(courseId);
 }
 
 export async function refreshCourseTotalDuration(courseId: string): Promise<void> {
@@ -1237,6 +1259,7 @@ export async function updateSection(
     .eq("course_id", courseId)
     .eq("id", sectionId);
   if (upErr) throw new Error(upErr.message);
+  invalidateSectionsCache(courseId);
 }
 
 export async function updateLesson(
@@ -1275,6 +1298,7 @@ export async function updateLesson(
     .eq("course_id", courseId)
     .eq("id", lessonId);
   if (upErr) throw new Error(upErr.message);
+  invalidateSectionsCache(courseId);
   // Re-ingest into knowledge_chunks so Cora RAG stays in sync. Checksums skip no-op writes.
   triggerLessonEmbeddingInBackground({ courseId, lessonId });
 }
@@ -1289,6 +1313,7 @@ export async function reorderCourseLessons(
     p_updates: lessons.map((l) => ({ id: l.id, sort_order: l.order, section_id: l.section_id })),
   });
   if (error) throw new Error(error.message);
+  invalidateSectionsCache(courseId);
 }
 
 export async function reorderCourseSections(
@@ -1301,6 +1326,7 @@ export async function reorderCourseSections(
     p_updates: sections.map((s) => ({ id: s.id, sort_order: s.order })),
   });
   if (error) throw new Error(error.message);
+  invalidateSectionsCache(courseId);
 }
 
 export async function deleteSection(
@@ -1308,19 +1334,27 @@ export async function deleteSection(
   sectionId: string,
   lessonIdsInSection: string[],
 ): Promise<void> {
-  await supabase.from("course_sections").delete().eq("course_id", courseId).eq("id", sectionId);
+  const { error: sectionError } = await supabase
+    .from("course_sections")
+    .delete()
+    .eq("course_id", courseId)
+    .eq("id", sectionId);
+  if (sectionError) throw new Error(sectionError.message);
   if (lessonIdsInSection.length > 0) {
-    await supabase
+    const { error: lessonsError } = await supabase
       .from("course_lessons")
       .delete()
       .eq("course_id", courseId)
       .in("id", lessonIdsInSection);
+    if (lessonsError) throw new Error(lessonsError.message);
   }
+  invalidateSectionsCache(courseId);
 }
 
 export async function deleteLesson(courseId: string, lessonId: string): Promise<void> {
   const { error } = await supabase.from("course_lessons").delete().eq("course_id", courseId).eq("id", lessonId);
   if (error) throw new Error(error.message);
+  invalidateSectionsCache(courseId);
 }
 
 export async function deleteCourse(courseId: string): Promise<void> {

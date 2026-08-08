@@ -22,6 +22,7 @@ import {
   getCourse,
   getCourseLessons,
   getLessonProgressForCourse,
+  getMyCertificateCodes,
   getMyEnrollments,
   invalidateCourseCache,
   syncCourseCompletion,
@@ -76,10 +77,13 @@ export function useAchievementsPage(enabled = true) {
       // Invalidate course cache so certificate template URLs (CDN) are always fresh
       invalidateCourseCache();
       await backfillMissingEnrollmentsForUser(user.id).catch(() => 0);
-      const [enrollments, courseIssuanceMap, ocRows] = await Promise.all([
+      const [enrollments, courseIssuanceMap, ocRows, certificateCodeMap] = await Promise.all([
         getMyEnrollments(user.id),
         fetchCourseIssuanceMapForUser(user.id),
         fetchMyCredentialIssuances(user.id),
+        // Non-fatal: a missing code only hides the verify affordance, it must never
+        // stop the certificate vault from rendering.
+        getMyCertificateCodes(user.id).catch(() => new Map<string, string>()),
       ]);
 
       const courseIds = Array.from(new Set(enrollments.map((item) => item.course_id)));
@@ -102,6 +106,7 @@ export function useAchievementsPage(enabled = true) {
         profile?.ocid,
         profile?.full_name,
         courseCredentialTemplateMap,
+        certificateCodeMap,
       );
       const nextCertificates = [...enrollmentCertificates].sort((a, b) => {
         const aDate = a.issuedAt.split("/").reverse().join("-");

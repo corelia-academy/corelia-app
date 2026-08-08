@@ -381,7 +381,7 @@ export default function InstructorCareerTrackEditorPage() {
 
   async function handleThumbnailUpload(file: File) {
     if (!id) {
-      setError("Hãy lưu lộ trình trước khi tải ảnh.");
+      setError(t("courseEdit.careerTracks.saveBeforeUpload"));
       return;
     }
     setUploadingThumbnail(true);
@@ -398,7 +398,7 @@ export default function InstructorCareerTrackEditorPage() {
         thumbnail_path: result.path,
       });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload thất bại");
+      setError(e instanceof Error ? e.message : t("courseEdit.careerTracks.uploadFailed"));
     } finally {
       setUploadingThumbnail(false);
     }
@@ -573,9 +573,9 @@ export default function InstructorCareerTrackEditorPage() {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Mô tả ngắn (short description)</FieldLabel>
+                  <FieldLabel>{t("courseEdit.careerTracks.shortDescriptionLabel")}</FieldLabel>
                   <FieldDescription>
-                    Hiển thị ngay dưới tiêu đề ở trang chi tiết. ~1–2 câu.
+                    {t("courseEdit.careerTracks.shortDescriptionDesc")}
                   </FieldDescription>
                   <textarea
                     value={form.shortDescription}
@@ -585,7 +585,7 @@ export default function InstructorCareerTrackEditorPage() {
                     rows={2}
                     maxLength={280}
                     className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none transition-colors placeholder:text-foreground-subtle focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
-                    placeholder="Hành trình học Web3 trong 8 tuần…"
+                    placeholder={t("courseEdit.careerTracks.shortDescriptionPlaceholder")}
                   />
                 </Field>
               </>
@@ -707,9 +707,9 @@ export default function InstructorCareerTrackEditorPage() {
                           Lưu lộ trình trước khi tải ảnh.
                         </span>
                       ) : null}
-                      {uploadingThumbnail ? (
-                        <span className="text-xs text-foreground-muted">Đang tải lên…</span>
-                      ) : null}
+                      {uploadingThumbnail && (
+                        <span className="text-xs text-foreground-muted">{t("courseEdit.careerTracks.uploading")}</span>
+                      )}
                       {form.thumbnailUrl ? (
                         <Button
                           type="button"
@@ -971,7 +971,7 @@ export default function InstructorCareerTrackEditorPage() {
                 </div>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   <Input
-                    placeholder="Tên"
+                    placeholder={t("courseEdit.careerTracks.namePlaceholder")}
                     value={sp.name ?? ""}
                     onChange={(e) => updateSponsor(idx, { name: e.target.value })}
                   />
@@ -990,7 +990,7 @@ export default function InstructorCareerTrackEditorPage() {
                     }
                   />
                   <Input
-                    placeholder="Mô tả ngắn (tuỳ chọn)"
+                    placeholder={t("courseEdit.careerTracks.shortDescOptionalPlaceholder")}
                     value={sp.description ?? ""}
                     onChange={(e) =>
                       updateSponsor(idx, { description: e.target.value || null })
@@ -1033,7 +1033,7 @@ export default function InstructorCareerTrackEditorPage() {
                 </div>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   <Input
-                    placeholder="Tên"
+                    placeholder={t("courseEdit.careerTracks.namePlaceholder")}
                     value={p.name ?? ""}
                     onChange={(e) => updatePartner(idx, { name: e.target.value })}
                   />
@@ -1052,7 +1052,7 @@ export default function InstructorCareerTrackEditorPage() {
                     }
                   />
                   <Input
-                    placeholder="Mô tả ngắn (tuỳ chọn)"
+                    placeholder={t("courseEdit.careerTracks.shortDescOptionalPlaceholder")}
                     value={p.description ?? ""}
                     onChange={(e) =>
                       updatePartner(idx, { description: e.target.value || null })
@@ -1078,7 +1078,7 @@ export default function InstructorCareerTrackEditorPage() {
           </FieldDescription>
           <div className="grid gap-2 sm:grid-cols-2">
             <Input
-              placeholder="Tên"
+              placeholder={t("courseEdit.careerTracks.namePlaceholder")}
               value={partnerBrand?.name ?? ""}
               onChange={(e) =>
                 setPartnerBrand((prev) => ({
@@ -1108,7 +1108,7 @@ export default function InstructorCareerTrackEditorPage() {
               }
             />
             <Input
-              placeholder="Mô tả ngắn (tuỳ chọn)"
+              placeholder={t("courseEdit.careerTracks.shortDescOptionalPlaceholder")}
               value={partnerBrand?.description ?? ""}
               onChange={(e) =>
                 setPartnerBrand((prev) => ({

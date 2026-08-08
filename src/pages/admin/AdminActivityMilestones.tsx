@@ -301,7 +301,9 @@ export default function AdminActivityMilestones() {
                   {uploading ? (
                     <>
                       <Loader2 className="size-6 animate-spin text-primary" aria-hidden />
-                      <span className="font-medium text-primary">Đang tải ảnh lên...</span>
+                      <span className="font-medium text-primary">
+                        {t("layout.activityMilestones.uploading")}
+                      </span>
                     </>
                   ) : (
                     <>
@@ -309,9 +311,14 @@ export default function AdminActivityMilestones() {
                         <Upload className="size-5" aria-hidden />
                       </div>
                       <div>
-                        <span className="font-medium text-primary">Nhấn để tải lên</span> hoặc kéo thả ảnh vào đây
+                        <span className="font-medium text-primary">
+                          {t("layout.activityMilestones.clickToUpload")}
+                        </span>{" "}
+                        {t("layout.activityMilestones.orDragDrop")}
                       </div>
-                      <div className="text-xs opacity-70">Hỗ trợ định dạng PNG, JPG</div>
+                      <div className="text-xs opacity-70">
+                        {t("layout.activityMilestones.supportFormats")}
+                      </div>
                     </>
                   )}
                 </div>
@@ -321,7 +328,7 @@ export default function AdminActivityMilestones() {
                   <div className="flex items-center justify-between gap-2 mb-2 text-xs font-medium text-foreground-muted">
                     <div className="flex items-center gap-2">
                       <ImageIcon className="size-4" />
-                      Bản xem trước
+                      {t("layout.activityMilestones.preview")}
                     </div>
                     <button
                       type="button"

@@ -70,9 +70,8 @@ import {
   updateSubmissionStatus,
 } from "@/lib/finalAssignment";
 import {
-  getAllProfiles,
   getProfile,
-  listCoreliaInstructorProfiles,
+  listCourseCoInstructorCandidates,
 } from "@/lib/profile";
 import { fetchYoutubeVideoMetadata, getYoutubeVideoDuration } from "@/lib/youtube";
 import {
@@ -177,6 +176,8 @@ import { DescriptionGeneratorDialog } from "@/pages/instructor-course-edit/compo
 
 import { CourseOcbCredentialSection } from "@/pages/instructor-course-edit/components/CourseOcbCredentialSection";
 import { QuestionGeneratorDialog } from "@/pages/instructor-course-edit/components/QuestionGeneratorDialog";
+import { CertificateLayoutPreview } from "@/pages/instructor-course-edit/components/CertificateLayoutPreview";
+import { CERTIFICATE_LAYOUT_DEFAULTS } from "@/pages/achievements/utils/certificateLayout";
 import { CO_INSTRUCTOR_PERMISSION_KEYS, EDIT_SECTION_IDS } from "./constants";
 import { AnnouncementsSection } from "./components/AnnouncementsSection";
 import type {
@@ -378,9 +379,17 @@ const InstructorCourseEdit = () => {
     has_sections: true,
     certificate_template_url: "",
     certificate_template_path: "",
-    certificate_name_x_percent: 50,
-    certificate_name_y_percent: 50,
+    certificate_name_x_percent: CERTIFICATE_LAYOUT_DEFAULTS.nameXPercent,
+    certificate_name_y_percent: CERTIFICATE_LAYOUT_DEFAULTS.nameYPercent,
+    certificate_name_size_percent: CERTIFICATE_LAYOUT_DEFAULTS.nameSizePercent,
     certificate_name_color: "#000000",
+    certificate_footer_x_percent: CERTIFICATE_LAYOUT_DEFAULTS.footerXPercent,
+    certificate_footer_y_percent: CERTIFICATE_LAYOUT_DEFAULTS.footerYPercent,
+    certificate_footer_size_percent: CERTIFICATE_LAYOUT_DEFAULTS.footerSizePercent,
+    certificate_footer_color: "#000000",
+    certificate_qr_x_percent: CERTIFICATE_LAYOUT_DEFAULTS.qrXPercent,
+    certificate_qr_y_percent: CERTIFICATE_LAYOUT_DEFAULTS.qrYPercent,
+    certificate_qr_size_percent: CERTIFICATE_LAYOUT_DEFAULTS.qrSizePercent,
     onchain_certificate_template_url: "",
     onchain_certificate_template_path: "",
     access_model: "free" as CourseAccessModel,
@@ -970,17 +979,10 @@ const InstructorCourseEdit = () => {
   }, [course?.id, canEditCoInstructors]);
 
   useEffect(() => {
-    if (!canEditCoInstructors) return;
+    if (!course?.id || !canEditCoInstructors) return;
     let cancelled = false;
     setLoadingInstructorDirectory(true);
-    const load = async () => {
-      if (isAdmin || isSupportStaff) {
-        const all = await getAllProfiles();
-        return all.filter((p) => p.role === "instructor");
-      }
-      return await listCoreliaInstructorProfiles();
-    };
-    void load()
+    void listCourseCoInstructorCandidates(course.id)
       .then((rows) => {
         if (!cancelled) setInstructorDirectory(rows);
       })
@@ -993,7 +995,7 @@ const InstructorCourseEdit = () => {
     return () => {
       cancelled = true;
     };
-  }, [canEditCoInstructors, isAdmin, isSupportStaff]);
+  }, [course?.id, canEditCoInstructors]);
 
   useEffect(() => {
     if (!id || !canAccessPricing) return;
@@ -1027,9 +1029,26 @@ const InstructorCourseEdit = () => {
         has_sections: course.has_sections ?? true,
         certificate_template_url: course.certificate_template_url ?? "",
         certificate_template_path: course.certificate_template_path ?? "",
-        certificate_name_x_percent: course.certificate_name_x_percent ?? 50,
-        certificate_name_y_percent: course.certificate_name_y_percent ?? 50,
+        certificate_name_x_percent:
+          course.certificate_name_x_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.nameXPercent,
+        certificate_name_y_percent:
+          course.certificate_name_y_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.nameYPercent,
+        certificate_name_size_percent:
+          course.certificate_name_size_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.nameSizePercent,
         certificate_name_color: course.certificate_name_color ?? "#000000",
+        certificate_footer_x_percent:
+          course.certificate_footer_x_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.footerXPercent,
+        certificate_footer_y_percent:
+          course.certificate_footer_y_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.footerYPercent,
+        certificate_footer_size_percent:
+          course.certificate_footer_size_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.footerSizePercent,
+        certificate_footer_color: course.certificate_footer_color ?? "#000000",
+        certificate_qr_x_percent:
+          course.certificate_qr_x_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.qrXPercent,
+        certificate_qr_y_percent:
+          course.certificate_qr_y_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.qrYPercent,
+        certificate_qr_size_percent:
+          course.certificate_qr_size_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.qrSizePercent,
         onchain_certificate_template_url: course.onchain_certificate_template_url ?? "",
         onchain_certificate_template_path: course.onchain_certificate_template_path ?? "",
         access_model: course.access_model ?? "free",
@@ -1306,6 +1325,24 @@ const InstructorCourseEdit = () => {
     }
   };
 
+  /** Clamped percentage input for the certificate layout fields. The render-time
+   *  clamp in certificateLayout() is the real guard — this just keeps the form from
+   *  showing values the renderer would silently ignore. */
+  const pctHandler =
+    (key: keyof typeof form, min = 0, max = 100) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value;
+      if (raw === "") {
+        setForm((p) => ({ ...p, [key]: "" as unknown as number }));
+        return;
+      }
+      // Khắc phục bug '00x' prefix: Loại bỏ các số 0 thừa ở đầu khi người dùng gõ đè
+      const sanitized = raw.replace(/^0+(?=\d)/, "");
+      const v = Number(sanitized);
+      if (Number.isNaN(v)) return;
+      setForm((p) => ({ ...p, [key]: Math.max(min, Math.min(max, v)) }));
+    };
+
   const saveCourseInfo = async (successMessage = t("courseEdit.toasts.saved")) => {
     if (!id || !course) return;
     if (form.access_model === "paid_upfront" && Number(form.price_vnd) <= 0) {
@@ -1458,6 +1495,66 @@ const InstructorCourseEdit = () => {
         return next;
       })();
 
+      // pctHandler stores "" (a string, despite the `number` form type — see its
+      // "as unknown as number" cast) while a certificate layout field is cleared
+      // mid-edit, so the user can retype without the input's leading-zero bug. That
+      // must never reach the DB as-is: courses.data is jsonb, which accepts "" with
+      // no error at write time, but private.corelia_verify_certificate() casts it
+      // right back with `(data->>'...')::numeric` on every /verify read — a saved ""
+      // turns into `invalid input syntax for type numeric` there, i.e. a public HTTP
+      // 500 on EVERY certificate under this course, not just a local form glitch.
+      // Falling back to the same default the field renders at when unset keeps the
+      // save a no-op for that field instead of corrupting it.
+      const numOrDefault = (value: number, fallback: number): number =>
+        typeof value === "number" && Number.isFinite(value) ? value : fallback;
+
+      // One object for BOTH the DB payload and the optimistic local patch below.
+      // Keeping two hand-maintained lists is what let certificate_name_color get
+      // saved but never patched locally — with a live layout preview reading this
+      // state, a missed field shows stale geometry right after a successful save.
+      const certificatePatch = {
+        certificate_template_url: form.certificate_template_url || null,
+        certificate_template_path: form.certificate_template_path || null,
+        certificate_name_x_percent: numOrDefault(
+          form.certificate_name_x_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.nameXPercent,
+        ),
+        certificate_name_y_percent: numOrDefault(
+          form.certificate_name_y_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.nameYPercent,
+        ),
+        certificate_name_size_percent: numOrDefault(
+          form.certificate_name_size_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.nameSizePercent,
+        ),
+        certificate_name_color: form.certificate_name_color || "#000000",
+        certificate_footer_x_percent: numOrDefault(
+          form.certificate_footer_x_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.footerXPercent,
+        ),
+        certificate_footer_y_percent: numOrDefault(
+          form.certificate_footer_y_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.footerYPercent,
+        ),
+        certificate_footer_size_percent: numOrDefault(
+          form.certificate_footer_size_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.footerSizePercent,
+        ),
+        certificate_footer_color: form.certificate_footer_color || "#000000",
+        certificate_qr_x_percent: numOrDefault(
+          form.certificate_qr_x_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.qrXPercent,
+        ),
+        certificate_qr_y_percent: numOrDefault(
+          form.certificate_qr_y_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.qrYPercent,
+        ),
+        certificate_qr_size_percent: numOrDefault(
+          form.certificate_qr_size_percent,
+          CERTIFICATE_LAYOUT_DEFAULTS.qrSizePercent,
+        ),
+      };
+
       await updateCourse(id, {
         slug: form.slug,
         thumbnail_url: form.thumbnail_url,
@@ -1487,11 +1584,7 @@ const InstructorCourseEdit = () => {
           final_assignment_instructions:
             contentForm.final_assignment_instructions.trim() || null,
         }),
-        certificate_template_url: form.certificate_template_url || null,
-        certificate_template_path: form.certificate_template_path || null,
-        certificate_name_x_percent: form.certificate_name_x_percent,
-        certificate_name_y_percent: form.certificate_name_y_percent,
-        certificate_name_color: form.certificate_name_color || "#000000",
+        ...certificatePatch,
         onchain_certificate_template_url: form.onchain_certificate_template_url || null,
         onchain_certificate_template_path: form.onchain_certificate_template_path || null,
         access_model: form.access_model,
@@ -1556,10 +1649,11 @@ const InstructorCourseEdit = () => {
                 final_assignment_description: contentForm.final_assignment_description,
                 final_assignment_instructions: contentForm.final_assignment_instructions,
               }),
+              ...certificatePatch,
+              // Course (read shape) uses optional-undefined where CourseUpdate is
+              // nullable; the layout numbers above are shared, these two are not.
               certificate_template_url: form.certificate_template_url,
               certificate_template_path: form.certificate_template_path,
-              certificate_name_x_percent: form.certificate_name_x_percent,
-              certificate_name_y_percent: form.certificate_name_y_percent,
               onchain_certificate_template_url: form.onchain_certificate_template_url,
               onchain_certificate_template_path: form.onchain_certificate_template_path,
               access_model: form.access_model,
@@ -1605,14 +1699,19 @@ const InstructorCourseEdit = () => {
       if (canEditCoInstructors && idsToInvite.length > 0) {
         let invitedCount = 0;
         let inviteFailures = 0;
+        let emailFailures = 0;
         for (const inviteeId of idsToInvite) {
           try {
-            await inviteCoInstructor({
+            const invite = await inviteCoInstructor({
               courseId: course.id,
               inviteeUserId: inviteeId,
               permissions: coInstructorPermissions[inviteeId] ?? {},
             });
             invitedCount += 1;
+            if (!invite.emailSent) {
+              emailFailures += 1;
+              console.error("[co-instructor invite] email not sent", inviteeId, invite.reason);
+            }
           } catch (err) {
             inviteFailures += 1;
             console.error("[co-instructor invite]", inviteeId, err);
@@ -1626,6 +1725,11 @@ const InstructorCourseEdit = () => {
         if (inviteFailures > 0) {
           toast.error(
             t("courseEdit.coInstructors.inviteFailed", { count: inviteFailures }),
+          );
+        }
+        if (emailFailures > 0) {
+          toast.error(
+            t("courseEdit.coInstructors.inviteEmailFailed", { count: emailFailures }),
           );
         }
         // Remove invited uids from local state (they are not real co-instructors yet)
@@ -5136,19 +5240,23 @@ const InstructorCourseEdit = () => {
                                   (inv) => inv.invitee_user_id === p.id,
                                 ),
                             )
-                            .map(
-                              (p): ProfileComboboxOption => ({
-                                id: p.id,
-                                label:
-                                  p.full_name ??
-                                  p.email ??
-                                  t("courseEdit.coInstructors.fallbackName"),
-                                description:
-                                  p.instructor_headline ??
-                                  p.instructor_organization ??
-                                  null,
-                              }),
-                            )
+                              .map(
+                                (p): ProfileComboboxOption => ({
+                                  id: p.id,
+                                  label:
+                                    p.full_name ??
+                                    (p.username ? `@${p.username}` : null) ??
+                                    p.email ??
+                                    t("courseEdit.coInstructors.fallbackName"),
+                                  description: [
+                                    p.email,
+                                    p.username ? `@${p.username}` : null,
+                                    p.instructor_headline ?? p.instructor_organization ?? null,
+                                  ]
+                                    .filter((value, index, values) => Boolean(value) && values.indexOf(value) === index)
+                                    .join(" · ") || null,
+                                }),
+                              )
                         }
                         placeholder={t("courseEdit.coInstructors.placeholder")}
                         searchPlaceholder={t("courseEdit.coInstructors.searchPlaceholder")}
@@ -5250,7 +5358,7 @@ const InstructorCourseEdit = () => {
                             return (
                               <div
                                 key={cid}
-                                className="rounded-md border border-border-subtle bg-surface-raised p-3"
+                                className="overflow-hidden rounded-md border border-border-subtle bg-surface-raised p-3"
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="min-w-0">
@@ -5262,7 +5370,7 @@ const InstructorCourseEdit = () => {
                                         </span>
                                       ) : null}
                                     </div>
-                                    <div className="mt-0.5 text-xs text-foreground-muted">
+                                    <div className="mt-0.5 break-all text-xs text-foreground-muted">
                                       {cid}
                                     </div>
                                   </div>
@@ -5286,13 +5394,13 @@ const InstructorCourseEdit = () => {
                                   </Button>
                                 </div>
 
-                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                                   {CO_INSTRUCTOR_PERMISSION_KEYS.map((item) => {
                                     const checked = perms[item.key] === true;
                                     return (
                                       <label
                                         key={item.key}
-                                        className="flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm"
+                                        className="flex min-w-0 items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base px-3 py-2 text-sm"
                                       >
                                         <input
                                           type="checkbox"
@@ -5308,7 +5416,7 @@ const InstructorCourseEdit = () => {
                                             }));
                                           }}
                                         />
-                                        <span className="text-foreground">
+                                        <span className="min-w-0 break-words text-foreground">
                                           {String(
                                             t(item.labelKey as never),
                                           )}
@@ -5316,7 +5424,7 @@ const InstructorCourseEdit = () => {
                                       </label>
                                     );
                                   })}
-                                  <label className="flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm sm:col-span-2">
+                                  <label className="flex min-w-0 items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base px-3 py-2 text-sm sm:col-span-2">
                                     <input
                                       type="checkbox"
                                       checked={coInstructorVisibility[cid] !== false}
@@ -5327,7 +5435,7 @@ const InstructorCourseEdit = () => {
                                         }));
                                       }}
                                     />
-                                    <span className="text-foreground">
+                                    <span className="min-w-0 break-words text-foreground">
                                       {t("courseEdit.coInstructors.showOnCoursePage")}
                                     </span>
                                   </label>
@@ -7023,7 +7131,7 @@ const InstructorCourseEdit = () => {
           )}
 
           <Dialog open={!!editingSection} onOpenChange={(open) => !open && setEditingSection(null)}>
-            <DialogContent>
+            <DialogContent className="w-[calc(100%-2rem)] max-w-2xl">
               <DialogHeader>
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle>{t("courseEdit.sections.editTitle")}</DialogTitle>
@@ -8783,44 +8891,61 @@ const InstructorCourseEdit = () => {
                       )}
                     </div>
                   </Field>
+                  <CertificateLayoutPreview
+                    templateUrl={form.certificate_template_url}
+                    nameColor={form.certificate_name_color ?? "#000000"}
+                    footerColor={form.certificate_footer_color ?? "#000000"}
+                    settings={{
+                      nameXPercent: form.certificate_name_x_percent,
+                      nameYPercent: form.certificate_name_y_percent,
+                      nameSizePercent: form.certificate_name_size_percent,
+                      footerXPercent: form.certificate_footer_x_percent,
+                      footerYPercent: form.certificate_footer_y_percent,
+                      footerSizePercent: form.certificate_footer_size_percent,
+                      qrXPercent: form.certificate_qr_x_percent,
+                      qrYPercent: form.certificate_qr_y_percent,
+                      qrSizePercent: form.certificate_qr_size_percent,
+                    }}
+                  />
+
+                  {/* Learner name */}
+                  <p className="text-sm font-semibold text-foreground">
+                    {t("courseEdit.certificate.nameGroupTitle")}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.nameXLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_name_x_percent}
+                        onChange={pctHandler("certificate_name_x_percent")}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.nameYLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_name_y_percent}
+                        onChange={pctHandler("certificate_name_y_percent")}
+                      />
+                    </Field>
+                  </div>
                   <Field>
-                    <FieldLabel>{t("courseEdit.certificate.nameXLabel")}</FieldLabel>
+                    <FieldLabel>{t("courseEdit.certificate.nameSizeLabel")}</FieldLabel>
                     <Input
                       type="number"
-                      min={0}
-                      max={100}
-                      value={form.certificate_name_x_percent}
-                      onChange={(e) => {
-                        const v = Number(e.target.value);
-                        if (!Number.isNaN(v))
-                          setForm((p) => ({
-                            ...p,
-                            certificate_name_x_percent: Math.max(
-                              0,
-                              Math.min(100, v),
-                            ),
-                          }));
-                      }}
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>{t("courseEdit.certificate.nameYLabel")}</FieldLabel>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={form.certificate_name_y_percent}
-                      onChange={(e) => {
-                        const v = Number(e.target.value);
-                        if (!Number.isNaN(v))
-                          setForm((p) => ({
-                            ...p,
-                            certificate_name_y_percent: Math.max(
-                              0,
-                              Math.min(100, v),
-                            ),
-                          }));
-                      }}
+                      min={1}
+                      max={15}
+                      step={0.25}
+                      disabled={!canEdit}
+                      value={form.certificate_name_size_percent}
+                      onChange={pctHandler("certificate_name_size_percent", 1, 15)}
                     />
                   </Field>
                   <Field>
@@ -8841,13 +8966,118 @@ const InstructorCourseEdit = () => {
                     </div>
                     <p className="mt-1 text-xs text-foreground-muted">{t("courseEdit.certificate.nameColorHint")}</p>
                   </Field>
+
+                  {/* Date of Issue / Certificate ID footer */}
+                  <p className="pt-2 text-sm font-semibold text-foreground">
+                    {t("courseEdit.certificate.footerGroupTitle")}
+                  </p>
+                  <p className="text-xs text-foreground-muted">
+                    {t("courseEdit.certificate.footerGroupHint")}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.footerXLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_footer_x_percent}
+                        onChange={pctHandler("certificate_footer_x_percent")}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.footerYLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_footer_y_percent}
+                        onChange={pctHandler("certificate_footer_y_percent")}
+                      />
+                    </Field>
+                  </div>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.footerSizeLabel")}</FieldLabel>
+                    <Input
+                      type="number"
+                      min={0.5}
+                      max={6}
+                      step={0.25}
+                      disabled={!canEdit}
+                      value={form.certificate_footer_size_percent}
+                      onChange={pctHandler("certificate_footer_size_percent", 0.5, 6)}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.footerColorLabel")}</FieldLabel>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={form.certificate_footer_color ?? "#000000"}
+                        disabled={!canEdit}
+                        onChange={(e) =>
+                          setForm((p) => ({ ...p, certificate_footer_color: e.target.value }))
+                        }
+                        className="size-9 cursor-pointer rounded border border-border-subtle bg-surface-base p-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                      />
+                      <span className="font-mono text-sm text-foreground-muted">
+                        {form.certificate_footer_color ?? "#000000"}
+                      </span>
+                    </div>
+                  </Field>
+
+                  {/* Verification QR */}
+                  <p className="pt-2 text-sm font-semibold text-foreground">
+                    {t("courseEdit.certificate.qrGroupTitle")}
+                  </p>
+                  <p className="text-xs text-foreground-muted">
+                    {t("courseEdit.certificate.qrGroupHint")}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.qrXLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_qr_x_percent}
+                        onChange={pctHandler("certificate_qr_x_percent")}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>{t("courseEdit.certificate.qrYLabel")}</FieldLabel>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        disabled={!canEdit}
+                        value={form.certificate_qr_y_percent}
+                        onChange={pctHandler("certificate_qr_y_percent")}
+                      />
+                    </Field>
+                  </div>
+                  <Field>
+                    <FieldLabel>{t("courseEdit.certificate.qrSizeLabel")}</FieldLabel>
+                    <Input
+                      type="number"
+                      min={3}
+                      max={30}
+                      step={0.25}
+                      disabled={!canEdit}
+                      value={form.certificate_qr_size_percent}
+                      onChange={pctHandler("certificate_qr_size_percent", 3, 30)}
+                    />
+                  </Field>
                   <Button
                     onClick={() =>
                       void saveCourseInfo(t("courseEdit.labels.saveCertificate"))
                     }
                     disabled={saving || !canEdit}
                   >
-                    {saving ? t("courseEdit.labels.saving") : t("courseEdit.certificate.saveNamePosition")}
+                    {saving ? t("courseEdit.labels.saving") : t("courseEdit.certificate.saveLayout")}
                   </Button>
                 </div>
 

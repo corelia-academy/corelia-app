@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, ZoomIn, ZoomOut } from "lucide-react";
@@ -17,6 +18,7 @@ export function CanvasCropperModal({
   onCrop,
   onCancel,
 }: CanvasCropperModalProps) {
+  const { t } = useTranslation();
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
@@ -254,7 +256,7 @@ export function CanvasCropperModal({
     <Dialog open={open} onOpenChange={(v) => !v && onCancel()}>
       <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle>Cắt ảnh tỷ lệ 1:1 (Hình vuông)</DialogTitle>
+          <DialogTitle>{t("cropper.title")}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4 py-4">
           <div className="relative overflow-hidden rounded-lg border border-border bg-surface-raised">
@@ -284,16 +286,16 @@ export function CanvasCropperModal({
             <ZoomIn className="size-4 text-foreground-muted" />
           </div>
           <p className="text-xs text-foreground-muted">
-            Kéo để di chuyển ảnh, sử dụng thanh trượt để thu phóng.
+            {t("cropper.hint")}
           </p>
         </div>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="ghost" onClick={onCancel} disabled={loading}>
-            Hủy
+            {t("cropper.cancel")}
           </Button>
           <Button onClick={handleCrop} disabled={loading} className="gap-2">
             {loading && <Loader2 className="size-4 animate-spin" />}
-            Xác nhận
+            {t("cropper.confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>

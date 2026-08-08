@@ -58,8 +58,9 @@
     "enrollErrorFallback": "Failed to enroll",
     "duration": {
       "lessThanOneMinute": "< 1 min",
+      "minutes": "{{count}} mins",
       "minutes_one": "{{count}} min",
-      "minutes_other": "{{count}} min",
+      "minutes_other": "{{count}} mins",
       "hoursMinutes": "{{hours}}h {{minutes}}m"
     },
     "payment": {
@@ -231,13 +232,17 @@
         "certificateFeeRequired": "Certificate review fee required",
         "fullLessons": "All lessons"
       },
+      "sectionCount": "{{count}} sections",
       "sectionCount_one": "{{count}} section",
       "sectionCount_other": "{{count}} sections",
       "sectionLabel": "Section {{index}}",
+      "lessonCount": "{{count}} lessons",
       "lessonCount_one": "{{count}} lesson",
       "lessonCount_other": "{{count}} lessons",
+      "lessonCountPreview": "{{count}} preview lessons",
       "lessonCountPreview_one": "{{count}} preview lesson",
       "lessonCountPreview_other": "{{count}} preview lessons",
+      "lessonCountShort": "{{count}} lessons",
       "lessonCountShort_one": "{{count}} lesson",
       "lessonCountShort_other": "{{count}} lessons",
       "previewLessonBadge": "Preview",
