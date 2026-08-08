@@ -328,6 +328,7 @@
     "empty": "Không tìm thấy người dùng nào khớp bộ lọc hiện tại.",
     "unknownError": "Đã có lỗi xảy ra",
     "confirmChangeRole": "Bạn có chắc muốn đổi role thành {{role}}?",
+    "updateRoleSuccess": "Cập nhật vai trò thành công!",
     "updateRoleErrorPrefix": "Lỗi khi cập nhật role: ",
     "unknown": "Lỗi không xác định",
     "showing": "Đang hiển thị {{shown}} / {{total}} tài khoản",

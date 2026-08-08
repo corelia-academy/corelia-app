@@ -35,8 +35,9 @@ export default function AdminUsers() {
       setProfiles((prev) =>
         prev.map((p) => (p.id === userId ? { ...p, role: newRole } : p)),
       );
+      toast.success(t("users.updateRoleSuccess"));
     } catch (err) {
-      alert(
+      toast.error(
         t("users.updateRoleErrorPrefix") +
           (err instanceof Error ? err.message : t("users.unknown")),
       );
@@ -58,11 +59,13 @@ export default function AdminUsers() {
       }
       if (!q) return true;
       const name = (p.full_name ?? "").toLowerCase();
+      const username = (p.username ?? "").toLowerCase();
       const email =
         (p.id === currentUser?.id ? (currentUser.email ?? "") : p.email ?? "")
           .toLowerCase();
       return (
         name.includes(q) ||
+        username.includes(q) ||
         email.includes(q) ||
         p.id.toLowerCase().includes(q) ||
         p.role.toLowerCase().includes(q)
@@ -260,12 +263,12 @@ export default function AdminUsers() {
                     />
                   ) : (
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-raised text-sm font-medium text-foreground-muted">
-                      {(p.full_name || "U")[0]}
+                      {(p.full_name || p.username || "U")[0].toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-foreground">
-                      {p.full_name || t("users.mobile.notUpdated")}
+                      {p.full_name || (p.username ? `@${p.username}` : t("users.mobile.notUpdated"))}
                     </p>
                     <div className="mt-0.5 flex items-center gap-1.5 text-xs text-foreground-muted">
                       <span className="truncate">{t("users.mobile.uid", { uid: p.id.substring(0, 8) })}</span>
@@ -429,12 +432,12 @@ export default function AdminUsers() {
                           />
                         ) : (
                           <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-raised text-sm font-medium text-foreground-muted">
-                            {(p.full_name || "U")[0]}
+                            {(p.full_name || p.username || "U")[0].toUpperCase()}
                           </div>
                         )}
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-foreground">
-                            {p.full_name || t("users.mobile.notUpdated")}
+                            {p.full_name || (p.username ? `@${p.username}` : t("users.mobile.notUpdated"))}
                           </p>
                           <div className="mt-0.5 flex items-center gap-1.5 text-xs text-foreground-muted">
                             <span className="truncate" title={p.id}>

@@ -421,6 +421,19 @@ export async function listCoreliaInstructorProfiles(): Promise<Profile[]> {
   return promise;
 }
 
+/**
+ * Private instructor directory for a course's owner and staff. The RPC exposes
+ * only invite-relevant fields, while preserving the restrictive base RLS policy
+ * on `profiles` for every other client query.
+ */
+export async function listCourseCoInstructorCandidates(courseId: string): Promise<Profile[]> {
+  const { data, error } = await supabase.rpc("list_course_co_instructor_candidates", {
+    p_course_id: courseId,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row: unknown) => rowToProfile(row as Record<string, unknown>));
+}
+
 export function invalidateInstructorProfilesCache() {
   instructorProfilesCache.clear();
 }
@@ -449,8 +462,18 @@ export async function updateProfileAdmin(userId: string, updates: ProfileUpdate)
   Object.keys(payload).forEach((k) => {
     if (payload[k] === undefined) delete payload[k];
   });
-  const { error } = await supabase.from("profiles").update(payload).eq("id", userId);
+  const { data, error } = await supabase
+    .from("profiles")
+    .update(payload)
+    .eq("id", userId)
+    .select("id, role");
   if (error) throw new Error(error.message);
+  if (!data || data.length === 0) {
+    throw new Error("Cập nhật thất bại: Không tìm thấy tài khoản hoặc không đủ quyền RLS.");
+  }
+  if (updates.role && data[0].role !== updates.role) {
+    throw new Error("Cập nhật vai trò bị từ chối bởi cơ sở dữ liệu (Privilege Guard).");
+  }
   invalidateCurrentProfileCache(userId);
 }
 

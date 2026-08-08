@@ -433,6 +433,7 @@
       "willInviteBadge": "Sẽ gửi lời mời khi lưu",
       "inviteSent": "Đã gửi {{count}} lời mời đồng giảng viên",
       "inviteFailed": "{{count}} lời mời thất bại",
+      "inviteEmailFailed": "Đã tạo lời mời trong ứng dụng, nhưng không gửi được email cho {{count}} người.",
       "inviteRevoked": "Đã thu hồi lời mời",
       "pendingTitle": "Lời mời đang chờ",
       "pendingHint": "Những người này đã được mời nhưng chưa đồng ý. Họ chưa thể truy cập khoá học cho tới khi accept.",
