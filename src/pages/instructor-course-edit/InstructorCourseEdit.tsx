@@ -70,9 +70,8 @@ import {
   updateSubmissionStatus,
 } from "@/lib/finalAssignment";
 import {
-  getAllProfiles,
   getProfile,
-  listCoreliaInstructorProfiles,
+  listCourseCoInstructorCandidates,
 } from "@/lib/profile";
 import { fetchYoutubeVideoMetadata, getYoutubeVideoDuration } from "@/lib/youtube";
 import {
@@ -980,17 +979,10 @@ const InstructorCourseEdit = () => {
   }, [course?.id, canEditCoInstructors]);
 
   useEffect(() => {
-    if (!canEditCoInstructors) return;
+    if (!course?.id || !canEditCoInstructors) return;
     let cancelled = false;
     setLoadingInstructorDirectory(true);
-    const load = async () => {
-      if (isAdmin || isSupportStaff) {
-        const all = await getAllProfiles();
-        return all.filter((p) => p.role === "instructor");
-      }
-      return await listCoreliaInstructorProfiles();
-    };
-    void load()
+    void listCourseCoInstructorCandidates(course.id)
       .then((rows) => {
         if (!cancelled) setInstructorDirectory(rows);
       })
@@ -1003,7 +995,7 @@ const InstructorCourseEdit = () => {
     return () => {
       cancelled = true;
     };
-  }, [canEditCoInstructors, isAdmin, isSupportStaff]);
+  }, [course?.id, canEditCoInstructors]);
 
   useEffect(() => {
     if (!id || !canAccessPricing) return;
@@ -1707,14 +1699,19 @@ const InstructorCourseEdit = () => {
       if (canEditCoInstructors && idsToInvite.length > 0) {
         let invitedCount = 0;
         let inviteFailures = 0;
+        let emailFailures = 0;
         for (const inviteeId of idsToInvite) {
           try {
-            await inviteCoInstructor({
+            const invite = await inviteCoInstructor({
               courseId: course.id,
               inviteeUserId: inviteeId,
               permissions: coInstructorPermissions[inviteeId] ?? {},
             });
             invitedCount += 1;
+            if (!invite.emailSent) {
+              emailFailures += 1;
+              console.error("[co-instructor invite] email not sent", inviteeId, invite.reason);
+            }
           } catch (err) {
             inviteFailures += 1;
             console.error("[co-instructor invite]", inviteeId, err);
@@ -1728,6 +1725,11 @@ const InstructorCourseEdit = () => {
         if (inviteFailures > 0) {
           toast.error(
             t("courseEdit.coInstructors.inviteFailed", { count: inviteFailures }),
+          );
+        }
+        if (emailFailures > 0) {
+          toast.error(
+            t("courseEdit.coInstructors.inviteEmailFailed", { count: emailFailures }),
           );
         }
         // Remove invited uids from local state (they are not real co-instructors yet)
@@ -5238,19 +5240,23 @@ const InstructorCourseEdit = () => {
                                   (inv) => inv.invitee_user_id === p.id,
                                 ),
                             )
-                            .map(
-                              (p): ProfileComboboxOption => ({
-                                id: p.id,
-                                label:
-                                  p.full_name ??
-                                  p.email ??
-                                  t("courseEdit.coInstructors.fallbackName"),
-                                description:
-                                  p.instructor_headline ??
-                                  p.instructor_organization ??
-                                  null,
-                              }),
-                            )
+                              .map(
+                                (p): ProfileComboboxOption => ({
+                                  id: p.id,
+                                  label:
+                                    p.full_name ??
+                                    (p.username ? `@${p.username}` : null) ??
+                                    p.email ??
+                                    t("courseEdit.coInstructors.fallbackName"),
+                                  description: [
+                                    p.email,
+                                    p.username ? `@${p.username}` : null,
+                                    p.instructor_headline ?? p.instructor_organization ?? null,
+                                  ]
+                                    .filter((value, index, values) => Boolean(value) && values.indexOf(value) === index)
+                                    .join(" · ") || null,
+                                }),
+                              )
                         }
                         placeholder={t("courseEdit.coInstructors.placeholder")}
                         searchPlaceholder={t("courseEdit.coInstructors.searchPlaceholder")}
@@ -5352,7 +5358,7 @@ const InstructorCourseEdit = () => {
                             return (
                               <div
                                 key={cid}
-                                className="rounded-md border border-border-subtle bg-surface-raised p-3"
+                                className="overflow-hidden rounded-md border border-border-subtle bg-surface-raised p-3"
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="min-w-0">
@@ -5364,7 +5370,7 @@ const InstructorCourseEdit = () => {
                                         </span>
                                       ) : null}
                                     </div>
-                                    <div className="mt-0.5 text-xs text-foreground-muted">
+                                    <div className="mt-0.5 break-all text-xs text-foreground-muted">
                                       {cid}
                                     </div>
                                   </div>
@@ -5388,13 +5394,13 @@ const InstructorCourseEdit = () => {
                                   </Button>
                                 </div>
 
-                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                                   {CO_INSTRUCTOR_PERMISSION_KEYS.map((item) => {
                                     const checked = perms[item.key] === true;
                                     return (
                                       <label
                                         key={item.key}
-                                        className="flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm"
+                                        className="flex min-w-0 items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base px-3 py-2 text-sm"
                                       >
                                         <input
                                           type="checkbox"
@@ -5410,7 +5416,7 @@ const InstructorCourseEdit = () => {
                                             }));
                                           }}
                                         />
-                                        <span className="text-foreground">
+                                        <span className="min-w-0 break-words text-foreground">
                                           {String(
                                             t(item.labelKey as never),
                                           )}
@@ -5418,7 +5424,7 @@ const InstructorCourseEdit = () => {
                                       </label>
                                     );
                                   })}
-                                  <label className="flex items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base shadow-card px-3 py-2 text-sm sm:col-span-2">
+                                  <label className="flex min-w-0 items-center gap-2 rounded-2xl border border-border-subtle bg-surface-base px-3 py-2 text-sm sm:col-span-2">
                                     <input
                                       type="checkbox"
                                       checked={coInstructorVisibility[cid] !== false}
@@ -5429,7 +5435,7 @@ const InstructorCourseEdit = () => {
                                         }));
                                       }}
                                     />
-                                    <span className="text-foreground">
+                                    <span className="min-w-0 break-words text-foreground">
                                       {t("courseEdit.coInstructors.showOnCoursePage")}
                                     </span>
                                   </label>
@@ -7125,7 +7131,7 @@ const InstructorCourseEdit = () => {
           )}
 
           <Dialog open={!!editingSection} onOpenChange={(open) => !open && setEditingSection(null)}>
-            <DialogContent>
+            <DialogContent className="w-[calc(100%-2rem)] max-w-2xl">
               <DialogHeader>
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle>{t("courseEdit.sections.editTitle")}</DialogTitle>

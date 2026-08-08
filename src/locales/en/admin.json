@@ -328,6 +328,7 @@
     "empty": "No users match the current filters.",
     "unknownError": "Something went wrong",
     "confirmChangeRole": "Are you sure you want to change the role to {{role}}?",
+    "updateRoleSuccess": "Role updated successfully!",
     "updateRoleErrorPrefix": "Failed to update role: ",
     "unknown": "Unknown error",
     "showing": "Showing {{shown}} / {{total}} accounts",
