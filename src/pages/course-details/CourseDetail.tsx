@@ -11,6 +11,7 @@ import {
   syncCourseCompletion,
 } from "@/lib/courses";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
+import { getDetailedLessonCounts } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseLessons } from "./hooks/useCourseLessons";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
@@ -412,6 +413,7 @@ export default function CourseDetail() {
         previewLessons={previewLessons}
         displayTotalDuration={displayTotalDuration}
         curriculumCountLabel={curriculumCountLabel}
+        detailedLessonCounts={getDetailedLessonCounts(lessons)}
         progressPercent={progress.progressPercent}
         onCertificateClaimed={(issuedAt) =>
           access.setEnrollment(
