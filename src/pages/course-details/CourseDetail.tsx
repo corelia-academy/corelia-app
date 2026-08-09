@@ -267,15 +267,26 @@ export default function CourseDetail() {
   );
 
   const isPreviewOnlyCurriculum = isPaidUpfront && !hasFullCourseAccess;
-  const curriculumLessonCount = isPreviewOnlyCurriculum
-    ? previewLessons.length
-    : lessons.length;
-  const curriculumCountLabel = isPreviewOnlyCurriculum
-    ? translate("detail.courseDetail.lessonCountPreview", {
-        count: curriculumLessonCount,
-      })
+  const targetLessons = isPreviewOnlyCurriculum ? previewLessons : lessons;
+  const detailedCounts = getDetailedLessonCounts(targetLessons);
+  const curriculumBreakdown = (
+    [
+      ["video", detailedCounts.videoCount],
+      ["article", detailedCounts.articleCount],
+      ["quiz", detailedCounts.quizCount],
+      ["practice", detailedCounts.practiceCount],
+    ] as const
+  )
+    .filter(([, count]) => count > 0)
+    .map(([format, count]) =>
+      translate(`detail.courseDetail.breakdown.${format}`, { count }),
+    )
+    .join(" • ");
+
+  const curriculumCountLabel = curriculumBreakdown
+    ? curriculumBreakdown
     : translate("detail.courseDetail.lessonCount", {
-        count: curriculumLessonCount,
+        count: detailedCounts.totalCount,
       });
 
   const canReviewDraft =
@@ -413,7 +424,7 @@ export default function CourseDetail() {
         previewLessons={previewLessons}
         displayTotalDuration={displayTotalDuration}
         curriculumCountLabel={curriculumCountLabel}
-        detailedLessonCounts={getDetailedLessonCounts(lessons)}
+        detailedLessonCounts={detailedCounts}
         progressPercent={progress.progressPercent}
         onCertificateClaimed={(issuedAt) =>
           access.setEnrollment(

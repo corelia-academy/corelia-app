@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, Clock, Code2, FileText, HelpCircle, Info, Layers, Video } from "lucide-react";
+import { BookOpen, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CourseBadge } from "./CourseBadge";
@@ -156,73 +156,59 @@ export function CourseHero({
           ) : null}
 
           <div className="mt-6 grid gap-4 text-sm">
-            <div className="grid grid-cols-1 gap-4 rounded-xl border border-border-subtle/80 bg-surface-raised/60 p-4 text-sm backdrop-blur-sm shadow-card sm:grid-cols-2">
+            <dl className="grid grid-cols-1 gap-2 rounded-md bg-surface-raised p-4 text-sm sm:grid-cols-2">
               {displayTotalDuration > 0 ? (
-                <div className="flex items-start gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
-                    <Clock className="size-4.5" aria-hidden />
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-wider text-foreground-subtle">
-                      {translate("detail.courseDetail.stats.duration")}
-                    </div>
-                    <div className="mt-1 text-base font-bold tracking-tight text-foreground">
-                      {formatDuration(displayTotalDuration)}
-                    </div>
-                  </div>
+                <div>
+                  <dt className="text-foreground-muted">
+                    {translate("detail.courseDetail.stats.duration")}
+                  </dt>
+                  <dd className="mt-0.5 font-medium text-foreground">
+                    {formatDuration(displayTotalDuration)}
+                  </dd>
                 </div>
               ) : null}
-              <div className="flex items-start gap-3 min-w-0">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-brand-accent/20 bg-brand-accent/10 text-brand-accent">
-                  <Layers className="size-4.5" aria-hidden />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-foreground-subtle">
-                    {translate("detail.courseDetail.stats.curriculum")}
-                  </div>
-                  <div className="mt-1.5 font-medium text-foreground">
-                    {detailedLessonCounts ? (
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {detailedLessonCounts.videoCount > 0 ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-md border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-400 shadow-xs transition-colors hover:bg-blue-500/20">
-                            <Video className="size-3.5" aria-hidden />
-                            {translate("detail.courseDetail.breakdown.video", {
-                              count: detailedLessonCounts.videoCount,
-                            })}
-                          </span>
-                        ) : null}
-                        {detailedLessonCounts.articleCount > 0 ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400 shadow-xs transition-colors hover:bg-emerald-500/20">
-                            <FileText className="size-3.5" aria-hidden />
-                            {translate("detail.courseDetail.breakdown.article", {
-                              count: detailedLessonCounts.articleCount,
-                            })}
-                          </span>
-                        ) : null}
-                        {detailedLessonCounts.quizCount > 0 ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-400 shadow-xs transition-colors hover:bg-amber-500/20">
-                            <HelpCircle className="size-3.5" aria-hidden />
-                            {translate("detail.courseDetail.breakdown.quiz", {
-                              count: detailedLessonCounts.quizCount,
-                            })}
-                          </span>
-                        ) : null}
-                        {detailedLessonCounts.practiceCount > 0 ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-md border border-purple-500/30 bg-purple-500/10 px-2.5 py-1 text-xs font-semibold text-purple-400 shadow-xs transition-colors hover:bg-purple-500/20">
-                            <Code2 className="size-3.5" aria-hidden />
-                            {translate("detail.courseDetail.breakdown.practice", {
-                              count: detailedLessonCounts.practiceCount,
-                            })}
-                          </span>
-                        ) : null}
-                      </div>
-                    ) : (
-                      curriculumCountLabel
-                    )}
-                  </div>
-                </div>
+              <div>
+                <dt className="text-foreground-muted">
+                  {translate("detail.courseDetail.stats.curriculum")}
+                </dt>
+                <dd className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs font-normal">
+                  {detailedLessonCounts ? (
+                    <>
+                      {detailedLessonCounts.videoCount > 0 ? (
+                        <span className="inline-flex items-center rounded-md border border-border-subtle bg-surface-base px-2 py-0.5 text-foreground-muted">
+                          {translate("detail.courseDetail.breakdown.video", {
+                            count: detailedLessonCounts.videoCount,
+                          })}
+                        </span>
+                      ) : null}
+                      {detailedLessonCounts.articleCount > 0 ? (
+                        <span className="inline-flex items-center rounded-md border border-border-subtle bg-surface-base px-2 py-0.5 text-foreground-muted">
+                          {translate("detail.courseDetail.breakdown.article", {
+                            count: detailedLessonCounts.articleCount,
+                          })}
+                        </span>
+                      ) : null}
+                      {detailedLessonCounts.quizCount > 0 ? (
+                        <span className="inline-flex items-center rounded-md border border-border-subtle bg-surface-base px-2 py-0.5 text-foreground-muted">
+                          {translate("detail.courseDetail.breakdown.quiz", {
+                            count: detailedLessonCounts.quizCount,
+                          })}
+                        </span>
+                      ) : null}
+                      {detailedLessonCounts.practiceCount > 0 ? (
+                        <span className="inline-flex items-center rounded-md border border-border-subtle bg-surface-base px-2 py-0.5 text-foreground-muted">
+                          {translate("detail.courseDetail.breakdown.practice", {
+                            count: detailedLessonCounts.practiceCount,
+                          })}
+                        </span>
+                      ) : null}
+                    </>
+                  ) : (
+                    <span className="text-foreground-muted">{curriculumCountLabel}</span>
+                  )}
+                </dd>
               </div>
-            </div>
+            </dl>
 
             {course.is_updating ? (
               <div className="rounded-md border border-border-subtle bg-surface-raised p-4 text-sm">
