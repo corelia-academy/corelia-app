@@ -11,7 +11,7 @@ import {
   syncCourseCompletion,
 } from "@/lib/courses";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
-import { splitLessonCounts } from "@/lib/lessonFormat";
+import { getDetailedLessonCounts } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseLessons } from "./hooks/useCourseLessons";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
@@ -268,17 +268,35 @@ export default function CourseDetail() {
 
   const isPreviewOnlyCurriculum = isPaidUpfront && !hasFullCourseAccess;
   const targetLessons = isPreviewOnlyCurriculum ? previewLessons : lessons;
-  const { contentCount } = splitLessonCounts(targetLessons);
-  const curriculumLessonCount =
-    contentCount > 0 ? contentCount : targetLessons.length;
+  const detailedCounts = getDetailedLessonCounts(targetLessons);
+  const contentCount = detailedCounts.videoCount + detailedCounts.articleCount;
 
-  const curriculumCountLabel = isPreviewOnlyCurriculum
-    ? translate("detail.courseDetail.lessonCountPreview", {
-        count: curriculumLessonCount,
-      })
-    : translate("detail.courseDetail.lessonCount", {
-        count: curriculumLessonCount,
-      });
+  let curriculumCountLabel: string;
+  if (isPreviewOnlyCurriculum) {
+    curriculumCountLabel = translate("detail.courseDetail.lessonCountPreview", {
+      count: contentCount > 0 ? contentCount : detailedCounts.totalCount,
+    });
+  } else if (contentCount > 0) {
+    curriculumCountLabel = translate("detail.courseDetail.lessonCount", {
+      count: contentCount,
+    });
+  } else if (detailedCounts.quizCount > 0 && detailedCounts.quizCount === detailedCounts.totalCount) {
+    curriculumCountLabel = translate("detail.courseDetail.breakdown.quiz", {
+      count: detailedCounts.quizCount,
+    });
+  } else if (detailedCounts.practiceCount > 0 && detailedCounts.practiceCount === detailedCounts.totalCount) {
+    curriculumCountLabel = translate("detail.courseDetail.breakdown.practice", {
+      count: detailedCounts.practiceCount,
+    });
+  } else if (detailedCounts.totalCount > 0) {
+    curriculumCountLabel = translate("detail.courseDetail.breakdown.quiz", {
+      count: detailedCounts.totalCount,
+    });
+  } else {
+    curriculumCountLabel = translate("detail.courseDetail.lessonCount", {
+      count: 0,
+    });
+  }
 
   const canReviewDraft =
     courseLoad.course &&
