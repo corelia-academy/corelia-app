@@ -11,7 +11,7 @@ import {
   syncCourseCompletion,
 } from "@/lib/courses";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
-import { isActivityLesson, splitLessonCounts } from "@/lib/lessonFormat";
+import { splitLessonCounts } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseLessons } from "./hooks/useCourseLessons";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
@@ -258,9 +258,7 @@ export default function CourseDetail() {
     () =>
       courseLoad.sections.map((section) => ({
         section,
-        lessons: sortedLessons.filter(
-          (lesson) => lesson.section_id === section.id && !isActivityLesson(lesson),
-        ),
+        lessons: sortedLessons.filter((lesson) => lesson.section_id === section.id),
       })),
     [courseLoad.sections, sortedLessons],
   );
@@ -269,12 +267,15 @@ export default function CourseDetail() {
   );
 
   const isPreviewOnlyCurriculum = isPaidUpfront && !hasFullCourseAccess;
-  const { contentCount } = splitLessonCounts(lessons);
+  const targetLessons = isPreviewOnlyCurriculum ? previewLessons : lessons;
+  const { contentCount } = splitLessonCounts(targetLessons);
   const curriculumCountLabel = isPreviewOnlyCurriculum
     ? translate("detail.courseDetail.lessonCountPreview", {
         count: contentCount,
       })
-    : translate("detail.courseDetail.lessonCount", { count: contentCount });
+    : translate("detail.courseDetail.lessonCount", {
+        count: contentCount,
+      });
 
   const canReviewDraft =
     courseLoad.course &&
@@ -298,13 +299,10 @@ export default function CourseDetail() {
     url: window.location.href,
   });
 
-  const totalDurationFromLessons = lessons.reduce(
-    (sum, lesson) => sum + (Number(lesson.duration_seconds) || 0),
-    0,
-  );
   const storedTotal = Number(courseLoad.course?.total_duration_seconds) || 0;
-  const displayTotalDuration =
-    storedTotal > 0 ? storedTotal : totalDurationFromLessons;
+  // Header là thông tin tổng quan của toàn khoá; preview chỉ giới hạn curriculum.
+  // Tổng này được DB trigger đồng bộ từ toàn bộ course_lessons.
+  const displayTotalDuration = storedTotal;
 
   const pricing = useMemo(
     () => computePricing(courseLoad.course),

@@ -73,10 +73,61 @@ export function getNextActivityLessonTitle(
   return getActivityLessonDisplayName(format, count + 1);
 }
 
-/** Split lessons into content (video/article) and activity (quiz/practice) counts. */
-export function splitLessonCounts<T extends Pick<CourseLesson, "lesson_format" | "youtube_url" | "description_markdown" | "short_description">>(
+export interface LessonTypeCounts {
+  videoCount: number;
+  articleCount: number;
+  quizCount: number;
+  practiceCount: number;
+  totalCount: number;
+}
+
+/** Count lessons by their resolved format, including legacy lessons without lesson_format. */
+export function getDetailedLessonCounts<
+  T extends Pick<
+    CourseLesson,
+    "lesson_format" | "youtube_url" | "description_markdown" | "short_description"
+  >,
+>(
   lessons: T[],
-): { contentCount: number; activityCount: number } {
+): LessonTypeCounts {
+  let videoCount = 0;
+  let articleCount = 0;
+  let quizCount = 0;
+  let practiceCount = 0;
+
+  for (const lesson of lessons) {
+    switch (getLessonFormat(lesson)) {
+      case "video":
+        videoCount += 1;
+        break;
+      case "article":
+        articleCount += 1;
+        break;
+      case "quiz":
+        quizCount += 1;
+        break;
+      case "practice":
+        practiceCount += 1;
+        break;
+    }
+  }
+
+  return {
+    videoCount,
+    articleCount,
+    quizCount,
+    practiceCount,
+    totalCount: lessons.length,
+  };
+}
+
+/** Split lessons into content (video/article) and activity (quiz/practice) counts. */
+export function splitLessonCounts<
+  T extends Pick<
+    CourseLesson,
+    "lesson_format" | "youtube_url" | "description_markdown" | "short_description"
+  >,
+>(lessons: T[]): { contentCount: number; activityCount: number } {
   let contentCount = 0;
   let activityCount = 0;
   for (const lesson of lessons) {

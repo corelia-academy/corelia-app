@@ -3,7 +3,10 @@ import { BookOpen, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { CourseBadge } from "./CourseBadge";
-import { isLessonDraftForLearners } from "@/lib/lessonFormat";
+import {
+  isActivityLesson,
+  isLessonDraftForLearners,
+} from "@/lib/lessonFormat";
 import {
   formatDuration,
   type CourseLesson,
@@ -114,6 +117,10 @@ export function CourseCurriculum({
         {visibleLessonGroups.map(
           ({ section, lessons: sectionLessons }, sectionIndex) => {
             const isCollapsed = collapsedSections.has(section.id);
+            const sectionContentCount = sectionLessons.filter(
+              (l) => !isActivityLesson(l),
+            ).length;
+
             return (
               <div
                 key={section.id}
@@ -147,11 +154,13 @@ export function CourseCurriculum({
                     ) : null}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-foreground-muted">
-                    <span>
-                      {translate("detail.courseDetail.lessonCountShort", {
-                        count: sectionLessons.length,
-                      })}
-                    </span>
+                    {sectionContentCount > 0 ? (
+                      <span>
+                        {translate("detail.courseDetail.lessonCountShort", {
+                          count: sectionContentCount,
+                        })}
+                      </span>
+                    ) : null}
                     <ChevronDown
                       className={cn(
                         "size-4 shrink-0 transition-transform duration-200",

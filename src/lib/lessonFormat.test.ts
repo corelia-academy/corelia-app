@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getDetailedLessonCounts,
   getLessonFormat,
   isArticleLesson,
   isLessonPublishedForLearners,
@@ -19,5 +20,23 @@ describe("lessonFormat", () => {
       }),
     ).toBe(true);
     expect(isLessonPublishedForLearners({ description_markdown: "Text" })).toBe(true);
+  });
+
+  it("counts every resolved lesson format, including legacy inferred formats", () => {
+    expect(
+      getDetailedLessonCounts([
+        { lesson_format: "video" },
+        { description_markdown: "## Article" },
+        { lesson_format: "quiz" },
+        { lesson_format: "practice" },
+        { youtube_url: "https://youtu.be/example" },
+      ]),
+    ).toEqual({
+      videoCount: 2,
+      articleCount: 1,
+      quizCount: 1,
+      practiceCount: 1,
+      totalCount: 5,
+    });
   });
 });

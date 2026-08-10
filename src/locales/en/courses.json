@@ -215,7 +215,7 @@
         "websiteLabel": "Visit website"
       },
       "stats": {
-        "duration": "Duration",
+        "duration": "Total duration",
         "curriculum": "Curriculum",
         "completion": "Completion",
         "videoLanguage": "Video language"
@@ -246,6 +246,25 @@
       "lessonCountShort_one": "{{count}} lesson",
       "lessonCountShort_other": "{{count}} lessons",
       "previewLessonBadge": "Preview",
+      "lessonType": {
+        "quiz": "Quiz",
+        "practice": "Practice"
+      },
+      "breakdown": {
+        "video": "{{count}} video",
+        "video_one": "{{count}} video",
+        "video_other": "{{count}} videos",
+        "article": "{{count}} article",
+        "article_one": "{{count}} article",
+        "article_other": "{{count}} articles",
+        "quiz": "{{count}} quiz",
+        "quiz_one": "{{count}} quiz",
+        "quiz_other": "{{count}} quizzes",
+        "practice": "{{count}} practice",
+        "practice_one": "{{count}} practice",
+        "practice_other": "{{count}} practices"
+      },
+      "lessonBreakdownPreview": "Preview: {{breakdown}}",
       "curriculum": {
         "title": "Curriculum",
         "previewDescription": "You're viewing the preview curriculum. Unlock to see the full curriculum.",
