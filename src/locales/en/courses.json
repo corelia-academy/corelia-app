@@ -215,7 +215,7 @@
         "websiteLabel": "Visit website"
       },
       "stats": {
-        "duration": "Duration",
+        "duration": "Total duration",
         "curriculum": "Curriculum",
         "completion": "Completion",
         "videoLanguage": "Video language"

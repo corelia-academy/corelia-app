@@ -299,13 +299,10 @@ export default function CourseDetail() {
     url: window.location.href,
   });
 
-  const totalDurationFromLessons = lessons.reduce(
-    (sum, lesson) => sum + (Number(lesson.duration_seconds) || 0),
-    0,
-  );
   const storedTotal = Number(courseLoad.course?.total_duration_seconds) || 0;
-  const displayTotalDuration =
-    storedTotal > 0 ? storedTotal : totalDurationFromLessons;
+  // Header là thông tin tổng quan của toàn khoá; preview chỉ giới hạn curriculum.
+  // Tổng này được DB trigger đồng bộ từ toàn bộ course_lessons.
+  const displayTotalDuration = storedTotal;
 
   const pricing = useMemo(
     () => computePricing(courseLoad.course),
