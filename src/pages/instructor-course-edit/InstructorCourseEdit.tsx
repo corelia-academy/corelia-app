@@ -2971,7 +2971,7 @@ const InstructorCourseEdit = () => {
       video_primary_locale: vidLocale,
       has_subtitle: subOn,
       subtitle_locales: subLocales,
-      duration_seconds: isQuizFormat || isPracticeFormat ? 0 : Math.max(0, Math.floor(durationSeconds || 0)),
+      duration_seconds: Math.max(0, Math.round(durationSeconds || 0)),
       order: getNextOrder(secSubset),
       is_preview_free:
         form.access_model === "paid_upfront" ? snap.isPreviewFree : false,
@@ -3435,9 +3435,7 @@ const InstructorCourseEdit = () => {
           ? []
           : [...newLessonResources],
       minutes:
-        newLessonFormat === "quiz" || newLessonFormat === "practice"
-          ? ""
-          : newLessonMinutes,
+        newLessonMinutes,
       isPreviewFree: newLessonIsPreviewFree,
     };
     pendingNewLessonSnapRef.current = snap;
@@ -3792,12 +3790,14 @@ const InstructorCourseEdit = () => {
                 : {}),
             }
           : {};
-      const nonVideoDurationPatch =
-        isQuizFormat || isPracticeFormat
-          ? { duration_seconds: 0 }
-          : isNonVideoFormat && editingLessonMinutes !== "" && Number(editingLessonMinutes) > 0
-          ? { duration_seconds: Math.max(0, Math.floor(Number(editingLessonMinutes) * 60)) }
-          : {};
+      const nonVideoDurationPatch = isNonVideoFormat
+        ? {
+            duration_seconds:
+              editingLessonMinutes === ""
+                ? 0
+                : Math.max(0, Math.round(Number(editingLessonMinutes) * 60)),
+          }
+        : {};
 
       for (const [loc, draft] of lessonDraftRef.current) {
         const sanitizedResources = (draft.resources ?? [])
@@ -7449,7 +7449,7 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   {dialogLessonLocale === primaryContentLocale &&
-                  editingLessonFormat === "article" ? (
+                  editingLessonFormat !== "video" ? (
                     <Field>
                       <FieldLabel>{t("courseEdit.lessons.durationMinutesLabel")}</FieldLabel>
                       <Input
@@ -8126,7 +8126,7 @@ const InstructorCourseEdit = () => {
                     />
                   </Field>
                   ) : null}
-                  {newLessonFormat === "video" ? (
+                  {newLessonFormat !== "video" ? (
                   <Field>
                     <FieldLabel>{t("courseEdit.lessons.durationMinutesLabel")}</FieldLabel>
                     <Input
@@ -8142,7 +8142,7 @@ const InstructorCourseEdit = () => {
                       placeholder={t("courseEdit.content.lessonMinutesPlaceholder")}
                     />
                     <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseEdit.lessons.durationHint")}
+                      {t("courseEdit.lessons.nonVideoDurationHint")}
                     </p>
                   </Field>
                   ) : null}
