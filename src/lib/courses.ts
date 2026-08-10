@@ -1180,6 +1180,7 @@ export async function addLesson(courseId: string, data: CourseLessonInsert): Pro
   });
   if (error) throw new Error(error.message);
   invalidateSectionsCache(courseId);
+  invalidateCourseCache(courseId);
   // Background-ingest the new lesson into knowledge_chunks so Cora RAG can pick it up.
   triggerLessonEmbeddingInBackground({ courseId, lessonId: id });
   return { id, ...payload } as CourseLesson;
@@ -1233,9 +1234,11 @@ export async function updateCourse(courseId: string, data: CourseUpdate): Promis
 }
 
 export async function refreshCourseTotalDuration(courseId: string): Promise<void> {
-  const lessons = await getCourseLessons(courseId);
-  const total = lessons.reduce((s, l) => s + (l.duration_seconds || 0), 0);
-  await updateCourse(courseId, { total_duration_seconds: total });
+  const { error } = await supabase.rpc("refresh_course_total_duration", {
+    p_course_id: courseId,
+  });
+  if (error) throw new Error(error.message);
+  invalidateCourseCache(courseId);
 }
 
 export async function updateSection(
@@ -1260,6 +1263,7 @@ export async function updateSection(
     .eq("id", sectionId);
   if (upErr) throw new Error(upErr.message);
   invalidateSectionsCache(courseId);
+  invalidateCourseCache(courseId);
 }
 
 export async function updateLesson(
@@ -1349,12 +1353,14 @@ export async function deleteSection(
     if (lessonsError) throw new Error(lessonsError.message);
   }
   invalidateSectionsCache(courseId);
+  invalidateCourseCache(courseId);
 }
 
 export async function deleteLesson(courseId: string, lessonId: string): Promise<void> {
   const { error } = await supabase.from("course_lessons").delete().eq("course_id", courseId).eq("id", lessonId);
   if (error) throw new Error(error.message);
   invalidateSectionsCache(courseId);
+  invalidateCourseCache(courseId);
 }
 
 export async function deleteCourse(courseId: string): Promise<void> {
