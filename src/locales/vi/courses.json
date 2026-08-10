@@ -242,9 +242,9 @@
       "lessonCountPreview": "{{count}} bài học thử",
       "lessonCountPreview_one": "{{count}} bài học thử",
       "lessonCountPreview_other": "{{count}} bài học thử",
-      "lessonCountShort": "{{count}} bài",
-      "lessonCountShort_one": "{{count}} bài",
-      "lessonCountShort_other": "{{count}} bài",
+      "lessonCountShort": "{{count}} bài học",
+      "lessonCountShort_one": "{{count}} bài học",
+      "lessonCountShort_other": "{{count}} bài học",
       "previewLessonBadge": "Học thử",
       "lessonType": {
         "quiz": "Bài kiểm tra",
@@ -374,8 +374,8 @@
       },
       "lessonList": {
         "title": "Danh sách bài học",
-        "metaFullAccess": "{{sections}} chương • {{lessons}} bài",
-        "metaPreview": "{{open}}/{{total}} bài đang mở"
+        "metaFullAccess": "{{sections}} chương • {{lessons}} bài học",
+        "metaPreview": "{{open}}/{{total}} bài học đang mở"
       },
       "currentLesson": {
         "label": "Bài học hiện tại",
