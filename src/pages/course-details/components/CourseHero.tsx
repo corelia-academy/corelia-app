@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CourseBadge } from "./CourseBadge";
 import i18n from "@/i18n";
-import { type LessonTypeCounts } from "@/lib/lessonFormat";
 import {
   checkAndIssueCertificate,
   courseHasCertificate,
@@ -29,7 +28,6 @@ interface CourseHeroProps {
   previewLessons: CourseLesson[];
   displayTotalDuration: number;
   curriculumCountLabel: string;
-  detailedLessonCounts?: LessonTypeCounts;
   progressPercent?: number;
   onCertificateClaimed?: (issuedAt: string) => void;
 }
@@ -42,7 +40,6 @@ export function CourseHero({
   previewLessons,
   displayTotalDuration,
   curriculumCountLabel,
-  detailedLessonCounts,
   progressPercent = 0,
   onCertificateClaimed,
 }: CourseHeroProps) {
@@ -171,41 +168,8 @@ export function CourseHero({
                 <dt className="text-foreground-muted">
                   {translate("detail.courseDetail.stats.curriculum")}
                 </dt>
-                <dd className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs font-normal">
-                  {detailedLessonCounts ? (
-                    <>
-                      {detailedLessonCounts.videoCount > 0 ? (
-                        <span className="inline-flex items-center rounded-md border border-border-subtle bg-surface-base px-2 py-0.5 text-foreground-muted">
-                          {translate("detail.courseDetail.breakdown.video", {
-                            count: detailedLessonCounts.videoCount,
-                          })}
-                        </span>
-                      ) : null}
-                      {detailedLessonCounts.articleCount > 0 ? (
-                        <span className="inline-flex items-center rounded-md border border-border-subtle bg-surface-base px-2 py-0.5 text-foreground-muted">
-                          {translate("detail.courseDetail.breakdown.article", {
-                            count: detailedLessonCounts.articleCount,
-                          })}
-                        </span>
-                      ) : null}
-                      {detailedLessonCounts.quizCount > 0 ? (
-                        <span className="inline-flex items-center rounded-md border border-border-subtle bg-surface-base px-2 py-0.5 text-foreground-muted">
-                          {translate("detail.courseDetail.breakdown.quiz", {
-                            count: detailedLessonCounts.quizCount,
-                          })}
-                        </span>
-                      ) : null}
-                      {detailedLessonCounts.practiceCount > 0 ? (
-                        <span className="inline-flex items-center rounded-md border border-border-subtle bg-surface-base px-2 py-0.5 text-foreground-muted">
-                          {translate("detail.courseDetail.breakdown.practice", {
-                            count: detailedLessonCounts.practiceCount,
-                          })}
-                        </span>
-                      ) : null}
-                    </>
-                  ) : (
-                    <span className="text-foreground-muted">{curriculumCountLabel}</span>
-                  )}
+                <dd className="mt-0.5 font-medium text-foreground">
+                  {curriculumCountLabel}
                 </dd>
               </div>
             </dl>

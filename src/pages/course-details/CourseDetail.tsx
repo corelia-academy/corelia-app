@@ -11,7 +11,7 @@ import {
   syncCourseCompletion,
 } from "@/lib/courses";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
-import { getDetailedLessonCounts } from "@/lib/lessonFormat";
+import { splitLessonCounts } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseLessons } from "./hooks/useCourseLessons";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
@@ -268,25 +268,16 @@ export default function CourseDetail() {
 
   const isPreviewOnlyCurriculum = isPaidUpfront && !hasFullCourseAccess;
   const targetLessons = isPreviewOnlyCurriculum ? previewLessons : lessons;
-  const detailedCounts = getDetailedLessonCounts(targetLessons);
-  const curriculumBreakdown = (
-    [
-      ["video", detailedCounts.videoCount],
-      ["article", detailedCounts.articleCount],
-      ["quiz", detailedCounts.quizCount],
-      ["practice", detailedCounts.practiceCount],
-    ] as const
-  )
-    .filter(([, count]) => count > 0)
-    .map(([format, count]) =>
-      translate(`detail.courseDetail.breakdown.${format}`, { count }),
-    )
-    .join(" • ");
+  const { contentCount } = splitLessonCounts(targetLessons);
+  const curriculumLessonCount =
+    contentCount > 0 ? contentCount : targetLessons.length;
 
-  const curriculumCountLabel = curriculumBreakdown
-    ? curriculumBreakdown
+  const curriculumCountLabel = isPreviewOnlyCurriculum
+    ? translate("detail.courseDetail.lessonCountPreview", {
+        count: curriculumLessonCount,
+      })
     : translate("detail.courseDetail.lessonCount", {
-        count: detailedCounts.totalCount,
+        count: curriculumLessonCount,
       });
 
   const canReviewDraft =
@@ -424,7 +415,6 @@ export default function CourseDetail() {
         previewLessons={previewLessons}
         displayTotalDuration={displayTotalDuration}
         curriculumCountLabel={curriculumCountLabel}
-        detailedLessonCounts={detailedCounts}
         progressPercent={progress.progressPercent}
         onCertificateClaimed={(issuedAt) =>
           access.setEnrollment(
