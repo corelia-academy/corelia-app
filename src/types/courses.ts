@@ -545,8 +545,9 @@ export function getYoutubeEmbedUrlForLesson(lesson: Pick<CourseLesson, "youtube_
 export function formatDuration(seconds: number): string {
   if (seconds == null || typeof seconds !== "number" || seconds <= 0) return "—";
   if (seconds < 60) return i18n.t("detail.duration.lessThanOneMinute", { ns: "courses" });
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
+  const roundedTotalMinutes = Math.round(seconds / 60);
+  const h = Math.floor(roundedTotalMinutes / 60);
+  const m = roundedTotalMinutes % 60;
   if (h === 0) {
     return i18n.t("detail.duration.minutes", {
       ns: "courses",

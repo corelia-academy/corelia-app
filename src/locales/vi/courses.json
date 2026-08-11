@@ -215,7 +215,7 @@
         "websiteLabel": "Xem website"
       },
       "stats": {
-        "duration": "Thời lượng",
+        "duration": "Tổng thời lượng",
         "curriculum": "Curriculum",
         "completion": "Hoàn thành",
         "videoLanguage": "Ngôn ngữ video"
@@ -242,14 +242,29 @@
       "lessonCountPreview": "{{count}} bài học thử",
       "lessonCountPreview_one": "{{count}} bài học thử",
       "lessonCountPreview_other": "{{count}} bài học thử",
-      "lessonCountShort": "{{count}} bài",
-      "lessonCountShort_one": "{{count}} bài",
-      "lessonCountShort_other": "{{count}} bài",
+      "lessonCountShort": "{{count}} bài học",
+      "lessonCountShort_one": "{{count}} bài học",
+      "lessonCountShort_other": "{{count}} bài học",
       "previewLessonBadge": "Học thử",
       "lessonType": {
         "quiz": "Bài kiểm tra",
         "practice": "Bài thực hành"
       },
+      "breakdown": {
+        "video": "{{count}} video",
+        "video_one": "{{count}} video",
+        "video_other": "{{count}} video",
+        "article": "{{count}} bài đọc",
+        "article_one": "{{count}} bài đọc",
+        "article_other": "{{count}} bài đọc",
+        "quiz": "{{count}} bài kiểm tra",
+        "quiz_one": "{{count}} bài kiểm tra",
+        "quiz_other": "{{count}} bài kiểm tra",
+        "practice": "{{count}} bài thực hành",
+        "practice_one": "{{count}} bài thực hành",
+        "practice_other": "{{count}} bài thực hành"
+      },
+      "lessonBreakdownPreview": "Học thử: {{breakdown}}",
       "curriculum": {
         "title": "Lộ trình học",
         "previewDescription": "Bạn đang xem phần preview. Mở khoá để thấy toàn bộ curriculum.",
@@ -359,8 +374,8 @@
       },
       "lessonList": {
         "title": "Danh sách bài học",
-        "metaFullAccess": "{{sections}} chương • {{lessons}} bài",
-        "metaPreview": "{{open}}/{{total}} bài đang mở"
+        "metaFullAccess": "{{sections}} chương • {{lessons}} bài học",
+        "metaPreview": "{{open}}/{{total}} bài học đang mở"
       },
       "currentLesson": {
         "label": "Bài học hiện tại",

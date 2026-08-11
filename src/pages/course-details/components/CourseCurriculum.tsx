@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { CourseBadge } from "./CourseBadge";
 import {
-  getLessonFormat,
+  isActivityLesson,
   isLessonDraftForLearners,
 } from "@/lib/lessonFormat";
 import {
@@ -29,12 +29,6 @@ function LessonRow({
   isPaidUpfront: boolean;
   translate: (key: string, options?: Record<string, unknown>) => string;
 }) {
-  const lessonFormat = getLessonFormat(lesson);
-  const activityBadgeKey =
-    lessonFormat === "quiz" || lessonFormat === "practice"
-      ? `detail.courseDetail.lessonType.${lessonFormat}`
-      : null;
-
   return (
     <div className="flex items-start gap-3 px-4 py-3 sm:items-center">
       <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-raised text-xs font-medium text-foreground-muted">
@@ -55,11 +49,6 @@ function LessonRow({
           </p>
         ) : null}
       </div>
-      {activityBadgeKey ? (
-        <CourseBadge className="mt-0.5 sm:mt-0" variant="outline">
-          {translate(activityBadgeKey)}
-        </CourseBadge>
-      ) : null}
       {isPaidUpfront && lesson.is_preview_free ? (
         <CourseBadge className="mt-0.5 sm:mt-0" variant="success">
           {translate("detail.courseDetail.previewLessonBadge")}
@@ -128,6 +117,10 @@ export function CourseCurriculum({
         {visibleLessonGroups.map(
           ({ section, lessons: sectionLessons }, sectionIndex) => {
             const isCollapsed = collapsedSections.has(section.id);
+            const sectionContentCount = sectionLessons.filter(
+              (l) => !isActivityLesson(l),
+            ).length;
+
             return (
               <div
                 key={section.id}
@@ -161,11 +154,13 @@ export function CourseCurriculum({
                     ) : null}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-foreground-muted">
-                    <span>
-                      {translate("detail.courseDetail.lessonCountShort", {
-                        count: sectionLessons.length,
-                      })}
-                    </span>
+                    {sectionContentCount > 0 ? (
+                      <span>
+                        {translate("detail.courseDetail.lessonCountShort", {
+                          count: sectionContentCount,
+                        })}
+                      </span>
+                    ) : null}
                     <ChevronDown
                       className={cn(
                         "size-4 shrink-0 transition-transform duration-200",
