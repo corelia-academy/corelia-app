@@ -29,6 +29,7 @@ import { UserProfileActivitySection } from "./components/UserProfileActivitySect
 import { UserProfileContestsSection } from "./components/UserProfileContestsSection";
 import { UserProfileCoursesSection } from "./components/UserProfileCoursesSection";
 import { UserProfileProjectsSection } from "./components/UserProfileProjectsSection";
+import { UserProfileSkillsCard } from "./components/UserProfileSkillsCard";
 import { useUserProfileLayoutData } from "./hooks/useUserProfileLayoutData";
 import {
   isValidHttpUrl,
@@ -172,6 +173,8 @@ function ProfileSidebar({
           ))}
         </div>
       </section>
+
+      <UserProfileSkillsCard profileId={profile.id} />
 
       {(headerHandle || ocid || (website && isValidHttpUrl(website))) ? (
         <section className="rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card sm:p-5">

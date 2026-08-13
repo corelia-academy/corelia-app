@@ -94,7 +94,7 @@ export default function CourseDetail() {
     "detail.loadLessonsErrorFallback",
   );
 
-  const lessons = useCourseLessons({
+  const { lessons, loaded: lessonsLoaded } = useCourseLessons({
     resolvedCourseId: courseLoad.resolvedCourseId,
     course: courseLoad.course,
     previewOnly,
@@ -310,6 +310,11 @@ export default function CourseDetail() {
     [courseLoad.course],
   );
   const courseCompleted = progress.progressPercent >= 100 && sortedLessons.length > 0;
+  const isPublicEmptyCurriculum =
+    courseLoad.course?.published === true &&
+    !isPaidUpfront &&
+    lessonsLoaded &&
+    sortedLessons.length === 0;
   const hasCourseCertificate = courseHasCertificate(courseLoad.course);
   const completionSynced = Boolean(access.enrollment?.completed_at || completionJustSynced);
   const certificateIssued = Boolean(
@@ -454,6 +459,7 @@ export default function CourseDetail() {
           enrolled={access.enrolled}
           paymentAccess={access.paymentAccess}
           progressPercent={progress.progressPercent}
+          isPublicEmptyCurriculum={isPublicEmptyCurriculum}
           hasStarted={progress.hasStarted}
           nextLesson={progress.nextLesson}
           pricing={pricing}
@@ -515,6 +521,7 @@ export default function CourseDetail() {
             enrolled={access.enrolled}
             paymentAccess={access.paymentAccess}
             progressPercent={progress.progressPercent}
+            isPublicEmptyCurriculum={isPublicEmptyCurriculum}
             hasStarted={progress.hasStarted}
             nextLesson={progress.nextLesson}
             pricing={pricing}

@@ -29,18 +29,18 @@ VALUES
     true,
     'seed-course-skills-demo',
     jsonb_build_object(
-      'title', 'Seed — AI Fundamentals & Prompt Engineering',
+      'title', 'Seed — Web3 Foundations',
       'short_description', 'Local fixture để kiểm tra skill hiển thị theo khoá học.',
       'description', 'Khoá học local dùng để kiểm tra việc cấu hình nhiều skill ở form tạo/sửa và hiển thị trước khi học viên bắt đầu.',
       'learning_outcomes', jsonb_build_array(
-        'Hiểu các khái niệm nền tảng về AI.',
-        'Viết prompt có cấu trúc.',
-        'Đánh giá đầu ra một cách có trách nhiệm.'
+        'Hiểu cách ví Web3 và giao dịch on-chain hoạt động.',
+        'Nhận biết các khái niệm nền tảng của blockchain.',
+        'Phân biệt các ứng dụng DeFi phổ biến.'
       ),
       'skills', jsonb_build_array(
-        'AI Fundamentals',
-        'Prompt Engineering',
-        'Responsible AI'
+        'Web3',
+        'Blockchain',
+        'DeFi'
       ),
       'instructor_name', 'Admin Tester',
       'level', 'beginner',
@@ -75,25 +75,25 @@ VALUES
 
 INSERT INTO public.course_sections (course_id, id, sort_order, data)
 VALUES
-  ('seed-course-skills-demo', 'intro', 1, jsonb_build_object('title', 'AI foundations')),
-  ('seed-course-skills-demo', 'prompting', 2, jsonb_build_object('title', 'Prompt engineering')),
+  ('seed-course-skills-demo', 'intro', 1, jsonb_build_object('title', 'Web3 foundations')),
+  ('seed-course-skills-demo', 'ecosystem', 2, jsonb_build_object('title', 'Web3 ecosystem')),
   ('seed-course-skills-legacy', 'intro', 1, jsonb_build_object('title', 'Legacy course intro'));
 
 INSERT INTO public.course_lessons (course_id, id, section_id, sort_order, data)
 VALUES
   (
     'seed-course-skills-demo',
-    'ai-basics',
+    'web3-basics',
     'intro',
     1,
-    jsonb_build_object('title', 'AI basics', 'format', 'article', 'markdown', 'Local seed lesson.')
+    jsonb_build_object('title', 'Web3 basics', 'format', 'article', 'markdown', 'Local seed lesson.')
   ),
   (
     'seed-course-skills-demo',
-    'prompt-basics',
-    'prompting',
+    'ecosystem-basics',
+    'ecosystem',
     1,
-    jsonb_build_object('title', 'Prompt basics', 'format', 'article', 'markdown', 'Local seed lesson.')
+    jsonb_build_object('title', 'Web3 ecosystem', 'format', 'article', 'markdown', 'Local seed lesson.')
   ),
   (
     'seed-course-skills-legacy',
@@ -102,6 +102,29 @@ VALUES
     1,
     jsonb_build_object('title', 'Legacy introduction', 'format', 'article', 'markdown', 'Local seed lesson.')
   );
+
+INSERT INTO public.enrollments (
+  id,
+  user_id,
+  course_id,
+  enrolled_at,
+  last_accessed_at,
+  completed_at
+)
+SELECT
+  'seed-course-skills-demo-enrollment',
+  id,
+  'seed-course-skills-demo',
+  now() - interval '7 days',
+  now() - interval '1 day',
+  now() - interval '1 day'
+FROM auth.users
+ORDER BY created_at
+LIMIT 1
+ON CONFLICT (user_id, course_id) DO UPDATE
+SET
+  last_accessed_at = EXCLUDED.last_accessed_at,
+  completed_at = EXCLUDED.completed_at;
 
 COMMIT;
 

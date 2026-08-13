@@ -20,6 +20,7 @@ interface CourseAccessPanelProps {
   enrolled: boolean;
   paymentAccess: CoursePaymentAccess | null;
   progressPercent: number;
+  isPublicEmptyCurriculum: boolean;
   hasStarted: boolean;
   nextLesson: CourseLesson | null;
   pricing: CoursePricing;
@@ -42,6 +43,7 @@ export function CourseAccessPanel({
   enrolled,
   paymentAccess,
   progressPercent,
+  isPublicEmptyCurriculum,
   hasStarted,
   nextLesson,
   pricing,
@@ -73,7 +75,11 @@ export function CourseAccessPanel({
         </h3>
       </div>
       <div className="p-4">
-        {hasFullCourseAccess ? (
+        {isPublicEmptyCurriculum ? (
+          <p className="text-sm leading-relaxed text-foreground-muted">
+            {translate("detail.accessPanel.contentComingSoon")}
+          </p>
+        ) : hasFullCourseAccess ? (
           <>
             <p className="mb-3 text-sm leading-relaxed text-foreground-muted">
               {translate("detail.accessPanel.enterToLearn")}

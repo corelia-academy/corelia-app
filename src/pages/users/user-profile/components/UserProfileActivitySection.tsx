@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Activity, ChevronDown, Loader2 } from "lucide-react";
+import { Activity } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getActorActivity } from "@/lib/feed";
 import type { PublicProfile } from "@/types/database";
 import type { ActivityEvent } from "@/types/feed";
 import { profileTitle } from "../utils/profileDisplay";
 
-const PAGE_SIZE = 8;
+const PROFILE_ACTIVITY_LIMIT = 5;
 
 function payloadText(payload: Record<string, unknown>, keys: string[]): string | null {
   for (const key of keys) {
@@ -151,9 +150,7 @@ export function UserProfileActivitySection({
   const { t, i18n } = useTranslation(["common", "feed"]);
   const [items, setItems] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -162,10 +159,11 @@ export function UserProfileActivitySection({
       setLoading(true);
       setError(null);
       try {
-        const next = await getActorActivity(profile.id, { limit: PAGE_SIZE + 1 });
+        const next = await getActorActivity(profile.id, {
+          limit: PROFILE_ACTIVITY_LIMIT,
+        });
         if (cancelled) return;
-        setItems(next.slice(0, PAGE_SIZE));
-        setHasMore(next.length > PAGE_SIZE);
+        setItems(next);
       } catch {
         if (cancelled) return;
         setError(t("userProfile.errors.loadFailed"));
@@ -179,26 +177,6 @@ export function UserProfileActivitySection({
       cancelled = true;
     };
   }, [profile.id, t]);
-
-  async function loadMore() {
-    const cursor = items.at(-1)?.created_at;
-    if (!cursor) return;
-
-    setLoadingMore(true);
-    setError(null);
-    try {
-      const next = await getActorActivity(profile.id, {
-        cursor,
-        limit: PAGE_SIZE + 1,
-      });
-      setItems((current) => [...current, ...next.slice(0, PAGE_SIZE)]);
-      setHasMore(next.length > PAGE_SIZE);
-    } catch {
-      setError(t("userProfile.errors.loadFailed"));
-    } finally {
-      setLoadingMore(false);
-    }
-  }
 
   return (
     <section className="space-y-3">
@@ -232,25 +210,6 @@ export function UserProfileActivitySection({
               locale={i18n.resolvedLanguage ?? i18n.language}
             />
           ))}
-          {hasMore ? (
-            <div className="flex justify-center pt-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="gap-1.5"
-                disabled={loadingMore}
-                onClick={() => void loadMore()}
-              >
-                {loadingMore ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden />
-                ) : (
-                  <ChevronDown className="size-4" aria-hidden />
-                )}
-                {t("feed:actions.loadMore")}
-              </Button>
-            </div>
-          ) : null}
         </div>
       )}
     </section>

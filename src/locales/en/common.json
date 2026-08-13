@@ -156,6 +156,10 @@
       "empty": "No public info yet.",
       "instructorHeadlineFallback": "Instructor"
     },
+    "skills": {
+      "title": "Skills earned",
+      "empty": "No skills yet."
+    },
     "activity": {
       "title": "Activity",
       "empty": "No public activity yet."

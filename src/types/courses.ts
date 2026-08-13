@@ -118,7 +118,7 @@ export interface Course {
   description: string;
   /** What you'll learn: danh sách kết quả học tập */
   learning_outcomes?: string[];
-  /** Kỹ năng off-chain hiển thị trên hồ sơ sau khi học viên hoàn thành khoá */
+  /** Kỹ năng hiển thị trên hồ sơ sau khi học viên hoàn thành khoá */
   skills?: string[];
   short_description?: string;
   thumbnail_url: string;

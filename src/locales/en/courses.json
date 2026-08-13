@@ -185,7 +185,7 @@
       },
       "skills": {
         "title": "Skills you'll earn",
-        "subtitle": "These off-chain skills will appear on your profile after you complete the course."
+        "subtitle": "These skills will appear on your profile after you complete the course."
       },
       "overview": {
         "title": "Course overview"
@@ -290,6 +290,7 @@
       "currentProgress": "Current progress",
       "nextLessonLabel": "Next lesson: {{title}}",
       "endOfPath": "You've reached the end of the current path.",
+      "contentComingSoon": "Course content will be updated in the future.",
       "priceLabel": "Price",
       "promoEnds": "Ends: {{date}}",
       "paidUpfrontCopy": "Unlock all videos, save progress, and follow the path right after payment.",

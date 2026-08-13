@@ -1,4 +1,6 @@
 import { useTranslation } from "react-i18next";
+
+import { SkillTag } from "@/components/skills/SkillTag";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface CourseSkillsProps {
@@ -29,12 +31,9 @@ export function CourseSkills({ skills }: CourseSkillsProps) {
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {items.map((item) => (
-            <span
-              key={item}
-              className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary"
-            >
+            <SkillTag key={item}>
               {item}
-            </span>
+            </SkillTag>
           ))}
         </div>
       </CardContent>

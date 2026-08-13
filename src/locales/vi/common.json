@@ -156,6 +156,10 @@
       "empty": "Chưa có thông tin công khai.",
       "instructorHeadlineFallback": "Giảng viên"
     },
+    "skills": {
+      "title": "Skill đã có",
+      "empty": "Chưa có skill nào."
+    },
     "activity": {
       "title": "Hoạt động",
       "empty": "Chưa có hoạt động public nào."
