@@ -456,6 +456,7 @@ const InstructorCourseEdit = () => {
     final_assignment_description: "",
     final_assignment_instructions: "",
   });
+  const [courseSkills, setCourseSkills] = useState<string[]>([]);
   const [descriptionGeneratorOpen, setDescriptionGeneratorOpen] = useState(false);
   const [descriptionGeneratorRequest, setDescriptionGeneratorRequest] =
     useState<DescriptionGeneratorDialogRequest | null>(null);
@@ -1076,6 +1077,12 @@ const InstructorCourseEdit = () => {
         external_source_attribution_note:
           course.external_source_attribution_note ?? "",
       });
+      setCourseSkills(
+        (Array.isArray(course.skills) ? course.skills : [])
+          .filter((item): item is string => typeof item === "string")
+          .map((item) => item.trim())
+          .filter(Boolean),
+      );
       setSponsors(Array.isArray(course.sponsors) ? course.sponsors : []);
       const list = Array.isArray(course.partners) ? course.partners : [];
       if (list.length > 0) {
@@ -1425,6 +1432,14 @@ const InstructorCourseEdit = () => {
         .filter(Boolean)
         .slice(0, 20)
         .map((item) => (item.length > 140 ? item.slice(0, 140) : item));
+      const sanitizedSkills = Array.from(
+        new Map(
+          courseSkills
+            .map((item) => item.trim())
+            .filter(Boolean)
+            .map((item) => [item.toLocaleLowerCase(), item.slice(0, 80)] as const),
+        ).values(),
+      ).slice(0, 20);
 
       await setCourseLocaleContent(id, activeContentLocale, {
         title: contentForm.title.trim() || course.title,
@@ -1571,6 +1586,7 @@ const InstructorCourseEdit = () => {
         has_certificate: form.has_certificate,
         has_sections: form.has_sections,
         i18n: i18nPayload,
+        skills: sanitizedSkills,
         sponsors,
         partners,
         ...(shouldUpdateRootContent && {
@@ -1638,6 +1654,7 @@ const InstructorCourseEdit = () => {
               is_updating: form.is_updating,
               has_certificate: form.has_certificate,
               i18n: i18nPayload,
+              skills: sanitizedSkills,
               sponsors,
               partners,
               ...(shouldUpdateRootContent && {
@@ -5214,6 +5231,50 @@ const InstructorCourseEdit = () => {
                   >
                     <Plus className="size-4" aria-hidden />
                     {t("courseEdit.form.learningOutcomesAdd")}
+                  </Button>
+                </Field>
+                <Field>
+                  <FieldLabel>{t("courseEdit.form.skillsLabel")}</FieldLabel>
+                  <p className="mt-1 text-xs text-foreground-muted">
+                    {t("courseEdit.form.skillsSubtitle")}
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    {courseSkills.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <Input
+                          value={item}
+                          onChange={(e) =>
+                            setCourseSkills((prev) => {
+                              const next = [...prev];
+                              next[idx] = e.target.value;
+                              return next;
+                            })
+                          }
+                          placeholder={t("courseEdit.form.skillsItemPlaceholder")}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-9 px-3"
+                          onClick={() =>
+                            setCourseSkills((prev) => prev.filter((_, itemIdx) => itemIdx !== idx))
+                          }
+                        >
+                          <XCircle className="size-4" aria-hidden />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 inline-flex items-center gap-2"
+                    onClick={() => setCourseSkills((prev) => [...prev, ""])}
+                  >
+                    <Plus className="size-4" aria-hidden />
+                    {t("courseEdit.form.skillsAdd")}
                   </Button>
                 </Field>
                 </div>

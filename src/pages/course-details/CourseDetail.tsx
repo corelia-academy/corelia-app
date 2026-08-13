@@ -26,6 +26,7 @@ import {
 import { CourseDraftBanner } from "./components/CourseDraftBanner";
 import { CourseHero } from "./components/CourseHero";
 import { CourseLearningOutcomes } from "./components/CourseLearningOutcomes";
+import { CourseSkills } from "./components/CourseSkills";
 import { CourseDescription } from "./components/CourseDescription";
 import {
   CourseCurriculum,
@@ -472,6 +473,7 @@ export default function CourseDetail() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
         <main className="min-w-0">
           <CourseLearningOutcomes outcomes={course.learning_outcomes ?? []} />
+          <CourseSkills skills={course.skills ?? []} />
 
           <CourseDescription
             description={course.description ?? ""}

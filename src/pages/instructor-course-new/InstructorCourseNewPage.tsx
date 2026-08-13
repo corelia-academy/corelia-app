@@ -417,6 +417,59 @@ export default function InstructorCourseNewPage() {
                   </Button>
                 </Field>
                 <Field>
+                  <FieldLabel>{t("courseNew.labels.skills")}</FieldLabel>
+                  <p className="mt-1 text-xs text-foreground-muted">
+                    {t("courseNew.labels.skillsSubtitle")}
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    {(form.skills ?? []).map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <Input
+                          value={item}
+                          onChange={(e) =>
+                            setForm((p) => {
+                              const next = [...(p.skills ?? [])];
+                              next[idx] = e.target.value;
+                              return { ...p, skills: next };
+                            })
+                          }
+                          placeholder={t("courseNew.placeholders.skillItem")}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-9 px-3"
+                          onClick={() =>
+                            setForm((p) => {
+                              const next = [...(p.skills ?? [])];
+                              next.splice(idx, 1);
+                              return { ...p, skills: next };
+                            })
+                          }
+                        >
+                          <XCircle className="size-4" aria-hidden />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 inline-flex items-center gap-2"
+                    onClick={() =>
+                      setForm((p) => ({
+                        ...p,
+                        skills: [...(p.skills ?? []), ""],
+                      }))
+                    }
+                  >
+                    <Plus className="size-4" aria-hidden />
+                    {t("courseNew.labels.skillsAdd")}
+                  </Button>
+                </Field>
+                <Field>
                   <FieldLabel>{t("courseNew.labels.thumbnail")}</FieldLabel>
                   <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center">
                     <input

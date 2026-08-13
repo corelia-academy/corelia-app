@@ -1063,6 +1063,7 @@ export async function createCourse(data: CourseInsert, viewer?: User | null): Pr
     title: data.title,
     description: data.description,
     learning_outcomes: data.learning_outcomes ?? [],
+    skills: data.skills ?? [],
     short_description: data.short_description ?? "",
     thumbnail_url: data.thumbnail_url,
     thumbnail_path: data.thumbnail_path,

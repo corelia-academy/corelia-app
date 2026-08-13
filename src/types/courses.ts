@@ -118,6 +118,8 @@ export interface Course {
   description: string;
   /** What you'll learn: danh sách kết quả học tập */
   learning_outcomes?: string[];
+  /** Kỹ năng off-chain hiển thị trên hồ sơ sau khi học viên hoàn thành khoá */
+  skills?: string[];
   short_description?: string;
   thumbnail_url: string;
   /** Đường dẫn trong Supabase Storage (course-thumbnails/...), dùng để xoá ảnh cũ khi thay */
@@ -340,6 +342,7 @@ export interface CourseInsert {
   slug: string;
   description: string;
   learning_outcomes?: string[];
+  skills?: string[];
   short_description?: string;
   thumbnail_url: string;
   thumbnail_path?: string;
@@ -381,6 +384,7 @@ export interface CourseUpdate {
   slug?: string;
   description?: string;
   learning_outcomes?: string[];
+  skills?: string[];
   short_description?: string;
   thumbnail_url?: string;
   thumbnail_path?: string;

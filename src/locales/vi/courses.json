@@ -183,6 +183,10 @@
         "title": "Bạn sẽ học được gì",
         "subtitle": "Khoá học này sẽ giúp bạn:"
       },
+      "skills": {
+        "title": "Skill bạn sẽ nhận được",
+        "subtitle": "Skill off-chain sẽ hiển thị trên hồ sơ sau khi bạn hoàn thành khoá học."
+      },
       "overview": {
         "title": "Tổng quan khoá học"
       },
