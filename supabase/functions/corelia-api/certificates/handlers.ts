@@ -91,7 +91,13 @@ async function runCertificateIssuedSideEffects(
         profileUrl,
         locale,
       });
-      await sendTransactionalEmailViaResend({ to: [email], subject, html });
+      await sendTransactionalEmailViaResend({
+        db,
+        mailType: "certificate_issued",
+        to: [email],
+        subject,
+        html,
+      });
     }
   } catch (mailErr) {
     console.error("[corelia-api] certificate → email failed (non-fatal)", mailErr);

@@ -260,7 +260,9 @@
       "cancelButton": "Huỷ",
       "resultSent": "Đã gửi thành công {{sent}}/{{total}} email.",
       "resultFailed": "{{failed}} email gửi thất bại.",
+      "resultSkipped": "Không gửi được cho {{skipped}} người nhận.",
       "resultError": "Lỗi gửi email: {{reason}}",
+      "systemUnavailable": "Hệ thống gửi email đang gặp sự cố. Chưa email nào được gửi. Vui lòng liên hệ quản trị viên hệ thống để được hỗ trợ.",
       "notConfigured": "Chưa cấu hình email. Vui lòng kiểm tra RESEND_API_KEY."
     }
   },
@@ -1127,8 +1129,9 @@
       "cancelButton": "Huỷ",
       "resultSent": "Đã gửi thành công {{sent}}/{{total}} email.",
       "resultFailed": "{{failed}} email gửi thất bại.",
-      "resultSkipped": "{{skipped}} học viên đã tắt nhận email.",
+      "resultSkipped": "Không gửi được cho {{skipped}} người nhận.",
       "resultError": "Lỗi gửi email: {{reason}}",
+      "systemUnavailable": "Hệ thống gửi email đang gặp sự cố. Chưa email nào được gửi. Vui lòng liên hệ quản trị viên hệ thống để được hỗ trợ.",
       "notConfigured": "Chưa cấu hình email. Vui lòng kiểm tra RESEND_API_KEY."
     }
   }

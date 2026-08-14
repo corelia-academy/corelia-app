@@ -3,6 +3,7 @@ import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
 import { triggerLessonEmbeddingInBackground } from "@/lib/lessonEmbedding";
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
+import { getYoutubeVideoId } from "@/types/courses";
 import type {
   Course,
   CourseSection,
@@ -175,17 +176,29 @@ export function applyCourseLessonLocaleContent(
   localized: CourseLessonLocaleContent | null,
 ): CourseLesson {
   if (!localized) return lesson;
+
+  // Empty or malformed locale URLs must not hide a valid master video. Locale
+  // records created by older editor flows can retain an empty string here.
+  const localizedYoutubeUrl = localized.youtube_url?.trim();
+  const hasValidLocalizedYoutubeUrl = Boolean(
+    localizedYoutubeUrl && getYoutubeVideoId(localizedYoutubeUrl),
+  );
+
   return {
     ...lesson,
     title: localized.title ?? lesson.title,
     short_description: localized.short_description ?? lesson.short_description,
     description_markdown: localized.description_markdown ?? lesson.description_markdown,
     resources: localized.resources ?? lesson.resources,
-    youtube_url: localized.youtube_url ?? lesson.youtube_url,
+    youtube_url: hasValidLocalizedYoutubeUrl ? localizedYoutubeUrl : lesson.youtube_url,
     youtube_start_seconds:
-      localized.youtube_start_seconds ?? lesson.youtube_start_seconds,
+      hasValidLocalizedYoutubeUrl
+        ? localized.youtube_start_seconds ?? lesson.youtube_start_seconds
+        : lesson.youtube_start_seconds,
     youtube_end_seconds:
-      localized.youtube_end_seconds ?? lesson.youtube_end_seconds,
+      hasValidLocalizedYoutubeUrl
+        ? localized.youtube_end_seconds ?? lesson.youtube_end_seconds
+        : lesson.youtube_end_seconds,
     video_primary_locale: localized.video_primary_locale ?? lesson.video_primary_locale,
     has_subtitle: localized.has_subtitle ?? lesson.has_subtitle,
     subtitle_locales: localized.subtitle_locales ?? lesson.subtitle_locales,

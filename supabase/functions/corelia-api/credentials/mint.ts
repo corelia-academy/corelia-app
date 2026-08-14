@@ -124,6 +124,8 @@ async function sendMintEmail(params: {
   });
 
   await sendTransactionalEmailViaResend({
+    db: params.db,
+    mailType: "credential_minted",
     to: [params.to],
     subject,
     html,

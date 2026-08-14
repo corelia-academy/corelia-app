@@ -97,6 +97,8 @@ export async function handleCoInstructorInviteEmail(
     });
 
     const result = await sendTransactionalEmailViaResend({
+      db,
+      mailType: "course_co_instructor_invite",
       to: [recipientEmail],
       subject,
       html,

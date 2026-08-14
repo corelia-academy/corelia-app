@@ -127,7 +127,13 @@ export async function handleGrantPendingCredential(req: Request, db: SupabaseCli
       imageUrl: template.image_url,
       locale: "vi",
     });
-    const mailResult = await sendTransactionalEmailViaResend({ to: [email], subject, html });
+    const mailResult = await sendTransactionalEmailViaResend({
+      db,
+      mailType: "credential_pending_claim",
+      to: [email],
+      subject,
+      html,
+    });
 
     return json({ ok: true, mode: "pending", emailSent: mailResult.sent === true });
   } catch (e) {

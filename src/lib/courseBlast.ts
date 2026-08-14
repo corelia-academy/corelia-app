@@ -7,6 +7,11 @@ export type BlastEmailResult = {
   skipped: number;
   total: number;
   reason?: string;
+  skipped_breakdown?: {
+    optedOut: number;
+    noEmail: number;
+    duplicateEmail: number;
+  };
 };
 
 export async function blastCourseEmail(

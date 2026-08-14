@@ -116,7 +116,11 @@ export function AnnouncementsSection({ courseId, enrollmentCount }: Props) {
         {/* Last result */}
         {lastResult && (
           <div className="rounded-md border border-border-subtle bg-surface-raised px-4 py-3 text-sm">
-            {lastResult.ok ? (
+            {lastResult.ok && lastResult.reason === "email_not_configured" ? (
+              <p className="text-destructive">
+                {t("courseEdit.announcements.systemUnavailable")}
+              </p>
+            ) : lastResult.ok ? (
               <>
                 <p className="font-medium text-foreground">
                   {t("courseEdit.announcements.resultSent", {
@@ -137,9 +141,7 @@ export function AnnouncementsSection({ courseId, enrollmentCount }: Props) {
               </>
             ) : (
               <p className="text-destructive">
-                {lastResult.reason === "email_not_configured"
-                  ? t("courseEdit.announcements.notConfigured")
-                  : t("courseEdit.announcements.resultError", { reason: lastResult.reason ?? "unknown" })}
+                {t("courseEdit.announcements.systemUnavailable")}
               </p>
             )}
           </div>

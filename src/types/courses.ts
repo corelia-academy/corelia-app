@@ -505,13 +505,36 @@ export function getInstructorSharePercent(course: Pick<Course, "owner_type" | "p
   return 100 - platformPercent;
 }
 
-/** Trích xuất YouTube video ID từ URL (watch hoặc embed) */
+function isYoutubeVideoId(value: string | null | undefined): value is string {
+  return typeof value === "string" && /^[a-zA-Z0-9_-]{11}$/.test(value);
+}
+
+/** Trích xuất YouTube video ID từ các URL watch, short, live, embed và youtu.be. */
 export function getYoutubeVideoId(url: string): string | null {
-  if (!url) return null;
-  const watchMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  if (watchMatch) return watchMatch[1];
-  const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
-  return embedMatch ? embedMatch[1] : null;
+  const raw = url.trim();
+  if (!raw) return null;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+  } catch {
+    return null;
+  }
+
+  const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
+  const pathSegments = parsed.pathname.split("/").filter(Boolean);
+  const candidate =
+    host === "youtu.be"
+      ? pathSegments[0]
+      : host === "youtube.com" || host === "m.youtube.com" || host === "music.youtube.com" || host === "youtube-nocookie.com"
+        ? parsed.pathname === "/watch"
+          ? parsed.searchParams.get("v")
+          : ["embed", "shorts", "live", "v"].includes(pathSegments[0] ?? "")
+            ? pathSegments[1]
+            : null
+        : null;
+
+  return isYoutubeVideoId(candidate) ? candidate : null;
 }
 
 /** URL embed để nhúng iframe */
