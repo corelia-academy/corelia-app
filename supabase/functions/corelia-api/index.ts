@@ -7,6 +7,7 @@
  *   certificates.verify | certificates.revoke |
  *   hackathons.notifyRegistrationReview | hackathons.blastEmail |
  *   courses.syncCompletion | courses.blastEmail | careerTracks.blastEmail | notifications.unsubscribe |
+ *   gamification.dailyStreakStatus | gamification.claimDailyStreak |
  *   credentials.checkCourseCompletion | credentials.checkActivityMilestones | credentials.grant |
  *   credentials.retryPending | credentials.hackathon.listEligible | credentials.listActiveOcaTemplates |
  *   credentials.listActiveCourseCredentialTemplates |
@@ -30,6 +31,7 @@ import { handleCoInstructorInviteEmail } from "./courses/co_instructor_invite_em
 import { handleSyncCourseCompletion } from "./courses/completion.ts";
 import { handleHackathonBlastEmail } from "./hackathons/blast_email.ts";
 import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.ts";
+import { handleClaimDailyStreak, handleGetDailyStreakStatus } from "./gamification/daily_streak.ts";
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { handleNotificationsUnsubscribe } from "./notifications/unsubscribe.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
@@ -62,6 +64,8 @@ const PROTECTED_OPS = new Set<string>([
   "courses.blastEmail",
   "courses.coInstructorInvite.sendEmail",
   "careerTracks.blastEmail",
+  "gamification.dailyStreakStatus",
+  "gamification.claimDailyStreak",
   // notifications.unsubscribe is PUBLIC — intentionally omitted from PROTECTED_OPS
   "credentials.checkCourseCompletion",
   "credentials.checkActivityMilestones",
@@ -141,6 +145,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleCareerTrackBlastEmail(req, db);
     } else if (op === "notifications.unsubscribe" && req.method === "POST") {
       response = await handleNotificationsUnsubscribe(req, db);
+    } else if (op === "gamification.dailyStreakStatus" && req.method === "POST") {
+      response = await handleGetDailyStreakStatus(req, db);
+    } else if (op === "gamification.claimDailyStreak" && req.method === "POST") {
+      response = await handleClaimDailyStreak(req, db);
     } else if (op === "credentials.checkCourseCompletion" && req.method === "POST") {
       response = await handleCheckCourseCompletion(req, db);
     } else if (op === "credentials.checkActivityMilestones" && req.method === "POST") {

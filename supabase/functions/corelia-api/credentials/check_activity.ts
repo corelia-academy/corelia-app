@@ -14,6 +14,12 @@ type ActivityRule = {
   manual?: boolean;
 };
 
+type ActivityEvaluationCache = {
+  completedCourses?: number;
+  completedCoursesByTrack: Map<string, number>;
+  projects?: number;
+};
+
 export async function handleCheckActivityMilestones(req: Request, db: SupabaseClient): Promise<Response> {
   try {
     const user = await verifyBearerUser(req, db);
@@ -45,7 +51,7 @@ async function countCompletedCourses(db: SupabaseClient, userId: string): Promis
   const { count, error } = await db.from("enrollments").select("id", { count: "exact", head: true }).eq(
     "user_id",
     userId,
-  ).not("certificate_issued_at", "is", null);
+  ).not("completed_at", "is", null);
   if (error) throw new Error(error.message);
   return count ?? 0;
 }
@@ -73,7 +79,7 @@ async function countCompletedCoursesInTrack(
   const { count, error: cErr } = await db.from("enrollments").select("id", { count: "exact", head: true }).eq(
     "user_id",
     userId,
-  ).not("certificate_issued_at", "is", null).in("course_id", ids);
+  ).not("completed_at", "is", null).in("course_id", ids);
   if (cErr) throw new Error(cErr.message);
   return count ?? 0;
 }
@@ -102,13 +108,14 @@ async function evaluateRule(
   rule: ActivityRule,
   eventType: string,
   payload: Record<string, unknown>,
+  cache: ActivityEvaluationCache,
 ): Promise<boolean> {
   if (rule.manual === true) return false;
   if (!ruleMatchesEvent(rule, eventType)) return false;
 
   const ev = String(rule.event ?? "");
 
-  if (ev === "login_streak") {
+  if (ev === "login_streak" || ev === "daily_streak") {
     const need = Number(rule.days ?? 0);
     const actual = Number(payload.days ?? 0);
     return need > 0 && actual >= need;
@@ -116,7 +123,10 @@ async function evaluateRule(
 
   if (ev === "courses_completed" || eventType === "course_completed") {
     const need = Number(rule.count ?? 1);
-    const n = await countCompletedCourses(db, userId);
+    if (cache.completedCourses === undefined) {
+      cache.completedCourses = await countCompletedCourses(db, userId);
+    }
+    const n = cache.completedCourses;
     return n >= need;
   }
 
@@ -124,13 +134,20 @@ async function evaluateRule(
     const need = Number(rule.count ?? 0);
     const track = String(rule.track ?? "").trim();
     if (!track || need <= 0) return false;
-    const n = await countCompletedCoursesInTrack(db, userId, track);
+    let n = cache.completedCoursesByTrack.get(track);
+    if (n === undefined) {
+      n = await countCompletedCoursesInTrack(db, userId, track);
+      cache.completedCoursesByTrack.set(track, n);
+    }
     return n >= need;
   }
 
   if (ev === "projects_submitted") {
     const need = Number(rule.count ?? 1);
-    const n = await countProjects(db, userId);
+    if (cache.projects === undefined) {
+      cache.projects = await countProjects(db, userId);
+    }
+    const n = cache.projects;
     return n >= need;
   }
 
@@ -153,11 +170,18 @@ export async function runActivityMilestoneCheck(
   ).eq("is_active", true).eq("trigger_type", "auto");
   if (error) throw new Error(error.message);
 
-  const defaultNet = await getDefaultMintNetwork(db);
-
-  for (const template of templates ?? []) {
+  const matchingTemplates = (templates ?? []).filter((template) => {
     const rule = (template.trigger_rule ?? {}) as ActivityRule;
-    const ok = await evaluateRule(db, userId, rule, eventType, payload);
+    return rule.manual !== true && ruleMatchesEvent(rule, eventType);
+  });
+  if (matchingTemplates.length === 0) return { awarded, skipped };
+
+  const defaultNet = await getDefaultMintNetwork(db);
+  const cache: ActivityEvaluationCache = { completedCoursesByTrack: new Map() };
+
+  for (const template of matchingTemplates) {
+    const rule = (template.trigger_rule ?? {}) as ActivityRule;
+    const ok = await evaluateRule(db, userId, rule, eventType, payload, cache);
     if (!ok) continue;
 
     const identifierPrefix = String(template.identifier_prefix ?? "").trim();

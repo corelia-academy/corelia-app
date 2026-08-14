@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { getProfileForUser, invalidateCurrentProfileCache } from "@/lib/profile";
-import { invokeCheckActivityMilestones } from "@/lib/credentialsEdge";
 import { invokeCoreliaApi } from "@/lib/coreliaEdgeApi";
 import { useAuthStore } from "@/stores/authStore";
 import i18n, { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n";
@@ -133,11 +132,11 @@ export function AuthSync() {
         return;
       }
 
-      // Genuine new sign-in (not a session restore or same-user tab refresh):
-      // fire login_streak check as background task.
+      // Genuine new sign-in (not a session restore or same-user tab refresh).
+      // Daily streaks are claimed explicitly from the header, so sign-in alone
+      // cannot create a streak or trigger its milestone badges.
       if (event === "SIGNED_IN" && session?.user) {
         queueMicrotask(() => {
-          invokeCheckActivityMilestones("login_streak").catch(() => {});
           // Best-effort: picks up any credential_issuances left at
           // awaiting_holder_id (e.g. ghost-mint rows claimed by
           // private.handle_new_user() at signup) once the user has an OCID.

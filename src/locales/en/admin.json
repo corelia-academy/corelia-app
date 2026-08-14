@@ -425,6 +425,7 @@
     },
     "event": {
       "loginStreak": "Login streak",
+      "dailyStreak": "Daily claim streak",
       "coursesCompleted": "Courses completed",
       "trackCourses": "Courses completed in track",
       "projects": "Projects submitted"
@@ -432,6 +433,7 @@
     "rule": {
       "manual": "Manual grant",
       "loginStreak": "{{days}}-day login streak",
+      "dailyStreak": "{{days}}-day daily claim streak",
       "coursesCompleted": "{{count}} courses completed",
       "trackCourses": "{{count}} courses in track “{{track}}”",
       "projects": "{{count}} projects submitted"
