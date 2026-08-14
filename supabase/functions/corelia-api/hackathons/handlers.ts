@@ -93,6 +93,8 @@ export async function handleHackathonNotifyRegistrationReview(req: Request, db: 
     });
 
     const mailResult = await sendTransactionalEmailViaResend({
+      db,
+      mailType: "hackathon_registration_review",
       to: [toEmail],
       subject,
       html,

@@ -172,26 +172,29 @@ export function ContestDetailBlastEmailPanel({
           {/* Last result */}
           {lastResult && (
             <div className="rounded-md border border-border-subtle bg-surface-raised px-4 py-3 text-sm">
-              <p className="font-medium text-foreground">
-                {translate("workspace.email.resultSent", {
-                  sent: lastResult.sent,
-                  total: lastResult.total,
-                })}
-              </p>
-              {lastResult.failed > 0 && (
-                <p className="mt-0.5 text-foreground-muted">
-                  {translate("workspace.email.resultFailed", { failed: lastResult.failed })}
+              {lastResult.reason === "email_not_configured" ? (
+                <p className="text-destructive">
+                  {translate("workspace.email.systemUnavailable")}
                 </p>
-              )}
-              {lastResult.skipped > 0 && (
-                <p className="mt-0.5 text-foreground-muted">
-                  {translate("workspace.email.resultSkipped", { skipped: lastResult.skipped })}
-                </p>
-              )}
-              {lastResult.reason === "email_not_configured" && (
-                <p className="mt-0.5 text-warning">
-                  {translate("workspace.email.notConfigured")}
-                </p>
+              ) : (
+                <>
+                  <p className="font-medium text-foreground">
+                    {translate("workspace.email.resultSent", {
+                      sent: lastResult.sent,
+                      total: lastResult.total,
+                    })}
+                  </p>
+                  {lastResult.failed > 0 && (
+                    <p className="mt-0.5 text-foreground-muted">
+                      {translate("workspace.email.resultFailed", { failed: lastResult.failed })}
+                    </p>
+                  )}
+                  {lastResult.skipped > 0 && (
+                    <p className="mt-0.5 text-foreground-muted">
+                      {translate("workspace.email.resultSkipped", { skipped: lastResult.skipped })}
+                    </p>
+                  )}
+                </>
               )}
             </div>
           )}

@@ -2,6 +2,7 @@ import { isAuthFailure } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
 import { normalizeAnnouncementBodyHtml } from "../lib/mail/announcement_body.ts";
 import { resolveAppUrl, wrapBlastEmail } from "../lib/mail/layout.ts";
+import { summarizeBlastRecipients } from "../lib/mail/recipient_accounting.ts";
 import { sendBatchEmailsViaResend } from "../lib/mail/resend.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { canProfileBlastHackathonEmail } from "./blast_permissions.ts";
@@ -98,10 +99,13 @@ export async function handleHackathonBlastEmail(
       }),
     );
 
-    const uniqueEmails = [...new Set(emailResults.filter(Boolean))];
-    const noEmailCount = filtered.length - emailResults.filter(Boolean).length;
+    const recipientSummary = summarizeBlastRecipients({
+      totalRecipients: filtered.length,
+      optedInRecipients: filtered.length,
+      resolvedEmails: emailResults,
+    });
 
-    if (!uniqueEmails.length) {
+    if (!recipientSummary.emails.length) {
       return json(
         { ok: true, sent: 0, failed: 0, skipped: filtered.length, total: filtered.length },
         200,
@@ -121,7 +125,9 @@ export async function handleHackathonBlastEmail(
     });
 
     const result = await sendBatchEmailsViaResend({
-      to_list: uniqueEmails,
+      db,
+      mailType: "hackathon_announcement",
+      to_list: recipientSummary.emails,
       subject,
       html: htmlWithLayout,
     });
@@ -138,8 +144,9 @@ export async function handleHackathonBlastEmail(
         ok: true,
         sent: result.sent,
         failed: result.failed,
-        skipped: noEmailCount,
+        skipped: recipientSummary.skipped,
         total: filtered.length,
+        skipped_breakdown: recipientSummary.skippedBreakdown,
       },
       200,
     );

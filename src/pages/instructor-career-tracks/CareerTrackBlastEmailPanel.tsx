@@ -106,7 +106,11 @@ export function CareerTrackBlastEmailPanel({ trackId }: Props) {
 
       {lastResult && (
         <div className="rounded-md border border-border-subtle bg-surface-raised px-4 py-3 text-sm">
-          {lastResult.ok ? (
+            {lastResult.ok && lastResult.reason === "email_not_configured" ? (
+              <p className="text-destructive">
+                {t("careerTracks.announcements.systemUnavailable")}
+              </p>
+            ) : lastResult.ok ? (
             <>
               <p className="font-medium text-foreground">
                 {t("careerTracks.announcements.resultSent", {
@@ -119,13 +123,16 @@ export function CareerTrackBlastEmailPanel({ trackId }: Props) {
                   {t("careerTracks.announcements.resultFailed", { failed: lastResult.failed })}
                 </p>
               )}
+              {lastResult.skipped > 0 && (
+                <p className="mt-0.5 text-foreground-muted">
+                  {t("careerTracks.announcements.resultSkipped", { skipped: lastResult.skipped })}
+                </p>
+              )}
             </>
-          ) : (
-            <p className="text-destructive">
-              {lastResult.reason === "email_not_configured"
-                ? t("careerTracks.announcements.notConfigured")
-                : t("careerTracks.announcements.resultError", { reason: lastResult.reason ?? "unknown" })}
-            </p>
+            ) : (
+              <p className="text-destructive">
+                {t("careerTracks.announcements.systemUnavailable")}
+              </p>
           )}
         </div>
       )}

@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { Loader2, Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
+import { LoginHcaptcha } from "@/components/auth/LoginHcaptcha";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { hcaptchaSiteKey, isHcaptchaConfigured } from "@/lib/hcaptchaConfig";
 import {
   getAuthErrorInfo,
   isEmailNotConfirmed,
@@ -49,11 +52,21 @@ export function LoginMfaChallenge({
   const [errorInfo, setErrorInfo] = useState<AuthErrorInfo | null>(null);
   const [resendEmailBusy, setResendEmailBusy] = useState(false);
   const [resendEmailSuccess, setResendEmailSuccess] = useState<string | null>(null);
+  const [resendEmailError, setResendEmailError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const hcaptchaEnabled = useMemo(() => isHcaptchaConfigured(), []);
+  const captchaRef = useRef<InstanceType<typeof HCaptcha> | null>(null);
+
+  const resetCaptchaAfterResend = useCallback(() => {
+    captchaRef.current?.resetCaptcha();
+    setCaptchaToken(null);
+  }, []);
 
   const loadFactors = useCallback(async () => {
     setLoadingFactors(true);
     setErrorInfo(null);
     setResendEmailSuccess(null);
+    setResendEmailError(null);
     try {
       const { data, error } = await supabase.auth.mfa.listFactors();
       if (error) throw error;
@@ -78,9 +91,17 @@ export function LoginMfaChallenge({
   }, [loadFactors]);
 
   const handleResendConfirmationEmail = useCallback(async () => {
-    setResendEmailBusy(true);
-    setErrorInfo(null);
     setResendEmailSuccess(null);
+    setResendEmailError(null);
+    if (hcaptchaEnabled && !captchaToken?.trim()) {
+      setResendEmailError(t("errors.captchaRequired"));
+      return;
+    }
+
+    const captchaOpts =
+      hcaptchaEnabled && captchaToken ? { captchaToken: captchaToken.trim() } : {};
+
+    setResendEmailBusy(true);
     try {
       const {
         data: { session },
@@ -89,21 +110,24 @@ export function LoginMfaChallenge({
       if (sessionErr) throw sessionErr;
       const mail = session?.user?.email?.trim();
       if (!mail) {
-        setErrorInfo({ message: t("errors.generic") });
+        setResendEmailError(t("errors.generic"));
         return;
       }
       const { error } = await supabase.auth.resend({
         type: "signup",
         email: mail,
+        ...(Object.keys(captchaOpts).length > 0 ? { options: captchaOpts } : {}),
       });
       if (error) throw error;
       setResendEmailSuccess(t("login.emailConfirmation.resendSuccess"));
+      setErrorInfo(null);
+      resetCaptchaAfterResend();
     } catch (e: unknown) {
-      setErrorInfo(getAuthErrorInfo(e, translate));
+      setResendEmailError(getAuthErrorInfo(e, translate).message);
     } finally {
       setResendEmailBusy(false);
     }
-  }, [t, translate]);
+  }, [captchaToken, hcaptchaEnabled, resetCaptchaAfterResend, t, translate]);
 
   const startChallenge = useCallback(async () => {
     if (!factor) return;
@@ -165,6 +189,51 @@ export function LoginMfaChallenge({
       : factor?.kind === "totp"
         ? t("login.subtitle.mfaTotp")
         : t("login.subtitle.mfa");
+
+  const emailConfirmationMessage = isEmailNotConfirmed(errorInfo)
+    ? errorInfo?.message ?? null
+    : null;
+  const emailConfirmationPanel = emailConfirmationMessage ? (
+    <div
+      className="flex flex-col gap-3 rounded-md border border-warning/20 bg-warning/10 p-4"
+      role="alert"
+    >
+      <div className="flex gap-3">
+        <Mail className="size-5 shrink-0 text-warning" aria-hidden />
+        <div className="min-w-0 space-y-1">
+          <p className="text-sm font-medium text-warning">
+            {t("login.emailConfirmation.title")}
+          </p>
+          <p className="text-sm text-warning">{emailConfirmationMessage}</p>
+          <p className="text-xs text-warning">{t("login.emailConfirmation.hint")}</p>
+        </div>
+      </div>
+      {hcaptchaEnabled ? (
+        <LoginHcaptcha
+          ref={captchaRef}
+          sitekey={hcaptchaSiteKey()}
+          onToken={setCaptchaToken}
+          className="py-1"
+        />
+      ) : null}
+      {resendEmailError ? (
+        <p className="text-sm text-destructive" role="status">
+          {resendEmailError}
+        </p>
+      ) : null}
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full border-warning/30 bg-surface-base"
+        disabled={busy || resendEmailBusy}
+        onClick={() => void handleResendConfirmationEmail()}
+      >
+        {resendEmailBusy
+          ? t("login.emailConfirmation.resending")
+          : t("login.emailConfirmation.resend")}
+      </Button>
+    </div>
+  ) : null;
 
   if (loadingFactors) {
     return (
@@ -238,34 +307,7 @@ export function LoginMfaChallenge({
             </Field>
 
             {errorInfo ? (
-              isEmailNotConfirmed(errorInfo) ? (
-                <div
-                  className="flex flex-col gap-3 rounded-md border border-warning/20 bg-warning/10 p-4"
-                  role="alert"
-                >
-                  <div className="flex gap-3">
-                    <Mail className="size-5 shrink-0 text-warning" aria-hidden />
-                    <div className="min-w-0 space-y-1">
-                      <p className="text-sm font-medium text-warning">
-                        {t("login.emailConfirmation.title")}
-                      </p>
-                      <p className="text-sm text-warning">{errorInfo.message}</p>
-                      <p className="text-xs text-warning">{t("login.emailConfirmation.hint")}</p>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full border-warning/30 bg-surface-base"
-                    disabled={busy || resendEmailBusy}
-                    onClick={() => void handleResendConfirmationEmail()}
-                  >
-                    {resendEmailBusy
-                      ? t("login.emailConfirmation.resending")
-                      : t("login.emailConfirmation.resend")}
-                  </Button>
-                </div>
-              ) : (
+              isEmailNotConfirmed(errorInfo) ? emailConfirmationPanel : (
                 <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                   {errorInfo.message}
                 </div>
@@ -279,32 +321,7 @@ export function LoginMfaChallenge({
         ) : null}
 
         {!factor && errorInfo ? (
-          isEmailNotConfirmed(errorInfo) ? (
-            <div
-              className="flex flex-col gap-3 rounded-md border border-warning/20 bg-warning/10 p-4"
-              role="alert"
-            >
-              <div className="flex gap-3">
-                <Mail className="size-5 shrink-0 text-warning" aria-hidden />
-                <div className="min-w-0 space-y-1">
-                  <p className="text-sm font-medium text-warning">{t("login.emailConfirmation.title")}</p>
-                  <p className="text-sm text-warning">{errorInfo.message}</p>
-                  <p className="text-xs text-warning">{t("login.emailConfirmation.hint")}</p>
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border-warning/30 bg-surface-base"
-                disabled={busy || resendEmailBusy}
-                onClick={() => void handleResendConfirmationEmail()}
-              >
-                {resendEmailBusy
-                  ? t("login.emailConfirmation.resending")
-                  : t("login.emailConfirmation.resend")}
-              </Button>
-            </div>
-          ) : (
+          isEmailNotConfirmed(errorInfo) ? emailConfirmationPanel : (
             <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {errorInfo.message}
             </div>

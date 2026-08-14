@@ -1724,10 +1724,14 @@ export function useContestDetailOrchestrator({
       setBlasting(true);
       try {
         const result = await blastContestEmail(id, params);
-        toast.success(translate("workspace.email.toastSuccess"));
+        if (result.reason === "email_not_configured") {
+          toast.error(translate("workspace.email.systemUnavailable"));
+        } else {
+          toast.success(translate("workspace.email.toastSuccess"));
+        }
         return result;
-      } catch (err) {
-        toast.error(translateApiError(err, translate, "workspace.email.toastError"));
+      } catch {
+        toast.error(translate("workspace.email.systemUnavailable"));
         return null;
       } finally {
         setBlasting(false);
