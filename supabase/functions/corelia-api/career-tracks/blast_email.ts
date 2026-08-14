@@ -2,6 +2,7 @@ import { isAuthFailure } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
 import { normalizeAnnouncementBodyHtml } from "../lib/mail/announcement_body.ts";
 import { resolveAppUrl, wrapBlastEmail } from "../lib/mail/layout.ts";
+import { summarizeBlastRecipients } from "../lib/mail/recipient_accounting.ts";
 import { sendBatchEmailsViaResend } from "../lib/mail/resend.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 
@@ -81,17 +82,25 @@ export async function handleCareerTrackBlastEmail(
     const userIds = [...new Set(enrollments.map((e) => String(e.user_id)))];
 
     // Ensure notification_preferences rows exist
-    await db
+    const { error: prefUpsertErr } = await db
       .from("notification_preferences")
       .upsert(
         userIds.map((uid) => ({ user_id: uid })),
         { onConflict: "user_id", ignoreDuplicates: true },
       );
+    if (prefUpsertErr) {
+      console.error("[corelia-api] careerTracks.blastEmail preference upsert", prefUpsertErr);
+      return json({ message: "email_preferences_unavailable" }, 503);
+    }
 
-    const { data: prefs } = await db
+    const { data: prefs, error: prefsErr } = await db
       .from("notification_preferences")
       .select("user_id, email_track_blast, in_app_track_blast")
       .in("user_id", userIds);
+    if (prefsErr) {
+      console.error("[corelia-api] careerTracks.blastEmail preference read", prefsErr);
+      return json({ message: "email_preferences_unavailable" }, 503);
+    }
 
     const prefsMap = Object.fromEntries(
       (prefs ?? []).map((p) => [String(p.user_id), p]),
@@ -110,7 +119,11 @@ export async function handleCareerTrackBlastEmail(
         return data?.user?.email?.trim().toLowerCase() ?? "";
       }),
     );
-    const uniqueEmails = [...new Set(emailResults.filter(Boolean))];
+    const recipientSummary = summarizeBlastRecipients({
+      totalRecipients: userIds.length,
+      optedInRecipients: emailRecipientIds.length,
+      resolvedEmails: emailResults,
+    });
 
     const bodyHtml = normalizeAnnouncementBodyHtml(html);
     if (!bodyHtml) {
@@ -125,7 +138,9 @@ export async function handleCareerTrackBlastEmail(
     });
 
     const result = await sendBatchEmailsViaResend({
-      to_list: uniqueEmails,
+      db,
+      mailType: "career_track_announcement",
+      to_list: recipientSummary.emails,
       subject,
       html: htmlWithLayout,
     });
@@ -155,8 +170,9 @@ export async function handleCareerTrackBlastEmail(
         ok: true,
         sent: result.skipped ? 0 : result.sent,
         failed: result.skipped ? 0 : result.failed,
-        skipped: userIds.length - emailRecipientIds.length,
+        skipped: result.skipped ? userIds.length : recipientSummary.skipped,
         total: userIds.length,
+        ...(result.skipped ? {} : { skipped_breakdown: recipientSummary.skippedBreakdown }),
         ...(result.skipped ? { reason: "email_not_configured" } : {}),
       },
       200,

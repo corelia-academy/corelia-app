@@ -203,9 +203,10 @@
       "cancelButton": "Cancel",
       "resultSent": "Sent {{sent}} of {{total}}",
       "resultFailed": "Failed: {{failed}}",
-      "resultSkipped": "Skipped (no email on file): {{skipped}}",
+      "resultSkipped": "Could not send to {{skipped}} recipients.",
       "toastSuccess": "Email blast sent",
       "toastError": "Failed to send email blast",
+      "systemUnavailable": "The email system is currently unavailable. No emails were sent. Please contact a system administrator for assistance.",
       "notConfigured": "Email not configured — set RESEND_API_KEY and MAIL_FROM in your Supabase environment."
     },
     "manage": {

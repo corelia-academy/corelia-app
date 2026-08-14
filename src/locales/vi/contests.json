@@ -203,9 +203,10 @@
       "cancelButton": "Huỷ",
       "resultSent": "Đã gửi {{sent}} / {{total}}",
       "resultFailed": "Thất bại: {{failed}}",
-      "resultSkipped": "Bỏ qua (không có email): {{skipped}}",
+      "resultSkipped": "Không gửi được cho {{skipped}} người nhận.",
       "toastSuccess": "Đã gửi email hàng loạt thành công",
       "toastError": "Không thể gửi email hàng loạt",
+      "systemUnavailable": "Hệ thống gửi email đang gặp sự cố. Chưa email nào được gửi. Vui lòng liên hệ quản trị viên hệ thống để được hỗ trợ.",
       "notConfigured": "Email chưa được cấu hình — hãy set RESEND_API_KEY và MAIL_FROM trong môi trường Supabase."
     },
     "manage": {

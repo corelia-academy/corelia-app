@@ -260,7 +260,9 @@
       "cancelButton": "Cancel",
       "resultSent": "Successfully sent {{sent}}/{{total}} emails.",
       "resultFailed": "{{failed}} emails failed to send.",
+      "resultSkipped": "Could not send to {{skipped}} recipients.",
       "resultError": "Send error: {{reason}}",
+      "systemUnavailable": "The email system is currently unavailable. No emails were sent. Please contact a system administrator for assistance.",
       "notConfigured": "Email not configured. Please check RESEND_API_KEY."
     }
   },
@@ -1127,8 +1129,9 @@
       "cancelButton": "Cancel",
       "resultSent": "Successfully sent {{sent}}/{{total}} emails.",
       "resultFailed": "{{failed}} emails failed to send.",
-      "resultSkipped": "{{skipped}} learners opted out of emails.",
+      "resultSkipped": "Could not send to {{skipped}} recipients.",
       "resultError": "Send error: {{reason}}",
+      "systemUnavailable": "The email system is currently unavailable. No emails were sent. Please contact a system administrator for assistance.",
       "notConfigured": "Email not configured. Please check RESEND_API_KEY."
     }
   }

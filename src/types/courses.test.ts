@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import i18n from "@/i18n";
 
-import { formatDuration } from "./courses";
+import { formatDuration, getYoutubeVideoId } from "./courses";
 
 describe("formatDuration", () => {
   let previousLanguage: string;
@@ -23,5 +23,25 @@ describe("formatDuration", () => {
 
   it("carries rounded minutes into the hour component", () => {
     expect(formatDuration(3599)).toBe("1h 0m");
+  });
+});
+
+describe("getYoutubeVideoId", () => {
+  const videoId = "dQw4w9WgXcQ";
+
+  it.each([
+    `https://www.youtube.com/watch?v=${videoId}`,
+    `https://www.youtube.com/watch?feature=shared&v=${videoId}&si=abc`,
+    `https://youtu.be/${videoId}?si=abc`,
+    `https://www.youtube.com/shorts/${videoId}?feature=share`,
+    `https://www.youtube.com/live/${videoId}?feature=share`,
+    `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`,
+  ])("extracts an ID from %s", (url) => {
+    expect(getYoutubeVideoId(url)).toBe(videoId);
+  });
+
+  it("rejects non-YouTube URLs and malformed IDs", () => {
+    expect(getYoutubeVideoId(`https://example.com/watch?v=${videoId}`)).toBeNull();
+    expect(getYoutubeVideoId("https://www.youtube.com/shorts/not-an-id")).toBeNull();
   });
 });
