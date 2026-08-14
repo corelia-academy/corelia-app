@@ -59,6 +59,26 @@ export function LessonPlayerCard({
     Boolean(lesson.description_markdown?.trim());
 
   const draftForDisplay = lesson ? isLessonDraftForLearners(lesson) : isDraftLesson;
+  const unavailableContentCopy =
+    videoLesson || lesson?.lesson_format === "video"
+      ? {
+          title: "detail.learn.lessonVideoUnavailableTitle",
+          body: "detail.learn.lessonVideoUnavailableBody",
+        }
+      : articleLesson
+        ? {
+            title: "detail.learn.lessonArticleUnavailableTitle",
+            body: "detail.learn.lessonArticleUnavailableBody",
+          }
+        : practiceLesson
+          ? {
+              title: "detail.learn.lessonPracticeUnavailableTitle",
+              body: "detail.learn.lessonPracticeUnavailableBody",
+            }
+          : {
+              title: "detail.learn.lessonContentUnavailableTitle",
+              body: "detail.learn.lessonContentUnavailableBody",
+            };
 
   if (!lesson) {
     return (
@@ -153,9 +173,14 @@ export function LessonPlayerCard({
               </p>
             </div>
           ) : (
-            <p className="text-sm text-foreground-muted">
-              {translate("detail.learn.currentLesson.selectAside")}
-            </p>
+            <div className="max-w-md px-6 text-center">
+              <p className="text-sm font-medium text-foreground">
+                {translate(unavailableContentCopy.title)}
+              </p>
+              <p className="mt-2 text-sm text-foreground-muted">
+                {translate(unavailableContentCopy.body)}
+              </p>
+            </div>
           )}
         </div>
       ) : null}
