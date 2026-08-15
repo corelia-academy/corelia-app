@@ -122,6 +122,7 @@ DECLARE
   v_state public.user_daily_streaks%ROWTYPE;
   v_timezone text := 'Asia/Ho_Chi_Minh';
   v_today date;
+  v_effective_current_streak integer := 0;
 BEGIN
   PERFORM public.sync_account_connection_points(p_user_id);
 
@@ -131,12 +132,21 @@ BEGIN
 
   IF FOUND THEN
     v_timezone := v_state.timezone;
+    v_today := (now() AT TIME ZONE v_timezone)::date;
+    -- If user claimed today or yesterday, streak is currently alive.
+    -- If user missed yesterday (last_claim_date < today - 1) or never claimed, active streak is 0.
+    IF v_state.last_claim_date = v_today OR v_state.last_claim_date = v_today - 1 THEN
+      v_effective_current_streak := COALESCE(v_state.current_streak, 0);
+    ELSE
+      v_effective_current_streak := 0;
+    END IF;
+  ELSE
+    v_today := (now() AT TIME ZONE v_timezone)::date;
   END IF;
-  v_today := (now() AT TIME ZONE v_timezone)::date;
 
   RETURN QUERY
   SELECT
-    COALESCE(v_state.current_streak, 0),
+    v_effective_current_streak,
     COALESCE(v_state.longest_streak, 0),
     v_state.last_claim_date,
     v_timezone,
