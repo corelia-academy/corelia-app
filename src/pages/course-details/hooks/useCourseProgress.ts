@@ -26,57 +26,85 @@ interface UseCourseProgressResult {
   refresh: () => Promise<CourseProgressRefreshResult | null>;
 }
 
+interface CourseProgressData {
+  progressPercent: number;
+  hasStarted: boolean;
+  nextLesson: CourseLesson | null;
+}
+
+const INITIAL_PROGRESS_DATA: CourseProgressData = {
+  progressPercent: 0,
+  hasStarted: false,
+  nextLesson: null,
+};
+
 export function useCourseProgress({
   resolvedCourseId,
   profileId,
   lessons,
   sections,
 }: UseCourseProgressInput): UseCourseProgressResult {
-  const [progressPercent, setProgressPercent] = useState(0);
-  const [hasStarted, setHasStarted] = useState(false);
-  const [nextLesson, setNextLesson] = useState<CourseLesson | null>(null);
-  const hasContext = !!resolvedCourseId && !!profileId;
+  const requestKey =
+    resolvedCourseId && profileId ? `${profileId}:${resolvedCourseId}` : "";
+  const [loadedResult, setLoadedResult] = useState<{
+    requestKey: string;
+    data: CourseProgressData;
+  }>({
+    requestKey: "",
+    data: INITIAL_PROGRESS_DATA,
+  });
 
   useEffect(() => {
-    if (!resolvedCourseId || !profileId) return;
+    if (!resolvedCourseId || !profileId || !requestKey) return;
     let cancelled = false;
-    setHasStarted(false);
 
     getLessonProgressForCourse(profileId, resolvedCourseId)
       .then((list) => {
         if (cancelled) return;
         const sorted = sortLessonsByCurriculum(lessons, sections);
-        setHasStarted(list.length > 0);
-        setProgressPercent(computeProgressPercent(sorted, list));
-        setNextLesson(getNextLesson(sorted, list));
+        setLoadedResult({
+          requestKey,
+          data: {
+            hasStarted: list.length > 0,
+            progressPercent: computeProgressPercent(sorted, list),
+            nextLesson: getNextLesson(sorted, list),
+          },
+        });
       })
       .catch(() => {
         if (cancelled) return;
-        setHasStarted(false);
-        setProgressPercent(0);
-        setNextLesson(null);
+        setLoadedResult({
+          requestKey,
+          data: INITIAL_PROGRESS_DATA,
+        });
       });
 
     return () => {
       cancelled = true;
     };
-  }, [resolvedCourseId, profileId, lessons, sections]);
+  }, [resolvedCourseId, profileId, lessons, sections, requestKey]);
 
   const refresh = useCallback(async () => {
-    if (!resolvedCourseId || !profileId) return null;
+    if (!resolvedCourseId || !profileId || !requestKey) return null;
     const list = await getLessonProgressForCourse(profileId, resolvedCourseId);
     const sorted = sortLessonsByCurriculum(lessons, sections);
     const next = getNextLesson(sorted, list);
-    setHasStarted(list.length > 0);
-    setProgressPercent(computeProgressPercent(sorted, list));
-    setNextLesson(next);
+    const nextData: CourseProgressData = {
+      hasStarted: list.length > 0,
+      progressPercent: computeProgressPercent(sorted, list),
+      nextLesson: next,
+    };
+    setLoadedResult({ requestKey, data: nextData });
     return { sorted, next };
-  }, [resolvedCourseId, profileId, lessons, sections]);
+  }, [resolvedCourseId, profileId, lessons, sections, requestKey]);
+
+  const isCurrent = Boolean(requestKey) && loadedResult.requestKey === requestKey;
+  const currentData = isCurrent ? loadedResult.data : INITIAL_PROGRESS_DATA;
 
   return {
-    progressPercent: hasContext ? progressPercent : 0,
-    hasStarted: hasContext ? hasStarted : false,
-    nextLesson: hasContext ? nextLesson : null,
+    progressPercent: currentData.progressPercent,
+    hasStarted: currentData.hasStarted,
+    nextLesson: currentData.nextLesson,
     refresh,
   };
 }
