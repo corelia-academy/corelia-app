@@ -484,46 +484,29 @@ export function ManualMintHistoryTable() {
                   >
                     {/* Cột 1: Người nhận */}
                     <td className="px-3.5 py-3">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        {row.isGhost ? (
-                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-yellow-400/15 text-yellow-500 border border-yellow-400/30">
-                            <UserPlus className="size-4" />
+                      <div className="min-w-0">
+                        <p
+                          className={cn(
+                            "truncate font-semibold text-sm leading-tight",
+                            row.isGhost
+                              ? "text-yellow-500 font-medium italic"
+                              : "text-foreground",
+                          )}
+                        >
+                          {row.recipientName}
+                        </p>
+                        <p className="truncate text-xs text-foreground-muted mt-0.5">
+                          {row.recipientEmail}
+                        </p>
+                        {row.recipientOcid ? (
+                          <div className="mt-1">
+                            <span className="inline-flex items-center rounded-full border border-border bg-primary-muted px-2 py-0.5 text-xs font-normal text-primary max-w-full truncate">
+                              {row.recipientOcid.endsWith(".edu")
+                                ? row.recipientOcid
+                                : `${row.recipientOcid}.edu`}
+                            </span>
                           </div>
-                        ) : row.recipientAvatarUrl ? (
-                          <img
-                            src={row.recipientAvatarUrl}
-                            alt=""
-                            className="size-8 shrink-0 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-raised font-bold text-xs text-foreground-muted border border-border-subtle">
-                            {(row.recipientName || "U").charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p
-                            className={cn(
-                              "truncate font-semibold text-sm leading-tight",
-                              row.isGhost
-                                ? "text-yellow-500 font-medium italic"
-                                : "text-foreground",
-                            )}
-                          >
-                            {row.recipientName}
-                          </p>
-                          <p className="truncate text-xs text-foreground-muted mt-0.5">
-                            {row.recipientEmail}
-                          </p>
-                          {row.recipientOcid ? (
-                            <div className="mt-1">
-                              <span className="inline-flex items-center rounded-full border border-border bg-primary-muted px-2 py-0.5 text-xs font-normal text-primary max-w-full truncate">
-                                {row.recipientOcid.endsWith(".edu")
-                                  ? row.recipientOcid
-                                  : `${row.recipientOcid}.edu`}
-                              </span>
-                            </div>
-                          ) : null}
-                        </div>
+                        ) : null}
                       </div>
                     </td>
 
