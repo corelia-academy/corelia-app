@@ -49,15 +49,24 @@ export async function handleRevokeCredential(
       }, 400);
     }
 
-    // Delete pending or failed issuance safely using backend db
-    const { error: delErr } = await db
+    const now = new Date().toISOString();
+    const reason = String(body.reason ?? "").trim() || "Revoked by admin";
+
+    // Mark pending or failed issuance as revoked with audit trail
+    const { error: updateErr } = await db
       .from("credential_issuances")
-      .delete()
+      .update({
+        status: "revoked",
+        revoked_at: now,
+        revoked_by: user.id,
+        revoked_reason: reason,
+        updated_at: now,
+      })
       .eq("id", id)
       .in("status", ["pending", "failed"]);
 
-    if (delErr) throw new Error(delErr.message);
-    return json({ ok: true, message: "Đã thu hồi chứng nhận thành công." });
+    if (updateErr) throw new Error(updateErr.message);
+    return json({ ok: true, status: "revoked", message: "Đã thu hồi chứng nhận thành công." });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) {

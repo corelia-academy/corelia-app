@@ -17,7 +17,7 @@ export type ManualMintHistoryRow = {
   granterName: string | null;
   granterEmail: string | null;
   grantedReason: string | null;
-  status: "pending" | "minted" | "failed" | "awaiting_signup";
+  status: "pending" | "minted" | "failed" | "awaiting_signup" | "revoked";
   network: "staging" | "mainnet";
   ocCredentialId: string | null;
   explorerUrl: string | null;

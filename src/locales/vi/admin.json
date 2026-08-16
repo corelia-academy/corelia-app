@@ -513,6 +513,7 @@
       "statusPending": "Chờ nhận",
       "statusAwaitingSignup": "Chờ tạo TK",
       "statusFailed": "Thất bại",
+      "statusRevoked": "Đã thu hồi",
       "reasonCol": "Lý do cấp",
       "actionsCol": "Thao tác",
       "viewOnOpenCampus": "Explorer",

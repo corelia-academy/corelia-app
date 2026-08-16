@@ -513,6 +513,7 @@
       "statusPending": "Pending",
       "statusAwaitingSignup": "Awaiting Signup",
       "statusFailed": "Failed",
+      "statusRevoked": "Revoked",
       "reasonCol": "Grant Reason",
       "actionsCol": "Actions",
       "viewOnOpenCampus": "Explorer",

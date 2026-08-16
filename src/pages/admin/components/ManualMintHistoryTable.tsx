@@ -580,6 +580,10 @@ export function ManualMintHistoryTable() {
                           <Clock className="size-3 shrink-0" />
                           {t("manualMint.history.statusPending")}
                         </span>
+                      ) : row.status === "revoked" ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-500/10 text-neutral-400 border border-neutral-500/20 px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
+                          {t("manualMint.history.statusRevoked")}
+                        </span>
                       ) : (
                         <TooltipProvider>
                           <Tooltip>
