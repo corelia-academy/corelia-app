@@ -22,16 +22,19 @@ import { uploadActivityMilestoneBadgeImage } from "@/lib/storage";
 import type { Profile } from "@/types/database";
 
 import { ManualMintProfilePreviewDialog } from "./components/ManualMintProfilePreviewDialog";
+import { ManualMintHistoryTable } from "./components/ManualMintHistoryTable";
 
 const TEXTAREA_CLASS =
   "min-h-[88px] w-full rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15";
 
 type IdentifierType = "uid" | "email";
+type ActiveTab = "grant" | "history";
 
 const EMAIL_FORMAT_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function AdminManualMint() {
   const { t } = useTranslation("admin");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("grant");
 
   // Step 1 — lookup
   const [identifierType, setIdentifierType] = useState<IdentifierType>("uid");
@@ -252,14 +255,46 @@ export default function AdminManualMint() {
         <p className="mt-1 text-sm text-foreground-muted">{t("manualMint.subheading")}</p>
       </div>
 
-      {/* Step 1 — identifier lookup */}
-      <div className="space-y-3 rounded-md border border-border-subtle p-4">
-        <FieldLabel>{t("manualMint.lookup.heading")}</FieldLabel>
-        <div className="flex gap-2">
-          <div className="flex shrink-0 overflow-hidden rounded-md border border-border-subtle">
-            <button
-              type="button"
-              onClick={() => handleIdentifierTypeChange("uid")}
+      {/* Top Tabs Switcher */}
+      <div className="mb-6 flex border-b border-border-subtle">
+        <button
+          type="button"
+          onClick={() => setActiveTab("grant")}
+          className={cn(
+            "border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
+            activeTab === "grant"
+              ? "border-primary text-primary font-semibold"
+              : "border-transparent text-foreground-muted hover:text-foreground",
+          )}
+        >
+          {t("manualMint.tabs.grant")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("history")}
+          className={cn(
+            "border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
+            activeTab === "history"
+              ? "border-primary text-primary font-semibold"
+              : "border-transparent text-foreground-muted hover:text-foreground",
+          )}
+        >
+          {t("manualMint.tabs.history")}
+        </button>
+      </div>
+
+      {activeTab === "history" ? (
+        <ManualMintHistoryTable />
+      ) : (
+        <>
+          {/* Step 1 — identifier lookup */}
+          <div className="space-y-3 rounded-md border border-border-subtle p-4">
+            <FieldLabel>{t("manualMint.lookup.heading")}</FieldLabel>
+            <div className="flex gap-2">
+              <div className="flex shrink-0 overflow-hidden rounded-md border border-border-subtle">
+                <button
+                  type="button"
+                  onClick={() => handleIdentifierTypeChange("uid")}
               className={cn(
                 "px-3 py-2 text-sm font-medium transition-colors",
                 identifierType === "uid"
@@ -491,6 +526,8 @@ export default function AdminManualMint() {
           </div>
         )}
       </div>
+        </>
+      )}
 
       <ManualMintProfilePreviewDialog
         userId={matchedProfile?.id ?? null}

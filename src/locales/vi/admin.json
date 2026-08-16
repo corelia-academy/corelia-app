@@ -442,6 +442,10 @@
   "manualMint": {
     "heading": "Cấp thủ công OCA/OCB",
     "subheading": "Cấp OCA/OCB cho một cá nhân cụ thể như phần thưởng ngoài khóa học, không ảnh hưởng trạng thái khóa học/hackathon.",
+    "tabs": {
+      "grant": "Cấp badge & Chờ nhận",
+      "history": "Lịch sử đã cấp"
+    },
     "lookup": {
       "heading": "Tra cứu học viên",
       "uidPlaceholder": "UID (copy từ trang Tài khoản)",
@@ -495,6 +499,33 @@
       "revokeSuccess": "Đã thu hồi cấp chờ thành công.",
       "revokeFailed": "Thu hồi thất bại.",
       "empty": "Hiện không có chứng nhận nào đang ở trạng thái cấp chờ."
+    },
+    "history": {
+      "heading": "Lịch sử OCB & OCA đã mint thủ công",
+      "subheading": "Theo dõi toàn bộ chứng nhận, huy hiệu đã cấp thủ công cùng trạng thái trên Open Campus.",
+      "searchPlaceholder": "Tìm theo người nhận, email, tên badge hoặc lý do...",
+      "filterStatusAll": "Tất cả trạng thái",
+      "filterStatusMinted": "Đã mint thành công",
+      "filterStatusPending": "Đang xử lý",
+      "filterStatusFailed": "Thất bại",
+      "filterKindAll": "Tất cả loại",
+      "filterKindOca": "Chỉ OCA",
+      "filterKindOcb": "Chỉ OCB",
+      "refresh": "Tải lại",
+      "recipientCol": "Người nhận",
+      "badgeCol": "Chứng nhận / Huy hiệu",
+      "granterCol": "Admin cấp",
+      "dateCol": "Thời gian",
+      "statusCol": "Trạng thái",
+      "statusMinted": "Đã mint",
+      "statusPending": "Đang xử lý",
+      "statusFailed": "Thất bại",
+      "reasonCol": "Lý do cấp",
+      "actionsCol": "Hành động / Explorer",
+      "viewOnOpenCampus": "Xem trên Open Campus",
+      "empty": "Chưa có chứng nhận nào được cấp thủ công.",
+      "emptyFiltered": "Không tìm thấy chứng nhận phù hợp với bộ lọc.",
+      "loadFailed": "Không thể tải lịch sử cấp thủ công."
     }
   },
   "coraVoucherBatches": {

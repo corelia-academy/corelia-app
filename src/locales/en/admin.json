@@ -442,6 +442,10 @@
   "manualMint": {
     "heading": "Manual OCA/OCB grant",
     "subheading": "Grant an OCA/OCB to a specific individual as a reward outside course completion — does not affect course/hackathon state.",
+    "tabs": {
+      "grant": "Issue & Pending",
+      "history": "Grant History"
+    },
     "lookup": {
       "heading": "Look up student",
       "uidPlaceholder": "UID (copy from the Account page)",
@@ -495,6 +499,33 @@
       "revokeSuccess": "Successfully revoked pending grant.",
       "revokeFailed": "Failed to revoke.",
       "empty": "No pending credential grants at this time."
+    },
+    "history": {
+      "heading": "Manual OCB & OCA Mint History",
+      "subheading": "Track all manually granted credentials, their status, and on-chain explorer links.",
+      "searchPlaceholder": "Search by recipient, email, badge name, or reason...",
+      "filterStatusAll": "All Statuses",
+      "filterStatusMinted": "Minted Successfully",
+      "filterStatusPending": "Processing",
+      "filterStatusFailed": "Failed",
+      "filterKindAll": "All Types",
+      "filterKindOca": "OCA only",
+      "filterKindOcb": "OCB only",
+      "refresh": "Refresh",
+      "recipientCol": "Recipient",
+      "badgeCol": "Badge / Credential",
+      "granterCol": "Granted By",
+      "dateCol": "Date",
+      "statusCol": "Status",
+      "statusMinted": "Minted",
+      "statusPending": "Processing",
+      "statusFailed": "Failed",
+      "reasonCol": "Grant Reason",
+      "actionsCol": "Actions / Explorer",
+      "viewOnOpenCampus": "View on Open Campus",
+      "empty": "No credentials have been granted manually yet.",
+      "emptyFiltered": "No credentials matched the current filter.",
+      "loadFailed": "Failed to load manual mint history."
     }
   },
   "coraVoucherBatches": {
