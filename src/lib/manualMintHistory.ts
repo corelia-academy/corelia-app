@@ -284,8 +284,8 @@ export async function retryManualGrant(issuanceId: string): Promise<{
   status?: string;
   message?: string;
 }> {
-  const { invokeCoreliaApi } = await import("@/lib/coreliaEdgeApi");
-  return await invokeCoreliaApi<{
+  const { callCoreliaApi } = await import("@/lib/coreliaEdgeApi");
+  return await callCoreliaApi<{
     ok: boolean;
     status?: string;
     message?: string;

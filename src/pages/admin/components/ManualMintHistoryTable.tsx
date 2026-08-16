@@ -139,13 +139,13 @@ export function ManualMintHistoryTable() {
     setRetryingId(item.id);
     try {
       const res = await retryManualGrant(item.id);
-      if (res.ok && res.status === "minted") {
+      if (res && res.status === "minted") {
         toast.success(t("manualMint.history.retrySuccess"));
-      } else if (res.ok && res.status === "pending") {
+      } else if (res && res.status === "pending") {
         toast.success(t("manualMint.history.retrySuccess"));
       } else {
         toast.error(
-          res.message || t("manualMint.history.retryFailed"),
+          (res && res.message) || t("manualMint.history.retryFailed"),
         );
       }
       await loadData();
@@ -155,6 +155,7 @@ export function ManualMintHistoryTable() {
           ? err.message
           : t("manualMint.history.retryFailed"),
       );
+      await loadData();
     } finally {
       setRetryingId(null);
     }
