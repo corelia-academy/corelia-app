@@ -270,7 +270,7 @@ export function ManualMintHistoryTable() {
           className={cn(
             "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
             statusFilter === "pending"
-              ? "bg-amber-600 text-white font-semibold shadow-xs"
+              ? "bg-yellow-400 text-neutral-950 font-bold shadow-xs"
               : "bg-surface-raised/60 text-foreground-muted hover:bg-surface-raised hover:text-foreground",
           )}
         >
@@ -280,7 +280,7 @@ export function ManualMintHistoryTable() {
             className={cn(
               "rounded-full px-1.5 py-0.2 text-[10px]",
               statusFilter === "pending"
-                ? "bg-white/20 text-white font-bold"
+                ? "bg-neutral-950/20 text-neutral-950 font-bold"
                 : "bg-surface-base text-foreground-muted",
             )}
           >
@@ -425,19 +425,19 @@ export function ManualMintHistoryTable() {
           <table className="w-full table-fixed text-left text-xs">
             <thead className="border-b border-border-subtle bg-surface-raised/50 text-foreground-muted font-medium">
               <tr>
-                <th className="w-[26%] px-3.5 py-3 font-semibold">
+                <th className="w-[23%] px-3.5 py-3 font-semibold">
                   {t("manualMint.history.recipientCol")}
                 </th>
-                <th className="w-[36%] px-3.5 py-3 font-semibold">
+                <th className="w-[31%] px-3.5 py-3 font-semibold">
                   {t("manualMint.history.badgeCol")}
                 </th>
                 <th className="w-[18%] px-3.5 py-3 font-semibold">
                   {t("manualMint.history.granterCol")} & {t("manualMint.history.dateCol")}
                 </th>
-                <th className="w-[11%] px-3 py-3 font-semibold">
+                <th className="w-[14%] px-3 py-3 font-semibold">
                   {t("manualMint.history.statusCol")}
                 </th>
-                <th className="w-[9%] px-3 py-3 text-right font-semibold">
+                <th className="w-[14%] px-3.5 py-3 text-right font-semibold">
                   {t("manualMint.history.actionsCol")}
                 </th>
               </tr>
@@ -457,7 +457,7 @@ export function ManualMintHistoryTable() {
                     <td className="px-3.5 py-3">
                       <div className="flex items-center gap-2 min-w-0">
                         {row.isGhost ? (
-                          <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                          <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-yellow-400/15 text-yellow-500 border border-yellow-400/30">
                             <UserPlus className="size-3.5" />
                           </div>
                         ) : row.recipientAvatarUrl ? (
@@ -476,7 +476,7 @@ export function ManualMintHistoryTable() {
                             className={cn(
                               "truncate font-semibold text-xs",
                               row.isGhost
-                                ? "text-amber-500 font-medium italic"
+                                ? "text-yellow-500 font-medium italic"
                                 : "text-foreground",
                             )}
                           >
@@ -519,7 +519,7 @@ export function ManualMintHistoryTable() {
                               className={cn(
                                 "rounded px-1 py-0.2 text-[9px] font-bold uppercase shrink-0",
                                 row.templateKind === "ocb"
-                                  ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                                  ? "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400"
                                   : "bg-blue-500/15 text-blue-600 dark:text-blue-400",
                               )}
                             >
@@ -553,24 +553,24 @@ export function ManualMintHistoryTable() {
                     {/* Cột 4: Trạng thái */}
                     <td className="px-3 py-3">
                       {row.status === "minted" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
                           <CheckCircle2 className="size-3 shrink-0" />
                           {t("manualMint.history.statusMinted")}
                         </span>
                       ) : row.status === "awaiting_signup" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-400/15 text-yellow-500 dark:text-yellow-400 border border-yellow-400/30 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap">
                           <Clock className="size-3 shrink-0" />
                           {t("manualMint.history.statusAwaitingSignup")}
                         </span>
                       ) : row.status === "pending" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-400/15 text-yellow-500 dark:text-yellow-400 border border-yellow-400/30 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap">
                           <Clock className="size-3 shrink-0" />
                           {t("manualMint.history.statusPending")}
                         </span>
                       ) : (
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger className="inline-flex cursor-help items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive whitespace-nowrap">
+                            <TooltipTrigger className="inline-flex cursor-help items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive border border-destructive/20 whitespace-nowrap">
                               <AlertCircle className="size-3 shrink-0" />
                               <span>{t("manualMint.history.statusFailed")}</span>
                             </TooltipTrigger>
@@ -587,45 +587,39 @@ export function ManualMintHistoryTable() {
                     </td>
 
                     {/* Cột 5: Thao tác */}
-                    <td className="px-3 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {row.explorerUrl ? (
+                    <td className="px-3.5 py-3 text-right">
+                      <div className="flex items-center justify-end">
+                        {row.status === "minted" && row.explorerUrl ? (
                           <a
                             href={row.explorerUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface-raised px-2 py-1 text-[11px] font-medium text-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                            className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface-raised px-2.5 py-1 text-[11px] font-medium text-foreground transition-colors hover:bg-primary/10 hover:text-primary shrink-0"
                             title={t("manualMint.history.viewOnOpenCampus")}
                           >
                             <ExternalLink className="size-3" />
-                            <span className="hidden sm:inline">Explorer</span>
+                            <span>Explorer</span>
                           </a>
-                        ) : null}
-
-                        {isPendingOrGhost || row.status === "failed" ? (
+                        ) : isPendingOrGhost || row.status === "failed" ? (
                           <Button
                             type="button"
                             variant="destructive"
                             size="xs"
                             disabled={revokingId === row.id}
                             onClick={() => void handleRevoke(row)}
-                            className="h-6.5 px-2 text-[10px]"
+                            className="h-6.5 px-2 text-[10px] shrink-0"
                             title={t("manualMint.history.revokeBtn")}
                           >
                             {revokingId === row.id ? (
                               <Loader2 className="size-3 animate-spin" />
                             ) : (
                               <>
-                                <Trash2 className="size-3 sm:mr-1" />
-                                <span className="hidden sm:inline">
-                                  {t("manualMint.history.revokeBtn")}
-                                </span>
+                                <Trash2 className="size-3 mr-1" />
+                                <span>{t("manualMint.history.revokeBtn")}</span>
                               </>
                             )}
                           </Button>
-                        ) : null}
-
-                        {!row.explorerUrl && !isPendingOrGhost && row.status !== "failed" && (
+                        ) : (
                           <span className="text-foreground-muted text-[11px] pr-2">
                             -
                           </span>
