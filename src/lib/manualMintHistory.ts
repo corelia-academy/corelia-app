@@ -56,6 +56,7 @@ type PendingGhostQueryResult = {
   email: string;
   template_id: string;
   network: string;
+  granted_by: string | null;
   granted_reason: string | null;
   created_at: string;
   credential_templates: {
@@ -115,6 +116,7 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
       email,
       template_id,
       network,
+      granted_by,
       granted_reason,
       created_at,
       credential_templates (
@@ -151,12 +153,13 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
     return Boolean(item.granted_by) || (tpl && tpl.trigger_type === "manual");
   });
 
-  // Collect unique user IDs for recipients and granters
+  // Collect unique user IDs for recipients and granters across both standard issuances and ghosts
   const userIds = Array.from(
     new Set(
-      manualIssuances
-        .flatMap((r) => [r.user_id, r.granted_by])
-        .filter((id): id is string => Boolean(id)),
+      [
+        ...manualIssuances.flatMap((r) => [r.user_id, r.granted_by]),
+        ...ghosts.map((g) => g.granted_by),
+      ].filter((id): id is string => Boolean(id)),
     ),
   );
 
@@ -189,6 +192,7 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
     const explorerUrl = openCampusCredentialExplorerUrl(item.oc_credential_id, {
       username: recipient?.ocid ?? null,
       nftCollection,
+      network: item.network === "mainnet" ? "mainnet" : "staging",
     });
 
     return {
@@ -225,6 +229,7 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
       tpl?.achievement_type === "Badge" ||
       tpl?.achievement_type === "Award";
     const kind: "oca" | "ocb" = isOcb ? "ocb" : "oca";
+    const granter = item.granted_by ? profileMap.get(item.granted_by) : null;
 
     return {
       id: item.id,
@@ -238,9 +243,9 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
       recipientEmail: item.email,
       recipientOcid: null,
       recipientAvatarUrl: null,
-      grantedBy: null,
-      granterName: "Admin",
-      granterEmail: null,
+      grantedBy: item.granted_by ?? null,
+      granterName: granter?.full_name?.trim() || granter?.email || "Admin",
+      granterEmail: granter?.email ?? null,
       grantedReason: item.granted_reason ?? null,
       status: "awaiting_signup",
       network: item.network === "mainnet" ? "mainnet" : "staging",
@@ -260,23 +265,8 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
 }
 
 export async function revokeManualGrant(id: string, isGhost: boolean): Promise<void> {
-  if (isGhost) {
-    const { error } = await supabase
-      .from("pending_credential_issuances")
-      .delete()
-      .eq("id", id);
-    if (error) throw new Error(error.message);
-    return;
-  }
-
-  // If standard issuance pending, delete row
-  const { error } = await supabase
-    .from("credential_issuances")
-    .delete()
-    .eq("id", id)
-    .in("status", ["pending", "failed"]);
-
-  if (error) throw new Error(error.message);
+  const { callCoreliaApi } = await import("@/lib/coreliaEdgeApi");
+  await callCoreliaApi("credentials.revoke", { id, isGhost });
 }
 
 export async function retryManualGrant(issuanceId: string): Promise<{

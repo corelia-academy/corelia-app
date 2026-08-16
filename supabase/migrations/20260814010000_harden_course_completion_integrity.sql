@@ -13,9 +13,10 @@ BEGIN
     (TG_OP = 'INSERT' AND NEW.completed_at IS NOT NULL)
     OR (TG_OP = 'UPDATE' AND NEW.completed_at IS DISTINCT FROM OLD.completed_at)
   )
-  AND COALESCE(auth.role(), '') <> 'service_role'
-  AND current_user NOT IN ('postgres', 'supabase_admin')
-  AND session_user NOT IN ('postgres', 'supabase_admin') THEN
+  AND (
+    COALESCE(auth.role(), '') IN ('authenticated', 'anon')
+    OR (auth.uid() IS NOT NULL AND COALESCE(auth.role(), '') <> 'service_role')
+  ) THEN
     RAISE EXCEPTION 'enrollments.completed_at is server-managed';
   END IF;
 

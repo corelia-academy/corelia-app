@@ -98,7 +98,7 @@ function ruleMatchesEvent(rule: ActivityRule, eventType: string): boolean {
   if (ev === eventType) return true;
   if (eventType === "course_completed" && ev === "courses_completed") return true;
   if (eventType === "courses_completed" && ev === "course_completed") return true;
-  if (ev === "login_streak" && eventType === "login_streak_updated") return true;
+  if ((ev === "login_streak" || ev === "daily_streak") && (eventType === "daily_streak" || eventType === "login_streak" || eventType === "login_streak_updated")) return true;
   return false;
 }
 
@@ -197,38 +197,52 @@ export async function runActivityMilestoneCheck(
       .eq("network", network)
       .limit(1)
       .maybeSingle();
-    if (existing && (existing.status === "minted" || existing.status === "pending")) {
-      skipped.push(String(template.id));
-      continue;
-    }
 
-    const { data: inserted, error: insErr } = await db.from("credential_issuances").insert({
-      template_id: template.id,
-      user_id: userId,
-      course_id: null,
-      hackathon_id: null,
-      issuer_reference_id: issuerRef,
-      network,
-      status: "pending",
-      oc_request_payload: null,
-      oc_response: null,
-      oc_credential_id: null,
-      minted_at: null,
-      error_message: null,
-      retry_count: 0,
-      granted_by: null,
-      granted_reason: null,
-    }).select("id").maybeSingle();
+    let issuanceId: string | null = null;
 
-    if (insErr) {
-      if (/duplicate key|unique constraint/i.test(insErr.message)) {
+    if (existing) {
+      if (existing.status === "minted" || existing.status === "pending") {
         skipped.push(String(template.id));
         continue;
       }
-      throw new Error(insErr.message);
+      // If status is failed, reset the existing issuance to retry minting
+      const { error: resetErr } = await db.from("credential_issuances").update({
+        status: "pending",
+        error_message: null,
+        oc_request_payload: null,
+        oc_response: null,
+      }).eq("id", existing.id);
+      if (resetErr) throw new Error(resetErr.message);
+      issuanceId = String(existing.id);
+    } else {
+      const { data: inserted, error: insErr } = await db.from("credential_issuances").insert({
+        template_id: template.id,
+        user_id: userId,
+        course_id: null,
+        hackathon_id: null,
+        issuer_reference_id: issuerRef,
+        network,
+        status: "pending",
+        oc_request_payload: null,
+        oc_response: null,
+        oc_credential_id: null,
+        minted_at: null,
+        error_message: null,
+        retry_count: 0,
+        granted_by: null,
+        granted_reason: null,
+      }).select("id").maybeSingle();
+
+      if (insErr) {
+        if (/duplicate key|unique constraint/i.test(insErr.message)) {
+          skipped.push(String(template.id));
+          continue;
+        }
+        throw new Error(insErr.message);
+      }
+      issuanceId = inserted?.id != null ? String(inserted.id) : null;
     }
 
-    const issuanceId = inserted?.id != null ? String(inserted.id) : null;
     if (!issuanceId) continue;
 
     const mintResult = await mintCredentialOnce(db, issuanceId);

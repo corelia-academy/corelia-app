@@ -1,17 +1,6 @@
 /**
  * Corelia API — Supabase Edge Function (Deno).
  * Invoke: GET/POST {SUPABASE_URL}/functions/v1/corelia-api?op=<operation>
- *
- * Operations: health | payments.sepay.checkout | payments.transactions |
- *   payments.sepay.verify | payments.sepay.ipn | certificates.issue | certificates.backfillEligible |
- *   certificates.verify | certificates.revoke |
- *   hackathons.notifyRegistrationReview | hackathons.blastEmail |
- *   courses.syncCompletion | courses.blastEmail | careerTracks.blastEmail | notifications.unsubscribe |
- *   gamification.dailyStreakStatus | gamification.claimDailyStreak |
- *   credentials.checkCourseCompletion | credentials.checkActivityMilestones | credentials.grant |
- *   credentials.retryPending | credentials.hackathon.listEligible | credentials.listActiveOcaTemplates |
- *   credentials.listActiveCourseCredentialTemplates |
- *   credentials.grantPending | credentials.claimLookup
  */
 import { handleBackfillEligibleCertificates, handleIssueCertificate } from "./certificates/handlers.ts";
 import { handleRevokeCertificate } from "./certificates/revoke.ts";
@@ -26,6 +15,7 @@ import { handleListActiveOcaTemplates } from "./credentials/list_active_oca_temp
 import { handleListActiveCourseCredentialTemplates } from "./credentials/list_active_course_credential_templates.ts";
 import { handleGrantPendingCredential } from "./credentials/grant_pending.ts";
 import { handleRetryPendingCredentials } from "./credentials/retry_pending.ts";
+import { handleRevokeCredential } from "./credentials/revoke.ts";
 import { handleCourseBlastEmail } from "./courses/blast_email.ts";
 import { handleCoInstructorInviteEmail } from "./courses/co_instructor_invite_email.ts";
 import { handleSyncCourseCompletion } from "./courses/completion.ts";
@@ -71,6 +61,7 @@ const PROTECTED_OPS = new Set<string>([
   "credentials.checkActivityMilestones",
   "credentials.grant",
   "credentials.retryPending",
+  "credentials.revoke",
   "credentials.hackathon.listEligible",
   "credentials.listActiveOcaTemplates",
   "credentials.listActiveCourseCredentialTemplates",
@@ -157,6 +148,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleGrantCredentials(req, db);
     } else if (op === "credentials.retryPending" && req.method === "POST") {
       response = await handleRetryPendingCredentials(req, db);
+    } else if (op === "credentials.revoke" && req.method === "POST") {
+      response = await handleRevokeCredential(req, db);
     } else if (op === "credentials.hackathon.listEligible" && req.method === "POST") {
       response = await handleHackathonListEligible(req, db);
     } else if (op === "credentials.listActiveOcaTemplates" && req.method === "POST") {

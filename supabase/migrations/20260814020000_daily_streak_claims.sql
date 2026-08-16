@@ -263,12 +263,12 @@ BEGIN
     ELSE 1
   END;
 
-  UPDATE public.user_daily_streaks
+  UPDATE public.user_daily_streaks AS uds
   SET current_streak = v_current_streak,
-      longest_streak = GREATEST(longest_streak, v_current_streak),
+      longest_streak = GREATEST(uds.longest_streak, v_current_streak),
       last_claim_date = v_today,
       updated_at = now()
-  WHERE user_id = p_user_id
+  WHERE uds.user_id = p_user_id
   RETURNING * INTO v_state;
 
   INSERT INTO public.user_daily_streak_claims (

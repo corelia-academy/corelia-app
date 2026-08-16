@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AlertCircle,
@@ -13,8 +13,6 @@ import {
   RotateCcw,
   Search,
   Trash2,
-  User,
-  UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -80,7 +78,7 @@ export function ManualMintHistoryTable() {
   const [kindFilter, setKindFilter] = useState<KindFilter>("all");
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const data = await listManualMintHistoryForAdmin();
@@ -92,11 +90,11 @@ export function ManualMintHistoryTable() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     void loadData();
-  }, []);
+  }, [loadData]);
 
   const counts = useMemo(() => {
     return {

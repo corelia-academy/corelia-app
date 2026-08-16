@@ -147,9 +147,12 @@ export function UserProfileActivitySection({
 }: {
   profile: PublicProfile;
 }) {
-  const { t, i18n } = useTranslation(["common", "feed"]);
+  const { t, i18n } = useTranslation("common");
+  const { t: tFeed } = useTranslation("feed");
   const [items, setItems] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -164,6 +167,7 @@ export function UserProfileActivitySection({
         });
         if (cancelled) return;
         setItems(next);
+        setHasMore(next.length === PROFILE_ACTIVITY_LIMIT);
       } catch {
         if (cancelled) return;
         setError(t("userProfile.errors.loadFailed"));
@@ -177,6 +181,24 @@ export function UserProfileActivitySection({
       cancelled = true;
     };
   }, [profile.id, t]);
+
+  const handleLoadMore = async () => {
+    if (loadingMore || !items.length) return;
+    setLoadingMore(true);
+    try {
+      const lastItem = items[items.length - 1];
+      const next = await getActorActivity(profile.id, {
+        limit: PROFILE_ACTIVITY_LIMIT,
+        cursor: lastItem.created_at,
+      });
+      setItems((prev) => [...prev, ...next]);
+      setHasMore(next.length === PROFILE_ACTIVITY_LIMIT);
+    } catch {
+      // Keep existing items
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   return (
     <section className="space-y-3">
@@ -210,6 +232,19 @@ export function UserProfileActivitySection({
               locale={i18n.resolvedLanguage ?? i18n.language}
             />
           ))}
+
+          {hasMore && (
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="inline-flex items-center justify-center rounded-md border border-border px-4 py-1.5 text-xs font-medium text-foreground hover:bg-surface-elevated disabled:opacity-50"
+              >
+                {loadingMore ? "..." : tFeed("actions.loadMore")}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </section>
