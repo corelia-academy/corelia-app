@@ -453,10 +453,10 @@ export function ManualMintHistoryTable() {
           <table className="w-full table-fixed text-left text-xs">
             <thead className="border-b border-border-subtle bg-surface-raised/50 text-foreground-muted font-medium">
               <tr>
-                <th className="w-[24%] px-3.5 py-3 font-semibold">
+                <th className="w-[17%] px-3.5 py-3 font-semibold">
                   {t("manualMint.history.recipientCol")}
                 </th>
-                <th className="w-[30%] px-3.5 py-3 font-semibold">
+                <th className="w-[38%] px-3.5 py-3 font-semibold">
                   {t("manualMint.history.badgeCol")}
                 </th>
                 <th className="w-[17%] px-3.5 py-3 font-semibold">
@@ -465,7 +465,7 @@ export function ManualMintHistoryTable() {
                 <th className="w-[13%] px-3 py-3 font-semibold">
                   {t("manualMint.history.statusCol")}
                 </th>
-                <th className="w-[16%] px-3.5 py-3 text-right font-semibold">
+                <th className="w-[15%] px-3.5 py-3 text-right font-semibold">
                   {t("manualMint.history.actionsCol")}
                 </th>
               </tr>
