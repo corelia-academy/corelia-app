@@ -187,7 +187,7 @@ function MainSidebarOverlay() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
         side="left"
-        className="w-76 bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+        className="w-76 data-[side=left]:w-76 data-[side=left]:sm:max-w-76 bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
       >
         <SheetHeader className="sr-only">
           <SheetTitle>Sidebar</SheetTitle>

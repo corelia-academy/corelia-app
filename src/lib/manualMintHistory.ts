@@ -42,7 +42,8 @@ type IssuanceQueryResult = {
     id: string;
     name: string;
     image_url: string;
-    kind: string;
+    achievement_type: string;
+    collection_symbol: string | null;
     scope_type: string;
     trigger_type: string;
     description: string | null;
@@ -76,7 +77,8 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
         id,
         name,
         image_url,
-        kind,
+        achievement_type,
+        collection_symbol,
         scope_type,
         trigger_type,
         description
@@ -129,7 +131,11 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
     const recipient = profileMap.get(item.user_id);
     const granter = item.granted_by ? profileMap.get(item.granted_by) : null;
 
-    const kind: "oca" | "ocb" = tpl?.kind === "ocb" ? "ocb" : "oca";
+    const isOcb =
+      tpl?.collection_symbol === "ocbadge" ||
+      tpl?.achievement_type === "Badge" ||
+      tpl?.achievement_type === "Award";
+    const kind: "oca" | "ocb" = isOcb ? "ocb" : "oca";
     const nftCollection = kind === "ocb" ? "ocbadge" : "occredential";
     const explorerUrl = openCampusCredentialExplorerUrl(item.oc_credential_id, {
       username: recipient?.ocid ?? null,

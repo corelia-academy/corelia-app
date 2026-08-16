@@ -104,6 +104,14 @@ export function AuthSync() {
       setAuthInitialized(true);
     }, INIT_TIMEOUT_MS);
 
+    // Immediate session check on mount for instant UI hydration
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted || hasInitializedFromEvent) return;
+      hasInitializedFromEvent = true;
+      window.clearTimeout(initTimeoutId);
+      syncFromSession(session);
+    });
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
