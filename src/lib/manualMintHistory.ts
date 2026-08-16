@@ -278,3 +278,17 @@ export async function revokeManualGrant(id: string, isGhost: boolean): Promise<v
 
   if (error) throw new Error(error.message);
 }
+
+export async function retryManualGrant(issuanceId: string): Promise<{
+  ok: boolean;
+  status?: string;
+  message?: string;
+}> {
+  const { invokeCoreliaApi } = await import("@/lib/coreliaEdgeApi");
+  return await invokeCoreliaApi<{
+    ok: boolean;
+    status?: string;
+    message?: string;
+    stillFailed?: number;
+  }>("credentials.retryPending", { issuanceId });
+}

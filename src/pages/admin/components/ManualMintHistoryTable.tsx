@@ -10,6 +10,7 @@ import {
   ImageIcon,
   Loader2,
   RefreshCw,
+  RotateCcw,
   Search,
   Trash2,
   User,
@@ -19,6 +20,7 @@ import { toast } from "sonner";
 
 import {
   listManualMintHistoryForAdmin,
+  retryManualGrant,
   revokeManualGrant,
   type ManualMintHistoryRow,
 } from "@/lib/manualMintHistory";
@@ -70,6 +72,7 @@ export function ManualMintHistoryTable() {
   const [rows, setRows] = useState<ManualMintHistoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [retryingId, setRetryingId] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -129,6 +132,31 @@ export function ManualMintHistoryTable() {
       );
     } finally {
       setRevokingId(null);
+    }
+  };
+
+  const handleRetry = async (item: ManualMintHistoryRow) => {
+    setRetryingId(item.id);
+    try {
+      const res = await retryManualGrant(item.id);
+      if (res.ok && res.status === "minted") {
+        toast.success(t("manualMint.history.retrySuccess"));
+      } else if (res.ok && res.status === "pending") {
+        toast.success(t("manualMint.history.retrySuccess"));
+      } else {
+        toast.error(
+          res.message || t("manualMint.history.retryFailed"),
+        );
+      }
+      await loadData();
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : t("manualMint.history.retryFailed"),
+      );
+    } finally {
+      setRetryingId(null);
     }
   };
 
@@ -221,7 +249,7 @@ export function ManualMintHistoryTable() {
           type="button"
           onClick={() => setStatusFilter("all")}
           className={cn(
-            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer",
             statusFilter === "all"
               ? "bg-primary text-primary-foreground font-semibold shadow-xs"
               : "bg-surface-raised/60 text-foreground-muted hover:bg-surface-raised hover:text-foreground",
@@ -244,7 +272,7 @@ export function ManualMintHistoryTable() {
           type="button"
           onClick={() => setStatusFilter("minted")}
           className={cn(
-            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer",
             statusFilter === "minted"
               ? "bg-emerald-600 text-white font-semibold shadow-xs"
               : "bg-surface-raised/60 text-foreground-muted hover:bg-surface-raised hover:text-foreground",
@@ -268,7 +296,7 @@ export function ManualMintHistoryTable() {
           type="button"
           onClick={() => setStatusFilter("pending")}
           className={cn(
-            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer",
             statusFilter === "pending"
               ? "bg-yellow-400 text-neutral-950 font-bold shadow-xs"
               : "bg-surface-raised/60 text-foreground-muted hover:bg-surface-raised hover:text-foreground",
@@ -292,7 +320,7 @@ export function ManualMintHistoryTable() {
           type="button"
           onClick={() => setStatusFilter("failed")}
           className={cn(
-            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer",
             statusFilter === "failed"
               ? "bg-destructive text-destructive-foreground font-semibold shadow-xs"
               : "bg-surface-raised/60 text-foreground-muted hover:bg-surface-raised hover:text-foreground",
@@ -336,7 +364,7 @@ export function ManualMintHistoryTable() {
             <select
               value={kindFilter}
               onChange={(e) => setKindFilter(e.target.value as KindFilter)}
-              className="h-8.5 rounded-md border border-border-subtle bg-surface-base px-2 text-xs text-foreground outline-none focus-visible:border-primary"
+              className="h-8.5 rounded-md border border-border-subtle bg-surface-base px-2 text-xs text-foreground outline-none focus-visible:border-primary cursor-pointer"
             >
               <option value="all">{t("manualMint.history.filterKindAll")}</option>
               <option value="oca">{t("manualMint.history.filterKindOca")}</option>
@@ -353,7 +381,7 @@ export function ManualMintHistoryTable() {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-              className="h-8.5 rounded-md border border-border-subtle bg-surface-base px-2 text-xs text-foreground outline-none focus-visible:border-primary"
+              className="h-8.5 rounded-md border border-border-subtle bg-surface-base px-2 text-xs text-foreground outline-none focus-visible:border-primary cursor-pointer"
             >
               <option value="all">{t("manualMint.history.filterDateAll")}</option>
               <option value="today">{t("manualMint.history.filterDateToday")}</option>
@@ -370,7 +398,7 @@ export function ManualMintHistoryTable() {
               variant="ghost"
               size="sm"
               onClick={handleResetFilters}
-              className="h-8.5 px-2 text-xs text-foreground-muted hover:text-foreground"
+              className="h-8.5 px-2 text-xs text-foreground-muted hover:text-foreground cursor-pointer"
             >
               <FilterX className="mr-1 size-3.5" />
               {t("manualMint.history.resetFilters")}
@@ -384,7 +412,7 @@ export function ManualMintHistoryTable() {
             size="sm"
             onClick={() => void loadData()}
             disabled={loading}
-            className="h-8.5 px-2.5 text-xs"
+            className="h-8.5 px-2.5 text-xs cursor-pointer"
           >
             <RefreshCw
               className={cn("size-3.5", loading && "animate-spin")}
@@ -415,7 +443,7 @@ export function ManualMintHistoryTable() {
                 variant="outline"
                 size="sm"
                 onClick={handleResetFilters}
-                className="mt-3 text-xs"
+                className="mt-3 text-xs cursor-pointer"
               >
                 {t("manualMint.history.resetFilters")}
               </Button>
@@ -425,19 +453,19 @@ export function ManualMintHistoryTable() {
           <table className="w-full table-fixed text-left text-xs">
             <thead className="border-b border-border-subtle bg-surface-raised/50 text-foreground-muted font-medium">
               <tr>
-                <th className="w-[23%] px-3.5 py-3 font-semibold">
+                <th className="w-[24%] px-3.5 py-3 font-semibold">
                   {t("manualMint.history.recipientCol")}
                 </th>
-                <th className="w-[31%] px-3.5 py-3 font-semibold">
+                <th className="w-[30%] px-3.5 py-3 font-semibold">
                   {t("manualMint.history.badgeCol")}
                 </th>
-                <th className="w-[18%] px-3.5 py-3 font-semibold">
+                <th className="w-[17%] px-3.5 py-3 font-semibold">
                   {t("manualMint.history.granterCol")} & {t("manualMint.history.dateCol")}
                 </th>
-                <th className="w-[14%] px-3 py-3 font-semibold">
+                <th className="w-[13%] px-3 py-3 font-semibold">
                   {t("manualMint.history.statusCol")}
                 </th>
-                <th className="w-[14%] px-3.5 py-3 text-right font-semibold">
+                <th className="w-[16%] px-3.5 py-3 text-right font-semibold">
                   {t("manualMint.history.actionsCol")}
                 </th>
               </tr>
@@ -447,6 +475,7 @@ export function ManualMintHistoryTable() {
                 const isPendingOrGhost =
                   row.status === "pending" ||
                   row.status === "awaiting_signup";
+                const isFailed = row.status === "failed";
 
                 return (
                   <tr
@@ -455,26 +484,26 @@ export function ManualMintHistoryTable() {
                   >
                     {/* Cột 1: Người nhận */}
                     <td className="px-3.5 py-3">
-                      <div className="flex items-center gap-2 min-w-0">
+                      <div className="flex items-center gap-2.5 min-w-0">
                         {row.isGhost ? (
-                          <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-yellow-400/15 text-yellow-500 border border-yellow-400/30">
-                            <UserPlus className="size-3.5" />
+                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-yellow-400/15 text-yellow-500 border border-yellow-400/30">
+                            <UserPlus className="size-4" />
                           </div>
                         ) : row.recipientAvatarUrl ? (
                           <img
                             src={row.recipientAvatarUrl}
                             alt=""
-                            className="size-7 shrink-0 rounded-full object-cover"
+                            className="size-8 shrink-0 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-raised text-foreground-muted border border-border-subtle">
-                            <User className="size-3.5" />
+                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-raised text-foreground-muted border border-border-subtle">
+                            <User className="size-4" />
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
                           <p
                             className={cn(
-                              "truncate font-semibold text-xs",
+                              "truncate font-semibold text-sm leading-tight",
                               row.isGhost
                                 ? "text-yellow-500 font-medium italic"
                                 : "text-foreground",
@@ -482,11 +511,11 @@ export function ManualMintHistoryTable() {
                           >
                             {row.recipientName}
                           </p>
-                          <p className="truncate text-[11px] text-foreground-muted">
+                          <p className="truncate text-xs text-foreground-muted mt-0.5">
                             {row.recipientEmail}
                           </p>
                           {row.recipientOcid ? (
-                            <span className="inline-block truncate max-w-full rounded bg-primary/10 px-1 py-0.2 text-[9px] font-medium text-primary">
+                            <span className="inline-flex items-center truncate max-w-full rounded bg-blue-500/10 border border-blue-500/25 px-1.5 py-0.5 text-[11px] font-semibold text-[#0052FF] dark:text-[#3884FF] mt-1">
                               {row.recipientOcid.endsWith(".edu")
                                 ? row.recipientOcid
                                 : `${row.recipientOcid}.edu`}
@@ -503,24 +532,24 @@ export function ManualMintHistoryTable() {
                           <img
                             src={row.templateImageUrl}
                             alt=""
-                            className="size-7 shrink-0 rounded object-contain bg-surface-raised p-0.5 border border-border-subtle mt-0.5"
+                            className="size-8 shrink-0 rounded object-contain bg-surface-raised p-0.5 border border-border-subtle mt-0.5"
                           />
                         ) : (
-                          <div className="flex size-7 shrink-0 items-center justify-center rounded bg-surface-raised text-foreground-muted border border-border-subtle mt-0.5">
-                            <ImageIcon className="size-3.5" />
+                          <div className="flex size-8 shrink-0 items-center justify-center rounded bg-surface-raised text-foreground-muted border border-border-subtle mt-0.5">
+                            <ImageIcon className="size-4" />
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <p className="truncate font-medium text-foreground text-xs">
+                            <p className="truncate font-medium text-foreground text-sm leading-tight">
                               {row.templateName}
                             </p>
                             <span
                               className={cn(
-                                "rounded px-1 py-0.2 text-[9px] font-bold uppercase shrink-0",
+                                "rounded px-1.5 py-0.5 text-[10px] font-bold uppercase shrink-0",
                                 row.templateKind === "ocb"
-                                  ? "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400"
-                                  : "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+                                  ? "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20"
+                                  : "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20",
                               )}
                             >
                               {row.templateKind.toUpperCase()}
@@ -528,7 +557,7 @@ export function ManualMintHistoryTable() {
                           </div>
                           {row.grantedReason ? (
                             <p
-                              className="truncate text-[11px] text-foreground-muted mt-0.5"
+                              className="truncate text-xs text-foreground-muted mt-0.5"
                               title={row.grantedReason}
                             >
                               {row.grantedReason}
@@ -541,10 +570,10 @@ export function ManualMintHistoryTable() {
                     {/* Cột 3: Admin cấp & Ngày */}
                     <td className="px-3.5 py-3">
                       <div className="min-w-0">
-                        <p className="truncate font-medium text-foreground text-xs">
+                        <p className="truncate font-medium text-foreground text-sm leading-tight">
                           {row.granterName}
                         </p>
-                        <p className="text-[11px] text-foreground-muted mt-0.5 truncate">
+                        <p className="text-xs text-foreground-muted mt-0.5 truncate">
                           {formatDate(row.mintedAt || row.createdAt)}
                         </p>
                       </div>
@@ -553,24 +582,24 @@ export function ManualMintHistoryTable() {
                     {/* Cột 4: Trạng thái */}
                     <td className="px-3 py-3">
                       {row.status === "minted" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
                           <CheckCircle2 className="size-3 shrink-0" />
                           {t("manualMint.history.statusMinted")}
                         </span>
                       ) : row.status === "awaiting_signup" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-400/15 text-yellow-500 dark:text-yellow-400 border border-yellow-400/30 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-400/15 text-yellow-500 dark:text-yellow-400 border border-yellow-400/30 px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
                           <Clock className="size-3 shrink-0" />
                           {t("manualMint.history.statusAwaitingSignup")}
                         </span>
                       ) : row.status === "pending" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-400/15 text-yellow-500 dark:text-yellow-400 border border-yellow-400/30 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-400/15 text-yellow-500 dark:text-yellow-400 border border-yellow-400/30 px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
                           <Clock className="size-3 shrink-0" />
                           {t("manualMint.history.statusPending")}
                         </span>
                       ) : (
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger className="inline-flex cursor-help items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive border border-destructive/20 whitespace-nowrap">
+                            <TooltipTrigger className="inline-flex cursor-help items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-0.5 text-[11px] font-semibold text-destructive border border-destructive/20 whitespace-nowrap">
                               <AlertCircle className="size-3 shrink-0" />
                               <span>{t("manualMint.history.statusFailed")}</span>
                             </TooltipTrigger>
@@ -588,26 +617,52 @@ export function ManualMintHistoryTable() {
 
                     {/* Cột 5: Thao tác */}
                     <td className="px-3.5 py-3 text-right">
-                      <div className="flex items-center justify-end">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {/* Minted: Explorer Link */}
                         {row.status === "minted" && row.explorerUrl ? (
                           <a
                             href={row.explorerUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface-raised px-2.5 py-1 text-[11px] font-medium text-foreground transition-colors hover:bg-primary/10 hover:text-primary shrink-0"
+                            className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface-raised px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-primary/10 hover:text-primary shrink-0"
                             title={t("manualMint.history.viewOnOpenCampus")}
                           >
-                            <ExternalLink className="size-3" />
+                            <ExternalLink className="size-3.5" />
                             <span>Explorer</span>
                           </a>
-                        ) : isPendingOrGhost || row.status === "failed" ? (
+                        ) : null}
+
+                        {/* Failed: Thử lại (Retry) & Thu hồi (Revoke) song song */}
+                        {isFailed && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="xs"
+                            disabled={retryingId === row.id || revokingId === row.id}
+                            onClick={() => void handleRetry(row)}
+                            className="h-7 px-2 text-xs font-medium text-foreground hover:bg-surface-raised shrink-0 cursor-pointer"
+                            title={t("manualMint.history.retryBtn")}
+                          >
+                            {retryingId === row.id ? (
+                              <Loader2 className="size-3 animate-spin" />
+                            ) : (
+                              <>
+                                <RotateCcw className="size-3 mr-1" />
+                                <span>{t("manualMint.history.retryBtn")}</span>
+                              </>
+                            )}
+                          </Button>
+                        )}
+
+                        {/* Pending hoặc Failed: Thu hồi (Revoke) */}
+                        {(isPendingOrGhost || isFailed) && (
                           <Button
                             type="button"
                             variant="destructive"
                             size="xs"
-                            disabled={revokingId === row.id}
+                            disabled={revokingId === row.id || retryingId === row.id}
                             onClick={() => void handleRevoke(row)}
-                            className="h-6.5 px-2 text-[10px] shrink-0"
+                            className="h-7 px-2 text-xs font-medium shrink-0 cursor-pointer"
                             title={t("manualMint.history.revokeBtn")}
                           >
                             {revokingId === row.id ? (
@@ -619,8 +674,10 @@ export function ManualMintHistoryTable() {
                               </>
                             )}
                           </Button>
-                        ) : (
-                          <span className="text-foreground-muted text-[11px] pr-2">
+                        )}
+
+                        {!row.explorerUrl && !isPendingOrGhost && !isFailed && (
+                          <span className="text-foreground-muted text-xs pr-2">
                             -
                           </span>
                         )}

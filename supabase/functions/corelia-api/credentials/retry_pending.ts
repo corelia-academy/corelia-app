@@ -1,4 +1,4 @@
-import { isAuthFailure } from "../lib/authz.ts";
+import { isAuthFailure, getUserRole } from "../lib/authz.ts";
 import { json } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
 import { mintCredentialOnce } from "./mint.ts";
@@ -68,7 +68,7 @@ export async function retryPendingIssuancesForUser(
 
 async function retryFailedIssuanceForUser(
   db: SupabaseClient,
-  userId: string,
+  callerId: string,
   issuanceId: string,
 ): Promise<{
   retried: number;
@@ -78,16 +78,18 @@ async function retryFailedIssuanceForUser(
   ocCredentialId: string | null;
   message?: string;
 }> {
-  const { data: issuance, error } = await db
-    .from("credential_issuances")
-    .select("id, status")
-    .eq("id", issuanceId)
-    .eq("user_id", userId)
-    .maybeSingle();
+  const role = await getUserRole(db, callerId);
+  const isAdmin = role === "admin" || role === "support_staff";
+
+  let query = db.from("credential_issuances").select("id, status, user_id").eq("id", issuanceId);
+  if (!isAdmin) {
+    query = query.eq("user_id", callerId);
+  }
+  const { data: issuance, error } = await query.maybeSingle();
   if (error) throw new Error(error.message);
   if (!issuance) throw new Error("Credential issuance not found");
-  if (issuance.status !== "failed") {
-    throw new Error("Only failed credential issuances can be retried");
+  if (issuance.status !== "failed" && issuance.status !== "pending") {
+    throw new Error("Only failed or pending credential issuances can be retried");
   }
 
   const { error: resetError } = await db
@@ -98,8 +100,7 @@ async function retryFailedIssuanceForUser(
       oc_request_payload: null,
       oc_response: null,
     })
-    .eq("id", issuanceId)
-    .eq("user_id", userId);
+    .eq("id", issuanceId);
   if (resetError) throw new Error(resetError.message);
 
   const result = await mintCredentialOnce(db, issuanceId);
@@ -107,7 +108,6 @@ async function retryFailedIssuanceForUser(
     .from("credential_issuances")
     .select("status, oc_credential_id, error_message")
     .eq("id", issuanceId)
-    .eq("user_id", userId)
     .maybeSingle();
   if (afterError) throw new Error(afterError.message);
 
