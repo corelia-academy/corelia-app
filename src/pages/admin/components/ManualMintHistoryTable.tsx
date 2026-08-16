@@ -1,18 +1,27 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AlertCircle,
+  Calendar,
   CheckCircle2,
   Clock,
   ExternalLink,
+  FilterX,
   ImageIcon,
   Loader2,
   RefreshCw,
   Search,
+  Trash2,
   User,
+  UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 
+import {
+  listManualMintHistoryForAdmin,
+  revokeManualGrant,
+  type ManualMintHistoryRow,
+} from "@/lib/manualMintHistory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,159 +31,273 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import {
-  listManualMintHistoryForAdmin,
-  type ManualMintHistoryRow,
-} from "@/lib/manualMintHistory";
 
-function formatDate(isoString: string | null | undefined): string {
-  if (!isoString) return "-";
-  try {
-    const d = new Date(isoString);
-    if (isNaN(d.getTime())) return "-";
-    return d.toLocaleString(undefined, {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return "-";
+type StatusFilter = "all" | "minted" | "pending" | "failed";
+type KindFilter = "all" | "oca" | "ocb";
+type DateFilter = "all" | "today" | "7days" | "30days" | "this_month";
+
+function matchesDateFilter(dateStr: string, filter: DateFilter): boolean {
+  if (filter === "all") return true;
+  const date = new Date(dateStr);
+  const now = new Date();
+
+  if (filter === "today") {
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
+    );
   }
+  if (filter === "7days") {
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    return date >= sevenDaysAgo;
+  }
+  if (filter === "30days") {
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    return date >= thirtyDaysAgo;
+  }
+  if (filter === "this_month") {
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth()
+    );
+  }
+  return true;
 }
 
 export function ManualMintHistoryTable() {
   const { t } = useTranslation("admin");
   const [rows, setRows] = useState<ManualMintHistoryRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [kindFilter, setKindFilter] = useState<string>("all");
+  const [revokingId, setRevokingId] = useState<string | null>(null);
 
-  const fetchHistory = useCallback(async () => {
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [kindFilter, setKindFilter] = useState<KindFilter>("all");
+  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+
+  const loadData = async () => {
     setLoading(true);
     try {
       const data = await listManualMintHistoryForAdmin();
       setRows(data);
-    } catch (e) {
+    } catch (err) {
       toast.error(
-        e instanceof Error ? e.message : t("manualMint.history.loadFailed"),
+        err instanceof Error ? err.message : t("manualMint.history.loadFailed"),
       );
-      setRows([]);
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  };
 
   useEffect(() => {
-    void fetchHistory();
-  }, [fetchHistory]);
+    void loadData();
+  }, []);
+
+  const handleRevoke = async (item: ManualMintHistoryRow) => {
+    const targetLabel = item.recipientEmail || item.recipientName;
+    const confirmed = window.confirm(
+      t("manualMint.history.revokeConfirm", {
+        recipient: targetLabel,
+        defaultValue: `Thu hồi lượt cấp này cho "${targetLabel}"? Hành động này không thể hoàn tác.`,
+      }),
+    );
+    if (!confirmed) return;
+
+    setRevokingId(item.id);
+    try {
+      await revokeManualGrant(item.id, item.isGhost);
+      toast.success(t("manualMint.history.revokeSuccess"));
+      await loadData();
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : t("manualMint.history.revokeFailed"),
+      );
+    } finally {
+      setRevokingId(null);
+    }
+  };
+
+  const hasActiveFilters =
+    searchQuery.trim() !== "" ||
+    statusFilter !== "all" ||
+    kindFilter !== "all" ||
+    dateFilter !== "all";
+
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setKindFilter("all");
+    setDateFilter("all");
+  };
 
   const filteredRows = useMemo(() => {
-    return rows.filter((item) => {
-      // Status filter
-      if (statusFilter !== "all" && item.status !== statusFilter) {
+    const q = searchQuery.trim().toLowerCase();
+
+    return rows.filter((row) => {
+      // 1. Status filter
+      if (statusFilter === "minted" && row.status !== "minted") return false;
+      if (
+        statusFilter === "pending" &&
+        row.status !== "pending" &&
+        row.status !== "awaiting_signup"
+      ) {
         return false;
       }
-      // Kind filter
-      if (kindFilter !== "all" && item.templateKind !== kindFilter) {
+      if (statusFilter === "failed" && row.status !== "failed") return false;
+
+      // 2. Kind filter
+      if (kindFilter !== "all" && row.templateKind !== kindFilter) return false;
+
+      // 3. Date filter
+      if (!matchesDateFilter(row.mintedAt || row.createdAt, dateFilter)) {
         return false;
       }
-      // Search query
-      if (search.trim()) {
-        const q = search.trim().toLowerCase();
-        const matchName = item.recipientName.toLowerCase().includes(q);
-        const matchEmail = item.recipientEmail.toLowerCase().includes(q);
-        const matchOcid = item.recipientOcid?.toLowerCase().includes(q);
-        const matchBadge = item.templateName.toLowerCase().includes(q);
-        const matchReason = item.grantedReason?.toLowerCase().includes(q);
-        const matchGranter = item.granterName?.toLowerCase().includes(q);
+
+      // 4. Search query
+      if (q) {
+        const matchName = row.recipientName.toLowerCase().includes(q);
+        const matchEmail = row.recipientEmail.toLowerCase().includes(q);
+        const matchOcid = row.recipientOcid?.toLowerCase().includes(q) ?? false;
+        const matchTemplate = row.templateName.toLowerCase().includes(q);
+        const matchReason =
+          row.grantedReason?.toLowerCase().includes(q) ?? false;
+        const matchGranter =
+          row.granterName?.toLowerCase().includes(q) ?? false;
+        const matchGranterEmail =
+          row.granterEmail?.toLowerCase().includes(q) ?? false;
+
         if (
           !matchName &&
           !matchEmail &&
           !matchOcid &&
-          !matchBadge &&
+          !matchTemplate &&
           !matchReason &&
-          !matchGranter
+          !matchGranter &&
+          !matchGranterEmail
         ) {
           return false;
         }
       }
+
       return true;
     });
-  }, [rows, statusFilter, kindFilter, search]);
+  }, [rows, searchQuery, statusFilter, kindFilter, dateFilter]);
+
+  const formatDate = (d: string | null) => {
+    if (!d) return "-";
+    try {
+      return new Date(d).toLocaleString(undefined, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return d;
+    }
+  };
 
   return (
     <div className="space-y-4">
-      {/* Header & Controls */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">
-            {t("manualMint.history.heading")}
-          </h2>
-          <p className="text-xs text-foreground-muted">
-            {t("manualMint.history.subheading")}
-          </p>
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => void fetchHistory()}
-          disabled={loading}
-          className="self-start sm:self-auto"
-        >
-          <RefreshCw
-            className={cn("mr-1.5 size-3.5", loading && "animate-spin")}
-          />
-          {t("manualMint.history.refresh")}
-        </Button>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="flex flex-wrap items-center gap-2.5 rounded-lg border border-border-subtle bg-surface-raised p-3">
-        <div className="relative min-w-[220px] flex-1">
-          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-foreground-muted" />
+      {/* Search & Filter Toolbar */}
+      <div className="flex flex-col gap-3 rounded-lg border border-border-subtle bg-surface-base p-3.5 sm:flex-row sm:items-center sm:justify-between">
+        {/* Left: Search input */}
+        <div className="relative flex-1 min-w-[240px]">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-muted" />
           <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("manualMint.history.searchPlaceholder")}
-            className="h-9 pl-8 text-xs"
+            className="pl-9 text-xs h-9 bg-surface-raised/40"
           />
         </div>
 
-        {/* Status Filter */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-foreground-muted font-medium">
-            {t("manualMint.history.statusCol")}:
-          </span>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-9 rounded-md border border-border-subtle bg-surface-base px-2.5 text-xs text-foreground outline-none focus-visible:border-primary"
-          >
-            <option value="all">{t("manualMint.history.filterStatusAll")}</option>
-            <option value="minted">{t("manualMint.history.filterStatusMinted")}</option>
-            <option value="pending">{t("manualMint.history.filterStatusPending")}</option>
-            <option value="failed">{t("manualMint.history.filterStatusFailed")}</option>
-          </select>
-        </div>
+        {/* Right: Dropdowns & Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Status Filter */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-foreground-muted font-medium whitespace-nowrap">
+              {t("manualMint.history.statusFilterLabel")}:
+            </span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              className="h-9 rounded-md border border-border-subtle bg-surface-base px-2.5 text-xs text-foreground outline-none focus-visible:border-primary"
+            >
+              <option value="all">{t("manualMint.history.filterStatusAll")}</option>
+              <option value="minted">{t("manualMint.history.filterStatusMinted")}</option>
+              <option value="pending">{t("manualMint.history.filterStatusPending")}</option>
+              <option value="failed">{t("manualMint.history.filterStatusFailed")}</option>
+            </select>
+          </div>
 
-        {/* Kind Filter */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-foreground-muted font-medium">
-            {t("manualMint.form.kind")}:
-          </span>
-          <select
-            value={kindFilter}
-            onChange={(e) => setKindFilter(e.target.value)}
-            className="h-9 rounded-md border border-border-subtle bg-surface-base px-2.5 text-xs text-foreground outline-none focus-visible:border-primary"
+          {/* Kind Filter */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-foreground-muted font-medium whitespace-nowrap">
+              {t("manualMint.history.kindFilterLabel")}:
+            </span>
+            <select
+              value={kindFilter}
+              onChange={(e) => setKindFilter(e.target.value as KindFilter)}
+              className="h-9 rounded-md border border-border-subtle bg-surface-base px-2.5 text-xs text-foreground outline-none focus-visible:border-primary"
+            >
+              <option value="all">{t("manualMint.history.filterKindAll")}</option>
+              <option value="oca">{t("manualMint.history.filterKindOca")}</option>
+              <option value="ocb">{t("manualMint.history.filterKindOcb")}</option>
+            </select>
+          </div>
+
+          {/* Date Filter */}
+          <div className="flex items-center gap-1.5">
+            <Calendar className="size-3.5 text-foreground-muted" />
+            <span className="text-xs text-foreground-muted font-medium whitespace-nowrap">
+              {t("manualMint.history.dateFilterLabel")}:
+            </span>
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value as DateFilter)}
+              className="h-9 rounded-md border border-border-subtle bg-surface-base px-2.5 text-xs text-foreground outline-none focus-visible:border-primary"
+            >
+              <option value="all">{t("manualMint.history.filterDateAll")}</option>
+              <option value="today">{t("manualMint.history.filterDateToday")}</option>
+              <option value="7days">{t("manualMint.history.filterDate7Days")}</option>
+              <option value="30days">{t("manualMint.history.filterDate30Days")}</option>
+              <option value="this_month">{t("manualMint.history.filterDateThisMonth")}</option>
+            </select>
+          </div>
+
+          {/* Reset Filters button */}
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleResetFilters}
+              className="h-9 px-2.5 text-xs text-foreground-muted hover:text-foreground"
+            >
+              <FilterX className="mr-1 size-3.5" />
+              {t("manualMint.history.resetFilters")}
+            </Button>
+          )}
+
+          {/* Refresh button */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void loadData()}
+            disabled={loading}
+            className="h-9 px-3 text-xs"
           >
-            <option value="all">{t("manualMint.history.filterKindAll")}</option>
-            <option value="oca">{t("manualMint.history.filterKindOca")}</option>
-            <option value="ocb">{t("manualMint.history.filterKindOcb")}</option>
-          </select>
+            <RefreshCw
+              className={cn("size-3.5", loading && "animate-spin")}
+            />
+          </Button>
         </div>
       </div>
 
@@ -194,37 +317,52 @@ export function ManualMintHistoryTable() {
             <p className="text-sm font-medium">
               {t("manualMint.history.emptyFiltered")}
             </p>
+            {hasActiveFilters && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleResetFilters}
+                className="mt-3 text-xs"
+              >
+                {t("manualMint.history.resetFilters")}
+              </Button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-border-subtle bg-surface-raised/50 text-foreground-muted">
+              <thead className="border-b border-border-subtle bg-surface-raised/50 text-foreground-muted font-medium">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">
+                  <th className="px-4 py-3 font-semibold min-w-[200px]">
                     {t("manualMint.history.recipientCol")}
                   </th>
-                  <th className="px-4 py-3 font-semibold">
+                  <th className="px-4 py-3 font-semibold min-w-[220px]">
                     {t("manualMint.history.badgeCol")}
                   </th>
-                  <th className="px-4 py-3 font-semibold">
+                  <th className="px-4 py-3 font-semibold min-w-[150px]">
                     {t("manualMint.history.granterCol")}
                   </th>
-                  <th className="px-4 py-3 font-semibold">
+                  <th className="px-4 py-3 font-semibold min-w-[110px]">
                     {t("manualMint.history.statusCol")}
                   </th>
-                  <th className="px-4 py-3 font-semibold">
+                  <th className="px-4 py-3 font-semibold min-w-[160px]">
                     {t("manualMint.history.reasonCol")}
                   </th>
-                  <th className="px-4 py-3 font-semibold">
+                  <th className="px-4 py-3 font-semibold min-w-[130px]">
                     {t("manualMint.history.dateCol")}
                   </th>
-                  <th className="px-4 py-3 text-right font-semibold">
+                  <th className="px-4 py-3 text-right font-semibold min-w-[130px]">
                     {t("manualMint.history.actionsCol")}
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle">
                 {filteredRows.map((row) => {
+                  const isPendingOrGhost =
+                    row.status === "pending" ||
+                    row.status === "awaiting_signup";
+
                   return (
                     <tr
                       key={row.id}
@@ -233,7 +371,11 @@ export function ManualMintHistoryTable() {
                       {/* Recipient */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2.5">
-                          {row.recipientAvatarUrl ? (
+                          {row.isGhost ? (
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                              <UserPlus className="size-4" />
+                            </div>
+                          ) : row.recipientAvatarUrl ? (
                             <img
                               src={row.recipientAvatarUrl}
                               alt=""
@@ -245,7 +387,14 @@ export function ManualMintHistoryTable() {
                             </div>
                           )}
                           <div className="min-w-0">
-                            <p className="truncate font-semibold text-foreground">
+                            <p
+                              className={cn(
+                                "truncate font-semibold",
+                                row.isGhost
+                                  ? "text-amber-500 font-medium italic"
+                                  : "text-foreground",
+                              )}
+                            >
                               {row.recipientName}
                             </p>
                             <p className="truncate text-[11px] text-foreground-muted">
@@ -318,6 +467,11 @@ export function ManualMintHistoryTable() {
                             <CheckCircle2 className="size-3" />
                             {t("manualMint.history.statusMinted")}
                           </span>
+                        ) : row.status === "awaiting_signup" ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                            <Clock className="size-3" />
+                            {t("manualMint.history.statusAwaitingSignup")}
+                          </span>
                         ) : row.status === "pending" ? (
                           <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                             <Clock className="size-3" />
@@ -343,7 +497,7 @@ export function ManualMintHistoryTable() {
                       </td>
 
                       {/* Reason */}
-                      <td className="max-w-[200px] px-4 py-3">
+                      <td className="max-w-[220px] px-4 py-3">
                         <p
                           className="truncate text-foreground-muted"
                           title={row.grantedReason || undefined}
@@ -357,23 +511,47 @@ export function ManualMintHistoryTable() {
                         {formatDate(row.mintedAt || row.createdAt)}
                       </td>
 
-                      {/* Actions / Explorer */}
+                      {/* Actions / Explorer / Revoke */}
                       <td className="whitespace-nowrap px-4 py-3 text-right">
-                        {row.explorerUrl ? (
-                          <a
-                            href={row.explorerUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface-raised px-2.5 py-1 text-[11px] font-medium text-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-                          >
-                            <ExternalLink className="size-3" />
-                            <span>{t("manualMint.history.viewOnOpenCampus")}</span>
-                          </a>
-                        ) : (
-                          <span className="text-foreground-muted text-[11px]">
-                            -
-                          </span>
-                        )}
+                        <div className="flex items-center justify-end gap-1.5">
+                          {row.explorerUrl ? (
+                            <a
+                              href={row.explorerUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface-raised px-2.5 py-1 text-[11px] font-medium text-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                            >
+                              <ExternalLink className="size-3" />
+                              <span>{t("manualMint.history.viewOnOpenCampus")}</span>
+                            </a>
+                          ) : null}
+
+                          {isPendingOrGhost || row.status === "failed" ? (
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="xs"
+                              disabled={revokingId === row.id}
+                              onClick={() => void handleRevoke(row)}
+                              className="h-7 px-2 text-[11px]"
+                            >
+                              {revokingId === row.id ? (
+                                <Loader2 className="size-3 animate-spin" />
+                              ) : (
+                                <>
+                                  <Trash2 className="mr-1 size-3" />
+                                  <span>{t("manualMint.history.revokeBtn")}</span>
+                                </>
+                              )}
+                            </Button>
+                          ) : null}
+
+                          {!row.explorerUrl && !isPendingOrGhost && row.status !== "failed" && (
+                            <span className="text-foreground-muted text-[11px]">
+                              -
+                            </span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

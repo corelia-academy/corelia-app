@@ -8,7 +8,7 @@ export type ManualMintHistoryRow = {
   templateImageUrl: string;
   templateKind: "oca" | "ocb";
   templateScope: string;
-  userId: string;
+  userId: string | null;
   recipientName: string;
   recipientEmail: string;
   recipientOcid: string | null;
@@ -17,13 +17,14 @@ export type ManualMintHistoryRow = {
   granterName: string | null;
   granterEmail: string | null;
   grantedReason: string | null;
-  status: "pending" | "minted" | "failed" | "revoked";
+  status: "pending" | "minted" | "failed" | "awaiting_signup";
   network: "staging" | "mainnet";
   ocCredentialId: string | null;
   explorerUrl: string | null;
   mintedAt: string | null;
   createdAt: string;
   errorMessage: string | null;
+  isGhost: boolean;
 };
 
 type IssuanceQueryResult = {
@@ -50,6 +51,25 @@ type IssuanceQueryResult = {
   } | null;
 };
 
+type PendingGhostQueryResult = {
+  id: string;
+  email: string;
+  template_id: string;
+  network: string;
+  granted_reason: string | null;
+  created_at: string;
+  credential_templates: {
+    id: string;
+    name: string;
+    image_url: string;
+    achievement_type: string;
+    collection_symbol: string | null;
+    scope_type: string;
+    trigger_type: string;
+    description: string | null;
+  } | null;
+};
+
 type ProfileQueryResult = {
   id: string;
   full_name: string | null;
@@ -59,7 +79,8 @@ type ProfileQueryResult = {
 };
 
 export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistoryRow[]> {
-  const { data: rawIssuances, error: issErr } = await supabase
+  // 1. Query standard issuances
+  const issuancesPromise = supabase
     .from("credential_issuances")
     .select(`
       id,
@@ -86,21 +107,49 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
     `)
     .order("created_at", { ascending: false });
 
+  // 2. Query pending ghost issuances (waiting for user signup)
+  const ghostPromise = supabase
+    .from("pending_credential_issuances")
+    .select(`
+      id,
+      email,
+      template_id,
+      network,
+      granted_reason,
+      created_at,
+      credential_templates (
+        id,
+        name,
+        image_url,
+        achievement_type,
+        collection_symbol,
+        scope_type,
+        trigger_type,
+        description
+      )
+    `)
+    .order("created_at", { ascending: false });
+
+  const [
+    { data: rawIssuances, error: issErr },
+    { data: rawGhosts, error: ghostErr },
+  ] = await Promise.all([issuancesPromise, ghostPromise]);
+
   if (issErr) {
     throw new Error(issErr.message);
   }
+  if (ghostErr) {
+    console.warn("Could not load pending_credential_issuances:", ghostErr.message);
+  }
 
   const issuances = (rawIssuances ?? []) as unknown as IssuanceQueryResult[];
+  const ghosts = (rawGhosts ?? []) as unknown as PendingGhostQueryResult[];
 
-  // Filter for manual grants: either granted_by is set or trigger_type is 'manual'
+  // Filter issuances for manual grants: either granted_by is set or trigger_type is 'manual'
   const manualIssuances = issuances.filter((item) => {
     const tpl = item.credential_templates;
     return Boolean(item.granted_by) || (tpl && tpl.trigger_type === "manual");
   });
-
-  if (manualIssuances.length === 0) {
-    return [];
-  }
 
   // Collect unique user IDs for recipients and granters
   const userIds = Array.from(
@@ -126,7 +175,7 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
     }
   }
 
-  return manualIssuances.map((item): ManualMintHistoryRow => {
+  const mappedIssuances: ManualMintHistoryRow[] = manualIssuances.map((item) => {
     const tpl = item.credential_templates;
     const recipient = profileMap.get(item.user_id);
     const granter = item.granted_by ? profileMap.get(item.granted_by) : null;
@@ -165,6 +214,67 @@ export async function listManualMintHistoryForAdmin(): Promise<ManualMintHistory
       mintedAt: item.minted_at,
       createdAt: item.created_at,
       errorMessage: item.error_message,
+      isGhost: false,
     };
   });
+
+  const mappedGhosts: ManualMintHistoryRow[] = ghosts.map((item) => {
+    const tpl = item.credential_templates;
+    const isOcb =
+      tpl?.collection_symbol === "ocbadge" ||
+      tpl?.achievement_type === "Badge" ||
+      tpl?.achievement_type === "Award";
+    const kind: "oca" | "ocb" = isOcb ? "ocb" : "oca";
+
+    return {
+      id: item.id,
+      templateId: item.template_id,
+      templateName: tpl?.name ?? "Unknown Credential",
+      templateImageUrl: tpl?.image_url ?? "",
+      templateKind: kind,
+      templateScope: tpl?.scope_type ?? "activity_milestone",
+      userId: null,
+      recipientName: "Chờ tạo tài khoản",
+      recipientEmail: item.email,
+      recipientOcid: null,
+      recipientAvatarUrl: null,
+      grantedBy: null,
+      granterName: "Admin",
+      granterEmail: null,
+      grantedReason: item.granted_reason ?? null,
+      status: "awaiting_signup",
+      network: item.network === "mainnet" ? "mainnet" : "staging",
+      ocCredentialId: null,
+      explorerUrl: null,
+      mintedAt: null,
+      createdAt: item.created_at,
+      errorMessage: null,
+      isGhost: true,
+    };
+  });
+
+  // Combine and sort by createdAt descending
+  return [...mappedIssuances, ...mappedGhosts].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+}
+
+export async function revokeManualGrant(id: string, isGhost: boolean): Promise<void> {
+  if (isGhost) {
+    const { error } = await supabase
+      .from("pending_credential_issuances")
+      .delete()
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
+
+  // If standard issuance pending, delete row
+  const { error } = await supabase
+    .from("credential_issuances")
+    .delete()
+    .eq("id", id)
+    .in("status", ["pending", "failed"]);
+
+  if (error) throw new Error(error.message);
 }

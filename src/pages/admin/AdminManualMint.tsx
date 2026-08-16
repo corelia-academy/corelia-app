@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent, type KeyboardEvent } from "react";
+import { useState, type ChangeEvent, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { ImageIcon, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -12,11 +12,6 @@ import { cn } from "@/lib/utils";
 import { saveActivityMilestoneTemplate, type CourseCredentialKind } from "@/lib/credentialTemplates";
 import { invokeGrantCredentials, invokeGrantPendingCredential } from "@/lib/credentialsEdge";
 import { validatePngSignature } from "@/lib/imageValidation";
-import {
-  listPendingCredentialsForAdmin,
-  revokePendingCredential,
-  type PendingCredentialRow,
-} from "@/lib/pendingCredentials";
 import { getProfile, getProfileByEmail } from "@/lib/profile";
 import { uploadActivityMilestoneBadgeImage } from "@/lib/storage";
 import type { Profile } from "@/types/database";
@@ -55,27 +50,6 @@ export default function AdminManualMint() {
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Step 3 — pending grants list
-  const [pendingList, setPendingList] = useState<PendingCredentialRow[]>([]);
-  const [loadingPending, setLoadingPending] = useState(false);
-  const [revokingId, setRevokingId] = useState<string | null>(null);
-
-  const fetchPending = async () => {
-    setLoadingPending(true);
-    try {
-      const list = await listPendingCredentialsForAdmin();
-      setPendingList(list);
-    } catch {
-      setPendingList([]);
-    } finally {
-      setLoadingPending(false);
-    }
-  };
-
-  useEffect(() => {
-    void fetchPending();
-  }, []);
-
   const resetAll = () => {
     setIdentifierValue("");
     setLookupError(null);
@@ -85,7 +59,6 @@ export default function AdminManualMint() {
     setName("");
     setImageUrl("");
     setReason("");
-    void fetchPending();
   };
 
   const handleLookup = async () => {
@@ -224,28 +197,6 @@ export default function AdminManualMint() {
     }
   };
 
-  const handleRevoke = async (item: PendingCredentialRow) => {
-    const confirmed = window.confirm(
-      t("manualMint.pendingList.revokeConfirm", {
-        email: item.email,
-        defaultValue: `Thu hồi cấp chờ cho "${item.email}"? Hành động này không thể hoàn tác.`,
-      }),
-    );
-    if (!confirmed) return;
-
-    const id = item.id;
-    setRevokingId(id);
-    try {
-      await revokePendingCredential(id);
-      toast.success(t("manualMint.pendingList.revokeSuccess"));
-      await fetchPending();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("manualMint.pendingList.revokeFailed"));
-    } finally {
-      setRevokingId(null);
-    }
-  };
-
   return (
     <div
       className={cn(
@@ -300,237 +251,171 @@ export default function AdminManualMint() {
                 <button
                   type="button"
                   onClick={() => handleIdentifierTypeChange("uid")}
-              className={cn(
-                "px-3 py-2 text-sm font-medium transition-colors",
-                identifierType === "uid"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface-base text-foreground-muted hover:bg-surface-raised",
-              )}
-            >
-              UID
-            </button>
-            <button
-              type="button"
-              onClick={() => handleIdentifierTypeChange("email")}
-              className={cn(
-                "px-3 py-2 text-sm font-medium transition-colors",
-                identifierType === "email"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface-base text-foreground-muted hover:bg-surface-raised",
-              )}
-            >
-              Email
-            </button>
-          </div>
-          <Input
-            value={identifierValue}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              setIdentifierValue(e.target.value);
-              if (matchedProfile) setMatchedProfile(null);
-              if (ghostEmail) setGhostEmail(null);
-              if (lookupError) setLookupError(null);
-            }}
-            onKeyDown={onIdentifierKeyDown}
-            placeholder={
-              identifierType === "uid"
-                ? t("manualMint.lookup.uidPlaceholder")
-                : t("manualMint.lookup.emailPlaceholder")
-            }
-            className="flex-1"
-          />
-          <Button type="button" onClick={() => void handleLookup()} disabled={looking || !identifierValue.trim()}>
-            {t("manualMint.lookup.submit")}
-          </Button>
-        </div>
-        {lookupError ? <p className="text-sm text-destructive">{lookupError}</p> : null}
-
-        {matchedProfile ? (
-          <div className="flex items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface-raised p-3">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {matchedProfile.full_name || t("manualMint.preview.noName")}
-              </p>
-              <p className="truncate text-xs text-foreground-muted">{matchedProfile.email}</p>
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium transition-colors",
+                    identifierType === "uid"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-surface-base text-foreground-muted hover:bg-surface-raised",
+                  )}
+                >
+                  UID
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleIdentifierTypeChange("email")}
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium transition-colors",
+                    identifierType === "email"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-surface-base text-foreground-muted hover:bg-surface-raised",
+                  )}
+                >
+                  Email
+                </button>
+              </div>
+              <Input
+                value={identifierValue}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  setIdentifierValue(e.target.value);
+                  if (matchedProfile) setMatchedProfile(null);
+                  if (ghostEmail) setGhostEmail(null);
+                  if (lookupError) setLookupError(null);
+                }}
+                onKeyDown={onIdentifierKeyDown}
+                placeholder={
+                  identifierType === "uid"
+                    ? t("manualMint.lookup.uidPlaceholder")
+                    : t("manualMint.lookup.emailPlaceholder")
+                }
+                className="flex-1"
+              />
+              <Button type="button" onClick={() => void handleLookup()} disabled={looking || !identifierValue.trim()}>
+                {t("manualMint.lookup.submit")}
+              </Button>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={() => setPreviewOpen(true)}>
-              {t("manualMint.lookup.previewProfile")}
-            </Button>
+            {lookupError ? <p className="text-sm text-destructive">{lookupError}</p> : null}
+
+            {matchedProfile ? (
+              <div className="flex items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface-raised p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {matchedProfile.full_name || t("manualMint.preview.noName")}
+                  </p>
+                  <p className="truncate text-xs text-foreground-muted">{matchedProfile.email}</p>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={() => setPreviewOpen(true)}>
+                  {t("manualMint.lookup.previewProfile")}
+                </Button>
+              </div>
+            ) : null}
+
+            {ghostEmail ? (
+              <div className="rounded-md border border-warning/25 bg-warning/8 p-3 text-sm text-foreground-muted">
+                {t("manualMint.lookup.ghostNotice", { email: ghostEmail })}
+              </div>
+            ) : null}
           </div>
-        ) : null}
 
-        {ghostEmail ? (
-          <div className="rounded-md border border-warning/25 bg-warning/8 p-3 text-sm text-foreground-muted">
-            {t("manualMint.lookup.ghostNotice", { email: ghostEmail })}
-          </div>
-        ) : null}
-      </div>
+          {/* Step 2 — business form */}
+          <div
+            className={cn(
+              "mt-4 space-y-3 rounded-md border border-border-subtle p-4",
+              !target && "pointer-events-none opacity-50",
+            )}
+          >
+            <Field>
+              <FieldLabel>{t("manualMint.form.kind")}</FieldLabel>
+              <div className="flex overflow-hidden rounded-md border border-border-subtle">
+                <button
+                  type="button"
+                  onClick={() => setCredentialKind("oca")}
+                  className={cn(
+                    "flex-1 px-3 py-2 text-sm font-medium transition-colors",
+                    credentialKind === "oca"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-surface-base text-foreground-muted hover:bg-surface-raised",
+                  )}
+                >
+                  OCA
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCredentialKind("ocb")}
+                  className={cn(
+                    "flex-1 px-3 py-2 text-sm font-medium transition-colors",
+                    credentialKind === "ocb"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-surface-base text-foreground-muted hover:bg-surface-raised",
+                  )}
+                >
+                  OCB
+                </button>
+              </div>
+            </Field>
 
-      {/* Step 2 — business form */}
-      <div
-        className={cn(
-          "mt-4 space-y-3 rounded-md border border-border-subtle p-4",
-          !target && "pointer-events-none opacity-50",
-        )}
-      >
-        <Field>
-          <FieldLabel>{t("manualMint.form.kind")}</FieldLabel>
-          <div className="flex overflow-hidden rounded-md border border-border-subtle">
-            <button
-              type="button"
-              onClick={() => setCredentialKind("oca")}
-              className={cn(
-                "flex-1 px-3 py-2 text-sm font-medium transition-colors",
-                credentialKind === "oca"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface-base text-foreground-muted hover:bg-surface-raised",
-              )}
-            >
-              OCA
-            </button>
-            <button
-              type="button"
-              onClick={() => setCredentialKind("ocb")}
-              className={cn(
-                "flex-1 px-3 py-2 text-sm font-medium transition-colors",
-                credentialKind === "ocb"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface-base text-foreground-muted hover:bg-surface-raised",
-              )}
-            >
-              OCB
-            </button>
-          </div>
-        </Field>
+            <Field>
+              <FieldLabel>{t("manualMint.form.name")}</FieldLabel>
+              <Input value={name} onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)} />
+            </Field>
 
-        <Field>
-          <FieldLabel>{t("manualMint.form.name")}</FieldLabel>
-          <Input value={name} onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)} />
-        </Field>
+            <Field>
+              <FieldLabel>{t("manualMint.form.image")}</FieldLabel>
+              <div className="relative flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-border-subtle bg-surface-base p-6 text-center transition-colors hover:bg-surface-raised">
+                <input
+                  type="file"
+                  accept="image/png"
+                  disabled={uploadingImage}
+                  className="absolute inset-0 cursor-pointer opacity-0"
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => void onFileSelect(e.target.files?.[0] ?? null)}
+                />
+                <div className="flex flex-col items-center gap-2 text-sm text-foreground-muted">
+                  {uploadingImage ? (
+                    <>
+                      <Loader2 className="size-6 animate-spin text-primary" aria-hidden />
+                      <span className="font-medium text-primary">{t("manualMint.form.uploading")}</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="rounded-full bg-surface-raised p-3">
+                        <Upload className="size-5" aria-hidden />
+                      </div>
+                      <span className="font-medium text-primary">{t("manualMint.form.uploadCta")}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              {imageUrl ? (
+                <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-surface-raised p-2">
+                  <div className="mb-2 flex items-center gap-2 text-xs font-medium text-foreground-muted">
+                    <ImageIcon className="size-4" />
+                    {t("manualMint.form.imagePreview")}
+                  </div>
+                  <img src={imageUrl} alt="" className="h-32 w-full object-contain" />
+                </div>
+              ) : null}
+            </Field>
 
-        <Field>
-          <FieldLabel>{t("manualMint.form.image")}</FieldLabel>
-          <div className="relative flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-border-subtle bg-surface-base p-6 text-center transition-colors hover:bg-surface-raised">
-            <input
-              type="file"
-              accept="image/png"
-              disabled={uploadingImage}
-              className="absolute inset-0 cursor-pointer opacity-0"
-              onChange={(e: ChangeEvent<HTMLInputElement>) => void onFileSelect(e.target.files?.[0] ?? null)}
-            />
-            <div className="flex flex-col items-center gap-2 text-sm text-foreground-muted">
-              {uploadingImage ? (
+            <Field>
+              <FieldLabel>{t("manualMint.form.reason")}</FieldLabel>
+              <textarea
+                rows={3}
+                value={reason}
+                className={TEXTAREA_CLASS}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value)}
+              />
+            </Field>
+
+            <Button type="button" className="w-full" disabled={!canSubmit} onClick={() => void handleSubmit()}>
+              {submitting ? (
                 <>
-                  <Loader2 className="size-6 animate-spin text-primary" aria-hidden />
-                  <span className="font-medium text-primary">{t("manualMint.form.uploading")}</span>
+                  <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
+                  {t("manualMint.form.submitting")}
                 </>
               ) : (
-                <>
-                  <div className="rounded-full bg-surface-raised p-3">
-                    <Upload className="size-5" aria-hidden />
-                  </div>
-                  <span className="font-medium text-primary">{t("manualMint.form.uploadCta")}</span>
-                </>
+                t("manualMint.form.submit")
               )}
-            </div>
+            </Button>
           </div>
-          {imageUrl ? (
-            <div className="mt-3 overflow-hidden rounded-md border border-border-subtle bg-surface-raised p-2">
-              <div className="mb-2 flex items-center gap-2 text-xs font-medium text-foreground-muted">
-                <ImageIcon className="size-4" />
-                {t("manualMint.form.imagePreview")}
-              </div>
-              <img src={imageUrl} alt="" className="h-32 w-full object-contain" />
-            </div>
-          ) : null}
-        </Field>
-
-        <Field>
-          <FieldLabel>{t("manualMint.form.reason")}</FieldLabel>
-          <textarea
-            rows={3}
-            value={reason}
-            className={TEXTAREA_CLASS}
-            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value)}
-          />
-        </Field>
-
-        <Button type="button" className="w-full" disabled={!canSubmit} onClick={() => void handleSubmit()}>
-          {submitting ? (
-            <>
-              <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
-              {t("manualMint.form.submitting")}
-            </>
-          ) : (
-            t("manualMint.form.submit")
-          )}
-        </Button>
-      </div>
-
-      {/* Step 3 — Pending credential issuances (Ghost Minting Dashboard) */}
-      <div className="mt-8 space-y-3 rounded-md border border-border-subtle p-4">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">{t("manualMint.pendingList.heading")}</h2>
-          <p className="mt-1 text-xs text-foreground-muted">{t("manualMint.pendingList.subheading")}</p>
-        </div>
-
-        {loadingPending ? (
-          <div className="flex items-center justify-center py-6 text-sm text-foreground-muted">
-            <Loader2 className="mr-2 size-4 animate-spin text-primary" />
-            {t("manualMint.lookup.loading")}
-          </div>
-        ) : pendingList.length === 0 ? (
-          <p className="py-4 text-center text-sm text-foreground-muted">{t("manualMint.pendingList.empty")}</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="border-b border-border-subtle text-foreground-muted">
-                <tr>
-                  <th className="pb-2 font-medium">{t("manualMint.pendingList.emailCol")}</th>
-                  <th className="pb-2 font-medium">{t("manualMint.pendingList.badgeCol")}</th>
-                  <th className="pb-2 font-medium">{t("manualMint.pendingList.reasonCol")}</th>
-                  <th className="pb-2 font-medium">{t("manualMint.pendingList.dateCol")}</th>
-                  <th className="pb-2 font-medium">{t("manualMint.pendingList.statusCol")}</th>
-                  <th className="pb-2 text-right font-medium">{t("manualMint.pendingList.actionsCol")}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-subtle">
-                {pendingList.map((item) => (
-                  <tr key={item.id} className="hover:bg-surface-raised/50 transition-colors">
-                    <td className="py-2.5 font-medium text-foreground">{item.email}</td>
-                    <td className="py-2.5 text-foreground-muted">{item.template_name || item.template_id}</td>
-                    <td className="py-2.5 text-foreground-muted max-w-[180px] truncate">
-                      {item.granted_reason || "—"}
-                    </td>
-                    <td className="py-2.5 text-foreground-muted">
-                      {new Date(item.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="py-2.5">
-                      <span className="inline-flex items-center rounded-full bg-warning/15 px-2 py-0.5 text-[11px] font-medium text-warning">
-                        {t("manualMint.pendingList.statusAwaiting")}
-                      </span>
-                    </td>
-                    <td className="py-2.5 text-right">
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="xs"
-                        disabled={revokingId === item.id}
-                        onClick={() => void handleRevoke(item)}
-                      >
-                        {revokingId === item.id ? (
-                          <Loader2 className="size-3 animate-spin" />
-                        ) : (
-                          t("manualMint.pendingList.revokeBtn")
-                        )}
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
         </>
       )}
 
