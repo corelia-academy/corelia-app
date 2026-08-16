@@ -484,45 +484,70 @@ export function ManualMintHistoryTable() {
                   >
                     {/* Cột 1: Người nhận */}
                     <td className="px-3.5 py-3">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        {row.isGhost ? (
-                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-yellow-400/15 text-yellow-500 border border-yellow-400/30">
-                            <UserPlus className="size-4" />
+                      {row.isGhost ? (
+                        <div className="flex flex-col items-start gap-1 min-w-0">
+                          <div className="inline-flex items-center gap-2 rounded-full border border-yellow-400/30 bg-yellow-400/10 py-0.5 pl-0.5 pr-2.5 text-yellow-500 max-w-full">
+                            <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-yellow-400/20 text-yellow-500">
+                              <UserPlus className="size-3" />
+                            </div>
+                            <span className="font-semibold text-xs truncate text-yellow-500">
+                              {row.recipientEmail}
+                            </span>
                           </div>
-                        ) : row.recipientAvatarUrl ? (
-                          <img
-                            src={row.recipientAvatarUrl}
-                            alt=""
-                            className="size-8 shrink-0 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-raised text-foreground-muted border border-border-subtle">
-                            <User className="size-4" />
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p
-                            className={cn(
-                              "truncate font-semibold text-sm leading-tight",
-                              row.isGhost
-                                ? "text-yellow-500 font-medium italic"
-                                : "text-foreground",
+                          <p className="pl-1 text-[11px] text-yellow-500/80 italic truncate">
+                            {t("manualMint.history.statusAwaitingSignup")}
+                          </p>
+                        </div>
+                      ) : row.recipientOcid ? (
+                        <div className="flex flex-col items-start gap-1 min-w-0">
+                          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-primary-muted py-0.5 pl-0.5 pr-2.5 text-primary max-w-full">
+                            {row.recipientAvatarUrl ? (
+                              <img
+                                src={row.recipientAvatarUrl}
+                                alt=""
+                                className="size-6 shrink-0 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-raised font-bold text-[11px] text-foreground border border-border-subtle">
+                                {(row.recipientName || "U").charAt(0).toUpperCase()}
+                              </div>
                             )}
-                          >
-                            {row.recipientName}
-                          </p>
-                          <p className="truncate text-xs text-foreground-muted mt-0.5">
-                            {row.recipientEmail}
-                          </p>
-                          {row.recipientOcid ? (
-                            <span className="inline-flex items-center truncate max-w-full rounded bg-blue-500/10 border border-blue-500/25 px-1.5 py-0.5 text-[11px] font-semibold text-[#0052FF] dark:text-[#3884FF] mt-1">
+                            <span className="font-semibold text-xs text-primary truncate">
                               {row.recipientOcid.endsWith(".edu")
                                 ? row.recipientOcid
                                 : `${row.recipientOcid}.edu`}
                             </span>
-                          ) : null}
+                          </div>
+                          <p className="pl-1 text-[11px] text-foreground-muted truncate max-w-full">
+                            <span className="font-medium text-foreground">{row.recipientName}</span>
+                            {row.recipientEmail ? (
+                              <span className="text-foreground-muted"> • {row.recipientEmail}</span>
+                            ) : null}
+                          </p>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="flex flex-col items-start gap-1 min-w-0">
+                          <div className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-base py-0.5 pl-0.5 pr-2.5 text-foreground max-w-full">
+                            {row.recipientAvatarUrl ? (
+                              <img
+                                src={row.recipientAvatarUrl}
+                                alt=""
+                                className="size-6 shrink-0 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-raised font-bold text-[11px] text-foreground border border-border-subtle">
+                                {(row.recipientName || "U").charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <span className="font-semibold text-xs truncate text-foreground">
+                              {row.recipientName}
+                            </span>
+                          </div>
+                          <p className="pl-1 text-[11px] text-foreground-muted truncate max-w-full">
+                            {row.recipientEmail}
+                          </p>
+                        </div>
+                      )}
                     </td>
 
                     {/* Cột 2: Chứng nhận & Lý do */}
