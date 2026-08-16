@@ -343,8 +343,11 @@ export function ManualMintHistoryTable() {
                       </td>
 
                       {/* Reason */}
-                      <td className="max-w-[160px] px-4 py-3">
-                        <p className="truncate text-foreground-muted">
+                      <td className="max-w-[200px] px-4 py-3">
+                        <p
+                          className="truncate text-foreground-muted"
+                          title={row.grantedReason || undefined}
+                        >
                           {row.grantedReason || "-"}
                         </p>
                       </td>
