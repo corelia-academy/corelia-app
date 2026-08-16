@@ -201,7 +201,7 @@ export default function AdminManualMint() {
     <div
       className={cn(
         "mx-auto w-full px-4 py-6 md:px-6 transition-[max-width] duration-150",
-        activeTab === "history" ? "max-w-7xl" : "max-w-4xl",
+        activeTab === "history" ? "max-w-full" : "max-w-4xl",
       )}
     >
       <LoadingOverlay show={looking} label={t("manualMint.lookup.loading")} />
