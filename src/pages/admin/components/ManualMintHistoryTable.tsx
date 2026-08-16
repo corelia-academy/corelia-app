@@ -516,16 +516,11 @@ export function ManualMintHistoryTable() {
                           </p>
                           {row.recipientOcid ? (
                             <div className="mt-1">
-                              <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-primary-muted py-0.5 pl-1 pr-2 text-primary max-w-full">
-                                <div className="flex size-4 shrink-0 items-center justify-center rounded-full bg-surface-raised font-bold text-[9px] text-foreground border border-border-subtle">
-                                  {(row.recipientOcid || "U").charAt(0).toUpperCase()}
-                                </div>
-                                <span className="font-semibold text-[11px] text-primary truncate">
-                                  {row.recipientOcid.endsWith(".edu")
-                                    ? row.recipientOcid
-                                    : `${row.recipientOcid}.edu`}
-                                </span>
-                              </div>
+                              <span className="inline-flex items-center rounded-full border border-border bg-primary-muted px-2 py-0.5 text-xs font-normal text-primary max-w-full truncate">
+                                {row.recipientOcid.endsWith(".edu")
+                                  ? row.recipientOcid
+                                  : `${row.recipientOcid}.edu`}
+                              </span>
                             </div>
                           ) : null}
                         </div>
