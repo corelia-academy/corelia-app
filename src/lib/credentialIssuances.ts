@@ -260,9 +260,15 @@ export function openCampusCredentialExplorerUrl(
     username?: string | null;
     /** "occredential" for OCA, "ocbadge" for OCB. Defaults to "occredential". */
     nftCollection?: "occredential" | "ocbadge";
+    /** Network override: "staging" | "mainnet". Defaults to VITE_OCID_SANDBOX. */
+    network?: "staging" | "mainnet" | string;
   },
 ): string | null {
-  const base = import.meta.env.VITE_OCID_SANDBOX === "true"
+  const isSandbox = opts?.network
+    ? opts.network === "staging"
+    : import.meta.env.VITE_OCID_SANDBOX === "true";
+
+  const base = isSandbox
     ? "https://id.sandbox.opencampus.xyz"
     : "https://id.opencampus.xyz";
 

@@ -16,17 +16,29 @@ interface UseCourseLessonsInput {
   loadLessonsErrorFallback: string;
 }
 
+interface UseCourseLessonsResult {
+  lessons: CourseLesson[];
+  loaded: boolean;
+}
+
 export function useCourseLessons({
   resolvedCourseId,
   course,
   previewOnly,
   onError,
   loadLessonsErrorFallback,
-}: UseCourseLessonsInput): CourseLesson[] {
-  const [lessons, setLessons] = useState<CourseLesson[]>([]);
+}: UseCourseLessonsInput): UseCourseLessonsResult {
+  const requestKey =
+    resolvedCourseId && course
+      ? `${resolvedCourseId}:${previewOnly}:${i18n.language}:${course.updated_at}`
+      : "";
+  const [loadedResult, setLoadedResult] = useState<{
+    requestKey: string;
+    lessons: CourseLesson[];
+  }>({ requestKey: "", lessons: [] });
 
   useEffect(() => {
-    if (!resolvedCourseId || !course) return;
+    if (!resolvedCourseId || !course || !requestKey) return;
     let cancelled = false;
 
     getCourseLessons(resolvedCourseId, { previewOnly })
@@ -41,7 +53,9 @@ export function useCourseLessons({
           const localized = rows.map((l) =>
             applyCourseLessonLocaleContent(l, map.get(l.id) ?? null),
           );
-          if (!cancelled) setLessons(localized);
+          if (!cancelled) {
+            setLoadedResult({ requestKey, lessons: localized });
+          }
         })();
       })
       .catch((e) => {
@@ -59,7 +73,9 @@ export function useCourseLessons({
     previewOnly,
     onError,
     loadLessonsErrorFallback,
+    requestKey,
   ]);
 
-  return lessons;
+  const loaded = Boolean(requestKey) && loadedResult.requestKey === requestKey;
+  return { lessons: loaded ? loadedResult.lessons : [], loaded };
 }

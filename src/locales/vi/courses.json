@@ -183,6 +183,10 @@
         "title": "Bạn sẽ học được gì",
         "subtitle": "Khoá học này sẽ giúp bạn:"
       },
+      "skills": {
+        "title": "Skill bạn sẽ nhận được",
+        "subtitle": "Skill sẽ hiển thị trên hồ sơ sau khi bạn hoàn thành khoá học."
+      },
       "overview": {
         "title": "Tổng quan khoá học"
       },
@@ -286,6 +290,7 @@
       "currentProgress": "Tiến độ hiện tại",
       "nextLessonLabel": "Bài tiếp theo: {{title}}",
       "endOfPath": "Bạn đã đi tới cuối lộ trình hiện tại.",
+      "contentComingSoon": "Nội dung sẽ được cập nhật trong tương lai.",
       "priceLabel": "Giá",
       "promoEnds": "Kết thúc: {{date}}",
       "paidUpfrontCopy": "Mở toàn bộ video, lưu tiến độ và học theo lộ trình ngay sau khi thanh toán.",

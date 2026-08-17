@@ -382,3 +382,18 @@
   }
 }
 
+@keyframes streak-flame-burst {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
+  }
+  38% {
+    transform: scale(1.16);
+    box-shadow: 0 0 0 14px color-mix(in srgb, var(--primary) 22%, transparent);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 24px color-mix(in srgb, var(--primary) 0%, transparent);
+  }
+}
+

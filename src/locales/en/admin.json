@@ -425,6 +425,7 @@
     },
     "event": {
       "loginStreak": "Login streak",
+      "dailyStreak": "Daily claim streak",
       "coursesCompleted": "Courses completed",
       "trackCourses": "Courses completed in track",
       "projects": "Projects submitted"
@@ -432,6 +433,7 @@
     "rule": {
       "manual": "Manual grant",
       "loginStreak": "{{days}}-day login streak",
+      "dailyStreak": "{{days}}-day daily claim streak",
       "coursesCompleted": "{{count}} courses completed",
       "trackCourses": "{{count}} courses in track “{{track}}”",
       "projects": "{{count}} projects submitted"
@@ -440,6 +442,11 @@
   "manualMint": {
     "heading": "Manual OCA/OCB grant",
     "subheading": "Grant an OCA/OCB to a specific individual as a reward outside course completion — does not affect course/hackathon state.",
+    "tabs": {
+      "grant": "Grant Credential / Badge",
+      "history": "Grant History & Pending",
+      "templates": "Badge Templates"
+    },
     "lookup": {
       "heading": "Look up student",
       "uidPlaceholder": "UID (copy from the Account page)",
@@ -461,6 +468,21 @@
       "followers": "Followers",
       "fullPageLink": "View full page →"
     },
+    "templates": {
+      "searchPlaceholder": "Search badge templates by name, description...",
+      "totalCount": "Total: {{count}} template(s)",
+      "emptyTitle": "No templates in the library yet",
+      "emptySubtitle": "When granting a manual badge, enable \"Save to template library\" to reuse it quickly later.",
+      "useTemplate": "Use template",
+      "deleteConfirm": "Are you sure you want to delete template \"{{name}}\" from the library?",
+      "deleteSuccess": "Template removed from library",
+      "deleteFailed": "Failed to delete template",
+      "deleteForbidden": "Automatic system templates cannot be deleted",
+      "loadFailed": "Failed to load badge templates",
+      "ocbBadge": "OCB Badge",
+      "ocaCertificate": "OCA Certificate",
+      "hidden": "Hidden"
+    },
     "form": {
       "kind": "Credential type",
       "name": "Credential/badge name",
@@ -471,28 +493,61 @@
       "invalidPng": "This file is not a valid PNG. Please remove the background or convert the image at",
       "uploadFailed": "Image upload failed.",
       "reason": "Grant reason",
+      "grantSectionTitle": "Badge / Certificate Details",
+      "chooseFromTemplates": "Choose from templates…",
+      "saveAsTemplate": "Save to template library for future reuse",
+      "appliedTemplate": "Applied template \"{{name}}\"",
       "submit": "Grant",
       "submitting": "Granting…",
       "success": "Granted successfully.",
       "successGhost": "Saved as pending and emailed the recipient an invite.",
       "submitFailed": "Grant failed."
     },
-    "pendingList": {
-      "heading": "Pending Grants (Ghost Minting)",
-      "subheading": "Emails without an account that have been granted a credential. The system will automatically claim it upon sign-up.",
-      "emailCol": "Recipient email",
-      "badgeCol": "Badge name",
-      "networkCol": "Network",
-      "reasonCol": "Reason",
-      "dateCol": "Granted date",
+    "history": {
+      "heading": "Manual Mint History & Pending Grants",
+      "subheading": "Track all manually granted credentials, Open Campus minting progress, and pending claims.",
+      "searchPlaceholder": "Search by recipient, email, OCID, badge name, or reason...",
+      "statusFilterLabel": "Status",
+      "kindFilterLabel": "Type",
+      "dateFilterLabel": "Date",
+      "filterStatusAll": "All Statuses",
+      "filterStatusMinted": "Minted",
+      "filterStatusPending": "Pending / Awaiting Signup",
+      "filterStatusFailed": "Failed",
+      "filterKindAll": "All Types",
+      "filterKindOca": "OCA (Certificate)",
+      "filterKindOcb": "OCB (Badge)",
+      "filterDateAll": "All Time",
+      "filterDateToday": "Today",
+      "filterDate7Days": "Past 7 days",
+      "filterDate30Days": "Past 30 days",
+      "filterDateThisMonth": "This month",
+      "resetFilters": "Reset filters",
+      "refresh": "Refresh",
+      "recipientCol": "Recipient",
+      "badgeCol": "Badge / Credential",
+      "granterCol": "Granted By",
+      "dateCol": "Date",
       "statusCol": "Status",
-      "statusAwaiting": "Awaiting account creation",
+      "statusMinted": "Minted",
+      "statusPending": "Pending",
+      "statusAwaitingSignup": "Awaiting Signup",
+      "statusFailed": "Failed",
+      "statusRevoked": "Revoked",
+      "reasonCol": "Grant Reason",
       "actionsCol": "Actions",
+      "viewOnOpenCampus": "Explorer",
+      "retryBtn": "Retry",
+      "retrying": "Retrying…",
+      "retrySuccess": "Mint retry initiated successfully.",
+      "retryFailed": "Retry failed.",
       "revokeBtn": "Revoke",
-      "revokeConfirm": "Revoke the pending grant for \"{{email}}\"? This action cannot be undone.",
-      "revokeSuccess": "Successfully revoked pending grant.",
+      "revokeConfirm": "Revoke this grant for \"{{recipient}}\"? This action cannot be undone.",
+      "revokeSuccess": "Successfully revoked grant.",
       "revokeFailed": "Failed to revoke.",
-      "empty": "No pending credential grants at this time."
+      "empty": "No credentials have been granted manually yet.",
+      "emptyFiltered": "No credentials matched the current filter.",
+      "loadFailed": "Failed to load manual mint history."
     }
   },
   "coraVoucherBatches": {

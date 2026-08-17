@@ -425,6 +425,7 @@
     },
     "event": {
       "loginStreak": "Chuỗi đăng nhập",
+      "dailyStreak": "Chuỗi claim hằng ngày",
       "coursesCompleted": "Hoàn thành khóa học",
       "trackCourses": "Hoàn thành khóa trong track",
       "projects": "Nộp project"
@@ -432,6 +433,7 @@
     "rule": {
       "manual": "Cấp thủ công",
       "loginStreak": "Chuỗi đăng nhập {{days}} ngày",
+      "dailyStreak": "Chuỗi claim hằng ngày {{days}} ngày",
       "coursesCompleted": "Hoàn thành {{count}} khóa học",
       "trackCourses": "{{count}} khóa trong track “{{track}}”",
       "projects": "{{count}} project đã nộp"
@@ -440,6 +442,11 @@
   "manualMint": {
     "heading": "Cấp thủ công OCA/OCB",
     "subheading": "Cấp OCA/OCB cho một cá nhân cụ thể như phần thưởng ngoài khóa học, không ảnh hưởng trạng thái khóa học/hackathon.",
+    "tabs": {
+      "grant": "Cấp chứng nhận / huy hiệu",
+      "history": "Danh sách đã cấp & Chờ nhận",
+      "templates": "Kho mẫu badge"
+    },
     "lookup": {
       "heading": "Tra cứu học viên",
       "uidPlaceholder": "UID (copy từ trang Tài khoản)",
@@ -461,6 +468,21 @@
       "followers": "Người theo dõi",
       "fullPageLink": "Xem trang đầy đủ →"
     },
+    "templates": {
+      "searchPlaceholder": "Tìm kiếm mẫu badge theo tên, mô tả...",
+      "totalCount": "Tổng cộng: {{count}} mẫu",
+      "emptyTitle": "Chưa có template nào trong kho mẫu",
+      "emptySubtitle": "Khi cấp badge thủ công, hãy bật \"Lưu vào kho mẫu\" để tái sử dụng nhanh cho các lần sau.",
+      "useTemplate": "Sử dụng mẫu",
+      "deleteConfirm": "Bạn có chắc muốn xóa template \"{{name}}\" khỏi kho mẫu?",
+      "deleteSuccess": "Đã xóa template khỏi kho mẫu",
+      "deleteFailed": "Không thể xóa template",
+      "deleteForbidden": "Không thể xóa template tự động của hệ thống",
+      "loadFailed": "Lỗi khi tải kho mẫu",
+      "ocbBadge": "OCB Badge",
+      "ocaCertificate": "OCA Certificate",
+      "hidden": "Đã ẩn"
+    },
     "form": {
       "kind": "Loại chứng nhận",
       "name": "Tên chứng chỉ/huy hiệu",
@@ -471,28 +493,61 @@
       "invalidPng": "Định dạng file không phải PNG. Vui lòng tách nền hoặc chuyển đổi ảnh tại",
       "uploadFailed": "Tải ảnh thất bại.",
       "reason": "Lý do cấp",
+      "grantSectionTitle": "Thông tin cấp Badge / Certificate",
+      "chooseFromTemplates": "Chọn từ kho mẫu…",
+      "saveAsTemplate": "Lưu vào kho mẫu để tái sử dụng cho các lần sau",
+      "appliedTemplate": "Đã áp dụng mẫu \"{{name}}\"",
       "submit": "Cấp phát",
       "submitting": "Đang cấp…",
       "success": "Đã cấp thành công.",
       "successGhost": "Đã lưu chờ cấp và gửi email mời cho học viên.",
       "submitFailed": "Cấp phát thất bại."
     },
-    "pendingList": {
-      "heading": "Danh sách cấp chờ (Ghost Minting)",
-      "subheading": "Các email chưa có tài khoản đã được Admin cấp chứng nhận. Hệ thống sẽ tự động gán khi họ đăng ký.",
-      "emailCol": "Email người nhận",
-      "badgeCol": "Tên huy hiệu",
-      "networkCol": "Mạng",
-      "reasonCol": "Lý do",
-      "dateCol": "Ngày cấp",
+    "history": {
+      "heading": "Danh sách đã cấp thủ công & Chờ nhận",
+      "subheading": "Theo dõi toàn bộ chứng nhận, huy hiệu đã cấp thủ công cùng tiến độ mint Open Campus và trạng thái chờ nhận.",
+      "searchPlaceholder": "Tìm theo người nhận, email, OCID, tên badge hoặc lý do...",
+      "statusFilterLabel": "Trạng thái",
+      "kindFilterLabel": "Loại",
+      "dateFilterLabel": "Thời gian",
+      "filterStatusAll": "Tất cả trạng thái",
+      "filterStatusMinted": "Đã mint",
+      "filterStatusPending": "Chờ nhận / Chờ tạo TK",
+      "filterStatusFailed": "Thất bại",
+      "filterKindAll": "Tất cả loại",
+      "filterKindOca": "OCA (Chứng chỉ)",
+      "filterKindOcb": "OCB (Huy hiệu)",
+      "filterDateAll": "Tất cả thời gian",
+      "filterDateToday": "Hôm nay",
+      "filterDate7Days": "7 ngày qua",
+      "filterDate30Days": "30 ngày qua",
+      "filterDateThisMonth": "Tháng này",
+      "resetFilters": "Đặt lại bộ lọc",
+      "refresh": "Tải lại",
+      "recipientCol": "Người nhận",
+      "badgeCol": "Chứng nhận / Huy hiệu",
+      "granterCol": "Admin cấp",
+      "dateCol": "Thời gian",
       "statusCol": "Trạng thái",
-      "statusAwaiting": "Chờ tạo tài khoản",
+      "statusMinted": "Đã mint",
+      "statusPending": "Chờ nhận",
+      "statusAwaitingSignup": "Chờ tạo TK",
+      "statusFailed": "Thất bại",
+      "statusRevoked": "Đã thu hồi",
+      "reasonCol": "Lý do cấp",
       "actionsCol": "Thao tác",
+      "viewOnOpenCampus": "Explorer",
+      "retryBtn": "Thử lại",
+      "retrying": "Đang thử lại…",
+      "retrySuccess": "Đã gửi yêu cầu thử lại mint thành công.",
+      "retryFailed": "Thử lại thất bại.",
       "revokeBtn": "Thu hồi",
-      "revokeConfirm": "Thu hồi cấp chờ cho \"{{email}}\"? Hành động này không thể hoàn tác.",
-      "revokeSuccess": "Đã thu hồi cấp chờ thành công.",
+      "revokeConfirm": "Thu hồi lượt cấp này cho \"{{recipient}}\"? Hành động này không thể hoàn tác.",
+      "revokeSuccess": "Đã thu hồi thành công.",
       "revokeFailed": "Thu hồi thất bại.",
-      "empty": "Hiện không có chứng nhận nào đang ở trạng thái cấp chờ."
+      "empty": "Chưa có chứng nhận nào được cấp thủ công.",
+      "emptyFiltered": "Không tìm thấy chứng nhận phù hợp với bộ lọc.",
+      "loadFailed": "Không thể tải danh sách cấp thủ công."
     }
   },
   "coraVoucherBatches": {
