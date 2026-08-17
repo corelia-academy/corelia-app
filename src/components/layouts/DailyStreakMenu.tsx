@@ -7,7 +7,6 @@ import {
   Flame,
   Globe,
   Github,
-  Infinity as InfinityIcon,
   Link2,
   LoaderCircle,
   LockKeyhole,
@@ -53,11 +52,11 @@ function calculateTimelineProgress(streak: number): number {
 }
 
 const MILESTONE_STEPS = [
+  { days: 0, display: "0" },
   { days: 3, display: "3d" },
   { days: 7, display: "7d" },
   { days: 14, display: "14d" },
   { days: 30, display: "30d" },
-  { days: "infinity", display: "∞" },
 ] as const;
 
 export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }) {
@@ -326,9 +325,9 @@ export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }
                 )}
               </div>
 
-              {/* Stepper Timeline Progress Card with Infinity Node */}
+              {/* Stepper Timeline Progress Card with Upward Current Position Pointer */}
               <div className="rounded-2xl border border-border-subtle bg-surface-raised/40 p-3.5 sm:p-4 shadow-xs">
-                <div className="relative flex items-center justify-between px-3 pt-1 pb-1">
+                <div className="relative pb-6 px-3 pt-1">
                   {/* Background Track Line */}
                   <div className="absolute left-6 right-6 top-[13px] h-1 -translate-y-1/2 rounded-full bg-surface-overlay overflow-hidden">
                     <div
@@ -337,63 +336,67 @@ export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }
                     />
                   </div>
 
-                  {/* 5 Milestone Nodes on the Track */}
-                  {MILESTONE_STEPS.map((m) => {
-                    const isInfinity = m.days === "infinity";
-                    const unlocked = isInfinity
-                      ? status.currentStreak >= 30
-                      : status.unlockedMilestones.includes(m.days);
+                  {/* 5 Milestone Nodes on the Track (0 -> 3d -> 7d -> 14d -> 30d) */}
+                  <div className="relative flex items-center justify-between">
+                    {MILESTONE_STEPS.map((m) => {
+                      const isStart = m.days === 0;
+                      const unlocked = isStart
+                        ? status.currentStreak >= 0
+                        : status.unlockedMilestones.includes(m.days) || status.currentStreak >= m.days;
 
-                    const milestoneTitle = isInfinity
-                      ? t("dailyStreak.infinityMilestone")
-                      : t("dailyStreak.milestone", { days: m.days });
+                      const milestoneTitle = isStart
+                        ? t("dailyStreak.startMilestone")
+                        : t("dailyStreak.milestone", { days: m.days });
 
-                    return (
-                      <div
-                        key={String(m.days)}
-                        className="relative z-10 flex flex-col items-center gap-1.5 text-center"
-                      >
-                        <span
-                          className={cn(
-                            "flex size-6 sm:size-6.5 items-center justify-center rounded-full border text-xs transition-all duration-200 shadow-xs ring-3 ring-surface-base",
-                            unlocked
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border-subtle bg-surface-base text-foreground-subtle",
-                          )}
-                          title={milestoneTitle}
+                      return (
+                        <div
+                          key={String(m.days)}
+                          className="relative z-10 flex flex-col items-center gap-1.5 text-center"
                         >
-                          {isInfinity ? (
-                            <InfinityIcon
-                              className={cn(
-                                "size-3.5 sm:size-4",
-                                unlocked ? "text-primary-foreground stroke-[2.5]" : "text-foreground-subtle stroke-[2.2]",
-                              )}
-                              aria-hidden
-                            />
-                          ) : unlocked ? (
-                            <Flame className="size-2.5 sm:size-3 fill-current" aria-hidden />
-                          ) : (
-                            <LockKeyhole className="size-2.5 sm:size-3" aria-hidden />
-                          )}
-                        </span>
-                        <span
-                          className={cn(
-                            "font-mono transition-colors",
-                            isInfinity
-                              ? "text-sm sm:text-base font-bold leading-none -mt-0.5"
-                              : "text-[10px] sm:text-[11px] font-medium tabular-nums",
-                            unlocked ? "text-primary font-bold" : "text-foreground-muted",
-                          )}
-                        >
-                          {m.display}
-                        </span>
-                      </div>
-                    );
-                  })}
+                          <span
+                            className={cn(
+                              "flex size-6 sm:size-6.5 items-center justify-center rounded-full border text-xs transition-all duration-200 shadow-xs ring-3 ring-surface-base",
+                              unlocked
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-border-subtle bg-surface-base text-foreground-subtle",
+                            )}
+                            title={milestoneTitle}
+                          >
+                            {isStart ? (
+                              <Flame className="size-2.5 sm:size-3 fill-current" aria-hidden />
+                            ) : unlocked ? (
+                              <Flame className="size-2.5 sm:size-3 fill-current" aria-hidden />
+                            ) : (
+                              <LockKeyhole className="size-2.5 sm:size-3" aria-hidden />
+                            )}
+                          </span>
+                          <span
+                            className={cn(
+                              "font-mono text-[10px] sm:text-[11px] font-medium tabular-nums transition-colors",
+                              unlocked ? "text-primary font-bold" : "text-foreground-muted",
+                            )}
+                          >
+                            {m.display}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Upward-pointing indicator arrow towards current learner position */}
+                  <div
+                    className="absolute bottom-0 -translate-x-1/2 flex flex-col items-center pointer-events-none transition-all duration-500 z-20"
+                    style={{ left: `calc(1.5rem + (${timelineProgress} / 100) * (100% - 3rem))` }}
+                  >
+                    <div className="w-0 h-0 border-x-[4px] border-x-transparent border-b-[5px] border-b-primary drop-shadow-xs" />
+                    <span className="mt-0.5 rounded-full bg-primary px-1.5 py-0.2 text-[9px] font-mono font-bold text-primary-foreground shadow-xs whitespace-nowrap">
+                      {status.currentStreak}d
+                    </span>
+                  </div>
                 </div>
 
                 {/* Subtext: Record or Dynamic Motivation */}
-                <p className="mt-2.5 text-center text-xs text-foreground-muted border-t border-border-subtle/50 pt-2.5 leading-relaxed">
+                <p className="mt-1 text-center text-xs text-foreground-muted border-t border-border-subtle/50 pt-2.5 leading-relaxed">
                   {streakSubtext}
                 </p>
               </div>

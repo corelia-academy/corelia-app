@@ -80,6 +80,7 @@
     "activeStreakMotivation": "Keep up the momentum! Only {{remaining}} day(s) left to catch your {{longest}}-day record.",
     "peakStreakMotivation": "All-time peak record: {{count}} days! You're doing amazing, keep the fire burning!",
     "milestone": "{{days}}-day milestone",
+    "startMilestone": "Start (0 days)",
     "infinityMilestone": "Infinity Streak (∞)",
     "claim": "Check In",
     "claimed": "Checked in today",
