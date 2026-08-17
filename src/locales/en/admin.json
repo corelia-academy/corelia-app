@@ -444,7 +444,8 @@
     "subheading": "Grant an OCA/OCB to a specific individual as a reward outside course completion — does not affect course/hackathon state.",
     "tabs": {
       "grant": "Grant Credential / Badge",
-      "history": "Grant History & Pending"
+      "history": "Grant History & Pending",
+      "templates": "Badge Templates"
     },
     "lookup": {
       "heading": "Look up student",
@@ -467,6 +468,21 @@
       "followers": "Followers",
       "fullPageLink": "View full page →"
     },
+    "templates": {
+      "searchPlaceholder": "Search badge templates by name, description...",
+      "totalCount": "Total: {{count}} template(s)",
+      "emptyTitle": "No templates in the library yet",
+      "emptySubtitle": "When granting a manual badge, enable \"Save to template library\" to reuse it quickly later.",
+      "useTemplate": "Use template",
+      "deleteConfirm": "Are you sure you want to delete template \"{{name}}\" from the library?",
+      "deleteSuccess": "Template removed from library",
+      "deleteFailed": "Failed to delete template",
+      "deleteForbidden": "Automatic system templates cannot be deleted",
+      "loadFailed": "Failed to load badge templates",
+      "ocbBadge": "OCB Badge",
+      "ocaCertificate": "OCA Certificate",
+      "hidden": "Hidden"
+    },
     "form": {
       "kind": "Credential type",
       "name": "Credential/badge name",
@@ -477,6 +493,10 @@
       "invalidPng": "This file is not a valid PNG. Please remove the background or convert the image at",
       "uploadFailed": "Image upload failed.",
       "reason": "Grant reason",
+      "grantSectionTitle": "Badge / Certificate Details",
+      "chooseFromTemplates": "Choose from templates…",
+      "saveAsTemplate": "Save to template library for future reuse",
+      "appliedTemplate": "Applied template \"{{name}}\"",
       "submit": "Grant",
       "submitting": "Granting…",
       "success": "Granted successfully.",

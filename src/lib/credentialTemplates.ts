@@ -98,7 +98,7 @@ export async function saveCourseCredentialTemplate(params: {
   const { data, error } = await supabase.from("credential_templates").insert(row).select("id").maybeSingle();
   if (error) throw new Error(error.message);
   const id = data?.id != null ? String(data.id) : "";
-  if (!id) throw new Error("Không lưu được template.");
+  if (!id) throw new Error("credential_template_save_failed");
   if (params.isActive) {
     await deactivateOthers(id);
     await supabase.from("credential_templates").update({ is_active: true }).eq("id", id);
@@ -165,7 +165,7 @@ export async function saveHackathonCredentialTemplate(params: {
   const { data, error } = await supabase.from("credential_templates").insert(row).select("id").maybeSingle();
   if (error) throw new Error(error.message);
   const id = data?.id != null ? String(data.id) : "";
-  if (!id) throw new Error("Không lưu được template.");
+  if (!id) throw new Error("credential_template_save_failed");
   return { id };
 }
 
@@ -229,6 +229,46 @@ export async function saveActivityMilestoneTemplate(params: {
   const { data, error } = await supabase.from("credential_templates").insert(row).select("id").maybeSingle();
   if (error) throw new Error(error.message);
   const id = data?.id != null ? String(data.id) : "";
-  if (!id) throw new Error("Không lưu được milestone.");
+  if (!id) throw new Error("activity_milestone_save_failed");
   return { id };
+}
+
+export async function listManualBadgeTemplates(): Promise<CredentialTemplateRow[]> {
+  const { data, error } = await supabase
+    .from("credential_templates")
+    .select("*")
+    .eq("scope_type", "activity_milestone")
+    .eq("trigger_type", "manual")
+    .eq("is_active", true)
+    .order("updated_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as CredentialTemplateRow[];
+}
+
+export async function deleteManualBadgeTemplate(templateId: string): Promise<void> {
+  const { data: tpl, error: tplErr } = await supabase
+    .from("credential_templates")
+    .select("scope_type, trigger_type")
+    .eq("id", templateId)
+    .maybeSingle();
+  if (tplErr) throw new Error(tplErr.message);
+  if (tpl?.scope_type !== "activity_milestone" || tpl.trigger_type !== "manual") {
+    throw new Error("manual_template_delete_forbidden");
+  }
+
+  const issuances = await countIssuancesForTemplate(templateId);
+  if (issuances > 0) {
+    // If it has issuances, soft-deactivate instead of hard-deleting to preserve audit trail
+    const { error } = await supabase
+      .from("credential_templates")
+      .update({ is_active: false })
+      .eq("id", templateId);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase
+      .from("credential_templates")
+      .delete()
+      .eq("id", templateId);
+    if (error) throw new Error(error.message);
+  }
 }

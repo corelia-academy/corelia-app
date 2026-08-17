@@ -444,7 +444,8 @@
     "subheading": "Cấp OCA/OCB cho một cá nhân cụ thể như phần thưởng ngoài khóa học, không ảnh hưởng trạng thái khóa học/hackathon.",
     "tabs": {
       "grant": "Cấp chứng nhận / huy hiệu",
-      "history": "Danh sách đã cấp & Chờ nhận"
+      "history": "Danh sách đã cấp & Chờ nhận",
+      "templates": "Kho mẫu badge"
     },
     "lookup": {
       "heading": "Tra cứu học viên",
@@ -467,6 +468,21 @@
       "followers": "Người theo dõi",
       "fullPageLink": "Xem trang đầy đủ →"
     },
+    "templates": {
+      "searchPlaceholder": "Tìm kiếm mẫu badge theo tên, mô tả...",
+      "totalCount": "Tổng cộng: {{count}} mẫu",
+      "emptyTitle": "Chưa có template nào trong kho mẫu",
+      "emptySubtitle": "Khi cấp badge thủ công, hãy bật \"Lưu vào kho mẫu\" để tái sử dụng nhanh cho các lần sau.",
+      "useTemplate": "Sử dụng mẫu",
+      "deleteConfirm": "Bạn có chắc muốn xóa template \"{{name}}\" khỏi kho mẫu?",
+      "deleteSuccess": "Đã xóa template khỏi kho mẫu",
+      "deleteFailed": "Không thể xóa template",
+      "deleteForbidden": "Không thể xóa template tự động của hệ thống",
+      "loadFailed": "Lỗi khi tải kho mẫu",
+      "ocbBadge": "OCB Badge",
+      "ocaCertificate": "OCA Certificate",
+      "hidden": "Đã ẩn"
+    },
     "form": {
       "kind": "Loại chứng nhận",
       "name": "Tên chứng chỉ/huy hiệu",
@@ -477,6 +493,10 @@
       "invalidPng": "Định dạng file không phải PNG. Vui lòng tách nền hoặc chuyển đổi ảnh tại",
       "uploadFailed": "Tải ảnh thất bại.",
       "reason": "Lý do cấp",
+      "grantSectionTitle": "Thông tin cấp Badge / Certificate",
+      "chooseFromTemplates": "Chọn từ kho mẫu…",
+      "saveAsTemplate": "Lưu vào kho mẫu để tái sử dụng cho các lần sau",
+      "appliedTemplate": "Đã áp dụng mẫu \"{{name}}\"",
       "submit": "Cấp phát",
       "submitting": "Đang cấp…",
       "success": "Đã cấp thành công.",

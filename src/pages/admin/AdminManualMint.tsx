@@ -18,12 +18,14 @@ import type { Profile } from "@/types/database";
 
 import { ManualMintProfilePreviewDialog } from "./components/ManualMintProfilePreviewDialog";
 import { ManualMintHistoryTable } from "./components/ManualMintHistoryTable";
+import { ManualMintTemplatesTab } from "./components/ManualMintTemplatesTab";
+import type { CredentialTemplateRow } from "@/lib/credentialTemplates";
 
 const TEXTAREA_CLASS =
   "min-h-[88px] w-full rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15";
 
 type IdentifierType = "uid" | "email";
-type ActiveTab = "grant" | "history";
+type ActiveTab = "grant" | "history" | "templates";
 
 const EMAIL_FORMAT_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -48,6 +50,8 @@ export default function AdminManualMint() {
   const [imageUrl, setImageUrl] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [reason, setReason] = useState("");
+  const [saveAsTemplate, setSaveAsTemplate] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const resetAll = () => {
@@ -59,6 +63,20 @@ export default function AdminManualMint() {
     setName("");
     setImageUrl("");
     setReason("");
+    setSaveAsTemplate(false);
+    setSelectedTemplateId(null);
+  };
+
+  const handleSelectTemplate = (tpl: CredentialTemplateRow) => {
+    const isOcb = tpl.collection_symbol === "ocbadge" || tpl.achievement_type === "Badge";
+    setCredentialKind(isOcb ? "ocb" : "oca");
+    setName(tpl.name);
+    setImageUrl(tpl.image_url);
+    setReason(tpl.description || "");
+    setSelectedTemplateId(tpl.id);
+    setSaveAsTemplate(false);
+    setActiveTab("grant");
+    toast.info(t("manualMint.form.appliedTemplate", { name: tpl.name }));
   };
 
   const handleLookup = async () => {
@@ -146,17 +164,21 @@ export default function AdminManualMint() {
     if (!target) return;
     setSubmitting(true);
     try {
-      const { id: templateId } = await saveActivityMilestoneTemplate({
-        templateId: null,
-        isActive: true,
-        name: name.trim(),
-        description: reason.trim(),
-        imageUrl,
-        identifierPrefix: `corelia:manual-mint-${Date.now()}`.slice(0, 40),
-        triggerType: "manual",
-        triggerRule: { manual: true },
-        credentialKind,
-      });
+      let templateId = selectedTemplateId;
+      if (!templateId) {
+        const { id } = await saveActivityMilestoneTemplate({
+          templateId: null,
+          isActive: saveAsTemplate,
+          name: name.trim(),
+          description: reason.trim(),
+          imageUrl,
+          identifierPrefix: `corelia:manual-mint-${Date.now()}`.slice(0, 40),
+          triggerType: "manual",
+          triggerRule: { manual: true, saved_as_template: saveAsTemplate },
+          credentialKind,
+        });
+        templateId = id;
+      }
 
       if (target.kind === "user" && matchedProfile) {
         const result = await invokeGrantCredentials({
@@ -191,7 +213,12 @@ export default function AdminManualMint() {
         resetAll();
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("manualMint.form.submitFailed"));
+      const errorCode = e instanceof Error ? e.message : "";
+      toast.error(
+        errorCode === "activity_milestone_save_failed"
+          ? t("manualMint.form.submitFailed")
+          : errorCode || t("manualMint.form.submitFailed"),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -237,10 +264,24 @@ export default function AdminManualMint() {
         >
           {t("manualMint.tabs.history")}
         </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("templates")}
+          className={cn(
+            "border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
+            activeTab === "templates"
+              ? "border-primary text-primary font-semibold"
+              : "border-transparent text-foreground-muted hover:text-foreground",
+          )}
+        >
+          {t("manualMint.tabs.templates")}
+        </button>
       </div>
 
       {activeTab === "history" ? (
         <ManualMintHistoryTable />
+      ) : activeTab === "templates" ? (
+        <ManualMintTemplatesTab onSelectTemplate={handleSelectTemplate} />
       ) : (
         <>
           {/* Step 1 — identifier lookup */}
@@ -323,12 +364,30 @@ export default function AdminManualMint() {
               !target && "pointer-events-none opacity-50",
             )}
           >
+            <div className="flex items-center justify-between border-b border-border-subtle/70 pb-2">
+              <h3 className="text-sm font-semibold text-foreground">
+                {t("manualMint.form.grantSectionTitle")}
+              </h3>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => setActiveTab("templates")}
+              >
+                {t("manualMint.form.chooseFromTemplates")}
+              </Button>
+            </div>
+
             <Field>
               <FieldLabel>{t("manualMint.form.kind")}</FieldLabel>
               <div className="flex overflow-hidden rounded-md border border-border-subtle">
                 <button
                   type="button"
-                  onClick={() => setCredentialKind("oca")}
+                  onClick={() => {
+                    setCredentialKind("oca");
+                    setSelectedTemplateId(null);
+                  }}
                   className={cn(
                     "flex-1 px-3 py-2 text-sm font-medium transition-colors",
                     credentialKind === "oca"
@@ -340,7 +399,10 @@ export default function AdminManualMint() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCredentialKind("ocb")}
+                  onClick={() => {
+                    setCredentialKind("ocb");
+                    setSelectedTemplateId(null);
+                  }}
                   className={cn(
                     "flex-1 px-3 py-2 text-sm font-medium transition-colors",
                     credentialKind === "ocb"
@@ -355,7 +417,13 @@ export default function AdminManualMint() {
 
             <Field>
               <FieldLabel>{t("manualMint.form.name")}</FieldLabel>
-              <Input value={name} onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)} />
+              <Input
+                value={name}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  setName(e.target.value);
+                  setSelectedTemplateId(null);
+                }}
+              />
             </Field>
 
             <Field>
@@ -366,7 +434,10 @@ export default function AdminManualMint() {
                   accept="image/png"
                   disabled={uploadingImage}
                   className="absolute inset-0 cursor-pointer opacity-0"
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => void onFileSelect(e.target.files?.[0] ?? null)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    setSelectedTemplateId(null);
+                    void onFileSelect(e.target.files?.[0] ?? null);
+                  }}
                 />
                 <div className="flex flex-col items-center gap-2 text-sm text-foreground-muted">
                   {uploadingImage ? (
@@ -401,9 +472,25 @@ export default function AdminManualMint() {
                 rows={3}
                 value={reason}
                 className={TEXTAREA_CLASS}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                  setReason(e.target.value);
+                  setSelectedTemplateId(null);
+                }}
               />
             </Field>
+
+            <div className="flex items-center gap-2 py-1">
+              <input
+                type="checkbox"
+                id="saveAsTemplateCheckbox"
+                checked={saveAsTemplate}
+                onChange={(e) => setSaveAsTemplate(e.target.checked)}
+                className="size-4 rounded border-border-subtle text-primary focus:ring-primary/20"
+              />
+              <label htmlFor="saveAsTemplateCheckbox" className="text-xs text-foreground cursor-pointer select-none">
+                {t("manualMint.form.saveAsTemplate")}
+              </label>
+            </div>
 
             <Button type="button" className="w-full" disabled={!canSubmit} onClick={() => void handleSubmit()}>
               {submitting ? (

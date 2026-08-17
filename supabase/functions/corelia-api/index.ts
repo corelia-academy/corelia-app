@@ -18,6 +18,7 @@ import { handleRetryPendingCredentials } from "./credentials/retry_pending.ts";
 import { handleRevokeCredential } from "./credentials/revoke.ts";
 import { handleCourseBlastEmail } from "./courses/blast_email.ts";
 import { handleCoInstructorInviteEmail } from "./courses/co_instructor_invite_email.ts";
+import { handleSendLearningReminders } from "./courses/learning_reminders.ts";
 import { handleSyncCourseCompletion } from "./courses/completion.ts";
 import { handleHackathonBlastEmail } from "./hackathons/blast_email.ts";
 import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.ts";
@@ -53,6 +54,7 @@ const PROTECTED_OPS = new Set<string>([
   "courses.syncCompletion",
   "courses.blastEmail",
   "courses.coInstructorInvite.sendEmail",
+  "courses.sendLearningReminders",
   "careerTracks.blastEmail",
   "gamification.dailyStreakStatus",
   "gamification.claimDailyStreak",
@@ -74,6 +76,12 @@ function hasBearerAuthHeader(req: Request): boolean {
   return /^Bearer\s+\S+$/i.test(header ?? "");
 }
 
+function hasLearningReminderCronSecret(req: Request): boolean {
+  const expected = Deno.env.get("LEARNING_REMINDER_CRON_SECRET")?.trim() ?? "";
+  const provided = req.headers.get("x-corelia-cron-secret")?.trim() ?? "";
+  return Boolean(expected && provided && expected === provided);
+}
+
 Deno.serve(async (req: Request): Promise<Response> => {
   const cors = corsHeadersForRequest(req);
   if (req.method === "OPTIONS") {
@@ -84,7 +92,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   try {
     const url = new URL(req.url);
     const op = url.searchParams.get("op") ?? "";
-    if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req)) {
+    const isLearningReminderCron = op === "courses.sendLearningReminders" && hasLearningReminderCronSecret(req);
+    if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req) && !isLearningReminderCron) {
       return withCors(req, json({ message: "Missing Authorization header" }, 401));
     }
     let db: SupabaseClient;
@@ -132,6 +141,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleCourseBlastEmail(req, db);
     } else if (op === "courses.coInstructorInvite.sendEmail" && req.method === "POST") {
       response = await handleCoInstructorInviteEmail(req, db);
+    } else if (op === "courses.sendLearningReminders" && req.method === "POST") {
+      response = await handleSendLearningReminders(req, db, { allowCron: isLearningReminderCron });
     } else if (op === "careerTracks.blastEmail" && req.method === "POST") {
       response = await handleCareerTrackBlastEmail(req, db);
     } else if (op === "notifications.unsubscribe" && req.method === "POST") {
