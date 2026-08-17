@@ -425,7 +425,7 @@
     },
     "event": {
       "loginStreak": "Chuỗi đăng nhập",
-      "dailyStreak": "Chuỗi claim hằng ngày",
+      "dailyStreak": "Chuỗi điểm danh hằng ngày",
       "coursesCompleted": "Hoàn thành khóa học",
       "trackCourses": "Hoàn thành khóa trong track",
       "projects": "Nộp project"
@@ -433,7 +433,7 @@
     "rule": {
       "manual": "Cấp thủ công",
       "loginStreak": "Chuỗi đăng nhập {{days}} ngày",
-      "dailyStreak": "Chuỗi claim hằng ngày {{days}} ngày",
+      "dailyStreak": "Chuỗi điểm danh hằng ngày {{days}} ngày",
       "coursesCompleted": "Hoàn thành {{count}} khóa học",
       "trackCourses": "{{count}} khóa trong track “{{track}}”",
       "projects": "{{count}} project đã nộp"

@@ -7,6 +7,7 @@ import {
   Flame,
   Globe,
   Github,
+  Infinity as InfinityIcon,
   Link2,
   LoaderCircle,
   LockKeyhole,
@@ -44,11 +45,12 @@ function formatCountdown(targetIso: string | null, now: number): string {
 
 function calculateTimelineProgress(streak: number): number {
   if (streak <= 0) return 0;
-  if (streak >= 30) return 100;
-  if (streak < 3) return (streak / 3) * 25;
-  if (streak < 7) return 25 + ((streak - 3) / 4) * 25;
-  if (streak < 14) return 50 + ((streak - 7) / 7) * 25;
-  return 75 + ((streak - 14) / 16) * 25;
+  if (streak < 3) return (streak / 3) * 20;
+  if (streak < 7) return 20 + ((streak - 3) / 4) * 20;
+  if (streak < 14) return 40 + ((streak - 7) / 7) * 20;
+  if (streak < 30) return 60 + ((streak - 14) / 16) * 20;
+  if (streak >= 60) return 100;
+  return 80 + ((streak - 30) / 30) * 20;
 }
 
 const MILESTONE_STEPS = [
@@ -57,6 +59,7 @@ const MILESTONE_STEPS = [
   { days: 7, display: "7d" },
   { days: 14, display: "14d" },
   { days: 30, display: "30d" },
+  { days: "infinity", display: "∞" },
 ] as const;
 
 export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }) {
@@ -200,7 +203,7 @@ export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="w-full sm:max-w-[480px] p-0 overflow-hidden flex flex-col border-l border-border-subtle bg-surface-base text-foreground shadow-2xl"
+        className="w-full sm:!w-[520px] md:!w-[560px] lg:!w-[580px] sm:!max-w-[580px] p-0 overflow-hidden flex flex-col border-l border-border-subtle bg-surface-base text-foreground shadow-2xl"
       >
         {/* Sheet Top Header */}
         <SheetHeader className="border-b border-border-subtle bg-gradient-to-b from-primary-muted/20 to-transparent p-4 sm:p-5 md:p-6">
@@ -325,54 +328,70 @@ export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }
                 )}
               </div>
 
-              {/* Stepper Timeline Progress Card with Upward Current Position Pointer */}
+              {/* Stepper Timeline Progress Card with Infinity Node and Upward Pointer */}
               <div className="rounded-2xl border border-border-subtle bg-surface-raised/40 p-3.5 sm:p-4 shadow-xs">
-                <div className="relative pb-6 px-3 pt-1">
+                <div className="relative pb-4 px-3 pt-1.5">
                   {/* Background Track Line */}
-                  <div className="absolute left-6 right-6 top-[13px] h-1 -translate-y-1/2 rounded-full bg-surface-overlay overflow-hidden">
+                  <div className="absolute left-[28px] right-[28px] top-[19px] h-1 -translate-y-1/2 rounded-full bg-surface-overlay overflow-hidden">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-primary/80 to-primary transition-all duration-500"
                       style={{ width: `${timelineProgress}%` }}
                     />
                   </div>
 
-                  {/* 5 Milestone Nodes on the Track (0 -> 3d -> 7d -> 14d -> 30d) */}
+                  {/* 6 Milestone Nodes on the Track (0 -> 3d -> 7d -> 14d -> 30d -> ∞) */}
                   <div className="relative flex items-center justify-between">
                     {MILESTONE_STEPS.map((m) => {
                       const isStart = m.days === 0;
+                      const isInfinity = m.days === "infinity";
                       const unlocked = isStart
                         ? status.currentStreak >= 0
+                        : isInfinity
+                        ? status.currentStreak >= 30
                         : status.unlockedMilestones.includes(m.days) || status.currentStreak >= m.days;
 
                       const milestoneTitle = isStart
                         ? t("dailyStreak.startMilestone")
+                        : isInfinity
+                        ? t("dailyStreak.infinityMilestone")
                         : t("dailyStreak.milestone", { days: m.days });
 
                       return (
                         <div
                           key={String(m.days)}
-                          className="relative z-10 flex flex-col items-center gap-1.5 text-center"
+                          className="relative z-10 flex w-8 flex-col items-center gap-1.5 text-center"
                         >
                           <span
                             className={cn(
-                              "flex size-6 sm:size-6.5 items-center justify-center rounded-full border text-xs transition-all duration-200 shadow-xs ring-3 ring-surface-base",
+                              "flex size-6.5 items-center justify-center rounded-full border text-xs transition-all duration-200 shadow-xs ring-3 ring-surface-base",
                               unlocked
                                 ? "border-primary bg-primary text-primary-foreground"
                                 : "border-border-subtle bg-surface-base text-foreground-subtle",
                             )}
                             title={milestoneTitle}
                           >
-                            {isStart ? (
-                              <Flame className="size-2.5 sm:size-3 fill-current" aria-hidden />
+                            {isInfinity ? (
+                              <InfinityIcon
+                                className={cn(
+                                  "size-3.5 sm:size-4",
+                                  unlocked ? "text-primary-foreground stroke-[2.5]" : "text-foreground-subtle stroke-[2.2]",
+                                )}
+                                aria-hidden
+                              />
+                            ) : isStart ? (
+                              <Flame className="size-3 fill-current" aria-hidden />
                             ) : unlocked ? (
-                              <Flame className="size-2.5 sm:size-3 fill-current" aria-hidden />
+                              <Flame className="size-3 fill-current" aria-hidden />
                             ) : (
-                              <LockKeyhole className="size-2.5 sm:size-3" aria-hidden />
+                              <LockKeyhole className="size-3" aria-hidden />
                             )}
                           </span>
                           <span
                             className={cn(
-                              "font-mono text-[10px] sm:text-[11px] font-medium tabular-nums transition-colors",
+                              "font-mono transition-colors",
+                              isInfinity
+                                ? "text-sm sm:text-base font-bold leading-none -mt-0.5"
+                                : "text-[10px] sm:text-[11px] font-medium tabular-nums",
                               unlocked ? "text-primary font-bold" : "text-foreground-muted",
                             )}
                           >
@@ -385,13 +404,10 @@ export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }
 
                   {/* Upward-pointing indicator arrow towards current learner position */}
                   <div
-                    className="absolute bottom-0 -translate-x-1/2 flex flex-col items-center pointer-events-none transition-all duration-500 z-20"
-                    style={{ left: `calc(1.5rem + (${timelineProgress} / 100) * (100% - 3rem))` }}
+                    className="absolute top-[54px] -translate-x-1/2 flex flex-col items-center pointer-events-none transition-all duration-500 z-20"
+                    style={{ left: `calc(28px + (${timelineProgress} / 100) * (100% - 56px))` }}
                   >
-                    <div className="w-0 h-0 border-x-[4px] border-x-transparent border-b-[5px] border-b-primary drop-shadow-xs" />
-                    <span className="mt-0.5 rounded-full bg-primary px-1.5 py-0.2 text-[9px] font-mono font-bold text-primary-foreground shadow-xs whitespace-nowrap">
-                      {status.currentStreak}d
-                    </span>
+                    <div className="w-0 h-0 border-x-[4.5px] border-x-transparent border-b-[6px] border-b-primary drop-shadow-xs" />
                   </div>
                 </div>
 
