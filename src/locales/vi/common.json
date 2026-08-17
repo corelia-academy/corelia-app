@@ -80,6 +80,7 @@
     "activeStreakMotivation": "Giữ vững phong độ! Còn {{remaining}} ngày để đuổi kịp kỷ lục {{longest}} ngày.",
     "peakStreakMotivation": "Kỷ lục đỉnh cao: {{count}} ngày! Bạn đang làm rất xuất sắc, giữ vững ngọn lửa này nhé!",
     "milestone": "Mốc {{days}} ngày",
+    "startMilestone": "Khởi đầu (0 ngày)",
     "infinityMilestone": "Chuỗi vô cực (∞)",
     "claim": "Điểm danh",
     "claimed": "Đã điểm danh hôm nay",
