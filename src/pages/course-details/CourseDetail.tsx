@@ -11,7 +11,7 @@ import {
   syncCourseCompletion,
 } from "@/lib/courses";
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
-import { splitLessonCounts } from "@/lib/lessonFormat";
+import { isActivityLesson, splitLessonCounts } from "@/lib/lessonFormat";
 import { useCourseLoad } from "./hooks/useCourseLoad";
 import { useCourseLessons } from "./hooks/useCourseLessons";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
@@ -258,7 +258,10 @@ export default function CourseDetail() {
     () =>
       courseLoad.sections.map((section) => ({
         section,
-        lessons: sortedLessons.filter((lesson) => lesson.section_id === section.id),
+        lessons: sortedLessons.filter(
+          (lesson) =>
+            lesson.section_id === section.id && !isActivityLesson(lesson),
+        ),
       })),
     [courseLoad.sections, sortedLessons],
   );

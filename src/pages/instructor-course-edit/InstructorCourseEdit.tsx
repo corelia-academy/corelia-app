@@ -3645,6 +3645,10 @@ const InstructorCourseEdit = () => {
       const isPracticeFormat = editingLessonFormat === "practice";
       const isQuizFormat = editingLessonFormat === "quiz";
       const isNonVideoFormat = editingLessonFormat !== "video";
+      if (getLessonFormat(editingLesson) !== "quiz" && isQuizFormat) {
+        toast.error(t("courseEdit.lessons.quizConversionBlocked"));
+        return;
+      }
       if (isArticleFormat) {
         if (!primaryDraft.markdown.trim() && !primaryDraft.shortDescription.trim()) {
           toast.error(t("courseEdit.lessons.articleContentRequired"));
@@ -7031,16 +7035,14 @@ const InstructorCourseEdit = () => {
                                   {t("courseEdit.lessons.previewFreeBadge")}
                                 </label>
                               )}
-                              {resolvedLessonFormat === "quiz" && (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => openLessonQuizGenerator(lesson)}
-                                >
-                                  {t("courseEdit.lessons.lessonQuestions")}
-                                </Button>
-                              )}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openLessonQuizGenerator(lesson)}
+                              >
+                                {t("courseEdit.lessons.lessonQuestions")}
+                              </Button>
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -7332,6 +7334,18 @@ const InstructorCourseEdit = () => {
                       <LessonFormatSelector
                         value={editingLessonFormat}
                         onChange={(next) => {
+                          // Questions belong to a lesson; choosing the Quiz action while
+                          // editing an existing content lesson must not convert it and
+                          // clear its video URL. Standalone quizzes are still created via
+                          // the Add lesson flow.
+                          if (
+                            next === "quiz" &&
+                            editingLesson &&
+                            getLessonFormat(editingLesson) !== "quiz"
+                          ) {
+                            openLessonQuizGenerator(editingLesson);
+                            return;
+                          }
                           setEditingLessonFormat(next);
                           if (next !== "video") setEditingLessonYoutubeUrl("");
                           if (next === "quiz") {
@@ -7558,15 +7572,23 @@ const InstructorCourseEdit = () => {
                       </p>
                     </Field>
                   ) : null}
-                  {editingLessonFormat === "quiz" && editingLesson ? (
+                  {editingLesson ? (
                     <div className="rounded-lg border border-border-subtle bg-surface-raised p-4">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <p className="text-sm font-semibold text-foreground">
-                            {t("courseEdit.lessons.quizSetupTitle")}
+                            {t(
+                              editingLessonFormat === "quiz"
+                                ? "courseEdit.lessons.quizSetupTitle"
+                                : "courseEdit.lessons.lessonQuestionsTitle",
+                            )}
                           </p>
                           <p className="mt-1 text-xs leading-5 text-foreground-muted">
-                            {t("courseEdit.lessons.quizSetupHint")}
+                            {t(
+                              editingLessonFormat === "quiz"
+                                ? "courseEdit.lessons.quizSetupHint"
+                                : "courseEdit.lessons.lessonQuestionsHint",
+                            )}
                           </p>
                         </div>
                         <Button

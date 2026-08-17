@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getDetailedLessonCounts,
   getLessonFormat,
+  isActivityLesson,
   isArticleLesson,
   isLessonPublishedForLearners,
 } from "./lessonFormat";
@@ -20,6 +21,13 @@ describe("lessonFormat", () => {
       }),
     ).toBe(true);
     expect(isLessonPublishedForLearners({ description_markdown: "Text" })).toBe(true);
+  });
+
+  it("identifies quiz and practice as activities, not roadmap content", () => {
+    expect(isActivityLesson({ lesson_format: "quiz" })).toBe(true);
+    expect(isActivityLesson({ lesson_format: "practice" })).toBe(true);
+    expect(isActivityLesson({ lesson_format: "video" })).toBe(false);
+    expect(isActivityLesson({ description_markdown: "## Article" })).toBe(false);
   });
 
   it("counts every resolved lesson format, including legacy inferred formats", () => {
