@@ -1,6 +1,7 @@
 import { canManageCourse, isAuthFailure } from "../lib/authz.ts";
 import { json, nowIso } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
+import { runActivityMilestoneCheck } from "../credentials/check_activity.ts";
 
 type CourseCompletionReason =
   | "completed"
@@ -28,6 +29,19 @@ type CourseCompletionData = {
 
 function courseHasCertificate(course: CourseCompletionData): boolean {
   return course.has_certificate === true || !!course.certificate_template_url?.trim();
+}
+
+async function evaluateCourseCompletionMilestones(
+  db: SupabaseClient,
+  userId: string,
+  courseId: string,
+): Promise<void> {
+  try {
+    await runActivityMilestoneCheck(db, userId, "courses_completed", { course_id: courseId });
+  } catch (milestoneErr) {
+    // Milestone minting is intentionally non-fatal for course completion.
+    console.error("[corelia-api] course completion → activity milestone failed", milestoneErr);
+  }
 }
 
 async function insertCourseCompletedNotification(
@@ -76,6 +90,7 @@ export async function syncCourseCompletionIfReady(
   const hasCertificate = courseHasCertificate(course);
 
   if (enrollment.completed_at) {
+    await evaluateCourseCompletionMilestones(db, targetUserId, courseId);
     return {
       ok: true,
       completed: true,
@@ -125,6 +140,9 @@ export async function syncCourseCompletionIfReady(
       .eq("id", enrollmentId)
       .maybeSingle();
     if (latestErr) throw new Error(latestErr.message);
+    if (latest?.completed_at) {
+      await evaluateCourseCompletionMilestones(db, targetUserId, courseId);
+    }
     return {
       ok: true,
       completed: Boolean(latest?.completed_at),
@@ -157,6 +175,8 @@ export async function syncCourseCompletionIfReady(
   } catch (notificationErr) {
     console.error("[corelia-api] completion → notification failed (non-fatal)", notificationErr);
   }
+
+  await evaluateCourseCompletionMilestones(db, targetUserId, courseId);
 
   return {
     ok: true,

@@ -38,6 +38,7 @@ export function useInstructorCourseNewForm() {
     slug: "",
     description: "",
     learning_outcomes: [] as string[],
+    skills: [] as string[],
     short_description: "",
     thumbnail_url:
       "https://placehold.co/640x360/1e3a5f/fff?text=Kho%C3%A1+h%E1%BB%8Dc",
@@ -130,6 +131,14 @@ export function useInstructorCourseNewForm() {
         .filter(Boolean)
         .slice(0, 20)
         .map((item) => (item.length > 140 ? item.slice(0, 140) : item));
+      const sanitizedSkills = Array.from(
+        new Map(
+          (form.skills ?? [])
+            .map((item) => item.trim())
+            .filter(Boolean)
+            .map((item) => [item.toLocaleLowerCase(), item.slice(0, 80)] as const),
+        ).values(),
+      ).slice(0, 20);
 
       const course = await createCourse(
         {
@@ -139,6 +148,7 @@ export function useInstructorCourseNewForm() {
             form.title.trim().toLowerCase().replace(/\s+/g, "-"),
           description: form.description.trim(),
           learning_outcomes: sanitizedOutcomes,
+          skills: sanitizedSkills,
           short_description: form.short_description.trim() || "",
           thumbnail_url: form.thumbnail_url.trim(),
           instructor_id: profile.id,

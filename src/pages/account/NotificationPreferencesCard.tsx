@@ -7,6 +7,7 @@ import { useAuth } from "@/stores/authStore";
 type Prefs = {
   email_course_blast: boolean;
   email_track_blast: boolean;
+  email_learning_reminders: boolean;
   in_app_course_blast: boolean;
   in_app_track_blast: boolean;
 };
@@ -14,6 +15,7 @@ type Prefs = {
 const DEFAULT_PREFS: Prefs = {
   email_course_blast: true,
   email_track_blast: true,
+  email_learning_reminders: true,
   in_app_course_blast: true,
   in_app_track_blast: true,
 };
@@ -75,7 +77,7 @@ export function NotificationPreferencesCard() {
     let cancelled = false;
     void supabase
       .from("notification_preferences")
-      .select("email_course_blast, email_track_blast, in_app_course_blast, in_app_track_blast")
+      .select("email_course_blast, email_track_blast, email_learning_reminders, in_app_course_blast, in_app_track_blast")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
@@ -84,6 +86,7 @@ export function NotificationPreferencesCard() {
           setPrefs({
             email_course_blast: data.email_course_blast ?? true,
             email_track_blast: data.email_track_blast ?? true,
+            email_learning_reminders: data.email_learning_reminders ?? true,
             in_app_course_blast: data.in_app_course_blast ?? true,
             in_app_track_blast: data.in_app_track_blast ?? true,
           });
@@ -130,6 +133,13 @@ export function NotificationPreferencesCard() {
       </p>
 
       <div className="mt-4 divide-y divide-border-subtle rounded-md border border-border-subtle px-4">
+        <Toggle
+          id="pref-email-learning"
+          checked={prefs.email_learning_reminders}
+          onChange={() => !saving && toggle("email_learning_reminders")}
+          label={t("settings.notifications.emailLearningReminders")}
+          description={t("settings.notifications.emailLearningRemindersDesc")}
+        />
         <Toggle
           id="pref-email-course"
           checked={prefs.email_course_blast}

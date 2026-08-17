@@ -1,16 +1,6 @@
 /**
  * Corelia API — Supabase Edge Function (Deno).
  * Invoke: GET/POST {SUPABASE_URL}/functions/v1/corelia-api?op=<operation>
- *
- * Operations: health | payments.sepay.checkout | payments.transactions |
- *   payments.sepay.verify | payments.sepay.ipn | certificates.issue | certificates.backfillEligible |
- *   certificates.verify | certificates.revoke |
- *   hackathons.notifyRegistrationReview | hackathons.blastEmail |
- *   courses.syncCompletion | courses.blastEmail | careerTracks.blastEmail | notifications.unsubscribe |
- *   credentials.checkCourseCompletion | credentials.checkActivityMilestones | credentials.grant |
- *   credentials.retryPending | credentials.hackathon.listEligible | credentials.listActiveOcaTemplates |
- *   credentials.listActiveCourseCredentialTemplates |
- *   credentials.grantPending | credentials.claimLookup
  */
 import { handleBackfillEligibleCertificates, handleIssueCertificate } from "./certificates/handlers.ts";
 import { handleRevokeCertificate } from "./certificates/revoke.ts";
@@ -25,11 +15,14 @@ import { handleListActiveOcaTemplates } from "./credentials/list_active_oca_temp
 import { handleListActiveCourseCredentialTemplates } from "./credentials/list_active_course_credential_templates.ts";
 import { handleGrantPendingCredential } from "./credentials/grant_pending.ts";
 import { handleRetryPendingCredentials } from "./credentials/retry_pending.ts";
+import { handleRevokeCredential } from "./credentials/revoke.ts";
 import { handleCourseBlastEmail } from "./courses/blast_email.ts";
 import { handleCoInstructorInviteEmail } from "./courses/co_instructor_invite_email.ts";
+import { handleSendLearningReminders } from "./courses/learning_reminders.ts";
 import { handleSyncCourseCompletion } from "./courses/completion.ts";
 import { handleHackathonBlastEmail } from "./hackathons/blast_email.ts";
 import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.ts";
+import { handleClaimDailyStreak, handleGetDailyStreakStatus } from "./gamification/daily_streak.ts";
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { handleNotificationsUnsubscribe } from "./notifications/unsubscribe.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
@@ -61,12 +54,16 @@ const PROTECTED_OPS = new Set<string>([
   "courses.syncCompletion",
   "courses.blastEmail",
   "courses.coInstructorInvite.sendEmail",
+  "courses.sendLearningReminders",
   "careerTracks.blastEmail",
+  "gamification.dailyStreakStatus",
+  "gamification.claimDailyStreak",
   // notifications.unsubscribe is PUBLIC — intentionally omitted from PROTECTED_OPS
   "credentials.checkCourseCompletion",
   "credentials.checkActivityMilestones",
   "credentials.grant",
   "credentials.retryPending",
+  "credentials.revoke",
   "credentials.hackathon.listEligible",
   "credentials.listActiveOcaTemplates",
   "credentials.listActiveCourseCredentialTemplates",
@@ -79,6 +76,12 @@ function hasBearerAuthHeader(req: Request): boolean {
   return /^Bearer\s+\S+$/i.test(header ?? "");
 }
 
+function hasLearningReminderCronSecret(req: Request): boolean {
+  const expected = Deno.env.get("LEARNING_REMINDER_CRON_SECRET")?.trim() ?? "";
+  const provided = req.headers.get("x-corelia-cron-secret")?.trim() ?? "";
+  return Boolean(expected && provided && expected === provided);
+}
+
 Deno.serve(async (req: Request): Promise<Response> => {
   const cors = corsHeadersForRequest(req);
   if (req.method === "OPTIONS") {
@@ -89,7 +92,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   try {
     const url = new URL(req.url);
     const op = url.searchParams.get("op") ?? "";
-    if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req)) {
+    const isLearningReminderCron = op === "courses.sendLearningReminders" && hasLearningReminderCronSecret(req);
+    if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req) && !isLearningReminderCron) {
       return withCors(req, json({ message: "Missing Authorization header" }, 401));
     }
     let db: SupabaseClient;
@@ -137,10 +141,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleCourseBlastEmail(req, db);
     } else if (op === "courses.coInstructorInvite.sendEmail" && req.method === "POST") {
       response = await handleCoInstructorInviteEmail(req, db);
+    } else if (op === "courses.sendLearningReminders" && req.method === "POST") {
+      response = await handleSendLearningReminders(req, db, { allowCron: isLearningReminderCron });
     } else if (op === "careerTracks.blastEmail" && req.method === "POST") {
       response = await handleCareerTrackBlastEmail(req, db);
     } else if (op === "notifications.unsubscribe" && req.method === "POST") {
       response = await handleNotificationsUnsubscribe(req, db);
+    } else if (op === "gamification.dailyStreakStatus" && req.method === "POST") {
+      response = await handleGetDailyStreakStatus(req, db);
+    } else if (op === "gamification.claimDailyStreak" && req.method === "POST") {
+      response = await handleClaimDailyStreak(req, db);
     } else if (op === "credentials.checkCourseCompletion" && req.method === "POST") {
       response = await handleCheckCourseCompletion(req, db);
     } else if (op === "credentials.checkActivityMilestones" && req.method === "POST") {
@@ -149,6 +159,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleGrantCredentials(req, db);
     } else if (op === "credentials.retryPending" && req.method === "POST") {
       response = await handleRetryPendingCredentials(req, db);
+    } else if (op === "credentials.revoke" && req.method === "POST") {
+      response = await handleRevokeCredential(req, db);
     } else if (op === "credentials.hackathon.listEligible" && req.method === "POST") {
       response = await handleHackathonListEligible(req, db);
     } else if (op === "credentials.listActiveOcaTemplates" && req.method === "POST") {

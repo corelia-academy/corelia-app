@@ -41,7 +41,7 @@ function readSupabaseSecretKey(): string {
 }
 
 export function createServiceClient(): SupabaseClient {
-  const url = requireAnyEnv("CORELIA_SUPABASE_URL", "SUPABASE_URL");
+  const url = requireAnyEnv("SUPABASE_URL", "CORELIA_SUPABASE_URL");
   const key = readSupabaseSecretKey();
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }

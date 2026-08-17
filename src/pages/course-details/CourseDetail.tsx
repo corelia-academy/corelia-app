@@ -26,6 +26,7 @@ import {
 import { CourseDraftBanner } from "./components/CourseDraftBanner";
 import { CourseHero } from "./components/CourseHero";
 import { CourseLearningOutcomes } from "./components/CourseLearningOutcomes";
+import { CourseSkills } from "./components/CourseSkills";
 import { CourseDescription } from "./components/CourseDescription";
 import {
   CourseCurriculum,
@@ -93,7 +94,7 @@ export default function CourseDetail() {
     "detail.loadLessonsErrorFallback",
   );
 
-  const lessons = useCourseLessons({
+  const { lessons, loaded: lessonsLoaded } = useCourseLessons({
     resolvedCourseId: courseLoad.resolvedCourseId,
     course: courseLoad.course,
     previewOnly,
@@ -312,6 +313,11 @@ export default function CourseDetail() {
     [courseLoad.course],
   );
   const courseCompleted = progress.progressPercent >= 100 && sortedLessons.length > 0;
+  const isPublicEmptyCurriculum =
+    courseLoad.course?.published === true &&
+    !isPaidUpfront &&
+    lessonsLoaded &&
+    sortedLessons.length === 0;
   const hasCourseCertificate = courseHasCertificate(courseLoad.course);
   const completionSynced = Boolean(access.enrollment?.completed_at || completionJustSynced);
   const certificateIssued = Boolean(
@@ -456,6 +462,7 @@ export default function CourseDetail() {
           enrolled={access.enrolled}
           paymentAccess={access.paymentAccess}
           progressPercent={progress.progressPercent}
+          isPublicEmptyCurriculum={isPublicEmptyCurriculum}
           hasStarted={progress.hasStarted}
           nextLesson={progress.nextLesson}
           pricing={pricing}
@@ -475,6 +482,7 @@ export default function CourseDetail() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
         <main className="min-w-0">
           <CourseLearningOutcomes outcomes={course.learning_outcomes ?? []} />
+          <CourseSkills skills={course.skills ?? []} />
 
           <CourseDescription
             description={course.description ?? ""}
@@ -516,6 +524,7 @@ export default function CourseDetail() {
             enrolled={access.enrolled}
             paymentAccess={access.paymentAccess}
             progressPercent={progress.progressPercent}
+            isPublicEmptyCurriculum={isPublicEmptyCurriculum}
             hasStarted={progress.hasStarted}
             nextLesson={progress.nextLesson}
             pricing={pricing}

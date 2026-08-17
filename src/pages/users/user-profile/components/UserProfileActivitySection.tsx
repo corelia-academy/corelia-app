@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Activity, ChevronDown, Loader2 } from "lucide-react";
+import { Activity } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getActorActivity } from "@/lib/feed";
 import type { PublicProfile } from "@/types/database";
 import type { ActivityEvent } from "@/types/feed";
 import { profileTitle } from "../utils/profileDisplay";
 
-const PAGE_SIZE = 8;
+const PROFILE_ACTIVITY_LIMIT = 5;
 
 function payloadText(payload: Record<string, unknown>, keys: string[]): string | null {
   for (const key of keys) {
@@ -148,12 +147,13 @@ export function UserProfileActivitySection({
 }: {
   profile: PublicProfile;
 }) {
-  const { t, i18n } = useTranslation(["common", "feed"]);
+  const { t, i18n } = useTranslation("common");
+  const { t: tFeed } = useTranslation("feed");
   const [items, setItems] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -162,10 +162,12 @@ export function UserProfileActivitySection({
       setLoading(true);
       setError(null);
       try {
-        const next = await getActorActivity(profile.id, { limit: PAGE_SIZE + 1 });
+        const next = await getActorActivity(profile.id, {
+          limit: PROFILE_ACTIVITY_LIMIT,
+        });
         if (cancelled) return;
-        setItems(next.slice(0, PAGE_SIZE));
-        setHasMore(next.length > PAGE_SIZE);
+        setItems(next);
+        setHasMore(next.length === PROFILE_ACTIVITY_LIMIT);
       } catch {
         if (cancelled) return;
         setError(t("userProfile.errors.loadFailed"));
@@ -180,25 +182,23 @@ export function UserProfileActivitySection({
     };
   }, [profile.id, t]);
 
-  async function loadMore() {
-    const cursor = items.at(-1)?.created_at;
-    if (!cursor) return;
-
+  const handleLoadMore = async () => {
+    if (loadingMore || !items.length) return;
     setLoadingMore(true);
-    setError(null);
     try {
+      const lastItem = items[items.length - 1];
       const next = await getActorActivity(profile.id, {
-        cursor,
-        limit: PAGE_SIZE + 1,
+        limit: PROFILE_ACTIVITY_LIMIT,
+        cursor: lastItem.created_at,
       });
-      setItems((current) => [...current, ...next.slice(0, PAGE_SIZE)]);
-      setHasMore(next.length > PAGE_SIZE);
+      setItems((prev) => [...prev, ...next]);
+      setHasMore(next.length === PROFILE_ACTIVITY_LIMIT);
     } catch {
-      setError(t("userProfile.errors.loadFailed"));
+      // Keep existing items
     } finally {
       setLoadingMore(false);
     }
-  }
+  };
 
   return (
     <section className="space-y-3">
@@ -232,25 +232,19 @@ export function UserProfileActivitySection({
               locale={i18n.resolvedLanguage ?? i18n.language}
             />
           ))}
-          {hasMore ? (
-            <div className="flex justify-center pt-1">
-              <Button
+
+          {hasMore && (
+            <div className="pt-2 text-center">
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
-                className="gap-1.5"
+                onClick={handleLoadMore}
                 disabled={loadingMore}
-                onClick={() => void loadMore()}
+                className="inline-flex items-center justify-center rounded-md border border-border px-4 py-1.5 text-xs font-medium text-foreground hover:bg-surface-elevated disabled:opacity-50"
               >
-                {loadingMore ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden />
-                ) : (
-                  <ChevronDown className="size-4" aria-hidden />
-                )}
-                {t("feed:actions.loadMore")}
-              </Button>
+                {loadingMore ? "..." : tFeed("actions.loadMore")}
+              </button>
             </div>
-          ) : null}
+          )}
         </div>
       )}
     </section>

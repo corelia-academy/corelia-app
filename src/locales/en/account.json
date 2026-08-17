@@ -74,6 +74,8 @@
     "notifications": {
       "title": "Notification preferences",
       "description": "Choose which notifications you want to receive by email and in-app.",
+      "emailLearningReminders": "Receive periodic learning reminder emails",
+      "emailLearningRemindersDesc": "Send spaced reminders when you pause an in-progress course.",
       "emailCourseBlast": "Receive course announcement emails",
       "emailTrackBlast": "Receive learning path announcement emails",
       "inAppCourseBlast": "Show course announcements in-app",

@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Corelia — Skill, Badge & Milestone Test</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #101313; color: #edf2ef; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #101313; }
+    main { max-width: 1280px; margin: 0 auto; padding: 28px 20px 56px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: clamp(1.6rem, 3vw, 2.4rem); margin-bottom: 8px; }
+    h2 { font-size: 1.1rem; margin-bottom: 16px; }
+    h3 { font-size: .95rem; margin: 0 0 10px; }
+    .muted { color: #a8b5af; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .8fr); gap: 18px; align-items: start; }
+    .panel, .card { background: #181d1c; border: 1px solid #2b3531; border-radius: 14px; }
+    .panel { padding: 18px; margin-bottom: 18px; }
+    .card { padding: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    label { display: block; font-size: .82rem; font-weight: 650; color: #d3dfd9; margin-bottom: 6px; }
+    input, textarea, select { width: 100%; border: 1px solid #39453f; border-radius: 9px; background: #101514; color: #f1f6f3; padding: 10px 11px; font: inherit; }
+    textarea { min-height: 84px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { outline: 2px solid #6bbf9c; outline-offset: 1px; }
+    .field { margin-bottom: 13px; }
+    .check { display: flex; gap: 9px; align-items: center; margin: 9px 0; color: #d3dfd9; font-size: .9rem; }
+    .check input { width: auto; accent-color: #6bbf9c; }
+    .actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+    button { border: 1px solid #405249; border-radius: 9px; background: #22332c; color: #effaf4; padding: 10px 13px; font: inherit; font-weight: 700; cursor: pointer; }
+    button:hover { background: #2d493c; }
+    button.secondary { background: #1a211f; }
+    button.danger { background: #432828; border-color: #6b3e3e; }
+    .error { color: #ffb5aa; min-height: 1.3em; margin: 10px 0 0; }
+    .tag-list, .template-list, .milestone-list { display: grid; gap: 8px; }
+    .tag, .template-row, .milestone-row { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 9px 10px; border: 1px solid #334038; border-radius: 9px; background: #121716; }
+    .tag { justify-content: flex-start; color: #c6f1d9; }
+    .template-row small, .milestone-row small { display: block; color: #9eafa5; margin-top: 3px; }
+    .template-row button { padding: 6px 9px; font-size: .78rem; }
+    .preview { position: sticky; top: 16px; }
+    .preview-header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .status { display: inline-flex; border-radius: 999px; padding: 4px 8px; font-size: .74rem; color: #c8f4dc; background: #193b2b; white-space: nowrap; }
+    .reward { margin-top: 12px; border-left: 3px solid #6bbf9c; padding: 10px 12px; background: #121716; border-radius: 0 9px 9px 0; }
+    .reward strong { display: block; margin-bottom: 4px; }
+    .output { min-height: 300px; max-height: 620px; overflow: auto; white-space: pre-wrap; word-break: break-word; font: .8rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; color: #d5f3e0; background: #0c100f; border: 1px solid #2b3932; border-radius: 9px; padding: 13px; }
+    .notice { border: 1px solid #5a5031; background: #302b1b; color: #eadca6; border-radius: 9px; padding: 10px 12px; font-size: .84rem; margin-top: 12px; }
+    .empty { color: #8d9d95; font-size: .85rem; padding: 8px 0; }
+    .testcase-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    .testcase-table th, .testcase-table td { border-bottom: 1px solid #2d3833; padding: 10px 8px; text-align: left; vertical-align: top; }
+    .testcase-table th { color: #b9c9c1; font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; }
+    .testcase-table td:first-child { width: 82px; color: #9ed8b8; font-weight: 750; white-space: nowrap; }
+    .testcase-table td:nth-child(2) { width: 23%; }
+    .testcase-table td:nth-child(3) { width: 37%; color: #b9c7c0; }
+    .testcase-table select, .testcase-table input { padding: 7px 8px; font-size: .78rem; }
+    .testcase-table select { min-width: 100px; }
+    .testcase-summary { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+    .summary-pill { border-radius: 999px; padding: 5px 9px; background: #121716; border: 1px solid #34423a; color: #b9c9c1; font-size: .78rem; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .preview { position: static; } }
+    @media (max-width: 620px) { .grid, .grid-3 { grid-template-columns: 1fr; } main { padding: 20px 12px 42px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="muted">Standalone QA prototype — không kết nối production/database</p>
+      <h1>Skill, Badge & Milestone Test</h1>
+      <p class="muted">Nhập cấu hình nghiệp vụ, xem preview cho learner/admin, sau đó xuất hoặc nhập JSON để trao đổi test case.</p>
+    </header>
+
+    <div class="layout">
+      <section>
+        <div class="panel">
+          <h2>1. Thông tin khóa học</h2>
+          <div class="grid">
+            <div class="field"><label for="courseTitle">Tên khóa học *</label><input id="courseTitle" value="AI Fundamentals" required></div>
+            <div class="field"><label for="courseSlug">Course slug *</label><input id="courseSlug" value="ai-fundamentals" required></div>
+          </div>
+          <div class="field"><label for="courseDescription">Mô tả phần thưởng hiển thị cho learner</label><textarea id="courseDescription">Hoàn thành khóa học để ghi nhận skill và nhận credential tương ứng.</textarea></div>
+          <div class="field"><label for="completionRule">Điều kiện hoàn thành</label><select id="completionRule"><option value="100_percent_lessons">Hoàn thành 100% bài học</option><option value="100_percent_plus_assignment">Hoàn thành bài học và pass final assignment</option><option value="custom">Điều kiện tùy chỉnh</option></select></div>
+        </div>
+
+        <div class="panel">
+          <h2>2. Skill off-chain</h2>
+          <p class="muted">Một khóa học có thể có nhiều skill. Skill chỉ là text trên profile sau khi hoàn thành, không mint on-chain.</p>
+          <div class="field"><label for="skills">Skill tags * — mỗi dòng một skill</label><textarea id="skills">AI Fundamentals
+Prompt Engineering</textarea></div>
+          <label class="check"><input id="skillsPublic" type="checkbox" checked> Hiển thị skill trong mục Skill trên public profile sau khi hoàn thành</label>
+        </div>
+
+        <div class="panel">
+          <h2>3. Phần thưởng sau khi hoàn thành</h2>
+          <label class="check"><input id="enableOcb" type="checkbox" checked> Cấp OCB Badge</label>
+          <div class="grid">
+            <div class="field"><label for="ocbName">Tên OCB</label><input id="ocbName" value="AI Fundamentals Badge"></div>
+            <div class="field"><label for="ocbImage">Ảnh OCB URL</label><input id="ocbImage" value="https://cdn.example.com/ai-fundamentals.png"></div>
+          </div>
+          <div class="field"><label for="ocbDescription">Mô tả OCB</label><textarea id="ocbDescription">Đã hoàn thành khóa học AI Fundamentals.</textarea></div>
+          <label class="check"><input id="enableOca" type="checkbox"> Cấp OCA / MicroCredential</label>
+          <div class="grid">
+            <div class="field"><label for="ocaName">Tên OCA</label><input id="ocaName" value="AI Fundamentals Certificate"></div>
+            <div class="field"><label for="ocaType">Achievement type</label><select id="ocaType"><option>MicroCredential</option><option>CertificateOfCompletion</option><option>Diploma</option></select></div>
+          </div>
+          <label class="check"><input id="enableCertificate" type="checkbox" checked> Có certificate nội bộ</label>
+          <div class="grid">
+            <div class="field"><label for="certificateName">Tên certificate</label><input id="certificateName" value="Certificate of Completion"></div>
+            <div class="field"><label for="certificatePublic">Chế độ hiển thị</label><select id="certificatePublic"><option value="public">Public verification</option><option value="private">Chỉ learner xem</option></select></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>4. Milestone và daily streak</h2>
+          <div class="grid-3">
+            <div class="field"><label for="streak3Name">Milestone 3 ngày</label><input id="streak3Name" value="3-Day Learning Streak"></div>
+            <div class="field"><label for="streak7Name">Milestone 7 ngày</label><input id="streak7Name" value="7-Day Learning Streak"></div>
+            <div class="field"><label for="streak30Name">Milestone 30 ngày</label><input id="streak30Name" value="30-Day Learning Streak"></div>
+          </div>
+          <label class="check"><input id="enableLongestStreak" type="checkbox" checked> Ghi nhận milestone theo longest streak</label>
+          <div class="field"><label for="milestoneBadgePolicy">Badge milestone</label><select id="milestoneBadgePolicy"><option value="independent">Độc lập với badge khóa học</option><option value="disabled">Chưa cấp badge milestone</option></select></div>
+          <div class="milestone-list">
+            <label class="milestone-row"><span><input type="checkbox" data-milestone="first_course" checked> Hoàn thành khóa học đầu tiên</span><small>first_course_completed</small></label>
+            <label class="milestone-row"><span><input type="checkbox" data-milestone="courses_5" checked> Hoàn thành 5 khóa học</span><small>courses_completed: 5</small></label>
+            <label class="milestone-row"><span><input type="checkbox" data-milestone="first_project"> Hoàn thành project đầu tiên</span><small>first_project_submitted</small></label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>5. Email nhắc học</h2>
+          <label class="check"><input id="remindersEnabled" type="checkbox" checked> Bật email nhắc học</label>
+          <div class="grid-3">
+            <div class="field"><label for="reminderStartDays">Bắt đầu nhắc sau (ngày)</label><input id="reminderStartDays" type="number" min="1" value="3"></div>
+            <div class="field"><label for="reminderStopDays">Dừng nhắc sau (ngày)</label><input id="reminderStopDays" type="number" min="1" value="30"></div>
+            <div class="field"><label for="reminderCadence">Tần suất</label><select id="reminderCadence"><option value="not_decided">Chưa chốt</option><option value="once">Một lần</option><option value="every_7_days">Mỗi 7 ngày</option></select></div>
+          </div>
+          <p class="notice">Không tạo luồng admin nhắc thủ công riêng. Hệ thống đã có thông báo gửi toàn bộ người học.</p>
+          <label class="check"><input id="stopOnCompletion" type="checkbox" checked> Dừng khi khóa học hoàn thành</label>
+          <label class="check"><input id="respectOptOut" type="checkbox" checked> Tôn trọng tùy chọn tắt email của user</label>
+        </div>
+
+        <div class="panel">
+          <h2>6. OCB mint thủ công và kho template</h2>
+          <div class="grid">
+            <div class="field"><label for="recipient">User nhận badge *</label><input id="recipient" value="student@example.com"></div>
+            <div class="field"><label for="grantReason">Lý do cấp</label><input id="grantReason" value="Outstanding contribution"></div>
+          </div>
+          <div class="grid">
+            <div class="field"><label for="manualBadgeName">Tên badge template</label><input id="manualBadgeName" value="Community Contributor"></div>
+            <div class="field"><label for="manualBadgeImage">Ảnh badge URL</label><input id="manualBadgeImage" value="https://cdn.example.com/community.png"></div>
+          </div>
+          <div class="field"><label for="manualBadgeDescription">Mô tả — có thể để trống</label><textarea id="manualBadgeDescription"></textarea></div>
+          <label class="check"><input id="saveTemplate" type="checkbox" checked> Lưu badge để tái sử dụng</label>
+          <div class="actions"><button type="button" id="saveTemplateButton">Lưu template hiện tại</button></div>
+          <h3>Template đã lưu</h3>
+          <div id="templateList" class="template-list"><div class="empty">Chưa có template được lưu.</div></div>
+        </div>
+
+        <div class="panel">
+          <h2>7. Test cases QA</h2>
+          <p class="muted">Cập nhật trạng thái sau khi kiểm tra UI/flow. Trạng thái chỉ là dữ liệu QA cục bộ và không gọi API production.</p>
+          <div class="testcase-summary" id="testCaseSummary"></div>
+          <div style="overflow-x:auto">
+            <table class="testcase-table">
+              <thead><tr><th>ID</th><th>Scenario</th><th>Expected result</th><th>Status</th><th>Notes</th></tr></thead>
+              <tbody>
+                <tr data-testcase-id="SKILL-001"><td>SKILL-001</td><td>Một khóa học có một skill</td><td>Skill hiển thị ở dashboard khóa học và được lưu dưới dạng off-chain text.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="SKILL-002"><td>SKILL-002</td><td>Một khóa học có nhiều skill</td><td>Tất cả skill tag được hiển thị; không giới hạn ở một skill duy nhất.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="SKILL-003"><td>SKILL-003</td><td>Hoàn thành khóa học</td><td>Skill xuất hiện trong mục Skill trên profile; không tạo credential on-chain cho skill.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="REWARD-001"><td>REWARD-001</td><td>Course reward preview</td><td>Dashboard hiển thị đúng OCB, OCA và certificate đã cấu hình; phần không bật không xuất hiện.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="MILESTONE-001"><td>MILESTONE-001</td><td>Daily streak 3/7/14/30 ngày</td><td>Milestone được đánh giá đúng các mốc streak đã cấu hình.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="MILESTONE-002"><td>MILESTONE-002</td><td>Longest streak</td><td>Hệ thống giữ được giá trị longest streak, kể cả khi streak hiện tại bị reset.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="MILESTONE-003"><td>MILESTONE-003</td><td>Badge milestone độc lập</td><td>Badge milestone không dùng lại course badge và không làm thay đổi course badge đã cấp.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="REMINDER-001"><td>REMINDER-001</td><td>Không hoạt động 3 ngày</td><td>Người học đang học dở đủ ngưỡng 3 ngày thì đủ điều kiện nhận email nhắc.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="REMINDER-002"><td>REMINDER-002</td><td>Không hoạt động quá 1 tháng</td><td>Hệ thống ngừng gửi reminder sau ngưỡng stop; không gửi vô hạn.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="REMINDER-003"><td>REMINDER-003</td><td>Completion, opt-out và access</td><td>Không gửi khi course hoàn thành, user opt-out hoặc user không còn quyền truy cập.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="MANUAL-OCB-001"><td>MANUAL-OCB-001</td><td>Mint OCB thủ công</td><td>Dashboard lưu người nhận, badge, admin, thời gian, status, link Open Campus và reason.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="MANUAL-OCB-002"><td>MANUAL-OCB-002</td><td>Lưu và chọn template</td><td>Admin lưu được badge template, chọn lại được ở lần mint sau; description được phép trống.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+                <tr data-testcase-id="NEGATIVE-001"><td>NEGATIVE-001</td><td>Dữ liệu bắt buộc không hợp lệ</td><td>Thiếu course title/slug/recipient/skill hoặc stop day nhỏ hơn start day thì không tạo output hợp lệ.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>8. Nhập / xuất test case</h2>
+          <div class="actions">
+            <button type="button" id="generateButton">Tạo output</button>
+            <button type="button" id="exportButton">Xuất JSON</button>
+            <button type="button" id="importButton" class="secondary">Nhập JSON</button>
+            <button type="button" id="resetButton" class="danger">Reset</button>
+            <input id="importFile" type="file" accept="application/json" hidden>
+          </div>
+          <p id="formError" class="error" role="alert"></p>
+        </div>
+      </section>
+
+      <aside class="preview">
+        <div class="panel">
+          <div class="preview-header"><div><h2>Preview cho learner</h2><p id="previewCourse" class="muted">AI Fundamentals</p></div><span class="status">Sau khi hoàn thành</span></div>
+          <div id="previewSkills" class="tag-list"></div>
+          <div id="previewRewards"></div>
+          <p id="previewVisibility" class="notice">Skill sẽ hiển thị công khai trên profile sau khi hoàn thành khóa học.</p>
+        </div>
+        <div class="panel">
+          <h2>Output JSON</h2>
+          <pre id="output" class="output">Bấm “Tạo output” để xem dữ liệu test.</pre>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const templates = [];
+      const value = (id) => $(id).value.trim();
+      const checked = (id) => $(id).checked;
+      const skills = () => value("skills").split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean);
+
+      function collect() {
+        const courseTitle = value("courseTitle");
+        const courseSlug = value("courseSlug");
+        const reminderStartDays = Number($("reminderStartDays").value);
+        const reminderStopDays = Number($("reminderStopDays").value);
+        if (!courseTitle || !courseSlug || !value("recipient")) throw new Error("Cần nhập tên khóa học, slug và user nhận badge.");
+        if (!skills().length) throw new Error("Cần có ít nhất một skill.");
+        if (reminderStartDays < 1 || reminderStopDays < reminderStartDays) throw new Error("Khoảng thời gian email nhắc học không hợp lệ.");
+        return {
+          course: { title: courseTitle, slug: courseSlug, description: value("courseDescription"), completionRule: $("completionRule").value },
+          skills: { values: skills(), storage: "offchain", profileSection: "skills", publicAfterCompletion: checked("skillsPublic"), mintedOnChain: false },
+          completionRewards: {
+            ocb: checked("enableOcb") ? { name: value("ocbName"), imageUrl: value("ocbImage"), description: value("ocbDescription"), reusableAsMilestoneBadge: false } : null,
+            oca: checked("enableOca") ? { name: value("ocaName"), achievementType: $("ocaType").value } : null,
+            certificate: checked("enableCertificate") ? { name: value("certificateName"), visibility: $("certificatePublic").value } : null
+          },
+          milestones: {
+            streakDays: [3, 7, 14, 30],
+            longestStreak: checked("enableLongestStreak"),
+            badgePolicy: $("milestoneBadgePolicy").value,
+            enabled: Array.from(document.querySelectorAll("[data-milestone]:checked")).map((input) => input.dataset.milestone)
+          },
+          testCases: Array.from(document.querySelectorAll("[data-testcase-id]")).map((row) => ({
+            id: row.dataset.testcaseId,
+            status: row.querySelector("[data-testcase-status]").value,
+            notes: row.querySelector("[data-testcase-notes]").value.trim()
+          })),
+          learningReminder: {
+            enabled: checked("remindersEnabled"),
+            startAfterInactiveDays: reminderStartDays,
+            stopAfterInactiveDays: reminderStopDays,
+            cadence: $("reminderCadence").value,
+            stopOnCompletion: checked("stopOnCompletion"),
+            respectUserOptOut: checked("respectOptOut"),
+            manualAdminReminderFlow: false
+          },
+          manualOcb: { recipient: value("recipient"), reason: value("grantReason"), template: { name: value("manualBadgeName"), imageUrl: value("manualBadgeImage"), description: value("manualBadgeDescription"), saveForReuse: checked("saveTemplate") }, savedTemplates: templates }
+        };
+      }
+
+      function renderPreview(data) {
+        $("previewCourse").textContent = data.course.title;
+        $("previewSkills").innerHTML = data.skills.values.map((skill) => `<span class="tag">${escapeHtml(skill)}</span>`).join("");
+        const rewards = [];
+        if (data.completionRewards.ocb) rewards.push(`<div class="reward"><strong>OCB Badge</strong>${escapeHtml(data.completionRewards.ocb.name)}</div>`);
+        if (data.completionRewards.oca) rewards.push(`<div class="reward"><strong>OCA</strong>${escapeHtml(data.completionRewards.oca.name)}</div>`);
+        if (data.completionRewards.certificate) rewards.push(`<div class="reward"><strong>Certificate</strong>${escapeHtml(data.completionRewards.certificate.name)}</div>`);
+        $("previewRewards").innerHTML = rewards.join("") || `<p class="empty">Chưa cấu hình phần thưởng.</p>`;
+        $("previewVisibility").textContent = data.skills.publicAfterCompletion ? "Skill sẽ hiển thị công khai trên profile sau khi hoàn thành khóa học." : "Skill chỉ hiển thị trong profile cá nhân.";
+      }
+
+      function generate() {
+        try {
+          const data = collect();
+          renderPreview(data);
+          renderTestCaseSummary(data.testCases);
+          $("output").textContent = JSON.stringify(data, null, 2);
+          $("formError").textContent = "";
+          return data;
+        } catch (error) {
+          $("formError").textContent = error.message;
+          return null;
+        }
+      }
+
+      function renderTestCaseSummary(testCases) {
+        const counts = testCases.reduce((result, testCase) => {
+          result[testCase.status] = (result[testCase.status] || 0) + 1;
+          return result;
+        }, { not_run: 0, pass: 0, fail: 0 });
+        $("testCaseSummary").innerHTML = [
+          `<span class="summary-pill">Total: ${testCases.length}</span>`,
+          `<span class="summary-pill">Pass: ${counts.pass}</span>`,
+          `<span class="summary-pill">Fail: ${counts.fail}</span>`,
+          `<span class="summary-pill">Not run: ${counts.not_run}</span>`
+        ].join("");
+      }
+
+      function restoreTestCases(testCases) {
+        if (!Array.isArray(testCases)) return;
+        testCases.forEach((testCase) => {
+          const row = document.querySelector(`[data-testcase-id="${CSS.escape(testCase.id || "")}"]`);
+          if (!row) return;
+          const status = row.querySelector("[data-testcase-status]");
+          const notes = row.querySelector("[data-testcase-notes]");
+          if (["not_run", "pass", "fail"].includes(testCase.status)) status.value = testCase.status;
+          notes.value = typeof testCase.notes === "string" ? testCase.notes : "";
+        });
+      }
+
+      function renderTemplates() {
+        $("templateList").innerHTML = templates.length ? templates.map((template, index) => `<div class="template-row"><span><strong>${escapeHtml(template.name)}</strong><small>${escapeHtml(template.description || "Không có mô tả")}</small></span><button type="button" data-remove-template="${index}" class="danger">Xóa</button></div>`).join("") : `<div class="empty">Chưa có template được lưu.</div>`;
+        document.querySelectorAll("[data-remove-template]").forEach((button) => button.addEventListener("click", () => { templates.splice(Number(button.dataset.removeTemplate), 1); renderTemplates(); generate(); }));
+      }
+
+      function escapeHtml(text) { return text.replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char])); }
+
+      $("generateButton").addEventListener("click", generate);
+      $("saveTemplateButton").addEventListener("click", () => { if (!value("manualBadgeName")) { $("formError").textContent = "Cần nhập tên badge template."; return; } templates.push({ name: value("manualBadgeName"), imageUrl: value("manualBadgeImage"), description: value("manualBadgeDescription") }); renderTemplates(); generate(); });
+      $("exportButton").addEventListener("click", () => { const data = generate(); if (!data) return; const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `${value("courseSlug") || "corelia-test-case"}.json`; link.click(); URL.revokeObjectURL(url); });
+      $("importButton").addEventListener("click", () => $("importFile").click());
+      $("importFile").addEventListener("change", async (event) => { const file = event.target.files[0]; if (!file) return; try { const data = JSON.parse(await file.text()); $("courseTitle").value = data.course?.title || ""; $("courseSlug").value = data.course?.slug || ""; $("courseDescription").value = data.course?.description || ""; $("skills").value = (data.skills?.values || []).join("\n"); $("skillsPublic").checked = data.skills?.publicAfterCompletion !== false; $("recipient").value = data.manualOcb?.recipient || ""; $("grantReason").value = data.manualOcb?.reason || ""; $("manualBadgeName").value = data.manualOcb?.template?.name || ""; $("manualBadgeImage").value = data.manualOcb?.template?.imageUrl || ""; $("manualBadgeDescription").value = data.manualOcb?.template?.description || ""; templates.splice(0, templates.length, ...(data.manualOcb?.savedTemplates || [])); restoreTestCases(data.testCases); renderTemplates(); generate(); } catch (error) { $("formError").textContent = `JSON không hợp lệ: ${error.message}`; } event.target.value = ""; });
+      $("resetButton").addEventListener("click", () => { if (confirm("Xóa dữ liệu test hiện tại?")) location.reload(); });
+      document.querySelectorAll("input, textarea, select").forEach((input) => {
+        const refresh = () => { if (input.id !== "importFile") generate(); };
+        input.addEventListener("input", refresh);
+        input.addEventListener("change", refresh);
+      });
+      renderTemplates();
+      generate();
+    })();
+  </script>
+</body>
+</html>

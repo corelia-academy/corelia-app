@@ -27,6 +27,7 @@ import { validatePngSignature } from "@/lib/imageValidation";
 
 type MilestoneEventKey =
   | "login_streak"
+  | "daily_streak"
   | "courses_completed"
   | "courses_completed_in_track"
   | "projects_submitted";
@@ -40,6 +41,8 @@ function buildTriggerRule(
   switch (event) {
     case "login_streak":
       return { event: "login_streak", days };
+    case "daily_streak":
+      return { event: "daily_streak", days };
     case "courses_completed":
       return { event: "courses_completed", count };
     case "courses_completed_in_track":
@@ -135,6 +138,9 @@ export default function AdminActivityMilestones() {
     if (ev === "login_streak") {
       return t("activityMilestones.rule.loginStreak", { days: Number(rule.days ?? 0) });
     }
+    if (ev === "daily_streak") {
+      return t("activityMilestones.rule.dailyStreak", { days: Number(rule.days ?? 0) });
+    }
     if (ev === "courses_completed") {
       return t("activityMilestones.rule.coursesCompleted", { count: Number(rule.count ?? 0) });
     }
@@ -174,6 +180,7 @@ export default function AdminActivityMilestones() {
     const ev = String(rule?.event ?? "courses_completed") as MilestoneEventKey;
     if (
       ev === "login_streak" ||
+      ev === "daily_streak" ||
       ev === "courses_completed" ||
       ev === "courses_completed_in_track" ||
       ev === "projects_submitted"
@@ -360,12 +367,13 @@ export default function AdminActivityMilestones() {
                 }
               >
                 <option value="login_streak">{t("activityMilestones.event.loginStreak")}</option>
+                <option value="daily_streak">{t("activityMilestones.event.dailyStreak")}</option>
                 <option value="courses_completed">{t("activityMilestones.event.coursesCompleted")}</option>
                 <option value="courses_completed_in_track">{t("activityMilestones.event.trackCourses")}</option>
                 <option value="projects_submitted">{t("activityMilestones.event.projects")}</option>
               </select>
             </Field>
-            {eventKey === "login_streak" ? (
+            {eventKey === "login_streak" || eventKey === "daily_streak" ? (
               <Field>
                 <FieldLabel>{t("activityMilestones.field.days")}</FieldLabel>
                 <Input

@@ -604,6 +604,25 @@ export async function getMyEnrollments(userId: string): Promise<Enrollment[]> {
   return promise;
 }
 
+/** Text skills earned from completed courses, respecting the profile's privacy setting. */
+export async function getProfileCourseSkills(profileId: string): Promise<string[]> {
+  if (!profileId) return [];
+  const { data, error } = await supabase.rpc("list_profile_course_skills", {
+    p_profile_id: profileId,
+  });
+  if (error) throw new Error(error.message);
+
+  const rows = (data ?? []) as Array<{ skill: string | null }>;
+  return Array.from(
+    new Map(
+      rows
+        .map((row) => row.skill?.trim() ?? "")
+        .filter(Boolean)
+        .map((skill) => [skill.toLocaleLowerCase(), skill] as const),
+    ).values(),
+  );
+}
+
 export function invalidateEnrollmentsCache(userId: string) {
   enrollmentsCache.delete(userId);
 }
@@ -1063,6 +1082,7 @@ export async function createCourse(data: CourseInsert, viewer?: User | null): Pr
     title: data.title,
     description: data.description,
     learning_outcomes: data.learning_outcomes ?? [],
+    skills: data.skills ?? [],
     short_description: data.short_description ?? "",
     thumbnail_url: data.thumbnail_url,
     thumbnail_path: data.thumbnail_path,

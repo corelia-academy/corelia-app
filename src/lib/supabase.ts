@@ -47,7 +47,6 @@ let _pendingRefresh: Promise<void> | null = null;
 
 const _originalGetSession = supabase.auth.getSession.bind(supabase.auth);
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
 supabase.auth.getSession = async () => {
   const result = await _originalGetSession();
 

@@ -9,6 +9,10 @@ project_id = "corelia-app"
 # Keep gateway JWT check off and enforce op-level auth in handler/router.
 verify_jwt = false
 
+[functions.cron-learning-reminders]
+# Scheduler authenticates with the shared LEARNING_REMINDER_CRON_SECRET header.
+verify_jwt = false
+
 [functions.ai-tutor]
 # Learner-facing chat surface. JWT is verified in code so we can keep the same
 # CORS/preflight behavior as the rest of the Corelia edge functions.

@@ -74,6 +74,8 @@
     "notifications": {
       "title": "Tuỳ chọn thông báo",
       "description": "Chọn loại thông báo bạn muốn nhận qua email và trong ứng dụng.",
+      "emailLearningReminders": "Nhận email nhắc học tập định kỳ",
+      "emailLearningRemindersDesc": "Gửi email nhắc nhở theo nhịp độ khi bạn tạm dừng bài học dở.",
       "emailCourseBlast": "Nhận email thông báo từ khoá học",
       "emailTrackBlast": "Nhận email thông báo từ lộ trình học",
       "inAppCourseBlast": "Hiển thị thông báo khoá học trong ứng dụng",

@@ -1,7 +1,6 @@
 import { canManageCourse, isAuthFailure } from "../lib/authz.ts";
 import { json, nowIso } from "../lib/http.ts";
 import { verifyBearerUser, type SupabaseClient } from "../lib/supabase.ts";
-import { runActivityMilestoneCheck } from "./check_activity.ts";
 import { issuerReferenceId, legacyIssuerReferenceId } from "./ids.ts";
 import { mintCredentialOnce } from "./mint.ts";
 import { extractOcCredentialId } from "./oc_response.ts";
@@ -244,12 +243,6 @@ export async function runCourseCredentialCheck(
   }
 
   await mintCredentialOnce(db, issuanceId);
-
-  try {
-    await runActivityMilestoneCheck(db, targetUserId, "courses_completed", { course_id: courseId });
-  } catch (actErr) {
-    console.error("[corelia-api] activity milestone after course credential", actErr);
-  }
 
   const { data: after } = await db.from("credential_issuances").select("status").eq("id", issuanceId).maybeSingle();
   return {
