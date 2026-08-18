@@ -11,6 +11,7 @@ import {
   type CredentialTemplateRow,
 } from "@/lib/credentialTemplates";
 import { cn } from "@/lib/utils";
+import { ManualMintCreateTemplateDialog } from "./ManualMintCreateTemplateDialog";
 
 interface ManualMintTemplatesTabProps {
   onSelectTemplate: (template: CredentialTemplateRow) => void;
@@ -22,6 +23,7 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const getErrorMessage = useCallback((err: unknown, fallback: string) => {
     const code = err instanceof Error ? err.message : "";
@@ -72,7 +74,7 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
 
   return (
     <div className="space-y-4">
-      {/* Search & Filter Header */}
+      {/* Search & Action Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-muted" />
@@ -83,9 +85,20 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
             className="pl-9"
           />
         </div>
-        <p className="text-xs text-foreground-muted">
-          {t("manualMint.templates.totalCount", { count: filtered.length })}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-xs text-foreground-muted">
+            {t("manualMint.templates.totalCount", { count: filtered.length })}
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setCreateOpen(true)}
+            className="h-9 gap-1.5 text-xs font-semibold"
+          >
+            <Plus className="size-4" />
+            <span>{t("manualMint.templates.createTemplate")}</span>
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -98,9 +111,18 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
           <p className="text-sm font-medium text-foreground">
             {t("manualMint.templates.emptyTitle")}
           </p>
-          <p className="mt-1 text-xs text-foreground-muted">
+          <p className="mt-1 text-xs text-foreground-muted max-w-sm">
             {t("manualMint.templates.emptySubtitle")}
           </p>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setCreateOpen(true)}
+            className="mt-4 h-8 gap-1.5 text-xs"
+          >
+            <Plus className="size-3.5" />
+            <span>{t("manualMint.templates.createTemplate")}</span>
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -189,6 +211,12 @@ export function ManualMintTemplatesTab({ onSelectTemplate }: ManualMintTemplates
           })}
         </div>
       )}
+
+      <ManualMintCreateTemplateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={() => void fetchTemplates()}
+      />
     </div>
   );
 }

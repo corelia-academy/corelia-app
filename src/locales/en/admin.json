@@ -481,7 +481,15 @@
       "loadFailed": "Failed to load badge templates",
       "ocbBadge": "OCB Badge",
       "ocaCertificate": "OCA Certificate",
-      "hidden": "Hidden"
+      "hidden": "Hidden",
+      "createTemplate": "Create Template",
+      "createDialogTitle": "Create New Badge / Certificate Template",
+      "createDialogDescription": "Create and save a badge template into the library for fast reuse when granting manually.",
+      "createSuccess": "Badge template saved to library successfully!",
+      "createFailed": "Could not save badge template. Please try again.",
+      "saveTemplateBtn": "Save to Library",
+      "templateNamePlaceholder": "E.g., Top Contributor Q3, Hackathon Winner...",
+      "templateDescriptionPlaceholder": "Description of criteria or reason for this award..."
     },
     "form": {
       "kind": "Credential type",

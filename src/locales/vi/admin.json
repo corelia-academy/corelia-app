@@ -481,7 +481,15 @@
       "loadFailed": "Lỗi khi tải kho mẫu",
       "ocbBadge": "OCB Badge",
       "ocaCertificate": "OCA Certificate",
-      "hidden": "Đã ẩn"
+      "hidden": "Đã ẩn",
+      "createTemplate": "Tạo mẫu mới",
+      "createDialogTitle": "Tạo mẫu Badge / Chứng chỉ mới",
+      "createDialogDescription": "Tạo và lưu phôi badge vào kho để tái sử dụng nhanh khi cấp phát thủ công.",
+      "createSuccess": "Đã lưu mẫu badge vào kho thành công!",
+      "createFailed": "Không thể lưu mẫu badge. Vui lòng thử lại.",
+      "saveTemplateBtn": "Lưu vào kho mẫu",
+      "templateNamePlaceholder": "Ví dụ: Top Contributor Q3, Hackathon Winner...",
+      "templateDescriptionPlaceholder": "Mô tả tiêu chí hoặc lý do đạt chứng nhận/huy hiệu này..."
     },
     "form": {
       "kind": "Loại chứng nhận",

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AlertCircle,
@@ -13,6 +13,7 @@ import {
   LockKeyhole,
   RotateCw,
   Sparkles,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,24 @@ export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }
   const [now, setNow] = useState(() => Date.now());
   const [bursting, setBursting] = useState(false);
   const [questTab, setQuestTab] = useState<"daily" | "external">("daily");
+  const [promptMessage, setPromptMessage] = useState<string | null>(null);
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  const statusRef = useRef(status);
+  const openRef = useRef(open);
+  const hideTimerRef = useRef<number | undefined>(undefined);
+  const loopTimerRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+
+  useEffect(() => {
+    openRef.current = open;
+    if (open) {
+      setShowPrompt(false);
+    }
+  }, [open]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -84,6 +103,81 @@ export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }
       setLoading(false);
     }
   }, []);
+
+  // Continuous Loop Speech Bubble Prompt (Hiện ngay khi vào web + lặp lại đều đặn)
+  useEffect(() => {
+    let isMounted = true;
+
+    const triggerPrompt = () => {
+      if (!isMounted) return;
+      if (openRef.current) {
+        // Đang mở menu sheet thì hoãn lại 15s rồi thử lại
+        loopTimerRef.current = window.setTimeout(triggerPrompt, 15000);
+        return;
+      }
+
+      const currentStatus = statusRef.current;
+      const pool: string[] = [];
+
+      // 1. Nếu chưa điểm danh: thêm các câu nhắc điểm danh
+      if (currentStatus?.canClaim) {
+        const unclaimedPool = t("dailyStreak.prompts.unclaimed", { returnObjects: true }) as string[];
+        if (Array.isArray(unclaimedPool)) {
+          pool.push(...unclaimedPool);
+        }
+      }
+
+      // 2. Chỉ nhắc liên kết OCID nếu chưa liên kết
+      if (currentStatus && !currentStatus.ocidConnected) {
+        const ocidPrompt = t("dailyStreak.prompts.ocidBonus");
+        if (typeof ocidPrompt === "string" && ocidPrompt) {
+          pool.push(ocidPrompt);
+        }
+      }
+
+      // 3. Chỉ nhắc liên kết GitHub nếu chưa liên kết
+      if (currentStatus && !currentStatus.githubConnected) {
+        const githubPrompt = t("dailyStreak.prompts.githubBonus");
+        if (typeof githubPrompt === "string" && githubPrompt) {
+          pool.push(githubPrompt);
+        }
+      }
+
+      // 4. Luôn thêm các câu quyền lợi chung (huy hiệu, chứng chỉ, quà tặng...)
+      const benefitsPool = t("dailyStreak.prompts.benefits", { returnObjects: true }) as string[];
+      if (Array.isArray(benefitsPool)) {
+        pool.push(...benefitsPool);
+      }
+
+      if (pool.length > 0) {
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        setPromptMessage(pool[randomIndex]);
+        setShowPrompt(true);
+
+        window.clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = window.setTimeout(() => {
+          if (!isMounted) return;
+          setShowPrompt(false);
+
+          // Hẹn giờ chu kỳ tiếp theo sau 35s - 60s
+          const nextInterval = (35 + Math.random() * 25) * 1000;
+          window.clearTimeout(loopTimerRef.current);
+          loopTimerRef.current = window.setTimeout(triggerPrompt, nextInterval);
+        }, 5000);
+      } else {
+        loopTimerRef.current = window.setTimeout(triggerPrompt, 30000);
+      }
+    };
+
+    // Kích hoạt ngay lập tức khi vừa vào web (sau 600ms để animation mượt mà)
+    loopTimerRef.current = window.setTimeout(triggerPrompt, 600);
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(hideTimerRef.current);
+      window.clearTimeout(loopTimerRef.current);
+    };
+  }, [t]);
 
   useEffect(() => {
     if (open) {
@@ -188,18 +282,62 @@ export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger
-        render={
-          <button
-            type="button"
-            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border-subtle bg-surface-base px-3 text-xs font-semibold tabular-nums text-foreground shadow-xs transition-all duration-150 hover:border-primary/40 hover:bg-surface-raised active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:h-10 md:px-3.5 md:text-sm"
-            aria-label={t("dailyStreak.openAria", { count: displayedStreak })}
-          >
-            <Flame className="size-4 fill-primary/30 text-primary md:size-[18px]" aria-hidden />
-            <span className="font-mono font-bold">{displayedStreak}</span>
-          </button>
-        }
-      />
+      <div className="relative inline-flex items-center">
+        <SheetTrigger
+          render={
+            <button
+              type="button"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border-subtle bg-surface-base px-3 text-xs font-semibold tabular-nums text-foreground shadow-xs transition-all duration-150 hover:border-primary/40 hover:bg-surface-raised active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:h-10 md:px-3.5 md:text-sm"
+              aria-label={t("dailyStreak.openAria", { count: displayedStreak })}
+            >
+              <Flame className="size-4 fill-primary/30 text-primary md:size-[18px]" aria-hidden />
+              <span className="font-mono font-bold">{displayedStreak}</span>
+            </button>
+          }
+        />
+
+        {/* Floating Chat Bubble Speech Prompt */}
+        <div
+          role="status"
+          aria-live="polite"
+          onClick={() => {
+            setShowPrompt(false);
+            setOpen(true);
+          }}
+          className={cn(
+            "absolute top-full mt-2.5 right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-50",
+            "w-[260px] sm:w-[280px] p-3 rounded-2xl border shadow-xl backdrop-blur-md cursor-pointer select-none",
+            "bg-surface-overlay/95 border-primary/35 hover:border-primary/70 text-foreground transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            showPrompt
+              ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
+              : "opacity-0 -translate-y-2 scale-95 pointer-events-none",
+          )}
+        >
+          {/* Upward Arrow pointer pointing to the streak trigger button */}
+          <div className="absolute -top-[6px] right-5 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 size-0 border-x-[6px] border-x-transparent border-b-[6px] border-b-primary/50" />
+          <div className="absolute -top-[4.5px] right-5 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 size-0 border-x-[6px] border-x-transparent border-b-[6px] border-b-surface-overlay" />
+
+          <div className="flex items-start gap-2.5">
+            <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary mt-0.5 animate-pulse">
+              <Sparkles className="size-3.5" aria-hidden />
+            </div>
+            <p className="flex-1 text-xs font-semibold leading-snug text-foreground">
+              {promptMessage}
+            </p>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowPrompt(false);
+              }}
+              className="shrink-0 -mr-1 -mt-1 rounded-full p-1 text-foreground-muted hover:bg-surface-raised hover:text-foreground transition-colors"
+              aria-label="Close prompt"
+            >
+              <X className="size-3" aria-hidden />
+            </button>
+          </div>
+        </div>
+      </div>
       <SheetContent
         side="right"
         showCloseButton={false}

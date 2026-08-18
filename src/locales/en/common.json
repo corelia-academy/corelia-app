@@ -99,7 +99,24 @@
     "claimFailed": "Could not complete check-in. Please try again.",
     "loadFailed": "Could not sync streak data.",
     "retry": "Try again",
-    "githubConnectFailed": "Could not initiate GitHub connection. Please try again."
+    "githubConnectFailed": "Could not initiate GitHub connection. Please try again.",
+    "prompts": {
+      "unclaimed": [
+        "Have you checked in to earn points today?",
+        "Check in now to keep your streak alive!",
+        "Build daily streaks, earn instant rewards!",
+        "Don't forget to check in and stay on fire!"
+      ],
+      "ocidBonus": "Connect OCID for an instant +50 bonus pts!",
+      "githubBonus": "Connect GitHub to boost your on-chain score!",
+      "benefits": [
+        "Collect streak points to unlock perks!",
+        "Finish daily quests to claim special gifts!",
+        "Hit streak milestones to earn OCB badges!",
+        "Learn daily and claim your OCA certificate!",
+        "Build your streak, level up your Web3 profile!"
+      ]
+    }
   },
   "betaAnnouncement": {
     "summary": "Corelia is currently in beta. Some features may be incomplete or contain bugs.",

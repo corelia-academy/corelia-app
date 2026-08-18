@@ -99,7 +99,24 @@
     "claimFailed": "Không thể điểm danh lúc này. Vui lòng thử lại.",
     "loadFailed": "Chưa thể đồng bộ dữ liệu streak.",
     "retry": "Thử lại",
-    "githubConnectFailed": "Không thể bắt đầu liên kết GitHub. Vui lòng thử lại."
+    "githubConnectFailed": "Không thể bắt đầu liên kết GitHub. Vui lòng thử lại.",
+    "prompts": {
+      "unclaimed": [
+        "Hôm nay bạn đã điểm danh nhận điểm chưa?",
+        "Điểm danh ngay để không bị đứt streak!",
+        "Duy trì streak mỗi ngày, nhận thưởng liền tay!",
+        "Đừng quên điểm danh để giữ lửa streak nhé!"
+      ],
+      "ocidBonus": "Liên kết OCID nhận ngay +50 điểm thưởng!",
+      "githubBonus": "Kết nối GitHub để cộng thêm điểm uy tín!",
+      "benefits": [
+        "Tích lũy điểm để đổi nhiều quyền lợi hấp dẫn!",
+        "Hoàn thành nhiệm vụ ngày, mở khóa quà tặng!",
+        "Đạt mốc streak để nhận huy hiệu OCB xịn!",
+        "Học đều mỗi ngày, sớm nhận chứng nhận OCA!",
+        "Tích lũy kinh nghiệm, nâng tầm hồ sơ Web3!"
+      ]
+    }
   },
   "betaAnnouncement": {
     "summary": "Corelia hiện đang trong phiên bản thử nghiệm. Một số tính năng có thể chưa đầy đủ hoặc phát sinh lỗi.",
