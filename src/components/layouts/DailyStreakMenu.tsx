@@ -292,7 +292,7 @@ export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }
                   <Button
                     type="button"
                     size="lg"
-                    className="h-[46px] w-[170px] gap-2 rounded-full font-bold shadow-md transition-all active:scale-[0.97] text-sm px-5"
+                    className="h-[46px] min-w-[180px] w-auto max-w-full px-6 gap-2 rounded-full font-bold shadow-md transition-all active:scale-[0.97] text-sm whitespace-nowrap"
                     disabled={claiming}
                     onClick={() => void handleClaim()}
                   >
@@ -309,9 +309,9 @@ export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }
                       type="button"
                       variant="secondary"
                       disabled
-                      className="h-[46px] w-[170px] gap-2 rounded-full font-bold opacity-90 cursor-default text-sm px-5"
+                      className="h-[46px] min-w-[180px] w-auto max-w-full px-6 gap-2 rounded-full font-bold opacity-90 cursor-default text-sm whitespace-nowrap"
                     >
-                      <Check className="size-4 text-primary" aria-hidden />
+                      <Check className="size-4 text-primary shrink-0" aria-hidden />
                       <span>{t("dailyStreak.claimed")}</span>
                     </Button>
                     {countdown ? (
@@ -402,13 +402,6 @@ export function DailyStreakMenu({ onConnectOcid }: { onConnectOcid: () => void }
                     })}
                   </div>
 
-                  {/* Upward-pointing indicator arrow towards current learner position */}
-                  <div
-                    className="absolute top-[54px] -translate-x-1/2 flex flex-col items-center pointer-events-none transition-all duration-500 z-20"
-                    style={{ left: `calc(28px + (${timelineProgress} / 100) * (100% - 56px))` }}
-                  >
-                    <div className="w-0 h-0 border-x-[4.5px] border-x-transparent border-b-[6px] border-b-primary drop-shadow-xs" />
-                  </div>
                 </div>
 
                 {/* Subtext: Record or Dynamic Motivation */}
