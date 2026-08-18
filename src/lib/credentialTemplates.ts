@@ -240,9 +240,13 @@ export async function listManualBadgeTemplates(): Promise<CredentialTemplateRow[
     .eq("scope_type", "activity_milestone")
     .eq("trigger_type", "manual")
     .eq("is_active", true)
+    .contains("trigger_rule", { saved_as_template: true })
     .order("updated_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return (data ?? []) as CredentialTemplateRow[];
+  return ((data ?? []) as CredentialTemplateRow[]).filter((tpl) => {
+    const rule = tpl.trigger_rule as Record<string, unknown> | null;
+    return rule?.saved_as_template === true;
+  });
 }
 
 export async function deleteManualBadgeTemplate(templateId: string): Promise<void> {
