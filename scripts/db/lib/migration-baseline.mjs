@@ -4,8 +4,13 @@ import { join, relative, resolve } from "node:path";
 
 export const MIGRATION_FILE_PATTERN = /^(?<version>\d{14})_(?<name>[a-z0-9][a-z0-9_]*[a-z0-9])\.sql$/;
 
+export function normalizeLineEndings(value) {
+  const text = typeof value === "string" ? value : value.toString("utf8");
+  return text.replaceAll("\r\n", "\n");
+}
+
 export function sha256(value) {
-  return createHash("sha256").update(value).digest("hex");
+  return createHash("sha256").update(normalizeLineEndings(value)).digest("hex");
 }
 
 export function migrationDirectory(projectRoot) {
