@@ -1467,7 +1467,11 @@ export async function refreshContestMetricsSnapshot(
     updated_at: new Date().toISOString(),
   };
 
-  await updateContest(contestId, { metrics_snapshot: snapshot });
+  const { error: rpcErr } = await supabase.rpc("patch_hackathon_metrics_snapshot", {
+    p_hackathon_id: contestId,
+    p_metrics_snapshot: snapshot,
+  });
+  if (rpcErr) throw new Error(rpcErr.message);
   return snapshot;
 }
 

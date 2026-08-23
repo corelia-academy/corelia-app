@@ -16,6 +16,26 @@ export type ContestLifecycleDatetimes = {
   judgingEndAt: string | null;
 };
 
+/**
+ * Canonical lifecycle boundary for new code: only the top-level hackathon
+ * fields define whether the event has started or ended. Detailed registration,
+ * submission and judging phases remain compatibility UI state for now.
+ */
+export type CanonicalHackathonLifecycle = "draft" | "upcoming" | "in_progress" | "ended";
+
+export function deriveCanonicalHackathonLifecycle(
+  contest: Contest,
+  nowMs: number = Date.now(),
+): CanonicalHackathonLifecycle {
+  if (contest.status === "draft") return "draft";
+
+  const startMs = parseLifecycleInstantMs(contest.starts_at);
+  const endMs = parseLifecycleInstantMs(contest.ends_at);
+  if (startMs != null && nowMs < startMs) return "upcoming";
+  if (endMs != null && nowMs >= endMs) return "ended";
+  return "in_progress";
+}
+
 function firstIso(...vals: (string | null | undefined)[]): string | null {
   for (const v of vals) {
     if (typeof v === "string" && v.trim()) return v.trim();

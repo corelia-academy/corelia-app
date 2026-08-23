@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { isHackathonProjectSource } from "@/lib/projectSource";
 
 export type ProjectInviteDisplayContext = {
   projectTitle: string | null;
@@ -22,7 +23,7 @@ export async function fetchProjectInviteDisplayContextByProjectIds(
   const hackathonIds = Array.from(
     new Set(
       projects
-        .filter((p) => p.source_type === "contest" && p.source_id)
+        .filter((p) => isHackathonProjectSource(p.source_type) && p.source_id)
         .map((p) => p.source_id as string),
     ),
   );
@@ -42,7 +43,7 @@ export async function fetchProjectInviteDisplayContextByProjectIds(
     let hackathonTitle: string | null = null;
     let hackathonHref: string | null = null;
 
-    if (p.source_type === "contest" && p.source_id) {
+    if (isHackathonProjectSource(p.source_type) && p.source_id) {
       const doc = docByHackathonId.get(p.source_id) ?? {};
       const rawTitle = doc.title;
       hackathonTitle =

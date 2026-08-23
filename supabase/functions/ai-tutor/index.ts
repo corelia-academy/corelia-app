@@ -3,7 +3,7 @@ import {
   enforceAbuseChecks,
   ensureSession,
   getProfile,
-  incrementQuotaSnapshot,
+  incrementSuccessfulQuotaSnapshot,
   resolveEffectiveTier,
 } from "./accessGuards.ts";
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
@@ -184,12 +184,12 @@ function readEnv(name: string): string {
 
 const FALLBACK_TIER_LIMITS: Record<
   Tier,
-  { monthlyMessages: number; rolling3hSoftCap: number; haikuOnly: boolean; monthlyTokens: number; rolling3hTokens: number }
+  { monthlyMessages: number; rolling3hSoftCap: number; haikuOnly: boolean }
 > = {
-  free:     { monthlyMessages: 50,   rolling3hSoftCap: 5,   haikuOnly: true,  monthlyTokens: 100000,   rolling3hTokens: 10000  },
-  student:  { monthlyMessages: 700,  rolling3hSoftCap: 70,  haikuOnly: true,  monthlyTokens: 1400000,  rolling3hTokens: 140000 },
-  pro:      { monthlyMessages: 1000, rolling3hSoftCap: 100, haikuOnly: false, monthlyTokens: 2000000,  rolling3hTokens: 200000 },
-  bootcamp: { monthlyMessages: 2000, rolling3hSoftCap: 200, haikuOnly: false, monthlyTokens: 4000000,  rolling3hTokens: 400000 },
+  free:     { monthlyMessages: 50,   rolling3hSoftCap: 5,   haikuOnly: true  },
+  student:  { monthlyMessages: 700,  rolling3hSoftCap: 70,  haikuOnly: true  },
+  pro:      { monthlyMessages: 1000, rolling3hSoftCap: 100, haikuOnly: false },
+  bootcamp: { monthlyMessages: 2000, rolling3hSoftCap: 200, haikuOnly: false },
 };
 
 function mapAssistantContext(assistantContext: string): BackendContextType {
@@ -1221,18 +1221,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const tier = await resolveEffectiveTier(db, user.id, profile?.tier ?? "free");
     const quota = await checkQuota(db, user.id, tier, FALLBACK_TIER_LIMITS);
     if (!quota.allowed) {
-      const useTokenCounter =
-        quota.quotaUnit === "token" ||
-        (quota.quotaUnit === "both" && quota.monthlyTokensLimit != null &&
-          quota.monthlyTokensUsed >= quota.monthlyTokensLimit);
       return withCors(
         req,
         json(
           {
             message: "Monthly quota exceeded",
-            quotaUnit: quota.quotaUnit,
-            used: useTokenCounter ? quota.monthlyTokensUsed : quota.monthlyUsed,
-            limit: useTokenCounter ? quota.monthlyTokensLimit : quota.monthlyLimit,
+            used: quota.successfulMessagesUsed,
+            limit: quota.successfulMessageLimit,
             tier: quota.tier,
           },
           429,
@@ -1408,7 +1403,21 @@ Deno.serve(async (req: Request): Promise<Response> => {
             const totalTokensUsed = result.usage
               ? result.usage.inputTokens + result.usage.outputTokens
               : estimateTokens(body.message) + estimateTokens(finalText);
-            const updatedQuota = incrementQuotaSnapshot(quota, totalTokensUsed);
+            // Provider completion is the successful-usage point of no return.
+            // Account before mutable conversation/session post-processing so a
+            // later persistence error cannot reclassify completed provider work
+            // as a free request.
+            const usageRecorded = await upsertUsage(db, user.id, {
+              inputText: body.message,
+              outputText: finalText,
+              modelUsed: result.model,
+              feature: "cora_chat",
+              conversationId: placeholder.id,
+              actualUsage: result.usage,
+            });
+            const updatedQuota = usageRecorded
+              ? incrementSuccessfulQuotaSnapshot(quota, totalTokensUsed)
+              : quota;
 
             const { error: assistantError } = await db
               .from("ai_conversations")
@@ -1427,52 +1436,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
             if (sessionId) {
               const { data: sessionRow } = await db
                 .from("ai_chat_sessions")
-                .select("message_count,title")
+                .select("title")
                 .eq("id", sessionId)
-                .maybeSingle<{ message_count: number; title: string | null }>();
-              const prevCount = Number(sessionRow?.message_count ?? 0);
-              const isFirstMessage = prevCount === 0;
+                .maybeSingle<{ title: string | null }>();
               const existingTitle = sessionRow?.title?.trim() ?? "";
-              const autoTitle = isFirstMessage && !existingTitle
-                ? body.message.trim().slice(0, 60)
-                : null;
-              const sessionUpdate: Record<string, unknown> = {
-                message_count: prevCount + 2,
-                last_message_at: nowIso,
-                updated_at: nowIso,
-              };
-              if (autoTitle) sessionUpdate.title = autoTitle;
-              const { error: sessionUpdateError } = await db
-                .from("ai_chat_sessions")
-                .update(sessionUpdate)
-                .eq("id", sessionId);
-              if (sessionUpdateError) throw new Error(sessionUpdateError.message);
+              if (!existingTitle) {
+                const autoTitle = body.message.trim().slice(0, 60);
+                if (autoTitle) {
+                  const { error: sessionUpdateError } = await db
+                    .from("ai_chat_sessions")
+                    .update({ title: autoTitle, updated_at: nowIso })
+                    .eq("id", sessionId);
+                  if (sessionUpdateError) console.warn("[ai-tutor] failed to update session title", sessionUpdateError);
+                }
+              }
             }
 
-            await upsertUsage(db, user.id, {
-              inputText: body.message,
-              outputText: finalText,
-              modelUsed: result.model,
-              feature: "cora_chat",
-              conversationId: placeholder.id,
-              actualUsage: result.usage,
-            });
             const memoryDelta = await updateLearningMemory(db, {
-              userId: user.id,
-              contextType,
-              lessonId: body.lessonId,
-              sessionId,
-              message: body.message,
-              assistantText: finalText,
-              contextData,
-              knowledgeChunks,
-              complexity,
-            });
-
-            send("done", {
-              sessionId,
-              quota: updatedQuota,
-              model: result.model,
               provider: result.provider,
               createdAt: nowIso,
               fullText: finalText,
@@ -1533,7 +1513,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const totalTokensUsed = providerResult.usage
       ? providerResult.usage.inputTokens + providerResult.usage.outputTokens
       : estimateTokens(body.message) + estimateTokens(finalText);
-    const updatedQuota = incrementQuotaSnapshot(quota, totalTokensUsed);
+    // See the streaming path: a provider completion is the quota accounting
+    // boundary, independent from later presentation/session persistence.
+    const usageRecorded = await upsertUsage(db, user.id, {
+      inputText: body.message,
+      outputText: finalText,
+      modelUsed: providerResult.model,
+      feature: "cora_chat",
+      conversationId: placeholder.id,
+      actualUsage: providerResult.usage,
+    });
+    const updatedQuota = usageRecorded
+      ? incrementSuccessfulQuotaSnapshot(quota, totalTokensUsed)
+      : quota;
 
     const { error: assistantError } = await db
       .from("ai_conversations")
@@ -1552,36 +1544,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (sessionId) {
       const { data: sessionRow } = await db
         .from("ai_chat_sessions")
-        .select("message_count,title")
+        .select("title")
         .eq("id", sessionId)
-        .maybeSingle<{ message_count: number; title: string | null }>();
-      const prevCount = Number(sessionRow?.message_count ?? 0);
-      const isFirstMessage = prevCount === 0;
+        .maybeSingle<{ title: string | null }>();
       const existingTitle = sessionRow?.title?.trim() ?? "";
-      const autoTitle = isFirstMessage && !existingTitle
-        ? body.message.trim().slice(0, 60)
-        : null;
-      const sessionUpdate: Record<string, unknown> = {
-        message_count: prevCount + 2,
-        last_message_at: nowIso,
-        updated_at: nowIso,
-      };
-      if (autoTitle) sessionUpdate.title = autoTitle;
-      const { error: sessionUpdateError } = await db
-        .from("ai_chat_sessions")
-        .update(sessionUpdate)
-        .eq("id", sessionId);
-      if (sessionUpdateError) throw new Error(sessionUpdateError.message);
+      if (!existingTitle) {
+        const autoTitle = body.message.trim().slice(0, 60);
+        if (autoTitle) {
+          const { error: sessionUpdateError } = await db
+            .from("ai_chat_sessions")
+            .update({ title: autoTitle, updated_at: nowIso })
+            .eq("id", sessionId);
+          if (sessionUpdateError) console.warn("[ai-tutor] failed to update session title", sessionUpdateError);
+        }
+      }
     }
 
-    await upsertUsage(db, user.id, {
-      inputText: body.message,
-      outputText: finalText,
-      modelUsed: providerResult.model,
-      feature: "cora_chat",
-      conversationId: placeholder.id,
-      actualUsage: providerResult.usage,
-    });
     const memoryDelta = await updateLearningMemory(db, {
       userId: user.id,
       contextType,

@@ -42,7 +42,7 @@ function chooseModel(
   if (
     contextType === "lesson" &&
     !quota.haikuOnly &&
-    !quota.throttled &&
+    !quota.attemptRateLimited &&
     complexity === "complex"
   ) {
     return readEnv("CORELIA_OPENAI_COMPLEX_MODEL") || "gpt-4o";

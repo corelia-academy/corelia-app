@@ -1,0 +1,81 @@
+name: Database Guardrails
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - "scripts/db/**"
+      - "docs/db-baseline/**"
+      - ".github/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  guardrails:
+    name: Baseline and declaration guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test guardrails
+        run: pnpm db:guard:test
+
+      - name: Verify frozen migration baseline
+        run: pnpm db:baseline:verify
+
+      - name: Require migration or approved exception
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pr-body.md"
+          node scripts/db/verify-db-change-declaration.mjs \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            --head "${{ github.sha }}" \
+            --pr-body-file "$RUNNER_TEMP/pr-body.md" \
+            --labels "$PR_LABELS"
+
+  local-migration-recreate:
+    name: Clean local migration recreate
+    needs: guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start isolated local Supabase stack
+        run: pnpm exec supabase start
+
+      - name: Apply every migration to an empty local database
+        run: pnpm db:verify:local
+
+      - name: Stop isolated local Supabase stack
+        if: always()
+        run: pnpm exec supabase stop --no-backup

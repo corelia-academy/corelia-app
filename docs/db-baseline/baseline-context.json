@@ -1,0 +1,48 @@
+{
+  "liveMigrationHistory": {
+    "main": {
+      "projectRef": "lawhkvyyoznwygzsycan",
+      "environment": "production",
+      "appliedMigrationCount": 139,
+      "latestMigration": "20260818120000",
+      "capturedAt": "2026-08-23",
+      "statementHashAvailability": "partial; two historical entries have null statements"
+    },
+    "staging": {
+      "projectRef": "opoozbmfbezkrpzxsusx",
+      "environment": "staging",
+      "appliedMigrationCount": 139,
+      "latestMigration": "20260818120000",
+      "capturedAt": "2026-08-23",
+      "statementHashAvailability": "partial; two historical entries have null statements"
+    }
+  },
+  "catalogBaseline": {
+    "capturedAt": "2026-08-23",
+    "main": {
+      "tables": 68,
+      "columns": 637,
+      "primaryKeys": 68,
+      "foreignKeys": 104,
+      "uniqueConstraints": 16,
+      "checkConstraints": 87,
+      "rlsPolicies": 149,
+      "functions": 118,
+      "triggers": 38,
+      "indexes": 207
+    },
+    "staging": {
+      "tables": 68,
+      "columns": 633,
+      "primaryKeys": 68,
+      "foreignKeys": 104,
+      "uniqueConstraints": 16,
+      "checkConstraints": 84,
+      "rlsPolicies": 152,
+      "functions": 118,
+      "triggers": 38,
+      "indexes": 213
+    },
+    "note": "These audited counts are a baseline summary. Full object-definition captures are intentionally supplied through the catalog fingerprint tool, not invented from counts."
+  }
+}

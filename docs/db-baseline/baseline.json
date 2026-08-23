@@ -1,0 +1,1034 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-23T12:10:51.306Z",
+  "repository": {
+    "commitSha": "71db35f8f28ae260d458ee1b6034a03c9bdd6e30",
+    "migrationDirectory": "supabase/migrations"
+  },
+  "frozenMigrationCount": 139,
+  "latestMigration": {
+    "version": "20260818120000",
+    "fileName": "20260818120000_clean_legacy_manual_mint_templates.sql"
+  },
+  "migrations": [
+    {
+      "fileName": "20250504120000_corelia_initial.sql",
+      "path": "supabase/migrations/20250504120000_corelia_initial.sql",
+      "version": "20250504120000",
+      "name": "corelia_initial",
+      "sha256": "7df9737c31b1957c21483fe80fe3e635e58ee9b5ed2a1fcb3820c5d3271a63b2"
+    },
+    {
+      "fileName": "20260506071954_tighten_rls_and_lockdown_functions.sql",
+      "path": "supabase/migrations/20260506071954_tighten_rls_and_lockdown_functions.sql",
+      "version": "20260506071954",
+      "name": "tighten_rls_and_lockdown_functions",
+      "sha256": "a282ab384f6ee06302eda59e04de66f57ef112c914086de753ba0bcb2abd8249"
+    },
+    {
+      "fileName": "20260506074210_drop_offline_academy.sql",
+      "path": "supabase/migrations/20260506074210_drop_offline_academy.sql",
+      "version": "20260506074210",
+      "name": "drop_offline_academy",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "fileName": "20260506074327_drop_offline_academy.sql",
+      "path": "supabase/migrations/20260506074327_drop_offline_academy.sql",
+      "version": "20260506074327",
+      "name": "drop_offline_academy",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "fileName": "20260506074500_drop_offline_academy.sql",
+      "path": "supabase/migrations/20260506074500_drop_offline_academy.sql",
+      "version": "20260506074500",
+      "name": "drop_offline_academy",
+      "sha256": "31dd1a97b1e6088bbb5d275467dfdd80e3a5a2f3ee0d91f2378b16125e654053"
+    },
+    {
+      "fileName": "20260506082735_fix_batch_update_lesson_orders_rpc.sql",
+      "path": "supabase/migrations/20260506082735_fix_batch_update_lesson_orders_rpc.sql",
+      "version": "20260506082735",
+      "name": "fix_batch_update_lesson_orders_rpc",
+      "sha256": "995f62e1b6861f2e2351fcd3f3e80ceb6f9af1376101d1947d9a9859d86f409e"
+    },
+    {
+      "fileName": "20260507000000_perf_indexes_and_batch_rpc.sql",
+      "path": "supabase/migrations/20260507000000_perf_indexes_and_batch_rpc.sql",
+      "version": "20260507000000",
+      "name": "perf_indexes_and_batch_rpc",
+      "sha256": "11097eef3a5dd7d2d650bb26b3a7d88ccfebc1665aa671766293ba0eb1efee2e"
+    },
+    {
+      "fileName": "20260508100000_contest_phase2_invites_rls.sql",
+      "path": "supabase/migrations/20260508100000_contest_phase2_invites_rls.sql",
+      "version": "20260508100000",
+      "name": "contest_phase2_invites_rls",
+      "sha256": "91808309fc44e840d8793043b5bd76fe61eb59e6f406c5080517fd3137a8b732"
+    },
+    {
+      "fileName": "20260508101000_contest_phase2_scores_rls.sql",
+      "path": "supabase/migrations/20260508101000_contest_phase2_scores_rls.sql",
+      "version": "20260508101000",
+      "name": "contest_phase2_scores_rls",
+      "sha256": "2a3de62b264afefbfed4db021489316e96a7b9b696d6dfbab3e38dc05f3671c2"
+    },
+    {
+      "fileName": "20260508170700_career_tracks.sql",
+      "path": "supabase/migrations/20260508170700_career_tracks.sql",
+      "version": "20260508170700",
+      "name": "career_tracks",
+      "sha256": "dfc82428035395e65bf2f30acd3df98022847d7b7b9c450f975e8b323f55a57c"
+    },
+    {
+      "fileName": "20260508174500_career_tracks_owner_scope_and_publish.sql",
+      "path": "supabase/migrations/20260508174500_career_tracks_owner_scope_and_publish.sql",
+      "version": "20260508174500",
+      "name": "career_tracks_owner_scope_and_publish",
+      "sha256": "5d504a74341089f834de3f340745d7ffc37ffb1e337c3732ee3491929da92881"
+    },
+    {
+      "fileName": "20260508180000_projects_entity.sql",
+      "path": "supabase/migrations/20260508180000_projects_entity.sql",
+      "version": "20260508180000",
+      "name": "projects_entity",
+      "sha256": "2c4c85998d1daa28e790ff97f32b5b89102b8e24e5fe96eec6da57f76893c1a9"
+    },
+    {
+      "fileName": "20260508183000_public_search_trending.sql",
+      "path": "supabase/migrations/20260508183000_public_search_trending.sql",
+      "version": "20260508183000",
+      "name": "public_search_trending",
+      "sha256": "1f858e67c961f4793398fe26d72efc183d30f07c4c92bb162e804f0ce16453c6"
+    },
+    {
+      "fileName": "20260508195500_rename_contest_to_hackathon.sql",
+      "path": "supabase/migrations/20260508195500_rename_contest_to_hackathon.sql",
+      "version": "20260508195500",
+      "name": "rename_contest_to_hackathon",
+      "sha256": "f1c1737344ef677151e95cc1fefcd61b78bb7eb737893017e42a0a037c379874"
+    },
+    {
+      "fileName": "20260508195600_public_search_rpc.sql",
+      "path": "supabase/migrations/20260508195600_public_search_rpc.sql",
+      "version": "20260508195600",
+      "name": "public_search_rpc",
+      "sha256": "4873bd54a58b4feef7ab36a6176613248bb1cdb7f95903c95c1dc7dbd532721c"
+    },
+    {
+      "fileName": "20260508210000_hackathons_slug_unique.sql",
+      "path": "supabase/migrations/20260508210000_hackathons_slug_unique.sql",
+      "version": "20260508210000",
+      "name": "hackathons_slug_unique",
+      "sha256": "e765514d4f3a864311bbe7b29da7b0870bee56c8b52c5e54505f92dbb3a7b52f"
+    },
+    {
+      "fileName": "20260508211000_backfill_hackathons_slug.sql",
+      "path": "supabase/migrations/20260508211000_backfill_hackathons_slug.sql",
+      "version": "20260508211000",
+      "name": "backfill_hackathons_slug",
+      "sha256": "3e5d22a4c1d7fc87936a5edc07d7fe6c098c23659b852da3c62e7348b187dcd0"
+    },
+    {
+      "fileName": "20260509161000_private_can_manage_project.sql",
+      "path": "supabase/migrations/20260509161000_private_can_manage_project.sql",
+      "version": "20260509161000",
+      "name": "private_can_manage_project",
+      "sha256": "f90cb20681d49b7daa4d4b67a51d6a15ea26721cb8897d5d8a16f791da2ca943"
+    },
+    {
+      "fileName": "20260509161500_entity_locales.sql",
+      "path": "supabase/migrations/20260509161500_entity_locales.sql",
+      "version": "20260509161500",
+      "name": "entity_locales",
+      "sha256": "ca6114eb908b1341941614808b3397699c07bf1b4051047683e6a58767d97202"
+    },
+    {
+      "fileName": "20260509210000_hackathon_registrations_update_review.sql",
+      "path": "supabase/migrations/20260509210000_hackathon_registrations_update_review.sql",
+      "version": "20260509210000",
+      "name": "hackathon_registrations_update_review",
+      "sha256": "66e7aa54835d17748d59317805d0225730a43024378f882d906155ab4b3b38f2"
+    },
+    {
+      "fileName": "20260512171252_cora_ai_foundations.sql",
+      "path": "supabase/migrations/20260512171252_cora_ai_foundations.sql",
+      "version": "20260512171252",
+      "name": "cora_ai_foundations",
+      "sha256": "5857d435813ed1e4d5d690e790b9c3e71f8131af81c551e1f278fa24bf3de4c9"
+    },
+    {
+      "fileName": "20260512191841_ai_subscription_payment_purpose.sql",
+      "path": "supabase/migrations/20260512191841_ai_subscription_payment_purpose.sql",
+      "version": "20260512191841",
+      "name": "ai_subscription_payment_purpose",
+      "sha256": "bc9a0e61e07716b09c219148f56fbb9be113776cbbf2b04061ba63e0763ce3bf"
+    },
+    {
+      "fileName": "20260512200148_project_media_links.sql",
+      "path": "supabase/migrations/20260512200148_project_media_links.sql",
+      "version": "20260512200148",
+      "name": "project_media_links",
+      "sha256": "f7a0ac3cccfceb7b413bbfc410b974bf7aa025f172e7e5ef5334db645e30b387"
+    },
+    {
+      "fileName": "20260512201257_project_collaborator_self_visibility.sql",
+      "path": "supabase/migrations/20260512201257_project_collaborator_self_visibility.sql",
+      "version": "20260512201257",
+      "name": "project_collaborator_self_visibility",
+      "sha256": "c4dfdccff5f896b7b6e656c9925d2d2d5009b1443bc0a881644176262102b4c5"
+    },
+    {
+      "fileName": "20260513173931_ai_conversation_sources.sql",
+      "path": "supabase/migrations/20260513173931_ai_conversation_sources.sql",
+      "version": "20260513173931",
+      "name": "ai_conversation_sources",
+      "sha256": "689491c9ccce6793603f59338a8b891ea5b58fa20579317ddf5b0acf5bae60b3"
+    },
+    {
+      "fileName": "20260514195000_cora_ai_pricing_rebalance.sql",
+      "path": "supabase/migrations/20260514195000_cora_ai_pricing_rebalance.sql",
+      "version": "20260514195000",
+      "name": "cora_ai_pricing_rebalance",
+      "sha256": "305765aa8735e75f7db02f89f0d211a88af56073715a09f54e4602ef8d951098"
+    },
+    {
+      "fileName": "20260519101719_ai_vouchers.sql",
+      "path": "supabase/migrations/20260519101719_ai_vouchers.sql",
+      "version": "20260519101719",
+      "name": "ai_vouchers",
+      "sha256": "3e5460e1b06080be94dd5d98017c09b21fe6c24190511644635265b72fdb2d6b"
+    },
+    {
+      "fileName": "20260522000000_token_quota_phase1.sql",
+      "path": "supabase/migrations/20260522000000_token_quota_phase1.sql",
+      "version": "20260522000000",
+      "name": "token_quota_phase1",
+      "sha256": "3b89daed4a4d8eaa619e0acca357c3cc39dde857410b24d79f06ac558d7f052c"
+    },
+    {
+      "fileName": "20260523000000_batch_update_section_orders_rpc.sql",
+      "path": "supabase/migrations/20260523000000_batch_update_section_orders_rpc.sql",
+      "version": "20260523000000",
+      "name": "batch_update_section_orders_rpc",
+      "sha256": "28b956a397642e38a8a3bc25eb100c9a19691c349ff3ce79907694610139943e"
+    },
+    {
+      "fileName": "20260523123519_cora_multi_session_history.sql",
+      "path": "supabase/migrations/20260523123519_cora_multi_session_history.sql",
+      "version": "20260523123519",
+      "name": "cora_multi_session_history",
+      "sha256": "ecea750484dc1c1b4effbbccd2ef183c6e5910560ad0570bb1f37ff9f3f94036"
+    },
+    {
+      "fileName": "20260606143900_public_user_profiles.sql",
+      "path": "supabase/migrations/20260606143900_public_user_profiles.sql",
+      "version": "20260606143900",
+      "name": "public_user_profiles",
+      "sha256": "2a8d779bc735a7c633f77d5af7505e7f87e0a12b2f6a9f5060c00ff72d7c0f12"
+    },
+    {
+      "fileName": "20260606150000_strip_redundant_locale_index_keys.sql",
+      "path": "supabase/migrations/20260606150000_strip_redundant_locale_index_keys.sql",
+      "version": "20260606150000",
+      "name": "strip_redundant_locale_index_keys",
+      "sha256": "13b67d67038cf3d0d3ca0d5cfd9a54dad3c87a8c028fe6e8f407f0cccc8e3c12"
+    },
+    {
+      "fileName": "20260607100000_perf_indexes_and_certificate_readiness_rpc.sql",
+      "path": "supabase/migrations/20260607100000_perf_indexes_and_certificate_readiness_rpc.sql",
+      "version": "20260607100000",
+      "name": "perf_indexes_and_certificate_readiness_rpc",
+      "sha256": "a2f5eb3088d3d3f52f9fce43c5c7d53c424b3b3e33e1d999160f49a177f71c60"
+    },
+    {
+      "fileName": "20260607110000_revoke_certificate_readiness_from_clients.sql",
+      "path": "supabase/migrations/20260607110000_revoke_certificate_readiness_from_clients.sql",
+      "version": "20260607110000",
+      "name": "revoke_certificate_readiness_from_clients",
+      "sha256": "8574965106681310dca51f8e1d172406c12c1faa4fcdb19a51a994db9cf79308"
+    },
+    {
+      "fileName": "20260608100000_lock_down_rls_auto_enable_rpc.sql",
+      "path": "supabase/migrations/20260608100000_lock_down_rls_auto_enable_rpc.sql",
+      "version": "20260608100000",
+      "name": "lock_down_rls_auto_enable_rpc",
+      "sha256": "487694de0779cee798b62d0f2f5cb7056e22435208ba214b4a4a4b6935af0efa"
+    },
+    {
+      "fileName": "20260608190000_fix_projects_rls_recursion.sql",
+      "path": "supabase/migrations/20260608190000_fix_projects_rls_recursion.sql",
+      "version": "20260608190000",
+      "name": "fix_projects_rls_recursion",
+      "sha256": "2afffcbd3495f5903025d307804e6df587bbcce9f86a7c5a52989ef52b89ea3a"
+    },
+    {
+      "fileName": "20260609120000_project_invites_notifications_sync_fix.sql",
+      "path": "supabase/migrations/20260609120000_project_invites_notifications_sync_fix.sql",
+      "version": "20260609120000",
+      "name": "project_invites_notifications_sync_fix",
+      "sha256": "2cde6cb7c5ebcffa8fdf8fa4c33b3436fbb9b8628ca1341d3638fbd5f5e01bb7"
+    },
+    {
+      "fileName": "20260609200000_hackathon_registration_review_notifications.sql",
+      "path": "supabase/migrations/20260609200000_hackathon_registration_review_notifications.sql",
+      "version": "20260609200000",
+      "name": "hackathon_registration_review_notifications",
+      "sha256": "a297124d6635c2ee4c16a0d8f8a55b3fd7e79d5a73fb395b3bb0176d2432fc98"
+    },
+    {
+      "fileName": "20260609203000_security_lints_fix.sql",
+      "path": "supabase/migrations/20260609203000_security_lints_fix.sql",
+      "version": "20260609203000",
+      "name": "security_lints_fix",
+      "sha256": "1a6930e0f4c5f0aac6f5356d3f6d24a79be40a7f3adafa49920139df43380eb0"
+    },
+    {
+      "fileName": "20260609204000_invites_rpc_security_invoker.sql",
+      "path": "supabase/migrations/20260609204000_invites_rpc_security_invoker.sql",
+      "version": "20260609204000",
+      "name": "invites_rpc_security_invoker",
+      "sha256": "3135511dde71f85f7efd4d9db97433d354d8929d8513c2cd90a80cb5667f4542"
+    },
+    {
+      "fileName": "20260609205000_rls_perf_and_policy_merge.sql",
+      "path": "supabase/migrations/20260609205000_rls_perf_and_policy_merge.sql",
+      "version": "20260609205000",
+      "name": "rls_perf_and_policy_merge",
+      "sha256": "3f634c2c806583c52e49981bb73f1034f694daa9ce97c252202ce9257f1d70cd"
+    },
+    {
+      "fileName": "20260609205500_fk_indexes.sql",
+      "path": "supabase/migrations/20260609205500_fk_indexes.sql",
+      "version": "20260609205500",
+      "name": "fk_indexes",
+      "sha256": "0b501f3e7c302c10d7bf977eeb78612ef03227b45dcbd43635b547541204b0c1"
+    },
+    {
+      "fileName": "20260610120000_contest_submission_deadline_project_lock.sql",
+      "path": "supabase/migrations/20260610120000_contest_submission_deadline_project_lock.sql",
+      "version": "20260610120000",
+      "name": "contest_submission_deadline_project_lock",
+      "sha256": "44011933a64fc08a67d906989ab13e7ca5d94fcee92b8d9545493058226a8f66"
+    },
+    {
+      "fileName": "20260611100000_project_hearts_comments.sql",
+      "path": "supabase/migrations/20260611100000_project_hearts_comments.sql",
+      "version": "20260611100000",
+      "name": "project_hearts_comments",
+      "sha256": "4d601958ebbeb8d4a2d1f6344c063f560056afee3aeccf5bd3c7fa0b8b30e99a"
+    },
+    {
+      "fileName": "20260612100000_search_public_extensions_search_path.sql",
+      "path": "supabase/migrations/20260612100000_search_public_extensions_search_path.sql",
+      "version": "20260612100000",
+      "name": "search_public_extensions_search_path",
+      "sha256": "c245d46e6c738475f825dc8d5855b02f5f63473922b4eb821970aaa9f4666228"
+    },
+    {
+      "fileName": "20260615100000_credentials_phase1.sql",
+      "path": "supabase/migrations/20260615100000_credentials_phase1.sql",
+      "version": "20260615100000",
+      "name": "credentials_phase1",
+      "sha256": "92da9dfe9f90b9cc3c0ce8f070d3150d7aa230ab5892fb12248b681951ada5cd"
+    },
+    {
+      "fileName": "20260620090000_enforce_corelia_ocb_rls.sql",
+      "path": "supabase/migrations/20260620090000_enforce_corelia_ocb_rls.sql",
+      "version": "20260620090000",
+      "name": "enforce_corelia_ocb_rls",
+      "sha256": "ae54ccb39417ee70c2250fa2fb72b18b4e5eb3b29598cd99e931adeb5f8787a3"
+    },
+    {
+      "fileName": "20260620100000_security_helpers_course_hackathon.sql",
+      "path": "supabase/migrations/20260620100000_security_helpers_course_hackathon.sql",
+      "version": "20260620100000",
+      "name": "security_helpers_course_hackathon",
+      "sha256": "4bffd9ecfc067f38b27d21af483b96df564d2e615c1ed9564caeb518788cf173"
+    },
+    {
+      "fileName": "20260620101000_course_rls_hardening.sql",
+      "path": "supabase/migrations/20260620101000_course_rls_hardening.sql",
+      "version": "20260620101000",
+      "name": "course_rls_hardening",
+      "sha256": "7d65fd52eaab82b1bc3de7c910ae748b47f009f3a28bf85a217125cea98698e8"
+    },
+    {
+      "fileName": "20260620102000_storage_policy_hardening.sql",
+      "path": "supabase/migrations/20260620102000_storage_policy_hardening.sql",
+      "version": "20260620102000",
+      "name": "storage_policy_hardening",
+      "sha256": "b0ba38d8c990e34a8cb7bfbcb001b3401553cfd85c4d184505f89c9278d77ec7"
+    },
+    {
+      "fileName": "20260620103000_lint_policy_and_index_remediation.sql",
+      "path": "supabase/migrations/20260620103000_lint_policy_and_index_remediation.sql",
+      "version": "20260620103000",
+      "name": "lint_policy_and_index_remediation",
+      "sha256": "ed838dcdd62163b272cbbfcb925ea565f8e1c04075e5558e3af11e657ef9f6a2"
+    },
+    {
+      "fileName": "20260620104000_enable_hypopg_for_index_advisor.sql",
+      "path": "supabase/migrations/20260620104000_enable_hypopg_for_index_advisor.sql",
+      "version": "20260620104000",
+      "name": "enable_hypopg_for_index_advisor",
+      "sha256": "6c03f91e56642d08c7ca473c26b8e163969d4b734755b995624b8d6286d236cb"
+    },
+    {
+      "fileName": "20260620105000_trending_searches_private_helper.sql",
+      "path": "supabase/migrations/20260620105000_trending_searches_private_helper.sql",
+      "version": "20260620105000",
+      "name": "trending_searches_private_helper",
+      "sha256": "dbe01e094e2a8df484fb9c6c45d1606ee2a3dec682337d28ccac53f8c91e2914"
+    },
+    {
+      "fileName": "20260620106000_cora_course_sessions.sql",
+      "path": "supabase/migrations/20260620106000_cora_course_sessions.sql",
+      "version": "20260620106000",
+      "name": "cora_course_sessions",
+      "sha256": "46e069e862ad5051e5632a234fa78491bb406747c74e86d99ead86f2aa926b78"
+    },
+    {
+      "fileName": "20260620110000_fix_tier_limits_pricing_v2.sql",
+      "path": "supabase/migrations/20260620110000_fix_tier_limits_pricing_v2.sql",
+      "version": "20260620110000",
+      "name": "fix_tier_limits_pricing_v2",
+      "sha256": "be937d7f2f0d5470effbd697d320560917521cd79ca849af3b32ec26f4d38c44"
+    },
+    {
+      "fileName": "20260620112000_ensure_ai_voucher_tables.sql",
+      "path": "supabase/migrations/20260620112000_ensure_ai_voucher_tables.sql",
+      "version": "20260620112000",
+      "name": "ensure_ai_voucher_tables",
+      "sha256": "eb1a8828771c4c94fa4b6e6cf65f550c97bcd4b358843578cb2d21ef66c2a882"
+    },
+    {
+      "fileName": "20260621000000_fix_ai_rls_initplan.sql",
+      "path": "supabase/migrations/20260621000000_fix_ai_rls_initplan.sql",
+      "version": "20260621000000",
+      "name": "fix_ai_rls_initplan",
+      "sha256": "57b7d4dcc152ab2acb8a74ec0d590ff0f8837d0b1470c0faabb45616af7691b3"
+    },
+    {
+      "fileName": "20260622000000_course_section_questions.sql",
+      "path": "supabase/migrations/20260622000000_course_section_questions.sql",
+      "version": "20260622000000",
+      "name": "course_section_questions",
+      "sha256": "ffba8298730ec3327108a31e7946dd41b00fc2dda81e7fd96d96aeab67650c6e"
+    },
+    {
+      "fileName": "20260623000000_knowledge_chunks_v2.sql",
+      "path": "supabase/migrations/20260623000000_knowledge_chunks_v2.sql",
+      "version": "20260623000000",
+      "name": "knowledge_chunks_v2",
+      "sha256": "822412dd7acfe240d2aadff383035ec8dbf2494ae69613e34435b58f122f5e0b"
+    },
+    {
+      "fileName": "20260624000000_notification_prefs_blast_logs.sql",
+      "path": "supabase/migrations/20260624000000_notification_prefs_blast_logs.sql",
+      "version": "20260624000000",
+      "name": "notification_prefs_blast_logs",
+      "sha256": "6b7d79da9d5c27ee76e312de365c63e2bcde44b2585b6252445511f04773ae31"
+    },
+    {
+      "fileName": "20260625000000_allow_course_context_in_ai_conversations.sql",
+      "path": "supabase/migrations/20260625000000_allow_course_context_in_ai_conversations.sql",
+      "version": "20260625000000",
+      "name": "allow_course_context_in_ai_conversations",
+      "sha256": "894c81dfc135c53eda4affbb9df6de0afe6d94793c364019690bfe97b5939ef4"
+    },
+    {
+      "fileName": "20260626000000_lesson_quiz_support.sql",
+      "path": "supabase/migrations/20260626000000_lesson_quiz_support.sql",
+      "version": "20260626000000",
+      "name": "lesson_quiz_support",
+      "sha256": "f3f81743efcda9e26eeaee9b58d58b173a54c6dd22e4f7392bcaa628440d97b3"
+    },
+    {
+      "fileName": "20260627000000_lesson_quiz_section_nullable.sql",
+      "path": "supabase/migrations/20260627000000_lesson_quiz_section_nullable.sql",
+      "version": "20260627000000",
+      "name": "lesson_quiz_section_nullable",
+      "sha256": "9baa3f3495cc05dc59dfff3a6aa5c9cd6329d2a6aa56f111b7d17d825434026c"
+    },
+    {
+      "fileName": "20260628000000_lesson_summaries.sql",
+      "path": "supabase/migrations/20260628000000_lesson_summaries.sql",
+      "version": "20260628000000",
+      "name": "lesson_summaries",
+      "sha256": "94c63dc2a8ae00c2237012105e509bac581698120e72406d7bb950be5c156334"
+    },
+    {
+      "fileName": "20260628103937_relax_credential_templates_fkey.sql",
+      "path": "supabase/migrations/20260628103937_relax_credential_templates_fkey.sql",
+      "version": "20260628103937",
+      "name": "relax_credential_templates_fkey",
+      "sha256": "f31208ccf230db82d62466913f7163a23b549c7acbf1c70bf91a5a991443840d"
+    },
+    {
+      "fileName": "20260629000000_ai_conversation_attachments.sql",
+      "path": "supabase/migrations/20260629000000_ai_conversation_attachments.sql",
+      "version": "20260629000000",
+      "name": "ai_conversation_attachments",
+      "sha256": "f813ed1adb5566e3d7b5bfd13e9c04f61a75e19cfa8e676227471b3a11b71294"
+    },
+    {
+      "fileName": "20260629231520_career_track_hero_media.sql",
+      "path": "supabase/migrations/20260629231520_career_track_hero_media.sql",
+      "version": "20260629231520",
+      "name": "career_track_hero_media",
+      "sha256": "74b3ed69f1a766f2016ada0c2d210ca89fa626c96196896e2ea9acd5da95057c"
+    },
+    {
+      "fileName": "20260630000000_course_co_instructor_invites.sql",
+      "path": "supabase/migrations/20260630000000_course_co_instructor_invites.sql",
+      "version": "20260630000000",
+      "name": "course_co_instructor_invites",
+      "sha256": "0a83a5be643a559144bb9cb8ea2baf80791567383dab89d73fb2fe08acc39c0b"
+    },
+    {
+      "fileName": "20260630010000_list_manageable_courses_rpc.sql",
+      "path": "supabase/migrations/20260630010000_list_manageable_courses_rpc.sql",
+      "version": "20260630010000",
+      "name": "list_manageable_courses_rpc",
+      "sha256": "966d12e813011d5f52873a2c6c35ffb72119df220883a89d8ec09a37df069e66"
+    },
+    {
+      "fileName": "20260701000000_flashcard_decks.sql",
+      "path": "supabase/migrations/20260701000000_flashcard_decks.sql",
+      "version": "20260701000000",
+      "name": "flashcard_decks",
+      "sha256": "0c5f5aa7b828977e1c8a7d374268e2ee39ceda72612c35a44367a55388f6c016"
+    },
+    {
+      "fileName": "20260701154437_preserve_issued_credentials.sql",
+      "path": "supabase/migrations/20260701154437_preserve_issued_credentials.sql",
+      "version": "20260701154437",
+      "name": "preserve_issued_credentials",
+      "sha256": "c00388f6a1099776a8b711415549fd9ad5942d003244e9861715bd013da6b575"
+    },
+    {
+      "fileName": "20260702000000_activity_feed_follow_system.sql",
+      "path": "supabase/migrations/20260702000000_activity_feed_follow_system.sql",
+      "version": "20260702000000",
+      "name": "activity_feed_follow_system",
+      "sha256": "159566ac1d991cf261b3f2aa085832423fec666373a3a020f74eb04c9eb21729"
+    },
+    {
+      "fileName": "20260702010000_activity_feed_event_triggers.sql",
+      "path": "supabase/migrations/20260702010000_activity_feed_event_triggers.sql",
+      "version": "20260702010000",
+      "name": "activity_feed_event_triggers",
+      "sha256": "1639c3668587d561dfedb7b00b497b276dd23448102ce0facf37c9b15b3708ff"
+    },
+    {
+      "fileName": "20260702020000_activity_feed_additional_events.sql",
+      "path": "supabase/migrations/20260702020000_activity_feed_additional_events.sql",
+      "version": "20260702020000",
+      "name": "activity_feed_additional_events",
+      "sha256": "661abefc23529fd58a66558a159e95caf4bb6f8f879bd365f9918350bf4d39ab"
+    },
+    {
+      "fileName": "20260702030000_activity_feed_rls_helper_row_security_fix.sql",
+      "path": "supabase/migrations/20260702030000_activity_feed_rls_helper_row_security_fix.sql",
+      "version": "20260702030000",
+      "name": "activity_feed_rls_helper_row_security_fix",
+      "sha256": "e93b271b906e8bd5cadaedf9893b3fe5255429c5be72510b59d9d403c74c5c07"
+    },
+    {
+      "fileName": "20260702040000_activity_feed_follower_preview_rpc.sql",
+      "path": "supabase/migrations/20260702040000_activity_feed_follower_preview_rpc.sql",
+      "version": "20260702040000",
+      "name": "activity_feed_follower_preview_rpc",
+      "sha256": "5155a9915a9a2132f46c36517b681e7343bd8775b84453be3a9a7ae9325031ab"
+    },
+    {
+      "fileName": "20260702050000_lesson_readiness_checks.sql",
+      "path": "supabase/migrations/20260702050000_lesson_readiness_checks.sql",
+      "version": "20260702050000",
+      "name": "lesson_readiness_checks",
+      "sha256": "25999f0f88a87ee4e6c8d7dcfda640f259eb6ef96faf41ec6cf05cd95a31b046"
+    },
+    {
+      "fileName": "20260702214400_private_profile_occ.sql",
+      "path": "supabase/migrations/20260702214400_private_profile_occ.sql",
+      "version": "20260702214400",
+      "name": "private_profile_occ",
+      "sha256": "81f2ec0955f5b9a15a8c027835025a48fb90aa34e629b152d27c4e5b95d055a8"
+    },
+    {
+      "fileName": "20260703000000_learning_paths.sql",
+      "path": "supabase/migrations/20260703000000_learning_paths.sql",
+      "version": "20260703000000",
+      "name": "learning_paths",
+      "sha256": "37d05e30eb9382871e50bb85be8e89307eb1d5adb84d34c8ca2f8fd8ea03d401"
+    },
+    {
+      "fileName": "20260704000000_career_tracks_media_sponsors.sql",
+      "path": "supabase/migrations/20260704000000_career_tracks_media_sponsors.sql",
+      "version": "20260704000000",
+      "name": "career_tracks_media_sponsors",
+      "sha256": "d6c8254890485b6dc7f728552e2864f23fecb3f1e65fc03b3c240a817665b682"
+    },
+    {
+      "fileName": "20260705000000_instructor_social_links.sql",
+      "path": "supabase/migrations/20260705000000_instructor_social_links.sql",
+      "version": "20260705000000",
+      "name": "instructor_social_links",
+      "sha256": "2e6e7c39cc6d6c7875c366148058e44e607669071086b4118b904cd63feaa34f"
+    },
+    {
+      "fileName": "20260705000001_no_delete_career_tracks.sql",
+      "path": "supabase/migrations/20260705000001_no_delete_career_tracks.sql",
+      "version": "20260705000001",
+      "name": "no_delete_career_tracks",
+      "sha256": "10676308c87ebb8f98e16831fe9f1de9d2d93499e7deb50e76f513cc50da423e"
+    },
+    {
+      "fileName": "20260705000002_hackathon_scores_range_guard.sql",
+      "path": "supabase/migrations/20260705000002_hackathon_scores_range_guard.sql",
+      "version": "20260705000002",
+      "name": "hackathon_scores_range_guard",
+      "sha256": "1971653f7ef83a515abc0e6da482b35eebcb3ae6327dff38f8f37423688ca3c2"
+    },
+    {
+      "fileName": "20260705000003_auto_follow_on_enroll_register.sql",
+      "path": "supabase/migrations/20260705000003_auto_follow_on_enroll_register.sql",
+      "version": "20260705000003",
+      "name": "auto_follow_on_enroll_register",
+      "sha256": "100f422af1e1362881e4b3051d31c3ceb5302331c5e3b08615e53643ce8e1d92"
+    },
+    {
+      "fileName": "20260705000004_fix_contest_media_storage_policy.sql",
+      "path": "supabase/migrations/20260705000004_fix_contest_media_storage_policy.sql",
+      "version": "20260705000004",
+      "name": "fix_contest_media_storage_policy",
+      "sha256": "556be2153e047a0d5d231f5f03564bfd8bc0276dc7f838dfa5b5cf3f832f13f7"
+    },
+    {
+      "fileName": "20260706000000_credentials_oc_payload_alignment.sql",
+      "path": "supabase/migrations/20260706000000_credentials_oc_payload_alignment.sql",
+      "version": "20260706000000",
+      "name": "credentials_oc_payload_alignment",
+      "sha256": "21bd884cdae7b7610ffafb3f16ea479cf49e20deb57253d0ca5144ac29021dee"
+    },
+    {
+      "fileName": "20260706000001_credential_templates_thumbnail.sql",
+      "path": "supabase/migrations/20260706000001_credential_templates_thumbnail.sql",
+      "version": "20260706000001",
+      "name": "credential_templates_thumbnail",
+      "sha256": "9b8c48d0a16558ac868bd6fadf2bb0fb6305740266f55f0c53b99095496d71d2"
+    },
+    {
+      "fileName": "20260707000000_cdn_public_bucket.sql",
+      "path": "supabase/migrations/20260707000000_cdn_public_bucket.sql",
+      "version": "20260707000000",
+      "name": "cdn_public_bucket",
+      "sha256": "3f9d2ecfde2ce8d0158e733667dddff9bda436f08622cb18cc5b9406d7162d10"
+    },
+    {
+      "fileName": "20260707000001_security_lint_fixes.sql",
+      "path": "supabase/migrations/20260707000001_security_lint_fixes.sql",
+      "version": "20260707000001",
+      "name": "security_lint_fixes",
+      "sha256": "5aafd54b1c0f4a822fd750a9bb5e5f0945ab2ace2ee0124886c44c88319d3848"
+    },
+    {
+      "fileName": "20260708000000_cdn_certificate_templates.sql",
+      "path": "supabase/migrations/20260708000000_cdn_certificate_templates.sql",
+      "version": "20260708000000",
+      "name": "cdn_certificate_templates",
+      "sha256": "bc5d72057e9182e138385ee41968139ef9323c37e07b89f830d32cb411b155b2"
+    },
+    {
+      "fileName": "20260708000001_cdn_rendered_certificates.sql",
+      "path": "supabase/migrations/20260708000001_cdn_rendered_certificates.sql",
+      "version": "20260708000001",
+      "name": "cdn_rendered_certificates",
+      "sha256": "5c59678a18f89d54de8e69d25f6fdc09d3488f2758721c67c1180d5caf290e80"
+    },
+    {
+      "fileName": "20260708000002_fix_oca_achievement_type.sql",
+      "path": "supabase/migrations/20260708000002_fix_oca_achievement_type.sql",
+      "version": "20260708000002",
+      "name": "fix_oca_achievement_type",
+      "sha256": "88995122ea31215b8167e980e39b493b95c7f388ff900058214c794c5518979a"
+    },
+    {
+      "fileName": "20260708204757_repair_public_profile_sync.sql",
+      "path": "supabase/migrations/20260708204757_repair_public_profile_sync.sql",
+      "version": "20260708204757",
+      "name": "repair_public_profile_sync",
+      "sha256": "f40371ddb79751297cb51f4286af1f6af05ac32b1d379b29534fe64dded04c53"
+    },
+    {
+      "fileName": "20260709000000_fix_profile_privilege_escalation.sql",
+      "path": "supabase/migrations/20260709000000_fix_profile_privilege_escalation.sql",
+      "version": "20260709000000",
+      "name": "fix_profile_privilege_escalation",
+      "sha256": "3813fdfef6b6ff8ed59b9fbc8c9087ea98d66ca890f8749ce1cab033daa481c7"
+    },
+    {
+      "fileName": "20260709000001_security_hardening_lint_fixes.sql",
+      "path": "supabase/migrations/20260709000001_security_hardening_lint_fixes.sql",
+      "version": "20260709000001",
+      "name": "security_hardening_lint_fixes",
+      "sha256": "95fb7ea818b3271e3c583c8d1de601b5c54a3b83fd6dbf34791df0227ba791bc"
+    },
+    {
+      "fileName": "20260709000002_definer_rpc_private_wrappers.sql",
+      "path": "supabase/migrations/20260709000002_definer_rpc_private_wrappers.sql",
+      "version": "20260709000002",
+      "name": "definer_rpc_private_wrappers",
+      "sha256": "515c1802da4244a8b5ee2c4dba5a3ab7c2a42ff26edbf5697917fd0747699ab2"
+    },
+    {
+      "fileName": "20260709000003_guard_allow_backend_role_changes.sql",
+      "path": "supabase/migrations/20260709000003_guard_allow_backend_role_changes.sql",
+      "version": "20260709000003",
+      "name": "guard_allow_backend_role_changes",
+      "sha256": "315919d5d73a77fd915b9654bee133a57116f5c1afe985c26fe344a5e7d78abf"
+    },
+    {
+      "fileName": "20260709000004_backfill_public_profiles.sql",
+      "path": "supabase/migrations/20260709000004_backfill_public_profiles.sql",
+      "version": "20260709000004",
+      "name": "backfill_public_profiles",
+      "sha256": "68cf28d65d7633759e011c3c4d882d21380bec1ee142363699f4757d2ffd4ff5"
+    },
+    {
+      "fileName": "20260709000005_fix_rendered_certificate_storage_rls.sql",
+      "path": "supabase/migrations/20260709000005_fix_rendered_certificate_storage_rls.sql",
+      "version": "20260709000005",
+      "name": "fix_rendered_certificate_storage_rls",
+      "sha256": "50dffa46983f5da5c1ba8103ef7573992b2ddf33260dbc1496dc94e2bed3073f"
+    },
+    {
+      "fileName": "20260709000006_fix_cdn_storage_upload_rls.sql",
+      "path": "supabase/migrations/20260709000006_fix_cdn_storage_upload_rls.sql",
+      "version": "20260709000006",
+      "name": "fix_cdn_storage_upload_rls",
+      "sha256": "4cc6049ce916b7007c0d61c12004670dac8bddaa38025f9e45a1948415e2c5fd"
+    },
+    {
+      "fileName": "20260709000007_course_completion_independent_state.sql",
+      "path": "supabase/migrations/20260709000007_course_completion_independent_state.sql",
+      "version": "20260709000007",
+      "name": "course_completion_independent_state",
+      "sha256": "bc361d1a6063c76dacda822987a6275a90d65b3e196de2b6c561de4e70dc6b61"
+    },
+    {
+      "fileName": "20260709000008_activity_feed_payload_titles.sql",
+      "path": "supabase/migrations/20260709000008_activity_feed_payload_titles.sql",
+      "version": "20260709000008",
+      "name": "activity_feed_payload_titles",
+      "sha256": "f7d67a2ddb3b234d52876238b18f625b2c4ff182e81c752870dcafb88b238019"
+    },
+    {
+      "fileName": "20260709000009_activity_feed_credential_id_guard.sql",
+      "path": "supabase/migrations/20260709000009_activity_feed_credential_id_guard.sql",
+      "version": "20260709000009",
+      "name": "activity_feed_credential_id_guard",
+      "sha256": "9e143d465faaf5bf4009f23cb7dac916b53d3d9ba4668cb2d53a9b2dbaa6179a"
+    },
+    {
+      "fileName": "20260709000010_revert_credential_activity_oc_guard.sql",
+      "path": "supabase/migrations/20260709000010_revert_credential_activity_oc_guard.sql",
+      "version": "20260709000010",
+      "name": "revert_credential_activity_oc_guard",
+      "sha256": "4669bd77f822a327d30239fc4d8c8cebe04f60a61e03bede541006ead7f00b00"
+    },
+    {
+      "fileName": "20260710000000_activity_feed_credential_title.sql",
+      "path": "supabase/migrations/20260710000000_activity_feed_credential_title.sql",
+      "version": "20260710000000",
+      "name": "activity_feed_credential_title",
+      "sha256": "33dc08fdeb38b8de6a2e97aa7465173ac64069105a16cb1b071e91e404cd8e7b"
+    },
+    {
+      "fileName": "20260711000000_enable_realtime_credential_issuances.sql",
+      "path": "supabase/migrations/20260711000000_enable_realtime_credential_issuances.sql",
+      "version": "20260711000000",
+      "name": "enable_realtime_credential_issuances",
+      "sha256": "1ebdcc4e236876544de6fd18aab9591cb3d18142dacd9c7fce12ed84c7a579a9"
+    },
+    {
+      "fileName": "20260712000000_fix_sync_public_profile_scrubbing.sql",
+      "path": "supabase/migrations/20260712000000_fix_sync_public_profile_scrubbing.sql",
+      "version": "20260712000000",
+      "name": "fix_sync_public_profile_scrubbing",
+      "sha256": "696da0187d0adabc5a739620594912834c3d71331c6bb74055695d844b2f3bfc"
+    },
+    {
+      "fileName": "20260713000001_restore_public_profiles_trigger.sql",
+      "path": "supabase/migrations/20260713000001_restore_public_profiles_trigger.sql",
+      "version": "20260713000001",
+      "name": "restore_public_profiles_trigger",
+      "sha256": "1f15e0ab35465fec84b7f3a4671d8db04e1bcbd8e7d6fc2e8697667210c51bbf"
+    },
+    {
+      "fileName": "20260714000000_fix_search_public_private_profiles.sql",
+      "path": "supabase/migrations/20260714000000_fix_search_public_private_profiles.sql",
+      "version": "20260714000000",
+      "name": "fix_search_public_private_profiles",
+      "sha256": "61c08be09ff34d0f9e2c349d87b8a74d6b11597da5fe71d6177e6b7856fdd967"
+    },
+    {
+      "fileName": "20260714000001_hide_private_profiles_from_search.sql",
+      "path": "supabase/migrations/20260714000001_hide_private_profiles_from_search.sql",
+      "version": "20260714000001",
+      "name": "hide_private_profiles_from_search",
+      "sha256": "d2e73c8f44f511eee22275fbd3c88bc97b7c61fc123b6e64220700824b3d2c15"
+    },
+    {
+      "fileName": "20260715000000_pending_credential_issuances.sql",
+      "path": "supabase/migrations/20260715000000_pending_credential_issuances.sql",
+      "version": "20260715000000",
+      "name": "pending_credential_issuances",
+      "sha256": "08b94ce241db81ca5d15a8bc27c0bedfbc01f11792830d00009a379e54545bd7"
+    },
+    {
+      "fileName": "20260715000001_handle_new_user_claim_pending_credentials.sql",
+      "path": "supabase/migrations/20260715000001_handle_new_user_claim_pending_credentials.sql",
+      "version": "20260715000001",
+      "name": "handle_new_user_claim_pending_credentials",
+      "sha256": "62d72597874f055e507626c0c06e6d47656e380bb0c82e3f4679d0c1984bf467"
+    },
+    {
+      "fileName": "20260716000000_split_course_credential_active_by_kind.sql",
+      "path": "supabase/migrations/20260716000000_split_course_credential_active_by_kind.sql",
+      "version": "20260716000000",
+      "name": "split_course_credential_active_by_kind",
+      "sha256": "ba8a06a216af17f87d4b176e33c5993c53dd24a10b959de3d8e7e21f8d0e5fa4"
+    },
+    {
+      "fileName": "20260716000001_revert_split_course_credential_active_by_kind.sql",
+      "path": "supabase/migrations/20260716000001_revert_split_course_credential_active_by_kind.sql",
+      "version": "20260716000001",
+      "name": "revert_split_course_credential_active_by_kind",
+      "sha256": "aecd9b9d5a6526cab4acb44f6e6fa0e6dd39adb422397f68859171d2467af82c"
+    },
+    {
+      "fileName": "20260716000002_enforce_course_ocb_certificate_exclusion.sql",
+      "path": "supabase/migrations/20260716000002_enforce_course_ocb_certificate_exclusion.sql",
+      "version": "20260716000002",
+      "name": "enforce_course_ocb_certificate_exclusion",
+      "sha256": "da1664394534b95362b8c963d844b678b7d76a69024605400e3a9676eb4cd7a5"
+    },
+    {
+      "fileName": "20260716000003_allow_course_ocb_with_certificate.sql",
+      "path": "supabase/migrations/20260716000003_allow_course_ocb_with_certificate.sql",
+      "version": "20260716000003",
+      "name": "allow_course_ocb_with_certificate",
+      "sha256": "2eb7b7807f8f30e9b8fa0e678242a08ebe61fcdabc7640651b73a2acb1bd1b08"
+    },
+    {
+      "fileName": "20260720000000_trim_profile_text_fields.sql",
+      "path": "supabase/migrations/20260720000000_trim_profile_text_fields.sql",
+      "version": "20260720000000",
+      "name": "trim_profile_text_fields",
+      "sha256": "b7afd1926da237313489fb4e0f64d1f3433013f9e2b80aeac1f17d6784f02816"
+    },
+    {
+      "fileName": "20260727031028_profile_occ_visibility.sql",
+      "path": "supabase/migrations/20260727031028_profile_occ_visibility.sql",
+      "version": "20260727031028",
+      "name": "profile_occ_visibility",
+      "sha256": "01bb264be5eb177e2b38a7db69c551e0f5ec7e4fcc3910a4966b0ffc434a9b32"
+    },
+    {
+      "fileName": "20260727053857_profile_following_preview.sql",
+      "path": "supabase/migrations/20260727053857_profile_following_preview.sql",
+      "version": "20260727053857",
+      "name": "profile_following_preview",
+      "sha256": "969c41bd4bc03898fb7dde0a43b202c005f38c7b3088cb02e2c85d117ec33792"
+    },
+    {
+      "fileName": "20260727055649_user_following_profile_count.sql",
+      "path": "supabase/migrations/20260727055649_user_following_profile_count.sql",
+      "version": "20260727055649",
+      "name": "user_following_profile_count",
+      "sha256": "d443be8003bd9b8f14d1b23a08fd6b062c44b7118827019dc88175324c4940ce"
+    },
+    {
+      "fileName": "20260727072722_public_profile_follow_counts.sql",
+      "path": "supabase/migrations/20260727072722_public_profile_follow_counts.sql",
+      "version": "20260727072722",
+      "name": "public_profile_follow_counts",
+      "sha256": "9f27fce98a2afc8f6d3ea6c3fd52c71fc1a54b33f6720eec093936daf46500f3"
+    },
+    {
+      "fileName": "20260729060000_credential_reference_v2.sql",
+      "path": "supabase/migrations/20260729060000_credential_reference_v2.sql",
+      "version": "20260729060000",
+      "name": "credential_reference_v2",
+      "sha256": "67866607d4d0ba2cfeacef398a2e5c681cf9ce184811bda4de58afa27eafed12"
+    },
+    {
+      "fileName": "20260804000000_certificate_public_verification.sql",
+      "path": "supabase/migrations/20260804000000_certificate_public_verification.sql",
+      "version": "20260804000000",
+      "name": "certificate_public_verification",
+      "sha256": "562297392d84db57b16a10d34b5fdaad3b032f1d906b4ba22c49c261b54e704d"
+    },
+    {
+      "fileName": "20260804010000_drop_public_enrollment_reads.sql",
+      "path": "supabase/migrations/20260804010000_drop_public_enrollment_reads.sql",
+      "version": "20260804010000",
+      "name": "drop_public_enrollment_reads",
+      "sha256": "b7aeeab79732ad2381e86a0e372a1e26bb912cc31449866c9b77d3c90ec96aaf"
+    },
+    {
+      "fileName": "20260805000000_certificate_layout_blocks.sql",
+      "path": "supabase/migrations/20260805000000_certificate_layout_blocks.sql",
+      "version": "20260805000000",
+      "name": "certificate_layout_blocks",
+      "sha256": "ed0826acde15a822b990c8d4f369abd13a711b70a90d24ce8ec034c28b6d79b9"
+    },
+    {
+      "fileName": "20260806000000_grant_private_schema_to_service_role.sql",
+      "path": "supabase/migrations/20260806000000_grant_private_schema_to_service_role.sql",
+      "version": "20260806000000",
+      "name": "grant_private_schema_to_service_role",
+      "sha256": "7dc955262bfe5ebdec998dddaa9adac79ac003c857905a6d03145ee614d6f4f3"
+    },
+    {
+      "fileName": "20260806010000_lockdown_verify_certificate_rpc.sql",
+      "path": "supabase/migrations/20260806010000_lockdown_verify_certificate_rpc.sql",
+      "version": "20260806010000",
+      "name": "lockdown_verify_certificate_rpc",
+      "sha256": "0a7c8bcfa05021169c568ceb4d2bbf1748faa35202988fb6f2f1473338d5e69b"
+    },
+    {
+      "fileName": "20260806172500_restore_original_verify_rpc.sql",
+      "path": "supabase/migrations/20260806172500_restore_original_verify_rpc.sql",
+      "version": "20260806172500",
+      "name": "restore_original_verify_rpc",
+      "sha256": "6b07de4f2f166101662981b48c5a44ba46986c7f63fcc082717d9782e872c1b9"
+    },
+    {
+      "fileName": "20260808100000_course_co_instructor_candidates.sql",
+      "path": "supabase/migrations/20260808100000_course_co_instructor_candidates.sql",
+      "version": "20260808100000",
+      "name": "course_co_instructor_candidates",
+      "sha256": "59f16dc546ed8e67a30a37aa0d5ea340fa92ad5fa3d2427d72975471d216bc5a"
+    },
+    {
+      "fileName": "20260810000000_sync_course_total_duration.sql",
+      "path": "supabase/migrations/20260810000000_sync_course_total_duration.sql",
+      "version": "20260810000000",
+      "name": "sync_course_total_duration",
+      "sha256": "4ded2aed5974bb853a6001f6b1f17df4237d4646fa72e50693af45e136805b59"
+    },
+    {
+      "fileName": "20260814000000_email_delivery_attempts.sql",
+      "path": "supabase/migrations/20260814000000_email_delivery_attempts.sql",
+      "version": "20260814000000",
+      "name": "email_delivery_attempts",
+      "sha256": "4842c2e490a4107b48e6d2cbfe34256a301bd29eccda448ce13027076c8b56fd"
+    },
+    {
+      "fileName": "20260814010000_harden_course_completion_integrity.sql",
+      "path": "supabase/migrations/20260814010000_harden_course_completion_integrity.sql",
+      "version": "20260814010000",
+      "name": "harden_course_completion_integrity",
+      "sha256": "d989534b0e4abaffdedd9bb22eb9aebca0f6058fe8a37a627f7a21cdada4a157"
+    },
+    {
+      "fileName": "20260814020000_daily_streak_claims.sql",
+      "path": "supabase/migrations/20260814020000_daily_streak_claims.sql",
+      "version": "20260814020000",
+      "name": "daily_streak_claims",
+      "sha256": "e0367f10c5ea05f3b95e10ea4ca4dcd9df57bef293313fdc3df6ba6a8eb622e4"
+    },
+    {
+      "fileName": "20260816181500_fix_daily_streak_and_integrity_guards.sql",
+      "path": "supabase/migrations/20260816181500_fix_daily_streak_and_integrity_guards.sql",
+      "version": "20260816181500",
+      "name": "fix_daily_streak_and_integrity_guards",
+      "sha256": "e0f4e9ea6c65ffdfa0bb71e13c163b2db20acb28c5de801d3d28892f2dd92b30"
+    },
+    {
+      "fileName": "20260817000000_learning_reminders_and_badge_templates.sql",
+      "path": "supabase/migrations/20260817000000_learning_reminders_and_badge_templates.sql",
+      "version": "20260817000000",
+      "name": "learning_reminders_and_badge_templates",
+      "sha256": "6c3e23cbb599345258a9a50c619a7a85254d4ba9a7344b5bdfc7aaad5d0bf060"
+    },
+    {
+      "fileName": "20260817010000_guard_manual_template_deletes.sql",
+      "path": "supabase/migrations/20260817010000_guard_manual_template_deletes.sql",
+      "version": "20260817010000",
+      "name": "guard_manual_template_deletes",
+      "sha256": "a44690798100cf2f1d4c9ac9bf40331a342c9650cb6ee249e57a77080e8609a2"
+    },
+    {
+      "fileName": "20260817020000_public_profile_course_skills.sql",
+      "path": "supabase/migrations/20260817020000_public_profile_course_skills.sql",
+      "version": "20260817020000",
+      "name": "public_profile_course_skills",
+      "sha256": "c2d9d8407b105a1a12225fe59fe78773840bc06c00bce2563e3f879b88315274"
+    },
+    {
+      "fileName": "20260817030000_learning_reminder_course_access_guard.sql",
+      "path": "supabase/migrations/20260817030000_learning_reminder_course_access_guard.sql",
+      "version": "20260817030000",
+      "name": "learning_reminder_course_access_guard",
+      "sha256": "ec8b77d9042ddc1b7a2b7f2b248a00846e9b80966163ea5c119ffe87b26a9ac3"
+    },
+    {
+      "fileName": "20260818120000_clean_legacy_manual_mint_templates.sql",
+      "path": "supabase/migrations/20260818120000_clean_legacy_manual_mint_templates.sql",
+      "version": "20260818120000",
+      "name": "clean_legacy_manual_mint_templates",
+      "sha256": "5c61c0e89b0c69c7ddcd89fe47f4fd6c040ef46a247007dc246766c723fc612a"
+    }
+  ],
+  "liveMigrationHistory": {
+    "main": {
+      "projectRef": "lawhkvyyoznwygzsycan",
+      "environment": "production",
+      "appliedMigrationCount": 139,
+      "latestMigration": "20260818120000",
+      "capturedAt": "2026-08-23",
+      "statementHashAvailability": "partial; two historical entries have null statements"
+    },
+    "staging": {
+      "projectRef": "opoozbmfbezkrpzxsusx",
+      "environment": "staging",
+      "appliedMigrationCount": 139,
+      "latestMigration": "20260818120000",
+      "capturedAt": "2026-08-23",
+      "statementHashAvailability": "partial; two historical entries have null statements"
+    }
+  },
+  "catalogBaseline": {
+    "capturedAt": "2026-08-23",
+    "main": {
+      "tables": 68,
+      "columns": 637,
+      "primaryKeys": 68,
+      "foreignKeys": 104,
+      "uniqueConstraints": 16,
+      "checkConstraints": 87,
+      "rlsPolicies": 149,
+      "functions": 118,
+      "triggers": 38,
+      "indexes": 207
+    },
+    "staging": {
+      "tables": 68,
+      "columns": 633,
+      "primaryKeys": 68,
+      "foreignKeys": 104,
+      "uniqueConstraints": 16,
+      "checkConstraints": 84,
+      "rlsPolicies": 152,
+      "functions": 118,
+      "triggers": 38,
+      "indexes": 213
+    },
+    "note": "These audited counts are a baseline summary. Full object-definition captures are intentionally supplied through the catalog fingerprint tool, not invented from counts."
+  }
+}

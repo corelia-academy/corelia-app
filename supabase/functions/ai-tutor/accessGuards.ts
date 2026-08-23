@@ -1,6 +1,11 @@
 import type { SupabaseClient } from "./lib/supabase.ts";
 import type { BackendContextType, SourceRef } from "./behaviorTypes.ts";
 import type { QuotaResult } from "./types.ts";
+import {
+  applySuccessfulUsageToSnapshot,
+  evaluateQuotaSemantics,
+  type SuccessfulQuotaSnapshot,
+} from "./quotaSemantics.ts";
 
 type Tier = "free" | "student" | "pro" | "bootcamp";
 
@@ -24,8 +29,6 @@ type FallbackTierLimit = {
   monthlyMessages: number;
   rolling3hSoftCap: number;
   haikuOnly: boolean;
-  monthlyTokens: number;
-  rolling3hTokens: number;
 };
 
 function monthKey(now: Date): string {
@@ -40,19 +43,51 @@ export async function getProfile(
   db: SupabaseClient,
   userId: string,
 ): Promise<ProfileRow | null> {
-  const { data, error } = await db
-    .from("profiles")
-    .select("full_name,tier,user_level,user_goal,streak_days,track_interest,category_interests")
-    .eq("id", userId)
-    .maybeSingle<ProfileRow>();
-  if (error) throw new Error(error.message);
-  return data ?? null;
+  const nowIso = new Date().toISOString();
+  const [
+    { data: profile, error: profileErr },
+    { data: streakRow, error: streakErr },
+    { data: subRow, error: subErr },
+  ] = await Promise.all([
+    db
+      .from("profiles")
+      .select("full_name,tier,user_level,user_goal,streak_days,track_interest,category_interests")
+      .eq("id", userId)
+      .maybeSingle<ProfileRow>(),
+    db
+      .from("user_daily_streaks")
+      .select("current_streak")
+      .eq("user_id", userId)
+      .maybeSingle<{ current_streak: number | null }>(),
+    db
+      .from("ai_subscriptions")
+      .select("tier,expires_at,status")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .gt("expires_at", nowIso)
+      .order("expires_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<ActiveSubscriptionRow>(),
+  ]);
+  if (profileErr) throw new Error(profileErr.message);
+  if (streakErr) {
+    console.warn("[ai-tutor] failed to fetch canonical user_daily_streaks", streakErr);
+  }
+  if (subErr) {
+    console.warn("[ai-tutor] failed to fetch canonical ai_subscriptions", subErr);
+  }
+  if (!profile) return null;
+  return {
+    ...profile,
+    tier: subRow?.tier ?? "free",
+    streak_days: Number(streakRow?.current_streak ?? 0),
+  };
 }
 
 export async function resolveEffectiveTier(
   db: SupabaseClient,
   userId: string,
-  profileTier: Tier | null,
+  _profileTier?: Tier | null,
 ): Promise<Tier> {
   const nowIso = new Date().toISOString();
   const { data, error } = await db
@@ -66,8 +101,10 @@ export async function resolveEffectiveTier(
     .maybeSingle<ActiveSubscriptionRow>();
   if (error) throw new Error(error.message);
 
+  // G2-B: ai_subscriptions is the canonical source for AI paid entitlement.
+  // profiles.tier must NOT independently grant paid AI entitlement.
   if (data?.tier) return data.tier;
-  return profileTier ?? "free";
+  return "free";
 }
 
 export async function ensureSession(
@@ -147,7 +184,6 @@ export async function checkQuota(
     { count: windowCount, error: windowError },
     { data: monthly },
     { data: limits, error: limitsError },
-    { data: rollingTokenRows, error: rollingTokenError },
   ] = await Promise.all([
     db
       .from("ai_conversations")
@@ -163,79 +199,38 @@ export async function checkQuota(
       .maybeSingle<{ message_count: number; tokens_used: number }>(),
     db
       .from("tier_limits")
-      .select("monthly_messages,rolling_3h_soft_cap,haiku_only,quota_unit,monthly_tokens,rolling_3h_tokens")
+      .select("monthly_messages,rolling_3h_soft_cap,haiku_only")
       .eq("tier", tier)
       .maybeSingle<{
         monthly_messages: number | null;
         rolling_3h_soft_cap: number | null;
         haiku_only: boolean | null;
-        quota_unit: "message" | "token" | "both" | null;
-        monthly_tokens: number | null;
-        rolling_3h_tokens: number | null;
       }>(),
-    db
-      .from("ai_usage_log")
-      .select("input_tokens,output_tokens")
-      .eq("user_id", userId)
-      .gte("created_at", windowStart),
   ]);
 
   if (windowError) throw new Error(windowError.message);
   if (limitsError) throw new Error(limitsError.message);
-  // Non-fatal: ai_usage_log may not exist pre-migration; degrades to rollingTokensUsed=0
-  if (rollingTokenError) console.warn("[ai-tutor] rolling token query failed", rollingTokenError.message);
-
   const fallbackLimits = fallbackTierLimits[tier];
-  const quotaUnit = limits?.quota_unit ?? "message";
+  const tierLimitSource = limits ? "tier_limits" : "fallback";
+  if (!limits) {
+    console.warn("[ai-tutor] tier limit fallback activated", { tier, userId });
+  }
 
-  // Message-based counters
-  const monthlyUsed = Number(monthly?.message_count ?? 0);
-  const windowUsed = Number(windowCount ?? 0);
-  const monthlyLimit = limits?.monthly_messages ?? fallbackLimits.monthlyMessages;
-  const windowSoftCap = limits?.rolling_3h_soft_cap ?? fallbackLimits.rolling3hSoftCap;
-
-  // Token-based counters
-  const monthlyTokensUsed = Number(monthly?.tokens_used ?? 0);
-  const monthlyTokensLimit = limits?.monthly_tokens ?? fallbackLimits.monthlyTokens;
-  const rollingTokensUsed = (rollingTokenRows ?? []).reduce(
-    (sum, row) => sum + Number(row.input_tokens ?? 0) + Number(row.output_tokens ?? 0),
-    0,
-  );
-  const rollingTokensCap = limits?.rolling_3h_tokens ?? fallbackLimits.rolling3hTokens;
-
-  const allowed =
-    quotaUnit === "message"
-      ? monthlyLimit == null || monthlyUsed < monthlyLimit
-      : quotaUnit === "token"
-        ? monthlyTokensLimit == null || monthlyTokensUsed < monthlyTokensLimit
-        : // 'both': block if EITHER counter exceeded
-          (monthlyLimit == null || monthlyUsed < monthlyLimit) &&
-          (monthlyTokensLimit == null || monthlyTokensUsed < monthlyTokensLimit);
-
-  const throttled =
-    quotaUnit === "message"
-      ? windowSoftCap != null && windowUsed >= windowSoftCap
-      : quotaUnit === "token"
-        ? rollingTokensCap != null && rollingTokensUsed >= rollingTokensCap
-        : // 'both': throttle if EITHER rolling cap exceeded
-          (windowSoftCap != null && windowUsed >= windowSoftCap) ||
-          (rollingTokensCap != null && rollingTokensUsed >= rollingTokensCap);
+  const snapshot: SuccessfulQuotaSnapshot = {
+    successfulMessagesUsed: Number(monthly?.message_count ?? 0),
+    successfulMessageLimit: limits?.monthly_messages ?? fallbackLimits.monthlyMessages,
+    rollingAttemptCount: Number(windowCount ?? 0),
+    rollingAttemptSoftCap: limits?.rolling_3h_soft_cap ?? fallbackLimits.rolling3hSoftCap,
+    rollingAttemptWindowHours: 3,
+    monthlyTokensUsed: Number(monthly?.tokens_used ?? 0),
+  };
 
   return {
-    allowed,
-    throttled,
+    ...snapshot,
+    ...evaluateQuotaSemantics(snapshot),
     haikuOnly: limits?.haiku_only ?? fallbackLimits.haikuOnly,
-    monthlyUsed,
-    monthlyLimit,
-    windowUsed,
-    windowSoftCap,
-    windowHours: 3,
     tier,
-    quotaUnit,
-    monthlyTokensUsed,
-    monthlyTokensLimit,
-    rollingTokensUsed,
-    rollingTokensCap,
+    tierLimitSource,
   };
 }
 
@@ -314,35 +309,9 @@ export async function enforceAbuseChecks(
   };
 }
 
-export function incrementQuotaSnapshot(quota: QuotaResult, tokensUsed = 0): QuotaResult {
-  const nextMonthlyUsed = quota.monthlyUsed + 1;
-  const nextWindowUsed = quota.windowUsed + 1;
-  const nextMonthlyTokensUsed = quota.monthlyTokensUsed + tokensUsed;
-  const nextRollingTokensUsed = quota.rollingTokensUsed + tokensUsed;
-
-  const allowed =
-    quota.quotaUnit === "message"
-      ? quota.monthlyLimit == null || nextMonthlyUsed < quota.monthlyLimit
-      : quota.quotaUnit === "token"
-        ? quota.monthlyTokensLimit == null || nextMonthlyTokensUsed < quota.monthlyTokensLimit
-        : (quota.monthlyLimit == null || nextMonthlyUsed < quota.monthlyLimit) &&
-          (quota.monthlyTokensLimit == null || nextMonthlyTokensUsed < quota.monthlyTokensLimit);
-
-  const throttled =
-    quota.quotaUnit === "message"
-      ? quota.windowSoftCap != null && nextWindowUsed >= quota.windowSoftCap
-      : quota.quotaUnit === "token"
-        ? quota.rollingTokensCap != null && nextRollingTokensUsed >= quota.rollingTokensCap
-        : (quota.windowSoftCap != null && nextWindowUsed >= quota.windowSoftCap) ||
-          (quota.rollingTokensCap != null && nextRollingTokensUsed >= quota.rollingTokensCap);
-
+export function incrementSuccessfulQuotaSnapshot(quota: QuotaResult, tokensUsed = 0): QuotaResult {
   return {
     ...quota,
-    monthlyUsed: nextMonthlyUsed,
-    windowUsed: nextWindowUsed,
-    monthlyTokensUsed: nextMonthlyTokensUsed,
-    rollingTokensUsed: nextRollingTokensUsed,
-    allowed,
-    throttled,
+    ...applySuccessfulUsageToSnapshot(quota, tokensUsed),
   };
 }

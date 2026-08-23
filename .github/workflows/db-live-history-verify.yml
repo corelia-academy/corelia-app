@@ -1,0 +1,58 @@
+name: Verify Protected Live Migration History
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Exact target to verify. This workflow reads only migration history.
+        required: true
+        type: choice
+        options: [staging, main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment == 'main' && 'production' || 'staging' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Install read-only PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install --yes postgresql-client
+
+      - name: Export and verify exact target history
+        env:
+          TARGET: ${{ inputs.environment }}
+          SUPABASE_MAIN_READONLY_DB_URL: ${{ secrets.SUPABASE_MAIN_READONLY_DB_URL }}
+          SUPABASE_STAGING_READONLY_DB_URL: ${{ secrets.SUPABASE_STAGING_READONLY_DB_URL }}
+        run: |
+          if [ "$TARGET" = "main" ]; then
+            DB_URL="$SUPABASE_MAIN_READONLY_DB_URL"
+            PROJECT_REF="lawhkvyyoznwygzsycan"
+          else
+            DB_URL="$SUPABASE_STAGING_READONLY_DB_URL"
+            PROJECT_REF="opoozbmfbezkrpzxsusx"
+          fi
+
+          if [ -z "$DB_URL" ]; then
+            echo "Missing protected read-only URL for $TARGET. Configure a least-privilege SUPABASE_*_READONLY_DB_URL secret; do not use service-role credentials."
+            exit 1
+          fi
+
+          psql "$DB_URL" -X -q -v ON_ERROR_STOP=1 --csv \
+            -c "BEGIN TRANSACTION READ ONLY; SELECT version, name FROM supabase_migrations.schema_migrations ORDER BY version; COMMIT;" \
+            > "$RUNNER_TEMP/live-history.csv"
+          node scripts/db/live-history-csv-to-json.mjs "$RUNNER_TEMP/live-history.csv" "$RUNNER_TEMP/live-history.json" "$PROJECT_REF"
+          node scripts/db/verify-live-history.mjs --environment "$TARGET" --project-ref "$PROJECT_REF" --input "$RUNNER_TEMP/live-history.json"
+
+      - name: Upload read-only history artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-migration-history-${{ inputs.environment }}
+          path: ${{ runner.temp }}/live-history.json

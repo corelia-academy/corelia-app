@@ -5,18 +5,13 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { CORA_AI_TUTOR_LOGO_SRC } from "@/components/course-ai/constants";
 import type { CoraQuotaInfo } from "@/hooks/useCoraAI";
+import { resolveEffectiveAiTier } from "@/lib/payments";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 
 function normalizeTierLabel(tier: string) {
   if (tier === "student" || tier === "pro" || tier === "bootcamp") return tier;
   return "free";
-}
-
-function formatTokenCount(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
-  return String(n);
 }
 
 export function CoraPlanSummary({
@@ -30,27 +25,14 @@ export function CoraPlanSummary({
   const { aiSubscription, daysUntilExpiry } = useAuth();
 
   const planTier = normalizeTierLabel(
-    aiSubscription?.tier ?? quotaInfo?.tier ?? "free",
+    resolveEffectiveAiTier(aiSubscription),
   );
 
-  const quotaUnit = quotaInfo?.quotaUnit ?? "message";
-  const useTokenDisplay = quotaUnit === "token";
-
-  // Token display
-  const tokenUsed = quotaInfo?.monthlyTokensUsed ?? 0;
-  const tokenLimit = quotaInfo?.monthlyTokensLimit ?? null;
-
-  // Message display (fallback / migration period)
-  const usageLimit = quotaInfo?.monthlyLimit ?? null;
-  const usageUsed = quotaInfo?.monthlyUsed ?? 0;
+  const usageLimit = quotaInfo?.successfulMessageLimit ?? null;
+  const usageUsed = quotaInfo?.successfulMessagesUsed ?? 0;
 
   const msgPct = usageLimit ? usageUsed / usageLimit : 0;
-  const tokenPct = tokenLimit ? tokenUsed / tokenLimit : 0;
-  const usedPct = useTokenDisplay
-    ? tokenPct
-    : quotaUnit === "both"
-      ? Math.max(msgPct, tokenPct)  // show worst-case during dual-enforce window
-      : msgPct;
+  const usedPct = msgPct;
 
   const isExceeded = usedPct >= 1;
   const isNearing = usedPct >= 0.7 && !isExceeded;
@@ -101,15 +83,11 @@ export function CoraPlanSummary({
               </span>
             ) : (
               <span>
-                {useTokenDisplay && tokenLimit != null
-                  ? t("coraWidget.plan.tokensThisMonth", {
-                      count: `${formatTokenCount(tokenUsed)} / ${formatTokenCount(tokenLimit)}`,
-                    })
-                  : usageLimit != null
-                    ? t("coraWidget.plan.messagesThisMonth", { count: usageUsed })
-                    : null}
+                {usageLimit != null
+                  ? t("coraWidget.plan.messagesThisMonth", { count: usageUsed })
+                  : null}
                 {aiSubscription?.expires_at
-                  ? ((useTokenDisplay ? tokenLimit : usageLimit) != null ? " · " : "") +
+                  ? (usageLimit != null ? " · " : "") +
                     t("coraWidget.plan.daysLeft", { count: daysLeft })
                   : null}
               </span>

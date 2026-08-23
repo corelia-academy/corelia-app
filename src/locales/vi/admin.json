@@ -579,6 +579,7 @@
     "showing": "Hiển thị {{shown}} / {{total}} batch",
     "active": "Đang bật",
     "inactive": "Đang tắt",
+    "archived": "Đã lưu trữ",
     "neverStarts": "Áp dụng ngay",
     "noExpiry": "Không hết hạn",
     "counts": "{{available}} available · {{reserved}} reserved · {{paid}} paid · {{inactive}} inactive",

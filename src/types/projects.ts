@@ -1,5 +1,6 @@
 export type ProjectVisibility = "public" | "unlisted" | "private";
-export type ProjectSourceType = "standalone" | "contest" | "course";
+/** `contest` is legacy compatibility; new hackathon-linked projects use `hackathon`. */
+export type ProjectSourceType = "standalone" | "contest" | "hackathon" | "course";
 
 export interface Project {
   id: string;

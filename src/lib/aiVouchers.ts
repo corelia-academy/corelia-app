@@ -11,6 +11,8 @@ export interface AiVoucherBatch {
   ends_at: string | null;
   target_tier: "student" | "pro" | "bootcamp" | null;
   target_duration_months: 1 | 12 | null;
+  archived_at: string | null;
+  archived_by: string | null;
   created_at: string;
   created_by: string | null;
   updated_at: string;
@@ -44,6 +46,17 @@ export interface AiVoucherRedemption {
   updated_at: string;
 }
 
+export interface AiVoucherPricingPreview {
+  voucher_id: string;
+  code: string;
+  percent_off: number;
+  base_amount_vnd: number;
+  discount_amount_vnd: number;
+  final_amount_vnd: number;
+  tier: "student" | "pro" | "bootcamp";
+  duration_months: 1 | 12;
+}
+
 export interface AiVoucherBatchCreateInput {
   name: string;
   quantity: number;
@@ -54,6 +67,18 @@ export interface AiVoucherBatchCreateInput {
   active: boolean;
   targetTier?: "student" | "pro" | "bootcamp" | null;
   targetDurationMonths?: 1 | 12 | null;
+}
+
+export interface CreateAiVoucherBatchPayload {
+  name: string;
+  quantity: number;
+  code_prefix?: string;
+  percent_off: number;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  active?: boolean;
+  target_tier?: "student" | "pro" | "bootcamp" | null;
+  target_duration_months?: 1 | 12 | null;
 }
 
 export interface AiVoucherBatchCreateResult {
@@ -72,6 +97,8 @@ function rowToBatch(row: Record<string, unknown>): AiVoucherBatch {
     ends_at: (row.ends_at as string | null) ?? null,
     target_tier: (row.target_tier as AiVoucherBatch["target_tier"]) ?? null,
     target_duration_months: row.target_duration_months != null ? (Number(row.target_duration_months) as 1 | 12) : null,
+    archived_at: (row.archived_at as string | null) ?? null,
+    archived_by: (row.archived_by as string | null) ?? null,
     created_at: String(row.created_at),
     created_by: (row.created_by as string | null) ?? null,
     updated_at: String(row.updated_at),

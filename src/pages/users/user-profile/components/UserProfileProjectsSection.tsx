@@ -16,11 +16,11 @@ import { listMyProjectHeartIds } from "@/lib/projectSocial";
 import { pickContentLocale } from "@/lib/entityLocales";
 import type { PublicProfile } from "@/types/database";
 import type { Project } from "@/types/projects";
-import { projectSourceLabelKey } from "@/lib/projectSource";
+import { isHackathonProjectSource, projectSourceLabelKey } from "@/lib/projectSource";
 import { useAuth } from "@/stores/authStore";
 
 function sourceLink(project: Project): string | null {
-  if (project.source_type === "contest" && project.source_id) {
+  if (isHackathonProjectSource(project.source_type) && project.source_id) {
     return `/hackathons/${project.source_id}/overview`;
   }
   if (project.source_type === "course" && project.source_id) {

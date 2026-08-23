@@ -294,18 +294,42 @@ export async function getMyPaymentTransactions(): Promise<PaymentTransaction[]> 
   return Array.isArray(data.transactions) ? data.transactions : [];
 }
 
-export async function getMyAiSubscription(): Promise<AiSubscription | null> {
+export function isAiSubscriptionActive(
+  sub: AiSubscription | null | undefined,
+  referenceDate: Date = new Date(),
+): boolean {
+  if (!sub) return false;
+  if (sub.status !== "active") return false;
+  if (!sub.expires_at) return false;
+  const expiryTime = new Date(sub.expires_at).getTime();
+  return Number.isFinite(expiryTime) && expiryTime > referenceDate.getTime();
+}
+
+export function resolveEffectiveAiTier(
+  sub: AiSubscription | null | undefined,
+  referenceDate: Date = new Date(),
+): AiSubscriptionTier | "free" {
+  return isAiSubscriptionActive(sub, referenceDate) && sub?.tier ? sub.tier : "free";
+}
+
+export async function getMyAiSubscription(
+  referenceDate: Date = new Date(),
+): Promise<AiSubscription | null> {
   const token = await getAccessToken();
   requireAccessToken(token);
+  const nowIso = referenceDate.toISOString();
   const { data, error } = await supabase
     .from("ai_subscriptions")
     .select("*")
     .eq("status", "active")
+    .gt("expires_at", nowIso)
     .order("expires_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? ({ ...data } as AiSubscription) : null;
+  if (!data) return null;
+  const sub = { ...data } as AiSubscription;
+  return isAiSubscriptionActive(sub, referenceDate) ? sub : null;
 }
 
 export async function verifySePayPayment(payload: {

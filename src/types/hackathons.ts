@@ -395,6 +395,13 @@ export interface ContestSubmissionInsert {
   video_url?: string | null;
 }
 
+/** Canonical vocabulary for new code; legacy Contest types remain source-compatible. */
+export type Hackathon = Contest;
+export type HackathonInsert = ContestInsert;
+export type HackathonUpdate = ContestUpdate;
+export type HackathonSubmission = ContestSubmission;
+export type HackathonSubmissionInsert = ContestSubmissionInsert;
+
 export interface ContestScore {
   id: string;
   contest_id: string;

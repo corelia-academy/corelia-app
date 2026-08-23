@@ -3,7 +3,7 @@ import { makeTTLCache, removeUndefinedFields } from "@/lib/utils";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import { getPublishedCourses } from "@/lib/courses";
 import { listContests } from "@/lib/hackathons";
-import type { ContestLinkedShowcaseProject, Project } from "@/types/projects";
+import type { ContestLinkedShowcaseProject, Project, ProjectSourceType } from "@/types/projects";
 import type { Locale } from "@/types/database";
 import type { EntityI18nConfig } from "@/types/entityLocales";
 import type { MyProjectEntry } from "@/lib/projectCollaboration";
@@ -128,7 +128,7 @@ export async function listContestShowcaseProjects(
   const { data, error } = await supabase
     .from("projects")
     .select(select)
-    .eq("source_type", "contest")
+    .in("source_type", ["contest", "hackathon"])
     .eq("source_id", contestId)
     .in("visibility", ["public", "unlisted"])
     .order("updated_at", { ascending: false });
@@ -136,6 +136,9 @@ export async function listContestShowcaseProjects(
   if (error) throw new Error(error.message);
   return (data ?? []) as ContestLinkedShowcaseProject[];
 }
+
+/** Canonical name for new code. The legacy export remains for compatibility. */
+export const listHackathonShowcaseProjects = listContestShowcaseProjects;
 
 export async function updateProjectI18n(
   projectId: string,
@@ -200,11 +203,10 @@ export type PublicDirectoryListResult = {
 
 function normalizePublicProjectSource(
   source: ListPublicProjectsOptions["source"],
-): Project["source_type"] | null {
+): ProjectSourceType[] | null {
   if (!source || source === "all") return null;
-  if (source === "hackathon") return "contest";
-  if (source === "contest") return "contest";
-  return source;
+  if (source === "hackathon" || source === "contest") return ["contest", "hackathon"];
+  return [source];
 }
 
 function normalizeProjectListSort(sort: ListPublicProjectsOptions["sort"]): PublicProjectSort {
@@ -309,7 +311,7 @@ export async function listPublicProjects(
     .select(select)
     .eq("visibility", "public");
 
-  if (sourceType) query = query.eq("source_type", sourceType);
+  if (sourceType) query = query.in("source_type", sourceType);
 
   if (sort === "most_liked") {
     query = query.order("like_count", { ascending: false }).order("updated_at", { ascending: false });

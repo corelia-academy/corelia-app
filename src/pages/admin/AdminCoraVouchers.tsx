@@ -339,27 +339,37 @@ export default function AdminCoraVouchers() {
                       {t("coraVoucherBatches.counts", stats)}
                     </td>
                     <td className="px-3 py-3">
-                      <span className={batch.active ? "text-emerald-700" : "text-foreground-muted"}>
-                        {batch.active ? t("coraVoucherBatches.active") : t("coraVoucherBatches.inactive")}
-                      </span>
+                      {batch.archived_at ? (
+                        <span className="text-amber-600 font-medium">
+                          {t("coraVoucherBatches.archived")}
+                        </span>
+                      ) : (
+                        <span className={batch.active ? "text-emerald-700" : "text-foreground-muted"}>
+                          {batch.active ? t("coraVoucherBatches.active") : t("coraVoucherBatches.inactive")}
+                        </span>
+                      )}
                     </td>
                     <td className="px-3 py-3 text-right">
                       <div className="flex justify-end gap-2">
                         <Button type="button" variant="outline" size="sm" onClick={() => setDetailBatchId(batch.id)}>
                           {t("coraVoucherBatches.viewCodes")}
                         </Button>
-                        <Button type="button" variant="outline" size="sm" onClick={() => void handleToggleBatch(batch)}>
-                          {batch.active ? t("coraVoucherBatches.deactivate") : t("coraVoucherBatches.activate")}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setDeletingBatch(batch)}
-                        >
-                          <Trash2 className="size-4" aria-hidden />
-                        </Button>
+                        {!batch.archived_at && (
+                          <Button type="button" variant="outline" size="sm" onClick={() => void handleToggleBatch(batch)}>
+                            {batch.active ? t("coraVoucherBatches.deactivate") : t("coraVoucherBatches.activate")}
+                          </Button>
+                        )}
+                        {!batch.archived_at && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeletingBatch(batch)}
+                          >
+                            <Trash2 className="size-4" aria-hidden />
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>

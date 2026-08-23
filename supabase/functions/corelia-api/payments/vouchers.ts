@@ -16,6 +16,8 @@ type AiVoucherBatchRow = {
   ends_at?: string | null;
   target_tier?: string | null;
   target_duration_months?: number | null;
+  archived_at?: string | null;
+  archived_by?: string | null;
 };
 
 type AiVoucherCodeRow = {
@@ -132,7 +134,8 @@ async function loadVoucherByCode(
         starts_at,
         ends_at,
         target_tier,
-        target_duration_months
+        target_duration_months,
+        archived_at
       )
     `)
     .eq("code", normalizedCode)
@@ -202,6 +205,7 @@ export async function previewAiVoucher(
   const startsAt = parseTime(batch.starts_at);
   const endsAt = parseTime(batch.ends_at);
 
+  if (batch.archived_at != null) throw new Error("Batch voucher này đã được lưu trữ / ngừng áp dụng.");
   if (!voucher.active) throw new Error("Mã voucher hiện đang bị tắt.");
   if (!batch.active) throw new Error("Batch voucher hiện đang bị tắt.");
   if (startsAt != null && startsAt > now) throw new Error("Voucher chưa đến thời gian áp dụng.");
@@ -310,7 +314,7 @@ export async function deleteAiVoucherBatch(
   db: SupabaseClient,
   batchId: string,
   userId: string,
-): Promise<void> {
+): Promise<{ archived: boolean; deleted: boolean }> {
   const role = await getUserRole(db, userId);
   if (role !== "admin" && role !== "support_staff") {
     throw new Error("Không đủ quyền xóa batch voucher.");
@@ -323,17 +327,48 @@ export async function deleteAiVoucherBatch(
   if (voucherFetchError) throw new Error(voucherFetchError.message);
 
   const ids = (voucherRows ?? []).map((v) => (v as { id: string }).id);
+  let hasRedemptions = false;
   if (ids.length > 0) {
     const { count, error: redemptionCheckError } = await db
       .from("ai_voucher_redemptions")
       .select("id", { count: "exact", head: true })
-      .in("voucher_id", ids)
-      .eq("status", "paid");
+      .in("voucher_id", ids);
     if (redemptionCheckError) throw new Error(redemptionCheckError.message);
-    if ((count ?? 0) > 0) {
-      throw new Error("Không thể xóa batch đã có voucher được sử dụng.");
-    }
+    hasRedemptions = (count ?? 0) > 0;
+  }
 
+  const now = nowIso();
+  if (hasRedemptions) {
+    // Has historical/active redemptions (paid, reserved, or released):
+    // ARCHIVE instead of physical delete to preserve historical redemption and financial evidence.
+    const { error: archiveBatchErr } = await db
+      .from("ai_voucher_batches")
+      .update({
+        archived_at: now,
+        archived_by: userId,
+        active: false,
+        updated_at: now,
+        updated_by: userId,
+      })
+      .eq("id", batchId);
+    if (archiveBatchErr) throw new Error(archiveBatchErr.message);
+
+    if (ids.length > 0) {
+      const { error: deactivateCodesErr } = await db
+        .from("ai_vouchers")
+        .update({
+          active: false,
+          updated_at: now,
+          updated_by: userId,
+        })
+        .eq("batch_id", batchId);
+      if (deactivateCodesErr) throw new Error(deactivateCodesErr.message);
+    }
+    return { archived: true, deleted: false };
+  }
+
+  // Zero redemptions: clean deletion of empty/unused batch and generated codes
+  if (ids.length > 0) {
     const { error: deleteCodesError } = await db
       .from("ai_vouchers")
       .delete()
@@ -346,6 +381,8 @@ export async function deleteAiVoucherBatch(
     .delete()
     .eq("id", batchId);
   if (deleteBatchError) throw new Error(deleteBatchError.message);
+
+  return { archived: false, deleted: true };
 }
 
 export function buildVoucherCsv(codes: AiVoucherCodeRow[]): string {

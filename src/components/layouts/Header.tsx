@@ -31,6 +31,7 @@ import { supabase } from "@/lib/supabase";
 import { CoraPlanSummary } from "@/components/course-ai/CoraPlanSummary";
 import { shouldShowGlobalCoraAssistant } from "@/components/course-ai/visibility";
 import { useCoraStore } from "@/stores/coraStore";
+import { resolveEffectiveAiTier } from "@/lib/payments";
 import { cn } from "@/lib/utils";
 import { BetaAnnouncementBanner } from "@/components/layouts/BetaAnnouncementBanner";
 
@@ -252,11 +253,7 @@ export default function Header() {
   }
 
   useEffect(() => {
-    const currentTier = (aiSubscription?.tier ?? "free") as
-      | "free"
-      | "student"
-      | "pro"
-      | "bootcamp";
+    const currentTier = resolveEffectiveAiTier(aiSubscription);
     if (!user?.id) return;
     if (coraQuotaInfo && coraQuotaInfo.tier === currentTier) return;
     const month = new Date().toISOString().slice(0, 7);
@@ -276,22 +273,18 @@ export default function Header() {
       setCoraQuotaInfo({
         tier: currentTier,
         allowed: true,
-        throttled: false,
+        attemptRateLimited: false,
         haikuOnly: false,
-        monthlyUsed: usage?.message_count ?? 0,
-        monthlyLimit: limit?.monthly_messages ?? null,
-        windowUsed: 0,
-        windowSoftCap: null,
-        windowHours: 3,
-        quotaUnit:
-          (limit?.quota_unit as "message" | "token" | "both") ?? "message",
+        successfulMessagesUsed: usage?.message_count ?? 0,
+        successfulMessageLimit: limit?.monthly_messages ?? null,
+        rollingAttemptCount: 0,
+        rollingAttemptSoftCap: null,
+        rollingAttemptWindowHours: 3,
+        tierLimitSource: "tier_limits",
         monthlyTokensUsed: usage?.tokens_used ?? 0,
-        monthlyTokensLimit: limit?.monthly_tokens ?? null,
-        rollingTokensUsed: 0,
-        rollingTokensCap: null,
       });
     });
-  }, [user?.id, aiSubscription?.tier, coraQuotaInfo, setCoraQuotaInfo]);
+  }, [user?.id, aiSubscription, coraQuotaInfo, setCoraQuotaInfo]);
 
   useEffect(() => {
     function onPointerDown(e: PointerEvent) {

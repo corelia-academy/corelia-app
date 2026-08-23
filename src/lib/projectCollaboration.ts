@@ -42,7 +42,7 @@ export async function fetchHackathonProjectForOwnerSubmission(
     .select(
       "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,created_at,updated_at",
     )
-    .eq("source_type", "contest")
+    .in("source_type", ["contest", "hackathon"])
     .eq("source_id", hackathonId)
     .eq("source_submission_id", submissionId)
     .eq("owner_id", ownerUserId)

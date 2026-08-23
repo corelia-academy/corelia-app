@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "unknownDrift": "fail",
+    "expiredIntentionalDrift": "fail",
+    "indexParity": "report_only"
+  },
+  "entries": [
+    {
+      "id": "historical-main-repository-provenance-gap",
+      "kind": "EXPECTED_HISTORICAL_DRIFT",
+      "surface": "migration_history",
+      "environments": ["main"],
+      "object": "supabase_migrations.schema_migrations",
+      "reason": "Main live ledger has 139 applied versions while origin/main has 131 migration files at the frozen audit baseline. History must not be rewritten.",
+      "owner": "database-maintainers",
+      "reviewDate": "2026-11-23",
+      "expectedCatalogDelta": "none; provenance only",
+      "stagingValidationResult": "not applicable"
+    },
+    {
+      "id": "historical-statement-text-serialization",
+      "kind": "EXPECTED_HISTORICAL_DRIFT",
+      "surface": "migration_history",
+      "environments": ["main", "staging"],
+      "object": "migration statements",
+      "reason": "Twelve historical same-version statement texts differ and two versions have null statement metadata. Preserve raw hashes for audit; do not rewrite history.",
+      "owner": "database-maintainers",
+      "reviewDate": "2026-11-23",
+      "expectedCatalogDelta": "none",
+      "stagingValidationResult": "semantic RLS/function review completed"
+    },
+    {
+      "id": "historical-rls-function-text-shape",
+      "kind": "EXPECTED_HISTORICAL_DRIFT",
+      "surface": "catalog",
+      "environments": ["main", "staging"],
+      "object": "RLS policies and seven function definitions",
+      "reason": "Audited policy helper wrappers and CRLF/LF function bodies are semantically equivalent. Raw definition differences remain visible for audit.",
+      "owner": "database-maintainers",
+      "reviewDate": "2026-11-23",
+      "expectedCatalogDelta": "policy/function raw hashes may differ while normalized semantic fingerprints match",
+      "stagingValidationResult": "resolved in final pre-implementation plan"
+    },
+    {
+      "id": "legacy-ai-voucher-columns-main-only",
+      "kind": "EXPECTED_HISTORICAL_DRIFT",
+      "surface": "catalog",
+      "environments": ["main", "staging"],
+      "object": "public.ai_vouchers",
+      "reason": "Main-only legacy duplicate/empty fields and three checks are deferred for Wave 6 cleanup; adding them to Staging would create false parity work.",
+      "owner": "database-maintainers",
+      "reviewDate": "2026-11-23",
+      "expectedCatalogDelta": "Main has percent_off, starts_at, ends_at, max_redemptions and related checks; Staging omits them",
+      "stagingValidationResult": "no database routine dependency; repository uses voucher batch configuration"
+    }
+  ],
+  "intentionalStagingFeatureDrift": []
+}

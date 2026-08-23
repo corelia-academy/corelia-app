@@ -579,6 +579,7 @@
     "showing": "Showing {{shown}} / {{total}} batches",
     "active": "Active",
     "inactive": "Inactive",
+    "archived": "Archived",
     "neverStarts": "Starts immediately",
     "noExpiry": "No expiry",
     "counts": "{{available}} available · {{reserved}} reserved · {{paid}} paid · {{inactive}} inactive",

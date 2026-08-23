@@ -42,19 +42,16 @@ export type CoraSourceRef = {
 
 export type CoraQuotaInfo = {
   allowed: boolean;
-  throttled: boolean;
+  attemptRateLimited: boolean;
   haikuOnly: boolean;
-  monthlyUsed: number;
-  monthlyLimit: number | null;
-  windowUsed: number;
-  windowSoftCap: number | null;
-  windowHours: number;
+  successfulMessagesUsed: number;
+  successfulMessageLimit: number | null;
+  rollingAttemptCount: number;
+  rollingAttemptSoftCap: number | null;
+  rollingAttemptWindowHours: number;
   tier: "free" | "student" | "pro" | "bootcamp";
-  quotaUnit: "message" | "token" | "both";
+  tierLimitSource: "tier_limits" | "fallback";
   monthlyTokensUsed: number;
-  monthlyTokensLimit: number | null;
-  rollingTokensUsed: number;
-  rollingTokensCap: number | null;
 };
 
 export type CoraLearningMemory = {

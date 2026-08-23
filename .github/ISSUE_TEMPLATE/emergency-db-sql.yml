@@ -1,0 +1,48 @@
+name: Emergency database SQL reconciliation
+description: Record break-glass SQL and the required forward-only reconciliation migration.
+title: "[DB emergency] "
+labels: ["database", "incident"]
+body:
+  - type: markdown
+    attributes:
+      value: "Direct SQL is exceptional. It never replaces migration history; a new reconciliation migration is required. Do not include secrets or personal data."
+  - type: input
+    id: target
+    attributes:
+      label: Target
+      description: Exact Supabase project ref and environment.
+    validations:
+      required: true
+  - type: input
+    id: actor-time
+    attributes:
+      label: Actor and timestamp
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: Incident and reason
+    validations:
+      required: true
+  - type: textarea
+    id: sql
+    attributes:
+      label: Exact SQL executed
+      description: Redact secrets only; preserve executable SQL.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation evidence
+      description: State the read-only verification query/result and user impact.
+    validations:
+      required: true
+  - type: input
+    id: reconciliation
+    attributes:
+      label: Reconciliation migration PR and deadline
+      description: A new migration is mandatory. Link the PR/issue and due date.
+    validations:
+      required: true

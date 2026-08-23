@@ -32,7 +32,51 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  verify:
+    name: Full pre-deploy verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.98.1
+
+      - name: Verify migration governance and guardrails
+        run: pnpm db:verify
+
+      - name: Run full application test suite
+        run: pnpm test
+
+      - name: Run lint and production build
+        run: |
+          pnpm lint
+          pnpm build:prod
+
+      - name: Cleanly recreate isolated local migration chain
+        run: |
+          supabase start
+          pnpm db:verify:local
+
+      - name: Stop isolated local Supabase stack
+        if: always()
+        run: supabase stop --no-backup
+
   deploy:
+    needs: verify
     runs-on: ubuntu-latest
     environment:
       name: production
