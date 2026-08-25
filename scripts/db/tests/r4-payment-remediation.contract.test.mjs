@@ -8,6 +8,7 @@ const handler = read("supabase/functions/corelia-api/payments/handlers.ts");
 const grantAccess = read("supabase/functions/corelia-api/payments/grant_access.ts");
 const migration = read("supabase/migrations/20260825150000_r4_atomic_payment_refund_and_ai_retirement.sql");
 const reconciliation = read("supabase/migrations/20260825151000_r4_staging_catalog_reconciliation.sql");
+const functionReconciliation = read("supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql");
 
 test("R4 handler delegates ORDER_PAID to the atomic RPC without pre-marking paid", () => {
   const paidBlock = handler.slice(
@@ -65,4 +66,12 @@ test("R4 reconciliation restores guards, preserves multi-session history, and ad
   assert.match(reconciliation, /public_profiles_ocid_trgm_idx/);
   assert.match(reconciliation, /public_profiles_full_name_trgm_idx/);
   assert.doesNotMatch(reconciliation, /DROP\s+(?:TABLE|FUNCTION).*CASCADE/i);
+});
+
+test("R4 forward function reconciliation restores canonical credential activity payload", () => {
+  assert.match(functionReconciliation, /private\.emit_activity_on_credential_issuance/);
+  assert.match(functionReconciliation, /private\.credential_template_activity_payload\(NEW\.template_id\)/);
+  assert.match(functionReconciliation, /internal\.delete_public_profile/);
+  assert.match(functionReconciliation, /NOT \(e\.payload \? 'title'\)/);
+  assert.doesNotMatch(functionReconciliation, /DROP\s+.*CASCADE/i);
 });
