@@ -24,14 +24,14 @@ flowchart TD
         B1[Tạo Isolated G2 Release Artifact từ base Main SHA] --> B2[Chốt APPROVED_PRODUCTION_RELEASE_SHA & MANIFEST_SHA]
         B2 --> B3[Manual Dispatch deploy-prod.yml trên main với release_sha]
         B3 --> B4[Verify Manifest, Base SHA 66981c2 & Exact 139 Ledger]
-        B4 --> B5[Apply 5 Migrations canonically]
+        B4 --> B5[Apply 10 Migrations canonically]
         B5 --> B6[Pre-Edge Live DB Check]
-        B6 --> B7[Deploy Edge Functions: corelia-api, ai-tutor]
+        B6 --> B7[Deploy Edge Functions: corelia-api + 7 AI Tombstones]
         B7 --> B8[Live DB Post-Edge Invariant Gate: Verify Final State & Aggregates]
         B8 --> B9[Smoke Test Non-Destructive]
         B9 --> B10[User Risk Acceptance: Merge G2 Artifact vào main]
         B10 --> B11[Cloudflare Deploy Frontend Production]
-        B11 --> B12[End-to-End Smoke & Giám sát 60m/24h]
+        B11 --> B12[Bắt đầu Production Observation Window 7-14 ngày]
     end
     Stage A --> Stage B
 ```
@@ -67,19 +67,8 @@ Bootstrap commit chỉ chứa file CI workflow, governance scripts, unit tests, 
 
 ### Base Main SHA & Candidate Identity
 - **Pre-release Main Base SHA:** `66981c2044b515a6fa07a71d06f8265d171d6a74`
-- **Candidate Tree SHA-256:** `a493046c227685b2544d19e322bdb185776a80e5ce1782bbe95d22f110c99463`
-- **Total Changed Files:** `83` files (bao gồm fix `FC-01` cho `useCourseProgress.ts`).
-
-### Phân loại Delta giữa Staging và Isolated G2 Scope
-Nhánh `staging` hiện có 44 commits (~141 files). G2 Production Release được cô lập nghiêm ngặt, chỉ chứa các file thuộc phạm vi đã được kiểm duyệt:
-
-| Phân loại | Thành phần file | Quyết định phát hành |
-|---|---|---|
-| **G2_REQUIRED** | 5 forward migrations (`20260823120000` .. `20260823140000`), Edge Functions `ai-tutor`, `corelia-api/payments/vouchers.ts`, modules `payments.ts`, `Header.tsx`, `CoraPlanSummary.tsx`, `AccountCoraRoute.tsx`, `useCoraAI.ts`, `aiVouchers.ts`, `projects.ts`, `projectSource.ts`, `hackathons.ts`, `UserProfileProjectsSection.tsx`, `ProjectDetailPage.tsx`, `useCourseProgress.ts` (FC-01 fix), admin vouchers, localization | **Bao gồm trong G2 Release Artifact** |
-| **WAVE0_GUARD_REQUIRED** | Baseline scripts, drift allowlist, catalog fingerprint, baseline.json (LF normalized) | **Bao gồm trong G2 Release Artifact** |
-| **STAGING_ONLY_VALIDATION** | Staging execution reports, integration test scripts (`g2-r1-db-integration.sql`, `g2-r1-concurrency.integration.mjs`) | **Bao gồm trong repo/docs** |
-| **DEFERRED** | `cron-learning-reminders` | **Hoãn có chủ đích (`DEFER_SAFE`)** |
-| **UNRELATED_FEATURE** | Các commit thử nghiệm UI khác ngoài phạm vi G2 | **Loại bỏ khỏi G2 Release Artifact** |
+- **Candidate Tree SHA-256:** `ec7ddebc145d5b56dace9954a79908662f159c038c037cb46816969d71af10e2`
+- **Scope:** Bao gồm 10 forward migrations, Edge corelia-api, 7 AI Edge tombstones, loại bỏ giao diện Cora AI Wave B, và bảo lưu các bảng snapshot tĩnh (`KEEP_UNTIL_SEPARATE_PRODUCT_MIGRATION`).
 
 ---
 
@@ -91,17 +80,24 @@ Nhánh `staging` hiện có 44 commits (~141 files). G2 Production Release đư�
 
 ---
 
-## 6. FC-02 & FC-05: Trigger / Edge Compatibility Window & Post-Edge Gate
+## 6. FC-02, FC-05 & F-02: Edge Rollout Scope, Tombstones & Post-Edge Gate
 
-### Phân tích cửa sổ tương thích
-1. Khi migration `20260823130000` được áp dụng lên DB, trigger `trg_sync_ai_chat_session_message_count` được kích hoạt trên `ai_conversations`.
-2. Trong khoảng thời gian trước khi `ai-tutor` mới được deploy, `ai-tutor` cũ vẫn đang chạy trên Production.
-3. Bản `ai-tutor` mới đã loại bỏ hoàn toàn lệnh `UPDATE ai_chat_sessions SET message_count = prevCount + 2`, để cho trigger quản lý tự động cả `message_count` và `last_message_at`.
-4. Để triệt tiêu rủi ro bất đồng bộ số liệu trong cửa sổ chuyển giao, workflow triển khai quy trình 4 bước:
+### Phân tích phạm vi triển khai Edge Functions (F-02 Remediation)
+1. Để đảm bảo loại bỏ triệt để toàn bộ khả năng AI của hệ thống mà không gây lỗi đứt gãy kết nối mạng cho các client cũ (stale clients), workflow triển khai `corelia-api` cùng toàn bộ **7 Edge Functions AI đã nghỉ hưu (Tombstones)**:
+   - `ai-tutor` (Tombstone: OPTIONS 204, POST 410 `AI_FEATURE_RETIRED`)
+   - `embed-lesson` (Tombstone: OPTIONS 204, POST 410 `AI_FEATURE_RETIRED`)
+   - `generate-description` (Tombstone: OPTIONS 204, POST 410 `AI_FEATURE_RETIRED`)
+   - `generate-flashcards` (Tombstone: OPTIONS 204, POST 410 `AI_FEATURE_RETIRED`)
+   - `generate-learning-path` (Tombstone: OPTIONS 204, POST 410 `AI_FEATURE_RETIRED`)
+   - `generate-lesson-summary` (Tombstone: OPTIONS 204, POST 410 `AI_FEATURE_RETIRED`)
+   - `generate-questions` (Tombstone: OPTIONS 204, POST 410 `AI_FEATURE_RETIRED`)
+2. Việc triển khai tombstones (thay vì undeploy ngay lập tức) cho phép hệ thống ghi nhận chính xác lưu lượng truy cập tàn dư trong Cửa sổ quan sát (Observation Window) và phản hồi mã lỗi ngữ nghĩa rõ ràng.
+3. Khi migration `20260823130000` được áp dụng lên DB, trigger `trg_sync_ai_chat_session_message_count` được kích hoạt trên `ai_conversations`.
+4. Quy trình triển khai Edge:
    - **Bước 1:** Áp dụng DB migrations canonically.
    - **Bước 2:** Chạy Pre-Edge gate kiểm tra DB schema.
-   - **Bước 3:** Deploy ngay lập tức 2 Edge Functions (`corelia-api`, `ai-tutor`).
-   - **Bước 4 (Post-Edge Gate):** Chạy **Live DB Post-Edge Invariant Gate** trực tiếp trên database để đối soát `session_count_mismatches = 0` trên toàn bộ sessions sau khi Edge Function mới đã active.
+   - **Bước 3:** Deploy `corelia-api` và toàn bộ 7 AI tombstones.
+   - **Bước 4 (Post-Edge Gate):** Chạy **Live DB Post-Edge Invariant Gate** trực tiếp trên database để đối soát `session_count_mismatches = 0` trên toàn bộ sessions sau khi toàn bộ Edge Functions mới đã active.
 5. Nếu bất kỳ sai lệch nào xảy ra trong quá trình deploy Edge, Post-Edge Gate sẽ **FAIL CLOSED** ngay lập tức, chặn hoàn toàn bước merge Main / deploy Frontend.
 
 ---

@@ -39,13 +39,27 @@ describe("Deployment State Machine & Compatibility Gates", () => {
     assert.match(migration130000Content, /pg_trigger_depth\(\) = 1/);
   });
 
-  it("CASE C4: workflow execution order enforces Post-Edge gate before completion", () => {
-    // Workflow must deploy Edge functions and then execute post-Edge verification gate
-    const deployEdgeIndex = workflowContent.indexOf("functions deploy ai-tutor");
+  it("CASE C4: workflow execution order enforces Post-Edge gate before completion and deploys all 7 tombstones", () => {
+    // Workflow must deploy corelia-api and all 7 retired AI functions before executing post-Edge verification gate
+    const retiredFunctions = [
+      "ai-tutor",
+      "embed-lesson",
+      "generate-description",
+      "generate-flashcards",
+      "generate-learning-path",
+      "generate-lesson-summary",
+      "generate-questions",
+    ];
+    for (const fn of retiredFunctions) {
+      const idx = workflowContent.indexOf(`functions deploy ${fn}`);
+      assert.ok(idx > 0, `Deploy step for retired AI function ${fn} must exist in workflow`);
+    }
+
+    const lastEdgeDeployIndex = workflowContent.indexOf("functions deploy generate-questions");
     const postEdgeGateIndex = workflowContent.indexOf("Verify live DB post-Edge final runtime invariants");
-    assert.ok(deployEdgeIndex > 0, "ai-tutor deploy step exists");
+    assert.ok(lastEdgeDeployIndex > 0, "Last Edge function (generate-questions) deploy step exists");
     assert.ok(postEdgeGateIndex > 0, "Post-Edge gate step exists");
-    assert.ok(postEdgeGateIndex > deployEdgeIndex, "Post-Edge gate executes AFTER Edge deployment");
+    assert.ok(postEdgeGateIndex > lastEdgeDeployIndex, "Post-Edge gate executes AFTER all Edge deployments");
   });
 
   it("CASE C5: Edge deployment failure leaves system in a safe recoverable state", () => {

@@ -105,7 +105,7 @@ function validateRecipe(recipe, sourceSha) {
 export function validateManifestSchema(manifest) {
   assertExactKeys(
     manifest,
-    ["schema_version", "artifact_id", "base_sha", "source_sha", "manifest_path", "candidate_tree_sha256", "recipe", "files", "migration_chain"],
+    ["schema_version", "artifact_id", "base_sha", "source_sha", "manifest_path", "candidate_tree_sha256", "recipe", "files", "deleted_files", "migration_chain"],
     "release manifest",
   );
   if (manifest.schema_version !== 1) throw new Error("Unsupported release manifest schema_version.");
@@ -126,6 +126,12 @@ export function validateManifestSchema(manifest) {
     const path = normalizeRepositoryPath(file.path);
     if (path === manifestPath) throw new Error("The manifest must be protected externally, not self-hashed.");
     assertSha(file.sha256, SHA256_RE, `files SHA-256 for ${path}`);
+  }
+
+  if (!Array.isArray(manifest.deleted_files)) throw new Error("deleted_files must be an array.");
+  validateUniquePaths(manifest.deleted_files.map((p) => ({ path: p })), "deleted_files");
+  for (const deletedPath of manifest.deleted_files) {
+    normalizeRepositoryPath(deletedPath);
   }
 
   assertExactKeys(manifest.migration_chain, ["baseline_manifest", "forward"], "migration_chain");
@@ -170,7 +176,7 @@ export function validateReleaseArtifactState(manifestInput, state) {
     return { ok: false, errors: [error.message] };
   }
   if (state.baseSha !== manifest.base_sha) errors.push(`Wrong base SHA: expected ${manifest.base_sha}, got ${state.baseSha ?? "<missing>"}.`);
-  const expectedChanged = [...manifest.files.map((entry) => entry.path), manifest.manifest_path];
+  const expectedChanged = [...manifest.files.map((entry) => entry.path), ...(manifest.deleted_files ?? []), manifest.manifest_path];
   compareExactPaths(state.changedFiles ?? [], expectedChanged, "Release artifact", errors);
 
   const actualFiles = state.files instanceof Map ? state.files : new Map(Object.entries(state.files ?? {}));
