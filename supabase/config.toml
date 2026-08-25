@@ -14,18 +14,24 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.ai-tutor]
-# Learner-facing chat surface. JWT is verified in code so we can keep the same
-# CORS/preflight behavior as the rest of the Corelia edge functions.
+verify_jwt = false
+
+[functions.embed-lesson]
 verify_jwt = false
 
 [functions.generate-description]
-# Instructor workspace helper. Keep preflight/CORS behavior consistent and
-# verify the bearer token in the handler so we can enforce role + entity access.
+verify_jwt = false
+
+[functions.generate-flashcards]
+verify_jwt = false
+
+[functions.generate-learning-path]
+verify_jwt = false
+
+[functions.generate-lesson-summary]
 verify_jwt = false
 
 [functions.generate-questions]
-# Instructor workspace helper. Mirror the same auth/CORS behavior as the other
-# workspace Edge Functions and verify the bearer token inside the handler.
 verify_jwt = false
 
 [api]
@@ -115,8 +121,8 @@ enabled = true
 port = 54323
 # External URL of the API server that frontend connects to.
 api_url = "http://127.0.0.1"
-# OpenAI API Key to use for Supabase AI in the Supabase Studio.
-openai_api_key = "env(OPENAI_API_KEY)"
+# OpenAI API Key to use for Supabase AI in the Supabase Studio (Retired in Wave C).
+# openai_api_key = "env(OPENAI_API_KEY)"
 
 # Email testing server. Emails sent with the local dev setup are not actually sent - rather, they
 # are monitored, and you can view the emails that would have been sent from the web interface.

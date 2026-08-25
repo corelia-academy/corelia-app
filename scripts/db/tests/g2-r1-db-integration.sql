@@ -6,8 +6,9 @@
 --   1. Clean Recreate Verification & Preflight Invariant Check (PREFLIGHT-01)
 --   2. FV-G2-02: Real Authenticated RLS & Composite FK Integration (OWN-01 to OWN-08)
 --   3. Message-Count Trigger Real Database Verification (MSG-01 to MSG-08)
---   4. FV-G2-03: Real Authenticated RPC Authorization (RPC-01 to RPC-06, PRIV-01 to PRIV-02, DATA-01)
---   5. FV-G2-01: Valid UUID & Partial-Index Compliant Entitlement Predicates (ENT-01 to ENT-03)
+--   4. COMPAT-OLD-EDGE-NEW-DB-01: Real legacy aggregate write compatibility
+--   5. FV-G2-03: Real Authenticated RPC Authorization (RPC-01 to RPC-06, PRIV-01 to PRIV-02, DATA-01)
+--   6. FV-G2-01: Valid UUID & Partial-Index Compliant Entitlement Predicates (ENT-01 to ENT-03)
 -- =============================================================================
 
 DO $integration_test$
@@ -42,6 +43,24 @@ DECLARE
   v_b_baseline_cnt int;
   v_b_baseline_ts timestamptz;
   v_sess_check uuid;
+
+  -- COMPAT-OLD-EDGE-NEW-DB-01 fixtures
+  v_compat_session_a uuid := 'c0100000-aaaa-4aaa-8aaa-000000000001'::uuid;
+  v_compat_session_b uuid := 'c0100000-bbbb-4bbb-8bbb-000000000002'::uuid;
+  v_compat_conv_insert uuid := 'c0100000-cccc-4ccc-8ccc-000000000001'::uuid;
+  v_compat_conv_transition uuid := 'c0100000-cccc-4ccc-8ccc-000000000002'::uuid;
+  v_compat_conv_delete uuid := 'c0100000-cccc-4ccc-8ccc-000000000003'::uuid;
+  v_guard_trigger_count int;
+  v_guard_trigger_def text;
+  v_guard_function_schema text;
+  v_guard_function_name text;
+  v_guard_enabled text;
+  v_guard_type int;
+  v_guard_columns text;
+  v_depth_1_events int;
+  v_depth_2_events int;
+  v_canonical_count int;
+  v_stale_count int;
 
   v_hackathon_id text := 'hackathon-test-g2-r1';
   v_sub_a uuid := 'a0000000-0000-4000-8000-000000000001'::uuid;
@@ -572,7 +591,252 @@ BEGIN
   RAISE NOTICE '✓ MSG-06: PASS (Foreign user session cannot be mutated via cross-owner insert/update, aggregates & error classifications strictly verified)';
 
   -- ---------------------------------------------------------------------------
-  -- 4. FV-G2-03 Real RPC Privilege & Authorization Integration
+  -- 4. COMPAT-OLD-EDGE-NEW-DB-01
+  --    Real DML proof for the worst rollout state: NEW DB + OLD EDGE.
+  -- ---------------------------------------------------------------------------
+
+  -- Prove the deployed trigger identity from PostgreSQL catalogs, not source text.
+  SELECT
+    count(*)::int,
+    max(pg_get_triggerdef(t.oid)),
+    max(pn.nspname),
+    max(p.proname),
+    max(t.tgenabled::text),
+    max(t.tgtype::int),
+    max(t.tgattr::text)
+  INTO
+    v_guard_trigger_count,
+    v_guard_trigger_def,
+    v_guard_function_schema,
+    v_guard_function_name,
+    v_guard_enabled,
+    v_guard_type,
+    v_guard_columns
+  FROM pg_trigger t
+  JOIN pg_class c ON c.oid = t.tgrelid
+  JOIN pg_namespace cn ON cn.oid = c.relnamespace
+  JOIN pg_proc p ON p.oid = t.tgfoid
+  JOIN pg_namespace pn ON pn.oid = p.pronamespace
+  WHERE t.tgname = 'trg_guard_ai_chat_session_message_count'
+    AND NOT t.tgisinternal
+    AND cn.nspname = 'public'
+    AND c.relname = 'ai_chat_sessions';
+
+  IF v_guard_trigger_count <> 1
+     OR v_guard_enabled IS DISTINCT FROM 'O'
+     OR v_guard_type IS DISTINCT FROM 19
+     OR v_guard_function_schema IS DISTINCT FROM 'public'
+     OR v_guard_function_name IS DISTINCT FROM 'guard_ai_chat_session_message_count'
+     OR v_guard_columns IS DISTINCT FROM (
+       SELECT a.attnum::text
+       FROM pg_attribute a
+       WHERE a.attrelid = 'public.ai_chat_sessions'::regclass
+         AND a.attname = 'message_count'
+         AND NOT a.attisdropped
+     )
+     OR v_guard_trigger_def NOT LIKE '%BEFORE UPDATE OF message_count ON public.ai_chat_sessions FOR EACH ROW%' THEN
+    RAISE EXCEPTION 'COMPAT-OLD-EDGE-NEW-DB-01: Guard identity mismatch (count %, enabled %, type %, function %.%, columns %, def %)',
+      v_guard_trigger_count, v_guard_enabled, v_guard_type,
+      v_guard_function_schema, v_guard_function_name, v_guard_columns, v_guard_trigger_def;
+  END IF;
+
+  -- A temporary observer records the real trigger depth for each session update.
+  -- It runs after the guard alphabetically and never changes NEW.
+  EXECUTE 'CREATE TEMP TABLE compat_trigger_depth_events (
+    event_id bigint GENERATED ALWAYS AS IDENTITY,
+    session_id uuid NOT NULL,
+    trigger_depth int NOT NULL,
+    old_count int NOT NULL,
+    new_count int NOT NULL
+  ) ON COMMIT DROP';
+  EXECUTE $compat_ddl$
+    CREATE FUNCTION pg_temp.capture_compat_session_trigger_depth()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    AS $capture$
+    BEGIN
+      INSERT INTO pg_temp.compat_trigger_depth_events (
+        session_id, trigger_depth, old_count, new_count
+      ) VALUES (
+        NEW.id, pg_trigger_depth(), OLD.message_count, NEW.message_count
+      );
+      RETURN NEW;
+    END;
+    $capture$
+  $compat_ddl$;
+  EXECUTE 'CREATE TRIGGER zz_test_capture_compat_session_trigger_depth
+    BEFORE UPDATE OF message_count ON public.ai_chat_sessions
+    FOR EACH ROW
+    EXECUTE FUNCTION pg_temp.capture_compat_session_trigger_depth()';
+
+  INSERT INTO public.ai_chat_sessions (id, user_id, context_type, title, message_count)
+  VALUES
+    (v_compat_session_a, v_user_a, 'dashboard', 'Compatibility Session A', 0),
+    (v_compat_session_b, v_user_b, 'dashboard', 'Compatibility Session B', 0);
+
+  -- completed INSERT: canonical nested update is depth 2; stale OLD EDGE write is depth 1.
+  TRUNCATE pg_temp.compat_trigger_depth_events;
+  SELECT message_count INTO v_stale_count
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_a;
+
+  INSERT INTO public.ai_conversations (id, user_id, session_id, role, content, status)
+  VALUES (v_compat_conv_insert, v_user_a, v_compat_session_a, 'user', 'completed insert', 'completed');
+
+  SELECT count(*) INTO v_depth_2_events
+  FROM pg_temp.compat_trigger_depth_events
+  WHERE session_id = v_compat_session_a AND trigger_depth = 2 AND old_count = 0 AND new_count = 1;
+  IF v_depth_2_events <> 1 THEN
+    RAISE EXCEPTION 'COMPAT-OLD-EDGE-NEW-DB-01: completed INSERT did not produce the expected nested depth-2 session update';
+  END IF;
+
+  UPDATE public.ai_chat_sessions
+  SET message_count = v_stale_count + 2
+  WHERE id = v_compat_session_a;
+
+  SELECT count(*) INTO v_depth_1_events
+  FROM pg_temp.compat_trigger_depth_events
+  WHERE session_id = v_compat_session_a AND trigger_depth = 1 AND new_count = 1;
+  SELECT message_count INTO v_cnt
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_a;
+  IF v_depth_1_events <> 1 OR v_cnt <> 1 THEN
+    RAISE EXCEPTION 'COMPAT-OLD-EDGE-NEW-DB-01: stale direct write after completed INSERT persisted (depth-1 events %, count %)', v_depth_1_events, v_cnt;
+  END IF;
+
+  -- pending -> completed.
+  INSERT INTO public.ai_conversations (id, user_id, session_id, role, content, status)
+  VALUES (v_compat_conv_transition, v_user_a, v_compat_session_a, 'assistant', 'pending transition', 'pending');
+  SELECT message_count INTO v_stale_count
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_a;
+  TRUNCATE pg_temp.compat_trigger_depth_events;
+
+  UPDATE public.ai_conversations
+  SET status = 'completed', content = 'transition completed'
+  WHERE id = v_compat_conv_transition;
+  UPDATE public.ai_chat_sessions
+  SET message_count = v_stale_count + 2
+  WHERE id = v_compat_session_a;
+
+  SELECT count(*) FILTER (WHERE trigger_depth = 2),
+         count(*) FILTER (WHERE trigger_depth = 1)
+  INTO v_depth_2_events, v_depth_1_events
+  FROM pg_temp.compat_trigger_depth_events
+  WHERE session_id = v_compat_session_a;
+  SELECT message_count INTO v_cnt
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_a;
+  IF v_depth_2_events <> 1 OR v_depth_1_events <> 1 OR v_cnt <> 2 THEN
+    RAISE EXCEPTION 'COMPAT-OLD-EDGE-NEW-DB-01: pending->completed compatibility failed (depth2 %, depth1 %, count %)', v_depth_2_events, v_depth_1_events, v_cnt;
+  END IF;
+
+  -- Repeated UPDATE on a completed row must not change the canonical count;
+  -- the following stale direct OLD EDGE write must still be normalized.
+  SELECT message_count INTO v_stale_count
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_a;
+  TRUNCATE pg_temp.compat_trigger_depth_events;
+  UPDATE public.ai_conversations
+  SET tokens_used = tokens_used + 1
+  WHERE id = v_compat_conv_transition;
+  UPDATE public.ai_chat_sessions
+  SET message_count = v_stale_count + 2
+  WHERE id = v_compat_session_a;
+
+  SELECT count(*) FILTER (WHERE trigger_depth = 2),
+         count(*) FILTER (WHERE trigger_depth = 1)
+  INTO v_depth_2_events, v_depth_1_events
+  FROM pg_temp.compat_trigger_depth_events
+  WHERE session_id = v_compat_session_a;
+  SELECT message_count INTO v_cnt
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_a;
+  IF v_depth_2_events <> 0 OR v_depth_1_events <> 1 OR v_cnt <> 2 THEN
+    RAISE EXCEPTION 'COMPAT-OLD-EDGE-NEW-DB-01: repeated completed UPDATE was not idempotent (depth2 %, depth1 %, count %)', v_depth_2_events, v_depth_1_events, v_cnt;
+  END IF;
+
+  -- completed -> error followed by a stale direct aggregate update.
+  SELECT message_count INTO v_stale_count
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_a;
+  TRUNCATE pg_temp.compat_trigger_depth_events;
+  UPDATE public.ai_conversations
+  SET status = 'error'
+  WHERE id = v_compat_conv_transition;
+  UPDATE public.ai_chat_sessions
+  SET message_count = v_stale_count + 2
+  WHERE id = v_compat_session_a;
+
+  SELECT count(*) FILTER (WHERE trigger_depth = 2),
+         count(*) FILTER (WHERE trigger_depth = 1)
+  INTO v_depth_2_events, v_depth_1_events
+  FROM pg_temp.compat_trigger_depth_events
+  WHERE session_id = v_compat_session_a;
+  SELECT message_count INTO v_cnt
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_a;
+  IF v_depth_2_events <> 1 OR v_depth_1_events <> 1 OR v_cnt <> 1 THEN
+    RAISE EXCEPTION 'COMPAT-OLD-EDGE-NEW-DB-01: completed->error compatibility failed (depth2 %, depth1 %, count %)', v_depth_2_events, v_depth_1_events, v_cnt;
+  END IF;
+
+  -- DELETE completed followed by a stale direct aggregate update.
+  INSERT INTO public.ai_conversations (id, user_id, session_id, role, content, status)
+  VALUES (v_compat_conv_delete, v_user_a, v_compat_session_a, 'user', 'delete completed', 'completed');
+  SELECT message_count INTO v_stale_count
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_a;
+  TRUNCATE pg_temp.compat_trigger_depth_events;
+  DELETE FROM public.ai_conversations WHERE id = v_compat_conv_delete;
+  UPDATE public.ai_chat_sessions
+  SET message_count = v_stale_count + 2
+  WHERE id = v_compat_session_a;
+
+  SELECT count(*) FILTER (WHERE trigger_depth = 2),
+         count(*) FILTER (WHERE trigger_depth = 1)
+  INTO v_depth_2_events, v_depth_1_events
+  FROM pg_temp.compat_trigger_depth_events
+  WHERE session_id = v_compat_session_a;
+  SELECT message_count INTO v_cnt
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_a;
+  SELECT count(*)::int INTO v_canonical_count
+  FROM public.ai_conversations
+  WHERE session_id = v_compat_session_a AND status = 'completed';
+  IF v_depth_2_events <> 1 OR v_depth_1_events <> 1 OR v_cnt <> v_canonical_count OR v_cnt <> 1 THEN
+    RAISE EXCEPTION 'COMPAT-OLD-EDGE-NEW-DB-01: DELETE completed compatibility failed (depth2 %, depth1 %, count %, canonical %)', v_depth_2_events, v_depth_1_events, v_cnt, v_canonical_count;
+  END IF;
+
+  -- Authenticated User A cannot directly corrupt User B's aggregate.
+  SELECT message_count INTO v_b_baseline_cnt
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_b;
+  PERFORM set_config('role', 'authenticated', true);
+  PERFORM set_config('request.jwt.claim.sub', v_user_a::text, true);
+  PERFORM set_config('request.jwt.claim.role', 'authenticated', true);
+  PERFORM set_config('request.jwt.claims', format('{"sub":"%s","role":"authenticated"}', v_user_a), true);
+  UPDATE public.ai_chat_sessions
+  SET message_count = 999
+  WHERE id = v_compat_session_b;
+  GET DIAGNOSTICS v_affected = ROW_COUNT;
+  PERFORM set_config('role', 'postgres', true);
+  SELECT message_count INTO v_cnt
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_b;
+  IF v_affected <> 0 OR v_cnt <> v_b_baseline_cnt THEN
+    RAISE EXCEPTION 'COMPAT-OLD-EDGE-NEW-DB-01: cross-owner direct update corrupted Session B (affected %, before %, after %)', v_affected, v_b_baseline_cnt, v_cnt;
+  END IF;
+
+  -- Final invariant and cleanup. The observer is removed explicitly so the
+  -- integration suite proves it does not leave a persistent test object.
+  SELECT message_count INTO v_cnt
+  FROM public.ai_chat_sessions WHERE id = v_compat_session_a;
+  SELECT count(*)::int INTO v_canonical_count
+  FROM public.ai_conversations
+  WHERE session_id = v_compat_session_a AND status = 'completed';
+  IF v_cnt <> v_canonical_count THEN
+    RAISE EXCEPTION 'COMPAT-OLD-EDGE-NEW-DB-01: final aggregate mismatch (stored %, canonical %)', v_cnt, v_canonical_count;
+  END IF;
+
+  DELETE FROM public.ai_conversations
+  WHERE id IN (v_compat_conv_insert, v_compat_conv_transition, v_compat_conv_delete);
+  DELETE FROM public.ai_chat_sessions
+  WHERE id IN (v_compat_session_a, v_compat_session_b);
+  EXECUTE 'DROP TRIGGER zz_test_capture_compat_session_trigger_depth ON public.ai_chat_sessions';
+  EXECUTE 'DROP FUNCTION pg_temp.capture_compat_session_trigger_depth()';
+
+  RAISE NOTICE '✓ COMPAT-OLD-EDGE-NEW-DB-01: PASS (real DML, runtime guard identity, depth-1 direct writes, depth-2 canonical writes, transitions, and owner isolation verified)';
+
+  -- ---------------------------------------------------------------------------
+  -- 5. FV-G2-03 Real RPC Privilege & Authorization Integration
   -- ---------------------------------------------------------------------------
   IF has_function_privilege('anon', 'public.patch_hackathon_metrics_snapshot(text, jsonb)', 'EXECUTE') THEN
     RAISE EXCEPTION 'PRIV-01: FAILED. anon role still has EXECUTE privilege on patch_hackathon_metrics_snapshot!';

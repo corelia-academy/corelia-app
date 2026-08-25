@@ -66,7 +66,6 @@ const AccountProfileRoute = lazy(() =>
 const AccountCvRoute = lazy(() =>
   import("@/pages/account/AccountCvRoute").then((m) => ({ default: m.AccountCvRoute })),
 );
-const CoraCheckoutPage = lazy(() => import("@/pages/cora/CoraCheckoutPage"));
 const AccountBillingRoute = lazy(() =>
   import("@/pages/account/AccountBillingRoute").then((m) => ({ default: m.AccountBillingRoute })),
 );
@@ -109,7 +108,6 @@ const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDe
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMilestones"));
 const AdminManualMint = lazy(() => import("@/pages/admin/AdminManualMint"));
-const AdminCoraVouchers = lazy(() => import("@/pages/admin/AdminCoraVouchers"));
 const AdminBranding = lazy(() => import("@/pages/admin/AdminBranding"));
 
 const PageFallback = () => <AuthGateLoading />;
@@ -518,19 +516,17 @@ export default function App() {
               </Route>
               <Route
                 path="account/cora"
-                element={<Navigate to="/cora" replace />}
+                element={<Navigate to="/courses" replace />}
               />
               <Route
                 path="cora"
-                element={
-                  <RequireAuth>
-                    <Suspense fallback={<PageFallback />}>
-                      <CoraCheckoutPage />
-                    </Suspense>
-                  </RequireAuth>
-                }
+                element={<Navigate to="/courses" replace />}
               />
-              <Route path="upgrade/cora" element={<Navigate to="/cora" replace />} />
+              <Route
+                path="cora/checkout"
+                element={<Navigate to="/courses" replace />}
+              />
+              <Route path="upgrade/cora" element={<Navigate to="/courses" replace />} />
               <Route
                 path="admin"
                 element={
@@ -591,11 +587,7 @@ export default function App() {
                 />
                 <Route
                   path="cora-vouchers"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <AdminCoraVouchers />
-                    </Suspense>
-                  }
+                  element={<Navigate to="/admin" replace />}
                 />
                 <Route
                   path="branding"

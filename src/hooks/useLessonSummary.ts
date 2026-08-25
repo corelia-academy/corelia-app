@@ -1,24 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 
-import i18n from "@/i18n";
-import {
-  invokeGenerateLessonSummary,
-  type LessonSummary,
-} from "@/lib/lessonSummary";
+import type { LessonSummary } from "@/lib/lessonSummary";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/authStore";
 
 type State = {
   summary: LessonSummary | null;
   loading: boolean;
-  generating: boolean;
   error: string | null;
 };
 
 const INITIAL_STATE: State = {
   summary: null,
   loading: false,
-  generating: false,
   error: null,
 };
 
@@ -52,88 +46,67 @@ function fromRow(row: DbSummaryRow): LessonSummary {
 
 export function useLessonSummary(params: {
   lessonId: string | null | undefined;
-  courseId: string | null | undefined;
+  courseId?: string | null | undefined;
   locale?: "vi" | "en";
 }) {
-  const { lessonId, courseId, locale } = params;
+  const { lessonId, locale = "vi" } = params;
   const { user, isAuthenticated } = useAuth();
   const [state, setState] = useState<State>(INITIAL_STATE);
+  const userId = user?.id;
 
-  const fetchExisting = useCallback(async () => {
-    if (!isAuthenticated || !user?.id || !lessonId) {
-      setState(INITIAL_STATE);
+  const refetch = useCallback(async () => {
+    if (!isAuthenticated || !userId || !lessonId) {
+      setState((prev) => (prev.summary ? INITIAL_STATE : prev));
       return;
     }
     setState((prev) => ({ ...prev, loading: true, error: null }));
     const { data, error } = await supabase
       .from("lesson_summaries")
       .select("id,key_points,practical_tips,locale,created_at,updated_at")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("lesson_id", lessonId)
-      .eq("locale", locale ?? "vi")
+      .eq("locale", locale)
       .maybeSingle<DbSummaryRow>();
     if (error) {
-      setState({ summary: null, loading: false, generating: false, error: error.message });
+      setState({ summary: null, loading: false, error: error.message });
       return;
     }
     setState({
       summary: data ? fromRow(data) : null,
       loading: false,
-      generating: false,
       error: null,
     });
-  }, [isAuthenticated, lessonId, locale, user?.id]);
+  }, [isAuthenticated, lessonId, locale, userId]);
 
   useEffect(() => {
-    void fetchExisting();
-  }, [fetchExisting]);
-
-  const generate = useCallback(
-    async (options?: { force?: boolean }) => {
-      if (!lessonId || !courseId) return null;
-      if (!isAuthenticated) {
-        setState((prev) => ({
-          ...prev,
-          error: i18n.t("courses:errors.mustLoginFeature"),
-        }));
-        return null;
-      }
-      setState((prev) => ({ ...prev, generating: true, error: null }));
-      try {
-        const response = await invokeGenerateLessonSummary({
-          lessonId,
-          courseId,
-          locale,
-          force: options?.force,
-        });
-        setState({
-          summary: response.summary,
-          loading: false,
-          generating: false,
-          error: null,
-        });
-        return response.summary;
-      } catch (error) {
-        setState((prev) => ({
-          ...prev,
-          generating: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : i18n.t("courses:errors.lessonSummary.generateFailed"),
-        }));
-        return null;
-      }
-    },
-    [courseId, isAuthenticated, lessonId, locale],
-  );
+    let active = true;
+    if (!isAuthenticated || !userId || !lessonId) {
+      return;
+    }
+    void supabase
+      .from("lesson_summaries")
+      .select("id,key_points,practical_tips,locale,created_at,updated_at")
+      .eq("user_id", userId)
+      .eq("lesson_id", lessonId)
+      .eq("locale", locale)
+      .maybeSingle<DbSummaryRow>()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          setState({ summary: null, loading: false, error: error.message });
+        } else {
+          setState({ summary: data ? fromRow(data) : null, loading: false, error: null });
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [isAuthenticated, lessonId, locale, userId]);
 
   return {
     summary: state.summary,
     loading: state.loading,
-    generating: state.generating,
     error: state.error,
-    generate,
-    refetch: fetchExisting,
+    refetch,
   };
 }

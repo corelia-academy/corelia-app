@@ -1,4 +1,3 @@
-import { supabaseFunctionHeaders } from "./coreliaEdgeApi";
 import { supabase } from "./supabase";
 
 export type LearningPathMilestone = {
@@ -43,24 +42,7 @@ export type LearningPath = {
   updatedAt: string;
 };
 
-export type GenerateLearningPathRequest = {
-  goal: string;
-  locale?: "vi" | "en";
-  force?: boolean;
-};
 
-export type GenerateLearningPathResponse = {
-  cached: boolean;
-  path: LearningPath;
-};
-
-function functionUrl(): string {
-  const explicit = import.meta.env.VITE_GENERATE_LEARNING_PATH_FUNCTION_URL?.trim();
-  if (explicit) return explicit.replace(/\/+$/, "");
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
-  if (!supabaseUrl) return "";
-  return `${supabaseUrl.replace(/\/+$/, "")}/functions/v1/generate-learning-path`;
-}
 
 function normalizeMilestones(input: unknown): LearningPathMilestone[] {
   if (!Array.isArray(input)) return [];
@@ -165,35 +147,6 @@ function normalizePath(raw: Record<string, unknown>): LearningPath {
           ? (raw.updated_at as string)
           : new Date().toISOString(),
   };
-}
-
-export async function invokeGenerateLearningPath(
-  body: GenerateLearningPathRequest,
-): Promise<GenerateLearningPathResponse> {
-  const url = functionUrl();
-  if (!url) throw new Error("Missing Supabase functions URL");
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const token = session?.access_token;
-  if (!token) throw new Error("Bạn cần đăng nhập để dùng tính năng này.");
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      ...supabaseFunctionHeaders(token),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-  const payload = (await res.json().catch(() => ({}))) as {
-    cached?: boolean;
-    path?: Record<string, unknown>;
-    message?: string;
-  };
-  if (!res.ok) throw new Error(payload.message?.trim() || `http_error:${res.status}`);
-  if (!payload.path) throw new Error("Phản hồi lộ trình không hợp lệ.");
-  return { cached: Boolean(payload.cached), path: normalizePath(payload.path) };
 }
 
 export async function listLearningPaths(userId: string): Promise<LearningPath[]> {

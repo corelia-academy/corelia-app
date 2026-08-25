@@ -63,16 +63,22 @@ export function useLearnEnrollmentAccess({
 
   const hasFullCourseAccess = useMemo(() => {
     const effective = accessModel ?? "free";
+    if (effective !== "paid_upfront") return true;
+    if (role === "admin") return true;
+
+    const isRevoked = effectivePaymentAccess?.status === "revoked" || effectivePaymentAccess?.status === "expired";
+    if (isRevoked) return false;
+
     return (
-      effective !== "paid_upfront" ||
-      effectiveEnrolled ||
-      !!effectivePaymentAccess?.full_access_granted ||
-      role === "admin"
+      effectivePaymentAccess?.full_access_granted === true ||
+      (effectiveEnrolled && !!effectiveEnrollment?.paid_at)
     );
   }, [
     accessModel,
     effectiveEnrolled,
+    effectiveEnrollment?.paid_at,
     effectivePaymentAccess?.full_access_granted,
+    effectivePaymentAccess?.status,
     role,
   ]);
 

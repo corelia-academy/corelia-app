@@ -1,4 +1,3 @@
-import { supabaseFunctionHeaders } from "./coreliaEdgeApi";
 import { supabase } from "./supabase";
 
 export type FlashcardBucket = "new" | "good" | "easy";
@@ -23,26 +22,7 @@ export type FlashcardDeck = {
   updatedAt: string;
 };
 
-export type GenerateFlashcardsRequest = {
-  lessonId: string;
-  courseId: string;
-  locale?: "vi" | "en";
-  force?: boolean;
-  count?: number;
-};
 
-export type GenerateFlashcardsResponse = {
-  cached: boolean;
-  deck: FlashcardDeck;
-};
-
-function flashcardsFunctionUrl(): string {
-  const explicit = import.meta.env.VITE_GENERATE_FLASHCARDS_FUNCTION_URL?.trim();
-  if (explicit) return explicit.replace(/\/+$/, "");
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
-  if (!supabaseUrl) return "";
-  return `${supabaseUrl.replace(/\/+$/, "")}/functions/v1/generate-flashcards`;
-}
 
 function normalizeCards(input: unknown): Flashcard[] {
   if (!Array.isArray(input)) return [];
@@ -71,60 +51,6 @@ function normalizeCards(input: unknown): Flashcard[] {
     });
   }
   return out;
-}
-
-export async function invokeGenerateFlashcards(
-  body: GenerateFlashcardsRequest,
-): Promise<GenerateFlashcardsResponse> {
-  const url = flashcardsFunctionUrl();
-  if (!url) throw new Error("Missing Supabase functions URL");
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const token = session?.access_token;
-  if (!token) throw new Error("Bạn cần đăng nhập để dùng tính năng này.");
-
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      method: "POST",
-      headers: {
-        ...supabaseFunctionHeaders(token),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-  } catch {
-    throw new Error("Không kết nối được Edge Function generate-flashcards.");
-  }
-
-  const payload = (await res.json().catch(() => ({}))) as {
-    cached?: boolean;
-    deck?: {
-      id: string;
-      cards: unknown;
-      locale: "vi" | "en";
-      createdAt: string;
-      updatedAt: string;
-    };
-    message?: string;
-  };
-  if (!res.ok) {
-    throw new Error(payload.message?.trim() || `http_error:${res.status}`);
-  }
-  if (!payload.deck) {
-    throw new Error("Phản hồi flashcards không hợp lệ.");
-  }
-  return {
-    cached: Boolean(payload.cached),
-    deck: {
-      id: payload.deck.id,
-      cards: normalizeCards(payload.deck.cards),
-      locale: payload.deck.locale,
-      createdAt: payload.deck.createdAt,
-      updatedAt: payload.deck.updatedAt,
-    },
-  };
 }
 
 export async function fetchFlashcardDeck(args: {

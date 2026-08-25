@@ -4,7 +4,6 @@ import i18n from "@/i18n";
 import {
   computeReadinessScore,
   fetchReadinessCheck,
-  generateReadinessCheck,
   skipReadinessCheck,
   submitReadinessAnswers,
   type ReadinessCheck,
@@ -16,7 +15,6 @@ import { useAuth } from "@/stores/authStore";
 type State = {
   check: ReadinessCheck | null;
   loading: boolean;
-  generating: boolean;
   submitting: boolean;
   error: string | null;
 };
@@ -24,7 +22,6 @@ type State = {
 const INITIAL_STATE: State = {
   check: null,
   loading: false,
-  generating: false,
   submitting: false,
   error: null,
 };
@@ -49,7 +46,6 @@ export function useReadinessCheck(params: {
       setState({
         check,
         loading: false,
-        generating: false,
         submitting: false,
         error: null,
       });
@@ -57,7 +53,6 @@ export function useReadinessCheck(params: {
       setState({
         check: null,
         loading: false,
-        generating: false,
         submitting: false,
         error:
           error instanceof Error ? error.message : i18n.t("courses:errors.readiness.loadFailed"),
@@ -68,43 +63,6 @@ export function useReadinessCheck(params: {
   useEffect(() => {
     void fetchExisting();
   }, [fetchExisting]);
-
-  const generate = useCallback(
-    async (prereqIds: string[], options?: { count?: number }) => {
-      if (!lessonId || !courseId || !user?.id) return null;
-      if (prereqIds.length === 0) return null;
-      setState((prev) => ({ ...prev, generating: true, error: null }));
-      try {
-        const check = await generateReadinessCheck({
-          userId: user.id,
-          courseId,
-          lessonId,
-          prereqIds,
-          locale,
-          count: options?.count,
-        });
-        setState({
-          check,
-          loading: false,
-          generating: false,
-          submitting: false,
-          error: null,
-        });
-        return check;
-      } catch (error) {
-        setState((prev) => ({
-          ...prev,
-          generating: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : i18n.t("courses:errors.readiness.generateFailed"),
-        }));
-        return null;
-      }
-    },
-    [courseId, lessonId, locale, user?.id],
-  );
 
   const submit = useCallback(
     async (answers: ReadinessUserAnswer[]) => {
@@ -185,10 +143,8 @@ export function useReadinessCheck(params: {
   return {
     check: state.check,
     loading: state.loading,
-    generating: state.generating,
     submitting: state.submitting,
     error: state.error,
-    generate,
     submit,
     skip,
     refetch: fetchExisting,

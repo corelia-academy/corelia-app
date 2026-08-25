@@ -8,16 +8,65 @@ export type PaymentPurpose = "course_purchase" | "certificate_fee" | "ai_subscri
 export type AiSubscriptionTier = "student" | "pro" | "bootcamp";
 export type AiSubscriptionDurationMonths = 1 | 12;
 
+export type CoursePaymentAccessSource =
+  | "payment"
+  | "admin_grant"
+  | "voucher"
+  | "free_enrollment"
+  | "legacy";
+
+export type CoursePaymentAccessStatus = "active" | "revoked" | "expired";
+
 export interface CoursePaymentAccess {
   id: string;
   user_id: string;
   course_id: string;
   full_access_granted?: boolean;
   certificate_fee_paid?: boolean;
+  source?: CoursePaymentAccessSource;
+  status?: CoursePaymentAccessStatus;
+  source_transaction_id?: string | null;
+  granted_at?: string;
+  revoked_at?: string | null;
+  revoked_reason?: string | null;
+  granted_by?: string | null;
   updated_at?: string;
 }
 
-export type PaymentTransactionStatus = "pending" | "paid" | "failed" | "cancelled";
+export type PaymentTransactionStatus =
+  | "pending"
+  | "paid"
+  | "failed"
+  | "cancelled"
+  | "refund_requested"
+  | "refunded"
+  | "partially_refunded";
+
+export type PaymentRefundStatus =
+  | "requested"
+  | "approved"
+  | "processing"
+  | "completed"
+  | "rejected"
+  | "failed"
+  | "cancelled";
+
+export interface PaymentRefund {
+  id: string;
+  payment_transaction_id: string;
+  user_id: string;
+  amount_vnd: number;
+  status: PaymentRefundStatus;
+  reason: string;
+  requested_by?: string | null;
+  processed_by?: string | null;
+  provider_refund_id?: string | null;
+  provider_payload?: unknown;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string | null;
+}
+
 export type PaymentProvider = "sepay";
 export interface PaymentTransaction {
   id: string;
@@ -34,6 +83,8 @@ export interface PaymentTransaction {
   updated_at: string;
 }
 
+export type AiSubscriptionStatus = "active" | "expired" | "cancelled" | "superseded" | "refunded";
+
 export interface AiSubscription {
   id: string;
   user_id: string;
@@ -43,7 +94,7 @@ export interface AiSubscription {
   started_at: string;
   expires_at: string;
   payment_transaction_id: string;
-  status: "active" | "expired" | "cancelled" | "superseded";
+  status: AiSubscriptionStatus;
   auto_renew?: boolean;
   created_at: string;
   updated_at?: string;
@@ -184,64 +235,19 @@ export async function createSePayCheckout(
 }
 
 export async function createAiSubscriptionCheckout(
-  payload: CreateAiSubscriptionCheckoutInput,
+  _payload: CreateAiSubscriptionCheckoutInput,
 ): Promise<CreateSePayCheckoutResponse> {
-  return createSePayCheckout({
-    courseId: "cora-ai",
-    purpose: "ai_subscription",
-    amountVnd: 1,
-    successUrl: payload.successUrl,
-    errorUrl: payload.errorUrl,
-    cancelUrl: payload.cancelUrl,
-    voucherCode: payload.voucherCode,
-    tier: payload.tier,
-    durationMonths: payload.durationMonths,
-  } as CreateSePayCheckoutInput & {
-    voucherCode?: string;
-    tier: AiSubscriptionTier;
-    durationMonths: AiSubscriptionDurationMonths;
-  });
+  void _payload;
+  throw new Error("Gói đăng ký trợ lý AI Cora đã dừng cung cấp mới.");
 }
 
-export async function previewAiVoucher(payload: {
+export async function previewAiVoucher(_payload: {
   tier: AiSubscriptionTier;
   durationMonths: AiSubscriptionDurationMonths;
   voucherCode: string;
 }): Promise<AiVoucherPreview> {
-  const endpoint =
-    import.meta.env.VITE_AI_VOUCHER_PREVIEW_API ||
-    coreliaEdgeUrl("payments.ai.voucher.preview");
-  const token = await getAccessToken();
-  requireAccessToken(token);
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...supabaseFunctionHeaders(token),
-    },
-    credentials: "include",
-    body: JSON.stringify(payload),
-  });
-  const data = (await res.json().catch(() => ({}))) as Partial<
-    AiVoucherPreview & { message?: string }
-  >;
-  if (
-    !res.ok ||
-    !data.code ||
-    typeof data.percent_off !== "number" ||
-    typeof data.base_amount_vnd !== "number" ||
-    typeof data.discount_amount_vnd !== "number" ||
-    typeof data.final_amount_vnd !== "number"
-  ) {
-    throw new Error(data.message || "Không áp dụng được voucher.");
-  }
-  return {
-    code: data.code,
-    percent_off: data.percent_off,
-    base_amount_vnd: data.base_amount_vnd,
-    discount_amount_vnd: data.discount_amount_vnd,
-    final_amount_vnd: data.final_amount_vnd,
-  };
+  void _payload;
+  throw new Error("Voucher trợ lý AI Cora đã dừng hỗ trợ.");
 }
 
 export function submitSePayCheckoutForm(input: CreateSePayCheckoutResponse) {

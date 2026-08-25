@@ -60,7 +60,6 @@ export function AuthSync() {
               );
               if (!mounted || runSeq !== currentSeq) return;
               setProfile(p);
-              void useAuthStore.getState().loadAiSubscription();
               const locale = (p?.locale ?? DEFAULT_LANGUAGE) as SupportedLanguage;
               void i18n.changeLanguage(locale);
             } catch (error) {

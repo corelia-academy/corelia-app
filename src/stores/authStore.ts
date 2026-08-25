@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User } from "@supabase/supabase-js";
 
-import { getMyAiSubscription, type AiSubscription } from "@/lib/payments";
+import type { AiSubscription } from "@/lib/payments";
 import { supabase } from "@/lib/supabase";
 import { getCurrentProfile, getProfileForUser } from "@/lib/profile";
 import type { Profile, UserRole } from "@/types/database";
@@ -107,25 +107,14 @@ export const useAuthStore = create<AuthStore>()(
           const profile = user
             ? await getProfileForUser(user)
             : await getCurrentProfile();
-          let aiSubscription: AiSubscription | null = null;
-          try {
-            aiSubscription = await getMyAiSubscription();
-          } catch (subscriptionError) {
-            console.warn("[authStore] loadAiSubscription during refreshProfile failed:", subscriptionError);
-          }
-          set({ profile, aiSubscription });
+          set({ profile, aiSubscription: null });
         } catch (err) {
           console.error("[authStore] refreshProfile failed:", err);
         }
       },
 
       loadAiSubscription: async () => {
-        try {
-          const aiSubscription = await getMyAiSubscription();
-          set({ aiSubscription });
-        } catch (err) {
-          console.error("[authStore] loadAiSubscription failed:", err);
-        }
+        set({ aiSubscription: null });
       },
     }),
     {

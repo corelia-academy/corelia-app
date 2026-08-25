@@ -98,6 +98,31 @@ CREATE TRIGGER trg_sync_ai_chat_session_message_count
   FOR EACH ROW
   EXECUTE FUNCTION public.sync_ai_chat_session_message_count();
 
+CREATE OR REPLACE FUNCTION public.guard_ai_chat_session_message_count()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- If message_count is modified directly on ai_chat_sessions from external/legacy code (trigger depth = 1),
+  -- normalize it to the true canonical completed conversation count to prevent stale overwrites.
+  IF pg_trigger_depth() = 1 AND NEW.message_count IS DISTINCT FROM OLD.message_count THEN
+    NEW.message_count := (
+      SELECT COUNT(*)::int
+      FROM public.ai_conversations c
+      WHERE c.session_id = NEW.id
+        AND c.status = 'completed'
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_guard_ai_chat_session_message_count ON public.ai_chat_sessions;
+CREATE TRIGGER trg_guard_ai_chat_session_message_count
+  BEFORE UPDATE OF message_count ON public.ai_chat_sessions
+  FOR EACH ROW
+  EXECUTE FUNCTION public.guard_ai_chat_session_message_count();
+
 -- Backfill existing session message counts deterministically from completed conversations
 UPDATE public.ai_chat_sessions AS s
 SET message_count = COALESCE((

@@ -6,10 +6,6 @@ vi.mock("@/lib/coreliaEdgeApi", () => ({
   supabaseFunctionHeaders: () => ({}),
 }));
 
-vi.mock("@/lib/lessonEmbedding", () => ({
-  triggerLessonEmbeddingInBackground: vi.fn(),
-}));
-
 vi.mock("@/lib/supabase", () => ({
   supabase: {},
 }));

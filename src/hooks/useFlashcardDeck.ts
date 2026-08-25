@@ -4,7 +4,6 @@ import i18n from "@/i18n";
 import {
   applyReview,
   fetchFlashcardDeck,
-  invokeGenerateFlashcards,
   persistDeckCards,
   type Flashcard,
   type FlashcardDeck,
@@ -15,7 +14,6 @@ import { useAuth } from "@/stores/authStore";
 type State = {
   deck: FlashcardDeck | null;
   loading: boolean;
-  generating: boolean;
   saving: boolean;
   error: string | null;
 };
@@ -23,17 +21,16 @@ type State = {
 const INITIAL_STATE: State = {
   deck: null,
   loading: false,
-  generating: false,
   saving: false,
   error: null,
 };
 
 export function useFlashcardDeck(params: {
   lessonId: string | null | undefined;
-  courseId: string | null | undefined;
+  courseId?: string | null | undefined;
   locale?: "vi" | "en";
 }) {
-  const { lessonId, courseId, locale } = params;
+  const { lessonId, locale } = params;
   const { user, isAuthenticated } = useAuth();
   const [state, setState] = useState<State>(INITIAL_STATE);
 
@@ -48,7 +45,6 @@ export function useFlashcardDeck(params: {
       setState({
         deck,
         loading: false,
-        generating: false,
         saving: false,
         error: null,
       });
@@ -56,7 +52,6 @@ export function useFlashcardDeck(params: {
       setState({
         deck: null,
         loading: false,
-        generating: false,
         saving: false,
         error: error instanceof Error ? error.message : i18n.t("courses:errors.flashcards.loadFailed"),
       });
@@ -66,48 +61,6 @@ export function useFlashcardDeck(params: {
   useEffect(() => {
     void fetchExisting();
   }, [fetchExisting]);
-
-  const generate = useCallback(
-    async (options?: { force?: boolean; count?: number }) => {
-      if (!lessonId || !courseId) return null;
-      if (!isAuthenticated) {
-        setState((prev) => ({
-          ...prev,
-          error: i18n.t("courses:errors.mustLoginFeature"),
-        }));
-        return null;
-      }
-      setState((prev) => ({ ...prev, generating: true, error: null }));
-      try {
-        const response = await invokeGenerateFlashcards({
-          lessonId,
-          courseId,
-          locale,
-          force: options?.force,
-          count: options?.count,
-        });
-        setState({
-          deck: response.deck,
-          loading: false,
-          generating: false,
-          saving: false,
-          error: null,
-        });
-        return response.deck;
-      } catch (error) {
-        setState((prev) => ({
-          ...prev,
-          generating: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : i18n.t("courses:errors.flashcards.generateFailed"),
-        }));
-        return null;
-      }
-    },
-    [courseId, isAuthenticated, lessonId, locale],
-  );
 
   const submitReview = useCallback(
     async (cardId: string, action: FlashcardReviewAction) => {
@@ -134,10 +87,8 @@ export function useFlashcardDeck(params: {
   return {
     deck: state.deck,
     loading: state.loading,
-    generating: state.generating,
     saving: state.saving,
     error: state.error,
-    generate,
     submitReview,
     refetch: fetchExisting,
   };

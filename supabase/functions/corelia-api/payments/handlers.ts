@@ -67,38 +67,8 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       return json({ message: "Callback URLs không hợp lệ" }, 400);
     }
     let baseAmount = 0;
-    let subscriptionMeta: AiSubscriptionMeta | null = null;
     if (purpose === "ai_subscription") {
-      const tier = String(body.tier ?? "").trim() as AiSubscriptionTier;
-      const durationMonths = Number(body.durationMonths ?? body.duration_months ?? 0) as AiSubscriptionDurationMonths;
-      if (!["student", "pro", "bootcamp"].includes(tier)) {
-        return json({ message: "Tier không hợp lệ" }, 400);
-      }
-      if (![1, 12].includes(durationMonths)) {
-        return json({ message: "Thời hạn không hợp lệ" }, 400);
-      }
-      const now = new Date().toISOString();
-      const { data: activeSubscription, error: activeSubscriptionError } = await db
-        .from("ai_subscriptions")
-        .select("tier,expires_at")
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .gt("expires_at", now)
-        .order("expires_at", { ascending: false })
-        .limit(1)
-        .maybeSingle<{ tier: AiSubscriptionTier; expires_at: string }>();
-      if (activeSubscriptionError) throw new Error(activeSubscriptionError.message);
-      if (activeSubscription?.tier && activeSubscription.tier !== tier) {
-        const TIER_RANK = { student: 1, pro: 2, bootcamp: 3 } as const;
-        const currentRank = TIER_RANK[activeSubscription.tier as keyof typeof TIER_RANK] ?? 0;
-        const newRank = TIER_RANK[tier as keyof typeof TIER_RANK] ?? 0;
-        if (newRank <= currentRank) {
-          return json({ message: "Không thể hạ cấp khi gói hiện tại còn hiệu lực." }, 400);
-        }
-        // newRank > currentRank → upgrade được phép, tiếp tục
-      }
-      baseAmount = AI_SUBSCRIPTION_PRICES[tier][durationMonths];
-      subscriptionMeta = { tier, duration_months: durationMonths };
+      return json({ message: "Gói đăng ký trợ lý AI Cora đã dừng cung cấp mới." }, 400);
     } else {
       const { data: courseRow, error: courseErr } = await db.from("courses").select("data").eq("id", courseId)
         .maybeSingle();
@@ -261,33 +231,8 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
 
 export async function handleAiVoucherPreview(req: Request, db: SupabaseClient): Promise<Response> {
   try {
-    const user = await verifyBearerUser(req, db);
-    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-    const tier = String(body.tier ?? "").trim() as AiSubscriptionTier;
-    const durationMonths = Number(body.durationMonths ?? body.duration_months ?? 0) as AiSubscriptionDurationMonths;
-    const voucherCode = String(body.voucherCode ?? "").trim();
-
-    if (!["student", "pro", "bootcamp"].includes(tier)) {
-      return json({ message: "Tier không hợp lệ" }, 400);
-    }
-    if (![1, 12].includes(durationMonths)) {
-      return json({ message: "Thời hạn không hợp lệ" }, 400);
-    }
-    if (!voucherCode) return json({ message: "Thiếu mã voucher." }, 400);
-
-    const preview = await previewAiVoucher(db, {
-      voucherCode,
-      baseAmountVnd: AI_SUBSCRIPTION_PRICES[tier][durationMonths],
-      tier,
-      durationMonths,
-    });
-    return json({
-      code: preview.code,
-      percent_off: preview.percentOff,
-      base_amount_vnd: preview.baseAmountVnd,
-      discount_amount_vnd: preview.discountAmountVnd,
-      final_amount_vnd: preview.finalAmountVnd,
-    });
+    await verifyBearerUser(req, db);
+    return json({ message: "Voucher trợ lý AI Cora đã dừng hỗ trợ." }, 400);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
@@ -297,29 +242,11 @@ export async function handleAiVoucherPreview(req: Request, db: SupabaseClient): 
 
 export async function handleAiVoucherBatchCreate(req: Request, db: SupabaseClient): Promise<Response> {
   try {
-    const user = await verifyBearerUser(req, db);
-    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-    const result = await createAiVoucherBatch(db, {
-      userId: user.id,
-      name: String(body.name ?? ""),
-      quantity: Math.round(Number(body.quantity ?? 0)),
-      codePrefix: String(body.codePrefix ?? ""),
-      percentOff: Math.round(Number(body.percentOff ?? 0)),
-      startsAt: body.startsAt == null ? null : String(body.startsAt),
-      endsAt: body.endsAt == null ? null : String(body.endsAt),
-      active: body.active !== false,
-      targetTier: body.targetTier == null ? null : String(body.targetTier),
-      targetDurationMonths: body.targetDurationMonths == null ? null : Number(body.targetDurationMonths),
-    });
-    return json({
-      batch: result.batch,
-      codes: result.codes,
-      csvText: result.csvText,
-    });
+    await verifyBearerUser(req, db);
+    return json({ message: "Tạo voucher AI đã dừng hỗ trợ." }, 400);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
-    if (message === "Không đủ quyền tạo batch voucher.") return json({ message }, 403);
     return json({ message }, 400);
   }
 }
@@ -532,6 +459,25 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
       await grantPaymentAccessForTransaction(db, tx, invoiceNumber, updatedAt, payload);
       return json({ ok: true });
     }
+    if (type === "ORDER_REFUND" || type === "CHARGEBACK") {
+      const refundAmount = Math.round(Number(orderAmount ?? tx.amount_vnd ?? 0));
+      const { error: rpcErr } = await db.rpc("process_payment_refund", {
+        p_payment_transaction_id: invoiceNumber,
+        p_refund_amount_vnd: refundAmount > 0 ? refundAmount : Math.round(Number(tx.amount_vnd ?? 0)),
+        p_reason: `SePay IPN ${type}`,
+        p_provider_refund_payload: payload as unknown as Record<string, unknown>,
+      });
+      if (rpcErr) {
+        console.error("[corelia-api] IPN refund RPC error", rpcErr);
+        // Fallback update
+        await db.from("payment_transactions").update({
+          status: "refunded",
+          provider_payload: payload as unknown as Record<string, unknown>,
+          updated_at: updatedAt,
+        }).eq("id", invoiceNumber);
+      }
+      return json({ ok: true });
+    }
     if (type === "ORDER_CANCELLED" || type === "ORDER_FAILED") {
       const nextStatus = type === "ORDER_CANCELLED" ? "cancelled" : "failed";
       const { error: statusErr } = await db.from("payment_transactions").update({
@@ -552,5 +498,87 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
   } catch (e) {
     console.error("[corelia-api] IPN", e);
     return json({ ok: false }, 500);
+  }
+}
+
+export async function handleProcessRefund(req: Request, db: SupabaseClient): Promise<Response> {
+  try {
+    const user = await verifyBearerUser(req, db);
+    const role = await getUserRole(db, user.id);
+    if (role !== "admin" && role !== "support_staff") {
+      return json({ message: "Không đủ quyền thực hiện hoàn tiền." }, 403);
+    }
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    const invoiceNumber = String(body.orderId ?? body.invoiceNumber ?? body.transactionId ?? "").trim();
+    const reason = String(body.reason ?? "").trim();
+    const amountVnd = Number(body.amountVnd ?? 0);
+    if (!invoiceNumber) return json({ message: "Thiếu mã giao dịch." }, 400);
+    if (!reason) return json({ message: "Thiếu lý do hoàn tiền." }, 400);
+
+    const { data: tx, error: fetchErr } = await db
+      .from("payment_transactions")
+      .select("*")
+      .eq("id", invoiceNumber)
+      .maybeSingle();
+    if (fetchErr || !tx) return json({ message: "Không tìm thấy giao dịch." }, 404);
+
+    const refundAmount = Number.isFinite(amountVnd) && amountVnd > 0
+      ? Math.round(amountVnd)
+      : Math.round(Number(tx.amount_vnd ?? 0));
+
+    const { data: refundResult, error: rpcErr } = await db.rpc("process_payment_refund", {
+      p_payment_transaction_id: invoiceNumber,
+      p_refund_amount_vnd: refundAmount,
+      p_reason: reason,
+      p_actor_user_id: user.id,
+      p_provider_refund_payload: { initiated_by: user.id, role },
+    });
+
+    if (rpcErr) throw new Error(rpcErr.message);
+
+    return json({ ok: true, refund: refundResult });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
+    console.error("[corelia-api] refund", e);
+    return json({ message: "Không thể hoàn tiền lúc này: " + message }, 500);
+  }
+}
+
+export async function handleAdminGrantCourseAccess(req: Request, db: SupabaseClient): Promise<Response> {
+  try {
+    const user = await verifyBearerUser(req, db);
+    const role = await getUserRole(db, user.id);
+    if (role !== "admin" && role !== "support_staff") {
+      return json({ message: "Không đủ quyền cấp quyền khoá học." }, 403);
+    }
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    const targetUserId = String(body.targetUserId ?? "").trim();
+    const courseId = String(body.courseId ?? "").trim();
+    const fullAccess = body.fullAccess !== false;
+    const certFeePaid = body.certFeePaid === true;
+    const reason = String(body.reason ?? "Admin manual grant").trim();
+
+    if (!targetUserId || !courseId) {
+      return json({ message: "Thiếu targetUserId hoặc courseId." }, 400);
+    }
+
+    const { data: grantResult, error: rpcErr } = await db.rpc("grant_course_access_admin", {
+      p_target_user_id: targetUserId,
+      p_course_id: courseId,
+      p_full_access: fullAccess,
+      p_cert_fee_paid: certFeePaid,
+      p_reason: reason,
+      p_admin_id: user.id,
+    });
+
+    if (rpcErr) throw new Error(rpcErr.message);
+
+    return json({ ok: true, grant: grantResult });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
+    console.error("[corelia-api] adminGrantAccess", e);
+    return json({ message: "Không thể cấp quyền lúc này: " + message }, 500);
   }
 }

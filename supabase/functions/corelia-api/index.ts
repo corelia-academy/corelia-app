@@ -35,6 +35,8 @@ import {
   handleSePayCheckout,
   handleSePayIpn,
   handleVerifySePayPayment,
+  handleProcessRefund,
+  handleAdminGrantCourseAccess,
 } from "./payments/handlers.ts";
 
 const PROTECTED_OPS = new Set<string>([
@@ -44,6 +46,8 @@ const PROTECTED_OPS = new Set<string>([
   "payments.ai.vouchers.batchDelete",
   "payments.transactions",
   "payments.sepay.debugLookup",
+  "payments.refund",
+  "payments.adminGrantAccess",
   "certificates.issue",
   "certificates.backfillEligible",
   "certificates.revoke",
@@ -119,6 +123,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleMyPaymentTransactions(req, db);
     } else if (op === "payments.sepay.debugLookup" && req.method === "POST") {
       response = await handleSePayDebugLookup(req, db);
+    } else if (op === "payments.refund" && req.method === "POST") {
+      response = await handleProcessRefund(req, db);
+    } else if (op === "payments.adminGrantAccess" && req.method === "POST") {
+      response = await handleAdminGrantCourseAccess(req, db);
     } else if (op === "certificates.issue" && req.method === "POST") {
       response = await handleIssueCertificate(req, db);
     } else if (op === "certificates.backfillEligible" && req.method === "POST") {
@@ -172,12 +180,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     } else if (op === "credentials.claimLookup" && req.method === "POST") {
       response = await handleClaimLookup(req, db);
     } else {
-      response = json({ message: "Unknown or disallowed op / method", op }, 404);
+      response = json({ message: "Not found" }, 404);
     }
-
     return withCors(req, response);
   } catch (e) {
-    console.error("[corelia-api] unhandled", e);
-    return withCors(req, json({ message: "Unhandled server error" }, 500));
+    console.error("[corelia-api] error", e);
+    return withCors(req, json({ message: "Internal server error" }, 500));
   }
 });

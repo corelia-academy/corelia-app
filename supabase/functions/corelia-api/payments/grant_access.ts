@@ -9,9 +9,22 @@ export async function grantPaymentAccessForTransaction(
   updatedAt: string,
   providerPayload: unknown,
 ): Promise<void> {
+  const mergedPayload = (providerPayload ?? tx.provider_payload ?? {}) as Record<string, unknown>;
+
+  // Attempt atomic database settlement RPC
+  const { data: rpcResult, error: rpcError } = await db.rpc("process_successful_payment", {
+    p_payment_transaction_id: invoiceNumber,
+    p_provider_payload: mergedPayload,
+    p_settled_at: updatedAt,
+  });
+
+  if (!rpcError && rpcResult && (rpcResult as { ok?: boolean }).ok) {
+    return;
+  }
+
+  // Fallback path for environments before RPC deployment or compatibility mode
   if (tx.purpose === "ai_subscription") {
-    const meta = ((providerPayload as { subscription_meta?: AiSubscriptionMeta } | null)?.subscription_meta ??
-      (tx.provider_payload as { subscription_meta?: AiSubscriptionMeta } | null)?.subscription_meta ??
+    const meta = ((mergedPayload as { subscription_meta?: AiSubscriptionMeta } | null)?.subscription_meta ??
       null) as AiSubscriptionMeta | null;
     if (!meta?.tier || !meta?.duration_months) {
       throw new Error("Missing ai subscription metadata");
@@ -102,6 +115,9 @@ export async function grantPaymentAccessForTransaction(
     updated_at: updatedAt,
     full_access_granted: fullAccess,
     certificate_fee_paid: certPaid,
+    source: "payment",
+    status: "active",
+    source_transaction_id: invoiceNumber,
   };
   const { error: accessErr } = await db.from("course_payment_access").upsert(accessPatch, {
     onConflict: "user_id,course_id",

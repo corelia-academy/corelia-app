@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Layers, Loader2, RefreshCw, Sparkles, X } from "lucide-react";
+import { Layers, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useFlashcardDeck } from "@/hooks/useFlashcardDeck";
@@ -9,16 +9,18 @@ import { cn } from "@/lib/utils";
 
 type Props = {
   lessonId: string | null;
-  courseId: string | null;
-  completed: boolean;
+  courseId?: string | null;
+  lessonTitle?: string;
+  lessonContent?: string;
+  completed?: boolean;
   locale?: "vi" | "en";
 };
 
 type Phase = "idle" | "reviewing" | "done";
 
-export function FlashcardDeckCard({ lessonId, courseId, completed, locale }: Props) {
+export function FlashcardDeckCard({ lessonId, courseId, completed = true, locale }: Props) {
   const { t } = useTranslation("courses");
-  const { deck, loading, generating, error, generate, submitReview } = useFlashcardDeck({
+  const { deck, loading, error, submitReview } = useFlashcardDeck({
     lessonId,
     courseId,
     locale,
@@ -32,8 +34,7 @@ export function FlashcardDeckCard({ lessonId, courseId, completed, locale }: Pro
 
   const dueCards = useMemo(() => (deck?.cards ?? []).filter((c) => isDueToday(c)), [deck]);
 
-  if (!completed || !lessonId) return null;
-  if (loading) return null;
+  if (!completed || !lessonId || loading || !deck) return null;
 
   const startReview = () => {
     if (dueCards.length === 0) return;
@@ -56,52 +57,6 @@ export function FlashcardDeckCard({ lessonId, courseId, completed, locale }: Pro
     setIndex(index + 1);
     setFlipped(false);
   };
-
-  // — No deck yet: prompt to generate —
-  if (!deck) {
-    return (
-      <div className="mx-4 mt-4 rounded-2xl border border-border-subtle bg-surface-raised p-5 sm:mx-6">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-2">
-            <Layers className="mt-0.5 size-4 text-primary" aria-hidden />
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                {t("detail.learn.flashcards.title", { defaultValue: "Flashcards" })}
-              </p>
-              <p className="mt-0.5 text-xs text-foreground-muted">
-                {t("detail.learn.flashcards.subtitle", {
-                  defaultValue: "Củng cố trí nhớ bằng thẻ ghi nhớ",
-                })}
-              </p>
-            </div>
-          </div>
-          <Button
-            size="sm"
-            onClick={() => void generate()}
-            disabled={generating}
-          >
-            {generating ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-            ) : (
-              <Sparkles className="size-4" aria-hidden />
-            )}
-            <span className="ml-1">
-              {generating
-                ? t("detail.learn.flashcards.generating", {
-                    defaultValue: "Cora đang tạo thẻ…",
-                  })
-                : t("detail.learn.flashcards.generateAction", {
-                    defaultValue: "Tạo flashcards",
-                  })}
-            </span>
-          </Button>
-        </div>
-        {error ? (
-          <p className="mt-3 text-xs text-destructive">{error}</p>
-        ) : null}
-      </div>
-    );
-  }
 
   // — Done with a review session —
   if (phase === "done") {
@@ -277,24 +232,9 @@ export function FlashcardDeckCard({ lessonId, courseId, completed, locale }: Pro
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => void generate({ force: true })}
-            disabled={generating}
-            title={String(
-              t("detail.learn.flashcards.regenerateAction", { defaultValue: "Tạo lại" }),
-            )}
-          >
-            {generating ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-            ) : (
-              <RefreshCw className="size-4" aria-hidden />
-            )}
-          </Button>
-          <Button
             size="sm"
             onClick={startReview}
-            disabled={dueCards.length === 0 || generating}
+            disabled={dueCards.length === 0}
           >
             {t("detail.learn.flashcards.startReview", {
               defaultValue: "Bắt đầu ôn",

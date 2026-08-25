@@ -28,11 +28,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/lib/supabase";
-import { CoraPlanSummary } from "@/components/course-ai/CoraPlanSummary";
-import { shouldShowGlobalCoraAssistant } from "@/components/course-ai/visibility";
-import { useCoraStore } from "@/stores/coraStore";
-import { resolveEffectiveAiTier } from "@/lib/payments";
-import { cn } from "@/lib/utils";
 import { BetaAnnouncementBanner } from "@/components/layouts/BetaAnnouncementBanner";
 
 type SearchEntityType =
@@ -106,16 +101,9 @@ export default function Header() {
     authInitialized,
     signOut,
     user,
-    aiSubscription,
   } = useAuth();
   const { t } = useTranslation("common");
   const { t: tAccount } = useTranslation("account");
-  const coraQuotaInfo = useCoraStore((s) => s.quotaInfo);
-  const setCoraQuotaInfo = useCoraStore((s) => s.setQuotaInfo);
-  const sidebarOpen = useCoraStore((s) => s.sidebarOpen);
-  const toggleSidebar = useCoraStore((s) => s.toggleSidebar);
-  const isCoraSupportedPage =
-    !!user && shouldShowGlobalCoraAssistant(location.pathname);
   const { isInitialized, authState, ocAuth } = useOCAuth();
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -251,40 +239,6 @@ export default function Header() {
     setOcConnectLoading(false);
     setOcConnectOpen(true);
   }
-
-  useEffect(() => {
-    const currentTier = resolveEffectiveAiTier(aiSubscription);
-    if (!user?.id) return;
-    if (coraQuotaInfo && coraQuotaInfo.tier === currentTier) return;
-    const month = new Date().toISOString().slice(0, 7);
-    void Promise.all([
-      supabase
-        .from("ai_usage_monthly")
-        .select("message_count,tokens_used")
-        .eq("user_id", user.id)
-        .eq("month", month)
-        .maybeSingle(),
-      supabase
-        .from("tier_limits")
-        .select("monthly_messages,monthly_tokens,quota_unit")
-        .eq("tier", currentTier)
-        .maybeSingle(),
-    ]).then(([{ data: usage }, { data: limit }]) => {
-      setCoraQuotaInfo({
-        tier: currentTier,
-        allowed: true,
-        attemptRateLimited: false,
-        haikuOnly: false,
-        successfulMessagesUsed: usage?.message_count ?? 0,
-        successfulMessageLimit: limit?.monthly_messages ?? null,
-        rollingAttemptCount: 0,
-        rollingAttemptSoftCap: null,
-        rollingAttemptWindowHours: 3,
-        tierLimitSource: "tier_limits",
-        monthlyTokensUsed: usage?.tokens_used ?? 0,
-      });
-    });
-  }, [user?.id, aiSubscription, coraQuotaInfo, setCoraQuotaInfo]);
 
   useEffect(() => {
     function onPointerDown(e: PointerEvent) {
@@ -609,10 +563,6 @@ export default function Header() {
                   }
                 />
                 <DropdownMenuContent align="end" className="z-20 min-w-64">
-                  <div className="px-2 pt-2">
-                    <CoraPlanSummary quotaInfo={coraQuotaInfo} />
-                  </div>
-                  <DropdownMenuSeparator />
                   {accountDropdownItems.map((item) => (
                     <DropdownMenuItem
                       key={item.to}
@@ -678,30 +628,6 @@ export default function Header() {
             </NavLink>
           )}
         </div>
-        {isCoraSupportedPage && (
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            aria-label={
-              sidebarOpen
-                ? String(t("coraWidget.hideAction"))
-                : String(t("coraWidget.openAction"))
-            }
-            className={cn(
-              "hidden shrink-0 items-center justify-center rounded-full border border-transparent transition-colors duration-150 xl:inline-flex cursor-pointer",
-              "hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-              sidebarOpen &&
-                "border-primary-muted bg-primary-muted hover:bg-primary-muted",
-            )}
-          >
-            <img
-              src="/logo/Cora_AI_Tutor.svg"
-              alt=""
-              className="size-7 select-none"
-              draggable={false}
-            />
-          </button>
-        )}
       </div>
     </header>
   );

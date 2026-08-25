@@ -1,18 +1,19 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { CheckCircle2, Loader2, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useReadinessCheck } from "@/hooks/useReadinessCheck";
-import { pickPrereqLessonIds } from "@/lib/readinessCheck";
 import { cn } from "@/lib/utils";
 import type { CourseLesson, SupportedCourseLocale } from "@/types/courses";
 
 type Props = {
   lesson: CourseLesson | null;
   courseId: string | null;
-  allLessons: CourseLesson[];
-  locale: SupportedCourseLocale;
+  allLessons?: CourseLesson[];
+  lessonTitle?: string;
+  lessonContent?: string;
+  locale?: SupportedCourseLocale;
   onJumpToLesson?: (lessonId: string) => void;
 };
 
@@ -21,19 +22,14 @@ type Phase = "idle" | "in_progress" | "result";
 export function LessonReadinessCard({
   lesson,
   courseId,
-  allLessons,
-  locale,
+  allLessons = [],
+  locale = "vi",
   onJumpToLesson,
 }: Props) {
   const { t } = useTranslation("courses");
   const lessonId = lesson?.id ?? null;
 
-  const prereqIds = useMemo(
-    () => (lesson ? pickPrereqLessonIds(lesson, allLessons) : []),
-    [lesson, allLessons],
-  );
-
-  const { check, loading, generating, submitting, error, generate, submit, skip } =
+  const { check, loading, submitting, error, submit, skip } =
     useReadinessCheck({ lessonId, courseId, locale });
 
   const [phase, setPhase] = useState<Phase>("idle");
@@ -41,20 +37,13 @@ export function LessonReadinessCard({
   const [questionIndex, setQuestionIndex] = useState(0);
 
   // — Render guards —
-  if (!lesson || !courseId) return null;
-  if (lesson.lesson_format === "quiz" || lesson.lesson_format === "practice") return null;
-  if (prereqIds.length === 0) return null;
-  if (loading) return null;
-  // Already reviewed (passed/failed/skipped) → don't show banner (unless user clicks "retry" below).
-  if (check?.reviewedAt && phase === "idle") return null;
+  if (!lesson || !courseId || loading || !check || check.questions.length === 0) return null;
+  // Already reviewed (passed/failed/skipped) → don't show banner
+  if (check.reviewedAt && phase === "idle") return null;
 
-  const prereqLessons = allLessons.filter((l) => prereqIds.includes(l.id));
+  const prereqLessons = allLessons.filter((l) => check.sourceLessonIds.includes(l.id));
 
-  const handleStart = async () => {
-    const result = check?.questions.length
-      ? check
-      : await generate(prereqIds);
-    if (!result) return;
+  const handleStart = () => {
     setQuestionIndex(0);
     setAnswers({});
     setPhase("in_progress");
@@ -63,14 +52,6 @@ export function LessonReadinessCard({
   const handleSkip = async () => {
     await skip();
     setPhase("idle");
-  };
-
-  const handleRetry = async () => {
-    const result = await generate(prereqIds);
-    if (!result) return;
-    setQuestionIndex(0);
-    setAnswers({});
-    setPhase("in_progress");
   };
 
   const handleAnswer = (questionId: string, optionIndex: number) => {
@@ -216,21 +197,6 @@ export function LessonReadinessCard({
           </div>
         </div>
         <div className="mt-3 flex items-center justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={generating}
-            onClick={() => void handleRetry()}
-            title={String(
-              t("detail.learn.readinessCheck.retryAction", { defaultValue: "Làm lại" }),
-            )}
-          >
-            {generating ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-            ) : (
-              <RefreshCw className="size-4" aria-hidden />
-            )}
-          </Button>
           <Button size="sm" onClick={() => setPhase("idle")}>
             {passed
               ? t("detail.learn.readinessCheck.passedAction", {
@@ -259,9 +225,9 @@ export function LessonReadinessCard({
             </p>
             <p className="mt-0.5 text-xs text-foreground-muted">
               {t("detail.learn.readinessCheck.subtitle", {
-                count: 3,
+                count: check.questions.length,
                 defaultValue:
-                  "Cora hỏi nhanh {{count}} câu về kiến thức nền trước khi bắt đầu.",
+                  "Kiểm tra nhanh {{count}} câu về kiến thức nền trước khi bắt đầu.",
               })}
             </p>
           </div>
@@ -277,23 +243,11 @@ export function LessonReadinessCard({
           </Button>
           <Button
             size="sm"
-            disabled={generating}
-            onClick={() => void handleStart()}
+            onClick={handleStart}
           >
-            {generating ? (
-              <>
-                <Loader2 className="size-4 animate-spin" aria-hidden />
-                <span className="ml-1">
-                  {t("detail.learn.readinessCheck.generating", {
-                    defaultValue: "Cora đang chuẩn bị câu hỏi…",
-                  })}
-                </span>
-              </>
-            ) : (
-              t("detail.learn.readinessCheck.startAction", {
-                defaultValue: "Bắt đầu kiểm tra",
-              })
-            )}
+            {t("detail.learn.readinessCheck.startAction", {
+              defaultValue: "Bắt đầu kiểm tra",
+            })}
           </Button>
         </div>
       </div>

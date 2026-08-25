@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 
 import {
   deleteLearningPath,
-  invokeGenerateLearningPath,
   listLearningPaths,
   type LearningPath,
 } from "@/lib/learningPaths";
@@ -19,17 +18,16 @@ const INITIAL_LIST: ListState = { paths: [], loading: false, error: null };
 export function useLearningPaths() {
   const { user, isAuthenticated } = useAuth();
   const [state, setState] = useState<ListState>(INITIAL_LIST);
-  const [generating, setGenerating] = useState(false);
-  const [generateError, setGenerateError] = useState<string | null>(null);
+  const userId = user?.id;
 
   const refetch = useCallback(async () => {
-    if (!isAuthenticated || !user?.id) {
-      setState(INITIAL_LIST);
+    if (!isAuthenticated || !userId) {
+      setState((prev) => (prev.paths.length > 0 ? INITIAL_LIST : prev));
       return;
     }
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const paths = await listLearningPaths(user.id);
+      const paths = await listLearningPaths(userId);
       setState({ paths, loading: false, error: null });
     } catch (error) {
       setState({
@@ -38,34 +36,31 @@ export function useLearningPaths() {
         error: error instanceof Error ? error.message : "Không tải được lộ trình.",
       });
     }
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, userId]);
 
   useEffect(() => {
-    void refetch();
-  }, [refetch]);
-
-  const generate = useCallback(
-    async (args: { goal: string; locale?: "vi" | "en"; force?: boolean }) => {
-      setGenerateError(null);
-      setGenerating(true);
-      try {
-        const res = await invokeGenerateLearningPath(args);
-        // Merge into list (replace if same id).
-        setState((prev) => {
-          const others = prev.paths.filter((p) => p.id !== res.path.id);
-          return { ...prev, paths: [res.path, ...others] };
-        });
-        return res.path;
-      } catch (error) {
-        const msg = error instanceof Error ? error.message : "Không tạo được lộ trình.";
-        setGenerateError(msg);
-        return null;
-      } finally {
-        setGenerating(false);
-      }
-    },
-    [],
-  );
+    let active = true;
+    if (!isAuthenticated || !userId) {
+      return;
+    }
+    void listLearningPaths(userId).then(
+      (paths) => {
+        if (active) setState({ paths, loading: false, error: null });
+      },
+      (error) => {
+        if (active) {
+          setState({
+            paths: [],
+            loading: false,
+            error: error instanceof Error ? error.message : "Không tải được lộ trình.",
+          });
+        }
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [isAuthenticated, userId]);
 
   const remove = useCallback(async (id: string) => {
     try {
@@ -81,9 +76,6 @@ export function useLearningPaths() {
     paths: state.paths,
     loading: state.loading,
     error: state.error,
-    generating,
-    generateError,
-    generate,
     remove,
     refetch,
   };

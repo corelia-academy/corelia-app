@@ -8,6 +8,15 @@ export type AiSubscriptionMeta = {
   duration_months: AiSubscriptionDurationMonths;
 };
 
+export type PaymentTransactionStatus =
+  | "pending"
+  | "paid"
+  | "failed"
+  | "cancelled"
+  | "refund_requested"
+  | "refunded"
+  | "partially_refunded";
+
 export type PaymentTransaction = {
   user_id: string;
   course_id: string;
@@ -17,10 +26,60 @@ export type PaymentTransaction = {
   discount_code?: string | null;
   discount_amount_vnd?: number | null;
   provider: "sepay";
-  status: "pending" | "paid" | "failed" | "cancelled";
+  status: PaymentTransactionStatus;
   provider_payload?: unknown;
   created_at: string;
   updated_at: string;
+};
+
+export type PaymentRefundStatus =
+  | "requested"
+  | "approved"
+  | "processing"
+  | "completed"
+  | "rejected"
+  | "failed"
+  | "cancelled";
+
+export type PaymentRefund = {
+  id: string;
+  payment_transaction_id: string;
+  user_id: string;
+  amount_vnd: number;
+  status: PaymentRefundStatus;
+  reason: string;
+  requested_by?: string | null;
+  processed_by?: string | null;
+  provider_refund_id?: string | null;
+  provider_payload?: unknown;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string | null;
+};
+
+export type CoursePaymentAccessSource =
+  | "payment"
+  | "admin_grant"
+  | "voucher"
+  | "free_enrollment"
+  | "legacy";
+
+export type CoursePaymentAccessStatus = "active" | "revoked" | "expired";
+
+export type CoursePaymentAccess = {
+  id: string;
+  user_id: string;
+  course_id: string;
+  full_access_granted?: boolean;
+  certificate_fee_paid?: boolean;
+  source?: CoursePaymentAccessSource;
+  status?: CoursePaymentAccessStatus;
+  source_transaction_id?: string | null;
+  granted_at?: string;
+  revoked_at?: string | null;
+  revoked_reason?: string | null;
+  granted_by?: string | null;
+  updated_at?: string;
 };
 
 export type SePayIpnPayload = {

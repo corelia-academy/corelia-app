@@ -1,4 +1,3 @@
-import { invokeGenerateQuestions } from "./questionGenerator";
 import { supabase } from "./supabase";
 import type { CourseLesson, SupportedCourseLocale } from "../types/courses";
 import type { QuestionOption } from "../types/questions";
@@ -161,69 +160,6 @@ export async function fetchReadinessCheck(args: {
     .maybeSingle<ReadinessRow>();
   if (error) throw new Error(error.message);
   return data ? fromRow(data) : null;
-}
-
-export async function generateReadinessCheck(args: {
-  userId: string;
-  courseId: string;
-  lessonId: string;
-  prereqIds: string[];
-  locale: SupportedCourseLocale;
-  count?: number;
-}): Promise<ReadinessCheck> {
-  const count = Math.max(2, Math.min(5, args.count ?? READINESS_QUESTION_COUNT));
-  const response = await invokeGenerateQuestions({
-    courseId: args.courseId,
-    lessonId: args.lessonId,
-    sourceLessonIds: args.prereqIds,
-    locale: args.locale,
-    count,
-  });
-
-  const questions: ReadinessQuestion[] = response.questions
-    .filter((q) => q.type === "mcq" && Array.isArray(q.options) && q.options.length >= 2)
-    .slice(0, count)
-    .map((q, idx) => ({
-      id:
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `q-${Date.now()}-${idx}`,
-      question: q.question,
-      options: q.options,
-      correct_index: q.correct_index,
-      explanation: q.explanation,
-      source_lesson_id: response.sources[idx]?.lessonId,
-    }));
-
-  if (questions.length === 0) {
-    throw new Error("Chưa đủ nội dung để Cora tạo câu hỏi kiểm tra.");
-  }
-
-  const { data, error } = await supabase
-    .from("lesson_readiness_checks")
-    .upsert(
-      {
-        user_id: args.userId,
-        course_id: args.courseId,
-        lesson_id: args.lessonId,
-        locale: args.locale,
-        questions,
-        source_lesson_ids: args.prereqIds,
-        user_answers: [],
-        score: null,
-        passed: null,
-        skipped: false,
-        reviewed_at: null,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id,lesson_id" },
-    )
-    .select(
-      "id,course_id,lesson_id,locale,questions,source_lesson_ids,user_answers,score,passed,skipped,reviewed_at,created_at,updated_at",
-    )
-    .single<ReadinessRow>();
-  if (error) throw new Error(error.message);
-  return fromRow(data);
 }
 
 export function computeReadinessScore(
