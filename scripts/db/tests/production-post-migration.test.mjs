@@ -166,8 +166,8 @@ const zeroInvariantMetrics = [
 ];
 
 function validVersions() {
-  const versions = Array.from({ length: 144 }, (_, index) => String(20260000000000 + index));
-  versions[143] = EXPECTED_POST_MIGRATION_LATEST;
+  const versions = Array.from({ length: 149 }, (_, index) => String(20260000000000 + index));
+  versions[148] = EXPECTED_POST_MIGRATION_LATEST;
   return versions;
 }
 
@@ -523,7 +523,7 @@ test("migration ledger fails on count, latest, pending, remote-only, or duplicat
   }).ok, false);
 
   const wrongLatest = [...versions];
-  wrongLatest[143] = "20260823139999";
+  wrongLatest[wrongLatest.length - 1] = "20260825139999";
   assert.equal(validatePostMigrationState({
     localVersions: wrongLatest,
     remoteVersions: wrongLatest,

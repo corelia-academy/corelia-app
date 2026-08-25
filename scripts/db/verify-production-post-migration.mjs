@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const EXPECTED_POST_MIGRATION_COUNT = 144;
-export const EXPECTED_POST_MIGRATION_LATEST = "20260823140000";
+export const EXPECTED_POST_MIGRATION_COUNT = 149;
+export const EXPECTED_POST_MIGRATION_LATEST = "20260825140000";
 
 const zeroInvariant = Object.freeze({ kind: "zero" });
 const guardTriggerSemantic = Object.freeze({ kind: "guard-trigger" });

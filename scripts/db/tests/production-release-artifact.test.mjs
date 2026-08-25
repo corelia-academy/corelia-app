@@ -94,10 +94,10 @@ function expectFailure(manifest, state, pattern) {
   assert.match(result.errors.join("\n"), pattern);
 }
 
-test("exact candidate passes exact file, hash, tree and 139+5 migration checks", () => {
+test("exact candidate passes exact file, hash, tree and 139+10 migration checks", () => {
   const { manifest, state } = buildFixture();
   const result = validateReleaseArtifactState(manifest, state);
-  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 149, totalMigrations: 144 });
+  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 154, totalMigrations: 149 });
 });
 
 test("missing required file fails closed", () => {
@@ -297,7 +297,7 @@ test("candidate builder rejects destructive, outside-temp and symlinked output t
   rmSync(fixtureRoot, { recursive: true, force: true });
 });
 
-test("production manifest has the canonical exact 139+5 shape", () => {
+test("production manifest has the canonical exact 139+10 shape", () => {
   const manifest = JSON.parse(readFileSync(DEFAULT_MANIFEST_PATH, "utf8"));
   validateManifestSchema(manifest);
   assert.equal(manifest.migration_chain.baseline_manifest.count, 139);

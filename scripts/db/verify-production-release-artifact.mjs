@@ -12,6 +12,11 @@ export const EXPECTED_FORWARD_MIGRATIONS = Object.freeze([
   "supabase/migrations/20260823122000_hackathon_canonical_project_compatibility.sql",
   "supabase/migrations/20260823130000_g2_canonical_state_and_data_integrity.sql",
   "supabase/migrations/20260823140000_g2_r1_remediation.sql",
+  "supabase/migrations/20260825100000_payment_refund_and_access_provenance_schema.sql",
+  "supabase/migrations/20260825110000_atomic_payment_settlement_and_enrollment_rpcs.sql",
+  "supabase/migrations/20260825120000_master_schema_classification_lifecycle_and_index_optimization.sql",
+  "supabase/migrations/20260825130000_harden_enrollment_provenance_and_security_guards.sql",
+  "supabase/migrations/20260825140000_harden_enrollment_payment_purpose_and_timestamp.sql",
 ]);
 
 const SHA1_RE = /^[0-9a-f]{40}$/;
@@ -136,7 +141,7 @@ export function validateManifestSchema(manifest) {
   validateMigrationEntries(manifest.migration_chain.forward, "migration_chain.forward");
   const forwardPaths = manifest.migration_chain.forward.map((entry) => normalizeRepositoryPath(entry.path));
   if (JSON.stringify(forwardPaths) !== JSON.stringify(EXPECTED_FORWARD_MIGRATIONS)) {
-    throw new Error("Forward migration set must be the exact reviewed five in canonical order.");
+    throw new Error("Forward migration set must be the exact reviewed ten in canonical order.");
   }
   validateRecipe(manifest.recipe, manifest.source_sha);
   return manifest;
