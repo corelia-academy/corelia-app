@@ -9,12 +9,12 @@ Kế hoạch này mô tả release candidate R4. Nó không cho phép tự độ
 ## 2. Định danh và target
 
 - Production base: `66981c2044b515a6fa07a71d06f8265d171d6a74`
-- R4 application payload: `79c6af1d2ac96ce6632beeaf72dade51ffed0fd4`
+- R4 application payload: `8ec46f7aefde86f9eb4fb98a803f66b5ef85dcfa`
 - Production Supabase ref: `lawhkvyyoznwygzsycan`
 - Staging Supabase ref: `opoozbmfbezkrpzxsusx`
 - Production pre-state bắt buộc: 139 migrations, latest `20260818120000`
-- Production post-state dự kiến: 152 migrations, latest `20260825152000`
-- Forward migration set: đúng 13 migration được khóa trong release manifest.
+- Production post-state dự kiến: 153 migrations, latest `20260825153000`
+- Forward migration set: đúng 14 migration được khóa trong release manifest.
 
 `R4_FINAL_RC_SHA`, candidate tree SHA-256 và manifest SHA-256 phải lấy từ immutable manifest/final RC đã verify; không nhập thủ công từ tài liệu này.
 
@@ -26,7 +26,8 @@ Kế hoạch này mô tả release candidate R4. Nó không cho phép tự độ
 - Access/certificate provenance theo đúng payment transaction.
 - Loại bỏ fallback refund không atomic.
 - Đóng đường tạo AI entitlement mới từ late callback, voucher và direct settlement.
-- Reconcile catalog bằng forward migrations `20260825150000`, `20260825151000`, `20260825152000`.
+- Reconcile catalog bằng forward migrations `20260825150000`, `20260825151000`, `20260825152000`, `20260825153000`.
+- Bảo đảm RLS của retained AI tables được tái lập từ migration chain và nằm trong semantic catalog fingerprint.
 - Giữ nguyên 7 AI tombstones và các bảng snapshot được bảo vệ.
 - Không thực hiện cleanup phá hủy của issue #330.
 
@@ -51,9 +52,9 @@ Workflow input `recovery_limitations_accepted` chỉ ghi nhận operator đã ch
 2. Verify Production target ref là `lawhkvyyoznwygzsycan`.
 3. Chạy full application/DB/release gates từ exact RC.
 4. Deploy `corelia-api` R4 trước DB để late AI callback fail-closed trong migration window.
-5. Verify ledger pre-state đúng 139 migrations và đúng 13 migration đang pending.
+5. Verify ledger pre-state đúng 139 migrations và đúng 14 migration đang pending.
 6. Apply migrations bằng canonical migration command; cấm `migration repair` và cấm `--include-all`.
-7. Chạy live post-migration semantic gate: ledger 152/latest `20260825152000`, payment/refund invariants, RPC privileges, catalog contracts.
+7. Chạy live post-migration semantic gate: ledger 153/latest `20260825153000`, payment/refund invariants, RPC privileges, RLS và catalog contracts.
 8. Deploy lại đủ 7 AI tombstones.
 9. Chạy post-Edge invariant gate và non-money smoke test.
 10. Chỉ sau khi toàn bộ gate PASS và m xác nhận trực tiếp mới được merge/push `main` hoặc phát hành frontend Production.
@@ -81,13 +82,13 @@ Workflow input `recovery_limitations_accepted` chỉ ghi nhận operator đã ch
 
 ## 8. Staging evidence và giới hạn
 
-- Staging đã nhận đúng ba forward R4 migrations và `corelia-api` R4.
-- Ledger Staging: 152, latest `20260825152000`.
-- Candidate ↔ Staging semantic catalog diff: 0 sau khi loại đúng object environment-specific `public.rls_auto_enable()`.
+- Staging đã nhận đúng bốn forward R4 migrations và `corelia-api` R4.
+- Ledger Staging: 153, latest `20260825153000`.
+- Candidate ↔ Staging semantic catalog diff: 0 sau khi loại đúng object environment-specific `public.rls_auto_enable()`; fingerprint bao gồm trạng thái RLS/force-RLS.
 - Payment/refund DB runtime fixtures, idempotency, refund và cleanup PASS.
 - `corelia-api` health/invalid-secret boundary và 7/7 tombstones PASS.
 - Exact signed provider callback chưa rehearsal vì secret thật không được lộ hoặc thay đổi. Đây là external gate, không được mô tả thành PASS.
-- R4 observation baseline bắt đầu `2026-08-25 16:37:04.191063+00` cho application payload `79c6af1d2ac96ce6632beeaf72dade51ffed0fd4`.
+- R4.1 observation baseline bắt đầu `2026-08-25 17:12:45.370282+00` cho application payload `8ec46f7aefde86f9eb4fb98a803f66b5ef85dcfa`.
 
 ## 9. Human policy gates
 
@@ -105,5 +106,5 @@ Code R4 phải tiếp tục fail-closed, không tạo AI entitlement mới trong
 - Production migrations: NONE
 - Production deploys: NONE
 - Remote `main` pushes/merges: NONE
-- Staging writes: ba forward R4 migrations và fixture test có cleanup xác minh
+- Staging writes: bốn forward R4 migrations và fixture test có cleanup xác minh
 - Staging deploy: `corelia-api` R4; 7 tombstones được xác minh còn live

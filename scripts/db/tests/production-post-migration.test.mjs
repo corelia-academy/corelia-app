@@ -114,6 +114,24 @@ const canonicalSemanticDefinitions = {
     configuration: ["search_path=public, pg_temp"],
     explicit_execute_roles: ["service_role"],
   },
+  "table.ai_model_pricing.rls": {
+    table_schema: "public",
+    table_name: "ai_model_pricing",
+    rls_enabled: true,
+    rls_forced: false,
+  },
+  "table.ai_usage_log.rls": {
+    table_schema: "public",
+    table_name: "ai_usage_log",
+    rls_enabled: true,
+    rls_forced: false,
+  },
+  "table.tier_limits.rls": {
+    table_schema: "public",
+    table_name: "tier_limits",
+    rls_enabled: true,
+    rls_forced: false,
+  },
   "column.payment_transactions.settled_at": {
     table_schema: "public",
     table_name: "payment_transactions",
@@ -212,8 +230,8 @@ const zeroInvariantMetrics = [
 ];
 
 function validVersions() {
-  const versions = Array.from({ length: 152 }, (_, index) => String(20260000000000 + index));
-  versions[151] = EXPECTED_POST_MIGRATION_LATEST;
+  const versions = Array.from({ length: 153 }, (_, index) => String(20260000000000 + index));
+  versions[152] = EXPECTED_POST_MIGRATION_LATEST;
   return versions;
 }
 
@@ -508,6 +526,14 @@ test("RPC with wrong EXECUTE privilege fails", () => {
     value.explicit_execute_roles = ["anon", "service_role"];
   }));
   assert.equal(result.ok, false);
+});
+
+test("retained AI table with RLS disabled fails closed", () => {
+  const result = verify(mutateMetric("table.ai_usage_log.rls", (value) => {
+    value.rls_enabled = false;
+  }));
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /Semantic definition mismatch/);
 });
 
 test("archived_at without archived_by fails", () => {

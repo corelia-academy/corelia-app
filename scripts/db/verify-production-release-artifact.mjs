@@ -20,6 +20,7 @@ export const EXPECTED_FORWARD_MIGRATIONS = Object.freeze([
   "supabase/migrations/20260825150000_r4_atomic_payment_refund_and_ai_retirement.sql",
   "supabase/migrations/20260825151000_r4_staging_catalog_reconciliation.sql",
   "supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql",
+  "supabase/migrations/20260825153000_r4_enable_ai_legacy_rls.sql",
 ]);
 
 const SHA1_RE = /^[0-9a-f]{40}$/;
@@ -150,7 +151,7 @@ export function validateManifestSchema(manifest) {
   validateMigrationEntries(manifest.migration_chain.forward, "migration_chain.forward");
   const forwardPaths = manifest.migration_chain.forward.map((entry) => normalizeRepositoryPath(entry.path));
   if (JSON.stringify(forwardPaths) !== JSON.stringify(EXPECTED_FORWARD_MIGRATIONS)) {
-    throw new Error("Forward migration set must be the exact reviewed thirteen in canonical order.");
+    throw new Error("Forward migration set must be the exact reviewed fourteen in canonical order.");
   }
   validateRecipe(manifest.recipe, manifest.source_sha);
   return manifest;

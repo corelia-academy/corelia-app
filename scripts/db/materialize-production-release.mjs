@@ -164,7 +164,7 @@ Runtime Application Delta: 0 bytes (0 files in src/, public/, supabase/migration
   const stageBCommitMessage = `feat(release): isolated G2 application release candidate (Stage B)
 
 Materialized release candidate containing the approved Wave 0 / M1 / G2 / G2-R1 / R4 delta:
-- 13 forward migrations (20260823120000 .. 20260825152000)
+- 14 forward migrations (20260823120000 .. 20260825153000)
 - Edge Functions: corelia-api and 7 retired AI tombstones
 - Frontend, payment/refund, entitlement, catalog reconciliation, and release-control changes
 - Candidate tree SHA-256: ${expectedCandidateTreeSha256}

@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const EXPECTED_POST_MIGRATION_COUNT = 152;
-export const EXPECTED_POST_MIGRATION_LATEST = "20260825152000";
+export const EXPECTED_POST_MIGRATION_COUNT = 153;
+export const EXPECTED_POST_MIGRATION_LATEST = "20260825153000";
 
 const zeroInvariant = Object.freeze({ kind: "zero" });
 const guardTriggerSemantic = Object.freeze({ kind: "guard-trigger" });
@@ -102,6 +102,24 @@ export const EXPECTED_POST_MIGRATION_INSPECTION = Object.freeze({
     security_definer: true,
     configuration: ["search_path=public, pg_temp"],
     explicit_execute_roles: ["service_role"],
+  },
+  "table.ai_model_pricing.rls": {
+    table_schema: "public",
+    table_name: "ai_model_pricing",
+    rls_enabled: true,
+    rls_forced: false,
+  },
+  "table.ai_usage_log.rls": {
+    table_schema: "public",
+    table_name: "ai_usage_log",
+    rls_enabled: true,
+    rls_forced: false,
+  },
+  "table.tier_limits.rls": {
+    table_schema: "public",
+    table_name: "tier_limits",
+    rls_enabled: true,
+    rls_forced: false,
   },
   "column.payment_transactions.settled_at": {
     table_schema: "public",

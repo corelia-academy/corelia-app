@@ -141,6 +141,16 @@ column_catalog AS (
   LEFT JOIN pg_attrdef ad ON ad.adrelid = a.attrelid AND ad.adnum = a.attnum
   WHERE a.attnum > 0 AND NOT a.attisdropped
 ),
+relation_catalog AS (
+  SELECT
+    n.nspname AS table_schema,
+    rel.relname AS table_name,
+    rel.relrowsecurity AS rls_enabled,
+    rel.relforcerowsecurity AS rls_forced
+  FROM pg_class rel
+  JOIN pg_namespace n ON n.oid = rel.relnamespace
+  WHERE rel.relkind IN ('r', 'p')
+),
 inspection AS (
   SELECT 'invariant.conversation_orphans' AS metric, COUNT(*)::text AS value
   FROM public.ai_conversations c
@@ -363,6 +373,36 @@ inspection AS (
     WHERE function_schema = 'public'
       AND function_name = 'process_payment_refund'
       AND argument_types = ARRAY['text', 'integer', 'text', 'uuid', 'jsonb']
+  ), 'null')
+
+  UNION ALL
+  SELECT 'table.ai_model_pricing.rls', COALESCE((
+    SELECT jsonb_build_object(
+      'table_schema', table_schema, 'table_name', table_name,
+      'rls_enabled', rls_enabled, 'rls_forced', rls_forced
+    )::text
+    FROM relation_catalog
+    WHERE table_schema = 'public' AND table_name = 'ai_model_pricing'
+  ), 'null')
+
+  UNION ALL
+  SELECT 'table.ai_usage_log.rls', COALESCE((
+    SELECT jsonb_build_object(
+      'table_schema', table_schema, 'table_name', table_name,
+      'rls_enabled', rls_enabled, 'rls_forced', rls_forced
+    )::text
+    FROM relation_catalog
+    WHERE table_schema = 'public' AND table_name = 'ai_usage_log'
+  ), 'null')
+
+  UNION ALL
+  SELECT 'table.tier_limits.rls', COALESCE((
+    SELECT jsonb_build_object(
+      'table_schema', table_schema, 'table_name', table_name,
+      'rls_enabled', rls_enabled, 'rls_forced', rls_forced
+    )::text
+    FROM relation_catalog
+    WHERE table_schema = 'public' AND table_name = 'tier_limits'
   ), 'null')
 
   UNION ALL

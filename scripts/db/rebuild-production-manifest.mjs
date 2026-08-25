@@ -79,7 +79,7 @@ export function generateCanonicalManifest() {
     schema_version: 1,
     artifact_id: "R4_RELEASE_CANDIDATE",
     base_sha: baseSha,
-    source_sha: "79c6af1d2ac96ce6632beeaf72dade51ffed0fd4",
+    source_sha: "8ec46f7aefde86f9eb4fb98a803f66b5ef85dcfa",
     manifest_path: DEFAULT_MANIFEST_PATH,
     candidate_tree_sha256: candidateTreeSha256,
     recipe: {

@@ -96,10 +96,10 @@ function expectFailure(manifest, state, pattern) {
   assert.match(result.errors.join("\n"), pattern);
 }
 
-test("exact candidate passes exact file, hash, tree and 139+13 migration checks", () => {
+test("exact candidate passes exact file, hash, tree and 139+14 migration checks", () => {
   const { manifest, state } = buildFixture();
   const result = validateReleaseArtifactState(manifest, state);
-  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 159, totalMigrations: 152 });
+  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 160, totalMigrations: 153 });
 });
 
 test("missing required file fails closed", () => {
@@ -176,10 +176,10 @@ test("missing historical migration fails exact 139 baseline chain", () => {
   expectFailure(manifest, state, /Migration chain count mismatch|Migration order\/path mismatch/);
 });
 
-test("unreviewed fourteenth forward migration fails exact migration chain", () => {
+test("unreviewed fifteenth forward migration fails exact migration chain", () => {
   const { manifest, state } = buildFixture();
   state.migrations.push({
-    path: "supabase/migrations/20260825153000_unreviewed_fourteenth.sql",
+    path: "supabase/migrations/20260825154000_unreviewed_fifteenth.sql",
     sha256: sha256("unreviewed"),
   });
   expectFailure(manifest, state, /Migration chain count mismatch/);
@@ -336,7 +336,7 @@ test("candidate builder rejects destructive, outside-temp and symlinked output t
   rmSync(fixtureRoot, { recursive: true, force: true });
 });
 
-test("production manifest has the canonical exact 139+13 shape", () => {
+test("production manifest has the canonical exact 139+14 shape", () => {
   const manifest = JSON.parse(readFileSync(DEFAULT_MANIFEST_PATH, "utf8"));
   validateManifestSchema(manifest);
   assert.equal(manifest.migration_chain.baseline_manifest.count, 139);
