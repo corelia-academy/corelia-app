@@ -4,7 +4,7 @@ Xem hub: [README.md](./README.md).
 
 ## Mục tiêu
 
-Phủ `/courses`, `/courses/:id`, `/checkout/course/:courseId`, `/checkout/success/:purpose/:courseId`, `/learn/:courseId`, `/learn/:courseId/lesson/:lessonId` — kèm **Cora AI** trong learn.
+Phủ `/courses`, `/courses/:id`, `/checkout/course/:courseId`, `/checkout/success/:purpose/:courseId`, `/learn/:courseId`, `/learn/:courseId/lesson/:lessonId`.
 
 ## Tiền đề staging
 
@@ -33,12 +33,8 @@ Phủ `/courses`, `/courses/:id`, `/checkout/course/:courseId`, `/checkout/succe
 
 7. Với khóa **đã có quyền học**, mở `/learn/:courseId`.
 8. Mở bài học `/learn/:courseId/lesson/:lessonId` — player/content load (video/link theo seed).
-9. Trong learn: mở/đóng **Cora** sidebar hoặc assistant panel (`CoraSidebarPanel` / `GlobalCoraAssistant`) — không crash, không che hết nội dung bài học.
+9. Learning shell không mount hoặc dành khoảng trống cho `CoraSidebarPanel`, `GlobalCoraAssistant` hay `ExplainSelectionButton`.
 10. **Không có quyền**: truy cập URL learn trực tiếp — bị chặn hoặc redirect (ghi nhận hành vi spec).
-
-### Cora subscription (cross-ref)
-
-11. Gói AI / subscription: xem thêm `/cora` ([07-account-hub.md](./07-account-hub.md)).
 
 ### Redirect legacy
 
@@ -46,7 +42,7 @@ Phủ `/courses`, `/courses/:id`, `/checkout/course/:courseId`, `/checkout/succe
 
 ## Kết quả mong đợi
 
-- Luồng xem → (tuỳ quyền) checkout SePay → học + Cora smoke hoạt động trên staging.
+- Luồng xem → (tuỳ quyền) checkout SePay → học hoạt động trên staging.
 
 ## Ghi chú bug
 

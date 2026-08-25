@@ -166,15 +166,6 @@ Dark mode `--elevation-card`: `0 8px 24px oklch(0 0 0 / 0.2)`.
 | Tertiary (Mark as read) | `ghost` | |
 | Danger (Delete) | `destructive` | |
 
-### Suggestion Pills (AI panel)
-
-```tsx
-"rounded-full border border-border-subtle bg-surface-raised px-2.5 py-1 text-[11px]"
-"hover:border-border hover:bg-surface-overlay hover:text-foreground"
-```
-
----
-
 ## 6. Spacing
 
 - Content padding: `clamp(1rem, 3vw, 2rem)` via `--content-px`
@@ -197,47 +188,17 @@ Dark mode `--elevation-card`: `0 8px 24px oklch(0 0 0 / 0.2)`.
 
 ---
 
-## 8. AI Panel (Cora) Patterns
-
-### Empty State Structure
-
-```
-[Context block]     ← Course + Lesson + Format badge
-[Suggestions]       ← "Try asking" label + SuggestionPills
-```
-
-### Format-aware suggestions
-
-| Format | Suggestions |
-|--------|-------------|
-| `video` | Summarize this video · Ask about this video · Explain what I just watched |
-| `article` | Summarize this reading · Explain this concept · Ask about this paragraph |
-| `quiz` | Explain the correct answers · Give me a hint · Related concepts |
-| `practice` | Review my approach · Give me a hint · Solution walkthrough |
-
-### Context block
-
-```tsx
-<div className="rounded-xl border border-border-subtle bg-surface-raised p-3">
-  <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground-muted mb-1.5">
-    Cora is using
-  </p>
-  <p className="text-xs font-medium text-foreground">{courseTitle}</p>
-  <p className="text-xs text-foreground-muted">{lessonTitle}</p>
-  <span className="text-[10px] text-foreground-subtle">{formatIcon} {formatLabel}</span>
-</div>
-```
-
----
-
 ## 9. Lesson Formats
 
-| Format | `lesson_format` value | Learner UI | Instructor tooling |
+| Format | `lesson_format` value | Learner UI | Admin tooling |
 |--------|----------------------|------------|-------------------|
 | Video | `"video"` | YouTube embed in card | YouTube URL |
 | Article | `"article"` | Markdown in card | Markdown editor |
-| Quiz | `"quiz"` | `LessonQuiz` MCQ component | AI Generate Questions |
-| Practice | `"practice"` | `LessonPractice` + Cora CTA | Markdown + AI gen |
+| Quiz | `"quiz"` | `LessonQuiz` MCQ component | Question editor |
+| Practice | `"practice"` | `LessonPractice`; modes instruction/checklist/submission/guided project | Markdown, steps và artifact fields |
+| Code exercise | `"code_exercise"` | Fill hoặc edit code + tests | `CodeExerciseBuilder` |
+
+Chi tiết layout và interaction: [Learner UI](./learning/learner-ui.md) và [Admin authoring UI](./learning/admin-ui.md).
 
 ### Quiz data model
 
@@ -245,7 +206,6 @@ Dark mode `--elevation-card`: `0 8px 24px oklch(0 0 0 / 0.2)`.
 - Attempts: `section_question_attempts` table với cột `lesson_id` (nullable)
 - Functions: `getLessonQuestions`, `setLessonQuestions` trong `src/lib/sectionQuestions.ts`
 - Attempt submit: `submitLessonQuizAttempts` trong `src/lib/quizAttempts.ts`
-- AI generation: `supabase/functions/generate-questions/` — pass `lessonId` thay `sectionId`
 
 ---
 
@@ -276,5 +236,5 @@ Màu thương hiệu đối tác — **không** thay bằng `--primary` / `--bra
 
 ## 12. Motion exceptions
 
-- **Collapsible sidebar** (`ui/sidebar`, `CoraSidebarPanel`, `InstructorSidebar`): `transition-[width]` được phép — pattern shadcn collapse.
+- **Collapsible sidebar** (`ui/sidebar`, admin sidebar): `transition-[width]` được phép — pattern shadcn collapse.
 - **Progress fill:** ưu tiên `transform: scaleX(...)` + `transition-transform` thay animate `width` khi refactor; curriculum bar có thể giữ `width` inline không transition.
