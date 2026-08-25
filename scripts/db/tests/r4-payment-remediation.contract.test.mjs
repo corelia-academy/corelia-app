@@ -9,6 +9,9 @@ const grantAccess = read("supabase/functions/corelia-api/payments/grant_access.t
 const migration = read("supabase/migrations/20260825150000_r4_atomic_payment_refund_and_ai_retirement.sql");
 const reconciliation = read("supabase/migrations/20260825151000_r4_staging_catalog_reconciliation.sql");
 const functionReconciliation = read("supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql");
+const rlsReconciliation = read("supabase/migrations/20260825153000_r4_enable_ai_legacy_rls.sql");
+const catalogFingerprint = read("scripts/db/r4-catalog-fingerprint.sql");
+const catalogObjectFingerprints = read("scripts/db/r4-catalog-object-fingerprints.sql");
 
 test("R4 handler delegates ORDER_PAID to the atomic RPC without pre-marking paid", () => {
   const paidBlock = handler.slice(
@@ -74,4 +77,17 @@ test("R4 forward function reconciliation restores canonical credential activity 
   assert.match(functionReconciliation, /internal\.delete_public_profile/);
   assert.match(functionReconciliation, /NOT \(e\.payload \? 'title'\)/);
   assert.doesNotMatch(functionReconciliation, /DROP\s+.*CASCADE/i);
+});
+
+test("R4.1 makes retained AI table RLS reproducible and catalog-visible", () => {
+  for (const table of ["ai_model_pricing", "ai_usage_log", "tier_limits"]) {
+    assert.match(rlsReconciliation, new RegExp(`ALTER TABLE public\\.${table} ENABLE ROW LEVEL SECURITY`));
+  }
+  assert.match(rlsReconciliation, /ai_usage_log_read_own/);
+  assert.match(rlsReconciliation, /user_id = \(SELECT auth\.uid\(\)\)/);
+  assert.doesNotMatch(rlsReconciliation, /DISABLE ROW LEVEL SECURITY|DROP\s+.*CASCADE/i);
+  assert.match(catalogFingerprint, /c\.relrowsecurity/);
+  assert.match(catalogFingerprint, /c\.relforcerowsecurity/);
+  assert.match(catalogObjectFingerprints, /'tables'::text AS category/);
+  assert.match(catalogObjectFingerprints, /c\.relrowsecurity/);
 });

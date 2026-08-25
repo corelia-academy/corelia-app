@@ -1,3 +1,18 @@
+SELECT 'tables'::text AS category,
+       format('%I.%I', n.nspname, c.relname) AS object_key,
+       md5(format(
+         '%s|%s|rls=%s|force_rls=%s',
+         c.relkind,
+         c.relpersistence,
+         c.relrowsecurity,
+         c.relforcerowsecurity
+       )) AS semantic_md5
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname IN ('public', 'private', 'internal')
+  AND c.relkind IN ('r', 'p')
+
+UNION ALL
 SELECT 'columns'::text AS category,
        format('%I.%I.%I', n.nspname, c.relname, a.attname) AS object_key,
        md5(format(

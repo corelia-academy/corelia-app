@@ -1,6 +1,10 @@
 WITH catalog_entries AS (
   SELECT 'tables'::text AS category,
-         format('%I.%I|%s|%s', n.nspname, c.relname, c.relkind, c.relpersistence) AS value
+         format(
+           '%I.%I|%s|%s|rls=%s|force_rls=%s',
+           n.nspname, c.relname, c.relkind, c.relpersistence,
+           c.relrowsecurity, c.relforcerowsecurity
+         ) AS value
   FROM pg_class c
   JOIN pg_namespace n ON n.oid = c.relnamespace
   WHERE n.nspname IN ('public', 'private', 'internal')
