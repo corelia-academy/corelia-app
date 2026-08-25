@@ -5,6 +5,8 @@ import { existsSync } from "node:fs";
 const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const sqlTestPath = resolve(process.cwd(), "scripts/db/tests/g2-r1-db-integration.sql");
 const concurrencyTestPath = resolve(process.cwd(), "scripts/db/tests/g2-r1-concurrency.integration.mjs");
+const r4PaymentSqlTestPath = resolve(process.cwd(), "scripts/db/tests/r4-payment-refund-integration.sql");
+const r4PaymentConcurrencyPath = resolve(process.cwd(), "scripts/db/tests/r4-payment-concurrency.integration.mjs");
 
 console.log("===============================================================================");
 console.log(" CORELIA DB OPTIMIZATION: LOCAL DISPOSABLE DATABASE INTEGRATION GATE");
@@ -54,7 +56,12 @@ if (!existsSync(sqlTestPath)) {
 try {
   const queryArgs = ["exec", "supabase", "db", "query", "--local", "--file", sqlTestPath];
   execFileSync(command, queryArgs, { stdio: "inherit", shell: true });
-  console.log("✓ SQL integration test suite executed successfully.\n");
+  if (!existsSync(r4PaymentSqlTestPath)) {
+    throw new Error(`R4 payment SQL integration test file missing at ${r4PaymentSqlTestPath}`);
+  }
+  const r4QueryArgs = ["exec", "supabase", "db", "query", "--local", "--file", r4PaymentSqlTestPath];
+  execFileSync(command, r4QueryArgs, { stdio: "inherit", shell: true });
+  console.log("✓ SQL integration test suites executed successfully.\n");
 } catch (sqlErr) {
   console.error("\n[INTEGRATION_SQL_FAILURE] SQL assertion failed during database integration testing.");
   process.exit(1);
@@ -69,7 +76,11 @@ if (!existsSync(concurrencyTestPath)) {
 
 try {
   execFileSync("node", [concurrencyTestPath], { stdio: "inherit", shell: true });
-  console.log("✓ Two-connection concurrency test executed successfully.\n");
+  if (!existsSync(r4PaymentConcurrencyPath)) {
+    throw new Error(`R4 payment concurrency script missing at ${r4PaymentConcurrencyPath}`);
+  }
+  execFileSync("node", [r4PaymentConcurrencyPath], { stdio: "inherit", shell: true });
+  console.log("✓ Two-connection concurrency tests executed successfully.\n");
 } catch (concErr) {
   console.error("\n[INTEGRATION_CONCURRENCY_FAILURE] Real two-connection concurrency test failed.");
   process.exit(1);

@@ -10,32 +10,14 @@ import {
   fetchSePayIncomingTransactionByInvoiceNumber,
   sepayCheckoutInitUrl,
 } from "./sepay.ts";
-import {
-  createAiVoucherBatch,
-  deleteAiVoucherBatch,
-  previewAiVoucher,
-  releaseVoucherReservationForPayment,
-  reserveAiVoucherForPayment,
-} from "./vouchers.ts";
+import { releaseVoucherReservationForPayment } from "./vouchers.ts";
 import type {
-  AiSubscriptionDurationMonths,
-  AiSubscriptionMeta,
-  AiSubscriptionTier,
   PaymentPurpose,
   PaymentTransaction,
   SePayIpnPayload,
 } from "./types.ts";
 
 const AI_SUBSCRIPTION_PRODUCT_ID = "cora-ai";
-
-const AI_SUBSCRIPTION_PRICES: Record<
-  AiSubscriptionTier,
-  Record<AiSubscriptionDurationMonths, number>
-> = {
-  student: { 1: 79_000, 12: 690_000 },
-  pro: { 1: 149_000, 12: 1_290_000 },
-  bootcamp: { 1: 399_000, 12: 3_490_000 },
-};
 
 export async function handleSePayCheckout(req: Request, db: SupabaseClient): Promise<Response> {
   try {
@@ -52,7 +34,6 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     const errorUrl = String(body.errorUrl ?? "");
     const cancelUrl = String(body.cancelUrl ?? "");
     const discountCodeRaw = String(body.discountCode ?? "").trim();
-    const voucherCodeRaw = String(body.voucherCode ?? "").trim();
     if (!courseId) return json({ message: "Thiếu courseId" }, 400);
     if (!purpose) return json({ message: "Thiếu/ sai purpose" }, 400);
     if (purpose !== "ai_subscription" && (!Number.isFinite(requestedAmountVnd) || requestedAmountVnd <= 0)) {
@@ -130,16 +111,6 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
           finalAmount = Math.max(0, baseAmount - discountAmount);
         }
       }
-    } else if (purpose === "ai_subscription" && voucherCodeRaw) {
-      const voucher = await previewAiVoucher(db, {
-        voucherCode: voucherCodeRaw,
-        baseAmountVnd: baseAmount,
-        tier: subscriptionMeta?.tier ?? null,
-        durationMonths: subscriptionMeta?.duration_months ?? null,
-      });
-      discountCode = voucher.code;
-      discountAmount = voucher.discountAmountVnd;
-      finalAmount = voucher.finalAmountVnd;
     }
     const orderId = `CORELIA-${Date.now()}-${randomHex(6)}`;
     const createdAt = nowIso();
@@ -153,7 +124,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       discount_amount_vnd: discountCode ? discountAmount : null,
       provider: "sepay",
       status: "pending",
-      provider_payload: subscriptionMeta ? { subscription_meta: subscriptionMeta } : undefined,
+      provider_payload: undefined,
       created_at: createdAt,
       updated_at: createdAt,
     };
@@ -168,27 +139,17 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       discount_amount_vnd: tx.discount_amount_vnd ?? undefined,
       provider: "sepay",
       status: "pending",
-      provider_payload: subscriptionMeta ? { subscription_meta: subscriptionMeta } : undefined,
+      provider_payload: undefined,
       created_at: createdAt,
       updated_at: createdAt,
     });
     if (insErr) throw new Error(insErr.message);
-    if (purpose === "ai_subscription" && discountCode) {
-      await reserveAiVoucherForPayment(db, {
-        userId: user.id,
-        paymentTransactionId: orderId,
-        voucherCode: discountCode,
-        baseAmountVnd: baseAmount,
-      });
-    }
     const roundedFinalAmount = Math.round(finalAmount);
     if (roundedFinalAmount <= 0) {
       if (!discountCode) {
         return json({ message: "Không thể hoàn tất checkout miễn phí." }, 400);
       }
-      const freeCheckoutPayload = subscriptionMeta
-        ? { source: "free_checkout", subscription_meta: subscriptionMeta }
-        : { source: "free_checkout" };
+      const freeCheckoutPayload = { source: "free_checkout" };
       await grantPaymentAccessForTransaction(db, tx, orderId, createdAt, freeCheckoutPayload);
       return json({
         order_id: orderId,
@@ -207,9 +168,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       order_invoice_number: orderId,
       order_description: purpose === "course_purchase"
         ? `Thanh toán khoá học ${courseId}`
-        : purpose === "certificate_fee"
-          ? `Thanh toán phí chứng nhận ${courseId}`
-          : `Thanh toán gói Cora AI ${subscriptionMeta?.tier ?? ""} ${subscriptionMeta?.duration_months ?? ""} tháng`,
+        : `Thanh toán phí chứng nhận ${courseId}`,
       customer_id: user.id,
       success_url: successUrl,
       error_url: errorUrl,
@@ -253,16 +212,11 @@ export async function handleAiVoucherBatchCreate(req: Request, db: SupabaseClien
 
 export async function handleAiVoucherBatchDelete(req: Request, db: SupabaseClient): Promise<Response> {
   try {
-    const user = await verifyBearerUser(req, db);
-    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-    const batchId = String(body.batchId ?? "").trim();
-    if (!batchId) return json({ message: "Thiếu batchId." }, 400);
-    await deleteAiVoucherBatch(db, batchId, user.id);
-    return json({ ok: true });
+    await verifyBearerUser(req, db);
+    return json({ message: "Xóa voucher AI đã dừng hỗ trợ; dữ liệu lịch sử được giữ nguyên." }, 400);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
-    if (message === "Không đủ quyền xóa batch voucher.") return json({ message }, 403);
     return json({ message }, 400);
   }
 }
@@ -450,12 +404,13 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
         console.error("[corelia-api] IPN amount mismatch", { invoiceNumber, expectedAmount, paidAmount });
         return json({ message: "Amount mismatch" }, 400);
       }
-      const { error: txUpdateErr } = await db.from("payment_transactions").update({
-        status: "paid",
-        provider_payload: payload as unknown as Record<string, unknown>,
-        updated_at: updatedAt,
-      }).eq("id", invoiceNumber);
-      if (txUpdateErr) throw new Error(txUpdateErr.message);
+      if (tx.purpose === "ai_subscription") {
+        return json({
+          ok: false,
+          code: "AI_SUBSCRIPTION_RETIRED",
+          message: "Giao dịch gói AI cũ cần được hỗ trợ thủ công; không tạo entitlement mới.",
+        }, 409);
+      }
       await grantPaymentAccessForTransaction(db, tx, invoiceNumber, updatedAt, payload);
       return json({ ok: true });
     }
@@ -469,12 +424,7 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
       });
       if (rpcErr) {
         console.error("[corelia-api] IPN refund RPC error", rpcErr);
-        // Fallback update
-        await db.from("payment_transactions").update({
-          status: "refunded",
-          provider_payload: payload as unknown as Record<string, unknown>,
-          updated_at: updatedAt,
-        }).eq("id", invoiceNumber);
+        throw new Error(rpcErr.message);
       }
       return json({ ok: true });
     }
