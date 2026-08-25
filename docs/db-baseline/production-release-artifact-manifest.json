@@ -2,9 +2,9 @@
   "schema_version": 1,
   "artifact_id": "R4_RELEASE_CANDIDATE",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "79c6af1d2ac96ce6632beeaf72dade51ffed0fd4",
+  "source_sha": "8ec46f7aefde86f9eb4fb98a803f66b5ef85dcfa",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "351814aa2097975b4ecfff05369800e0af3466c1b66421f33b5f5baa789cca2b",
+  "candidate_tree_sha256": "13706c45e35838f6571d925dd3b1f1d7ebc42bb497a4f3ff70abb30556f4eacd",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -93,7 +93,7 @@
     },
     {
       "path": "docs/db-baseline/main-g2-r1-rollout-plan.md",
-      "sha256": "54d003be81399ea17e3999b451db86b15c5397d1d00fcbc49a4c2d184cfb2d2f"
+      "sha256": "d38fa11974d77a23e292c2dcbd8e919f68fb0e38ef7c3ded90a76f61a8621afd"
     },
     {
       "path": "docs/db-baseline/README.md",
@@ -205,23 +205,23 @@
     },
     {
       "path": "scripts/db/materialize-production-release.mjs",
-      "sha256": "d872971bb86b3496a85340c6d29f28fa8b7a99af6c021be6239a4e71522ab31c"
+      "sha256": "ca60d032bcac5df8ddd95e12644c1c8c6a62eb8b5ed00d987353541fefcd3a16"
     },
     {
       "path": "scripts/db/production-post-migration-inspect.sql",
-      "sha256": "a54bde45d6aa267e9034c35a66a1632296716c03f97372ca72f105ea3b93beb1"
+      "sha256": "283527d229645b62d3c8263d9b475390a8b5c2031f24e4f4a8c8dc2aa8aeced4"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
-      "sha256": "e40a85184a9f5a18a06e1a14b580d7a1d189e19ca15ceb87fe5a0e5358460131"
+      "sha256": "efb5116d7431b1475e32966ec8ff4fea6a8bab7716f6699688c510ce8dcbeb11"
     },
     {
       "path": "scripts/db/r4-catalog-object-fingerprints.sql",
-      "sha256": "79a26e9933a66b2f6db5b050218bb0bc869ca7419706f7385f5adb5178958419"
+      "sha256": "486dcf3d8dacba7e8b1f62b5e6a0e2bb101f3ea31bcf980ad21aeab0af25b511"
     },
     {
       "path": "scripts/db/rebuild-production-manifest.mjs",
-      "sha256": "50df4aad145530fa906a512d537609fb22939359a1abe2da084becce4dd32a15"
+      "sha256": "b0c1cd59299c1038fa0c36e42a4ac2781e886511d840b039a3cdd9272a1f3a66"
     },
     {
       "path": "scripts/db/repair-ai-chat-session-aggregates.sql",
@@ -277,15 +277,15 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "0d683ee2c0e88fe8381be64c7b324e8e295688f53f5dc555c54fc813aeef1f5d"
+      "sha256": "f570b9b94e8bbf531163c6684ffac8f66b460aa7d95e1ce43db9ae9be2d300ce"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
-      "sha256": "8a29df78c400d1c94893cb64efa06d82245eec1958c4557948fdfc0c69205bda"
+      "sha256": "2923ed58dcbe06d861c6faab11929354053e1a5bb68be33499d3ff85e598352e"
     },
     {
       "path": "scripts/db/tests/production-release-artifact.test.mjs",
-      "sha256": "86c5ecfd126b350552752fcf4f20ba3eaae86c98501e22cb88533eb54c38f91c"
+      "sha256": "a079d887b272eaadd31e09a8045b1439cc97e5a1de9266e758e852e71fa1b531"
     },
     {
       "path": "scripts/db/tests/project-seed-only.contract.test.mjs",
@@ -301,11 +301,11 @@
     },
     {
       "path": "scripts/db/tests/r4-payment-remediation.contract.test.mjs",
-      "sha256": "4c4760e07b52570fa2acbd714a91c703967efc860559fdf222a2a7bdafbfda8d"
+      "sha256": "00534d6979956e30710fee019d1a96d59288105f65a7b8c26b4c390c4d284416"
     },
     {
       "path": "scripts/db/tests/rollout-compatibility.test.mjs",
-      "sha256": "11626416a08de7d2067632f814cf4012ece8693f92f8f29a198b0525e54d901f"
+      "sha256": "f45316488b414c117a79e084724d20d5dc2b49259c3f1d87cd041dd5de2b0cee"
     },
     {
       "path": "scripts/db/verify-ai-backup-restore.mjs",
@@ -337,15 +337,15 @@
     },
     {
       "path": "scripts/db/verify-production-migration-state.mjs",
-      "sha256": "8c845a092dc04e5f77f71579524b2a29689c83386e9790f0a84a4e38ccb1284b"
+      "sha256": "7901c636fef76de26a632460c0ce685b5aca6f25ea139dce1077fd8ce694e40b"
     },
     {
       "path": "scripts/db/verify-production-post-migration.mjs",
-      "sha256": "7b5c5ee469efc1d78538da41ea201568b90510639b488807f2b8f4094097230b"
+      "sha256": "386e8da3b17b8c69b12dbd94defb323f317ea95e4147ab11cbf87e4935863e5d"
     },
     {
       "path": "scripts/db/verify-production-release-artifact.mjs",
-      "sha256": "a62df5a1d92328b88e2563b24904cb18dbae0f083f6d20974e83498e40df0d42"
+      "sha256": "4d77715ed5736fdc8b8804467420bf0ced6765f4c38fe01aa53aa53e2aefe14d"
     },
     {
       "path": "scripts/seed-course-skills-demo.sql",
@@ -890,6 +890,10 @@
     {
       "path": "supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql",
       "sha256": "1751f60cb9422234ed0d0c9c61e720944d943db89541b120a1322d7f143b0abb"
+    },
+    {
+      "path": "supabase/migrations/20260825153000_r4_enable_ai_legacy_rls.sql",
+      "sha256": "659fc1587a8921c4198390477d6e85d252caa2d99a07d28e2fbae1107d86cf61"
     }
   ],
   "deleted_files": [
@@ -995,6 +999,10 @@
       {
         "path": "supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql",
         "sha256": "1751f60cb9422234ed0d0c9c61e720944d943db89541b120a1322d7f143b0abb"
+      },
+      {
+        "path": "supabase/migrations/20260825153000_r4_enable_ai_legacy_rls.sql",
+        "sha256": "659fc1587a8921c4198390477d6e85d252caa2d99a07d28e2fbae1107d86cf61"
       }
     ]
   }
