@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "artifact_id": "R3_PROPOSED_RELEASE_CANDIDATE",
+  "artifact_id": "R4_RELEASE_CANDIDATE",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "1b3c3da94ccae170e018eefc97d9b1650e1494f5",
+  "source_sha": "79c6af1d2ac96ce6632beeaf72dade51ffed0fd4",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "1b925ef637d38f3fd109f5876360467abf69e9eca142689b51a2925f21944d2d",
+  "candidate_tree_sha256": "351814aa2097975b4ecfff05369800e0af3466c1b66421f33b5f5baa789cca2b",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -33,7 +33,7 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "00563bd27ddb255614e0b294b59cd9d67ba189d4df452a84aeffd497d4a2d18b"
+      "sha256": "b5f34532120e01b1fc432d94f70f81896e30dd3a85dbee98a2fbef4603c7b87a"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
@@ -93,7 +93,7 @@
     },
     {
       "path": "docs/db-baseline/main-g2-r1-rollout-plan.md",
-      "sha256": "53c8287d758b7f9c1d290cbfd1afab341ffa6eb2356e0dd91e32efb8f10f2be6"
+      "sha256": "54d003be81399ea17e3999b451db86b15c5397d1d00fcbc49a4c2d184cfb2d2f"
     },
     {
       "path": "docs/db-baseline/README.md",
@@ -173,7 +173,7 @@
     },
     {
       "path": "scripts/db/build-production-release-candidate.mjs",
-      "sha256": "fa4e0c466c0398c40acf71793b5a040a3d4268f80c432d22e017f4f8ba54c4c0"
+      "sha256": "754cca4d5f5fbd1dad486804e534ba81f71d016e65eff633eef9d4a5aab235e0"
     },
     {
       "path": "scripts/db/catalog-fingerprint.mjs",
@@ -205,15 +205,23 @@
     },
     {
       "path": "scripts/db/materialize-production-release.mjs",
-      "sha256": "2f948a7ae938fcb45e990388ef0ea60827c292814c9bae7eaee3c7e5508293ae"
+      "sha256": "d872971bb86b3496a85340c6d29f28fa8b7a99af6c021be6239a4e71522ab31c"
     },
     {
       "path": "scripts/db/production-post-migration-inspect.sql",
-      "sha256": "b356fbb9d65ddab73ae8811fbd59c7d987469a4bcbd43af46b8a95b3c6d558d2"
+      "sha256": "a54bde45d6aa267e9034c35a66a1632296716c03f97372ca72f105ea3b93beb1"
+    },
+    {
+      "path": "scripts/db/r4-catalog-fingerprint.sql",
+      "sha256": "e40a85184a9f5a18a06e1a14b580d7a1d189e19ca15ceb87fe5a0e5358460131"
+    },
+    {
+      "path": "scripts/db/r4-catalog-object-fingerprints.sql",
+      "sha256": "79a26e9933a66b2f6db5b050218bb0bc869ca7419706f7385f5adb5178958419"
     },
     {
       "path": "scripts/db/rebuild-production-manifest.mjs",
-      "sha256": "92221c56c96e872969633ad921cbb818420a4d5447d2587319aa1af11c282590"
+      "sha256": "50df4aad145530fa906a512d537609fb22939359a1abe2da084becce4dd32a15"
     },
     {
       "path": "scripts/db/repair-ai-chat-session-aggregates.sql",
@@ -265,27 +273,39 @@
     },
     {
       "path": "scripts/db/tests/production-frontend-artifact.test.mjs",
-      "sha256": "a076f38ca415c69d58a7dc814ac8032df3b8019bf364e973492845293f5e8ec6"
+      "sha256": "22223dd161c27a4e019d24e33f19657609e920f112800011092d1dede39474a7"
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "2a5f1e334a4eaa1b70304d95174825495631c2c1a87757c78cfcd2bd039af36f"
+      "sha256": "0d683ee2c0e88fe8381be64c7b324e8e295688f53f5dc555c54fc813aeef1f5d"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
-      "sha256": "7e28951e1e8b22d8cb92df18bb12f8598b04b1ec211b3be6dfe7b0b4414193a2"
+      "sha256": "8a29df78c400d1c94893cb64efa06d82245eec1958c4557948fdfc0c69205bda"
     },
     {
       "path": "scripts/db/tests/production-release-artifact.test.mjs",
-      "sha256": "02281d21227dcd6813868df4ba1d9f38939060ca3985db0cee5e8a6ea57b7f55"
+      "sha256": "86c5ecfd126b350552752fcf4f20ba3eaae86c98501e22cb88533eb54c38f91c"
     },
     {
       "path": "scripts/db/tests/project-seed-only.contract.test.mjs",
       "sha256": "3a373e66ad36009b9f50269118fa6287dac46b2a4382d5c3b7d8e503b4e5ee7c"
     },
     {
+      "path": "scripts/db/tests/r4-payment-concurrency.integration.mjs",
+      "sha256": "9abdaba24df042379fbaa1a5ead1b61e06473e421f44073a479217fe6e44bc3a"
+    },
+    {
+      "path": "scripts/db/tests/r4-payment-refund-integration.sql",
+      "sha256": "cc31c23aa4dd6d65775adf61780982bf8a9e02bdec1059d5b184cf509d64a021"
+    },
+    {
+      "path": "scripts/db/tests/r4-payment-remediation.contract.test.mjs",
+      "sha256": "4c4760e07b52570fa2acbd714a91c703967efc860559fdf222a2a7bdafbfda8d"
+    },
+    {
       "path": "scripts/db/tests/rollout-compatibility.test.mjs",
-      "sha256": "b06e07f55ce0d501d0ec48a6f2bbda550dafc4a3894d0d77a9a0b3af4fd9d166"
+      "sha256": "11626416a08de7d2067632f814cf4012ece8693f92f8f29a198b0525e54d901f"
     },
     {
       "path": "scripts/db/verify-ai-backup-restore.mjs",
@@ -305,7 +325,7 @@
     },
     {
       "path": "scripts/db/verify-local-migration-apply.mjs",
-      "sha256": "6b7a0003ee22650661d03ee7013af6f9b12993098a8553007515556bdc34ca2d"
+      "sha256": "6b40cb68fc6755652b97f566e46895d7cd7a782fb786fcd48c91a898d23ffdab"
     },
     {
       "path": "scripts/db/verify-migration-baseline.mjs",
@@ -317,15 +337,15 @@
     },
     {
       "path": "scripts/db/verify-production-migration-state.mjs",
-      "sha256": "417f2bb776d5c0e49a76b7f83d7a93cc3e590202b83dae87ba45eb3302d52fdb"
+      "sha256": "8c845a092dc04e5f77f71579524b2a29689c83386e9790f0a84a4e38ccb1284b"
     },
     {
       "path": "scripts/db/verify-production-post-migration.mjs",
-      "sha256": "170c03fb6aac81da37c1e397c11869e8c2fe39af6dc6fbb3e56afb45755fc7f0"
+      "sha256": "7b5c5ee469efc1d78538da41ea201568b90510639b488807f2b8f4094097230b"
     },
     {
       "path": "scripts/db/verify-production-release-artifact.mjs",
-      "sha256": "b6e4bf4d3ad8d07a10946d6dd6413a27c458a6cda9a39fd342f70da2b4860b94"
+      "sha256": "a62df5a1d92328b88e2563b24904cb18dbae0f083f6d20974e83498e40df0d42"
     },
     {
       "path": "scripts/seed-course-skills-demo.sql",
@@ -745,11 +765,11 @@
     },
     {
       "path": "supabase/functions/corelia-api/payments/grant_access.ts",
-      "sha256": "3a2c94b313181a431cef71b0937aa83a727e633bfa481f19dc497e6ebd305572"
+      "sha256": "e916186c6c734dd429388d05e6e8e90ae61eacd636452706305bcd84d24962db"
     },
     {
       "path": "supabase/functions/corelia-api/payments/handlers.ts",
-      "sha256": "4c35f8ad34416d959891bd9c0480b1c7282a5c3f624de3a9aa50d8f95b77b68c"
+      "sha256": "4d95a16e70f551653e58f55b0987be0ab6f857bce4eddfbb3baea847a843cec5"
     },
     {
       "path": "supabase/functions/corelia-api/payments/types.ts",
@@ -858,6 +878,18 @@
     {
       "path": "supabase/migrations/20260825140000_harden_enrollment_payment_purpose_and_timestamp.sql",
       "sha256": "3fcbfa3d0174bcc4635607fe11e81a041521cd57b09bee2736ee6743a7f110e6"
+    },
+    {
+      "path": "supabase/migrations/20260825150000_r4_atomic_payment_refund_and_ai_retirement.sql",
+      "sha256": "ccd0dd526b97c75ec30300c7222d8692356c24e78fa9092d13a9863b0bae900e"
+    },
+    {
+      "path": "supabase/migrations/20260825151000_r4_staging_catalog_reconciliation.sql",
+      "sha256": "547584244eaf62a2e743abca9c7d1efa852f3d65ac832f1a7fac2695ab55f3d7"
+    },
+    {
+      "path": "supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql",
+      "sha256": "1751f60cb9422234ed0d0c9c61e720944d943db89541b120a1322d7f143b0abb"
     }
   ],
   "deleted_files": [
@@ -951,6 +983,18 @@
       {
         "path": "supabase/migrations/20260825140000_harden_enrollment_payment_purpose_and_timestamp.sql",
         "sha256": "3fcbfa3d0174bcc4635607fe11e81a041521cd57b09bee2736ee6743a7f110e6"
+      },
+      {
+        "path": "supabase/migrations/20260825150000_r4_atomic_payment_refund_and_ai_retirement.sql",
+        "sha256": "ccd0dd526b97c75ec30300c7222d8692356c24e78fa9092d13a9863b0bae900e"
+      },
+      {
+        "path": "supabase/migrations/20260825151000_r4_staging_catalog_reconciliation.sql",
+        "sha256": "547584244eaf62a2e743abca9c7d1efa852f3d65ac832f1a7fac2695ab55f3d7"
+      },
+      {
+        "path": "supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql",
+        "sha256": "1751f60cb9422234ed0d0c9c61e720944d943db89541b120a1322d7f143b0abb"
       }
     ]
   }
