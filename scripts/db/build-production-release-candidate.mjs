@@ -219,7 +219,7 @@ function run() {
       };
       console.log(JSON.stringify(serializable, null, 2));
     } else {
-      console.log(`R3_PROPOSED_RELEASE_CANDIDATE built at ${result.candidateRoot}`);
+      console.log(`R4_RELEASE_CANDIDATE built at ${result.candidateRoot}`);
       console.log(`Changed files: ${result.result.totalFiles}`);
       console.log(`Migrations: ${result.result.totalMigrations}`);
       console.log(`Candidate tree SHA-256: ${result.state.candidateTreeSha256}`);

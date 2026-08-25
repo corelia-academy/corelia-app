@@ -77,9 +77,9 @@ export function generateCanonicalManifest() {
 
   const manifest = {
     schema_version: 1,
-    artifact_id: "R3_PROPOSED_RELEASE_CANDIDATE",
+    artifact_id: "R4_RELEASE_CANDIDATE",
     base_sha: baseSha,
-    source_sha: "1b3c3da94ccae170e018eefc97d9b1650e1494f5",
+    source_sha: "79c6af1d2ac96ce6632beeaf72dade51ffed0fd4",
     manifest_path: DEFAULT_MANIFEST_PATH,
     candidate_tree_sha256: candidateTreeSha256,
     recipe: {

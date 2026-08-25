@@ -17,6 +17,9 @@ export const EXPECTED_FORWARD_MIGRATIONS = Object.freeze([
   "supabase/migrations/20260825120000_master_schema_classification_lifecycle_and_index_optimization.sql",
   "supabase/migrations/20260825130000_harden_enrollment_provenance_and_security_guards.sql",
   "supabase/migrations/20260825140000_harden_enrollment_payment_purpose_and_timestamp.sql",
+  "supabase/migrations/20260825150000_r4_atomic_payment_refund_and_ai_retirement.sql",
+  "supabase/migrations/20260825151000_r4_staging_catalog_reconciliation.sql",
+  "supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql",
 ]);
 
 const SHA1_RE = /^[0-9a-f]{40}$/;
@@ -109,7 +112,7 @@ export function validateManifestSchema(manifest) {
     "release manifest",
   );
   if (manifest.schema_version !== 1) throw new Error("Unsupported release manifest schema_version.");
-  if (manifest.artifact_id !== "R3_PROPOSED_RELEASE_CANDIDATE") throw new Error("Unexpected release artifact_id.");
+  if (manifest.artifact_id !== "R4_RELEASE_CANDIDATE") throw new Error("Unexpected release artifact_id.");
   assertSha(manifest.base_sha, SHA1_RE, "base_sha");
   assertSha(manifest.source_sha, SHA1_RE, "source_sha");
   if (manifest.base_sha !== EXPECTED_BASE_MAIN_SHA) {
@@ -147,7 +150,7 @@ export function validateManifestSchema(manifest) {
   validateMigrationEntries(manifest.migration_chain.forward, "migration_chain.forward");
   const forwardPaths = manifest.migration_chain.forward.map((entry) => normalizeRepositoryPath(entry.path));
   if (JSON.stringify(forwardPaths) !== JSON.stringify(EXPECTED_FORWARD_MIGRATIONS)) {
-    throw new Error("Forward migration set must be the exact reviewed ten in canonical order.");
+    throw new Error("Forward migration set must be the exact reviewed thirteen in canonical order.");
   }
   validateRecipe(manifest.recipe, manifest.source_sha);
   return manifest;

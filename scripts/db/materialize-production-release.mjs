@@ -13,8 +13,6 @@ import {
   validateReleaseArtifactState,
 } from "./verify-production-release-artifact.mjs";
 
-export const EXPECTED_CANDIDATE_TREE_SHA256 = "19d2998cbcb4411439cbcde3faa29b62aa8998ed25e741b3dcf9d180c24665c9";
-
 const STAGE_A_EXACT_FILES = Object.freeze([
   ".github/workflows/deploy-prod.yml",
   "docs/db-baseline/g2-r1-db-harness-remediation-report.md",
@@ -55,9 +53,11 @@ export function materializeReleases({
   const absoluteSourceRepo = resolve(sourceRepo);
   const absoluteWorkspaceRoot = resolve(workspaceRoot);
   const tempOutput = resolve(tmpdir(), "corelia-candidate-materialization");
+  const manifest = JSON.parse(readFileSync(resolve(absoluteWorkspaceRoot, manifestPath), "utf8"));
+  const expectedCandidateTreeSha256 = manifest.candidate_tree_sha256;
 
   console.log("===============================================================================");
-  console.log(" CORELIA R3.2: IMMUTABLE RELEASE ARTIFACT MATERIALIZATION (LOCAL ONLY)");
+  console.log(" CORELIA R4: IMMUTABLE RELEASE ARTIFACT MATERIALIZATION (LOCAL ONLY)");
   console.log("===============================================================================");
 
   // 1. Verify base Main commit exists
@@ -76,9 +76,9 @@ export function materializeReleases({
     output: tempOutput,
   });
 
-  if (candidate.state.candidateTreeSha256 !== EXPECTED_CANDIDATE_TREE_SHA256) {
+  if (candidate.state.candidateTreeSha256 !== expectedCandidateTreeSha256) {
     throw new Error(
-      `CANDIDATE_DRIFT_DETECTED: expected tree SHA-256 ${EXPECTED_CANDIDATE_TREE_SHA256}, got ${candidate.state.candidateTreeSha256}`,
+      `CANDIDATE_DRIFT_DETECTED: expected tree SHA-256 ${expectedCandidateTreeSha256}, got ${candidate.state.candidateTreeSha256}`,
     );
   }
   console.log(`✓ Candidate tree SHA-256 verified: ${candidate.state.candidateTreeSha256}`);
@@ -163,11 +163,11 @@ Runtime Application Delta: 0 bytes (0 files in src/, public/, supabase/migration
   const stageBTreeSha = git(candidate.candidateRoot, ["write-tree"]).trim();
   const stageBCommitMessage = `feat(release): isolated G2 application release candidate (Stage B)
 
-Materialized release candidate containing the approved Wave 0 / M1 / G2 / G2-R1 / R3.2 delta:
-- 5 forward migrations (20260823120000 .. 20260823140000)
-- Edge Functions: corelia-api, ai-tutor
-- Frontend entitlement, contest lifecycle, and course progress hooks
-- Candidate tree SHA-256: ${EXPECTED_CANDIDATE_TREE_SHA256}
+Materialized release candidate containing the approved Wave 0 / M1 / G2 / G2-R1 / R4 delta:
+- 13 forward migrations (20260823120000 .. 20260825152000)
+- Edge Functions: corelia-api and 7 retired AI tombstones
+- Frontend, payment/refund, entitlement, catalog reconciliation, and release-control changes
+- Candidate tree SHA-256: ${expectedCandidateTreeSha256}
 
 Base Main: ${EXPECTED_BASE_MAIN_SHA}
 Stage A Parent: ${stageACommitSha}
@@ -200,7 +200,6 @@ Release Manifest: ${manifestPath}
   console.log(`✓ Stage B changed files against base Main: ${stageBChangedAgainstMain.length}`);
 
   // Re-verify release artifact validator against Stage B commit
-  const manifest = JSON.parse(readFileSync(resolve(absoluteWorkspaceRoot, manifestPath), "utf8"));
   const entries = git(absoluteSourceRepo, ["ls-tree", "-r", "-z", stageBCommitSha], { encoding: "buffer" })
     .toString("utf8")
     .split("\0")
@@ -214,9 +213,9 @@ Release Manifest: ${manifestPath}
   const readObject = (path) => git(absoluteSourceRepo, ["show", `${stageBCommitSha}:${path}`], { encoding: "buffer" });
   const recomputedTreeSha = computeCandidateTreeSha256(entries, readObject, [manifest.manifest_path]);
 
-  if (recomputedTreeSha !== EXPECTED_CANDIDATE_TREE_SHA256) {
+  if (recomputedTreeSha !== expectedCandidateTreeSha256) {
     throw new Error(
-      `Stage B recomputed tree SHA-256 mismatch: expected ${EXPECTED_CANDIDATE_TREE_SHA256}, got ${recomputedTreeSha}`,
+      `Stage B recomputed tree SHA-256 mismatch: expected ${expectedCandidateTreeSha256}, got ${recomputedTreeSha}`,
     );
   }
   console.log(`✓ Stage B recomputed tree SHA-256: ${recomputedTreeSha}`);
@@ -227,7 +226,7 @@ Release Manifest: ${manifestPath}
 
   return {
     baseMainSha: EXPECTED_BASE_MAIN_SHA,
-    candidateTreeSha256: EXPECTED_CANDIDATE_TREE_SHA256,
+    candidateTreeSha256: expectedCandidateTreeSha256,
     stageA: {
       sha: stageACommitSha,
       branch: stageABranch,

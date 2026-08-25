@@ -186,6 +186,47 @@ inspection AS (
   ) duplicates
 
   UNION ALL
+  SELECT 'invariant.paid_course_purchase_missing_access', COUNT(*)::text
+  FROM public.payment_transactions t
+  WHERE t.status = 'paid'
+    AND t.purpose = 'course_purchase'
+    AND NOT EXISTS (
+      SELECT 1 FROM public.course_payment_access a
+      WHERE a.user_id = t.user_id
+        AND a.course_id = t.course_id
+        AND a.full_access_granted = true
+        AND a.status = 'active'
+    )
+
+  UNION ALL
+  SELECT 'invariant.paid_course_purchase_missing_enrollment', COUNT(*)::text
+  FROM public.payment_transactions t
+  WHERE t.status = 'paid'
+    AND t.purpose = 'course_purchase'
+    AND NOT EXISTS (
+      SELECT 1 FROM public.enrollments e
+      WHERE e.user_id = t.user_id AND e.course_id = t.course_id
+    )
+
+  UNION ALL
+  SELECT 'invariant.refund_ledger_exceeds_payment', COUNT(*)::text
+  FROM (
+    SELECT t.id
+    FROM public.payment_transactions t
+    JOIN public.payment_refunds r ON r.payment_transaction_id = t.id AND r.status = 'completed'
+    GROUP BY t.id, t.amount_vnd
+    HAVING SUM(r.amount_vnd) > t.amount_vnd
+  ) over_refunded
+
+  UNION ALL
+  SELECT 'invariant.financial_rpc_client_execute_grants', (
+    has_function_privilege('anon', 'public.process_successful_payment(text,jsonb,timestamp with time zone)', 'EXECUTE')::int
+    + has_function_privilege('authenticated', 'public.process_successful_payment(text,jsonb,timestamp with time zone)', 'EXECUTE')::int
+    + has_function_privilege('anon', 'public.process_payment_refund(text,integer,text,uuid,jsonb)', 'EXECUTE')::int
+    + has_function_privilege('authenticated', 'public.process_payment_refund(text,integer,text,uuid,jsonb)', 'EXECUTE')::int
+  )::text
+
+  UNION ALL
   SELECT 'constraint.ai_chat_sessions_id_user_id_unique', COALESCE((
     SELECT jsonb_build_object(
       'table_schema', table_schema, 'table_name', table_name,
@@ -294,6 +335,67 @@ inspection AS (
     WHERE function_schema = 'public'
       AND function_name = 'patch_hackathon_metrics_snapshot'
       AND argument_types = ARRAY['text', 'jsonb']
+  ), 'null')
+
+  UNION ALL
+  SELECT 'function.process_successful_payment', COALESCE((
+    SELECT jsonb_build_object(
+      'function_schema', function_schema, 'function_name', function_name,
+      'argument_types', argument_types, 'result_type', result_type,
+      'security_definer', security_definer, 'configuration', configuration,
+      'explicit_execute_roles', explicit_execute_roles
+    )::text
+    FROM function_catalog
+    WHERE function_schema = 'public'
+      AND function_name = 'process_successful_payment'
+      AND argument_types = ARRAY['text', 'jsonb', 'timestamp with time zone']
+  ), 'null')
+
+  UNION ALL
+  SELECT 'function.process_payment_refund', COALESCE((
+    SELECT jsonb_build_object(
+      'function_schema', function_schema, 'function_name', function_name,
+      'argument_types', argument_types, 'result_type', result_type,
+      'security_definer', security_definer, 'configuration', configuration,
+      'explicit_execute_roles', explicit_execute_roles
+    )::text
+    FROM function_catalog
+    WHERE function_schema = 'public'
+      AND function_name = 'process_payment_refund'
+      AND argument_types = ARRAY['text', 'integer', 'text', 'uuid', 'jsonb']
+  ), 'null')
+
+  UNION ALL
+  SELECT 'column.payment_transactions.settled_at', COALESCE((
+    SELECT jsonb_build_object(
+      'table_schema', table_schema, 'table_name', table_name,
+      'column_name', column_name, 'data_type', data_type,
+      'not_null', not_null, 'default_expression', default_expression
+    )::text
+    FROM column_catalog
+    WHERE table_schema = 'public' AND table_name = 'payment_transactions' AND column_name = 'settled_at'
+  ), 'null')
+
+  UNION ALL
+  SELECT 'column.course_payment_access.full_access_transaction_id', COALESCE((
+    SELECT jsonb_build_object(
+      'table_schema', table_schema, 'table_name', table_name,
+      'column_name', column_name, 'data_type', data_type,
+      'not_null', not_null, 'default_expression', default_expression
+    )::text
+    FROM column_catalog
+    WHERE table_schema = 'public' AND table_name = 'course_payment_access' AND column_name = 'full_access_transaction_id'
+  ), 'null')
+
+  UNION ALL
+  SELECT 'column.course_payment_access.certificate_fee_transaction_id', COALESCE((
+    SELECT jsonb_build_object(
+      'table_schema', table_schema, 'table_name', table_name,
+      'column_name', column_name, 'data_type', data_type,
+      'not_null', not_null, 'default_expression', default_expression
+    )::text
+    FROM column_catalog
+    WHERE table_schema = 'public' AND table_name = 'course_payment_access' AND column_name = 'certificate_fee_transaction_id'
   ), 'null')
 
   UNION ALL

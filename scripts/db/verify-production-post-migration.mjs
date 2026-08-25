@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const EXPECTED_POST_MIGRATION_COUNT = 149;
-export const EXPECTED_POST_MIGRATION_LATEST = "20260825140000";
+export const EXPECTED_POST_MIGRATION_COUNT = 152;
+export const EXPECTED_POST_MIGRATION_LATEST = "20260825152000";
 
 const zeroInvariant = Object.freeze({ kind: "zero" });
 const guardTriggerSemantic = Object.freeze({ kind: "guard-trigger" });
@@ -16,6 +16,10 @@ export const EXPECTED_POST_MIGRATION_INSPECTION = Object.freeze({
   "invariant.orphan_ai_vouchers": zeroInvariant,
   "invariant.orphan_ai_voucher_redemptions": zeroInvariant,
   "invariant.duplicate_project_provenance_groups": zeroInvariant,
+  "invariant.paid_course_purchase_missing_access": zeroInvariant,
+  "invariant.paid_course_purchase_missing_enrollment": zeroInvariant,
+  "invariant.refund_ledger_exceeds_payment": zeroInvariant,
+  "invariant.financial_rpc_client_execute_grants": zeroInvariant,
   "constraint.ai_chat_sessions_id_user_id_unique": {
     table_schema: "public",
     table_name: "ai_chat_sessions",
@@ -80,6 +84,48 @@ export const EXPECTED_POST_MIGRATION_INSPECTION = Object.freeze({
     security_definer: true,
     configuration: ["search_path=public, pg_temp"],
     explicit_execute_roles: ["authenticated", "service_role"],
+  },
+  "function.process_successful_payment": {
+    function_schema: "public",
+    function_name: "process_successful_payment",
+    argument_types: ["text", "jsonb", "timestamp with time zone"],
+    result_type: "jsonb",
+    security_definer: true,
+    configuration: ["search_path=public, pg_temp"],
+    explicit_execute_roles: ["service_role"],
+  },
+  "function.process_payment_refund": {
+    function_schema: "public",
+    function_name: "process_payment_refund",
+    argument_types: ["text", "integer", "text", "uuid", "jsonb"],
+    result_type: "jsonb",
+    security_definer: true,
+    configuration: ["search_path=public, pg_temp"],
+    explicit_execute_roles: ["service_role"],
+  },
+  "column.payment_transactions.settled_at": {
+    table_schema: "public",
+    table_name: "payment_transactions",
+    column_name: "settled_at",
+    data_type: "timestamp with time zone",
+    not_null: false,
+    default_expression: null,
+  },
+  "column.course_payment_access.full_access_transaction_id": {
+    table_schema: "public",
+    table_name: "course_payment_access",
+    column_name: "full_access_transaction_id",
+    data_type: "text",
+    not_null: false,
+    default_expression: null,
+  },
+  "column.course_payment_access.certificate_fee_transaction_id": {
+    table_schema: "public",
+    table_name: "course_payment_access",
+    column_name: "certificate_fee_transaction_id",
+    data_type: "text",
+    not_null: false,
+    default_expression: null,
   },
   "column.ai_voucher_batches.archived_at": {
     table_schema: "public",

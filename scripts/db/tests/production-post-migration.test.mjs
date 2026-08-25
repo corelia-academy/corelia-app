@@ -96,6 +96,48 @@ const canonicalSemanticDefinitions = {
     configuration: ["search_path=public, pg_temp"],
     explicit_execute_roles: ["authenticated", "service_role"],
   },
+  "function.process_successful_payment": {
+    function_schema: "public",
+    function_name: "process_successful_payment",
+    argument_types: ["text", "jsonb", "timestamp with time zone"],
+    result_type: "jsonb",
+    security_definer: true,
+    configuration: ["search_path=public, pg_temp"],
+    explicit_execute_roles: ["service_role"],
+  },
+  "function.process_payment_refund": {
+    function_schema: "public",
+    function_name: "process_payment_refund",
+    argument_types: ["text", "integer", "text", "uuid", "jsonb"],
+    result_type: "jsonb",
+    security_definer: true,
+    configuration: ["search_path=public, pg_temp"],
+    explicit_execute_roles: ["service_role"],
+  },
+  "column.payment_transactions.settled_at": {
+    table_schema: "public",
+    table_name: "payment_transactions",
+    column_name: "settled_at",
+    data_type: "timestamp with time zone",
+    not_null: false,
+    default_expression: null,
+  },
+  "column.course_payment_access.full_access_transaction_id": {
+    table_schema: "public",
+    table_name: "course_payment_access",
+    column_name: "full_access_transaction_id",
+    data_type: "text",
+    not_null: false,
+    default_expression: null,
+  },
+  "column.course_payment_access.certificate_fee_transaction_id": {
+    table_schema: "public",
+    table_name: "course_payment_access",
+    column_name: "certificate_fee_transaction_id",
+    data_type: "text",
+    not_null: false,
+    default_expression: null,
+  },
   "column.ai_voucher_batches.archived_at": {
     table_schema: "public",
     table_name: "ai_voucher_batches",
@@ -163,11 +205,15 @@ const zeroInvariantMetrics = [
   "invariant.orphan_ai_vouchers",
   "invariant.orphan_ai_voucher_redemptions",
   "invariant.duplicate_project_provenance_groups",
+  "invariant.paid_course_purchase_missing_access",
+  "invariant.paid_course_purchase_missing_enrollment",
+  "invariant.refund_ledger_exceeds_payment",
+  "invariant.financial_rpc_client_execute_grants",
 ];
 
 function validVersions() {
-  const versions = Array.from({ length: 149 }, (_, index) => String(20260000000000 + index));
-  versions[148] = EXPECTED_POST_MIGRATION_LATEST;
+  const versions = Array.from({ length: 152 }, (_, index) => String(20260000000000 + index));
+  versions[151] = EXPECTED_POST_MIGRATION_LATEST;
   return versions;
 }
 

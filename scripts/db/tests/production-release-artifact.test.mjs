@@ -58,7 +58,7 @@ function buildFixture() {
   const deletedFiles = ["src/components/course-ai/CoraPlanSummary.tsx", "src/hooks/useCoraAI.ts"];
   const manifest = {
     schema_version: 1,
-    artifact_id: "R3_PROPOSED_RELEASE_CANDIDATE",
+    artifact_id: "R4_RELEASE_CANDIDATE",
     base_sha: EXPECTED_BASE_MAIN_SHA,
     source_sha: SOURCE_SHA,
     manifest_path: DEFAULT_MANIFEST_PATH,
@@ -96,10 +96,10 @@ function expectFailure(manifest, state, pattern) {
   assert.match(result.errors.join("\n"), pattern);
 }
 
-test("exact candidate passes exact file, hash, tree and 139+10 migration checks", () => {
+test("exact candidate passes exact file, hash, tree and 139+13 migration checks", () => {
   const { manifest, state } = buildFixture();
   const result = validateReleaseArtifactState(manifest, state);
-  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 156, totalMigrations: 149 });
+  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 159, totalMigrations: 152 });
 });
 
 test("missing required file fails closed", () => {
@@ -176,10 +176,10 @@ test("missing historical migration fails exact 139 baseline chain", () => {
   expectFailure(manifest, state, /Migration chain count mismatch|Migration order\/path mismatch/);
 });
 
-test("sixth forward migration fails exact migration chain", () => {
+test("unreviewed fourteenth forward migration fails exact migration chain", () => {
   const { manifest, state } = buildFixture();
   state.migrations.push({
-    path: "supabase/migrations/20260823150000_unreviewed_sixth.sql",
+    path: "supabase/migrations/20260825153000_unreviewed_fourteenth.sql",
     sha256: sha256("unreviewed"),
   });
   expectFailure(manifest, state, /Migration chain count mismatch/);
@@ -336,7 +336,7 @@ test("candidate builder rejects destructive, outside-temp and symlinked output t
   rmSync(fixtureRoot, { recursive: true, force: true });
 });
 
-test("production manifest has the canonical exact 139+10 shape", () => {
+test("production manifest has the canonical exact 139+13 shape", () => {
   const manifest = JSON.parse(readFileSync(DEFAULT_MANIFEST_PATH, "utf8"));
   validateManifestSchema(manifest);
   assert.equal(manifest.migration_chain.baseline_manifest.count, 139);

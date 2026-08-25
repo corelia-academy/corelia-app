@@ -30,7 +30,7 @@ function validate(overrides = {}) {
   });
 }
 
-test("CASE P0: exact frozen 139 + exact ten pending => PASS", () => {
+test("CASE P0: exact frozen 139 + exact thirteen pending => PASS", () => {
   const result = validate();
   assert.equal(result.ok, true);
   assert.equal(result.errors.length, 0);
@@ -108,7 +108,7 @@ test("CASE P8: malformed CLI output => FAIL", () => {
   );
 });
 
-test("CASE P9: remote already contains one of the five unexpectedly (partial migration state) => FAIL", () => {
+test("CASE P9: remote already contains one approved migration unexpectedly (partial migration state) => FAIL", () => {
   const partiallyMigratedRemote = [...realReleasedVersions, APPROVED_PENDING_VERSIONS[0]];
   const result = validate({ remoteVersions: partiallyMigratedRemote });
   assert.equal(result.ok, false);
