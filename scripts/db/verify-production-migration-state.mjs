@@ -20,6 +20,8 @@ export const APPROVED_PENDING_VERSIONS = [
   "20260825151000",
   "20260825152000",
   "20260825153000",
+  "20260826100000",
+  "20260826110000",
 ];
 
 function unique(values) {

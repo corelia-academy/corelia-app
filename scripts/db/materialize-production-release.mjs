@@ -57,7 +57,7 @@ export function materializeReleases({
   const expectedCandidateTreeSha256 = manifest.candidate_tree_sha256;
 
   console.log("===============================================================================");
-  console.log(" CORELIA R4: IMMUTABLE RELEASE ARTIFACT MATERIALIZATION (LOCAL ONLY)");
+  console.log(" CORELIA R5: IMMUTABLE RELEASE ARTIFACT MATERIALIZATION (LOCAL ONLY)");
   console.log("===============================================================================");
 
   // 1. Verify base Main commit exists
@@ -163,8 +163,8 @@ Runtime Application Delta: 0 bytes (0 files in src/, public/, supabase/migration
   const stageBTreeSha = git(candidate.candidateRoot, ["write-tree"]).trim();
   const stageBCommitMessage = `feat(release): isolated G2 application release candidate (Stage B)
 
-Materialized release candidate containing the approved Wave 0 / M1 / G2 / G2-R1 / R4 delta:
-- 14 forward migrations (20260823120000 .. 20260825153000)
+Materialized release candidate containing the approved Wave 0 / M1 / G2 / G2-R1 / R4 / R5 delta:
+- 16 forward migrations (20260823120000 .. 20260826110000)
 - Edge Functions: corelia-api and 7 retired AI tombstones
 - Frontend, payment/refund, entitlement, catalog reconciliation, and release-control changes
 - Candidate tree SHA-256: ${expectedCandidateTreeSha256}

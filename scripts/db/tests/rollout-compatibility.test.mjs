@@ -32,7 +32,7 @@ describe("Deployment State Machine & Compatibility Gates", () => {
     assert.match(accessGuards, /resolveEffectiveTier/);
   });
 
-  it("CASE C3: final DB state (153) + NEW EDGE is safe with canonical trigger and guard", () => {
+  it("CASE C3: final DB state (155) + NEW EDGE is safe with canonical trigger and guard", () => {
     // Final DB state installs trigger and session-level guard for stale direct updates
     assert.match(migration130000Content, /CREATE TRIGGER trg_sync_ai_chat_session_message_count/);
     assert.match(migration130000Content, /CREATE TRIGGER trg_guard_ai_chat_session_message_count/);

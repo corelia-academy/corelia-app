@@ -23,6 +23,8 @@ function git(args, options = {}) {
 export function generateCanonicalManifest() {
   const baseSha = EXPECTED_BASE_MAIN_SHA;
   const targetRef = "HEAD";
+  const sourceSha = git(["rev-parse", targetRef]).trim();
+  const sourceTreeSha = git(["rev-parse", `${targetRef}^{tree}`]).trim();
 
   // 1. Get raw diff against baseSha from git index / HEAD
   const diffRaw = git(["diff", "--name-status", `${baseSha}..${targetRef}`]);
@@ -77,9 +79,15 @@ export function generateCanonicalManifest() {
 
   const manifest = {
     schema_version: 1,
-    artifact_id: "R4_RELEASE_CANDIDATE",
+    artifact_id: "R5_RELEASE_CANDIDATE",
+    rc_sha: sourceSha,
+    git_tree_sha: sourceTreeSha,
+    production_base_sha: baseSha,
+    target_production_project_ref: "lawhkvyyoznwygzsycan",
+    migration_count: EXPECTED_BASELINE_MIGRATION_COUNT + EXPECTED_FORWARD_MIGRATIONS.length,
+    latest_migration: EXPECTED_FORWARD_MIGRATIONS.at(-1).split("/").at(-1),
     base_sha: baseSha,
-    source_sha: "8ec46f7aefde86f9eb4fb98a803f66b5ef85dcfa",
+    source_sha: sourceSha,
     manifest_path: DEFAULT_MANIFEST_PATH,
     candidate_tree_sha256: candidateTreeSha256,
     recipe: {

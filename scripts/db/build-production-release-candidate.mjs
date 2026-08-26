@@ -167,7 +167,15 @@ export function collectCandidateIndexState(candidateRoot, manifest) {
     .sort((a, b) => a.path.localeCompare(b.path, "en"))
     .map((entry) => ({ path: entry.path, sha256: sha256(readIndexFile(candidateRoot, entry.path)) }));
   const candidateTreeSha256 = computeCandidateTreeSha256(entries, (path) => readIndexFile(candidateRoot, path), [manifest.manifest_path]);
-  return { baseSha: manifest.base_sha, changedFiles, files, migrations, candidateTreeSha256 };
+  return {
+    baseSha: manifest.base_sha,
+    sourceSha: manifest.rc_sha,
+    sourceTreeSha: manifest.git_tree_sha,
+    changedFiles,
+    files,
+    migrations,
+    candidateTreeSha256,
+  };
 }
 
 export function buildCandidate({ sourceRepo, workspaceRoot, manifestPath, output, printState = false }) {
@@ -219,7 +227,7 @@ function run() {
       };
       console.log(JSON.stringify(serializable, null, 2));
     } else {
-      console.log(`R4_RELEASE_CANDIDATE built at ${result.candidateRoot}`);
+      console.log(`R5_RELEASE_CANDIDATE built at ${result.candidateRoot}`);
       console.log(`Changed files: ${result.result.totalFiles}`);
       console.log(`Migrations: ${result.result.totalMigrations}`);
       console.log(`Candidate tree SHA-256: ${result.state.candidateTreeSha256}`);

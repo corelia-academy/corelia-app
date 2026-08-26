@@ -58,7 +58,13 @@ function buildFixture() {
   const deletedFiles = ["src/components/course-ai/CoraPlanSummary.tsx", "src/hooks/useCoraAI.ts"];
   const manifest = {
     schema_version: 1,
-    artifact_id: "R4_RELEASE_CANDIDATE",
+    artifact_id: "R5_RELEASE_CANDIDATE",
+    rc_sha: SOURCE_SHA,
+    git_tree_sha: "c".repeat(40),
+    production_base_sha: EXPECTED_BASE_MAIN_SHA,
+    target_production_project_ref: "lawhkvyyoznwygzsycan",
+    migration_count: 155,
+    latest_migration: "20260826110000_r5_canonicalize_rls_auto_enable.sql",
     base_sha: EXPECTED_BASE_MAIN_SHA,
     source_sha: SOURCE_SHA,
     manifest_path: DEFAULT_MANIFEST_PATH,
@@ -82,6 +88,8 @@ function buildFixture() {
   };
   const state = {
     baseSha: EXPECTED_BASE_MAIN_SHA,
+    sourceSha: SOURCE_SHA,
+    sourceTreeSha: "c".repeat(40),
     changedFiles: [...allFiles.map((entry) => entry.path), ...deletedFiles, DEFAULT_MANIFEST_PATH],
     files: new Map(allFiles.map((entry) => [entry.path, entry.content])),
     migrations: [...baseline, ...forward].map(({ path, sha256: digest }) => ({ path, sha256: digest })),
@@ -96,10 +104,10 @@ function expectFailure(manifest, state, pattern) {
   assert.match(result.errors.join("\n"), pattern);
 }
 
-test("exact candidate passes exact file, hash, tree and 139+14 migration checks", () => {
+test("exact candidate passes exact file, hash, tree and 139+16 migration checks", () => {
   const { manifest, state } = buildFixture();
   const result = validateReleaseArtifactState(manifest, state);
-  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 160, totalMigrations: 153 });
+  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 162, totalMigrations: 155 });
 });
 
 test("missing required file fails closed", () => {
@@ -270,7 +278,7 @@ test("Production workflow requires explicit recovery limitations acceptance and 
   assert.match(workflow, /forward-fix is the\s+primary DB migration recovery strategy/i);
   assert.match(workflow, /Edge\/frontend rollback\s+may be unrehearsed/i);
 
-  assert.match(workflow, /test "\$CONFIRMATION" = "DEPLOY_G2_R1_DB_EDGE_TO_PRODUCTION"/);
+  assert.match(workflow, /test "\$CONFIRMATION" = "DEPLOY_R5_DB_EDGE_TO_PRODUCTION"/);
   assert.match(workflow, /test -n "\$APPROVED_RELEASE_SHA"/);
   assert.match(workflow, /test -n "\$PRODUCTION_RELEASE_MANIFEST_SHA256"/);
   assert.match(workflow, /test "\$RELEASE_SHA" = "\$APPROVED_RELEASE_SHA"/);
@@ -336,7 +344,7 @@ test("candidate builder rejects destructive, outside-temp and symlinked output t
   rmSync(fixtureRoot, { recursive: true, force: true });
 });
 
-test("production manifest has the canonical exact 139+14 shape", () => {
+test("production manifest has the canonical exact 139+16 shape", () => {
   const manifest = JSON.parse(readFileSync(DEFAULT_MANIFEST_PATH, "utf8"));
   validateManifestSchema(manifest);
   assert.equal(manifest.migration_chain.baseline_manifest.count, 139);

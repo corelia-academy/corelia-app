@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       confirmation:
-        description: Type DEPLOY_G2_R1_DB_EDGE_TO_PRODUCTION
+        description: Type DEPLOY_R5_DB_EDGE_TO_PRODUCTION
         required: true
         type: string
       recovery_limitations_accepted:
@@ -28,9 +28,9 @@ on:
 # Quy trình phát hành Production hai giai đoạn (Two-Stage Release):
 # → Giai đoạn A (Control-Plane Bootstrap): Merge commit workflow/guard này lên main.
 # → Giai đoạn B (G2 Release): Chạy manual workflow_dispatch trên main với input
-#   release_sha trỏ vào commit G2 đã được kiểm duyệt.
+#   release_sha trỏ vào commit manifest R5 đã được kiểm duyệt.
 # → Workflow check out đúng release_sha, kiểm tra manifest, kiểm tra ledger 139,
-#   chạy 5 migrations, chạy post-migration live DB check, và deploy duy nhất
+#   chạy đúng 16 forward migrations, chạy post-migration live DB check, và deploy
 #   hai Edge Functions cần thiết (ai-tutor, corelia-api).
 # → Merge main kích hoạt frontend Cloudflare Production theo pipeline riêng sau khi
 #   hậu kiểm DB/Edge hoàn tất.
@@ -61,7 +61,7 @@ jobs:
           CONFIRMATION: ${{ inputs.confirmation }}
           RECOVERY_LIMITATIONS_ACCEPTED: ${{ inputs.recovery_limitations_accepted }}
         run: |
-          test "$CONFIRMATION" = "DEPLOY_G2_R1_DB_EDGE_TO_PRODUCTION"
+          test "$CONFIRMATION" = "DEPLOY_R5_DB_EDGE_TO_PRODUCTION"
           # true means the operator rechecked the physical backup and explicitly
           # accepts: no PITR, unrehearsed restore, unmeasured RPO/RTO,
           # forward-fix as the primary DB migration recovery strategy, and
@@ -161,7 +161,7 @@ jobs:
         with:
           version: 2.98.1
 
-      # Deploy the R4 callback guard before the DB migration. NEW EDGE is
+      # Deploy the R5 callback guard before the DB migration. NEW EDGE is
       # compatible with the released DB RPC, while OLD EDGE can pre-mark a
       # late ai_subscription callback paid during the migration window.
       - name: Deploy Edge Function (corelia-api)

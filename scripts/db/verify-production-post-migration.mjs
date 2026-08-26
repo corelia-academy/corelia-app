@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const EXPECTED_POST_MIGRATION_COUNT = 153;
-export const EXPECTED_POST_MIGRATION_LATEST = "20260825153000";
+export const EXPECTED_POST_MIGRATION_COUNT = 155;
+export const EXPECTED_POST_MIGRATION_LATEST = "20260826110000";
 
 const zeroInvariant = Object.freeze({ kind: "zero" });
 const guardTriggerSemantic = Object.freeze({ kind: "guard-trigger" });
@@ -66,6 +66,30 @@ export const EXPECTED_POST_MIGRATION_INSPECTION = Object.freeze({
     function_identity_arguments: "",
   },
   "trigger.trg_guard_ai_chat_session_message_count": guardTriggerSemantic,
+  "trigger.trg_guard_retired_ai_subscription_writes": {
+    table_schema: "public",
+    table_name: "ai_subscriptions",
+    trigger_name: "trg_guard_retired_ai_subscription_writes",
+    enabled: "ORIGIN",
+    timing: "BEFORE",
+    level: "ROW",
+    events: ["INSERT", "UPDATE"],
+    function_schema: "public",
+    function_name: "guard_retired_ai_subscription_writes",
+    function_identity_arguments: "",
+  },
+  "trigger.trg_guard_retired_ai_voucher_redemption_writes": {
+    table_schema: "public",
+    table_name: "ai_voucher_redemptions",
+    trigger_name: "trg_guard_retired_ai_voucher_redemption_writes",
+    enabled: "ORIGIN",
+    timing: "BEFORE",
+    level: "ROW",
+    events: ["INSERT", "UPDATE"],
+    function_schema: "public",
+    function_name: "guard_retired_ai_voucher_redemption_writes",
+    function_identity_arguments: "",
+  },
   "function.guard_ai_chat_session_message_count": guardFunctionSemantic,
   "function.record_ai_successful_usage": {
     function_schema: "public",

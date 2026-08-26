@@ -68,6 +68,30 @@ const canonicalSemanticDefinitions = {
     function_identity_arguments: "",
     normalized_definition: "create trigger trg_guard_ai_chat_session_message_count before update of message_count on public.ai_chat_sessions for each row execute function public.guard_ai_chat_session_message_count()",
   },
+  "trigger.trg_guard_retired_ai_subscription_writes": {
+    table_schema: "public",
+    table_name: "ai_subscriptions",
+    trigger_name: "trg_guard_retired_ai_subscription_writes",
+    enabled: "ORIGIN",
+    timing: "BEFORE",
+    level: "ROW",
+    events: ["INSERT", "UPDATE"],
+    function_schema: "public",
+    function_name: "guard_retired_ai_subscription_writes",
+    function_identity_arguments: "",
+  },
+  "trigger.trg_guard_retired_ai_voucher_redemption_writes": {
+    table_schema: "public",
+    table_name: "ai_voucher_redemptions",
+    trigger_name: "trg_guard_retired_ai_voucher_redemption_writes",
+    enabled: "ORIGIN",
+    timing: "BEFORE",
+    level: "ROW",
+    events: ["INSERT", "UPDATE"],
+    function_schema: "public",
+    function_name: "guard_retired_ai_voucher_redemption_writes",
+    function_identity_arguments: "",
+  },
   "function.guard_ai_chat_session_message_count": {
     function_schema: "public",
     function_name: "guard_ai_chat_session_message_count",
@@ -230,8 +254,8 @@ const zeroInvariantMetrics = [
 ];
 
 function validVersions() {
-  const versions = Array.from({ length: 153 }, (_, index) => String(20260000000000 + index));
-  versions[152] = EXPECTED_POST_MIGRATION_LATEST;
+  const versions = Array.from({ length: 155 }, (_, index) => String(20260000000000 + index));
+  versions[154] = EXPECTED_POST_MIGRATION_LATEST;
   return versions;
 }
 

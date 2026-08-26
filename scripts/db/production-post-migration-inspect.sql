@@ -234,6 +234,10 @@ inspection AS (
     + has_function_privilege('authenticated', 'public.process_successful_payment(text,jsonb,timestamp with time zone)', 'EXECUTE')::int
     + has_function_privilege('anon', 'public.process_payment_refund(text,integer,text,uuid,jsonb)', 'EXECUTE')::int
     + has_function_privilege('authenticated', 'public.process_payment_refund(text,integer,text,uuid,jsonb)', 'EXECUTE')::int
+    + has_function_privilege('anon', 'public.guard_retired_ai_subscription_writes()', 'EXECUTE')::int
+    + has_function_privilege('authenticated', 'public.guard_retired_ai_subscription_writes()', 'EXECUTE')::int
+    + has_function_privilege('anon', 'public.guard_retired_ai_voucher_redemption_writes()', 'EXECUTE')::int
+    + has_function_privilege('authenticated', 'public.guard_retired_ai_voucher_redemption_writes()', 'EXECUTE')::int
   )::text
 
   UNION ALL
@@ -302,6 +306,34 @@ inspection AS (
     FROM trigger_catalog
     WHERE trigger_name = 'trg_guard_ai_chat_session_message_count'
       AND table_schema = 'public' AND table_name = 'ai_chat_sessions'
+  ), 'null')
+
+  UNION ALL
+  SELECT 'trigger.trg_guard_retired_ai_subscription_writes', COALESCE((
+    SELECT jsonb_build_object(
+      'table_schema', table_schema, 'table_name', table_name,
+      'trigger_name', trigger_name, 'enabled', enabled,
+      'timing', timing, 'level', level, 'events', events,
+      'function_schema', function_schema, 'function_name', function_name,
+      'function_identity_arguments', function_identity_arguments
+    )::text
+    FROM trigger_catalog
+    WHERE trigger_name = 'trg_guard_retired_ai_subscription_writes'
+      AND table_schema = 'public' AND table_name = 'ai_subscriptions'
+  ), 'null')
+
+  UNION ALL
+  SELECT 'trigger.trg_guard_retired_ai_voucher_redemption_writes', COALESCE((
+    SELECT jsonb_build_object(
+      'table_schema', table_schema, 'table_name', table_name,
+      'trigger_name', trigger_name, 'enabled', enabled,
+      'timing', timing, 'level', level, 'events', events,
+      'function_schema', function_schema, 'function_name', function_name,
+      'function_identity_arguments', function_identity_arguments
+    )::text
+    FROM trigger_catalog
+    WHERE trigger_name = 'trg_guard_retired_ai_voucher_redemption_writes'
+      AND table_schema = 'public' AND table_name = 'ai_voucher_redemptions'
   ), 'null')
 
   UNION ALL
