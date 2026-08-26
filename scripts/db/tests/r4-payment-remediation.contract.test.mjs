@@ -11,6 +11,7 @@ const reconciliation = read("supabase/migrations/20260825151000_r4_staging_catal
 const functionReconciliation = read("supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql");
 const rlsReconciliation = read("supabase/migrations/20260825153000_r4_enable_ai_legacy_rls.sql");
 const r5AiRetirement = read("supabase/migrations/20260826100000_r5_retired_ai_entitlement_write_guards.sql");
+const r5RlsAutoEnable = read("supabase/migrations/20260826110000_r5_canonicalize_rls_auto_enable.sql");
 const catalogFingerprint = read("scripts/db/r4-catalog-fingerprint.sql");
 const catalogObjectFingerprints = read("scripts/db/r4-catalog-object-fingerprints.sql");
 
@@ -114,4 +115,14 @@ test("R5 HTTP paid retries invoke the atomic RPC and unknown invoices fail close
   assert.doesNotMatch(ipn, /if \(tx\.status === "paid"\) return json\(\{ ok: true \}\)/);
   assert.match(ipn, /PAYMENT_TRANSACTION_NOT_FOUND/);
   assert.match(ipn, /grantPaymentAccessForTransaction\(db, tx, invoiceNumber/);
+});
+
+test("R5 canonicalizes rls_auto_enable and fingerprints event triggers without exclusions", () => {
+  assert.match(r5RlsAutoEnable, /CREATE OR REPLACE FUNCTION public\.rls_auto_enable\(\)/);
+  assert.match(r5RlsAutoEnable, /CREATE EVENT TRIGGER ensure_rls ON ddl_command_end/);
+  assert.match(r5RlsAutoEnable, /ALTER EVENT TRIGGER ensure_rls ENABLE/);
+  assert.match(catalogFingerprint, /'event_triggers'/);
+  assert.match(catalogObjectFingerprints, /'event_triggers'/);
+  assert.doesNotMatch(catalogFingerprint, /NOT \(n\.nspname = 'public' AND p\.proname = 'rls_auto_enable'/);
+  assert.doesNotMatch(catalogObjectFingerprints, /NOT \(n\.nspname = 'public' AND p\.proname = 'rls_auto_enable'/);
 });

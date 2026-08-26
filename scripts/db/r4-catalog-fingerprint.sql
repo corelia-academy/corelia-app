@@ -83,7 +83,18 @@ WITH catalog_entries AS (
   FROM pg_proc p
   JOIN pg_namespace n ON n.oid = p.pronamespace
   WHERE n.nspname IN ('public', 'private', 'internal')
-    AND NOT (n.nspname = 'public' AND p.proname = 'rls_auto_enable' AND pg_get_function_identity_arguments(p.oid) = '')
+
+  UNION ALL
+  SELECT 'event_triggers',
+         format(
+           '%I|%s|%s|%s|%s',
+           e.evtname,
+           e.evtevent,
+           e.evtenabled,
+           e.evtfoid::regprocedure,
+           coalesce(array_to_string(e.evttags, ','), '')
+         )
+  FROM pg_event_trigger e
 )
 SELECT category,
        count(*)::int AS object_count,
