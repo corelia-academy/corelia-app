@@ -67,6 +67,7 @@ jobs:
           pnpm build:prod
 
       - name: Cleanly recreate isolated local migration chain
+        timeout-minutes: 15
         run: |
           supabase start
           pnpm db:verify:local
