@@ -23,6 +23,7 @@ export const EXPECTED_FORWARD_MIGRATIONS = Object.freeze([
   "supabase/migrations/20260825153000_r4_enable_ai_legacy_rls.sql",
   "supabase/migrations/20260826100000_r5_retired_ai_entitlement_write_guards.sql",
   "supabase/migrations/20260826110000_r5_canonicalize_rls_auto_enable.sql",
+  "supabase/migrations/20260826120000_issue_329_payment_retirement_safety.sql",
 ]);
 
 const SHA1_RE = /^[0-9a-f]{40}$/;
@@ -124,8 +125,8 @@ export function validateManifestSchema(manifest) {
   if (manifest.rc_sha !== manifest.source_sha) throw new Error("rc_sha must equal source_sha.");
   if (manifest.production_base_sha !== manifest.base_sha) throw new Error("production_base_sha must equal base_sha.");
   if (manifest.target_production_project_ref !== "lawhkvyyoznwygzsycan") throw new Error("Unexpected target Production project ref.");
-  if (manifest.migration_count !== 155) throw new Error("Release migration_count must equal 155.");
-  if (manifest.latest_migration !== "20260826110000_r5_canonicalize_rls_auto_enable.sql") throw new Error("Unexpected release latest_migration.");
+  if (manifest.migration_count !== 156) throw new Error("Release migration_count must equal 156.");
+  if (manifest.latest_migration !== "20260826120000_issue_329_payment_retirement_safety.sql") throw new Error("Unexpected release latest_migration.");
   if (manifest.base_sha !== EXPECTED_BASE_MAIN_SHA) {
     throw new Error(`base_sha must equal the reviewed Production base ${EXPECTED_BASE_MAIN_SHA}.`);
   }
@@ -161,7 +162,7 @@ export function validateManifestSchema(manifest) {
   validateMigrationEntries(manifest.migration_chain.forward, "migration_chain.forward");
   const forwardPaths = manifest.migration_chain.forward.map((entry) => normalizeRepositoryPath(entry.path));
   if (JSON.stringify(forwardPaths) !== JSON.stringify(EXPECTED_FORWARD_MIGRATIONS)) {
-    throw new Error("Forward migration set must be the exact reviewed sixteen in canonical order.");
+    throw new Error("Forward migration set must be the exact reviewed seventeen in canonical order.");
   }
   validateRecipe(manifest.recipe, manifest.source_sha);
   return manifest;

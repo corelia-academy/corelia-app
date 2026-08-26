@@ -30,7 +30,7 @@ function validate(overrides = {}) {
   });
 }
 
-test("CASE P0: exact frozen 139 + exact sixteen pending => PASS", () => {
+test("CASE P0: exact frozen 139 + exact seventeen pending => PASS", () => {
   const result = validate();
   assert.equal(result.ok, true);
   assert.equal(result.errors.length, 0);

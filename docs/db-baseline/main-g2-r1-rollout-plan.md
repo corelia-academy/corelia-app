@@ -13,7 +13,7 @@ Kế hoạch này mô tả release candidate R5. Nó không cho phép tự độ
 - Production Supabase ref: `lawhkvyyoznwygzsycan`
 - Staging Supabase ref: `opoozbmfbezkrpzxsusx`
 - Production pre-state bắt buộc: 139 migrations, latest `20260818120000`
-- Production post-state dự kiến: 155 migrations, latest `20260826110000`
+- Production post-state dự kiến: 156 migrations, latest `20260826120000`
 - Forward migration set: đúng 16 migration được khóa trong release manifest.
 
 Technical RC SHA, Git tree SHA, candidate tree SHA-256 và manifest SHA-256 phải lấy từ immutable manifest/final manifest commit đã verify; không nhập thủ công từ tài liệu này.
@@ -56,7 +56,7 @@ Workflow input `recovery_limitations_accepted` chỉ ghi nhận operator đã ch
 4. Deploy `corelia-api` R5 trước DB để late AI callback fail-closed trong migration window.
 5. Verify ledger pre-state đúng 139 migrations và đúng 16 migration đang pending.
 6. Apply migrations bằng canonical migration command; cấm `migration repair` và cấm `--include-all`.
-7. Chạy live post-migration semantic gate: ledger 155/latest `20260826110000`, payment/refund invariants, AI retirement guards, RPC privileges, RLS và catalog contracts.
+7. Chạy live post-migration semantic gate: ledger 156/latest `20260826120000`, payment/refund invariants, AI retirement guards, RPC privileges, RLS và catalog contracts.
 8. Deploy lại đủ 7 AI tombstones.
 9. Chạy post-Edge invariant gate và non-money smoke test.
 10. Chỉ sau khi toàn bộ gate PASS và m xác nhận trực tiếp mới được merge/push `main` hoặc phát hành frontend Production.
@@ -85,7 +85,7 @@ Workflow input `recovery_limitations_accepted` chỉ ghi nhận operator đã ch
 ## 8. Staging evidence và giới hạn
 
 - Staging đã nhận đủ R4 migrations, hai forward R5 migrations và `corelia-api` R5.
-- Ledger Staging: 155, latest `20260826110000`.
+- Ledger Staging: 156, latest `20260826120000`.
 - Candidate ↔ Staging semantic catalog diff: 0; fingerprint bao gồm `public.rls_auto_enable()`, event trigger `ensure_rls` và trạng thái RLS/force-RLS.
 - Payment/refund DB runtime fixtures, idempotency, refund và cleanup PASS.
 - `corelia-api` health/invalid-secret boundary và 7/7 tombstones PASS.

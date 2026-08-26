@@ -254,8 +254,8 @@ const zeroInvariantMetrics = [
 ];
 
 function validVersions() {
-  const versions = Array.from({ length: 155 }, (_, index) => String(20260000000000 + index));
-  versions[154] = EXPECTED_POST_MIGRATION_LATEST;
+  const versions = Array.from({ length: 156 }, (_, index) => String(20260000000000 + index));
+  versions[155] = EXPECTED_POST_MIGRATION_LATEST;
   return versions;
 }
 
