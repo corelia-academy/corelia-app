@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { join, relative } from "node:path";
 
 vi.mock("@/lib/coreliaEdgeApi", () => ({
   coreliaEdgeUrl: (name: string) => name,
@@ -16,6 +16,45 @@ import {
   previewAiVoucher,
   type PaymentPurpose,
 } from "@/lib/payments";
+
+function readSource(rootDir: string, relPath: string): string {
+  const fullPath = join(rootDir, relPath);
+  expect(existsSync(fullPath), `${relPath} must remain present`).toBe(true);
+  return readFileSync(fullPath, "utf8");
+}
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function listRuntimeSourceFiles(srcDir: string): string[] {
+  const runtimeExtension = /\.(?:ts|tsx|js|jsx)$/;
+  const typeDeclaration = /\.d\.(?:ts|tsx|js|jsx)$/;
+  const excludedDirectories = new Set(["assets", "tests"]);
+  const files: string[] = [];
+
+  function visit(directory: string): void {
+    const entries = readdirSync(directory, { withFileTypes: true }).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+
+    for (const entry of entries) {
+      const fullPath = join(directory, entry.name);
+
+      if (entry.isDirectory()) {
+        if (!excludedDirectories.has(entry.name)) visit(fullPath);
+        continue;
+      }
+
+      if (entry.isFile() && runtimeExtension.test(entry.name) && !typeDeclaration.test(entry.name)) {
+        files.push(fullPath);
+      }
+    }
+  }
+
+  visit(srcDir);
+  return files;
+}
 
 describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
   const RETIRED_LEARNER_AI_EDGE_FUNCTIONS = [
@@ -33,27 +72,56 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
 
   const rootDir = process.cwd();
 
-  describe("WC-01: Learner frontend has zero AI Edge Function invocations", () => {
-    it("confirms learner-facing modules in src have no AI edge function invocations", () => {
-      const learnerSrcFiles = [
-        "src/lib/courses.ts",
-        "src/lib/flashcards.ts",
-        "src/lib/learningPaths.ts",
-        "src/lib/lessonSummary.ts",
-        "src/lib/readinessCheck.ts",
-        "src/hooks/useReadinessCheck.ts",
+  describe("WC-Learner-UI: Retired learner AI entry points stay unreachable", () => {
+    it("keeps Learn.tsx free of retired readiness, recap, and flashcard cards", () => {
+      const content = readSource(rootDir, "src/pages/learn/Learn.tsx");
+      const retiredCards = [
+        "LessonReadinessCard",
+        "LessonRecapCard",
+        "FlashcardDeckCard",
       ];
 
-      for (const relPath of learnerSrcFiles) {
-        const fullPath = join(rootDir, relPath);
-        if (!existsSync(fullPath)) continue;
+      for (const component of retiredCards) {
+        expect(content).not.toMatch(
+          new RegExp(`import\\s+(?:\\{[^}]*\\b${component}\\b[^}]*\\}|${component}\\b)`),
+        );
+        expect(content).not.toMatch(new RegExp(`<\\s*${component}\\b`));
+      }
+    });
+
+    it.each([
+      ["account/cora", "/courses"],
+      ["cora", "/courses"],
+      ["cora/checkout", "/courses"],
+      ["upgrade/cora", "/courses"],
+      ["learning-path/*", "/"],
+    ])("keeps /%s redirected to %s", (routePath, destination) => {
+      const appSource = readSource(rootDir, "src/App.tsx");
+      const routePattern = new RegExp(
+        `<Route\\s+path=["']${escapeRegex(routePath)}["'][^>]*element=\\{<Navigate\\s+to=["']${escapeRegex(destination)}["']\\s+replace\\s*/>\\}[^>]*/>`,
+        "s",
+      );
+
+      expect(appSource).toMatch(routePattern);
+    });
+  });
+
+  describe("WC-01: Learner frontend has zero AI Edge Function invocations", () => {
+    it("confirms runtime source in src has no retired learner AI edge function references", () => {
+      const srcDir = join(rootDir, "src");
+      const runtimeSourceFiles = listRuntimeSourceFiles(srcDir);
+
+      expect(runtimeSourceFiles.length).toBeGreaterThan(0);
+
+      for (const fullPath of runtimeSourceFiles) {
+        const relPath = relative(rootDir, fullPath);
         const content = readFileSync(fullPath, "utf8");
+
         for (const fn of RETIRED_LEARNER_AI_EDGE_FUNCTIONS) {
-          expect(content).not.toContain(`"${fn}"`);
-          expect(content).not.toContain(`'${fn}'`);
+          expect(content, `${relPath} must not reference retired learner endpoint ${fn}`).not.toContain(
+            fn,
+          );
         }
-        expect(content).not.toContain("invokeGenerateQuestions");
-        expect(content).not.toContain("invokeGenerateDescription");
       }
     });
   });
@@ -109,6 +177,47 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
       expect(content).toMatch(
         /if \(params\.lessonId\)[\s\S]*?\.eq\("id", params\.lessonId\)[\s\S]*?if \(params\.courseId\) query\.eq\("course_id", params\.courseId\)/,
       );
+    });
+
+    it("retains instructor AI helpers and their Edge Function endpoints", () => {
+      const descriptionHelper = readSource(rootDir, "src/lib/descriptionGenerator.ts");
+      const questionHelper = readSource(rootDir, "src/lib/questionGenerator.ts");
+
+      expect(descriptionHelper).toContain("export async function invokeGenerateDescription");
+      expect(descriptionHelper).toContain("/functions/v1/generate-description");
+      expect(questionHelper).toContain("export async function invokeGenerateQuestions");
+      expect(questionHelper).toContain("/functions/v1/generate-questions");
+    });
+
+    it("retains instructor dialogs and course editor callers", () => {
+      const courseEditor = readSource(
+        rootDir,
+        "src/pages/instructor-course-edit/InstructorCourseEdit.tsx",
+      );
+      const descriptionDialog = readSource(
+        rootDir,
+        "src/pages/instructor-course-edit/components/DescriptionGeneratorDialog.tsx",
+      );
+      const questionDialog = readSource(
+        rootDir,
+        "src/pages/instructor-course-edit/components/QuestionGeneratorDialog.tsx",
+      );
+
+      expect(courseEditor).toMatch(/invokeGenerateDescription\s*\(/);
+      expect(courseEditor).toMatch(/invokeGenerateQuestions\s*\(/);
+      expect(descriptionDialog).toMatch(/invokeGenerateDescription\s*\(\s*request\.requestBody\s*\)/);
+      expect(questionDialog).toMatch(/invokeGenerateQuestions\s*\(\s*req\s*\)/);
+    });
+
+    it("retains the Career Track AI Translate caller", () => {
+      const careerTrackEditor = readSource(
+        rootDir,
+        "src/pages/instructor-career-tracks/InstructorCareerTrackEditorPage.tsx",
+      );
+
+      expect(careerTrackEditor).toMatch(/invokeGenerateDescription\s*\(\s*\{/);
+      expect(careerTrackEditor).toMatch(/action:\s*["']translate["']/);
+      expect(careerTrackEditor).toMatch(/bundleKind:\s*["']course_info["']/);
     });
   });
 
