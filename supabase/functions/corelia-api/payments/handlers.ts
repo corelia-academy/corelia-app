@@ -392,24 +392,25 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
     if (fetchErr) throw new Error(fetchErr.message);
     if (!snap) {
       console.warn("[corelia-api] IPN unknown invoice", invoiceNumber);
-      return json({ ok: true });
+      return json({ ok: false, code: "PAYMENT_TRANSACTION_NOT_FOUND" }, 404);
     }
     const tx = snap as PaymentTransaction;
     const updatedAt = nowIso();
-    if (tx.status === "paid") return json({ ok: true });
+    // AI monetization is retired. Reject every AI callback deterministically,
+    // including retries for historical paid rows, before any settlement path.
+    if (type === "ORDER_PAID" && tx.purpose === "ai_subscription") {
+      return json({
+        ok: false,
+        code: "AI_SUBSCRIPTION_RETIRED",
+        message: "Giao dịch gói AI cũ cần được hỗ trợ thủ công; không tạo entitlement mới.",
+      }, 409);
+    }
     if (type === "ORDER_PAID") {
       const expectedAmount = Math.round(Number(tx.amount_vnd ?? 0));
       const paidAmount = Math.round(Number(orderAmount ?? 0));
       if (!Number.isFinite(paidAmount) || paidAmount <= 0 || paidAmount !== expectedAmount) {
         console.error("[corelia-api] IPN amount mismatch", { invoiceNumber, expectedAmount, paidAmount });
         return json({ message: "Amount mismatch" }, 400);
-      }
-      if (tx.purpose === "ai_subscription") {
-        return json({
-          ok: false,
-          code: "AI_SUBSCRIPTION_RETIRED",
-          message: "Giao dịch gói AI cũ cần được hỗ trợ thủ công; không tạo entitlement mới.",
-        }, 409);
       }
       await grantPaymentAccessForTransaction(db, tx, invoiceNumber, updatedAt, payload);
       return json({ ok: true });

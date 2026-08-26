@@ -10,6 +10,7 @@ const migration = read("supabase/migrations/20260825150000_r4_atomic_payment_ref
 const reconciliation = read("supabase/migrations/20260825151000_r4_staging_catalog_reconciliation.sql");
 const functionReconciliation = read("supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql");
 const rlsReconciliation = read("supabase/migrations/20260825153000_r4_enable_ai_legacy_rls.sql");
+const r5AiRetirement = read("supabase/migrations/20260826100000_r5_retired_ai_entitlement_write_guards.sql");
 const catalogFingerprint = read("scripts/db/r4-catalog-fingerprint.sql");
 const catalogObjectFingerprints = read("scripts/db/r4-catalog-object-fingerprints.sql");
 
@@ -21,7 +22,6 @@ test("R4 handler delegates ORDER_PAID to the atomic RPC without pre-marking paid
   assert.ok(paidBlock.includes("grantPaymentAccessForTransaction"));
   assert.ok(!paidBlock.includes('status: "paid"'));
   assert.ok(!paidBlock.includes("payment_transactions"));
-  assert.match(paidBlock, /AI_SUBSCRIPTION_RETIRED/);
 });
 
 test("R4 removes non-atomic application fallbacks", () => {
@@ -90,4 +90,28 @@ test("R4.1 makes retained AI table RLS reproducible and catalog-visible", () => 
   assert.match(catalogFingerprint, /c\.relforcerowsecurity/);
   assert.match(catalogObjectFingerprints, /'tables'::text AS category/);
   assert.match(catalogObjectFingerprints, /c\.relrowsecurity/);
+});
+
+test("R5 blocks direct service-role AI entitlement and voucher redemption writes", () => {
+  assert.match(r5AiRetirement, /guard_retired_ai_subscription_writes/);
+  assert.match(r5AiRetirement, /BEFORE INSERT OR UPDATE ON public\.ai_subscriptions/);
+  assert.match(r5AiRetirement, /NEW\.expires_at > OLD\.expires_at/);
+  assert.match(r5AiRetirement, /NEW\.status = 'active' AND OLD\.status <> 'active'/);
+  assert.match(r5AiRetirement, /guard_retired_ai_voucher_redemption_writes/);
+  assert.match(r5AiRetirement, /BEFORE INSERT OR UPDATE ON public\.ai_voucher_redemptions/);
+  assert.doesNotMatch(r5AiRetirement, /DROP\s+.*CASCADE/i);
+});
+
+test("R5 HTTP handler rejects every AI callback before paid retry handling", () => {
+  const aiGuard = handler.indexOf('if (type === "ORDER_PAID" && tx.purpose === "ai_subscription")', handler.indexOf("handleSePayIpn"));
+  const paidBlock = handler.indexOf('if (type === "ORDER_PAID")', handler.indexOf("handleSePayIpn"));
+  assert.ok(aiGuard > -1 && paidBlock > -1 && aiGuard < paidBlock);
+  assert.match(handler.slice(aiGuard, paidBlock), /AI_SUBSCRIPTION_RETIRED/);
+});
+
+test("R5 HTTP paid retries invoke the atomic RPC and unknown invoices fail closed", () => {
+  const ipn = handler.slice(handler.indexOf("handleSePayIpn"), handler.indexOf("handleProcessRefund"));
+  assert.doesNotMatch(ipn, /if \(tx\.status === "paid"\) return json\(\{ ok: true \}\)/);
+  assert.match(ipn, /PAYMENT_TRANSACTION_NOT_FOUND/);
+  assert.match(ipn, /grantPaymentAccessForTransaction\(db, tx, invoiceNumber/);
 });
