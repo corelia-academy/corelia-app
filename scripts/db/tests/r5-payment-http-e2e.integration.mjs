@@ -76,6 +76,10 @@ async function postIpn(url, secret, invoice, amount, notificationType = "ORDER_P
         order_invoice_number: invoice,
         order_amount: String(amount),
       },
+      transaction: {
+        id: `${notificationType}-${invoice}`,
+        transaction_id: `${notificationType}-${invoice}`,
+      },
     }),
   });
   const body = await response.json().catch(() => ({}));
@@ -92,6 +96,7 @@ const paidRepairTx = `R5-HTTP-PAID-REPAIR-${token}`;
 const failedTx = `R5-HTTP-FAILED-${token}`;
 const mismatchTx = `R5-HTTP-MISMATCH-${token}`;
 const aiPendingTx = `R5-HTTP-AI-PENDING-${token}`;
+const aiHistoricalPendingTx = `R5-HTTP-AI-HISTORICAL-PENDING-${token}`;
 const aiPaidTx = `R5-HTTP-AI-PAID-${token}`;
 const amount = 275000;
 
@@ -127,6 +132,7 @@ try {
       ('${failedTx}', '${buyer}', '${courseId}', 'course_purchase', ${amount}, 'sepay', 'failed', now(), now()),
       ('${mismatchTx}', '${buyer}', '${courseId}', 'course_purchase', ${amount}, 'sepay', 'pending', now(), now()),
       ('${aiPendingTx}', '${buyer}', 'cora-ai', 'ai_subscription', 199000, 'sepay', 'pending', now(), now()),
+      ('${aiHistoricalPendingTx}', '${buyer}', 'cora-ai', 'ai_subscription', 199000, 'sepay', 'pending', '2026-08-25 14:59:59+00', '2026-08-25 14:59:59+00'),
       ('${aiPaidTx}', '${buyer}', 'cora-ai', 'ai_subscription', 199000, 'sepay', 'paid', now() - interval '90 days', now() - interval '90 days');
   `);
 
@@ -207,22 +213,29 @@ try {
   }
   console.log("HTTP-PAY-07 PASS (amount mismatch rejected; zero mutation)");
 
-  for (const [label, txId, expectedStatus] of [
-    ["HTTP-PAY-08", aiPendingTx, "pending"],
-    ["HTTP-PAY-09", aiPaidTx, "paid"],
+  const aiPendingResponse = await postIpn(functionUrl, ipnSecret, aiPendingTx, 199000);
+  if (aiPendingResponse.status !== 409 || aiPendingResponse.body.code !== "AI_SUBSCRIPTION_RETIRED") {
+    fail(`HTTP-PAY-08 post-retirement AI callback did not return retired-service rejection (${aiPendingResponse.status}).`);
+  }
+  console.log("HTTP-PAY-08 PASS (post-retirement AI callback rejected; zero mutation)");
+
+  for (const [label, txId] of [
+    ["HTTP-PAY-09", aiHistoricalPendingTx],
+    ["HTTP-PAY-09B", aiPaidTx],
   ]) {
     const aiResponse = await postIpn(functionUrl, ipnSecret, txId, 199000);
-    if (aiResponse.status !== 409 || aiResponse.body.code !== "AI_SUBSCRIPTION_RETIRED") {
-      fail(`${label} AI callback did not return retired-service rejection (${aiResponse.status}).`);
+    if (aiResponse.status !== 200 || aiResponse.body.ok !== true) {
+      fail(`${label} historical AI callback did not reconcile idempotently (${aiResponse.status}).`);
     }
     const aiState = runSql(`
-      SELECT concat_ws(':', status,
+      SELECT concat_ws(':', status, (settled_at IS NOT NULL)::int,
         (SELECT count(*) FROM public.ai_subscriptions WHERE payment_transaction_id='${txId}'),
-        (SELECT count(*) FROM public.ai_voucher_redemptions WHERE payment_transaction_id='${txId}')
+        (SELECT count(*) FROM public.ai_voucher_redemptions WHERE payment_transaction_id='${txId}'),
+        (SELECT count(*) FROM public.course_payment_access WHERE source_transaction_id='${txId}')
       ) FROM public.payment_transactions WHERE id='${txId}';
     `);
-    if (aiState !== `${expectedStatus}:0:0`) fail(`${label} AI callback changed history/entitlement: ${aiState}.`);
-    console.log(`${label} PASS (AI ${expectedStatus} callback rejected; history preserved; zero entitlement)`);
+    if (aiState !== "paid:1:0:0:0") fail(`${label} historical AI reconciliation changed entitlement or missed settlement: ${aiState}.`);
+    console.log(`${label} PASS (historical AI transaction reconciled; zero entitlement)`);
   }
 
   const aiRefund = await postIpn(functionUrl, ipnSecret, aiPaidTx, 199000, "ORDER_REFUND");
@@ -238,7 +251,7 @@ try {
   if (aiRefundState !== "refunded:1:0") fail(`HTTP-PAY-10 historical AI refund invariant failed: ${aiRefundState}.`);
   console.log("HTTP-PAY-10 PASS (provider refund remains supported; zero AI reactivation)");
 
-  console.log("R5 LOCAL HTTP E2E PASS (10/10 real Request/router/signature/DB cases)");
+  console.log("R5 LOCAL HTTP E2E PASS (11/11 real Request/router/signature/DB cases)");
 } catch (error) {
   const safeOutput = edgeOutput
     .replaceAll(ipnSecret, "[REDACTED]")
@@ -265,10 +278,10 @@ try {
   });
   try {
     runSql(`
-      DELETE FROM public.payment_refunds WHERE payment_transaction_id IN ('${validTx}', '${paidRepairTx}', '${failedTx}', '${mismatchTx}', '${aiPendingTx}', '${aiPaidTx}');
+      DELETE FROM public.payment_refunds WHERE payment_transaction_id IN ('${validTx}', '${paidRepairTx}', '${failedTx}', '${mismatchTx}', '${aiPendingTx}', '${aiHistoricalPendingTx}', '${aiPaidTx}');
       DELETE FROM public.enrollments WHERE user_id='${buyer}' AND course_id IN ('${courseId}', '${repairCourseId}');
       DELETE FROM public.course_payment_access WHERE user_id='${buyer}' AND course_id IN ('${courseId}', '${repairCourseId}');
-      DELETE FROM public.payment_transactions WHERE id IN ('${validTx}', '${paidRepairTx}', '${failedTx}', '${mismatchTx}', '${aiPendingTx}', '${aiPaidTx}');
+      DELETE FROM public.payment_transactions WHERE id IN ('${validTx}', '${paidRepairTx}', '${failedTx}', '${mismatchTx}', '${aiPendingTx}', '${aiHistoricalPendingTx}', '${aiPaidTx}');
       DELETE FROM public.courses WHERE id IN ('${courseId}', '${repairCourseId}');
       DELETE FROM auth.users WHERE id IN ('${buyer}', '${instructor}');
     `);

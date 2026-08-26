@@ -8,6 +8,7 @@ const concurrencyTestPath = resolve(process.cwd(), "scripts/db/tests/g2-r1-concu
 const r4PaymentSqlTestPath = resolve(process.cwd(), "scripts/db/tests/r4-payment-refund-integration.sql");
 const r4PaymentConcurrencyPath = resolve(process.cwd(), "scripts/db/tests/r4-payment-concurrency.integration.mjs");
 const r5AiRetirementSqlTestPath = resolve(process.cwd(), "scripts/db/tests/r5-ai-financial-retirement-integration.sql");
+const issue329PaymentRetirementSqlTestPath = resolve(process.cwd(), "scripts/db/tests/issue-329-payment-retirement-integration.sql");
 const r5PaymentHttpE2ePath = resolve(process.cwd(), "scripts/db/tests/r5-payment-http-e2e.integration.mjs");
 
 console.log("===============================================================================");
@@ -68,6 +69,11 @@ try {
   }
   const r5AiQueryArgs = ["exec", "supabase", "db", "query", "--local", "--file", r5AiRetirementSqlTestPath];
   execFileSync(command, r5AiQueryArgs, { stdio: "inherit", shell: true });
+  if (!existsSync(issue329PaymentRetirementSqlTestPath)) {
+    throw new Error(`Issue #329 payment retirement SQL integration test file missing at ${issue329PaymentRetirementSqlTestPath}`);
+  }
+  const issue329QueryArgs = ["exec", "supabase", "db", "query", "--local", "--file", issue329PaymentRetirementSqlTestPath];
+  execFileSync(command, issue329QueryArgs, { stdio: "inherit", shell: true });
   console.log("✓ SQL integration test suites executed successfully.\n");
 } catch (sqlErr) {
   console.error("\n[INTEGRATION_SQL_FAILURE] SQL assertion failed during database integration testing.");

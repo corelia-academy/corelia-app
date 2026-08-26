@@ -10,7 +10,6 @@ import {
   fetchSePayIncomingTransactionByInvoiceNumber,
   sepayCheckoutInitUrl,
 } from "./sepay.ts";
-import { releaseVoucherReservationForPayment } from "./vouchers.ts";
 import type {
   PaymentPurpose,
   PaymentTransaction,
@@ -18,6 +17,35 @@ import type {
 } from "./types.ts";
 
 const AI_SUBSCRIPTION_PRODUCT_ID = "cora-ai";
+const AI_PAYMENT_RETIREMENT_CUTOFF_MS = Date.parse("2026-08-25T15:00:00.000Z");
+
+function sePayProviderRefundEventId(payload: SePayIpnPayload): string | null {
+  const candidates = [
+    payload.refund?.id,
+    payload.event_id,
+    payload.transaction?.id,
+    payload.transaction?.transaction_id,
+  ];
+  for (const candidate of candidates) {
+    const normalized = String(candidate ?? "").trim();
+    if (normalized) return normalized;
+  }
+  return null;
+}
+
+async function reconcileHistoricalAiPayment(
+  db: SupabaseClient,
+  invoiceNumber: string,
+  updatedAt: string,
+  providerPayload: Record<string, unknown>,
+): Promise<void> {
+  const { error } = await db.rpc("reconcile_historical_ai_payment", {
+    p_payment_transaction_id: invoiceNumber,
+    p_provider_payload: providerPayload,
+    p_settled_at: updatedAt,
+  });
+  if (error) throw new Error(error.message);
+}
 
 export async function handleSePayCheckout(req: Request, db: SupabaseClient): Promise<Response> {
   try {
@@ -290,10 +318,15 @@ export async function handleVerifySePayPayment(req: Request, db: SupabaseClient)
       const expectedAmount = Math.round(Number(tx.amount_vnd ?? 0));
       const sepayTx = await fetchSePayIncomingTransactionByInvoiceNumber(orderRow.id, expectedAmount);
       if (sepayTx) {
-        await grantPaymentAccessForTransaction(db, tx, orderRow.id, nowIso(), {
+        const providerPayload = {
           source: "verify_endpoint_sepay_lookup",
           sepay_transaction: sepayTx,
-        });
+        };
+        if (tx.purpose === "ai_subscription") {
+          await reconcileHistoricalAiPayment(db, orderRow.id, nowIso(), providerPayload);
+        } else {
+          await grantPaymentAccessForTransaction(db, tx, orderRow.id, nowIso(), providerPayload);
+        }
         verifiedBy = "sepay_lookup";
       }
     }
@@ -396,15 +429,6 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
     }
     const tx = snap as PaymentTransaction;
     const updatedAt = nowIso();
-    // AI monetization is retired. Reject every AI callback deterministically,
-    // including retries for historical paid rows, before any settlement path.
-    if (type === "ORDER_PAID" && tx.purpose === "ai_subscription") {
-      return json({
-        ok: false,
-        code: "AI_SUBSCRIPTION_RETIRED",
-        message: "Giao dịch gói AI cũ cần được hỗ trợ thủ công; không tạo entitlement mới.",
-      }, 409);
-    }
     if (type === "ORDER_PAID") {
       const expectedAmount = Math.round(Number(tx.amount_vnd ?? 0));
       const paidAmount = Math.round(Number(orderAmount ?? 0));
@@ -412,15 +436,41 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
         console.error("[corelia-api] IPN amount mismatch", { invoiceNumber, expectedAmount, paidAmount });
         return json({ message: "Amount mismatch" }, 400);
       }
-      await grantPaymentAccessForTransaction(db, tx, invoiceNumber, updatedAt, payload);
+      if (tx.purpose === "ai_subscription") {
+        const createdAt = Date.parse(tx.created_at);
+        if (
+          tx.provider !== "sepay" ||
+          !Number.isFinite(createdAt) ||
+          createdAt >= AI_PAYMENT_RETIREMENT_CUTOFF_MS
+        ) {
+          return json({
+            ok: false,
+            code: "AI_SUBSCRIPTION_RETIRED",
+            message: "Giao dịch AI mới không được phép đối soát sau thời điểm ngừng cung cấp.",
+          }, 409);
+        }
+        await reconcileHistoricalAiPayment(
+          db,
+          invoiceNumber,
+          updatedAt,
+          payload as unknown as Record<string, unknown>,
+        );
+      } else {
+        await grantPaymentAccessForTransaction(db, tx, invoiceNumber, updatedAt, payload);
+      }
       return json({ ok: true });
     }
     if (type === "ORDER_REFUND" || type === "CHARGEBACK") {
+      const providerRefundId = sePayProviderRefundEventId(payload);
+      if (!providerRefundId) {
+        return json({ message: "Missing provider refund/event id" }, 400);
+      }
       const refundAmount = Math.round(Number(orderAmount ?? tx.amount_vnd ?? 0));
-      const { error: rpcErr } = await db.rpc("process_payment_refund", {
+      const { error: rpcErr } = await db.rpc("process_provider_payment_refund", {
         p_payment_transaction_id: invoiceNumber,
         p_refund_amount_vnd: refundAmount > 0 ? refundAmount : Math.round(Number(tx.amount_vnd ?? 0)),
         p_reason: `SePay IPN ${type}`,
+        p_provider_refund_id: providerRefundId,
         p_provider_refund_payload: payload as unknown as Record<string, unknown>,
       });
       if (rpcErr) {
@@ -431,13 +481,13 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
     }
     if (type === "ORDER_CANCELLED" || type === "ORDER_FAILED") {
       const nextStatus = type === "ORDER_CANCELLED" ? "cancelled" : "failed";
-      const { error: statusErr } = await db.from("payment_transactions").update({
-        status: nextStatus,
-        provider_payload: payload as unknown as Record<string, unknown>,
-        updated_at: updatedAt,
-      }).eq("id", invoiceNumber);
+      const { error: statusErr } = await db.rpc("process_unsuccessful_payment_callback", {
+        p_payment_transaction_id: invoiceNumber,
+        p_next_status: nextStatus,
+        p_provider_payload: payload as unknown as Record<string, unknown>,
+        p_updated_at: updatedAt,
+      });
       if (statusErr) throw new Error(statusErr.message);
-      await releaseVoucherReservationForPayment(db, invoiceNumber);
       return json({ ok: true });
     }
     const { error: payloadUpdateErr } = await db.from("payment_transactions").update({

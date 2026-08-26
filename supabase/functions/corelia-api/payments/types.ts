@@ -83,8 +83,11 @@ export type CoursePaymentAccess = {
 };
 
 export type SePayIpnPayload = {
+  event_id?: string | number;
   notification_type?: string;
-  order?: { order_invoice_number?: string; order_amount?: string };
+  order?: { id?: string; order_invoice_number?: string; order_amount?: string };
+  transaction?: { id?: string; transaction_id?: string };
+  refund?: { id?: string };
 };
 
 export type SePayTransactionListItem = {
