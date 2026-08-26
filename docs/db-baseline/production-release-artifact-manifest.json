@@ -1,10 +1,16 @@
 {
   "schema_version": 1,
-  "artifact_id": "R4_RELEASE_CANDIDATE",
+  "artifact_id": "R5_RELEASE_CANDIDATE",
+  "rc_sha": "19f10fbe9f1d402f8e97d41f98186ec4553fb5ef",
+  "git_tree_sha": "7aa9312ed6bcca764f13f9c14d6579e9cc1dc2c9",
+  "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
+  "target_production_project_ref": "lawhkvyyoznwygzsycan",
+  "migration_count": 155,
+  "latest_migration": "20260826110000_r5_canonicalize_rls_auto_enable.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "8ec46f7aefde86f9eb4fb98a803f66b5ef85dcfa",
+  "source_sha": "19f10fbe9f1d402f8e97d41f98186ec4553fb5ef",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "13706c45e35838f6571d925dd3b1f1d7ebc42bb497a4f3ff70abb30556f4eacd",
+  "candidate_tree_sha256": "82868639259a3bdaca27a20a2faa00c6705b0ac74ef7939b673c65e3a4dc94d4",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -33,7 +39,7 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "b5f34532120e01b1fc432d94f70f81896e30dd3a85dbee98a2fbef4603c7b87a"
+      "sha256": "be90e75c7fc33b00b9e94a2a3ec7847bf0335d21d092b1c1610b6b68a9b852af"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
@@ -93,7 +99,7 @@
     },
     {
       "path": "docs/db-baseline/main-g2-r1-rollout-plan.md",
-      "sha256": "d38fa11974d77a23e292c2dcbd8e919f68fb0e38ef7c3ded90a76f61a8621afd"
+      "sha256": "1cb40384a0f0cd879a3d0ba715abd038c316e07708d5436fdc9f0841485a82c7"
     },
     {
       "path": "docs/db-baseline/README.md",
@@ -173,7 +179,7 @@
     },
     {
       "path": "scripts/db/build-production-release-candidate.mjs",
-      "sha256": "754cca4d5f5fbd1dad486804e534ba81f71d016e65eff633eef9d4a5aab235e0"
+      "sha256": "d0a348d0628d76649501f3dfae0311efc7603c3559741b1363b5fe16501acc72"
     },
     {
       "path": "scripts/db/catalog-fingerprint.mjs",
@@ -205,23 +211,23 @@
     },
     {
       "path": "scripts/db/materialize-production-release.mjs",
-      "sha256": "ca60d032bcac5df8ddd95e12644c1c8c6a62eb8b5ed00d987353541fefcd3a16"
+      "sha256": "1a08b2a79f06a459297c4ddde5884aeb331ae3191d98fd2d8e4d5f42c060283e"
     },
     {
       "path": "scripts/db/production-post-migration-inspect.sql",
-      "sha256": "283527d229645b62d3c8263d9b475390a8b5c2031f24e4f4a8c8dc2aa8aeced4"
+      "sha256": "e456e8c544a0f566054b663b715a179d7468969fe71fe95e40a3bd53c2121d3c"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
-      "sha256": "efb5116d7431b1475e32966ec8ff4fea6a8bab7716f6699688c510ce8dcbeb11"
+      "sha256": "fe65f739390003d6da464bbbd14467747c25aae43ecbd3de5da6998fd1eb3d33"
     },
     {
       "path": "scripts/db/r4-catalog-object-fingerprints.sql",
-      "sha256": "486dcf3d8dacba7e8b1f62b5e6a0e2bb101f3ea31bcf980ad21aeab0af25b511"
+      "sha256": "93ae31f95e3eb2b3701ae21861f867d541ca6489245b523d70136867c1453af4"
     },
     {
       "path": "scripts/db/rebuild-production-manifest.mjs",
-      "sha256": "b0c1cd59299c1038fa0c36e42a4ac2781e886511d840b039a3cdd9272a1f3a66"
+      "sha256": "102fff2ef8500a9569c488271490b868b0320e70adf1550db5e8d159c49c9fd1"
     },
     {
       "path": "scripts/db/repair-ai-chat-session-aggregates.sql",
@@ -249,7 +255,7 @@
     },
     {
       "path": "scripts/db/tests/g2-r1-db-integration.sql",
-      "sha256": "5627bdc5e199a0a64892dc3dcb7328cc9d663fce2f9b2621fe303796e8c4620b"
+      "sha256": "c4d5989a398a6a22f4783e2216bb8a3c26442b26b4cc1d798aacd91e9a5e3cd5"
     },
     {
       "path": "scripts/db/tests/hackathon-canonical.contract.test.mjs",
@@ -277,15 +283,15 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "f570b9b94e8bbf531163c6684ffac8f66b460aa7d95e1ce43db9ae9be2d300ce"
+      "sha256": "8a3498279672c76b898db3dc9aa7bcf7f111bd9308d1349850331e4cd363a1c4"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
-      "sha256": "2923ed58dcbe06d861c6faab11929354053e1a5bb68be33499d3ff85e598352e"
+      "sha256": "18acca79e74c0225a14ea755e3a13e8cf22eeb12d166902318394c67c85de10c"
     },
     {
       "path": "scripts/db/tests/production-release-artifact.test.mjs",
-      "sha256": "a079d887b272eaadd31e09a8045b1439cc97e5a1de9266e758e852e71fa1b531"
+      "sha256": "62c64530f440129c384633eb4fa04b5e01fa149ea72154572001e8951950958a"
     },
     {
       "path": "scripts/db/tests/project-seed-only.contract.test.mjs",
@@ -301,11 +307,19 @@
     },
     {
       "path": "scripts/db/tests/r4-payment-remediation.contract.test.mjs",
-      "sha256": "00534d6979956e30710fee019d1a96d59288105f65a7b8c26b4c390c4d284416"
+      "sha256": "a18edfef42282d4b5298209c2c9f4151476d25a753d3e6bf1ab8d10db830c322"
+    },
+    {
+      "path": "scripts/db/tests/r5-ai-financial-retirement-integration.sql",
+      "sha256": "8679077dc6a4a17dc442147eb7141abe8fc31e995bbd775f74c9e1aafc271dc2"
+    },
+    {
+      "path": "scripts/db/tests/r5-payment-http-e2e.integration.mjs",
+      "sha256": "12ecc2d4eb70c211d31cd61f78bead715f78c52d78584340a6ff20b34c3f7c79"
     },
     {
       "path": "scripts/db/tests/rollout-compatibility.test.mjs",
-      "sha256": "f45316488b414c117a79e084724d20d5dc2b49259c3f1d87cd041dd5de2b0cee"
+      "sha256": "a15b8193dd9d1117b9ee0b519723af58641f2cca4811896c95f9348fe9c14b35"
     },
     {
       "path": "scripts/db/verify-ai-backup-restore.mjs",
@@ -325,7 +339,7 @@
     },
     {
       "path": "scripts/db/verify-local-migration-apply.mjs",
-      "sha256": "6b40cb68fc6755652b97f566e46895d7cd7a782fb786fcd48c91a898d23ffdab"
+      "sha256": "3f46c395321fc79036b022e7c71b3614a6ba0116a8528e6d33ff9762fce55227"
     },
     {
       "path": "scripts/db/verify-migration-baseline.mjs",
@@ -337,15 +351,15 @@
     },
     {
       "path": "scripts/db/verify-production-migration-state.mjs",
-      "sha256": "7901c636fef76de26a632460c0ce685b5aca6f25ea139dce1077fd8ce694e40b"
+      "sha256": "08e1ebdc57fc0a98bd23e18e030607d2166e38675329a72bfb7a6c3780088fd0"
     },
     {
       "path": "scripts/db/verify-production-post-migration.mjs",
-      "sha256": "386e8da3b17b8c69b12dbd94defb323f317ea95e4147ab11cbf87e4935863e5d"
+      "sha256": "b4219669727b3c810d39563c194f128b53e463c403eb144d4ecba765e54eef65"
     },
     {
       "path": "scripts/db/verify-production-release-artifact.mjs",
-      "sha256": "4d77715ed5736fdc8b8804467420bf0ced6765f4c38fe01aa53aa53e2aefe14d"
+      "sha256": "3eac8c3a28006bc83726eecf8a69c3d1449e01f4fe23816fa085dedae41b24d2"
     },
     {
       "path": "scripts/seed-course-skills-demo.sql",
@@ -490,6 +504,10 @@
     {
       "path": "src/lib/readinessCheck.ts",
       "sha256": "c23fd46672ad41f7f74203d20232f3f2555a1fabe9eaf59e154435c6b2acf1b6"
+    },
+    {
+      "path": "src/lib/storage.ts",
+      "sha256": "56ea9340263959ded21c8d01835c791a2252105139fd7f6f44ee948b7742d007"
     },
     {
       "path": "src/lib/supabase.ts",
@@ -769,7 +787,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/payments/handlers.ts",
-      "sha256": "4d95a16e70f551653e58f55b0987be0ab6f857bce4eddfbb3baea847a843cec5"
+      "sha256": "ae35b886339aa5fb0359068683ee4fbb1754c0ba2463acb4cad7e4646b816fcf"
     },
     {
       "path": "supabase/functions/corelia-api/payments/types.ts",
@@ -894,6 +912,18 @@
     {
       "path": "supabase/migrations/20260825153000_r4_enable_ai_legacy_rls.sql",
       "sha256": "659fc1587a8921c4198390477d6e85d252caa2d99a07d28e2fbae1107d86cf61"
+    },
+    {
+      "path": "supabase/migrations/20260826100000_r5_retired_ai_entitlement_write_guards.sql",
+      "sha256": "432adb21f2914853ddea40b8a7b95d1649a850e883bbf25f26669ad53c50caf2"
+    },
+    {
+      "path": "supabase/migrations/20260826110000_r5_canonicalize_rls_auto_enable.sql",
+      "sha256": "ff4d11302065e3d4b983a52de85b426c8492b88d3fd87339fbb1e890ec433810"
+    },
+    {
+      "path": "vite.config.ts",
+      "sha256": "26ecbdc0314eadbada05a2ac0e65a3daaf028d1bf73fdcdc3ebe14ab42bfa71f"
     }
   ],
   "deleted_files": [
@@ -1003,6 +1033,14 @@
       {
         "path": "supabase/migrations/20260825153000_r4_enable_ai_legacy_rls.sql",
         "sha256": "659fc1587a8921c4198390477d6e85d252caa2d99a07d28e2fbae1107d86cf61"
+      },
+      {
+        "path": "supabase/migrations/20260826100000_r5_retired_ai_entitlement_write_guards.sql",
+        "sha256": "432adb21f2914853ddea40b8a7b95d1649a850e883bbf25f26669ad53c50caf2"
+      },
+      {
+        "path": "supabase/migrations/20260826110000_r5_canonicalize_rls_auto_enable.sql",
+        "sha256": "ff4d11302065e3d4b983a52de85b426c8492b88d3fd87339fbb1e890ec433810"
       }
     ]
   }
