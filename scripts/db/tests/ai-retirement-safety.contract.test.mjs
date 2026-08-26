@@ -235,18 +235,16 @@ test("Edge Functions Provider Isolation: Corelia API does not require OPENAI_API
   );
 });
 
-test("Wave C (Issue #328): All 7 AI Edge Functions are decommissioned tombstones without provider calls", () => {
-  const aiFunctions = [
+test("Wave C (Issue #328): Learner AI Edge Functions are decommissioned tombstones without provider calls", () => {
+  const learnerAiFunctions = [
     "ai-tutor",
     "embed-lesson",
-    "generate-description",
     "generate-flashcards",
     "generate-learning-path",
     "generate-lesson-summary",
-    "generate-questions",
   ];
 
-  for (const fn of aiFunctions) {
+  for (const fn of learnerAiFunctions) {
     const fnIndex = readFileSync(`supabase/functions/${fn}/index.ts`, "utf8");
     assert.ok(
       !fnIndex.includes("api.openai.com"),
@@ -259,6 +257,33 @@ test("Wave C (Issue #328): All 7 AI Edge Functions are decommissioned tombstones
     assert.ok(
       fnIndex.includes("AI_FEATURE_RETIRED") && fnIndex.includes("410"),
       `${fn}/index.ts contains deterministic 410 AI_FEATURE_RETIRED tombstone`,
+    );
+  }
+});
+
+test("Wave C: Restored Instructor AI Edge Functions enforce strict role guards and course management", () => {
+  const instructorAiFunctions = [
+    "generate-description",
+    "generate-questions",
+  ];
+
+  for (const fn of instructorAiFunctions) {
+    const fnIndex = readFileSync(`supabase/functions/${fn}/index.ts`, "utf8");
+    assert.ok(
+      fnIndex.includes("verifyBearerUser"),
+      `${fn}/index.ts enforces auth verification`,
+    );
+    assert.ok(
+      fnIndex.includes("getUserRole"),
+      `${fn}/index.ts checks user role`,
+    );
+    assert.ok(
+      fnIndex.includes("instructor") && fnIndex.includes("support_staff") && fnIndex.includes("admin"),
+      `${fn}/index.ts restricts access to instructor, support_staff, and admin`,
+    );
+    assert.ok(
+      fnIndex.includes("ensureCanManageCourse"),
+      `${fn}/index.ts checks course management permission`,
     );
   }
 });

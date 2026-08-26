@@ -18,42 +18,48 @@ import {
 } from "@/lib/payments";
 
 describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
-  const AI_EDGE_FUNCTIONS = [
+  const RETIRED_LEARNER_AI_EDGE_FUNCTIONS = [
     "ai-tutor",
     "embed-lesson",
-    "generate-description",
     "generate-flashcards",
     "generate-learning-path",
     "generate-lesson-summary",
+  ] as const;
+
+  const INSTRUCTOR_AI_EDGE_FUNCTIONS = [
+    "generate-description",
     "generate-questions",
   ] as const;
 
   const rootDir = process.cwd();
 
-  describe("WC-01: Supported frontend has zero AI Edge Function invocations", () => {
-    it("confirms no client code in src calls AI edge function names", () => {
-      const srcFiles = [
+  describe("WC-01: Learner frontend has zero AI Edge Function invocations", () => {
+    it("confirms learner-facing modules in src have no AI edge function invocations", () => {
+      const learnerSrcFiles = [
         "src/lib/courses.ts",
         "src/lib/flashcards.ts",
         "src/lib/learningPaths.ts",
         "src/lib/lessonSummary.ts",
         "src/lib/readinessCheck.ts",
+        "src/hooks/useReadinessCheck.ts",
       ];
 
-      for (const relPath of srcFiles) {
+      for (const relPath of learnerSrcFiles) {
         const fullPath = join(rootDir, relPath);
         if (!existsSync(fullPath)) continue;
         const content = readFileSync(fullPath, "utf8");
-        for (const fn of AI_EDGE_FUNCTIONS) {
+        for (const fn of RETIRED_LEARNER_AI_EDGE_FUNCTIONS) {
           expect(content).not.toContain(`"${fn}"`);
           expect(content).not.toContain(`'${fn}'`);
         }
+        expect(content).not.toContain("invokeGenerateQuestions");
+        expect(content).not.toContain("invokeGenerateDescription");
       }
     });
   });
 
-  describe("WC-02 to WC-09: AI Edge Functions cannot reach model providers and fail-closed", () => {
-    for (const fn of AI_EDGE_FUNCTIONS) {
+  describe("WC-02 to WC-09: Learner AI Edge Functions remain 410 tombstones", () => {
+    for (const fn of RETIRED_LEARNER_AI_EDGE_FUNCTIONS) {
       it(`proves ${fn} has zero api.openai.com calls and acts as a 410 tombstone`, () => {
         const fullPath = join(rootDir, "supabase", "functions", fn, "index.ts");
         expect(existsSync(fullPath)).toBe(true);
@@ -79,10 +85,37 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
     });
   });
 
-  describe("WC-10: Provider configuration is not required by active application runtime", () => {
-    it("verifies supabase/functions/.env.example has retired all OPENAI / AI provider configs", () => {
+  describe("WC-Instructor: Instructor-facing AI functions enforce strict auth and role guards", () => {
+    for (const fn of INSTRUCTOR_AI_EDGE_FUNCTIONS) {
+      it(`proves ${fn} enforces role guard (instructor/support_staff/admin) and course management check`, () => {
+        const fullPath = join(rootDir, "supabase", "functions", fn, "index.ts");
+        expect(existsSync(fullPath)).toBe(true);
+        const content = readFileSync(fullPath, "utf8");
+
+        expect(content).toContain("verifyBearerUser");
+        expect(content).toContain("getUserRole");
+        expect(content).toContain("instructor");
+        expect(content).toContain("support_staff");
+        expect(content).toContain("admin");
+        expect(content).toContain("ensureCanManageCourse");
+      });
+    }
+
+    it("scopes lesson generation to the requested course when both IDs are provided", () => {
+      const content = readFileSync(
+        join(rootDir, "supabase", "functions", "generate-description", "index.ts"),
+        "utf8",
+      );
+      expect(content).toMatch(
+        /if \(params\.lessonId\)[\s\S]*?\.eq\("id", params\.lessonId\)[\s\S]*?if \(params\.courseId\) query\.eq\("course_id", params\.courseId\)/,
+      );
+    });
+  });
+
+  describe("WC-10: Provider configuration is explicit and secret-only", () => {
+    it("documents that provider secrets are retained only for instructor-facing generators", () => {
       const envExample = readFileSync(join(rootDir, "supabase", "functions", ".env.example"), "utf8");
-      expect(envExample).toContain("RETIRED in Wave C");
+      expect(envExample).toContain("retained only for instructor-facing generators");
       expect(envExample).not.toMatch(/^CORELIA_AI_PROVIDER=openai/m);
       expect(envExample).not.toMatch(/^OPENAI_API_KEY=\S+/m);
     });
@@ -135,8 +168,8 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
     });
   });
 
-  describe("WC-15: Stale callers receive deterministic fail-closed response", () => {
-    for (const fn of AI_EDGE_FUNCTIONS) {
+  describe("WC-15: Stale callers for retired learner AI receive deterministic fail-closed response", () => {
+    for (const fn of RETIRED_LEARNER_AI_EDGE_FUNCTIONS) {
       it(`verifies ${fn} returns JSON with code AI_FEATURE_RETIRED`, () => {
         const content = readFileSync(join(rootDir, "supabase", "functions", fn, "index.ts"), "utf8");
         expect(content).toContain('code: "AI_FEATURE_RETIRED"');

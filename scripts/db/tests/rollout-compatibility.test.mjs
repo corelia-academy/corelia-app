@@ -39,9 +39,9 @@ describe("Deployment State Machine & Compatibility Gates", () => {
     assert.match(migration130000Content, /pg_trigger_depth\(\) = 1/);
   });
 
-  it("CASE C4: workflow execution order enforces Post-Edge gate before completion and deploys all 7 tombstones", () => {
-    // Workflow must deploy corelia-api and all 7 retired AI functions before executing post-Edge verification gate
-    const retiredFunctions = [
+  it("CASE C4: workflow execution order enforces Post-Edge gate before completion and deploys all 8 Edge functions", () => {
+    // Workflow must deploy corelia-api and all 7 AI functions before executing post-Edge verification gate
+    const aiFunctions = [
       "ai-tutor",
       "embed-lesson",
       "generate-description",
@@ -50,7 +50,7 @@ describe("Deployment State Machine & Compatibility Gates", () => {
       "generate-lesson-summary",
       "generate-questions",
     ];
-    for (const fn of retiredFunctions) {
+    for (const fn of aiFunctions) {
       const idx = workflowContent.indexOf(`functions deploy ${fn}`);
       assert.ok(idx > 0, `Deploy step for retired AI function ${fn} must exist in workflow`);
     }
