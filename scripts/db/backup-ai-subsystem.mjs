@@ -1,9 +1,20 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
 import { execSync } from "node:child_process";
-import { mkdirSync, writeFileSync, unlinkSync } from "node:fs";
-import { join, resolve } from "node:path";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { basename, dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
+
+const LINKED_ENVIRONMENTS = new Set(["staging", "production"]);
+const SUPABASE_PROJECT_REF_PATTERN = /^[a-z0-9]{20}$/;
 
 /**
  * Authoritative Registry of AI Subsystem Tables for Epic #332
@@ -123,6 +134,233 @@ export const AI_TABLE_REGISTRY = [
 export function sha256(content) {
   const text = typeof content === "string" ? content : JSON.stringify(content);
   return createHash("sha256").update(text).digest("hex");
+}
+
+export function canonicalJson(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => canonicalJson(item)).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function readRequiredOption(argv, option) {
+  const index = argv.indexOf(option);
+  if (index === -1) return null;
+  const value = argv[index + 1];
+  if (!value || value.startsWith("--")) {
+    throw new Error(`${option} requires a value.`);
+  }
+  return value;
+}
+
+function requireCanonicalProjectRef(value, label = "project ref") {
+  if (typeof value !== "string" || !SUPABASE_PROJECT_REF_PATTERN.test(value)) {
+    throw new Error(`${label} must be exactly 20 lowercase alphanumeric characters.`);
+  }
+  return value;
+}
+
+export function parseAiBackupCliArgs(argv) {
+  const useLinkedSupabase = argv.includes("--linked") || argv.includes("--production");
+  const rawEnvironment = readRequiredOption(argv, "--environment");
+  const explicitEnvironment = rawEnvironment?.trim().toLowerCase() || null;
+  const expectedProjectRef = readRequiredOption(argv, "--expected-project-ref");
+
+  if (useLinkedSupabase) {
+    const environment = argv.includes("--production") ? "production" : explicitEnvironment;
+    if (!environment || !LINKED_ENVIRONMENTS.has(environment)) {
+      throw new Error("Linked backup requires --environment staging|production.");
+    }
+    if (argv.includes("--production") && explicitEnvironment && explicitEnvironment !== "production") {
+      throw new Error("--production cannot be combined with a non-production --environment.");
+    }
+    if (!expectedProjectRef) {
+      throw new Error("Linked backup requires --expected-project-ref <exact-project-ref>.");
+    }
+    return {
+      environment,
+      expectedProjectRef: requireCanonicalProjectRef(expectedProjectRef, "--expected-project-ref"),
+      useLinkedSupabase: true,
+    };
+  }
+
+  const environment = (explicitEnvironment || process.env.NODE_ENV || "local").trim().toLowerCase();
+  if (LINKED_ENVIRONMENTS.has(environment)) {
+    throw new Error(`${environment} backup requires --linked and an exact expected project ref.`);
+  }
+  return {
+    environment,
+    expectedProjectRef: null,
+    useLinkedSupabase: false,
+  };
+}
+
+export function getCurrentGitHead(commandRunner = execSync) {
+  try {
+    const sha = String(commandRunner("git rev-parse HEAD", {
+      encoding: "utf8",
+      windowsHide: true,
+      timeout: 10_000,
+    })).trim();
+    if (!/^[0-9a-f]{40}$/i.test(sha)) {
+      throw new Error("git rev-parse returned an invalid SHA.");
+    }
+    return sha.toLowerCase();
+  } catch {
+    throw new Error("Could not resolve the current Git HEAD SHA for backup provenance.");
+  }
+}
+
+export function assertCleanGitWorktree(commandRunner = execSync, cwd = process.cwd()) {
+  try {
+    const status = String(commandRunner("git status --porcelain --untracked-files=all", {
+      cwd,
+      encoding: "utf8",
+      windowsHide: true,
+      timeout: 10_000,
+    })).trim();
+    if (status !== "") {
+      throw new Error("dirty");
+    }
+  } catch {
+    throw new Error("Linked staging/production backup requires a clean Git worktree.");
+  }
+}
+
+function resolveGitHeadSha(gitHeadSha) {
+  const sha = gitHeadSha || getCurrentGitHead();
+  if (typeof sha !== "string" || !/^[0-9a-f]{40}$/i.test(sha)) {
+    throw new Error("Backup provenance requires a valid 40-character Git HEAD SHA.");
+  }
+  return sha.toLowerCase();
+}
+
+export function computeSourceFingerprint(provenance) {
+  const {
+    source_fingerprint_sha256: _ignored,
+    ...sourceIdentity
+  } = provenance;
+  return sha256(canonicalJson(sourceIdentity));
+}
+
+export function readLinkedProjectState({
+  workspaceRoot = process.cwd(),
+} = {}) {
+  const metadataPath = resolve(workspaceRoot, "supabase", ".temp", "linked-project.json");
+  const projectRefPath = resolve(workspaceRoot, "supabase", ".temp", "project-ref");
+  if (!existsSync(projectRefPath)) {
+    throw new Error("Canonical Supabase CLI project-ref is missing.");
+  }
+
+  const projectRef = requireCanonicalProjectRef(
+    readFileSync(projectRefPath, "utf8").trim(),
+    "Supabase CLI project-ref",
+  );
+  let metadata = null;
+  if (existsSync(metadataPath)) {
+    try {
+      metadata = JSON.parse(readFileSync(metadataPath, "utf8"));
+    } catch {
+      throw new Error("Optional linked project metadata is malformed JSON.");
+    }
+    if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+      throw new Error("Optional linked project metadata must be a JSON object.");
+    }
+    if (metadata.ref !== undefined) {
+      const metadataRef = requireCanonicalProjectRef(metadata.ref, "Linked project metadata ref");
+      if (metadataRef !== projectRef) {
+        throw new Error(
+          "Linked project identity does not match the exact expected project ref; optional metadata diverges from canonical project-ref.",
+        );
+      }
+    }
+  }
+  return { metadata, projectRef };
+}
+
+export function assertLinkedProjectState({ workspaceRoot, expectedProjectRef }) {
+  const canonicalExpectedRef = requireCanonicalProjectRef(expectedProjectRef, "Expected project ref");
+  const { metadata, projectRef } = readLinkedProjectState({ workspaceRoot });
+  if (projectRef !== canonicalExpectedRef) {
+    throw new Error("Linked project identity does not match the exact expected project ref.");
+  }
+  return { metadata, projectRef };
+}
+
+export function resolveLinkedProjectProvenance({
+  environment,
+  expectedProjectRef,
+  workspaceRoot = process.cwd(),
+  gitHeadSha,
+} = {}) {
+  if (!LINKED_ENVIRONMENTS.has(environment)) {
+    throw new Error("Linked backup environment must be exactly staging or production.");
+  }
+  const canonicalExpectedRef = requireCanonicalProjectRef(expectedProjectRef, "Expected project ref");
+  const { metadata, projectRef } = assertLinkedProjectState({
+    workspaceRoot,
+    expectedProjectRef: canonicalExpectedRef,
+  });
+
+  const sourceIdentity = {
+    source_mode: "linked",
+    environment,
+    project_ref: projectRef,
+    project_name: typeof metadata?.name === "string" ? metadata.name : null,
+    organization_id: typeof metadata?.organization_id === "string" ? metadata.organization_id : null,
+    git_head_sha: resolveGitHeadSha(gitHeadSha),
+  };
+
+  return {
+    ...sourceIdentity,
+    source_fingerprint_sha256: computeSourceFingerprint(sourceIdentity),
+  };
+}
+
+function resolveBackupProvenance({
+  environment,
+  useLinkedSupabase,
+  expectedProjectRef,
+  workspaceRoot,
+  gitHeadSha,
+  tableDataFetcher,
+  useLivePostgres,
+}) {
+  if (useLinkedSupabase) {
+    return resolveLinkedProjectProvenance({
+      environment,
+      expectedProjectRef,
+      workspaceRoot,
+      gitHeadSha,
+    });
+  }
+
+  if (LINKED_ENVIRONMENTS.has(environment)) {
+    throw new Error(`${environment} backup requires linked project provenance.`);
+  }
+
+  const sourceIdentity = {
+    source_mode: typeof tableDataFetcher === "function"
+      ? "custom_fetcher"
+      : useLivePostgres
+        ? "local_postgres"
+        : "empty_fixture",
+    environment,
+    project_ref: null,
+    project_name: null,
+    organization_id: null,
+    git_head_sha: resolveGitHeadSha(gitHeadSha),
+  };
+  return {
+    ...sourceIdentity,
+    source_fingerprint_sha256: computeSourceFingerprint(sourceIdentity),
+  };
 }
 
 export function generateSchemaDdl() {
@@ -446,52 +684,113 @@ CREATE TABLE IF NOT EXISTS public.learning_paths (
 /**
  * Fetch table rows from local PostgreSQL container
  */
-export function fetchTableDataFromLocalPostgres(tableName) {
+export function fetchTableDataFromLocalPostgres(tableName, commandRunner = execSync) {
   try {
     const query = `SELECT COALESCE(json_agg(t), '[]'::json) FROM (SELECT * FROM public.${tableName}) t;`;
-    const output = execSync(
+    const output = commandRunner(
       `docker exec -i supabase_db_corelia-app psql -U postgres -d postgres -t -A -c "${query}"`,
-      { encoding: "utf8", windowsHide: true },
+      { encoding: "utf8", windowsHide: true, timeout: 120_000 },
     ).trim();
 
-    if (!output) return [];
-    return JSON.parse(output);
-  } catch (err) {
-    console.warn(`[WARN] Could not fetch table ${tableName} from local Postgres: ${err.message}`);
-    return [];
+    if (!output) {
+      throw new Error("empty output");
+    }
+    const rows = JSON.parse(output);
+    if (!Array.isArray(rows)) {
+      throw new Error("non-array output");
+    }
+    return rows;
+  } catch {
+    throw new Error(`Local PostgreSQL query failed for table ${tableName}.`);
   }
 }
 
 /**
- * Fetch table rows from Linked Supabase Project (Production/Staging)
+ * Fetch all registered tables from one Linked Supabase statement snapshot.
  */
-export function fetchTableDataFromSupabaseLinked(tableName) {
-  const tmpFile = join(tmpdir(), `query_${tableName}_${Date.now()}.sql`);
+export function fetchAllTableDataFromSupabaseLinked(
+  {
+    commandRunner = execSync,
+    tempDirectory = tmpdir(),
+    workspaceRoot = process.cwd(),
+    expectedProjectRef,
+    linkedProjectMetadata = null,
+  } = {},
+) {
+  const canonicalProjectRef = requireCanonicalProjectRef(expectedProjectRef, "Expected project ref");
+  const isolatedWorkdir = mkdtempSync(join(resolve(tempDirectory), "corelia-ai-linked-query-"));
+  const isolatedSupabaseTempDir = join(isolatedWorkdir, "supabase", ".temp");
+  const queryFile = join(isolatedWorkdir, "query_ai_subsystem.sql");
   try {
-    const query = `SELECT COALESCE(json_agg(t), '[]'::json) AS data FROM (SELECT * FROM public.${tableName}) t;`;
-    writeFileSync(tmpFile, query, "utf8");
+    mkdirSync(isolatedSupabaseTempDir, { recursive: true });
+    writeFileSync(join(isolatedSupabaseTempDir, "project-ref"), `${canonicalProjectRef}\n`, "utf8");
+    if (linkedProjectMetadata) {
+      const safeMetadata = {
+        ref: canonicalProjectRef,
+        name: typeof linkedProjectMetadata.name === "string" ? linkedProjectMetadata.name : null,
+        organization_id: typeof linkedProjectMetadata.organization_id === "string"
+          ? linkedProjectMetadata.organization_id
+          : null,
+      };
+      writeFileSync(
+        join(isolatedSupabaseTempDir, "linked-project.json"),
+        JSON.stringify(safeMetadata),
+        "utf8",
+      );
+    }
+    const entries = AI_TABLE_REGISTRY.map(({ name }) =>
+      `  '${name}', (SELECT COALESCE(json_agg(t), '[]'::json) FROM public.${name} t)`,
+    ).join(",\n");
+    const query = `SELECT json_build_object(\n${entries}\n) AS data;\n`;
+    writeFileSync(queryFile, query, "utf8");
 
-    const cmd = `pnpm exec supabase db query --linked --file "${tmpFile}"`;
-    const output = execSync(cmd, {
+    const supabaseCli = resolve(
+      workspaceRoot,
+      "node_modules",
+      ".bin",
+      process.platform === "win32" ? "supabase.cmd" : "supabase",
+    );
+    const cmd = `"${supabaseCli}" db query --linked --file "${queryFile}"`;
+    const output = commandRunner(cmd, {
+      cwd: isolatedWorkdir,
       encoding: "utf8",
       windowsHide: true,
       maxBuffer: 64 * 1024 * 1024,
+      timeout: 120_000,
     });
 
-    const jsonMatch = output.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return [];
-    const parsed = JSON.parse(jsonMatch[0]);
-    if (parsed.rows && parsed.rows[0] && Array.isArray(parsed.rows[0].data)) {
-      return parsed.rows[0].data;
+    if (typeof output !== "string") {
+      throw new Error("Linked query returned non-text output.");
     }
-    return [];
-  } catch (err) {
-    console.warn(`[WARN] Could not fetch table ${tableName} from linked Supabase: ${err.message}`);
-    return [];
+    const jsonStart = output.indexOf("{");
+    const jsonEnd = output.lastIndexOf("}");
+    if (jsonStart === -1 || jsonEnd < jsonStart) {
+      throw new Error("Linked query returned no JSON result.");
+    }
+
+    const parsed = JSON.parse(output.slice(jsonStart, jsonEnd + 1));
+    if (!Array.isArray(parsed?.rows) || parsed.rows.length === 0) {
+      throw new Error("Linked query JSON does not contain a result row.");
+    }
+    const data = parsed.rows[0]?.data;
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      throw new Error("Linked query JSON result does not contain a table-data object.");
+    }
+    const expectedNames = new Set(AI_TABLE_REGISTRY.map(({ name }) => name));
+    const actualNames = Object.keys(data);
+    if (actualNames.length !== expectedNames.size || actualNames.some((name) => !expectedNames.has(name))) {
+      throw new Error("Linked query result has missing or unexpected table keys.");
+    }
+    for (const { name } of AI_TABLE_REGISTRY) {
+      if (!Array.isArray(data[name])) {
+        throw new Error(`Linked query result for ${name} is not an array.`);
+      }
+    }
+    return data;
+  } catch {
+    throw new Error("Linked Supabase snapshot query failed.");
   } finally {
-    try {
-      unlinkSync(tmpFile);
-    } catch {}
+    rmSync(isolatedWorkdir, { recursive: true, force: true });
   }
 }
 
@@ -504,87 +803,140 @@ export function executeAiBackup({
   useLinkedSupabase = false,
   useLivePostgres = true,
   tableDataFetcher = null,
+  expectedProjectRef = null,
+  workspaceRoot = process.cwd(),
+  gitHeadSha,
+  linkedCommandRunner = execSync,
+  gitCommandRunner = execSync,
 } = {}) {
+  if (useLinkedSupabase && typeof tableDataFetcher === "function") {
+    throw new Error("Linked backup cannot use a custom tableDataFetcher.");
+  }
+  const normalizedEnvironment = String(environment).trim().toLowerCase();
+  if (LINKED_ENVIRONMENTS.has(normalizedEnvironment) && !useLinkedSupabase) {
+    throw new Error(`${normalizedEnvironment} backup requires linked project provenance.`);
+  }
+  if (useLinkedSupabase) {
+    assertCleanGitWorktree(gitCommandRunner, workspaceRoot);
+  }
+  const provenance = resolveBackupProvenance({
+    environment: normalizedEnvironment,
+    useLinkedSupabase,
+    expectedProjectRef,
+    workspaceRoot,
+    gitHeadSha,
+    tableDataFetcher,
+    useLivePostgres,
+  });
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const backupDir = resolve(targetDir || join(process.cwd(), ".backups", "ai-retirement", `${environment}-${timestamp}`));
-  const dataDir = join(backupDir, "data");
+  const backupDir = resolve(targetDir || join(workspaceRoot, ".backups", "ai-retirement", `${normalizedEnvironment}-${timestamp}`));
+  if (existsSync(backupDir)) {
+    throw new Error("Refusing to overwrite or reuse an existing backup target.");
+  }
+  mkdirSync(dirname(backupDir), { recursive: true });
+  const partialDir = join(dirname(backupDir), `.${basename(backupDir)}.partial-${process.pid}-${Date.now()}`);
+  if (existsSync(partialDir)) rmSync(partialDir, { recursive: true, force: true });
 
-  mkdirSync(dataDir, { recursive: true });
-
-  const ddlContent = generateSchemaDdl();
-  const ddlPath = join(backupDir, "schema_ai_subsystem.sql");
-  writeFileSync(ddlPath, ddlContent, "utf8");
-
-  const tableManifest = [];
-
-  for (const table of AI_TABLE_REGISTRY) {
-    let rows = [];
-    if (typeof tableDataFetcher === "function") {
-      rows = tableDataFetcher(table.name);
-    } else if (useLinkedSupabase) {
-      rows = fetchTableDataFromSupabaseLinked(table.name);
-    } else if (useLivePostgres) {
-      rows = fetchTableDataFromLocalPostgres(table.name);
+  try {
+    let linkedSnapshot = null;
+    if (useLinkedSupabase) {
+      const linkedState = assertLinkedProjectState({ workspaceRoot, expectedProjectRef });
+      linkedSnapshot = fetchAllTableDataFromSupabaseLinked({
+        commandRunner: linkedCommandRunner,
+        workspaceRoot,
+        expectedProjectRef: linkedState.projectRef,
+        linkedProjectMetadata: linkedState.metadata,
+      });
+      assertLinkedProjectState({ workspaceRoot, expectedProjectRef });
     }
 
-    const jsonContent = JSON.stringify(rows, null, 2);
-    const fileName = `${table.name}.json`;
-    const filePath = join(dataDir, fileName);
-    writeFileSync(filePath, jsonContent, "utf8");
+    const dataDir = join(partialDir, "data");
+    mkdirSync(dataDir, { recursive: true });
+    const ddlContent = generateSchemaDdl();
+    writeFileSync(join(partialDir, "schema_ai_subsystem.sql"), ddlContent, "utf8");
+    const tableManifest = [];
 
-    const digest = sha256(jsonContent);
+    for (const table of AI_TABLE_REGISTRY) {
+      let rows = [];
+      if (typeof tableDataFetcher === "function") {
+        try {
+          rows = tableDataFetcher(table.name);
+        } catch {
+          throw new Error(`Custom table data fetch failed for ${table.name}.`);
+        }
+      } else if (useLinkedSupabase) {
+        rows = linkedSnapshot[table.name];
+      } else if (useLivePostgres) {
+        rows = fetchTableDataFromLocalPostgres(table.name);
+      }
+      if (!Array.isArray(rows)) {
+        throw new Error(`Backup data for ${table.name} must be an array.`);
+      }
 
-    tableManifest.push({
-      table_name: table.name,
-      classification: table.classification,
-      primaryKey: table.primaryKey,
-      description: table.description,
-      file: `data/${fileName}`,
-      row_count: rows.length,
-      bytes: Buffer.byteLength(jsonContent, "utf8"),
-      sha256: digest,
-    });
+      const jsonContent = JSON.stringify(rows, null, 2);
+      const fileName = `${table.name}.json`;
+      writeFileSync(join(dataDir, fileName), jsonContent, "utf8");
+      tableManifest.push({
+        table_name: table.name,
+        classification: table.classification,
+        primaryKey: table.primaryKey,
+        description: table.description,
+        file: `data/${fileName}`,
+        row_count: rows.length,
+        bytes: Buffer.byteLength(jsonContent, "utf8"),
+        sha256: sha256(jsonContent),
+      });
+    }
+
+    const restoreVerifierArgs = provenance.source_mode === "linked"
+      ? `<backup_dir> --expected-environment ${normalizedEnvironment} --expected-project-ref ${provenance.project_ref}`
+      : `<backup_dir> --expected-environment ${normalizedEnvironment}`;
+    const manifestData = {
+      schema_version: 2,
+      backup_id: `AI-BACKUP-${normalizedEnvironment.toUpperCase()}-${timestamp}`,
+      generated_at: new Date().toISOString(),
+      environment: normalizedEnvironment,
+      provenance,
+      epic: "#332",
+      issue: "#325",
+      tables_count: AI_TABLE_REGISTRY.length,
+      total_rows: tableManifest.reduce((acc, t) => acc + t.row_count, 0),
+      schema_ddl: {
+        file: "schema_ai_subsystem.sql",
+        sha256: sha256(ddlContent),
+      },
+      tables: tableManifest,
+      restore_instructions: [
+        "1. To restore into isolated PostgreSQL database:",
+        "   psql -f schema_ai_subsystem.sql <database_url>",
+        "2. To populate table data from JSON fixtures and verify database runtime:",
+        `   node scripts/db/verify-ai-backup-restore.mjs ${restoreVerifierArgs}`,
+      ],
+    };
+
+    writeFileSync(join(partialDir, "manifest.json"), JSON.stringify(manifestData, null, 2), "utf8");
+    renameSync(partialDir, backupDir);
+    return {
+      backupDir,
+      manifestPath: join(backupDir, "manifest.json"),
+      manifest: manifestData,
+    };
+  } catch (error) {
+    rmSync(partialDir, { recursive: true, force: true });
+    throw error;
   }
-
-  const manifestData = {
-    schema_version: 1,
-    backup_id: `AI-BACKUP-${environment.toUpperCase()}-${timestamp}`,
-    generated_at: new Date().toISOString(),
-    environment,
-    epic: "#332",
-    issue: "#325",
-    tables_count: AI_TABLE_REGISTRY.length,
-    total_rows: tableManifest.reduce((acc, t) => acc + t.row_count, 0),
-    schema_ddl: {
-      file: "schema_ai_subsystem.sql",
-      sha256: sha256(ddlContent),
-    },
-    tables: tableManifest,
-    restore_instructions: [
-      "1. To restore into isolated PostgreSQL database:",
-      "   psql -f schema_ai_subsystem.sql <database_url>",
-      "2. To populate table data from JSON fixtures and verify database runtime:",
-      "   node scripts/db/verify-ai-backup-restore.mjs --restore-dir <backup_dir>",
-    ],
-  };
-
-  const manifestJson = JSON.stringify(manifestData, null, 2);
-  const manifestPath = join(backupDir, "manifest.json");
-  writeFileSync(manifestPath, manifestJson, "utf8");
-
-  return {
-    backupDir,
-    manifestPath,
-    manifest: manifestData,
-  };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/i, "$1"))) {
-  const isLinked = process.argv.includes("--linked") || process.argv.includes("--production");
-  const env = isLinked ? "production" : (process.env.NODE_ENV || "local");
-  const result = executeAiBackup({ environment: env, useLinkedSupabase: isLinked });
-  console.log(`[AI_BACKUP_SUCCESS] Created real backup at: ${result.backupDir}`);
-  console.log(`Environment: ${result.manifest.environment}`);
-  console.log(`Tables: ${result.manifest.tables_count}, Total Rows: ${result.manifest.total_rows}`);
-  console.log(`Manifest: ${result.manifestPath}`);
+  try {
+    const options = parseAiBackupCliArgs(process.argv.slice(2));
+    const result = executeAiBackup(options);
+    console.log(`[AI_BACKUP_SUCCESS] Created real backup at: ${result.backupDir}`);
+    console.log(`Environment: ${result.manifest.environment}`);
+    console.log(`Tables: ${result.manifest.tables_count}, Total Rows: ${result.manifest.total_rows}`);
+    console.log(`Manifest: ${result.manifestPath}`);
+  } catch (err) {
+    console.error(`[AI_BACKUP_FAILED] ${err.message}`);
+    process.exitCode = 1;
+  }
 }

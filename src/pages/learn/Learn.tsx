@@ -41,9 +41,6 @@ import {
   type CurriculumGroup,
 } from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
-import { FlashcardDeckCard } from "./components/FlashcardDeckCard";
-import { LessonReadinessCard } from "./components/LessonReadinessCard";
-import { LessonRecapCard } from "./components/LessonRecapCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
 import { SectionQuiz } from "./components/SectionQuiz";
 import { getSectionQuestions } from "@/lib/sectionQuestions";
@@ -91,8 +88,7 @@ function getDesktopBreakpointSnapshot() {
 }
 
 export default function Learn() {
-  const { t, i18n } = useTranslation("courses");
-  const currentLocale: "vi" | "en" = i18n.language?.startsWith("en") ? "en" : "vi";
+  const { t } = useTranslation("courses");
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
       String(t(key as never, options as never)),
@@ -522,14 +518,6 @@ export default function Learn() {
         </div>
       )}
 
-      <LessonReadinessCard
-        lesson={currentLesson}
-        courseId={courseId ?? null}
-        allLessons={visibleLessons}
-        locale={currentLocale}
-        onJumpToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
-      />
-
       {courseCompleted ? (
         <CourseCompletionCertificatePanel
           className="mx-4 mb-4 sm:mx-6"
@@ -561,24 +549,6 @@ export default function Learn() {
         onMarkComplete={() => void markComplete()}
         onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
         courseId={courseId}
-      />
-
-      <LessonRecapCard
-        lessonId={currentLesson?.id ?? null}
-        courseId={courseId ?? null}
-        completed={
-          !!currentLesson && progress.completedIds.has(currentLesson.id)
-        }
-        locale={currentLocale}
-      />
-
-      <FlashcardDeckCard
-        lessonId={currentLesson?.id ?? null}
-        courseId={courseId ?? null}
-        completed={
-          !!currentLesson && progress.completedIds.has(currentLesson.id)
-        }
-        locale={currentLocale}
       />
 
       {shouldShowSectionQuiz && sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (

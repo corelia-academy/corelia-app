@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { ArrowDown, ArrowUp, ImagePlus, Plus, Save, Trash2, Youtube } from "lucide-react";
+import { ArrowDown, ArrowUp, ImagePlus, Plus, Save, Sparkles, Trash2, Youtube } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CareerTrackBlastEmailPanel } from "./CareerTrackBlastEmailPanel";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel, FieldDescription, FieldSeparator } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { invokeGenerateDescription } from "@/lib/descriptionGenerator";
 import { normalizeYoutubeVideoId } from "@/lib/youtubeVideoId";
 import { useAuth } from "@/stores/authStore";
 import { getCoursesForManagement } from "@/lib/courses";
@@ -109,6 +110,7 @@ export default function InstructorCareerTrackEditorPage() {
   });
   const [savingTranslation, setSavingTranslation] = useState(false);
   const translationInitialRef = useRef<string>("");
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -325,6 +327,42 @@ export default function InstructorCareerTrackEditorPage() {
     return void handleSavePrimary();
   }
 
+  async function handleTranslateAll() {
+    if (!isTranslating || !form.title) return;
+    setTranslating(true);
+    try {
+      const response = await invokeGenerateDescription({
+        action: "translate",
+        type: "course",
+        targetField: "description",
+        locale: activeContentLocale,
+        sourceLocale: primaryLocale,
+        bundleKind: "course_info",
+        sourceBundle: {
+          title: form.title,
+          shortDescription: form.shortDescription,
+          description: form.description,
+          learningOutcomes: splitLines(form.whatYoullLearnText),
+        },
+        careerTrackId: id,
+      });
+      if (!response.bundle) {
+        throw new Error(t("courseEdit.descriptionGenerator.errors.noBundle"));
+      }
+      setTranslationDraft((prev) => ({
+        title: response.bundle?.title ?? prev.title,
+        description: response.bundle?.description ?? prev.description,
+        whatYoullLearnText: response.bundle?.learningOutcomes?.join("\n") ?? prev.whatYoullLearnText,
+        prerequisitesText: prev.prerequisitesText,
+      }));
+      toast.success(t("courseEdit.descriptionGenerator.translateApplied"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("courseEdit.descriptionGenerator.errors.generic"));
+    } finally {
+      setTranslating(false);
+    }
+  }
+
   async function handleSaveLocalizationSettings() {
     if (!id) return;
     setSavingI18nConfig(true);
@@ -492,6 +530,18 @@ export default function InstructorCareerTrackEditorPage() {
             <span className="font-semibold">{activeContentLocale.toUpperCase()}</span>
             {" — "}{t("careerTracks.editor.translationModeHint", { locale: activeContentLocale.toUpperCase() })}
           </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={translating || !form.title}
+            onClick={() => void handleTranslateAll()}
+          >
+            <Sparkles className="size-3.5" aria-hidden />
+            {translating
+              ? t("courseEdit.descriptionGenerator.translating")
+              : t("courseEdit.descriptionGenerator.translateTrigger")}
+          </Button>
         </div>
       )}
 
@@ -812,7 +862,9 @@ export default function InstructorCareerTrackEditorPage() {
                   disabled={savingI18nConfig}
                   onClick={() => void handleSaveLocalizationSettings()}
                 >
-                  {savingI18nConfig ? t("careerTracks.actions.saving") : "Save localization settings"}
+                  {savingI18nConfig
+                    ? t("careerTracks.actions.saving")
+                    : t("careerTracks.actions.saveLocalizationSettings")}
                 </Button>
               </>
             ) : null}

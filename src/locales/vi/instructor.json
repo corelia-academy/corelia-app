@@ -233,7 +233,8 @@
       "back": "Quay lại",
       "save": "Lưu",
       "saving": "Đang lưu…",
-      "translationSaved": "Đã lưu bản dịch."
+      "translationSaved": "Đã lưu bản dịch.",
+      "saveLocalizationSettings": "Lưu thiết lập ngôn ngữ"
     },
     "errors": {
       "loadFailed": "Không thể tải dữ liệu lộ trình.",
@@ -671,7 +672,8 @@
       "optionIsCorrect": "Đáp án {{id}} là đúng",
       "optionPlaceholder": "Lựa chọn {{id}}...",
       "explanationToggle": "Giải thích đáp án",
-      "explanationPlaceholder": "Giải thích vì sao đáp án đúng (tùy chọn)..."
+      "explanationPlaceholder": "Giải thích vì sao đáp án đúng (tùy chọn)...",
+      "replaceDraftConfirm": "Tạo câu hỏi mới và thay thế bản nháp hiện tại? Các chỉnh sửa chưa lưu sẽ bị mất."
     },
     "careerTracks": {
       "shortDescriptionLabel": "Mô tả ngắn",
@@ -914,7 +916,8 @@
         "missing": "Nguồn còn thiếu"
       },
       "errors": {
-        "generic": "Không thể generate mô tả lúc này."
+        "generic": "Không thể generate mô tả lúc này.",
+        "noBundle": "Phản hồi dịch không có nội dung cần áp dụng."
       }
     },
     "translationCoverage": {

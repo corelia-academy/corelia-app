@@ -16,7 +16,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         ok: false,
         error: "AI capability retired",
         code: "AI_FEATURE_RETIRED",
-        message: "Trợ lý AI Cora đã dừng hoạt động theo kế hoạch Epic #332.",
+        message: "Tính năng AI dành cho người học đã ngừng hoạt động theo kế hoạch Epic #332.",
       },
       410,
     ),

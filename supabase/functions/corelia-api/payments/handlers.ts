@@ -10,32 +10,41 @@ import {
   fetchSePayIncomingTransactionByInvoiceNumber,
   sepayCheckoutInitUrl,
 } from "./sepay.ts";
-import {
-  createAiVoucherBatch,
-  deleteAiVoucherBatch,
-  previewAiVoucher,
-  releaseVoucherReservationForPayment,
-  reserveAiVoucherForPayment,
-} from "./vouchers.ts";
 import type {
-  AiSubscriptionDurationMonths,
-  AiSubscriptionMeta,
-  AiSubscriptionTier,
   PaymentPurpose,
   PaymentTransaction,
   SePayIpnPayload,
 } from "./types.ts";
 
-const AI_SUBSCRIPTION_PRODUCT_ID = "cora-ai";
+const AI_PAYMENT_RETIREMENT_CUTOFF_MS = Date.parse("2026-08-25T15:00:00.000Z");
 
-const AI_SUBSCRIPTION_PRICES: Record<
-  AiSubscriptionTier,
-  Record<AiSubscriptionDurationMonths, number>
-> = {
-  student: { 1: 79_000, 12: 690_000 },
-  pro: { 1: 149_000, 12: 1_290_000 },
-  bootcamp: { 1: 399_000, 12: 3_490_000 },
-};
+function sePayProviderRefundEventId(payload: SePayIpnPayload): string | null {
+  const candidates = [
+    payload.refund?.id,
+    payload.event_id,
+    payload.transaction?.id,
+    payload.transaction?.transaction_id,
+  ];
+  for (const candidate of candidates) {
+    const normalized = String(candidate ?? "").trim();
+    if (normalized) return normalized;
+  }
+  return null;
+}
+
+async function reconcileHistoricalAiPayment(
+  db: SupabaseClient,
+  invoiceNumber: string,
+  updatedAt: string,
+  providerPayload: Record<string, unknown>,
+): Promise<void> {
+  const { error } = await db.rpc("reconcile_historical_ai_payment", {
+    p_payment_transaction_id: invoiceNumber,
+    p_provider_payload: providerPayload,
+    p_settled_at: updatedAt,
+  });
+  if (error) throw new Error(error.message);
+}
 
 export async function handleSePayCheckout(req: Request, db: SupabaseClient): Promise<Response> {
   try {
@@ -44,18 +53,19 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     const purpose = body.purpose === "course_purchase" || body.purpose === "certificate_fee" || body.purpose === "ai_subscription"
       ? body.purpose as PaymentPurpose
       : null;
-    const courseId = purpose === "ai_subscription"
-      ? AI_SUBSCRIPTION_PRODUCT_ID
-      : String(body.courseId ?? "");
+    if (!purpose) return json({ message: "Thiếu/ sai purpose" }, 400);
+    if (purpose === "ai_subscription") {
+      return json({ message: "Gói AI dành cho người học đã dừng cung cấp mới." }, 400);
+    }
+
+    const courseId = String(body.courseId ?? "");
     const requestedAmountVnd = Number(body.amountVnd ?? 0);
     const successUrl = String(body.successUrl ?? "");
     const errorUrl = String(body.errorUrl ?? "");
     const cancelUrl = String(body.cancelUrl ?? "");
     const discountCodeRaw = String(body.discountCode ?? "").trim();
-    const voucherCodeRaw = String(body.voucherCode ?? "").trim();
     if (!courseId) return json({ message: "Thiếu courseId" }, 400);
-    if (!purpose) return json({ message: "Thiếu/ sai purpose" }, 400);
-    if (purpose !== "ai_subscription" && (!Number.isFinite(requestedAmountVnd) || requestedAmountVnd <= 0)) {
+    if (!Number.isFinite(requestedAmountVnd) || requestedAmountVnd <= 0) {
       return json({ message: "amountVnd không hợp lệ" }, 400);
     }
     const callbackAllowlist = paymentCallbackOriginAllowlistFromEnv();
@@ -67,34 +77,30 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       return json({ message: "Callback URLs không hợp lệ" }, 400);
     }
     let baseAmount = 0;
-    if (purpose === "ai_subscription") {
-      return json({ message: "Gói đăng ký trợ lý AI Cora đã dừng cung cấp mới." }, 400);
-    } else {
-      const { data: courseRow, error: courseErr } = await db.from("courses").select("data").eq("id", courseId)
-        .maybeSingle();
-      if (courseErr) throw new Error(courseErr.message);
-      if (!courseRow) return json({ message: "Không tìm thấy khoá học" }, 404);
-      const course = (courseRow.data ?? {}) as {
-        price_vnd?: number | null;
-        promo_price_vnd?: number | null;
-        promo_ends_at?: string | null;
-        certificate_fee_vnd?: number | null;
-      };
-      const basePrice = Math.round(Number(course.price_vnd ?? 0));
-      const promoPrice = Math.round(Number(course.promo_price_vnd ?? 0));
-      const promoEndsAt = course.promo_ends_at ? Date.parse(course.promo_ends_at) : NaN;
-      const promoActive =
-        Number.isFinite(basePrice) &&
-        basePrice > 0 &&
-        promoPrice > 0 &&
-        promoPrice < basePrice &&
-        (!Number.isFinite(promoEndsAt) || Date.now() <= promoEndsAt);
-      baseAmount = purpose === "course_purchase"
-        ? (promoActive ? promoPrice : basePrice)
-        : Math.round(Number(course.certificate_fee_vnd ?? 0));
-    }
+    const { data: courseRow, error: courseErr } = await db.from("courses").select("data").eq("id", courseId)
+      .maybeSingle();
+    if (courseErr) throw new Error(courseErr.message);
+    if (!courseRow) return json({ message: "Không tìm thấy khoá học" }, 404);
+    const course = (courseRow.data ?? {}) as {
+      price_vnd?: number | null;
+      promo_price_vnd?: number | null;
+      promo_ends_at?: string | null;
+      certificate_fee_vnd?: number | null;
+    };
+    const basePrice = Math.round(Number(course.price_vnd ?? 0));
+    const promoPrice = Math.round(Number(course.promo_price_vnd ?? 0));
+    const promoEndsAt = course.promo_ends_at ? Date.parse(course.promo_ends_at) : NaN;
+    const promoActive =
+      Number.isFinite(basePrice) &&
+      basePrice > 0 &&
+      promoPrice > 0 &&
+      promoPrice < basePrice &&
+      (!Number.isFinite(promoEndsAt) || Date.now() <= promoEndsAt);
+    baseAmount = purpose === "course_purchase"
+      ? (promoActive ? promoPrice : basePrice)
+      : Math.round(Number(course.certificate_fee_vnd ?? 0));
     if (!Number.isFinite(baseAmount) || baseAmount <= 0) {
-      return json({ message: purpose === "ai_subscription" ? "Gói AI chưa cấu hình giá hợp lệ" : "Khoá học chưa cấu hình phí hợp lệ" }, 400);
+      return json({ message: "Khoá học chưa cấu hình phí hợp lệ" }, 400);
     }
     let finalAmount = baseAmount;
     let discountCode: string | undefined;
@@ -130,16 +136,6 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
           finalAmount = Math.max(0, baseAmount - discountAmount);
         }
       }
-    } else if (purpose === "ai_subscription" && voucherCodeRaw) {
-      const voucher = await previewAiVoucher(db, {
-        voucherCode: voucherCodeRaw,
-        baseAmountVnd: baseAmount,
-        tier: subscriptionMeta?.tier ?? null,
-        durationMonths: subscriptionMeta?.duration_months ?? null,
-      });
-      discountCode = voucher.code;
-      discountAmount = voucher.discountAmountVnd;
-      finalAmount = voucher.finalAmountVnd;
     }
     const orderId = `CORELIA-${Date.now()}-${randomHex(6)}`;
     const createdAt = nowIso();
@@ -153,7 +149,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       discount_amount_vnd: discountCode ? discountAmount : null,
       provider: "sepay",
       status: "pending",
-      provider_payload: subscriptionMeta ? { subscription_meta: subscriptionMeta } : undefined,
+      provider_payload: undefined,
       created_at: createdAt,
       updated_at: createdAt,
     };
@@ -168,27 +164,17 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       discount_amount_vnd: tx.discount_amount_vnd ?? undefined,
       provider: "sepay",
       status: "pending",
-      provider_payload: subscriptionMeta ? { subscription_meta: subscriptionMeta } : undefined,
+      provider_payload: undefined,
       created_at: createdAt,
       updated_at: createdAt,
     });
     if (insErr) throw new Error(insErr.message);
-    if (purpose === "ai_subscription" && discountCode) {
-      await reserveAiVoucherForPayment(db, {
-        userId: user.id,
-        paymentTransactionId: orderId,
-        voucherCode: discountCode,
-        baseAmountVnd: baseAmount,
-      });
-    }
     const roundedFinalAmount = Math.round(finalAmount);
     if (roundedFinalAmount <= 0) {
       if (!discountCode) {
         return json({ message: "Không thể hoàn tất checkout miễn phí." }, 400);
       }
-      const freeCheckoutPayload = subscriptionMeta
-        ? { source: "free_checkout", subscription_meta: subscriptionMeta }
-        : { source: "free_checkout" };
+      const freeCheckoutPayload = { source: "free_checkout" };
       await grantPaymentAccessForTransaction(db, tx, orderId, createdAt, freeCheckoutPayload);
       return json({
         order_id: orderId,
@@ -207,9 +193,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       order_invoice_number: orderId,
       order_description: purpose === "course_purchase"
         ? `Thanh toán khoá học ${courseId}`
-        : purpose === "certificate_fee"
-          ? `Thanh toán phí chứng nhận ${courseId}`
-          : `Thanh toán gói Cora AI ${subscriptionMeta?.tier ?? ""} ${subscriptionMeta?.duration_months ?? ""} tháng`,
+        : `Thanh toán phí chứng nhận ${courseId}`,
       customer_id: user.id,
       success_url: successUrl,
       error_url: errorUrl,
@@ -232,7 +216,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
 export async function handleAiVoucherPreview(req: Request, db: SupabaseClient): Promise<Response> {
   try {
     await verifyBearerUser(req, db);
-    return json({ message: "Voucher trợ lý AI Cora đã dừng hỗ trợ." }, 400);
+    return json({ message: "Voucher AI dành cho người học đã dừng hỗ trợ." }, 400);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
@@ -253,16 +237,11 @@ export async function handleAiVoucherBatchCreate(req: Request, db: SupabaseClien
 
 export async function handleAiVoucherBatchDelete(req: Request, db: SupabaseClient): Promise<Response> {
   try {
-    const user = await verifyBearerUser(req, db);
-    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-    const batchId = String(body.batchId ?? "").trim();
-    if (!batchId) return json({ message: "Thiếu batchId." }, 400);
-    await deleteAiVoucherBatch(db, batchId, user.id);
-    return json({ ok: true });
+    await verifyBearerUser(req, db);
+    return json({ message: "Xóa voucher AI đã dừng hỗ trợ; dữ liệu lịch sử được giữ nguyên." }, 400);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
-    if (message === "Không đủ quyền xóa batch voucher.") return json({ message }, 403);
     return json({ message }, 400);
   }
 }
@@ -336,10 +315,15 @@ export async function handleVerifySePayPayment(req: Request, db: SupabaseClient)
       const expectedAmount = Math.round(Number(tx.amount_vnd ?? 0));
       const sepayTx = await fetchSePayIncomingTransactionByInvoiceNumber(orderRow.id, expectedAmount);
       if (sepayTx) {
-        await grantPaymentAccessForTransaction(db, tx, orderRow.id, nowIso(), {
+        const providerPayload = {
           source: "verify_endpoint_sepay_lookup",
           sepay_transaction: sepayTx,
-        });
+        };
+        if (tx.purpose === "ai_subscription") {
+          await reconcileHistoricalAiPayment(db, orderRow.id, nowIso(), providerPayload);
+        } else {
+          await grantPaymentAccessForTransaction(db, tx, orderRow.id, nowIso(), providerPayload);
+        }
         verifiedBy = "sepay_lookup";
       }
     }
@@ -438,11 +422,10 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
     if (fetchErr) throw new Error(fetchErr.message);
     if (!snap) {
       console.warn("[corelia-api] IPN unknown invoice", invoiceNumber);
-      return json({ ok: true });
+      return json({ ok: false, code: "PAYMENT_TRANSACTION_NOT_FOUND" }, 404);
     }
     const tx = snap as PaymentTransaction;
     const updatedAt = nowIso();
-    if (tx.status === "paid") return json({ ok: true });
     if (type === "ORDER_PAID") {
       const expectedAmount = Math.round(Number(tx.amount_vnd ?? 0));
       const paidAmount = Math.round(Number(orderAmount ?? 0));
@@ -450,43 +433,58 @@ export async function handleSePayIpn(req: Request, db: SupabaseClient): Promise<
         console.error("[corelia-api] IPN amount mismatch", { invoiceNumber, expectedAmount, paidAmount });
         return json({ message: "Amount mismatch" }, 400);
       }
-      const { error: txUpdateErr } = await db.from("payment_transactions").update({
-        status: "paid",
-        provider_payload: payload as unknown as Record<string, unknown>,
-        updated_at: updatedAt,
-      }).eq("id", invoiceNumber);
-      if (txUpdateErr) throw new Error(txUpdateErr.message);
-      await grantPaymentAccessForTransaction(db, tx, invoiceNumber, updatedAt, payload);
+      if (tx.purpose === "ai_subscription") {
+        const createdAt = Date.parse(tx.created_at);
+        if (
+          tx.provider !== "sepay" ||
+          !Number.isFinite(createdAt) ||
+          createdAt >= AI_PAYMENT_RETIREMENT_CUTOFF_MS
+        ) {
+          return json({
+            ok: false,
+            code: "AI_SUBSCRIPTION_RETIRED",
+            message: "Giao dịch AI mới không được phép đối soát sau thời điểm ngừng cung cấp.",
+          }, 409);
+        }
+        await reconcileHistoricalAiPayment(
+          db,
+          invoiceNumber,
+          updatedAt,
+          payload as unknown as Record<string, unknown>,
+        );
+      } else {
+        await grantPaymentAccessForTransaction(db, tx, invoiceNumber, updatedAt, payload);
+      }
       return json({ ok: true });
     }
     if (type === "ORDER_REFUND" || type === "CHARGEBACK") {
+      const providerRefundId = sePayProviderRefundEventId(payload);
+      if (!providerRefundId) {
+        return json({ message: "Missing provider refund/event id" }, 400);
+      }
       const refundAmount = Math.round(Number(orderAmount ?? tx.amount_vnd ?? 0));
-      const { error: rpcErr } = await db.rpc("process_payment_refund", {
+      const { error: rpcErr } = await db.rpc("process_provider_payment_refund", {
         p_payment_transaction_id: invoiceNumber,
         p_refund_amount_vnd: refundAmount > 0 ? refundAmount : Math.round(Number(tx.amount_vnd ?? 0)),
         p_reason: `SePay IPN ${type}`,
+        p_provider_refund_id: providerRefundId,
         p_provider_refund_payload: payload as unknown as Record<string, unknown>,
       });
       if (rpcErr) {
         console.error("[corelia-api] IPN refund RPC error", rpcErr);
-        // Fallback update
-        await db.from("payment_transactions").update({
-          status: "refunded",
-          provider_payload: payload as unknown as Record<string, unknown>,
-          updated_at: updatedAt,
-        }).eq("id", invoiceNumber);
+        throw new Error(rpcErr.message);
       }
       return json({ ok: true });
     }
     if (type === "ORDER_CANCELLED" || type === "ORDER_FAILED") {
       const nextStatus = type === "ORDER_CANCELLED" ? "cancelled" : "failed";
-      const { error: statusErr } = await db.from("payment_transactions").update({
-        status: nextStatus,
-        provider_payload: payload as unknown as Record<string, unknown>,
-        updated_at: updatedAt,
-      }).eq("id", invoiceNumber);
+      const { error: statusErr } = await db.rpc("process_unsuccessful_payment_callback", {
+        p_payment_transaction_id: invoiceNumber,
+        p_next_status: nextStatus,
+        p_provider_payload: payload as unknown as Record<string, unknown>,
+        p_updated_at: updatedAt,
+      });
       if (statusErr) throw new Error(statusErr.message);
-      await releaseVoucherReservationForPayment(db, invoiceNumber);
       return json({ ok: true });
     }
     const { error: payloadUpdateErr } = await db.from("payment_transactions").update({

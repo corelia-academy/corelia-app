@@ -22,10 +22,6 @@
       "title": "Kho thành tích",
       "description": "Quản lý chứng nhận & huy hiệu"
     },
-    "cora": {
-      "title": "Cora AI",
-      "description": "Gói AI, hạn mức và lịch sử nâng cấp"
-    },
     "billing": {
       "title": "Thanh toán & lịch sử",
       "description": "Hoá đơn, lịch sử thanh toán"
@@ -379,12 +375,14 @@
     "empty": "Chưa có giao dịch nào.",
     "purpose": {
       "coursePurchase": "Mua khoá học",
-      "certificateFee": "Phí chứng nhận"
+      "certificateFee": "Phí chứng nhận",
+      "historicalAiTransaction": "Giao dịch AI lịch sử"
     },
     "meta": {
       "course": "Course: {{id}}",
       "providerOrder": "Provider: {{provider}} · Order: {{order}}",
-      "courseProviderOrder": "Course: {{course}} · Provider: {{provider}} · Order: {{order}}"
+      "courseProviderOrder": "Course: {{course}} · Provider: {{provider}} · Order: {{order}}",
+      "historicalAiProviderOrder": "Giao dịch AI lịch sử · Nhà cung cấp: {{provider}} · Mã đơn: {{order}}"
     },
     "table": {
       "time": "Thời gian",
@@ -394,132 +392,6 @@
     },
     "errors": {
       "fetchFailed": "Không lấy được lịch sử thanh toán."
-    }
-  },
-  "cora": {
-    "title": "Nâng cấp Cora AI",
-    "subtitle": "Chọn gói phù hợp để hỏi Cora nhiều hơn, nhận hỗ trợ học tập sâu hơn và mở rộng các use case AI trong Corelia.",
-    "mustLogin": "Bạn cần đăng nhập để quản lý gói Cora AI.",
-    "currentPlan": {
-      "statusLabel": "Trạng thái hiện tại",
-      "free": "Gói miễn phí",
-      "active": "Gói Cora AI của bạn đang hoạt động.",
-      "notSubscribed": "Bạn đang dùng hạn mức mặc định của Corelia.",
-      "expiryLabel": "Hiệu lực đến",
-      "daysLeftLabel": "Thời gian còn lại",
-      "daysLeft_one": "Còn {{count}} ngày",
-      "daysLeft_other": "Còn {{count}} ngày",
-      "questionsAnswered": "Cora đã trả lời {{count}} câu hỏi cho bạn tháng này",
-      "tokensUsed": "Cora đã dùng {{count}} tokens tháng này",
-      "nearingQuota": "🔥 Bạn đang học rất chăm tháng này!",
-      "nearingQuotaSub": "Còn khoảng {{remaining}} câu hỏi · Reset {{date}}",
-      "nearingTokenQuota": "🔥 Bạn đang dùng nhiều tokens tháng này!",
-      "nearingTokenQuotaSub": "Còn {{remaining}} tokens · Reset {{date}}",
-      "tokenExplainer": "Token là gì? 1 từ tiếng Việt ≈ 1.5 token. 1 câu ngắn ≈ 20 token.",
-      "upgradeNudge": "Nâng lên {{tier}}",
-      "quotaExceededMsg": "🎓 Tháng này bạn đã học rất hiệu quả!",
-      "quotaResetDate": "Quota mới vào ngày {{date}}"
-    },
-    "selector": {
-      "title": "Chọn gói phù hợp",
-      "subtitle": "Mỗi gói ưu tiên một kiểu học và mức độ đồng hành khác nhau của Cora.",
-      "perDuration": "{{duration}}",
-      "checkoutAction": "Tiếp tục thanh toán",
-      "checkoutLoading": "Đang tạo phiên thanh toán...",
-      "checkoutHint": "Bạn sẽ được chuyển sang cổng thanh toán SePay để hoàn tất nâng cấp.",
-      "activeRenewalHint": "Gói {{tier}} của bạn đang hoạt động. Bạn có thể gia hạn cùng tier hoặc nâng cấp lên tier cao hơn bất cứ lúc nào.",
-      "upgradeImmediateWarning": "Nâng cấp lên {{newTier}} sẽ bắt đầu ngay lập tức và thay thế gói {{currentTier}} hiện tại. Bạn sẽ mất {{days}} ngày còn lại của gói cũ."
-    },
-    "durationTitle": "Chu kỳ thanh toán",
-    "durationValueLabel": "Chi phí trung bình mỗi tháng",
-    "durationMonthlyEquivalent": "{{amount}} / tháng",
-    "durationSavingsBadge": "Tiết kiệm {{percent}}%",
-    "durationSavingsDetail": "Ít hơn {{amount}} so với trả từng tháng",
-    "durationSavingsSummaryLabel": "Tổng lợi ích khi chọn chu kỳ này",
-    "durationSavingsSummaryValue": "Tiết kiệm {{amount}} ({{percent}}%)",
-    "duration": {
-      "1": {
-        "label": "1 tháng",
-        "note": "Linh hoạt để bắt đầu nhanh"
-      },
-      "12": {
-        "label": "1 năm",
-        "note": "Khóa chi phí tốt hơn cho cả hành trình học dài hạn",
-        "popular": "Phổ biến nhất"
-      }
-    },
-    "tiers": {
-      "student": {
-        "title": "Student",
-        "description": "Cho học viên cần trợ lý học tập thường xuyên trong các khóa đang học.",
-        "features": [
-          "Cora đồng hành trong tất cả các khóa học đang học",
-          "Hỏi về tiến độ học và bài học hiện tại",
-          "Nhận gợi ý khóa học tiếp theo phù hợp hơn"
-        ]
-      },
-      "pro": {
-        "title": "Pro",
-        "description": "Cho người học muốn dùng AI mạnh hơn để học nhanh và định hướng nghề nghiệp rõ hơn.",
-        "features": [
-          "Cora có mặt ở mọi nơi trên nền tảng, bất kỳ lúc nào",
-          "Tư vấn career path, profile review và project direction",
-          "Phản hồi chi tiết hơn với model AI mạnh hơn"
-        ]
-      },
-      "bootcamp": {
-        "title": "Bootcamp",
-        "description": "Cho học viên cần AI đồng hành cường độ cao trong giai đoạn tăng tốc.",
-        "features": [
-          "Không giới hạn*",
-          "Tối ưu cho goal setting, milestone check-in và execution support",
-          "Phù hợp với cohort, bootcamp hoặc giai đoạn chuyển nghề"
-        ],
-        "fairUseNote": "* Không giới hạn theo chính sách sử dụng hợp lý"
-      }
-    },
-    "history": {
-      "title": "Lịch sử gói Cora AI",
-      "subtitle": "Theo dõi các lần nâng cấp hoặc gia hạn gần đây của bạn.",
-      "loading": "Đang tải lịch sử Cora AI...",
-      "empty": "Bạn chưa có giao dịch Cora AI nào.",
-      "planFallback": "Giao dịch Cora AI",
-      "table": {
-        "time": "Thời gian",
-        "plan": "Gói",
-        "amount": "Số tiền",
-        "status": "Trạng thái"
-      }
-    },
-    "voucher": {
-      "label": "Voucher",
-      "placeholder": "Nhập mã voucher",
-      "apply": "Áp dụng",
-      "hint": "Mỗi checkout chỉ dùng tối đa một voucher giảm theo %.",
-      "applied": "Áp dụng voucher thành công. Bạn tiết kiệm {{amount}} cho lần thanh toán này.",
-      "basePrice": "Giá gốc",
-      "discountValue": "Giảm bởi voucher"
-    },
-    "return": {
-      "verifyingTitle": "Đang xác minh giao dịch Cora AI",
-      "verifyingDescription": "Corelia đang kiểm tra trạng thái thanh toán và đồng bộ gói của bạn. Việc này thường chỉ mất vài giây.",
-      "verifiedTitle": "Đã xác nhận thanh toán thành công",
-      "verifiedDescription": "Gói Cora AI của bạn đã được cập nhật. Nếu cần, bạn có thể bắt đầu dùng ngay ở dashboard, search hoặc màn hình học.",
-      "successTitle": "Thanh toán đang được xác nhận",
-      "successDescription": "Nếu giao dịch đã hoàn tất, gói Cora AI và lịch sử thanh toán của bạn sẽ tự cập nhật trong giây lát.",
-      "timeoutTitle": "Vẫn đang chờ cổng thanh toán xác nhận",
-      "timeoutDescription": "Corelia chưa thấy trạng thái cuối cùng của giao dịch trong thời gian ngắn. Bạn có thể chờ thêm một lúc rồi tải lại trang này.",
-      "errorTitle": "Phiên thanh toán gặp lỗi",
-      "errorDescription": "Corelia chưa nhận được xác nhận thành công từ cổng thanh toán. Bạn có thể thử lại khi sẵn sàng.",
-      "cancelTitle": "Bạn đã hủy phiên thanh toán",
-      "cancelDescription": "Chưa có thay đổi nào với gói hiện tại của bạn. Khi cần, bạn có thể chọn lại gói và thanh toán tiếp."
-    },
-    "errors": {
-      "checkoutFailed": "Không thể tạo phiên thanh toán Cora AI.",
-      "fetchTransactions": "Không tải được lịch sử Cora AI.",
-      "voucherMissing": "Hãy nhập mã voucher trước.",
-      "voucherFailed": "Không áp dụng được voucher.",
-      "tierChangeBlocked": "Khi gói hiện tại còn hiệu lực, bạn chỉ có thể gia hạn cùng tier."
     }
   },
   "ocid": {

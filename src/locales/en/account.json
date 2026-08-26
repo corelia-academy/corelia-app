@@ -22,10 +22,6 @@
       "title": "Achievements Vault",
       "description": "Manage certificates & badges"
     },
-    "cora": {
-      "title": "Cora AI",
-      "description": "AI plans, limits, and upgrade history"
-    },
     "billing": {
       "title": "Billing & history",
       "description": "Invoices, payment history"
@@ -379,12 +375,14 @@
     "empty": "No transactions yet.",
     "purpose": {
       "coursePurchase": "Course purchase",
-      "certificateFee": "Certificate fee"
+      "certificateFee": "Certificate fee",
+      "historicalAiTransaction": "Historical AI transaction"
     },
     "meta": {
       "course": "Course: {{id}}",
       "providerOrder": "Provider: {{provider}} · Order: {{order}}",
-      "courseProviderOrder": "Course: {{course}} · Provider: {{provider}} · Order: {{order}}"
+      "courseProviderOrder": "Course: {{course}} · Provider: {{provider}} · Order: {{order}}",
+      "historicalAiProviderOrder": "Historical AI purchase · Provider: {{provider}} · Order: {{order}}"
     },
     "table": {
       "time": "Time",
@@ -394,132 +392,6 @@
     },
     "errors": {
       "fetchFailed": "Unable to load payment history."
-    }
-  },
-  "cora": {
-    "title": "Upgrade Cora AI",
-    "subtitle": "Choose the plan that fits your pace so you can ask Cora more often, get deeper learning support, and unlock richer AI use cases across Corelia.",
-    "mustLogin": "You need to sign in to manage your Cora AI plan.",
-    "currentPlan": {
-      "statusLabel": "Current status",
-      "free": "Free plan",
-      "active": "Your Cora AI plan is active.",
-      "notSubscribed": "You're currently using Corelia's default AI allowance.",
-      "expiryLabel": "Valid until",
-      "daysLeftLabel": "Time remaining",
-      "daysLeft_one": "{{count}} day left",
-      "daysLeft_other": "{{count}} days left",
-      "questionsAnswered": "Cora answered {{count}} questions for you this month",
-      "tokensUsed": "Cora used {{count}} tokens this month",
-      "nearingQuota": "🔥 You're on a learning streak this month!",
-      "nearingQuotaSub": "About {{remaining}} questions left · Resets {{date}}",
-      "nearingTokenQuota": "🔥 You're using a lot of tokens this month!",
-      "nearingTokenQuotaSub": "{{remaining}} tokens left · Resets {{date}}",
-      "tokenExplainer": "What's a token? 1 English word ≈ 1 token. A short sentence ≈ 20 tokens.",
-      "upgradeNudge": "Upgrade to {{tier}}",
-      "quotaExceededMsg": "🎓 Great learning month!",
-      "quotaResetDate": "New quota on {{date}}"
-    },
-    "selector": {
-      "title": "Choose the right plan",
-      "subtitle": "Each tier is tuned for a different learning rhythm and level of AI support.",
-      "perDuration": "{{duration}}",
-      "checkoutAction": "Continue to checkout",
-      "checkoutLoading": "Creating checkout session...",
-      "checkoutHint": "You'll be redirected to SePay to complete the upgrade.",
-      "activeRenewalHint": "Your {{tier}} plan is active. You can renew the same tier or upgrade to a higher tier at any time.",
-      "upgradeImmediateWarning": "Upgrading to {{newTier}} starts immediately and replaces your current {{currentTier}} plan. You will lose the {{days}} days remaining on your current plan."
-    },
-    "durationTitle": "Billing cycle",
-    "durationValueLabel": "Average monthly cost",
-    "durationMonthlyEquivalent": "{{amount}} / month",
-    "durationSavingsBadge": "Save {{percent}}%",
-    "durationSavingsDetail": "{{amount}} less than paying month by month",
-    "durationSavingsSummaryLabel": "What you gain with this cycle",
-    "durationSavingsSummaryValue": "Save {{amount}} ({{percent}}%)",
-    "duration": {
-      "1": {
-        "label": "1 month",
-        "note": "Flexible if you're just getting started"
-      },
-      "12": {
-        "label": "1 year",
-        "note": "Lock in the strongest rate for a long learning runway",
-        "popular": "Most popular"
-      }
-    },
-    "tiers": {
-      "student": {
-        "title": "Student",
-        "description": "For learners who want a steady AI study companion during active courses.",
-        "features": [
-          "Cora available across all your active courses",
-          "Ask about your learning progress and current lessons",
-          "Get personalized next-course recommendations"
-        ]
-      },
-      "pro": {
-        "title": "Pro",
-        "description": "For learners who want stronger AI support for faster learning and clearer career direction.",
-        "features": [
-          "Cora available everywhere on the platform, all day",
-          "Career path, profile review, and project direction support",
-          "Richer answers powered by a stronger AI model"
-        ]
-      },
-      "bootcamp": {
-        "title": "Bootcamp",
-        "description": "For learners who need high-intensity AI support during acceleration phases.",
-        "features": [
-          "Unlimited*",
-          "Optimized for goal setting, milestone check-ins, and execution support",
-          "Best for cohorts, bootcamps, or career transition phases"
-        ],
-        "fairUseNote": "* Unlimited under fair use policy"
-      }
-    },
-    "history": {
-      "title": "Cora AI history",
-      "subtitle": "Track your recent Cora AI upgrades and renewals.",
-      "loading": "Loading Cora AI history...",
-      "empty": "You don't have any Cora AI transactions yet.",
-      "planFallback": "Cora AI transaction",
-      "table": {
-        "time": "Time",
-        "plan": "Plan",
-        "amount": "Amount",
-        "status": "Status"
-      }
-    },
-    "voucher": {
-      "label": "Voucher",
-      "placeholder": "Enter voucher code",
-      "apply": "Apply",
-      "hint": "Only one percentage-based voucher can be used per checkout.",
-      "applied": "Voucher applied successfully. You save {{amount}} on this checkout.",
-      "basePrice": "Base price",
-      "discountValue": "Voucher discount"
-    },
-    "return": {
-      "verifyingTitle": "Verifying your Cora AI payment",
-      "verifyingDescription": "Corelia is checking the payment status and syncing your plan. This usually only takes a few seconds.",
-      "verifiedTitle": "Payment confirmed successfully",
-      "verifiedDescription": "Your Cora AI plan has been updated. You can start using it right away in the dashboard, search, or learning surfaces.",
-      "successTitle": "Payment is being confirmed",
-      "successDescription": "If the transaction completed successfully, your Cora AI plan and payment history will refresh shortly.",
-      "timeoutTitle": "Still waiting for payment confirmation",
-      "timeoutDescription": "Corelia hasn't seen the final transaction state yet within the short window. You can wait a bit longer and refresh this page.",
-      "errorTitle": "The payment session ran into an error",
-      "errorDescription": "Corelia hasn't received a successful confirmation from the payment gateway yet. You can try again whenever you're ready.",
-      "cancelTitle": "You cancelled the payment session",
-      "cancelDescription": "Your current plan hasn't changed. Whenever you're ready, you can choose a plan and try again."
-    },
-    "errors": {
-      "checkoutFailed": "Unable to create a Cora AI checkout session.",
-      "fetchTransactions": "Unable to load Cora AI history.",
-      "voucherMissing": "Enter a voucher code first.",
-      "voucherFailed": "Unable to apply voucher.",
-      "tierChangeBlocked": "While your current plan is active, you can only renew the same tier."
     }
   },
   "ocid": {

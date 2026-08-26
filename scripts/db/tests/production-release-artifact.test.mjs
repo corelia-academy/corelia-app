@@ -55,9 +55,16 @@ function buildFixture() {
     sha256: sha256(baselineManifestContent),
   };
   const allFiles = [...baseline, ...forward, ...otherFiles, baselineManifestFile];
+  const deletedFiles = ["src/components/course-ai/CoraPlanSummary.tsx", "src/hooks/useCoraAI.ts"];
   const manifest = {
     schema_version: 1,
-    artifact_id: "R3_PROPOSED_RELEASE_CANDIDATE",
+    artifact_id: "R5_RELEASE_CANDIDATE",
+    rc_sha: SOURCE_SHA,
+    git_tree_sha: "c".repeat(40),
+    production_base_sha: EXPECTED_BASE_MAIN_SHA,
+    target_production_project_ref: "lawhkvyyoznwygzsycan",
+    migration_count: 156,
+    latest_migration: "20260826120000_issue_329_payment_retirement_safety.sql",
     base_sha: EXPECTED_BASE_MAIN_SHA,
     source_sha: SOURCE_SHA,
     manifest_path: DEFAULT_MANIFEST_PATH,
@@ -68,6 +75,7 @@ function buildFixture() {
       workspace_files: [],
     },
     files: allFiles.map(({ path, sha256: digest }) => ({ path, sha256: digest })),
+    deleted_files: deletedFiles,
     migration_chain: {
       baseline_manifest: {
         path: baselineManifestFile.path,
@@ -80,7 +88,9 @@ function buildFixture() {
   };
   const state = {
     baseSha: EXPECTED_BASE_MAIN_SHA,
-    changedFiles: [...allFiles.map((entry) => entry.path), DEFAULT_MANIFEST_PATH],
+    sourceSha: SOURCE_SHA,
+    sourceTreeSha: "c".repeat(40),
+    changedFiles: [...allFiles.map((entry) => entry.path), ...deletedFiles, DEFAULT_MANIFEST_PATH],
     files: new Map(allFiles.map((entry) => [entry.path, entry.content])),
     migrations: [...baseline, ...forward].map(({ path, sha256: digest }) => ({ path, sha256: digest })),
     candidateTreeSha256: TREE_SHA,
@@ -94,10 +104,10 @@ function expectFailure(manifest, state, pattern) {
   assert.match(result.errors.join("\n"), pattern);
 }
 
-test("exact candidate passes exact file, hash, tree and 139+5 migration checks", () => {
+test("exact candidate passes exact file, hash, tree and 139+17 migration checks", () => {
   const { manifest, state } = buildFixture();
   const result = validateReleaseArtifactState(manifest, state);
-  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 149, totalMigrations: 144 });
+  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 163, totalMigrations: 156 });
 });
 
 test("missing required file fails closed", () => {
@@ -106,6 +116,28 @@ test("missing required file fails closed", () => {
   state.changedFiles = state.changedFiles.filter((path) => path !== missing);
   state.files.delete(missing);
   expectFailure(manifest, state, /missing required file|Cannot read required file content/);
+});
+
+test("deleted Wave B files do not remain required as present files", () => {
+  const { manifest, state } = buildFixture();
+  // Deleted files are in deleted_files, and they should NOT be in state.files
+  for (const deleted of manifest.deleted_files) {
+    assert.equal(state.files.has(deleted), false);
+  }
+  const result = validateReleaseArtifactState(manifest, state);
+  assert.equal(result.ok, true);
+});
+
+test("unexpected Wave B/C files cause manifest failure", () => {
+  const { manifest, state } = buildFixture();
+  state.changedFiles.push("src/unexpected/ExtraFile.ts");
+  expectFailure(manifest, state, /contains unexpected file/);
+});
+
+test("candidate tree/hash tampering fails closed", () => {
+  const { manifest, state } = buildFixture();
+  state.candidateTreeSha256 = "0".repeat(64);
+  expectFailure(manifest, state, /Candidate tree SHA-256 mismatch/);
 });
 
 test("extra unexpected file fails closed", () => {
@@ -152,10 +184,10 @@ test("missing historical migration fails exact 139 baseline chain", () => {
   expectFailure(manifest, state, /Migration chain count mismatch|Migration order\/path mismatch/);
 });
 
-test("sixth forward migration fails exact migration chain", () => {
+test("unreviewed fifteenth forward migration fails exact migration chain", () => {
   const { manifest, state } = buildFixture();
   state.migrations.push({
-    path: "supabase/migrations/20260823150000_unreviewed_sixth.sql",
+    path: "supabase/migrations/20260825154000_unreviewed_fifteenth.sql",
     sha256: sha256("unreviewed"),
   });
   expectFailure(manifest, state, /Migration chain count mismatch/);
@@ -246,11 +278,26 @@ test("Production workflow requires explicit recovery limitations acceptance and 
   assert.match(workflow, /forward-fix is the\s+primary DB migration recovery strategy/i);
   assert.match(workflow, /Edge\/frontend rollback\s+may be unrehearsed/i);
 
-  assert.match(workflow, /test "\$CONFIRMATION" = "DEPLOY_G2_R1_DB_EDGE_TO_PRODUCTION"/);
+  assert.match(workflow, /test "\$CONFIRMATION" = "DEPLOY_R5_DB_EDGE_TO_PRODUCTION"/);
   assert.match(workflow, /test -n "\$APPROVED_RELEASE_SHA"/);
   assert.match(workflow, /test -n "\$PRODUCTION_RELEASE_MANIFEST_SHA256"/);
   assert.match(workflow, /test "\$RELEASE_SHA" = "\$APPROVED_RELEASE_SHA"/);
   assert.match(workflow, /test "\$\(git rev-parse HEAD\)" = "\$APPROVED_RELEASE_SHA"/);
+
+  // F-02 check: Workflow must deploy corelia-api and all 7 retired AI Edge Functions
+  const expectedEdgeFunctions = [
+    "corelia-api",
+    "ai-tutor",
+    "embed-lesson",
+    "generate-description",
+    "generate-flashcards",
+    "generate-learning-path",
+    "generate-lesson-summary",
+    "generate-questions",
+  ];
+  for (const fn of expectedEdgeFunctions) {
+    assert.match(workflow, new RegExp(`supabase functions deploy ${fn}\\b`), `Workflow must deploy function ${fn}`);
+  }
 
   assert.match(rolloutPlan, /recovery_limitations_accepted/);
   assert.match(rolloutPlan, /chấp nhận rõ ràng/);
@@ -297,7 +344,7 @@ test("candidate builder rejects destructive, outside-temp and symlinked output t
   rmSync(fixtureRoot, { recursive: true, force: true });
 });
 
-test("production manifest has the canonical exact 139+5 shape", () => {
+test("production manifest has the canonical exact 139+17 shape", () => {
   const manifest = JSON.parse(readFileSync(DEFAULT_MANIFEST_PATH, "utf8"));
   validateManifestSchema(manifest);
   assert.equal(manifest.migration_chain.baseline_manifest.count, 139);

@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { AI_TABLE_REGISTRY, executeAiBackup } from "../backup-ai-subsystem.mjs";
 import {
+  buildRestoreInsertSql,
   executeRealPostgresRestoreTest,
   executeSqlOnLocalPostgres,
+  sha256 as restoreSha256,
   verifyAiBackupDirectory,
 } from "../verify-ai-backup-restore.mjs";
 
@@ -40,6 +43,7 @@ test("AI Subsystem Registry: Exactly 18 tables defined with valid classification
 test("AI Backup Tooling: Generates valid schema DDL, data fixtures, and deterministic manifest", () => {
   const tempDir = mkdtempSync(join(tmpdir(), "corelia-ai-backup-test-"));
   try {
+    const backupDir = join(tempDir, "backup");
     const mockDataFetcher = (tableName) => {
       if (tableName === "tier_limits") {
         return [
@@ -56,7 +60,7 @@ test("AI Backup Tooling: Generates valid schema DDL, data fixtures, and determin
     };
 
     const result = executeAiBackup({
-      targetDir: tempDir,
+      targetDir: backupDir,
       environment: "test",
       useLivePostgres: false,
       tableDataFetcher: mockDataFetcher,
@@ -66,7 +70,10 @@ test("AI Backup Tooling: Generates valid schema DDL, data fixtures, and determin
     assert.equal(result.manifest.tables_count, 18);
     assert.equal(result.manifest.total_rows, 3);
 
-    const verification = verifyAiBackupDirectory(tempDir);
+    const verification = verifyAiBackupDirectory(backupDir, {
+      expectedEnvironment: "test",
+      expectedManifestSha256: restoreSha256(readFileSync(result.manifestPath)),
+    });
     assert.equal(verification.ok, true, `Verification errors: ${verification.errors.join(", ")}`);
     assert.equal(verification.totalTables, 18);
     assert.equal(verification.totalRows, 3);
@@ -75,21 +82,33 @@ test("AI Backup Tooling: Generates valid schema DDL, data fixtures, and determin
   }
 });
 
+test("AI Restore SQL: untrusted JSON is encoded and cannot become executable SQL", () => {
+  const payload = "'); DROP TABLE public.ai_subscriptions; --";
+  const sql = buildRestoreInsertSql(
+    "ai_subscriptions",
+    ["id", "status"],
+    [{ id: "00000000-0000-0000-0000-000000000001", status: payload }],
+  );
+  assert.equal(sql.includes(payload), false);
+  assert.match(sql, /decode\('[A-Za-z0-9+/=]+', 'base64'\)/);
+});
+
 test("AI Backup Verification: Fails closed on tampered data, checksum mismatch, or missing file", () => {
   const tempDir = mkdtempSync(join(tmpdir(), "corelia-ai-backup-fail-test-"));
   try {
+    const backupDir = join(tempDir, "backup");
     executeAiBackup({
-      targetDir: tempDir,
+      targetDir: backupDir,
       environment: "test",
       useLivePostgres: false,
       tableDataFetcher: () => [],
     });
 
     // 1. Mutate a table file to cause SHA-256 mismatch
-    const targetFile = join(tempDir, "data", "ai_subscriptions.json");
+    const targetFile = join(backupDir, "data", "ai_subscriptions.json");
     writeFileSync(targetFile, JSON.stringify([{ id: "tampered" }]), "utf8");
 
-    const failedVerify = verifyAiBackupDirectory(tempDir);
+    const failedVerify = verifyAiBackupDirectory(backupDir);
     assert.equal(failedVerify.ok, false);
     assert.ok(
       failedVerify.errors.some((e) => e.includes("SHA-256 mismatch for ai_subscriptions") || e.includes("Row count mismatch")),
@@ -120,13 +139,14 @@ test("Level 4 Integration Test: Real PostgreSQL isolated restore into disposable
   }
   const tempDir = mkdtempSync(join(tmpdir(), "corelia-ai-real-restore-test-"));
   try {
+    const backupDir = join(tempDir, "backup");
     executeAiBackup({
-      targetDir: tempDir,
+      targetDir: backupDir,
       environment: "local",
       useLivePostgres: true,
     });
 
-    const restoreResult = executeRealPostgresRestoreTest(tempDir);
+    const restoreResult = executeRealPostgresRestoreTest(backupDir);
     assert.equal(
       restoreResult.ok,
       true,
@@ -234,18 +254,16 @@ test("Edge Functions Provider Isolation: Corelia API does not require OPENAI_API
   );
 });
 
-test("Wave C (Issue #328): All 7 AI Edge Functions are decommissioned tombstones without provider calls", () => {
-  const aiFunctions = [
+test("Wave C (Issue #328): Learner AI Edge Functions are decommissioned tombstones without provider calls", () => {
+  const learnerAiFunctions = [
     "ai-tutor",
     "embed-lesson",
-    "generate-description",
     "generate-flashcards",
     "generate-learning-path",
     "generate-lesson-summary",
-    "generate-questions",
   ];
 
-  for (const fn of aiFunctions) {
+  for (const fn of learnerAiFunctions) {
     const fnIndex = readFileSync(`supabase/functions/${fn}/index.ts`, "utf8");
     assert.ok(
       !fnIndex.includes("api.openai.com"),
@@ -258,6 +276,33 @@ test("Wave C (Issue #328): All 7 AI Edge Functions are decommissioned tombstones
     assert.ok(
       fnIndex.includes("AI_FEATURE_RETIRED") && fnIndex.includes("410"),
       `${fn}/index.ts contains deterministic 410 AI_FEATURE_RETIRED tombstone`,
+    );
+  }
+});
+
+test("Wave C: Restored Instructor AI Edge Functions enforce strict role guards and course management", () => {
+  const instructorAiFunctions = [
+    "generate-description",
+    "generate-questions",
+  ];
+
+  for (const fn of instructorAiFunctions) {
+    const fnIndex = readFileSync(`supabase/functions/${fn}/index.ts`, "utf8");
+    assert.ok(
+      fnIndex.includes("verifyBearerUser"),
+      `${fn}/index.ts enforces auth verification`,
+    );
+    assert.ok(
+      fnIndex.includes("getUserRole"),
+      `${fn}/index.ts checks user role`,
+    );
+    assert.ok(
+      fnIndex.includes("instructor") && fnIndex.includes("support_staff") && fnIndex.includes("admin"),
+      `${fn}/index.ts restricts access to instructor, support_staff, and admin`,
+    );
+    assert.ok(
+      fnIndex.includes("ensureCanManageCourse"),
+      `${fn}/index.ts checks course management permission`,
     );
   }
 });

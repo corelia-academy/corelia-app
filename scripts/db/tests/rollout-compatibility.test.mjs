@@ -8,6 +8,8 @@ describe("Deployment State Machine & Compatibility Gates", () => {
   const workflowContent = readFileSync(workflowPath, "utf8");
   const migration130000Path = resolve(process.cwd(), "supabase/migrations/20260823130000_g2_canonical_state_and_data_integrity.sql");
   const migration130000Content = readFileSync(migration130000Path, "utf8");
+  const migrationIssue329Path = resolve(process.cwd(), "supabase/migrations/20260826120000_issue_329_payment_retirement_safety.sql");
+  const migrationIssue329Content = readFileSync(migrationIssue329Path, "utf8");
   const repairSqlPath = resolve(process.cwd(), "scripts/db/repair-ai-chat-session-aggregates.sql");
   const repairSqlContent = readFileSync(repairSqlPath, "utf8");
 
@@ -25,27 +27,43 @@ describe("Deployment State Machine & Compatibility Gates", () => {
     assert.doesNotMatch(migration121000, /trg_sync_ai_chat_session_message_count/);
   });
 
-  it("CASE C2: transitional DB state (121000+) + NEW EDGE is safe", () => {
-    // NEW EDGE requires record_ai_successful_usage which exists starting at migration 121000
-    const accessGuards = readFileSync(resolve(process.cwd(), "supabase/functions/ai-tutor/accessGuards.ts"), "utf8");
-    assert.match(accessGuards, /ai_subscriptions/);
-    assert.match(accessGuards, /resolveEffectiveTier/);
+  it("CASE C2: retired ai-tutor is database-independent and fail-closed", () => {
+    const tombstone = readFileSync(resolve(process.cwd(), "supabase/functions/ai-tutor/index.ts"), "utf8");
+    assert.match(tombstone, /AI_FEATURE_RETIRED/);
+    assert.match(tombstone, /410/);
+    assert.doesNotMatch(tombstone, /ai_subscriptions|record_ai_successful_usage/);
   });
 
-  it("CASE C3: final DB state (144) + NEW EDGE is safe with canonical trigger and guard", () => {
+  it("CASE C3: final DB state (156) + NEW EDGE is safe with canonical trigger, guard, and payment retirement", () => {
     // Final DB state installs trigger and session-level guard for stale direct updates
     assert.match(migration130000Content, /CREATE TRIGGER trg_sync_ai_chat_session_message_count/);
     assert.match(migration130000Content, /CREATE TRIGGER trg_guard_ai_chat_session_message_count/);
     assert.match(migration130000Content, /pg_trigger_depth\(\) = 1/);
+    assert.match(migrationIssue329Content, /reconcile_historical_ai_payment/);
+    assert.match(migrationIssue329Content, /ai_subscription/);
   });
 
-  it("CASE C4: workflow execution order enforces Post-Edge gate before completion", () => {
-    // Workflow must deploy Edge functions and then execute post-Edge verification gate
-    const deployEdgeIndex = workflowContent.indexOf("functions deploy ai-tutor");
+  it("CASE C4: workflow execution order enforces Post-Edge gate before completion and deploys all 8 Edge functions", () => {
+    // Workflow must deploy corelia-api and all 7 AI functions before executing post-Edge verification gate
+    const aiFunctions = [
+      "ai-tutor",
+      "embed-lesson",
+      "generate-description",
+      "generate-flashcards",
+      "generate-learning-path",
+      "generate-lesson-summary",
+      "generate-questions",
+    ];
+    for (const fn of aiFunctions) {
+      const idx = workflowContent.indexOf(`functions deploy ${fn}`);
+      assert.ok(idx > 0, `Deploy step for retired AI function ${fn} must exist in workflow`);
+    }
+
+    const lastEdgeDeployIndex = workflowContent.indexOf("functions deploy generate-questions");
     const postEdgeGateIndex = workflowContent.indexOf("Verify live DB post-Edge final runtime invariants");
-    assert.ok(deployEdgeIndex > 0, "ai-tutor deploy step exists");
+    assert.ok(lastEdgeDeployIndex > 0, "Last Edge function (generate-questions) deploy step exists");
     assert.ok(postEdgeGateIndex > 0, "Post-Edge gate step exists");
-    assert.ok(postEdgeGateIndex > deployEdgeIndex, "Post-Edge gate executes AFTER Edge deployment");
+    assert.ok(postEdgeGateIndex > lastEdgeDeployIndex, "Post-Edge gate executes AFTER all Edge deployments");
   });
 
   it("CASE C5: Edge deployment failure leaves system in a safe recoverable state", () => {

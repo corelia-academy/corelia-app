@@ -165,12 +165,22 @@ test("Production workflow uses the technical frontend gate and preserves deploym
     /verify-production-release-artifact\.mjs origin\/main/,
   );
 
+  const migrationIndex = workflow.indexOf("Verify exact Production migration state and apply approved migrations");
   const postGateIndex = workflow.indexOf("Verify live DB post-migration state and data invariants");
   const coreliaApiIndex = workflow.indexOf("Deploy Edge Function (corelia-api)");
-  const aiTutorIndex = workflow.indexOf("Deploy Edge Function (ai-tutor)");
-  assert.ok(postGateIndex >= 0 && postGateIndex < coreliaApiIndex && coreliaApiIndex < aiTutorIndex);
+  const aiTutorIndex = workflow.indexOf("Deploy Edge Function (ai-tutor");
+  assert.ok(coreliaApiIndex >= 0 && coreliaApiIndex < migrationIndex && migrationIndex < postGateIndex && postGateIndex < aiTutorIndex);
 
   const deployedFunctions = [...workflow.matchAll(/supabase functions deploy ([a-z0-9-]+)/g)]
     .map((match) => match[1]);
-  assert.deepEqual(deployedFunctions, ["corelia-api", "ai-tutor"]);
+  assert.deepEqual(deployedFunctions, [
+    "corelia-api",
+    "ai-tutor",
+    "embed-lesson",
+    "generate-description",
+    "generate-flashcards",
+    "generate-learning-path",
+    "generate-lesson-summary",
+    "generate-questions",
+  ]);
 });

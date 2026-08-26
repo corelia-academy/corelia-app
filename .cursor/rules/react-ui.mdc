@@ -6,7 +6,7 @@ alwaysApply: false
 
 # React/UI conventions
 
-- Follow **`docs/DESIGN.md`** for tokens, card radius, shadows, typography, and AI (Cora) patterns before writing UI.
+- Follow **`docs/DESIGN.md`** for tokens, card radius, shadows, typography, and instructor AI generator patterns before writing UI. Learner-facing Cora is retired and must not be reintroduced.
 - Prefer **function components** and local state via React hooks.
 - Reuse UI primitives in `src/components/ui/*` (e.g. `Button`, `Dialog`, `Card`, `Toaster`, `TooltipProvider`) instead of rolling custom ones.
 - Use Tailwind utility classes; when composing class strings use `cn` from `@/lib/utils` if available in the file’s area.

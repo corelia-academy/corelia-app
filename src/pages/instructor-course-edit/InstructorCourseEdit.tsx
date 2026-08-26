@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Markdown } from "@/components/markdown/Markdown";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   ArrowLeft,
@@ -25,6 +24,7 @@ import {
   DollarSign,
   Trash2,
   Pencil,
+  Sparkles,
 } from "lucide-react";
 import {
   getCourse,
@@ -155,9 +155,27 @@ import { cn } from "@/lib/utils";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
+import { Markdown } from "@/components/markdown/Markdown";
+import {
+  invokeGenerateDescription,
+  type DescriptionSourceInput,
+  type DescriptionTranslationBundle,
+  type DescriptionTranslationBundleKind,
+} from "@/lib/descriptionGenerator";
+import {
+  invokeGenerateQuestions,
+  type GeneratedQuestionSource,
+} from "@/lib/questionGenerator";
 import { setLessonQuestions } from "@/lib/sectionQuestions";
 import type { QuestionOption, SectionQuestionData } from "@/types/questions";
+import type {
+  DescriptionGeneratorDialogRequest,
+  DescriptionGeneratorSourcePreview,
+} from "@/pages/instructor-course-edit/components/DescriptionGeneratorDialog";
+import { DescriptionGeneratorDialog } from "@/pages/instructor-course-edit/components/DescriptionGeneratorDialog";
+
 import { CourseOcbCredentialSection } from "@/pages/instructor-course-edit/components/CourseOcbCredentialSection";
+import { QuestionGeneratorDialog } from "@/pages/instructor-course-edit/components/QuestionGeneratorDialog";
 import { CertificateLayoutPreview } from "@/pages/instructor-course-edit/components/CertificateLayoutPreview";
 import { CERTIFICATE_LAYOUT_DEFAULTS } from "@/pages/achievements/utils/certificateLayout";
 import { CO_INSTRUCTOR_PERMISSION_KEYS, EDIT_SECTION_IDS } from "./constants";
@@ -180,6 +198,7 @@ import {
 /** Gợi ý tách lesson khi video dài hơn ngưỡng này (giây). */
 const LONG_VIDEO_SPLIT_SECONDS = 3600;
 const QUIZ_OPTION_IDS = ["a", "b", "c", "d"] as const;
+const NEW_QUIZ_COUNT_OPTIONS = [3, 5, 7, 10] as const;
 
 type CoverageFieldKey =
   | "title"
@@ -260,7 +279,30 @@ const InstructorCourseEdit = () => {
     explanation: "",
     locale: activeContentLocale,
   });
+  const questionDataToNewQuizDraft = (
+    question: SectionQuestionData,
+  ): NewQuizQuestionDraft => ({
+    _key: crypto.randomUUID(),
+    type: "mcq",
+    question: question.question ?? "",
+    options: QUIZ_OPTION_IDS.map((optionId, index) => ({
+      id: optionId,
+      text: question.options[index]?.text ?? "",
+    })),
+    correct_index: question.correct_index ?? 0,
+    explanation: question.explanation ?? "",
+    locale: activeContentLocale,
+  });
   const [newQuizQuestions, setNewQuizQuestions] = useState<NewQuizQuestionDraft[]>([]);
+  const [newQuizSourceLessonIds, setNewQuizSourceLessonIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [newQuizQuestionCount, setNewQuizQuestionCount] = useState<number>(5);
+  const [newQuizGenerating, setNewQuizGenerating] = useState(false);
+  const [newQuizGenerateError, setNewQuizGenerateError] = useState<string | null>(null);
+  const [newQuizGeneratedSources, setNewQuizGeneratedSources] = useState<
+    GeneratedQuestionSource[]
+  >([]);
   const [editingLessonFormat, setEditingLessonFormat] = useState<LessonFormat>("video");
   const [editingLessonMinutes, setEditingLessonMinutes] = useState<number | "">("");
   const [lessonLearnerCounts, setLessonLearnerCounts] = useState<Record<string, number>>({});
@@ -415,6 +457,14 @@ const InstructorCourseEdit = () => {
     final_assignment_instructions: "",
   });
   const [courseSkills, setCourseSkills] = useState<string[]>([]);
+  const [descriptionGeneratorOpen, setDescriptionGeneratorOpen] = useState(false);
+  const [descriptionGeneratorRequest, setDescriptionGeneratorRequest] =
+    useState<DescriptionGeneratorDialogRequest | null>(null);
+  const [translatingBundle, setTranslatingBundle] = useState<string | null>(null);
+  const [questionGeneratorOpen, setQuestionGeneratorOpen] = useState(false);
+  const [questionGeneratorSection, setQuestionGeneratorSection] = useState<CourseSection | null>(null);
+  const [lessonQuizDialogOpen, setLessonQuizDialogOpen] = useState(false);
+  const [lessonQuizDialogLesson, setLessonQuizDialogLesson] = useState<CourseLesson | null>(null);
   const [submissions, setSubmissions] = useState<FinalAssignmentSubmission[]>(
     [],
   );
@@ -707,12 +757,194 @@ const InstructorCourseEdit = () => {
     course && isCoreliaCourse && (isAdmin || isSupportStaff || isCoreliaInstructor),
   );
 
+  const createSourcePreview = (
+    item: {
+      id: string;
+      title: string;
+      shortDescription?: string | null;
+      markdownDescription?: string | null;
+      youtubeUrl?: string | null;
+    },
+  ): DescriptionGeneratorSourcePreview => {
+    const sourceKinds: DescriptionGeneratorSourcePreview["sourceKinds"] = [];
+    if (item.shortDescription?.trim()) sourceKinds.push("short_description");
+    if (item.markdownDescription?.trim()) sourceKinds.push("description_markdown");
+    if (item.youtubeUrl?.trim()) sourceKinds.push("transcript");
+    if (sourceKinds.length === 0) sourceKinds.push("missing");
+    const snippet =
+      item.markdownDescription?.trim() ||
+      item.shortDescription?.trim() ||
+      undefined;
+    return {
+      id: item.id,
+      title: item.title.trim() || t("courseEdit.defaults.lessonTitle"),
+      sourceKinds,
+      snippet: snippet && snippet.length > 180 ? `${snippet.slice(0, 177)}...` : snippet,
+    };
+  };
+
+  const createSourceInput = (item: {
+    id: string;
+    title: string;
+    shortDescription?: string | null;
+    markdownDescription?: string | null;
+    youtubeUrl?: string | null;
+  }): DescriptionSourceInput => ({
+    id: item.id,
+    title: item.title.trim() || t("courseEdit.defaults.lessonTitle"),
+    shortDescription: item.shortDescription?.trim() || undefined,
+    markdownDescription: item.markdownDescription?.trim() || undefined,
+    youtubeUrl: item.youtubeUrl?.trim() || undefined,
+  });
+
+  const buildGeneratorWarning = (sources: DescriptionGeneratorSourcePreview[]): string | null => {
+    const usableSources = sources.filter((source) => !source.sourceKinds.includes("missing"));
+    if (usableSources.length === 0) {
+      return t("courseEdit.descriptionGenerator.warnings.notEnough");
+    }
+    if (usableSources.length < 2) {
+      return t("courseEdit.descriptionGenerator.warnings.limited");
+    }
+    return null;
+  };
+
+  const openDescriptionGenerator = (request: DescriptionGeneratorDialogRequest) => {
+    setDescriptionGeneratorRequest(request);
+    setDescriptionGeneratorOpen(true);
+  };
+
   const sourceLocaleFor = (targetLocale: SupportedCourseLocale): SupportedCourseLocale =>
     targetLocale === primaryContentLocale
       ? supportedLocales.find((loc) => loc !== targetLocale) ?? primaryContentLocale
       : primaryContentLocale;
 
   const localeBadge = (locale: SupportedCourseLocale) => `${locale === "vi" ? "🇻🇳" : "🇬🇧"} ${locale.toUpperCase()}`;
+
+  const bundleHasSource = (bundle: DescriptionTranslationBundle): boolean =>
+    Boolean(
+      bundle.title?.trim() ||
+        bundle.shortDescription?.trim() ||
+        bundle.description?.trim() ||
+        bundle.markdownDescription?.trim() ||
+        bundle.instructions?.trim() ||
+        bundle.learningOutcomes?.some((item) => item.trim()),
+    );
+
+  const translateBundle = async (params: {
+    busyKey: string;
+    bundleKind: DescriptionTranslationBundleKind;
+    type: "course" | "lesson";
+    targetLocale: SupportedCourseLocale;
+    sourceLocale: SupportedCourseLocale;
+    sourceBundle: DescriptionTranslationBundle;
+    courseId?: string;
+    sectionId?: string;
+    lessonId?: string;
+    onApply: (bundle: DescriptionTranslationBundle) => void;
+  }) => {
+    if (!bundleHasSource(params.sourceBundle)) {
+      toast.error(t("courseEdit.descriptionGenerator.warnings.notEnough"));
+      return;
+    }
+    setTranslatingBundle(params.busyKey);
+    try {
+      const response = await invokeGenerateDescription({
+        action: "translate",
+        type: params.type,
+        targetField: "description",
+        locale: params.targetLocale,
+        sourceLocale: params.sourceLocale,
+        bundleKind: params.bundleKind,
+        sourceBundle: params.sourceBundle,
+        courseId: params.courseId,
+        sectionId: params.sectionId,
+        lessonId: params.lessonId,
+      });
+      if (!response.bundle) {
+        throw new Error(t("courseEdit.descriptionGenerator.errors.generic"));
+      }
+      params.onApply(response.bundle);
+      toast.success(t("courseEdit.descriptionGenerator.translateApplied"));
+    } catch (translateError) {
+      toast.error(
+        translateError instanceof Error
+          ? translateError.message
+          : t("courseEdit.descriptionGenerator.errors.generic"),
+      );
+    } finally {
+      setTranslatingBundle(null);
+    }
+  };
+
+  const openTranslateCourseField = (
+    targetField: "short_description" | "description",
+  ) => {
+    if (!course) return;
+    const sourceLocale = sourceLocaleFor(activeContentLocale);
+    const sourceContent =
+      sourceLocale === primaryContentLocale
+        ? {
+            title: course.title ?? "",
+            short_description: course.short_description ?? "",
+            description: course.description ?? "",
+          }
+        : {
+            title: contentForm.title,
+            short_description: contentForm.short_description,
+            description: contentForm.description,
+          };
+    const sourceText =
+      targetField === "short_description"
+        ? sourceContent.short_description
+        : sourceContent.description;
+    const sourcePreviews = [
+      createSourcePreview({
+        id: `course-${sourceLocale}`,
+        title: `${t("courseEdit.descriptionGenerator.currentCourseSource")} · ${localeBadge(sourceLocale)}`,
+        shortDescription:
+          targetField === "short_description" ? sourceText : undefined,
+        markdownDescription:
+          targetField === "description" ? sourceText : undefined,
+      }),
+    ];
+    openDescriptionGenerator({
+      title: t("courseEdit.descriptionGenerator.translateCourseTitle"),
+      description: t("courseEdit.descriptionGenerator.translateCourseDescription", {
+        source: sourceLocale.toUpperCase(),
+        target: activeContentLocale.toUpperCase(),
+      }),
+      type: "course",
+      targetField,
+      locale: activeContentLocale,
+      sourcePreviews,
+      warning: buildGeneratorWarning(sourcePreviews),
+      actionLabel: t("courseEdit.descriptionGenerator.translateTrigger"),
+      loadingLabel: t("courseEdit.descriptionGenerator.translating"),
+      requestBody: {
+        action: "translate",
+        type: "course",
+        targetField,
+        locale: activeContentLocale,
+        sourceLocale,
+        sourceInputs: [
+          createSourceInput({
+            id: `course-${sourceLocale}`,
+            title: `${t("courseEdit.descriptionGenerator.currentCourseSource")} · ${localeBadge(sourceLocale)}`,
+            shortDescription:
+              targetField === "short_description" ? sourceText : undefined,
+            markdownDescription:
+              targetField === "description" ? sourceText : undefined,
+          }),
+        ],
+        courseId: id,
+      },
+      onApply: (value) =>
+        setContentForm((prev) => ({
+          ...prev,
+          [targetField]: value,
+        })),
+    });
+  };
 
   useEffect(() => {
     if (!course) return;
@@ -2081,6 +2313,282 @@ const InstructorCourseEdit = () => {
     }
   };
 
+  const handleGenerateCourseDescription = (
+    targetField: "short_description" | "description",
+  ) => {
+    if (!id) return;
+    const sourcePreviews = lessons.map((lesson) =>
+      createSourcePreview({
+        id: lesson.id,
+        title: lesson.title,
+        shortDescription: lesson.short_description,
+        markdownDescription: lesson.description_markdown,
+        youtubeUrl: lesson.youtube_url,
+      }),
+    );
+    openDescriptionGenerator({
+      title: t("courseEdit.descriptionGenerator.courseTitle"),
+      description: t("courseEdit.descriptionGenerator.courseDescription"),
+      type: "course",
+      targetField,
+      locale: activeContentLocale,
+      sourcePreviews,
+      warning: buildGeneratorWarning(sourcePreviews),
+      requestBody: {
+        type: "course",
+        targetField,
+        locale: activeContentLocale,
+        courseId: id,
+      },
+      onApply: (value) =>
+        setContentForm((prev) => ({
+          ...prev,
+          [targetField]: value,
+        })),
+    });
+  };
+
+  const handleGenerateSectionDescription = () => {
+    if (!id || !editingSection) return;
+    const sourcePreviews = lessons
+      .filter((lesson) => lesson.section_id === editingSection.id)
+      .map((lesson) =>
+        createSourcePreview({
+          id: lesson.id,
+          title: lesson.title,
+          shortDescription: lesson.short_description,
+          markdownDescription: lesson.description_markdown,
+          youtubeUrl: lesson.youtube_url,
+        }),
+      );
+    openDescriptionGenerator({
+      title: t("courseEdit.descriptionGenerator.sectionTitle"),
+      description: t("courseEdit.descriptionGenerator.sectionDescription"),
+      type: "course",
+      targetField: "description",
+      locale: dialogSectionLocale,
+      sourcePreviews,
+      warning: buildGeneratorWarning(sourcePreviews),
+      requestBody: {
+        type: "course",
+        targetField: "description",
+        locale: dialogSectionLocale,
+        courseId: id,
+        sectionId: editingSection.id,
+      },
+      onApply: (value) => setEditingSectionDescription(value),
+    });
+  };
+
+  const handleGenerateLessonDescription = (params: {
+    targetField: "short_description" | "description_markdown";
+    lessonId?: string;
+    youtubeUrl?: string;
+    title: string;
+    shortDescription?: string;
+    markdownDescription?: string;
+    sourceInputs?: DescriptionSourceInput[];
+    sourcePreviews?: DescriptionGeneratorSourcePreview[];
+    locale: SupportedCourseLocale;
+    onApply: (value: string) => void;
+  }) => {
+    const sourcePreviews =
+      params.sourcePreviews && params.sourcePreviews.length > 0
+        ? params.sourcePreviews
+        : [
+            createSourcePreview({
+              id: params.lessonId ?? "draft-lesson",
+              title: params.title,
+              shortDescription: params.shortDescription,
+              markdownDescription: params.markdownDescription,
+              youtubeUrl: params.youtubeUrl,
+            }),
+          ];
+    openDescriptionGenerator({
+      title: t("courseEdit.descriptionGenerator.lessonTitle"),
+      description: t("courseEdit.descriptionGenerator.lessonDescription"),
+      type: "lesson",
+      targetField: params.targetField,
+      locale: params.locale,
+      sourcePreviews,
+      warning: buildGeneratorWarning(sourcePreviews),
+      requestBody: {
+        type: "lesson",
+        targetField: params.targetField,
+        intent:
+          params.targetField === "description_markdown" &&
+          params.sourceInputs &&
+          params.sourceInputs.length > 0
+            ? "practice"
+            : undefined,
+        locale: params.locale,
+        courseId: id ?? undefined,
+        lessonId: params.lessonId,
+        youtubeUrl: params.youtubeUrl?.trim() || undefined,
+        lessonTitle: params.title?.trim() || undefined,
+        sourceInputs: params.sourceInputs,
+      },
+      onApply: params.onApply,
+    });
+  };
+
+  const handleGeneratePracticeTitle = (params: {
+    sourceIds: Set<string>;
+    fallbackTitle: string;
+    locale: SupportedCourseLocale;
+    onApply: (value: string) => void;
+  }) => {
+    const sourcePreviews = getLessonSourcePreviews(params.sourceIds);
+    const sourceInputs = getLessonSourceInputs(params.sourceIds);
+    openDescriptionGenerator({
+      title: t("courseEdit.descriptionGenerator.lessonTitle"),
+      description: t("courseEdit.descriptionGenerator.lessonDescription"),
+      type: "lesson",
+      targetField: "title",
+      locale: params.locale,
+      sourcePreviews,
+      warning: buildGeneratorWarning(sourcePreviews),
+      requestBody: {
+        type: "lesson",
+        targetField: "title",
+        intent: "practice",
+        locale: params.locale,
+        courseId: id ?? undefined,
+        lessonTitle: params.fallbackTitle,
+        sourceInputs,
+      },
+      onApply: params.onApply,
+    });
+  };
+
+  const handleTranslateCourseInfoBundle = () => {
+    if (!course || activeContentLocale === primaryContentLocale) return;
+    void translateBundle({
+      busyKey: "course_info",
+      bundleKind: "course_info",
+      type: "course",
+      targetLocale: activeContentLocale,
+      sourceLocale: primaryContentLocale,
+      courseId: id,
+      sourceBundle: {
+        title: course.title ?? "",
+        shortDescription: course.short_description ?? "",
+        description: course.description ?? "",
+        learningOutcomes: course.learning_outcomes ?? [],
+      },
+      onApply: (bundle) =>
+        setContentForm((prev) => ({
+          ...prev,
+          title: bundle.title ?? prev.title,
+          short_description: bundle.shortDescription ?? prev.short_description,
+          description: bundle.description ?? prev.description,
+          learning_outcomes: bundle.learningOutcomes?.length
+            ? bundle.learningOutcomes
+            : prev.learning_outcomes,
+        })),
+    });
+  };
+
+  const handleTranslateLearningOutcomes = () => {
+    if (!course || activeContentLocale === primaryContentLocale) return;
+    void translateBundle({
+      busyKey: "learning_outcomes",
+      bundleKind: "course_info",
+      type: "course",
+      targetLocale: activeContentLocale,
+      sourceLocale: primaryContentLocale,
+      courseId: id,
+      sourceBundle: {
+        learningOutcomes: course.learning_outcomes ?? [],
+      },
+      onApply: (bundle) =>
+        setContentForm((prev) => ({
+          ...prev,
+          learning_outcomes: bundle.learningOutcomes?.length
+            ? bundle.learningOutcomes
+            : prev.learning_outcomes,
+        })),
+    });
+  };
+
+  const handleTranslateAssignmentBundle = () => {
+    if (!course || activeContentLocale === primaryContentLocale) return;
+    void translateBundle({
+      busyKey: "assignment",
+      bundleKind: "assignment",
+      type: "course",
+      targetLocale: activeContentLocale,
+      sourceLocale: primaryContentLocale,
+      courseId: id,
+      sourceBundle: {
+        title: course.final_assignment_title ?? "",
+        description: course.final_assignment_description ?? "",
+        instructions: course.final_assignment_instructions ?? "",
+      },
+      onApply: (bundle) =>
+        setContentForm((prev) => ({
+          ...prev,
+          final_assignment_title: bundle.title ?? prev.final_assignment_title,
+          final_assignment_description:
+            bundle.description ?? prev.final_assignment_description,
+          final_assignment_instructions:
+            bundle.instructions ?? prev.final_assignment_instructions,
+        })),
+    });
+  };
+
+  const handleTranslateSectionBundle = () => {
+    if (!editingSection || dialogSectionLocale === primaryContentLocale) return;
+    const sourceDraft = sectionDraftRef.current.get(primaryContentLocale) ?? {
+      title: editingSection.title ?? "",
+      description: editingSection.description ?? "",
+    };
+    void translateBundle({
+      busyKey: "section",
+      bundleKind: "section",
+      type: "course",
+      targetLocale: dialogSectionLocale,
+      sourceLocale: primaryContentLocale,
+      courseId: id,
+      sectionId: editingSection.id,
+      sourceBundle: {
+        title: sourceDraft.title,
+        description: sourceDraft.description,
+      },
+      onApply: (bundle) => {
+        setEditingSectionTitle(bundle.title ?? editingSectionTitle);
+        setEditingSectionDescription(bundle.description ?? editingSectionDescription);
+      },
+    });
+  };
+
+  const handleTranslateLessonBundle = () => {
+    if (!editingLesson || dialogLessonLocale === primaryContentLocale) return;
+    const sourceDraft =
+      lessonDraftRef.current.get(primaryContentLocale) ?? captureLessonDraftFromState();
+    void translateBundle({
+      busyKey: "lesson",
+      bundleKind: "lesson",
+      type: "lesson",
+      targetLocale: dialogLessonLocale,
+      sourceLocale: primaryContentLocale,
+      courseId: id,
+      lessonId: editingLesson.id,
+      sourceBundle: {
+        title: sourceDraft.title,
+        shortDescription: sourceDraft.shortDescription,
+        markdownDescription: sourceDraft.markdown,
+      },
+      onApply: (bundle) => {
+        setEditingLessonTitle(bundle.title ?? editingLessonTitle);
+        setEditingLessonShortDescription(
+          bundle.shortDescription ?? editingLessonShortDescription,
+        );
+        setEditingLessonMarkdown(bundle.markdownDescription ?? editingLessonMarkdown);
+      },
+    });
+  };
+
   const handleAddLessonDirect = async () => {
     if (!id) return;
     try {
@@ -2128,6 +2636,16 @@ const InstructorCourseEdit = () => {
     }
   };
 
+  const openQuestionGenerator = (section: CourseSection) => {
+    setQuestionGeneratorSection(section);
+    setQuestionGeneratorOpen(true);
+  };
+
+  const openLessonQuizGenerator = (lesson: CourseLesson) => {
+    setLessonQuizDialogLesson(lesson);
+    setLessonQuizDialogOpen(true);
+  };
+
   const hasQuizSourceContent = (lesson: CourseLesson) =>
     lesson.lesson_format !== "quiz" &&
     lesson.lesson_format !== "practice" &&
@@ -2146,6 +2664,43 @@ const InstructorCourseEdit = () => {
       )
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
+  const getNewQuizSourceLessons = () =>
+    getPracticeSourceLessons(addingLessonDraftSectionId);
+
+  const getLessonSourceInputs = (sourceIds: Iterable<string>): DescriptionSourceInput[] => {
+    const selected = new Set(sourceIds);
+    return lessons
+      .filter((lesson) => selected.has(lesson.id))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((lesson) =>
+        createSourceInput({
+          id: lesson.id,
+          title: lesson.title,
+          shortDescription: lesson.short_description,
+          markdownDescription: lesson.description_markdown,
+          youtubeUrl: lesson.youtube_url,
+        }),
+      );
+  };
+
+  const getLessonSourcePreviews = (
+    sourceIds: Iterable<string>,
+  ): DescriptionGeneratorSourcePreview[] => {
+    const selected = new Set(sourceIds);
+    return lessons
+      .filter((lesson) => selected.has(lesson.id))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((lesson) =>
+        createSourcePreview({
+          id: lesson.id,
+          title: lesson.title,
+          shortDescription: lesson.short_description,
+          markdownDescription: lesson.description_markdown,
+          youtubeUrl: lesson.youtube_url,
+        }),
+      );
+  };
+
   const getDefaultActivityLessonTitle = (
     sectionId: string,
     format: LessonFormat,
@@ -2156,10 +2711,31 @@ const InstructorCourseEdit = () => {
       accumulator ?? lessons.filter((lesson) => lesson.section_id === sectionId),
     );
 
+  const resetNewQuizGenerationState = () => {
+    setNewQuizSourceLessonIds(new Set());
+    setNewQuizGenerateError(null);
+    setNewQuizGenerating(false);
+    setNewQuizGeneratedSources([]);
+  };
+
+  const seedNewQuizSourceLessons = (sectionId: string | null) => {
+    const sourceIds = getPracticeSourceLessons(sectionId).map((lesson) => lesson.id);
+    setNewQuizSourceLessonIds(new Set(sourceIds));
+  };
+
   const seedNewPracticeSourceLessons = (sectionId: string | null) => {
     const sourceIds = getPracticeSourceLessons(sectionId).map((lesson) => lesson.id);
     setNewPracticeSourceLessonIds(new Set(sourceIds));
     setNewPracticeSourceLessonId(sourceIds[0] ?? "");
+  };
+
+  const toggleNewQuizSourceLesson = (lessonId: string) => {
+    setNewQuizSourceLessonIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(lessonId)) next.delete(lessonId);
+      else next.add(lessonId);
+      return next;
+    });
   };
 
   const toggleNewPracticeSourceLesson = (lessonId: string) => {
@@ -2180,6 +2756,46 @@ const InstructorCourseEdit = () => {
       setEditingPracticeSourceLessonId(Array.from(next)[0] ?? "");
       return next;
     });
+  };
+
+  const lessonQuizDialogSectionLessons = useMemo(
+    () =>
+      lessonQuizDialogLesson
+        ? lessons
+            .filter((l) => l.section_id === lessonQuizDialogLesson.section_id)
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((l) => ({
+              id: l.id,
+              title: l.title,
+              hasSourceContent: hasQuizSourceContent(l),
+            }))
+        : [],
+    [lessonQuizDialogLesson, lessons],
+  );
+
+  const handleGenerateNewQuizQuestions = async () => {
+    if (!id || !addingLessonDraftSectionId || newQuizSourceLessonIds.size === 0) return;
+    setNewQuizGenerating(true);
+    setNewQuizGenerateError(null);
+    try {
+      const sourceLessonIds = Array.from(newQuizSourceLessonIds);
+      const res = await invokeGenerateQuestions({
+        courseId: id,
+        // The quiz lesson does not exist yet, so we anchor generation on the first source lesson.
+        lessonId: sourceLessonIds[0],
+        sourceLessonIds,
+        locale: activeContentLocale,
+        count: newQuizQuestionCount,
+      });
+      setNewQuizGeneratedSources(res.sources);
+      setNewQuizQuestions(res.questions.map(questionDataToNewQuizDraft));
+    } catch (err) {
+      setNewQuizGenerateError(
+        err instanceof Error ? err.message : t("courseEdit.questions.generateFailed"),
+      );
+    } finally {
+      setNewQuizGenerating(false);
+    }
   };
 
   const openEditSection = (section: CourseSection) => {
@@ -2552,6 +3168,7 @@ const InstructorCourseEdit = () => {
     setNewPracticeSourceLessonId("");
     setNewPracticeSourceLessonIds(new Set());
     setNewQuizQuestions([]);
+    resetNewQuizGenerationState();
     setNewLessonFormat("video");
     setAddingLessonDraftSectionId(null);
     pendingNewLessonSnapRef.current = null;
@@ -2915,8 +3532,12 @@ const InstructorCourseEdit = () => {
         lessonAccumulator: secSubset,
       });
       resetNewLessonFormFields();
-      if (newLessonFormat === "quiz" && quizQuestionPayload.length > 0) {
-        await setLessonQuestions(id, createdLesson.id, quizQuestionPayload);
+      if (newLessonFormat === "quiz") {
+        if (quizQuestionPayload.length > 0) {
+          await setLessonQuestions(id, createdLesson.id, quizQuestionPayload);
+        } else {
+          openLessonQuizGenerator(createdLesson);
+        }
       }
       await refreshCourseTotalDuration(id);
     } catch (e) {
@@ -3844,6 +4465,127 @@ const InstructorCourseEdit = () => {
     }, 80);
   };
 
+  const handleTranslateCoverageField = (
+    key: CoverageFieldKey,
+  ) => {
+    const sourceLocale = sourceLocaleFor(activeContentLocale);
+    const sourceContent =
+      sourceLocale === primaryContentLocale
+        ? {
+            title: course.title ?? "",
+            short_description: course.short_description ?? "",
+            description: course.description ?? "",
+            learning_outcomes: course.learning_outcomes ?? [],
+            final_assignment_title: course.final_assignment_title ?? "",
+            final_assignment_description: course.final_assignment_description ?? "",
+            final_assignment_instructions: course.final_assignment_instructions ?? "",
+          }
+        : {
+            title: contentForm.title,
+            short_description: contentForm.short_description,
+            description: contentForm.description,
+            learning_outcomes: contentForm.learning_outcomes,
+            final_assignment_title: contentForm.final_assignment_title,
+            final_assignment_description: contentForm.final_assignment_description,
+            final_assignment_instructions: contentForm.final_assignment_instructions,
+          };
+
+    const labelByKey = {
+      title: t("courseEdit.translationCoverage.fields.title"),
+      short_description: t("courseEdit.translationCoverage.fields.shortDescription"),
+      description: t("courseEdit.translationCoverage.fields.description"),
+      learning_outcomes: t("courseEdit.translationCoverage.fields.learningOutcomes"),
+      final_assignment_title: t("courseEdit.translationCoverage.fields.assignmentTitle"),
+      final_assignment_description: t("courseEdit.translationCoverage.fields.assignmentDescription"),
+      final_assignment_instructions: t("courseEdit.translationCoverage.fields.assignmentInstructions"),
+    } as const;
+
+    const generatorTargetField =
+      key === "title" || key === "final_assignment_title"
+        ? "title"
+        : key === "learning_outcomes"
+          ? "learning_outcomes"
+          : key === "short_description"
+        ? "short_description"
+        : "description";
+
+    const sourceText =
+      key === "learning_outcomes"
+        ? (sourceContent.learning_outcomes ?? []).filter(Boolean).join("\n")
+        : String(sourceContent[key] ?? "");
+
+    const sourcePreviews = [
+      createSourcePreview({
+        id: `coverage-${key}-${sourceLocale}`,
+        title: `${labelByKey[key]} · ${localeBadge(sourceLocale)}`,
+        shortDescription:
+          key === "short_description" || key === "title" || key === "final_assignment_title"
+            ? sourceText
+            : undefined,
+        markdownDescription:
+          key === "description" ||
+          key === "learning_outcomes" ||
+          key === "final_assignment_description" ||
+          key === "final_assignment_instructions"
+            ? sourceText
+            : undefined,
+      }),
+    ];
+
+    openDescriptionGenerator({
+      title: t("courseEdit.descriptionGenerator.translateCourseTitle"),
+      description: t("courseEdit.descriptionGenerator.translateCourseDescription", {
+        source: sourceLocale.toUpperCase(),
+        target: activeContentLocale.toUpperCase(),
+      }),
+      type: "course",
+      targetField: generatorTargetField,
+      locale: activeContentLocale,
+      sourcePreviews,
+      warning: buildGeneratorWarning(sourcePreviews),
+      actionLabel: t("courseEdit.descriptionGenerator.translateTrigger"),
+      loadingLabel: t("courseEdit.descriptionGenerator.translating"),
+      requestBody: {
+        action: "translate",
+        type: "course",
+        targetField: generatorTargetField,
+        locale: activeContentLocale,
+        sourceLocale,
+        sourceInputs: [
+          createSourceInput({
+            id: `coverage-${key}-${sourceLocale}`,
+            title: `${labelByKey[key]} · ${localeBadge(sourceLocale)}`,
+            shortDescription:
+              key === "short_description" || key === "title" || key === "final_assignment_title"
+                ? sourceText
+                : undefined,
+            markdownDescription:
+              key === "description" ||
+              key === "learning_outcomes" ||
+              key === "final_assignment_description" ||
+              key === "final_assignment_instructions"
+                ? sourceText
+                : undefined,
+          }),
+        ],
+        courseId: id,
+      },
+      onApply: (value) =>
+        setContentForm((prev) => {
+          if (key === "learning_outcomes") {
+            return {
+              ...prev,
+              learning_outcomes: value
+                .split("\n")
+                .map((item) => item.trim())
+                .filter(Boolean),
+            };
+          }
+          return { ...prev, [key]: value };
+        }),
+    });
+  };
+
   return (
     <PageContainer>
       <div className="mb-4 rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
@@ -4185,6 +4927,31 @@ const InstructorCourseEdit = () => {
                           </p>
                         </div>
                         <div className="flex flex-wrap justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="inline-flex items-center gap-1.5"
+                            disabled={
+                              translatingBundle === "course_info" ||
+                              !bundleHasSource({
+                                title: course.title ?? "",
+                                shortDescription: course.short_description ?? "",
+                                description: course.description ?? "",
+                                learningOutcomes: course.learning_outcomes ?? [],
+                              })
+                            }
+                            onClick={handleTranslateCourseInfoBundle}
+                          >
+                            {translatingBundle === "course_info" ? (
+                              <Loader2 className="size-4 animate-spin" aria-hidden />
+                            ) : (
+                              <Sparkles className="size-4" aria-hidden />
+                            )}
+                            {translatingBundle === "course_info"
+                              ? t("courseEdit.descriptionGenerator.translating")
+                              : t("courseEdit.descriptionGenerator.translateTrigger")}
+                          </Button>
                           <span className="rounded-full bg-surface-base px-2.5 py-1 text-xs font-semibold text-foreground">
                             {t("courseEdit.translationCoverage.completed" as never, {
                               completed: translationCoverageStats.completed,
@@ -4241,6 +5008,21 @@ const InstructorCourseEdit = () => {
                               <span className="text-[11px] font-medium text-foreground-muted">
                                 {t("courseEdit.translationCoverage.actions.openField")}
                               </span>
+                              {!item.currentFilled && item.sourceFilled ? (
+                                <Button
+                                  type="button"
+                                  variant="secondary"
+                                  size="sm"
+                                  className="h-7"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleTranslateCoverageField(item.key);
+                                  }}
+                                >
+                                  <Sparkles className="mr-1 size-3.5" aria-hidden />
+                                  {t("courseEdit.descriptionGenerator.translateTrigger")}
+                                </Button>
+                              ) : null}
                             </div>
                           </button>
                         ))}
@@ -4288,6 +5070,28 @@ const InstructorCourseEdit = () => {
                     <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                       {activeContentLocale.toUpperCase()}
                     </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="ml-2 inline-flex items-center gap-1"
+                      onClick={() => handleGenerateCourseDescription("short_description")}
+                    >
+                      <Sparkles className="size-4" aria-hidden />
+                      {t("courseEdit.descriptionGenerator.trigger")}
+                    </Button>
+                    {activeContentLocale !== primaryContentLocale ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="ml-2 inline-flex items-center gap-1"
+                        onClick={() => openTranslateCourseField("short_description")}
+                      >
+                        <Sparkles className="size-4" aria-hidden />
+                        {t("courseEdit.descriptionGenerator.translateTrigger")}
+                      </Button>
+                    ) : null}
                   </FieldLabel>
                   <Input
                     value={contentForm.short_description}
@@ -4312,6 +5116,28 @@ const InstructorCourseEdit = () => {
                     <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                       {activeContentLocale.toUpperCase()}
                     </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="ml-2 inline-flex items-center gap-1"
+                      onClick={() => handleGenerateCourseDescription("description")}
+                    >
+                      <Sparkles className="size-4" aria-hidden />
+                      {t("courseEdit.descriptionGenerator.trigger")}
+                    </Button>
+                    {activeContentLocale !== primaryContentLocale ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="ml-2 inline-flex items-center gap-1"
+                        onClick={() => openTranslateCourseField("description")}
+                      >
+                        <Sparkles className="size-4" aria-hidden />
+                        {t("courseEdit.descriptionGenerator.translateTrigger")}
+                      </Button>
+                    ) : null}
                   </FieldLabel>
                   <p className="mt-1 text-xs text-foreground-muted">
                     {t("courseEdit.form.descriptionMarkdownHint")}
@@ -4337,6 +5163,28 @@ const InstructorCourseEdit = () => {
                     <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                       {activeContentLocale.toUpperCase()}
                     </span>
+                    {activeContentLocale !== primaryContentLocale ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="ml-2 inline-flex items-center gap-1"
+                        disabled={
+                          translatingBundle === "learning_outcomes" ||
+                          !(course?.learning_outcomes?.length)
+                        }
+                        onClick={handleTranslateLearningOutcomes}
+                      >
+                        {translatingBundle === "learning_outcomes" ? (
+                          <Loader2 className="size-4 animate-spin" aria-hidden />
+                        ) : (
+                          <Sparkles className="size-4" aria-hidden />
+                        )}
+                        {translatingBundle === "learning_outcomes"
+                          ? t("courseEdit.descriptionGenerator.translating")
+                          : t("courseEdit.descriptionGenerator.translateTrigger")}
+                      </Button>
+                    ) : null}
                   </FieldLabel>
                   <p className="mt-1 text-xs text-foreground-muted">
                     {t("courseEdit.form.learningOutcomesSubtitle")}
@@ -6087,6 +6935,14 @@ const InstructorCourseEdit = () => {
                           {t("courseEdit.sections.edit")}
                         </Button>
                         <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openQuestionGenerator(section)}
+                        >
+                          {t("courseEdit.sections.questions")}
+                        </Button>
+                        <Button
                           variant="ghost"
                           size="sm"
                           className="text-destructive hover:text-destructive"
@@ -6244,6 +7100,14 @@ const InstructorCourseEdit = () => {
                                 type="button"
                                 variant="ghost"
                                 size="sm"
+                                onClick={() => openLessonQuizGenerator(lesson)}
+                              >
+                                {t("courseEdit.lessons.lessonQuestions")}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
                                 className="text-destructive shrink-0"
                                 disabled={reorderingLessons}
                                 onClick={() => handleDeleteLesson(lesson.id)}
@@ -6272,6 +7136,7 @@ const InstructorCourseEdit = () => {
                           setNewPracticeSourceLessonId("");
                           setNewPracticeSourceLessonIds(new Set());
                           setNewQuizQuestions([]);
+                          resetNewQuizGenerationState();
                           setNewLessonFormat("video");
                         }}
                         className="inline-flex items-center gap-1"
@@ -6334,6 +7199,25 @@ const InstructorCourseEdit = () => {
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle>{t("courseEdit.sections.editTitle")}</DialogTitle>
                   <div className="flex flex-wrap items-center justify-end gap-2">
+                    {dialogSectionLocale !== primaryContentLocale ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="inline-flex items-center gap-1.5"
+                        disabled={translatingBundle === "section"}
+                        onClick={handleTranslateSectionBundle}
+                      >
+                        {translatingBundle === "section" ? (
+                          <Loader2 className="size-4 animate-spin" aria-hidden />
+                        ) : (
+                          <Sparkles className="size-4" aria-hidden />
+                        )}
+                        {translatingBundle === "section"
+                          ? t("courseEdit.descriptionGenerator.translating")
+                          : t("courseEdit.descriptionGenerator.translateTrigger")}
+                      </Button>
+                    ) : null}
                     <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
                       {supportedLocales.map((loc) => (
                         <button
@@ -6366,7 +7250,7 @@ const InstructorCourseEdit = () => {
                       </span>
                     </div>
                     <p className="mt-2 text-sm text-foreground-muted">
-                      {t("courseEdit.i18n.translateDialogHint", { defaultValue: "Bạn đang chỉnh sửa bản dịch cho ngôn ngữ này." })}
+                      {t("courseEdit.descriptionGenerator.translateDialogHint")}
                     </p>
                   </div>
                 ) : null}
@@ -6388,6 +7272,16 @@ const InstructorCourseEdit = () => {
                     <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                       {dialogSectionLocale.toUpperCase()}
                     </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="ml-2 inline-flex items-center gap-1"
+                      onClick={handleGenerateSectionDescription}
+                    >
+                      <Sparkles className="size-4" aria-hidden />
+                      {t("courseEdit.descriptionGenerator.trigger")}
+                    </Button>
                   </FieldLabel>
                   <textarea
                     value={editingSectionDescription}
@@ -6416,6 +7310,25 @@ const InstructorCourseEdit = () => {
                   <div className="flex items-center justify-between gap-3">
                     <DialogTitle>{t("courseEdit.lessons.editTitle")}</DialogTitle>
                     <div className="flex flex-wrap items-center justify-end gap-2">
+                      {dialogLessonLocale !== primaryContentLocale ? (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          className="inline-flex items-center gap-1.5"
+                          disabled={translatingBundle === "lesson"}
+                          onClick={handleTranslateLessonBundle}
+                        >
+                          {translatingBundle === "lesson" ? (
+                            <Loader2 className="size-4 animate-spin" aria-hidden />
+                          ) : (
+                            <Sparkles className="size-4" aria-hidden />
+                          )}
+                          {translatingBundle === "lesson"
+                            ? t("courseEdit.descriptionGenerator.translating")
+                            : t("courseEdit.descriptionGenerator.translateTrigger")}
+                        </Button>
+                      ) : null}
                       <div className="flex gap-1 rounded-lg border border-border-subtle bg-surface-raised p-1">
                         {supportedLocales.map((loc) => (
                           <button
@@ -6448,7 +7361,7 @@ const InstructorCourseEdit = () => {
                         </span>
                       </div>
                       <p className="mt-2 text-sm text-foreground-muted">
-                        {t("courseEdit.i18n.translateDialogHint", { defaultValue: "Bạn đang chỉnh sửa bản dịch cho ngôn ngữ này." })}
+                        {t("courseEdit.descriptionGenerator.translateDialogHint")}
                       </p>
                     </div>
                   ) : null}
@@ -6482,6 +7395,18 @@ const InstructorCourseEdit = () => {
                       <LessonFormatSelector
                         value={editingLessonFormat}
                         onChange={(next) => {
+                          // Questions belong to a lesson; choosing the Quiz action while
+                          // editing an existing content lesson must not convert it and
+                          // clear its video URL. Standalone quizzes are still created via
+                          // the Add lesson flow.
+                          if (
+                            next === "quiz" &&
+                            editingLesson &&
+                            getLessonFormat(editingLesson) !== "quiz"
+                          ) {
+                            openLessonQuizGenerator(editingLesson);
+                            return;
+                          }
                           setEditingLessonFormat(next);
                           if (next !== "video") setEditingLessonYoutubeUrl("");
                           if (next === "quiz") {
@@ -6573,6 +7498,24 @@ const InstructorCourseEdit = () => {
                       <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {dialogLessonLocale.toUpperCase()}
                       </span>
+                      {editingLessonFormat === "practice" && editingPracticeSourceLessonIds.size > 0 ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="ml-2 inline-flex items-center gap-1"
+                          onClick={() =>
+                            handleGeneratePracticeTitle({
+                              sourceIds: editingPracticeSourceLessonIds,
+                              fallbackTitle: editingLessonTitle || editingLesson?.title || "Practice",
+                              locale: dialogLessonLocale,
+                              onApply: setEditingLessonTitle,
+                            })}
+                        >
+                          <Sparkles className="size-4" aria-hidden />
+                          {t("courseEdit.descriptionGenerator.trigger")}
+                        </Button>
+                      ) : null}
                     </FieldLabel>
                     <Input
                       value={editingLessonTitle}
@@ -6633,6 +7576,26 @@ const InstructorCourseEdit = () => {
                       <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {dialogLessonLocale.toUpperCase()}
                       </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="ml-2 inline-flex items-center gap-1"
+                        onClick={() =>
+                          handleGenerateLessonDescription({
+                            targetField: "short_description",
+                            lessonId: editingLesson?.id,
+                            youtubeUrl: editingLessonYoutubeUrl,
+                            title: editingLessonTitle || editingLesson?.title || "",
+                            shortDescription: editingLessonShortDescription,
+                            markdownDescription: editingLessonMarkdown,
+                            locale: dialogLessonLocale,
+                            onApply: setEditingLessonShortDescription,
+                          })}
+                      >
+                        <Sparkles className="size-4" aria-hidden />
+                        {t("courseEdit.descriptionGenerator.trigger")}
+                      </Button>
                     </FieldLabel>
                     <Input
                       value={editingLessonShortDescription}
@@ -6670,6 +7633,38 @@ const InstructorCourseEdit = () => {
                       </p>
                     </Field>
                   ) : null}
+                  {editingLesson ? (
+                    <div className="rounded-lg border border-border-subtle bg-surface-raised p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {t(
+                              editingLessonFormat === "quiz"
+                                ? "courseEdit.lessons.quizSetupTitle"
+                                : "courseEdit.lessons.lessonQuestionsTitle",
+                            )}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-foreground-muted">
+                            {t(
+                              editingLessonFormat === "quiz"
+                                ? "courseEdit.lessons.quizSetupHint"
+                                : "courseEdit.lessons.lessonQuestionsHint",
+                            )}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => openLessonQuizGenerator(editingLesson)}
+                        >
+                          <CheckSquare className="size-4" aria-hidden />
+                          {t("courseEdit.lessons.lessonQuestions")}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
                   {editingLessonFormat !== "quiz" ? (
                   <Field>
                     <FieldLabel>
@@ -6683,6 +7678,34 @@ const InstructorCourseEdit = () => {
                       <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {dialogLessonLocale.toUpperCase()}
                       </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="ml-2 inline-flex items-center gap-1"
+                        onClick={() =>
+                          handleGenerateLessonDescription({
+                            targetField: "description_markdown",
+                            lessonId: editingLesson?.id,
+                            youtubeUrl: editingLessonYoutubeUrl,
+                            title: editingLessonTitle || editingLesson?.title || "",
+                            shortDescription: editingLessonShortDescription,
+                            markdownDescription: editingLessonMarkdown,
+                            sourceInputs:
+                              editingLessonFormat === "practice" && editingPracticeSourceLessonIds.size > 0
+                                ? getLessonSourceInputs(editingPracticeSourceLessonIds)
+                                : undefined,
+                            sourcePreviews:
+                              editingLessonFormat === "practice" && editingPracticeSourceLessonIds.size > 0
+                                ? getLessonSourcePreviews(editingPracticeSourceLessonIds)
+                                : undefined,
+                            locale: dialogLessonLocale,
+                            onApply: setEditingLessonMarkdown,
+                          })}
+                      >
+                        <Sparkles className="size-4" aria-hidden />
+                        {t("courseEdit.descriptionGenerator.trigger")}
+                      </Button>
                     </FieldLabel>
                     <p className="mt-1 text-xs text-foreground-muted">
                       {t(
@@ -7065,6 +8088,7 @@ const InstructorCourseEdit = () => {
                           setNewLessonMarkdown("");
                           setNewLessonMinutes("");
                           setNewLessonResources([]);
+                          seedNewQuizSourceLessons(addingLessonDraftSectionId);
                           setNewQuizQuestions((prev) =>
                             prev.length > 0 ? prev : [makeBlankNewQuizQuestion()],
                           );
@@ -7119,6 +8143,31 @@ const InstructorCourseEdit = () => {
                       <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {activeContentLocale.toUpperCase()}
                       </span>
+                      {newLessonFormat === "practice" && newPracticeSourceLessonIds.size > 0 ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="ml-2 inline-flex items-center gap-1"
+                          onClick={() =>
+                            handleGeneratePracticeTitle({
+                              sourceIds: newPracticeSourceLessonIds,
+                              fallbackTitle:
+                                newLessonTitle ||
+                                (addingLessonDraftSectionId
+                                  ? getDefaultActivityLessonTitle(
+                                      addingLessonDraftSectionId,
+                                      "practice",
+                                    )
+                                  : "Practice"),
+                              locale: activeContentLocale,
+                              onApply: setNewLessonTitle,
+                            })}
+                        >
+                          <Sparkles className="size-4" aria-hidden />
+                          {t("courseEdit.descriptionGenerator.trigger")}
+                        </Button>
+                      ) : null}
                     </FieldLabel>
                     <Input
                       value={newLessonTitle}
@@ -7133,6 +8182,25 @@ const InstructorCourseEdit = () => {
                       <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {activeContentLocale.toUpperCase()}
                       </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="ml-2 inline-flex items-center gap-1"
+                        onClick={() =>
+                          handleGenerateLessonDescription({
+                            targetField: "short_description",
+                            youtubeUrl: newLessonYoutubeUrl,
+                            title: newLessonTitle,
+                            shortDescription: newLessonShortDescription,
+                            markdownDescription: newLessonMarkdown,
+                            locale: activeContentLocale,
+                            onApply: setNewLessonShortDescription,
+                          })}
+                      >
+                        <Sparkles className="size-4" aria-hidden />
+                        {t("courseEdit.descriptionGenerator.trigger")}
+                      </Button>
                     </FieldLabel>
                     <Input
                       value={newLessonShortDescription}
@@ -7199,6 +8267,78 @@ const InstructorCourseEdit = () => {
                           {t("courseEdit.questions.add")}
                         </Button>
                       </div>
+                      {getNewQuizSourceLessons().length > 0 ? (
+                        <div className="grid gap-4 rounded-lg border border-border-subtle bg-surface-base p-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
+                              {t("courseEdit.questions.sourceLessons")}
+                            </p>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {getNewQuizSourceLessons().map((lesson) => (
+                                <label
+                                  key={lesson.id}
+                                  className="flex items-start gap-2 rounded-md border border-border-subtle bg-surface-raised px-3 py-2 text-xs text-foreground-muted"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={newQuizSourceLessonIds.has(lesson.id)}
+                                    onChange={() => toggleNewQuizSourceLesson(lesson.id)}
+                                    className="mt-0.5 shrink-0 rounded border-border accent-primary"
+                                  />
+                                  <span className="line-clamp-2">{lesson.title}</span>
+                                </label>
+                              ))}
+                            </div>
+                            {newQuizGeneratedSources.length > 0 ? (
+                              <p className="text-xs text-foreground-muted">
+                                {t("courseEdit.questions.sources")}:{" "}
+                                {newQuizGeneratedSources
+                                  .map((source) => source.lessonTitle)
+                                  .join(", ")}
+                              </p>
+                            ) : null}
+                            {newQuizGenerateError ? (
+                              <p className="text-xs text-destructive">
+                                {newQuizGenerateError}
+                              </p>
+                            ) : null}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                            <select
+                              value={newQuizQuestionCount}
+                              onChange={(e) =>
+                                setNewQuizQuestionCount(parseInt(e.target.value, 10) || 5)
+                              }
+                              className="h-9 rounded border border-border bg-surface-base px-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
+                              aria-label={t("courseEdit.questions.count")}
+                            >
+                              {NEW_QUIZ_COUNT_OPTIONS.map((count) => (
+                                <option key={count} value={count}>
+                                  {count}
+                                </option>
+                              ))}
+                            </select>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={
+                                newQuizGenerating || newQuizSourceLessonIds.size === 0
+                              }
+                              onClick={() => void handleGenerateNewQuizQuestions()}
+                            >
+                              {newQuizGenerating ? (
+                                <Loader2 className="size-4 animate-spin" aria-hidden />
+                              ) : (
+                                <Sparkles className="size-4" aria-hidden />
+                              )}
+                              {newQuizGenerating
+                                ? t("courseEdit.questions.generating")
+                                : t("courseEdit.questions.generate")}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : null}
                       {newQuizQuestions.length > 0 ? (
                         <div className="space-y-3">
                           {newQuizQuestions.map((question, questionIndex) => (
@@ -7332,6 +8472,33 @@ const InstructorCourseEdit = () => {
                       <span className="ml-1.5 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-normal text-foreground-muted">
                         {activeContentLocale.toUpperCase()}
                       </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="ml-2 inline-flex items-center gap-1"
+                        onClick={() =>
+                          handleGenerateLessonDescription({
+                            targetField: "description_markdown",
+                            youtubeUrl: newLessonYoutubeUrl,
+                            title: newLessonTitle,
+                            shortDescription: newLessonShortDescription,
+                            markdownDescription: newLessonMarkdown,
+                            sourceInputs:
+                              newLessonFormat === "practice" && newPracticeSourceLessonIds.size > 0
+                                ? getLessonSourceInputs(newPracticeSourceLessonIds)
+                                : undefined,
+                            sourcePreviews:
+                              newLessonFormat === "practice" && newPracticeSourceLessonIds.size > 0
+                                ? getLessonSourcePreviews(newPracticeSourceLessonIds)
+                                : undefined,
+                            locale: activeContentLocale,
+                            onApply: setNewLessonMarkdown,
+                          })}
+                      >
+                        <Sparkles className="size-4" aria-hidden />
+                        {t("courseEdit.descriptionGenerator.trigger")}
+                      </Button>
                     </FieldLabel>
                     <p className="mt-1 text-xs text-foreground-muted">
                       {t(
@@ -7489,6 +8656,32 @@ const InstructorCourseEdit = () => {
                   <FileText className="size-5" aria-hidden /> {t("courseEdit.sidebar.nav.assignments")}
                 </h2>
                 <div className="flex flex-wrap items-center justify-end gap-2">
+                  {activeContentLocale !== primaryContentLocale ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="inline-flex items-center gap-1.5"
+                      disabled={
+                        translatingBundle === "assignment" ||
+                        !bundleHasSource({
+                          title: course.final_assignment_title ?? "",
+                          description: course.final_assignment_description ?? "",
+                          instructions: course.final_assignment_instructions ?? "",
+                        })
+                      }
+                      onClick={handleTranslateAssignmentBundle}
+                    >
+                      {translatingBundle === "assignment" ? (
+                        <Loader2 className="size-4 animate-spin" aria-hidden />
+                      ) : (
+                        <Sparkles className="size-4" aria-hidden />
+                      )}
+                      {translatingBundle === "assignment"
+                        ? t("courseEdit.descriptionGenerator.translating")
+                        : t("courseEdit.descriptionGenerator.translateTrigger")}
+                    </Button>
+                  ) : null}
                   <span className="rounded bg-surface-raised px-2 py-1 text-xs font-semibold text-foreground">
                     {activeContentLocale.toUpperCase()}
                   </span>
@@ -8240,6 +9433,39 @@ const InstructorCourseEdit = () => {
           )}
         </div>
       </div>
+      <DescriptionGeneratorDialog
+        open={descriptionGeneratorOpen}
+        request={descriptionGeneratorRequest}
+        onOpenChange={(open) => {
+          setDescriptionGeneratorOpen(open);
+          if (!open) setDescriptionGeneratorRequest(null);
+        }}
+        t={(key, options) => String(t(key as never, options as never))}
+      />
+      <QuestionGeneratorDialog
+        open={questionGeneratorOpen}
+        section={questionGeneratorSection}
+        courseId={id ?? ""}
+        locale={activeContentLocale}
+        onOpenChange={(open) => {
+          setQuestionGeneratorOpen(open);
+          if (!open) setQuestionGeneratorSection(null);
+        }}
+      />
+      <QuestionGeneratorDialog
+        open={lessonQuizDialogOpen}
+        section={null}
+        courseId={id ?? ""}
+        locale={activeContentLocale}
+        mode="lesson"
+        lessonId={lessonQuizDialogLesson?.id}
+        lessonTitle={lessonQuizDialogLesson?.title}
+        sectionLessons={lessonQuizDialogSectionLessons}
+        onOpenChange={(open) => {
+          setLessonQuizDialogOpen(open);
+          if (!open) setLessonQuizDialogLesson(null);
+        }}
+      />
     </PageContainer>
   );
 };

@@ -12,6 +12,18 @@ export const EXPECTED_FORWARD_MIGRATIONS = Object.freeze([
   "supabase/migrations/20260823122000_hackathon_canonical_project_compatibility.sql",
   "supabase/migrations/20260823130000_g2_canonical_state_and_data_integrity.sql",
   "supabase/migrations/20260823140000_g2_r1_remediation.sql",
+  "supabase/migrations/20260825100000_payment_refund_and_access_provenance_schema.sql",
+  "supabase/migrations/20260825110000_atomic_payment_settlement_and_enrollment_rpcs.sql",
+  "supabase/migrations/20260825120000_master_schema_classification_lifecycle_and_index_optimization.sql",
+  "supabase/migrations/20260825130000_harden_enrollment_provenance_and_security_guards.sql",
+  "supabase/migrations/20260825140000_harden_enrollment_payment_purpose_and_timestamp.sql",
+  "supabase/migrations/20260825150000_r4_atomic_payment_refund_and_ai_retirement.sql",
+  "supabase/migrations/20260825151000_r4_staging_catalog_reconciliation.sql",
+  "supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql",
+  "supabase/migrations/20260825153000_r4_enable_ai_legacy_rls.sql",
+  "supabase/migrations/20260826100000_r5_retired_ai_entitlement_write_guards.sql",
+  "supabase/migrations/20260826110000_r5_canonicalize_rls_auto_enable.sql",
+  "supabase/migrations/20260826120000_issue_329_payment_retirement_safety.sql",
 ]);
 
 const SHA1_RE = /^[0-9a-f]{40}$/;
@@ -100,13 +112,21 @@ function validateRecipe(recipe, sourceSha) {
 export function validateManifestSchema(manifest) {
   assertExactKeys(
     manifest,
-    ["schema_version", "artifact_id", "base_sha", "source_sha", "manifest_path", "candidate_tree_sha256", "recipe", "files", "migration_chain"],
+    ["schema_version", "artifact_id", "rc_sha", "git_tree_sha", "production_base_sha", "target_production_project_ref", "migration_count", "latest_migration", "base_sha", "source_sha", "manifest_path", "candidate_tree_sha256", "recipe", "files", "deleted_files", "migration_chain"],
     "release manifest",
   );
   if (manifest.schema_version !== 1) throw new Error("Unsupported release manifest schema_version.");
-  if (manifest.artifact_id !== "R3_PROPOSED_RELEASE_CANDIDATE") throw new Error("Unexpected release artifact_id.");
+  if (manifest.artifact_id !== "R5_RELEASE_CANDIDATE") throw new Error("Unexpected release artifact_id.");
+  assertSha(manifest.rc_sha, SHA1_RE, "rc_sha");
+  assertSha(manifest.git_tree_sha, SHA1_RE, "git_tree_sha");
+  assertSha(manifest.production_base_sha, SHA1_RE, "production_base_sha");
   assertSha(manifest.base_sha, SHA1_RE, "base_sha");
   assertSha(manifest.source_sha, SHA1_RE, "source_sha");
+  if (manifest.rc_sha !== manifest.source_sha) throw new Error("rc_sha must equal source_sha.");
+  if (manifest.production_base_sha !== manifest.base_sha) throw new Error("production_base_sha must equal base_sha.");
+  if (manifest.target_production_project_ref !== "lawhkvyyoznwygzsycan") throw new Error("Unexpected target Production project ref.");
+  if (manifest.migration_count !== 156) throw new Error("Release migration_count must equal 156.");
+  if (manifest.latest_migration !== "20260826120000_issue_329_payment_retirement_safety.sql") throw new Error("Unexpected release latest_migration.");
   if (manifest.base_sha !== EXPECTED_BASE_MAIN_SHA) {
     throw new Error(`base_sha must equal the reviewed Production base ${EXPECTED_BASE_MAIN_SHA}.`);
   }
@@ -123,6 +143,12 @@ export function validateManifestSchema(manifest) {
     assertSha(file.sha256, SHA256_RE, `files SHA-256 for ${path}`);
   }
 
+  if (!Array.isArray(manifest.deleted_files)) throw new Error("deleted_files must be an array.");
+  validateUniquePaths(manifest.deleted_files.map((p) => ({ path: p })), "deleted_files");
+  for (const deletedPath of manifest.deleted_files) {
+    normalizeRepositoryPath(deletedPath);
+  }
+
   assertExactKeys(manifest.migration_chain, ["baseline_manifest", "forward"], "migration_chain");
   assertExactKeys(manifest.migration_chain.baseline_manifest, ["path", "sha256", "count", "latest"], "migration_chain.baseline_manifest");
   normalizeRepositoryPath(manifest.migration_chain.baseline_manifest.path);
@@ -136,7 +162,7 @@ export function validateManifestSchema(manifest) {
   validateMigrationEntries(manifest.migration_chain.forward, "migration_chain.forward");
   const forwardPaths = manifest.migration_chain.forward.map((entry) => normalizeRepositoryPath(entry.path));
   if (JSON.stringify(forwardPaths) !== JSON.stringify(EXPECTED_FORWARD_MIGRATIONS)) {
-    throw new Error("Forward migration set must be the exact reviewed five in canonical order.");
+    throw new Error("Forward migration set must be the exact reviewed seventeen in canonical order.");
   }
   validateRecipe(manifest.recipe, manifest.source_sha);
   return manifest;
@@ -165,7 +191,9 @@ export function validateReleaseArtifactState(manifestInput, state) {
     return { ok: false, errors: [error.message] };
   }
   if (state.baseSha !== manifest.base_sha) errors.push(`Wrong base SHA: expected ${manifest.base_sha}, got ${state.baseSha ?? "<missing>"}.`);
-  const expectedChanged = [...manifest.files.map((entry) => entry.path), manifest.manifest_path];
+  if (state.sourceSha !== manifest.rc_sha) errors.push(`Wrong technical RC SHA: expected ${manifest.rc_sha}, got ${state.sourceSha ?? "<missing>"}.`);
+  if (state.sourceTreeSha !== manifest.git_tree_sha) errors.push(`Wrong technical RC tree SHA: expected ${manifest.git_tree_sha}, got ${state.sourceTreeSha ?? "<missing>"}.`);
+  const expectedChanged = [...manifest.files.map((entry) => entry.path), ...(manifest.deleted_files ?? []), manifest.manifest_path];
   compareExactPaths(state.changedFiles ?? [], expectedChanged, "Release artifact", errors);
 
   const actualFiles = state.files instanceof Map ? state.files : new Map(Object.entries(state.files ?? {}));
@@ -272,6 +300,8 @@ export function computeCandidateTreeSha256(entries, readContent, excludedPaths =
 export function collectGitArtifactState({ repoRoot, baseRef, targetRef, manifest }) {
   const baseSha = resolveGitCommit(repoRoot, baseRef);
   const targetSha = resolveGitCommit(repoRoot, targetRef);
+  const sourceSha = resolveGitCommit(repoRoot, manifest.rc_sha);
+  const sourceTreeSha = git(repoRoot, ["rev-parse", `${sourceSha}^{tree}`]).trim();
   const changedFiles = git(repoRoot, ["diff", "--name-only", `${baseSha}..${targetSha}`])
     .split(/\r?\n/)
     .filter(Boolean)
@@ -291,7 +321,7 @@ export function collectGitArtifactState({ repoRoot, baseRef, targetRef, manifest
     .sort((a, b) => a.path.localeCompare(b.path, "en"))
     .map((entry) => ({ path: entry.path, sha256: sha256(readTargetFile(entry.path)) }));
   const candidateTreeSha256 = computeCandidateTreeSha256(treeEntries, readTargetFile, [manifest.manifest_path]);
-  return { baseSha, targetSha, changedFiles, files, migrations, candidateTreeSha256 };
+  return { baseSha, targetSha, sourceSha, sourceTreeSha, changedFiles, files, migrations, candidateTreeSha256 };
 }
 
 function readCliArguments(argv) {
@@ -314,6 +344,10 @@ function run() {
     verifyManifestIntegrity(rawManifest, args.expectedManifestSha256);
     const manifest = validateManifestSchema(JSON.parse(rawManifest.toString("utf8")));
     const state = collectGitArtifactState({ repoRoot, baseRef: args.baseRef, targetRef: args.targetRef, manifest });
+    const targetParent = resolveGitCommit(repoRoot, `${args.targetRef}^`);
+    if (targetParent !== manifest.rc_sha) {
+      throw new Error(`Manifest commit must directly descend from technical RC ${manifest.rc_sha}; got parent ${targetParent}.`);
+    }
     const result = validateReleaseArtifactState(manifest, state);
     if (!result.ok) throw new Error(result.errors.join("\n"));
     console.log(`Exact Production release artifact verified: ${result.totalFiles} changed files, ${result.totalMigrations} migrations, tree ${state.candidateTreeSha256}.`);

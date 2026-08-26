@@ -1018,48 +1018,42 @@ BEGIN
     id, user_id, course_id, purpose, amount_vnd, provider, status, created_at, updated_at
   ) VALUES
     (v_tx_a, v_user_a, 'course-1', 'ai_subscription', 199000, 'sepay', 'paid', now(), now()),
-    (v_tx_b, v_user_b, 'course-1', 'ai_subscription', 399000, 'sepay', 'paid', now(), now())
+    (v_tx_b, v_user_b, 'course-1', 'ai_subscription', 399000, 'sepay', 'pending', now(), now())
   ON CONFLICT (id) DO NOTHING;
 
-  -- ENT-01: Active-but-expired row filtered out
-  INSERT INTO public.ai_subscriptions (
-    id, user_id, tier, duration_months, price_vnd, started_at, expires_at, payment_transaction_id, status
-  ) VALUES (
-    v_sub_a, v_user_a, 'pro', 1, 199000, now() - interval '60 days', now() - interval '30 days', v_tx_a, 'active'
-  ) ON CONFLICT (id) DO UPDATE SET status = 'active', expires_at = now() - interval '30 days';
-
-  SELECT * INTO v_active_sub
-  FROM public.ai_subscriptions
-  WHERE user_id = v_user_a
-    AND status = 'active'
-    AND expires_at > now()
-  ORDER BY expires_at DESC
-  LIMIT 1;
-
-  IF FOUND THEN
-    RAISE EXCEPTION 'ENT-01: FAILED. Expired subscription was returned as active by DB predicate!';
+  -- ENT-01: Retirement guard rejects direct service-role subscription creation.
+  BEGIN
+    INSERT INTO public.ai_subscriptions (
+      id, user_id, tier, duration_months, price_vnd, started_at, expires_at, payment_transaction_id, status
+    ) VALUES (
+      v_sub_a, v_user_a, 'pro', 1, 199000, now(), now() + interval '30 days', v_tx_a, 'active'
+    );
+    RAISE EXCEPTION 'ENT-01: FAILED. Direct AI subscription insert succeeded after retirement!';
+  EXCEPTION
+    WHEN SQLSTATE 'P0001' THEN
+      IF SQLERRM NOT LIKE 'AI_SUBSCRIPTION_RETIRED:%' THEN
+        RAISE;
+      END IF;
+  END;
+  IF EXISTS (SELECT 1 FROM public.ai_subscriptions WHERE id = v_sub_a) THEN
+    RAISE EXCEPTION 'ENT-01: FAILED. Rejected subscription row remains!';
   END IF;
-  RAISE NOTICE '✓ ENT-01: PASS (Expired row with status=active filtered out by canonical predicate)';
+  RAISE NOTICE '✓ ENT-01: PASS (Direct service-role AI entitlement creation rejected)';
 
-  -- ENT-02: Valid active unexpired subscription returned
-  INSERT INTO public.ai_subscriptions (
-    id, user_id, tier, duration_months, price_vnd, started_at, expires_at, payment_transaction_id, status
-  ) VALUES (
-    v_sub_b, v_user_b, 'bootcamp', 1, 399000, now(), now() + interval '30 days', v_tx_b, 'active'
-  ) ON CONFLICT (id) DO UPDATE SET status = 'active', expires_at = now() + interval '30 days';
-
-  SELECT * INTO v_active_sub
-  FROM public.ai_subscriptions
-  WHERE user_id = v_user_b
-    AND status = 'active'
-    AND expires_at > now()
-  ORDER BY expires_at DESC
-  LIMIT 1;
-
-  IF NOT FOUND OR v_active_sub.tier <> 'bootcamp' THEN
-    RAISE EXCEPTION 'ENT-02: FAILED. Valid unexpired subscription was not returned!';
+  -- ENT-02: Paid AI transaction cannot bypass retirement through settlement RPC.
+  BEGIN
+    PERFORM public.process_successful_payment(v_tx_b, '{}'::jsonb, now());
+    RAISE EXCEPTION 'ENT-02: FAILED. AI settlement RPC succeeded after retirement!';
+  EXCEPTION
+    WHEN SQLSTATE 'P0001' THEN
+      IF SQLERRM NOT LIKE 'AI_SUBSCRIPTION_RETIRED:%' THEN
+        RAISE;
+      END IF;
+  END;
+  IF EXISTS (SELECT 1 FROM public.ai_subscriptions WHERE payment_transaction_id = v_tx_b) THEN
+    RAISE EXCEPTION 'ENT-02: FAILED. AI settlement created a subscription!';
   END IF;
-  RAISE NOTICE '✓ ENT-02: PASS (Valid active unexpired subscription returned accurately)';
+  RAISE NOTICE '✓ ENT-02: PASS (AI settlement RPC cannot create entitlement)';
 
   -- ENT-03: User C with stale profile tier returns 0 active subscriptions
   SELECT * INTO v_active_sub

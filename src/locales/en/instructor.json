@@ -233,7 +233,8 @@
       "back": "Back",
       "save": "Save",
       "saving": "Saving…",
-      "translationSaved": "Translation saved."
+      "translationSaved": "Translation saved.",
+      "saveLocalizationSettings": "Save localization settings"
     },
     "errors": {
       "loadFailed": "Could not load tracks.",
@@ -671,7 +672,8 @@
       "optionIsCorrect": "Option {{id}} is correct",
       "optionPlaceholder": "Option {{id}}...",
       "explanationToggle": "Answer explanation",
-      "explanationPlaceholder": "Explain why the answer is correct (optional)..."
+      "explanationPlaceholder": "Explain why the answer is correct (optional)...",
+      "replaceDraftConfirm": "Generate new questions and replace the current draft? Unsaved edits will be lost."
     },
     "careerTracks": {
       "shortDescriptionLabel": "Short description",
@@ -914,7 +916,8 @@
         "missing": "Source missing"
       },
       "errors": {
-        "generic": "Unable to generate a description right now."
+        "generic": "Unable to generate a description right now.",
+        "noBundle": "The translation response did not include a content bundle."
       }
     },
     "translationCoverage": {

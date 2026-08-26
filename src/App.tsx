@@ -379,7 +379,6 @@ export default function App() {
                   </Suspense>
                 }
               />
-              <Route path="learning-path/*" element={<Navigate to="/" replace />} />
               <Route
                 path="career/:slug"
                 element={
@@ -515,19 +514,6 @@ export default function App() {
                 />
               </Route>
               <Route
-                path="account/cora"
-                element={<Navigate to="/courses" replace />}
-              />
-              <Route
-                path="cora"
-                element={<Navigate to="/courses" replace />}
-              />
-              <Route
-                path="cora/checkout"
-                element={<Navigate to="/courses" replace />}
-              />
-              <Route path="upgrade/cora" element={<Navigate to="/courses" replace />} />
-              <Route
                 path="admin"
                 element={
                   <RequireRole roles={ROLE_GROUPS.admin}>
@@ -584,10 +570,6 @@ export default function App() {
                       <AdminManualMint />
                     </Suspense>
                   }
-                />
-                <Route
-                  path="cora-vouchers"
-                  element={<Navigate to="/admin" replace />}
                 />
                 <Route
                   path="branding"
@@ -717,6 +699,14 @@ export default function App() {
                   }
                 />
               </Route>
+              <Route
+                path="learning-path/*"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <NotFound />
+                  </Suspense>
+                }
+              />
               <Route
                 path=":handle/*"
                 element={

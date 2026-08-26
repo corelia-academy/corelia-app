@@ -68,6 +68,30 @@ const canonicalSemanticDefinitions = {
     function_identity_arguments: "",
     normalized_definition: "create trigger trg_guard_ai_chat_session_message_count before update of message_count on public.ai_chat_sessions for each row execute function public.guard_ai_chat_session_message_count()",
   },
+  "trigger.trg_guard_retired_ai_subscription_writes": {
+    table_schema: "public",
+    table_name: "ai_subscriptions",
+    trigger_name: "trg_guard_retired_ai_subscription_writes",
+    enabled: "ORIGIN",
+    timing: "BEFORE",
+    level: "ROW",
+    events: ["INSERT", "UPDATE"],
+    function_schema: "public",
+    function_name: "guard_retired_ai_subscription_writes",
+    function_identity_arguments: "",
+  },
+  "trigger.trg_guard_retired_ai_voucher_redemption_writes": {
+    table_schema: "public",
+    table_name: "ai_voucher_redemptions",
+    trigger_name: "trg_guard_retired_ai_voucher_redemption_writes",
+    enabled: "ORIGIN",
+    timing: "BEFORE",
+    level: "ROW",
+    events: ["INSERT", "UPDATE"],
+    function_schema: "public",
+    function_name: "guard_retired_ai_voucher_redemption_writes",
+    function_identity_arguments: "",
+  },
   "function.guard_ai_chat_session_message_count": {
     function_schema: "public",
     function_name: "guard_ai_chat_session_message_count",
@@ -95,6 +119,66 @@ const canonicalSemanticDefinitions = {
     security_definer: true,
     configuration: ["search_path=public, pg_temp"],
     explicit_execute_roles: ["authenticated", "service_role"],
+  },
+  "function.process_successful_payment": {
+    function_schema: "public",
+    function_name: "process_successful_payment",
+    argument_types: ["text", "jsonb", "timestamp with time zone"],
+    result_type: "jsonb",
+    security_definer: true,
+    configuration: ["search_path=public, pg_temp"],
+    explicit_execute_roles: ["service_role"],
+  },
+  "function.process_payment_refund": {
+    function_schema: "public",
+    function_name: "process_payment_refund",
+    argument_types: ["text", "integer", "text", "uuid", "jsonb"],
+    result_type: "jsonb",
+    security_definer: true,
+    configuration: ["search_path=public, pg_temp"],
+    explicit_execute_roles: ["service_role"],
+  },
+  "table.ai_model_pricing.rls": {
+    table_schema: "public",
+    table_name: "ai_model_pricing",
+    rls_enabled: true,
+    rls_forced: false,
+  },
+  "table.ai_usage_log.rls": {
+    table_schema: "public",
+    table_name: "ai_usage_log",
+    rls_enabled: true,
+    rls_forced: false,
+  },
+  "table.tier_limits.rls": {
+    table_schema: "public",
+    table_name: "tier_limits",
+    rls_enabled: true,
+    rls_forced: false,
+  },
+  "column.payment_transactions.settled_at": {
+    table_schema: "public",
+    table_name: "payment_transactions",
+    column_name: "settled_at",
+    data_type: "timestamp with time zone",
+    not_null: false,
+    default_expression: null,
+  },
+  "column.course_payment_access.full_access_transaction_id": {
+    table_schema: "public",
+    table_name: "course_payment_access",
+    column_name: "full_access_transaction_id",
+    data_type: "text",
+    not_null: false,
+    default_expression: null,
+  },
+  "column.course_payment_access.certificate_fee_transaction_id": {
+    table_schema: "public",
+    table_name: "course_payment_access",
+    column_name: "certificate_fee_transaction_id",
+    data_type: "text",
+    not_null: false,
+    default_expression: null,
   },
   "column.ai_voucher_batches.archived_at": {
     table_schema: "public",
@@ -163,11 +247,15 @@ const zeroInvariantMetrics = [
   "invariant.orphan_ai_vouchers",
   "invariant.orphan_ai_voucher_redemptions",
   "invariant.duplicate_project_provenance_groups",
+  "invariant.paid_course_purchase_missing_access",
+  "invariant.paid_course_purchase_missing_enrollment",
+  "invariant.refund_ledger_exceeds_payment",
+  "invariant.financial_rpc_client_execute_grants",
 ];
 
 function validVersions() {
-  const versions = Array.from({ length: 144 }, (_, index) => String(20260000000000 + index));
-  versions[143] = EXPECTED_POST_MIGRATION_LATEST;
+  const versions = Array.from({ length: 156 }, (_, index) => String(20260000000000 + index));
+  versions[155] = EXPECTED_POST_MIGRATION_LATEST;
   return versions;
 }
 
@@ -464,6 +552,14 @@ test("RPC with wrong EXECUTE privilege fails", () => {
   assert.equal(result.ok, false);
 });
 
+test("retained AI table with RLS disabled fails closed", () => {
+  const result = verify(mutateMetric("table.ai_usage_log.rls", (value) => {
+    value.rls_enabled = false;
+  }));
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /Semantic definition mismatch/);
+});
+
 test("archived_at without archived_by fails", () => {
   const rows = validInspectionRows().filter((row) => row.metric !== "column.ai_voucher_batches.archived_by");
   const result = verify(rows);
@@ -523,7 +619,7 @@ test("migration ledger fails on count, latest, pending, remote-only, or duplicat
   }).ok, false);
 
   const wrongLatest = [...versions];
-  wrongLatest[143] = "20260823139999";
+  wrongLatest[wrongLatest.length - 1] = "20260825139999";
   assert.equal(validatePostMigrationState({
     localVersions: wrongLatest,
     remoteVersions: wrongLatest,

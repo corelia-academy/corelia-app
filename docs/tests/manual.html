@@ -341,9 +341,9 @@
         id: "s03",
         title: "03 — Khóa học, checkout, học",
         intro: [
-          "Routes: /courses, /courses/:id, /checkout/course/:id, /checkout/success/..., /learn/... + Cora trong learn.",
+          "Routes: /courses, /courses/:id, /checkout/course/:id, /checkout/success/..., /learn/.... Learner AI không còn trong learning shell.",
           "Thanh toán chỉ test mode SePay. Tham chiếu docs/COURSE_OWNERSHIP_REVENUE_SEPAY.md, COURSE_ACCESS_MODELS.md.",
-          "Tài khoản: Student_1. Gói Cora: /cora (mục 07).",
+          "Tài khoản: Student_1. Kiểm tra account hub ở mục 07.",
         ],
         blocks: [
           {
@@ -367,7 +367,7 @@
             items: [
               { id: "s03-7", text: "Khóa đã có quyền: /learn/:courseId load." },
               { id: "s03-8", text: "/learn/:courseId/lesson/:lessonId — content/player load." },
-              { id: "s03-9", text: "Learn: mở/đóng Cora sidebar/assistant — không crash." },
+              { id: "s03-9", text: "Learn: không render learner AI sidebar/assistant hoặc khoảng trống cũ." },
               { id: "s03-10", text: "Không quyền: URL learn trực tiếp — chặn/redirect ghi nhận spec." },
             ],
           },
@@ -431,7 +431,7 @@
             items: [
               { id: "s06-1", text: "Ẩn danh: /u/<handle> layout load." },
               { id: "s06-2", text: "Handle không tồn tại — 404/empty theo spec." },
-              { id: "s06-3", text: "Short URL /:handle/* — smoke; tránh handle reserved (hackathons, cora, …)." },
+              { id: "s06-3", text: "Short URL /:handle/* — smoke; tránh handle reserved (hackathons, career, courses, …)." },
               { id: "s06-4", text: "Chính chủ login: field private không lộ guest; handle có thể từ OCID." },
             ],
           },
@@ -439,8 +439,8 @@
       },
       {
         id: "s07",
-        title: "07 — Account hub & Cora",
-        intro: ["Student_1 hầu hết tab + /cora; Instructor_1 tab instructor (role instructor). /account/projects = editor i18n, không phải /projects gallery.", "Tiền đề: auth ổn (mục 01)."],
+        title: "07 — Account hub",
+        intro: ["Student_1 kiểm tra các account tab; Instructor_1 kiểm tra tab instructor. /account/projects = editor i18n, không phải /projects gallery.", "Tiền đề: auth ổn (mục 01)."],
         blocks: [
           {
             items: [
@@ -452,8 +452,7 @@
               { id: "s07-6", text: "/account/projects — editor i18n project (không nhầm /projects gallery)." },
               { id: "s07-7a", text: "Student_1: /account/instructor empty/upsell/redirect (ghi nhận spec)." },
               { id: "s07-7b", text: "Instructor_1: /account/instructor form lưu được." },
-              { id: "s07-8", text: "/cora — subscription/AI UI load." },
-              { id: "s07-9", text: "/account/cora và /upgrade/cora redirect /cora." },
+              { id: "s07-8", text: "Không có learner AI navigation, route hoặc copy trong account hub." },
               { id: "s07-10", text: "/achievements redirect /account (không UI riêng)." },
             ],
           },
@@ -599,7 +598,7 @@
             title: "i18n",
             items: [
               { id: "s12-1", text: "Đổi en: Home + /account/settings không sót vi rõ ràng." },
-              { id: "s12-2", text: "Spot-check /cora và /learn/.../lesson/... sau đổi en." },
+              { id: "s12-2", text: "Spot-check /learn/.../lesson/... sau đổi en; không có learner AI copy." },
               { id: "s12-3", text: "Đổi vi — nhất quán." },
               { id: "s12-4", text: "Tuỳ chọn: document.documentElement.lang khớp locale." },
             ],
