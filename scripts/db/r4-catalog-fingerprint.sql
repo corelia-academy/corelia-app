@@ -95,6 +95,7 @@ WITH catalog_entries AS (
            coalesce(array_to_string(e.evttags, ','), '')
          )
   FROM pg_event_trigger e
+  WHERE e.evtname IN ('ensure_rls')
 )
 SELECT category,
        count(*)::int AS object_count,

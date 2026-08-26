@@ -117,12 +117,14 @@ test("R5 HTTP paid retries invoke the atomic RPC and unknown invoices fail close
   assert.match(ipn, /grantPaymentAccessForTransaction\(db, tx, invoiceNumber/);
 });
 
-test("R5 canonicalizes rls_auto_enable and fingerprints event triggers without exclusions", () => {
+test("R5 canonicalizes rls_auto_enable and fingerprints the application-owned event trigger", () => {
   assert.match(r5RlsAutoEnable, /CREATE OR REPLACE FUNCTION public\.rls_auto_enable\(\)/);
   assert.match(r5RlsAutoEnable, /CREATE EVENT TRIGGER ensure_rls ON ddl_command_end/);
   assert.match(r5RlsAutoEnable, /ALTER EVENT TRIGGER ensure_rls ENABLE/);
   assert.match(catalogFingerprint, /'event_triggers'/);
   assert.match(catalogObjectFingerprints, /'event_triggers'/);
+  assert.match(catalogFingerprint, /evtname IN \('ensure_rls'\)/);
+  assert.match(catalogObjectFingerprints, /evtname IN \('ensure_rls'\)/);
   assert.doesNotMatch(catalogFingerprint, /NOT \(n\.nspname = 'public' AND p\.proname = 'rls_auto_enable'/);
   assert.doesNotMatch(catalogObjectFingerprints, /NOT \(n\.nspname = 'public' AND p\.proname = 'rls_auto_enable'/);
 });

@@ -59,4 +59,5 @@ SELECT 'event_triggers',
          coalesce(array_to_string(e.evttags, ','), '')
        ))
 FROM pg_event_trigger e
+WHERE e.evtname IN ('ensure_rls')
 ORDER BY category, object_key;
