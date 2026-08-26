@@ -515,19 +515,6 @@ export default function App() {
                 />
               </Route>
               <Route
-                path="account/cora"
-                element={<Navigate to="/courses" replace />}
-              />
-              <Route
-                path="cora"
-                element={<Navigate to="/courses" replace />}
-              />
-              <Route
-                path="cora/checkout"
-                element={<Navigate to="/courses" replace />}
-              />
-              <Route path="upgrade/cora" element={<Navigate to="/courses" replace />} />
-              <Route
                 path="admin"
                 element={
                   <RequireRole roles={ROLE_GROUPS.admin}>
@@ -584,10 +571,6 @@ export default function App() {
                       <AdminManualMint />
                     </Suspense>
                   }
-                />
-                <Route
-                  path="cora-vouchers"
-                  element={<Navigate to="/admin" replace />}
                 />
                 <Route
                   path="branding"

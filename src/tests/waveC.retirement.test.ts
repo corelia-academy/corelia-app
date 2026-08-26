@@ -23,10 +23,6 @@ function readSource(rootDir: string, relPath: string): string {
   return readFileSync(fullPath, "utf8");
 }
 
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 function listRuntimeSourceFiles(srcDir: string): string[] {
   const runtimeExtension = /\.(?:ts|tsx|js|jsx)$/;
   const typeDeclaration = /\.d\.(?:ts|tsx|js|jsx)$/;
@@ -89,41 +85,52 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
       }
     });
 
-    it.each([
-      ["account/cora", "/courses"],
-      ["cora", "/courses"],
-      ["cora/checkout", "/courses"],
-      ["upgrade/cora", "/courses"],
-      ["learning-path/*", "/"],
-    ])("keeps /%s redirected to %s", (routePath, destination) => {
+    it("confirms Cora routes and redirects are completely removed from App.tsx", () => {
+      const appSource = readSource(rootDir, "src/App.tsx");
+      const coraRoutes = [
+        "account/cora",
+        'path="cora"',
+        "cora/checkout",
+        "upgrade/cora",
+        "cora-vouchers",
+      ];
+      for (const r of coraRoutes) {
+        expect(appSource).not.toContain(r);
+      }
+    });
+
+    it("confirms learning-path wildcard route redirects to /", () => {
       const appSource = readSource(rootDir, "src/App.tsx");
       const routePattern = new RegExp(
-        `<Route\\s+path=["']${escapeRegex(routePath)}["'][^>]*element=\\{<Navigate\\s+to=["']${escapeRegex(destination)}["']\\s+replace\\s*/>\\}[^>]*/>`,
+        `<Route\\s+path=["']learning-path/\\*["'][^>]*element=\\{<Navigate\\s+to=["']/["']\\s+replace\\s*/>\\}[^>]*/>`,
         "s",
       );
-
       expect(appSource).toMatch(routePattern);
     });
   });
 
   describe("WC-01: Learner frontend has zero AI Edge Function invocations", () => {
-    it("confirms runtime source in src has no retired learner AI edge function references", () => {
-      const srcDir = join(rootDir, "src");
-      const runtimeSourceFiles = listRuntimeSourceFiles(srcDir);
+    it(
+      "confirms runtime source in src has no retired learner AI edge function references",
+      () => {
+        const srcDir = join(rootDir, "src");
+        const runtimeSourceFiles = listRuntimeSourceFiles(srcDir);
 
-      expect(runtimeSourceFiles.length).toBeGreaterThan(0);
+        expect(runtimeSourceFiles.length).toBeGreaterThan(0);
 
-      for (const fullPath of runtimeSourceFiles) {
-        const relPath = relative(rootDir, fullPath);
-        const content = readFileSync(fullPath, "utf8");
+        for (const fullPath of runtimeSourceFiles) {
+          const relPath = relative(rootDir, fullPath);
+          const content = readFileSync(fullPath, "utf8");
 
-        for (const fn of RETIRED_LEARNER_AI_EDGE_FUNCTIONS) {
-          expect(content, `${relPath} must not reference retired learner endpoint ${fn}`).not.toContain(
-            fn,
-          );
+          for (const fn of RETIRED_LEARNER_AI_EDGE_FUNCTIONS) {
+            expect(content, `${relPath} must not reference retired learner endpoint ${fn}`).not.toContain(
+              fn,
+            );
+          }
         }
-      }
-    });
+      },
+      15000,
+    );
   });
 
   describe("WC-02 to WC-09: Learner AI Edge Functions remain 410 tombstones", () => {

@@ -331,52 +331,6 @@
         "completedLessons": "Completed",
         "nextUp": "Next"
       },
-      "recap": {
-        "title": "Cora's recap",
-        "keyPointsLabel": "Key takeaways",
-        "practicalTipsLabel": "Practical tips",
-        "generating": "Cora is summarizing this lesson…",
-        "regenerate": "Regenerate",
-        "error": "Cora couldn't summarize this lesson right now.",
-        "retry": "Try again"
-      },
-      "readinessCheck": {
-        "title": "Readiness check",
-        "subtitle": "Cora will ask {{count}} quick questions on prior material before you start.",
-        "startAction": "Start check",
-        "skipAction": "Skip",
-        "generating": "Cora is preparing questions…",
-        "questionCounter": "Question {{current}}/{{total}}",
-        "nextAction": "Next",
-        "submitAction": "Submit",
-        "passedTitle": "You're ready! 🎯",
-        "passedSubtitle": "You have a solid grasp of the prior material.",
-        "passedAction": "Start the lesson",
-        "failedTitle": "Review these first",
-        "failedSubtitle": "Cora suggests revisiting:",
-        "failedAction": "Continue anyway",
-        "retryAction": "Retry"
-      },
-      "flashcards": {
-        "title": "Flashcards",
-        "subtitle": "Reinforce memory with spaced repetition",
-        "generateAction": "Generate flashcards",
-        "regenerateAction": "Regenerate",
-        "generating": "Cora is generating cards…",
-        "startReview": "Start review",
-        "noDueToday": "Nothing due — see you tomorrow 🎯",
-        "dueCount": "{{count}} cards due",
-        "totalCount": "{{count}} cards total",
-        "frontLabel": "Question",
-        "backLabel": "Answer",
-        "flipHint": "Tap to flip",
-        "again": "Again",
-        "good": "Good",
-        "easy": "Easy",
-        "sessionDone": "Done! Reviewed {{count}} cards.",
-        "backToOverview": "Back",
-        "empty": "Not enough content yet to generate flashcards."
-      },
       "lessonList": {
         "title": "Lessons",
         "metaFullAccess": "{{sections}} sections • {{lessons}} lessons",
@@ -471,26 +425,11 @@
         "submitIncomplete": "Answer all questions ({{answered}}/{{total}})"
       },
       "practice": {
-        "hint": "Need a hint? Ask Cora for step-by-step guidance.",
-        "askCora": "Ask Cora"
+        "hint": "Follow the instructions above to practice this lesson."
       },
       "noLessonSelected": "Select a lesson from the curriculum to begin.",
       "toggleCurriculum": "Toggle curriculum",
-      "openCurriculum": "Open curriculum",
-      "toggleCora": "Toggle Cora AI"
-    },
-    "aiTutor": {
-      "sheetTitle": "Cora AI Tutor",
-      "contextCourse": "Course: {{title}}",
-      "contextLesson": "Lesson: {{title}}",
-      "suggestionsLabel": "Try asking",
-      "inputPlaceholder": "Type a question…",
-      "suggestions": [
-        "Summarize the key ideas from this lesson.",
-        "What should I practice next?",
-        "Explain this concept in simpler terms.",
-        "How does this topic connect to the rest of the course?"
-      ]
+      "openCurriculum": "Open curriculum"
     }
   },
   "filters": {
@@ -525,20 +464,6 @@
   },
   "errors": {
     "mustLoginQuiz": "You need to sign in to take the quiz.",
-    "mustLoginFeature": "You need to sign in to use this feature.",
-    "flashcards": {
-      "loadFailed": "Could not load flashcards.",
-      "generateFailed": "Could not generate flashcards right now.",
-      "saveFailed": "Could not save your progress."
-    },
-    "readiness": {
-      "loadFailed": "Could not load the readiness check.",
-      "generateFailed": "Could not create the check right now.",
-      "submitFailed": "Could not save your results.",
-      "skipFailed": "Could not skip right now."
-    },
-    "lessonSummary": {
-      "generateFailed": "Could not summarize this lesson right now."
-    }
+    "mustLoginFeature": "You need to sign in to use this feature."
   }
 }

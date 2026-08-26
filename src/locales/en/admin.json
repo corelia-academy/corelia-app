@@ -22,10 +22,6 @@
         "label": "Manual OCA/OCB grant",
         "tooltip": "Manually grant OCA/OCB to an individual, unrelated to a course"
       },
-      "coraVouchers": {
-        "label": "Cora vouchers",
-        "tooltip": "Voucher management for Cora AI checkout"
-      },
       "branding": {
         "label": "Branding",
         "tooltip": "Corelia logo and brand assets"
@@ -53,10 +49,6 @@
       "manualMint": {
         "title": "Manual credential grant",
         "description": "Manually grant an OCA or OCB to a specific individual, unrelated to any course or hackathon."
-      },
-      "coraVouchers": {
-        "title": "Cora vouchers",
-        "description": "Create and monitor percentage-based vouchers for Cora AI payments."
       },
       "branding": {
         "title": "Branding",
@@ -556,99 +548,6 @@
       "empty": "No credentials have been granted manually yet.",
       "emptyFiltered": "No credentials matched the current filter.",
       "loadFailed": "Failed to load manual mint history."
-    }
-  },
-  "coraVoucherBatches": {
-    "heading": "Cora AI voucher batches",
-    "subheading": "Create batch campaigns with single-use codes and monitor their lifecycle.",
-    "refresh": "Refresh",
-    "add": "New batch",
-    "loading": "Loading voucher batches...",
-    "loadFailed": "Unable to load voucher batches.",
-    "empty": "No voucher batches yet.",
-    "created": "Voucher batch created.",
-    "batchUpdated": "Batch updated.",
-    "batchDeleted": "Voucher batch deleted.",
-    "codeUpdated": "Voucher code updated.",
-    "saveFailed": "Unable to save voucher batch.",
-    "delete": "Delete",
-    "deleteConfirmTitle": "Delete voucher batch?",
-    "deleteConfirmBody": "Batch \"{{name}}\" and all unused codes will be permanently deleted. This cannot be undone.",
-    "copyFailed": "Unable to copy voucher codes.",
-    "codesCopied": "Voucher codes copied.",
-    "showing": "Showing {{shown}} / {{total}} batches",
-    "active": "Active",
-    "inactive": "Inactive",
-    "archived": "Archived",
-    "neverStarts": "Starts immediately",
-    "noExpiry": "No expiry",
-    "counts": "{{available}} available · {{reserved}} reserved · {{paid}} paid · {{inactive}} inactive",
-    "viewCodes": "View codes",
-    "activate": "Activate",
-    "deactivate": "Deactivate",
-    "createTitle": "Create voucher batch",
-    "detailTitle": "Batch detail",
-    "cancel": "Cancel",
-    "save": "Save",
-    "saving": "Saving...",
-    "copyCodes": "Copy codes",
-    "downloadCsv": "Download CSV",
-    "createdBatchReady": "{{count}} codes are ready to export.",
-    "filters": {
-      "searchPlaceholder": "Search by batch name...",
-      "status": {
-        "all": "All statuses",
-        "active": "Active only",
-        "inactive": "Inactive only"
-      },
-      "expiry": {
-        "all": "All expiry states",
-        "expired": "Expired",
-        "notExpired": "Not expired"
-      }
-    },
-    "table": {
-      "name": "Batch",
-      "percent": "Discount",
-      "window": "Validity",
-      "counts": "Counts",
-      "status": "Status",
-      "actions": "Actions"
-    },
-    "codesTable": {
-      "code": "Code",
-      "status": "Status",
-      "usedAt": "Used at",
-      "actions": "Actions"
-    },
-    "codeFilters": {
-      "all": "All codes",
-      "available": "Available",
-      "reserved": "Reserved",
-      "paid": "Paid",
-      "inactive": "Inactive"
-    },
-    "form": {
-      "name": "Batch name",
-      "quantity": "Number of codes",
-      "codePrefix": "Code prefix",
-      "percentOff": "Percent off",
-      "targetTier": "Target plan tier",
-      "targetTierAny": "Any tier",
-      "targetDuration": "Target duration",
-      "targetDurationAny": "Any duration",
-      "startsAt": "Starts at",
-      "endsAt": "Ends at",
-      "status": "Status"
-    },
-    "tiers": {
-      "student": "Student",
-      "pro": "Pro",
-      "bootcamp": "Bootcamp"
-    },
-    "durations": {
-      "1": "1 month",
-      "12": "12 months"
     }
   }
 }

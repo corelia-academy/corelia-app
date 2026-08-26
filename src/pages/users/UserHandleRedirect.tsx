@@ -26,7 +26,6 @@ const RESERVED_HANDLES = new Set([
   "email",
   "auth",
   "upgrade",
-  "cora",
   "achievements",
   "u",
   "claim",

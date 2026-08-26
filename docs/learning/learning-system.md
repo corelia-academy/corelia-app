@@ -39,7 +39,7 @@ Repo đã có các khối cần giữ:
 - Lesson format `video | article | quiz | practice`, có fallback cho lesson cũ chưa lưu format.
 - Learner routes `/learn/:courseId` và `/learn/:courseId/lesson/:lessonId`.
 - Article, YouTube video, lesson quiz và open-ended practice.
-- Section quiz, readiness check, recap và flashcards. Cora components vẫn còn trong codebase nhưng đang có issue loại bỏ hoàn toàn và không thuộc target.
+- Section quiz, bài tập và thực hành. Toàn bộ learner AI (readiness check, recap, flashcards, Cora AI) đã được loại bỏ hoàn toàn theo Epic #332.
 - Repo còn các field và flow lịch sử cho course trả phí.
 - Nội dung `vi/en` qua các bảng locale riêng, không tách progress theo locale.
 - Final assignment, manual review, completion sync và credential issuance.
