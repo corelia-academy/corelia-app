@@ -11,11 +11,7 @@ vi.mock("@/lib/supabase", () => ({
   supabase: {},
 }));
 
-import {
-  createAiSubscriptionCheckout,
-  previewAiVoucher,
-  type PaymentPurpose,
-} from "@/lib/payments";
+import { type PaymentPurpose } from "@/lib/payments";
 
 function readSource(rootDir: string, relPath: string): string {
   const fullPath = join(rootDir, relPath);
@@ -52,7 +48,7 @@ function listRuntimeSourceFiles(srcDir: string): string[] {
   return files;
 }
 
-describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
+describe("Wave C Retirement Contract Tests (Epic #332 / Issues #328 and #331)", () => {
   const RETIRED_LEARNER_AI_EDGE_FUNCTIONS = [
     "ai-tutor",
     "embed-lesson",
@@ -99,13 +95,27 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
       }
     });
 
-    it("confirms learning-path wildcard route redirects to /", () => {
-      const appSource = readSource(rootDir, "src/App.tsx");
-      const routePattern = new RegExp(
-        `<Route\\s+path=["']learning-path/\\*["'][^>]*element=\\{<Navigate\\s+to=["']/["']\\s+replace\\s*/>\\}[^>]*/>`,
-        "s",
+    it("keeps the retired Cora handle fail-closed instead of redirecting to a public profile", () => {
+      const handleRedirectSource = readSource(rootDir, "src/pages/users/UserHandleRedirect.tsx");
+
+      expect(handleRedirectSource).toMatch(/RESERVED_HANDLES[\s\S]*["']cora["']/);
+      expect(handleRedirectSource).toMatch(
+        /RESERVED_HANDLES\.has\(handle\.toLowerCase\(\)\)\) return <NotFound \/>/,
       );
-      expect(appSource).toMatch(routePattern);
+    });
+
+    it("routes retired learning-path URLs to NotFound before the handle wildcard", () => {
+      const appSource = readSource(rootDir, "src/App.tsx");
+      const retiredRouteIndex = appSource.indexOf('path="learning-path/*"');
+      const handleWildcardIndex = appSource.indexOf('path=":handle/*"');
+
+      expect(retiredRouteIndex).toBeGreaterThanOrEqual(0);
+      expect(handleWildcardIndex).toBeGreaterThan(retiredRouteIndex);
+
+      const retiredRouteSource = appSource.slice(retiredRouteIndex, handleWildcardIndex);
+      expect(retiredRouteSource).toContain("<NotFound />");
+      expect(retiredRouteSource).not.toContain("<Navigate");
+      expect(retiredRouteSource).not.toContain("UserHandleRedirect");
     });
   });
 
@@ -147,17 +157,9 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
         // Fail-closed tombstone contracts
         expect(content).toContain("AI_FEATURE_RETIRED");
         expect(content).toContain("410");
+        expect(content).not.toMatch(/Cora/i);
       });
     }
-
-    it("WC-03: confirms ai-tutor provider.ts streamProviderText rejects with decommission error", async () => {
-      const providerPath = join(rootDir, "supabase", "functions", "ai-tutor", "provider.ts");
-      const providerContent = readFileSync(providerPath, "utf8");
-
-      expect(providerContent).not.toContain("api.openai.com");
-      expect(providerContent).not.toContain("OPENAI_API_KEY");
-      expect(providerContent).toContain("AI provider has been decommissioned under Epic #332.");
-    });
   });
 
   describe("WC-Instructor: Instructor-facing AI functions enforce strict auth and role guards", () => {
@@ -295,13 +297,23 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
     it("documents that provider secrets are retained only for instructor-facing generators", () => {
       const envExample = readFileSync(join(rootDir, "supabase", "functions", ".env.example"), "utf8");
       expect(envExample).toContain("retained only for instructor-facing generators");
-      expect(envExample).not.toMatch(/^CORELIA_AI_PROVIDER=openai/m);
+      expect(envExample).not.toContain("CORELIA_AI_PROVIDER");
       expect(envExample).not.toMatch(/^OPENAI_API_KEY=\S+/m);
+      expect(envExample).toContain("# OPENAI_API_KEY=");
+      expect(envExample).toContain("# CORELIA_OPENAI_DESCRIPTION_MODEL=");
+      expect(envExample).toContain("# CORELIA_OPENAI_QUESTIONS_MODEL=");
     });
 
-    it("verifies supabase/config.toml has commented out openai_api_key", () => {
+    it("keeps every learner tombstone and both instructor generator function configurations", () => {
       const configToml = readFileSync(join(rootDir, "supabase", "config.toml"), "utf8");
-      expect(configToml).toContain('# openai_api_key = "env(OPENAI_API_KEY)"');
+
+      for (const fn of RETIRED_LEARNER_AI_EDGE_FUNCTIONS) {
+        expect(configToml).toContain(`[functions.${fn}]`);
+      }
+      for (const fn of INSTRUCTOR_AI_EDGE_FUNCTIONS) {
+        expect(configToml).toContain(`[functions.${fn}]`);
+      }
+      expect(configToml).not.toContain("openai_api_key");
     });
   });
 
@@ -316,24 +328,6 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
       const p2: PaymentPurpose = "certificate_fee";
       expect(p1).toBe("course_purchase");
       expect(p2).toBe("certificate_fee");
-    });
-
-    it("confirms createAiSubscriptionCheckout throws explicit retirement error", async () => {
-      await expect(
-        createAiSubscriptionCheckout({
-          tier: "pro",
-          durationMonths: 1,
-          successUrl: "http://localhost:5173/success",
-          errorUrl: "http://localhost:5173/error",
-          cancelUrl: "http://localhost:5173/cancel",
-        }),
-      ).rejects.toThrow(/Gói đăng ký trợ lý AI Cora đã dừng cung cấp mới/);
-    });
-
-    it("confirms previewAiVoucher throws explicit retirement error", async () => {
-      await expect(previewAiVoucher({ tier: "pro", durationMonths: 1, voucherCode: "CODE" })).rejects.toThrow(
-        /Voucher trợ lý AI Cora đã dừng hỗ trợ/,
-      );
     });
   });
 

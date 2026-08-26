@@ -29,6 +29,7 @@ const RESERVED_HANDLES = new Set([
   "achievements",
   "u",
   "claim",
+  "cora",
 ]);
 
 /**

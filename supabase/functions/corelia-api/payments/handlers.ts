@@ -16,7 +16,6 @@ import type {
   SePayIpnPayload,
 } from "./types.ts";
 
-const AI_SUBSCRIPTION_PRODUCT_ID = "cora-ai";
 const AI_PAYMENT_RETIREMENT_CUTOFF_MS = Date.parse("2026-08-25T15:00:00.000Z");
 
 function sePayProviderRefundEventId(payload: SePayIpnPayload): string | null {
@@ -54,17 +53,19 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     const purpose = body.purpose === "course_purchase" || body.purpose === "certificate_fee" || body.purpose === "ai_subscription"
       ? body.purpose as PaymentPurpose
       : null;
-    const courseId = purpose === "ai_subscription"
-      ? AI_SUBSCRIPTION_PRODUCT_ID
-      : String(body.courseId ?? "");
+    if (!purpose) return json({ message: "Thiếu/ sai purpose" }, 400);
+    if (purpose === "ai_subscription") {
+      return json({ message: "Gói AI dành cho người học đã dừng cung cấp mới." }, 400);
+    }
+
+    const courseId = String(body.courseId ?? "");
     const requestedAmountVnd = Number(body.amountVnd ?? 0);
     const successUrl = String(body.successUrl ?? "");
     const errorUrl = String(body.errorUrl ?? "");
     const cancelUrl = String(body.cancelUrl ?? "");
     const discountCodeRaw = String(body.discountCode ?? "").trim();
     if (!courseId) return json({ message: "Thiếu courseId" }, 400);
-    if (!purpose) return json({ message: "Thiếu/ sai purpose" }, 400);
-    if (purpose !== "ai_subscription" && (!Number.isFinite(requestedAmountVnd) || requestedAmountVnd <= 0)) {
+    if (!Number.isFinite(requestedAmountVnd) || requestedAmountVnd <= 0) {
       return json({ message: "amountVnd không hợp lệ" }, 400);
     }
     const callbackAllowlist = paymentCallbackOriginAllowlistFromEnv();
@@ -76,34 +77,30 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       return json({ message: "Callback URLs không hợp lệ" }, 400);
     }
     let baseAmount = 0;
-    if (purpose === "ai_subscription") {
-      return json({ message: "Gói đăng ký trợ lý AI Cora đã dừng cung cấp mới." }, 400);
-    } else {
-      const { data: courseRow, error: courseErr } = await db.from("courses").select("data").eq("id", courseId)
-        .maybeSingle();
-      if (courseErr) throw new Error(courseErr.message);
-      if (!courseRow) return json({ message: "Không tìm thấy khoá học" }, 404);
-      const course = (courseRow.data ?? {}) as {
-        price_vnd?: number | null;
-        promo_price_vnd?: number | null;
-        promo_ends_at?: string | null;
-        certificate_fee_vnd?: number | null;
-      };
-      const basePrice = Math.round(Number(course.price_vnd ?? 0));
-      const promoPrice = Math.round(Number(course.promo_price_vnd ?? 0));
-      const promoEndsAt = course.promo_ends_at ? Date.parse(course.promo_ends_at) : NaN;
-      const promoActive =
-        Number.isFinite(basePrice) &&
-        basePrice > 0 &&
-        promoPrice > 0 &&
-        promoPrice < basePrice &&
-        (!Number.isFinite(promoEndsAt) || Date.now() <= promoEndsAt);
-      baseAmount = purpose === "course_purchase"
-        ? (promoActive ? promoPrice : basePrice)
-        : Math.round(Number(course.certificate_fee_vnd ?? 0));
-    }
+    const { data: courseRow, error: courseErr } = await db.from("courses").select("data").eq("id", courseId)
+      .maybeSingle();
+    if (courseErr) throw new Error(courseErr.message);
+    if (!courseRow) return json({ message: "Không tìm thấy khoá học" }, 404);
+    const course = (courseRow.data ?? {}) as {
+      price_vnd?: number | null;
+      promo_price_vnd?: number | null;
+      promo_ends_at?: string | null;
+      certificate_fee_vnd?: number | null;
+    };
+    const basePrice = Math.round(Number(course.price_vnd ?? 0));
+    const promoPrice = Math.round(Number(course.promo_price_vnd ?? 0));
+    const promoEndsAt = course.promo_ends_at ? Date.parse(course.promo_ends_at) : NaN;
+    const promoActive =
+      Number.isFinite(basePrice) &&
+      basePrice > 0 &&
+      promoPrice > 0 &&
+      promoPrice < basePrice &&
+      (!Number.isFinite(promoEndsAt) || Date.now() <= promoEndsAt);
+    baseAmount = purpose === "course_purchase"
+      ? (promoActive ? promoPrice : basePrice)
+      : Math.round(Number(course.certificate_fee_vnd ?? 0));
     if (!Number.isFinite(baseAmount) || baseAmount <= 0) {
-      return json({ message: purpose === "ai_subscription" ? "Gói AI chưa cấu hình giá hợp lệ" : "Khoá học chưa cấu hình phí hợp lệ" }, 400);
+      return json({ message: "Khoá học chưa cấu hình phí hợp lệ" }, 400);
     }
     let finalAmount = baseAmount;
     let discountCode: string | undefined;
@@ -219,7 +216,7 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
 export async function handleAiVoucherPreview(req: Request, db: SupabaseClient): Promise<Response> {
   try {
     await verifyBearerUser(req, db);
-    return json({ message: "Voucher trợ lý AI Cora đã dừng hỗ trợ." }, 400);
+    return json({ message: "Voucher AI dành cho người học đã dừng hỗ trợ." }, 400);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);

@@ -5,7 +5,7 @@ Xem hub: [README.md](./README.md).
 ## Mục tiêu
 
 Phủ các route con account: `profile`, `cv`, `billing`, `settings`, `projects`, `instructor`.
-*(Ghi chú: Toàn bộ tính năng Cora và learner-facing AI đã được gỡ bỏ khỏi hệ thống theo Epic #332; các route cũ liên quan tới Cora không còn tồn tại).*
+Toàn bộ learner-facing AI và các route cũ liên quan đã được gỡ bỏ theo Epic #332.
 
 **Lưu ý:** `/account/projects` là **editor i18n/translation** cho project (`AccountProjectsRoute`), **không** phải gallery công khai `/projects` ([05](./05-projects-invites-search.md)).
 

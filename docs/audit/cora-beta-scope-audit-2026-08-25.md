@@ -1,5 +1,7 @@
 # Cora AI Beta — product and implementation audit
 
+> **SUPERSEDED — HISTORICAL EVIDENCE ONLY.** Learner-facing Cora was removed under issues #325–#332. The decisions and implementation state below describe the 2026-08-25 snapshot and must not be used as current product guidance. Instructor Description Generator, Question Generator, and Career Track AI Translate remain supported.
+
 Date: 2026-08-25  
 Status: implemented in the current worktree
 

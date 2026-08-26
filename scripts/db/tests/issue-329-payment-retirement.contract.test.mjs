@@ -5,6 +5,21 @@ import { resolve } from "node:path";
 
 const read = (path) => readFileSync(resolve(process.cwd(), path), "utf8");
 const handler = read("supabase/functions/corelia-api/payments/handlers.ts");
+
+test("new AI subscription checkout fails before deriving a product or course identifier", () => {
+  const checkout = handler.slice(
+    handler.indexOf("export async function handleSePayCheckout"),
+    handler.indexOf("export async function handleAiVoucherPreview"),
+  );
+  const purposeParseIndex = checkout.indexOf('body.purpose === "course_purchase"');
+  const aiRejectionIndex = checkout.indexOf('if (purpose === "ai_subscription")');
+  const courseIdIndex = checkout.indexOf('const courseId = String(body.courseId ?? "")');
+
+  assert.ok(purposeParseIndex >= 0, "checkout must parse the payment purpose");
+  assert.ok(aiRejectionIndex > purposeParseIndex, "AI checkout rejection must follow purpose parsing");
+  assert.ok(courseIdIndex > aiRejectionIndex, "AI checkout must fail before deriving courseId");
+  assert.doesNotMatch(checkout, /cora-ai|AI_SUBSCRIPTION_PRODUCT_ID/);
+});
 const migration = read("supabase/migrations/20260826120000_issue_329_payment_retirement_safety.sql");
 const billing = read("src/pages/account/AccountBillingRoute.tsx");
 const billingPurpose = read("src/pages/account/billingPurpose.ts");

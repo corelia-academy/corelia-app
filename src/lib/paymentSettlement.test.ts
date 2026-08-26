@@ -3,8 +3,20 @@ import type {
   PaymentTransaction,
   PaymentRefund,
   CoursePaymentAccess,
-  AiSubscription,
 } from "./payments";
+
+interface HistoricalAiSubscriptionFixture {
+  id: string;
+  user_id: string;
+  tier: "student" | "pro" | "bootcamp";
+  duration_months: 1 | 12;
+  price_vnd: number;
+  started_at: string;
+  expires_at: string;
+  payment_transaction_id: string;
+  status: "active" | "expired" | "cancelled" | "superseded" | "refunded";
+  created_at: string;
+}
 
 describe("Master Wave — Payment Settlement & Access Integrity Unit Test Suite", () => {
   // PAY-01: Valid successful payment grants intended access
@@ -228,7 +240,7 @@ describe("Master Wave — Payment Settlement & Access Integrity Unit Test Suite"
 
   // REF-05: AI Subscription refund downgrades tier when no other active subscriptions exist
   it("REF-05: refunding AI subscription marks subscription refunded and downgrades profile tier", () => {
-    const sub: AiSubscription = {
+    const sub: HistoricalAiSubscriptionFixture = {
       id: "sub-100",
       user_id: "user-eve",
       tier: "pro",

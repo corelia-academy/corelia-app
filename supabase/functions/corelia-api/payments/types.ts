@@ -1,13 +1,5 @@
 export type PaymentPurpose = "course_purchase" | "certificate_fee" | "ai_subscription";
 
-export type AiSubscriptionTier = "student" | "pro" | "bootcamp";
-export type AiSubscriptionDurationMonths = 1 | 12;
-
-export type AiSubscriptionMeta = {
-  tier: AiSubscriptionTier;
-  duration_months: AiSubscriptionDurationMonths;
-};
-
 export type PaymentTransactionStatus =
   | "pending"
   | "paid"

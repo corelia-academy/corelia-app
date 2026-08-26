@@ -379,7 +379,6 @@ export default function App() {
                   </Suspense>
                 }
               />
-              <Route path="learning-path/*" element={<Navigate to="/" replace />} />
               <Route
                 path="career/:slug"
                 element={
@@ -700,6 +699,14 @@ export default function App() {
                   }
                 />
               </Route>
+              <Route
+                path="learning-path/*"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <NotFound />
+                  </Suspense>
+                }
+              />
               <Route
                 path=":handle/*"
                 element={

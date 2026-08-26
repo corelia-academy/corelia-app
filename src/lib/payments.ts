@@ -5,8 +5,6 @@ import { makeTTLCache } from "@/lib/utils";
 const paymentAccessCache = makeTTLCache<CoursePaymentAccess | null>(60_000);
 
 export type PaymentPurpose = "course_purchase" | "certificate_fee" | "ai_subscription";
-export type AiSubscriptionTier = "student" | "pro" | "bootcamp";
-export type AiSubscriptionDurationMonths = 1 | 12;
 
 export type CoursePaymentAccessSource =
   | "payment"
@@ -83,23 +81,6 @@ export interface PaymentTransaction {
   updated_at: string;
 }
 
-export type AiSubscriptionStatus = "active" | "expired" | "cancelled" | "superseded" | "refunded";
-
-export interface AiSubscription {
-  id: string;
-  user_id: string;
-  tier: AiSubscriptionTier;
-  duration_months: AiSubscriptionDurationMonths;
-  price_vnd: number;
-  started_at: string;
-  expires_at: string;
-  payment_transaction_id: string;
-  status: AiSubscriptionStatus;
-  auto_renew?: boolean;
-  created_at: string;
-  updated_at?: string;
-}
-
 export interface VerifySePayPaymentResponse {
   order_id: string;
   status: PaymentTransactionStatus;
@@ -119,23 +100,6 @@ interface CreateSePayCheckoutInput {
   errorUrl: string;
   cancelUrl: string;
   discountCode?: string;
-}
-
-interface CreateAiSubscriptionCheckoutInput {
-  tier: AiSubscriptionTier;
-  durationMonths: AiSubscriptionDurationMonths;
-  successUrl: string;
-  errorUrl: string;
-  cancelUrl: string;
-  voucherCode?: string;
-}
-
-export interface AiVoucherPreview {
-  code: string;
-  percent_off: number;
-  base_amount_vnd: number;
-  discount_amount_vnd: number;
-  final_amount_vnd: number;
 }
 
 export interface CreateSePayCheckoutResponse {
@@ -234,22 +198,6 @@ export async function createSePayCheckout(
   };
 }
 
-export async function createAiSubscriptionCheckout(
-  _payload: CreateAiSubscriptionCheckoutInput,
-): Promise<CreateSePayCheckoutResponse> {
-  void _payload;
-  throw new Error("Gói đăng ký trợ lý AI Cora đã dừng cung cấp mới.");
-}
-
-export async function previewAiVoucher(_payload: {
-  tier: AiSubscriptionTier;
-  durationMonths: AiSubscriptionDurationMonths;
-  voucherCode: string;
-}): Promise<AiVoucherPreview> {
-  void _payload;
-  throw new Error("Voucher trợ lý AI Cora đã dừng hỗ trợ.");
-}
-
 export function submitSePayCheckoutForm(input: CreateSePayCheckoutResponse) {
   if (!input.checkout_url || !input.fields) {
     throw new Error("Thiếu thông tin checkout SePay.");
@@ -298,44 +246,6 @@ export async function getMyPaymentTransactions(): Promise<PaymentTransaction[]> 
   }>;
   if (!res.ok) throw new Error(data.message || "Không lấy được lịch sử thanh toán.");
   return Array.isArray(data.transactions) ? data.transactions : [];
-}
-
-export function isAiSubscriptionActive(
-  sub: AiSubscription | null | undefined,
-  referenceDate: Date = new Date(),
-): boolean {
-  if (!sub) return false;
-  if (sub.status !== "active") return false;
-  if (!sub.expires_at) return false;
-  const expiryTime = new Date(sub.expires_at).getTime();
-  return Number.isFinite(expiryTime) && expiryTime > referenceDate.getTime();
-}
-
-export function resolveEffectiveAiTier(
-  sub: AiSubscription | null | undefined,
-  referenceDate: Date = new Date(),
-): AiSubscriptionTier | "free" {
-  return isAiSubscriptionActive(sub, referenceDate) && sub?.tier ? sub.tier : "free";
-}
-
-export async function getMyAiSubscription(
-  referenceDate: Date = new Date(),
-): Promise<AiSubscription | null> {
-  const token = await getAccessToken();
-  requireAccessToken(token);
-  const nowIso = referenceDate.toISOString();
-  const { data, error } = await supabase
-    .from("ai_subscriptions")
-    .select("*")
-    .eq("status", "active")
-    .gt("expires_at", nowIso)
-    .order("expires_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data) return null;
-  const sub = { ...data } as AiSubscription;
-  return isAiSubscriptionActive(sub, referenceDate) ? sub : null;
 }
 
 export async function verifySePayPayment(payload: {

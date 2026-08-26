@@ -19,7 +19,7 @@ Kiểm tra trải nghiệm xuyên suốt: ngôn ngữ (vi/en), dark/light mode, 
 ### i18n
 
 1. Đổi ngôn ngữ app (header/settings) sang **en**, reload Home và `/account/settings` — chuỗi không còn tiếng Việt rơi rớt rõ ràng.
-2. Spot-check **`/cora`** và **`/learn/:courseId/lesson/:lessonId`** (nếu có quyền) sau khi đổi en — layout không vỡ.
+2. Spot-check **`/learn/:courseId/lesson/:lessonId`** (nếu có quyền) sau khi đổi en — layout không vỡ và không xuất hiện learner AI copy.
 3. Đổi lại **vi** — nhất quán.
 4. Kiểm tra `document.documentElement.lang` phản ánh locale (tuỳ chọn — DevTools Elements).
 

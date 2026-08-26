@@ -372,7 +372,7 @@ ADMIN PREVIEW · Progress and attempts are not saved
 
 - Desktop/Mobile switch thay content width; không mô phỏng browser/device đầy đủ.
 - Preview draft lesson trực tiếp từ saved draft data. Unsaved form preview có thể render local form model nhưng phải ghi rõ `Unsaved preview`.
-- Preview không mount bất kỳ Cora/AI assistant component nào.
+- Preview không mount bất kỳ learner AI assistant component nào.
 
 ## 15. Publish flow
 
