@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "19f10fbe9f1d402f8e97d41f98186ec4553fb5ef",
-  "git_tree_sha": "7aa9312ed6bcca764f13f9c14d6579e9cc1dc2c9",
+  "rc_sha": "1ab633c8241cf5407c5a34413d43f33dd794f057",
+  "git_tree_sha": "e753a839d10097dbcf5cdccc0795d28d832f70bc",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 155,
   "latest_migration": "20260826110000_r5_canonicalize_rls_auto_enable.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "19f10fbe9f1d402f8e97d41f98186ec4553fb5ef",
+  "source_sha": "1ab633c8241cf5407c5a34413d43f33dd794f057",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "82868639259a3bdaca27a20a2faa00c6705b0ac74ef7939b673c65e3a4dc94d4",
+  "candidate_tree_sha256": "800845d526614cd9e467158d1e665e4b310a15931660f0adfa9549c180e0807f",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -219,11 +219,11 @@
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
-      "sha256": "fe65f739390003d6da464bbbd14467747c25aae43ecbd3de5da6998fd1eb3d33"
+      "sha256": "b4413fd66394c8b5eed774eb22dade12ab62b2411e3aa63bd388f8f2e1725926"
     },
     {
       "path": "scripts/db/r4-catalog-object-fingerprints.sql",
-      "sha256": "93ae31f95e3eb2b3701ae21861f867d541ca6489245b523d70136867c1453af4"
+      "sha256": "08a2f0261255e9693ed2fee58ca0139fc35c758a6de02f09f206a4bea39e1ebe"
     },
     {
       "path": "scripts/db/rebuild-production-manifest.mjs",
@@ -307,7 +307,7 @@
     },
     {
       "path": "scripts/db/tests/r4-payment-remediation.contract.test.mjs",
-      "sha256": "a18edfef42282d4b5298209c2c9f4151476d25a753d3e6bf1ab8d10db830c322"
+      "sha256": "0a5af0d90c46e48253dfa0e3c7c97cb853d0ae24dbc027299895db95aadda471"
     },
     {
       "path": "scripts/db/tests/r5-ai-financial-retirement-integration.sql",
