@@ -344,7 +344,7 @@ export default function InstructorCareerTrackEditorPage() {
           description: form.description,
           learningOutcomes: splitLines(form.whatYoullLearnText),
         },
-        courseId: id,
+        careerTrackId: id,
       });
       if (!response.bundle) {
         throw new Error(t("courseEdit.descriptionGenerator.errors.noBundle"));

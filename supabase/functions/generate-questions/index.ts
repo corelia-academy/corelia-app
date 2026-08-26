@@ -53,6 +53,16 @@ const CORS_METHODS = "POST, OPTIONS";
 const CORS_HEADERS =
   "authorization, x-client-info, apikey, content-type, x-secret-key, x-supabase-api-version";
 
+class HttpStatusError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "HttpStatusError";
+    this.status = status;
+  }
+}
+
 function normalizeOrigin(raw: string): string | null {
   try {
     const url = new URL(raw.trim());
@@ -150,12 +160,14 @@ function createServiceClient(): SupabaseClient {
 
 async function verifyBearerUser(req: Request, db: SupabaseClient): Promise<User> {
   const header = req.headers.get("authorization") ?? req.headers.get("Authorization");
-  if (!header) throw new Error("Missing Authorization header");
+  if (!header) throw new HttpStatusError(401, "Missing Authorization header");
   const match = header.match(/^Bearer\s+(.+)$/i);
-  if (!match) throw new Error("Invalid Authorization header");
+  if (!match) throw new HttpStatusError(401, "Invalid Authorization header");
   const { data, error } = await db.auth.getUser(match[1]!);
-  if (error || !data.user) throw new Error("Invalid or expired session");
-  if (!data.user.email_confirmed_at) throw new Error("Email confirmation required");
+  if (error || !data.user) throw new HttpStatusError(401, "Invalid or expired session");
+  if (!data.user.email_confirmed_at) {
+    throw new HttpStatusError(401, "Email confirmation required");
+  }
   return data.user;
 }
 
@@ -171,7 +183,6 @@ async function ensureCanManageCourse(
   role: Role,
   courseId: string,
 ): Promise<void> {
-  if (role === "admin" || role === "support_staff") return;
   const { data, error } = await db
     .from("courses")
     .select("instructor_id,data")
@@ -179,12 +190,66 @@ async function ensureCanManageCourse(
     .single();
   if (error || !data) throw new Error("Không tìm thấy khoá học.");
   const row = data as CourseRow;
+  if (role === "admin" || role === "support_staff") return;
   if (row.instructor_id === userId) return;
   const coPerms =
     ((row.data ?? {}).co_instructor_permissions as Record<string, Record<string, boolean> | undefined> | undefined) ??
     {};
   if (coPerms[userId]?.content) return;
   throw new Error("Bạn không có quyền thực hiện thao tác này với khoá học.");
+}
+
+async function ensureQuestionResourcesBelongToCourse(
+  db: SupabaseClient,
+  params: {
+    courseId: string;
+    sectionId: string | null;
+    lessonId: string | null;
+    sourceLessonIds: string[] | null;
+  },
+): Promise<void> {
+  if (params.sectionId) {
+    const { data, error } = await db
+      .from("course_sections")
+      .select("course_id")
+      .eq("id", params.sectionId)
+      .single();
+    if (error || !data?.course_id) throw new Error("Không tìm thấy chương học.");
+    if (String(data.course_id) !== params.courseId) {
+      throw new Error("Chương học không thuộc khoá học đã yêu cầu.");
+    }
+  }
+
+  if (params.lessonId) {
+    const { data, error } = await db
+      .from("course_lessons")
+      .select("course_id,section_id")
+      .eq("id", params.lessonId)
+      .single();
+    if (error || !data?.course_id) throw new Error("Không tìm thấy bài học.");
+    if (String(data.course_id) !== params.courseId) {
+      throw new Error("Bài học không thuộc khoá học đã yêu cầu.");
+    }
+    if (params.sectionId && String(data.section_id ?? "") !== params.sectionId) {
+      throw new Error("Bài học không thuộc chương học đã yêu cầu.");
+    }
+  }
+
+  if (params.sourceLessonIds?.length) {
+    const sourceLessonIds = Array.from(new Set(params.sourceLessonIds));
+    const { data, error } = await db
+      .from("course_lessons")
+      .select("id,course_id")
+      .in("id", sourceLessonIds);
+    if (error) throw new Error("Không thể kiểm tra nguồn bài học.");
+    const rows = (data ?? []) as Array<{ id: string; course_id: string }>;
+    if (
+      rows.length !== sourceLessonIds.length ||
+      rows.some((row) => String(row.course_id) !== params.courseId)
+    ) {
+      throw new Error("Nguồn bài học không thuộc khoá học đã yêu cầu.");
+    }
+  }
 }
 
 function parseBody(body: RequestBody): {
@@ -553,6 +618,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const { courseId, sectionId, lessonId, sourceLessonIds, locale, count } = parseBody((await req.json()) as RequestBody);
 
     await ensureCanManageCourse(db, user.id, role, courseId);
+    await ensureQuestionResourcesBelongToCourse(db, {
+      courseId,
+      sectionId,
+      lessonId,
+      sourceLessonIds,
+    });
 
     let lessonQuery = db
       .from("course_lessons")
@@ -621,11 +692,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     console.error("[generate-questions]", error);
     const message =
       error instanceof Error ? error.message : "Không thể generate câu hỏi lúc này.";
-    const status = /Missing Authorization|Invalid or expired|Email confirmation/.test(message)
-      ? 401
+    const status = error instanceof HttpStatusError
+      ? error.status
       : /không có quyền/i.test(message)
         ? 403
-        : /Thiếu|Missing|hợp lệ/.test(message)
+        : /Thiếu|Missing|hợp lệ|Không tìm thấy|không thuộc/.test(message)
           ? 400
           : /chưa có nội dung|chưa có bài/.test(message)
             ? 422

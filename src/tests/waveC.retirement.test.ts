@@ -167,6 +167,17 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
         expect(content).toContain("admin");
         expect(content).toContain("ensureCanManageCourse");
       });
+
+      it(`classifies malformed Authorization as 401 in ${fn}`, () => {
+        const content = readSource(rootDir, `supabase/functions/${fn}/index.ts`);
+
+        expect(content).toContain(
+          'throw new HttpStatusError(401, "Invalid Authorization header")',
+        );
+        expect(content).toMatch(
+          /const status = error instanceof HttpStatusError\s*\? error\.status/,
+        );
+      });
     }
 
     it("scopes lesson generation to the requested course when both IDs are provided", () => {
@@ -218,6 +229,58 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issue #328)", () => {
       expect(careerTrackEditor).toMatch(/invokeGenerateDescription\s*\(\s*\{/);
       expect(careerTrackEditor).toMatch(/action:\s*["']translate["']/);
       expect(careerTrackEditor).toMatch(/bundleKind:\s*["']course_info["']/);
+      expect(careerTrackEditor).toMatch(/careerTrackId:\s*id/);
+      expect(careerTrackEditor).not.toMatch(
+        /invokeGenerateDescription\s*\(\s*\{[\s\S]*?bundleKind:\s*["']course_info["'][\s\S]*?courseId:\s*id[\s\S]*?\}\s*\)/,
+      );
+    });
+
+    it("statically enforces the Career Track translation resource contract", () => {
+      const content = readSource(
+        rootDir,
+        "supabase/functions/generate-description/index.ts",
+      );
+
+      expect(content).toContain('parseOptionalResourceId(body.careerTrackId, "careerTrackId")');
+      expect(content).toContain("Không được gửi đồng thời courseId và careerTrackId.");
+      expect(content).toContain("careerTrackId chỉ hợp lệ cho luồng dịch toàn bộ Career Track.");
+      expect(content).toMatch(
+        /async function ensureCanManageCareerTrack[\s\S]*?\.from\("career_tracks"\)[\s\S]*?\.eq\("id", careerTrackId\)[\s\S]*?if \(error \|\| !data\)[\s\S]*?if \(role === "admin" \|\| role === "support_staff"\) return/,
+      );
+    });
+
+    it("statically proves privileged course bypass happens only after course existence lookup", () => {
+      const descriptionFunction = readSource(
+        rootDir,
+        "supabase/functions/generate-description/index.ts",
+      );
+      const questionFunction = readSource(
+        rootDir,
+        "supabase/functions/generate-questions/index.ts",
+      );
+
+      expect(descriptionFunction).toMatch(
+        /async function ensureCanManageCourse[\s\S]*?const row = await getCourseAccessRow\(db, courseId\)[\s\S]*?if \(role === "admin" \|\| role === "support_staff"\) return/,
+      );
+      expect(questionFunction).toMatch(
+        /async function ensureCanManageCourse[\s\S]*?\.from\("courses"\)[\s\S]*?if \(error \|\| !data\)[\s\S]*?if \(role === "admin" \|\| role === "support_staff"\) return/,
+      );
+    });
+
+    it("statically keeps section, lesson, and source lessons scoped to their course", () => {
+      const descriptionFunction = readSource(
+        rootDir,
+        "supabase/functions/generate-description/index.ts",
+      );
+      const questionFunction = readSource(
+        rootDir,
+        "supabase/functions/generate-questions/index.ts",
+      );
+
+      expect(descriptionFunction).toContain("resolveAndValidateCourseScope");
+      expect(descriptionFunction).toContain("Nguồn bài học không thuộc khoá học đã yêu cầu.");
+      expect(questionFunction).toContain("ensureQuestionResourcesBelongToCourse");
+      expect(questionFunction).toContain("Nguồn bài học không thuộc khoá học đã yêu cầu.");
     });
   });
 
