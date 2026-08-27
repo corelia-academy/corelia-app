@@ -140,8 +140,6 @@ export function AuthSync() {
       }
 
       // Genuine new sign-in (not a session restore or same-user tab refresh).
-      // Daily streaks are claimed explicitly from the header, so sign-in alone
-      // cannot create a streak or trigger its milestone badges.
       if (event === "SIGNED_IN" && session?.user) {
         queueMicrotask(() => {
           // Best-effort: picks up any credential_issuances left at

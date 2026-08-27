@@ -67,56 +67,6 @@
     "accept": "Accept",
     "decline": "Decline"
   },
-  "dailyStreak": {
-    "openAria": "Open learning streak. Current streak: {{count}} days.",
-    "title": "Learning Streak",
-    "subtitle": "Check in daily to build your streak and earn rewards.",
-    "points": "{{count}} pts",
-    "currentStreak": "day streak",
-    "longest": "Best record: {{count}} days",
-    "zeroStreakMotivation": "Check in and start learning today!",
-    "brokenStreakMotivation": "Don't give up! Start again today to beat your previous {{count}}-day record!",
-    "activeStreakMotivation": "Keep up the momentum! Only {{remaining}} day(s) left to catch your {{longest}}-day record.",
-    "peakStreakMotivation": "All-time peak record: {{count}} days! You're doing amazing, keep the fire burning!",
-    "milestone": "{{days}}-day milestone",
-    "startMilestone": "Start (0 days)",
-    "infinityMilestone": "Infinity Streak (∞)",
-    "claim": "Check In",
-    "claimed": "Checked in today",
-    "nextClaimIn": "Next check-in in {{countdown}}",
-    "claimHint": "Resets every day at midnight (local time).",
-    "bonusTasks": "Bonus Missions",
-    "dailyQuests": "Daily Quests",
-    "externalQuests": "External Quests",
-    "dailyBonus": "Daily check-in",
-    "ocidBonus": "Connect Open Campus ID",
-    "githubBonus": "Connect GitHub account",
-    "connect": "Connect",
-    "connecting": "Connecting…",
-    "claimedToast": "Day {{count}} check-in completed!",
-    "milestoneToast": "Unlocked {{days}}-day streak milestone!",
-    "claimFailed": "Could not complete check-in. Please try again.",
-    "loadFailed": "Could not sync streak data.",
-    "retry": "Try again",
-    "githubConnectFailed": "Could not initiate GitHub connection. Please try again.",
-    "prompts": {
-      "unclaimed": [
-        "Have you checked in to earn points today?",
-        "Check in now to keep your streak alive!",
-        "Build daily streaks, earn instant rewards!",
-        "Don't forget to check in and stay on fire!"
-      ],
-      "ocidBonus": "Connect OCID for an instant +50 bonus pts!",
-      "githubBonus": "Connect GitHub to boost your on-chain score!",
-      "benefits": [
-        "Collect streak points to unlock perks!",
-        "Finish daily quests to claim special gifts!",
-        "Hit streak milestones to earn OCB badges!",
-        "Learn daily and claim your OCA certificate!",
-        "Build your streak, level up your Web3 profile!"
-      ]
-    }
-  },
   "betaAnnouncement": {
     "summary": "Corelia is currently in beta. Some features may be incomplete or contain bugs.",
     "summaryCompact": "Beta version — features may be incomplete or contain bugs.",
@@ -465,7 +415,6 @@
   "achievements": {
     "badgeCategory": {
       "learning": "Learning",
-      "streak": "Streak",
       "milestone": "Milestone",
       "social": "Social"
     },

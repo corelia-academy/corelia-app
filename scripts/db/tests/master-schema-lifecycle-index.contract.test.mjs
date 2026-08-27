@@ -48,14 +48,11 @@ describe("Master Wave 3: Schema Classification, Lifecycle Invariants & Index Opt
       "notification_preferences",
       "email_delivery_attempts",
       "learning_reminder_logs",
-      "user_daily_streaks",
-      "user_daily_streak_claims",
-      "user_point_ledger",
-      "user_streak_milestone_unlocks",
       "credential_templates",
       "credential_issuances",
       "certificate_records",
       "pending_credential_issuances",
+      "user_point_ledger",
       "follows",
       "activity_events",
       "knowledge_chunks",
@@ -131,7 +128,6 @@ describe("Master Wave 3: Schema Classification, Lifecycle Invariants & Index Opt
     assert.match(migrationContent, /COMMENT ON TABLE public\.courses IS 'CANONICAL_ENTITY:/);
     assert.match(migrationContent, /COMMENT ON TABLE public\.projects IS 'CANONICAL_ENTITY:/);
     assert.match(migrationContent, /COMMENT ON TABLE public\.hackathons IS 'CANONICAL_ENTITY:/);
-    assert.match(migrationContent, /COMMENT ON TABLE public\.user_daily_streaks IS 'CANONICAL_AGGREGATE:/);
   });
 
   it("SOT-02: Derived state cannot silently diverge where fixed", () => {

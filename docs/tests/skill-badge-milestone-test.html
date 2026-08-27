@@ -109,13 +109,7 @@ Prompt Engineering</textarea></div>
         </div>
 
         <div class="panel">
-          <h2>4. Milestone và daily streak</h2>
-          <div class="grid-3">
-            <div class="field"><label for="streak3Name">Milestone 3 ngày</label><input id="streak3Name" value="3-Day Learning Streak"></div>
-            <div class="field"><label for="streak7Name">Milestone 7 ngày</label><input id="streak7Name" value="7-Day Learning Streak"></div>
-            <div class="field"><label for="streak30Name">Milestone 30 ngày</label><input id="streak30Name" value="30-Day Learning Streak"></div>
-          </div>
-          <label class="check"><input id="enableLongestStreak" type="checkbox" checked> Ghi nhận milestone theo longest streak</label>
+          <h2>4. Activity Milestones</h2>
           <div class="field"><label for="milestoneBadgePolicy">Badge milestone</label><select id="milestoneBadgePolicy"><option value="independent">Độc lập với badge khóa học</option><option value="disabled">Chưa cấp badge milestone</option></select></div>
           <div class="milestone-list">
             <label class="milestone-row"><span><input type="checkbox" data-milestone="first_course" checked> Hoàn thành khóa học đầu tiên</span><small>first_course_completed</small></label>
@@ -166,8 +160,6 @@ Prompt Engineering</textarea></div>
                 <tr data-testcase-id="SKILL-002"><td>SKILL-002</td><td>Một khóa học có nhiều skill</td><td>Tất cả skill tag được hiển thị; không giới hạn ở một skill duy nhất.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
                 <tr data-testcase-id="SKILL-003"><td>SKILL-003</td><td>Hoàn thành khóa học</td><td>Skill xuất hiện trong mục Skill trên profile; không tạo credential on-chain cho skill.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
                 <tr data-testcase-id="REWARD-001"><td>REWARD-001</td><td>Course reward preview</td><td>Dashboard hiển thị đúng OCB, OCA và certificate đã cấu hình; phần không bật không xuất hiện.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
-                <tr data-testcase-id="MILESTONE-001"><td>MILESTONE-001</td><td>Daily streak 3/7/14/30 ngày</td><td>Milestone được đánh giá đúng các mốc streak đã cấu hình.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
-                <tr data-testcase-id="MILESTONE-002"><td>MILESTONE-002</td><td>Longest streak</td><td>Hệ thống giữ được giá trị longest streak, kể cả khi streak hiện tại bị reset.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
                 <tr data-testcase-id="MILESTONE-003"><td>MILESTONE-003</td><td>Badge milestone độc lập</td><td>Badge milestone không dùng lại course badge và không làm thay đổi course badge đã cấp.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
                 <tr data-testcase-id="REMINDER-001"><td>REMINDER-001</td><td>Không hoạt động 3 ngày</td><td>Người học đang học dở đủ ngưỡng 3 ngày thì đủ điều kiện nhận email nhắc.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
                 <tr data-testcase-id="REMINDER-002"><td>REMINDER-002</td><td>Không hoạt động quá 1 tháng</td><td>Hệ thống ngừng gửi reminder sau ngưỡng stop; không gửi vô hạn.</td><td><select data-testcase-status><option value="not_run">Not run</option><option value="pass">Pass</option><option value="fail">Fail</option></select></td><td><input data-testcase-notes placeholder="Ghi chú"></td></tr>
@@ -233,8 +225,6 @@ Prompt Engineering</textarea></div>
             certificate: checked("enableCertificate") ? { name: value("certificateName"), visibility: $("certificatePublic").value } : null
           },
           milestones: {
-            streakDays: [3, 7, 14, 30],
-            longestStreak: checked("enableLongestStreak"),
             badgePolicy: $("milestoneBadgePolicy").value,
             enabled: Array.from(document.querySelectorAll("[data-milestone]:checked")).map((input) => input.dataset.milestone)
           },
