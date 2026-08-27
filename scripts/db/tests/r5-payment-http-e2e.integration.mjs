@@ -157,6 +157,18 @@ try {
   }
   console.log("HTTP-PAY-01 PASS (invalid signature rejected; zero DB mutation)");
 
+  const missingSecretResponse = await fetch(`${functionUrl}?op=payments.sepay.ipn`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      notification_type: "ORDER_PAID",
+      order: { order_invoice_number: validTx, order_amount: String(amount) },
+      transaction: { id: `MISSING-SIG-${validTx}`, transaction_id: `MISSING-SIG-${validTx}` },
+    }),
+  });
+  if (missingSecretResponse.status !== 401) fail(`HTTP-PAY-01B expected 401 on missing secret, got ${missingSecretResponse.status}.`);
+  console.log("HTTP-PAY-01B PASS (missing signature rejected; zero DB mutation)");
+
   const valid = await postIpn(functionUrl, ipnSecret, validTx, amount);
   if (valid.status !== 200 || valid.body.ok !== true) fail(`HTTP-PAY-02 valid callback failed (${valid.status}).`);
   const validState = runSql(`
@@ -251,7 +263,32 @@ try {
   if (aiRefundState !== "refunded:1:0") fail(`HTTP-PAY-10 historical AI refund invariant failed: ${aiRefundState}.`);
   console.log("HTTP-PAY-10 PASS (provider refund remains supported; zero AI reactivation)");
 
-  console.log("R5 LOCAL HTTP E2E PASS (11/11 real Request/router/signature/DB cases)");
+  // HTTP-PAY-11: Provider course refund callback finalizes refund and revokes course entitlement
+  const courseRefund = await postIpn(functionUrl, ipnSecret, validTx, amount, "ORDER_REFUND");
+  if (courseRefund.status !== 200 || courseRefund.body.ok !== true) {
+    fail(`HTTP-PAY-11 provider course refund callback failed (${courseRefund.status}).`);
+  }
+  const courseRefundState = runSql(`
+    SELECT concat_ws(':',
+      t.status,
+      (SELECT count(*) FROM public.payment_refunds r WHERE r.payment_transaction_id=t.id AND r.status='completed'),
+      (SELECT count(*) FROM public.course_entitlement_grants g WHERE g.source_transaction_id=t.id AND g.status='active'),
+      (SELECT count(*) FROM public.course_entitlement_grants g WHERE g.source_transaction_id=t.id AND g.status='revoked'),
+      (SELECT count(*) FROM public.course_payment_access a WHERE a.full_access_transaction_id=t.id AND a.full_access_granted)
+    ) FROM public.payment_transactions t WHERE t.id='${validTx}';
+  `);
+  if (courseRefundState !== "refunded:1:0:1:0") fail(`HTTP-PAY-11 course refund invariant failed: ${courseRefundState}.`);
+  console.log("HTTP-PAY-11 PASS (provider course refund revoked entitlement grant and updated projection)");
+
+  // Duplicate provider course refund is idempotent
+  const dupCourseRefund = await postIpn(functionUrl, ipnSecret, validTx, amount, "ORDER_REFUND");
+  if (dupCourseRefund.status !== 200 || dupCourseRefund.body.ok !== true) {
+    fail(`HTTP-PAY-11B duplicate course refund failed (${dupCourseRefund.status}).`);
+  }
+  console.log("HTTP-PAY-11B PASS (duplicate provider course refund callback idempotent)");
+
+  console.log("R5 LOCAL HTTP E2E PASS (13/13 real Request/router/signature/DB cases)");
+
 } catch (error) {
   const safeOutput = edgeOutput
     .replaceAll(ipnSecret, "[REDACTED]")
@@ -279,10 +316,13 @@ try {
   try {
     runSql(`
       DELETE FROM public.payment_refunds WHERE payment_transaction_id IN ('${validTx}', '${paidRepairTx}', '${failedTx}', '${mismatchTx}', '${aiPendingTx}', '${aiHistoricalPendingTx}', '${aiPaidTx}');
-      DELETE FROM public.enrollments WHERE user_id='${buyer}' AND course_id IN ('${courseId}', '${repairCourseId}');
+      DELETE FROM public.course_entitlement_grants WHERE user_id='${buyer}' AND (course_id IN ('${courseId}', '${repairCourseId}') OR source_transaction_id IN ('${validTx}', '${paidRepairTx}', '${failedTx}', '${mismatchTx}', '${aiPendingTx}', '${aiHistoricalPendingTx}', '${aiPaidTx}'));
       DELETE FROM public.course_payment_access WHERE user_id='${buyer}' AND course_id IN ('${courseId}', '${repairCourseId}');
+      DELETE FROM public.enrollments WHERE user_id='${buyer}' AND course_id IN ('${courseId}', '${repairCourseId}');
+      DELETE FROM public.payment_transaction_items WHERE payment_transaction_id IN ('${validTx}', '${paidRepairTx}', '${failedTx}', '${mismatchTx}', '${aiPendingTx}', '${aiHistoricalPendingTx}', '${aiPaidTx}');
       DELETE FROM public.payment_transactions WHERE id IN ('${validTx}', '${paidRepairTx}', '${failedTx}', '${mismatchTx}', '${aiPendingTx}', '${aiHistoricalPendingTx}', '${aiPaidTx}');
       DELETE FROM public.courses WHERE id IN ('${courseId}', '${repairCourseId}');
+      DELETE FROM public.profiles WHERE id IN ('${buyer}', '${instructor}');
       DELETE FROM auth.users WHERE id IN ('${buyer}', '${instructor}');
     `);
   } catch (cleanupError) {

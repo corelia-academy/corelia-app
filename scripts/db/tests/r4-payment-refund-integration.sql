@@ -17,6 +17,10 @@ BEGIN
     (v_instructor, 'r4-payment-instructor@test.local', 'authenticated', 'authenticated', '{}', '{}')
   ON CONFLICT (id) DO NOTHING;
 
+  INSERT INTO public.profiles (id, role, full_name, email)
+  VALUES (v_instructor, 'admin', 'R4 Instructor', 'r4-payment-instructor@test.local')
+  ON CONFLICT (id) DO UPDATE SET role = EXCLUDED.role;
+
   INSERT INTO public.courses (id, instructor_id, published, slug, data)
   VALUES
     ('r4-pay-main', v_instructor, true, 'r4-pay-main', '{"access_model":"paid_upfront"}'),
@@ -157,19 +161,51 @@ BEGIN
   -- PAY-INT-10: SECURITY DEFINER financial mutations are service-only.
   IF has_function_privilege('anon', 'public.process_successful_payment(text,jsonb,timestamp with time zone)', 'EXECUTE')
      OR has_function_privilege('authenticated', 'public.process_successful_payment(text,jsonb,timestamp with time zone)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.request_payment_refund(text,integer,text,uuid,jsonb)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.request_payment_refund(text,integer,text,uuid,jsonb)', 'EXECUTE')
      OR has_function_privilege('anon', 'public.process_payment_refund(text,integer,text,uuid,jsonb)', 'EXECUTE')
-     OR has_function_privilege('authenticated', 'public.process_payment_refund(text,integer,text,uuid,jsonb)', 'EXECUTE') THEN
+     OR has_function_privilege('authenticated', 'public.process_payment_refund(text,integer,text,uuid,jsonb)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.process_provider_payment_refund(text,integer,text,text,uuid,jsonb)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.process_provider_payment_refund(text,integer,text,text,uuid,jsonb)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.create_payment_checkout_transaction(text,uuid,text,text,integer,integer,text,integer,text,timestamp with time zone)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.create_payment_checkout_transaction(text,uuid,text,text,integer,integer,text,integer,text,timestamp with time zone)', 'EXECUTE')
+      OR has_function_privilege('anon', 'public.grant_course_access_admin(uuid,text,boolean,text,uuid)', 'EXECUTE')
+      OR has_function_privilege('authenticated', 'public.grant_course_access_admin(uuid,text,boolean,text,uuid)', 'EXECUTE')
+      OR has_function_privilege('anon', 'public.grant_course_access_admin(uuid,text,boolean,boolean,text,uuid)', 'EXECUTE')
+      OR has_function_privilege('authenticated', 'public.grant_course_access_admin(uuid,text,boolean,boolean,text,uuid)', 'EXECUTE') THEN
     RAISE EXCEPTION 'PAY-INT-10: financial SECURITY DEFINER RPC remains client executable';
   END IF;
   RAISE NOTICE 'PAY-INT-10 PASS';
 
-  -- REF-INT-01: full refund writes ledger, revokes access, preserves enrollment.
-  v_result := public.process_payment_refund('R4-PAY-01', 299000, 'full refund', v_instructor, '{}');
+  -- REF-INT-01: Two-stage refund lifecycle (Stage A request + Stage B provider finalize).
+  -- Stage A: Request refund
+  v_result := public.request_payment_refund('R4-PAY-01', 299000, 'full refund', v_instructor, '{}');
+  IF v_result->>'status' <> 'refunded' AND v_result->>'status' <> 'refund_requested' THEN
+    RAISE EXCEPTION 'REF-INT-01: refund request result was %', v_result;
+  END IF;
+  IF (SELECT status FROM public.payment_transactions WHERE id = 'R4-PAY-01') <> 'refund_requested'
+     OR NOT EXISTS (
+       SELECT 1 FROM public.payment_refunds
+       WHERE payment_transaction_id = 'R4-PAY-01' AND amount_vnd = 299000 AND status = 'requested'
+     )
+     OR NOT EXISTS (
+       SELECT 1 FROM public.course_payment_access
+       WHERE user_id = v_buyer AND course_id = 'r4-pay-main' AND full_access_granted = true
+     )
+     OR NOT EXISTS (
+       SELECT 1 FROM public.enrollments
+       WHERE user_id = v_buyer AND course_id = 'r4-pay-main'
+     ) THEN
+    RAISE EXCEPTION 'REF-INT-01: Stage A request invariant failed';
+  END IF;
+
+  -- Stage B: Provider confirmation
+  v_result := public.process_provider_payment_refund('R4-PAY-01', 299000, 'full refund confirmed', 'SEPAY-REF-01', v_instructor, '{}');
   IF v_result->>'status' <> 'refunded'
      OR (SELECT status FROM public.payment_transactions WHERE id = 'R4-PAY-01') <> 'refunded'
      OR NOT EXISTS (
        SELECT 1 FROM public.payment_refunds
-       WHERE payment_transaction_id = 'R4-PAY-01' AND amount_vnd = 299000 AND status = 'completed'
+       WHERE payment_transaction_id = 'R4-PAY-01' AND amount_vnd = 299000 AND status = 'completed' AND provider_refund_id = 'SEPAY-REF-01'
      )
      OR EXISTS (
        SELECT 1 FROM public.course_payment_access
@@ -179,54 +215,70 @@ BEGIN
        SELECT 1 FROM public.enrollments
        WHERE user_id = v_buyer AND course_id = 'r4-pay-main'
      ) THEN
-    RAISE EXCEPTION 'REF-INT-01: full refund invariant failed';
+    RAISE EXCEPTION 'REF-INT-01: Stage B provider finalize invariant failed';
   END IF;
   RAISE NOTICE 'REF-INT-01 PASS';
 
-  -- REF-INT-02/03: partial state and remaining refundable amount.
+  -- REF-INT-02/03: partial refund and over-refund are strictly rejected.
   INSERT INTO public.payment_transactions
     (id, user_id, course_id, purpose, amount_vnd, provider, status, created_at, updated_at)
   VALUES
     ('R4-REF-PARTIAL', v_buyer, 'r4-pay-partial', 'course_purchase', 300000, 'sepay', 'pending', now(), now());
   PERFORM public.process_successful_payment('R4-REF-PARTIAL', '{}', now());
-  v_result := public.process_payment_refund('R4-REF-PARTIAL', 100000, 'partial refund', v_instructor, '{}');
-  IF v_result->>'status' <> 'partially_refunded'
-     OR (v_result->>'remaining_refundable_vnd')::int <> 200000
-     OR (SELECT status FROM public.payment_transactions WHERE id = 'R4-REF-PARTIAL') <> 'partially_refunded'
-     OR NOT EXISTS (
-       SELECT 1 FROM public.course_payment_access
-       WHERE user_id = v_buyer AND course_id = 'r4-pay-partial' AND full_access_granted = true
-     ) THEN
-    RAISE EXCEPTION 'REF-INT-02: partial refund state/access invalid';
+
+  -- Partial refund rejected
+  v_caught := false;
+  BEGIN
+    PERFORM public.request_payment_refund('R4-REF-PARTIAL', 100000, 'partial refund', v_instructor, '{}');
+  EXCEPTION WHEN SQLSTATE '22023' THEN
+    v_caught := true;
+  END;
+  IF NOT v_caught
+     OR (SELECT status FROM public.payment_transactions WHERE id = 'R4-REF-PARTIAL') <> 'paid'
+     OR EXISTS (SELECT 1 FROM public.payment_refunds WHERE payment_transaction_id = 'R4-REF-PARTIAL') THEN
+    RAISE EXCEPTION 'REF-INT-02: partial refund was not rejected atomically';
   END IF;
   RAISE NOTICE 'REF-INT-02 PASS';
 
+  -- Over-refund rejected
   v_caught := false;
   BEGIN
-    PERFORM public.process_payment_refund('R4-REF-PARTIAL', 200001, 'over refund', v_instructor, '{}');
-  EXCEPTION WHEN SQLSTATE '22003' THEN
+    PERFORM public.request_payment_refund('R4-REF-PARTIAL', 300001, 'over refund', v_instructor, '{}');
+  EXCEPTION WHEN SQLSTATE '22023' THEN
     v_caught := true;
   END;
-  IF NOT v_caught OR (
-    SELECT COALESCE(sum(amount_vnd), 0) FROM public.payment_refunds
-    WHERE payment_transaction_id = 'R4-REF-PARTIAL' AND status = 'completed'
-  ) <> 100000 THEN
+  IF NOT v_caught
+     OR (SELECT status FROM public.payment_transactions WHERE id = 'R4-REF-PARTIAL') <> 'paid'
+     OR EXISTS (SELECT 1 FROM public.payment_refunds WHERE payment_transaction_id = 'R4-REF-PARTIAL') THEN
     RAISE EXCEPTION 'REF-INT-03: over-refund was not rejected atomically';
   END IF;
   RAISE NOTICE 'REF-INT-03 PASS';
 
-  -- REF-INT-05: refunding an old purchase preserves a newer purchase.
+  -- REF-INT-05: refunding an old purchase preserves a newer purchase after repurchase.
   INSERT INTO public.payment_transactions
     (id, user_id, course_id, purpose, amount_vnd, provider, status, created_at, updated_at)
   VALUES
-    ('R4-REF-OLD', v_buyer, 'r4-pay-repurchase', 'course_purchase', 200000, 'sepay', 'pending', now() - interval '2 hours', now() - interval '2 hours'),
+    ('R4-REF-OLD', v_buyer, 'r4-pay-repurchase', 'course_purchase', 200000, 'sepay', 'pending', now() - interval '3 hours', now() - interval '3 hours'),
     ('R4-REF-NEW', v_buyer, 'r4-pay-repurchase', 'course_purchase', 220000, 'sepay', 'pending', now() - interval '1 hour', now() - interval '1 hour');
-  PERFORM public.process_successful_payment('R4-REF-OLD', '{}', now() - interval '2 hours');
+  PERFORM public.process_successful_payment('R4-REF-OLD', '{}', now() - interval '3 hours');
+  PERFORM public.request_payment_refund('R4-REF-OLD', 200000, 'refund old purchase', v_instructor, '{}');
+  PERFORM public.process_provider_payment_refund('R4-REF-OLD', 200000, 'refund old purchase', 'SEPAY-REF-OLD', v_instructor, '{}');
+
+  -- Repurchase with R4-REF-NEW
   PERFORM public.process_successful_payment('R4-REF-NEW', '{}', now() - interval '1 hour');
 
-  -- PAY-INT-11: a delayed duplicate callback for the old transaction must not
+  -- PAY-INT-11: a delayed duplicate callback for the old refunded transaction must not
   -- overwrite the newer entitlement provenance or enrollment payment source.
-  PERFORM public.process_successful_payment('R4-REF-OLD', '{"provider":"delayed-retry"}', now());
+  v_caught := false;
+  BEGIN
+    PERFORM public.process_successful_payment('R4-REF-OLD', '{"provider":"delayed-retry"}', now());
+  EXCEPTION WHEN SQLSTATE '22000' THEN
+    v_caught := true;
+  END;
+  IF NOT v_caught THEN
+    RAISE EXCEPTION 'PAY-INT-11: delayed callback for refunded transaction was not rejected';
+  END IF;
+
   IF (SELECT full_access_transaction_id FROM public.course_payment_access
       WHERE user_id = v_buyer AND course_id = 'r4-pay-repurchase') <> 'R4-REF-NEW'
      OR (SELECT paid_order_id FROM public.enrollments
@@ -235,7 +287,6 @@ BEGIN
   END IF;
   RAISE NOTICE 'PAY-INT-11 PASS';
 
-  PERFORM public.process_payment_refund('R4-REF-OLD', 200000, 'refund old purchase', v_instructor, '{}');
   SELECT * INTO STRICT v_access FROM public.course_payment_access
   WHERE user_id = v_buyer AND course_id = 'r4-pay-repurchase';
   IF v_access.full_access_granted IS NOT TRUE
@@ -253,8 +304,8 @@ BEGIN
   PERFORM public.process_successful_payment('R4-REF-FAIL', '{}', now());
   v_caught := false;
   BEGIN
-    PERFORM public.process_payment_refund('R4-REF-FAIL', 120001, 'must fail', v_instructor, '{}');
-  EXCEPTION WHEN SQLSTATE '22003' THEN
+    PERFORM public.process_provider_payment_refund('R4-REF-FAIL', 120001, 'must fail', 'SEPAY-REF-FAIL', v_instructor, '{}');
+  EXCEPTION WHEN SQLSTATE '22023' THEN
     v_caught := true;
   END;
   IF NOT v_caught
@@ -276,7 +327,7 @@ BEGIN
     ('R4-CERT-NEW', v_buyer, 'r4-pay-cert-later', 'certificate_fee', 45000, 'sepay', 'pending', now() - interval '1 hour', now() - interval '1 hour');
   PERFORM public.process_successful_payment('R4-CERT-OLD', '{}', now() - interval '2 hours');
   PERFORM public.process_successful_payment('R4-CERT-NEW', '{}', now() - interval '1 hour');
-  PERFORM public.process_payment_refund('R4-CERT-OLD', 40000, 'refund old certificate fee', v_instructor, '{}');
+  PERFORM public.process_provider_payment_refund('R4-CERT-OLD', 40000, 'refund old certificate fee', 'SEPAY-CERT-OLD', v_instructor, '{}');
   SELECT * INTO STRICT v_access FROM public.course_payment_access
   WHERE user_id = v_buyer AND course_id = 'r4-pay-cert-later';
   IF v_access.certificate_fee_paid IS NOT TRUE
@@ -287,10 +338,13 @@ BEGIN
 
   -- Cleanup in FK-safe order.
   DELETE FROM public.payment_refunds WHERE payment_transaction_id LIKE 'R4-%';
-  DELETE FROM public.enrollments WHERE user_id = v_buyer AND course_id LIKE 'r4-pay-%';
+  DELETE FROM public.course_entitlement_grants WHERE user_id = v_buyer AND (course_id LIKE 'r4-pay-%' OR source_transaction_id LIKE 'R4-%');
   DELETE FROM public.course_payment_access WHERE user_id = v_buyer AND course_id LIKE 'r4-pay-%';
+  DELETE FROM public.enrollments WHERE user_id = v_buyer AND course_id LIKE 'r4-pay-%';
+  DELETE FROM public.payment_transaction_items WHERE payment_transaction_id LIKE 'R4-%';
   DELETE FROM public.payment_transactions WHERE id LIKE 'R4-%';
   DELETE FROM public.courses WHERE id LIKE 'r4-pay-%';
+  DELETE FROM public.profiles WHERE id IN (v_buyer, v_instructor);
   DELETE FROM auth.users WHERE id IN (v_buyer, v_instructor);
 
   RAISE NOTICE 'R4 PAYMENT/REFUND SQL INTEGRATION PASS';
