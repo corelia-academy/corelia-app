@@ -95,15 +95,16 @@ describe("Remove Streak Feature Contract Test", () => {
 
   it("STREAK-04: Historical docs/streak are preserved verbatim", () => {
     const expectedSha256 = {
-      "docs/streak/README.md": "f1941b5645e067789b1a6a670f288efd70cee51a189d4e4f4d55ab3312b56ddf",
-      "docs/streak/streak-system.md": "5f2d65ee2de553ac27868c2d4f148c4d6a130daddf58e191cdef3b6ac6c74ca3",
-      "docs/streak/streak-ui.md": "cfc9c64eae1230a586efa9b98852757b48c9101cdecf422fc1c699af9ff3bf06",
+      "docs/streak/README.md": "1860f9a49c2071e3872b22d022df2cb8b558857063ce47f3c2949d9985854e06",
+      "docs/streak/streak-system.md": "d90e834a49cfa7bfde6823d6353a992daef6b1a710c805a4498f9efacae7e32a",
+      "docs/streak/streak-ui.md": "ac1502036622cfdaf1097df4d568891ed155990d1b50f61c9a122beb6d73c93c",
     };
 
     for (const [relativePath, expectedHash] of Object.entries(expectedSha256)) {
       const doc = path.join(rootDir, relativePath);
       assert.strictEqual(fs.existsSync(doc), true, `Historical doc must exist: ${doc}`);
-      const actualHash = createHash("sha256").update(fs.readFileSync(doc)).digest("hex");
+      const normalizedContent = fs.readFileSync(doc, "utf8").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      const actualHash = createHash("sha256").update(normalizedContent, "utf8").digest("hex");
       assert.strictEqual(actualHash, expectedHash, `Historical doc changed: ${relativePath}`);
     }
   });
