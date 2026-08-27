@@ -5,8 +5,12 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+const pnpmShell = process.platform === "win32";
 const projectId = "corelia-app";
 const dbContainer = `supabase_db_${projectId}`;
+const edgeProcessStopTimeoutMs = 5_000;
+const dockerStopTimeoutMs = 15_000;
+const cleanupSqlTimeoutMs = 10_000;
 const tempDir = mkdtempSync(join(tmpdir(), "corelia-r5-http-"));
 const envPath = join(tempDir, "edge.env");
 const ipnSecret = randomBytes(32).toString("hex");
@@ -21,10 +25,10 @@ function parseStatusEnv() {
   const result = spawnSync(command, ["exec", "supabase", "status", "-o", "env"], {
     cwd: process.cwd(),
     encoding: "utf8",
-    shell: true,
+    shell: pnpmShell,
     windowsHide: true,
   });
-  if (result.status !== 0) fail("R5 HTTP E2E could not read local Supabase status.");
+  if (result.error || result.status !== 0) fail("R5 HTTP E2E could not read local Supabase status.");
   const values = {};
   for (const line of result.stdout.split(/\r?\n/)) {
     const match = line.match(/^([A-Z0-9_]+)=(?:"([^"]*)"|(.*))$/);
@@ -36,14 +40,102 @@ function parseStatusEnv() {
   return values;
 }
 
-function runSql(sql) {
+function runSql(sql, { timeoutMs } = {}) {
   const result = spawnSync(
     "docker",
     ["exec", "-i", dbContainer, "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", "postgres", "-tA", "-f", "-"],
-    { input: sql, encoding: "utf8", windowsHide: true },
+    {
+      input: sql,
+      encoding: "utf8",
+      windowsHide: true,
+      ...(timeoutMs == null ? {} : { timeout: timeoutMs }),
+    },
   );
-  if (result.status !== 0) fail(`R5 HTTP E2E SQL failed: ${result.stderr.trim()}`);
+  if (result.error || result.status !== 0) {
+    const detail = result.error?.code === "ETIMEDOUT"
+      ? `timed out after ${timeoutMs}ms`
+      : result.stderr?.trim() || result.error?.message || `exit status ${result.status}`;
+    fail(`R5 HTTP E2E SQL failed: ${detail}`);
+  }
   return result.stdout.trim();
+}
+
+function isChildRunning(child) {
+  return child && child.exitCode == null && child.signalCode == null;
+}
+
+function waitForChildExit(child, timeoutMs) {
+  if (!isChildRunning(child)) return Promise.resolve(true);
+
+  return new Promise((resolveWait) => {
+    let settled = false;
+    let timer;
+    const finish = (exited) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      child.off("exit", onExit);
+      child.off("close", onExit);
+      resolveWait(exited);
+    };
+    const onExit = () => finish(true);
+
+    timer = setTimeout(() => finish(false), timeoutMs);
+    child.once("exit", onExit);
+    child.once("close", onExit);
+    if (!isChildRunning(child)) finish(true);
+  });
+}
+
+function terminateWindowsProcessTree(pid) {
+  if (pid == null) return;
+  const result = spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], {
+    encoding: "utf8",
+    timeout: edgeProcessStopTimeoutMs,
+    windowsHide: true,
+  });
+  if (result.error && result.error.code !== "ESRCH") {
+    console.error(`R5 HTTP E2E process cleanup warning: ${result.error.message}`);
+  }
+}
+
+async function terminateEdgeProcess() {
+  const child = edgeProcess;
+  if (!child) return;
+
+  const pid = child.pid;
+  if (process.platform === "win32") {
+    if (isChildRunning(child)) terminateWindowsProcessTree(pid);
+  } else if (pid != null) {
+    try {
+      process.kill(-pid, "SIGTERM");
+    } catch (error) {
+      if (error.code !== "ESRCH") {
+        console.error(`R5 HTTP E2E process cleanup warning: ${error.message}`);
+      }
+    }
+  }
+
+  const exited = await waitForChildExit(child, edgeProcessStopTimeoutMs);
+  if (!exited && pid != null) {
+    if (process.platform === "win32") {
+      terminateWindowsProcessTree(pid);
+    } else {
+      try {
+        process.kill(-pid, "SIGKILL");
+      } catch (error) {
+        if (error.code !== "ESRCH") {
+          console.error(`R5 HTTP E2E forced process cleanup warning: ${error.message}`);
+        }
+      }
+    }
+    await waitForChildExit(child, edgeProcessStopTimeoutMs);
+  }
+
+  child.stdout?.resume();
+  child.stderr?.resume();
+  child.stdout?.destroy();
+  child.stderr?.destroy();
 }
 
 async function waitForHealth(url, timeoutMs = 60_000) {
@@ -139,7 +231,13 @@ try {
   edgeProcess = spawn(
     command,
     ["exec", "supabase", "functions", "serve", "corelia-api", "--env-file", envPath, "--no-verify-jwt"],
-    { cwd: resolve(process.cwd()), shell: true, windowsHide: true, stdio: ["ignore", "pipe", "pipe"] },
+    {
+      cwd: resolve(process.cwd()),
+      shell: pnpmShell,
+      detached: process.platform !== "win32",
+      windowsHide: true,
+      stdio: ["ignore", "pipe", "pipe"],
+    },
   );
   const collect = (chunk) => {
     edgeOutput = (edgeOutput + String(chunk)).slice(-20_000);
@@ -297,24 +395,21 @@ try {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
 } finally {
-  if (edgeProcess && edgeProcess.exitCode == null) {
-    if (process.platform === "win32") {
-      spawnSync("taskkill", ["/PID", String(edgeProcess.pid), "/T", "/F"], {
-        encoding: "utf8",
-        windowsHide: true,
-      });
-    } else {
-      edgeProcess.kill("SIGTERM");
-      await new Promise((resolveWait) => setTimeout(resolveWait, 500));
-      if (edgeProcess.exitCode == null) edgeProcess.kill("SIGKILL");
-    }
-  }
-  spawnSync("docker", ["stop", `supabase_edge_runtime_${projectId}`], {
+  await terminateEdgeProcess();
+  const dockerStopResult = spawnSync("docker", ["stop", "--time", "5", `supabase_edge_runtime_${projectId}`], {
     encoding: "utf8",
+    timeout: dockerStopTimeoutMs,
     windowsHide: true,
   });
+  if (dockerStopResult.error && dockerStopResult.error.code !== "ETIMEDOUT") {
+    console.error(`R5 HTTP E2E Docker cleanup warning: ${dockerStopResult.error.message}`);
+  } else if (dockerStopResult.error?.code === "ETIMEDOUT") {
+    console.error(`R5 HTTP E2E Docker cleanup warning: timed out after ${dockerStopTimeoutMs}ms`);
+  }
   try {
     runSql(`
+      SET lock_timeout = '4s';
+      SET statement_timeout = '8s';
       DELETE FROM public.payment_refunds WHERE payment_transaction_id IN ('${validTx}', '${paidRepairTx}', '${failedTx}', '${mismatchTx}', '${aiPendingTx}', '${aiHistoricalPendingTx}', '${aiPaidTx}');
       DELETE FROM public.course_entitlement_grants WHERE user_id='${buyer}' AND (course_id IN ('${courseId}', '${repairCourseId}') OR source_transaction_id IN ('${validTx}', '${paidRepairTx}', '${failedTx}', '${mismatchTx}', '${aiPendingTx}', '${aiHistoricalPendingTx}', '${aiPaidTx}'));
       DELETE FROM public.course_payment_access WHERE user_id='${buyer}' AND course_id IN ('${courseId}', '${repairCourseId}');
@@ -324,7 +419,7 @@ try {
       DELETE FROM public.courses WHERE id IN ('${courseId}', '${repairCourseId}');
       DELETE FROM public.profiles WHERE id IN ('${buyer}', '${instructor}');
       DELETE FROM auth.users WHERE id IN ('${buyer}', '${instructor}');
-    `);
+    `, { timeoutMs: cleanupSqlTimeoutMs });
   } catch (cleanupError) {
     console.error(`R5 HTTP E2E cleanup failed: ${cleanupError.message}`);
     process.exitCode = 1;
