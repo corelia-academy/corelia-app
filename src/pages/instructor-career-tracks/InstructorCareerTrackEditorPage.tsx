@@ -344,9 +344,11 @@ export default function InstructorCareerTrackEditorPage() {
           description: form.description,
           learningOutcomes: splitLines(form.whatYoullLearnText),
         },
-        courseId: id,
+        careerTrackId: id,
       });
-      if (!response.bundle) throw new Error("No bundle returned");
+      if (!response.bundle) {
+        throw new Error(t("courseEdit.descriptionGenerator.errors.noBundle"));
+      }
       setTranslationDraft((prev) => ({
         title: response.bundle?.title ?? prev.title,
         description: response.bundle?.description ?? prev.description,
@@ -536,7 +538,9 @@ export default function InstructorCareerTrackEditorPage() {
             onClick={() => void handleTranslateAll()}
           >
             <Sparkles className="size-3.5" aria-hidden />
-            {translating ? t("courseEdit.descriptionGenerator.translating") : "AI Translate"}
+            {translating
+              ? t("courseEdit.descriptionGenerator.translating")
+              : t("courseEdit.descriptionGenerator.translateTrigger")}
           </Button>
         </div>
       )}
@@ -858,7 +862,9 @@ export default function InstructorCareerTrackEditorPage() {
                   disabled={savingI18nConfig}
                   onClick={() => void handleSaveLocalizationSettings()}
                 >
-                  {savingI18nConfig ? t("careerTracks.actions.saving") : "Save localization settings"}
+                  {savingI18nConfig
+                    ? t("careerTracks.actions.saving")
+                    : t("careerTracks.actions.saveLocalizationSettings")}
                 </Button>
               </>
             ) : null}

@@ -46,22 +46,45 @@ export type DescriptionTranslationBundle = {
   instructions?: string;
 };
 
-export type GenerateDescriptionRequest = {
-  action?: DescriptionGeneratorAction;
-  type: DescriptionGeneratorType;
+type GenerateDescriptionRequestCommon = {
   targetField: DescriptionGeneratorTargetField;
   intent?: "practice";
   locale: SupportedCourseLocale;
   sourceLocale?: SupportedCourseLocale;
   sourceInputs?: DescriptionSourceInput[];
-  bundleKind?: DescriptionTranslationBundleKind;
   sourceBundle?: DescriptionTranslationBundle;
-  courseId?: string;
-  sectionId?: string;
-  lessonId?: string;
   youtubeUrl?: string;
   lessonTitle?: string;
 };
+
+type CareerTrackTranslationRequest = GenerateDescriptionRequestCommon & {
+  action: "translate";
+  type: "course";
+  targetField: "description";
+  bundleKind: "course_info";
+  careerTrackId: string;
+  courseId?: never;
+  sectionId?: never;
+  lessonId?: never;
+};
+
+type CourseOrLessonDescriptionRequest = GenerateDescriptionRequestCommon & {
+  action?: DescriptionGeneratorAction;
+  type: DescriptionGeneratorType;
+  bundleKind?: DescriptionTranslationBundleKind;
+  careerTrackId?: never;
+  courseId?: string;
+  sectionId?: string;
+  lessonId?: string;
+};
+
+export type GenerateDescriptionRequest =
+  | CareerTrackTranslationRequest
+  | CourseOrLessonDescriptionRequest;
+
+export function serializeGenerateDescriptionRequest(body: GenerateDescriptionRequest): string {
+  return JSON.stringify(body);
+}
 
 export type GenerateDescriptionResponse = {
   description: string;
@@ -89,14 +112,19 @@ export async function invokeGenerateDescription(
   const token = session?.access_token;
   if (!token) throw new Error("Bạn cần đăng nhập để dùng tính năng này.");
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      ...supabaseFunctionHeaders(token),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: {
+        ...supabaseFunctionHeaders(token),
+        "Content-Type": "application/json",
+      },
+      body: serializeGenerateDescriptionRequest(body),
+    });
+  } catch {
+    throw new Error("Không kết nối được Edge Function generate-description. Kiểm tra deploy/CORS.");
+  }
   const json = (await res.json().catch(() => ({}))) as Partial<GenerateDescriptionResponse> & {
     message?: string;
   };

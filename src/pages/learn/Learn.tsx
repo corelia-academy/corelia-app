@@ -13,7 +13,6 @@ import {
   ChevronLeft,
   List,
   PanelLeft,
-  PanelRight,
 } from "lucide-react";
 import {
   checkAndIssueCertificate,
@@ -42,9 +41,6 @@ import {
   type CurriculumGroup,
 } from "./components/LessonCurriculum";
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
-import { FlashcardDeckCard } from "./components/FlashcardDeckCard";
-import { LessonReadinessCard } from "./components/LessonReadinessCard";
-import { LessonRecapCard } from "./components/LessonRecapCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
 import { SectionQuiz } from "./components/SectionQuiz";
 import { getSectionQuestions } from "@/lib/sectionQuestions";
@@ -55,10 +51,8 @@ import { useLearnEnrollmentAccess } from "./hooks/useLearnEnrollmentAccess";
 import { useLearnPaymentReturnFlow } from "./hooks/useLearnPaymentReturnFlow";
 import { useLearnProgress } from "./hooks/useLearnProgress";
 import { useLearnSubmission } from "./hooks/useLearnSubmission";
-import { useCoraStore } from "@/stores/coraStore";
 import { Button } from "@/components/ui/button";
 import { CourseCompletionCertificatePanel } from "@/components/courses/CourseCompletionCertificatePanel";
-import { CoraSidebarPanel } from "@/components/course-ai/CoraSidebarPanel";
 import { cn } from "@/lib/utils";
 import type { CertificateIssueReason } from "@/lib/courses";
 import {
@@ -94,16 +88,12 @@ function getDesktopBreakpointSnapshot() {
 }
 
 export default function Learn() {
-  const { t, i18n } = useTranslation("courses");
-  const currentLocale: "vi" | "en" = i18n.language?.startsWith("en") ? "en" : "vi";
+  const { t } = useTranslation("courses");
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
       String(t(key as never, options as never)),
     [t],
   );
-  const setSidebarMeta = useCoraStore((s) => s.setSidebarMeta);
-  const setSidebarOpen = useCoraStore((s) => s.setSidebarOpen);
-  const sidebarOpen = useCoraStore((s) => s.sidebarOpen);
   const { courseId, lessonId } = useParams<{
     courseId: string;
     lessonId?: string;
@@ -117,7 +107,6 @@ export default function Learn() {
   );
   const [curricOpen, setCurricOpen] = useState(true);
   const curriculumPanelRef = useRef<ResizablePanelHandle | null>(null);
-  const coraPanelRef = useRef<ResizablePanelHandle | null>(null);
   const completionSyncAttemptedRef = useRef<Set<string>>(new Set());
   const [completionSyncing, setCompletionSyncing] = useState(false);
   const [completionJustSynced, setCompletionJustSynced] = useState(false);
@@ -342,24 +331,6 @@ export default function Learn() {
     visibleLessons,
   ]);
 
-  useEffect(() => {
-    setSidebarMeta({
-      courseTitle: courseLoad.course?.title ?? "",
-      courseId: courseId ?? null,
-      lessonTitle: currentLesson?.title ?? null,
-      lessonId: currentLesson?.id ?? null,
-      lessonFormat: currentLesson?.lesson_format ?? null,
-    });
-    return () => setSidebarMeta(null);
-  }, [
-    courseId,
-    courseLoad.course?.title,
-    currentLesson?.id,
-    currentLesson?.title,
-    currentLesson?.lesson_format,
-    setSidebarMeta,
-  ]);
-
   // Load quiz questions and existing result whenever the current lesson (and its section) changes
   useEffect(() => {
     if (!courseId || !currentLesson?.section_id) {
@@ -523,27 +494,6 @@ export default function Learn() {
     panel.collapse();
   };
 
-  const toggleCoraPanel = () => {
-    const panel = coraPanelRef.current;
-    if (!panel) {
-      setSidebarOpen(!sidebarOpen);
-      return;
-    }
-    if (panel.isCollapsed()) {
-      panel.expand();
-    } else {
-      panel.collapse();
-    }
-  };
-  const hideCoraPanel = () => {
-    const panel = coraPanelRef.current;
-    if (!panel) {
-      setSidebarOpen(false);
-      return;
-    }
-    panel.collapse();
-  };
-
   const lessonContent = (
     <>
       {(!hasFullCourseAccess ||
@@ -567,14 +517,6 @@ export default function Learn() {
           ) : null}
         </div>
       )}
-
-      <LessonReadinessCard
-        lesson={currentLesson}
-        courseId={courseId ?? null}
-        allLessons={visibleLessons}
-        locale={currentLocale}
-        onJumpToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
-      />
 
       {courseCompleted ? (
         <CourseCompletionCertificatePanel
@@ -607,24 +549,6 @@ export default function Learn() {
         onMarkComplete={() => void markComplete()}
         onNavigateToLesson={(id) => navigate(`/learn/${courseId}/lesson/${id}`)}
         courseId={courseId}
-      />
-
-      <LessonRecapCard
-        lessonId={currentLesson?.id ?? null}
-        courseId={courseId ?? null}
-        completed={
-          !!currentLesson && progress.completedIds.has(currentLesson.id)
-        }
-        locale={currentLocale}
-      />
-
-      <FlashcardDeckCard
-        lessonId={currentLesson?.id ?? null}
-        courseId={courseId ?? null}
-        completed={
-          !!currentLesson && progress.completedIds.has(currentLesson.id)
-        }
-        locale={currentLocale}
       />
 
       {shouldShowSectionQuiz && sectionQuestions.length > 0 && currentLesson?.section_id && courseId && (
@@ -709,7 +633,7 @@ export default function Learn() {
 
       {/* Right */}
       <div className="ml-auto flex items-center gap-1">
-        {/* Mobile: open curriculum sheet */}
+        {/* Mobile: Sheet for curriculum */}
         <Sheet>
           <SheetTrigger
             className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md text-foreground-muted hover:bg-surface-raised hover:text-foreground xl:hidden"
@@ -726,99 +650,48 @@ export default function Learn() {
             <LessonCurriculum variant="sidebar" {...curriculumProps} />
           </SheetContent>
         </Sheet>
-
-        {/* Desktop: toggle Cora AI sidebar */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleCoraPanel}
-          aria-label={translate("detail.learn.toggleCora")}
-          className={cn(
-            "hidden xl:inline-flex",
-            sidebarOpen &&
-              "bg-primary-muted text-primary hover:bg-primary-muted hover:text-primary",
-          )}
-        >
-          <PanelRight className="size-4" aria-hidden />
-        </Button>
       </div>
     </div>
   );
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full flex-col">
+      {topBar}
       {isDesktop ? (
-        /* Desktop: outer ResizablePanelGroup — [left-content | cora] */
-        <ResizablePanelGroup
-          orientation="horizontal"
-          autoSaveId="learn-layout-outer"
-        >
-          {/* Left panel: header + curriculum + lesson */}
-          <ResizablePanel
-            defaultSize={75}
-            minSize={50}
-            className="flex min-w-0 flex-col"
+        <div className="flex flex-1 overflow-hidden">
+          <ResizablePanelGroup
+            orientation="horizontal"
+            autoSaveId="learn-layout-curriculum"
           >
-            {topBar}
-            <div className="flex flex-1 overflow-hidden">
-              <ResizablePanelGroup
-                orientation="horizontal"
-                autoSaveId="learn-layout-inner"
-              >
-                <ResizablePanel
-                  ref={curriculumPanelRef}
-                  defaultSize={24}
-                  minSize={16}
-                  maxSize={35}
-                  collapsible
-                  collapsedSize={0}
-                  onCollapse={() => setCurricOpen(false)}
-                  onExpand={() => setCurricOpen(true)}
-                  className="flex flex-col bg-surface-base"
-                >
-                  <LessonCurriculum variant="sidebar" {...curriculumProps} />
-                </ResizablePanel>
-                <ResizableHandle />
-                <ResizablePanel
-                  defaultSize={76}
-                  minSize={40}
-                  className="min-w-0 bg-background"
-                >
-                  <main className="h-full min-w-0 overflow-y-auto">
-                    {lessonContent}
-                  </main>
-                </ResizablePanel>
-              </ResizablePanelGroup>
-            </div>
-          </ResizablePanel>
-
-          {/* Cora panel: full height, resizable up to 50% */}
-          <ResizableHandle />
-          <ResizablePanel
-            ref={coraPanelRef}
-            defaultSize={25}
-            minSize={20}
-            maxSize={50}
-            collapsible
-            collapsedSize={0}
-            onCollapse={() => setSidebarOpen(false)}
-            onExpand={() => setSidebarOpen(true)}
-            className="flex flex-col bg-surface-base"
-          >
-            <CoraSidebarPanel
-              variant="embedded"
-              onRequestHide={hideCoraPanel}
-            />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      ) : (
-        /* Mobile: simple flex column */
-        <div className="flex min-w-0 flex-1 flex-col">
-          {topBar}
-          <main className="min-w-0 flex-1 overflow-y-auto">
-            {lessonContent}
-          </main>
+            <ResizablePanel
+              ref={curriculumPanelRef}
+              defaultSize={24}
+              minSize={16}
+              maxSize={35}
+              collapsible
+              collapsedSize={0}
+              onCollapse={() => setCurricOpen(false)}
+              onExpand={() => setCurricOpen(true)}
+              className="flex flex-col bg-surface-base"
+            >
+              <LessonCurriculum variant="sidebar" {...curriculumProps} />
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel
+              defaultSize={76}
+              minSize={40}
+              className="min-w-0 bg-background"
+            >
+              <main className="h-full min-w-0 overflow-y-auto">
+                {lessonContent}
+              </main>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
+      ) : (
+        <main className="min-w-0 flex-1 overflow-y-auto">
+          {lessonContent}
+        </main>
       )}
     </div>
   );

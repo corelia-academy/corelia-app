@@ -5,8 +5,15 @@ import { makeTTLCache } from "@/lib/utils";
 const paymentAccessCache = makeTTLCache<CoursePaymentAccess | null>(60_000);
 
 export type PaymentPurpose = "course_purchase" | "certificate_fee" | "ai_subscription";
-export type AiSubscriptionTier = "student" | "pro" | "bootcamp";
-export type AiSubscriptionDurationMonths = 1 | 12;
+
+export type CoursePaymentAccessSource =
+  | "payment"
+  | "admin_grant"
+  | "voucher"
+  | "free_enrollment"
+  | "legacy";
+
+export type CoursePaymentAccessStatus = "active" | "revoked" | "expired";
 
 export interface CoursePaymentAccess {
   id: string;
@@ -14,10 +21,91 @@ export interface CoursePaymentAccess {
   course_id: string;
   full_access_granted?: boolean;
   certificate_fee_paid?: boolean;
+  source?: CoursePaymentAccessSource;
+  status?: CoursePaymentAccessStatus;
+  source_transaction_id?: string | null;
+  granted_at?: string;
+  revoked_at?: string | null;
+  revoked_reason?: string | null;
+  granted_by?: string | null;
   updated_at?: string;
 }
 
-export type PaymentTransactionStatus = "pending" | "paid" | "failed" | "cancelled";
+export interface CourseEntitlementGrant {
+  id: string;
+  user_id: string;
+  course_id: string;
+  source: CoursePaymentAccessSource;
+  status: CoursePaymentAccessStatus;
+  source_transaction_id?: string | null;
+  granted_by?: string | null;
+  reason?: string | null;
+  granted_at: string;
+  revoked_at?: string | null;
+  revoked_reason?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BillingProduct {
+  id: string;
+  product_type: string;
+  title: string;
+  description?: string | null;
+  active: boolean;
+  metadata?: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaymentTransactionItem {
+  id: string;
+  payment_transaction_id: string;
+  product_id: string;
+  resource_id: string;
+  unit_price_vnd: number;
+  quantity: number;
+  snapshot: Record<string, unknown>;
+  fulfillment_status: "pending" | "fulfilled" | "conflict" | "failed" | "revoked";
+  fulfillment_id?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PaymentTransactionStatus =
+  | "pending"
+  | "paid"
+  | "failed"
+  | "cancelled"
+  | "refund_requested"
+  | "refunded"
+  | "partially_refunded";
+
+export type PaymentRefundStatus =
+  | "requested"
+  | "approved"
+  | "processing"
+  | "completed"
+  | "rejected"
+  | "failed"
+  | "cancelled";
+
+export interface PaymentRefund {
+  id: string;
+  payment_transaction_id: string;
+  user_id: string;
+  amount_vnd: number;
+  status: PaymentRefundStatus;
+  reason: string;
+  requested_by?: string | null;
+  processed_by?: string | null;
+  provider_refund_id?: string | null;
+  provider_payload?: unknown;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string | null;
+}
+
 export type PaymentProvider = "sepay";
 export interface PaymentTransaction {
   id: string;
@@ -32,21 +120,6 @@ export interface PaymentTransaction {
   status: PaymentTransactionStatus;
   created_at: string;
   updated_at: string;
-}
-
-export interface AiSubscription {
-  id: string;
-  user_id: string;
-  tier: AiSubscriptionTier;
-  duration_months: AiSubscriptionDurationMonths;
-  price_vnd: number;
-  started_at: string;
-  expires_at: string;
-  payment_transaction_id: string;
-  status: "active" | "expired" | "cancelled" | "superseded";
-  auto_renew?: boolean;
-  created_at: string;
-  updated_at?: string;
 }
 
 export interface VerifySePayPaymentResponse {
@@ -68,23 +141,6 @@ interface CreateSePayCheckoutInput {
   errorUrl: string;
   cancelUrl: string;
   discountCode?: string;
-}
-
-interface CreateAiSubscriptionCheckoutInput {
-  tier: AiSubscriptionTier;
-  durationMonths: AiSubscriptionDurationMonths;
-  successUrl: string;
-  errorUrl: string;
-  cancelUrl: string;
-  voucherCode?: string;
-}
-
-export interface AiVoucherPreview {
-  code: string;
-  percent_off: number;
-  base_amount_vnd: number;
-  discount_amount_vnd: number;
-  final_amount_vnd: number;
 }
 
 export interface CreateSePayCheckoutResponse {
@@ -183,67 +239,6 @@ export async function createSePayCheckout(
   };
 }
 
-export async function createAiSubscriptionCheckout(
-  payload: CreateAiSubscriptionCheckoutInput,
-): Promise<CreateSePayCheckoutResponse> {
-  return createSePayCheckout({
-    courseId: "cora-ai",
-    purpose: "ai_subscription",
-    amountVnd: 1,
-    successUrl: payload.successUrl,
-    errorUrl: payload.errorUrl,
-    cancelUrl: payload.cancelUrl,
-    voucherCode: payload.voucherCode,
-    tier: payload.tier,
-    durationMonths: payload.durationMonths,
-  } as CreateSePayCheckoutInput & {
-    voucherCode?: string;
-    tier: AiSubscriptionTier;
-    durationMonths: AiSubscriptionDurationMonths;
-  });
-}
-
-export async function previewAiVoucher(payload: {
-  tier: AiSubscriptionTier;
-  durationMonths: AiSubscriptionDurationMonths;
-  voucherCode: string;
-}): Promise<AiVoucherPreview> {
-  const endpoint =
-    import.meta.env.VITE_AI_VOUCHER_PREVIEW_API ||
-    coreliaEdgeUrl("payments.ai.voucher.preview");
-  const token = await getAccessToken();
-  requireAccessToken(token);
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...supabaseFunctionHeaders(token),
-    },
-    credentials: "include",
-    body: JSON.stringify(payload),
-  });
-  const data = (await res.json().catch(() => ({}))) as Partial<
-    AiVoucherPreview & { message?: string }
-  >;
-  if (
-    !res.ok ||
-    !data.code ||
-    typeof data.percent_off !== "number" ||
-    typeof data.base_amount_vnd !== "number" ||
-    typeof data.discount_amount_vnd !== "number" ||
-    typeof data.final_amount_vnd !== "number"
-  ) {
-    throw new Error(data.message || "Không áp dụng được voucher.");
-  }
-  return {
-    code: data.code,
-    percent_off: data.percent_off,
-    base_amount_vnd: data.base_amount_vnd,
-    discount_amount_vnd: data.discount_amount_vnd,
-    final_amount_vnd: data.final_amount_vnd,
-  };
-}
-
 export function submitSePayCheckoutForm(input: CreateSePayCheckoutResponse) {
   if (!input.checkout_url || !input.fields) {
     throw new Error("Thiếu thông tin checkout SePay.");
@@ -292,44 +287,6 @@ export async function getMyPaymentTransactions(): Promise<PaymentTransaction[]> 
   }>;
   if (!res.ok) throw new Error(data.message || "Không lấy được lịch sử thanh toán.");
   return Array.isArray(data.transactions) ? data.transactions : [];
-}
-
-export function isAiSubscriptionActive(
-  sub: AiSubscription | null | undefined,
-  referenceDate: Date = new Date(),
-): boolean {
-  if (!sub) return false;
-  if (sub.status !== "active") return false;
-  if (!sub.expires_at) return false;
-  const expiryTime = new Date(sub.expires_at).getTime();
-  return Number.isFinite(expiryTime) && expiryTime > referenceDate.getTime();
-}
-
-export function resolveEffectiveAiTier(
-  sub: AiSubscription | null | undefined,
-  referenceDate: Date = new Date(),
-): AiSubscriptionTier | "free" {
-  return isAiSubscriptionActive(sub, referenceDate) && sub?.tier ? sub.tier : "free";
-}
-
-export async function getMyAiSubscription(
-  referenceDate: Date = new Date(),
-): Promise<AiSubscription | null> {
-  const token = await getAccessToken();
-  requireAccessToken(token);
-  const nowIso = referenceDate.toISOString();
-  const { data, error } = await supabase
-    .from("ai_subscriptions")
-    .select("*")
-    .eq("status", "active")
-    .gt("expires_at", nowIso)
-    .order("expires_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data) return null;
-  const sub = { ...data } as AiSubscription;
-  return isAiSubscriptionActive(sub, referenceDate) ? sub : null;
 }
 
 export async function verifySePayPayment(payload: {

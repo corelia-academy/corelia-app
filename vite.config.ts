@@ -54,8 +54,6 @@ export default defineConfig({
 
           if (
             id.includes('/src/components/layouts/MainLayout') ||
-            id.includes('/src/components/course-ai/') ||
-            id.includes('/src/hooks/useCoraAI.ts') ||
             id.includes('/src/pages/home/')
           ) {
             return 'feature-learner-core'

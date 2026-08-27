@@ -39,7 +39,7 @@ Repo đã có các khối cần giữ:
 - Lesson format `video | article | quiz | practice`, có fallback cho lesson cũ chưa lưu format.
 - Learner routes `/learn/:courseId` và `/learn/:courseId/lesson/:lessonId`.
 - Article, YouTube video, lesson quiz và open-ended practice.
-- Section quiz, readiness check, recap và flashcards. Cora components vẫn còn trong codebase nhưng đang có issue loại bỏ hoàn toàn và không thuộc target.
+- Section quiz, bài tập và thực hành. Toàn bộ learner-facing AI đã được loại bỏ theo Epic #332.
 - Repo còn các field và flow lịch sử cho course trả phí.
 - Nội dung `vi/en` qua các bảng locale riêng, không tách progress theo locale.
 - Final assignment, manual review, completion sync và credential issuance.
@@ -96,7 +96,7 @@ Mobile IDE
 Analytics warehouse riêng
 Course marketplace, checkout và paywall
 Instructor/co-instructor permission matrix
-Cora/AI tutor, chat sidebar và explain-selection UI
+Learner AI tutor, chat sidebar và explain-selection UI
 ```
 
 ## 4. Course và curriculum model
@@ -240,7 +240,7 @@ LearnLayout
 
 `LessonRenderer` là switch duy nhất. Learner view và admin preview phải dùng cùng renderer và cùng normalized lesson model.
 
-Desktop giữ curriculum dưới dạng panel có thể thu gọn. Mobile dùng drawer cho curriculum; article, video, quiz và practice là single-column. `code_exercise.edit` trên mobile chỉ bảo đảm xem nội dung và draft nhỏ; UI phải khuyến nghị desktop cho chỉnh sửa nghiêm túc. Không dành layout slot hoặc toggle cho Cora.
+Desktop giữ curriculum dưới dạng panel có thể thu gọn. Mobile dùng drawer cho curriculum; article, video, quiz và practice là single-column. `code_exercise.edit` trên mobile chỉ bảo đảm xem nội dung và draft nhỏ; UI phải khuyến nghị desktop cho chỉnh sửa nghiêm túc. Không dành layout slot hoặc toggle cho learner AI.
 
 ### Navigation
 
@@ -476,7 +476,7 @@ Không cần per-test dashboard, funnel builder, time-to-deploy hoặc blockchai
 - Chuyển route tạo/sửa course sang admin guard; ngừng dùng instructor/co-instructor ownership để authorize.
 - Backfill `courses.data.instructors` từ instructor attribution hiện hữu khi profile còn hợp lệ; không copy permission.
 - Giữ các bảng invite/permission cũ bất hoạt trong lần đầu, rồi xóa ở migration cleanup riêng sau khi xác nhận không còn consumer.
-- Gỡ `GlobalCoraAssistant`, `ExplainSelectionButton`, `CoraSidebarPanel` và Cora store wiring khỏi learning routes theo issue removal hiện hữu; không tạo compatibility placeholder.
+- Không tạo compatibility placeholder cho learner AI trong learning routes.
 
 ### Phase 1 — Learning shell và completion
 

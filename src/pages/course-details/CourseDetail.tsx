@@ -39,7 +39,6 @@ import { CoursePartnerBrandPanel } from "./components/CoursePartnerBrandPanel";
 import { CourseSponsorsPanel } from "./components/CourseSponsorsPanel";
 import { CourseInstructorSection } from "./components/CourseInstructorSection";
 import { useInstructorProfile } from "./hooks/useInstructorProfile";
-import { useCoraStore } from "@/stores/coraStore";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { FollowerPreview } from "@/components/social/FollowerPreview";
 import { CourseCompletionCertificatePanel } from "@/components/courses/CourseCompletionCertificatePanel";
@@ -52,7 +51,6 @@ export default function CourseDetail() {
       String(t(key as never, options as never)),
     [t],
   );
-  const setSidebarMeta = useCoraStore((s) => s.setSidebarMeta);
   const completionSyncAttemptedRef = useRef<Set<string>>(new Set());
   const [completionSyncing, setCompletionSyncing] = useState(false);
   const [completionJustSynced, setCompletionJustSynced] = useState(false);
@@ -288,13 +286,6 @@ export default function CourseDetail() {
     (profile.role === "admin" ||
       (profile.role === "instructor" &&
         courseLoad.course.instructor_id === profile.id));
-
-  useEffect(() => {
-    const title = courseLoad.course?.title;
-    if (!title) return;
-    setSidebarMeta({ courseTitle: title, courseId: courseLoad.resolvedCourseId ?? null });
-    return () => setSidebarMeta(null);
-  }, [courseLoad.course?.title, courseLoad.resolvedCourseId, setSidebarMeta]);
 
   usePageMeta({
     title: courseLoad.course?.title ?? undefined,

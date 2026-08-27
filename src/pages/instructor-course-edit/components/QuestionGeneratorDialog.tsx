@@ -249,6 +249,12 @@ export function QuestionGeneratorDialog({
     if (!courseId) return;
     if (!isLessonMode && !section) return;
     if (isLessonMode && !lessonId) return;
+    if (
+      questions.length > 0 &&
+      !window.confirm(t("courseEdit.questionGenerator.replaceDraftConfirm"))
+    ) {
+      return;
+    }
 
     setGenerating(true);
     setGenerateError(null);

@@ -22,10 +22,6 @@
         "label": "Cấp thủ công OCA/OCB",
         "tooltip": "Cấp OCA/OCB thủ công cho cá nhân, không gắn khóa học"
       },
-      "coraVouchers": {
-        "label": "Voucher Cora",
-        "tooltip": "Quản lý voucher cho thanh toán Cora AI"
-      },
       "branding": {
         "label": "Thương hiệu",
         "tooltip": "Logo Corelia và tài nguyên thương hiệu"
@@ -53,10 +49,6 @@
       "manualMint": {
         "title": "Cấp chứng chỉ/huy hiệu thủ công",
         "description": "Cấp OCA hoặc OCB thủ công cho một cá nhân cụ thể, không gắn khóa học hay hackathon."
-      },
-      "coraVouchers": {
-        "title": "Voucher Cora",
-        "description": "Tạo và theo dõi voucher giảm giá theo % cho thanh toán Cora AI."
       },
       "branding": {
         "title": "Thương hiệu",
@@ -424,16 +416,12 @@
       "active": "Kích hoạt"
     },
     "event": {
-      "loginStreak": "Chuỗi đăng nhập",
-      "dailyStreak": "Chuỗi điểm danh hằng ngày",
       "coursesCompleted": "Hoàn thành khóa học",
       "trackCourses": "Hoàn thành khóa trong track",
       "projects": "Nộp project"
     },
     "rule": {
       "manual": "Cấp thủ công",
-      "loginStreak": "Chuỗi đăng nhập {{days}} ngày",
-      "dailyStreak": "Chuỗi điểm danh hằng ngày {{days}} ngày",
       "coursesCompleted": "Hoàn thành {{count}} khóa học",
       "trackCourses": "{{count}} khóa trong track “{{track}}”",
       "projects": "{{count}} project đã nộp"
@@ -556,99 +544,6 @@
       "empty": "Chưa có chứng nhận nào được cấp thủ công.",
       "emptyFiltered": "Không tìm thấy chứng nhận phù hợp với bộ lọc.",
       "loadFailed": "Không thể tải danh sách cấp thủ công."
-    }
-  },
-  "coraVoucherBatches": {
-    "heading": "Batch voucher Cora AI",
-    "subheading": "Tạo campaign nhiều mã dùng một lần và theo dõi vòng đời của từng mã.",
-    "refresh": "Làm mới",
-    "add": "Tạo batch",
-    "loading": "Đang tải batch voucher...",
-    "loadFailed": "Không tải được batch voucher.",
-    "empty": "Chưa có batch voucher nào.",
-    "created": "Đã tạo batch voucher.",
-    "batchUpdated": "Đã cập nhật batch.",
-    "batchDeleted": "Đã xóa batch voucher.",
-    "codeUpdated": "Đã cập nhật mã voucher.",
-    "saveFailed": "Không lưu được batch voucher.",
-    "delete": "Xóa",
-    "deleteConfirmTitle": "Xóa batch voucher?",
-    "deleteConfirmBody": "Batch \"{{name}}\" và toàn bộ mã chưa dùng sẽ bị xóa vĩnh viễn. Không thể hoàn tác.",
-    "copyFailed": "Không copy được danh sách mã.",
-    "codesCopied": "Đã copy danh sách mã voucher.",
-    "showing": "Hiển thị {{shown}} / {{total}} batch",
-    "active": "Đang bật",
-    "inactive": "Đang tắt",
-    "archived": "Đã lưu trữ",
-    "neverStarts": "Áp dụng ngay",
-    "noExpiry": "Không hết hạn",
-    "counts": "{{available}} available · {{reserved}} reserved · {{paid}} paid · {{inactive}} inactive",
-    "viewCodes": "Xem mã",
-    "activate": "Bật",
-    "deactivate": "Tắt",
-    "createTitle": "Tạo batch voucher",
-    "detailTitle": "Chi tiết batch",
-    "cancel": "Huỷ",
-    "save": "Lưu",
-    "saving": "Đang lưu...",
-    "copyCodes": "Copy mã",
-    "downloadCsv": "Tải CSV",
-    "createdBatchReady": "Đã có {{count}} mã sẵn sàng để export.",
-    "filters": {
-      "searchPlaceholder": "Tìm theo tên batch...",
-      "status": {
-        "all": "Mọi trạng thái",
-        "active": "Chỉ đang bật",
-        "inactive": "Chỉ đang tắt"
-      },
-      "expiry": {
-        "all": "Mọi hạn dùng",
-        "expired": "Đã hết hạn",
-        "notExpired": "Chưa hết hạn"
-      }
-    },
-    "table": {
-      "name": "Batch",
-      "percent": "Giảm giá",
-      "window": "Hiệu lực",
-      "counts": "Số lượng",
-      "status": "Trạng thái",
-      "actions": "Thao tác"
-    },
-    "codesTable": {
-      "code": "Mã",
-      "status": "Trạng thái",
-      "usedAt": "Đã dùng lúc",
-      "actions": "Thao tác"
-    },
-    "codeFilters": {
-      "all": "Tất cả mã",
-      "available": "Sẵn dùng",
-      "reserved": "Đang giữ chỗ",
-      "paid": "Đã dùng",
-      "inactive": "Đang tắt"
-    },
-    "form": {
-      "name": "Tên batch",
-      "quantity": "Số lượng mã",
-      "codePrefix": "Prefix mã",
-      "percentOff": "Phần trăm giảm",
-      "targetTier": "Gói AI mục tiêu",
-      "targetTierAny": "Mọi gói",
-      "targetDuration": "Thời hạn mục tiêu",
-      "targetDurationAny": "Mọi thời hạn",
-      "startsAt": "Bắt đầu",
-      "endsAt": "Kết thúc",
-      "status": "Trạng thái"
-    },
-    "tiers": {
-      "student": "Student",
-      "pro": "Pro",
-      "bootcamp": "Bootcamp"
-    },
-    "durations": {
-      "1": "1 tháng",
-      "12": "12 tháng"
     }
   }
 }

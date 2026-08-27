@@ -1,5 +1,7 @@
 # Front-end Performance & Code Audit — Corelia App
 
+> **SUPERSEDED — HISTORICAL EVIDENCE ONLY.** Nội dung Cora/learner AI trong báo cáo này phản ánh trạng thái tại thời điểm audit và không mô tả runtime hiện hành.
+
 Ngày audit: 2026-08-25  
 Phạm vi: `src/`, cấu hình build và static assets trong `public/`. Không audit schema, migration, Edge Functions, RLS hay implementation bên trong `supabase/`.
 

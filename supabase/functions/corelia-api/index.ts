@@ -22,7 +22,6 @@ import { handleSendLearningReminders } from "./courses/learning_reminders.ts";
 import { handleSyncCourseCompletion } from "./courses/completion.ts";
 import { handleHackathonBlastEmail } from "./hackathons/blast_email.ts";
 import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.ts";
-import { handleClaimDailyStreak, handleGetDailyStreakStatus } from "./gamification/daily_streak.ts";
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { handleNotificationsUnsubscribe } from "./notifications/unsubscribe.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
@@ -35,6 +34,8 @@ import {
   handleSePayCheckout,
   handleSePayIpn,
   handleVerifySePayPayment,
+  handleProcessRefund,
+  handleAdminGrantCourseAccess,
 } from "./payments/handlers.ts";
 
 const PROTECTED_OPS = new Set<string>([
@@ -44,6 +45,8 @@ const PROTECTED_OPS = new Set<string>([
   "payments.ai.vouchers.batchDelete",
   "payments.transactions",
   "payments.sepay.debugLookup",
+  "payments.refund",
+  "payments.adminGrantAccess",
   "certificates.issue",
   "certificates.backfillEligible",
   "certificates.revoke",
@@ -56,8 +59,6 @@ const PROTECTED_OPS = new Set<string>([
   "courses.coInstructorInvite.sendEmail",
   "courses.sendLearningReminders",
   "careerTracks.blastEmail",
-  "gamification.dailyStreakStatus",
-  "gamification.claimDailyStreak",
   // notifications.unsubscribe is PUBLIC — intentionally omitted from PROTECTED_OPS
   "credentials.checkCourseCompletion",
   "credentials.checkActivityMilestones",
@@ -119,6 +120,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleMyPaymentTransactions(req, db);
     } else if (op === "payments.sepay.debugLookup" && req.method === "POST") {
       response = await handleSePayDebugLookup(req, db);
+    } else if (op === "payments.refund" && req.method === "POST") {
+      response = await handleProcessRefund(req, db);
+    } else if (op === "payments.adminGrantAccess" && req.method === "POST") {
+      response = await handleAdminGrantCourseAccess(req, db);
     } else if (op === "certificates.issue" && req.method === "POST") {
       response = await handleIssueCertificate(req, db);
     } else if (op === "certificates.backfillEligible" && req.method === "POST") {
@@ -147,10 +152,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleCareerTrackBlastEmail(req, db);
     } else if (op === "notifications.unsubscribe" && req.method === "POST") {
       response = await handleNotificationsUnsubscribe(req, db);
-    } else if (op === "gamification.dailyStreakStatus" && req.method === "POST") {
-      response = await handleGetDailyStreakStatus(req, db);
-    } else if (op === "gamification.claimDailyStreak" && req.method === "POST") {
-      response = await handleClaimDailyStreak(req, db);
     } else if (op === "credentials.checkCourseCompletion" && req.method === "POST") {
       response = await handleCheckCourseCompletion(req, db);
     } else if (op === "credentials.checkActivityMilestones" && req.method === "POST") {
@@ -172,12 +173,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     } else if (op === "credentials.claimLookup" && req.method === "POST") {
       response = await handleClaimLookup(req, db);
     } else {
-      response = json({ message: "Unknown or disallowed op / method", op }, 404);
+      response = json({ message: "Not found" }, 404);
     }
-
     return withCors(req, response);
   } catch (e) {
-    console.error("[corelia-api] unhandled", e);
-    return withCors(req, json({ message: "Unhandled server error" }, 500));
+    console.error("[corelia-api] error", e);
+    return withCors(req, json({ message: "Internal server error" }, 500));
   }
 });

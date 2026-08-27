@@ -23,6 +23,7 @@ type RequestBody = {
   sourceInputs?: unknown;
   bundleKind?: unknown;
   sourceBundle?: unknown;
+  careerTrackId?: unknown;
   courseId?: unknown;
   sectionId?: unknown;
   lessonId?: unknown;
@@ -33,6 +34,10 @@ type RequestBody = {
 type CourseRow = {
   instructor_id: string;
   data: Record<string, unknown> | null;
+};
+
+type CareerTrackRow = {
+  instructor_id: string;
 };
 
 type LessonRow = {
@@ -79,6 +84,16 @@ type TranslationBundle = {
 const CORS_METHODS = "POST, OPTIONS";
 const CORS_HEADERS =
   "authorization, x-client-info, apikey, content-type, x-secret-key, x-supabase-api-version";
+
+class HttpStatusError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "HttpStatusError";
+    this.status = status;
+  }
+}
 
 function normalizeOrigin(raw: string): string | null {
   try {
@@ -181,12 +196,14 @@ function createServiceClient(): SupabaseClient {
 
 async function verifyBearerUser(req: Request, db: SupabaseClient): Promise<User> {
   const header = req.headers.get("authorization") ?? req.headers.get("Authorization");
-  if (!header) throw new Error("Missing Authorization header");
+  if (!header) throw new HttpStatusError(401, "Missing Authorization header");
   const match = header.match(/^Bearer\s+(.+)$/i);
-  if (!match) throw new Error("Invalid Authorization header");
+  if (!match) throw new HttpStatusError(401, "Invalid Authorization header");
   const { data, error } = await db.auth.getUser(match[1]!);
-  if (error || !data.user) throw new Error("Invalid or expired session");
-  if (!data.user.email_confirmed_at) throw new Error("Email confirmation required");
+  if (error || !data.user) throw new HttpStatusError(401, "Invalid or expired session");
+  if (!data.user.email_confirmed_at) {
+    throw new HttpStatusError(401, "Email confirmation required");
+  }
   return data.user;
 }
 
@@ -200,6 +217,7 @@ function parseBody(body: RequestBody): {
   sourceInputs: SourceInput[] | null;
   bundleKind: BundleKind | null;
   sourceBundle: TranslationBundle | null;
+  careerTrackId: string | null;
   courseId: string | null;
   sectionId: string | null;
   lessonId: string | null;
@@ -234,6 +252,7 @@ function parseBody(body: RequestBody): {
       ? body.bundleKind
       : null;
   const sourceBundle = parseTranslationBundle(body.sourceBundle);
+  const careerTrackId = parseOptionalResourceId(body.careerTrackId, "careerTrackId");
   const courseId = typeof body.courseId === "string" && body.courseId.trim() ? body.courseId.trim() : null;
   const sectionId = typeof body.sectionId === "string" && body.sectionId.trim() ? body.sectionId.trim() : null;
   const lessonId = typeof body.lessonId === "string" && body.lessonId.trim() ? body.lessonId.trim() : null;
@@ -243,6 +262,26 @@ function parseBody(body: RequestBody): {
     typeof body.lessonTitle === "string" && body.lessonTitle.trim() ? body.lessonTitle.trim() : null;
   if (!action || !type || !targetField || !locale) {
     throw new Error("Thiếu action, type, targetField hoặc locale hợp lệ.");
+  }
+  if (careerTrackId) {
+    if (body.courseId != null) {
+      throw new Error("Không được gửi đồng thời courseId và careerTrackId.");
+    }
+    const isCareerTrackTranslation =
+      action === "translate" &&
+      type === "course" &&
+      targetField === "description" &&
+      bundleKind === "course_info";
+    const hasCourseResourceInputs =
+      body.sectionId != null ||
+      body.lessonId != null ||
+      body.youtubeUrl != null ||
+      body.lessonTitle != null ||
+      body.intent != null ||
+      body.sourceInputs != null;
+    if (!isCareerTrackTranslation || hasCourseResourceInputs) {
+      throw new Error("careerTrackId chỉ hợp lệ cho luồng dịch toàn bộ Career Track.");
+    }
   }
   return {
     action,
@@ -254,12 +293,21 @@ function parseBody(body: RequestBody): {
     sourceInputs,
     bundleKind,
     sourceBundle,
+    careerTrackId,
     courseId,
     sectionId,
     lessonId,
     youtubeUrl,
     lessonTitle,
   };
+}
+
+function parseOptionalResourceId(value: unknown, fieldName: string): string | null {
+  if (value == null) return null;
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error(`${fieldName} không hợp lệ.`);
+  }
+  return value.trim();
 }
 
 function parseTranslationBundle(value: unknown): TranslationBundle | null {
@@ -457,14 +505,107 @@ async function ensureCanManageCourse(
   role: Role,
   courseId: string,
 ): Promise<void> {
-  if (role === "admin" || role === "support_staff") return;
   const row = await getCourseAccessRow(db, courseId);
+  if (role === "admin" || role === "support_staff") return;
   if (row.instructor_id === userId) return;
   const coInstructorPermissions =
     ((row.data ?? {}).co_instructor_permissions as Record<string, Record<string, boolean> | undefined> | undefined) ??
     {};
   if (coInstructorPermissions[userId]?.content) return;
   throw new Error("Bạn không có quyền generate mô tả cho khoá học này.");
+}
+
+async function ensureCanManageCareerTrack(
+  db: SupabaseClient,
+  userId: string,
+  role: Role,
+  careerTrackId: string,
+): Promise<void> {
+  const { data, error } = await db
+    .from("career_tracks")
+    .select("instructor_id")
+    .eq("id", careerTrackId)
+    .single();
+  if (error || !data) throw new Error("Không tìm thấy lộ trình nghề nghiệp.");
+  if (role === "admin" || role === "support_staff") return;
+  const row = data as CareerTrackRow;
+  if (row.instructor_id === userId) return;
+  throw new Error("Bạn không có quyền dịch lộ trình nghề nghiệp này.");
+}
+
+async function resolveAndValidateCourseScope(
+  db: SupabaseClient,
+  params: {
+    courseId: string | null;
+    sectionId: string | null;
+    lessonId: string | null;
+    intent: "practice" | null;
+    sourceInputs: SourceInput[] | null;
+  },
+): Promise<string> {
+  let resolvedCourseId = params.courseId;
+  let resolvedSectionId: string | null = null;
+
+  if (params.sectionId) {
+    const { data, error } = await db
+      .from("course_sections")
+      .select("course_id")
+      .eq("id", params.sectionId)
+      .single();
+    if (error || !data?.course_id) throw new Error("Không tìm thấy chương học.");
+    const sectionCourseId = String(data.course_id);
+    if (resolvedCourseId && resolvedCourseId !== sectionCourseId) {
+      throw new Error("Chương học không thuộc khoá học đã yêu cầu.");
+    }
+    resolvedCourseId = sectionCourseId;
+    resolvedSectionId = params.sectionId;
+  }
+
+  if (params.lessonId) {
+    const { data, error } = await db
+      .from("course_lessons")
+      .select("course_id,section_id")
+      .eq("id", params.lessonId)
+      .single();
+    if (error || !data?.course_id) throw new Error("Không tìm thấy bài học.");
+    const lessonCourseId = String(data.course_id);
+    if (resolvedCourseId && resolvedCourseId !== lessonCourseId) {
+      throw new Error("Bài học không thuộc khoá học đã yêu cầu.");
+    }
+    if (resolvedSectionId && String(data.section_id ?? "") !== resolvedSectionId) {
+      throw new Error("Bài học không thuộc chương học đã yêu cầu.");
+    }
+    resolvedCourseId = lessonCourseId;
+  }
+
+  if (!resolvedCourseId) throw new Error("Không xác định được phạm vi khoá học.");
+
+  if (params.intent === "practice" && params.sourceInputs?.length) {
+    const sourceLessonIds = Array.from(
+      new Set(
+        params.sourceInputs.map((source) =>
+          typeof source.id === "string" && source.id.trim() ? source.id.trim() : "",
+        ),
+      ),
+    );
+    if (sourceLessonIds.includes("")) {
+      throw new Error("Nguồn bài học không hợp lệ.");
+    }
+    const { data, error } = await db
+      .from("course_lessons")
+      .select("id,course_id")
+      .in("id", sourceLessonIds);
+    if (error) throw new Error("Không thể kiểm tra nguồn bài học.");
+    const rows = (data ?? []) as Array<{ id: string; course_id: string }>;
+    if (
+      rows.length !== sourceLessonIds.length ||
+      rows.some((row) => String(row.course_id) !== resolvedCourseId)
+    ) {
+      throw new Error("Nguồn bài học không thuộc khoá học đã yêu cầu.");
+    }
+  }
+
+  return resolvedCourseId;
 }
 
 async function resolveLessonRows(
@@ -476,11 +617,12 @@ async function resolveLessonRows(
   },
 ): Promise<LessonRow[]> {
   if (params.lessonId) {
-    const { data, error } = await db
+    const query = db
       .from("course_lessons")
       .select("id,course_id,section_id,data")
-      .eq("id", params.lessonId)
-      .single();
+      .eq("id", params.lessonId);
+    if (params.courseId) query.eq("course_id", params.courseId);
+    const { data, error } = await query.single();
     if (error || !data) throw new Error("Không tìm thấy bài học.");
     return [data as LessonRow];
   }
@@ -947,33 +1089,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const parsed = parseBody((await req.json()) as RequestBody);
     const normalizedYoutubeVideoId = parsed.youtubeUrl ? normalizeYoutubeVideoId(parsed.youtubeUrl) : null;
 
-    let guardCourseId = parsed.courseId ?? null;
-    if (!guardCourseId && parsed.lessonId) {
-      const { data, error } = await db
-        .from("course_lessons")
-        .select("course_id")
-        .eq("id", parsed.lessonId)
-        .single();
-      if (error || !data?.course_id) {
-        return withCors(req, json({ message: "Không xác định được phạm vi khoá học." }, 400));
-      }
-      guardCourseId = String(data.course_id);
+    let guardCourseId: string | null = null;
+    if (parsed.careerTrackId) {
+      await ensureCanManageCareerTrack(db, user.id, role, parsed.careerTrackId);
+    } else {
+      guardCourseId = await resolveAndValidateCourseScope(db, parsed);
+      await ensureCanManageCourse(db, user.id, role, guardCourseId);
     }
-    if (!guardCourseId && parsed.sectionId) {
-      const { data, error } = await db
-        .from("course_sections")
-        .select("course_id")
-        .eq("id", parsed.sectionId)
-        .single();
-      if (error || !data?.course_id) {
-        return withCors(req, json({ message: "Không xác định được phạm vi khoá học." }, 400));
-      }
-      guardCourseId = String(data.course_id);
-    }
-    if (!guardCourseId) {
-      return withCors(req, json({ message: "Không xác định được phạm vi khoá học." }, 400));
-    }
-    await ensureCanManageCourse(db, user.id, role, guardCourseId);
 
     if (parsed.action === "translate" && parsed.bundleKind) {
       if (!parsed.sourceBundle) {
@@ -1116,11 +1238,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     console.error("[generate-description]", error);
     const message =
       error instanceof Error ? error.message : "Không thể generate description lúc này.";
-    const status = /Missing Authorization|Invalid or expired|Email confirmation/.test(message)
-      ? 401
+    const status = error instanceof HttpStatusError
+      ? error.status
       : /không có quyền|permission/i.test(message)
         ? 403
-        : /Thiếu|Missing|hợp lệ|Không xác định|Không tìm thấy/.test(message)
+        : /Thiếu|Missing|hợp lệ|Không xác định|Không tìm thấy|không thuộc/.test(message)
           ? 400
           : /không đủ nội dung|rỗng/i.test(message)
             ? 422

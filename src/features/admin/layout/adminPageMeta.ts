@@ -39,11 +39,6 @@ const PAGE_META: Array<{
     descriptionKey: "layout.pageMeta.manualMint.description",
   },
   {
-    match: (pathname) => pathname === "/admin/cora-vouchers",
-    titleKey: "layout.pageMeta.coraVouchers.title",
-    descriptionKey: "layout.pageMeta.coraVouchers.description",
-  },
-  {
     match: (pathname) => pathname === "/admin/branding",
     titleKey: "layout.pageMeta.branding.title",
     descriptionKey: "layout.pageMeta.branding.description",

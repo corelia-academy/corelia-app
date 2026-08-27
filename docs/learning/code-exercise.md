@@ -454,7 +454,7 @@ Regression:
 
 - Existing format resolution và curriculum counts/icons.
 - Next-lesson/course-completion calculation.
-- Mobile shell không có Cora hoặc paid-access branches.
+- Mobile shell không có learner AI hoặc paid-access branches.
 
 ## 12. Acceptance criteria
 

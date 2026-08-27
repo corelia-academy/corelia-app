@@ -33,7 +33,7 @@ Phủ `/courses`, `/courses/:id`, `/checkout/course/:courseId`, `/checkout/succe
 
 7. Với khóa **đã có quyền học**, mở `/learn/:courseId`.
 8. Mở bài học `/learn/:courseId/lesson/:lessonId` — player/content load (video/link theo seed).
-9. Learning shell không mount hoặc dành khoảng trống cho `CoraSidebarPanel`, `GlobalCoraAssistant` hay `ExplainSelectionButton`.
+9. Learning shell không mount hoặc dành khoảng trống cho learner AI assistant/chat/explain-selection UI.
 10. **Không có quyền**: truy cập URL learn trực tiếp — bị chặn hoặc redirect (ghi nhận hành vi spec).
 
 ### Redirect legacy

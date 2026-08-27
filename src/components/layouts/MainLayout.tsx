@@ -1,5 +1,5 @@
 import { Briefcase, BookOpen, Home, List, LogIn } from "lucide-react";
-import React, { Suspense, lazy } from "react";
+import React from "react";
 import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
@@ -18,24 +18,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import Header from "./Header";
-
-const GlobalCoraAssistant = lazy(() =>
-  import("@/components/course-ai/GlobalCoraAssistant").then((module) => ({
-    default: module.GlobalCoraAssistant,
-  })),
-);
-
-const CoraSidebarPanel = lazy(() =>
-  import("@/components/course-ai/CoraSidebarPanel").then((module) => ({
-    default: module.CoraSidebarPanel,
-  })),
-);
-
-const ExplainSelectionButton = lazy(() =>
-  import("@/components/course-ai/ExplainSelectionButton").then((module) => ({
-    default: module.ExplainSelectionButton,
-  })),
-);
 
 const mobileTabItemClassName =
   "flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2.5 text-center transition-colors";
@@ -65,9 +47,6 @@ const MainLayout = () => {
         <div className="flex-1 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0">
           <Outlet />
         </div>
-        <Suspense fallback={null}>
-          <GlobalCoraAssistant />
-        </Suspense>
         <footer className="hidden border-t border-border-subtle bg-surface-raised md:block">
           <div className="container-app flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 text-xs text-foreground-muted">
             <span className="min-w-0">
@@ -106,12 +85,6 @@ const MainLayout = () => {
           </div>
         </footer>
       </SidebarInset>
-      <Suspense fallback={null}>
-        <CoraSidebarPanel />
-      </Suspense>
-      <Suspense fallback={null}>
-        <ExplainSelectionButton />
-      </Suspense>
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface-float pb-[env(safe-area-inset-bottom,0px)] md:hidden">
         <div className="container-app grid grid-cols-4 gap-1 px-2 py-2">
           {mobilePrimaryNav.map((item) => {

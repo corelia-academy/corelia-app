@@ -8,7 +8,6 @@ type SubmitAttemptParams = {
   sectionId: string;
   questionId: string;
   selectedIndex: number;
-  isCorrect: boolean;
 };
 
 export async function submitQuizAttempt(
@@ -19,18 +18,13 @@ export async function submitQuizAttempt(
   } = await supabase.auth.getUser();
   if (!user) throw new Error(i18n.t("courses:errors.mustLoginQuiz"));
 
-  const { data, error } = await supabase
-    .from("section_question_attempts")
-    .insert({
-      user_id: user.id,
-      course_id: params.courseId,
-      section_id: params.sectionId,
-      question_id: params.questionId,
-      selected_index: params.selectedIndex,
-      is_correct: params.isCorrect,
-    })
-    .select("id,user_id,course_id,section_id,lesson_id,question_id,selected_index,is_correct,attempted_at")
-    .single();
+  const { data, error } = await supabase.rpc("submit_quiz_attempt", {
+    p_course_id: params.courseId,
+    p_section_id: params.sectionId || null,
+    p_lesson_id: null,
+    p_question_id: params.questionId,
+    p_selected_index: params.selectedIndex,
+  });
 
   if (error) throw new Error(error.message);
   return data as SectionQuestionAttempt;
@@ -45,19 +39,17 @@ export async function submitSectionQuizAttempts(
   } = await supabase.auth.getUser();
   if (!user) throw new Error(i18n.t("courses:errors.mustLoginQuiz"));
 
-  const rows = attempts.map((a) => ({
-    user_id: user.id,
+  const payload = attempts.map((a) => ({
     course_id: a.courseId,
-    section_id: a.sectionId,
+    section_id: a.sectionId || null,
+    lesson_id: null,
     question_id: a.questionId,
     selected_index: a.selectedIndex,
-    is_correct: a.isCorrect,
   }));
 
-  const { data, error } = await supabase
-    .from("section_question_attempts")
-    .insert(rows)
-    .select("id,user_id,course_id,section_id,lesson_id,question_id,selected_index,is_correct,attempted_at");
+  const { data, error } = await supabase.rpc("submit_quiz_attempts", {
+    p_attempts: payload,
+  });
 
   if (error) throw new Error(error.message);
   return (data ?? []) as SectionQuestionAttempt[];
@@ -107,7 +99,6 @@ type SubmitLessonAttemptParams = {
   lessonId: string;
   questionId: string;
   selectedIndex: number;
-  isCorrect: boolean;
 };
 
 export async function submitLessonQuizAttempts(
@@ -117,20 +108,17 @@ export async function submitLessonQuizAttempts(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error(i18n.t("courses:errors.mustLoginQuiz"));
 
-  const rows = attempts.map((a) => ({
-    user_id: user.id,
+  const payload = attempts.map((a) => ({
     course_id: a.courseId,
-    lesson_id: a.lessonId,
-    section_id: null as string | null,
+    section_id: null,
+    lesson_id: a.lessonId || null,
     question_id: a.questionId,
     selected_index: a.selectedIndex,
-    is_correct: a.isCorrect,
   }));
 
-  const { data, error } = await supabase
-    .from("section_question_attempts")
-    .insert(rows)
-    .select("id,user_id,course_id,section_id,lesson_id,question_id,selected_index,is_correct,attempted_at");
+  const { data, error } = await supabase.rpc("submit_quiz_attempts", {
+    p_attempts: payload,
+  });
 
   if (error) throw new Error(error.message);
   return (data ?? []) as SectionQuestionAttempt[];

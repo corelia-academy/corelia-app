@@ -1,6 +1,5 @@
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
-import { triggerLessonEmbeddingInBackground } from "@/lib/lessonEmbedding";
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
 import { getYoutubeVideoId } from "@/types/courses";
@@ -672,6 +671,18 @@ export async function enrollCourse(courseId: string, viewer?: User | null): Prom
   const existing = await getEnrollment(user.id, courseId);
   if (existing) return existing;
 
+  // Attempt canonical enrollment RPC
+  const { data: rpcData, error: rpcError } = await supabase.rpc("enroll_in_course", {
+    p_course_id: courseId,
+    p_user_id: user.id,
+  });
+
+  if (!rpcError && (rpcData as { ok?: boolean } | null)?.ok) {
+    invalidateEnrollmentsCache(user.id);
+    const refreshed = await getEnrollment(user.id, courseId);
+    if (refreshed) return refreshed;
+  }
+
   const now = new Date().toISOString();
   const enrollmentId = `${user.id}_${courseId}`;
   const { data, error } = await supabase
@@ -1214,8 +1225,6 @@ export async function addLesson(courseId: string, data: CourseLessonInsert): Pro
   if (error) throw new Error(error.message);
   invalidateSectionsCache(courseId);
   invalidateCourseCache(courseId);
-  // Background-ingest the new lesson into knowledge_chunks so Cora RAG can pick it up.
-  triggerLessonEmbeddingInBackground({ courseId, lessonId: id });
   return { id, ...payload } as CourseLesson;
 }
 
@@ -1336,8 +1345,6 @@ export async function updateLesson(
     .eq("id", lessonId);
   if (upErr) throw new Error(upErr.message);
   invalidateSectionsCache(courseId);
-  // Re-ingest into knowledge_chunks so Cora RAG stays in sync. Checksums skip no-op writes.
-  triggerLessonEmbeddingInBackground({ courseId, lessonId });
 }
 
 export async function reorderCourseLessons(

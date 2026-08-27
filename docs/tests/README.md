@@ -84,7 +84,7 @@ Client build cần tối thiểu `VITE_SUPABASE_URL` và một trong `VITE_SUPAB
 | [04-career-roadmap.md](./04-career-roadmap.md) | Career + roadmap |
 | [05-projects-invites-search.md](./05-projects-invites-search.md) | Projects, invite, search |
 | [06-public-profiles.md](./06-public-profiles.md) | Hồ sơ công khai `/u/:handle` |
-| [07-account-hub.md](./07-account-hub.md) | `/account/*`, `/cora` |
+| [07-account-hub.md](./07-account-hub.md) | `/account/*` |
 | [08-hackathons-public.md](./08-hackathons-public.md) | Hackathon công khai — single-page `/hackathons/:slug` + hash, lifecycle, showcase |
 | [09-hackathons-manage-workspace.md](./09-hackathons-manage-workspace.md) | Workspace manage — tabs overview/applications/judging/email/… |
 | [10-instructor-workspace.md](./10-instructor-workspace.md) | Workspace instructor |

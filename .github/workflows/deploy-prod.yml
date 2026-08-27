@@ -1,29 +1,39 @@
 name: Deploy Production
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "supabase/migrations/**"
-      - "supabase/functions/**"
-      - "supabase/config.toml"
-      - ".github/workflows/deploy-prod.yml"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Full approved G2 release commit SHA
+        required: true
+        type: string
+      confirmation:
+        description: Type DEPLOY_R5_DB_EDGE_TO_PRODUCTION
+        required: true
+        type: string
+      recovery_limitations_accepted:
+        description: >-
+          Accept that the physical backup was rechecked, PITR is unavailable,
+          restore is unrehearsed, RPO/RTO are unmeasured, forward-fix is the
+          primary DB migration recovery strategy, and Edge/frontend rollback
+          may be unrehearsed
+        required: true
+        type: boolean
 
 # ─── PRODUCTION GATE ────────────────────────────────────────────────────────
 #
 # `environment: name: production` liên kết job này với GitHub Environment
-# "production". Environment đã được tạo tại Settings → Environments.
+# "production" (được cấu hình chỉ chấp nhận workflow chạy trên nhánh main).
 #
-# "Required reviewers" (approval gate) KHÔNG khả dụng trên GitHub Free
-# với private repo — chỉ có trên GitHub Pro / Team / Enterprise.
-#
-# Thay thế phù hợp cho tài khoản cá nhân (Free):
-# → Dùng Branch Protection Rule trên nhánh `main`:
-#   Settings → Branches → Add branch ruleset → chọn nhánh `main`
-#   Bật "Require a pull request before merging" + "Required approvals: 1"
-#   → Không ai push thẳng lên main được, mọi thay đổi phải qua PR review.
-#   → Khi PR được merge vào main, workflow này tự chạy và deploy prod.
+# Quy trình phát hành Production hai giai đoạn (Two-Stage Release):
+# → Giai đoạn A (Control-Plane Bootstrap): Merge commit workflow/guard này lên main.
+# → Giai đoạn B (G2 Release): Chạy manual workflow_dispatch trên main với input
+#   release_sha trỏ vào commit manifest R5 đã được kiểm duyệt.
+# → Workflow check out đúng release_sha, kiểm tra manifest, kiểm tra ledger 139,
+#   chạy đúng 16 forward migrations, chạy post-migration live DB check, và deploy
+#   hai Edge Functions cần thiết (ai-tutor, corelia-api).
+# → Merge main kích hoạt frontend Cloudflare Production theo pipeline riêng sau khi
+#   hậu kiểm DB/Edge hoàn tất.
 #
 # ────────────────────────────────────────────────────────────────────────────
 
@@ -35,10 +45,35 @@ jobs:
   verify:
     name: Full pre-deploy verification
     runs-on: ubuntu-latest
+    environment:
+      name: production
     steps:
       - uses: actions/checkout@v5
         with:
+          ref: ${{ inputs.release_sha }}
           fetch-depth: 0
+
+      - name: Verify approved release artifact identity and manifest
+        env:
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          APPROVED_RELEASE_SHA: ${{ vars.APPROVED_PRODUCTION_RELEASE_SHA }}
+          PRODUCTION_RELEASE_MANIFEST_SHA256: ${{ vars.APPROVED_PRODUCTION_RELEASE_MANIFEST_SHA256 }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+          RECOVERY_LIMITATIONS_ACCEPTED: ${{ inputs.recovery_limitations_accepted }}
+        run: |
+          test "$CONFIRMATION" = "DEPLOY_R5_DB_EDGE_TO_PRODUCTION"
+          # true means the operator rechecked the physical backup and explicitly
+          # accepts: no PITR, unrehearsed restore, unmeasured RPO/RTO,
+          # forward-fix as the primary DB migration recovery strategy, and
+          # potentially unrehearsed Edge/frontend rollback.
+          test "$RECOVERY_LIMITATIONS_ACCEPTED" = "true"
+          test -n "$APPROVED_RELEASE_SHA"
+          test -n "$PRODUCTION_RELEASE_MANIFEST_SHA256"
+          test "$RELEASE_SHA" = "$APPROVED_RELEASE_SHA"
+          test "$(git rev-parse HEAD)" = "$APPROVED_RELEASE_SHA"
+          git fetch origin main
+          git cat-file -e "66981c2044b515a6fa07a71d06f8265d171d6a74^{commit}"
+          node scripts/db/verify-production-release-artifact.mjs 66981c2044b515a6fa07a71d06f8265d171d6a74 "$APPROVED_RELEASE_SHA"
 
       - uses: actions/setup-node@v5
         with:
@@ -61,12 +96,25 @@ jobs:
       - name: Run full application test suite
         run: pnpm test
 
-      - name: Run lint and production build
+      - name: Run lint
+        run: pnpm lint
+
+      - name: Build and verify Production frontend artifact
+        env:
+          VITE_SUPABASE_URL: https://${{ secrets.SUPABASE_PROJECT_REF }}.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_CDN_BASE_URL: ${{ vars.VITE_CDN_BASE_URL }}
+          EXPECTED_PRODUCTION_SUPABASE_URL: https://lawhkvyyoznwygzsycan.supabase.co
+          EXPECTED_PRODUCTION_CDN_URL: ${{ vars.VITE_CDN_BASE_URL }}
         run: |
-          pnpm lint
+          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY"
+          test -n "$VITE_CDN_BASE_URL"
           pnpm build:prod
+          node scripts/db/verify-production-frontend-artifact.mjs dist "$RUNNER_TEMP/production-frontend-artifact.json"
+          node -e 'const fs=require("node:fs"); const r=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Production frontend artifact\n\n- Supabase project ref: \`${r.supabaseProjectRef}\`\n- CDN origin: \`${r.cdnOrigin}\`\n- App version: \`${r.appVersion}\`\n- Files: \`${r.fileCount}\`\n- Artifact SHA-256: \`${r.artifactSha256}\`\n`)' "$RUNNER_TEMP/production-frontend-artifact.json"
 
       - name: Cleanly recreate isolated local migration chain
+        timeout-minutes: 15
         run: |
           supabase start
           pnpm db:verify:local
@@ -88,8 +136,22 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          # Needed for git diff between github.event.before and github.sha
+          ref: ${{ inputs.release_sha }}
           fetch-depth: 0
+
+      - name: Re-verify release artifact immediately before Production writes
+        env:
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          APPROVED_RELEASE_SHA: ${{ vars.APPROVED_PRODUCTION_RELEASE_SHA }}
+          PRODUCTION_RELEASE_MANIFEST_SHA256: ${{ vars.APPROVED_PRODUCTION_RELEASE_MANIFEST_SHA256 }}
+        run: |
+          test -n "$APPROVED_RELEASE_SHA"
+          test -n "$PRODUCTION_RELEASE_MANIFEST_SHA256"
+          test "$RELEASE_SHA" = "$APPROVED_RELEASE_SHA"
+          test "$(git rev-parse HEAD)" = "$APPROVED_RELEASE_SHA"
+          git fetch origin main
+          git cat-file -e "66981c2044b515a6fa07a71d06f8265d171d6a74^{commit}"
+          node scripts/db/verify-production-release-artifact.mjs 66981c2044b515a6fa07a71d06f8265d171d6a74 "$APPROVED_RELEASE_SHA"
 
       - uses: actions/setup-node@v5
         with:
@@ -100,29 +162,50 @@ jobs:
         with:
           version: 2.98.1
 
-      - name: Apply Supabase migrations
+      # Deploy the R5 callback guard before the DB migration. NEW EDGE is
+      # compatible with the released DB RPC, while OLD EDGE can pre-mark a
+      # late ai_subscription callback paid during the migration window.
+      - name: Deploy Edge Function (corelia-api)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          test "$SUPABASE_PROJECT_REF" = "lawhkvyyoznwygzsycan"
+          supabase functions deploy corelia-api --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Verify exact Production migration state and apply approved migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
+          test "$SUPABASE_PROJECT_REF" = "lawhkvyyoznwygzsycan"
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
-          # Mark orphaned migration (reverted via PR #225) so history matches local files
-          supabase migration repair --status reverted 20260709000009 --dns-resolver https || true
-          # --include-all applies out-of-order local migrations (e.g. late-June files added after July ones)
-          supabase migration up --linked --dns-resolver https --include-all
+          supabase migration list --linked --password "$SUPABASE_DB_PASSWORD" --dns-resolver https > "$RUNNER_TEMP/production-pre-migration-list.txt"
+          node scripts/db/verify-production-migration-state.mjs "$RUNNER_TEMP/production-pre-migration-list.txt"
+          supabase migration up --linked --dns-resolver https
 
-      - name: Deploy Edge Function (corelia-api)
+      - name: Verify live DB post-migration state and data invariants (Pre-Edge Gate)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase functions deploy corelia-api --project-ref "$SUPABASE_PROJECT_REF"
+        run: |
+          supabase migration list --linked --password "$SUPABASE_DB_PASSWORD" --dns-resolver https > "$RUNNER_TEMP/production-post-migration-list.txt"
+          supabase db query --linked --file scripts/db/production-post-migration-inspect.sql > "$RUNNER_TEMP/production-post-inspection.json"
+          node scripts/db/verify-production-post-migration.mjs "$RUNNER_TEMP/production-post-migration-list.txt" "$RUNNER_TEMP/production-post-inspection.json"
 
-      - name: Deploy Edge Function (ai-tutor)
+      - name: Deploy Edge Function (ai-tutor - retired tombstone)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy ai-tutor --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy Edge Function (embed-lesson - retired tombstone)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy embed-lesson --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Deploy Edge Function (generate-description)
         env:
@@ -130,32 +213,36 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy generate-description --project-ref "$SUPABASE_PROJECT_REF"
 
+      - name: Deploy Edge Function (generate-flashcards - retired tombstone)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy generate-flashcards --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy Edge Function (generate-learning-path - retired tombstone)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy generate-learning-path --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy Edge Function (generate-lesson-summary - retired tombstone)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy generate-lesson-summary --project-ref "$SUPABASE_PROJECT_REF"
+
       - name: Deploy Edge Function (generate-questions)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy generate-questions --project-ref "$SUPABASE_PROJECT_REF"
 
-      - name: Deploy Edge Function (generate-lesson-summary)
+      - name: Verify live DB post-Edge final runtime invariants (Post-Edge Gate)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase functions deploy generate-lesson-summary --project-ref "$SUPABASE_PROJECT_REF"
-
-      - name: Deploy Edge Function (generate-flashcards)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase functions deploy generate-flashcards --project-ref "$SUPABASE_PROJECT_REF"
-
-      - name: Deploy Edge Function (embed-lesson)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase functions deploy embed-lesson --project-ref "$SUPABASE_PROJECT_REF"
-
-      - name: Deploy Edge Function (generate-learning-path)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase functions deploy generate-learning-path --project-ref "$SUPABASE_PROJECT_REF"
+        run: |
+          supabase migration list --linked --password "$SUPABASE_DB_PASSWORD" --dns-resolver https > "$RUNNER_TEMP/production-final-migration-list.txt"
+          supabase db query --linked --file scripts/db/production-post-migration-inspect.sql > "$RUNNER_TEMP/production-final-inspection.json"
+          node scripts/db/verify-production-post-migration.mjs "$RUNNER_TEMP/production-final-migration-list.txt" "$RUNNER_TEMP/production-final-inspection.json"

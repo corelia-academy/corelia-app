@@ -5,6 +5,22 @@ import { useAuth } from "@/stores/authStore";
 import { getMyPaymentTransactions, type PaymentTransaction } from "@/lib/payments";
 import { formatVndPrice } from "@/types/courses";
 import { intlLocale } from "@/lib/intl";
+import { billingMetadataTranslation, billingPurposeTranslationKey } from "./billingPurpose";
+
+function BillingMetadata({
+  transaction,
+  className,
+}: {
+  transaction: PaymentTransaction;
+  className: string;
+}) {
+  const { t } = useTranslation("account");
+  const metadata = billingMetadataTranslation(transaction);
+  if (metadata.key === "billing.meta.historicalAiProviderOrder") {
+    return <div className={className}>{t(metadata.key, metadata.values)}</div>;
+  }
+  return <div className={className}>{t(metadata.key, metadata.values)}</div>;
+}
 
 export function BillingSection() {
   const { t } = useTranslation("account");
@@ -72,9 +88,7 @@ export function BillingSection() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="font-medium text-foreground">
-                      {tx.purpose === "course_purchase"
-                        ? t("billing.purpose.coursePurchase")
-                        : t("billing.purpose.certificateFee")}
+                      {t(billingPurposeTranslationKey(tx.purpose))}
                     </div>
                     <div className="mt-1 text-xs text-foreground-muted">
                       {new Date(tx.created_at).toLocaleString(intlLocale())}
@@ -87,12 +101,10 @@ export function BillingSection() {
                 <div className="text-sm font-medium text-foreground">
                   {formatVndPrice(tx.amount_vnd)}
                 </div>
-                <div className="text-xs leading-5 text-foreground-muted">
-                  {t("billing.meta.course", { id: tx.course_id })}
-                </div>
-                <div className="text-xs leading-5 text-foreground-muted">
-                  {t("billing.meta.providerOrder", { provider: tx.provider, order: tx.id })}
-                </div>
+                <BillingMetadata
+                  transaction={tx}
+                  className="text-xs leading-5 text-foreground-muted"
+                />
               </div>
             ))}
           </div>
@@ -125,17 +137,9 @@ export function BillingSection() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="font-medium text-foreground">
-                      {tx.purpose === "course_purchase"
-                        ? t("billing.purpose.coursePurchase")
-                        : t("billing.purpose.certificateFee")}
+                      {t(billingPurposeTranslationKey(tx.purpose))}
                     </div>
-                    <div className="text-xs text-foreground-muted">
-                      {t("billing.meta.courseProviderOrder", {
-                        course: tx.course_id,
-                        provider: tx.provider,
-                        order: tx.id,
-                      })}
-                    </div>
+                    <BillingMetadata transaction={tx} className="text-xs text-foreground-muted" />
                   </td>
                   <td className="px-4 py-3 font-medium text-foreground">
                     {formatVndPrice(tx.amount_vnd)}

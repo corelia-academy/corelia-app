@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User } from "@supabase/supabase-js";
 
-import { getMyAiSubscription, type AiSubscription } from "@/lib/payments";
 import { supabase } from "@/lib/supabase";
 import { getCurrentProfile, getProfileForUser } from "@/lib/profile";
 import type { Profile, UserRole } from "@/types/database";
@@ -23,18 +22,9 @@ function clearSupabaseAuthFromLocalStorage(): void {
   }
 }
 
-function differenceInCalendarDaysSafe(later: string): number {
-  const target = new Date(later);
-  const now = new Date();
-  const utcTarget = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate());
-  const utcNow = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-  return Math.round((utcTarget - utcNow) / 86_400_000);
-}
-
 interface AuthStore {
   user: User | null;
   profile: Profile | null;
-  aiSubscription: AiSubscription | null;
   /** True while the signed-in user's profile row is being fetched (not session bootstrap). */
   profileLoading: boolean;
   authInitialized: boolean;
@@ -42,13 +32,11 @@ interface AuthStore {
   isPasswordRecovery: boolean;
   setUser: (user: User | null) => void;
   setProfile: (profile: Profile | null) => void;
-  setAiSubscription: (aiSubscription: AiSubscription | null) => void;
   setProfileLoading: (profileLoading: boolean) => void;
   setAuthInitialized: (authInitialized: boolean) => void;
   setPasswordRecovery: (value: boolean) => void;
   signOut: () => Promise<void>;
   refreshProfile: (user?: User | null) => Promise<void>;
-  loadAiSubscription: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -56,14 +44,12 @@ export const useAuthStore = create<AuthStore>()(
     (set) => ({
       user: null,
       profile: null,
-      aiSubscription: null,
       profileLoading: false,
       authInitialized: false,
       isPasswordRecovery: false,
 
       setUser: (user) => set({ user }),
       setProfile: (profile) => set({ profile }),
-      setAiSubscription: (aiSubscription) => set({ aiSubscription }),
       setProfileLoading: (profileLoading) => set({ profileLoading }),
       setAuthInitialized: (authInitialized) => set({ authInitialized }),
       setPasswordRecovery: (value) => set({ isPasswordRecovery: value }),
@@ -92,7 +78,6 @@ export const useAuthStore = create<AuthStore>()(
             set({
               user: null,
               profile: null,
-              aiSubscription: null,
               profileLoading: false,
               authInitialized: true,
             });
@@ -107,24 +92,9 @@ export const useAuthStore = create<AuthStore>()(
           const profile = user
             ? await getProfileForUser(user)
             : await getCurrentProfile();
-          let aiSubscription: AiSubscription | null = null;
-          try {
-            aiSubscription = await getMyAiSubscription();
-          } catch (subscriptionError) {
-            console.warn("[authStore] loadAiSubscription during refreshProfile failed:", subscriptionError);
-          }
-          set({ profile, aiSubscription });
+          set({ profile });
         } catch (err) {
           console.error("[authStore] refreshProfile failed:", err);
-        }
-      },
-
-      loadAiSubscription: async () => {
-        try {
-          const aiSubscription = await getMyAiSubscription();
-          set({ aiSubscription });
-        } catch (err) {
-          console.error("[authStore] loadAiSubscription failed:", err);
         }
       },
     }),
@@ -142,35 +112,25 @@ export const useAuthStore = create<AuthStore>()(
 export function useAuth() {
   const user = useAuthStore((s) => s.user);
   const profile = useAuthStore((s) => s.profile);
-  const aiSubscription = useAuthStore((s) => s.aiSubscription);
   const profileLoading = useAuthStore((s) => s.profileLoading);
   const authInitialized = useAuthStore((s) => s.authInitialized);
   const signOut = useAuthStore((s) => s.signOut);
   const refreshProfile = useAuthStore((s) => s.refreshProfile);
-  const loadAiSubscription = useAuthStore((s) => s.loadAiSubscription);
   const setAuthInitialized = useAuthStore((s) => s.setAuthInitialized);
 
   const role = profile?.role;
   const isAuthenticated = !!user;
   const hasRole = (allowed: readonly UserRole[]) =>
     role ? checkRole(role, allowed) : false;
-  const daysUntilExpiry =
-    aiSubscription?.expires_at
-      ? differenceInCalendarDaysSafe(aiSubscription.expires_at)
-      : null;
-
   return {
     user,
     profile,
-    aiSubscription,
-    daysUntilExpiry,
     profileLoading,
     /** @deprecated Prefer `profileLoading` — same value (profile fetch gate, not session init). */
     loading: profileLoading,
     authInitialized,
     signOut,
     refreshProfile,
-    loadAiSubscription,
     setAuthInitialized,
     isAuthenticated,
     role,

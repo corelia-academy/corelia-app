@@ -6,7 +6,7 @@ Xem hub: [README.md](./README.md).
 
 Kiểm tra trang chủ `/` khi **ẩn danh** và khi **đã đăng nhập** (momentum cards, continue learning, explore courses).
 
-**Lưu ý:** Home hiện tại **không** có AI assistant panel trên trang chủ — không kỳ vọng Cora/chat trên `/`.
+**Lưu ý:** Home hiện tại **không** có learner AI assistant hoặc chat panel trên `/`.
 
 ## Tiền đề staging
 

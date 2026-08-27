@@ -367,7 +367,7 @@ src/pages/learn/Learn.tsx
 → orchestration only: load, route selection, access-free enrollment, completion sync
 
 LearnLayout.tsx
-→ h-dvh shell; remove GlobalCoraAssistant and ExplainSelectionButton mounts
+→ h-dvh shell; không mount learner AI assistant hoặc explain-selection UI
 
 LessonPlayerCard.tsx
 → split into LessonWorkspace + LessonRenderer + LessonFooter
@@ -403,7 +403,7 @@ Do not create a component per success/error state; use shared state primitives.
 - Desktop renders curriculum và lesson workspace without page-level double scroll.
 - Closing curriculum expands lesson workspace.
 - Mobile curriculum sheet và mọi touch target đáp ứng 44px.
-- Learning routes không mount, render hoặc dành layout space cho Cora/AI assistant.
+- Learning routes không mount, render hoặc dành layout space cho learner AI assistant.
 - No paid/locked/preview UI remains in learning routes.
 - All five lesson formats render through one `LessonRenderer`.
 - Footer exposes exactly one primary CTA appropriate to lesson state.

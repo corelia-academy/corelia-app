@@ -4,7 +4,7 @@
 
 **`DB_INTEGRATION_PASS`**
 
-Docker daemon đã được khởi động và toàn bộ gate tích hợp cơ sở dữ liệu `pnpm db:verify:local` (gồm 32 migrations recreate từ zero, toàn bộ SQL assertion integration tests, và real two-connection concurrency test) đã thực thi trực tiếp trên PostgreSQL container và đạt kết quả **100% PASS**.
+Docker daemon đã được khởi động và toàn bộ gate tích hợp cơ sở dữ liệu `pnpm db:verify:local` (gồm 149 migrations recreate từ zero: 139 historical baseline + 10 forward migrations, toàn bộ SQL assertion integration tests, và real two-connection concurrency test) đã thực thi trực tiếp trên PostgreSQL container và đạt kết quả **100% PASS**.
 
 ---
 
@@ -26,7 +26,7 @@ Docker daemon đã được khởi động và toàn bộ gate tích hợp cơ s
 
 Chuỗi thực thi tự động qua entrypoint duy nhất: `pnpm db:verify:local`
 1. **Docker Preflight:** Kiểm tra `docker info` qua shell an toàn $\rightarrow$ Nếu docker tắt, dừng ngay với mã lỗi `BLOCKED_DOCKER_DAEMON`.
-2. **Clean Recreate from Zero:** Chạy `supabase db reset --local --no-seed --yes` để khởi tạo database trắng, chạy tuần tự 32 migrations từ baseline đến `20260823140000_g2_r1_remediation.sql`. Bắt lỗi `MIGRATION_RESET_FAILURE`.
+2. **Clean Recreate from Zero:** Chạy `supabase db reset --local --no-seed --yes` để khởi tạo database trắng, chạy tuần tự 149 migrations gồm 139 historical baseline + 10 forward migrations, kết thúc tại `20260825140000_harden_enrollment_payment_purpose_and_timestamp.sql`. Bắt lỗi `MIGRATION_RESET_FAILURE`.
 3. **SQL Integration Suite:** Chạy `supabase db query --local --file scripts/db/tests/g2-r1-db-integration.sql` dưới dạng một khối DO giao dịch duy nhất trên PostgreSQL. Bắt lỗi `INTEGRATION_SQL_FAILURE`.
 4. **Two-Connection Real Concurrency Test:** Chạy `node scripts/db/tests/g2-r1-concurrency.integration.mjs` mở 2 phiên DB đồng thời kiểm chứng race condition và bảo toàn dữ liệu JSONB. Bắt lỗi `INTEGRATION_CONCURRENCY_FAILURE`.
 
@@ -106,10 +106,13 @@ PERFORM set_config('request.jwt.claims', format('{"sub":"%s","role":"authenticat
 
 ## 10. Concurrency Test (FV-G2-03 Lost Update Prevention)
 
+**Classification:** `DETERMINISTIC_CONCURRENCY_PROVEN`
+
 Kịch bản thực thi tại [`scripts/db/tests/g2-r1-concurrency.integration.mjs`](file:///g:/Documents/CORELIA/corelia-app/scripts/db/tests/g2-r1-concurrency.integration.mjs):
 - **Khởi tạo:** Hackathon có `title = 'Original Concurrent Title'`, `metrics_snapshot = { registrations_total: 0 }`.
-- **Kết nối 1 (Manager Edit):** Chạy UPDATE đổi `title = 'MANAGER_CONCURRENT_TITLE_UPDATED'`, `description = 'MANAGER_CONCURRENT_DESC_UPDATED'`.
-- **Kết nối 2 (Background Metrics Patch):** Chạy đồng thời gọi RPC `patch_hackathon_metrics_snapshot` với `registrations_total: 77, submissions_total: 19`.
+- **Kết nối 1 (Manager Edit):** Chạy UPDATE đổi `title = 'MANAGER_CONCURRENT_TITLE_UPDATED'`, `description = 'MANAGER_CONCURRENT_DESC_UPDATED'`, giữ transaction mở và giữ row lock trên đúng hackathon đang kiểm thử.
+- **Kết nối 2 (Background Metrics Patch):** Gọi RPC `patch_hackathon_metrics_snapshot` với `registrations_total: 77, submissions_total: 19` trong khi row lock của Kết nối 1 còn hiệu lực.
+- **Synchronization proof:** Test chỉ tiếp tục khi `pg_stat_activity`, `wait_event_type = 'Lock'` và `pg_blocking_pids()` xác nhận session RPC đang bị chính transaction manager block trên critical region. Nếu không quan sát được quan hệ blocker này trước timeout, test fail.
 - **Kết quả DB sau khi kết thúc song song:**
   - `document.title` là `'MANAGER_CONCURRENT_TITLE_UPDATED'` (Sửa đổi của manager được bảo toàn 100%).
   - `document.description` là `'MANAGER_CONCURRENT_DESC_UPDATED'` (Được bảo toàn 100%).
@@ -138,7 +141,7 @@ Kịch bản thực thi tại [`scripts/db/tests/g2-r1-concurrency.integration.m
 | `pnpm build:staging` | **PASS** | TypeScript compile + Vite staging build thành công. |
 | `pnpm build:prod` | **PASS** | TypeScript compile + Vite production build thành công. |
 | `git diff --check` | **PASS** | Không có lỗi formatting / whitespace. |
-| `pnpm db:verify:local` | **PASS (100% SUCCESS)** | Recreate 32 migrations từ zero + 100% SQL & Concurrency tests pass trên Docker PostgreSQL container. |
+| `pnpm db:verify:local` | **PASS (100% SUCCESS)** | Recreate 144 migrations từ zero (139 historical + 5 forward) + SQL & Concurrency tests pass trên Docker PostgreSQL container. |
 
 ---
 
