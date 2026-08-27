@@ -31,6 +31,47 @@ export interface CoursePaymentAccess {
   updated_at?: string;
 }
 
+export interface CourseEntitlementGrant {
+  id: string;
+  user_id: string;
+  course_id: string;
+  source: CoursePaymentAccessSource;
+  status: CoursePaymentAccessStatus;
+  source_transaction_id?: string | null;
+  granted_by?: string | null;
+  reason?: string | null;
+  granted_at: string;
+  revoked_at?: string | null;
+  revoked_reason?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BillingProduct {
+  id: string;
+  product_type: string;
+  title: string;
+  description?: string | null;
+  active: boolean;
+  metadata?: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaymentTransactionItem {
+  id: string;
+  payment_transaction_id: string;
+  product_id: string;
+  resource_id: string;
+  unit_price_vnd: number;
+  quantity: number;
+  snapshot: Record<string, unknown>;
+  fulfillment_status: "pending" | "fulfilled" | "conflict" | "failed" | "revoked";
+  fulfillment_id?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export type PaymentTransactionStatus =
   | "pending"
   | "paid"

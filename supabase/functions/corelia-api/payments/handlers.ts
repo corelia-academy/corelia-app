@@ -76,6 +76,27 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     ) {
       return json({ message: "Callback URLs không hợp lệ" }, 400);
     }
+
+    if (purpose === "course_purchase") {
+      const { data: activeGrant, error: grantErr } = await db
+        .from("course_entitlement_grants")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("course_id", courseId)
+        .eq("status", "active")
+        .maybeSingle();
+      if (grantErr) throw new Error(grantErr.message);
+      if (activeGrant) {
+        return json(
+          {
+            message: "Bạn đã có quyền truy cập khóa học này.",
+            code: "ALREADY_ENTITLED",
+          },
+          400,
+        );
+      }
+    }
+
     let baseAmount = 0;
     const { data: courseRow, error: courseErr } = await db.from("courses").select("data").eq("id", courseId)
       .maybeSingle();
@@ -139,11 +160,28 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
     }
     const orderId = `CORELIA-${Date.now()}-${randomHex(6)}`;
     const createdAt = nowIso();
+    const roundedFinalAmount = Math.round(finalAmount);
+    const productId = purpose === "certificate_fee" ? "certificate_fee" : "course_access";
+
+    const { error: insErr } = await db.rpc("create_payment_checkout_transaction", {
+      p_order_id: orderId,
+      p_user_id: user.id,
+      p_product_id: productId,
+      p_resource_id: courseId,
+      p_amount_vnd: roundedFinalAmount,
+      p_original_amount_vnd: baseAmount,
+      p_discount_code: discountCode ?? null,
+      p_discount_amount_vnd: discountCode ? discountAmount : null,
+      p_provider: "sepay",
+      p_created_at: createdAt,
+    });
+    if (insErr) throw new Error(insErr.message);
+
     const tx: PaymentTransaction = {
       user_id: user.id,
       course_id: courseId,
       purpose,
-      amount_vnd: Math.round(finalAmount),
+      amount_vnd: roundedFinalAmount,
       original_amount_vnd: baseAmount,
       discount_code: discountCode ?? null,
       discount_amount_vnd: discountCode ? discountAmount : null,
@@ -153,23 +191,6 @@ export async function handleSePayCheckout(req: Request, db: SupabaseClient): Pro
       created_at: createdAt,
       updated_at: createdAt,
     };
-    const { error: insErr } = await db.from("payment_transactions").insert({
-      id: orderId,
-      user_id: tx.user_id,
-      course_id: tx.course_id,
-      purpose: tx.purpose,
-      amount_vnd: tx.amount_vnd,
-      original_amount_vnd: tx.original_amount_vnd ?? undefined,
-      discount_code: tx.discount_code,
-      discount_amount_vnd: tx.discount_amount_vnd ?? undefined,
-      provider: "sepay",
-      status: "pending",
-      provider_payload: undefined,
-      created_at: createdAt,
-      updated_at: createdAt,
-    });
-    if (insErr) throw new Error(insErr.message);
-    const roundedFinalAmount = Math.round(finalAmount);
     if (roundedFinalAmount <= 0) {
       if (!discountCode) {
         return json({ message: "Không thể hoàn tất checkout miễn phí." }, 400);
@@ -524,22 +545,22 @@ export async function handleProcessRefund(req: Request, db: SupabaseClient): Pro
       ? Math.round(amountVnd)
       : Math.round(Number(tx.amount_vnd ?? 0));
 
-    const { data: refundResult, error: rpcErr } = await db.rpc("process_payment_refund", {
+    const { data: refundResult, error: rpcErr } = await db.rpc("request_payment_refund", {
       p_payment_transaction_id: invoiceNumber,
       p_refund_amount_vnd: refundAmount,
       p_reason: reason,
       p_actor_user_id: user.id,
-      p_provider_refund_payload: { initiated_by: user.id, role },
+      p_provider_payload: { initiated_by: user.id, role },
     });
 
     if (rpcErr) throw new Error(rpcErr.message);
 
-    return json({ ok: true, refund: refundResult });
+    return json({ ok: true, status: "refund_requested", refund: refundResult });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     if (isAuthFailure(message)) return json({ message: "Chưa đăng nhập" }, 401);
     console.error("[corelia-api] refund", e);
-    return json({ message: "Không thể hoàn tiền lúc này: " + message }, 500);
+    return json({ message: "Không thể yêu cầu hoàn tiền lúc này: " + message }, 500);
   }
 }
 
@@ -554,7 +575,6 @@ export async function handleAdminGrantCourseAccess(req: Request, db: SupabaseCli
     const targetUserId = String(body.targetUserId ?? "").trim();
     const courseId = String(body.courseId ?? "").trim();
     const fullAccess = body.fullAccess !== false;
-    const certFeePaid = body.certFeePaid === true;
     const reason = String(body.reason ?? "Admin manual grant").trim();
 
     if (!targetUserId || !courseId) {
@@ -565,7 +585,6 @@ export async function handleAdminGrantCourseAccess(req: Request, db: SupabaseCli
       p_target_user_id: targetUserId,
       p_course_id: courseId,
       p_full_access: fullAccess,
-      p_cert_fee_paid: certFeePaid,
       p_reason: reason,
       p_admin_id: user.id,
     });

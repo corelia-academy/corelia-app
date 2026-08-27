@@ -53,7 +53,6 @@ export function SectionQuiz({
         sectionId,
         questionId: q.id,
         selectedIndex: selectedAnswers[q.id] ?? 0,
-        isCorrect: (selectedAnswers[q.id] ?? -1) === q.correct_index,
       }));
       const saved = await submitSectionQuizAttempts(attempts);
       const correct = saved.filter((a) => a.is_correct).length;

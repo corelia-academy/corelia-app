@@ -124,30 +124,30 @@ BEGIN
     RAISE EXCEPTION 'I329-STATUS-02: late failed/cancelled callback regressed financial status';
   END IF;
 
-  -- I329-REFUND-01/02: duplicate event is a replay, distinct events preserve partial/full totals.
+  -- I329-REFUND-01/02: duplicate event is a replay, distinct events preserve full totals.
   v_result := public.process_provider_payment_refund(
-    v_refund_tx, 40000, 'provider partial', 'sepay-refund-i329-1', NULL, '{"event_id":"sepay-refund-i329-1"}'
+    v_refund_tx, 100000, 'provider full refund', 'sepay-refund-i329-1', NULL, '{"event_id":"sepay-refund-i329-1"}'
   );
-  IF v_result->>'status' <> 'partially_refunded' OR v_result->>'idempotent_replay' <> 'false' THEN
+  IF v_result->>'status' <> 'refunded' OR v_result->>'idempotent_replay' <> 'false' THEN
     RAISE EXCEPTION 'I329-REFUND-01: first provider refund failed';
   END IF;
   v_result := public.process_provider_payment_refund(
-    v_refund_tx, 40000, 'provider duplicate', 'sepay-refund-i329-1', NULL, '{"event_id":"sepay-refund-i329-1"}'
+    v_refund_tx, 100000, 'provider duplicate', 'sepay-refund-i329-1', NULL, '{"event_id":"sepay-refund-i329-1"}'
   );
   SELECT count(*), COALESCE(sum(amount_vnd), 0)
   INTO v_refund_count, v_refund_total
   FROM public.payment_refunds
   WHERE payment_transaction_id = v_refund_tx AND status = 'completed';
   IF v_result->>'idempotent_replay' <> 'true'
-     OR v_refund_count <> 1 OR v_refund_total <> 40000
-     OR (SELECT status FROM public.payment_transactions WHERE id = v_refund_tx) <> 'partially_refunded' THEN
+     OR v_refund_count <> 1 OR v_refund_total <> 100000
+     OR (SELECT status FROM public.payment_transactions WHERE id = v_refund_tx) <> 'refunded' THEN
     RAISE EXCEPTION 'I329-REFUND-01: duplicate provider event changed accounting';
   END IF;
 
   -- I329-REFUND-02: a provider event ID cannot be replayed onto another transaction.
   BEGIN
     PERFORM public.process_provider_payment_refund(
-      v_refund_other_tx, 40000, 'cross-transaction replay', 'sepay-refund-i329-1', NULL,
+      v_refund_other_tx, 100000, 'cross-transaction replay', 'sepay-refund-i329-1', NULL,
       '{"event_id":"sepay-refund-i329-1"}'
     );
     RAISE EXCEPTION 'I329-REFUND-02: cross-transaction provider event replay unexpectedly succeeded';
@@ -161,19 +161,28 @@ BEGIN
     RAISE EXCEPTION 'I329-REFUND-02: rejected cross-transaction replay changed accounting';
   END IF;
 
-  PERFORM public.process_provider_payment_refund(
-    v_refund_tx, 60000, 'provider remainder', 'sepay-refund-i329-2', NULL, '{"event_id":"sepay-refund-i329-2"}'
-  );
-  SELECT count(*), COALESCE(sum(amount_vnd), 0)
-  INTO v_refund_count, v_refund_total
-  FROM public.payment_refunds
-  WHERE payment_transaction_id = v_refund_tx AND status = 'completed';
-  IF v_refund_count <> 2 OR v_refund_total <> 100000
-     OR (SELECT status FROM public.payment_transactions WHERE id = v_refund_tx) <> 'refunded' THEN
-    RAISE EXCEPTION 'I329-REFUND-03: distinct provider events broke partial/full accounting';
-  END IF;
+  -- I329-REFUND-03: partial refund attempt is strictly rejected.
+  BEGIN
+    PERFORM public.process_provider_payment_refund(
+      v_refund_other_tx, 40000, 'partial attempt', 'sepay-refund-i329-partial', NULL,
+      '{"event_id":"sepay-refund-i329-partial"}'
+    );
+    RAISE EXCEPTION 'I329-REFUND-03: partial provider refund unexpectedly succeeded';
+  EXCEPTION WHEN SQLSTATE '22023' THEN
+    IF SQLERRM NOT LIKE 'PARTIAL_REFUND_NOT_SUPPORTED:%' THEN RAISE; END IF;
+  END;
 
-  DELETE FROM public.payment_refunds WHERE payment_transaction_id = v_refund_tx;
+  DELETE FROM public.payment_refunds WHERE payment_transaction_id IN (
+    v_ai_pre, v_ai_boundary, v_ai_unverified, v_pending, v_paid, v_partial, v_refunded, v_refund_tx,
+    v_refund_other_tx
+  );
+  DELETE FROM public.course_entitlement_grants WHERE user_id = v_buyer AND course_id = 'i329-payment-course';
+  DELETE FROM public.course_payment_access WHERE user_id = v_buyer AND course_id = 'i329-payment-course';
+  DELETE FROM public.enrollments WHERE user_id = v_buyer AND course_id = 'i329-payment-course';
+  DELETE FROM public.payment_transaction_items WHERE payment_transaction_id IN (
+    v_ai_pre, v_ai_boundary, v_ai_unverified, v_pending, v_paid, v_partial, v_refunded, v_refund_tx,
+    v_refund_other_tx
+  );
   DELETE FROM public.payment_transactions WHERE id IN (
     v_ai_pre, v_ai_boundary, v_ai_unverified, v_pending, v_paid, v_partial, v_refunded, v_refund_tx,
     v_refund_other_tx
