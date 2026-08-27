@@ -18,7 +18,6 @@ import { useTranslation } from "react-i18next";
 import { useOCAuth } from "@opencampus/ocid-connect-js";
 import OpenCampusConnectDialog from "@/components/layouts/OpenCampusConnectDialog";
 import { NotificationBell } from "@/components/layouts/NotificationBell";
-import { DailyStreakMenu } from "@/components/layouts/DailyStreakMenu";
 import { useTheme } from "next-themes";
 import {
   DropdownMenu,
@@ -539,7 +538,6 @@ export default function Header() {
             <div className="h-9 w-28 animate-pulse rounded-full bg-surface-raised md:h-10" />
           ) : isAuthenticated ? (
             <div className="flex items-center gap-3">
-              <DailyStreakMenu onConnectOcid={handleOcLogoClick} />
               <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger

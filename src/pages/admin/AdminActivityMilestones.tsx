@@ -26,23 +26,16 @@ import { uploadActivityMilestoneBadgeImage } from "@/lib/storage";
 import { validatePngSignature } from "@/lib/imageValidation";
 
 type MilestoneEventKey =
-  | "login_streak"
-  | "daily_streak"
   | "courses_completed"
   | "courses_completed_in_track"
   | "projects_submitted";
 
 function buildTriggerRule(
   event: MilestoneEventKey,
-  days: number,
   count: number,
   track: string,
 ): Record<string, unknown> | null {
   switch (event) {
-    case "login_streak":
-      return { event: "login_streak", days };
-    case "daily_streak":
-      return { event: "daily_streak", days };
     case "courses_completed":
       return { event: "courses_completed", count };
     case "courses_completed_in_track":
@@ -68,7 +61,6 @@ export default function AdminActivityMilestones() {
   const [imageUrl, setImageUrl] = useState("");
   const [identifierPrefix, setIdentifierPrefix] = useState("");
   const [eventKey, setEventKey] = useState<MilestoneEventKey>("courses_completed");
-  const [days, setDays] = useState(7);
   const [count, setCount] = useState(5);
   const [track, setTrack] = useState("ai");
   const [isActive, setIsActive] = useState(true);
@@ -135,12 +127,6 @@ export default function AdminActivityMilestones() {
     if (!rule) return "—";
     if (rule.manual === true) return t("activityMilestones.rule.manual");
     const ev = String(rule.event ?? "");
-    if (ev === "login_streak") {
-      return t("activityMilestones.rule.loginStreak", { days: Number(rule.days ?? 0) });
-    }
-    if (ev === "daily_streak") {
-      return t("activityMilestones.rule.dailyStreak", { days: Number(rule.days ?? 0) });
-    }
     if (ev === "courses_completed") {
       return t("activityMilestones.rule.coursesCompleted", { count: Number(rule.count ?? 0) });
     }
@@ -163,7 +149,6 @@ export default function AdminActivityMilestones() {
     setImageUrl("");
     setIdentifierPrefix("");
     setEventKey("courses_completed");
-    setDays(7);
     setCount(5);
     setTrack("ai");
     setIsActive(true);
@@ -179,8 +164,6 @@ export default function AdminActivityMilestones() {
     const rule = row.trigger_rule as Record<string, unknown> | null;
     const ev = String(rule?.event ?? "courses_completed") as MilestoneEventKey;
     if (
-      ev === "login_streak" ||
-      ev === "daily_streak" ||
       ev === "courses_completed" ||
       ev === "courses_completed_in_track" ||
       ev === "projects_submitted"
@@ -189,7 +172,6 @@ export default function AdminActivityMilestones() {
     } else {
       setEventKey("courses_completed");
     }
-    setDays(Number(rule?.days ?? 7));
     setCount(Number(rule?.count ?? 5));
     setTrack(String(rule?.track ?? "ai"));
     setIsActive(row.is_active);
@@ -199,7 +181,7 @@ export default function AdminActivityMilestones() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const triggerRule = buildTriggerRule(eventKey, days, count, track);
+      const triggerRule = buildTriggerRule(eventKey, count, track);
       await saveActivityMilestoneTemplate({
         templateId: editId,
         isActive,
@@ -366,24 +348,11 @@ export default function AdminActivityMilestones() {
                   setEventKey(e.target.value as MilestoneEventKey)
                 }
               >
-                <option value="login_streak">{t("activityMilestones.event.loginStreak")}</option>
-                <option value="daily_streak">{t("activityMilestones.event.dailyStreak")}</option>
                 <option value="courses_completed">{t("activityMilestones.event.coursesCompleted")}</option>
                 <option value="courses_completed_in_track">{t("activityMilestones.event.trackCourses")}</option>
                 <option value="projects_submitted">{t("activityMilestones.event.projects")}</option>
               </select>
             </Field>
-            {eventKey === "login_streak" || eventKey === "daily_streak" ? (
-              <Field>
-                <FieldLabel>{t("activityMilestones.field.days")}</FieldLabel>
-                <Input
-                  type="number"
-                  min={1}
-                  value={days}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setDays(Number(e.target.value))}
-                />
-              </Field>
-            ) : null}
             {eventKey === "courses_completed" || eventKey === "projects_submitted" ? (
               <Field>
                 <FieldLabel>{t("activityMilestones.field.count")}</FieldLabel>

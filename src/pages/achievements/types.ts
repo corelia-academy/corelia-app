@@ -68,7 +68,7 @@ export type BadgeItem = {
   borderColor: string;
   earnedAt: string | null;
   locked: boolean;
-  category: "learning" | "streak" | "milestone" | "social";
+  category: "learning" | "milestone" | "social";
   /** Ảnh huy hiệu (placeholder nếu chưa có) */
   imageUrl?: string;
   /** Course id backing a standalone (no offchain certificate) credential —

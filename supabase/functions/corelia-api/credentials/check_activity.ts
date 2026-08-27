@@ -98,7 +98,6 @@ function ruleMatchesEvent(rule: ActivityRule, eventType: string): boolean {
   if (ev === eventType) return true;
   if (eventType === "course_completed" && ev === "courses_completed") return true;
   if (eventType === "courses_completed" && ev === "course_completed") return true;
-  if ((ev === "login_streak" || ev === "daily_streak") && (eventType === "daily_streak" || eventType === "login_streak" || eventType === "login_streak_updated")) return true;
   return false;
 }
 
@@ -114,12 +113,6 @@ async function evaluateRule(
   if (!ruleMatchesEvent(rule, eventType)) return false;
 
   const ev = String(rule.event ?? "");
-
-  if (ev === "login_streak" || ev === "daily_streak") {
-    const need = Number(rule.days ?? 0);
-    const actual = Number(payload.days ?? 0);
-    return need > 0 && actual >= need;
-  }
 
   if (ev === "courses_completed" || eventType === "course_completed") {
     const need = Number(rule.count ?? 1);

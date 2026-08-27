@@ -67,56 +67,6 @@
     "accept": "Chấp nhận",
     "decline": "Từ chối"
   },
-  "dailyStreak": {
-    "openAria": "Mở Streak. Streak hiện tại: {{count}} ngày.",
-    "title": "Streak",
-    "subtitle": "Điểm danh mỗi ngày để duy trì streak và tích lũy điểm thưởng.",
-    "points": "{{count}} pts",
-    "currentStreak": "ngày trong streak",
-    "longest": "Streak dài nhất: {{count}} ngày",
-    "zeroStreakMotivation": "Điểm danh và bắt đầu streak ngay hôm nay!",
-    "brokenStreakMotivation": "Đừng nản lòng! Bắt đầu lại hôm nay để vượt qua streak kỷ lục {{count}} ngày trước đó!",
-    "activeStreakMotivation": "Giữ vững phong độ! Còn {{remaining}} ngày để đuổi kịp streak kỷ lục {{longest}} ngày.",
-    "peakStreakMotivation": "Kỷ lục streak: {{count}} ngày! Bạn đang làm rất xuất sắc, giữ vững ngọn lửa này nhé!",
-    "milestone": "Mốc streak {{days}} ngày",
-    "startMilestone": "Khởi đầu (0 ngày)",
-    "infinityMilestone": "Streak vô hạn (∞)",
-    "claim": "Điểm danh",
-    "claimed": "Đã điểm danh hôm nay",
-    "nextClaimIn": "Lượt tiếp theo sau {{countdown}}",
-    "claimHint": "Lượt điểm danh mới mở vào 00:00 mỗi ngày.",
-    "bonusTasks": "Nhiệm vụ nhận điểm",
-    "dailyQuests": "Nhiệm vụ hàng ngày",
-    "externalQuests": "Nhiệm vụ mở rộng",
-    "dailyBonus": "Điểm danh mỗi ngày",
-    "ocidBonus": "Liên kết Open Campus ID",
-    "githubBonus": "Liên kết tài khoản GitHub",
-    "connect": "Liên kết",
-    "connecting": "Đang kết nối…",
-    "claimedToast": "Điểm danh thành công ngày thứ {{count}}!",
-    "milestoneToast": "Mở khóa mốc streak {{days}} ngày liên tiếp!",
-    "claimFailed": "Không thể điểm danh lúc này. Vui lòng thử lại.",
-    "loadFailed": "Chưa thể đồng bộ dữ liệu streak.",
-    "retry": "Thử lại",
-    "githubConnectFailed": "Không thể bắt đầu liên kết GitHub. Vui lòng thử lại.",
-    "prompts": {
-      "unclaimed": [
-        "Hôm nay bạn đã điểm danh nhận điểm chưa?",
-        "Điểm danh ngay để không bị đứt streak!",
-        "Duy trì streak mỗi ngày, nhận thưởng liền tay!",
-        "Đừng quên điểm danh để giữ lửa streak nhé!"
-      ],
-      "ocidBonus": "Liên kết OCID nhận ngay +50 điểm thưởng!",
-      "githubBonus": "Kết nối GitHub để cộng thêm điểm uy tín!",
-      "benefits": [
-        "Tích lũy điểm để đổi nhiều quyền lợi hấp dẫn!",
-        "Hoàn thành nhiệm vụ ngày, mở khóa quà tặng!",
-        "Đạt mốc streak để nhận huy hiệu OCB xịn!",
-        "Học đều mỗi ngày, sớm nhận chứng nhận OCA!",
-        "Tích lũy kinh nghiệm, nâng tầm hồ sơ Web3!"
-      ]
-    }
-  },
   "betaAnnouncement": {
     "summary": "Corelia hiện đang trong phiên bản thử nghiệm. Một số tính năng có thể chưa đầy đủ hoặc phát sinh lỗi.",
     "summaryCompact": "Phiên bản thử nghiệm — có thể thiếu tính năng hoặc phát sinh lỗi.",
@@ -465,7 +415,6 @@
   "achievements": {
     "badgeCategory": {
       "learning": "Học tập",
-      "streak": "Chuỗi",
       "milestone": "Milestone",
       "social": "Cộng đồng"
     },
