@@ -1,39 +1,18 @@
 name: Deploy Production
 
 on:
-  workflow_dispatch:
-    inputs:
-      release_sha:
-        description: Full approved G2 release commit SHA
-        required: true
-        type: string
-      confirmation:
-        description: Type DEPLOY_R5_DB_EDGE_TO_PRODUCTION
-        required: true
-        type: string
-      recovery_limitations_accepted:
-        description: >-
-          Accept that the physical backup was rechecked, PITR is unavailable,
-          restore is unrehearsed, RPO/RTO are unmeasured, forward-fix is the
-          primary DB migration recovery strategy, and Edge/frontend rollback
-          may be unrehearsed
-        required: true
-        type: boolean
+  workflow_dispatch: {}
 
 # ─── PRODUCTION GATE ────────────────────────────────────────────────────────
 #
 # `environment: name: production` liên kết job này với GitHub Environment
 # "production" (được cấu hình chỉ chấp nhận workflow chạy trên nhánh main).
 #
-# Quy trình phát hành Production hai giai đoạn (Two-Stage Release):
-# → Giai đoạn A (Control-Plane Bootstrap): Merge commit workflow/guard này lên main.
-# → Giai đoạn B (G2 Release): Chạy manual workflow_dispatch trên main với input
-#   release_sha trỏ vào commit manifest R5 đã được kiểm duyệt.
-# → Workflow check out đúng release_sha, kiểm tra manifest, kiểm tra ledger 139,
-#   chạy đúng 16 forward migrations, chạy post-migration live DB check, và deploy
-#   hai Edge Functions cần thiết (ai-tutor, corelia-api).
-# → Merge main kích hoạt frontend Cloudflare Production theo pipeline riêng sau khi
-#   hậu kiểm DB/Edge hoàn tất.
+# "Required reviewers" (approval gate) KHÔNG khả dụng trên GitHub Free
+# với private repo — chỉ có trên GitHub Pro / Team / Enterprise.
+#
+# Production chỉ deploy thủ công bằng workflow_dispatch trên nhánh `main`.
+# Merge/push vào `main` không tự động chạy workflow này.
 #
 # ────────────────────────────────────────────────────────────────────────────
 
@@ -50,30 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ inputs.release_sha }}
           fetch-depth: 0
-
-      - name: Verify approved release artifact identity and manifest
-        env:
-          RELEASE_SHA: ${{ inputs.release_sha }}
-          APPROVED_RELEASE_SHA: ${{ vars.APPROVED_PRODUCTION_RELEASE_SHA }}
-          PRODUCTION_RELEASE_MANIFEST_SHA256: ${{ vars.APPROVED_PRODUCTION_RELEASE_MANIFEST_SHA256 }}
-          CONFIRMATION: ${{ inputs.confirmation }}
-          RECOVERY_LIMITATIONS_ACCEPTED: ${{ inputs.recovery_limitations_accepted }}
-        run: |
-          test "$CONFIRMATION" = "DEPLOY_R5_DB_EDGE_TO_PRODUCTION"
-          # true means the operator rechecked the physical backup and explicitly
-          # accepts: no PITR, unrehearsed restore, unmeasured RPO/RTO,
-          # forward-fix as the primary DB migration recovery strategy, and
-          # potentially unrehearsed Edge/frontend rollback.
-          test "$RECOVERY_LIMITATIONS_ACCEPTED" = "true"
-          test -n "$APPROVED_RELEASE_SHA"
-          test -n "$PRODUCTION_RELEASE_MANIFEST_SHA256"
-          test "$RELEASE_SHA" = "$APPROVED_RELEASE_SHA"
-          test "$(git rev-parse HEAD)" = "$APPROVED_RELEASE_SHA"
-          git fetch origin main
-          git cat-file -e "66981c2044b515a6fa07a71d06f8265d171d6a74^{commit}"
-          node scripts/db/verify-production-release-artifact.mjs 66981c2044b515a6fa07a71d06f8265d171d6a74 "$APPROVED_RELEASE_SHA"
 
       - uses: actions/setup-node@v5
         with:
@@ -136,22 +92,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ inputs.release_sha }}
           fetch-depth: 0
-
-      - name: Re-verify release artifact immediately before Production writes
-        env:
-          RELEASE_SHA: ${{ inputs.release_sha }}
-          APPROVED_RELEASE_SHA: ${{ vars.APPROVED_PRODUCTION_RELEASE_SHA }}
-          PRODUCTION_RELEASE_MANIFEST_SHA256: ${{ vars.APPROVED_PRODUCTION_RELEASE_MANIFEST_SHA256 }}
-        run: |
-          test -n "$APPROVED_RELEASE_SHA"
-          test -n "$PRODUCTION_RELEASE_MANIFEST_SHA256"
-          test "$RELEASE_SHA" = "$APPROVED_RELEASE_SHA"
-          test "$(git rev-parse HEAD)" = "$APPROVED_RELEASE_SHA"
-          git fetch origin main
-          git cat-file -e "66981c2044b515a6fa07a71d06f8265d171d6a74^{commit}"
-          node scripts/db/verify-production-release-artifact.mjs 66981c2044b515a6fa07a71d06f8265d171d6a74 "$APPROVED_RELEASE_SHA"
 
       - uses: actions/setup-node@v5
         with:

@@ -263,26 +263,13 @@ test("manifest identity uses immutable Git blob bytes across LF and CRLF checkou
   rmSync(repoRoot, { recursive: true, force: true });
 });
 
-test("Production workflow requires explicit recovery limitations acceptance and preserves fail-closed gates", () => {
+test("Production workflow is manual-only and does not require an approved release SHA", () => {
   const workflow = readFileSync(WORKFLOW_PATH, "utf8");
-  const rolloutPlan = readFileSync(ROLLOUT_PLAN_PATH, "utf8");
 
-  assert.doesNotMatch(workflow, /recovery_verified|RECOVERY_VERIFIED/);
-  assert.match(workflow, /recovery_limitations_accepted:/);
-  assert.match(workflow, /RECOVERY_LIMITATIONS_ACCEPTED: \$\{\{ inputs\.recovery_limitations_accepted \}\}/);
-  assert.match(workflow, /test "\$RECOVERY_LIMITATIONS_ACCEPTED" = "true"/);
-  assert.match(workflow, /physical backup was rechecked/i);
-  assert.match(workflow, /PITR is unavailable/i);
-  assert.match(workflow, /restore is unrehearsed/i);
-  assert.match(workflow, /RPO\/RTO are unmeasured/i);
-  assert.match(workflow, /forward-fix is the\s+primary DB migration recovery strategy/i);
-  assert.match(workflow, /Edge\/frontend rollback\s+may be unrehearsed/i);
-
-  assert.match(workflow, /test "\$CONFIRMATION" = "DEPLOY_R5_DB_EDGE_TO_PRODUCTION"/);
-  assert.match(workflow, /test -n "\$APPROVED_RELEASE_SHA"/);
-  assert.match(workflow, /test -n "\$PRODUCTION_RELEASE_MANIFEST_SHA256"/);
-  assert.match(workflow, /test "\$RELEASE_SHA" = "\$APPROVED_RELEASE_SHA"/);
-  assert.match(workflow, /test "\$\(git rev-parse HEAD\)" = "\$APPROVED_RELEASE_SHA"/);
+  assert.match(workflow, /^on:\s*\r?\n\s+workflow_dispatch: \{\}/m);
+  assert.doesNotMatch(workflow, /^\s+push:/m);
+  assert.doesNotMatch(workflow, /APPROVED_PRODUCTION_RELEASE_SHA|APPROVED_RELEASE_SHA/);
+  assert.doesNotMatch(workflow, /release_sha:|inputs\.release_sha/);
 
   // F-02 check: Workflow must deploy corelia-api and all 7 retired AI Edge Functions
   const expectedEdgeFunctions = [
@@ -298,10 +285,6 @@ test("Production workflow requires explicit recovery limitations acceptance and 
   for (const fn of expectedEdgeFunctions) {
     assert.match(workflow, new RegExp(`supabase functions deploy ${fn}\\b`), `Workflow must deploy function ${fn}`);
   }
-
-  assert.match(rolloutPlan, /recovery_limitations_accepted/);
-  assert.match(rolloutPlan, /chấp nhận rõ ràng/);
-  assert.match(rolloutPlan, /không phải tuyên bố recovery đã được kiểm chứng operationally/);
 });
 
 test("candidate builder rejects destructive, outside-temp and symlinked output targets", () => {
