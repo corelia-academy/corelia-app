@@ -51,7 +51,7 @@ const canonicalSemanticDefinitions = {
     timing: "AFTER",
     level: "ROW",
     events: ["INSERT", "UPDATE", "DELETE"],
-    function_schema: "public",
+    function_schema: "private",
     function_name: "sync_ai_chat_session_message_count",
     function_identity_arguments: "",
   },
@@ -117,8 +117,8 @@ const canonicalSemanticDefinitions = {
     function_name: "patch_hackathon_metrics_snapshot",
     argument_types: ["text", "jsonb"],
     result_type: "jsonb",
-    security_definer: true,
-    configuration: ["search_path=public, pg_temp"],
+    security_definer: false,
+    configuration: ["search_path=\"\""],
     explicit_execute_roles: ["authenticated", "service_role"],
   },
   "function.process_successful_payment": {
@@ -529,9 +529,9 @@ test("RPC with the same name but wrong signature fails", () => {
   assert.equal(result.ok, false);
 });
 
-test("RPC with wrong SECURITY DEFINER state fails", () => {
+test("RPC wrapper with unexpected SECURITY DEFINER state fails", () => {
   const result = verify(mutateMetric("function.patch_hackathon_metrics_snapshot", (value) => {
-    value.security_definer = false;
+    value.security_definer = true;
   }));
   assert.equal(result.ok, false);
 });
