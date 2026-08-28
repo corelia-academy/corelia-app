@@ -5,6 +5,7 @@ import {
   parsePostMigrationLedger,
   parsePostMigrationInspection,
   validatePostMigrationState,
+  EXPECTED_POST_MIGRATION_COUNT,
   EXPECTED_POST_MIGRATION_LATEST,
 } from "../verify-production-post-migration.mjs";
 
@@ -254,8 +255,8 @@ const zeroInvariantMetrics = [
 ];
 
 function validVersions() {
-  const versions = Array.from({ length: 156 }, (_, index) => String(20260000000000 + index));
-  versions[155] = EXPECTED_POST_MIGRATION_LATEST;
+  const versions = Array.from({ length: EXPECTED_POST_MIGRATION_COUNT }, (_, index) => String(20260000000000 + index));
+  versions[EXPECTED_POST_MIGRATION_COUNT - 1] = EXPECTED_POST_MIGRATION_LATEST;
   return versions;
 }
 

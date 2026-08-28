@@ -1,9 +1,12 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  EXPECTED_POST_MIGRATION_COUNT,
+  EXPECTED_POST_MIGRATION_LATEST,
+} from "./production-release-migrations.mjs";
 
-export const EXPECTED_POST_MIGRATION_COUNT = 156;
-export const EXPECTED_POST_MIGRATION_LATEST = "20260826120000";
+export { EXPECTED_POST_MIGRATION_COUNT, EXPECTED_POST_MIGRATION_LATEST };
 
 const zeroInvariant = Object.freeze({ kind: "zero" });
 const guardTriggerSemantic = Object.freeze({ kind: "guard-trigger" });

@@ -2,29 +2,16 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  APPROVED_PENDING_MIGRATION_PATHS,
+  EXPECTED_POST_MIGRATION_COUNT,
+  PRODUCTION_BASELINE_COUNT,
+} from "./production-release-migrations.mjs";
 
 export const DEFAULT_MANIFEST_PATH = "docs/db-baseline/production-release-artifact-manifest.json";
 export const EXPECTED_BASE_MAIN_SHA = "66981c2044b515a6fa07a71d06f8265d171d6a74";
-export const EXPECTED_BASELINE_MIGRATION_COUNT = 139;
-export const EXPECTED_FORWARD_MIGRATIONS = Object.freeze([
-  "supabase/migrations/20260823120000_seed_projects_without_overwrite.sql",
-  "supabase/migrations/20260823121000_ai_quota_semantic_normalization.sql",
-  "supabase/migrations/20260823122000_hackathon_canonical_project_compatibility.sql",
-  "supabase/migrations/20260823130000_g2_canonical_state_and_data_integrity.sql",
-  "supabase/migrations/20260823140000_g2_r1_remediation.sql",
-  "supabase/migrations/20260825100000_payment_refund_and_access_provenance_schema.sql",
-  "supabase/migrations/20260825110000_atomic_payment_settlement_and_enrollment_rpcs.sql",
-  "supabase/migrations/20260825120000_master_schema_classification_lifecycle_and_index_optimization.sql",
-  "supabase/migrations/20260825130000_harden_enrollment_provenance_and_security_guards.sql",
-  "supabase/migrations/20260825140000_harden_enrollment_payment_purpose_and_timestamp.sql",
-  "supabase/migrations/20260825150000_r4_atomic_payment_refund_and_ai_retirement.sql",
-  "supabase/migrations/20260825151000_r4_staging_catalog_reconciliation.sql",
-  "supabase/migrations/20260825152000_r4_function_definition_reconciliation.sql",
-  "supabase/migrations/20260825153000_r4_enable_ai_legacy_rls.sql",
-  "supabase/migrations/20260826100000_r5_retired_ai_entitlement_write_guards.sql",
-  "supabase/migrations/20260826110000_r5_canonicalize_rls_auto_enable.sql",
-  "supabase/migrations/20260826120000_issue_329_payment_retirement_safety.sql",
-]);
+export const EXPECTED_BASELINE_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT;
+export const EXPECTED_FORWARD_MIGRATIONS = APPROVED_PENDING_MIGRATION_PATHS;
 
 const SHA1_RE = /^[0-9a-f]{40}$/;
 const SHA256_RE = /^[0-9a-f]{64}$/;
@@ -125,8 +112,12 @@ export function validateManifestSchema(manifest) {
   if (manifest.rc_sha !== manifest.source_sha) throw new Error("rc_sha must equal source_sha.");
   if (manifest.production_base_sha !== manifest.base_sha) throw new Error("production_base_sha must equal base_sha.");
   if (manifest.target_production_project_ref !== "lawhkvyyoznwygzsycan") throw new Error("Unexpected target Production project ref.");
-  if (manifest.migration_count !== 156) throw new Error("Release migration_count must equal 156.");
-  if (manifest.latest_migration !== "20260826120000_issue_329_payment_retirement_safety.sql") throw new Error("Unexpected release latest_migration.");
+  if (manifest.migration_count !== EXPECTED_POST_MIGRATION_COUNT) {
+    throw new Error(`Release migration_count must equal ${EXPECTED_POST_MIGRATION_COUNT}.`);
+  }
+  if (manifest.latest_migration !== EXPECTED_FORWARD_MIGRATIONS.at(-1).split("/").at(-1)) {
+    throw new Error("Unexpected release latest_migration.");
+  }
   if (manifest.base_sha !== EXPECTED_BASE_MAIN_SHA) {
     throw new Error(`base_sha must equal the reviewed Production base ${EXPECTED_BASE_MAIN_SHA}.`);
   }

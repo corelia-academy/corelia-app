@@ -104,7 +104,7 @@ function expectFailure(manifest, state, pattern) {
   assert.match(result.errors.join("\n"), pattern);
 }
 
-test("exact candidate passes exact file, hash, tree and 139+17 migration checks", () => {
+test("exact candidate passes exact file, hash, tree and 139+19 migration checks", () => {
   const { manifest, state } = buildFixture();
   const result = validateReleaseArtifactState(manifest, state);
   assert.deepEqual(result, { ok: true, errors: [], totalFiles: 163, totalMigrations: 156 });
@@ -327,7 +327,7 @@ test("candidate builder rejects destructive, outside-temp and symlinked output t
   rmSync(fixtureRoot, { recursive: true, force: true });
 });
 
-test("production manifest has the canonical exact 139+17 shape", () => {
+test("production manifest has the canonical exact 139+19 shape", () => {
   const manifest = JSON.parse(readFileSync(DEFAULT_MANIFEST_PATH, "utf8"));
   validateManifestSchema(manifest);
   assert.equal(manifest.migration_chain.baseline_manifest.count, 139);

@@ -1,29 +1,15 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  APPROVED_PENDING_VERSIONS,
+  PRODUCTION_BASELINE_COUNT,
+  PRODUCTION_BASELINE_LATEST,
+} from "./production-release-migrations.mjs";
+
+export { APPROVED_PENDING_VERSIONS, PRODUCTION_BASELINE_COUNT, PRODUCTION_BASELINE_LATEST };
 
 export const PRODUCTION_PROJECT_REF = "lawhkvyyoznwygzsycan";
-export const PRODUCTION_BASELINE_COUNT = 139;
-export const PRODUCTION_BASELINE_LATEST = "20260818120000";
-export const APPROVED_PENDING_VERSIONS = [
-  "20260823120000",
-  "20260823121000",
-  "20260823122000",
-  "20260823130000",
-  "20260823140000",
-  "20260825100000",
-  "20260825110000",
-  "20260825120000",
-  "20260825130000",
-  "20260825140000",
-  "20260825150000",
-  "20260825151000",
-  "20260825152000",
-  "20260825153000",
-  "20260826100000",
-  "20260826110000",
-  "20260826120000",
-];
 
 function unique(values) {
   return [...new Set(values)];
