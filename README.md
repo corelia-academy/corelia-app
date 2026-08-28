@@ -2,6 +2,22 @@
 
 Vite + React 19 + TypeScript SPA. Auth, database, and storage use **Supabase**; backend APIs live in **Supabase Edge Functions** (`corelia-api`). Production hosting is deployed with **Cloudflare Workers** via Wrangler.
 
+## Recent release-system changes
+
+This update changes CI/CD release controls only. It does not change application features or automatically publish the frontend.
+
+### 2026-08-28 — Release control plane and deployment gates
+
+- **Separated deployment paths:** The [`Deploy Staging`](.github/workflows/deploy-staging.yml) workflow handles Supabase migrations and Edge Functions. The Vite app and Cloudflare Workers deployment use a separate path.
+- **Staging release gate:** A qualifying push to `staging` runs migration guardrails, the full test suite, lint, build, and an isolated local migration recreate before any remote migration or Edge Function deployment.
+- **Pull-request guardrails:** Pull requests that touch database or release-control files run migration baseline/declaration checks and an isolated migration recreation. [`Verify Protected Live Migration History`](.github/workflows/db-live-history-verify.yml) provides a separate read-only check for `staging` or `main`.
+- **Production release control:** Production is not push-triggered. The [`Deploy Production`](.github/workflows/deploy-prod.yml) workflow uses a manual two-stage release from `main`, with an approved release commit, an exact confirmation token, and explicit acknowledgement of recovery limitations.
+- **Failure containment:** Release jobs use bounded local cleanup and controlled concurrency; migration rollouts that require destructive changes can deploy a compatible backend before applying the migration.
+
+## Release process
+
+See [Release process](docs/RELEASE_PROCESS.md) for the staging and production flow, release gates, approval inputs, rationale, and failure handling.
+
 ## Prerequisites
 
 - Node 22+
