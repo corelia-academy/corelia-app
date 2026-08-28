@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "f42cd4c66f439224ab27b2270b46e1beda8cf601",
-  "git_tree_sha": "c1259dd60f5ad7694a3cc1d55ca4e7934f75524e",
+  "rc_sha": "2b40aae686d100064dacd9a4780474b0e50d0842",
+  "git_tree_sha": "23369fdbb709cc7fca00960d156edcbf239a4683",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 158,
   "latest_migration": "20260827130000_remove_daily_streak_feature.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "f42cd4c66f439224ab27b2270b46e1beda8cf601",
+  "source_sha": "2b40aae686d100064dacd9a4780474b0e50d0842",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "99ccb8d7d7905316502702016965128f6dede847d65c7e41ffda442162b11e74",
+  "candidate_tree_sha256": "e282baa0cc68a24ebaf6589bb800100f9849f0415c32b8035be20cd111096e07",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -371,7 +371,7 @@
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
-      "sha256": "44b154e0d114652576966fd61fb8ec57488f520555f6d05d72a37b518e932ec9"
+      "sha256": "52264b5a5ae23f26a21176addfd32de99924d6a26eb9eea0d07cfd10fbf13704"
     },
     {
       "path": "scripts/db/tests/production-release-artifact.test.mjs",
@@ -447,7 +447,7 @@
     },
     {
       "path": "scripts/db/verify-production-post-migration.mjs",
-      "sha256": "f58346012bf3145ac18afbc28f3e2aeb8e3783cea68de65b7f0cb0bf6f919625"
+      "sha256": "bd7e55f85d7210babbc70601674765387742e45bad5eaa80049fad9cec12388b"
     },
     {
       "path": "scripts/db/verify-production-release-artifact.mjs",
