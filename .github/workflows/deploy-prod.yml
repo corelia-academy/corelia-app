@@ -133,7 +133,7 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           supabase migration list --linked --password "$SUPABASE_DB_PASSWORD" --dns-resolver https > "$RUNNER_TEMP/production-post-migration-list.txt"
-          supabase db query --linked --file scripts/db/production-post-migration-inspect.sql > "$RUNNER_TEMP/production-post-inspection.json"
+          supabase db query --linked --file scripts/db/production-post-migration-inspect.sql --output json > "$RUNNER_TEMP/production-post-inspection.json"
           node scripts/db/verify-production-post-migration.mjs "$RUNNER_TEMP/production-post-migration-list.txt" "$RUNNER_TEMP/production-post-inspection.json"
 
       - name: Deploy Edge Function (ai-tutor - retired tombstone)
@@ -185,5 +185,5 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           supabase migration list --linked --password "$SUPABASE_DB_PASSWORD" --dns-resolver https > "$RUNNER_TEMP/production-final-migration-list.txt"
-          supabase db query --linked --file scripts/db/production-post-migration-inspect.sql > "$RUNNER_TEMP/production-final-inspection.json"
+          supabase db query --linked --file scripts/db/production-post-migration-inspect.sql --output json > "$RUNNER_TEMP/production-final-inspection.json"
           node scripts/db/verify-production-post-migration.mjs "$RUNNER_TEMP/production-final-migration-list.txt" "$RUNNER_TEMP/production-final-inspection.json"

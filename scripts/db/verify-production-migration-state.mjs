@@ -70,19 +70,22 @@ export function validateProductionMigrationState({
   if (releasedVersions.at(-1) !== expectedBaselineLatest) {
     errors.push(`Frozen released baseline latest differs: expected ${expectedBaselineLatest}, got ${releasedVersions.at(-1) ?? "none"}.`);
   }
-  if (!sameOrderedValues(remoteVersions, releasedVersions)) {
-    errors.push(`Remote historical ledger differs from the frozen released baseline. Remote: ${describe(remoteVersions)}.`);
+  const expectedLocalVersions = [...releasedVersions, ...expectedPendingVersions];
+  const remoteIsBaseline = sameOrderedValues(remoteVersions, releasedVersions);
+  const remoteIsFullyReleased = sameOrderedValues(remoteVersions, expectedLocalVersions);
+  if (!remoteIsBaseline && !remoteIsFullyReleased) {
+    errors.push(`Remote ledger is neither the frozen baseline nor the exact fully released chain. Remote: ${describe(remoteVersions)}.`);
   }
 
-  const expectedLocalVersions = [...releasedVersions, ...expectedPendingVersions];
   if (!sameOrderedValues(localVersions, expectedLocalVersions)) {
     errors.push(`Local migration chain is not the released baseline plus the exact approved pending set. Local: ${describe(localVersions)}.`);
   }
 
   const remoteSet = new Set(remoteVersions);
   const pendingVersions = localVersions.filter((version) => !remoteSet.has(version));
-  if (!sameOrderedValues(pendingVersions, expectedPendingVersions)) {
-    errors.push(`Pending migration set differs. Expected: ${describe(expectedPendingVersions)}. Actual: ${describe(pendingVersions)}.`);
+  const allowedPendingVersions = remoteIsFullyReleased ? [] : expectedPendingVersions;
+  if (!sameOrderedValues(pendingVersions, allowedPendingVersions)) {
+    errors.push(`Pending migration set differs. Expected: ${describe(allowedPendingVersions)}. Actual: ${describe(pendingVersions)}.`);
   }
 
   return { ok: errors.length === 0, errors, pendingVersions };
