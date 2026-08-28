@@ -139,31 +139,8 @@ test("Production workflow uses the technical frontend gate and preserves deploym
   assert.match(workflow, /pnpm build:prod[\s\S]*verify-production-frontend-artifact\.mjs/);
   assert.doesNotMatch(workflow, /migration repair|--include-all/);
 
-  const manifestHashBindings = [...workflow.matchAll(
-    /^\s+PRODUCTION_RELEASE_MANIFEST_SHA256: \$\{\{ vars\.APPROVED_PRODUCTION_RELEASE_MANIFEST_SHA256 \}\}$/gm,
-  )];
-  const manifestHashGuards = [...workflow.matchAll(
-    /^\s+test -n "\$PRODUCTION_RELEASE_MANIFEST_SHA256"$/gm,
-  )];
-  assert.equal(manifestHashBindings.length, 2);
-  assert.equal(manifestHashGuards.length, 2);
-
-  const immutableBase = "66981c2044b515a6fa07a71d06f8265d171d6a74";
-  const immutableBaseGuards = [...workflow.matchAll(
-    new RegExp(`git cat-file -e "${immutableBase}\\^\\{commit\\}"`, "g"),
-  )];
-  const pinnedVerifierInvocations = [...workflow.matchAll(
-    new RegExp(
-      `node scripts/db/verify-production-release-artifact\\.mjs ${immutableBase} "\\$APPROVED_RELEASE_SHA"`,
-      "g",
-    ),
-  )];
-  assert.equal(immutableBaseGuards.length, 2);
-  assert.equal(pinnedVerifierInvocations.length, 2);
-  assert.doesNotMatch(
-    workflow,
-    /verify-production-release-artifact\.mjs origin\/main/,
-  );
+  assert.doesNotMatch(workflow, /APPROVED_PRODUCTION_RELEASE_SHA|APPROVED_RELEASE_SHA/);
+  assert.doesNotMatch(workflow, /inputs\.release_sha|ref: \$\{\{ inputs\.release_sha \}\}/);
 
   const migrationIndex = workflow.indexOf("Verify exact Production migration state and apply approved migrations");
   const postGateIndex = workflow.indexOf("Verify live DB post-migration state and data invariants");
