@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "2c8481f6297fadc2800856b6b972a60db2940c23",
-  "git_tree_sha": "d7b0bfc348d7ee387783cedac7259ac424a58dd9",
+  "rc_sha": "27331252544a68c4e85bacde79174517fcba93c4",
+  "git_tree_sha": "17d0dfc2b9b314b5463e4c3ab0d8a6233f6cab93",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 156,
-  "latest_migration": "20260826120000_issue_329_payment_retirement_safety.sql",
+  "migration_count": 158,
+  "latest_migration": "20260827130000_remove_daily_streak_feature.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "2c8481f6297fadc2800856b6b972a60db2940c23",
+  "source_sha": "27331252544a68c4e85bacde79174517fcba93c4",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "198ef54700b90dee1b9417b901e8c2d43ba011fcdf4d190852cce38da90cac0b",
+  "candidate_tree_sha256": "4674ba57d7abf9b2f102b3e1f13d313d93b5e81ea0fa5ea302dbdc6f3742db71",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -43,11 +43,11 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "be2a655ed53c6d3379c2231c02a27057dfc4118973b3a70f0a78949d31afa40c"
+      "sha256": "0eea54b6d1c6834af398a5d879aee34999eb84ad23df3085fa968fd2c1e0957a"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
-      "sha256": "f33967fa3d266f3b6246565b5fb39d89e54479f43bdcd63bbbf381a002e97b4b"
+      "sha256": "12af064e9335f4549e88c60e41a7e373b4213d8a1e5cd5400236e3e950c81468"
     },
     {
       "path": ".gitignore",
@@ -82,6 +82,10 @@
       "sha256": "6cb768beb206c68a52d977d2cc6a15338fb06afd55a8d4adb6ea26ad4b3a44d9"
     },
     {
+      "path": "docs/db-baseline/corelia-db-optimization-completion-report.md",
+      "sha256": "60bf4b5e7a6b14b91ce21a724d4f9f237139a77424df3a080302b2fff80babe7"
+    },
+    {
       "path": "docs/db-baseline/expected-drift.json",
       "sha256": "60c66dd4ab4b23fb266c24ad9eabeec260e44beaf3fdc90ec74a67f7beadfdf0"
     },
@@ -108,6 +112,10 @@
     {
       "path": "docs/db-baseline/README.md",
       "sha256": "bb840afe5b9f9fcac775eaca5e1aff11803ab6165140509859a667c051ee44a1"
+    },
+    {
+      "path": "docs/db-baseline/staging-candidate-readiness.md",
+      "sha256": "a2f0f693fea73e4a84dce463ac6cf9461baae07be3d4d143eaa530c80de09337"
     },
     {
       "path": "docs/db-baseline/staging-frontend-g2-r1-report.md",
@@ -158,8 +166,24 @@
       "sha256": "90964d338393dae08bf6664677a518f54ef9487dd927361da1efc85f8c342cf6"
     },
     {
+      "path": "docs/RELEASE_PROCESS.md",
+      "sha256": "230734e80e06b9c5a2a7d8e937157cfa08d74201e9abb490133b6b5177206ff7"
+    },
+    {
       "path": "docs/rules/frontend_data_architecture_rules.md",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/streak/README.md",
+      "sha256": "1860f9a49c2071e3872b22d022df2cb8b558857063ce47f3c2949d9985854e06"
+    },
+    {
+      "path": "docs/streak/streak-system.md",
+      "sha256": "d90e834a49cfa7bfde6823d6353a992daef6b1a710c805a4498f9efacae7e32a"
+    },
+    {
+      "path": "docs/streak/streak-ui.md",
+      "sha256": "ac1502036622cfdaf1097df4d568891ed155990d1b50f61c9a122beb6d73c93c"
     },
     {
       "path": "docs/tests/02-home-discovery.md",
@@ -191,11 +215,15 @@
     },
     {
       "path": "docs/tests/skill-badge-milestone-test.html",
-      "sha256": "8d8f30e7819452830dbaa9aaee73fe8efa7abf8c29dd76c421bc7bf127c8843a"
+      "sha256": "aa6c117b1c480cc3d16382e1579809700d07ce25835aca95155abf56726e334e"
     },
     {
       "path": "package.json",
       "sha256": "8b4dd48338d5571ecaf0b1aafb6bff72b66f65949262f91b8de256da83fa3a80"
+    },
+    {
+      "path": "README.md",
+      "sha256": "5826d6c10583b8d3596bc15373043eedc349ead83e83530872ceb239fc791d09"
     },
     {
       "path": "scripts/db/audit-production-ai-state.sql",
@@ -246,6 +274,10 @@
       "sha256": "e456e8c544a0f566054b663b715a179d7468969fe71fe95e40a3bd53c2121d3c"
     },
     {
+      "path": "scripts/db/production-release-migrations.mjs",
+      "sha256": "57e743663e29862eb02fbc01f45bd2828a9603f869e3d9357f25fc7230a43d1a"
+    },
+    {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
       "sha256": "b4413fd66394c8b5eed774eb22dade12ab62b2411e3aa63bd388f8f2e1725926"
     },
@@ -274,6 +306,14 @@
       "sha256": "a9a1e3a5770f1b3484b814c7f1baebf4fb56b079eac0595e6c85a926f0b76590"
     },
     {
+      "path": "scripts/db/tests/canonical-payment-entitlements-integration.sql",
+      "sha256": "f938c8a84d1575bca9d0eae841daba51a9a41d30db65395b4fa8716b223b6941"
+    },
+    {
+      "path": "scripts/db/tests/canonical-payment-entitlements.contract.test.mjs",
+      "sha256": "015e8a02b6616896349b9369ff704c6ac5e01fa5fe3850c5dbec710bf823c776"
+    },
+    {
       "path": "scripts/db/tests/catalog-and-history.test.mjs",
       "sha256": "fece316f33688205c6c6cde4ffee79df8823c0987e81576406a66e4f1c0d79e8"
     },
@@ -294,8 +334,12 @@
       "sha256": "51ec0e6bacc289a3a44477e507943d5f632fca89a0d5e95c73b8e5790d4bc7dc"
     },
     {
+      "path": "scripts/db/tests/incremental-upgrade-proof.mjs",
+      "sha256": "ba3702b7525559a9aa563d3488598c3c435fcdcc9563f9e0189bc804ceeecbee"
+    },
+    {
       "path": "scripts/db/tests/issue-329-payment-retirement-integration.sql",
-      "sha256": "407e05e1176102ba0510ea038c3f6b642a52ac784ef0b97035f314cdf234d680"
+      "sha256": "e5be4c9d561ae83ec836e23ba3ef4cb8974d8785ff6014e4fedc48d322eab7f2"
     },
     {
       "path": "scripts/db/tests/issue-329-payment-retirement.contract.test.mjs",
@@ -311,7 +355,7 @@
     },
     {
       "path": "scripts/db/tests/master-schema-lifecycle-index.contract.test.mjs",
-      "sha256": "32a68eba382ff7b45e03904e594e2e6fbb57fa332268a3fb35874886374c3ade"
+      "sha256": "7b87e1b58777163ece6ad98c4c0c76f6c78b5f5e006ecf983998864f73e14ade"
     },
     {
       "path": "scripts/db/tests/migration-baseline.test.mjs",
@@ -319,19 +363,19 @@
     },
     {
       "path": "scripts/db/tests/production-frontend-artifact.test.mjs",
-      "sha256": "22223dd161c27a4e019d24e33f19657609e920f112800011092d1dede39474a7"
+      "sha256": "4b4cae54d0be83ed596a7b01750d4fcc0a71264d792c495f93e3048900eea072"
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "ab71c890f11e51ccbda75b51cdb664e1b6d4527c033d086c97dad3f185257e2a"
+      "sha256": "0d9289a36635b5e15448bef9f8f05e6c449fe8fc007b46344ee23f67f9f21e9c"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
-      "sha256": "a2160e0578a5848a87e686b31133f178ebe344bc0c1679de860e246995d0186b"
+      "sha256": "44b154e0d114652576966fd61fb8ec57488f520555f6d05d72a37b518e932ec9"
     },
     {
       "path": "scripts/db/tests/production-release-artifact.test.mjs",
-      "sha256": "7423c12a3a5583935b1338ada5eee41681807ab0667bca65f8b977882d6f8832"
+      "sha256": "a05ca7d4d88a242666a5735c2dae4ab28350f53465f1d88a364f04fa9ead839a"
     },
     {
       "path": "scripts/db/tests/project-seed-only.contract.test.mjs",
@@ -339,11 +383,11 @@
     },
     {
       "path": "scripts/db/tests/r4-payment-concurrency.integration.mjs",
-      "sha256": "9abdaba24df042379fbaa1a5ead1b61e06473e421f44073a479217fe6e44bc3a"
+      "sha256": "63283d9999cdb48539f8a889613a1f7ca9db6df5b81d480f0c39798ebc4d73c8"
     },
     {
       "path": "scripts/db/tests/r4-payment-refund-integration.sql",
-      "sha256": "cc31c23aa4dd6d65775adf61780982bf8a9e02bdec1059d5b184cf509d64a021"
+      "sha256": "df9c80e320fd540026521f3648ee8bca0d62d29f1b62e2dca0a0c119795a94d3"
     },
     {
       "path": "scripts/db/tests/r4-payment-remediation.contract.test.mjs",
@@ -354,8 +398,16 @@
       "sha256": "8679077dc6a4a17dc442147eb7141abe8fc31e995bbd775f74c9e1aafc271dc2"
     },
     {
+      "path": "scripts/db/tests/r5-http-e2e-cleanup.contract.test.mjs",
+      "sha256": "8f5994c43a1e0993427d925c8c209a032b1d4bea05d5c7e6505a6cc079b6e1d7"
+    },
+    {
       "path": "scripts/db/tests/r5-payment-http-e2e.integration.mjs",
-      "sha256": "60c9bf2389b248ebef42405fe866f39e25bab50faa774a360b4c50d07e8472a7"
+      "sha256": "c7ad4e34b1638eec249ba04fd923174c6cc0679e564dd0bebe2f31e122d548bc"
+    },
+    {
+      "path": "scripts/db/tests/remove-streak-feature.contract.test.mjs",
+      "sha256": "e70bd8963cd71ade43c409684ab78bf2d9876a4e49b152f6b43c48435a4a622c"
     },
     {
       "path": "scripts/db/tests/rollout-compatibility.test.mjs",
@@ -379,7 +431,7 @@
     },
     {
       "path": "scripts/db/verify-local-migration-apply.mjs",
-      "sha256": "6137ae7e1bb5398b5b6db1e945a1bbbfcff428a5c65b5c05832af73126129b23"
+      "sha256": "e0cb5ccaed6b5ae8e38897dd57e2ca3fcd834e9be07c4087f894f22bcab533d2"
     },
     {
       "path": "scripts/db/verify-migration-baseline.mjs",
@@ -391,15 +443,15 @@
     },
     {
       "path": "scripts/db/verify-production-migration-state.mjs",
-      "sha256": "81421f94572490371e646bc5af69e94ac08369363bf16755deb614969b708de8"
+      "sha256": "bb718b89f93049875673f913726503e99d99a26e25884ea702f9f7593d8df511"
     },
     {
       "path": "scripts/db/verify-production-post-migration.mjs",
-      "sha256": "8f7b35215453f9507bcb1089b273510b6a73c3dc0134d3c7a6125ff2bceeff85"
+      "sha256": "f58346012bf3145ac18afbc28f3e2aeb8e3783cea68de65b7f0cb0bf6f919625"
     },
     {
       "path": "scripts/db/verify-production-release-artifact.mjs",
-      "sha256": "e89b874bc6456a94110b9e673c7d14021bbfd446a9a58902523219559813d80f"
+      "sha256": "519e18681a88750dcbb6a9d5fed4e62fe47e0173f023a87345744f251528ff9a"
     },
     {
       "path": "scripts/seed-course-skills-demo.sql",
@@ -415,15 +467,11 @@
     },
     {
       "path": "src/components/auth/AuthSync.tsx",
-      "sha256": "2b4429c65880ab8262a28c742ad977b2c17a0e586ae4344440a0d97edbdc4a0c"
-    },
-    {
-      "path": "src/components/layouts/DailyStreakMenu.tsx",
-      "sha256": "8a75b77c25ecf9c43ac91f628f277d9d3a6561406ac9f8442582925adfb92950"
+      "sha256": "8247a19fafa5fd1b98a5649c5f197e3f9b94764c411ab04260d5819a9b8afa39"
     },
     {
       "path": "src/components/layouts/Header.tsx",
-      "sha256": "58e7c4bef7dd2685d1d7f575d6a384cf7cd7620cded6115845e187c434bc2fa3"
+      "sha256": "08435461eb9993bbc3fd436b856ad7e31588e2898b290042a7b94b2fc3e307a5"
     },
     {
       "path": "src/components/layouts/MainLayout.tsx",
@@ -474,10 +522,6 @@
       "sha256": "d8dbfc035410efada0572504089534926577aedfb04d90199a263592abf67331"
     },
     {
-      "path": "src/lib/dailyStreak.ts",
-      "sha256": "15dbe3a92fd23629e7d1f5e834e7e8d255cd69b8eee8b1102a7b375139d0bc9a"
-    },
-    {
       "path": "src/lib/descriptionGenerator.test.ts",
       "sha256": "0a426b5dcf5e8c3311b71a4bf306bd64bb6cbd8af0781e47a0a8c548df569c57"
     },
@@ -503,7 +547,7 @@
     },
     {
       "path": "src/lib/payments.ts",
-      "sha256": "1e4d5427de45dd35afc664e098489b3ccd310c0d3fc3bd1227c2f48794125583"
+      "sha256": "4f12f602f072ac66ed715107544e53a61a7f863762cf95d2cfbd7049c9d7d1c7"
     },
     {
       "path": "src/lib/paymentSettlement.test.ts",
@@ -526,6 +570,10 @@
       "sha256": "2d46b998658122284e7aa1c489ab2c363d5534b1f8401c04ec2fa6eee3fe8c12"
     },
     {
+      "path": "src/lib/quizAttempts.ts",
+      "sha256": "dd8554866777b64939b6609f021cd74ce121cdaca7c6c9da57c178457ba1a1f6"
+    },
+    {
       "path": "src/lib/storage.ts",
       "sha256": "56ea9340263959ded21c8d01835c791a2252105139fd7f6f44ee948b7742d007"
     },
@@ -539,11 +587,11 @@
     },
     {
       "path": "src/locales/en/admin.json",
-      "sha256": "d6e6eb46b7b5ec667df5a445ae213b9359cbd51aff3db1dce0b4dabaeb556d98"
+      "sha256": "b182d52432e3708fba586ab764902729e1e816cda9f7769f7f5f3a6f5aa228e4"
     },
     {
       "path": "src/locales/en/common.json",
-      "sha256": "2f25a48a3a42376092ecd0e4dccf6fb16c8d06ee8d0e46855fc8873c230967f5"
+      "sha256": "23562e85e3ddc30510e32932b31739c4b96a244fbab55241b9ad1f65aa9e670d"
     },
     {
       "path": "src/locales/en/courses.json",
@@ -559,11 +607,11 @@
     },
     {
       "path": "src/locales/vi/admin.json",
-      "sha256": "09ca0e7dd58380c6db673ee51aa07951d1ad1c8929efbfef0073f37aa262c840"
+      "sha256": "6d7199245cc6755d86e7279802997db3733fd8e913a57fefe6aa53720314b084"
     },
     {
       "path": "src/locales/vi/common.json",
-      "sha256": "3cf1ae006bc74e5ff57fc3f686618496643240d9f55a07f946731de1b6231a31"
+      "sha256": "6a9fbad8cce3bd3e6d3a718bb29ebaced073a031a879dc1716e5d33fd72ef5e0"
     },
     {
       "path": "src/locales/vi/courses.json",
@@ -586,8 +634,12 @@
       "sha256": "be2440c90fa0b60594d1a2ba4285dad052d41724f03e66abb392574b285b6853"
     },
     {
+      "path": "src/pages/achievements/types.ts",
+      "sha256": "a820e668f90d47f86e365005d78c0910ac3362e3b06dd7f6d48f07cb30906bda"
+    },
+    {
       "path": "src/pages/admin/AdminActivityMilestones.tsx",
-      "sha256": "b885d64cfb3aefaa64039ba3a7d77fb07e8193ace67cdb73c58bbe427b384557"
+      "sha256": "befb02d253856cbbefc0de3d181f857f178e8513f9a1c8f1e01aee6e524dc5a5"
     },
     {
       "path": "src/pages/admin/AdminManualMint.tsx",
@@ -662,6 +714,14 @@
       "sha256": "b2b1680cad9886d28938d3a15ecb3f36a98365d90f03d212616ff8ede8b31953"
     },
     {
+      "path": "src/pages/learn/components/LessonQuiz.tsx",
+      "sha256": "82d327c51f86d9e77301ff2bebbc748fc842c135a6529f593a8327118400cb88"
+    },
+    {
+      "path": "src/pages/learn/components/SectionQuiz.tsx",
+      "sha256": "d3c748a47bfd0347462ccbcc659f1116f422611fa23a672eec229e64dfd9621c"
+    },
+    {
       "path": "src/pages/learn/hooks/useLearnEnrollmentAccess.ts",
       "sha256": "5947f2e67254e878211925cff7501e2c2269cfc3e766a0dfcfd530d4f5666f4e"
     },
@@ -700,10 +760,6 @@
     {
       "path": "src/stores/authStore.ts",
       "sha256": "356d56b8a993db3799cc350a87592ddde18662020a1fb9e8f2551c630a66df7e"
-    },
-    {
-      "path": "src/styles/globals.css",
-      "sha256": "c5f830ba6cc44f32d38732e2b40e3469f28676c59bbf3e942f4f9057dbd1a66a"
     },
     {
       "path": "src/tests/waveB.retirement.test.ts",
@@ -747,7 +803,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/credentials/check_activity.ts",
-      "sha256": "a02a1dd3240a77b321c1b5addf62375404f65ecb8b5d9428a6d2a8002b8171b9"
+      "sha256": "243a14738bcb0fc061f8186b324b97e271f81effa361260f46699011012d714a"
     },
     {
       "path": "supabase/functions/corelia-api/credentials/check_course.ts",
@@ -762,12 +818,8 @@
       "sha256": "c7aaebbec86315e21748b08586f75101f97b8fcf985efe936cbb4319aceeb261"
     },
     {
-      "path": "supabase/functions/corelia-api/gamification/daily_streak.ts",
-      "sha256": "6e14c33771abdbb45d1bb54977167d8b84bc93cb27b4e0734ede9eca6b1be7ec"
-    },
-    {
       "path": "supabase/functions/corelia-api/index.ts",
-      "sha256": "0a4afc8d9eb73a9c3b3cc2e60d4398d5b76b686cfdd1e80d2f4b9bee95a87367"
+      "sha256": "e6fb9bca0a622454442c1140ab833d1365996f45c05d91ff5ba7cf51e0533550"
     },
     {
       "path": "supabase/functions/corelia-api/lib/supabase.ts",
@@ -779,7 +831,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/payments/handlers.ts",
-      "sha256": "55ec60e40ff174a3b2acb373b8a912835aeedaef803facc25cc2a00f35d0079b"
+      "sha256": "25f6dca26064738a230f5444ea92a0e2ff99cd07a1c5e5a15dfde656eaac7d74"
     },
     {
       "path": "supabase/functions/corelia-api/payments/retired_ai_vouchers.test.ts",
@@ -918,8 +970,20 @@
       "sha256": "73ac44c35b56e90144d3b483281b00b987e888d7015acaddd4c5549387c2bbcb"
     },
     {
+      "path": "supabase/migrations/20260827120000_canonical_payment_entitlements_and_quiz_integrity.sql",
+      "sha256": "e32f923d6391e12d9a90c0008a3e6713f95a41b0779a96f908700a747bb3793a"
+    },
+    {
+      "path": "supabase/migrations/20260827130000_remove_daily_streak_feature.sql",
+      "sha256": "220340cc983b9b138ddbe462ad7915de92dca59ddbe53fe64b4264935f39f0a9"
+    },
+    {
       "path": "vite.config.ts",
       "sha256": "26ecbdc0314eadbada05a2ac0e65a3daaf028d1bf73fdcdc3ebe14ab42bfa71f"
+    },
+    {
+      "path": "walkthrough.md",
+      "sha256": "3723cef033bf3d35176bd1c47bbafa5c374005b5543fe06e336c77c64b15d62a"
     }
   ],
   "deleted_files": [
@@ -1067,6 +1131,14 @@
       {
         "path": "supabase/migrations/20260826120000_issue_329_payment_retirement_safety.sql",
         "sha256": "73ac44c35b56e90144d3b483281b00b987e888d7015acaddd4c5549387c2bbcb"
+      },
+      {
+        "path": "supabase/migrations/20260827120000_canonical_payment_entitlements_and_quiz_integrity.sql",
+        "sha256": "e32f923d6391e12d9a90c0008a3e6713f95a41b0779a96f908700a747bb3793a"
+      },
+      {
+        "path": "supabase/migrations/20260827130000_remove_daily_streak_feature.sql",
+        "sha256": "220340cc983b9b138ddbe462ad7915de92dca59ddbe53fe64b4264935f39f0a9"
       }
     ]
   }

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 import {
@@ -30,11 +30,20 @@ function validate(overrides = {}) {
   });
 }
 
-test("CASE P0: exact frozen 139 + exact seventeen pending => PASS", () => {
+test("CASE P0: exact frozen 139 + exact nineteen pending => PASS", () => {
   const result = validate();
   assert.equal(result.ok, true);
   assert.equal(result.errors.length, 0);
   assert.deepEqual(result.pendingVersions, APPROVED_PENDING_VERSIONS);
+});
+
+test("CASE P0b: repository migrations exactly match the frozen baseline plus approved pending set", () => {
+  const localVersions = readdirSync(resolve(process.cwd(), "supabase/migrations"))
+    .map((name) => name.match(/^(\d{14})_[^/]+\.sql$/)?.[1])
+    .filter(Boolean)
+    .sort();
+
+  assert.deepEqual(localVersions, [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS]);
 });
 
 test("CASE P1: latest != 20260818120000 => FAIL", () => {

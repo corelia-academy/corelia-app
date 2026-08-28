@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, parse } from "node:path";
+import { join, parse, resolve } from "node:path";
 import test from "node:test";
 import { assertSafeOutputPath } from "../build-production-release-candidate.mjs";
 import {
@@ -63,8 +63,8 @@ function buildFixture() {
     git_tree_sha: "c".repeat(40),
     production_base_sha: EXPECTED_BASE_MAIN_SHA,
     target_production_project_ref: "lawhkvyyoznwygzsycan",
-    migration_count: 156,
-    latest_migration: "20260826120000_issue_329_payment_retirement_safety.sql",
+    migration_count: 139 + EXPECTED_FORWARD_MIGRATIONS.length,
+    latest_migration: EXPECTED_FORWARD_MIGRATIONS.at(-1).split("/").at(-1),
     base_sha: EXPECTED_BASE_MAIN_SHA,
     source_sha: SOURCE_SHA,
     manifest_path: DEFAULT_MANIFEST_PATH,
@@ -104,10 +104,10 @@ function expectFailure(manifest, state, pattern) {
   assert.match(result.errors.join("\n"), pattern);
 }
 
-test("exact candidate passes exact file, hash, tree and 139+17 migration checks", () => {
+test("exact candidate passes exact file, hash, tree and 139+19 migration checks", () => {
   const { manifest, state } = buildFixture();
   const result = validateReleaseArtifactState(manifest, state);
-  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 163, totalMigrations: 156 });
+  assert.deepEqual(result, { ok: true, errors: [], totalFiles: 165, totalMigrations: 158 });
 });
 
 test("missing required file fails closed", () => {
@@ -294,7 +294,10 @@ test("candidate builder rejects destructive, outside-temp and symlinked output t
   const safeOutput = join(fixtureRoot, "candidates", "r3");
   mkdirSync(sourceRepo);
   mkdirSync(workspaceRoot);
-  assert.equal(assertSafeOutputPath({ output: safeOutput, sourceRepo, workspaceRoot, cwd: workspaceRoot }), safeOutput);
+  assert.equal(
+    assertSafeOutputPath({ output: safeOutput, sourceRepo, workspaceRoot, cwd: workspaceRoot }),
+    resolve(realpathSync(fixtureRoot), "candidates", "r3"),
+  );
   assert.throws(
     () => assertSafeOutputPath({ output: tmpdir(), sourceRepo, workspaceRoot, cwd: workspaceRoot }),
     /strict descendant|protected path/,
@@ -327,7 +330,7 @@ test("candidate builder rejects destructive, outside-temp and symlinked output t
   rmSync(fixtureRoot, { recursive: true, force: true });
 });
 
-test("production manifest has the canonical exact 139+17 shape", () => {
+test("production manifest has the canonical exact 139+19 shape", () => {
   const manifest = JSON.parse(readFileSync(DEFAULT_MANIFEST_PATH, "utf8"));
   validateManifestSchema(manifest);
   assert.equal(manifest.migration_chain.baseline_manifest.count, 139);
