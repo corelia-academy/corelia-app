@@ -100,8 +100,8 @@ const canonicalSemanticDefinitions = {
     result_type: "trigger",
     language: "plpgsql",
     security_definer: false,
-    configuration: [],
-    normalized_body: "begin\n-- legacy callers may submit a stale aggregate\n-- canonical conversation rows remain authoritative\nif pg_trigger_depth() = 1 and new.message_count is distinct from old.message_count then new.message_count := ( select count(*)::int from public.ai_conversations c where c.session_id = new.id and c.status = 'completed' ); end if; return new; end;",
+    configuration: ["search_path=public, pg_temp"],
+    normalized_body: "begin\n-- canonical conversation rows remain authoritative\nif pg_trigger_depth() = 1 then new.message_count := ( select count(*)::int from public.ai_conversations c where c.session_id = new.id and c.status = 'completed' ); end if; return new; end;",
   },
   "function.record_ai_successful_usage": {
     function_schema: "public",
@@ -457,8 +457,8 @@ test("guard function metadata and normalized body contract fail closed", () => {
     (value) => { value.security_definer = true; },
     (value) => { value.language = "sql"; },
     (value) => { value.result_type = "void"; },
+    (value) => { value.configuration = []; },
     (value) => { value.normalized_body = value.normalized_body.replace("pg_trigger_depth() = 1", "pg_trigger_depth() = 2"); },
-    (value) => { value.normalized_body = value.normalized_body.replace("new.message_count is distinct from old.message_count", "true"); },
     (value) => { value.normalized_body = value.normalized_body.replace("c.status = 'completed'", "c.status = 'pending'"); },
     (value) => { value.normalized_body = value.normalized_body.replace("return new;", "return old;"); },
     (value) => { value.normalized_body += " new.message_count := 999;"; },
@@ -471,8 +471,8 @@ test("guard function metadata and normalized body contract fail closed", () => {
 
 test("guard function contract present only in line or block comments fails closed", () => {
   const commentOnlyBodies = [
-    "begin -- if pg_trigger_depth() = 1 and new.message_count is distinct from old.message_count then new.message_count := (select count(*)::int from public.ai_conversations c where c.session_id = new.id and c.status = 'completed'); end if;\n return new; end;",
-    "begin /* if pg_trigger_depth() = 1 and new.message_count is distinct from old.message_count then new.message_count := (select count(*)::int from public.ai_conversations c where c.session_id = new.id and c.status = 'completed'); end if; */ return new; end;",
+    "begin -- if pg_trigger_depth() = 1 then new.message_count := (select count(*)::int from public.ai_conversations c where c.session_id = new.id and c.status = 'completed'); end if;\n return new; end;",
+    "begin /* if pg_trigger_depth() = 1 then new.message_count := (select count(*)::int from public.ai_conversations c where c.session_id = new.id and c.status = 'completed'); end if; */ return new; end;",
   ];
   for (const normalizedBody of commentOnlyBodies) {
     const result = verify(mutateMetric("function.guard_ai_chat_session_message_count", (value) => {
@@ -482,12 +482,9 @@ test("guard function contract present only in line or block comments fails close
   }
 });
 
-test("guard function AND weakened to OR fails closed", () => {
+test("guard function unconditional rewrite fails closed", () => {
   const result = verify(mutateMetric("function.guard_ai_chat_session_message_count", (value) => {
-    value.normalized_body = value.normalized_body.replace(
-      "pg_trigger_depth() = 1 and new.message_count is distinct from old.message_count",
-      "pg_trigger_depth() = 1 or new.message_count is distinct from old.message_count",
-    );
+    value.normalized_body = value.normalized_body.replace("pg_trigger_depth() = 1", "true");
   }));
   assert.equal(result.ok, false);
 });

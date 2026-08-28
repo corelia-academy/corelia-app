@@ -465,7 +465,7 @@ function validateGuardFunction(metric, actual, errors) {
     result_type: "trigger",
     language: "plpgsql",
     security_definer: false,
-    configuration: [],
+    configuration: ["search_path=public, pg_temp"],
   };
   for (const [field, expected] of Object.entries(expectedFields)) {
     requireSemanticField(errors, metric, actual, field, expected);
@@ -480,8 +480,8 @@ function validateGuardFunction(metric, actual, errors) {
     errors,
     metric,
     body,
-    "combined direct-trigger depth AND message_count change predicate",
-    /\bif\s*\(?\s*pg_trigger_depth\s*\(\s*\)\s*=\s*1\s+and\s+new\.message_count\s+is\s+distinct\s+from\s+old\.message_count\s*\)?\s+then\b/,
+    "direct-trigger depth predicate",
+    /\bif\s*\(?\s*pg_trigger_depth\s*\(\s*\)\s*=\s*1\s*\)?\s+then\b/,
   );
   requireNormalizedPattern(
     errors,
@@ -495,7 +495,7 @@ function validateGuardFunction(metric, actual, errors) {
   // Fail closed on the complete PL/pgSQL contract instead of relying only on
   // a keyword blacklist. This prevents alternative mutation syntax such as
   // SELECT ... INTO NEW.updated_at from being accepted accidentally.
-  const exactGuardContract = /^begin\s+if\s*\(?\s*pg_trigger_depth\s*\(\s*\)\s*=\s*1\s+and\s+new\.message_count\s+is\s+distinct\s+from\s+old\.message_count\s*\)?\s+then\s+new\.message_count\s*:=\s*\(\s*select\s+count\s*\(\s*\*\s*\)\s*::\s*(?:int|integer)\s+from\s+public\.ai_conversations\s+c\s+where\s+c\.session_id\s*=\s*new\.id\s+and\s+c\.status\s*=\s*'completed'\s*\)\s*;\s*end\s+if\s*;\s*return\s+new\s*;\s*end\s*;?$/;
+  const exactGuardContract = /^begin\s+if\s*\(?\s*pg_trigger_depth\s*\(\s*\)\s*=\s*1\s*\)?\s+then\s+new\.message_count\s*:=\s*\(\s*select\s+count\s*\(\s*\*\s*\)\s*::\s*(?:int|integer)\s+from\s+public\.ai_conversations\s+c\s+where\s+c\.session_id\s*=\s*new\.id\s+and\s+c\.status\s*=\s*'completed'\s*\)\s*;\s*end\s+if\s*;\s*return\s+new\s*;\s*end\s*;?$/;
   if (!exactGuardContract.test(body)) {
     errors.push(`Semantic definition mismatch for ${metric}: function body contains behavior outside the canonical guard contract.`);
   }
