@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "27331252544a68c4e85bacde79174517fcba93c4",
-  "git_tree_sha": "17d0dfc2b9b314b5463e4c3ab0d8a6233f6cab93",
+  "rc_sha": "f42cd4c66f439224ab27b2270b46e1beda8cf601",
+  "git_tree_sha": "c1259dd60f5ad7694a3cc1d55ca4e7934f75524e",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 158,
   "latest_migration": "20260827130000_remove_daily_streak_feature.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "27331252544a68c4e85bacde79174517fcba93c4",
+  "source_sha": "f42cd4c66f439224ab27b2270b46e1beda8cf601",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "4674ba57d7abf9b2f102b3e1f13d313d93b5e81ea0fa5ea302dbdc6f3742db71",
+  "candidate_tree_sha256": "99ccb8d7d7905316502702016965128f6dede847d65c7e41ffda442162b11e74",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -43,7 +43,7 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "0eea54b6d1c6834af398a5d879aee34999eb84ad23df3085fa968fd2c1e0957a"
+      "sha256": "a25a8c681c4287ff2f6c02b98dac32f9d51d8b6f49986aaa2a07cb6f7df6d4d1"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
@@ -367,7 +367,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "0d9289a36635b5e15448bef9f8f05e6c449fe8fc007b46344ee23f67f9f21e9c"
+      "sha256": "e7738738d2bb108e7a35b8ee7c83b07a1cd2b2b4e556a66ce3c4afbaef0189e3"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -443,7 +443,7 @@
     },
     {
       "path": "scripts/db/verify-production-migration-state.mjs",
-      "sha256": "bb718b89f93049875673f913726503e99d99a26e25884ea702f9f7593d8df511"
+      "sha256": "600f98a400dcd1f61f2330f3e484b1c972d33a6b576e5ffe1f0a8e5455d43a74"
     },
     {
       "path": "scripts/db/verify-production-post-migration.mjs",

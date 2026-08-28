@@ -46,6 +46,13 @@ test("CASE P0b: repository migrations exactly match the frozen baseline plus app
   assert.deepEqual(localVersions, [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS]);
 });
 
+test("CASE P0c: exact fully released remote chain is accepted for an idempotent retry", () => {
+  const fullRelease = [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS];
+  const result = validate({ remoteVersions: fullRelease });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.pendingVersions, []);
+});
+
 test("CASE P1: latest != 20260818120000 => FAIL", () => {
   const mutatedReleased = [...realReleasedVersions];
   mutatedReleased[mutatedReleased.length - 1] = "20260817030000";
@@ -58,7 +65,7 @@ test("CASE P2: missing 20260709000009 from remote ledger => FAIL", () => {
   const missingHistorical = realReleasedVersions.filter((v) => v !== "20260709000009");
   const result = validate({ remoteVersions: missingHistorical });
   assert.equal(result.ok, false);
-  assert.match(result.errors.join("\n"), /Remote historical ledger differs from the frozen released baseline/);
+  assert.match(result.errors.join("\n"), /Remote ledger is neither the frozen baseline nor the exact fully released chain/);
 });
 
 test("CASE P3: extra historical pending migration => FAIL", () => {
@@ -101,7 +108,7 @@ test("CASE P6: historical baseline mutation (reordered/changed) => FAIL", () => 
   reordered[11] = tmp;
   const result = validate({ remoteVersions: reordered });
   assert.equal(result.ok, false);
-  assert.match(result.errors.join("\n"), /Remote historical ledger differs/);
+  assert.match(result.errors.join("\n"), /Remote ledger is neither the frozen baseline nor the exact fully released chain/);
 });
 
 test("CASE P7: wrong project ref => FAIL", () => {
@@ -121,7 +128,7 @@ test("CASE P9: remote already contains one approved migration unexpectedly (part
   const partiallyMigratedRemote = [...realReleasedVersions, APPROVED_PENDING_VERSIONS[0]];
   const result = validate({ remoteVersions: partiallyMigratedRemote });
   assert.equal(result.ok, false);
-  assert.match(result.errors.join("\n"), /Remote historical ledger differs/);
+  assert.match(result.errors.join("\n"), /Remote ledger is neither the frozen baseline nor the exact fully released chain/);
 });
 
 test("Production workflow structure safety", () => {
