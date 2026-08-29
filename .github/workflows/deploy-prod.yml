@@ -143,7 +143,8 @@ jobs:
         run: |
           advisor_output="$(supabase db advisors --linked --type security --level warn)"
           echo "$advisor_output"
-          if [[ "$advisor_output" == "No issues found" ]]; then
+          # CLI 2.98.1 writes "No issues found" to stderr and leaves stdout empty.
+          if [[ -z "$advisor_output" || "$advisor_output" == "No issues found" ]]; then
             exit 0
           fi
           # HIBP protection is a project-plan Auth setting, not a database migration finding.
