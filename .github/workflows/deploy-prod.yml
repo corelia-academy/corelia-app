@@ -136,6 +136,16 @@ jobs:
           supabase db query --linked --file scripts/db/production-post-migration-inspect.sql --output json > "$RUNNER_TEMP/production-post-inspection.json"
           node scripts/db/verify-production-post-migration.mjs "$RUNNER_TEMP/production-post-migration-list.txt" "$RUNNER_TEMP/production-post-inspection.json"
 
+      - name: Verify Supabase Security Advisor has no database warnings
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          advisor_output="$(supabase db advisors --linked --type security --level warn)"
+          echo "$advisor_output"
+          # HIBP protection is a project-plan Auth setting, not a database migration finding.
+          jq --exit-status 'all(.[]; .name == "auth_leaked_password_protection")' <<< "$advisor_output"
+
       - name: Deploy Edge Function (ai-tutor - retired tombstone)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "2b40aae686d100064dacd9a4780474b0e50d0842",
-  "git_tree_sha": "23369fdbb709cc7fca00960d156edcbf239a4683",
+  "rc_sha": "b8505dfa67743505e4a12c95a7aadf34fc02bd29",
+  "git_tree_sha": "94b77d78b33658eec266dd8ac56ed25799d1f9ee",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 158,
-  "latest_migration": "20260827130000_remove_daily_streak_feature.sql",
+  "migration_count": 159,
+  "latest_migration": "20260828060630_harden_security_definer_rpc_boundaries.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "2b40aae686d100064dacd9a4780474b0e50d0842",
+  "source_sha": "b8505dfa67743505e4a12c95a7aadf34fc02bd29",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "e282baa0cc68a24ebaf6589bb800100f9849f0415c32b8035be20cd111096e07",
+  "candidate_tree_sha256": "0a89c8d63c46a97f5dfa7c1b088e96999d1b6cf09b05703db4affd6426624bf1",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -43,11 +43,11 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "a25a8c681c4287ff2f6c02b98dac32f9d51d8b6f49986aaa2a07cb6f7df6d4d1"
+      "sha256": "c881f448667ae5a502d515af3ea884f0755165961395ee6192291894d4830851"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
-      "sha256": "12af064e9335f4549e88c60e41a7e373b4213d8a1e5cd5400236e3e950c81468"
+      "sha256": "ec124e9eec5e9b7eb411aa685e4c75ed8dbbdda0b3686e6d73dea95ea8ef4c01"
     },
     {
       "path": ".gitignore",
@@ -219,7 +219,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "8b4dd48338d5571ecaf0b1aafb6bff72b66f65949262f91b8de256da83fa3a80"
+      "sha256": "32f258291ed160ba166cdae9dbb05b6ffb8cfecced998a138589f1cbd17fee38"
     },
     {
       "path": "README.md",
@@ -275,7 +275,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "57e743663e29862eb02fbc01f45bd2828a9603f869e3d9357f25fc7230a43d1a"
+      "sha256": "aaed799f71146140a7b41d621a73b88f90837c16f774675bc5f05ce8c1e7d677"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -367,15 +367,15 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "e7738738d2bb108e7a35b8ee7c83b07a1cd2b2b4e556a66ce3c4afbaef0189e3"
+      "sha256": "a5b57f656a94f302c29a147aa716d98aacad35633bc8c1997dc64f41acdcabce"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
-      "sha256": "52264b5a5ae23f26a21176addfd32de99924d6a26eb9eea0d07cfd10fbf13704"
+      "sha256": "d84c93cd67c7f5220d634cecdefd101312f76e0f59fc9d1973f11fc1cc977624"
     },
     {
       "path": "scripts/db/tests/production-release-artifact.test.mjs",
-      "sha256": "a05ca7d4d88a242666a5735c2dae4ab28350f53465f1d88a364f04fa9ead839a"
+      "sha256": "7475d02957a473094da08a74fe3426de68e7ccf1e45c77478fb6744d4be07666"
     },
     {
       "path": "scripts/db/tests/project-seed-only.contract.test.mjs",
@@ -414,6 +414,10 @@
       "sha256": "bbe9140a6019ed5f545f5725fc690dcdc40bd8433e409d883c409990f5c0eda9"
     },
     {
+      "path": "scripts/db/tests/security-definer-rpc-boundaries.contract.test.mjs",
+      "sha256": "ac770db01d781336c0d0edabd033a360c65e77fe5cc62ceda407819783eac164"
+    },
+    {
       "path": "scripts/db/verify-ai-backup-restore.mjs",
       "sha256": "c4ea081c088d5354153fc5f9c45a02f2a052b12de2e9c0fe6b30d1c094b6cac9"
     },
@@ -447,7 +451,7 @@
     },
     {
       "path": "scripts/db/verify-production-post-migration.mjs",
-      "sha256": "bd7e55f85d7210babbc70601674765387742e45bad5eaa80049fad9cec12388b"
+      "sha256": "b778673fd6c899be914434c4bcfc5e8bacfac7678f42f73fd331113bd7f70643"
     },
     {
       "path": "scripts/db/verify-production-release-artifact.mjs",
@@ -978,6 +982,10 @@
       "sha256": "220340cc983b9b138ddbe462ad7915de92dca59ddbe53fe64b4264935f39f0a9"
     },
     {
+      "path": "supabase/migrations/20260828060630_harden_security_definer_rpc_boundaries.sql",
+      "sha256": "709a911e516dada69bbeca67a115e9e240138480c144aeaf5d00fc48509e83ca"
+    },
+    {
       "path": "vite.config.ts",
       "sha256": "26ecbdc0314eadbada05a2ac0e65a3daaf028d1bf73fdcdc3ebe14ab42bfa71f"
     },
@@ -1139,6 +1147,10 @@
       {
         "path": "supabase/migrations/20260827130000_remove_daily_streak_feature.sql",
         "sha256": "220340cc983b9b138ddbe462ad7915de92dca59ddbe53fe64b4264935f39f0a9"
+      },
+      {
+        "path": "supabase/migrations/20260828060630_harden_security_definer_rpc_boundaries.sql",
+        "sha256": "709a911e516dada69bbeca67a115e9e240138480c144aeaf5d00fc48509e83ca"
       }
     ]
   }

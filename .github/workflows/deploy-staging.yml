@@ -126,6 +126,16 @@ jobs:
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
           supabase migration up --linked --dns-resolver https --include-all
 
+      - name: Verify Supabase Security Advisor has no database warnings
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          advisor_output="$(supabase db advisors --linked --type security --level warn)"
+          echo "$advisor_output"
+          # HIBP protection is a project-plan Auth setting, not a database migration finding.
+          jq --exit-status 'all(.[]; .name == "auth_leaked_password_protection")' <<< "$advisor_output"
+
       - name: Deploy Edge Function (corelia-api)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
