@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "5f029e551a436027add5566de28ce2ff29ef232a",
-  "git_tree_sha": "6e3d86750144db8d9e9fe42ee7e6e18706e0abfa",
+  "rc_sha": "1b9baa30e36a3a1b1b1eca9a558b2dfa1717d6ff",
+  "git_tree_sha": "0bc0856fdc707070adf71b7bec4dd051c8fcbfb3",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 159,
   "latest_migration": "20260828060630_harden_security_definer_rpc_boundaries.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "5f029e551a436027add5566de28ce2ff29ef232a",
+  "source_sha": "1b9baa30e36a3a1b1b1eca9a558b2dfa1717d6ff",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "d3cc289a8399bac9e163b0f33a1e22c1cd2b575cc88e915cd681ca526f640fea",
+  "candidate_tree_sha256": "de485b56cfae7056d31bda6caf7d6266ad24d928864d43859fb3d6549df0fe49",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -43,11 +43,11 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "41353dc5472994637b1a3fe166ab08746ff1abe49a5690d7039d94f40203723b"
+      "sha256": "ac1a6098d678680ab16a8e8ba93d37ea065af5e393cb76967169d2c435790b98"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
-      "sha256": "74543643cd7c9596a3024788a2f9b448cbcc0778538c8f34f2f67dba7cd8e335"
+      "sha256": "0b532bce7d1d7b8ee23855b5c7ccecc0905598e5c089d7ec510c89ccff9ba1df"
     },
     {
       "path": ".gitignore",

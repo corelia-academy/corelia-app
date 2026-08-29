@@ -133,6 +133,9 @@ jobs:
         run: |
           advisor_output="$(supabase db advisors --linked --type security --level warn)"
           echo "$advisor_output"
+          if [[ "$advisor_output" == "No issues found" ]]; then
+            exit 0
+          fi
           # HIBP protection is a project-plan Auth setting, not a database migration finding.
           jq --exit-status 'all(.[]; .name == "auth_leaked_password_protection")' <<< "$advisor_output"
 
