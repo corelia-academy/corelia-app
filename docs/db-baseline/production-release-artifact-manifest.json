@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "b8505dfa67743505e4a12c95a7aadf34fc02bd29",
-  "git_tree_sha": "94b77d78b33658eec266dd8ac56ed25799d1f9ee",
+  "rc_sha": "5f029e551a436027add5566de28ce2ff29ef232a",
+  "git_tree_sha": "6e3d86750144db8d9e9fe42ee7e6e18706e0abfa",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 159,
   "latest_migration": "20260828060630_harden_security_definer_rpc_boundaries.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "b8505dfa67743505e4a12c95a7aadf34fc02bd29",
+  "source_sha": "5f029e551a436027add5566de28ce2ff29ef232a",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "0a89c8d63c46a97f5dfa7c1b088e96999d1b6cf09b05703db4affd6426624bf1",
+  "candidate_tree_sha256": "d3cc289a8399bac9e163b0f33a1e22c1cd2b575cc88e915cd681ca526f640fea",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -43,11 +43,11 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "c881f448667ae5a502d515af3ea884f0755165961395ee6192291894d4830851"
+      "sha256": "41353dc5472994637b1a3fe166ab08746ff1abe49a5690d7039d94f40203723b"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
-      "sha256": "ec124e9eec5e9b7eb411aa685e4c75ed8dbbdda0b3686e6d73dea95ea8ef4c01"
+      "sha256": "74543643cd7c9596a3024788a2f9b448cbcc0778538c8f34f2f67dba7cd8e335"
     },
     {
       "path": ".gitignore",
@@ -275,7 +275,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "aaed799f71146140a7b41d621a73b88f90837c16f774675bc5f05ce8c1e7d677"
+      "sha256": "24a408e02fcbdd75a213e92aa4f116e624a060c2ddbc93a062fc89b9518ea3d2"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -367,7 +367,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "a5b57f656a94f302c29a147aa716d98aacad35633bc8c1997dc64f41acdcabce"
+      "sha256": "6a115cfc5f5e1c3f8b916df1932687cb4cb187899605cae6496d3475ed4980a3"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -447,7 +447,7 @@
     },
     {
       "path": "scripts/db/verify-production-migration-state.mjs",
-      "sha256": "600f98a400dcd1f61f2330f3e484b1c972d33a6b576e5ffe1f0a8e5455d43a74"
+      "sha256": "07332a889bafc3ebbade242226698ee674b59c96a4cea7e7ba56e5dfcf962030"
     },
     {
       "path": "scripts/db/verify-production-post-migration.mjs",

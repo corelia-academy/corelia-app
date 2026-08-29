@@ -27,5 +27,13 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
+
+// The first release wave was applied to Production on 2026-08-28. Keep it in
+// the reviewed release artifact, but distinguish it from the one migration
+// that is still pending so the pre-deploy ledger gate remains exact.
+export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
+  APPROVED_PENDING_VERSIONS.slice(0, -1),
+);
+export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-1));
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);
