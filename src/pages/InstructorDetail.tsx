@@ -36,6 +36,13 @@ const InstructorDetail = () => {
     if (!id) return;
     let cancelled = false;
 
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_REGEX.test(id.trim())) {
+      setError(translate("detail.instructorDetail.errors.notFound"));
+      setLoading(false);
+      return;
+    }
+
     Promise.all([getPublicProfileById(id), getPublishedCoursesByInstructor(id)])
       .then(([prof, list]) => {
         if (cancelled) return;
@@ -46,13 +53,9 @@ const InstructorDetail = () => {
         setProfile(prof);
         setCourses(list);
       })
-      .catch((e) => {
+      .catch(() => {
         if (!cancelled) {
-          setError(
-            e instanceof Error
-              ? e.message
-              : translate("detail.instructorDetail.errors.loadFailed"),
-          );
+          setError(translate("detail.instructorDetail.errors.notFound"));
         }
       })
       .finally(() => {
