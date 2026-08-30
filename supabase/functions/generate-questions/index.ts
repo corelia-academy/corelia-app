@@ -615,7 +615,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return withCors(req, json({ message: "Bạn không có quyền dùng tính năng này." }, 403));
     }
 
-    const { courseId, sectionId, lessonId, sourceLessonIds, locale, count } = parseBody((await req.json()) as RequestBody);
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      throw new HttpStatusError(400, "Payload JSON không hợp lệ.");
+    }
+    const { courseId, sectionId, lessonId, sourceLessonIds, locale, count } = parseBody(rawBody as RequestBody);
 
     await ensureCanManageCourse(db, user.id, role, courseId);
     await ensureQuestionResourcesBelongToCourse(db, {

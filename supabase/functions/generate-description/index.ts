@@ -1086,7 +1086,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return withCors(req, json({ message: "Bạn không có quyền dùng tính năng này." }, 403));
     }
 
-    const parsed = parseBody((await req.json()) as RequestBody);
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      throw new HttpStatusError(400, "Payload JSON không hợp lệ.");
+    }
+    const parsed = parseBody(rawBody as RequestBody);
     const normalizedYoutubeVideoId = parsed.youtubeUrl ? normalizeYoutubeVideoId(parsed.youtubeUrl) : null;
 
     let guardCourseId: string | null = null;
