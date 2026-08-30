@@ -5,8 +5,8 @@
   "git_tree_sha": "0ef473b3c5f5323708c46ffcead8517422b780bf",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 159,
-  "latest_migration": "20260828060630_harden_security_definer_rpc_boundaries.sql",
+  "migration_count": 160,
+  "latest_migration": "20260830212012_remove_learner_facing_ai_database.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "source_sha": "c01486df824e6779cd33d0eb6a2ed749136c8acc",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
@@ -986,6 +986,10 @@
       "sha256": "709a911e516dada69bbeca67a115e9e240138480c144aeaf5d00fc48509e83ca"
     },
     {
+      "path": "supabase/migrations/20260830212012_remove_learner_facing_ai_database.sql",
+      "sha256": "4f87ff8e29bbff6391871b683b232caf3d07dd45f56808e9f29bfa4f0d30e0a2"
+    },
+    {
       "path": "vite.config.ts",
       "sha256": "26ecbdc0314eadbada05a2ac0e65a3daaf028d1bf73fdcdc3ebe14ab42bfa71f"
     },
@@ -1151,6 +1155,10 @@
       {
         "path": "supabase/migrations/20260828060630_harden_security_definer_rpc_boundaries.sql",
         "sha256": "709a911e516dada69bbeca67a115e9e240138480c144aeaf5d00fc48509e83ca"
+      },
+      {
+        "path": "supabase/migrations/20260830212012_remove_learner_facing_ai_database.sql",
+        "sha256": "4f87ff8e29bbff6391871b683b232caf3d07dd45f56808e9f29bfa4f0d30e0a2"
       }
     ]
   }

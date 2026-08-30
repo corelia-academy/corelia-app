@@ -8,10 +8,8 @@ describe("Deployment State Machine & Compatibility Gates", () => {
   const workflowContent = readFileSync(workflowPath, "utf8");
   const migration130000Path = resolve(process.cwd(), "supabase/migrations/20260823130000_g2_canonical_state_and_data_integrity.sql");
   const migration130000Content = readFileSync(migration130000Path, "utf8");
-  const migrationIssue329Path = resolve(process.cwd(), "supabase/migrations/20260826120000_issue_329_payment_retirement_safety.sql");
-  const migrationIssue329Content = readFileSync(migrationIssue329Path, "utf8");
-  const repairSqlPath = resolve(process.cwd(), "scripts/db/repair-ai-chat-session-aggregates.sql");
-  const repairSqlContent = readFileSync(repairSqlPath, "utf8");
+  const retirementPath = resolve(process.cwd(), "supabase/migrations/20260830212012_remove_learner_facing_ai_database.sql");
+  const retirementContent = readFileSync(retirementPath, "utf8");
 
   it("CASE C0: baseline OLD DB (139) + OLD EDGE is safe", () => {
     // Old Edge uses legacy direct updates and does not call record_ai_successful_usage
@@ -34,13 +32,11 @@ describe("Deployment State Machine & Compatibility Gates", () => {
     assert.doesNotMatch(tombstone, /ai_subscriptions|record_ai_successful_usage/);
   });
 
-  it("CASE C3: final DB state (156) + NEW EDGE is safe with canonical trigger, guard, and payment retirement", () => {
-    // Final DB state installs trigger and session-level guard for stale direct updates
-    assert.match(migration130000Content, /CREATE TRIGGER trg_sync_ai_chat_session_message_count/);
-    assert.match(migration130000Content, /CREATE TRIGGER trg_guard_ai_chat_session_message_count/);
-    assert.match(migration130000Content, /pg_trigger_depth\(\) = 1/);
-    assert.match(migrationIssue329Content, /reconcile_historical_ai_payment/);
-    assert.match(migrationIssue329Content, /ai_subscription/);
+  it("CASE C3: final DB state removes learner AI while instructor generators stay database-independent", () => {
+    assert.match(retirementContent, /DROP TABLE public\.ai_chat_sessions/);
+    assert.match(retirementContent, /DROP TABLE public\.knowledge_chunks/);
+    assert.match(retirementContent, /DROP TABLE public\.learning_paths/);
+    assert.match(retirementContent, /process_successful_payment\(text,jsonb,timestamptz\)/);
   });
 
   it("CASE C4: workflow execution order enforces Post-Edge gate before completion and deploys all 8 Edge functions", () => {
@@ -66,17 +62,9 @@ describe("Deployment State Machine & Compatibility Gates", () => {
     assert.ok(postEdgeGateIndex > lastEdgeDeployIndex, "Post-Edge gate executes AFTER all Edge deployments");
   });
 
-  it("CASE C5: Edge deployment failure leaves system in a safe recoverable state", () => {
-    // If Edge deploy fails, DB has guard trigger preventing stale corruption and ledger remains intact
-    assert.match(migration130000Content, /guard_ai_chat_session_message_count/);
-  });
-
-  it("CASE C6: repair tool is deterministic, transaction-bounded and non-destructive", () => {
-    // repair script must have BEGIN, COMMIT, inspection, and verification
-    assert.match(repairSqlContent, /^BEGIN;/m);
-    assert.match(repairSqlContent, /^COMMIT;/m);
-    assert.match(repairSqlContent, /WITH canonical_session_aggregates AS/);
-    assert.match(repairSqlContent, /COUNT\(c\.id\) FILTER \(WHERE c\.status = 'completed'\)/);
-    assert.match(repairSqlContent, /Post-repair verification passed/);
+  it("CASE C5: retired tombstones remain safe after the database objects are gone", () => {
+    const tombstone = readFileSync(resolve(process.cwd(), "supabase/functions/ai-tutor/index.ts"), "utf8");
+    assert.match(tombstone, /AI_FEATURE_RETIRED/);
+    assert.doesNotMatch(tombstone, /\.from\(|\.rpc\(/);
   });
 });

@@ -14,10 +14,10 @@ vi.mock("@/lib/supabase", () => ({
 import { type PaymentPurpose } from "@/lib/payments";
 
 describe("Wave B Retirement Contract Tests (Epic #332 / Issues #326, #327, #329, #331)", () => {
-  describe("Issue #329: Monetization Retirement & Historical Integrity", () => {
-    it("retains historical 'ai_subscription' in PaymentPurpose type union", () => {
-      const samplePurpose: PaymentPurpose = "ai_subscription";
-      expect(samplePurpose).toBe("ai_subscription");
+  describe("Issue #329: Monetization Retirement", () => {
+    it("keeps PaymentPurpose limited to active course products", () => {
+      const samplePurpose: PaymentPurpose = "course_purchase";
+      expect(samplePurpose).toBe("course_purchase");
     });
   });
 

@@ -375,14 +375,12 @@
     "empty": "No transactions yet.",
     "purpose": {
       "coursePurchase": "Course purchase",
-      "certificateFee": "Certificate fee",
-      "historicalAiTransaction": "Historical AI transaction"
+      "certificateFee": "Certificate fee"
     },
     "meta": {
       "course": "Course: {{id}}",
       "providerOrder": "Provider: {{provider}} · Order: {{order}}",
-      "courseProviderOrder": "Course: {{course}} · Provider: {{provider}} · Order: {{order}}",
-      "historicalAiProviderOrder": "Historical AI purchase · Provider: {{provider}} · Order: {{order}}"
+      "courseProviderOrder": "Course: {{course}} · Provider: {{provider}} · Order: {{order}}"
     },
     "table": {
       "time": "Time",

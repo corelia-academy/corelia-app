@@ -16,9 +16,6 @@ function BillingMetadata({
 }) {
   const { t } = useTranslation("account");
   const metadata = billingMetadataTranslation(transaction);
-  if (metadata.key === "billing.meta.historicalAiProviderOrder") {
-    return <div className={className}>{t(metadata.key, metadata.values)}</div>;
-  }
   return <div className={className}>{t(metadata.key, metadata.values)}</div>;
 }
 
@@ -162,4 +159,3 @@ export function BillingSection() {
 export function AccountBillingRoute() {
   return <BillingSection />;
 }
-
