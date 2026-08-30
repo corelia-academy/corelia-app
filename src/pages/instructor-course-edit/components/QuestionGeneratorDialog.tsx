@@ -162,6 +162,8 @@ type Props = {
   sectionLessons?: SourceLesson[];
 };
 
+const EMPTY_SECTION_LESSONS: SourceLesson[] = [];
+
 export function QuestionGeneratorDialog({
   open,
   section,
@@ -171,7 +173,7 @@ export function QuestionGeneratorDialog({
   mode = "section",
   lessonId,
   lessonTitle,
-  sectionLessons = [],
+  sectionLessons = EMPTY_SECTION_LESSONS,
 }: Props) {
   const { t } = useTranslation("instructor");
   const [questions, setQuestions] = useState<DraftQuestion[]>([]);
@@ -186,52 +188,63 @@ export function QuestionGeneratorDialog({
   const listEndRef = useRef<HTMLDivElement>(null);
 
   const isLessonMode = mode === "lesson";
+  const sectionId = section?.id;
 
   // Load existing questions when dialog opens
   useEffect(() => {
     if (!open || !courseId) return;
     if (isLessonMode && !lessonId) return;
-    if (!isLessonMode && !section) return;
+    if (!isLessonMode && !sectionId) return;
 
+    let cancelled = false;
     setLoading(true);
     setGenerateError(null);
 
     const loadPromise = isLessonMode
       ? getLessonQuestions(courseId, lessonId!, locale)
-      : getSectionQuestions(courseId, section!.id, locale);
+      : getSectionQuestions(courseId, sectionId!, locale);
 
     loadPromise
       .then((existing) => {
-        setQuestions(existing.map(dataToDraft));
+        if (!cancelled) setQuestions(existing.map(dataToDraft));
       })
       .catch(() => {
-        setQuestions([]);
+        if (!cancelled) setQuestions([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-    if (isLessonMode && lessonId) {
-      const currentIndex = sectionLessons.findIndex((l) => l.id === lessonId);
-      const contentSources = sectionLessons.filter(
-        (l) => l.id !== lessonId && l.hasSourceContent !== false,
-      );
-      const priorContentSources =
-        currentIndex > 0
-          ? sectionLessons
-              .slice(0, currentIndex)
-              .filter((l) => l.hasSourceContent !== false)
-          : [];
-      const current = sectionLessons.find((l) => l.id === lessonId);
-      const defaults =
-        priorContentSources.length > 0
-          ? priorContentSources
-          : contentSources.length > 0
-            ? contentSources
-            : current && current.hasSourceContent !== false
-              ? [current]
-              : [];
-      setSelectedSourceIds(new Set(defaults.map((l) => l.id)));
-    }
-  }, [open, section, courseId, isLessonMode, lessonId, locale, sectionLessons]);
+    return () => {
+      cancelled = true;
+    };
+  }, [open, sectionId, courseId, isLessonMode, lessonId, locale]);
+
+  // Initialize selected source lessons in lesson mode
+  useEffect(() => {
+    if (!open || !isLessonMode || !lessonId) return;
+
+    const currentIndex = sectionLessons.findIndex((l) => l.id === lessonId);
+    const contentSources = sectionLessons.filter(
+      (l) => l.id !== lessonId && l.hasSourceContent !== false,
+    );
+    const priorContentSources =
+      currentIndex > 0
+        ? sectionLessons
+            .slice(0, currentIndex)
+            .filter((l) => l.hasSourceContent !== false)
+        : [];
+    const current = sectionLessons.find((l) => l.id === lessonId);
+    const defaults =
+      priorContentSources.length > 0
+        ? priorContentSources
+        : contentSources.length > 0
+          ? contentSources
+          : current && current.hasSourceContent !== false
+            ? [current]
+            : [];
+    setSelectedSourceIds(new Set(defaults.map((l) => l.id)));
+  }, [open, isLessonMode, lessonId, sectionLessons]);
 
   // Reset when closed
   useEffect(() => {
