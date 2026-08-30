@@ -317,13 +317,8 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issues #328 and #331)", 
     });
   });
 
-  describe("WC-11 to WC-13: Payment compatibility and accounting integrity", () => {
-    it("WC-11: retains historical 'ai_subscription' in PaymentPurpose type union", () => {
-      const samplePurpose: PaymentPurpose = "ai_subscription";
-      expect(samplePurpose).toBe("ai_subscription");
-    });
-
-    it("WC-12 & WC-13: supports standard 'course_purchase' and 'certificate_fee' purposes", () => {
+  describe("WC-11 to WC-13: Payment contracts after AI retirement", () => {
+    it("supports only standard 'course_purchase' and 'certificate_fee' purposes", () => {
       const p1: PaymentPurpose = "course_purchase";
       const p2: PaymentPurpose = "certificate_fee";
       expect(p1).toBe("course_purchase");
@@ -331,13 +326,15 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issues #328 and #331)", 
     });
   });
 
-  describe("WC-14: No destructive #330 database operations introduced", () => {
-    it("verifies all 18 AI subsystem tables remain registered in backup tooling", () => {
-      const backupScript = readFileSync(join(rootDir, "scripts", "db", "backup-ai-subsystem.mjs"), "utf8");
-      const match = backupScript.match(/AI_TABLE_REGISTRY\s*=\s*\[([\s\S]*?)\];/);
-      expect(match).not.toBeNull();
-      const tableCount = (match?.[1]?.match(/name:\s*"/g) || []).length;
-      expect(tableCount).toBe(18);
+  describe("WC-14: Learner AI database retirement", () => {
+    it("keeps the destructive cleanup explicit and dependency-strict", () => {
+      const migration = readFileSync(
+        join(rootDir, "supabase", "migrations", "20260830212012_remove_learner_facing_ai_database.sql"),
+        "utf8",
+      );
+      expect(migration).toContain("DROP TABLE public.ai_chat_sessions;");
+      expect(migration).toContain("DROP TABLE public.knowledge_chunks;");
+      expect(migration).not.toMatch(/DROP\s+(?:TABLE|FUNCTION)[^;]*\sCASCADE\b/i);
     });
   });
 

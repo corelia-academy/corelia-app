@@ -9,6 +9,8 @@ import {
   PRODUCTION_BASELINE_COUNT,
   PRODUCTION_BASELINE_LATEST,
   APPROVED_PENDING_VERSIONS,
+  CURRENT_PENDING_VERSIONS,
+  PREVIOUSLY_RELEASED_APPROVED_VERSIONS,
 } from "../verify-production-migration-state.mjs";
 
 const baselineJson = JSON.parse(
@@ -20,7 +22,7 @@ function validate(overrides = {}) {
   return validateProductionMigrationState({
     projectRef: PRODUCTION_PROJECT_REF,
     localVersions: [...realReleasedVersions, ...APPROVED_PENDING_VERSIONS],
-    remoteVersions: [...realReleasedVersions],
+    remoteVersions: [...realReleasedVersions, ...PREVIOUSLY_RELEASED_APPROVED_VERSIONS],
     releasedVersions: realReleasedVersions,
     expectedProjectRef: PRODUCTION_PROJECT_REF,
     expectedBaselineCount: PRODUCTION_BASELINE_COUNT,
@@ -30,11 +32,11 @@ function validate(overrides = {}) {
   });
 }
 
-test("CASE P0: exact frozen baseline + approved pending set => PASS", () => {
+test("CASE P0: exact prior Production release + current pending set => PASS", () => {
   const result = validate();
   assert.equal(result.ok, true);
   assert.equal(result.errors.length, 0);
-  assert.deepEqual(result.pendingVersions, APPROVED_PENDING_VERSIONS);
+  assert.deepEqual(result.pendingVersions, CURRENT_PENDING_VERSIONS);
 });
 
 test("CASE P0b: repository migrations exactly match the frozen baseline plus approved pending set", () => {
@@ -65,7 +67,7 @@ test("CASE P2: missing 20260709000009 from remote ledger => FAIL", () => {
   const missingHistorical = realReleasedVersions.filter((v) => v !== "20260709000009");
   const result = validate({ remoteVersions: missingHistorical });
   assert.equal(result.ok, false);
-  assert.match(result.errors.join("\n"), /Remote ledger is neither the frozen baseline nor the exact fully released chain/);
+  assert.match(result.errors.join("\n"), /Remote ledger is neither the exact pre-deploy chain nor the exact fully released chain/);
 });
 
 test("CASE P3: extra historical pending migration => FAIL", () => {
@@ -108,7 +110,7 @@ test("CASE P6: historical baseline mutation (reordered/changed) => FAIL", () => 
   reordered[11] = tmp;
   const result = validate({ remoteVersions: reordered });
   assert.equal(result.ok, false);
-  assert.match(result.errors.join("\n"), /Remote ledger is neither the frozen baseline nor the exact fully released chain/);
+  assert.match(result.errors.join("\n"), /Remote ledger is neither the exact pre-deploy chain nor the exact fully released chain/);
 });
 
 test("CASE P7: wrong project ref => FAIL", () => {
@@ -124,11 +126,11 @@ test("CASE P8: malformed CLI output => FAIL", () => {
   );
 });
 
-test("CASE P9: remote already contains one approved migration unexpectedly (partial migration state) => FAIL", () => {
-  const partiallyMigratedRemote = [...realReleasedVersions, APPROVED_PENDING_VERSIONS[0]];
+test("CASE P9: an incomplete prior release prefix is rejected", () => {
+  const partiallyMigratedRemote = [...realReleasedVersions, ...PREVIOUSLY_RELEASED_APPROVED_VERSIONS.slice(0, -1)];
   const result = validate({ remoteVersions: partiallyMigratedRemote });
   assert.equal(result.ok, false);
-  assert.match(result.errors.join("\n"), /Remote ledger is neither the frozen baseline nor the exact fully released chain/);
+  assert.match(result.errors.join("\n"), /Remote ledger is neither the exact pre-deploy chain nor the exact fully released chain/);
 });
 
 test("Production workflow structure safety", () => {

@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "b8505dfa67743505e4a12c95a7aadf34fc02bd29",
-  "git_tree_sha": "94b77d78b33658eec266dd8ac56ed25799d1f9ee",
+  "rc_sha": "c01486df824e6779cd33d0eb6a2ed749136c8acc",
+  "git_tree_sha": "0ef473b3c5f5323708c46ffcead8517422b780bf",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 159,
-  "latest_migration": "20260828060630_harden_security_definer_rpc_boundaries.sql",
+  "migration_count": 160,
+  "latest_migration": "20260830212012_remove_learner_facing_ai_database.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "b8505dfa67743505e4a12c95a7aadf34fc02bd29",
+  "source_sha": "c01486df824e6779cd33d0eb6a2ed749136c8acc",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "0a89c8d63c46a97f5dfa7c1b088e96999d1b6cf09b05703db4affd6426624bf1",
+  "candidate_tree_sha256": "02f919ce1f80fea1d39ec3e17db5120a682cc431a8a7d40362e23b4d958e7302",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -43,11 +43,11 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "c881f448667ae5a502d515af3ea884f0755165961395ee6192291894d4830851"
+      "sha256": "f1426edfbeffb1f61ee2de72cdf7da636e990100f0b74646a646c2e7cd755d85"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
-      "sha256": "ec124e9eec5e9b7eb411aa685e4c75ed8dbbdda0b3686e6d73dea95ea8ef4c01"
+      "sha256": "f67669e3a389d93f6b99285453692c10a3899ce25a6d4fbf3517b42cbf40772b"
     },
     {
       "path": ".gitignore",
@@ -275,7 +275,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "aaed799f71146140a7b41d621a73b88f90837c16f774675bc5f05ce8c1e7d677"
+      "sha256": "24a408e02fcbdd75a213e92aa4f116e624a060c2ddbc93a062fc89b9518ea3d2"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -367,7 +367,7 @@
     },
     {
       "path": "scripts/db/tests/production-migration-state.test.mjs",
-      "sha256": "a5b57f656a94f302c29a147aa716d98aacad35633bc8c1997dc64f41acdcabce"
+      "sha256": "6a115cfc5f5e1c3f8b916df1932687cb4cb187899605cae6496d3475ed4980a3"
     },
     {
       "path": "scripts/db/tests/production-post-migration.test.mjs",
@@ -447,7 +447,7 @@
     },
     {
       "path": "scripts/db/verify-production-migration-state.mjs",
-      "sha256": "600f98a400dcd1f61f2330f3e484b1c972d33a6b576e5ffe1f0a8e5455d43a74"
+      "sha256": "07332a889bafc3ebbade242226698ee674b59c96a4cea7e7ba56e5dfcf962030"
     },
     {
       "path": "scripts/db/verify-production-post-migration.mjs",
@@ -986,6 +986,10 @@
       "sha256": "709a911e516dada69bbeca67a115e9e240138480c144aeaf5d00fc48509e83ca"
     },
     {
+      "path": "supabase/migrations/20260830212012_remove_learner_facing_ai_database.sql",
+      "sha256": "4f87ff8e29bbff6391871b683b232caf3d07dd45f56808e9f29bfa4f0d30e0a2"
+    },
+    {
       "path": "vite.config.ts",
       "sha256": "26ecbdc0314eadbada05a2ac0e65a3daaf028d1bf73fdcdc3ebe14ab42bfa71f"
     },
@@ -1151,6 +1155,10 @@
       {
         "path": "supabase/migrations/20260828060630_harden_security_definer_rpc_boundaries.sql",
         "sha256": "709a911e516dada69bbeca67a115e9e240138480c144aeaf5d00fc48509e83ca"
+      },
+      {
+        "path": "supabase/migrations/20260830212012_remove_learner_facing_ai_database.sql",
+        "sha256": "4f87ff8e29bbff6391871b683b232caf3d07dd45f56808e9f29bfa4f0d30e0a2"
       }
     ]
   }
