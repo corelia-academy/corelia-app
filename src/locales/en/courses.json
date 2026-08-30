@@ -127,6 +127,9 @@
       "paymentAsideBodyEmphasis": "scan a QR transfer",
       "paymentAsideBodySuffix": "This is currently the only supported method.",
       "continueToSePay": "Continue to SePay",
+      "freeCourseEnroll": "Free Course • Start Learning",
+      "freeCourseEnrolled": "Enrolled successfully!",
+      "freeCourseAsideBody": "This course is free. No payment required.",
       "redirecting": "Redirecting...",
       "mustLoginInline": "You need to sign in to pay.",
       "postPayHint": "After paying, you'll be redirected back to the course page for confirmation."

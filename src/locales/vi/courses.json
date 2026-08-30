@@ -127,6 +127,9 @@
       "paymentAsideBodyEmphasis": "quét QR chuyển khoản",
       "paymentAsideBodySuffix": "Hiện tại hệ thống chỉ hỗ trợ hình thức này.",
       "continueToSePay": "Tiếp tục sang SePay",
+      "freeCourseEnroll": "Khoá học miễn phí • Vào học ngay",
+      "freeCourseEnrolled": "Đăng ký thành công!",
+      "freeCourseAsideBody": "Khoá học này hoàn toàn miễn phí. Bạn không cần thanh toán.",
       "redirecting": "Đang chuyển...",
       "mustLoginInline": "Bạn cần đăng nhập để thanh toán.",
       "postPayHint": "Sau khi thanh toán, bạn sẽ được chuyển về trang khoá học để hệ thống xác nhận."

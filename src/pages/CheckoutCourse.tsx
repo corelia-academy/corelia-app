@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
-import { getCourse } from "@/lib/courses";
+import { enrollCourse, getCourse } from "@/lib/courses";
 import { createSePayCheckout, completeSePayCheckout } from "@/lib/payments";
 import type { Course } from "@/types/courses";
 import { formatVndPrice } from "@/types/courses";
@@ -53,8 +53,13 @@ export default function CheckoutCourse() {
     setLoading(true);
     setError(null);
     getCourse(courseId)
-      .then((c) => {
-        if (!cancelled) setCourse(c);
+      .then((data) => {
+        if (cancelled) return;
+        if (!data) {
+          setError(t("detail.checkout.missingCourseFallback"));
+          return;
+        }
+        setCourse(data);
       })
       .catch((e) => {
         if (!cancelled)
@@ -73,11 +78,36 @@ export default function CheckoutCourse() {
     return computeDisplayPrice(course);
   }, [course]);
 
+  const isFreeCourse =
+    !!course &&
+    (course.access_model !== "paid_upfront" || !pricing || pricing.displayAmount === 0);
+
   const canPay =
     !!course &&
     course.access_model === "paid_upfront" &&
     !!pricing &&
     pricing.displayAmount > 0;
+
+  const handleFreeEnroll = async () => {
+    if (!courseId || !course) return;
+    if (!user) {
+      toast.error(t("detail.checkout.mustLoginToPay"));
+      navigate("/login", { replace: true });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      if (course.access_model !== "paid_upfront") {
+        await enrollCourse(courseId, user);
+      }
+      toast.success(t("detail.checkout.freeCourseEnrolled"));
+      navigate(`/learn/${courseId}`, { replace: true });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("detail.checkout.createPaymentFailed"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleContinue = async () => {
     if (!courseId || !course || !pricing) return;
@@ -250,21 +280,38 @@ export default function CheckoutCourse() {
         <aside className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
           <h2 className="text-sm font-medium text-foreground">{t("detail.checkout.paymentAsideTitle")}</h2>
           <p className="mt-2 text-sm text-foreground-muted">
-            {t("detail.checkout.paymentAsideBodyPrefix")}{" "}
-            <span className="font-medium text-foreground">
-              {t("detail.checkout.paymentAsideBodyEmphasis")}
-            </span>
-            . {t("detail.checkout.paymentAsideBodySuffix")}
+            {isFreeCourse ? (
+              t("detail.checkout.freeCourseAsideBody")
+            ) : (
+              <>
+                {t("detail.checkout.paymentAsideBodyPrefix")}{" "}
+                <span className="font-medium text-foreground">
+                  {t("detail.checkout.paymentAsideBodyEmphasis")}
+                </span>
+                . {t("detail.checkout.paymentAsideBodySuffix")}
+              </>
+            )}
           </p>
 
-          <Button
-            className="mt-4 w-full"
-            size="lg"
-            disabled={submitting || !canPay || !user}
-            onClick={() => void handleContinue()}
-          >
-            {submitting ? t("detail.checkout.redirecting") : t("detail.checkout.continueToSePay")}
-          </Button>
+          {isFreeCourse ? (
+            <Button
+              className="mt-4 w-full"
+              size="lg"
+              disabled={submitting || !user}
+              onClick={() => void handleFreeEnroll()}
+            >
+              {submitting ? t("detail.checkout.redirecting") : t("detail.checkout.freeCourseEnroll")}
+            </Button>
+          ) : (
+            <Button
+              className="mt-4 w-full"
+              size="lg"
+              disabled={submitting || !canPay || !user}
+              onClick={() => void handleContinue()}
+            >
+              {submitting ? t("detail.checkout.redirecting") : t("detail.checkout.continueToSePay")}
+            </Button>
+          )}
 
           {!user ? (
             <p className="mt-3 text-xs text-destructive">
@@ -272,9 +319,11 @@ export default function CheckoutCourse() {
             </p>
           ) : null}
 
-          <p className="mt-3 text-xs text-foreground-muted">
-            {t("detail.checkout.postPayHint")}
-          </p>
+          {!isFreeCourse ? (
+            <p className="mt-3 text-xs text-foreground-muted">
+              {t("detail.checkout.postPayHint")}
+            </p>
+          ) : null}
         </aside>
       </div>
     </div>
