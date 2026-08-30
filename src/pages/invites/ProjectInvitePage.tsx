@@ -11,6 +11,14 @@ import {
 } from "@/lib/notifications";
 import { fetchProjectInviteDisplayContextByProjectIds } from "@/lib/notificationInviteContext";
 
+function formatInviteError(err: unknown, t: (key: string, defaultVal?: string) => string): string {
+  const raw = err instanceof Error ? err.message : String(err ?? "");
+  if (/invalid_token|not_found|expired|missing/i.test(raw)) {
+    return t("detail.inviteProject.invalid", "Lời mời không hợp lệ hoặc đã hết hạn.");
+  }
+  return t("detail.inviteProject.errorFallback", "Đã có lỗi xảy ra.");
+}
+
 export default function ProjectInvitePage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
@@ -19,6 +27,7 @@ export default function ProjectInvitePage() {
   const { isAuthenticated, authInitialized } = useAuth();
   const [busy, setBusy] = useState<"accept" | "decline" | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const safeToken = (token ?? "").trim();
 
@@ -26,6 +35,7 @@ export default function ProjectInvitePage() {
     if (!safeToken) return;
     setBusy("accept");
     setMessage(null);
+    setErrorMessage(null);
     try {
       const res = await acceptProjectInviteByToken(safeToken);
       toast.success(t("detail.inviteProject.accepted"));
@@ -42,9 +52,8 @@ export default function ProjectInvitePage() {
 
       setMessage(t("detail.inviteProject.accepted"));
     } catch (e) {
-      const msg =
-        e instanceof Error ? e.message : t("detail.inviteProject.errorFallback");
-      setMessage(msg);
+      const msg = formatInviteError(e, t);
+      setErrorMessage(msg);
       toast.error(msg);
     } finally {
       setBusy(null);
@@ -55,19 +64,21 @@ export default function ProjectInvitePage() {
     if (!safeToken) return;
     setBusy("decline");
     setMessage(null);
+    setErrorMessage(null);
     try {
       await declineProjectInviteByToken(safeToken);
       setMessage(t("detail.inviteProject.declined"));
       toast.success(t("detail.inviteProject.declined"));
     } catch (e) {
-      const msg =
-        e instanceof Error ? e.message : t("detail.inviteProject.errorFallback");
-      setMessage(msg);
+      const msg = formatInviteError(e, t);
+      setErrorMessage(msg);
       toast.error(msg);
     } finally {
       setBusy(null);
     }
   }
+
+  const isResolved = Boolean(message || errorMessage);
 
   return (
     <div className="container-app flex min-h-[50vh] items-center justify-center py-10">
@@ -101,6 +112,14 @@ export default function ProjectInvitePage() {
             </div>
           ) : !safeToken ? (
             <p className="text-sm text-destructive">{t("detail.inviteProject.invalid")}</p>
+          ) : isResolved ? (
+            <div className="space-y-2">
+              {errorMessage ? (
+                <p className="text-sm text-destructive">{errorMessage}</p>
+              ) : (
+                <p className="text-sm text-foreground whitespace-pre-wrap">{message}</p>
+              )}
+            </div>
           ) : (
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button
@@ -122,10 +141,6 @@ export default function ProjectInvitePage() {
               </Button>
             </div>
           )}
-
-          {message ? (
-            <p className="text-sm text-foreground whitespace-pre-wrap">{message}</p>
-          ) : null}
 
           <Button type="button" variant="ghost" className="w-full" onClick={() => navigate("/")}>
             {tc("nav.home")}
