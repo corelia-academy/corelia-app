@@ -375,14 +375,12 @@
     "empty": "Chưa có giao dịch nào.",
     "purpose": {
       "coursePurchase": "Mua khoá học",
-      "certificateFee": "Phí chứng nhận",
-      "historicalAiTransaction": "Giao dịch AI lịch sử"
+      "certificateFee": "Phí chứng nhận"
     },
     "meta": {
       "course": "Course: {{id}}",
       "providerOrder": "Provider: {{provider}} · Order: {{order}}",
-      "courseProviderOrder": "Course: {{course}} · Provider: {{provider}} · Order: {{order}}",
-      "historicalAiProviderOrder": "Giao dịch AI lịch sử · Nhà cung cấp: {{provider}} · Mã đơn: {{order}}"
+      "courseProviderOrder": "Course: {{course}} · Provider: {{provider}} · Order: {{order}}"
     },
     "table": {
       "time": "Thời gian",

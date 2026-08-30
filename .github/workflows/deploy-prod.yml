@@ -103,9 +103,8 @@ jobs:
         with:
           version: 2.98.1
 
-      # Deploy the R5 callback guard before the DB migration. NEW EDGE is
-      # compatible with the released DB RPC, while OLD EDGE can pre-mark a
-      # late ai_subscription callback paid during the migration window.
+      # Deploy the payment API before the destructive DB cleanup. The current
+      # API rejects the retired product and remains compatible with both states.
       - name: Deploy Edge Function (corelia-api)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -133,7 +132,7 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           supabase migration list --linked --password "$SUPABASE_DB_PASSWORD" --dns-resolver https > "$RUNNER_TEMP/production-post-migration-list.txt"
-          supabase db query --linked --file scripts/db/production-post-migration-inspect.sql --output json > "$RUNNER_TEMP/production-post-inspection.json"
+          supabase db query --linked --file scripts/db/audit-production-ai-state.sql --output json > "$RUNNER_TEMP/production-post-inspection.json"
           node scripts/db/verify-production-post-migration.mjs "$RUNNER_TEMP/production-post-migration-list.txt" "$RUNNER_TEMP/production-post-inspection.json"
 
       - name: Verify Supabase Security Advisor has no database warnings
@@ -199,5 +198,5 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           supabase migration list --linked --password "$SUPABASE_DB_PASSWORD" --dns-resolver https > "$RUNNER_TEMP/production-final-migration-list.txt"
-          supabase db query --linked --file scripts/db/production-post-migration-inspect.sql --output json > "$RUNNER_TEMP/production-final-inspection.json"
+          supabase db query --linked --file scripts/db/audit-production-ai-state.sql --output json > "$RUNNER_TEMP/production-final-inspection.json"
           node scripts/db/verify-production-post-migration.mjs "$RUNNER_TEMP/production-final-migration-list.txt" "$RUNNER_TEMP/production-final-inspection.json"

@@ -4,7 +4,7 @@ import { makeTTLCache } from "@/lib/utils";
 
 const paymentAccessCache = makeTTLCache<CoursePaymentAccess | null>(60_000);
 
-export type PaymentPurpose = "course_purchase" | "certificate_fee" | "ai_subscription";
+export type PaymentPurpose = "course_purchase" | "certificate_fee";
 
 export type CoursePaymentAccessSource =
   | "payment"
