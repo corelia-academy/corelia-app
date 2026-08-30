@@ -10,13 +10,14 @@ import {
   declineProjectInviteByToken,
 } from "@/lib/notifications";
 import { fetchProjectInviteDisplayContextByProjectIds } from "@/lib/notificationInviteContext";
+import type { TFunction } from "i18next";
 
-function formatInviteError(err: unknown, t: (key: string, defaultVal?: string) => string): string {
+function formatInviteError(err: unknown, t: TFunction<"contests">): string {
   const raw = err instanceof Error ? err.message : String(err ?? "");
   if (/invalid_token|not_found|expired|missing/i.test(raw)) {
-    return t("detail.inviteProject.invalid", "Lời mời không hợp lệ hoặc đã hết hạn.");
+    return t("detail.inviteProject.invalid");
   }
-  return t("detail.inviteProject.errorFallback", "Đã có lỗi xảy ra.");
+  return t("detail.inviteProject.errorFallback");
 }
 
 export default function ProjectInvitePage() {

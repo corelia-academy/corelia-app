@@ -11,13 +11,14 @@ import {
   peekCoInstructorInviteByToken,
   type CoInstructorInvitePreview,
 } from "@/lib/coInstructorInvites";
+import type { TFunction } from "i18next";
 
-function formatCoInstructorError(err: unknown, t: (key: string, defaultVal?: string) => string): string {
+function formatCoInstructorError(err: unknown, t: TFunction<"courses">): string {
   const raw = err instanceof Error ? err.message : String(err ?? "");
   if (/invalid_token|not_found|expired|missing/i.test(raw)) {
-    return t("inviteCoInstructor.invalid", "Liên kết lời mời không hợp lệ.");
+    return t("inviteCoInstructor.invalid");
   }
-  return t("inviteCoInstructor.errorFallback", "Không xử lý được lời mời.");
+  return t("inviteCoInstructor.errorFallback");
 }
 
 export default function CoInstructorInvitePage() {

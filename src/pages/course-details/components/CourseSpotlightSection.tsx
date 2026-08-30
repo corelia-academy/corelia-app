@@ -1,11 +1,10 @@
 import { useCallback, useMemo } from "react";
-import { BookOpen, Rocket, Trophy } from "lucide-react";
+import { BookOpen, Rocket } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   CoreliaSpotlight,
   type CoreliaSpotlightItem,
 } from "@/components/spotlight/CoreliaSpotlight";
-import { intlLocale } from "@/lib/intl";
 import type { Contest } from "@/types/hackathons";
 import type { CourseLesson } from "@/types/courses";
 
@@ -14,7 +13,7 @@ interface CourseSpotlightSectionProps {
   courseTitle: string;
   hasFullCourseAccess: boolean;
   nextLesson: CourseLesson | null;
-  spotlightContests: Contest[];
+  spotlightContests?: Contest[];
 }
 
 export function CourseSpotlightSection({
@@ -22,7 +21,7 @@ export function CourseSpotlightSection({
   courseTitle,
   hasFullCourseAccess,
   nextLesson,
-  spotlightContests,
+  spotlightContests: _spotlightContests,
 }: CourseSpotlightSectionProps) {
   const { t } = useTranslation("courses");
   const translate = useCallback(
