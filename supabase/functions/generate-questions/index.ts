@@ -274,8 +274,26 @@ function parseBody(body: RequestBody): {
           .slice(0, 8)
       : null;
   const locale = body.locale === "en" ? "en" : "vi";
-  const rawCount = typeof body.count === "number" ? body.count : parseInt(String(body.count ?? "5"), 10);
-  const count = isNaN(rawCount) ? 5 : Math.min(10, Math.max(1, rawCount));
+  let count = 5;
+  if (body.count !== undefined && body.count !== null && body.count !== "") {
+    if (typeof body.count === "number") {
+      if (!Number.isInteger(body.count)) {
+        throw new HttpStatusError(400, "Số lượng câu hỏi phải là số nguyên (1–10).");
+      }
+      count = body.count;
+    } else if (typeof body.count === "string") {
+      const str = (body.count as string).trim();
+      if (!/^\d+$/.test(str)) {
+        throw new HttpStatusError(400, "Số lượng câu hỏi phải là số nguyên (1–10).");
+      }
+      count = parseInt(str, 10);
+    } else {
+      throw new HttpStatusError(400, "Số lượng câu hỏi không hợp lệ.");
+    }
+    if (count < 1 || count > 10) {
+      throw new HttpStatusError(400, "Số lượng câu hỏi phải nằm trong khoảng từ 1 đến 10.");
+    }
+  }
   if (!courseId) throw new Error("Thiếu courseId.");
   if (!lessonId && !sectionId) throw new Error("Thiếu sectionId hoặc lessonId.");
   return { courseId, sectionId, lessonId, sourceLessonIds, locale, count };
