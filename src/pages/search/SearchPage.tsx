@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { NavLink, useLocation } from "react-router";
+import { NavLink, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Search, ShieldAlert } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
 
@@ -32,10 +34,26 @@ function useQueryParam(name: string): string {
 
 export default function SearchPage() {
   const { t } = useTranslation("common");
+  const navigate = useNavigate();
   const q = useQueryParam("q").trim();
+  const [searchInput, setSearchInput] = useState(q);
   const [items, setItems] = useState<SearchResultRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSearchInput(q);
+  }, [q]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchInput.trim();
+    if (query) {
+      navigate(`/search?q=${encodeURIComponent(query)}`);
+    } else {
+      navigate("/search");
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -77,7 +95,7 @@ export default function SearchPage() {
     <div className="container-app py-6 sm:py-8">
       <div className="flex items-start gap-3">
         <Search className="mt-1 size-5 text-primary" aria-hidden />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-semibold text-foreground sm:text-2xl">
             {t("search.title")}
           </h1>
@@ -86,6 +104,25 @@ export default function SearchPage() {
               ? t("search.queryLine", { query: q })
               : t("search.enterQueryHint")}
           </p>
+
+          <form onSubmit={handleSearch} className="mt-4 flex w-full max-w-xl items-center gap-2">
+            <div className="relative flex-1 min-w-0">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-muted"
+                aria-hidden
+              />
+              <Input
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder={t("search.placeholder")}
+                className="h-10 pl-9"
+              />
+            </div>
+            <Button type="submit" className="shrink-0">
+              {t("actions.search", "Tìm kiếm")}
+            </Button>
+          </form>
         </div>
       </div>
 
