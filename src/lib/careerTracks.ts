@@ -16,6 +16,12 @@ const trackBySlugCache = makeTTLCache<CareerTrackDetail | null>(CATALOG_CACHE_TT
 const LOCALE_CACHE_TTL = 5 * 60 * 1000;
 const careerTrackLocaleCache = makeTTLCache<Partial<CareerTrack> | null>(LOCALE_CACHE_TTL);
 
+export function invalidateCareerTracksCache(): void {
+  tracksListCache.clear();
+  trackBySlugCache.clear();
+  careerTrackLocaleCache.clear();
+}
+
 type CareerTrackRow = CareerTrack;
 type CareerTrackCourseRow = {
   sort_order: number;
@@ -499,19 +505,24 @@ export async function createInstructorCareerTrack(
   input: CareerTrackUpsertInput,
 ): Promise<CareerTrackDetail> {
   const userId = await requireAuthedUserId();
-  const payload = {
-    owner_scope: "instructor" as const,
+  const slug = (input.slug ?? "").trim();
+  if (!slug) throw new Error("Slug không được để trống");
+  const title = (input.title ?? "").trim();
+  if (!title) throw new Error("Tiêu đề không được để trống");
+
+  const payload: Record<string, unknown> = {
+    owner_scope: "instructor",
     instructor_id: userId,
-    published: Boolean(input.published),
-    slug: input.slug.trim(),
-    title: input.title,
-    description: input.description,
+    slug,
+    title,
+    description: (input.description ?? "").trim(),
     what_youll_learn: input.what_youll_learn ?? [],
     prerequisites: input.prerequisites ?? [],
-    has_certificate: Boolean(input.has_certificate),
+    has_certificate: input.has_certificate ?? false,
     hero_media_type: input.hero_media_type ?? "image",
     hero_youtube_url: input.hero_youtube_url ?? null,
     hero_youtube_video_id: input.hero_youtube_video_id ?? null,
+    published: input.published ?? false,
     short_description: input.short_description ?? null,
     thumbnail_url: input.thumbnail_url ?? null,
     thumbnail_path: input.thumbnail_path ?? null,
@@ -555,6 +566,7 @@ export async function createInstructorCareerTrack(
 
   if (error) throw new Error(error.message);
 
+  invalidateCareerTracksCache();
   const track = data as unknown as CareerTrackRow;
   return await computeDetail(track, []);
 }
@@ -593,6 +605,8 @@ export async function updateInstructorCareerTrack(
     .eq("instructor_id", userId);
 
   if (error) throw new Error(error.message);
+
+  invalidateCareerTracksCache();
 }
 
 export async function setInstructorCareerTrackPublished(
@@ -659,4 +673,6 @@ export async function setInstructorCareerTrackCourses(
       .upsert(upserts, { onConflict: "track_id,course_id" });
     if (error) throw new Error(error.message);
   }
+
+  invalidateCareerTracksCache();
 }
