@@ -328,6 +328,9 @@
       "lessonDraftNoticeTitle": "Bài học đang được cập nhật",
       "lessonDraftNoticeBody": "Video chưa sẵn sàng. Vui lòng quay lại sau.",
       "lessonDraftToast": "Bài học đang cập nhật. Đang chuyển sang bài học có thể xem.",
+      "lessonNotFoundTitle": "Không tìm thấy bài học",
+      "lessonNotFoundDescription": "Bài học bạn yêu cầu không tồn tại hoặc đã bị gỡ bỏ.",
+      "goToFirstLesson": "Vào bài học đầu tiên",
       "certificateFeeMissing": "Khoá học chưa cấu hình phí chứng nhận hợp lệ.",
       "sepayCreateFailed": "Không tạo được thanh toán SePay.",
       "stats": {

@@ -280,10 +280,9 @@ export default function Learn() {
 
   useEffect(() => {
     if (!courseId || visibleLessons.length === 0) return;
-    const hasCurrentLesson = lessonId
-      ? visibleLessons.some((lesson) => lesson.id === lessonId)
-      : false;
-    if (hasCurrentLesson) return;
+    // If URL already contains an explicit lessonId, do not auto-redirect
+    if (lessonId) return;
+
     const next = getNextLesson(visibleLessons, progress.progressList);
     const target = next ?? visibleLessons[0];
     if (target) {
@@ -293,11 +292,7 @@ export default function Learn() {
 
   const currentLesson = useMemo(() => {
     if (visibleLessons.length === 0 || !lessonId) return null;
-    return (
-      visibleLessons.find((lesson) => lesson.id === lessonId) ??
-      visibleLessons[0] ??
-      null
-    );
+    return visibleLessons.find((lesson) => lesson.id === lessonId) ?? null;
   }, [lessonId, visibleLessons]);
 
   const isPrivilegedViewer =
@@ -443,6 +438,32 @@ export default function Learn() {
         translate={translate}
         message={courseLoad.error ?? translate("detail.notFound")}
       />
+    );
+  }
+
+  if (lessonId && visibleLessons.length > 0 && !currentLesson) {
+    const firstLesson = visibleLessons[0];
+    return (
+      <div className="mx-auto w-full max-w-[960px] px-4 py-12">
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-6 text-center shadow-card">
+          <h1 className="text-xl font-semibold text-foreground">
+            {translate("detail.learn.lessonNotFoundTitle", { defaultValue: "Không tìm thấy bài học" })}
+          </h1>
+          <p className="mt-2 text-sm text-foreground-muted">
+            {translate("detail.learn.lessonNotFoundDescription", { defaultValue: "Bài học bạn yêu cầu không tồn tại hoặc đã bị gỡ bỏ." })}
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            {firstLesson && (
+              <Button onClick={() => navigate(`/learn/${courseId}/lesson/${firstLesson.id}`, { replace: true })}>
+                {translate("detail.learn.goToFirstLesson", { defaultValue: "Vào bài học đầu tiên" })}
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>
+              {translate("detail.learn.backToCourse")}
+            </Button>
+          </div>
+        </div>
+      </div>
     );
   }
 
