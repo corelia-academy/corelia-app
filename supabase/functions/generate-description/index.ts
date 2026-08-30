@@ -495,7 +495,7 @@ async function getUserRole(db: SupabaseClient, userId: string): Promise<Role> {
 
 async function getCourseAccessRow(db: SupabaseClient, courseId: string): Promise<CourseRow> {
   const { data, error } = await db.from("courses").select("instructor_id,data").eq("id", courseId).single();
-  if (error || !data) throw new Error("Không tìm thấy khoá học.");
+  if (error || !data) throw new HttpStatusError(404, "Không tìm thấy khoá học.");
   return data as CourseRow;
 }
 
@@ -526,7 +526,7 @@ async function ensureCanManageCareerTrack(
     .select("instructor_id")
     .eq("id", careerTrackId)
     .single();
-  if (error || !data) throw new Error("Không tìm thấy lộ trình nghề nghiệp.");
+  if (error || !data) throw new HttpStatusError(404, "Không tìm thấy lộ trình nghề nghiệp.");
   if (role === "admin" || role === "support_staff") return;
   const row = data as CareerTrackRow;
   if (row.instructor_id === userId) return;
@@ -552,7 +552,7 @@ async function resolveAndValidateCourseScope(
       .select("course_id")
       .eq("id", params.sectionId)
       .single();
-    if (error || !data?.course_id) throw new Error("Không tìm thấy chương học.");
+    if (error || !data?.course_id) throw new HttpStatusError(404, "Không tìm thấy chương học.");
     const sectionCourseId = String(data.course_id);
     if (resolvedCourseId && resolvedCourseId !== sectionCourseId) {
       throw new Error("Chương học không thuộc khoá học đã yêu cầu.");
@@ -567,7 +567,7 @@ async function resolveAndValidateCourseScope(
       .select("course_id,section_id")
       .eq("id", params.lessonId)
       .single();
-    if (error || !data?.course_id) throw new Error("Không tìm thấy bài học.");
+    if (error || !data?.course_id) throw new HttpStatusError(404, "Không tìm thấy bài học.");
     const lessonCourseId = String(data.course_id);
     if (resolvedCourseId && resolvedCourseId !== lessonCourseId) {
       throw new Error("Bài học không thuộc khoá học đã yêu cầu.");
@@ -623,7 +623,7 @@ async function resolveLessonRows(
       .eq("id", params.lessonId);
     if (params.courseId) query.eq("course_id", params.courseId);
     const { data, error } = await query.single();
-    if (error || !data) throw new Error("Không tìm thấy bài học.");
+    if (error || !data) throw new HttpStatusError(404, "Không tìm thấy bài học.");
     return [data as LessonRow];
   }
   if (params.sectionId) {
@@ -1242,11 +1242,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       ? error.status
       : /không có quyền|permission/i.test(message)
         ? 403
-        : /Thiếu|Missing|hợp lệ|Không xác định|Không tìm thấy|không thuộc/.test(message)
-          ? 400
-          : /không đủ nội dung|rỗng/i.test(message)
-            ? 422
-            : 500;
+        : /Không tìm thấy/i.test(message)
+          ? 404
+          : /Thiếu|Missing|hợp lệ|Không xác định|không thuộc/i.test(message)
+            ? 400
+            : /không đủ nội dung|rỗng/i.test(message)
+              ? 422
+              : 500;
     return withCors(req, json({ message }, status));
   }
 });

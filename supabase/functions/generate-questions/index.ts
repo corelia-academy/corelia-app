@@ -188,7 +188,7 @@ async function ensureCanManageCourse(
     .select("instructor_id,data")
     .eq("id", courseId)
     .single();
-  if (error || !data) throw new Error("Không tìm thấy khoá học.");
+  if (error || !data) throw new HttpStatusError(404, "Không tìm thấy khoá học.");
   const row = data as CourseRow;
   if (role === "admin" || role === "support_staff") return;
   if (row.instructor_id === userId) return;
@@ -214,7 +214,7 @@ async function ensureQuestionResourcesBelongToCourse(
       .select("course_id")
       .eq("id", params.sectionId)
       .single();
-    if (error || !data?.course_id) throw new Error("Không tìm thấy chương học.");
+    if (error || !data?.course_id) throw new HttpStatusError(404, "Không tìm thấy chương học.");
     if (String(data.course_id) !== params.courseId) {
       throw new Error("Chương học không thuộc khoá học đã yêu cầu.");
     }
@@ -226,7 +226,7 @@ async function ensureQuestionResourcesBelongToCourse(
       .select("course_id,section_id")
       .eq("id", params.lessonId)
       .single();
-    if (error || !data?.course_id) throw new Error("Không tìm thấy bài học.");
+    if (error || !data?.course_id) throw new HttpStatusError(404, "Không tìm thấy bài học.");
     if (String(data.course_id) !== params.courseId) {
       throw new Error("Bài học không thuộc khoá học đã yêu cầu.");
     }
@@ -696,11 +696,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       ? error.status
       : /không có quyền/i.test(message)
         ? 403
-        : /Thiếu|Missing|hợp lệ|Không tìm thấy|không thuộc/.test(message)
-          ? 400
-          : /chưa có nội dung|chưa có bài/.test(message)
-            ? 422
-            : 500;
+        : /Không tìm thấy/i.test(message)
+          ? 404
+          : /Thiếu|Missing|hợp lệ|không thuộc/i.test(message)
+            ? 400
+            : /chưa có nội dung|chưa có bài/i.test(message)
+              ? 422
+              : 500;
     return withCors(req, json({ message }, status));
   }
 });
