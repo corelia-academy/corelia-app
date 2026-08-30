@@ -40,6 +40,8 @@ async function waitForActiveSession(maxMs: number): Promise<Session | null> {
   });
 }
 
+type VerificationState = "verifying" | "success" | "invalid_order" | "timeout";
+
 export default function CheckoutSuccess() {
   const { t } = useTranslation("courses");
   const { user: storeUser } = useAuth();
@@ -47,7 +49,9 @@ export default function CheckoutSuccess() {
   const navigate = useNavigate();
   const [seconds, setSeconds] = useState(10);
   const hasCheckoutContext = !!courseId && !!purpose;
-  const [verifying, setVerifying] = useState(hasCheckoutContext);
+  const [verificationState, setVerificationState] = useState<VerificationState>(() =>
+    hasCheckoutContext ? "verifying" : "invalid_order",
+  );
   const [statusMessage, setStatusMessage] = useState(() =>
     hasCheckoutContext
       ? t("detail.checkoutSuccess.verifyingPayment")
@@ -60,14 +64,18 @@ export default function CheckoutSuccess() {
   }, [courseId, purpose]);
 
   useEffect(() => {
-    const t = window.setInterval(() => {
-      setSeconds((s) => (verifying ? s : Math.max(0, s - 1)));
+    const isVerifying = verificationState === "verifying";
+    const timer = window.setInterval(() => {
+      setSeconds((s) => (isVerifying ? s : Math.max(0, s - 1)));
     }, 1000);
-    return () => window.clearInterval(t);
-  }, [verifying]);
+    return () => window.clearInterval(timer);
+  }, [verificationState]);
 
   useEffect(() => {
-    if (!courseId || !purpose) return;
+    if (!courseId || !purpose) {
+      setVerificationState("invalid_order");
+      return;
+    }
 
     let cancelled = false;
     let stored: StoredCheckout | null = null;
@@ -93,7 +101,7 @@ export default function CheckoutSuccess() {
 
       const accessToken = session?.access_token ?? null;
       if (!accessToken) {
-        setVerifying(false);
+        setVerificationState(orderId ? "timeout" : "invalid_order");
         setStatusMessage(
           t("detail.checkoutSuccess.sessionNotReady"),
         );
@@ -112,7 +120,7 @@ export default function CheckoutSuccess() {
           });
           if (cancelled) return;
           if (result.full_access_granted || result.certificate_fee_paid) {
-            setVerifying(false);
+            setVerificationState("success");
             setStatusMessage(
               result.verified_by === "sepay_lookup"
                 ? t("detail.checkoutSuccess.verifiedViaSePay")
@@ -121,9 +129,20 @@ export default function CheckoutSuccess() {
             window.sessionStorage.removeItem("corelia:lastCheckout");
             return;
           }
+          if (!orderId) {
+            // No order to verify and user doesn't have existing access -> invalid order
+            setVerificationState("invalid_order");
+            setStatusMessage(t("detail.checkoutSuccess.missingOrderInfo"));
+            return;
+          }
           setStatusMessage(t("detail.checkoutSuccess.waitingForAccess"));
         } catch (error) {
           if (cancelled) return;
+          if (!orderId) {
+            setVerificationState("invalid_order");
+            setStatusMessage(t("detail.checkoutSuccess.missingOrderInfo"));
+            return;
+          }
           setStatusMessage(
             error instanceof Error
               ? error.message
@@ -134,13 +153,17 @@ export default function CheckoutSuccess() {
       }
 
       if (!cancelled) {
-        setVerifying(false);
+        setVerificationState(orderId ? "timeout" : "invalid_order");
         setStatusMessage(
-          t("detail.checkoutSuccess.timeoutStatus"),
+          orderId
+            ? t("detail.checkoutSuccess.timeoutStatus")
+            : t("detail.checkoutSuccess.missingOrderInfo"),
         );
-        toast.message(
-          t("detail.checkoutSuccess.timeoutToast"),
-        );
+        if (orderId) {
+          toast.message(
+            t("detail.checkoutSuccess.timeoutToast"),
+          );
+        }
       }
     })();
 
@@ -150,19 +173,28 @@ export default function CheckoutSuccess() {
   }, [courseId, purpose, storeUser, t]);
 
   useEffect(() => {
-    if (verifying || seconds > 0) return;
+    if (verificationState !== "success" || seconds > 0) return;
     navigate(targetPath, { replace: true });
-  }, [seconds, targetPath, navigate, verifying]);
+  }, [seconds, targetPath, navigate, verificationState]);
+
+  const title =
+    verificationState === "success"
+      ? t("detail.checkoutSuccess.title")
+      : verificationState === "verifying"
+        ? t("detail.checkoutSuccess.verifyingTitle", "Đang xác nhận thanh toán...")
+        : verificationState === "timeout"
+          ? t("detail.checkoutSuccess.timeoutTitle", "Chưa hoàn tất xác nhận thanh toán")
+          : t("detail.checkoutSuccess.invalidOrderTitle", "Không tìm thấy thông tin đơn hàng");
 
   return (
     <div className="mx-auto w-full max-w-[960px] px-4 py-10">
       <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
         <h1 className="text-2xl font-normal tracking-tight text-foreground">
-          {t("detail.checkoutSuccess.title")}
+          {title}
         </h1>
         <p className="mt-2 text-sm text-foreground-muted">
           {statusMessage}{" "}
-          {!verifying ? (
+          {verificationState === "success" ? (
             <>
               {t("detail.checkoutSuccess.autoRedirectPrefix")}{" "}
               <span className="font-medium text-foreground tabular-nums">{seconds}s</span>.
@@ -170,35 +202,59 @@ export default function CheckoutSuccess() {
           ) : null}
         </p>
 
-        {verifying ? (
+        {verificationState === "verifying" ? (
           <div className="mt-6 flex items-center justify-center">
             <Loader2 className="size-10 animate-spin text-foreground-subtle" aria-hidden />
           </div>
         ) : null}
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Button
-            className="sm:w-auto w-full"
-            size="lg"
-            onClick={() => navigate("/account/billing")}
-          >
-            <Receipt className="size-4" aria-hidden /> {t("detail.checkoutSuccess.viewBilling")}
-          </Button>
-          <Button
-            className="sm:w-auto w-full"
-            size="lg"
-            variant="outline"
-            onClick={() => navigate(targetPath)}
-          >
-            <BookOpen className="size-4" aria-hidden /> {t("detail.checkoutSuccess.goToCourse")}
-          </Button>
+          {verificationState === "invalid_order" ? (
+            <>
+              <Button
+                className="sm:w-auto w-full"
+                size="lg"
+                onClick={() => navigate("/courses")}
+              >
+                {t("detail.checkoutSuccess.backToCourses", "Về danh sách khoá học")}
+              </Button>
+              <Button
+                className="sm:w-auto w-full"
+                size="lg"
+                variant="outline"
+                onClick={() => navigate("/account/billing")}
+              >
+                <Receipt className="size-4" aria-hidden /> {t("detail.checkoutSuccess.viewBilling")}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                className="sm:w-auto w-full"
+                size="lg"
+                onClick={() => navigate("/account/billing")}
+              >
+                <Receipt className="size-4" aria-hidden /> {t("detail.checkoutSuccess.viewBilling")}
+              </Button>
+              <Button
+                className="sm:w-auto w-full"
+                size="lg"
+                variant={verificationState === "success" ? "default" : "outline"}
+                onClick={() => navigate(targetPath)}
+              >
+                <BookOpen className="size-4" aria-hidden /> {t("detail.checkoutSuccess.goToCourse")}
+              </Button>
+            </>
+          )}
         </div>
 
-        <div className="mt-6 text-xs text-foreground-muted">
-          <Link to={targetPath} className="inline-flex items-center gap-1 hover:underline">
-            {t("detail.checkoutSuccess.skipNow")} <ArrowRight className="size-3.5" aria-hidden />
-          </Link>
-        </div>
+        {verificationState === "success" && (
+          <div className="mt-6 text-xs text-foreground-muted">
+            <Link to={targetPath} className="inline-flex items-center gap-1 hover:underline">
+              {t("detail.checkoutSuccess.skipNow")} <ArrowRight className="size-3.5" aria-hidden />
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
