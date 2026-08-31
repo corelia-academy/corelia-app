@@ -132,10 +132,11 @@ jobs:
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
           for prefix in course-partner-docs instructor-partner-docs; do
             objects="$(supabase storage ls "ss:///app/$prefix" --recursive --linked --experimental --output json)"
-            if [[ "$(jq 'length' <<<"$objects")" != "0" ]]; then
+            if [[ -n "$objects" ]] && [[ "$(jq 'length' <<<"$objects")" != "0" ]]; then
               supabase storage rm --recursive "ss:///app/$prefix" --linked --experimental --yes
             fi
-            test "$(supabase storage ls "ss:///app/$prefix" --recursive --linked --experimental --output json | jq 'length')" = "0"
+            remaining="$(supabase storage ls "ss:///app/$prefix" --recursive --linked --experimental --output json)"
+            [[ -z "$remaining" ]] || [[ "$(jq 'length' <<<"$remaining")" = "0" ]]
           done
 
       - name: Apply Supabase migrations
