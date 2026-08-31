@@ -17,8 +17,6 @@ import { useCourseLessons } from "./hooks/useCourseLessons";
 import { useCourseEnrollmentAccess } from "./hooks/useCourseEnrollmentAccess";
 import { useCourseProgress } from "./hooks/useCourseProgress";
 import { useSpotlightContests } from "./hooks/useSpotlightContests";
-import { usePaymentReturnFlow } from "./hooks/usePaymentReturnFlow";
-import { computePricing } from "./utils/pricing";
 import {
   CourseDetailError,
   CourseDetailLoading,
@@ -78,16 +76,6 @@ export default function CourseDetail() {
     viewer: user,
   });
 
-  const accessModelEffective = courseLoad.course?.access_model ?? "free";
-  const isPaidUpfront = accessModelEffective === "paid_upfront";
-  const isFreeWithPaidCertificate =
-    accessModelEffective === "free_with_paid_certificate";
-  const hasFullCourseAccess =
-    !isPaidUpfront ||
-    access.enrolled ||
-    !!access.paymentAccess?.full_access_granted;
-  const previewOnly = isPaidUpfront && !hasFullCourseAccess;
-
   const loadLessonsErrorFallback = translate(
     "detail.loadLessonsErrorFallback",
   );
@@ -95,7 +83,7 @@ export default function CourseDetail() {
   const { lessons, loaded: lessonsLoaded } = useCourseLessons({
     resolvedCourseId: courseLoad.resolvedCourseId,
     course: courseLoad.course,
-    previewOnly,
+    previewOnly: false,
     onError: courseLoad.setError,
     loadLessonsErrorFallback,
   });
@@ -109,16 +97,6 @@ export default function CourseDetail() {
 
   const spotlightContests = useSpotlightContests();
   const { profile: instructorProfile } = useInstructorProfile(courseLoad.course?.instructor_id);
-
-  usePaymentReturnFlow({
-    resolvedCourseId: courseLoad.resolvedCourseId,
-    profileId: profile?.id,
-    paymentAccessFullAccessGranted: access.paymentAccess?.full_access_granted,
-    setPaymentAccess: access.setPaymentAccess,
-    setEnrolled: access.setEnrolled,
-    setEnrollment: access.setEnrollment,
-    translate,
-  });
 
   const syncCertificate = useCallback(async () => {
     const course = courseLoad.course;
@@ -248,11 +226,6 @@ export default function CourseDetail() {
     () => sortLessonsByCurriculum(lessons, courseLoad.sections),
     [lessons, courseLoad.sections],
   );
-  const previewLessons = useMemo(
-    () => sortedLessons.filter((lesson) => lesson.is_preview_free),
-    [sortedLessons],
-  );
-
   const lessonsBySection = useMemo<CurriculumGroup[]>(
     () =>
       courseLoad.sections.map((section) => ({
@@ -268,16 +241,10 @@ export default function CourseDetail() {
     ({ lessons: sectionLessons }) => sectionLessons.length > 0,
   );
 
-  const isPreviewOnlyCurriculum = isPaidUpfront && !hasFullCourseAccess;
-  const targetLessons = isPreviewOnlyCurriculum ? previewLessons : lessons;
-  const { contentCount } = splitLessonCounts(targetLessons);
-  const curriculumCountLabel = isPreviewOnlyCurriculum
-    ? translate("detail.courseDetail.lessonCountPreview", {
-        count: contentCount,
-      })
-    : translate("detail.courseDetail.lessonCount", {
-        count: contentCount,
-      });
+  const { contentCount } = splitLessonCounts(lessons);
+  const curriculumCountLabel = translate("detail.courseDetail.lessonCount", {
+    count: contentCount,
+  });
 
   const canReviewDraft =
     courseLoad.course &&
@@ -299,14 +266,9 @@ export default function CourseDetail() {
   // Tổng này được DB trigger đồng bộ từ toàn bộ course_lessons.
   const displayTotalDuration = storedTotal;
 
-  const pricing = useMemo(
-    () => computePricing(courseLoad.course),
-    [courseLoad.course],
-  );
   const courseCompleted = progress.progressPercent >= 100 && sortedLessons.length > 0;
   const isPublicEmptyCurriculum =
     courseLoad.course?.published === true &&
-    !isPaidUpfront &&
     lessonsLoaded &&
     sortedLessons.length === 0;
   const hasCourseCertificate = courseHasCertificate(courseLoad.course);
@@ -352,17 +314,6 @@ export default function CourseDetail() {
     translate,
   ]);
 
-  const handleStartPreview = useCallback(() => {
-    const courseId = courseLoad.resolvedCourseId;
-    if (!courseId) return;
-    const previewTarget = previewLessons[0];
-    if (previewTarget) {
-      navigate(`/learn/${courseId}/lesson/${previewTarget.id}`);
-      return;
-    }
-    navigate(`/learn/${courseId}`);
-  }, [courseLoad.resolvedCourseId, navigate, previewLessons]);
-
   const handleContinue = useCallback(() => {
     const courseId = courseLoad.resolvedCourseId;
     if (!courseId) return;
@@ -372,12 +323,6 @@ export default function CourseDetail() {
         : `/learn/${courseId}`,
     );
   }, [courseLoad.resolvedCourseId, navigate, progress.nextLesson]);
-
-  const handleBuy = useCallback(() => {
-    const courseId = courseLoad.resolvedCourseId;
-    if (!courseId) return;
-    navigate(`/checkout/course/${courseId}`);
-  }, [courseLoad.resolvedCourseId, navigate]);
 
   const handleEnrollClick = useCallback(() => {
     if (!isAuthenticated) {
@@ -404,9 +349,9 @@ export default function CourseDetail() {
       <CourseHero
         course={course}
         enrollment={access.enrollment}
-        isPaidUpfront={isPaidUpfront}
-        isFreeWithPaidCertificate={isFreeWithPaidCertificate}
-        previewLessons={previewLessons}
+        isPaidUpfront={false}
+        isFreeWithPaidCertificate={false}
+        previewLessons={[]}
         displayTotalDuration={displayTotalDuration}
         curriculumCountLabel={curriculumCountLabel}
         progressPercent={progress.progressPercent}
@@ -445,24 +390,14 @@ export default function CourseDetail() {
 
       <div className="mt-6 space-y-4 lg:hidden">
         <CourseAccessPanel
-          course={course}
           resolvedCourseId={courseLoad.resolvedCourseId}
-          hasFullCourseAccess={hasFullCourseAccess}
-          isPaidUpfront={isPaidUpfront}
-          isFreeWithPaidCertificate={isFreeWithPaidCertificate}
           enrolled={access.enrolled}
-          paymentAccess={access.paymentAccess}
           progressPercent={progress.progressPercent}
           isPublicEmptyCurriculum={isPublicEmptyCurriculum}
           hasStarted={progress.hasStarted}
           nextLesson={progress.nextLesson}
-          pricing={pricing}
-          previewLessons={previewLessons}
-          isAuthenticated={isAuthenticated}
           enrolling={access.enrolling}
           onContinue={handleContinue}
-          onBuy={handleBuy}
-          onStartPreview={handleStartPreview}
           onEnroll={handleEnrollClick}
         />
         <CourseLanguagePanel course={course} lessons={lessons} />
@@ -484,8 +419,8 @@ export default function CourseDetail() {
 
           <CourseCurriculum
             visibleLessonGroups={visibleLessonGroups}
-            isPaidUpfront={isPaidUpfront}
-            isPreviewOnlyCurriculum={isPreviewOnlyCurriculum}
+            isPaidUpfront={false}
+            isPreviewOnlyCurriculum={false}
             hasSections={courseLoad.course?.has_sections ?? true}
           />
 
@@ -499,7 +434,7 @@ export default function CourseDetail() {
           <CourseSpotlightSection
             resolvedCourseId={courseLoad.resolvedCourseId ?? ""}
             courseTitle={course.title ?? ""}
-            hasFullCourseAccess={hasFullCourseAccess}
+            hasFullCourseAccess={true}
             nextLesson={progress.nextLesson}
             spotlightContests={spotlightContests}
           />
@@ -507,24 +442,14 @@ export default function CourseDetail() {
 
         <aside className="hidden lg:flex lg:flex-col lg:gap-4 lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:overflow-y-auto">
           <CourseAccessPanel
-            course={course}
             resolvedCourseId={courseLoad.resolvedCourseId}
-            hasFullCourseAccess={hasFullCourseAccess}
-            isPaidUpfront={isPaidUpfront}
-            isFreeWithPaidCertificate={isFreeWithPaidCertificate}
             enrolled={access.enrolled}
-            paymentAccess={access.paymentAccess}
             progressPercent={progress.progressPercent}
             isPublicEmptyCurriculum={isPublicEmptyCurriculum}
             hasStarted={progress.hasStarted}
             nextLesson={progress.nextLesson}
-            pricing={pricing}
-            previewLessons={previewLessons}
-            isAuthenticated={isAuthenticated}
             enrolling={access.enrolling}
             onContinue={handleContinue}
-            onBuy={handleBuy}
-            onStartPreview={handleStartPreview}
             onEnroll={handleEnrollClick}
           />
           <CourseLanguagePanel course={course} lessons={lessons} />

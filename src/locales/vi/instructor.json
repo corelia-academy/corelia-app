@@ -7,80 +7,7 @@
     "careerTracks": "Lộ trình học",
     "offlineClasses": "Lớp học trực tiếp",
     "profile": "Hồ sơ giảng viên",
-    "contests": "Cuộc thi",
-    "contracts": "Hợp đồng",
-    "invoices": "Hoá đơn",
-    "payments": "Thanh toán"
-  },
-  "finance": {
-    "externalOnlyHint": "Mục này chỉ hiển thị cho giảng viên đối tác bên ngoài."
-  },
-  "partnerFinance": {
-    "common": {
-      "notAvailable": "Chưa có",
-      "updated": "Đã cập nhật"
-    },
-    "contracts": {
-      "stats": {
-        "totalDocuments": "Tổng tài liệu",
-        "source": "Nguồn cung cấp",
-        "sourceValue": "Học vụ / Admin",
-        "status": "Trạng thái",
-        "statusValue": "Theo dõi tài liệu"
-      },
-      "panel": {
-        "title": "Hợp đồng",
-        "description": "Danh sách tài liệu hợp đồng do học vụ hoặc admin cung cấp cho giảng viên đối tác.",
-        "countLabel": "{{count}} tài liệu"
-      },
-      "list": {
-        "empty": "Chưa có tài liệu hợp đồng.",
-        "meta": "Tài liệu hợp đồng đã được chia sẻ cho bạn."
-      }
-    },
-    "invoices": {
-      "stats": {
-        "currentMonth": "Tháng đang xem",
-        "total": "Số hoá đơn",
-        "status": "Trạng thái",
-        "statusValue": "Đối soát theo kỳ"
-      },
-      "panel": {
-        "title": "Hoá đơn",
-        "description": "Lọc theo tháng để xem các file hoá đơn hoặc đối soát đã được chia sẻ cho bạn.",
-        "countLabel": "{{count}} tài liệu"
-      },
-      "list": {
-        "empty": "Không có hoá đơn trong tháng đã chọn.",
-        "invoiceMonthPrefix": "Tháng {{month}}",
-        "noInvoiceMonth": "Không gắn tháng hoá đơn"
-      }
-    },
-    "payments": {
-      "stats": {
-        "bankAccount": "Tài khoản ngân hàng",
-        "accountHolder": "Chủ tài khoản",
-        "payoutGuide": "Hướng dẫn thanh toán"
-      },
-      "panel": {
-        "title": "Thanh toán",
-        "description": "Thông tin chuyển khoản và ghi chú đối soát do học vụ hoặc admin cung cấp theo hợp đồng.",
-        "ready": "Sẵn sàng nhận thanh toán",
-        "missingInfo": "Chưa đủ thông tin"
-      },
-      "sections": {
-        "transferInfo": "Thông tin chuyển khoản",
-        "extraNotes": "Ghi chú thêm"
-      },
-      "fields": {
-        "bankName": "Ngân hàng:",
-        "accountNumber": "Số tài khoản:",
-        "accountHolder": "Chủ tài khoản:",
-        "transferNote": "Nội dung CK:"
-      },
-      "emptyExtraNotes": "Chưa có ghi chú thanh toán bổ sung.",
-      "empty": "Chưa có thông tin thanh toán."
-    }
+    "contests": "Cuộc thi"
   },
   "layout": {
     "crumbs": {
@@ -95,9 +22,6 @@
       "contests": "Cuộc thi",
       "createContest": "Tạo contest",
       "contestWorkspace": "Khu vực vận hành cuộc thi",
-      "contracts": "Hợp đồng",
-      "invoices": "Hoá đơn",
-      "payments": "Thanh toán",
       "profile": "Hồ sơ giảng viên",
       "course": "Khoá học",
       "edit": "Chỉnh sửa"
@@ -146,18 +70,6 @@
       "profile": {
         "title": "Hồ sơ giảng viên",
         "description": "Giữ hồ sơ chuyên môn, mô tả và thông tin hợp tác luôn rõ ràng."
-      },
-      "contracts": {
-        "title": "Hợp đồng đối tác",
-        "description": "Theo dõi tài liệu hợp tác và những bản cập nhật mới nhất."
-      },
-      "invoices": {
-        "title": "Hoá đơn",
-        "description": "Tập trung toàn bộ hoá đơn để đối soát và làm việc với vận hành."
-      },
-      "payments": {
-        "title": "Thanh toán",
-        "description": "Kiểm tra thông tin nhận tiền và lịch sử phối hợp với đội ngũ."
       },
       "editCourse": {
         "titleFallback": "Chỉnh sửa khoá học",
@@ -271,9 +183,6 @@
     "errors": {
       "missingProfileName": "Vui lòng cập nhật họ tên trong Tài khoản.",
       "missingTitle": "Nhập tên khoá học.",
-      "invalidPaidPrice": "Nhập giá khoá học hợp lệ cho mô hình trả phí trước.",
-      "invalidCertificateFee": "Nhập phí chứng nhận hợp lệ cho mô hình học miễn phí.",
-      "invalidRevenueShare": "Tỷ lệ chia sẻ cho nền tảng phải từ 0 đến 100%.",
       "createFailed": "Lỗi tạo khoá học"
     },
     "toasts": {
@@ -286,7 +195,7 @@
     "stats": {
       "statusLabel": "Trạng thái",
       "accessLabel": "Loại truy cập",
-      "ownerLabel": "Sở hữu doanh thu",
+      "ownerLabel": "Nguồn khoá học",
       "levelLabel": "Cấp độ"
     },
     "nav": {
@@ -325,11 +234,7 @@
       "skillsSubtitle": "Skill sẽ hiển thị trên hồ sơ sau khi học viên hoàn thành khoá học.",
       "skillsAdd": "Thêm skill",
       "thumbnail": "Ảnh bìa khoá học",
-      "ownerType": "Loại khoá học theo sở hữu doanh thu",
-      "platformRevenueSharePercent": "Tỷ lệ doanh thu nền tảng (%)",
-      "accessModel": "Loại khoá học",
-      "priceVnd": "Giá khoá học (VND)",
-      "certificateFeeVnd": "Phí chứng nhận / bài thu hoạch (VND)",
+      "ownerType": "Nguồn khoá học",
       "level": "Cấp độ",
       "contentLocales": "Ngôn ngữ nội dung khoá học",
       "contentLocalesHint": "Chọn những ngôn ngữ mà khoá học sẽ có nội dung riêng (hiện hỗ trợ VI/EN).",
@@ -339,9 +244,7 @@
       "externalAggregatedCheckbox": "Khoá học tổng hợp công khai"
     },
     "hints": {
-      "businessSettingsRestricted": "Chỉ học vụ/admin được đổi cấu hình sở hữu doanh thu.",
-      "partnerRevenueRemainder": "Phần còn lại thuộc giảng viên đối tác.",
-      "vndFormat": "Đơn vị VND (đ), tự động định dạng khi nhập.",
+      "businessSettingsRestricted": "Chỉ học vụ/admin được đổi nguồn khoá học.",
       "externalAggregatedDescription": "Course này tổng hợp nội dung từ nguồn bên ngoài (YouTube/reference link tới kênh của creator)."
     },
     "placeholders": {
@@ -352,9 +255,7 @@
       "sources": "Mỗi dòng 1 URL nguồn\nhttps://youtube.com/...\nhttps://youtube.com/...",
       "sourceAttributionNote": "Ghi chú công khai về nguồn tổng hợp (ví dụ: curated từ playlist YouTube của các creator).",
       "learningOutcomesItem": "Ví dụ: Hiểu cách ví Web3 và giao dịch on-chain hoạt động",
-      "skillItem": "Ví dụ: Blockchain Fundamentals",
-      "priceVnd": "Ví dụ: 499.000",
-      "certificateFeeVnd": "Ví dụ: 199.000"
+      "skillItem": "Ví dụ: Blockchain Fundamentals"
     },
     "actions": {
       "uploadThumb": "Tải ảnh bìa lên",
@@ -372,12 +273,11 @@
       "total": "Tổng khoá học",
       "published": "Đã xuất bản",
       "drafts": "Bản nháp",
-      "paidUpfront": "Trả phí upfront",
       "free": "Khoá học miễn phí"
     },
     "hero": {
       "title": "Danh mục khoá học của bạn",
-      "description": "Theo dõi nhanh tình trạng xuất bản, mô hình doanh thu và mở màn chỉnh sửa chỉ với một cú nhấp.",
+      "description": "Theo dõi nhanh tình trạng xuất bản và mở màn chỉnh sửa chỉ với một cú nhấp.",
       "create": "Tạo khoá học mới"
     },
     "empty": {
@@ -391,7 +291,6 @@
     },
     "courseCards": {
       "pricingLabel": "Mô hình giá",
-      "certificateFeePrefix": "Phí chứng nhận {{price}}",
       "free": "Miễn phí",
       "instructorLabel": "Giảng viên",
       "you": "Bạn"
@@ -543,27 +442,19 @@
       "loadCourseFailed": "Lỗi tải khoá học",
       "refreshTotalFailed": "Lỗi cập nhật",
       "uploadThumbnailFailed": "Lỗi tải ảnh bìa khoá học",
-      "invalidPaidPrice": "Nhập giá khoá học hợp lệ cho mô hình trả phí trước.",
-      "invalidPromoPrice": "Giá khuyến mãi phải nhỏ hơn giá gốc.",
-      "invalidPromoEndsAt": "Thời gian kết thúc khuyến mãi không hợp lệ (cần ISO string).",
-      "invalidCertificateFee": "Nhập phí chứng nhận hợp lệ cho mô hình học miễn phí.",
-      "invalidRevenueShare": "Tỷ lệ chia sẻ cho nền tảng phải từ 0 đến 100%.",
       "updateFailed": "Lỗi cập nhật",
       "processFailed": "Lỗi xử lý",
       "missingCertificateTemplate": "Vui lòng tải lên ảnh template chứng chỉ khi bật Cấp chứng chỉ.",
       "missingCertificateTemplateCta": "Chứng nhận",
       "uploadCertTemplateFailed": "Lỗi tải template chứng nhận",
       "clearCertTemplateFailed": "Lỗi khi hủy chứng nhận",
-      "uploadPartnerDocsFailed": "Lỗi tải tài liệu đối tác",
       "addSectionFailed": "Lỗi thêm chương",
       "addLessonFailed": "Lỗi thêm bài học",
-      "updatePreviewFailed": "Lỗi cập nhật bài học thử",
       "deleteSectionFailed": "Lỗi xoá chương",
       "deleteLessonFailed": "Lỗi xoá bài học",
       "deleteCourseFailed": "Lỗi xoá khoá học",
       "reorderLessonsFailed": "Không thể cập nhật thứ tự bài học",
       "reorderSectionsFailed": "Không thể cập nhật thứ tự chương",
-      "createDiscountFailed": "Không tạo được mã giảm giá.",
       "prepareLessonFailed": "Không thể chuẩn bị bài học.",
       "externalSourcesRequired": "Vui lòng nhập ít nhất 1 nguồn (URL) khi bật Public external course."
     },
@@ -571,14 +462,9 @@
       "back": "Quay lại"
     },
     "business": {
-      "ownershipLabel": "Sở hữu khoá học & chia sẻ doanh thu",
-      "ownershipAdminOnly": "Chỉ học vụ/admin được cập nhật phần sở hữu và doanh thu.",
-      "ownershipCurrent": "Hiện tại: {{type}}",
-      "instructorShare": "Giảng viên nhận {{percent}}%.",
-      "partnerTransferLabel": "Thông tin chuyển khoản đối tác",
-      "partnerTransferHint": "Hiển thị cho giảng viên đối tác trong mục Hoá đơn & thanh toán.",
-      "noContractDocs": "Chưa có tài liệu hợp đồng.",
-      "noInvoiceDocs": "Chưa có tài liệu hoá đơn."
+      "ownershipLabel": "Nguồn khoá học",
+      "ownershipAdminOnly": "Chỉ admin được cập nhật nguồn khoá học.",
+      "ownershipCurrent": "Hiện tại: {{type}}"
     },
     "externalCourse": {
       "toggleLabel": "Khoá học nguồn ngoài công khai (Public external course)",
@@ -597,10 +483,7 @@
       "certificateIssued": "Đã cấp chứng nhận.",
       "assignmentConfigSaved": "Đã lưu cấu hình bài tập.",
       "certTemplateUploaded": "Đã tải template chứng nhận lên.",
-      "certTemplateCleared": "Đã hủy chứng nhận.",
-      "partnerContractUploaded": "Đã tải lên hồ sơ hợp đồng.",
-      "partnerInvoiceUploaded": "Đã tải lên hồ sơ hoá đơn.",
-      "discountCreated": "Đã tạo mã giảm giá."
+      "certTemplateCleared": "Đã hủy chứng nhận."
     },
     "confirm": {
       "deleteSection": "Xoá chương và toàn bộ bài học trong chương?",
@@ -615,15 +498,12 @@
       "save": "Lưu thay đổi",
       "saving": "Đang lưu...",
       "saveInfo": "Đã lưu thông tin chung.",
-      "savePricing": "Đã lưu thay đổi giá & thanh toán.",
       "saveAssignment": "Lưu cấu hình bài tập",
       "saveCertificate": "Đã lưu cấu hình chứng nhận.",
       "reload": "Tải lại",
       "loading": "Đang tải...",
       "updating": "Đang cập nhật…",
       "updateTotalDuration": "Cập nhật tổng thời lượng",
-      "creatingDiscount": "Đang tạo...",
-      "createDiscount": "Tạo mã",
       "add": "Thêm",
       "adding": "Đang thêm…",
       "addSection": "Thêm chương",
@@ -762,52 +642,7 @@
       "skillsItemPlaceholder": "Ví dụ: Web3",
       "skillsAdd": "Thêm skill",
       "thumbnailLabel": "Ảnh bìa khoá học",
-      "platformRevenueShareLabel": "Tỷ lệ doanh thu nền tảng (%)",
-      "partnerTransferPlaceholder": "Ví dụ: Ngân hàng, số tài khoản, chủ tài khoản, nội dung chuyển khoản theo hợp đồng...",
-      "partnerContractDocsLabel": "Hồ sơ hợp đồng đối tác",
-      "partnerInvoiceDocsLabel": "Hồ sơ hoá đơn / đối soát",
       "levelLabel": "Cấp độ"
-    },
-    "pricing": {
-      "accessModelLabel": "Loại khoá học",
-      "priceVndLabel": "Giá mở toàn bộ khoá học (VND)",
-      "promoPriceVndLabel": "Giá khuyến mãi (VND)",
-      "promoPricePlaceholder": "Để trống nếu không khuyến mãi",
-      "promoEndsAtLabel": "Hẹn giờ kết thúc khuyến mãi (ISO)",
-      "updateTotalDurationLabelPrefix": "Khoá học trả phí trước: bật \"Học thử miễn phí\" cho các bài",
-      "intro": "Thiết lập mô hình truy cập, giá khoá học, phí chứng nhận và mã giảm giá.",
-      "paidPreviewHint": "Học viên chưa thanh toán chỉ xem được bài có bật \"Học thử miễn phí\".",
-      "promoMustBeLower": "Giá khuyến mãi phải nhỏ hơn giá gốc.",
-      "promoEndsOptional": "Để trống nếu không hẹn giờ.",
-      "discountsTitle": "Mã giảm giá & khuyến mãi",
-      "certificateFeeLabel": "Phí chứng nhận / bài thu hoạch (VND)",
-      "certificateFeeHint": "Toàn bộ bài học vẫn miễn phí; khoản phí này áp dụng khi học viên muốn nộp bài thu hoạch để xét chứng nhận."
-    },
-    "discounts": {
-      "createTitle": "Tạo mã giảm giá (theo % hoặc số tiền) và giới hạn",
-      "subtitleSuffix": " thời gian/lượt dùng.",
-      "empty": "Chưa có mã giảm giá nào.",
-      "activeOn": "Bật",
-      "activeOff": "Tắt",
-      "table": {
-        "code": "Mã",
-        "type": "Loại",
-        "value": "Giá trị",
-        "status": "Trạng thái",
-        "actions": "Hành động",
-        "active": "Đang bật",
-        "inactive": "Tắt",
-        "delete": "Xoá"
-      },
-      "form": {
-        "code": "Mã",
-        "codePlaceholder": "VD: SPRING10",
-        "type": "Loại",
-        "value": "Giá trị",
-        "startsAt": "Bắt đầu (ISO, tuỳ chọn)",
-        "endsAt": "Kết thúc (ISO, tuỳ chọn)",
-        "maxRedemptions": "Giới hạn lượt dùng (tuỳ chọn)"
-      }
     },
     "sidebar": {
       "editingLanguage": "Ngôn ngữ đang chỉnh sửa",
@@ -816,7 +651,6 @@
       "navHint": "Đi qua từng nhóm cấu hình để hoàn thiện khoá học trước khi xuất bản.",
       "nav": {
         "info": "Thông tin chung",
-        "pricing": "Giá & thanh toán",
         "content": "Nội dung & bài học",
         "assignments": "Bài tập cuối khoá",
         "certificate": "Chứng nhận",
@@ -832,7 +666,6 @@
       "dragHint": "Kéo biểu tượng chấm để đổi thứ tự bài trong từng chương, hoặc dùng mũi tên lên/xuống khi cần.",
       "sectionsToggleLabel": "Phân chia theo section",
       "sectionsToggleHint": "Bật nếu khoá học cần nhóm bài học theo chương/phần. Tắt để hiển thị danh sách bài học phẳng.",
-      "paidUpfrontPreviewBanner": "Khoá học trả phí trước: bật \"Học thử miễn phí\" cho các bài muốn mở cho học viên chưa thanh toán.",
       "addSectionHeading": "Thêm chương mới",
       "lessonTitlePlaceholder": "Tên bài (tùy chọn)",
       "lessonMinutesPlaceholder": "Thời lượng (phút) — nếu không lấy được từ YouTube, nhập vào đây",
@@ -1068,15 +901,11 @@
     },
     "students": {
       "empty": "Chưa có học viên nào ghi danh vào khoá học này.",
-      "providerLabel": "Provider: {{provider}}",
-      "providerEmpty": "Provider: —",
-      "orderLabel": "Order: {{id}}",
       "columns": {
         "student": "Học viên",
         "progress": "Tiến độ",
         "assignment": "Bài tập",
         "certificate": "Chứng nhận",
-        "payment": "Thanh toán",
         "enrolledAt": "Ngày ghi danh",
         "lastAccess": "Lần truy cập cuối"
       },
@@ -1087,8 +916,6 @@
         "notSubmitted": "Chưa nộp",
         "notEligible": "Chưa đủ điều kiện",
         "issue": "Cấp",
-        "paid": "Trả phí",
-        "free": "Miễn phí / chưa ghi nhận",
         "issued": "Đã cấp"
       }
     },

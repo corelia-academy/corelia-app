@@ -5,8 +5,6 @@ import { existsSync } from "node:fs";
 const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const pnpmShell = process.platform === "win32";
 const sqlTestPath = resolve(process.cwd(), "scripts/db/tests/learner-ai-retirement.integration.sql");
-const r4PaymentConcurrencyPath = resolve(process.cwd(), "scripts/db/tests/r4-payment-concurrency.integration.mjs");
-const canonicalPaymentEntitlementsSqlTestPath = resolve(process.cwd(), "scripts/db/tests/canonical-payment-entitlements-integration.sql");
 
 console.log("===============================================================================");
 console.log(" CORELIA DB OPTIMIZATION: LOCAL DISPOSABLE DATABASE INTEGRATION GATE");
@@ -20,7 +18,7 @@ if (process.env.SUPABASE_DB_URL && !process.env.SUPABASE_DB_URL.includes("127.0.
 }
 
 // 1. Check Docker environment
-console.log("[STEP 1/5] Checking Docker daemon status...");
+console.log("[STEP 1/3] Checking Docker daemon status...");
 try {
   execFileSync("docker", ["info"], { stdio: "ignore", shell: false });
   console.log("✓ Docker daemon is active and responsive.\n");
@@ -35,7 +33,7 @@ try {
 }
 
 // 2. Clean recreate from zero
-console.log("[STEP 2/5] Executing clean recreate from zero via canonical migration chain...");
+console.log("[STEP 2/3] Executing clean recreate from zero via canonical migration chain...");
 try {
   const resetArgs = ["exec", "supabase", "db", "reset", "--local", "--no-seed", "--yes"];
   execFileSync(command, resetArgs, { stdio: "inherit", shell: pnpmShell });
@@ -46,8 +44,8 @@ try {
   process.exit(1);
 }
 
-// 3. Execute SQL Integration Suite (RLS, FK, Triggers, RPC Authorization, Entitlements)
-console.log("[STEP 3/5] Executing SQL integration test assertions (RLS, FK, triggers, RPC, entitlement)...");
+// 3. Execute retained SQL integration suite.
+console.log("[STEP 3/3] Executing retained SQL integration assertions...");
 if (!existsSync(sqlTestPath)) {
   console.error(`\n[HARNESS_CONFIGURATION_FAILURE] SQL integration test file missing at ${sqlTestPath}`);
   process.exit(1);
@@ -56,31 +54,11 @@ if (!existsSync(sqlTestPath)) {
 try {
   const queryArgs = ["exec", "supabase", "db", "query", "--local", "--file", sqlTestPath];
   execFileSync(command, queryArgs, { stdio: "inherit", shell: pnpmShell });
-  if (!existsSync(canonicalPaymentEntitlementsSqlTestPath)) {
-    throw new Error(`Canonical payment entitlements SQL test file missing at ${canonicalPaymentEntitlementsSqlTestPath}`);
-  }
-  const canonicalQueryArgs = ["exec", "supabase", "db", "query", "--local", "--file", canonicalPaymentEntitlementsSqlTestPath];
-  execFileSync(command, canonicalQueryArgs, { stdio: "inherit", shell: pnpmShell });
-  console.log("✓ SQL integration test suites executed successfully.\n");
+  console.log("✓ SQL integration test suite executed successfully.\n");
 } catch (sqlErr) {
   console.error("\n[INTEGRATION_SQL_FAILURE] SQL assertion failed during database integration testing.");
   process.exit(1);
 }
-
-// 4. Execute Real Two-Connection Concurrency Test
-console.log("[STEP 4/5] Executing real two-connection concurrency test...");
-try {
-  if (!existsSync(r4PaymentConcurrencyPath)) {
-    throw new Error(`R4 payment concurrency script missing at ${r4PaymentConcurrencyPath}`);
-  }
-  execFileSync("node", [r4PaymentConcurrencyPath], { stdio: "inherit", shell: false });
-  console.log("✓ Two-connection concurrency tests executed successfully.\n");
-} catch (concErr) {
-  console.error("\n[INTEGRATION_CONCURRENCY_FAILURE] Real two-connection concurrency test failed.");
-  process.exit(1);
-}
-
-console.log("[STEP 5/5] Instructor generator independence is covered by contract and Vitest suites.\n");
 
 console.log("===============================================================================");
 console.log(" ALL DATABASE INTEGRATION GATES PASSED (100% SUCCESS)");

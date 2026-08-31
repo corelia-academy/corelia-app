@@ -15,9 +15,8 @@ function normalizeOrigin(raw: string): string | null {
 
 function corsAllowedOriginsFromEnv(): Set<string> {
   const explicit = Deno.env.get("CORELIA_CORS_ALLOWED_ORIGINS")?.trim() ?? "";
-  const payment = Deno.env.get("CORELIA_PAYMENT_CALLBACK_ORIGINS")?.trim() ?? "";
   const app = Deno.env.get("CORELIA_APP_ORIGIN")?.trim() ?? "";
-  const merged = explicit || payment || app;
+  const merged = explicit || app;
   const out = new Set<string>();
   if (!merged) return out;
   for (const item of merged.split(",")) {

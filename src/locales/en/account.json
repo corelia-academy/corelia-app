@@ -21,10 +21,6 @@
     "achievements": {
       "title": "Achievements Vault",
       "description": "Manage certificates & badges"
-    },
-    "billing": {
-      "title": "Billing & history",
-      "description": "Invoices, payment history"
     }
   },
   "header": {
@@ -34,7 +30,7 @@
       "support_staff": "Support account",
       "student": "Student account"
     },
-    "subtitle": "Manage your personal info, security, career profile, and payment history in one place.",
+    "subtitle": "Manage your personal info, security, and career profile in one place.",
     "summary": {
       "profileLabel": "Profile",
       "roleLabel": "Role",
@@ -230,7 +226,7 @@
     "fullName": {
       "label": "Full name",
       "placeholder": "Nguyen Van A",
-      "hint": "Used for certificates, transcripts, and invoices."
+      "hint": "Used for certificates and transcripts."
     },
     "username": {
       "label": "Username",
@@ -365,31 +361,6 @@
     },
     "errors": {
       "updateFailed": "Unable to update instructor profile."
-    }
-  },
-  "billing": {
-    "title": "Payment history",
-    "subtitle": "Review tuition payments, invoices, and related details for easier reconciliation when needed.",
-    "mustLogin": "You need to sign in to view payment history.",
-    "loading": "Loading history...",
-    "empty": "No transactions yet.",
-    "purpose": {
-      "coursePurchase": "Course purchase",
-      "certificateFee": "Certificate fee"
-    },
-    "meta": {
-      "course": "Course: {{id}}",
-      "providerOrder": "Provider: {{provider}} · Order: {{order}}",
-      "courseProviderOrder": "Course: {{course}} · Provider: {{provider}} · Order: {{order}}"
-    },
-    "table": {
-      "time": "Time",
-      "content": "Description",
-      "amount": "Amount",
-      "status": "Status"
-    },
-    "errors": {
-      "fetchFailed": "Unable to load payment history."
     }
   },
   "ocid": {

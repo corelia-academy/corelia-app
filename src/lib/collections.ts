@@ -13,9 +13,6 @@ export const COL = {
   LESSON_PROGRESS: "lesson_progress",
   FINAL_ASSIGNMENT_SUBMISSIONS: "final_assignment_submissions",
 
-  // Thanh toán
-  COURSE_PAYMENT_ACCESS: "course_payment_access",
-
   // Cuộc thi
   CONTESTS: "contests",
   CONTEST_REGISTRATIONS: "contest_registrations",

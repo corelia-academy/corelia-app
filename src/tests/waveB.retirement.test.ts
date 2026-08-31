@@ -11,16 +11,8 @@ vi.mock("@/lib/supabase", () => ({
   supabase: {},
 }));
 
-import { type PaymentPurpose } from "@/lib/payments";
 
 describe("Wave B Retirement Contract Tests (Epic #332 / Issues #326, #327, #329, #331)", () => {
-  describe("Issue #329: Monetization Retirement", () => {
-    it("keeps PaymentPurpose limited to active course products", () => {
-      const samplePurpose: PaymentPurpose = "course_purchase";
-      expect(samplePurpose).toBe("course_purchase");
-    });
-  });
-
   describe("Issue #326 & #331: Complete Removal of Learner AI Modules", () => {
     it("confirms course lesson create/update does not export background embedding triggers", async () => {
       const coursesModule = await import("@/lib/courses");

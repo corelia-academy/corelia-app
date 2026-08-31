@@ -11,7 +11,6 @@ vi.mock("@/lib/supabase", () => ({
   supabase: {},
 }));
 
-import { type PaymentPurpose } from "@/lib/payments";
 
 function readSource(rootDir: string, relPath: string): string {
   const fullPath = join(rootDir, relPath);
@@ -304,15 +303,6 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issues #328 and #331)", 
         expect(configToml).toContain(`[functions.${fn}]`);
       }
       expect(configToml).not.toContain("openai_api_key");
-    });
-  });
-
-  describe("WC-11 to WC-13: Payment contracts after AI retirement", () => {
-    it("supports only standard 'course_purchase' and 'certificate_fee' purposes", () => {
-      const p1: PaymentPurpose = "course_purchase";
-      const p2: PaymentPurpose = "certificate_fee";
-      expect(p1).toBe("course_purchase");
-      expect(p2).toBe("certificate_fee");
     });
   });
 

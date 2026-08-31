@@ -24,6 +24,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260828060630_harden_security_definer_rpc_boundaries.sql",
   "supabase/migrations/20260830212012_remove_learner_facing_ai_database.sql",
   "supabase/migrations/20260830230917_drop_unused_vector_extension.sql",
+  "supabase/migrations/20260831230000_remove_all_financial_features.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(

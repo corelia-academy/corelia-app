@@ -28,12 +28,6 @@ export function buildInstructorCrumbs({
   } else if (pathname.startsWith("/instructor/career-tracks/") && pathname.endsWith("/edit")) {
     list.push({ label: translate("layout.crumbs.careerTracks"), to: "/instructor/career-tracks" });
     list.push({ label: translate("layout.crumbs.edit") });
-  } else if (pathname === "/instructor/contracts") {
-    list.push({ label: translate("layout.crumbs.contracts") });
-  } else if (pathname === "/instructor/invoices") {
-    list.push({ label: translate("layout.crumbs.invoices") });
-  } else if (pathname === "/instructor/payments") {
-    list.push({ label: translate("layout.crumbs.payments") });
   } else if (pathname === "/instructor/profile") {
     list.push({ label: translate("layout.crumbs.profile") });
   } else if (needsCourseTitle) {
@@ -85,24 +79,6 @@ export function resolveInstructorShellMeta({
       description: translate("layout.shell.profile.description"),
     };
   }
-  if (pathname === "/instructor/contracts") {
-    return {
-      title: translate("layout.shell.contracts.title"),
-      description: translate("layout.shell.contracts.description"),
-    };
-  }
-  if (pathname === "/instructor/invoices") {
-    return {
-      title: translate("layout.shell.invoices.title"),
-      description: translate("layout.shell.invoices.description"),
-    };
-  }
-  if (pathname === "/instructor/payments") {
-    return {
-      title: translate("layout.shell.payments.title"),
-      description: translate("layout.shell.payments.description"),
-    };
-  }
   if (needsCourseTitle) {
     return {
       title: courseTitle ?? translate("layout.shell.editCourse.titleFallback"),
@@ -114,4 +90,3 @@ export function resolveInstructorShellMeta({
     description: translate("layout.shell.courseList.description"),
   };
 }
-

@@ -11,25 +11,18 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
-  CreditCard,
-  FileText,
   GraduationCap,
   PlusCircle,
-  Receipt,
   UserCircle,
   Video,
   Layers,
 } from "lucide-react";
-import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
 
 export function InstructorSidebar() {
   const { t } = useTranslation("instructor");
   const location = useLocation();
   const pathname = location.pathname;
-  const { profile } = useAuth();
-  const isExternalInstructor =
-    profile?.role === "instructor" && profile?.instructor_origin === "external";
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
@@ -123,61 +116,6 @@ export function InstructorSidebar() {
                   }
                 />
               </SidebarMenuItem>
-              {isExternalInstructor && (
-                <>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      className="rounded-xl"
-                      tooltip={t("sidebar.contracts")}
-                      isActive={pathname === "/instructor/contracts"}
-                      render={
-                        <NavLink
-                          to="/instructor/contracts"
-                          end
-                          className="flex w-full items-center gap-2"
-                        >
-                          <FileText className="size-4" aria-hidden />
-                          <span>{t("sidebar.contracts")}</span>
-                        </NavLink>
-                      }
-                    />
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      className="rounded-xl"
-                      tooltip={t("sidebar.invoices")}
-                      isActive={pathname === "/instructor/invoices"}
-                      render={
-                        <NavLink
-                          to="/instructor/invoices"
-                          end
-                          className="flex w-full items-center gap-2"
-                        >
-                          <Receipt className="size-4" aria-hidden />
-                          <span>{t("sidebar.invoices")}</span>
-                        </NavLink>
-                      }
-                    />
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      className="rounded-xl"
-                      tooltip={t("sidebar.payments")}
-                      isActive={pathname === "/instructor/payments"}
-                      render={
-                        <NavLink
-                          to="/instructor/payments"
-                          end
-                          className="flex w-full items-center gap-2"
-                        >
-                          <CreditCard className="size-4" aria-hidden />
-                          <span>{t("sidebar.payments")}</span>
-                        </NavLink>
-                      }
-                    />
-                  </SidebarMenuItem>
-                </>
-              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -187,4 +125,3 @@ export function InstructorSidebar() {
     </Sidebar>
   );
 }
-

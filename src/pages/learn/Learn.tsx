@@ -8,8 +8,6 @@ import {
 } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import {
-  AlertCircle,
-  CheckCircle2,
   ChevronLeft,
   List,
   PanelLeft,
@@ -48,7 +46,6 @@ import { getSectionQuizResult } from "@/lib/quizAttempts";
 import type { SectionQuestion, SectionQuizResult } from "@/types/questions";
 import { useLearnCourseLoad } from "./hooks/useLearnCourseLoad";
 import { useLearnEnrollmentAccess } from "./hooks/useLearnEnrollmentAccess";
-import { useLearnPaymentReturnFlow } from "./hooks/useLearnPaymentReturnFlow";
 import { useLearnProgress } from "./hooks/useLearnProgress";
 import { useLearnSubmission } from "./hooks/useLearnSubmission";
 import { Button } from "@/components/ui/button";
@@ -131,28 +128,13 @@ export default function Learn() {
   const access = useLearnEnrollmentAccess({
     courseId,
     profileId: profile?.id,
-    accessModel: courseLoad.course?.access_model,
-    role: profile?.role,
-  });
-
-  useLearnPaymentReturnFlow({
-    courseId,
-    profileId: profile?.id,
-    paymentAccessCertificateFeePaid: access.paymentAccess?.certificate_fee_paid,
-    paymentAccessFullAccessGranted: access.paymentAccess?.full_access_granted,
-    setPaymentAccess: access.setPaymentAccess,
-    translate,
   });
 
   const sortedLessons = useMemo(
     () => sortLessonsByCurriculum(courseLoad.lessons, courseLoad.sections),
     [courseLoad.lessons, courseLoad.sections],
   );
-  const visibleLessons = useMemo(() => {
-    return access.hasFullCourseAccess
-      ? sortedLessons
-      : sortedLessons.filter((lesson) => lesson.is_preview_free);
-  }, [access.hasFullCourseAccess, sortedLessons]);
+  const visibleLessons = sortedLessons;
 
   const progress = useLearnProgress({
     courseId,
@@ -447,7 +429,6 @@ export default function Learn() {
   }
 
   const course = courseLoad.course;
-  const accessModel = course.access_model ?? "free";
   const hasCourseCertificate = courseHasCertificate(course);
   const hasFullCourseAccess = access.hasFullCourseAccess;
   const courseCompleted = progress.progressPercent >= 100 && visibleLessons.length > 0;
@@ -496,28 +477,6 @@ export default function Learn() {
 
   const lessonContent = (
     <>
-      {(!hasFullCourseAccess ||
-        (accessModel === "paid_upfront" &&
-          access.enrolled &&
-          !access.paymentAccess?.full_access_granted)) && (
-        <div className="px-4 pt-4 sm:px-6">
-          {!hasFullCourseAccess ? (
-            <div className="mb-2 flex items-center gap-3 rounded-md border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
-              <AlertCircle className="w-4 h-4 shrink-0" aria-hidden />
-              <p>{translate("detail.learn.previewModeNotice")}</p>
-            </div>
-          ) : null}
-          {accessModel === "paid_upfront" &&
-          access.enrolled &&
-          !access.paymentAccess?.full_access_granted ? (
-            <div className="mb-2 flex items-center gap-3 rounded-md border border-success/20 bg-success/10 px-4 py-3 text-sm text-success">
-              <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden />
-              <p>{translate("detail.accessPanel.keptAccess")}</p>
-            </div>
-          ) : null}
-        </div>
-      )}
-
       {courseCompleted ? (
         <CourseCompletionCertificatePanel
           className="mx-4 mb-4 sm:mx-6"
@@ -572,8 +531,6 @@ export default function Learn() {
             courseId={courseId}
             course={course}
             profileId={profile?.id ?? ""}
-            isAdmin={profile?.role === "admin"}
-            certificateFeePaid={!!access.paymentAccess?.certificate_fee_paid}
             submission={submission.submission as never}
             translate={translate}
             onSubmit={async (input) => {

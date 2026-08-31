@@ -25,18 +25,6 @@ export interface InstructorSocialLink {
   label?: string | null;
 }
 
-export interface PartnerProfileDocument {
-  name: string;
-  url: string;
-  path: string;
-  uploaded_at: string;
-  uploaded_by: string;
-  /** Dùng cho hoá đơn/đối soát: YYYY-MM */
-  invoice_month?: string | null;
-  /** Ghi chú tuỳ chọn (số HĐ, kỳ thanh toán, v.v.) */
-  note?: string | null;
-}
-
 export interface Profile {
   id: string;
   role: UserRole;
@@ -77,17 +65,6 @@ export interface Profile {
   instructor_website?: string | null;
   /** Danh sách link mạng xã hội của giảng viên */
   instructor_social_links?: InstructorSocialLink[] | null;
-  /** Hồ sơ hợp đồng đối tác ở cấp giảng viên (không phụ thuộc khoá học) */
-  partner_contract_docs?: PartnerProfileDocument[];
-  /** Hồ sơ hoá đơn đối tác ở cấp giảng viên */
-  partner_invoice_docs?: PartnerProfileDocument[];
-  /** Thông tin thanh toán/chuyển khoản ở cấp giảng viên */
-  partner_transfer_info?: string | null;
-  /** Thông tin ngân hàng (tách trường để rõ ràng hơn) */
-  partner_bank_name?: string | null;
-  partner_bank_account_number?: string | null;
-  partner_bank_account_holder?: string | null;
-  partner_bank_transfer_note?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -115,13 +92,6 @@ export interface ProfileInsert {
   instructor_organization?: string | null;
   instructor_website?: string | null;
   instructor_social_links?: InstructorSocialLink[] | null;
-  partner_contract_docs?: PartnerProfileDocument[];
-  partner_invoice_docs?: PartnerProfileDocument[];
-  partner_transfer_info?: string | null;
-  partner_bank_name?: string | null;
-  partner_bank_account_number?: string | null;
-  partner_bank_account_holder?: string | null;
-  partner_bank_transfer_note?: string | null;
 }
 
 export interface ProfileUpdate {
@@ -146,13 +116,6 @@ export interface ProfileUpdate {
   instructor_organization?: string | null;
   instructor_website?: string | null;
   instructor_social_links?: InstructorSocialLink[] | null;
-  partner_contract_docs?: PartnerProfileDocument[];
-  partner_invoice_docs?: PartnerProfileDocument[];
-  partner_transfer_info?: string | null;
-  partner_bank_name?: string | null;
-  partner_bank_account_number?: string | null;
-  partner_bank_account_holder?: string | null;
-  partner_bank_transfer_note?: string | null;
 }
 
 export function getRoleLabel(role: UserRole): string {

@@ -13,7 +13,6 @@ import {
 } from "@/lib/courses";
 import {
   formatDuration,
-  getCourseAccessModelLabel,
   getCourseLevelLabel,
   type Course,
   type CourseLesson,
@@ -103,9 +102,7 @@ export function CourseHero({
             <CourseBadge variant="secondary">
               {getCourseLevelLabel(course.level)}
             </CourseBadge>
-            <CourseBadge variant="secondary">
-              {getCourseAccessModelLabel(course.access_model)}
-            </CourseBadge>
+            <CourseBadge variant="secondary">{translate("pricing.freeLearning")}</CourseBadge>
             {showCertificateAvailableBadge ? (
               <CourseBadge variant="secondary">
                 {translate("detail.courseDetail.certificateAvailable")}
