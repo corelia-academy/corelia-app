@@ -42,6 +42,9 @@ export function verifyProductionPostMigration({ migrationOutput, inspectionOutpu
     if (audit.learner_ai_payment_rows !== 0) {
       errors.push("learner_ai_payment_rows must be zero.");
     }
+    if (audit.vector_extension_installed !== false) {
+      errors.push("vector_extension_installed must be false.");
+    }
     const courseTables = audit.instructor_course_tables_present ?? {};
     for (const table of ["courses", "course_sections", "course_lessons", "course_section_questions"]) {
       if (courseTables[table] !== true) errors.push(`Required instructor table ${table} is missing.`);

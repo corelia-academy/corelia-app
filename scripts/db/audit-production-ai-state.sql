@@ -50,6 +50,8 @@ SELECT jsonb_build_object(
     (SELECT count(*) FROM public.payment_transactions WHERE purpose = 'ai_subscription'),
   'learner_ai_quota_columns',
     (SELECT COALESCE(jsonb_agg(column_name), '[]'::jsonb) FROM remaining_quota_columns),
+  'vector_extension_installed',
+    EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector'),
   'instructor_course_tables_present', jsonb_build_object(
     'courses', to_regclass('public.courses') IS NOT NULL,
     'course_sections', to_regclass('public.course_sections') IS NOT NULL,

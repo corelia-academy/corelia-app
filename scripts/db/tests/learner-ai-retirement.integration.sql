@@ -29,6 +29,10 @@ BEGIN
     RAISE EXCEPTION 'Retired learner AI quota columns remain';
   END IF;
 
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector') THEN
+    RAISE EXCEPTION 'Unused vector extension remains installed';
+  END IF;
+
   INSERT INTO auth.users (id, email) VALUES (v_user_id, 'retirement-test@corelia.local');
 
   BEGIN

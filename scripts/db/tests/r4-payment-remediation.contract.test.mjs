@@ -103,12 +103,11 @@ test("R5 blocks direct service-role AI entitlement and voucher redemption writes
   assert.doesNotMatch(r5AiRetirement, /DROP\s+.*CASCADE/i);
 });
 
-test("R5/#329 HTTP handler routes only eligible historical AI payments to transaction-only reconciliation", () => {
+test("final HTTP handler has no historical learner-AI payment reconciliation", () => {
   const ipn = handler.slice(handler.indexOf("handleSePayIpn"), handler.indexOf("handleProcessRefund"));
-  assert.match(ipn, /AI_PAYMENT_RETIREMENT_CUTOFF_MS/);
-  assert.match(ipn, /tx\.provider !== "sepay"/);
-  assert.match(ipn, /reconcileHistoricalAiPayment/);
-  assert.match(ipn, /AI_SUBSCRIPTION_RETIRED/);
+  assert.doesNotMatch(handler, /AI_PAYMENT_RETIREMENT_CUTOFF_MS|reconcileHistoricalAiPayment|AI_SUBSCRIPTION_RETIRED/);
+  assert.doesNotMatch(handler, /payments\.ai\.|ai_subscription/);
+  assert.match(ipn, /grantPaymentAccessForTransaction\(db, tx, invoiceNumber/);
 });
 
 test("R5 HTTP paid retries invoke the atomic RPC and unknown invoices fail closed", () => {

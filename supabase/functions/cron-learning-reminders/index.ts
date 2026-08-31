@@ -31,7 +31,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  const supabaseUrl = env("SUPABASE_URL") || env("CORELIA_SUPABASE_URL");
+  const supabaseUrl = env("SUPABASE_URL");
   if (!supabaseUrl) {
     return new Response(JSON.stringify({ message: "missing_supabase_url" }), {
       status: 500,
