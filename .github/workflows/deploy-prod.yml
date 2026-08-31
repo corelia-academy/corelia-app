@@ -120,7 +120,10 @@ jobs:
           test "$SUPABASE_PROJECT_REF" = "lawhkvyyoznwygzsycan"
           supabase link --project-ref "$SUPABASE_PROJECT_REF" --dns-resolver https
           for prefix in course-partner-docs instructor-partner-docs; do
-            supabase storage rm --recursive "ss:///app/$prefix" --linked --experimental --yes
+            objects="$(supabase storage ls "ss:///app/$prefix" --recursive --linked --experimental --output json)"
+            if [[ "$(jq 'length' <<<"$objects")" != "0" ]]; then
+              supabase storage rm --recursive "ss:///app/$prefix" --linked --experimental --yes
+            fi
             test "$(supabase storage ls "ss:///app/$prefix" --recursive --linked --experimental --output json | jq 'length')" = "0"
           done
 
