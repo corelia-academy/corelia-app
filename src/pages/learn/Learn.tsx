@@ -441,8 +441,8 @@ export default function Learn() {
     );
   }
 
-  if (lessonId && visibleLessons.length > 0 && !currentLesson) {
-    const firstLesson = visibleLessons[0];
+  if (lessonId && !currentLesson) {
+    const firstLesson = visibleLessons[0] ?? null;
     return (
       <div className="mx-auto w-full max-w-[960px] px-4 py-12">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-6 text-center shadow-card">
