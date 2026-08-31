@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "https://esm.sh/@supabase/supabase-js@2.49.8": "@supabase/supabase-js",
     },
   },
   test: {

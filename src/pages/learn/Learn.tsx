@@ -290,6 +290,11 @@ export default function Learn() {
     }
   }, [courseId, lessonId, navigate, progress.progressList, visibleLessons]);
 
+  const rawLesson = useMemo(() => {
+    if (!lessonId || sortedLessons.length === 0) return null;
+    return sortedLessons.find((lesson) => lesson.id === lessonId) ?? null;
+  }, [lessonId, sortedLessons]);
+
   const currentLesson = useMemo(() => {
     if (visibleLessons.length === 0 || !lessonId) return null;
     return visibleLessons.find((lesson) => lesson.id === lessonId) ?? null;
@@ -441,7 +446,16 @@ export default function Learn() {
     );
   }
 
-  if (lessonId && !currentLesson) {
+  if (
+    access.loading &&
+    rawLesson &&
+    !currentLesson &&
+    courseLoad.course?.access_model === "paid_upfront"
+  ) {
+    return <LearnLoadingState translate={translate} />;
+  }
+
+  if (lessonId && !rawLesson) {
     const firstLesson = visibleLessons[0] ?? null;
     return (
       <div className="mx-auto w-full max-w-[960px] px-4 py-12">
@@ -459,6 +473,35 @@ export default function Learn() {
               </Button>
             )}
             <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>
+              {translate("detail.learn.backToCourse")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (lessonId && rawLesson && !currentLesson) {
+    const firstLesson = visibleLessons[0] ?? null;
+    return (
+      <div className="mx-auto w-full max-w-[960px] px-4 py-12">
+        <div className="rounded-2xl border border-border-subtle bg-surface-base p-6 text-center shadow-card">
+          <h1 className="text-xl font-semibold text-foreground">
+            {translate("detail.learn.lessonLockedTitle", { defaultValue: "Bài học bị khoá" })}
+          </h1>
+          <p className="mt-2 text-sm text-foreground-muted">
+            {translate("detail.learn.lessonLockedDescription", { defaultValue: "Bài học này chỉ dành cho học viên đã mở khoá toàn bộ nội dung khoá học." })}
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Button onClick={() => navigate(`/checkout/course/${courseId}`)}>
+              {translate("detail.learn.unlockCourse", { defaultValue: "Mở khoá toàn bộ khoá học" })}
+            </Button>
+            {firstLesson && (
+              <Button variant="outline" onClick={() => navigate(`/learn/${courseId}/lesson/${firstLesson.id}`, { replace: true })}>
+                {translate("detail.learn.goToFirstLesson", { defaultValue: "Vào bài học xem trước" })}
+              </Button>
+            )}
+            <Button variant="ghost" onClick={() => navigate(`/courses/${courseId}`)}>
               {translate("detail.learn.backToCourse")}
             </Button>
           </div>

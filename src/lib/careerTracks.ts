@@ -252,8 +252,52 @@ export async function listCareerTracks(uiLocale?: string | null): Promise<Career
   const normalizedUiLocale = normalizeContentLocale(uiLocale);
   const cacheKey = `all:${normalizedUiLocale}`;
 
-  const cached = tracksListCache.get(cacheKey);
-  if (cached) return cached;
+  const cachedPromise = tracksListCache.get(cacheKey);
+  if (cachedPromise) {
+    const cached = await cachedPromise.catch(() => null);
+    if (cached) {
+      // Revalidate against DB to check for modifications or new/updated tracks from other sessions
+      const [tracksRes, localesRes] = await Promise.all([
+        supabase
+          .from("career_tracks")
+          .select("id,updated_at")
+          .eq("published", true)
+          .order("updated_at", { ascending: false }),
+        supabase
+          .from("career_track_locales")
+          .select("career_track_id,locale,data")
+          .in("career_track_id", cached.map((t) => t.id)),
+      ]);
+
+      const currentRows = tracksRes.data;
+      const localeRows = localesRes.data as Array<{ career_track_id: string; locale: string; data: unknown }> | null;
+
+      if (!tracksRes.error && !localesRes.error && currentRows && currentRows.length === cached.length) {
+        const localeMap = new Map<string, string | undefined>();
+        if (localeRows) {
+          for (const row of localeRows) {
+            const rowLocale = normalizeContentLocale(row.locale);
+            const dataObj = row.data as Record<string, unknown> | null;
+            localeMap.set(`${row.career_track_id}:${rowLocale}`, dataObj?.updated_at as string | undefined);
+          }
+        }
+
+        const isMatch = currentRows.every((row, idx) => {
+          if (row.id !== cached[idx]?.id || row.updated_at !== cached[idx]?.updated_at) {
+            return false;
+          }
+          const desired = pickContentLocale(cached[idx]?.i18n ?? null, normalizedUiLocale);
+          const currentLocaleUpdatedAt = localeMap.get(`${row.id}:${desired}`);
+          return currentLocaleUpdatedAt === (cached[idx] as Record<string, unknown>)._locale_updated_at;
+        });
+
+        if (isMatch) {
+          return cached;
+        }
+      }
+      tracksListCache.delete(cacheKey);
+    }
+  }
 
   const promise = (async () => {
     const { data, error } = await supabase
@@ -301,9 +345,9 @@ export async function listCareerTracks(uiLocale?: string | null): Promise<Career
       rows.map((r) => (r.owner_scope === "instructor" ? r.instructor_id : null)),
     );
 
-    return await Promise.all(
+    const unlocalizedList = await Promise.all(
       rows.map(async (r) => {
-      const { career_track_courses, ...track } = r;
+        const { career_track_courses, ...track } = r;
         const detail = await computeDetail(track, career_track_courses ?? []);
         return {
           ...detail,
@@ -314,31 +358,38 @@ export async function listCareerTracks(uiLocale?: string | null): Promise<Career
         };
       }),
     );
+
+    // Fetch fresh locale translations for all tracks
+    const { data: localeRows } = await supabase
+      .from("career_track_locales")
+      .select("career_track_id,locale,data")
+      .in("career_track_id", unlocalizedList.map((t) => t.id));
+
+    const localeMap = new Map<string, Partial<CareerTrack>>();
+    if (localeRows) {
+      for (const row of localeRows as Array<{ career_track_id: string; locale: string; data: unknown }>) {
+        if (!row.data) continue;
+        const normalized = normalizeContentLocale(row.locale);
+        const content = row.data as Partial<CareerTrack>;
+        careerTrackLocaleCache.set(`${row.career_track_id}:${normalized}`, Promise.resolve(content));
+        localeMap.set(`${row.career_track_id}:${normalized}`, content);
+      }
+    }
+
+    return unlocalizedList.map((track) => {
+      const desired = pickContentLocale(track.i18n ?? null, normalizedUiLocale);
+      const localized = localeMap.get(`${track.id}:${desired}`) ?? null;
+      const localeUpdatedAt = (localized as Record<string, unknown> | null)?.updated_at as string | undefined;
+      return {
+        ...applyCareerTrackLocaleContent(track, localized),
+        _locale_updated_at: localeUpdatedAt,
+      } as CareerTrackDetail;
+    });
   })();
 
   tracksListCache.set(cacheKey, promise);
   promise.catch(() => tracksListCache.delete(cacheKey));
-  const list = await promise;
-
-  // Apply localized content (preferred UI locale) if available.
-  const idsByLocale = new Map<Locale, string[]>();
-  for (const track of list) {
-    const desired = pickContentLocale(track.i18n ?? null, normalizedUiLocale);
-    const ids = idsByLocale.get(desired) ?? [];
-    ids.push(track.id);
-    idsByLocale.set(desired, ids);
-  }
-  const localeMaps = new Map<Locale, Map<string, Partial<CareerTrack>>>();
-  await Promise.all(
-    Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
-      localeMaps.set(locale, await getBatchCareerTrackLocaleContent(ids, locale));
-    }),
-  );
-  return list.map((track) => {
-    const desired = pickContentLocale(track.i18n ?? null, normalizedUiLocale);
-    const localized = localeMaps.get(desired)?.get(track.id) ?? null;
-    return applyCareerTrackLocaleContent(track, localized);
-  });
+  return promise;
 }
 
 export async function getCareerTrackBySlug(
@@ -350,8 +401,42 @@ export async function getCareerTrackBySlug(
   if (!normalizedSlug) return null;
 
   const cacheKey = `slug:${normalizedSlug}:${normalizedUiLocale}`;
-  const cached = trackBySlugCache.get(cacheKey);
-  if (cached) return cached;
+  const cachedPromise = trackBySlugCache.get(cacheKey);
+  if (cachedPromise) {
+    const cached = await cachedPromise.catch(() => null);
+    if (cached) {
+      // Check if parent track or locale content was updated in another session
+      const desired = pickContentLocale(cached.i18n ?? null, normalizedUiLocale);
+      const [trackRes, localeRes] = await Promise.all([
+        supabase
+          .from("career_tracks")
+          .select("updated_at")
+          .eq("id", cached.id)
+          .maybeSingle(),
+        supabase
+          .from("career_track_locales")
+          .select("data")
+          .eq("career_track_id", cached.id)
+          .eq("locale", desired)
+          .maybeSingle(),
+      ]);
+
+      const trackUpdatedAt = trackRes.data?.updated_at;
+      const localeDataObj = localeRes.data?.data as Record<string, unknown> | null;
+      const localeUpdatedAt = localeDataObj?.updated_at as string | undefined;
+
+      if (
+        !trackRes.error &&
+        !localeRes.error &&
+        trackUpdatedAt === cached.updated_at &&
+        localeUpdatedAt === (cached as Record<string, unknown>)._locale_updated_at
+      ) {
+        return cached;
+      }
+      trackBySlugCache.delete(cacheKey);
+      careerTrackLocaleCache.delete(`${cached.id}:${desired}`);
+    }
+  }
 
   const promise = (async () => {
     const { data, error } = await supabase
@@ -408,7 +493,11 @@ export async function getCareerTrackBySlug(
     const resolved: CareerTrackDetail = { ...detail, instructorHandle };
     const desired = pickContentLocale(resolved.i18n ?? null, normalizedUiLocale);
     const localized = await getCareerTrackLocaleContent(resolved.id, desired);
-    return applyCareerTrackLocaleContent(resolved, localized);
+    const localeUpdatedAt = (localized as Record<string, unknown> | null)?.updated_at as string | undefined;
+    return {
+      ...applyCareerTrackLocaleContent(resolved, localized),
+      _locale_updated_at: localeUpdatedAt,
+    } as CareerTrackDetail;
   })();
 
   trackBySlugCache.set(cacheKey, promise);

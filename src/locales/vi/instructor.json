@@ -839,6 +839,10 @@
       "sectionTitlePlaceholder": "Tên chương"
     },
     "questions": {
+      "loadFailed": "Không thể tải câu hỏi hiện có.",
+      "loadFailedBeforeGenerate": "Không thể tạo câu hỏi khi chưa tải được dữ liệu hiện có.",
+      "loadFailedBeforeSave": "Không thể lưu khi trạng thái tải câu hỏi đang bị lỗi.",
+      "retry": "Thử lại",
       "generateFailed": "Không thể tạo câu hỏi.",
       "fillRequired": "Vui lòng điền đầy đủ nội dung câu hỏi và ít nhất 2 lựa chọn.",
       "saveFailed": "Không thể lưu câu hỏi.",

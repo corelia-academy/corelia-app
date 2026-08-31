@@ -217,7 +217,7 @@ export default function CheckoutCourse() {
           <h2 className="text-sm font-medium text-foreground">{t("detail.checkout.courseSectionTitle")}</h2>
           <p className="mt-2 text-base text-foreground">{course.title}</p>
           <p className="mt-1 text-sm text-foreground-muted">
-            {t("detail.checkout.paymentMethodLabel")}: {t("accessModel.paid_upfront")}
+            {t("detail.checkout.paymentMethodLabel")}: {t(`accessModel.${course.access_model ?? "free"}`)}
           </p>
 
           <div className="mt-4 rounded-md border border-border-subtle bg-surface-raised p-4">
@@ -226,7 +226,11 @@ export default function CheckoutCourse() {
                 <p className="text-xs font-semibold uppercase text-foreground-muted">
                   {t("detail.checkout.paymentAmountLabel")}
                 </p>
-                {pricing?.promoActive ? (
+                {isFreeCourse ? (
+                  <div className="mt-1 text-xl font-semibold text-foreground">
+                    {formatVndPrice(0)}
+                  </div>
+                ) : pricing?.promoActive ? (
                   <>
                     <div className="mt-1 text-xl font-semibold text-foreground">
                       {formatVndPrice(pricing.displayAmount)}
@@ -252,24 +256,28 @@ export default function CheckoutCourse() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-xs text-foreground-muted">
-                <ShieldCheck className="size-4" aria-hidden /> {t("detail.checkout.sepayQr")}
-              </div>
+              {!isFreeCourse ? (
+                <div className="flex items-center gap-2 text-xs text-foreground-muted">
+                  <ShieldCheck className="size-4" aria-hidden /> {t("detail.checkout.sepayQr")}
+                </div>
+              ) : null}
             </div>
 
-            <div className="mt-4">
-              <label className="block text-xs font-medium text-foreground-muted mb-1">
-                {t("detail.checkout.discount.label")}
-              </label>
-              <Input
-                value={discountCode}
-                onChange={(e) => setDiscountCode(e.target.value)}
-                placeholder={t("detail.checkout.discount.placeholder")}
-              />
-              <p className="mt-1 text-xs text-foreground-muted">
-                {t("detail.checkout.discount.hint")}
-              </p>
-            </div>
+            {!isFreeCourse ? (
+              <div className="mt-4">
+                <label className="block text-xs font-medium text-foreground-muted mb-1">
+                  {t("detail.checkout.discount.label")}
+                </label>
+                <Input
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value)}
+                  placeholder={t("detail.checkout.discount.placeholder")}
+                />
+                <p className="mt-1 text-xs text-foreground-muted">
+                  {t("detail.checkout.discount.hint")}
+                </p>
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -298,6 +306,19 @@ export default function CheckoutCourse() {
             >
               {submitting ? t("detail.checkout.redirecting") : t("detail.checkout.freeCourseEnroll")}
             </Button>
+          ) : !canPay ? (
+            <div className="mt-4 space-y-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-center">
+              <p className="text-sm font-medium text-destructive">
+                {t("detail.checkout.invalidPaymentConfig")}
+              </p>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate(`/courses/${courseId}`)}
+              >
+                {t("detail.checkout.backToCourse")}
+              </Button>
+            </div>
           ) : (
             <Button
               className="mt-4 w-full"
@@ -315,7 +336,7 @@ export default function CheckoutCourse() {
             </p>
           ) : null}
 
-          {!isFreeCourse ? (
+          {!isFreeCourse && canPay ? (
             <p className="mt-3 text-xs text-foreground-muted">
               {t("detail.checkout.postPayHint")}
             </p>

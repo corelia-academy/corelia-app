@@ -65,7 +65,7 @@ export function CourseSpotlightSection({
       badge: translate("detail.spotlight.careerTrackBadge"),
       title: translate("detail.spotlight.careerTrackTitle"),
       description: translate("detail.spotlight.careerTrackDescription"),
-      href: "/career-tracks",
+      href: "/career",
       ctaLabel: translate("detail.spotlight.exploreCareerTracks"),
       meta: translate("detail.spotlight.careerTrackMeta"),
       icon: <Rocket className="size-5 shrink-0" aria-hidden />,

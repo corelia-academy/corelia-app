@@ -4,7 +4,7 @@ import { ArrowRight, BookOpen, Loader2, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/stores/authStore";
 import { supabase } from "@/lib/supabase";
-import { verifySePayPayment } from "@/lib/payments";
+import { verifySePayPayment, type PaymentPurpose } from "@/lib/payments";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import type { Session } from "@supabase/supabase-js";
@@ -48,7 +48,8 @@ export default function CheckoutSuccess() {
   const { courseId, purpose } = useParams<{ courseId: string; purpose: string }>();
   const navigate = useNavigate();
   const [seconds, setSeconds] = useState(10);
-  const hasCheckoutContext = !!courseId && !!purpose;
+  const isValidPurpose = purpose === "course_purchase" || purpose === "certificate_fee";
+  const hasCheckoutContext = Boolean(courseId && isValidPurpose);
   const [verificationState, setVerificationState] = useState<VerificationState>(() =>
     hasCheckoutContext ? "verifying" : "invalid_order",
   );
@@ -57,6 +58,19 @@ export default function CheckoutSuccess() {
       ? t("detail.checkoutSuccess.verifyingPayment")
       : t("detail.checkoutSuccess.missingOrderInfo"),
   );
+  const [prevContext, setPrevContext] = useState(`${courseId}:${purpose}`);
+
+  if (prevContext !== `${courseId}:${purpose}`) {
+    setPrevContext(`${courseId}:${purpose}`);
+    setSeconds(10);
+    setVerificationState(hasCheckoutContext ? "verifying" : "invalid_order");
+    setStatusMessage(
+      hasCheckoutContext
+        ? t("detail.checkoutSuccess.verifyingPayment")
+        : t("detail.checkoutSuccess.missingOrderInfo"),
+    );
+  }
+
   const targetPath = useMemo(() => {
     if (!courseId) return "/courses";
     if (purpose === "certificate_fee") return `/learn/${courseId}?payment=success`;
@@ -72,9 +86,12 @@ export default function CheckoutSuccess() {
   }, [verificationState]);
 
   useEffect(() => {
-    if (!courseId || !purpose) return;
+    if (!courseId || !isValidPurpose) {
+      return;
+    }
 
     let cancelled = false;
+    const abortController = new AbortController();
     let stored: StoredCheckout | null = null;
     try {
       const raw = window.sessionStorage.getItem("corelia:lastCheckout");
@@ -109,14 +126,38 @@ export default function CheckoutSuccess() {
       const deadline = Date.now() + 30_000;
       while (!cancelled && Date.now() < deadline) {
         try {
-          const result = await verifySePayPayment({
-            orderId,
-            courseId,
-            purpose: purpose === "certificate_fee" ? "certificate_fee" : "course_purchase",
-            accessToken,
-          });
+          const singleRequestController = new AbortController();
+          const timeoutTimer = window.setTimeout(() => singleRequestController.abort(), 8000);
+          const combinedSignal = abortController.signal;
+          const onAbort = () => singleRequestController.abort();
+          combinedSignal.addEventListener("abort", onAbort, { once: true });
+
+          let result;
+          try {
+            result = await verifySePayPayment({
+              orderId,
+              courseId,
+              purpose: purpose as PaymentPurpose,
+              accessToken,
+              signal: singleRequestController.signal,
+            });
+          } finally {
+            window.clearTimeout(timeoutTimer);
+            combinedSignal.removeEventListener("abort", onAbort);
+          }
+
           if (cancelled) return;
-          if (result.full_access_granted || result.certificate_fee_paid) {
+
+          const isMatchingContext =
+            result.course_id === courseId && result.purpose === purpose;
+          const isTargetVerified =
+            isMatchingContext &&
+            result.status === "paid" &&
+            (purpose === "certificate_fee"
+              ? result.certificate_fee_paid === true
+              : result.full_access_granted === true);
+
+          if (isTargetVerified) {
             setVerificationState("success");
             setStatusMessage(
               result.verified_by === "sepay_lookup"
@@ -126,8 +167,9 @@ export default function CheckoutSuccess() {
             window.sessionStorage.removeItem("corelia:lastCheckout");
             return;
           }
+
           if (!orderId) {
-            // No order to verify and user doesn't have existing access -> invalid order
+            // No order to verify and target payment not confirmed -> invalid order
             setVerificationState("invalid_order");
             setStatusMessage(t("detail.checkoutSuccess.missingOrderInfo"));
             return;
@@ -166,8 +208,9 @@ export default function CheckoutSuccess() {
 
     return () => {
       cancelled = true;
+      abortController.abort();
     };
-  }, [courseId, purpose, storeUser, t]);
+  }, [courseId, isValidPurpose, purpose, storeUser, t]);
 
   useEffect(() => {
     if (verificationState !== "success" || seconds > 0) return;
