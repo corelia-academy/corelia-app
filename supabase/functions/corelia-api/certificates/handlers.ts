@@ -12,13 +12,11 @@ type CertificateIssueReason =
   | "already_issued"
   | "no_course"
   | "no_enrollment"
-  | "fee_unpaid"
   | "lessons_incomplete"
   | "assignment_not_approved"
   | "issued";
 
 type CourseCertificateData = {
-  access_model?: string | null;
   final_assignment_title?: string | null;
   has_certificate?: boolean;
   title?: string | null;
@@ -164,17 +162,6 @@ export async function issueCourseCertificateIfReady(
       certificate_issued_at: enrollment.certificate_issued_at,
       course_title: course.title ?? null,
     };
-  }
-
-  if (course.access_model === "free_with_paid_certificate") {
-    const accessId = `${targetUserId}_${courseId}`;
-    const { data: payAccess, error: payErr } = await db.from("course_payment_access").select(
-      "certificate_fee_paid",
-    ).eq("id", accessId).maybeSingle();
-    if (payErr) throw new Error(payErr.message);
-    if (payAccess?.certificate_fee_paid !== true) {
-      return { issued: false, reason: "fee_unpaid", course_title: course.title ?? null };
-    }
   }
 
   const { data: readinessRaw, error: readyErr } = await db.rpc("corelia_certificate_readiness", {
@@ -345,14 +332,6 @@ async function issueCourseCertificateIfReadyDryRun(
   if (!courseHasCertificate(course)) return { issued: false, reason: "no_certificate" };
   if (enrollment.certificate_issued_at) {
     return { issued: true, reason: "already_issued", certificate_issued_at: enrollment.certificate_issued_at };
-  }
-  if (course.access_model === "free_with_paid_certificate") {
-    const accessId = `${targetUserId}_${courseId}`;
-    const { data: payAccess, error: payErr } = await db.from("course_payment_access").select(
-      "certificate_fee_paid",
-    ).eq("id", accessId).maybeSingle();
-    if (payErr) throw new Error(payErr.message);
-    if (payAccess?.certificate_fee_paid !== true) return { issued: false, reason: "fee_unpaid" };
   }
   const { data: readinessRaw, error: readyErr } = await db.rpc("corelia_certificate_readiness", {
     p_course_id: courseId,

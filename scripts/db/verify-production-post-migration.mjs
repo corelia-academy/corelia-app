@@ -39,8 +39,13 @@ export function verifyProductionPostMigration({ migrationOutput, inspectionOutpu
         errors.push(`${key} must be an empty array.`);
       }
     }
-    if (audit.learner_ai_payment_rows !== 0) {
-      errors.push("learner_ai_payment_rows must be zero.");
+    for (const key of ["financial_relations", "financial_columns"]) {
+      if (!Array.isArray(audit[key]) || audit[key].length !== 0) {
+        errors.push(`${key} must be an empty array.`);
+      }
+    }
+    if (audit.courses_with_financial_metadata !== 0) {
+      errors.push("courses_with_financial_metadata must be zero.");
     }
     if (audit.vector_extension_installed !== false) {
       errors.push("vector_extension_installed must be false.");

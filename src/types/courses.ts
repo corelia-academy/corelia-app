@@ -4,23 +4,17 @@
  */
 
 import i18n from "@/i18n";
-import { intlLocale } from "@/lib/intl";
 
 export type SupportedCourseLocale = "vi" | "en";
 
 export type CourseLevel = "beginner" | "intermediate" | "advanced" | "all";
-export type CourseAccessModel =
-  | "free"
-  | "paid_upfront"
-  | "free_with_paid_certificate";
 export type CourseOwnerType = "corelia" | "external_partner";
 
 export type CourseCoInstructorPermissionKey =
   | "students"
   | "submissions"
   | "content"
-  | "certificates"
-  | "pricing";
+  | "certificates";
 
 export type CourseCoInstructorPermissions = Partial<
   Record<CourseCoInstructorPermissionKey, boolean>
@@ -103,14 +97,6 @@ export interface CourseLocaleContent {
   updated_at?: string;
 }
 
-export interface PartnerCourseDocument {
-  name: string;
-  url: string;
-  path: string;
-  uploaded_at: string;
-  uploaded_by: string;
-}
-
 export interface Course {
   id: string;
   title: string;
@@ -171,8 +157,6 @@ export interface Course {
   onchain_certificate_template_url?: string;
   /** Đường dẫn Storage của phôi OCA on-chain */
   onchain_certificate_template_path?: string;
-  /** Mô hình truy cập khoá học */
-  access_model?: CourseAccessModel;
   /** Khoá học có hỗ trợ cấp chứng nhận hoàn thành */
   has_certificate?: boolean;
   /** Khoá học vẫn đang được cập nhật nội dung (manual flag) */
@@ -185,24 +169,8 @@ export interface Course {
   external_source_urls?: string[];
   /** Chú thích nguồn để hiển thị công khai */
   external_source_attribution_note?: string | null;
-  /** Giá mở toàn bộ khoá học (VND) khi access_model = paid_upfront */
-  price_vnd?: number | null;
-  /** Giá khuyến mãi (VND) khi access_model = paid_upfront (nếu có) */
-  promo_price_vnd?: number | null;
-  /** Thời điểm kết thúc khuyến mãi (ISO) */
-  promo_ends_at?: string | null;
-  /** Phí làm bài thu hoạch/chứng nhận (VND) khi access_model = free_with_paid_certificate */
-  certificate_fee_vnd?: number | null;
   /** Loại sở hữu khoá học: nội bộ Corelia hoặc đối tác ngoài */
   owner_type?: CourseOwnerType;
-  /** Tỷ lệ % doanh thu nền tảng nhận (áp dụng cho khoá đối tác ngoài) */
-  platform_revenue_share_percent?: number | null;
-  /** Hồ sơ hợp đồng đối tác (upload bởi học vụ/admin) */
-  partner_contract_docs?: PartnerCourseDocument[];
-  /** Hồ sơ hoá đơn/đối soát đối tác (upload bởi học vụ/admin) */
-  partner_invoice_docs?: PartnerCourseDocument[];
-  /** Thông tin chuyển khoản cho đối tác (theo hợp đồng) */
-  partner_transfer_info?: string | null;
 
   /** Đồng giảng viên (chỉ để hiển thị công khai) */
   co_instructors?: CourseCoInstructorSnapshot[];
@@ -301,11 +269,6 @@ export interface Enrollment {
   completed_at?: string | null;
   /** Thời điểm cấp chứng nhận hoàn thành (null = chưa đủ điều kiện) */
   certificate_issued_at?: string | null;
-  /** Metadata thanh toán (chỉ có khi khoá trả phí/có phí) */
-  paid_provider?: "sepay";
-  paid_amount_vnd?: number;
-  paid_order_id?: string;
-  paid_at?: string;
 }
 
 /** Trạng thái bài nộp bài tập cuối khoá */
@@ -352,21 +315,12 @@ export interface CourseInsert {
   total_duration_seconds?: number;
   published?: boolean;
   i18n?: CourseI18nConfig;
-  access_model?: CourseAccessModel;
   is_updating?: boolean;
   has_sections?: boolean;
   is_external_aggregated?: boolean;
   external_source_urls?: string[];
   external_source_attribution_note?: string | null;
-  price_vnd?: number | null;
-  promo_price_vnd?: number | null;
-  promo_ends_at?: string | null;
-  certificate_fee_vnd?: number | null;
   owner_type?: CourseOwnerType;
-  platform_revenue_share_percent?: number | null;
-  partner_contract_docs?: PartnerCourseDocument[];
-  partner_invoice_docs?: PartnerCourseDocument[];
-  partner_transfer_info?: string | null;
 
   co_instructors?: CourseCoInstructorSnapshot[];
   co_instructor_permissions?: Record<string, CourseCoInstructorPermissions>;
@@ -411,22 +365,13 @@ export interface CourseUpdate {
   certificate_qr_size_percent?: number | null;
   onchain_certificate_template_url?: string | null;
   onchain_certificate_template_path?: string | null;
-  access_model?: CourseAccessModel;
   has_certificate?: boolean;
   is_updating?: boolean;
   has_sections?: boolean;
   is_external_aggregated?: boolean;
   external_source_urls?: string[];
   external_source_attribution_note?: string | null;
-  price_vnd?: number | null;
-  promo_price_vnd?: number | null;
-  promo_ends_at?: string | null;
-  certificate_fee_vnd?: number | null;
   owner_type?: CourseOwnerType;
-  platform_revenue_share_percent?: number | null;
-  partner_contract_docs?: PartnerCourseDocument[];
-  partner_invoice_docs?: PartnerCourseDocument[];
-  partner_transfer_info?: string | null;
 
   co_instructors?: CourseCoInstructorSnapshot[] | null;
   co_instructor_permissions?: Record<string, CourseCoInstructorPermissions> | null;
@@ -470,11 +415,6 @@ export const COURSE_LEVEL_LABELS: Record<CourseLevel, string> = {
   all: "Mọi cấp độ",
 };
 
-export const COURSE_ACCESS_MODEL_LABELS: Record<CourseAccessModel, string> = {
-  free: "Miễn phí",
-  paid_upfront: "Trả phí trước để mở toàn bộ",
-  free_with_paid_certificate: "Học miễn phí, trả phí để làm chứng nhận",
-};
 export const COURSE_OWNER_TYPE_LABELS: Record<CourseOwnerType, string> = {
   corelia: "Khoá học Corelia",
   external_partner: "Khoá học giảng viên đối tác",
@@ -484,29 +424,9 @@ export function getCourseLevelLabel(level: CourseLevel): string {
   return i18n.t(`courses:level.${level}`, { defaultValue: COURSE_LEVEL_LABELS[level] });
 }
 
-export function getCourseAccessModelLabel(model?: CourseAccessModel): string {
-  const key = model ?? "free";
-  return i18n.t(`courses:accessModel.${key}`, { defaultValue: COURSE_ACCESS_MODEL_LABELS[key] });
-}
-
 export function getCourseOwnerTypeLabel(ownerType?: CourseOwnerType): string {
   const key = ownerType ?? "corelia";
   return i18n.t(`courses:ownerType.${key}`, { defaultValue: COURSE_OWNER_TYPE_LABELS[key] });
-}
-
-export function formatVndPrice(value?: number | null): string {
-  const amount = Number(value ?? 0);
-  if (!Number.isFinite(amount) || amount <= 0) return "0đ";
-  return `${amount.toLocaleString(intlLocale())}đ`;
-}
-
-export function getInstructorSharePercent(course: Pick<Course, "owner_type" | "platform_revenue_share_percent">): number {
-  if ((course.owner_type ?? "corelia") === "corelia") return 0;
-  const platformPercent = Math.max(
-    0,
-    Math.min(100, Number(course.platform_revenue_share_percent ?? 0)),
-  );
-  return 100 - platformPercent;
 }
 
 function isYoutubeVideoId(value: string | null | undefined): value is string {

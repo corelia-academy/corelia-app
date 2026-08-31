@@ -266,16 +266,6 @@ export function uploadCourseCredentialBadgeImage(
   );
 }
 
-export function uploadCoursePartnerDocument(
-  courseId: string,
-  kind: "contract" | "invoice",
-  file: File,
-): Promise<{ url: string; path: string }> {
-  if (!courseId) throw new Error("Thiếu courseId");
-  const safeName = (file.name || "document").replace(/[^a-zA-Z0-9._-]/g, "_");
-  return uploadToPath(`course-partner-docs/${courseId}/${kind}/${Date.now()}-${safeName}`, file);
-}
-
 export function uploadCourseSponsorLogo(
   courseId: string,
   sponsorId: string,
@@ -313,19 +303,6 @@ export function uploadCoursePartnerBrandLogo(
   if (!cid) throw new Error("Thiếu courseId");
   const ext = buildSafeExt(file.name, "png");
   return uploadToPath(`course-partner-brand/${cid}/${Date.now()}.${ext}`, file, previousPath);
-}
-
-export function uploadInstructorPartnerDocument(
-  instructorId: string,
-  kind: "contract" | "invoice",
-  file: File,
-): Promise<{ url: string; path: string }> {
-  if (!instructorId) throw new Error("Thiếu instructorId");
-  const safeName = (file.name || "document").replace(/[^a-zA-Z0-9._-]/g, "_");
-  return uploadToPath(
-    `instructor-partner-docs/${instructorId}/${kind}/${Date.now()}-${safeName}`,
-    file,
-  );
 }
 
 /** ảnh đại diện: avatars/{userId}/{timestamp}.{ext} */

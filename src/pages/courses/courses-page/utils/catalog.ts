@@ -1,8 +1,7 @@
 import { sortLocale } from "@/lib/intl";
 import type { Course, CourseLevel, CourseOwnerType } from "@/types/courses";
-import { formatVndPrice, getCourseOwnerTypeLabel } from "@/types/courses";
+import { getCourseOwnerTypeLabel } from "@/types/courses";
 
-export type PricingFilter = "all" | "free" | "paid" | "certificate";
 export type OwnerFilter = "all" | CourseOwnerType;
 export type SortMode = "featured" | "recent" | "duration_desc" | "title_asc";
 
@@ -15,34 +14,9 @@ export function normalizeText(value: string | null | undefined): string {
   return (value ?? "").trim().toLowerCase();
 }
 
-export function matchesPricing(course: Course, filter: PricingFilter): boolean {
-  const accessModel = course.access_model ?? "free";
-  if (filter === "all") return true;
-  if (filter === "free") return accessModel === "free";
-  if (filter === "paid") return accessModel === "paid_upfront";
-  return accessModel === "free_with_paid_certificate";
-}
-
-export function getPrimaryPriceLabel(course: Course, t: CatalogTranslate): string {
-  const accessModel = course.access_model ?? "free";
-  if (accessModel === "paid_upfront") {
-    const promo = Number(course.promo_price_vnd ?? 0);
-    if (promo > 0)
-      return t("pricing.fromPrice", { price: formatVndPrice(promo) });
-    return formatVndPrice(course.price_vnd);
-  }
-  if (accessModel === "free_with_paid_certificate") {
-    return t("pricing.certificateFee", {
-      price: formatVndPrice(course.certificate_fee_vnd),
-    });
-  }
-  return t("pricing.freeLearning");
-}
-
 export function getFeaturedScore(course: Course): number {
   let score = 0;
   score += (course.owner_type ?? "corelia") === "corelia" ? 3 : 1;
-  score += (course.access_model ?? "free") === "paid_upfront" ? 2 : 0;
   score += course.short_description ? 1 : 0;
   score += Math.min(
     4,
@@ -78,7 +52,6 @@ export function filterAndSortCourses(
   opts: {
     query: string;
     levelFilter: "all" | CourseLevel;
-    pricingFilter: PricingFilter;
     ownerFilter: OwnerFilter;
     sortMode: SortMode;
   },
@@ -88,7 +61,6 @@ export function filterAndSortCourses(
     if (opts.levelFilter !== "all" && course.level !== opts.levelFilter) {
       return false;
     }
-    if (!matchesPricing(course, opts.pricingFilter)) return false;
     if (
       opts.ownerFilter !== "all" &&
       (course.owner_type ?? "corelia") !== opts.ownerFilter

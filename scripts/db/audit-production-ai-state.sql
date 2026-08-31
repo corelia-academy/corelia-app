@@ -40,18 +40,49 @@ WITH target_tables(name) AS (
     AND column_name IN (
       'monthly_messages', 'haiku_only', 'monthly_tokens', 'rolling_3h_tokens'
     )
+), remaining_financial_relations AS (
+  SELECT c.relname AS object_name
+  FROM pg_class c
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE n.nspname = 'public'
+    AND c.relkind IN ('r', 'p', 'v', 'm')
+    AND c.relname IN (
+      'payment_refunds', 'payment_transaction_items', 'course_payment_access',
+      'course_entitlement_grants', 'payment_transactions', 'billing_products',
+      'course_discounts'
+    )
+), remaining_financial_columns AS (
+  SELECT table_name || '.' || column_name AS column_name
+  FROM information_schema.columns
+  WHERE table_schema = 'public'
+    AND (
+      (table_name = 'enrollments' AND column_name IN ('paid_provider', 'paid_amount_vnd', 'paid_order_id', 'paid_at'))
+      OR (table_name = 'profiles' AND column_name LIKE 'partner\_%' ESCAPE '\')
+    )
+), courses_with_financial_metadata AS (
+  SELECT id
+  FROM public.courses
+  WHERE data ?| ARRAY[
+    'access_model', 'price_vnd', 'promo_price_vnd', 'promo_starts_at',
+    'promo_ends_at', 'certificate_fee_vnd', 'revenue_share_percent',
+    'partner_contract_docs', 'partner_invoice_docs', 'partner_transfer_info'
+  ]
 )
 SELECT jsonb_build_object(
   'learner_ai_relations',
     (SELECT COALESCE(jsonb_agg(to_jsonb(r)), '[]'::jsonb) FROM remaining_relations r),
   'learner_ai_functions',
     (SELECT COALESCE(jsonb_agg(to_jsonb(f)), '[]'::jsonb) FROM remaining_functions f),
-  'learner_ai_payment_rows',
-    (SELECT count(*) FROM public.payment_transactions WHERE purpose = 'ai_subscription'),
   'learner_ai_quota_columns',
     (SELECT COALESCE(jsonb_agg(column_name), '[]'::jsonb) FROM remaining_quota_columns),
   'vector_extension_installed',
     EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector'),
+  'financial_relations',
+    (SELECT COALESCE(jsonb_agg(object_name), '[]'::jsonb) FROM remaining_financial_relations),
+  'financial_columns',
+    (SELECT COALESCE(jsonb_agg(column_name), '[]'::jsonb) FROM remaining_financial_columns),
+  'courses_with_financial_metadata',
+    (SELECT count(*) FROM courses_with_financial_metadata),
   'instructor_course_tables_present', jsonb_build_object(
     'courses', to_regclass('public.courses') IS NOT NULL,
     'course_sections', to_regclass('public.course_sections') IS NOT NULL,

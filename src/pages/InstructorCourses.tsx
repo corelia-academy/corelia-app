@@ -6,16 +6,13 @@ import {
   PlusCircle,
   GraduationCap,
   Loader2,
-  DollarSign,
   EyeOff,
   Pencil,
 } from "lucide-react";
 import { getCoursesForManagement } from "@/lib/courses";
 import {
-  getCourseAccessModelLabel,
   getCourseLevelLabel,
   getCourseOwnerTypeLabel,
-  formatVndPrice,
 } from "@/types/courses";
 import type { Course } from "@/types/courses";
 import { useAuth } from "@/stores/authStore";
@@ -73,9 +70,7 @@ const InstructorCourses = () => {
   const stats = useMemo(() => {
     const published = courses.filter((course) => course.published).length;
     const drafts = courses.length - published;
-    const paid = courses.filter((course) => course.access_model === "paid_upfront").length;
-    const free = courses.filter((course) => course.access_model === "free").length;
-    return { total: courses.length, published, drafts, paid, free };
+    return { total: courses.length, published, drafts, free: courses.length };
   }, [courses]);
 
   if (loading) {
@@ -94,7 +89,7 @@ const InstructorCourses = () => {
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -137,21 +132,6 @@ const InstructorCourses = () => {
             </div>
             <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <EyeOff className="size-5" aria-hidden />
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-foreground-muted">
-                {t("courseListPage.stats.paidUpfront")}
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-foreground">
-                {stats.paid}
-              </p>
-            </div>
-            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <DollarSign className="size-5" aria-hidden />
             </div>
           </div>
         </div>
@@ -243,7 +223,7 @@ const InstructorCourses = () => {
                 <div className="flex flex-1 flex-col p-4">
                   <div className="flex flex-wrap gap-2">
                     <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
-                      {getCourseAccessModelLabel(course.access_model)}
+                      {t("courseListPage.courseCards.free")}
                     </span>
                     <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-1 text-xs font-medium text-foreground">
                       {getCourseOwnerTypeLabel(course.owner_type)}
@@ -261,13 +241,7 @@ const InstructorCourses = () => {
                         {t("courseListPage.courseCards.pricingLabel")}
                       </p>
                       <p className="mt-1 text-sm font-medium text-foreground">
-                        {course.access_model === "paid_upfront"
-                          ? formatVndPrice(course.price_vnd)
-                          : course.access_model === "free_with_paid_certificate"
-                            ? t("courseListPage.courseCards.certificateFeePrefix", {
-                                price: formatVndPrice(course.certificate_fee_vnd),
-                              })
-                            : t("courseListPage.courseCards.free")}
+                        {t("courseListPage.courseCards.free")}
                       </p>
                     </div>
                     <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-3">

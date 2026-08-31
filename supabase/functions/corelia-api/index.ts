@@ -25,27 +25,12 @@ import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.t
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { handleNotificationsUnsubscribe } from "./notifications/unsubscribe.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
-import {
-  handleMyPaymentTransactions,
-  handleSePayDebugLookup,
-  handleSePayCheckout,
-  handleSePayIpn,
-  handleVerifySePayPayment,
-  handleProcessRefund,
-  handleAdminGrantCourseAccess,
-} from "./payments/handlers.ts";
 
 const PROTECTED_OPS = new Set<string>([
-  "payments.sepay.checkout",
-  "payments.transactions",
-  "payments.sepay.debugLookup",
-  "payments.refund",
-  "payments.adminGrantAccess",
   "certificates.issue",
   "certificates.backfillEligible",
   "certificates.revoke",
   // certificates.verify is PUBLIC — intentionally omitted from PROTECTED_OPS
-  "payments.sepay.verify",
   "hackathons.notifyRegistrationReview",
   "hackathons.blastEmail",
   "courses.syncCompletion",
@@ -102,16 +87,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     let response: Response;
     if (op === "health" && req.method === "GET") {
       response = json({ ok: true });
-    } else if (op === "payments.sepay.checkout" && req.method === "POST") {
-      response = await handleSePayCheckout(req, db);
-    } else if (op === "payments.transactions" && req.method === "GET") {
-      response = await handleMyPaymentTransactions(req, db);
-    } else if (op === "payments.sepay.debugLookup" && req.method === "POST") {
-      response = await handleSePayDebugLookup(req, db);
-    } else if (op === "payments.refund" && req.method === "POST") {
-      response = await handleProcessRefund(req, db);
-    } else if (op === "payments.adminGrantAccess" && req.method === "POST") {
-      response = await handleAdminGrantCourseAccess(req, db);
     } else if (op === "certificates.issue" && req.method === "POST") {
       response = await handleIssueCertificate(req, db);
     } else if (op === "certificates.backfillEligible" && req.method === "POST") {
@@ -120,10 +95,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleVerifyCertificate(req, db);
     } else if (op === "certificates.revoke" && req.method === "POST") {
       response = await handleRevokeCertificate(req, db);
-    } else if (op === "payments.sepay.verify" && req.method === "POST") {
-      response = await handleVerifySePayPayment(req, db);
-    } else if (op === "payments.sepay.ipn" && req.method === "POST") {
-      response = await handleSePayIpn(req, db);
     } else if (op === "hackathons.notifyRegistrationReview" && req.method === "POST") {
       response = await handleHackathonNotifyRegistrationReview(req, db);
     } else if (op === "hackathons.blastEmail" && req.method === "POST") {

@@ -9,11 +9,9 @@ import {
   Plus,
 } from "lucide-react";
 import {
-  getCourseAccessModelLabel,
   getCourseLevelLabel,
   getCourseOwnerTypeLabel,
   type CourseOwnerType,
-  type CourseAccessModel,
   type CourseLevel,
 } from "@/types/courses";
 import { Button } from "@/components/ui/button";
@@ -22,7 +20,6 @@ import { Input } from "@/components/ui/input";
 import { PageContainer, PageSectionCard } from "@/components/layouts/PagePrimitives";
 
 import { useInstructorCourseNewForm } from "./hooks/useInstructorCourseNewForm";
-import { formatVndInput, normalizeVndDigits } from "./utils/currency";
 
 export default function InstructorCourseNewPage() {
   const {
@@ -79,7 +76,7 @@ export default function InstructorCourseNewPage() {
               {t("courseNew.stats.accessLabel")}
             </p>
             <p className="mt-2 text-xl font-semibold text-foreground">
-              {getCourseAccessModelLabel(form.access_model)}
+              {t("courseListPage.courseCards.free")}
             </p>
           </div>
           <div className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
@@ -529,98 +526,7 @@ export default function InstructorCourseNewPage() {
                         </p>
                       )}
                     </Field>
-                    {form.owner_type === "external_partner" && (
-                      <Field>
-                        <FieldLabel>{t("courseNew.labels.platformRevenueSharePercent")}</FieldLabel>
-                        <Input
-                          type="number"
-                          min={0}
-                          max={100}
-                          value={form.platform_revenue_share_percent}
-                          disabled={!canManageBusinessSettings}
-                          onChange={(e) =>
-                            setForm((p) => ({
-                              ...p,
-                              platform_revenue_share_percent: e.target.value,
-                            }))
-                          }
-                        />
-                        <p className="mt-1 text-xs text-foreground-muted">
-                          {t("courseNew.hints.partnerRevenueRemainder")}
-                        </p>
-                      </Field>
-                    )}
                   </>
-                )}
-                <Field>
-                  <FieldLabel>{t("courseNew.labels.accessModel")}</FieldLabel>
-                  <select
-                    value={form.access_model}
-                    onChange={(e) =>
-                      setForm((p) => ({
-                        ...p,
-                        access_model: e.target.value as CourseAccessModel,
-                      }))
-                    }
-                    className="w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
-                  >
-                    {(
-                      [
-                        ["free", getCourseAccessModelLabel("free")],
-                        ["paid_upfront", getCourseAccessModelLabel("paid_upfront")],
-                        [
-                          "free_with_paid_certificate",
-                          getCourseAccessModelLabel("free_with_paid_certificate"),
-                        ],
-                      ] as const
-                    ).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                {form.access_model === "paid_upfront" && (
-                  <Field>
-                    <FieldLabel>{t("courseNew.labels.priceVnd")}</FieldLabel>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      value={formatVndInput(form.price_vnd)}
-                      onChange={(e) =>
-                        setForm((p) => ({
-                          ...p,
-                          price_vnd: normalizeVndDigits(e.target.value),
-                        }))
-                      }
-                      placeholder={t("courseNew.placeholders.priceVnd")}
-                    />
-                    <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseNew.hints.vndFormat")}
-                    </p>
-                  </Field>
-                )}
-                {form.access_model === "free_with_paid_certificate" && (
-                  <Field>
-                    <FieldLabel>{t("courseNew.labels.certificateFeeVnd")}</FieldLabel>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      value={formatVndInput(form.certificate_fee_vnd)}
-                      onChange={(e) =>
-                        setForm((p) => ({
-                          ...p,
-                          certificate_fee_vnd: normalizeVndDigits(
-                            e.target.value,
-                          ),
-                        }))
-                      }
-                      placeholder={t("courseNew.placeholders.certificateFeeVnd")}
-                    />
-                    <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseNew.hints.vndFormat")}
-                    </p>
-                  </Field>
                 )}
                 <Field>
                   <FieldLabel>{t("courseNew.labels.level")}</FieldLabel>

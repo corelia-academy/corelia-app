@@ -8,8 +8,10 @@ import {
 const audit = {
   learner_ai_relations: [],
   learner_ai_functions: [],
-  learner_ai_payment_rows: 0,
   learner_ai_quota_columns: [],
+  financial_relations: [],
+  financial_columns: [],
+  courses_with_financial_metadata: 0,
   vector_extension_installed: false,
   instructor_course_tables_present: {
     courses: true,
@@ -41,8 +43,10 @@ test("remaining AI objects, data, quota columns, or missing course tables fail c
   for (const mutation of [
     { learner_ai_relations: [{ object_name: "ai_chat_sessions" }] },
     { learner_ai_functions: [{ function_name: "record_ai_successful_usage" }] },
-    { learner_ai_payment_rows: 1 },
     { learner_ai_quota_columns: ["monthly_tokens"] },
+    { financial_relations: ["payment_transactions"] },
+    { financial_columns: ["enrollments.paid_at"] },
+    { courses_with_financial_metadata: 1 },
     { vector_extension_installed: true },
     { instructor_course_tables_present: { ...audit.instructor_course_tables_present, courses: false } },
   ]) {

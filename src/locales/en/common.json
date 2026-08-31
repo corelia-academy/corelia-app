@@ -693,10 +693,10 @@
     "plannedTitle": "Planned next",
     "footerNote": "Priorities can shift with partner programs and learner feedback. This page is updated when major milestones land.",
     "shippedItems": [
-      "Course catalog, checkout, and self-paced learning workspace",
+      "Free course catalog and self-paced learning workspace",
       "Hackathons: discovery, public hubs, and participant-facing flows",
-      "Account area: profile, billing basics, and achievements overview",
-      "Instructor workspace: course authoring and partner finance tools",
+      "Account area: profile and achievements overview",
+      "Instructor workspace: course authoring and learner management",
       "Admin tools for users, instructors, and platform operations",
       "Open Campus (OCID) linking for credentials and achievement claims"
     ],
@@ -709,7 +709,6 @@
     "plannedItems": [
       "Community layer: comments, showcases, and learner highlights",
       "Stronger analytics for instructors and program owners",
-      "More payment and invoicing options where markets need them",
       "Mobile-first improvements and optional PWA-style install"
     ]
   },

@@ -21,7 +21,6 @@ import {
   Loader2,
   PenLine,
   Settings,
-  DollarSign,
   Trash2,
   Pencil,
   Sparkles,
@@ -83,16 +82,7 @@ import {
   type ParsedChapterStart,
 } from "@/lib/youtubeChapters";
 import {
-  createCourseDiscount,
-  deleteCourseDiscount as deleteCourseDiscountCode,
-  listCourseDiscounts,
-  setCourseDiscountActive,
-  type CourseDiscount,
-  type CourseDiscountType,
-} from "@/lib/discounts";
-import {
   uploadCourseThumbnail,
-  uploadCoursePartnerDocument,
   uploadCertificateTemplate,
   uploadCourseSponsorLogo,
   uploadCoursePartnerLogo,
@@ -100,14 +90,10 @@ import {
 } from "@/lib/storage";
 import {
   getCourseOwnerTypeLabel,
-  getCourseAccessModelLabel,
   getCourseLevelLabel,
-  formatVndPrice,
   formatDuration,
   getYoutubeVideoId,
-  type PartnerCourseDocument,
   type CourseOwnerType,
-  type CourseAccessModel,
   type CourseLevel,
   type SupportedCourseLocale,
   type CourseCoInstructorPermissions,
@@ -186,7 +172,6 @@ import type {
   SectionDropPosition,
   SectionDropTarget,
 } from "./types";
-import { formatVndInput, normalizeVndDigits } from "./utils/currency";
 import { createSponsorId, getNextOrder, isValidHttpUrl } from "./utils/helpers";
 import {
   inviteCoInstructor,
@@ -222,7 +207,7 @@ const InstructorCourseEdit = () => {
     return `${h} hr ${m} min`;
   };
   const { id } = useParams<{ id: string }>();
-  const { profile, user } = useAuth();
+  const { profile } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [sections, setSections] = useState<CourseSection[]>([]);
   const [lessons, setLessons] = useState<CourseLesson[]>([]);
@@ -392,16 +377,7 @@ const InstructorCourseEdit = () => {
     certificate_qr_size_percent: CERTIFICATE_LAYOUT_DEFAULTS.qrSizePercent,
     onchain_certificate_template_url: "",
     onchain_certificate_template_path: "",
-    access_model: "free" as CourseAccessModel,
-    price_vnd: "",
-    promo_price_vnd: "",
-    promo_ends_at: "",
-    certificate_fee_vnd: "",
     owner_type: "corelia" as CourseOwnerType,
-    platform_revenue_share_percent: "100",
-    partner_contract_docs: [] as PartnerCourseDocument[],
-    partner_invoice_docs: [] as PartnerCourseDocument[],
-    partner_transfer_info: "",
     external_source_urls_text: "",
     external_source_attribution_note: "",
   });
@@ -482,8 +458,6 @@ const InstructorCourseEdit = () => {
   const [uploadingThumb, setUploadingThumb] = useState(false);
   const certificateInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingCert, setUploadingCert] = useState(false);
-  const [uploadingContractDoc, setUploadingContractDoc] = useState(false);
-  const [uploadingInvoiceDoc, setUploadingInvoiceDoc] = useState(false);
   const [sponsors, setSponsors] = useState<CourseSponsor[]>([]);
   const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
   const [activeSponsorId, setActiveSponsorId] = useState<string | null>(null);
@@ -520,21 +494,9 @@ const InstructorCourseEdit = () => {
   const partnerLogoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingPartnerLogo, setUploadingPartnerLogo] = useState(false);
   const [ocbDirty, setOcbDirty] = useState(false);
-  const [discounts, setDiscounts] = useState<CourseDiscount[]>([]);
-  const [loadingDiscounts, setLoadingDiscounts] = useState(false);
-  const [creatingDiscount, setCreatingDiscount] = useState(false);
-  const [discountForm, setDiscountForm] = useState({
-    code: "",
-    type: "percent" as CourseDiscountType,
-    value: "",
-    starts_at: "",
-    ends_at: "",
-    max_redemptions: "",
-  });
 
   type SectionId =
     | "info"
-    | "pricing"
     | "content"
     | "assignments"
     | "certificate"
@@ -704,7 +666,6 @@ const InstructorCourseEdit = () => {
   );
 
   const canAccessInfo = Boolean(canEdit);
-  const canAccessPricing = Boolean(canEdit || coInstructorPermsEffective.pricing);
   const canAccessContent = Boolean(canEdit || coInstructorPermsEffective.content);
   const canAccessAssignments = Boolean(
     canEdit || coInstructorPermsEffective.submissions,
@@ -723,7 +684,6 @@ const InstructorCourseEdit = () => {
   useEffect(() => {
     const allowed: SectionId[] = [];
     if (canAccessInfo) allowed.push("info");
-    if (canAccessPricing) allowed.push("pricing");
     if (canAccessContent) allowed.push("content");
     if (canAccessAssignments) allowed.push("assignments");
     if (canAccessCertificate) allowed.push("certificate");
@@ -739,7 +699,6 @@ const InstructorCourseEdit = () => {
   }, [
     activeSection,
     canAccessInfo,
-    canAccessPricing,
     canAccessContent,
     canAccessAssignments,
     canAccessCertificate,
@@ -999,25 +958,6 @@ const InstructorCourseEdit = () => {
   }, [course?.id, canEditCoInstructors]);
 
   useEffect(() => {
-    if (!id || !canAccessPricing) return;
-    let cancelled = false;
-    setLoadingDiscounts(true);
-    listCourseDiscounts(id)
-      .then((rows) => {
-        if (!cancelled) setDiscounts(rows);
-      })
-      .catch(() => {
-        if (!cancelled) setDiscounts([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingDiscounts(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [id, canAccessPricing]);
-
-  useEffect(() => {
     if (course) {
       setForm({
         slug: course.slug,
@@ -1052,27 +992,7 @@ const InstructorCourseEdit = () => {
           course.certificate_qr_size_percent ?? CERTIFICATE_LAYOUT_DEFAULTS.qrSizePercent,
         onchain_certificate_template_url: course.onchain_certificate_template_url ?? "",
         onchain_certificate_template_path: course.onchain_certificate_template_path ?? "",
-        access_model: course.access_model ?? "free",
-        price_vnd:
-          course.price_vnd && course.price_vnd > 0
-            ? String(course.price_vnd)
-            : "",
-        promo_price_vnd:
-          course.promo_price_vnd && course.promo_price_vnd > 0
-            ? String(course.promo_price_vnd)
-            : "",
-        promo_ends_at: course.promo_ends_at ?? "",
-        certificate_fee_vnd:
-          course.certificate_fee_vnd && course.certificate_fee_vnd > 0
-            ? String(course.certificate_fee_vnd)
-            : "",
         owner_type: course.owner_type ?? "corelia",
-        platform_revenue_share_percent: String(
-          course.platform_revenue_share_percent ?? 100,
-        ),
-        partner_contract_docs: course.partner_contract_docs ?? [],
-        partner_invoice_docs: course.partner_invoice_docs ?? [],
-        partner_transfer_info: course.partner_transfer_info ?? "",
         external_source_urls_text: (course.external_source_urls ?? []).join("\n"),
         external_source_attribution_note:
           course.external_source_attribution_note ?? "",
@@ -1352,40 +1272,6 @@ const InstructorCourseEdit = () => {
 
   const saveCourseInfo = async (successMessage = t("courseEdit.toasts.saved")) => {
     if (!id || !course) return;
-    if (form.access_model === "paid_upfront" && Number(form.price_vnd) <= 0) {
-      setError(t("courseEdit.errors.invalidPaidPrice"));
-      return;
-    }
-    if (
-      form.access_model === "paid_upfront" &&
-      form.promo_price_vnd &&
-      Number(form.promo_price_vnd) >= Number(form.price_vnd || 0)
-    ) {
-      setError(t("courseEdit.errors.invalidPromoPrice"));
-      return;
-    }
-    if (form.access_model === "paid_upfront" && form.promo_ends_at) {
-      const ts = Date.parse(form.promo_ends_at);
-      if (!Number.isFinite(ts)) {
-        setError(t("courseEdit.errors.invalidPromoEndsAt"));
-        return;
-      }
-    }
-    if (
-      form.access_model === "free_with_paid_certificate" &&
-      Number(form.certificate_fee_vnd) <= 0
-    ) {
-      setError(t("courseEdit.errors.invalidCertificateFee"));
-      return;
-    }
-    if (
-      form.owner_type === "external_partner" &&
-      (Number(form.platform_revenue_share_percent) < 0 ||
-        Number(form.platform_revenue_share_percent) > 100)
-    ) {
-      setError(t("courseEdit.errors.invalidRevenueShare"));
-      return;
-    }
     if (form.is_external_aggregated) {
       const externalSources = form.external_source_urls_text
         .split("\n")
@@ -1603,34 +1489,7 @@ const InstructorCourseEdit = () => {
         ...certificatePatch,
         onchain_certificate_template_url: form.onchain_certificate_template_url || null,
         onchain_certificate_template_path: form.onchain_certificate_template_path || null,
-        access_model: form.access_model,
-        price_vnd:
-          form.access_model === "paid_upfront"
-            ? Number(form.price_vnd || 0)
-            : null,
-        promo_price_vnd:
-          form.access_model === "paid_upfront"
-            ? Number(form.promo_price_vnd || 0) || null
-            : null,
-        promo_ends_at:
-          form.access_model === "paid_upfront"
-            ? form.promo_ends_at.trim() || null
-            : null,
-        certificate_fee_vnd:
-          form.access_model === "free_with_paid_certificate"
-            ? Number(form.certificate_fee_vnd || 0)
-            : null,
         owner_type: form.owner_type,
-        platform_revenue_share_percent:
-          form.owner_type === "corelia"
-            ? 100
-            : Number(form.platform_revenue_share_percent || 0),
-        partner_contract_docs: form.partner_contract_docs,
-        partner_invoice_docs: form.partner_invoice_docs,
-        partner_transfer_info:
-          form.owner_type === "external_partner"
-            ? form.partner_transfer_info.trim() || null
-            : null,
         ...(canEditCoInstructors && {
           co_instructors: coInstructorSnapshots,
           co_instructor_permissions: coInstructorPermissionsPayload,
@@ -1673,34 +1532,7 @@ const InstructorCourseEdit = () => {
               certificate_template_path: form.certificate_template_path,
               onchain_certificate_template_url: form.onchain_certificate_template_url,
               onchain_certificate_template_path: form.onchain_certificate_template_path,
-              access_model: form.access_model,
-              price_vnd:
-                form.access_model === "paid_upfront"
-                  ? Number(form.price_vnd || 0)
-                  : null,
-              promo_price_vnd:
-                form.access_model === "paid_upfront"
-                  ? Number(form.promo_price_vnd || 0) || null
-                  : null,
-              promo_ends_at:
-                form.access_model === "paid_upfront"
-                  ? form.promo_ends_at.trim() || null
-                  : null,
-              certificate_fee_vnd:
-                form.access_model === "free_with_paid_certificate"
-                  ? Number(form.certificate_fee_vnd || 0)
-                  : null,
               owner_type: form.owner_type,
-              platform_revenue_share_percent:
-                form.owner_type === "corelia"
-                  ? 100
-                  : Number(form.platform_revenue_share_percent || 0),
-              partner_contract_docs: form.partner_contract_docs,
-              partner_invoice_docs: form.partner_invoice_docs,
-              partner_transfer_info:
-                form.owner_type === "external_partner"
-                  ? form.partner_transfer_info.trim() || null
-                  : null,
               ...(canEditCoInstructors && {
                 co_instructors: coInstructorSnapshots ?? prev.co_instructors ?? [],
                 co_instructor_permissions:
@@ -2268,49 +2100,6 @@ const InstructorCourseEdit = () => {
     const nextPartners = partners.filter((x) => String(x.id ?? "").trim() !== pid);
     await persistPartners(nextPartners, "courseEdit.partners.toasts.removed");
     await deleteStorageObjectByPath(p.logo_path ?? null);
-  };
-
-  const handleUploadPartnerDocument = async (
-    kind: "contract" | "invoice",
-    file: File,
-  ) => {
-    if (!id || !profile?.id) return;
-    if (kind === "contract") setUploadingContractDoc(true);
-    else setUploadingInvoiceDoc(true);
-    setError(null);
-    try {
-      const uploaded = await uploadCoursePartnerDocument(id, kind, file);
-      const nextDoc: PartnerCourseDocument = {
-        name: file.name,
-        url: uploaded.url,
-        path: uploaded.path,
-        uploaded_at: new Date().toISOString(),
-        uploaded_by: profile.id,
-      };
-      setForm((prev) => ({
-        ...prev,
-        partner_contract_docs:
-          kind === "contract"
-            ? [...prev.partner_contract_docs, nextDoc]
-            : prev.partner_contract_docs,
-        partner_invoice_docs:
-          kind === "invoice"
-            ? [...prev.partner_invoice_docs, nextDoc]
-            : prev.partner_invoice_docs,
-      }));
-      toast.success(
-        kind === "contract"
-          ? t("courseEdit.toasts.partnerContractUploaded")
-          : t("courseEdit.toasts.partnerInvoiceUploaded"),
-      );
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : t("courseEdit.errors.uploadPartnerDocsFailed"),
-      );
-    } finally {
-      if (kind === "contract") setUploadingContractDoc(false);
-      else setUploadingInvoiceDoc(false);
-    }
   };
 
   const handleGenerateCourseDescription = (
@@ -2991,7 +2780,7 @@ const InstructorCourseEdit = () => {
       duration_seconds: Math.max(0, Math.round(durationSeconds || 0)),
       order: getNextOrder(secSubset),
       is_preview_free:
-        form.access_model === "paid_upfront" ? snap.isPreviewFree : false,
+        false,
     });
 
     if (activeContentLocale !== primaryContentLocale) {
@@ -3890,23 +3679,6 @@ const InstructorCourseEdit = () => {
     }
   };
 
-  const handleTogglePreviewLesson = async (
-    lessonId: string,
-    nextValue: boolean,
-  ) => {
-    if (!id) return;
-    try {
-      await updateLesson(id, lessonId, { is_preview_free: nextValue });
-      setLessons((prev) =>
-        prev.map((l) =>
-          l.id === lessonId ? { ...l, is_preview_free: nextValue } : l,
-        ),
-      );
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("courseEdit.errors.updatePreviewFailed"));
-    }
-  };
-
   const handleDeleteSection = async (sectionId: string) => {
     if (!id || !confirm(t("courseEdit.confirm.deleteSection"))) return;
     const secLessons = lessons.filter((l) => l.section_id === sectionId);
@@ -4597,7 +4369,7 @@ const InstructorCourseEdit = () => {
                 : t("courseEdit.labels.draft")}
             </span>
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
-              {getCourseAccessModelLabel(course.access_model)}
+              {t("courseListPage.courseCards.free")}
             </span>
             <span className="inline-flex items-center rounded-full border border-border-subtle bg-surface-raised px-3 py-2 text-xs font-medium text-foreground">
               {getCourseLevelLabel(course.level)}
@@ -4690,23 +4462,6 @@ const InstructorCourseEdit = () => {
               >
                 <Settings className="size-4 shrink-0" aria-hidden />
                 {t("courseEdit.sidebar.nav.info")}
-              </button>
-            </li>
-            ) : null}
-            {canAccessPricing ? (
-            <li>
-              <button
-                type="button"
-                onClick={() => setSection("pricing")}
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
-                  activeSection === "pricing"
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-foreground-muted hover:bg-surface-raised hover:text-foreground",
-                )}
-              >
-                <DollarSign className="size-4 shrink-0" aria-hidden />
-                {t("courseEdit.sidebar.nav.pricing")}
               </button>
             </li>
             ) : null}
@@ -6079,126 +5834,6 @@ const InstructorCourseEdit = () => {
                         })}
                       </p>
                     </Field>
-                    {form.owner_type === "external_partner" && (
-                      <>
-                        <Field>
-                          <FieldLabel>{t("courseEdit.form.platformRevenueShareLabel")}</FieldLabel>
-                          <Input
-                            type="number"
-                            min={0}
-                            max={100}
-                            value={form.platform_revenue_share_percent}
-                            disabled={!canManageBusinessSettings}
-                            onChange={(e) =>
-                              setForm((p) => ({
-                                ...p,
-                                platform_revenue_share_percent: e.target.value,
-                              }))
-                            }
-                          />
-                          <p className="mt-1 text-xs text-foreground-muted">
-                            {t("courseEdit.business.instructorShare", {
-                              percent:
-                                100 -
-                                Number(form.platform_revenue_share_percent || 0),
-                            })}
-                          </p>
-                        </Field>
-                        <Field>
-                          <FieldLabel>{t("courseEdit.business.partnerTransferLabel")}</FieldLabel>
-                          <textarea
-                            value={form.partner_transfer_info}
-                            onChange={(e) =>
-                              setForm((p) => ({
-                                ...p,
-                                partner_transfer_info: e.target.value,
-                              }))
-                            }
-                            disabled={!canManageBusinessSettings}
-                            rows={4}
-                            className="min-h-[90px] w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 disabled:opacity-60"
-                            placeholder={t("courseEdit.form.partnerTransferPlaceholder")}
-                          />
-                          <p className="mt-1 text-xs text-foreground-muted">
-                            {t("courseEdit.business.partnerTransferHint")}
-                          </p>
-                        </Field>
-                        <Field>
-                          <FieldLabel>{t("courseEdit.form.partnerContractDocsLabel")}</FieldLabel>
-                          <Input
-                            type="file"
-                            disabled={
-                              !canManageBusinessSettings || uploadingContractDoc
-                            }
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file)
-                                void handleUploadPartnerDocument(
-                                  "contract",
-                                  file,
-                                );
-                              e.target.value = "";
-                            }}
-                          />
-                          {form.partner_contract_docs.length > 0 ? (
-                            <div className="mt-2 space-y-1 text-xs">
-                              {form.partner_contract_docs.map((doc) => (
-                                <a
-                                  key={doc.path}
-                                  href={doc.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="block text-primary hover:underline"
-                                >
-                                  {doc.name}
-                                </a>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="mt-1 text-xs text-foreground-muted">
-                              {t("courseEdit.business.noContractDocs")}
-                            </p>
-                          )}
-                        </Field>
-                        <Field>
-                          <FieldLabel>{t("courseEdit.form.partnerInvoiceDocsLabel")}</FieldLabel>
-                          <Input
-                            type="file"
-                            disabled={
-                              !canManageBusinessSettings || uploadingInvoiceDoc
-                            }
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file)
-                                void handleUploadPartnerDocument(
-                                  "invoice",
-                                  file,
-                                );
-                              e.target.value = "";
-                            }}
-                          />
-                          {form.partner_invoice_docs.length > 0 ? (
-                            <div className="mt-2 space-y-1 text-xs">
-                              {form.partner_invoice_docs.map((doc) => (
-                                <a
-                                  key={doc.path}
-                                  href={doc.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="block text-primary hover:underline"
-                                >
-                                  {doc.name}
-                                </a>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="mt-1 text-xs text-foreground-muted">
-                              {t("courseEdit.business.noInvoiceDocs")}
-                            </p>
-                          )}
-                        </Field>
-                      </>
-                    )}
                   </>
                 )}
                 <Field>
@@ -6359,433 +5994,6 @@ const InstructorCourseEdit = () => {
             </section>
           )}
 
-          {activeSection === "pricing" && canAccessPricing && (
-            <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
-              <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
-                <DollarSign className="size-5" aria-hidden /> {t("courseEdit.sidebar.nav.pricing")}
-              </h2>
-              <p className="mt-1 text-sm text-foreground-muted">
-                {t("courseEdit.pricing.intro")}
-              </p>
-
-              <FieldGroup className="mt-4">
-                <Field>
-                  <FieldLabel>{t("courseEdit.pricing.accessModelLabel")}</FieldLabel>
-                  <select
-                    value={form.access_model}
-                    onChange={(e) =>
-                      setForm((p) => ({
-                        ...p,
-                        access_model: e.target.value as CourseAccessModel,
-                      }))
-                    }
-                    className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
-                  >
-                    {(
-                      [
-                        ["free", getCourseAccessModelLabel("free")],
-                        ["paid_upfront", getCourseAccessModelLabel("paid_upfront")],
-                        [
-                          "free_with_paid_certificate",
-                          getCourseAccessModelLabel("free_with_paid_certificate"),
-                        ],
-                      ] as const
-                    ).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-
-                {form.access_model === "paid_upfront" && (
-                  <>
-                    <Field>
-                      <FieldLabel>{t("courseEdit.pricing.priceVndLabel")}</FieldLabel>
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        value={formatVndInput(form.price_vnd)}
-                        onChange={(e) =>
-                          setForm((p) => ({
-                            ...p,
-                            price_vnd: normalizeVndDigits(e.target.value),
-                          }))
-                        }
-                      />
-                      <p className="mt-1 text-xs text-foreground-muted">
-                        {t("courseEdit.pricing.paidPreviewHint")}
-                      </p>
-                    </Field>
-
-                    <Field>
-                      <FieldLabel>{t("courseEdit.pricing.promoPriceVndLabel")}</FieldLabel>
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        value={formatVndInput(form.promo_price_vnd)}
-                        onChange={(e) =>
-                          setForm((p) => ({
-                            ...p,
-                            promo_price_vnd: normalizeVndDigits(e.target.value),
-                          }))
-                        }
-                        placeholder={t("courseEdit.pricing.promoPricePlaceholder")}
-                      />
-                      <p className="mt-1 text-xs text-foreground-muted">
-                        {t("courseEdit.pricing.promoMustBeLower")}
-                      </p>
-                    </Field>
-
-                    <Field>
-                      <FieldLabel>{t("courseEdit.pricing.promoEndsAtLabel")}</FieldLabel>
-                      <Input
-                        value={form.promo_ends_at}
-                        onChange={(e) =>
-                          setForm((p) => ({
-                            ...p,
-                            promo_ends_at: e.target.value,
-                          }))
-                        }
-                        placeholder="2026-03-31T23:59:59.000Z"
-                      />
-                      <p className="mt-1 text-xs text-foreground-muted">
-                        {t("courseEdit.pricing.promoEndsOptional")}
-                      </p>
-                    </Field>
-
-                    <div className="rounded-md border border-border-subtle bg-surface-raised p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-medium text-foreground">
-                            {t("courseEdit.pricing.discountsTitle")}
-                          </p>
-                          <p className="text-xs text-foreground-muted">
-                            {t("courseEdit.discounts.createTitle")}
-                            {t("courseEdit.discounts.subtitleSuffix")}
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={!id || loadingDiscounts}
-                          onClick={() => {
-                            if (!id) return;
-                            setLoadingDiscounts(true);
-                            listCourseDiscounts(id)
-                              .then((rows) => setDiscounts(rows))
-                              .finally(() => setLoadingDiscounts(false));
-                          }}
-                        >
-                          {loadingDiscounts
-                            ? t("courseEdit.labels.loading")
-                            : t("courseEdit.labels.reload")}
-                        </Button>
-                      </div>
-
-                      {discounts.length === 0 ? (
-                        <p className="mt-3 text-xs text-foreground-muted">
-                          {t("courseEdit.discounts.empty")}
-                        </p>
-                      ) : (
-                        <div className="mt-3 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
-                          <table className="w-full text-left text-xs">
-                            <thead>
-                              <tr className="border-b border-border-subtle bg-surface-raised">
-                                <th className="px-3 py-2 font-medium text-foreground">
-                                  {t("courseEdit.discounts.table.code")}
-                                </th>
-                                <th className="px-3 py-2 font-medium text-foreground">
-                                  {t("courseEdit.discounts.table.type")}
-                                </th>
-                                <th className="px-3 py-2 font-medium text-foreground">
-                                  {t("courseEdit.discounts.table.value")}
-                                </th>
-                                <th className="px-3 py-2 font-medium text-foreground">
-                                  {t("courseEdit.discounts.table.status")}
-                                </th>
-                                <th className="px-3 py-2 font-medium text-foreground">
-                                  {t("courseEdit.discounts.table.actions")}
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {discounts.map((d) => (
-                                <tr
-                                  key={d.id}
-                                  className="border-b border-border-subtle last:border-b-0"
-                                >
-                                  <td className="px-3 py-2 font-mono text-foreground">
-                                    {d.code}
-                                  </td>
-                                  <td className="px-3 py-2 text-foreground-muted">
-                                    {d.type === "percent" ? "%" : "VND"}
-                                  </td>
-                                  <td className="px-3 py-2 text-foreground">
-                                    {d.type === "percent"
-                                      ? `${d.value}%`
-                                      : formatVndPrice(d.value)}
-                                  </td>
-                                  <td className="px-3 py-2">
-                                    {d.active ? (
-                                      <span className="text-success text-xs">
-                                        {t("courseEdit.discounts.table.active")}
-                                      </span>
-                                    ) : (
-                                      <span className="text-foreground-muted text-xs">
-                                        {t("courseEdit.discounts.table.inactive")}
-                                      </span>
-                                    )}
-                                  </td>
-                                  <td className="px-3 py-2">
-                                    <div className="flex items-center gap-2">
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={async () => {
-                                          if (!id) return;
-                                          await setCourseDiscountActive(
-                                            id,
-                                            d.id,
-                                            !d.active,
-                                            user,
-                                          );
-                                          setDiscounts((prev) =>
-                                            prev.map((x) =>
-                                              x.id === d.id
-                                                ? { ...x, active: !d.active }
-                                                : x,
-                                            ),
-                                          );
-                                        }}
-                                      >
-                                        {d.active
-                                          ? t("courseEdit.discounts.activeOff")
-                                          : t("courseEdit.discounts.activeOn")}
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="text-destructive border-destructive/40 hover:bg-destructive/10"
-                                        onClick={async () => {
-                                          if (!id) return;
-                                          await deleteCourseDiscountCode(
-                                            id,
-                                            d.id,
-                                            user,
-                                          );
-                                          setDiscounts((prev) =>
-                                            prev.filter((x) => x.id !== d.id),
-                                          );
-                                        }}
-                                      >
-                                        {t("courseEdit.discounts.table.delete")}
-                                      </Button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-
-                      <div className="mt-4 grid gap-3 md:grid-cols-2">
-                        <div>
-                          <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                            {t("courseEdit.discounts.form.code")}
-                          </label>
-                          <Input
-                            value={discountForm.code}
-                            onChange={(e) =>
-                              setDiscountForm((p) => ({
-                                ...p,
-                                code: e.target.value.toUpperCase(),
-                              }))
-                            }
-                            placeholder={t("courseEdit.discounts.form.codePlaceholder")}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                              {t("courseEdit.discounts.form.type")}
-                            </label>
-                            <select
-                              value={discountForm.type}
-                              onChange={(e) =>
-                                setDiscountForm((p) => ({
-                                  ...p,
-                                  type: e.target.value as CourseDiscountType,
-                                }))
-                              }
-                              className="w-full rounded border border-border bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15"
-                            >
-                              <option value="percent">%</option>
-                              <option value="amount_vnd">VND</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                              {t("courseEdit.discounts.form.value")}
-                            </label>
-                            <Input
-                              inputMode="numeric"
-                              value={discountForm.value}
-                              onChange={(e) =>
-                                setDiscountForm((p) => ({
-                                  ...p,
-                                  value: normalizeVndDigits(e.target.value),
-                                }))
-                              }
-                              placeholder={
-                                discountForm.type === "percent" ? "10" : "50000"
-                              }
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                            {t("courseEdit.discounts.form.startsAt")}
-                          </label>
-                          <Input
-                            value={discountForm.starts_at}
-                            onChange={(e) =>
-                              setDiscountForm((p) => ({
-                                ...p,
-                                starts_at: e.target.value,
-                              }))
-                            }
-                            placeholder="2026-03-17T00:00:00.000Z"
-                          />
-                        </div>
-                        <div>
-                          <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                            {t("courseEdit.discounts.form.endsAt")}
-                          </label>
-                          <Input
-                            value={discountForm.ends_at}
-                            onChange={(e) =>
-                              setDiscountForm((p) => ({
-                                ...p,
-                                ends_at: e.target.value,
-                              }))
-                            }
-                            placeholder="2026-03-31T23:59:59.000Z"
-                          />
-                        </div>
-                        <div>
-                          <label className="mb-1 block text-xs font-medium text-foreground-muted">
-                            {t("courseEdit.discounts.form.maxRedemptions")}
-                          </label>
-                          <Input
-                            inputMode="numeric"
-                            value={discountForm.max_redemptions}
-                            onChange={(e) =>
-                              setDiscountForm((p) => ({
-                                ...p,
-                                max_redemptions: normalizeVndDigits(
-                                  e.target.value,
-                                ),
-                              }))
-                            }
-                            placeholder="100"
-                          />
-                        </div>
-                        <div className="flex items-end">
-                          <Button
-                            type="button"
-                            disabled={
-                              creatingDiscount ||
-                              !id ||
-                              !discountForm.code.trim() ||
-                              Number(discountForm.value || 0) <= 0
-                            }
-                            onClick={async () => {
-                              if (!id) return;
-                              setCreatingDiscount(true);
-                              try {
-                                const created = await createCourseDiscount(id, {
-                                  code: discountForm.code,
-                                  type: discountForm.type,
-                                  value: Number(discountForm.value || 0),
-                                  starts_at:
-                                    discountForm.starts_at.trim() || null,
-                                  ends_at: discountForm.ends_at.trim() || null,
-                                  max_redemptions: discountForm.max_redemptions
-                                    ? Number(discountForm.max_redemptions)
-                                    : null,
-                                  active: true,
-                                }, user);
-                                setDiscounts((prev) => [created, ...prev]);
-                                setDiscountForm({
-                                  code: "",
-                                  type: "percent",
-                                  value: "",
-                                  starts_at: "",
-                                  ends_at: "",
-                                  max_redemptions: "",
-                                });
-                                toast.success(t("courseEdit.toasts.discountCreated"));
-                              } catch (e) {
-                                toast.error(
-                                  e instanceof Error
-                                    ? e.message
-                                    : t("courseEdit.errors.createDiscountFailed"),
-                                );
-                              } finally {
-                                setCreatingDiscount(false);
-                              }
-                            }}
-                          >
-                            {creatingDiscount
-                              ? t("courseEdit.labels.creatingDiscount")
-                              : t("courseEdit.labels.createDiscount")}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {form.access_model === "free_with_paid_certificate" && (
-                  <Field>
-                    <FieldLabel>{t("courseEdit.pricing.certificateFeeLabel")}</FieldLabel>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      value={formatVndInput(form.certificate_fee_vnd)}
-                      onChange={(e) =>
-                        setForm((p) => ({
-                          ...p,
-                          certificate_fee_vnd: normalizeVndDigits(
-                            e.target.value,
-                          ),
-                        }))
-                      }
-                    />
-                    <p className="mt-1 text-xs text-foreground-muted">
-                      {t("courseEdit.pricing.certificateFeeHint")}
-                    </p>
-                  </Field>
-                )}
-              </FieldGroup>
-
-              <Button
-                className="mt-4"
-                onClick={() =>
-                  void saveCourseInfo(t("courseEdit.labels.savePricing"))
-                }
-                disabled={saving || !canEdit}
-              >
-                {saving ? t("courseEdit.labels.saving") : t("courseEdit.labels.save")}
-              </Button>
-            </section>
-          )}
-
           {activeSection === "content" && canAccessContent && (
             <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -6836,11 +6044,6 @@ const InstructorCourseEdit = () => {
               </div>
 
               <div className="mt-4 space-y-4">
-                {form.access_model === "paid_upfront" && (
-                  <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
-                    {t("courseEdit.content.paidUpfrontPreviewBanner")}
-                  </div>
-                )}
                 {lessonsBySection.map(({ section, lessons: secLessons }, sectionIndex) => {
                   const isSectionDragging = draggingSectionId === section.id;
                   const isSectionDropBefore =
@@ -7022,12 +6225,6 @@ const InstructorCourseEdit = () => {
                                   {t("courseEdit.lessons.notTranslated")}
                                 </span>
                               )}
-                              {form.access_model === "paid_upfront" &&
-                                lesson.is_preview_free && (
-                                  <span className="rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
-                                    {t("courseEdit.lessons.previewBadge")}
-                                  </span>
-                                )}
                               {isLessonDraftForLearners(lesson) ? (
                                 <span className="rounded-md bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">
                                   {t("courseEdit.lessons.draftBadge")}
@@ -7079,23 +6276,6 @@ const InstructorCourseEdit = () => {
                               >
                                 <ArrowDownToLine className="size-4" aria-hidden />
                               </Button>
-                              {form.access_model === "paid_upfront" && (
-                                <label className="inline-flex items-center gap-2 text-xs text-foreground-muted">
-                                  <input
-                                    type="checkbox"
-                                    checked={!!lesson.is_preview_free}
-                                    disabled={reorderingLessons}
-                                    onChange={(e) =>
-                                      void handleTogglePreviewLesson(
-                                        lesson.id,
-                                        e.target.checked,
-                                      )
-                                    }
-                                    className="rounded border-border"
-                                  />
-                                  {t("courseEdit.lessons.previewFreeBadge")}
-                                </label>
-                              )}
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -8229,17 +7409,6 @@ const InstructorCourseEdit = () => {
                     </p>
                   </Field>
                   ) : null}
-                  {form.access_model === "paid_upfront" && newLessonFormat !== "quiz" && (
-                    <label className="inline-flex items-center gap-2 text-xs text-foreground-muted">
-                      <input
-                        type="checkbox"
-                        checked={newLessonIsPreviewFree}
-                        onChange={(e) => setNewLessonIsPreviewFree(e.target.checked)}
-                        className="rounded border-border"
-                      />
-                      {t("courseEdit.lessons.previewFreeLabel")}
-                    </label>
-                  )}
                   {newLessonFormat === "quiz" ? (
                     <div className="space-y-3 rounded-lg border border-border-subtle bg-surface-raised p-4">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -8687,14 +7856,6 @@ const InstructorCourseEdit = () => {
                   </span>
                 </div>
               </div>
-              {form.access_model === "free_with_paid_certificate" && (
-                <p className="mb-3 text-sm text-primary">
-                  Học viên cần thanh toán{" "}
-                  {formatVndPrice(Number(form.certificate_fee_vnd || 0))} để mở
-                  quyền nộp bài thu hoạch và xét chứng nhận (cổng thanh toán sẽ
-                  tích hợp sau).
-                </p>
-              )}
               <p className="mb-4 text-sm text-foreground-muted">
                 Nếu có, học viên phải nộp và được duyệt mới đủ điều kiện nhận
                 chứng nhận.
@@ -9248,9 +8409,6 @@ const InstructorCourseEdit = () => {
                           {t("courseEdit.students.columns.certificate")}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
-                          {t("courseEdit.students.columns.payment")}
-                        </th>
-                        <th className="px-4 py-3 font-medium text-foreground">
                           {t("courseEdit.students.columns.enrolledAt")}
                         </th>
                         <th className="px-4 py-3 font-medium text-foreground">
@@ -9264,8 +8422,6 @@ const InstructorCourseEdit = () => {
                         const prog = studentProgress[e.user_id] ?? 0;
                         const sub = submissionByUser[e.user_id];
                         const hasCert = !!e.certificate_issued_at;
-                        const isPaid =
-                          !!e.paid_amount_vnd && e.paid_amount_vnd > 0;
                         return (
                           <tr
                             key={e.id}
@@ -9343,30 +8499,6 @@ const InstructorCourseEdit = () => {
                               ) : (
                                 <span className="text-foreground-muted text-xs">
                                   {t("courseEdit.students.status.notEligible")}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              {isPaid ? (
-                                <div className="space-y-0.5">
-                                  <div className="text-xs font-medium text-foreground">
-                                    {t("courseEdit.students.status.paid")} ·{" "}
-                                    {formatVndPrice(e.paid_amount_vnd)}
-                                  </div>
-                                  <div className="text-xs text-foreground-muted">
-                                    {e.paid_provider
-                                      ? t("courseEdit.students.providerLabel", {
-                                          provider: e.paid_provider,
-                                        })
-                                      : t("courseEdit.students.providerEmpty")}
-                                    {e.paid_order_id
-                                      ? ` · ${t("courseEdit.students.orderLabel", { id: e.paid_order_id })}`
-                                      : ""}
-                                  </div>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-foreground-muted">
-                                  {t("courseEdit.students.status.free")}
                                 </span>
                               )}
                             </td>

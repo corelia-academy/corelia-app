@@ -21,10 +21,6 @@
     "achievements": {
       "title": "Kho thành tích",
       "description": "Quản lý chứng nhận & huy hiệu"
-    },
-    "billing": {
-      "title": "Thanh toán & lịch sử",
-      "description": "Hoá đơn, lịch sử thanh toán"
     }
   },
   "header": {
@@ -34,7 +30,7 @@
       "support_staff": "Tài khoản học vụ",
       "student": "Tài khoản học viên"
     },
-    "subtitle": "Quản lý thông tin cá nhân, bảo mật, hồ sơ nghề nghiệp và toàn bộ lịch sử thanh toán của bạn trong một nơi.",
+    "subtitle": "Quản lý thông tin cá nhân, bảo mật và hồ sơ nghề nghiệp tại một nơi.",
     "summary": {
       "profileLabel": "Hồ sơ",
       "roleLabel": "Vai trò",
@@ -230,7 +226,7 @@
     "fullName": {
       "label": "Họ và tên đầy đủ",
       "placeholder": "Nguyễn Văn A",
-      "hint": "Dùng để hiển thị trên chứng nhận, bảng điểm và hoá đơn."
+      "hint": "Dùng để hiển thị trên chứng nhận và bảng điểm."
     },
     "username": {
       "label": "Username",
@@ -365,31 +361,6 @@
     },
     "errors": {
       "updateFailed": "Không thể cập nhật hồ sơ giảng viên."
-    }
-  },
-  "billing": {
-    "title": "Lịch sử thanh toán",
-    "subtitle": "Xem lại các lần đóng học phí, hoá đơn và thông tin liên quan để tiện đối soát khi cần.",
-    "mustLogin": "Bạn cần đăng nhập để xem lịch sử thanh toán.",
-    "loading": "Đang tải lịch sử...",
-    "empty": "Chưa có giao dịch nào.",
-    "purpose": {
-      "coursePurchase": "Mua khoá học",
-      "certificateFee": "Phí chứng nhận"
-    },
-    "meta": {
-      "course": "Course: {{id}}",
-      "providerOrder": "Provider: {{provider}} · Order: {{order}}",
-      "courseProviderOrder": "Course: {{course}} · Provider: {{provider}} · Order: {{order}}"
-    },
-    "table": {
-      "time": "Thời gian",
-      "content": "Nội dung",
-      "amount": "Số tiền",
-      "status": "Trạng thái"
-    },
-    "errors": {
-      "fetchFailed": "Không lấy được lịch sử thanh toán."
     }
   },
   "ocid": {

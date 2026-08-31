@@ -2,7 +2,6 @@ DO $test$
 DECLARE
   v_remaining text;
   v_user_id uuid := gen_random_uuid();
-  v_rejected boolean := false;
 BEGIN
   SELECT string_agg(c.relname, ', ')
   INTO v_remaining
@@ -34,20 +33,6 @@ BEGIN
   END IF;
 
   INSERT INTO auth.users (id, email) VALUES (v_user_id, 'retirement-test@corelia.local');
-
-  BEGIN
-    INSERT INTO public.payment_transactions (
-      id, user_id, course_id, purpose, amount_vnd, provider, status
-    ) VALUES (
-      'RETIREMENT-AI-TX', v_user_id, 'retired-ai', 'ai_subscription', 1, 'sepay', 'pending'
-    );
-  EXCEPTION WHEN check_violation THEN
-    v_rejected := true;
-  END;
-
-  IF NOT v_rejected THEN
-    RAISE EXCEPTION 'payment_transactions still accepts ai_subscription';
-  END IF;
 
   IF to_regclass('public.courses') IS NULL
      OR to_regclass('public.course_sections') IS NULL
