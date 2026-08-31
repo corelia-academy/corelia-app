@@ -78,9 +78,7 @@ export default function CheckoutCourse() {
     return computeDisplayPrice(course);
   }, [course]);
 
-  const isFreeCourse =
-    !!course &&
-    (course.access_model !== "paid_upfront" || !pricing || pricing.displayAmount === 0);
+  const isFreeCourse = !!course && course.access_model !== "paid_upfront";
 
   const canPay =
     !!course &&
@@ -89,7 +87,7 @@ export default function CheckoutCourse() {
     pricing.displayAmount > 0;
 
   const handleFreeEnroll = async () => {
-    if (!courseId || !course) return;
+    if (!courseId || !course || !isFreeCourse) return;
     if (!user) {
       toast.error(t("detail.checkout.mustLoginToPay"));
       navigate("/login", { replace: true });
@@ -97,9 +95,7 @@ export default function CheckoutCourse() {
     }
     setSubmitting(true);
     try {
-      if (course.access_model !== "paid_upfront") {
-        await enrollCourse(courseId, user);
-      }
+      await enrollCourse(courseId, user);
       toast.success(t("detail.checkout.freeCourseEnrolled"));
       navigate(`/learn/${courseId}`, { replace: true });
     } catch (e) {
