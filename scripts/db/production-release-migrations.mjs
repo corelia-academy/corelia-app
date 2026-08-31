@@ -23,15 +23,15 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260827130000_remove_daily_streak_feature.sql",
   "supabase/migrations/20260828060630_harden_security_definer_rpc_boundaries.sql",
   "supabase/migrations/20260830212012_remove_learner_facing_ai_database.sql",
+  "supabase/migrations/20260830230917_drop_unused_vector_extension.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// The first release wave was applied to Production on 2026-08-28. Keep it in
-// the reviewed release artifact, but distinguish it from the one migration
-// that is still pending so the pre-deploy ledger gate remains exact.
+// Every approved migration except the final entry is already released. Keep
+// the reviewed history distinct from the one migration pending this rollout.
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
   APPROVED_PENDING_VERSIONS.slice(0, -1),
 );

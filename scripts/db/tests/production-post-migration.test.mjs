@@ -10,6 +10,7 @@ const audit = {
   learner_ai_functions: [],
   learner_ai_payment_rows: 0,
   learner_ai_quota_columns: [],
+  vector_extension_installed: false,
   instructor_course_tables_present: {
     courses: true,
     course_sections: true,
@@ -18,7 +19,7 @@ const audit = {
   },
 };
 
-const migrationOutput = `LOCAL | REMOTE | TIME\n20260828060630 | 20260828060630 | x\n20260830212012 | 20260830212012 | x`;
+const migrationOutput = `LOCAL | REMOTE | TIME\n20260828060630 | 20260828060630 | x\n20260830212012 | 20260830212012 | x\n20260830230917 | 20260830230917 | x`;
 
 test("post-migration audit parses the Supabase JSON row", () => {
   assert.deepEqual(
@@ -31,7 +32,7 @@ test("exact learner-AI-free production state passes", () => {
   const result = verifyProductionPostMigration({
     migrationOutput,
     inspectionOutput: JSON.stringify([{ learner_ai_retirement_audit: audit }]),
-    localVersions: ["20260828060630", "20260830212012"],
+    localVersions: ["20260828060630", "20260830212012", "20260830230917"],
   });
   assert.equal(result.ok, true, result.errors.join("\n"));
 });
@@ -42,12 +43,13 @@ test("remaining AI objects, data, quota columns, or missing course tables fail c
     { learner_ai_functions: [{ function_name: "record_ai_successful_usage" }] },
     { learner_ai_payment_rows: 1 },
     { learner_ai_quota_columns: ["monthly_tokens"] },
+    { vector_extension_installed: true },
     { instructor_course_tables_present: { ...audit.instructor_course_tables_present, courses: false } },
   ]) {
     const result = verifyProductionPostMigration({
       migrationOutput,
       inspectionOutput: JSON.stringify([{ learner_ai_retirement_audit: { ...audit, ...mutation } }]),
-      localVersions: ["20260828060630", "20260830212012"],
+      localVersions: ["20260828060630", "20260830212012", "20260830230917"],
     });
     assert.equal(result.ok, false);
   }

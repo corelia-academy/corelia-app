@@ -1,4 +1,4 @@
-export type PaymentPurpose = "course_purchase" | "certificate_fee" | "ai_subscription";
+export type PaymentPurpose = "course_purchase" | "certificate_fee";
 
 export type PaymentTransactionStatus =
   | "pending"

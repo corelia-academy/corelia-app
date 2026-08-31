@@ -17,9 +17,9 @@ function requireAnyEnv(...names: string[]): string {
 }
 
 function readSupabaseSecretKey(): string {
-  const secretKeysRaw = readOptionalEnv("CORELIA_SUPABASE_SECRET_KEYS", "SUPABASE_SECRET_KEYS");
+  const secretKeysRaw = readOptionalEnv("SUPABASE_SECRET_KEYS");
   if (!secretKeysRaw) {
-    throw new Error("Missing env: CORELIA_SUPABASE_SECRET_KEYS | SUPABASE_SECRET_KEYS");
+    throw new Error("Missing env: SUPABASE_SECRET_KEYS");
   }
 
   // Preferred format: a single `sb_secret_...` string copied from the dashboard.
@@ -37,11 +37,11 @@ function readSupabaseSecretKey(): string {
     console.error("[corelia-api] invalid SUPABASE_SECRET_KEYS format", e);
   }
 
-  throw new Error("Invalid env: CORELIA_SUPABASE_SECRET_KEYS | SUPABASE_SECRET_KEYS");
+  throw new Error("Invalid env: SUPABASE_SECRET_KEYS");
 }
 
 export function createServiceClient(): SupabaseClient {
-  const url = requireAnyEnv("SUPABASE_URL", "CORELIA_SUPABASE_URL");
+  const url = requireAnyEnv("SUPABASE_URL");
   const key = readSupabaseSecretKey();
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
