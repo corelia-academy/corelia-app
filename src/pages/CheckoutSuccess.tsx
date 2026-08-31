@@ -72,10 +72,7 @@ export default function CheckoutSuccess() {
   }, [verificationState]);
 
   useEffect(() => {
-    if (!courseId || !purpose) {
-      setVerificationState("invalid_order");
-      return;
-    }
+    if (!courseId || !purpose) return;
 
     let cancelled = false;
     let stored: StoredCheckout | null = null;

@@ -32,16 +32,12 @@ const InstructorDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!id) return;
-    let cancelled = false;
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const isValidUuid = Boolean(id && UUID_REGEX.test(id.trim()));
 
-    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!UUID_REGEX.test(id.trim())) {
-      setError(translate("detail.instructorDetail.errors.notFound"));
-      setLoading(false);
-      return;
-    }
+  useEffect(() => {
+    if (!id || !isValidUuid) return;
+    let cancelled = false;
 
     Promise.all([getPublicProfileById(id), getPublishedCoursesByInstructor(id)])
       .then(([prof, list]) => {
@@ -65,10 +61,15 @@ const InstructorDetail = () => {
     return () => {
       cancelled = true;
     };
-  }, [id, translate]);
+  }, [id, isValidUuid, translate]);
 
   const instructorBio =
     profile?.instructor_bio?.trim() || profile?.bio?.trim() || undefined;
+
+  const activeError = !isValidUuid
+    ? translate("detail.instructorDetail.errors.notFound")
+    : error;
+  const isActuallyLoading = isValidUuid && loading;
 
   usePageMeta({
     title: profile?.full_name?.trim() ?? undefined,
@@ -95,7 +96,7 @@ const InstructorDetail = () => {
     );
   }
 
-  if (loading) {
+  if (isActuallyLoading) {
     return (
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border-subtle bg-surface-base p-8 text-center">
@@ -108,12 +109,12 @@ const InstructorDetail = () => {
     );
   }
 
-  if (error || !profile) {
+  if (activeError || !profile) {
     return (
       <div className="mx-auto w-full min-w-0 max-w-[1990px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-5">
           <p className="text-sm font-medium text-destructive">
-            {error ?? translate("detail.instructorDetail.errors.notFound")}
+            {activeError ?? translate("detail.instructorDetail.errors.notFound")}
           </p>
           <Link
             to="/courses"

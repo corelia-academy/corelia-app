@@ -21,7 +21,6 @@ export function CourseSpotlightSection({
   courseTitle,
   hasFullCourseAccess,
   nextLesson,
-  spotlightContests: _spotlightContests,
 }: CourseSpotlightSectionProps) {
   const { t } = useTranslation("courses");
   const translate = useCallback(
