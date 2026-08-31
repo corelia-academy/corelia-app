@@ -16,6 +16,10 @@ const certificateHandler = readFileSync(
   new URL("../../../supabase/functions/corelia-api/certificates/handlers.ts", import.meta.url),
   "utf8",
 );
+const enrollmentBoundary = readFileSync(
+  new URL("../../../supabase/migrations/20260831232819_restore_enrollment_rpc_security_boundary.sql", import.meta.url),
+  "utf8",
+);
 
 test("financial retirement removes every runtime financial table and snapshot", () => {
   for (const table of [
@@ -51,4 +55,10 @@ test("retired routes and course payloads cannot reintroduce commerce metadata", 
 
 test("certificate eligibility no longer depends on payment state", () => {
   assert.doesNotMatch(certificateHandler, /payment|certificate_fee_paid|fee_unpaid/i);
+});
+
+test("free enrollment keeps privileged code behind an invoker RPC boundary", () => {
+  assert.match(enrollmentBoundary, /CREATE OR REPLACE FUNCTION private\.enroll_in_course/);
+  assert.match(enrollmentBoundary, /CREATE FUNCTION public\.enroll_in_course[\s\S]*SECURITY INVOKER/);
+  assert.doesNotMatch(enrollmentBoundary, /CREATE FUNCTION public\.enroll_in_course[\s\S]*SECURITY DEFINER/);
 });
