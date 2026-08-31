@@ -13,22 +13,7 @@ verify_jwt = false
 # Scheduler authenticates with the shared LEARNING_REMINDER_CRON_SECRET header.
 verify_jwt = false
 
-[functions.ai-tutor]
-verify_jwt = false
-
-[functions.embed-lesson]
-verify_jwt = false
-
 [functions.generate-description]
-verify_jwt = false
-
-[functions.generate-flashcards]
-verify_jwt = false
-
-[functions.generate-learning-path]
-verify_jwt = false
-
-[functions.generate-lesson-summary]
 verify_jwt = false
 
 [functions.generate-questions]

@@ -11,8 +11,8 @@ You cannot create secrets starting with `SUPABASE_` in the Dashboard because thi
 
 | Biến | Ghi chú |
 |------|---------|
-| `CORELIA_SUPABASE_URL` | URL project cho local/dev |
-| `CORELIA_SUPABASE_SECRET_KEYS` | Secret key cho backend (vd. `sb_secret_...`). Vẫn hỗ trợ format JSON cũ để tương thích ngược |
+| `SUPABASE_URL` | URL project do Supabase Edge runtime tự inject |
+| `SUPABASE_SECRET_KEYS` | Secret-key dictionary do Supabase Edge runtime tự inject; backend chọn key mặc định |
 
 ---
 

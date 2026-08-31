@@ -164,7 +164,7 @@ Runtime Application Delta: 0 bytes (0 files in src/, public/, supabase/migration
 
 Materialized release candidate containing the approved Wave 0 / M1 / G2 / G2-R1 / R4 / R5 delta:
 - 16 forward migrations (20260823120000 .. 20260826110000)
-- Edge Functions: corelia-api and 7 retired AI tombstones
+- Edge Functions: corelia-api and 2 instructor-only AI generators
 - Frontend, payment/refund, entitlement, catalog reconciliation, and release-control changes
 - Candidate tree SHA-256: ${expectedCandidateTreeSha256}
 

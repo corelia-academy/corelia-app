@@ -149,47 +149,23 @@ jobs:
           # HIBP protection is a project-plan Auth setting, not a database migration finding.
           jq --exit-status 'all(.[]; .name == "auth_leaked_password_protection")' <<< "$advisor_output"
 
-      - name: Deploy Edge Function (ai-tutor - retired tombstone)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase functions deploy ai-tutor --project-ref "$SUPABASE_PROJECT_REF"
-
-      - name: Deploy Edge Function (embed-lesson - retired tombstone)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase functions deploy embed-lesson --project-ref "$SUPABASE_PROJECT_REF"
-
       - name: Deploy Edge Function (generate-description)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy generate-description --project-ref "$SUPABASE_PROJECT_REF"
 
-      - name: Deploy Edge Function (generate-flashcards - retired tombstone)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase functions deploy generate-flashcards --project-ref "$SUPABASE_PROJECT_REF"
-
-      - name: Deploy Edge Function (generate-learning-path - retired tombstone)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase functions deploy generate-learning-path --project-ref "$SUPABASE_PROJECT_REF"
-
-      - name: Deploy Edge Function (generate-lesson-summary - retired tombstone)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase functions deploy generate-lesson-summary --project-ref "$SUPABASE_PROJECT_REF"
-
       - name: Deploy Edge Function (generate-questions)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: supabase functions deploy generate-questions --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Remove learner-facing AI Edge functions and unused secrets
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: scripts/retire-learner-ai-edge.sh
 
       - name: Verify live DB post-Edge final runtime invariants (Post-Edge Gate)
         env:
