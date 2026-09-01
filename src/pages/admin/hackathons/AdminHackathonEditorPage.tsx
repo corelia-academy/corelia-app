@@ -221,6 +221,21 @@ export default function AdminHackathonEditorPage() {
     const track: ContestTrack = { id: crypto.randomUUID(), name: "", description: "", prize_amount: "0", active: true, sort_order: draft.locales.vi.tracks.length };
     setDraft((current) => ({ ...current, locales: { vi: { ...current.locales.vi, tracks: [...current.locales.vi.tracks, track] }, en: { ...current.locales.en, tracks: [...current.locales.en.tracks, { ...track, name: "", description: "" }] } } })); setDirty(true);
   };
+  const removeTrack = (trackId: string) => {
+    const isPersisted = loadedDraft?.locales.vi.tracks.some((track) => track.id === trackId) ?? false;
+    if (isPersisted && !window.confirm(t("hackathons.editor.removeTrackConfirm"))) return;
+    const withoutTrack = (items: ContestTrack[]) => items
+      .filter((item) => item.id !== trackId)
+      .map((item, sortOrder) => ({ ...item, sort_order: sortOrder }));
+    setDraft((current) => ({
+      ...current,
+      locales: {
+        vi: { ...current.locales.vi, tracks: withoutTrack(current.locales.vi.tracks) },
+        en: { ...current.locales.en, tracks: withoutTrack(current.locales.en.tracks) },
+      },
+    }));
+    setDirty(true);
+  };
   const addTaxonomy = (key: "sectors" | "tech_stacks") => {
     const option: HackathonTaxonomyOption = { id: crypto.randomUUID(), name: "", active: true, sort_order: draft.locales.vi[key].length };
     setDraft((current) => ({ ...current, locales: { vi: { ...current.locales.vi, [key]: [...current.locales.vi[key], option] }, en: { ...current.locales.en, [key]: [...current.locales.en[key], { ...option, name: "" }] } } })); setDirty(true);
@@ -256,7 +271,25 @@ export default function AdminHackathonEditorPage() {
             <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium">{t("hackathons.editor.fields.totalPrize")}<Input className="mt-2" inputMode="decimal" value={draft.prize_amount} onChange={(event) => change({ prize_amount: event.target.value })} /></label><label className="text-sm font-medium">Currency<Input className="mt-2" value={draft.prize_currency} maxLength={10} onChange={(event) => change({ prize_currency: event.target.value.toUpperCase() })} /></label></div>
             <label className="block text-sm font-medium">Description Markdown ({locale.toUpperCase()})<textarea className={textareaClass} value={localized.prize_description_markdown} onChange={(event) => changeLocale({ prize_description_markdown: event.target.value })} /></label>
             <div className="flex items-center justify-between"><h3 className="font-semibold">Tracks</h3><Button type="button" variant="outline" size="sm" onClick={addTrack}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div>
-            {localized.tracks.map((track, index) => <div key={track.id} className="grid gap-3 rounded-lg border border-border p-4 sm:grid-cols-[1fr_1fr_150px_auto]"><Input value={track.name} placeholder="Track" onChange={(event) => changeLocale({ tracks: localized.tracks.map((item) => item.id === track.id ? { ...item, name: event.target.value } : item) })} /><Input value={track.description ?? ""} placeholder="Description" onChange={(event) => changeLocale({ tracks: localized.tracks.map((item) => item.id === track.id ? { ...item, description: event.target.value } : item) })} /><Input disabled={locale !== "vi"} inputMode="decimal" value={draft.locales.vi.tracks[index]?.prize_amount ?? "0"} onChange={(event) => { const tracks = draft.locales.vi.tracks.map((item) => item.id === track.id ? { ...item, prize_amount: event.target.value } : item); setDraft((current) => ({ ...current, locales: { ...current.locales, vi: { ...current.locales.vi, tracks } } })); setDirty(true); }} /><Button type="button" variant="outline" size="sm" onClick={() => { const update = (target: Locale) => draft.locales[target].tracks.map((item) => item.id === track.id ? { ...item, active: item.active === false } : item); setDraft((current) => ({ ...current, locales: { vi: { ...current.locales.vi, tracks: update("vi") }, en: { ...current.locales.en, tracks: update("en") } } })); setDirty(true); }}>{track.active === false ? t("hackathons.editor.activate") : t("hackathons.editor.archive")}</Button></div>)}
+            {localized.tracks.length === 0 ? <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-foreground-muted">{t("hackathons.editor.noTracks")}</div> : null}
+            <div className="space-y-3">
+              {localized.tracks.map((track, index) => {
+                const prizeAmount = draft.locales.vi.tracks.find((item) => item.id === track.id)?.prize_amount ?? "0";
+                return (
+                  <div key={track.id} className="rounded-xl border border-border bg-surface-raised/40 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm font-semibold">{t("hackathons.editor.trackNumber", { number: index + 1 })}</span>
+                      <Button type="button" variant="ghost" size="icon" className="text-foreground-muted hover:text-destructive" aria-label={t("hackathons.editor.removeTrack")} onClick={() => removeTrack(track.id)}><Trash2 className="size-4" /></Button>
+                    </div>
+                    <div className="mt-3 grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px]">
+                      <label className="text-sm font-medium">{t("hackathons.editor.trackName")} ({locale.toUpperCase()})<Input className="mt-2" value={track.name} placeholder={t("hackathons.editor.trackNamePlaceholder")} onChange={(event) => changeLocale({ tracks: localized.tracks.map((item) => item.id === track.id ? { ...item, name: event.target.value } : item) })} /></label>
+                      <label className="text-sm font-medium">{t("hackathons.editor.trackPrize")}<Input className="mt-2" disabled={locale !== "vi"} inputMode="decimal" value={prizeAmount} onChange={(event) => { const tracks = draft.locales.vi.tracks.map((item) => item.id === track.id ? { ...item, prize_amount: event.target.value } : item); setDraft((current) => ({ ...current, locales: { ...current.locales, vi: { ...current.locales.vi, tracks } } })); setDirty(true); }} /></label>
+                    </div>
+                    <label className="mt-4 block text-sm font-medium">{t("hackathons.editor.trackDescription")} ({locale.toUpperCase()})<textarea className={`${textareaClass} min-h-24`} value={track.description ?? ""} placeholder={t("hackathons.editor.trackDescriptionPlaceholder")} onChange={(event) => changeLocale({ tracks: localized.tracks.map((item) => item.id === track.id ? { ...item, description: event.target.value } : item) })} /></label>
+                  </div>
+                );
+              })}
+            </div>
           </Section>
           <Section id="timeline" title={t("hackathons.editor.sections.timeline")} onSave={save} saving={saveMutation.isPending}><div className="flex justify-end"><Button type="button" variant="outline" size="sm" onClick={addTimeline}><Plus className="size-4" />{t("hackathons.editor.add")}</Button></div>{localized.timeline.map((item, index) => <div key={item.id} className="space-y-3 rounded-lg border border-border p-4"><Input value={item.title} placeholder="Title" onChange={(event) => changeLocale({ timeline: localized.timeline.map((row) => row.id === item.id ? { ...row, title: event.target.value } : row) })} /><div className="grid gap-3 sm:grid-cols-2"><Input type="datetime-local" disabled={locale !== "vi"} value={dateInput(draft.locales.vi.timeline[index]?.starts_at)} onChange={(event) => { const timeline = draft.locales.vi.timeline.map((row) => row.id === item.id ? { ...row, starts_at: new Date(event.target.value).toISOString() } : row); setDraft((current) => ({ ...current, locales: { ...current.locales, vi: { ...current.locales.vi, timeline } } })); setDirty(true); }} /><Input type="datetime-local" disabled={locale !== "vi"} value={dateInput(draft.locales.vi.timeline[index]?.ends_at)} onChange={(event) => { const timeline = draft.locales.vi.timeline.map((row) => row.id === item.id ? { ...row, ends_at: event.target.value ? new Date(event.target.value).toISOString() : null } : row); setDraft((current) => ({ ...current, locales: { ...current.locales, vi: { ...current.locales.vi, timeline } } })); setDirty(true); }} /></div><textarea className={textareaClass} placeholder="Markdown" value={item.description_markdown ?? ""} onChange={(event) => changeLocale({ timeline: localized.timeline.map((row) => row.id === item.id ? { ...row, description_markdown: event.target.value } : row) })} /></div>)}</Section>
           <Section id="resources" title={t("hackathons.editor.sections.resources")} onSave={save} saving={saveMutation.isPending}><textarea className={`${textareaClass} min-h-80 font-mono`} value={localized.resources_markdown} onChange={(event) => changeLocale({ resources_markdown: event.target.value })} /></Section>
