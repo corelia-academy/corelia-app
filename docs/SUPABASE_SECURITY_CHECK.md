@@ -78,11 +78,9 @@ too heavily on client-side rules.
 
 - Tables:
   - `profiles`
-  - `dashboard_configs`
   - `user_notifications`
 - Client write libs:
   - `src/lib/profile.ts`
-  - `src/lib/dashboardConfig.ts`
 
 ### Storage paths
 

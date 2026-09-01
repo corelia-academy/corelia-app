@@ -11,30 +11,12 @@ You cannot create secrets starting with `SUPABASE_` in the Dashboard because thi
 
 | Biến | Ghi chú |
 |------|---------|
-| `CORELIA_SUPABASE_URL` | URL project cho local/dev |
-| `CORELIA_SUPABASE_SECRET_KEYS` | Secret key cho backend (vd. `sb_secret_...`). Vẫn hỗ trợ format JSON cũ để tương thích ngược |
+| `SUPABASE_URL` | URL project do Supabase Edge runtime tự inject |
+| `SUPABASE_SECRET_KEYS` | Secret-key dictionary do Supabase Edge runtime tự inject; backend chọn key mặc định |
 
 ---
 
-## Theo tính năng (chỉ thêm khi dùng đúng `op`)
-
-### Thanh toán SePay (`payments.sepay.*`, `payments.transactions`)
-
-| Biến | Bắt buộc? | Ghi chú |
-|------|------------|---------|
-| `SEPAY_MERCHANT_ID` | Có (checkout) | |
-| `SEPAY_SECRET_KEY` | Có (checkout) | Dùng ký form `pay*.sepay.vn/v1/checkout/init` |
-| `SEPAY_IPN_SECRET` | Khuyến nghị (IPN webhook) | Nếu thiếu, code fallback sang `SEPAY_SECRET_KEY` |
-| `SEPAY_ENV` | Không | `sandbox` (mặc định) hoặc `production` — chọn URL checkout và base URL SePay API v2 mặc định |
-| `SEPAY_API_TOKEN` | Có (verify lookup) | Bearer token cho SePay API v2 `userapi` |
-| `SEPAY_USERAPI_BASE_URL` | Không | Override base URL v2 (mặc định: sandbox `https://userapi-sandbox.sepay.vn/v2`, production `https://userapi.sepay.vn/v2`) |
-| `SEPAY_BANK_ACCOUNT_ID` | Không | UUID bank account để thu hẹp truy vấn `v2/transactions` |
-| `CORELIA_CORS_ALLOWED_ORIGINS` | Khuyến nghị | Comma-separated allowlist cho browser `Origin` được phép gọi Edge Function; nếu thiếu sẽ fallback sang `CORELIA_PAYMENT_CALLBACK_ORIGINS`, rồi `CORELIA_APP_ORIGIN` |
-| `CORELIA_PAYMENT_CALLBACK_ORIGINS` | Khuyến nghị | Comma-separated allowlist cho `success_url` / `error_url` / `cancel_url` |
-
-Luồng checkout của SePay Payment Gateway hiện vẫn dùng endpoint `/v1/checkout/init`; phần tra soát giao dịch trong `payments.sepay.verify` đã dùng SePay API v2 (`/v2/transactions`).
-
-`payments.sepay.debugLookup` (POST) là op nội bộ để debug lookup v2 bằng `orderId + amountVnd`, chỉ cho `admin` / `support_staff`.
+## Theo tính năng
 
 ### Mail giao dịch — Resend (**dùng chung** cho mọi flow gọi `sendTransactionalEmailViaResend`, hiện có `hackathons.notifyRegistrationReview`)
 
@@ -42,7 +24,7 @@ Luồng checkout của SePay Payment Gateway hiện vẫn dùng endpoint `/v1/ch
 |------|-----------------------------|---------|
 | `RESEND_API_KEY` | Có | API key Resend |
 | `MAIL_FROM` | Có | Địa chỉ đã verify trên Resend (vd. `Corelia <noreply@yourdomain.com>`) |
-| `CORELIA_APP_ORIGIN` | Không | URL app production (không slash cuối); dùng để dựng link trong một số template (vd. deep link hackathon), và là fallback cuối cho allowlist CORS / callback nếu chưa cấu hình biến chuyên biệt |
+| `CORELIA_APP_ORIGIN` | Không | URL app production (không slash cuối); dùng để dựng link và làm fallback cho allowlist CORS |
 
 Nếu thiếu `RESEND_API_KEY` hoặc `MAIL_FROM`, handler **không lỗi**: trả `{ skipped: true, reason: "email_not_configured" }` và log cảnh báo — phù hợp môi trường dev.
 

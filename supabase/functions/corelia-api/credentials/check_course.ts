@@ -23,7 +23,7 @@ export type CourseCredentialEligibility =
   };
 
 /**
- * Evaluate the same enrollment, payment, completion, and assignment rules
+ * Evaluate the same enrollment, completion, and assignment rules
  * used for issuing a course credential without creating an issuance. The
  * achievements endpoint uses this to avoid advertising an OCA before it can
  * actually be claimed.
@@ -43,21 +43,6 @@ export async function evaluateCourseCredentialEligibility(
   if (enrErr) throw new Error(enrErr.message);
   if (!courseRow || !enrollment) {
     return { eligible: false, reason: "no_enrollment" };
-  }
-
-  const course = (courseRow.data ?? {}) as {
-    access_model?: string | null;
-  };
-
-  if (course.access_model === "free_with_paid_certificate") {
-    const accessId = `${targetUserId}_${courseId}`;
-    const { data: payAccess, error: payErr } = await db.from("course_payment_access").select(
-      "certificate_fee_paid",
-    ).eq("id", accessId).maybeSingle();
-    if (payErr) throw new Error(payErr.message);
-    if (payAccess?.certificate_fee_paid !== true) {
-      return { eligible: false, reason: "certificate_fee_unpaid" };
-    }
   }
 
   const { data: readinessRaw, error: readyErr } = await db.rpc("corelia_certificate_readiness", {

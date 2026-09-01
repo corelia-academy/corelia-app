@@ -673,10 +673,6 @@ export async function enrollCourse(courseId: string, viewer?: User | null): Prom
   if (!user) throw new Error("Chưa đăng nhập");
   const course = await getCourse(courseId);
   if (!course) throw new Error("Không tìm thấy khoá học");
-  if (course.access_model === "paid_upfront") {
-    throw new Error("Khoá học này yêu cầu thanh toán trước khi mở toàn bộ nội dung.");
-  }
-
   const existing = await getEnrollment(user.id, courseId);
   if (existing) return existing;
 
@@ -816,7 +812,6 @@ export type CertificateIssueReason =
   | "already_issued"
   | "no_course"
   | "no_enrollment"
-  | "fee_unpaid"
   | "lessons_incomplete"
   | "assignment_not_approved"
   | "issued"
@@ -1110,18 +1105,11 @@ export async function createCourse(data: CourseInsert, viewer?: User | null): Pr
     level: data.level ?? "all",
     total_duration_seconds: data.total_duration_seconds ?? 0,
     i18n: data.i18n,
-    access_model: data.access_model ?? "free",
     is_updating: data.is_updating ?? false,
     is_external_aggregated: data.is_external_aggregated ?? false,
     external_source_urls: data.external_source_urls ?? [],
     external_source_attribution_note: data.external_source_attribution_note ?? null,
-    price_vnd: data.price_vnd ?? null,
-    certificate_fee_vnd: data.certificate_fee_vnd ?? null,
     owner_type: data.owner_type ?? "corelia",
-    platform_revenue_share_percent: data.platform_revenue_share_percent ?? 100,
-    partner_contract_docs: data.partner_contract_docs ?? [],
-    partner_invoice_docs: data.partner_invoice_docs ?? [],
-    partner_transfer_info: data.partner_transfer_info ?? null,
     co_instructors: data.co_instructors ?? [],
     co_instructor_permissions: data.co_instructor_permissions ?? {},
   }) as Record<string, unknown>;

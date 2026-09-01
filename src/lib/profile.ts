@@ -58,13 +58,6 @@ function rowToProfile(row: Record<string, unknown>): Profile {
     instructor_organization: (row.instructor_organization as string | null) ?? null,
     instructor_website: (row.instructor_website as string | null) ?? null,
     instructor_social_links: (row.instructor_social_links as Profile["instructor_social_links"]) ?? null,
-    partner_contract_docs: (row.partner_contract_docs as Profile["partner_contract_docs"]) ?? [],
-    partner_invoice_docs: (row.partner_invoice_docs as Profile["partner_invoice_docs"]) ?? [],
-    partner_transfer_info: (row.partner_transfer_info as string | null) ?? null,
-    partner_bank_name: (row.partner_bank_name as string | null) ?? null,
-    partner_bank_account_number: (row.partner_bank_account_number as string | null) ?? null,
-    partner_bank_account_holder: (row.partner_bank_account_holder as string | null) ?? null,
-    partner_bank_transfer_note: (row.partner_bank_transfer_note as string | null) ?? null,
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
   };

@@ -1,73 +1,91 @@
--- Comprehensive Read-Only Audit of Production AI State (Epic #332 / Issue #325)
-
-WITH
-sub_metrics AS (
-  SELECT
-    COUNT(*) FILTER (WHERE status = 'active' AND expires_at > now()) AS active_unexpired_subs,
-    COUNT(*) FILTER (WHERE status = 'active' AND expires_at <= now()) AS active_expired_subs,
-    COUNT(*) FILTER (WHERE status = 'expired') AS expired_subs,
-    COUNT(*) FILTER (WHERE status = 'cancelled') AS cancelled_subs,
-    COUNT(*) FILTER (WHERE status = 'refunded') AS refunded_subs,
-    COUNT(*) FILTER (WHERE status = 'superseded') AS superseded_subs,
-    COUNT(*) AS total_subscriptions_count,
-    MIN(started_at) AS earliest_sub_started_at,
-    MAX(expires_at) AS latest_sub_expires_at
-  FROM public.ai_subscriptions
-),
-tx_metrics AS (
-  SELECT
-    COUNT(*) FILTER (WHERE status = 'paid') AS paid_ai_tx_count,
-    COALESCE(SUM(amount_vnd) FILTER (WHERE status = 'paid'), 0) AS paid_ai_gross_amount_vnd,
-    COUNT(*) FILTER (WHERE status = 'pending') AS pending_ai_tx_count,
-    COUNT(*) FILTER (WHERE status = 'failed') AS failed_ai_tx_count,
-    COUNT(*) FILTER (WHERE status = 'refunded') AS refunded_ai_tx_count,
-    COALESCE(SUM(amount_vnd) FILTER (WHERE status = 'refunded'), 0) AS refunded_ai_gross_amount_vnd,
-    COUNT(*) AS total_ai_tx_count
-  FROM public.payment_transactions
-  WHERE purpose = 'ai_subscription'
-),
-voucher_metrics AS (
-  SELECT
-    (SELECT COUNT(*) FROM public.ai_voucher_batches) AS total_batches_count,
-    (SELECT COUNT(*) FROM public.ai_vouchers) AS total_vouchers_count,
-    (SELECT COUNT(*) FROM public.ai_vouchers WHERE active = true AND (ends_at IS NULL OR ends_at > now())) AS active_valid_vouchers_count,
-    (SELECT COUNT(*) FROM public.ai_voucher_redemptions) AS total_redemptions_count,
-    (SELECT COUNT(*) FROM public.ai_voucher_redemptions WHERE status = 'paid') AS paid_redemptions_count,
-    (SELECT COUNT(*) FROM public.ai_voucher_redemptions WHERE status = 'reserved') AS reserved_redemptions_count,
-    (SELECT COUNT(*) FROM public.ai_voucher_redemptions WHERE status = 'released') AS released_redemptions_count
-),
-usage_counts AS (
-  SELECT
-    (SELECT COUNT(*) FROM public.ai_chat_sessions) AS chat_sessions_count,
-    (SELECT COUNT(*) FROM public.ai_conversations) AS conversations_count,
-    (SELECT COUNT(*) FROM public.ai_usage_daily) AS usage_daily_count,
-    (SELECT COUNT(*) FROM public.ai_usage_monthly) AS usage_monthly_count,
-    (SELECT COUNT(*) FROM public.ai_usage_log) AS usage_log_count,
-    (SELECT COUNT(*) FROM public.knowledge_chunks) AS knowledge_chunks_count,
-    (SELECT COUNT(*) FROM public.user_learning_profile) AS user_learning_profile_count,
-    (SELECT COUNT(*) FROM public.learning_observations) AS learning_observations_count,
-    (SELECT COUNT(*) FROM public.lesson_summaries) AS lesson_summaries_count,
-    (SELECT COUNT(*) FROM public.flashcard_decks) AS flashcard_decks_count,
-    (SELECT COUNT(*) FROM public.lesson_readiness_checks) AS lesson_readiness_checks_count,
-    (SELECT COUNT(*) FROM public.learning_paths) AS learning_paths_count
-),
-activity_timestamps AS (
-  SELECT
-    (SELECT MAX(last_message_at) FROM public.ai_chat_sessions) AS last_chat_session_activity_at,
-    (SELECT MAX(created_at) FROM public.ai_conversations) AS last_conversation_created_at,
-    (SELECT MAX(created_at) FROM public.ai_usage_log) AS last_usage_log_created_at,
-    (SELECT MAX(updated_at) FROM public.ai_usage_daily) AS last_usage_daily_updated_at,
-    (SELECT MAX(created_at) FROM public.lesson_summaries) AS last_lesson_summary_created_at,
-    (SELECT MAX(created_at) FROM public.flashcard_decks) AS last_flashcard_deck_created_at,
-    (SELECT MAX(created_at) FROM public.lesson_readiness_checks) AS last_readiness_check_created_at,
-    (SELECT MAX(created_at) FROM public.learning_paths) AS last_learning_path_created_at,
-    (SELECT MAX(created_at) FROM public.knowledge_chunks) AS last_knowledge_chunk_created_at
+-- Read-only proof that learner-facing AI has been removed from the active DB.
+WITH target_tables(name) AS (
+  VALUES
+    ('ai_chat_sessions'), ('ai_conversations'), ('ai_subscriptions'),
+    ('ai_usage_daily'), ('ai_usage_monthly'), ('ai_usage_log'),
+    ('ai_model_pricing'), ('knowledge_chunks'), ('user_learning_profile'),
+    ('learning_observations'), ('ai_voucher_batches'), ('ai_vouchers'),
+    ('ai_voucher_redemptions'), ('lesson_summaries'), ('flashcard_decks'),
+    ('lesson_readiness_checks'), ('learning_paths')
+), remaining_relations AS (
+  SELECT n.nspname AS schema_name, c.relname AS object_name, c.relkind
+  FROM pg_class c
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE n.nspname IN ('public', 'private')
+    AND c.relname IN (SELECT name FROM target_tables)
+), remaining_functions AS (
+  SELECT n.nspname AS schema_name, p.proname AS function_name,
+         pg_get_function_identity_arguments(p.oid) AS arguments
+  FROM pg_proc p
+  JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE p.prokind = 'f'
+    AND n.nspname IN ('public', 'private')
+    AND (
+      p.proname IN (
+        'guard_ai_chat_session_message_count',
+        'guard_retired_ai_subscription_writes',
+        'guard_retired_ai_voucher_redemption_writes',
+        'match_knowledge_chunks',
+        'record_ai_successful_usage',
+        'reconcile_historical_ai_payment',
+        'sync_ai_chat_session_message_count'
+      )
+      OR pg_get_functiondef(p.oid) ~* 'ai_subscription'
+    )
+), remaining_retired_config_relations AS (
+  SELECT c.relname AS object_name
+  FROM pg_class c
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE n.nspname = 'public'
+    AND c.relkind IN ('r', 'p', 'v', 'm')
+    AND c.relname IN ('dashboard_configs', 'tier_limits')
+), remaining_financial_relations AS (
+  SELECT c.relname AS object_name
+  FROM pg_class c
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE n.nspname = 'public'
+    AND c.relkind IN ('r', 'p', 'v', 'm')
+    AND c.relname IN (
+      'payment_refunds', 'payment_transaction_items', 'course_payment_access',
+      'course_entitlement_grants', 'payment_transactions', 'billing_products',
+      'course_discounts'
+    )
+), remaining_financial_columns AS (
+  SELECT table_name || '.' || column_name AS column_name
+  FROM information_schema.columns
+  WHERE table_schema = 'public'
+    AND (
+      (table_name = 'enrollments' AND column_name IN ('paid_provider', 'paid_amount_vnd', 'paid_order_id', 'paid_at'))
+      OR (table_name = 'profiles' AND column_name LIKE 'partner\_%' ESCAPE '\')
+    )
+), courses_with_financial_metadata AS (
+  SELECT id
+  FROM public.courses
+  WHERE data ?| ARRAY[
+    'access_model', 'price_vnd', 'promo_price_vnd', 'promo_starts_at',
+    'promo_ends_at', 'certificate_fee_vnd', 'revenue_share_percent',
+    'partner_contract_docs', 'partner_invoice_docs', 'partner_transfer_info'
+  ]
 )
-SELECT
-  json_build_object(
-    'subscriptions', (SELECT row_to_json(sub_metrics.*) FROM sub_metrics),
-    'payments', (SELECT row_to_json(tx_metrics.*) FROM tx_metrics),
-    'vouchers', (SELECT row_to_json(voucher_metrics.*) FROM voucher_metrics),
-    'table_counts', (SELECT row_to_json(usage_counts.*) FROM usage_counts),
-    'timestamps', (SELECT row_to_json(activity_timestamps.*) FROM activity_timestamps)
-  ) AS production_audit_report;
+SELECT jsonb_build_object(
+  'learner_ai_relations',
+    (SELECT COALESCE(jsonb_agg(to_jsonb(r)), '[]'::jsonb) FROM remaining_relations r),
+  'learner_ai_functions',
+    (SELECT COALESCE(jsonb_agg(to_jsonb(f)), '[]'::jsonb) FROM remaining_functions f),
+  'retired_config_relations',
+    (SELECT COALESCE(jsonb_agg(object_name), '[]'::jsonb) FROM remaining_retired_config_relations),
+  'vector_extension_installed',
+    EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector'),
+  'financial_relations',
+    (SELECT COALESCE(jsonb_agg(object_name), '[]'::jsonb) FROM remaining_financial_relations),
+  'financial_columns',
+    (SELECT COALESCE(jsonb_agg(column_name), '[]'::jsonb) FROM remaining_financial_columns),
+  'courses_with_financial_metadata',
+    (SELECT count(*) FROM courses_with_financial_metadata),
+  'instructor_course_tables_present', jsonb_build_object(
+    'courses', to_regclass('public.courses') IS NOT NULL,
+    'course_sections', to_regclass('public.course_sections') IS NOT NULL,
+    'course_lessons', to_regclass('public.course_lessons') IS NOT NULL,
+    'course_section_questions', to_regclass('public.course_section_questions') IS NOT NULL
+  )
+) AS learner_ai_retirement_audit;

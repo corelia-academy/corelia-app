@@ -12,7 +12,6 @@ import {
 import { uploadCourseThumbnail } from "@/lib/storage";
 import { useAuth } from "@/stores/authStore";
 import type {
-  CourseAccessModel,
   CourseLevel,
   CourseOwnerType,
   SupportedCourseLocale,
@@ -47,11 +46,7 @@ export function useInstructorCourseNewForm() {
     is_external_aggregated: false,
     external_source_urls_text: "",
     external_source_attribution_note: "",
-    access_model: "free" as CourseAccessModel,
-    price_vnd: "",
-    certificate_fee_vnd: "",
     owner_type: "corelia" as CourseOwnerType,
-    platform_revenue_share_percent: "100",
   });
   const canManageBusinessSettings =
     profile?.role === "admin" || profile?.role === "support_staff";
@@ -104,25 +99,6 @@ export function useInstructorCourseNewForm() {
       setError(t("courseNew.errors.missingTitle"));
       return;
     }
-    if (form.access_model === "paid_upfront" && Number(form.price_vnd) <= 0) {
-      setError(t("courseNew.errors.invalidPaidPrice"));
-      return;
-    }
-    if (
-      form.access_model === "free_with_paid_certificate" &&
-      Number(form.certificate_fee_vnd) <= 0
-    ) {
-      setError(t("courseNew.errors.invalidCertificateFee"));
-      return;
-    }
-    if (
-      form.owner_type === "external_partner" &&
-      (Number(form.platform_revenue_share_percent) < 0 ||
-        Number(form.platform_revenue_share_percent) > 100)
-    ) {
-      setError(t("courseNew.errors.invalidRevenueShare"));
-      return;
-    }
     setSaving(true);
     setError(null);
     try {
@@ -169,20 +145,7 @@ export function useInstructorCourseNewForm() {
             default_video_primary_locale: form.default_video_primary_locale,
             subtitle_note_policy: "suggest",
           },
-          access_model: form.access_model,
-          price_vnd:
-            form.access_model === "paid_upfront"
-              ? Number(form.price_vnd || 0)
-              : null,
-          certificate_fee_vnd:
-            form.access_model === "free_with_paid_certificate"
-              ? Number(form.certificate_fee_vnd || 0)
-              : null,
           owner_type: form.owner_type,
-          platform_revenue_share_percent:
-            form.owner_type === "corelia"
-              ? 100
-              : Number(form.platform_revenue_share_percent || 0),
         },
         user ?? undefined,
       );

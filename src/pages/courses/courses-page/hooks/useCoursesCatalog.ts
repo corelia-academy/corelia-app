@@ -11,7 +11,6 @@ import type { Course, CourseLevel, SupportedCourseLocale } from "@/types/courses
 import {
   filterAndSortCourses,
   type OwnerFilter,
-  type PricingFilter,
   type SortMode,
 } from "../utils/catalog";
 
@@ -25,7 +24,6 @@ export function useCoursesCatalog() {
 
   const [query, setQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<"all" | CourseLevel>("all");
-  const [pricingFilter, setPricingFilter] = useState<PricingFilter>("all");
   const [ownerFilter, setOwnerFilter] = useState<OwnerFilter>("all");
   const [sortMode, setSortMode] = useState<SortMode>("featured");
 
@@ -85,16 +83,14 @@ export function useCoursesCatalog() {
       filterAndSortCourses(courses, {
         query,
         levelFilter,
-        pricingFilter,
         ownerFilter,
         sortMode,
       }),
-    [courses, levelFilter, ownerFilter, pricingFilter, query, sortMode],
+    [courses, levelFilter, ownerFilter, query, sortMode],
   );
 
   const activeFilterCount = [
     levelFilter !== "all",
-    pricingFilter !== "all",
     ownerFilter !== "all",
     query.trim() !== "",
   ].filter(Boolean).length;
@@ -104,7 +100,6 @@ export function useCoursesCatalog() {
   const resetFilters = () => {
     setQuery("");
     setLevelFilter("all");
-    setPricingFilter("all");
     setOwnerFilter("all");
     setSortMode("featured");
   };

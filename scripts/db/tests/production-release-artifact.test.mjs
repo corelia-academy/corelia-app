@@ -276,19 +276,18 @@ test("Production workflow is manual-only and does not require an approved releas
   assert.doesNotMatch(workflow, /APPROVED_PRODUCTION_RELEASE_SHA|APPROVED_RELEASE_SHA/);
   assert.doesNotMatch(workflow, /release_sha:|inputs\.release_sha/);
 
-  // F-02 check: Workflow must deploy corelia-api and all 7 retired AI Edge Functions
+  // F-02 check: Workflow deploys only retained functions and runs remote cleanup.
   const expectedEdgeFunctions = [
     "corelia-api",
-    "ai-tutor",
-    "embed-lesson",
     "generate-description",
-    "generate-flashcards",
-    "generate-learning-path",
-    "generate-lesson-summary",
     "generate-questions",
   ];
   for (const fn of expectedEdgeFunctions) {
     assert.match(workflow, new RegExp(`supabase functions deploy ${fn}\\b`), `Workflow must deploy function ${fn}`);
+  }
+  assert.match(workflow, /scripts\/retire-learner-ai-edge\.sh/);
+  for (const fn of ["ai-tutor", "embed-lesson", "generate-flashcards", "generate-learning-path", "generate-lesson-summary"]) {
+    assert.doesNotMatch(workflow, new RegExp(`supabase functions deploy ${fn}\\b`));
   }
 });
 

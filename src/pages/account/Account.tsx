@@ -3,13 +3,11 @@ import { useAuth } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import {
-  CreditCard,
   GraduationCap,
   IdCard,
   Settings,
   UserCircle,
 } from "lucide-react";
-export { AccountBillingRoute } from "./AccountBillingRoute";
 export { AccountCvRoute } from "./AccountCvRoute";
 export {
   AccountInstructorProfileRoute,
@@ -45,12 +43,6 @@ export default function Account() {
       title: t("nav.cv.title"),
       description: t("nav.cv.description"),
       icon: <IdCard className="size-4 shrink-0" aria-hidden />,
-    },
-    {
-      to: "/account/billing",
-      title: t("nav.billing.title"),
-      description: t("nav.billing.description"),
-      icon: <CreditCard className="size-4 shrink-0" aria-hidden />,
     },
     {
       to: "/account/settings",

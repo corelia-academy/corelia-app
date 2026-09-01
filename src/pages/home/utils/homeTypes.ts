@@ -10,13 +10,3 @@ export type FocusCard = {
   lastAccessedAt?: string;
 };
 
-export type PinnedProgramCard = {
-  id: string;
-  badge: string;
-  title: string;
-  description: string;
-  to: string;
-  cta: string;
-  meta: string;
-};
-

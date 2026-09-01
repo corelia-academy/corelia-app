@@ -11,7 +11,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Award, GraduationCap, ImageIcon, Medal, Pin, Settings, Users } from "lucide-react";
+import { Award, GraduationCap, ImageIcon, Medal, Settings, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function AdminSidebar() {
@@ -63,22 +63,6 @@ export function AdminSidebar() {
                     >
                       <Users className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.users.label")}</span>
-                    </NavLink>
-                  }
-                />
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  className="rounded-md"
-                  tooltip="Dashboard"
-                  isActive={pathname.startsWith("/admin/dashboard")}
-                  render={
-                    <NavLink
-                      to="/admin/dashboard"
-                      className="flex w-full items-center gap-2"
-                    >
-                      <Pin className="size-4" aria-hidden />
-                      <span>{t("layout.sidebar.dashboard.label")}</span>
                     </NavLink>
                   }
                 />

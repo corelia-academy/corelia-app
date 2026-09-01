@@ -34,7 +34,7 @@ export const supabase = createClient(url, publicClientKey, {
 // expires. The next user interaction sends an expired token and receives 401.
 //
 // Solution: patch `supabase.auth.getSession` at the client level so that EVERY
-// caller in the codebase (payments.ts, courses.ts, credentialsEdge.ts,
+// caller in the codebase (courses.ts, credentialsEdge.ts,
 // descriptionGenerator.ts, questionGenerator.ts, etc.) automatically gets a fresh token without any
 // changes to those files.
 //

@@ -8,7 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
   formatDuration,
-  getCourseAccessModelLabel,
   getCourseLevelLabel,
   type Course,
 } from "@/types/courses";
@@ -18,7 +17,7 @@ import {
   useUserCoursesProgress,
   type CourseProgressEntry,
 } from "./hooks/useUserCoursesProgress";
-import { type CatalogTranslate, getPrimaryPriceLabel } from "./utils/catalog";
+import { type CatalogTranslate } from "./utils/catalog";
 
 function levelBadgeClass(level?: string | null): string {
   switch (level) {
@@ -104,10 +103,10 @@ function CourseCard({
           </span>
           <span className="inline-flex items-center gap-1">
             <BadgeCheck className="size-3.5 shrink-0" aria-hidden />
-            {getCourseAccessModelLabel(course.access_model)}
+            {translate("pricing.freeLearning")}
           </span>
           <span className="ml-auto font-medium text-foreground">
-            {getPrimaryPriceLabel(course, translate)}
+            {translate("pricing.freeLearning")}
           </span>
         </div>
 

@@ -11,7 +11,6 @@ vi.mock("@/lib/supabase", () => ({
   supabase: {},
 }));
 
-import { type PaymentPurpose } from "@/lib/payments";
 
 function readSource(rootDir: string, relPath: string): string {
   const fullPath = join(rootDir, relPath);
@@ -143,21 +142,11 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issues #328 and #331)", 
     );
   });
 
-  describe("WC-02 to WC-09: Learner AI Edge Functions remain 410 tombstones", () => {
+  describe("WC-02 to WC-09: Learner AI Edge Functions are physically absent", () => {
     for (const fn of RETIRED_LEARNER_AI_EDGE_FUNCTIONS) {
-      it(`proves ${fn} has zero api.openai.com calls and acts as a 410 tombstone`, () => {
+      it(`proves ${fn} has no deployable source directory`, () => {
         const fullPath = join(rootDir, "supabase", "functions", fn, "index.ts");
-        expect(existsSync(fullPath)).toBe(true);
-        const content = readFileSync(fullPath, "utf8");
-
-        // Zero provider outbound calls
-        expect(content).not.toContain("api.openai.com");
-        expect(content).not.toContain("OPENAI_API_KEY");
-
-        // Fail-closed tombstone contracts
-        expect(content).toContain("AI_FEATURE_RETIRED");
-        expect(content).toContain("410");
-        expect(content).not.toMatch(/Cora/i);
+        expect(existsSync(fullPath)).toBe(false);
       });
     }
   });
@@ -304,11 +293,11 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issues #328 and #331)", 
       expect(envExample).toContain("# CORELIA_OPENAI_QUESTIONS_MODEL=");
     });
 
-    it("keeps every learner tombstone and both instructor generator function configurations", () => {
+    it("configures only the retained instructor generators", () => {
       const configToml = readFileSync(join(rootDir, "supabase", "config.toml"), "utf8");
 
       for (const fn of RETIRED_LEARNER_AI_EDGE_FUNCTIONS) {
-        expect(configToml).toContain(`[functions.${fn}]`);
+        expect(configToml).not.toContain(`[functions.${fn}]`);
       }
       for (const fn of INSTRUCTOR_AI_EDGE_FUNCTIONS) {
         expect(configToml).toContain(`[functions.${fn}]`);
@@ -317,36 +306,24 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issues #328 and #331)", 
     });
   });
 
-  describe("WC-11 to WC-13: Payment compatibility and accounting integrity", () => {
-    it("WC-11: retains historical 'ai_subscription' in PaymentPurpose type union", () => {
-      const samplePurpose: PaymentPurpose = "ai_subscription";
-      expect(samplePurpose).toBe("ai_subscription");
-    });
-
-    it("WC-12 & WC-13: supports standard 'course_purchase' and 'certificate_fee' purposes", () => {
-      const p1: PaymentPurpose = "course_purchase";
-      const p2: PaymentPurpose = "certificate_fee";
-      expect(p1).toBe("course_purchase");
-      expect(p2).toBe("certificate_fee");
+  describe("WC-14: Learner AI database retirement", () => {
+    it("keeps the destructive cleanup explicit and dependency-strict", () => {
+      const migration = readFileSync(
+        join(rootDir, "supabase", "migrations", "20260830212012_remove_learner_facing_ai_database.sql"),
+        "utf8",
+      );
+      expect(migration).toContain("DROP TABLE public.ai_chat_sessions;");
+      expect(migration).toContain("DROP TABLE public.knowledge_chunks;");
+      expect(migration).not.toMatch(/DROP\s+(?:TABLE|FUNCTION)[^;]*\sCASCADE\b/i);
     });
   });
 
-  describe("WC-14: No destructive #330 database operations introduced", () => {
-    it("verifies all 18 AI subsystem tables remain registered in backup tooling", () => {
-      const backupScript = readFileSync(join(rootDir, "scripts", "db", "backup-ai-subsystem.mjs"), "utf8");
-      const match = backupScript.match(/AI_TABLE_REGISTRY\s*=\s*\[([\s\S]*?)\];/);
-      expect(match).not.toBeNull();
-      const tableCount = (match?.[1]?.match(/name:\s*"/g) || []).length;
-      expect(tableCount).toBe(18);
-    });
-  });
-
-  describe("WC-15: Stale callers for retired learner AI receive deterministic fail-closed response", () => {
+  describe("WC-15: Deployment permanently removes stale learner AI endpoints", () => {
+    const cleanupScript = readSource(rootDir, "scripts/retire-learner-ai-edge.sh");
     for (const fn of RETIRED_LEARNER_AI_EDGE_FUNCTIONS) {
-      it(`verifies ${fn} returns JSON with code AI_FEATURE_RETIRED`, () => {
-        const content = readFileSync(join(rootDir, "supabase", "functions", fn, "index.ts"), "utf8");
-        expect(content).toContain('code: "AI_FEATURE_RETIRED"');
-        expect(content).toContain('error: "AI capability retired"');
+      it(`verifies ${fn} is deleted idempotently`, () => {
+        expect(cleanupScript).toContain(fn);
+        expect(cleanupScript).toContain("supabase functions delete");
       });
     }
   });

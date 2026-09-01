@@ -7,80 +7,7 @@
     "careerTracks": "Career tracks",
     "offlineClasses": "Offline classes",
     "profile": "Instructor profile",
-    "contests": "Contests",
-    "contracts": "Contracts",
-    "invoices": "Invoices",
-    "payments": "Payments"
-  },
-  "finance": {
-    "externalOnlyHint": "This section is only available to external partner instructors."
-  },
-  "partnerFinance": {
-    "common": {
-      "notAvailable": "N/A",
-      "updated": "Updated"
-    },
-    "contracts": {
-      "stats": {
-        "totalDocuments": "Total documents",
-        "source": "Source",
-        "sourceValue": "Ops / Admin",
-        "status": "Status",
-        "statusValue": "Document tracking"
-      },
-      "panel": {
-        "title": "Contracts",
-        "description": "Contract documents shared by ops or admins for partner instructors.",
-        "countLabel": "{{count}} documents"
-      },
-      "list": {
-        "empty": "No contract documents yet.",
-        "meta": "Contract documents have been shared with you."
-      }
-    },
-    "invoices": {
-      "stats": {
-        "currentMonth": "Month",
-        "total": "Invoices",
-        "status": "Status",
-        "statusValue": "Periodic reconciliation"
-      },
-      "panel": {
-        "title": "Invoices",
-        "description": "Filter by month to view shared invoice or reconciliation files.",
-        "countLabel": "{{count}} documents"
-      },
-      "list": {
-        "empty": "No invoices for the selected month.",
-        "invoiceMonthPrefix": "Month {{month}}",
-        "noInvoiceMonth": "No invoice month attached"
-      }
-    },
-    "payments": {
-      "stats": {
-        "bankAccount": "Bank account",
-        "accountHolder": "Account holder",
-        "payoutGuide": "Payout guidance"
-      },
-      "panel": {
-        "title": "Payments",
-        "description": "Bank transfer info and reconciliation notes shared by ops/admin per the contract.",
-        "ready": "Ready for payout",
-        "missingInfo": "Missing information"
-      },
-      "sections": {
-        "transferInfo": "Transfer details",
-        "extraNotes": "Extra notes"
-      },
-      "fields": {
-        "bankName": "Bank:",
-        "accountNumber": "Account number:",
-        "accountHolder": "Account holder:",
-        "transferNote": "Transfer note:"
-      },
-      "emptyExtraNotes": "No additional payment notes.",
-      "empty": "No payment information available."
-    }
+    "contests": "Contests"
   },
   "layout": {
     "crumbs": {
@@ -95,9 +22,6 @@
       "contests": "Contests",
       "createContest": "Create contest",
       "contestWorkspace": "Contest workspace",
-      "contracts": "Contracts",
-      "invoices": "Invoices",
-      "payments": "Payments",
       "profile": "Instructor profile",
       "course": "Course",
       "edit": "Edit"
@@ -146,18 +70,6 @@
       "profile": {
         "title": "Instructor profile",
         "description": "Keep your professional profile and collaboration info clear and up to date."
-      },
-      "contracts": {
-        "title": "Partner contracts",
-        "description": "Track collaboration documents and the latest updates."
-      },
-      "invoices": {
-        "title": "Invoices",
-        "description": "Centralize invoices for reconciliation and ops workflows."
-      },
-      "payments": {
-        "title": "Payments",
-        "description": "Check payout info and coordination history with ops."
       },
       "editCourse": {
         "titleFallback": "Edit course",
@@ -271,9 +183,6 @@
     "errors": {
       "missingProfileName": "Please update your full name in Account.",
       "missingTitle": "Enter a course title.",
-      "invalidPaidPrice": "Enter a valid course price for paid-upfront courses.",
-      "invalidCertificateFee": "Enter a valid certificate fee for the free-with-certificate model.",
-      "invalidRevenueShare": "Platform revenue share must be between 0 and 100%.",
       "createFailed": "Failed to create course"
     },
     "toasts": {
@@ -286,7 +195,7 @@
     "stats": {
       "statusLabel": "Status",
       "accessLabel": "Access type",
-      "ownerLabel": "Revenue ownership",
+      "ownerLabel": "Course source",
       "levelLabel": "Level"
     },
     "nav": {
@@ -325,11 +234,7 @@
       "skillsSubtitle": "These skills will appear on the learner's profile after course completion.",
       "skillsAdd": "Add skill",
       "thumbnail": "Course cover image",
-      "ownerType": "Revenue ownership type",
-      "platformRevenueSharePercent": "Platform revenue share (%)",
-      "accessModel": "Course type",
-      "priceVnd": "Course price (VND)",
-      "certificateFeeVnd": "Certificate / assignment fee (VND)",
+      "ownerType": "Course source",
       "level": "Level",
       "contentLocales": "Course content languages",
       "contentLocalesHint": "Select languages that this course will have separate content for (currently VI/EN).",
@@ -339,9 +244,7 @@
       "externalAggregatedCheckbox": "Public external course"
     },
     "hints": {
-      "businessSettingsRestricted": "Only academic staff/admin can change revenue ownership settings.",
-      "partnerRevenueRemainder": "The remainder belongs to the partner instructor.",
-      "vndFormat": "Unit: VND (₫), formatted automatically as you type.",
+      "businessSettingsRestricted": "Only academic staff/admin can change the course source.",
       "externalAggregatedDescription": "This course aggregates content from external sources (YouTube/reference links to the creator's channel)."
     },
     "placeholders": {
@@ -352,9 +255,7 @@
       "sources": "One URL per line\nhttps://youtube.com/...\nhttps://youtube.com/...",
       "sourceAttributionNote": "Public note about aggregated sources (e.g., curated from a YouTube playlist by creators).",
       "learningOutcomesItem": "e.g. Explain how Web3 wallets and on-chain transactions work",
-      "skillItem": "e.g. Blockchain Fundamentals",
-      "priceVnd": "e.g. 499,000",
-      "certificateFeeVnd": "e.g. 199,000"
+      "skillItem": "e.g. Blockchain Fundamentals"
     },
     "actions": {
       "uploadThumb": "Upload cover image",
@@ -372,12 +273,11 @@
       "total": "Total courses",
       "published": "Published",
       "drafts": "Drafts",
-      "paidUpfront": "Paid upfront",
       "free": "Free courses"
     },
     "hero": {
       "title": "Your course catalog",
-      "description": "Quickly track publish status, revenue model, and jump into editing in one click.",
+      "description": "Track publishing status and jump into editing with one click.",
       "create": "Create new course"
     },
     "empty": {
@@ -391,7 +291,6 @@
     },
     "courseCards": {
       "pricingLabel": "Pricing model",
-      "certificateFeePrefix": "Certificate fee {{price}}",
       "free": "Free",
       "instructorLabel": "Instructor",
       "you": "You"
@@ -543,27 +442,19 @@
       "loadCourseFailed": "Failed to load course",
       "refreshTotalFailed": "Update failed",
       "uploadThumbnailFailed": "Failed to upload course cover image",
-      "invalidPaidPrice": "Enter a valid course price for paid-upfront courses.",
-      "invalidPromoPrice": "Promo price must be lower than the base price.",
-      "invalidPromoEndsAt": "Invalid promo end time (must be an ISO string).",
-      "invalidCertificateFee": "Enter a valid certificate fee for the free-with-certificate model.",
-      "invalidRevenueShare": "Platform revenue share must be between 0 and 100%.",
       "updateFailed": "Update failed",
       "processFailed": "Action failed",
       "missingCertificateTemplate": "Please upload a certificate template image when Certificate Issuance is enabled.",
       "missingCertificateTemplateCta": "Certificate",
       "uploadCertTemplateFailed": "Failed to upload certificate template",
       "clearCertTemplateFailed": "Failed to cancel the certificate",
-      "uploadPartnerDocsFailed": "Failed to upload partner documents",
       "addSectionFailed": "Failed to add section",
       "addLessonFailed": "Failed to add lesson",
-      "updatePreviewFailed": "Failed to update preview lesson",
       "deleteSectionFailed": "Failed to delete section",
       "deleteLessonFailed": "Failed to delete lesson",
       "deleteCourseFailed": "Failed to delete course",
       "reorderLessonsFailed": "Unable to update lesson order",
       "reorderSectionsFailed": "Unable to update section order",
-      "createDiscountFailed": "Unable to create discount code.",
       "prepareLessonFailed": "Could not prepare the lesson.",
       "externalSourcesRequired": "Enter at least one source URL when Public external course is enabled."
     },
@@ -571,14 +462,9 @@
       "back": "Back"
     },
     "business": {
-      "ownershipLabel": "Course ownership & revenue share",
-      "ownershipAdminOnly": "Only admins can update ownership and revenue settings.",
-      "ownershipCurrent": "Current: {{type}}",
-      "instructorShare": "Instructor receives {{percent}}%.",
-      "partnerTransferLabel": "Partner transfer details",
-      "partnerTransferHint": "Shown to partner instructors in Invoices & payments.",
-      "noContractDocs": "No contract documents yet.",
-      "noInvoiceDocs": "No invoice documents yet."
+      "ownershipLabel": "Course source",
+      "ownershipAdminOnly": "Only admins can update the course source.",
+      "ownershipCurrent": "Current: {{type}}"
     },
     "externalCourse": {
       "toggleLabel": "Public external course",
@@ -597,10 +483,7 @@
       "certificateIssued": "Certificate issued.",
       "assignmentConfigSaved": "Assignment settings saved.",
       "certTemplateUploaded": "Certificate template uploaded.",
-      "certTemplateCleared": "Certificate cancelled.",
-      "partnerContractUploaded": "Partner contract document uploaded.",
-      "partnerInvoiceUploaded": "Partner invoice document uploaded.",
-      "discountCreated": "Discount code created."
+      "certTemplateCleared": "Certificate cancelled."
     },
     "confirm": {
       "deleteSection": "Delete this section and all lessons inside it?",
@@ -615,15 +498,12 @@
       "save": "Save changes",
       "saving": "Saving...",
       "saveInfo": "General info saved.",
-      "savePricing": "Pricing & payment saved.",
       "saveAssignment": "Save assignment settings",
       "saveCertificate": "Certificate settings saved.",
       "reload": "Reload",
       "loading": "Loading...",
       "updating": "Updating…",
       "updateTotalDuration": "Refresh total duration",
-      "creatingDiscount": "Creating...",
-      "createDiscount": "Create code",
       "add": "Add",
       "adding": "Adding…",
       "addSection": "Add section",
@@ -762,52 +642,7 @@
       "skillsItemPlaceholder": "e.g. Web3",
       "skillsAdd": "Add skill",
       "thumbnailLabel": "Course cover image",
-      "platformRevenueShareLabel": "Platform revenue share (%)",
-      "partnerTransferPlaceholder": "e.g. Bank, account number, account holder, transfer note per contract...",
-      "partnerContractDocsLabel": "Partner contract documents",
-      "partnerInvoiceDocsLabel": "Invoices / reconciliation documents",
       "levelLabel": "Level"
-    },
-    "pricing": {
-      "accessModelLabel": "Course type",
-      "priceVndLabel": "Full course price (VND)",
-      "promoPriceVndLabel": "Promo price (VND)",
-      "promoPricePlaceholder": "Leave blank if no promotion",
-      "promoEndsAtLabel": "Promo end time (ISO)",
-      "updateTotalDurationLabelPrefix": "Paid-upfront course: enable \"Free preview\" for lessons",
-      "intro": "Set access model, course price, certificate fee, and discount codes.",
-      "paidPreviewHint": "Learners who have not paid can only view lessons marked as free preview.",
-      "promoMustBeLower": "Promo price must be lower than the base price.",
-      "promoEndsOptional": "Leave blank if there is no end time.",
-      "discountsTitle": "Discount codes & promotions",
-      "certificateFeeLabel": "Certificate / final project fee (VND)",
-      "certificateFeeHint": "All lessons remain free; this fee applies when learners submit work for certificate review."
-    },
-    "discounts": {
-      "createTitle": "Create a discount code (percent or fixed amount) with limits",
-      "subtitleSuffix": " with time/redemption limits.",
-      "empty": "No discount codes yet.",
-      "activeOn": "On",
-      "activeOff": "Off",
-      "table": {
-        "code": "Code",
-        "type": "Type",
-        "value": "Value",
-        "status": "Status",
-        "actions": "Actions",
-        "active": "Active",
-        "inactive": "Off",
-        "delete": "Delete"
-      },
-      "form": {
-        "code": "Code",
-        "codePlaceholder": "e.g. SPRING10",
-        "type": "Type",
-        "value": "Value",
-        "startsAt": "Start (ISO, optional)",
-        "endsAt": "End (ISO, optional)",
-        "maxRedemptions": "Redemption limit (optional)"
-      }
     },
     "sidebar": {
       "editingLanguage": "Editing language",
@@ -816,7 +651,6 @@
       "navHint": "Go through each configuration group to complete the course before publishing.",
       "nav": {
         "info": "General info",
-        "pricing": "Pricing & payment",
         "content": "Content & lessons",
         "assignments": "Final assignment",
         "certificate": "Certificate",
@@ -832,7 +666,6 @@
       "dragHint": "Drag the dot icon to reorder lessons within each section, or use the up/down arrows as needed.",
       "sectionsToggleLabel": "Organize by sections",
       "sectionsToggleHint": "Enable to group lessons into chapters. Disable for a flat lesson list.",
-      "paidUpfrontPreviewBanner": "Paid-upfront course: enable \"Free preview\" on lessons you want available to learners who have not paid.",
       "addSectionHeading": "Add new section",
       "lessonTitlePlaceholder": "Lesson title (optional)",
       "lessonMinutesPlaceholder": "Duration (minutes) — if YouTube duration can't be fetched, enter it here",
@@ -1072,15 +905,11 @@
     },
     "students": {
       "empty": "No learners enrolled in this course yet.",
-      "providerLabel": "Provider: {{provider}}",
-      "providerEmpty": "Provider: —",
-      "orderLabel": "Order: {{id}}",
       "columns": {
         "student": "Learner",
         "progress": "Progress",
         "assignment": "Assignment",
         "certificate": "Certificate",
-        "payment": "Payment",
         "enrolledAt": "Enrolled",
         "lastAccess": "Last access"
       },
@@ -1091,8 +920,6 @@
         "notSubmitted": "Not submitted",
         "notEligible": "Not eligible",
         "issue": "Issue",
-        "paid": "Paid",
-        "free": "Free / untracked",
         "issued": "Issued"
       }
     },

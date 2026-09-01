@@ -33,8 +33,6 @@ const OCIDRedirect = lazy(() => import("@/pages/OCIDRedirect"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const MainLayout = lazy(() => import("@/components/layouts/MainLayout"));
 const CourseDetail = lazy(() => import("@/pages/course-details"));
-const CheckoutCourse = lazy(() => import("@/pages/CheckoutCourse"));
-const CheckoutSuccess = lazy(() => import("@/pages/CheckoutSuccess"));
 const Learn = lazy(() => import("@/pages/learn"));
 const LearnLayout = lazy(() => import("@/pages/learn/LearnLayout"));
 const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
@@ -66,9 +64,6 @@ const AccountProfileRoute = lazy(() =>
 const AccountCvRoute = lazy(() =>
   import("@/pages/account/AccountCvRoute").then((m) => ({ default: m.AccountCvRoute })),
 );
-const AccountBillingRoute = lazy(() =>
-  import("@/pages/account/AccountBillingRoute").then((m) => ({ default: m.AccountBillingRoute })),
-);
 const AccountSettingsRoute = lazy(() =>
   import("@/pages/account/AccountSettingsRoute").then((m) => ({ default: m.AccountSettingsRoute })),
 );
@@ -91,21 +86,11 @@ const InstructorCareerTracks = lazy(() => import("@/pages/instructor-career-trac
 const InstructorCareerTrackEditor = lazy(
   () => import("@/pages/instructor-career-tracks/InstructorCareerTrackEditorPage"),
 );
-const PartnerContractsPage = lazy(() =>
-  import("@/pages/instructor/PartnerFinance").then((m) => ({ default: m.PartnerContractsPage })),
-);
-const PartnerInvoicesPage = lazy(() =>
-  import("@/pages/instructor/PartnerFinance").then((m) => ({ default: m.PartnerInvoicesPage })),
-);
-const PartnerPaymentsPage = lazy(() =>
-  import("@/pages/instructor/PartnerFinance").then((m) => ({ default: m.PartnerPaymentsPage })),
-);
 
 const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
 const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
 const AdminInstructors = lazy(() => import("@/pages/admin/AdminInstructors"));
 const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
-const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMilestones"));
 const AdminManualMint = lazy(() => import("@/pages/admin/AdminManualMint"));
 const AdminBranding = lazy(() => import("@/pages/admin/AdminBranding"));
@@ -397,26 +382,6 @@ export default function App() {
               />
               <Route path="cohorts/:id" element={<Navigate to="/courses" replace />} />
               <Route
-                path="checkout/course/:courseId"
-                element={
-                  <RequireAuth>
-                    <Suspense fallback={<PageFallback />}>
-                      <CheckoutCourse />
-                    </Suspense>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="checkout/success/:purpose/:courseId"
-                element={
-                  <RequireAuth>
-                    <Suspense fallback={<PageFallback />}>
-                      <CheckoutSuccess />
-                    </Suspense>
-                  </RequireAuth>
-                }
-              />
-              <Route
                 path="instructors/:id"
                 element={
                   <Suspense fallback={<PageFallback />}>
@@ -488,14 +453,6 @@ export default function App() {
                   }
                 />
                 <Route
-                  path="billing"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <AccountBillingRoute />
-                    </Suspense>
-                  }
-                />
-                <Route
                   path="settings"
                   element={
                     <Suspense fallback={<PageFallback />}>
@@ -528,14 +485,6 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <AdminUsers />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="dashboard"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <AdminDashboard />
                     </Suspense>
                   }
                 />
@@ -663,30 +612,6 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <InstructorWorkspaceProfileRoute />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="contracts"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <PartnerContractsPage />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="invoices"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <PartnerInvoicesPage />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="payments"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <PartnerPaymentsPage />
                     </Suspense>
                   }
                 />

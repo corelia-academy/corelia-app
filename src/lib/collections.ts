@@ -13,9 +13,6 @@ export const COL = {
   LESSON_PROGRESS: "lesson_progress",
   FINAL_ASSIGNMENT_SUBMISSIONS: "final_assignment_submissions",
 
-  // Thanh toán
-  COURSE_PAYMENT_ACCESS: "course_payment_access",
-
   // Cuộc thi
   CONTESTS: "contests",
   CONTEST_REGISTRATIONS: "contest_registrations",
@@ -24,8 +21,6 @@ export const COL = {
   CONTEST_SCORES: "contest_scores",
 
   // Khoá học offline
-  // Dashboard
-  DASHBOARD_CONFIGS: "dashboard_configs",
 } as const;
 
 // ─── Subcollection keys (dùng trong collection path lồng nhau) ────────────────
@@ -35,9 +30,4 @@ export const SUB = {
   LOCALES: "locales",
   DISCOUNTS: "discounts",
   SESSIONS: "sessions",
-} as const;
-
-// ─── Document IDs cố định ─────────────────────────────────────────────────────
-export const DOC = {
-  HOME_DASHBOARD: "home",
 } as const;

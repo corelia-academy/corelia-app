@@ -100,7 +100,6 @@ vi.mock("react-i18next", async (importOriginal) => {
 import { useLearnEnrollmentAccess } from "@/pages/learn/hooks/useLearnEnrollmentAccess";
 import { QuestionGeneratorDialog } from "@/pages/instructor-course-edit/components/QuestionGeneratorDialog";
 import { getSectionQuestions } from "@/lib/sectionQuestions";
-import { verifySePayPayment } from "@/lib/payments";
 import { peekProjectInviteByToken } from "@/lib/notifications";
 import { getCareerTrackBySlug, listCareerTracks, invalidateCareerTracksCache } from "@/lib/careerTracks";
 import { CourseSpotlightSection } from "@/pages/course-details/components/CourseSpotlightSection";
@@ -157,77 +156,6 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
 
   afterEach(() => {
     document.body.innerHTML = "";
-  });
-
-  describe("BUG-006: verifySePayPayment actual implementation & cancellation", () => {
-    it("calls edge function and correctly parses valid paid response", async () => {
-      const mockSuccessResponse = {
-        order_id: "ord-123456",
-        status: "paid",
-        purpose: "course_access",
-        amount: 500000,
-        course_id: "course-123",
-        profile_id: "user-456",
-        full_access_granted: true,
-      };
-
-      globalThis.fetch = vi.fn().mockResolvedValue(
-        new Response(JSON.stringify(mockSuccessResponse), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
-      );
-
-      const result = await verifySePayPayment({
-        courseId: "course-123",
-        orderId: "ord-123456",
-      });
-
-      expect(result.status).toBe("paid");
-      expect(result.purpose).toBe("course_access");
-      expect(result.full_access_granted).toBe(true);
-    });
-
-    it("passes AbortSignal to fetch and aborts in-flight request when signal triggers", async () => {
-      const controller = new AbortController();
-
-      globalThis.fetch = vi.fn().mockImplementation((_url, init) => {
-        return new Promise((_resolve, reject) => {
-          if (init?.signal?.aborted) {
-            reject(new DOMException("This operation was aborted", "AbortError"));
-            return;
-          }
-          init?.signal?.addEventListener("abort", () => {
-            reject(new DOMException("This operation was aborted", "AbortError"));
-          });
-        });
-      });
-
-      const promise = verifySePayPayment({
-        courseId: "course-123",
-        orderId: "ord-123456",
-        signal: controller.signal,
-      });
-
-      controller.abort();
-      await expect(promise).rejects.toThrow("This operation was aborted");
-    });
-
-    it("throws clear error when verification payload is incomplete or status is not ok", async () => {
-      globalThis.fetch = vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ error: "TRANSACTION_NOT_FOUND" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }),
-      );
-
-      await expect(
-        verifySePayPayment({
-          courseId: "course-123",
-          orderId: "non-existent-order",
-        }),
-      ).rejects.toThrow();
-    });
   });
 
   describe("BUG-007: peekProjectInviteByToken implementation tests", () => {
@@ -476,114 +404,69 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
   });
 
   describe("BUG-011: Context isolation in useLearnEnrollmentAccess hook (Real React DOM Lifecycle)", () => {
-    it("runs useLearnEnrollmentAccess and proves state isolation between Course A and Course B", () => {
+    it("does not leak enrollment state between courses", () => {
       const hook = renderRealHook(useLearnEnrollmentAccess, {
         courseId: "course-A",
         profileId: "user-1",
-        accessModel: "paid_upfront",
-        role: "learner",
       });
 
       expect(hook.current.loading).toBe(true);
-      expect(hook.current.hasFullCourseAccess).toBe(false);
-
       act(() => {
-        hook.current.setPaymentAccess({
+        hook.current.setEnrollment({
           course_id: "course-A",
-          status: "paid",
-          full_access_granted: true,
         } as never);
+        hook.current.setEnrolled(true);
       });
 
+      expect(hook.current.enrolled).toBe(true);
       expect(hook.current.hasFullCourseAccess).toBe(true);
-      expect(hook.current.paymentAccess?.full_access_granted).toBe(true);
-
-      const setPaymentAccessFromA = hook.current.setPaymentAccess;
+      const setEnrollmentFromA = hook.current.setEnrollment;
 
       hook.rerender({
         courseId: "course-B",
         profileId: "user-1",
-        accessModel: "paid_upfront",
-        role: "learner",
       });
 
       expect(hook.current.loading).toBe(true);
-      expect(hook.current.hasFullCourseAccess).toBe(false);
-      expect(hook.current.paymentAccess).toBeNull();
-
-      act(() => {
-        hook.current.setPaymentAccess({
-          course_id: "course-B",
-          status: "paid",
-          full_access_granted: true,
-        } as never);
-      });
+      expect(hook.current.enrolled).toBe(false);
+      expect(hook.current.enrollment).toBeNull();
       expect(hook.current.hasFullCourseAccess).toBe(true);
-      expect(hook.current.paymentAccess?.course_id).toBe("course-B");
 
       act(() => {
-        setPaymentAccessFromA({
+        setEnrollmentFromA({
           course_id: "course-A",
-          status: "revoked",
-          full_access_granted: false,
         } as never);
       });
 
-      expect(hook.current.paymentAccess?.course_id).toBe("course-B");
-      expect(hook.current.hasFullCourseAccess).toBe(true);
-
-      act(() => {
-        hook.current.setPaymentAccess({
-          course_id: "course-B",
-          status: "revoked",
-          full_access_granted: true,
-        } as never);
-      });
-      expect(hook.current.hasFullCourseAccess).toBe(false);
+      expect(hook.current.enrollment).toBeNull();
 
       hook.unmount();
     });
 
-    it("does not leak enrollment or payment access across different accounts in same course", () => {
+    it("does not leak enrollment across different accounts in the same course", () => {
       const hook = renderRealHook(useLearnEnrollmentAccess, {
         courseId: "course-1",
         profileId: "user-alice",
-        accessModel: "paid_upfront",
-        role: "learner",
       });
 
       act(() => {
         hook.current.setEnrollment({
           course_id: "course-1",
-          paid_at: "2026-08-01T00:00:00Z",
         } as never);
         hook.current.setEnrolled(true);
-        hook.current.setPaymentAccess({
-          course_id: "course-1",
-          status: "paid",
-          full_access_granted: true,
-        } as never);
       });
 
       expect(hook.current.enrolled).toBe(true);
       expect(hook.current.hasFullCourseAccess).toBe(true);
-      expect(hook.current.enrollment?.paid_at).toBe("2026-08-01T00:00:00Z");
 
       hook.rerender({
         courseId: "course-1",
         profileId: "user-bob",
-        accessModel: "paid_upfront",
-        role: "learner",
-      });
-
-      act(() => {
-        hook.current.setPaymentAccess(null);
       });
 
       expect(hook.current.enrolled).toBe(false);
       expect(hook.current.enrollment).toBeNull();
-      expect(hook.current.paymentAccess).toBeNull();
-      expect(hook.current.hasFullCourseAccess).toBe(false);
+      expect(hook.current.hasFullCourseAccess).toBe(true);
 
       hook.unmount();
     });

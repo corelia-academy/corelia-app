@@ -11,9 +11,14 @@
       "brandTitle": "Corelia Admin",
       "brandSubtitle": "Roles, instructors, and daily system operations in one place.",
       "primaryNavigation": "Primary navigation",
-      "users": { "label": "Users", "tooltip": "Users" },
-      "dashboard": { "label": "Dashboard" },
-      "instructors": { "label": "Instructors", "tooltip": "Instructors" },
+      "users": {
+        "label": "Users",
+        "tooltip": "Users"
+      },
+      "instructors": {
+        "label": "Instructors",
+        "tooltip": "Instructors"
+      },
       "activityMilestones": {
         "label": "Activity milestones",
         "tooltip": "Global Open Campus milestone badges"
@@ -26,17 +31,19 @@
         "label": "Branding",
         "tooltip": "Corelia logo and brand assets"
       },
-      "offlineClasses": { "label": "Offline classes", "tooltip": "Offline classes" },
-      "contests": { "label": "Contests", "tooltip": "Contests" }
+      "offlineClasses": {
+        "label": "Offline classes",
+        "tooltip": "Offline classes"
+      },
+      "contests": {
+        "label": "Contests",
+        "tooltip": "Contests"
+      }
     },
     "pageMeta": {
       "users": {
         "title": "User management",
         "description": "Control roles and access health across all users."
-      },
-      "dashboard": {
-        "title": "Dashboard configuration",
-        "description": "Pin key programs so they show up in the right spot on learners' Home."
       },
       "instructors": {
         "title": "Instructor management",
@@ -60,7 +67,7 @@
       },
       "instructorDetail": {
         "title": "Instructor detail",
-        "description": "Update profile, contracts, invoices, and payout information."
+        "description": "Update profile and instructor information."
       }
     },
     "hero": {
@@ -70,49 +77,6 @@
         "manualAudit": "Manual audit"
       }
     }
-  },
-  "dashboard": {
-    "errors": {
-      "loadFailed": "Unable to load dashboard configuration.",
-      "saveFailed": "Unable to save dashboard configuration."
-    },
-    "toasts": {
-      "saved": "Pinned programs configuration saved."
-    },
-    "hero": {
-      "eyebrow": "Pin programs on the dashboard",
-      "title": "Select up to 3 programs to feature on learners' Home",
-      "description": "Learners' dashboards still prioritize personal data. This area is only for programs that admins or ops want to highlight for a period of time."
-    },
-    "actions": {
-      "save": "Save configuration",
-      "saving": "Saving..."
-    },
-    "slot": {
-      "label": "Slot {{index}}",
-      "activeOn": "Enabled",
-      "activeOff": "Disabled",
-      "show": "Show"
-    },
-    "programType": {
-      "course": "Online course",
-      "contest": "Contest",
-      "offlineCourse": "Offline program"
-    },
-    "form": {
-      "programTypeLabel": "Program type",
-      "programSourceLabel": "Source program",
-      "programSourcePlaceholder": "Select a program",
-      "badgeLabel": "Custom badge",
-      "badgePlaceholder": "e.g. Open for registration",
-      "titleOverrideLabel": "Title override",
-      "titleOverridePlaceholder": "Leave empty to use the original title",
-      "descriptionOverrideLabel": "Description override",
-      "descriptionOverridePlaceholder": "Leave empty to use the original description",
-      "ctaLabel": "CTA label",
-      "ctaPlaceholder": "e.g. View program"
-    },
-    "hint": "Only enabled slots with a selected source program will be shown. If title/description overrides are empty, the system will use content from the source program."
   },
   "instructors": {
     "errors": {
@@ -132,7 +96,7 @@
     },
     "hero": {
       "title": "Instructor network operations",
-      "description": "Open each profile to manage contracts, invoices, and payouts. Here you can quickly classify internal vs partner instructors."
+      "description": "Open each profile to manage instructor information and classification."
     },
     "filters": {
       "searchPlaceholder": "Search by name, email, org, headline, UID…",
@@ -168,15 +132,10 @@
   "instructorDetailPage": {
     "errors": {
       "loadFailed": "Unable to load data",
-      "saveFailed": "Unable to save changes",
-      "uploadFailed": "Unable to upload document",
-      "paymentsSaveFailed": "Unable to save payments"
+      "saveFailed": "Unable to save changes"
     },
     "toasts": {
-      "detailsSaved": "Instructor details saved.",
-      "contractUploaded": "Contract uploaded for the instructor.",
-      "invoiceUploaded": "Invoice uploaded for the instructor.",
-      "paymentsSaved": "Payment info updated."
+      "detailsSaved": "Instructor details saved."
     },
     "loading": "Loading instructor detail...",
     "empty": {
@@ -187,36 +146,21 @@
       "backToInstructors": "← Back to instructors"
     },
     "summary": {
-      "profileCompletion": "Profile completion",
-      "contracts": "Contracts",
-      "invoices": "Invoices",
-      "bankAccount": "Bank account",
-      "ready": "Ready",
-      "notAvailable": "N/A"
+      "profileCompletion": "Profile completion"
     },
     "hero": {
       "eyebrow": "Instructor workspace",
-      "description": "Manage the instructor profile, partner documents, and payout information in a clearer ops flow.",
+      "description": "Manage instructor profile information in a clear operations flow.",
       "rolePrefix": "Role: {{role}}",
       "partnerInstructor": "Partner instructor",
       "coreliaInstructor": "Corelia instructor"
     },
     "nav": {
       "title": "Profile navigation",
-      "subtitle": "Quickly switch between personal info, partner documents, and payments."
+      "subtitle": "Review and update instructor profile information."
     },
     "sections": {
-      "profile": "Instructor details",
-      "partnerGroup": "Partner",
-      "contracts": "Contracts",
-      "invoices": "Invoices",
-      "payments": "Payments"
-    },
-    "partnerMode": {
-      "titleOn": "Partner mode enabled",
-      "titleOff": "Internal instructor",
-      "descriptionOn": "Contracts, invoices, and payments sections are enabled for reconciliation.",
-      "descriptionOff": "Partner sections are disabled because this profile doesn't use partner payout workflows."
+      "profile": "Instructor details"
     },
     "common": {
       "dash": "—",
@@ -243,59 +187,6 @@
       },
       "actions": {
         "save": "Save changes",
-        "saving": "Saving..."
-      }
-    },
-    "contracts": {
-      "externalOnly": "Only applicable to external partner instructors.",
-      "title": "Contracts",
-      "description": "Upload the signed offline contract. The file is saved immediately and visible to the instructor.",
-      "countLabel": "{{count}} files",
-      "noteLabel": "Note (optional)",
-      "notePlaceholder": "e.g. Contract ref, signing date...",
-      "uploadLabel": "Upload contract",
-      "empty": "No contract documents yet.",
-      "noNote": "No note"
-    },
-    "invoices": {
-      "externalOnly": "Only applicable to external partner instructors.",
-      "title": "Invoices",
-      "description": "Upload invoices/reconciliation files. The file is saved immediately and visible to the instructor.",
-      "countLabel": "{{count}} files",
-      "invoiceMonthLabel": "Invoice month",
-      "noteLabel": "Note (optional)",
-      "notePlaceholder": "e.g. Reconciliation period, invoice number...",
-      "uploadLabel": "Upload invoice",
-      "empty": "No invoice documents yet.",
-      "invoiceMonthPrefix": "Month {{month}}"
-    },
-    "payments": {
-      "externalOnly": "Only applicable to external partner instructors.",
-      "title": "Payments",
-      "description": "Transfer information is shown to the instructor in the “Payments” section.",
-      "stats": {
-        "profileType": "Profile type",
-        "bankAccount": "Bank account",
-        "accountHolder": "Account holder"
-      },
-      "profileType": {
-        "external": "External partner",
-        "internal": "Internal"
-      },
-      "fields": {
-        "bankName": "Bank",
-        "bankNamePlaceholder": "e.g. Vietcombank",
-        "accountNumber": "Account number",
-        "accountNumberPlaceholder": "0123456789",
-        "accountHolder": "Account holder",
-        "accountHolderPlaceholder": "NGUYEN VAN A",
-        "transferNote": "Transfer note (optional)",
-        "transferNotePlaceholder": "e.g. Corelia - reconciliation 03/2026",
-        "extraNotes": "Extra notes (optional)",
-        "extraNotesPlaceholder": "e.g. Payment terms, reconciliation deadlines, invoice email..."
-      },
-      "actions": {
-        "save": "Save payments",
         "saving": "Saving..."
       }
     }

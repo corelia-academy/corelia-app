@@ -22,10 +22,22 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260827120000_canonical_payment_entitlements_and_quiz_integrity.sql",
   "supabase/migrations/20260827130000_remove_daily_streak_feature.sql",
   "supabase/migrations/20260828060630_harden_security_definer_rpc_boundaries.sql",
+  "supabase/migrations/20260830212012_remove_learner_facing_ai_database.sql",
+  "supabase/migrations/20260830230917_drop_unused_vector_extension.sql",
+  "supabase/migrations/20260831230000_remove_all_financial_features.sql",
+  "supabase/migrations/20260831232819_restore_enrollment_rpc_security_boundary.sql",
+  "supabase/migrations/20260901002156_remove_dashboard_configs_and_tier_limits.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
+
+// Every approved migration except the final entry is already released. Keep
+// the reviewed history distinct from the migration pending this rollout.
+export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
+  APPROVED_PENDING_VERSIONS.slice(0, -1),
+);
+export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-1));
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);

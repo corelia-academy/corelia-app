@@ -11,9 +11,14 @@
       "brandTitle": "Corelia Admin",
       "brandSubtitle": "Phân quyền, giảng viên và các tác vụ điều hành hệ thống hằng ngày.",
       "primaryNavigation": "Điều hướng chính",
-      "users": { "label": "Tài khoản", "tooltip": "Tài khoản" },
-      "dashboard": { "label": "Dashboard" },
-      "instructors": { "label": "Giảng viên", "tooltip": "Giảng viên" },
+      "users": {
+        "label": "Tài khoản",
+        "tooltip": "Tài khoản"
+      },
+      "instructors": {
+        "label": "Giảng viên",
+        "tooltip": "Giảng viên"
+      },
       "activityMilestones": {
         "label": "Milestone hoạt động",
         "tooltip": "Huy hiệu milestone Open Campus toàn cục"
@@ -26,17 +31,19 @@
         "label": "Thương hiệu",
         "tooltip": "Logo Corelia và tài nguyên thương hiệu"
       },
-      "offlineClasses": { "label": "Lớp học trực tiếp", "tooltip": "Lớp học trực tiếp" },
-      "contests": { "label": "Cuộc thi", "tooltip": "Cuộc thi" }
+      "offlineClasses": {
+        "label": "Lớp học trực tiếp",
+        "tooltip": "Lớp học trực tiếp"
+      },
+      "contests": {
+        "label": "Cuộc thi",
+        "tooltip": "Cuộc thi"
+      }
     },
     "pageMeta": {
       "users": {
         "title": "Quản lý tài khoản",
         "description": "Kiểm soát vai trò và sức khoẻ truy cập của toàn bộ người dùng."
-      },
-      "dashboard": {
-        "title": "Cấu hình dashboard",
-        "description": "Ghim các chương trình quan trọng để xuất hiện đúng vị trí trên Home của học viên."
       },
       "instructors": {
         "title": "Quản lý giảng viên",
@@ -60,7 +67,7 @@
       },
       "instructorDetail": {
         "title": "Chi tiết giảng viên",
-        "description": "Cập nhật hồ sơ, hợp đồng, hoá đơn và thông tin thanh toán."
+        "description": "Cập nhật hồ sơ và thông tin giảng viên."
       }
     },
     "hero": {
@@ -70,49 +77,6 @@
         "manualAudit": "Audit thủ công"
       }
     }
-  },
-  "dashboard": {
-    "errors": {
-      "loadFailed": "Không thể tải cấu hình dashboard.",
-      "saveFailed": "Không thể lưu cấu hình dashboard."
-    },
-    "toasts": {
-      "saved": "Đã lưu cấu hình ghim chương trình lên dashboard."
-    },
-    "hero": {
-      "eyebrow": "Ghim chương trình trên dashboard",
-      "title": "Chọn tối đa 3 chương trình để đẩy lên Home của học viên",
-      "description": "Dashboard của học viên vẫn ưu tiên dữ liệu cá nhân. Khu vực này chỉ dành cho những chương trình mà admin hoặc học vụ muốn nhấn mạnh trong một giai đoạn nhất định."
-    },
-    "actions": {
-      "save": "Lưu cấu hình",
-      "saving": "Đang lưu..."
-    },
-    "slot": {
-      "label": "Slot {{index}}",
-      "activeOn": "Đang bật",
-      "activeOff": "Đang tắt",
-      "show": "Hiển thị"
-    },
-    "programType": {
-      "course": "Khoá học online",
-      "contest": "Contest",
-      "offlineCourse": "Chương trình offline"
-    },
-    "form": {
-      "programTypeLabel": "Loại chương trình",
-      "programSourceLabel": "Chương trình nguồn",
-      "programSourcePlaceholder": "Chọn chương trình",
-      "badgeLabel": "Badge tuỳ chỉnh",
-      "badgePlaceholder": "Ví dụ: Đang mở đăng ký",
-      "titleOverrideLabel": "Tiêu đề override",
-      "titleOverridePlaceholder": "Để trống nếu dùng tiêu đề gốc",
-      "descriptionOverrideLabel": "Mô tả override",
-      "descriptionOverridePlaceholder": "Để trống nếu dùng mô tả gốc",
-      "ctaLabel": "Nhãn CTA",
-      "ctaPlaceholder": "Ví dụ: Xem chương trình"
-    },
-    "hint": "Dashboard chỉ hiển thị những slot đang bật và đã chọn chương trình nguồn. Nếu bạn để trống tiêu đề hoặc mô tả override, hệ thống sẽ lấy nội dung từ chương trình gốc."
   },
   "instructors": {
     "errors": {
@@ -132,7 +96,7 @@
     },
     "hero": {
       "title": "Điều phối mạng lưới giảng viên",
-      "description": "Mở từng hồ sơ để xử lý hợp đồng, hoá đơn và thanh toán. Tại đây bạn có thể phân loại nhanh giảng viên nội bộ và giảng viên đối tác."
+      "description": "Mở từng hồ sơ để quản lý thông tin và phân loại giảng viên."
     },
     "filters": {
       "searchPlaceholder": "Tìm theo tên, email, tổ chức, headline, UID…",
@@ -168,15 +132,10 @@
   "instructorDetailPage": {
     "errors": {
       "loadFailed": "Không thể tải dữ liệu",
-      "saveFailed": "Không thể lưu cập nhật",
-      "uploadFailed": "Không thể tải tài liệu",
-      "paymentsSaveFailed": "Không thể lưu thanh toán"
+      "saveFailed": "Không thể lưu cập nhật"
     },
     "toasts": {
-      "detailsSaved": "Đã lưu thông tin giảng viên.",
-      "contractUploaded": "Đã tải lên hợp đồng cho giảng viên.",
-      "invoiceUploaded": "Đã tải lên hoá đơn cho giảng viên.",
-      "paymentsSaved": "Đã cập nhật thông tin thanh toán."
+      "detailsSaved": "Đã lưu thông tin giảng viên."
     },
     "loading": "Đang tải chi tiết giảng viên...",
     "empty": {
@@ -187,36 +146,21 @@
       "backToInstructors": "← Quay lại danh sách giảng viên"
     },
     "summary": {
-      "profileCompletion": "Hồ sơ hoàn thiện",
-      "contracts": "Hợp đồng",
-      "invoices": "Hoá đơn",
-      "bankAccount": "Tài khoản ngân hàng",
-      "ready": "Sẵn sàng",
-      "notAvailable": "Chưa có"
+      "profileCompletion": "Hồ sơ hoàn thiện"
     },
     "hero": {
       "eyebrow": "Instructor workspace",
-      "description": "Quản lý hồ sơ giảng viên, tài liệu đối tác và thông tin thanh toán trong một luồng vận hành rõ ràng hơn.",
+      "description": "Quản lý thông tin hồ sơ giảng viên trong một luồng vận hành rõ ràng.",
       "rolePrefix": "Role: {{role}}",
       "partnerInstructor": "Giảng viên đối tác",
       "coreliaInstructor": "Giảng viên Corelia"
     },
     "nav": {
       "title": "Điều hướng hồ sơ",
-      "subtitle": "Chuyển nhanh giữa thông tin cá nhân, tài liệu đối tác và thanh toán."
+      "subtitle": "Xem và cập nhật thông tin hồ sơ giảng viên."
     },
     "sections": {
-      "profile": "Thông tin giảng viên",
-      "partnerGroup": "Đối tác",
-      "contracts": "Hợp đồng",
-      "invoices": "Hoá đơn",
-      "payments": "Thanh toán"
-    },
-    "partnerMode": {
-      "titleOn": "Đang ở chế độ đối tác",
-      "titleOff": "Giảng viên nội bộ",
-      "descriptionOn": "Các section hợp đồng, hoá đơn và thanh toán đang được mở để quản trị đối soát.",
-      "descriptionOff": "Các section đối tác sẽ tự khoá vì hồ sơ này không dùng quy trình thanh toán đối tác."
+      "profile": "Thông tin giảng viên"
     },
     "common": {
       "dash": "—",
@@ -243,59 +187,6 @@
       },
       "actions": {
         "save": "Lưu thay đổi",
-        "saving": "Đang lưu..."
-      }
-    },
-    "contracts": {
-      "externalOnly": "Chỉ áp dụng cho giảng viên đối tác bên ngoài.",
-      "title": "Hợp đồng",
-      "description": "Upload hợp đồng đã ký offline. File sẽ được lưu ngay và hiển thị cho giảng viên.",
-      "countLabel": "{{count}} file",
-      "noteLabel": "Ghi chú (tuỳ chọn)",
-      "notePlaceholder": "Ví dụ: HĐ CTV giảng viên, số hợp đồng, ngày ký...",
-      "uploadLabel": "Upload hợp đồng",
-      "empty": "Chưa có tài liệu hợp đồng.",
-      "noNote": "Không có ghi chú"
-    },
-    "invoices": {
-      "externalOnly": "Chỉ áp dụng cho giảng viên đối tác bên ngoài.",
-      "title": "Hoá đơn",
-      "description": "Upload hoá đơn/đối soát. File sẽ được lưu ngay và hiển thị cho giảng viên.",
-      "countLabel": "{{count}} file",
-      "invoiceMonthLabel": "Tháng hoá đơn",
-      "noteLabel": "Ghi chú (tuỳ chọn)",
-      "notePlaceholder": "Ví dụ: Kỳ đối soát, số hoá đơn...",
-      "uploadLabel": "Upload hoá đơn",
-      "empty": "Chưa có tài liệu hoá đơn.",
-      "invoiceMonthPrefix": "Tháng {{month}}"
-    },
-    "payments": {
-      "externalOnly": "Chỉ áp dụng cho giảng viên đối tác bên ngoài.",
-      "title": "Thanh toán",
-      "description": "Thông tin chuyển khoản hiển thị cho giảng viên ở mục “Thanh toán”.",
-      "stats": {
-        "profileType": "Loại hồ sơ",
-        "bankAccount": "Tài khoản ngân hàng",
-        "accountHolder": "Chủ tài khoản"
-      },
-      "profileType": {
-        "external": "Đối tác bên ngoài",
-        "internal": "Nội bộ"
-      },
-      "fields": {
-        "bankName": "Ngân hàng",
-        "bankNamePlaceholder": "Ví dụ: Vietcombank",
-        "accountNumber": "Số tài khoản",
-        "accountNumberPlaceholder": "0123456789",
-        "accountHolder": "Chủ tài khoản",
-        "accountHolderPlaceholder": "NGUYEN VAN A",
-        "transferNote": "Nội dung chuyển khoản (tuỳ chọn)",
-        "transferNotePlaceholder": "Ví dụ: Corelia - đối soát tháng 03/2026",
-        "extraNotes": "Ghi chú thêm (tuỳ chọn)",
-        "extraNotesPlaceholder": "Ví dụ: Điều kiện thanh toán, thời hạn đối soát, email nhận hoá đơn..."
-      },
-      "actions": {
-        "save": "Lưu thanh toán",
         "saving": "Đang lưu..."
       }
     }

@@ -14,11 +14,6 @@ const PAGE_META: Array<{
     descriptionKey: "layout.pageMeta.users.description",
   },
   {
-    match: (pathname) => pathname === "/admin/dashboard",
-    titleKey: "layout.pageMeta.dashboard.title",
-    descriptionKey: "layout.pageMeta.dashboard.description",
-  },
-  {
     match: (pathname) => pathname === "/admin/instructors",
     titleKey: "layout.pageMeta.instructors.title",
     descriptionKey: "layout.pageMeta.instructors.description",

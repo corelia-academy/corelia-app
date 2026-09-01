@@ -3,11 +3,19 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   APPROVED_PENDING_VERSIONS,
+  CURRENT_PENDING_VERSIONS,
+  PREVIOUSLY_RELEASED_APPROVED_VERSIONS,
   PRODUCTION_BASELINE_COUNT,
   PRODUCTION_BASELINE_LATEST,
 } from "./production-release-migrations.mjs";
 
-export { APPROVED_PENDING_VERSIONS, PRODUCTION_BASELINE_COUNT, PRODUCTION_BASELINE_LATEST };
+export {
+  APPROVED_PENDING_VERSIONS,
+  CURRENT_PENDING_VERSIONS,
+  PREVIOUSLY_RELEASED_APPROVED_VERSIONS,
+  PRODUCTION_BASELINE_COUNT,
+  PRODUCTION_BASELINE_LATEST,
+};
 
 export const PRODUCTION_PROJECT_REF = "lawhkvyyoznwygzsycan";
 
@@ -54,6 +62,8 @@ export function validateProductionMigrationState({
   expectedBaselineCount = PRODUCTION_BASELINE_COUNT,
   expectedBaselineLatest = PRODUCTION_BASELINE_LATEST,
   expectedPendingVersions = APPROVED_PENDING_VERSIONS,
+  previouslyReleasedApprovedVersions = PREVIOUSLY_RELEASED_APPROVED_VERSIONS,
+  currentPendingVersions = CURRENT_PENDING_VERSIONS,
 }) {
   const errors = [];
   const duplicateLocal = localVersions.length !== unique(localVersions).length;
@@ -71,10 +81,11 @@ export function validateProductionMigrationState({
     errors.push(`Frozen released baseline latest differs: expected ${expectedBaselineLatest}, got ${releasedVersions.at(-1) ?? "none"}.`);
   }
   const expectedLocalVersions = [...releasedVersions, ...expectedPendingVersions];
-  const remoteIsBaseline = sameOrderedValues(remoteVersions, releasedVersions);
+  const expectedPreDeployRemote = [...releasedVersions, ...previouslyReleasedApprovedVersions];
+  const remoteIsExpectedPreDeploy = sameOrderedValues(remoteVersions, expectedPreDeployRemote);
   const remoteIsFullyReleased = sameOrderedValues(remoteVersions, expectedLocalVersions);
-  if (!remoteIsBaseline && !remoteIsFullyReleased) {
-    errors.push(`Remote ledger is neither the frozen baseline nor the exact fully released chain. Remote: ${describe(remoteVersions)}.`);
+  if (!remoteIsExpectedPreDeploy && !remoteIsFullyReleased) {
+    errors.push(`Remote ledger is neither the exact pre-deploy chain nor the exact fully released chain. Remote: ${describe(remoteVersions)}.`);
   }
 
   if (!sameOrderedValues(localVersions, expectedLocalVersions)) {
@@ -83,7 +94,7 @@ export function validateProductionMigrationState({
 
   const remoteSet = new Set(remoteVersions);
   const pendingVersions = localVersions.filter((version) => !remoteSet.has(version));
-  const allowedPendingVersions = remoteIsFullyReleased ? [] : expectedPendingVersions;
+  const allowedPendingVersions = remoteIsFullyReleased ? [] : currentPendingVersions;
   if (!sameOrderedValues(pendingVersions, allowedPendingVersions)) {
     errors.push(`Pending migration set differs. Expected: ${describe(allowedPendingVersions)}. Actual: ${describe(pendingVersions)}.`);
   }

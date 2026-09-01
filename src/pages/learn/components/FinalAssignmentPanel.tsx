@@ -1,11 +1,8 @@
-import { useId, useMemo, useState } from "react";
-import { AlertCircle, FileText } from "lucide-react";
-import { toast } from "sonner";
+import { useId, useState } from "react";
+import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { createSePayCheckout, submitSePayCheckoutForm } from "@/lib/payments";
 import { uploadFinalAssignmentFile } from "@/lib/storage";
-import { formatVndPrice } from "@/types/courses";
 import type { Course } from "@/types/courses";
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
@@ -19,8 +16,6 @@ export function FinalAssignmentPanel({
   courseId,
   course,
   profileId,
-  isAdmin,
-  certificateFeePaid,
   submission,
   translate,
   onSubmit,
@@ -28,8 +23,6 @@ export function FinalAssignmentPanel({
   courseId: string;
   course: Course;
   profileId: string;
-  isAdmin: boolean;
-  certificateFeePaid: boolean;
   submission: SubmissionRow;
   translate: TranslateFn;
   onSubmit: (input: { content: string; fileUrls?: string[] }) => Promise<void>;
@@ -37,17 +30,9 @@ export function FinalAssignmentPanel({
   const [submitting, setSubmitting] = useState(false);
   const [submitContent, setSubmitContent] = useState("");
   const [submitFiles, setSubmitFiles] = useState<File[]>([]);
-  const [payingCertificateFee, setPayingCertificateFee] = useState(false);
   const contentId = useId();
   const filesId = useId();
 
-  const requiresCertificatePayment =
-    course.access_model === "free_with_paid_certificate";
-
-  const canSubmitCertificateAssignment = useMemo(
-    () => !requiresCertificatePayment || certificateFeePaid || isAdmin,
-    [certificateFeePaid, isAdmin, requiresCertificatePayment],
-  );
 
   const handleSubmit = async () => {
     if (!submitContent.trim()) return;
@@ -68,42 +53,6 @@ export function FinalAssignmentPanel({
       console.warn("Submit failed", e);
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handlePayCertificateFee = async () => {
-    const amount = Number(course.certificate_fee_vnd || 0);
-    if (amount <= 0) {
-      toast.error(translate("detail.learn.certificateFeeMissing"));
-      return;
-    }
-    setPayingCertificateFee(true);
-    try {
-      const base = window.location.origin;
-      const checkout = await createSePayCheckout({
-        courseId,
-        purpose: "certificate_fee",
-        amountVnd: amount,
-        successUrl: `${base}/checkout/success/certificate_fee/${courseId}`,
-        errorUrl: `${base}/learn/${courseId}?payment=error`,
-        cancelUrl: `${base}/learn/${courseId}?payment=cancel`,
-      });
-      window.sessionStorage.setItem(
-        "corelia:lastCheckout",
-        JSON.stringify({
-          orderId: checkout.order_id,
-          courseId,
-          purpose: "certificate_fee",
-          createdAt: Date.now(),
-        }),
-      );
-      submitSePayCheckoutForm(checkout);
-    } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : translate("detail.learn.sepayCreateFailed"),
-      );
-    } finally {
-      setPayingCertificateFee(false);
     }
   };
 
@@ -147,32 +96,8 @@ export function FinalAssignmentPanel({
         </div>
       ) : null}
 
-      {requiresCertificatePayment && !submission && !canSubmitCertificateAssignment ? (
-        <div className="mt-4 flex items-start gap-3 rounded-md border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning">
-          <AlertCircle className="mt-0.5 w-4 h-4 shrink-0" aria-hidden />
-          <div className="min-w-0 flex-1">
-            <p>
-              {translate("detail.learn.finalAssignment.certificateFeeRequired", {
-                fee: formatVndPrice(course.certificate_fee_vnd),
-              })}
-            </p>
-            <div className="mt-3">
-              <Button
-                onClick={() => void handlePayCertificateFee()}
-                disabled={payingCertificateFee}
-                size="sm"
-              >
-                {payingCertificateFee
-                  ? translate("detail.learn.finalAssignment.creatingPayment")
-                  : translate("detail.learn.finalAssignment.payViaSePay")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
       {(submission?.status === "rejected" ||
-        (!submission && canSubmitCertificateAssignment)) ? (
+        !submission) ? (
         <div className="mt-4 space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor={contentId} className="sr-only">

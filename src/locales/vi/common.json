@@ -351,24 +351,6 @@
         "emptyNote": "Chưa có chứng nhận nào được cấp"
       }
     },
-    "pinned": {
-      "badges": {
-        "onlinePath": "Lộ trình online",
-        "ecosystemPlayground": "Sân chơi hệ sinh thái",
-        "offlineClass": "Lớp trực tiếp"
-      },
-      "courseFallbackDescription": "Ưu tiên cho giai đoạn này của dashboard. {{nextStep}}",
-      "cta": {
-        "viewCourse": "Xem khoá học",
-        "viewProgram": "Xem chương trình",
-        "viewContest": "Xem hackathon"
-      },
-      "contest": {
-        "registrationDeadline": "Hạn đăng ký {{date}}",
-        "openInEcosystem": "Đang mở trong hệ sinh thái Corelia"
-      },
-      "offlineCampusFallback": "Corelia Campus"
-    },
     "guest": {
       "heroTitle": "Bắt đầu hành trình học Web3 cùng Corelia",
       "heroSubtitle": "Khám phá khoá học, chương trình và hackathon đang mở. Khi cần lưu tiến độ hoặc đăng ký, bạn chỉ cần đăng nhập.",
@@ -693,9 +675,9 @@
     "plannedTitle": "Tiếp theo",
     "footerNote": "Ưu tiên có thể thay đổi theo chương trình đối tác và phản hồi học viên. Trang sẽ được cập nhật khi các mốc lớn hoàn thành.",
     "shippedItems": [
-      "Danh mục khóa học, thanh toán và không gian học tự học",
+      "Danh mục khóa học miễn phí và không gian học tự học",
       "Hackathon: khám phá, trang công khai và luồng dành cho thí sinh",
-      "Khu vực tài khoản: hồ sơ, thanh toán cơ bản và tổng quan thành tích",
+      "Khu vực tài khoản: hồ sơ và tổng quan thành tích",
       "Không gian giảng viên: biên soạn khóa và công cụ tài chính đối tác",
       "Công cụ admin cho người dùng, giảng viên và vận hành nền tảng",
       "Liên kết Open Campus (OCID) cho chứng nhận và xác nhận thành tích"
@@ -709,7 +691,6 @@
     "plannedItems": [
       "Lớp cộng đồng: bình luận, showcase và điểm nhấn học viên",
       "Phân tích sâu hơn cho giảng viên và chủ chương trình",
-      "Mở rộng thanh toán & hóa đơn theo nhu cầu từng thị trường",
       "Tối ưu mobile và khả năng cài PWA (tuỳ chọn)"
     ]
   },

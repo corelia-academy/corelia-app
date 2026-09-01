@@ -5,8 +5,6 @@ import { Award, PlaySquare } from "lucide-react";
 
 import { useHomeCatalogAndContests } from "./hooks/useHomeCatalogAndContests";
 import { useHomeUserDashboard } from "./hooks/useHomeUserDashboard";
-import type { PinnedProgramCard } from "./utils/homeTypes";
-import { formatCourseMeta, pickCourseFormat } from "./utils/homeFormat";
 
 import { GuestHome } from "./components/GuestHome";
 import { HomeHeader } from "./components/HomeHeader";
@@ -19,12 +17,7 @@ export default function Home() {
   const { profile, user, isAuthenticated } = useAuth();
 
   const { courseCatalog } = useHomeCatalogAndContests();
-  const {
-    loading,
-    focusCards,
-    issuedCertificates,
-    dashboardConfig,
-  } = useHomeUserDashboard(user, t);
+  const { loading, focusCards, issuedCertificates } = useHomeUserDashboard(user, t);
 
   const oauthDisplayName =
     typeof user?.user_metadata?.full_name === "string"
@@ -63,64 +56,9 @@ export default function Home() {
 
   const featuredFocus = focusCards[0] ?? null;
 
-  const pinnedPrograms = useMemo<PinnedProgramCard[]>(() => {
-    if (!dashboardConfig) return [];
-
-    return dashboardConfig.pinned_programs
-      .filter((item) => item.active)
-      .map((item) => {
-        if (item.type === "course") {
-          const enrolledCourse = focusCards.find((entry) => entry.id === item.ref_id);
-          const catalogCourse = courseCatalog.find((entry) => entry.id === item.ref_id);
-          if (enrolledCourse) {
-            return {
-              id: item.id,
-              badge: item.badge || t("home.pinned.badges.onlinePath"),
-              title: item.title_override || enrolledCourse.title,
-              description:
-                item.description_override ||
-                t("home.pinned.courseFallbackDescription", { nextStep: enrolledCourse.nextStep }),
-              to: `/courses/${enrolledCourse.id}`,
-              cta: item.cta_label || t("home.pinned.cta.viewCourse"),
-              meta: enrolledCourse.meta,
-            };
-          }
-          if (catalogCourse) {
-            return {
-              id: item.id,
-              badge: item.badge || t("home.pinned.badges.onlinePath"),
-              title: item.title_override || catalogCourse.title,
-              description:
-                item.description_override ||
-                catalogCourse.short_description ||
-                catalogCourse.description,
-              to: `/courses/${catalogCourse.id}`,
-              cta: item.cta_label || t("home.pinned.cta.viewCourse"),
-              meta: formatCourseMeta(catalogCourse, pickCourseFormat(catalogCourse)),
-            };
-          }
-          return null;
-        }
-
-        // Contest pinned cards are hidden (Hackathons feature removed from UI).
-        if (item.type === "contest") {
-          return null;
-        }
-
-        return null;
-      })
-      .filter((item): item is PinnedProgramCard => item != null)
-      .slice(0, 1);
-  }, [courseCatalog, dashboardConfig, focusCards, t]);
-
-  const activePinnedProgram = pinnedPrograms[0] ?? null;
-
-  // Header already surfaces either the pinned program or the first focus card,
-  // so drop the first focus card from the strip below when no pinned program
-  // is shown to avoid showing the same course twice.
-  const continueLearningCards = activePinnedProgram
-    ? focusCards
-    : focusCards.slice(1);
+  // The header surfaces the most recently accessed course, so avoid rendering
+  // the same course again in the continuation strip.
+  const continueLearningCards = focusCards.slice(1);
 
   if (!isAuthenticated) {
     return <GuestHome t={t} courseCatalog={courseCatalog} />;
@@ -133,7 +71,6 @@ export default function Home() {
           t={t}
           loading={loading}
           firstName={firstName}
-          activePinnedProgram={activePinnedProgram}
           featuredFocus={featuredFocus}
         />
 

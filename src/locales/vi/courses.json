@@ -25,9 +25,7 @@
     "all": "Mọi cấp độ"
   },
   "accessModel": {
-    "free": "Miễn phí",
-    "paid_upfront": "Trả phí trước để mở toàn bộ",
-    "free_with_paid_certificate": "Học miễn phí, trả phí để làm chứng nhận"
+    "free": "Miễn phí"
   },
   "ownerType": {
     "corelia": "Khoá học Corelia",
@@ -63,13 +61,6 @@
       "minutes_other": "{{count}} phút",
       "hoursMinutes": "{{hours}} giờ {{minutes}} phút"
     },
-    "payment": {
-      "failed": "Thanh toán thất bại. Vui lòng thử lại.",
-      "cancelled": "Bạn đã huỷ thanh toán.",
-      "checking": "Đang xác nhận thanh toán...",
-      "success": "Thanh toán thành công. Bạn đã được mở khoá khoá học.",
-      "notConfirmedYet": "Chưa thấy xác nhận thanh toán. Nếu bạn đã thanh toán, vui lòng chờ thêm hoặc tải lại trang sau ít phút."
-    },
     "instructorDetail": {
       "crumbs": {
         "home": "Home",
@@ -99,61 +90,6 @@
         "empty": "Giảng viên hiện chưa có khoá học public trên nền tảng.",
         "durationPrefix": "Thời lượng: {{duration}}"
       }
-    },
-    "checkout": {
-      "missingCourseId": "Thiếu mã khoá học",
-      "loadCourseFailed": "Không tải được khoá học",
-      "mustLoginToPay": "Bạn cần đăng nhập để thanh toán.",
-      "invalidPaymentConfig": "Khoá học chưa cấu hình thanh toán hợp lệ.",
-      "createPaymentFailed": "Không tạo được thanh toán.",
-      "loadingPaymentInfo": "Đang tải thông tin thanh toán...",
-      "missingCourseFallback": "Không tìm thấy khoá học",
-      "backToCourses": "Quay lại Khoá học",
-      "backToCourse": "Quay lại khoá học",
-      "title": "Xác nhận thanh toán",
-      "subtitle": "Kiểm tra thông tin trước khi chuyển sang cổng SePay (quét mã chuyển khoản).",
-      "courseSectionTitle": "Khoá học",
-      "paymentMethodLabel": "Hình thức",
-      "paymentAmountLabel": "Số tiền thanh toán",
-      "promoEndsPrefix": "Kết thúc: {{date}}",
-      "sepayQr": "SePay QR",
-      "discount": {
-        "label": "Mã giảm giá (tuỳ chọn)",
-        "placeholder": "VD: SPRING10",
-        "hint": "Mã hợp lệ sẽ được áp dụng khi tạo phiên thanh toán."
-      },
-      "paymentAsideTitle": "Thanh toán",
-      "paymentAsideBodyPrefix": "Bạn sẽ được chuyển sang SePay để",
-      "paymentAsideBodyEmphasis": "quét QR chuyển khoản",
-      "paymentAsideBodySuffix": "Hiện tại hệ thống chỉ hỗ trợ hình thức này.",
-      "continueToSePay": "Tiếp tục sang SePay",
-      "freeCourseEnroll": "Khoá học miễn phí • Vào học ngay",
-      "freeCourseEnrolled": "Đăng ký thành công!",
-      "freeCourseAsideBody": "Khoá học này hoàn toàn miễn phí. Bạn không cần thanh toán.",
-      "redirecting": "Đang chuyển...",
-      "mustLoginInline": "Bạn cần đăng nhập để thanh toán.",
-      "postPayHint": "Sau khi thanh toán, bạn sẽ được chuyển về trang khoá học để hệ thống xác nhận."
-    },
-    "checkoutSuccess": {
-      "verifyingPayment": "Đang xác nhận thanh toán và quyền truy cập khoá học...",
-      "missingOrderInfo": "Thiếu thông tin đơn hàng để xác minh tự động.",
-      "restoringSession": "Đang khôi phục phiên đăng nhập...",
-      "sessionNotReady": "Phiên đăng nhập chưa sẵn sàng trên thiết bị này. Bạn vẫn có thể vào khoá học để hệ thống kiểm tra lại quyền truy cập.",
-      "verifiedViaSePay": "Đã xác minh thanh toán từ cổng SePay và mở quyền truy cập.",
-      "verifiedFallback": "Đã xác nhận thanh toán và mở quyền truy cập thành công.",
-      "waitingForAccess": "Đã ghi nhận giao dịch. Hệ thống đang chờ xác nhận quyền truy cập...",
-      "verifyFailedFallback": "Không thể xác minh thanh toán ngay lúc này.",
-      "timeoutStatus": "Chưa xác minh xong trong thời gian chờ. Bạn vẫn có thể vào khoá học, hệ thống sẽ tiếp tục kiểm tra ở bước tiếp theo.",
-      "timeoutToast": "Chưa xác minh xong thanh toán. Hệ thống sẽ kiểm tra lại khi bạn vào khoá học.",
-      "title": "Thanh toán thành công",
-      "verifyingTitle": "Đang xác nhận thanh toán...",
-      "invalidOrderTitle": "Không tìm thấy thông tin đơn hàng",
-      "timeoutTitle": "Chưa hoàn tất xác nhận thanh toán",
-      "backToCourses": "Về danh sách khoá học",
-      "autoRedirectPrefix": "Hệ thống sẽ tự chuyển sau",
-      "viewBilling": "Xem lịch sử thanh toán",
-      "goToCourse": "Vào khoá học",
-      "skipNow": "Bỏ qua và chuyển ngay"
     },
     "spotlight": {
       "myCourseBadge": "Khoá học của bạn",
@@ -295,24 +231,12 @@
     },
     "accessPanel": {
       "ready": "Sẵn sàng vào học",
-      "unlockToStart": "Mở khoá để bắt đầu",
       "enterToLearn": "Vào trang học để xem video, lưu tiến độ và theo dõi hành trình hoàn thành.",
-      "paymentConfirmed": "Thanh toán đã được xác nhận. Bạn có thể vào học ngay bây giờ.",
-      "keptAccess": "Bạn đã ghi danh khoá học này từ trước, nên vẫn giữ quyền truy cập đầy đủ dù khoá học hiện đang ở chế độ trả phí.",
       "currentProgress": "Tiến độ hiện tại",
       "nextLessonLabel": "Bài tiếp theo: {{title}}",
       "endOfPath": "Bạn đã đi tới cuối lộ trình hiện tại.",
       "contentComingSoon": "Nội dung sẽ được cập nhật trong tương lai.",
-      "priceLabel": "Giá",
-      "promoEnds": "Kết thúc: {{date}}",
-      "paidUpfrontCopy": "Mở toàn bộ video, lưu tiến độ và học theo lộ trình ngay sau khi thanh toán.",
-      "previewAvailable": " Hiện có {{count}} bài học thử miễn phí để bạn trải nghiệm trước.",
-      "previewNotAvailable": " Hiện chưa có bài học thử miễn phí.",
-      "buyCourse": "Mua khoá học",
-      "tryFreePreview": "Học thử miễn phí",
-      "noPreviewYet": "Chưa có bài học thử",
       "freeEnrollCopy": "Ghi danh miễn phí để bắt đầu học và lưu tiến độ trên mọi thiết bị.",
-      "certificateFeeSuffix": " Nếu muốn nộp bài thu hoạch và xét chứng nhận, phí áp dụng là {{fee}}.",
       "processing": "Đang xử lý...",
       "enrollAndEnter": "Ghi danh và vào học"
     },
@@ -326,7 +250,6 @@
       "backToCourses": "Quay lại khoá học",
       "backToCourse": "Quay lại khoá học",
       "loadingPage": "Đang tải trang học...",
-      "previewModeNotice": "Bạn đang ở chế độ học thử miễn phí. Chỉ các bài được đánh dấu học thử mới mở xem.",
       "lessonLockedBadge": "Khoá",
       "selectLessonToStart": "Chọn một bài học để bắt đầu",
       "completedPath": "Hoàn thành lộ trình",
@@ -338,12 +261,7 @@
       "lessonDraftToast": "Bài học đang cập nhật. Đang chuyển sang bài học có thể xem.",
       "lessonNotFoundTitle": "Không tìm thấy bài học",
       "lessonNotFoundDescription": "Bài học bạn yêu cầu không tồn tại hoặc đã bị gỡ bỏ.",
-      "lessonLockedTitle": "Bài học bị khoá",
-      "lessonLockedDescription": "Bài học này chỉ dành cho học viên đã mở khoá toàn bộ nội dung khoá học.",
-      "unlockCourse": "Mở khoá toàn bộ khoá học",
       "goToFirstLesson": "Vào bài học đầu tiên",
-      "certificateFeeMissing": "Khoá học chưa cấu hình phí chứng nhận hợp lệ.",
-      "sepayCreateFailed": "Không tạo được thanh toán SePay.",
       "stats": {
         "progress": "Tiến độ",
         "completedLessons": "Bài đã xong",
@@ -399,7 +317,6 @@
           "already_issued": "Chứng nhận Corelia của bạn đã sẵn sàng.",
           "no_course": "Không tìm thấy khoá học để cấp chứng nhận.",
           "no_enrollment": "Corelia đang tạo hồ sơ ghi danh trước khi cấp chứng nhận. Hãy thử đồng bộ lại.",
-          "fee_unpaid": "Khoá học này cần thanh toán phí xét chứng nhận trước khi cấp.",
           "lessons_incomplete": "Corelia chưa xác nhận đủ 100% bài học để cấp chứng nhận.",
           "assignment_not_approved": "Bài cuối khoá cần được duyệt trước khi cấp chứng nhận.",
           "issued": "Chứng nhận Corelia của bạn đã sẵn sàng.",
@@ -412,9 +329,6 @@
           "rejected": "Bài bị từ chối. Bạn có thể nộp lại.",
           "pending": "Đã nộp — Đang chờ giảng viên duyệt."
         },
-        "certificateFeeRequired": "Để nộp bài thu hoạch và xét chứng nhận, học viên cần thanh toán {{fee}}.",
-        "creatingPayment": "Đang tạo thanh toán...",
-        "payViaSePay": "Thanh toán qua SePay",
         "contentPlaceholder": "Nhập nội dung bài làm của bạn...",
         "attachmentsLabel": "File đính kèm (tuỳ chọn)",
         "submitting": "Đang nộp...",
@@ -459,9 +373,7 @@
     },
     "pricing": {
       "all": "Mọi mức phí",
-      "free": "Miễn phí",
-      "paid": "Trả phí trước",
-      "certificate": "Học miễn phí, trả phí chứng nhận"
+      "free": "Miễn phí"
     },
     "owner": {
       "all": "Mọi đơn vị",
@@ -476,9 +388,7 @@
     }
   },
   "pricing": {
-    "freeLearning": "Học miễn phí",
-    "fromPrice": "Từ {{price}}",
-    "certificateFee": "Chứng nhận {{price}}"
+    "freeLearning": "Học miễn phí"
   },
   "errors": {
     "mustLoginQuiz": "Bạn cần đăng nhập để làm bài.",
