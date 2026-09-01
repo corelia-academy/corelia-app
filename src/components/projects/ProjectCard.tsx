@@ -66,7 +66,7 @@ export function ProjectCard({
 }: ProjectCardProps) {
   const { t } = useTranslation("common");
   const navigate = useNavigate();
-  const detailPath = `/projects/${project.id}`;
+  const detailPath = `/projects/${project.slug || project.id}`;
   const ownerText = ownerHandle ? `@${ownerHandle}` : ownerLabel;
   const actions: ProjectAction[] = [
     { key: "demo", label: t("projects.detail.demo"), href: project.demo_url, icon: ExternalLink },

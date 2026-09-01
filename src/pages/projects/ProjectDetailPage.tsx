@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { NavLink, useParams } from "react-router";
+import { NavLink, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
   ExternalLink,
@@ -19,12 +19,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProjectCoverImageUrl, type PublicProjectEntry } from "@/lib/projects";
 import { publicProjectDetailQueryOptions } from "@/features/projects/projectQueries";
+import { getContest } from "@/lib/hackathons";
 import { isHackathonProjectSource, projectSourceLabelKey } from "@/lib/projectSource";
+import { useAuth } from "@/stores/authStore";
 import type { Project } from "@/types/projects";
 
-function sourceLink(project: Project): string | null {
+function sourceLink(project: Project, hackathonSlug?: string | null): string | null {
   if (isHackathonProjectSource(project.source_type) && project.source_id) {
-    return `/hackathons/${project.source_id}/overview`;
+    return `/hackathons/${hackathonSlug || project.source_id}/overview`;
   }
   if (project.source_type === "course" && project.source_id) {
     return `/courses/${project.source_id}`;
@@ -78,13 +80,21 @@ function DetailSkeleton() {
 }
 
 export default function ProjectDetailPage() {
-  const { id } = useParams();
+  const { slug } = useParams();
+  const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const { t, i18n } = useTranslation("common");
   const locale = i18n.resolvedLanguage ?? i18n.language;
-  const query = useQuery(publicProjectDetailQueryOptions(id, locale));
+  const query = useQuery(publicProjectDetailQueryOptions(slug, locale));
   const entry = query.data;
+  const sourceQuery = useQuery({
+    queryKey: ["hackathons", "source", entry?.project.source_id ?? "missing", locale],
+    queryFn: () => getContest(entry!.project.source_id!, locale),
+    enabled: Boolean(entry?.project.source_id && isHackathonProjectSource(entry.project.source_type)),
+    staleTime: 60_000,
+  });
   const loading = query.isPending;
-  const notFound = !id || (query.isSuccess && entry === null);
+  const notFound = !slug || (query.isSuccess && entry === null);
   const error = query.error
     ? query.error instanceof Error
       ? query.error.message
@@ -92,6 +102,12 @@ export default function ProjectDetailPage() {
     : null;
 
   const owner = useMemo(() => ownerDisplay(entry?.owner ?? null), [entry?.owner]);
+
+  useEffect(() => {
+    if (entry?.project.slug && slug !== entry.project.slug) {
+      navigate(`/projects/${entry.project.slug}`, { replace: true });
+    }
+  }, [entry?.project.slug, navigate, slug]);
 
   if (notFound) {
     return (
@@ -145,7 +161,8 @@ export default function ProjectDetailPage() {
   }
 
   const { project } = entry;
-  const href = sourceLink(project);
+  const href = sourceLink(project, sourceQuery.data?.slug);
+  const canEdit = user?.id === project.owner_id || profile?.role === "admin" || profile?.role === "support_staff";
   const description = project.summary || t("projects.detail.noDescription");
 
   const actions = [
@@ -274,6 +291,12 @@ export default function ProjectDetailPage() {
                   );
                 })}
               </div>
+            ) : null}
+
+            {canEdit ? (
+              <Button className="mt-4" render={<NavLink to={`/projects/${project.slug}/edit`} />} nativeButton={false}>
+                {t("projects.detail.edit")}
+              </Button>
             ) : null}
 
             <section className="mt-6">

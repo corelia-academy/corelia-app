@@ -13,6 +13,7 @@
     "unknown": "—"
   },
   "registrationStatus": {
+    "registered": "Registered",
     "pending": "Pending",
     "approved": "Approved",
     "rejected": "Rejected",
@@ -21,9 +22,9 @@
   "catalog": {
     "heroEyebrow": "Hackathons & ecosystem activities",
     "heroTitle": "Corelia hackathons",
-    "heroDescription": "Explore hackathons and multi-round activities open to the community. Participation is official only after Corelia reviews and approves your application.",
+    "heroDescription": "Explore open hackathons and register instantly to start building your project.",
     "missingSlug": "This hackathon is missing a slug. Run the slug backfill migration or set a slug in workspace settings.",
-    "pillReviewed": "Corelia-reviewed entry",
+    "pillReviewed": "Instant registration",
     "pillTeamBased": "Team submissions",
     "sectionWhyTitle": "Hackathons aren't just for winning — they're for learning and building in the real world",
     "loadingTitle": "Loading hackathons...",
@@ -75,6 +76,57 @@
       "leaderboardHint": "Judges score using a rubric; the leaderboard and winners are shown only after results are published."
     },
     "listCardImageAlt": "Contest thumbnail — {{title}}"
+  },
+  "public": {
+    "registered": "Registration complete.",
+    "registerFailed": "Could not register for this hackathon.",
+    "register": "Register now",
+    "registeredLabel": "Registered",
+    "registrationClosed": "Registration closed",
+    "createProject": "Create / view project",
+    "submissionClosed": "Submissions closed",
+    "hostedBy": "Hosted by",
+    "participants": "Participants",
+    "registrationDeadline": "Registration deadline",
+    "submissionDeadline": "Submission deadline",
+    "tabsLabel": "Hackathon content",
+    "tabs": {
+      "overview": "Overview",
+      "prizes": "Prizes",
+      "timeline": "Timeline",
+      "resources": "Resources",
+      "projects": "Projects"
+    },
+    "mode": { "online": "Online", "offline": "Offline", "hybrid": "Hybrid" },
+    "status": { "draft": "Draft", "published": "Open", "running": "Running", "ended": "Ended" },
+    "overview": {
+      "description": "Description",
+      "summary": "At a glance",
+      "mode": "Mode",
+      "registration": "Your status",
+      "registered": "Registered",
+      "notRegistered": "Not registered"
+    },
+    "prizes": { "total": "Total prize pool" },
+    "projects": {
+      "filters": "Filter projects",
+      "sort": "Sort",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "tracks": "Tracks",
+      "sectors": "Sectors",
+      "techStacks": "Tech stacks",
+      "loading": "Loading…",
+      "loadMore": "Load more",
+      "openCatalog": "Open project catalog"
+    },
+    "empty": {
+      "overview": "Description will be added soon.",
+      "prizes": "Prize details will be added soon.",
+      "timeline": "Timeline will be added soon.",
+      "resources": "Resources will be added soon.",
+      "projects": "No matching projects yet."
+    }
   },
   "workspace": {
     "access": {

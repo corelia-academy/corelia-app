@@ -38,6 +38,10 @@
       "contests": {
         "label": "Contests",
         "tooltip": "Contests"
+      },
+      "hackathons": {
+        "label": "Hackathons",
+        "tooltip": "Manage hackathons"
       }
     },
     "pageMeta": {
@@ -65,6 +69,10 @@
         "title": "Contest operations",
         "description": "Create and manage contests, review applications, score submissions, and publish results."
       },
+      "hackathons": {
+        "title": "Hackathon management",
+        "description": "Edit content, taxonomy, projects, and winners."
+      },
       "instructorDetail": {
         "title": "Instructor detail",
         "description": "Update profile and instructor information."
@@ -75,6 +83,61 @@
       "pills": {
         "sensitive": "Sensitive permissions",
         "manualAudit": "Manual audit"
+      }
+    }
+  },
+  "hackathons": {
+    "title": "Hackathons",
+    "description": "Create and manage public hackathon pages.",
+    "new": "New hackathon",
+    "edit": "Edit",
+    "view": "View public",
+    "loading": "Loading hackathons…",
+    "empty": "No hackathons yet.",
+    "editor": {
+      "back": "Back to list",
+      "newTitle": "New hackathon",
+      "editTitle": "Edit hackathon",
+      "participants": "registrations",
+      "saveAll": "Save all",
+      "saved": "Hackathon saved.",
+      "saveFailed": "Could not save hackathon.",
+      "notFound": "Hackathon not found.",
+      "unsaved": "You have unsaved changes. Save before leaving.",
+      "add": "Add",
+      "archive": "Archive",
+      "activate": "Activate",
+      "remove": "Remove",
+      "saveBeforeWinners": "Save the hackathon before selecting winners.",
+      "selectProject": "Select a project",
+      "awardLabel": "Award label",
+      "deleteConfirm": "Permanently delete this hackathon?",
+      "applyStatus": "Apply status",
+      "taxonomyHint": "Taxonomy in use can only be archived, not deleted.",
+      "validationRequired": "Vietnamese title and slug are required.",
+      "validationCurrency": "Currency must be 2–10 uppercase letters or numbers.",
+      "validationPrize": "Track allocations cannot exceed the prize pool.",
+      "validationDeadlines": "Registration deadline must precede submission deadline.",
+      "sections": {
+        "overview": "Overview",
+        "description": "Description",
+        "prizes": "Prize & Tracks",
+        "timeline": "Timeline",
+        "resources": "Resources",
+        "taxonomy": "Project Taxonomy",
+        "projects": "Projects & Winners",
+        "danger": "Publish, end & delete"
+      },
+      "fields": {
+        "title": "Title",
+        "shortDescription": "Short description",
+        "totalPrize": "Total prize pool",
+        "starts_at": "Starts",
+        "ends_at": "Ends",
+        "registration_deadline": "Registration deadline",
+        "submission_deadline": "Submission deadline",
+        "sectors": "Sectors",
+        "tech_stacks": "Tech stacks"
       }
     }
   },

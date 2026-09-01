@@ -16,46 +16,9 @@ export function getContestScopedViewerRoles(
   contest: Contest | null | undefined,
   email: string | null | undefined,
 ): ContestScopedViewerRole[] {
-  if (!contest || !email) return [];
-  const normalized = email.trim().toLowerCase();
-  if (!normalized) return [];
-
-  const roles: ContestScopedViewerRole[] = [];
-  if ((contest.judge_emails ?? []).some((item) => item.toLowerCase() === normalized)) {
-    roles.push("judge");
-  }
-  if (
-    (contest.co_organizer_emails ?? []).some(
-      (item) => item.toLowerCase() === normalized,
-    )
-  ) {
-    roles.push("co_organizer");
-  }
-  if (
-    (contest.co_host_viewer_emails ?? []).some(
-      (item) => item.toLowerCase() === normalized,
-    )
-  ) {
-    roles.push("co_host_viewer");
-  }
-  if (
-    (contest.partner_viewer_emails ?? []).some(
-      (item) => item.toLowerCase() === normalized,
-    )
-  ) {
-    roles.push("partner_viewer");
-  }
-  if ((contest.mentor_emails ?? []).some((item) => item.toLowerCase() === normalized)) {
-    roles.push("mentor");
-  }
-  if (
-    (contest.reviewer_emails ?? []).some(
-      (item) => item.toLowerCase() === normalized,
-    )
-  ) {
-    roles.push("reviewer");
-  }
-  return roles;
+  void contest;
+  void email;
+  return [];
 }
 
 export function canReviewContestApplications(

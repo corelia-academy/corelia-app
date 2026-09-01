@@ -1,5 +1,7 @@
 # Corelia Table Role & Lifecycle Audit
 
+> **Historical hackathon inventory:** phân loại `hackathon_scores`, `hackathon_access_invites`, judging và metrics snapshot bên dưới chỉ đúng với baseline 2026-08-23. Contract hiện hành xóa trực tiếp chúng không cần export; xem [Hackathon](../hackathon/README.md).
+
 > Scope: read-only P1 analysis of the 68-table Main/Staging baseline captured 2026-08-23.  
 > Evidence: schema snapshot `G:\Codex\attachments\0c4caf02-3b2b-4cf2-9285-2a8f9e08e7e1\pasted-text.txt`, repository migrations and callers.  
 > This report is architecture mapping, not a retention policy or cleanup authorization. M1-dependent rows are labelled `M1_IN_PROGRESS` and describe the closed target contract, not deployed state.

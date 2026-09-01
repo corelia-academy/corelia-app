@@ -12,11 +12,11 @@ Tham số cần đo thực tế trên staging: **p95/p99 latency**, **số query
 | `certificates.issue` | (sau migration + deploy Edge) | Giữ các bước trên nhưng **1 RPC** `corelia_certificate_readiness` thay 2 select lớn | Một vòng SQL aggregate, không trả full list lesson/progress |
 | `payments.sepay.verify` | `handleVerifySePayPayment` | 1–2 `payment_transactions` + song song `course_payment_access` + `enrollments` + có thể `grant*` + re-fetch 3 song song + HTTP SePay | Index `(user_id, course_id, purpose, created_at desc)` giúp resolve order không `orderId` |
 | Danh sách khoá học publish / instructor | `src/lib/courses.ts` | `select("*")` full rows | Thiếu pagination → transfer lớn khi catalog tăng |
-| `listContests` | `src/lib/contests.ts` | `select("*")` + cache 2 phút | Tương tự; cân nhắc limit/keyset |
+| Hackathon catalog/project gallery | `src/lib/hackathons.ts`, `src/features/projects/projectQueries.ts` | Query public hackathon và project theo filter | Giữ pagination/load more; public header đọc `participants_count`, không tải participant rows |
 | `getSubmissionsForCourse` | `src/lib/finalAssignment.ts` | Full rows theo course | Thêm limit/pagination khi lớp học lớn |
 | `getPublicProfileByHandle` | `src/lib/profile.ts` | `public_profiles` OR | Index composite trên `public_profiles` (migration) |
 
-**Heatmap ưu tiên xử lý:** Edge `certificates.issue` + `payments.sepay.verify` → sau đó catalog `courses`/`contests` (pagination / narrow select).
+**Heatmap ưu tiên xử lý:** Edge `certificates.issue` + `payments.sepay.verify` → sau đó catalog `courses`/`hackathons`/`projects` (pagination / narrow select).
 
 ## 2) Query shape audit (tóm tắt)
 

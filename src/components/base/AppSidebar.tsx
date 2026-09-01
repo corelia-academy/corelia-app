@@ -3,9 +3,11 @@ import {
   Briefcase,
   BookOpen,
   GraduationCap,
+  FolderKanban,
   Home,
   Rss,
   Settings,
+  Trophy,
 } from "lucide-react";
 import {
   Sidebar,
@@ -33,6 +35,8 @@ const primaryNav = [
   { labelKey: "nav.feed" as const, href: "/feed", icon: Rss },
   { labelKey: "nav.courses" as const, href: "/courses", icon: BookOpen },
   { labelKey: "nav.career" as const, href: "/career", icon: Briefcase },
+  { labelKey: "nav.contests" as const, href: "/hackathons", icon: Trophy },
+  { labelKey: "nav.projects" as const, href: "/projects", icon: FolderKanban },
 ] as const;
 
 export default function AppSidebar({

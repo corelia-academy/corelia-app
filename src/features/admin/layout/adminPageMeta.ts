@@ -9,6 +9,11 @@ const PAGE_META: Array<{
   descriptionKey: string;
 }> = [
   {
+    match: (pathname) => pathname.startsWith("/admin/hackathons"),
+    titleKey: "layout.pageMeta.hackathons.title",
+    descriptionKey: "layout.pageMeta.hackathons.description",
+  },
+  {
     match: (pathname) => pathname === "/admin" || pathname.startsWith("/admin/users"),
     titleKey: "layout.pageMeta.users.title",
     descriptionKey: "layout.pageMeta.users.description",

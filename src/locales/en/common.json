@@ -221,12 +221,17 @@
       "label": "Project source",
       "all": "All",
       "hackathon": "Hackathon",
+      "allHackathons": "All hackathons",
+      "tracks": "Tracks",
+      "sectors": "Sectors",
+      "techStacks": "Tech stacks",
       "course": "Course",
       "showcase": "Showcase"
     },
     "sort": {
       "label": "Sort",
       "newest": "Newest",
+      "oldest": "Oldest",
       "mostLiked": "Most liked",
       "mostCommented": "Most commented"
     },
@@ -247,7 +252,28 @@
       "noDescription": "No description provided yet.",
       "notFoundTitle": "Project not found",
       "notFoundDescription": "This project may not exist or may not be public.",
-      "goBack": "Back to Projects"
+      "goBack": "Back to Projects",
+      "edit": "Edit project"
+    },
+    "form": {
+      "back": "Back",
+      "createTitle": "Create hackathon project",
+      "editTitle": "Edit project",
+      "title": "Project title",
+      "slug": "Slug",
+      "summary": "Summary",
+      "demoUrl": "Demo URL",
+      "repoUrl": "Repository URL",
+      "visibility": "Visibility",
+      "create": "Create project",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "created": "Project created.",
+      "saved": "Project saved.",
+      "saveFailed": "Could not save project.",
+      "notEligible": "You cannot create a project yet",
+      "notEligibleDescription": "Register for the hackathon first or check the submission deadline.",
+      "cannotEdit": "You do not have permission to edit this project."
     },
     "social": {
       "heart": "Like",

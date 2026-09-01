@@ -11,7 +11,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Award, GraduationCap, ImageIcon, Medal, Settings, Users } from "lucide-react";
+import { Award, GraduationCap, ImageIcon, Medal, Settings, Trophy, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function AdminSidebar() {
@@ -131,7 +131,19 @@ export function AdminSidebar() {
                   }
                 />
               </SidebarMenuItem>
-              {/* Hackathon management is no longer under /admin/* */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="rounded-md"
+                  tooltip={t("layout.sidebar.hackathons.tooltip")}
+                  isActive={pathname.startsWith("/admin/hackathons")}
+                  render={
+                    <NavLink to="/admin/hackathons" className="flex w-full items-center gap-2">
+                      <Trophy className="size-4" aria-hidden />
+                      <span>{t("layout.sidebar.hackathons.label")}</span>
+                    </NavLink>
+                  }
+                />
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -6,16 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { contestListImageUrl } from "@/lib/hackathonVisuals";
-import { canAccessContestManagementCatalog, canManageContests } from "@/lib/permissions";
+import { canManageContests } from "@/lib/permissions";
 import { useAuth } from "@/stores/authStore";
 import type { Contest } from "@/types/hackathons";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import {
-  hackathonCatalogQueryOptions,
-  hackathonCoOrganizerAccessQueryOptions,
-} from "@/features/hackathons/hackathonQueries";
+import { hackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import {
   contestListLocationLabel,
   contestListStatusLabel,
@@ -74,15 +71,7 @@ export default function Contests() {
     : null;
 
   const isManager = canManageContests(profile);
-  const canManageCatalog = canAccessContestManagementCatalog(profile);
-  const coOrganizerQuery = useQuery(
-    hackathonCoOrganizerAccessQueryOptions(
-      user?.id,
-      profile?.email,
-      !canManageCatalog,
-    ),
-  );
-  const canManageCatalogScoped = canManageCatalog || coOrganizerQuery.data === true;
+  const canManageCatalogScoped = isManager;
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -123,7 +112,7 @@ export default function Contests() {
         {canManageCatalogScoped ? (
           <div className="flex flex-wrap gap-2">
             <Button
-              render={<NavLink to="/hackathons/manage" />}
+              render={<NavLink to="/admin/hackathons" />}
               nativeButton={false}
               size="sm"
               variant="outline"
@@ -197,7 +186,7 @@ export default function Contests() {
                 </div>
                 {isManager ? (
                   <Button
-                    render={<NavLink to="/hackathons/manage" />}
+                    render={<NavLink to="/admin/hackathons" />}
                     nativeButton={false}
                     size="sm"
                     variant="outline"
@@ -250,7 +239,7 @@ export default function Contests() {
                       </div>
                       <span className="shrink-0 rounded-md bg-surface-raised px-2 py-0.5 text-xs font-medium text-foreground-muted">
                         {contestListLocationLabel(
-                          contest.location,
+                          contest.mode ?? contest.location,
                           translate,
                           "catalog",
                         )}
@@ -279,7 +268,7 @@ export default function Contests() {
                       <div className="grid gap-2 sm:grid-cols-2">
                         <ContestListMetricCellCatalog icon={Users}>
                           {t("catalog.item.registrationsCount", {
-                            count: contest.metrics_snapshot.registrations_total,
+                            count: contest.participants_count ?? 0,
                           })}
                         </ContestListMetricCellCatalog>
                         <ContestListMetricCellCatalog icon={Trophy}>

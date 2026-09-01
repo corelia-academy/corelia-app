@@ -4,7 +4,7 @@ Xem hub: [README.md](./README.md).
 
 ## Mục tiêu
 
-Phủ `/admin` (index users), `/admin/dashboard`, `/admin/instructors`, `/admin/instructors/:id`, `/admin/activity-milestones`.
+Phủ `/admin` (index users), `/admin/instructors`, `/admin/instructors/:id`, `/admin/activity-milestones` và `/admin/hackathons`.
 
 ## Gate & role
 
@@ -35,14 +35,16 @@ Phủ `/admin` (index users), `/admin/dashboard`, `/admin/instructors`, `/admin/
 5. `/admin/instructors` — danh sách.
 6. `/admin/instructors/:id` — chi tiết một instructor seed.
 7. `/admin/activity-milestones` — trang load; danh sách / form milestone không crash (empty state hợp lý nếu chưa seed).
+8. `/admin/hackathons` — danh sách load; tạo mới và mở editor được.
+9. `/admin/hackathons/:id/edit` — sidebar, VI/EN, lưu section, publish/end và winner hoạt động theo [checklist Hackathon](../hackathon/acceptance-checklist.md).
 
 ### Đổi role (nếu UI cho phép)
 
-8. Từ admin users, thử đổi role test user staging (chỉ user test) — xác nhận sau khi đổi, user vào đúng/không vào đúng khu vực ([README matrix](./README.md)).
+10. Từ admin users, thử đổi role test user staging (chỉ user test) — xác nhận sau khi đổi, user vào đúng/không vào đúng khu vực ([README matrix](./README.md)).
 
 ### Route không tồn tại
 
-9. `/admin/hackathons/*` — NotFound (hackathon ops nằm ở `/hackathons/manage`, [09](./09-hackathons-manage-workspace.md)).
+11. `/hackathons/manage`, `/hackathons/new` và `/hackathons/:slug/manage/*` — NotFound; editor hợp lệ chỉ nằm trong `/admin/hackathons`.
 
 ## Kết quả mong đợi
 

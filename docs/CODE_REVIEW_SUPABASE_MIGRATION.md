@@ -1,5 +1,7 @@
 # Code Review: Supabase Migration — Corelia App
 
+> **Historical note:** review này phản ánh code ngày 2026-05-04. Các tên `Contest*` được nhắc tới chỉ là compatibility lịch sử; contract hackathon hiện hành nằm tại [docs/hackathon](./hackathon/README.md).
+
 > **Branch:** `develop`  
 > **Review date:** 2026-05-04  
 > **Scope:** Toàn bộ codebase sau khi migrate Firebase → Supabase

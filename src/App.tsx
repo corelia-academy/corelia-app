@@ -55,6 +55,17 @@ const VerifyCertificatePage = lazy(() =>
 );
 const UserHandleRedirect = lazy(() => import("@/pages/users/UserHandleRedirect"));
 const AchievementsPage = lazy(() => import("@/pages/achievements"));
+const Hackathons = lazy(() => import("@/pages/hackathon-detail/Contests"));
+const HackathonPublicLayout = lazy(() => import("@/pages/hackathon-detail/ContestPublicLayout"));
+const HackathonOverviewTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonOverviewTab })));
+const HackathonPrizesTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonPrizesTab })));
+const HackathonTimelineTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonTimelineTab })));
+const HackathonResourcesTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonResourcesTab })));
+const HackathonProjectsTab = lazy(() => import("@/pages/hackathon-detail/ContestPublicTabs").then((m) => ({ default: m.HackathonProjectsTab })));
+const ProjectsPage = lazy(() => import("@/pages/projects/ProjectsPage"));
+const ProjectDetailPage = lazy(() => import("@/pages/projects/ProjectDetailPage"));
+const ProjectNewPage = lazy(() => import("@/pages/projects/ProjectNewPage"));
+const ProjectEditPage = lazy(() => import("@/pages/projects/ProjectEditPage"));
 
 const Account = lazy(() => import("@/pages/account/Account"));
 const AccountProfileRoute = lazy(() =>
@@ -93,6 +104,8 @@ const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDe
 const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMilestones"));
 const AdminManualMint = lazy(() => import("@/pages/admin/AdminManualMint"));
 const AdminBranding = lazy(() => import("@/pages/admin/AdminBranding"));
+const AdminHackathons = lazy(() => import("@/pages/admin/hackathons/AdminHackathonsPage"));
+const AdminHackathonEditor = lazy(() => import("@/pages/admin/hackathons/AdminHackathonEditorPage"));
 
 const PageFallback = () => <AuthGateLoading />;
 
@@ -129,9 +142,9 @@ function ScrollToTop() {
       return;
     }
 
-    const manageBaseRe = /^\/hackathons\/([^/]+)\/manage(?:\/|$)/;
-    const prevManage = prev?.pathname.match(manageBaseRe);
-    const nextManage = location.pathname.match(manageBaseRe);
+    const publicHackathonTabRe = /^\/hackathons\/([^/]+)\/(?:overview|prizes|timeline|resources|projects)$/;
+    const prevManage = prev?.pathname.match(publicHackathonTabRe);
+    const nextManage = location.pathname.match(publicHackathonTabRe);
     if (
       prev &&
       prevManage &&
@@ -139,23 +152,6 @@ function ScrollToTop() {
       prevManage[1] === nextManage[1] &&
       prev.pathname !== location.pathname
     ) {
-      return;
-    }
-
-    const legacyContestTabRe =
-      /^\/hackathons\/([^/]+)\/(?:overview|timeline|prizes|partners|rules|faqs|projects)$/;
-    const prevLegacy = prev?.pathname.match(legacyContestTabRe);
-    const nextCanonical = location.pathname.match(/^\/hackathons\/([^/]+)$/);
-    if (
-      prevLegacy &&
-      nextCanonical &&
-      prevLegacy[1] === nextCanonical[1]
-    ) {
-      return;
-    }
-
-    const canonicalContest = /^\/hackathons\/([^/]+)$/;
-    if (canonicalContest.test(location.pathname) && location.hash) {
       return;
     }
 
@@ -391,8 +387,22 @@ export default function App() {
                   </RequireAuth>
                 }
               />
-              <Route path="hackathons/*" element={<Navigate to="/" replace />} />
-              <Route path="projects/*" element={<Navigate to="/" replace />} />
+              <Route path="hackathons" element={<Suspense fallback={<PageFallback />}><Hackathons /></Suspense>} />
+              <Route path="hackathons/manage/*" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
+              <Route path="hackathons/new" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
+              <Route path="hackathons/:slug/manage/*" element={<Suspense fallback={<PageFallback />}><NotFound /></Suspense>} />
+              <Route path="hackathons/:slug" element={<Suspense fallback={<PageFallback />}><HackathonPublicLayout /></Suspense>}>
+                <Route index element={<Navigate to="overview" replace />} />
+                <Route path="overview" element={<Suspense fallback={<PageFallback />}><HackathonOverviewTab /></Suspense>} />
+                <Route path="prizes" element={<Suspense fallback={<PageFallback />}><HackathonPrizesTab /></Suspense>} />
+                <Route path="timeline" element={<Suspense fallback={<PageFallback />}><HackathonTimelineTab /></Suspense>} />
+                <Route path="resources" element={<Suspense fallback={<PageFallback />}><HackathonResourcesTab /></Suspense>} />
+                <Route path="projects" element={<Suspense fallback={<PageFallback />}><HackathonProjectsTab /></Suspense>} />
+              </Route>
+              <Route path="projects" element={<Suspense fallback={<PageFallback />}><ProjectsPage /></Suspense>} />
+              <Route path="projects/new" element={<RequireAuth><Suspense fallback={<PageFallback />}><ProjectNewPage /></Suspense></RequireAuth>} />
+              <Route path="projects/:slug/edit" element={<RequireAuth><Suspense fallback={<PageFallback />}><ProjectEditPage /></Suspense></RequireAuth>} />
+              <Route path="projects/:slug" element={<Suspense fallback={<PageFallback />}><ProjectDetailPage /></Suspense>} />
               <Route
                 path="search"
                 element={
@@ -512,14 +522,9 @@ export default function App() {
                     </Suspense>
                   }
                 />
-                <Route
-                  path="hackathons/*"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <NotFound />
-                    </Suspense>
-                  }
-                />
+                <Route path="hackathons" element={<Suspense fallback={<PageFallback />}><AdminHackathons /></Suspense>} />
+                <Route path="hackathons/new" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
+                <Route path="hackathons/:id/edit" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
               </Route>
               <Route
                 path="instructor"

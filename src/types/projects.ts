@@ -4,6 +4,7 @@ export type ProjectSourceType = "standalone" | "contest" | "hackathon" | "course
 
 export interface Project {
   id: string;
+  slug: string;
   owner_id: string;
   title: string;
   summary: string | null;
@@ -17,6 +18,9 @@ export interface Project {
   source_type: ProjectSourceType;
   source_id: string | null;
   source_submission_id: string | null;
+  hackathon_track_ids: string[];
+  hackathon_sector_ids: string[];
+  hackathon_tech_stack_ids: string[];
   /** Denormalized count from project_hearts (server-maintained). */
   like_count?: number;
   /** Denormalized count from follows (server-maintained). */
@@ -33,6 +37,7 @@ export interface Project {
 export type ContestLinkedShowcaseProject = Pick<
   Project,
   | "id"
+  | "slug"
   | "title"
   | "summary"
   | "demo_url"
@@ -45,6 +50,10 @@ export type ContestLinkedShowcaseProject = Pick<
   | "source_submission_id"
   | "updated_at"
   | "like_count"
+  | "created_at"
+  | "hackathon_track_ids"
+  | "hackathon_sector_ids"
+  | "hackathon_tech_stack_ids"
 >;
 
 export interface ProjectComment {

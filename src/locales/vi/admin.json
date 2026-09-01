@@ -38,6 +38,10 @@
       "contests": {
         "label": "Cuộc thi",
         "tooltip": "Cuộc thi"
+      },
+      "hackathons": {
+        "label": "Hackathon",
+        "tooltip": "Quản lý hackathon"
       }
     },
     "pageMeta": {
@@ -65,6 +69,10 @@
         "title": "Vận hành cuộc thi",
         "description": "Tạo và quản lý contest, duyệt hồ sơ, chấm điểm và công bố kết quả."
       },
+      "hackathons": {
+        "title": "Quản lý hackathon",
+        "description": "Biên tập nội dung, taxonomy, dự án và người thắng."
+      },
       "instructorDetail": {
         "title": "Chi tiết giảng viên",
         "description": "Cập nhật hồ sơ và thông tin giảng viên."
@@ -75,6 +83,61 @@
       "pills": {
         "sensitive": "Quyền nhạy cảm",
         "manualAudit": "Audit thủ công"
+      }
+    }
+  },
+  "hackathons": {
+    "title": "Hackathon",
+    "description": "Tạo và quản lý các trang hackathon công khai.",
+    "new": "Tạo hackathon",
+    "edit": "Chỉnh sửa",
+    "view": "Xem public",
+    "loading": "Đang tải hackathon…",
+    "empty": "Chưa có hackathon nào.",
+    "editor": {
+      "back": "Quay lại danh sách",
+      "newTitle": "Hackathon mới",
+      "editTitle": "Chỉnh sửa hackathon",
+      "participants": "người đăng ký",
+      "saveAll": "Lưu tất cả",
+      "saved": "Đã lưu hackathon.",
+      "saveFailed": "Không thể lưu hackathon.",
+      "notFound": "Không tìm thấy hackathon.",
+      "unsaved": "Có thay đổi chưa lưu. Hãy lưu trước khi rời trang.",
+      "add": "Thêm",
+      "archive": "Lưu trữ",
+      "activate": "Kích hoạt",
+      "remove": "Xóa",
+      "saveBeforeWinners": "Lưu hackathon trước khi chọn dự án thắng giải.",
+      "selectProject": "Chọn dự án",
+      "awardLabel": "Nhãn giải thưởng",
+      "deleteConfirm": "Xóa vĩnh viễn hackathon này?",
+      "applyStatus": "Áp dụng trạng thái",
+      "taxonomyHint": "Taxonomy đã được dự án sử dụng chỉ có thể lưu trữ, không xóa.",
+      "validationRequired": "Tiêu đề tiếng Việt và slug là bắt buộc.",
+      "validationCurrency": "Currency phải gồm 2–10 ký tự A–Z hoặc số.",
+      "validationPrize": "Tổng giải theo track không được vượt prize pool.",
+      "validationDeadlines": "Hạn đăng ký phải trước hạn nộp dự án.",
+      "sections": {
+        "overview": "Overview",
+        "description": "Description",
+        "prizes": "Prize & Tracks",
+        "timeline": "Timeline",
+        "resources": "Resources",
+        "taxonomy": "Project Taxonomy",
+        "projects": "Projects & Winners",
+        "danger": "Publish, end & delete"
+      },
+      "fields": {
+        "title": "Tiêu đề",
+        "shortDescription": "Mô tả ngắn",
+        "totalPrize": "Tổng prize pool",
+        "starts_at": "Bắt đầu",
+        "ends_at": "Kết thúc",
+        "registration_deadline": "Hạn đăng ký",
+        "submission_deadline": "Hạn nộp dự án",
+        "sectors": "Sectors",
+        "tech_stacks": "Tech stacks"
       }
     }
   },

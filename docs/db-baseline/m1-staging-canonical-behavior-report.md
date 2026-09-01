@@ -1,5 +1,7 @@
 # M1 Staging Canonical Behavior
 
+> **Historical hackathon evidence:** compatibility với judging và detailed lifecycle bên dưới không còn là target. Contract mới nằm tại [Hackathon hiện hành](../hackathon/README.md).
+
 > Date: 2026-08-23  
 > Branch: `staging`  
 > Scope: C-06 Project seed-only, C-08 AI quota semantics, C-09 Hackathon vocabulary compatibility.  

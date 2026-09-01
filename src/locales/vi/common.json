@@ -221,12 +221,17 @@
       "label": "Nguồn dự án",
       "all": "Tất cả",
       "hackathon": "Hackathon",
+      "allHackathons": "Tất cả hackathon",
+      "tracks": "Tracks",
+      "sectors": "Sectors",
+      "techStacks": "Tech stacks",
       "course": "Khóa học",
       "showcase": "Showcase"
     },
     "sort": {
       "label": "Sắp xếp",
       "newest": "Mới nhất",
+      "oldest": "Cũ nhất",
       "mostLiked": "Nhiều tim nhất",
       "mostCommented": "Nhiều bình luận nhất"
     },
@@ -247,7 +252,28 @@
       "noDescription": "Dự án chưa có mô tả chi tiết.",
       "notFoundTitle": "Không tìm thấy dự án",
       "notFoundDescription": "Dự án này có thể không tồn tại hoặc chưa được public.",
-      "goBack": "Quay lại Dự án"
+      "goBack": "Quay lại Dự án",
+      "edit": "Chỉnh sửa dự án"
+    },
+    "form": {
+      "back": "Quay lại",
+      "createTitle": "Tạo dự án dự thi",
+      "editTitle": "Chỉnh sửa dự án",
+      "title": "Tên dự án",
+      "slug": "Slug",
+      "summary": "Mô tả",
+      "demoUrl": "Demo URL",
+      "repoUrl": "Repository URL",
+      "visibility": "Quyền hiển thị",
+      "create": "Tạo dự án",
+      "save": "Lưu thay đổi",
+      "saving": "Đang lưu…",
+      "created": "Đã tạo dự án.",
+      "saved": "Đã lưu dự án.",
+      "saveFailed": "Không thể lưu dự án.",
+      "notEligible": "Bạn chưa thể tạo dự án",
+      "notEligibleDescription": "Hãy đăng ký hackathon trước hoặc kiểm tra lại hạn nộp bài.",
+      "cannotEdit": "Bạn không có quyền sửa dự án này."
     },
     "social": {
       "heart": "Thả tim",

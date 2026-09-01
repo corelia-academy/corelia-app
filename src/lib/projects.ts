@@ -23,7 +23,7 @@ export function getProjectCoverImageUrl(
 }
 
 const PUBLIC_PORTFOLIO_PROJECT_SELECT =
-  "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+  "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
 
 export async function listPublicPortfolioProjects(
   profileId: string,
@@ -155,7 +155,7 @@ export async function listContestShowcaseProjects(
   contestId: string,
 ): Promise<ContestLinkedShowcaseProject[]> {
   const select =
-    "id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,owner_id,source_submission_id,updated_at,like_count" as const;
+    "id,slug,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,owner_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,created_at,updated_at,like_count" as const;
 
   const { data, error } = await supabase
     .from("projects")
@@ -255,7 +255,7 @@ export type PublicProjectEntry = {
 };
 
 export type PublicProjectSourceFilter = "all" | "hackathon" | "course" | "standalone";
-export type PublicProjectSort = "newest" | "most_liked" | "most_commented";
+export type PublicProjectSort = "newest" | "oldest" | "most_liked" | "most_commented";
 
 export type ListPublicProjectsOptions = {
   locale?: string | null;
@@ -263,6 +263,11 @@ export type ListPublicProjectsOptions = {
   sort?: PublicProjectSort | null;
   limit?: number;
   cursor?: string | null;
+  hackathonId?: string | null;
+  trackIds?: string[];
+  sectorIds?: string[];
+  techStackIds?: string[];
+  winnerProjectIds?: string[];
 };
 
 export type PublicProjectListResult = {
@@ -300,7 +305,7 @@ function normalizePublicProjectSource(
 }
 
 function normalizeProjectListSort(sort: ListPublicProjectsOptions["sort"]): PublicProjectSort {
-  if (sort === "most_liked" || sort === "most_commented") return sort;
+  if (sort === "oldest" || sort === "most_liked" || sort === "most_commented") return sort;
   return "newest";
 }
 
@@ -390,36 +395,60 @@ export async function listPublicProjects(
   options: ListPublicProjectsOptions = {},
 ): Promise<PublicProjectListResult> {
   const select =
-    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
   const limit = normalizeProjectLimit(options.limit);
   const offset = parseProjectCursor(options.cursor);
   const sourceType = normalizePublicProjectSource(options.source);
   const sort = normalizeProjectListSort(options.sort);
 
-  let query = supabase
-    .from("projects")
-    .select(select)
-    .eq("visibility", "public");
+  const applyFilters = () => {
+    let filtered = supabase.from("projects").select(select).eq("visibility", "public");
+    if (sourceType) filtered = filtered.in("source_type", sourceType);
+    if (options.hackathonId) {
+      filtered = filtered.in("source_type", ["contest", "hackathon"]).eq("source_id", options.hackathonId);
+    }
+    if (options.trackIds?.length) filtered = filtered.overlaps("hackathon_track_ids", options.trackIds);
+    if (options.sectorIds?.length) filtered = filtered.overlaps("hackathon_sector_ids", options.sectorIds);
+    if (options.techStackIds?.length) filtered = filtered.overlaps("hackathon_tech_stack_ids", options.techStackIds);
+    return filtered;
+  };
 
-  if (sourceType) query = query.in("source_type", sourceType);
+  let query = applyFilters();
 
   if (sort === "most_liked") {
     query = query.order("like_count", { ascending: false }).order("updated_at", { ascending: false });
+  } else if (sort === "oldest") {
+    query = query.order("created_at", { ascending: true });
   } else {
-    query = query.order("updated_at", { ascending: false });
+    query = query.order("created_at", { ascending: false });
   }
 
-  const rangeStart = sort === "most_commented" ? 0 : offset;
-  const rangeSize = sort === "most_commented" ? offset + limit : limit;
-  const { data, error } = await query.range(rangeStart, rangeStart + rangeSize);
+  const winnerIds = Array.from(new Set(options.winnerProjectIds ?? [])).filter(isUuidLike);
+  let winnerRows: Project[] = [];
+  if (winnerIds.length > 0 && options.hackathonId && sort !== "most_commented") {
+    const { data: winners, error: winnerError } = await applyFilters().in("id", winnerIds);
+    if (winnerError) throw new Error(winnerError.message);
+    const winnerOrder = new Map(winnerIds.map((id, index) => [id, index]));
+    winnerRows = ((winners ?? []) as Project[]).sort((a, b) => (winnerOrder.get(a.id) ?? 0) - (winnerOrder.get(b.id) ?? 0));
+    query = query.not("id", "in", `(${winnerIds.join(",")})`);
+  }
+
+  const winnerSlice = winnerRows.slice(offset, offset + limit);
+  const regularOffset = Math.max(0, offset - winnerRows.length);
+  const regularLimit = limit - winnerSlice.length;
+  const rangeStart = sort === "most_commented" ? 0 : regularOffset;
+  const rangeSize = sort === "most_commented" ? offset + limit : regularLimit;
+  const { data, error } = regularLimit > 0
+    ? await query.range(rangeStart, rangeStart + rangeSize)
+    : { data: [] as Project[], error: null };
   if (error) throw new Error(error.message);
 
   const fetchedProjects = (data ?? []) as Project[];
-  const hasMore = fetchedProjects.length > rangeSize;
+  const hasMore = offset + limit < winnerRows.length || fetchedProjects.length > rangeSize;
   const candidates =
     sort === "most_commented"
       ? fetchedProjects.slice(0, offset + limit)
-      : fetchedProjects.slice(0, limit);
+      : [...winnerSlice, ...fetchedProjects.slice(0, regularLimit)];
   const commentCounts = await getProjectCommentCounts(candidates.map((p) => p.id));
   let projects = candidates.map((project) => ({
     ...project,
@@ -448,7 +477,7 @@ async function listDirectoryProjectEntries(
   uiLocale?: string | null,
 ): Promise<PublicProjectEntry[]> {
   const select =
-    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
 
   const { data, error } = await supabase
     .from("projects")
@@ -526,7 +555,7 @@ export async function listPublicDirectoryItems(
     title: project.title,
     summary: project.summary ?? null,
     imageUrl: getProjectCoverImageUrl(project),
-    href: `/projects/${project.id}`,
+    href: `/projects/${project.slug || project.id}`,
     updated_at: project.updated_at,
     source: project,
     projectOwner: owner,
@@ -577,23 +606,33 @@ export async function listPublicDirectoryItems(
   };
 }
 
-export async function getProjectById(
-  id: string,
+export async function getProjectBySlugOrId(
+  slugOrId: string,
   uiLocale?: string | null,
 ): Promise<PublicProjectEntry | null> {
-  const trimmedId = id.trim();
-  if (!trimmedId) return null;
-  if (!isUuidLike(trimmedId)) return null;
+  const value = slugOrId.trim().toLowerCase();
+  if (!value) return null;
 
   const select =
-    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
 
-  const { data, error } = await supabase
+  let projectId = isUuidLike(value) ? value : null;
+  const currentSlug = isUuidLike(value) ? null : value;
+  if (!projectId && currentSlug) {
+    const { data: history } = await supabase
+      .from("project_slug_history")
+      .select("project_id")
+      .eq("slug", currentSlug)
+      .maybeSingle();
+    projectId = history?.project_id ?? null;
+  }
+
+  let query = supabase
     .from("projects")
     .select(select)
-    .eq("id", trimmedId)
-    .eq("visibility", "public")
-    .maybeSingle();
+    ;
+  query = projectId ? query.eq("id", projectId) : query.eq("slug", currentSlug!);
+  const { data, error } = await query.maybeSingle();
 
   if (error) throw new Error(error.message);
   if (!data) return null;
@@ -608,6 +647,42 @@ export async function getProjectById(
   return entry ?? null;
 }
 
+export const getProjectById = getProjectBySlugOrId;
+
+export type ProjectUpdateInput = Pick<
+  Project,
+  "slug" | "title" | "summary" | "demo_url" | "repo_url" | "visibility"
+> & {
+  hackathon_track_ids?: string[];
+  hackathon_sector_ids?: string[];
+  hackathon_tech_stack_ids?: string[];
+};
+
+export async function updateMyProject(
+  projectId: string,
+  input: ProjectUpdateInput,
+): Promise<void> {
+  const { data, error } = await supabase
+    .from("projects")
+    .update({
+      slug: input.slug.trim().toLowerCase(),
+      title: input.title.trim(),
+      summary: input.summary?.trim() || null,
+      demo_url: input.demo_url?.trim() || null,
+      repo_url: input.repo_url?.trim() || null,
+      visibility: input.visibility,
+      hackathon_track_ids: input.hackathon_track_ids,
+      hackathon_sector_ids: input.hackathon_sector_ids,
+      hackathon_tech_stack_ids: input.hackathon_tech_stack_ids,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", projectId)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("forbidden:project_update");
+}
+
 export async function listMyProjects(uiLocale?: string | null): Promise<Project[]> {
   const {
     data: { user },
@@ -617,7 +692,7 @@ export async function listMyProjects(uiLocale?: string | null): Promise<Project[
   if (!user) throw new Error("Chưa đăng nhập");
 
   const select =
-    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
 
   const [{ data: owned, error: ownedErr }, { data: collaboratorRows, error: collabErr }] =
     await Promise.all([
@@ -690,7 +765,7 @@ export async function listMyProjectsForAccount(uiLocale?: string | null): Promis
   if (!user) throw new Error("Chưa đăng nhập");
 
   const select =
-    "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+    "id,slug,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,hackathon_track_ids,hackathon_sector_ids,hackathon_tech_stack_ids,i18n,created_at,updated_at,like_count" as const;
 
   const [{ data: owned, error: ownedErr }, { data: collaboratorRows, error: collabErr }] =
     await Promise.all([

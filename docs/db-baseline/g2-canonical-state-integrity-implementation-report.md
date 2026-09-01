@@ -2,6 +2,8 @@
 # MILESTONE G2 IMPLEMENTATION REPORT
 # CANONICAL STATE & DATA INTEGRITY IMPLEMENTATION
 
+> **Historical hackathon evidence:** các flow review registration, score, invited judge và metrics refresh không còn là runtime/contract. Xem [Hackathon hiện hành](../hackathon/README.md); dữ liệu legacy bị xóa trực tiếp không export.
+
 ## 1. Implementation Metadata
 
 - **Milestone:** G2 — Canonical State & Data Integrity Implementation
