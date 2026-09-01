@@ -24,6 +24,9 @@ export function EmailUnsubscribePage() {
   useEffect(() => {
     if (status !== "loading") return;
     const url = coreliaEdgeUrl("notifications.unsubscribe");
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 8000);
+
     void fetch(url, {
       method: "POST",
       headers: {
@@ -31,9 +34,16 @@ export function EmailUnsubscribePage() {
         apikey: ANON_KEY,
       },
       body: JSON.stringify({ token, type }),
+      signal: controller.signal,
     })
       .then((res) => setStatus(res.ok ? "success" : "error"))
-      .catch(() => setStatus("error"));
+      .catch(() => setStatus("error"))
+      .finally(() => window.clearTimeout(timer));
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
     // Run only once on mount — token/type from URL don't change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

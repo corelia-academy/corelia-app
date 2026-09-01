@@ -15,13 +15,18 @@ export async function handleNotificationsUnsubscribe(
     const column =
       type === "track_blast" ? "email_track_blast" : "email_course_blast";
 
-    const { error } = await db
+    const { data, error } = await db
       .from("notification_preferences")
       .update({ [column]: false, updated_at: new Date().toISOString() })
-      .eq("unsubscribe_token", token);
+      .eq("unsubscribe_token", token)
+      .select("user_id");
 
     if (error) {
       console.error("[corelia-api] notifications.unsubscribe db error", error);
+      return json({ message: "db_error" }, 500);
+    }
+
+    if (!data || data.length === 0) {
       return json({ message: "token_not_found" }, 404);
     }
 

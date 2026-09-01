@@ -672,6 +672,10 @@
       "sectionTitlePlaceholder": "Section title"
     },
     "questions": {
+      "loadFailed": "Failed to load existing questions.",
+      "loadFailedBeforeGenerate": "Cannot generate questions while existing questions failed to load.",
+      "loadFailedBeforeSave": "Cannot save questions while question loading is in an error state.",
+      "retry": "Retry",
       "generateFailed": "Could not generate questions.",
       "fillRequired": "Fill in the question and at least two answer choices.",
       "saveFailed": "Could not save questions.",

@@ -1002,8 +1002,13 @@
     "inviteProject": {
       "title": "Project invitation",
       "description": "Accept to join the team on this hackathon project.",
+      "previewSummary": "You have been invited to join the project \"{{project}}\".",
       "loginRequired": "Please sign in to respond to this invite.",
       "invalid": "This invite is invalid or has expired.",
+      "notActionable": "This invite is no longer valid (status: {{status}}).",
+      "wrongAccountTitle": "This invite belongs to a different account",
+      "wrongAccountBody": "You are signed in as {{email}}. Please sign out and sign in with the invited account.",
+      "retry": "Retry",
       "accepted": "You have joined the project.",
       "declined": "You declined the invite.",
       "errorFallback": "Something went wrong.",

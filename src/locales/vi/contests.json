@@ -1002,8 +1002,13 @@
     "inviteProject": {
       "title": "Lời mời dự án",
       "description": "Chấp nhận để tham gia nhóm trong dự án hackathon này.",
+      "previewSummary": "Bạn đã được mời tham gia dự án \"{{project}}\".",
       "loginRequired": "Hãy đăng nhập để phản hồi lời mời.",
       "invalid": "Lời mời không hợp lệ hoặc đã hết hạn.",
+      "notActionable": "Lời mời này không còn hiệu lực (trạng thái: {{status}}).",
+      "wrongAccountTitle": "Lời mời này thuộc về tài khoản khác",
+      "wrongAccountBody": "Bạn đang đăng nhập bằng {{email}}. Hãy đăng xuất và đăng nhập lại bằng tài khoản nhận lời mời.",
+      "retry": "Thử lại",
       "accepted": "Bạn đã tham gia dự án.",
       "declined": "Bạn đã từ chối lời mời.",
       "errorFallback": "Đã có lỗi xảy ra.",
