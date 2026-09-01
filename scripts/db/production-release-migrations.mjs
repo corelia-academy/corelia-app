@@ -26,17 +26,18 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260830230917_drop_unused_vector_extension.sql",
   "supabase/migrations/20260831230000_remove_all_financial_features.sql",
   "supabase/migrations/20260831232819_restore_enrollment_rpc_security_boundary.sql",
+  "supabase/migrations/20260901002156_remove_dashboard_configs_and_tier_limits.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// The two financial-retirement migrations are pending Production together:
-// destructive cleanup followed by the forward-only RPC boundary remediation.
+// Every approved migration except the final entry is already released. Keep
+// the reviewed history distinct from the migration pending this rollout.
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
-  APPROVED_PENDING_VERSIONS.slice(0, -2),
+  APPROVED_PENDING_VERSIONS.slice(0, -1),
 );
-export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-2));
+export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-1));
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);

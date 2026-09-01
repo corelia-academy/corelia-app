@@ -15,9 +15,6 @@
         "label": "Users",
         "tooltip": "Users"
       },
-      "dashboard": {
-        "label": "Dashboard"
-      },
       "instructors": {
         "label": "Instructors",
         "tooltip": "Instructors"
@@ -47,10 +44,6 @@
       "users": {
         "title": "User management",
         "description": "Control roles and access health across all users."
-      },
-      "dashboard": {
-        "title": "Dashboard configuration",
-        "description": "Pin key programs so they show up in the right spot on learners' Home."
       },
       "instructors": {
         "title": "Instructor management",
@@ -84,49 +77,6 @@
         "manualAudit": "Manual audit"
       }
     }
-  },
-  "dashboard": {
-    "errors": {
-      "loadFailed": "Unable to load dashboard configuration.",
-      "saveFailed": "Unable to save dashboard configuration."
-    },
-    "toasts": {
-      "saved": "Pinned programs configuration saved."
-    },
-    "hero": {
-      "eyebrow": "Pin programs on the dashboard",
-      "title": "Select up to 3 programs to feature on learners' Home",
-      "description": "Learners' dashboards still prioritize personal data. This area is only for programs that admins or ops want to highlight for a period of time."
-    },
-    "actions": {
-      "save": "Save configuration",
-      "saving": "Saving..."
-    },
-    "slot": {
-      "label": "Slot {{index}}",
-      "activeOn": "Enabled",
-      "activeOff": "Disabled",
-      "show": "Show"
-    },
-    "programType": {
-      "course": "Online course",
-      "contest": "Contest",
-      "offlineCourse": "Offline program"
-    },
-    "form": {
-      "programTypeLabel": "Program type",
-      "programSourceLabel": "Source program",
-      "programSourcePlaceholder": "Select a program",
-      "badgeLabel": "Custom badge",
-      "badgePlaceholder": "e.g. Open for registration",
-      "titleOverrideLabel": "Title override",
-      "titleOverridePlaceholder": "Leave empty to use the original title",
-      "descriptionOverrideLabel": "Description override",
-      "descriptionOverridePlaceholder": "Leave empty to use the original description",
-      "ctaLabel": "CTA label",
-      "ctaPlaceholder": "e.g. View program"
-    },
-    "hint": "Only enabled slots with a selected source program will be shown. If title/description overrides are empty, the system will use content from the source program."
   },
   "instructors": {
     "errors": {

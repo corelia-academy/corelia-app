@@ -21,8 +21,6 @@ export const COL = {
   CONTEST_SCORES: "contest_scores",
 
   // Khoá học offline
-  // Dashboard
-  DASHBOARD_CONFIGS: "dashboard_configs",
 } as const;
 
 // ─── Subcollection keys (dùng trong collection path lồng nhau) ────────────────
@@ -32,9 +30,4 @@ export const SUB = {
   LOCALES: "locales",
   DISCOUNTS: "discounts",
   SESSIONS: "sessions",
-} as const;
-
-// ─── Document IDs cố định ─────────────────────────────────────────────────────
-export const DOC = {
-  HOME_DASHBOARD: "home",
 } as const;

@@ -91,7 +91,6 @@ const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
 const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
 const AdminInstructors = lazy(() => import("@/pages/admin/AdminInstructors"));
 const AdminInstructorDetail = lazy(() => import("@/pages/admin/AdminInstructorDetail"));
-const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const AdminActivityMilestones = lazy(() => import("@/pages/admin/AdminActivityMilestones"));
 const AdminManualMint = lazy(() => import("@/pages/admin/AdminManualMint"));
 const AdminBranding = lazy(() => import("@/pages/admin/AdminBranding"));
@@ -486,14 +485,6 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <AdminUsers />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="dashboard"
-                  element={
-                    <Suspense fallback={<PageFallback />}>
-                      <AdminDashboard />
                     </Suspense>
                   }
                 />

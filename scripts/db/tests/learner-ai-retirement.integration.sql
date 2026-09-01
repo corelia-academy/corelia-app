@@ -20,12 +20,9 @@ BEGIN
     RAISE EXCEPTION 'Retired learner AI relations remain: %', v_remaining;
   END IF;
 
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'tier_limits'
-      AND column_name IN ('monthly_messages', 'haiku_only', 'monthly_tokens', 'rolling_3h_tokens')
-  ) THEN
-    RAISE EXCEPTION 'Retired learner AI quota columns remain';
+  IF to_regclass('public.tier_limits') IS NOT NULL
+     OR to_regclass('public.dashboard_configs') IS NOT NULL THEN
+    RAISE EXCEPTION 'Retired configuration relations remain';
   END IF;
 
   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector') THEN

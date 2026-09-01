@@ -15,9 +15,6 @@
         "label": "Tài khoản",
         "tooltip": "Tài khoản"
       },
-      "dashboard": {
-        "label": "Dashboard"
-      },
       "instructors": {
         "label": "Giảng viên",
         "tooltip": "Giảng viên"
@@ -47,10 +44,6 @@
       "users": {
         "title": "Quản lý tài khoản",
         "description": "Kiểm soát vai trò và sức khoẻ truy cập của toàn bộ người dùng."
-      },
-      "dashboard": {
-        "title": "Cấu hình dashboard",
-        "description": "Ghim các chương trình quan trọng để xuất hiện đúng vị trí trên Home của học viên."
       },
       "instructors": {
         "title": "Quản lý giảng viên",
@@ -84,49 +77,6 @@
         "manualAudit": "Audit thủ công"
       }
     }
-  },
-  "dashboard": {
-    "errors": {
-      "loadFailed": "Không thể tải cấu hình dashboard.",
-      "saveFailed": "Không thể lưu cấu hình dashboard."
-    },
-    "toasts": {
-      "saved": "Đã lưu cấu hình ghim chương trình lên dashboard."
-    },
-    "hero": {
-      "eyebrow": "Ghim chương trình trên dashboard",
-      "title": "Chọn tối đa 3 chương trình để đẩy lên Home của học viên",
-      "description": "Dashboard của học viên vẫn ưu tiên dữ liệu cá nhân. Khu vực này chỉ dành cho những chương trình mà admin hoặc học vụ muốn nhấn mạnh trong một giai đoạn nhất định."
-    },
-    "actions": {
-      "save": "Lưu cấu hình",
-      "saving": "Đang lưu..."
-    },
-    "slot": {
-      "label": "Slot {{index}}",
-      "activeOn": "Đang bật",
-      "activeOff": "Đang tắt",
-      "show": "Hiển thị"
-    },
-    "programType": {
-      "course": "Khoá học online",
-      "contest": "Contest",
-      "offlineCourse": "Chương trình offline"
-    },
-    "form": {
-      "programTypeLabel": "Loại chương trình",
-      "programSourceLabel": "Chương trình nguồn",
-      "programSourcePlaceholder": "Chọn chương trình",
-      "badgeLabel": "Badge tuỳ chỉnh",
-      "badgePlaceholder": "Ví dụ: Đang mở đăng ký",
-      "titleOverrideLabel": "Tiêu đề override",
-      "titleOverridePlaceholder": "Để trống nếu dùng tiêu đề gốc",
-      "descriptionOverrideLabel": "Mô tả override",
-      "descriptionOverridePlaceholder": "Để trống nếu dùng mô tả gốc",
-      "ctaLabel": "Nhãn CTA",
-      "ctaPlaceholder": "Ví dụ: Xem chương trình"
-    },
-    "hint": "Dashboard chỉ hiển thị những slot đang bật và đã chọn chương trình nguồn. Nếu bạn để trống tiêu đề hoặc mô tả override, hệ thống sẽ lấy nội dung từ chương trình gốc."
   },
   "instructors": {
     "errors": {

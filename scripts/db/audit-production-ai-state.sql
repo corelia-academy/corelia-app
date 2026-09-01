@@ -32,14 +32,13 @@ WITH target_tables(name) AS (
       )
       OR pg_get_functiondef(p.oid) ~* 'ai_subscription'
     )
-), remaining_quota_columns AS (
-  SELECT column_name
-  FROM information_schema.columns
-  WHERE table_schema = 'public'
-    AND table_name = 'tier_limits'
-    AND column_name IN (
-      'monthly_messages', 'haiku_only', 'monthly_tokens', 'rolling_3h_tokens'
-    )
+), remaining_retired_config_relations AS (
+  SELECT c.relname AS object_name
+  FROM pg_class c
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE n.nspname = 'public'
+    AND c.relkind IN ('r', 'p', 'v', 'm')
+    AND c.relname IN ('dashboard_configs', 'tier_limits')
 ), remaining_financial_relations AS (
   SELECT c.relname AS object_name
   FROM pg_class c
@@ -73,8 +72,8 @@ SELECT jsonb_build_object(
     (SELECT COALESCE(jsonb_agg(to_jsonb(r)), '[]'::jsonb) FROM remaining_relations r),
   'learner_ai_functions',
     (SELECT COALESCE(jsonb_agg(to_jsonb(f)), '[]'::jsonb) FROM remaining_functions f),
-  'learner_ai_quota_columns',
-    (SELECT COALESCE(jsonb_agg(column_name), '[]'::jsonb) FROM remaining_quota_columns),
+  'retired_config_relations',
+    (SELECT COALESCE(jsonb_agg(object_name), '[]'::jsonb) FROM remaining_retired_config_relations),
   'vector_extension_installed',
     EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector'),
   'financial_relations',
