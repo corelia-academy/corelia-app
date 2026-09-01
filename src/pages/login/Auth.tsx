@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Navigate, NavLink, useLocation, useSearchParams } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
-import { supabase } from "@/lib/supabase";
+import { mfaAssuranceQueryOptions } from "@/features/auth/authQueries";
 import { useAuth } from "@/stores/authStore";
 import { LoginForm } from "@/pages/login/LoginForm";
 import { LoginMfaChallenge } from "@/pages/login/components/LoginMfaChallenge";
@@ -26,40 +27,19 @@ export default function Auth() {
   const initialEmail = searchParams.get("email")?.trim() || undefined;
   const initialMode = searchParams.get("mode") === "signup" ? "sign_up" : undefined;
 
-  const [mfaGate, setMfaGate] = useState<MfaGateState>("unchecked");
-  const prevUserIdRef = useRef<string | undefined>(undefined);
-
-  // Reset MFA gate when Supabase user identity changes (login/logout/switch account).
-  /* eslint-disable react-hooks/set-state-in-effect -- synchronous gate reset before AAL fetch avoids Navigate flash */
-  useLayoutEffect(() => {
-    const id = user?.id;
-    if (prevUserIdRef.current === id) return;
-    prevUserIdRef.current = id;
-    setMfaGate("unchecked");
-  }, [user?.id]);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  useEffect(() => {
-    if (!user?.id || !authInitialized) return;
-    let cancelled = false;
-    void (async () => {
-      const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (cancelled) return;
-      if (error) {
-        console.error("[Auth] getAuthenticatorAssuranceLevel:", error.message);
-        setMfaGate("clear");
-        return;
-      }
-      if (data.currentLevel === "aal1" && data.nextLevel === "aal2") {
-        setMfaGate("mfa");
-      } else {
-        setMfaGate("clear");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user, authInitialized]);
+  const [mfaCompletedForUser, setMfaCompletedForUser] = useState<string | null>(null);
+  const assuranceQuery = useQuery(
+    mfaAssuranceQueryOptions(user?.id, authInitialized && Boolean(user)),
+  );
+  const mfaGate: MfaGateState = !user
+    ? "unchecked"
+    : assuranceQuery.isPending
+      ? "unchecked"
+      : assuranceQuery.data?.currentLevel === "aal1" &&
+          assuranceQuery.data.nextLevel === "aal2" &&
+          mfaCompletedForUser !== user.id
+        ? "mfa"
+        : "clear";
 
   if (!authInitialized) {
     return (
@@ -92,10 +72,10 @@ export default function Auth() {
             <LanguageSwitcher />
           </div>
           <LoginMfaChallenge
-            onSuccess={() => setMfaGate("clear")}
+            onSuccess={() => setMfaCompletedForUser(user.id)}
             onCancel={async () => {
               await signOut();
-              setMfaGate("unchecked");
+              setMfaCompletedForUser(null);
             }}
           />
         </div>

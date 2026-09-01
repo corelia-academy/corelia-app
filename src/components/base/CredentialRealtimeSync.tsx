@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Sparkles, XCircle } from "lucide-react";
 import React from "react";
 
-import { supabase } from "@/lib/supabase";
+import { subscribeToCredentialIssuances } from "@/lib/credentialIssuances";
 import { useAuth } from "@/stores/authStore";
 
 export const CREDENTIAL_SYNC_EVENT = "corelia:credential-sync";
@@ -28,17 +28,9 @@ export default function CredentialRealtimeSync() {
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
 
-    const channel = supabase
-      .channel("public:credential_issuances")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "credential_issuances",
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
+    const unsubscribe = subscribeToCredentialIssuances(
+      user.id,
+      (payload) => {
           if (payload.eventType === "INSERT") {
             const status = payload.new.status;
             window.dispatchEvent(
@@ -124,12 +116,11 @@ export default function CredentialRealtimeSync() {
               }
             }
           }
-        }
-      )
-      .subscribe();
+        },
+    );
 
     return () => {
-      supabase.removeChannel(channel);
+      unsubscribe();
     };
   }, [achievementsPath, isAuthenticated, navigate, t, user?.id]);
 

@@ -1,32 +1,11 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Trophy } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/lib/supabase";
 import type { PublicProfile } from "@/types/database";
-import type { Contest } from "@/types/hackathons";
-
-import { contestFromRow } from "../utils/contestFromRow";
-
-function isMissingRelationError(error: unknown): boolean {
-  const message =
-    typeof error === "object" && error && "message" in error
-      ? String((error as { message?: unknown }).message ?? "")
-      : "";
-  const code =
-    typeof error === "object" && error && "code" in error
-      ? String((error as { code?: unknown }).code ?? "")
-      : "";
-
-  return (
-    code === "PGRST205" ||
-    (message.includes("schema cache") &&
-      (message.includes("public.contests") ||
-        message.includes("public.contest_submissions")))
-  );
-}
+import { publicProfileContestsQueryOptions } from "@/features/profiles/publicProfileQueries";
 
 export function UserProfileContestsSection({
   profile,
@@ -35,108 +14,14 @@ export function UserProfileContestsSection({
   profile: PublicProfile;
   isSelf: boolean;
 }) {
-  const { t } = useTranslation("common");
-  const [contests, setContests] = useState<Contest[]>([]);
-  const [participations, setParticipations] = useState<Contest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data, error: dbErr } = await supabase
-          .from("contests")
-          .select("*")
-          .in("status", ["published", "running", "ended"])
-          .eq("document->>created_by", profile.id)
-          .order("updated_at", { ascending: false });
-
-        if (dbErr) {
-          if (isMissingRelationError(dbErr)) {
-            if (!cancelled) {
-              setContests([]);
-              setParticipations([]);
-            }
-            return;
-          }
-          throw dbErr;
-        }
-        if (cancelled) return;
-
-        const rows = ((data ?? []) as Array<{
-          id: string;
-          status: string;
-          created_at: string;
-          updated_at: string;
-          document: Record<string, unknown> | null;
-        }>).map((row) => contestFromRow(row, profile.id));
-        setContests(rows);
-
-        if (!isSelf) {
-          setParticipations([]);
-          return;
-        }
-
-        const { data: participationData, error: participationErr } = await supabase
-          .from("contest_submissions")
-          .select("contest_id")
-          .eq("user_id", profile.id);
-
-        if (participationErr) {
-          if (isMissingRelationError(participationErr)) {
-            setParticipations([]);
-            return;
-          }
-          throw participationErr;
-        }
-        if (cancelled) return;
-
-        const contestIds = Array.from(
-          new Set((participationData ?? []).map((r) => r.contest_id)),
-        ).filter(Boolean);
-        if (contestIds.length === 0) {
-          setParticipations([]);
-          return;
-        }
-
-        const { data: pData, error: pErr } = await supabase
-          .from("contests")
-          .select("*")
-          .in("id", contestIds)
-          .in("status", ["published", "running", "ended"])
-          .order("updated_at", { ascending: false });
-        if (pErr) {
-          if (isMissingRelationError(pErr)) {
-            setParticipations([]);
-            return;
-          }
-          throw pErr;
-        }
-        if (cancelled) return;
-
-        const pRows = (pData ?? []) as Array<{
-          id: string;
-          status: string;
-          created_at: string;
-          updated_at: string;
-          document: Record<string, unknown> | null;
-        }>;
-        setParticipations(pRows.map((row) => contestFromRow(row, profile.id)));
-      } catch {
-        if (cancelled) return;
-        setError(t("userProfile.errors.loadFailed"));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [isSelf, profile.id, t]);
+  const { t, i18n } = useTranslation("common");
+  const query = useQuery(
+    publicProfileContestsQueryOptions(profile.id, isSelf, i18n.language),
+  );
+  const contests = query.data?.organized ?? [];
+  const participations = query.data?.participations ?? [];
+  const loading = query.isPending;
+  const error = query.error ? t("userProfile.errors.loadFailed") : null;
 
   if (loading) {
     return (

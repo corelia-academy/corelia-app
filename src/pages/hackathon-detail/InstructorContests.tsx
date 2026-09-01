@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import {
   Calendar,
@@ -28,7 +29,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { deleteContest, listContests } from "@/lib/hackathons";
+import { deleteContest } from "@/lib/hackathons";
+import {
+  hackathonCatalogQueryOptions,
+  hackathonKeys,
+} from "@/features/hackathons/hackathonQueries";
 import { contestListImageUrl } from "@/lib/hackathonVisuals";
 import type { Contest } from "@/types/hackathons";
 import { toast } from "sonner";
@@ -50,6 +55,8 @@ import {
 } from "@/components/layouts/PagePrimitives";
 import { useAuth } from "@/stores/authStore";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const EMPTY_CONTESTS: Contest[] = [];
 
 function InstructorContestWorkspaceSkeleton() {
   return (
@@ -109,34 +116,32 @@ export default function InstructorContests() {
     [t],
   );
   const navigate = useNavigate();
-  const [items, setItems] = useState<Contest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const catalogOptions = hackathonCatalogQueryOptions(
+    user,
+    locale,
+    authInitialized,
+  );
+  const catalogQuery = useQuery(catalogOptions);
+  const items = catalogQuery.data ?? EMPTY_CONTESTS;
   const [contestToDelete, setContestToDelete] = useState<Contest | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!authInitialized) return;
-
-    let cancelled = false;
-    listContests(user ?? null)
-      .then((data) => {
-        if (!cancelled) setItems(data);
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : t("instructor.loadListFailed"),
-          );
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [authInitialized, t, user, i18n.language]);
+  const deleteMutation = useMutation({
+    mutationFn: deleteContest,
+    onSuccess: (_result, contestId) => {
+      queryClient.setQueryData<Contest[]>(catalogOptions.queryKey, (current) =>
+        current?.filter((item) => item.id !== contestId),
+      );
+      void queryClient.invalidateQueries({ queryKey: hackathonKeys.all });
+    },
+  });
+  const deletingId = deleteMutation.isPending ? deleteMutation.variables : null;
+  const errorValue = deleteMutation.error ?? catalogQuery.error;
+  const error = errorValue
+    ? errorValue instanceof Error
+      ? errorValue.message
+      : t("instructor.loadListFailed")
+    : null;
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -154,23 +159,18 @@ export default function InstructorContests() {
   async function handleDeleteContest() {
     if (!contestToDelete) return;
 
-    setDeletingId(contestToDelete.id);
     try {
-      await deleteContest(contestToDelete.id);
-      setItems((current) => current.filter((item) => item.id !== contestToDelete.id));
+      await deleteMutation.mutateAsync(contestToDelete.id);
       setContestToDelete(null);
       toast.success(t("instructor.deleteSuccess"));
     } catch (err) {
       const message =
         err instanceof Error ? err.message : t("instructor.deleteFailed");
-      setError(message);
       toast.error(message);
-    } finally {
-      setDeletingId(null);
     }
   }
 
-  if (loading) {
+  if (catalogQuery.isPending) {
     return <InstructorContestWorkspaceSkeleton />;
   }
 

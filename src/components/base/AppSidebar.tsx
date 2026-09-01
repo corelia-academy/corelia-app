@@ -24,6 +24,9 @@ import { ShowForRole } from "@/components/auth/ShowForRole";
 import { useTranslation } from "react-i18next";
 import { ROLE_GROUPS } from "@/config/roles";
 import { useTheme } from "next-themes";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/stores/authStore";
+import { canSpeculativelyPrefetch, prefetchRouteChunk } from "@/lib/routePrefetch";
 
 const primaryNav = [
   { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
@@ -40,10 +43,44 @@ export default function AppSidebar({
   className?: string;
 }) {
   const { t } = useTranslation("common");
+  const { i18n } = useTranslation();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { isMobile } = useSidebar();
   const { resolvedTheme } = useTheme();
   const location = useLocation();
   const pathname = location.pathname;
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+
+  const prefetchPrimaryRoute = async (href: string) => {
+    if (!canSpeculativelyPrefetch()) return;
+    prefetchRouteChunk(href);
+    try {
+      if (href === "/") {
+        const { homeCatalogQueryOptions } = await import(
+          "@/pages/home/queries/homeQueries"
+        );
+        await queryClient.prefetchQuery(homeCatalogQueryOptions(user, locale));
+      } else if (href === "/feed" && user?.id) {
+        const { feedTimelineQueryOptions } = await import(
+          "@/features/feed/feedQueries"
+        );
+        await queryClient.prefetchInfiniteQuery(feedTimelineQueryOptions(user.id));
+      } else if (href === "/courses") {
+        const { coursesCatalogQueryOptions } = await import(
+          "@/features/courses/courseQueries"
+        );
+        await queryClient.prefetchQuery(coursesCatalogQueryOptions(locale));
+      } else if (href === "/career") {
+        const { careerCatalogQueryOptions } = await import(
+          "@/features/career/careerQueries"
+        );
+        await queryClient.prefetchQuery(careerCatalogQueryOptions(locale));
+      }
+    } catch {
+      // Speculative work must never affect navigation.
+    }
+  };
 
   return (
     <Sidebar
@@ -88,6 +125,8 @@ export default function AppSidebar({
                           to={item.href}
                           end={"end" in item ? item.end : undefined}
                           className="flex w-full items-center gap-2"
+                          onPointerEnter={() => void prefetchPrimaryRoute(item.href)}
+                          onFocus={() => void prefetchPrimaryRoute(item.href)}
                         >
                           <Icon className="size-5 shrink-0" aria-hidden />
                           <span>{t(item.labelKey)}</span>
@@ -116,6 +155,8 @@ export default function AppSidebar({
                       <NavLink
                         to="/instructor/courses"
                         className="flex w-full items-center gap-2"
+                        onPointerEnter={() => prefetchRouteChunk("/instructor/courses")}
+                        onFocus={() => prefetchRouteChunk("/instructor/courses")}
                       >
                         <GraduationCap className="size-5 shrink-0" aria-hidden />
                         <span>{t("nav.instructor")}</span>
@@ -134,6 +175,8 @@ export default function AppSidebar({
                       <NavLink
                         to="/admin"
                         className="flex w-full items-center gap-2"
+                        onPointerEnter={() => prefetchRouteChunk("/admin")}
+                        onFocus={() => prefetchRouteChunk("/admin")}
                       >
                         <Settings className="size-5 shrink-0" aria-hidden />
                         <span>{t("nav.admin")}</span>

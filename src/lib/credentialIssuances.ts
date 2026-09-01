@@ -34,6 +34,32 @@ type IssuanceRow = {
     | null;
 };
 
+export type CredentialIssuanceRealtimePayload = {
+  eventType: "INSERT" | "UPDATE" | "DELETE";
+  new: Record<string, unknown>;
+  old: Record<string, unknown>;
+};
+
+export function subscribeToCredentialIssuances(
+  userId: string,
+  onChange: (payload: CredentialIssuanceRealtimePayload) => void,
+): () => void {
+  const channel = supabase
+    .channel(`credential-issuances:${userId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "credential_issuances",
+        filter: `user_id=eq.${userId}`,
+      },
+      (payload) => onChange(payload as CredentialIssuanceRealtimePayload),
+    )
+    .subscribe();
+  return () => { void supabase.removeChannel(channel); };
+}
+
 function unwrapTemplate(
   t: IssuanceRow["credential_templates"],
 ): CredentialTemplateSummary | null {

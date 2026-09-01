@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, Loader2, LockKeyhole, Shield } from "lucide-react";
 
@@ -6,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-  countIssuancesForTemplate,
-  getLatestCourseCredentialTemplate,
   saveCourseCredentialTemplate,
   type CourseCredentialKind,
   type CourseCredentialTriggerRule,
@@ -15,6 +14,8 @@ import {
 import { uploadCourseCredentialBadgeImage, uploadOnchainCertificateTemplate } from "@/lib/storage";
 import { toast } from "sonner";
 import { validatePngSignature } from "@/lib/imageValidation";
+import { courseCredentialEditorQueryOptions } from "@/features/credentials/courseCredentialQueries";
+import { useAuth } from "@/stores/authStore";
 
 function InvalidPngToast() {
   return (
@@ -112,8 +113,21 @@ export function CourseOcbCredentialSection({
   onClearOnchainCertificate?: () => void;
 }) {
   const { t } = useTranslation("instructor");
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryOptions = courseCredentialEditorQueryOptions({
+    courseId,
+    userId: user?.id,
+  });
+  const credentialQuery = useQuery(queryOptions);
+  const { mutateAsync: executeOperation } = useMutation({
+    mutationFn: (operation: () => Promise<unknown>) => operation(),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryOptions.queryKey });
+    },
+  });
+  const loading = credentialQuery.isPending;
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [templateId, setTemplateId] = useState<string | null>(null);
@@ -129,7 +143,7 @@ export function CourseOcbCredentialSection({
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [identifierPrefix, setIdentifierPrefix] = useState("");
-  const [issuanceCount, setIssuanceCount] = useState(0);
+  const issuanceCount = credentialQuery.data?.issuanceCount ?? 0;
   const [completionPct, setCompletionPct] = useState(100);
   const [requireAssignmentPass, setRequireAssignmentPass] = useState(false);
   const [minAssignmentScore, setMinAssignmentScore] = useState(70);
@@ -137,7 +151,7 @@ export function CourseOcbCredentialSection({
   /** Snapshot of the last loaded/saved field values, used to detect unsaved
    *  edits (`isDirty` below). A ref because it's only ever read during
    *  render, not something that should itself trigger a re-render. */
-  const savedSnapshotRef = useRef<{
+  type SavedSnapshot = {
     isActive: boolean;
     credentialKind: CourseCredentialKind;
     name: string;
@@ -147,12 +161,16 @@ export function CourseOcbCredentialSection({
     completionPct: number;
     requireAssignmentPass: boolean;
     minAssignmentScore: number;
-  } | null>(null);
+  };
+  const [savedSnapshot, setSavedSnapshot] = useState<SavedSnapshot | null>(null);
+  const hydratedCourseRef = useRef("");
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const row = await getLatestCourseCredentialTemplate(courseId);
+  useEffect(() => {
+    if (!credentialQuery.isSuccess || hydratedCourseRef.current === courseId) return;
+    const row = credentialQuery.data.template;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
       if (!row) {
         const freshIdentifierPrefix = `corelia:${courseSlug}`.slice(0, 40);
         setTemplateId(null);
@@ -165,8 +183,7 @@ export function CourseOcbCredentialSection({
         setCompletionPct(100);
         setRequireAssignmentPass(false);
         setMinAssignmentScore(70);
-        setIssuanceCount(0);
-        savedSnapshotRef.current = {
+        setSavedSnapshot({
           isActive: false,
           credentialKind: "oca",
           name: "",
@@ -176,7 +193,8 @@ export function CourseOcbCredentialSection({
           completionPct: 100,
           requireAssignmentPass: false,
           minAssignmentScore: 70,
-        };
+        });
+        hydratedCourseRef.current = courseId;
         return;
       }
       const kind: CourseCredentialKind = row.collection_symbol ? "ocb" : "oca";
@@ -202,26 +220,11 @@ export function CourseOcbCredentialSection({
       setCompletionPct(loaded.completionPct);
       setRequireAssignmentPass(loaded.requireAssignmentPass);
       setMinAssignmentScore(loaded.minAssignmentScore);
-      savedSnapshotRef.current = loaded;
-      // Load issuance count to determine if identifierPrefix can be edited
-      const count = await countIssuancesForTemplate(row.id).catch(() => 0);
-      setIssuanceCount(count);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("courseEdit.ocb.loadFailed"));
-    } finally {
-      setLoading(false);
-    }
-  }, [courseId, courseSlug, t]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  // The real toggle takes over from here — drop the "peek" so it doesn't
-  // linger and force the card to stay expanded after a later off-toggle.
-  useEffect(() => {
-    if (isActive) setPeekExpanded(false);
-  }, [isActive]);
+      setSavedSnapshot(loaded);
+      hydratedCourseRef.current = courseId;
+    });
+    return () => { cancelled = true; };
+  }, [courseId, courseSlug, credentialQuery.data, credentialQuery.isSuccess]);
 
   // The OCA image lives in the parent course form because it is uploaded to
   // course storage first, but it is only copied into the credential template
@@ -234,7 +237,7 @@ export function CourseOcbCredentialSection({
   // True whenever any field differs from what's actually saved in the DB —
   // drives both the Save button's visual state and the parent's
   // "leave without saving" warning when switching away from this tab.
-  const snap = savedSnapshotRef.current;
+  const snap = savedSnapshot;
   const isDirty = snap
     ? isActive !== snap.isActive ||
       credentialKind !== snap.credentialKind ||
@@ -262,7 +265,9 @@ export function CourseOcbCredentialSection({
     }
     setUploading(true);
     try {
-      const { url } = await uploadCourseCredentialBadgeImage(courseId, file);
+      const { url } = await executeOperation(() =>
+        uploadCourseCredentialBadgeImage(courseId, file),
+      ) as { url: string };
       setImageUrl(url);
       toast.success(t("courseEdit.ocb.uploadOk"));
     } catch (e) {
@@ -301,11 +306,11 @@ export function CourseOcbCredentialSection({
     }
     setUploadingOnchain(true);
     try {
-      const result = await uploadOnchainCertificateTemplate(
+      const result = await executeOperation(() => uploadOnchainCertificateTemplate(
         courseId,
         file,
         onchainCertificateTemplatePath,
-      );
+      )) as { url: string; path: string };
       onOnchainCertificateUploaded?.(result);
       toast.success(t("courseEdit.ocb.onchainCertUploaded"));
     } catch (e) {
@@ -383,7 +388,7 @@ export function CourseOcbCredentialSection({
         return false;
       }
 
-      const { id } = await saveCourseCredentialTemplate({
+      const { id } = await executeOperation(() => saveCourseCredentialTemplate({
         courseId,
         courseSlug,
         templateId,
@@ -394,10 +399,20 @@ export function CourseOcbCredentialSection({
         identifierPrefix: identifierPrefix.trim(),
         triggerRule,
         credentialKind,
-      });
+      })) as { id: string };
       setTemplateId(id);
+      setSavedSnapshot({
+        isActive: active,
+        credentialKind,
+        name,
+        description,
+        imageUrl: finalImageUrl,
+        identifierPrefix,
+        completionPct: triggerRule.completion_pct,
+        requireAssignmentPass,
+        minAssignmentScore: triggerRule.min_assignment_score,
+      });
       toast.success(t("courseEdit.ocb.saved"));
-      await load();
       return true;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("courseEdit.ocb.saveFailed"));
@@ -412,6 +427,7 @@ export function CourseOcbCredentialSection({
   // roll the toggle back to ON so UI and DB stay in sync.
   const handleToggleChange = async (value: boolean) => {
     setIsActive(value);
+    if (value) setPeekExpanded(false);
     if (!value) {
       setIsDeactivating(true);
       const saved = await handleSave(false);
@@ -425,6 +441,26 @@ export function CourseOcbCredentialSection({
       <div className="flex items-center gap-2 text-sm text-foreground-muted py-4">
         <Loader2 className="size-4 animate-spin" aria-hidden />
         {t("courseEdit.ocb.loading")}
+      </div>
+    );
+  }
+
+  if (credentialQuery.error) {
+    return (
+      <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+        <p>
+          {credentialQuery.error instanceof Error
+            ? credentialQuery.error.message
+            : t("courseEdit.ocb.loadFailed")}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3"
+          onClick={() => void credentialQuery.refetch()}
+        >
+          {t("common.retry", { defaultValue: "Thử lại" })}
+        </Button>
       </div>
     );
   }

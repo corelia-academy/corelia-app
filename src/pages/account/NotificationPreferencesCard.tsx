@@ -1,24 +1,16 @@
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import {
+  accountKeys,
+  notificationPreferencesQueryOptions,
+} from "@/features/account/accountQueries";
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  saveNotificationPreferences,
+  type NotificationPreferences,
+} from "@/lib/notificationPreferences";
 import { useAuth } from "@/stores/authStore";
-
-type Prefs = {
-  email_course_blast: boolean;
-  email_track_blast: boolean;
-  email_learning_reminders: boolean;
-  in_app_course_blast: boolean;
-  in_app_track_blast: boolean;
-};
-
-const DEFAULT_PREFS: Prefs = {
-  email_course_blast: true,
-  email_track_blast: true,
-  email_learning_reminders: true,
-  in_app_course_blast: true,
-  in_app_track_blast: true,
-};
 
 function Toggle({
   id,
@@ -68,60 +60,33 @@ function Toggle({
 export function NotificationPreferencesCard() {
   const { t } = useTranslation("account");
   const { user } = useAuth();
-  const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const preferencesQuery = useQuery(notificationPreferencesQueryOptions(user?.id));
+  const prefs = preferencesQuery.data ?? DEFAULT_NOTIFICATION_PREFERENCES;
+  const saveMutation = useMutation({
+    mutationFn: (next: NotificationPreferences) =>
+      saveNotificationPreferences(user!.id, next),
+    onMutate: async (next) => {
+      if (!user?.id) return undefined;
+      const key = accountKeys.notificationPreferences(user.id);
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<NotificationPreferences>(key);
+      queryClient.setQueryData(key, next);
+      return { key, previous };
+    },
+    onError: (error, _next, context) => {
+      if (context) queryClient.setQueryData(context.key, context.previous);
+      toast.error(error instanceof Error ? error.message : "Lỗi khi lưu tuỳ chọn");
+    },
+    onSuccess: () => toast.success(t("settings.notifications.saved")),
+  });
 
-  useEffect(() => {
-    if (!user?.id) return;
-    let cancelled = false;
-    void supabase
-      .from("notification_preferences")
-      .select("email_course_blast, email_track_blast, email_learning_reminders, in_app_course_blast, in_app_track_blast")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (cancelled) return;
-        if (data) {
-          setPrefs({
-            email_course_blast: data.email_course_blast ?? true,
-            email_track_blast: data.email_track_blast ?? true,
-            email_learning_reminders: data.email_learning_reminders ?? true,
-            in_app_course_blast: data.in_app_course_blast ?? true,
-            in_app_track_blast: data.in_app_track_blast ?? true,
-          });
-        }
-        setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
-
-  async function save(next: Prefs) {
-    if (!user?.id) return;
-    setPrefs(next);
-    setSaving(true);
-    try {
-      const { error } = await supabase.from("notification_preferences").upsert(
-        { user_id: user.id, ...next, updated_at: new Date().toISOString() },
-        { onConflict: "user_id" },
-      );
-      if (error) throw new Error(error.message);
-      toast.success(t("settings.notifications.saved"));
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Lỗi khi lưu tuỳ chọn");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function toggle(key: keyof Prefs) {
+  function toggle(key: keyof NotificationPreferences) {
     const next = { ...prefs, [key]: !prefs[key] };
-    void save(next);
+    saveMutation.mutate(next);
   }
 
-  if (loading) return null;
+  if (preferencesQuery.isPending) return null;
 
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4">
@@ -136,32 +101,32 @@ export function NotificationPreferencesCard() {
         <Toggle
           id="pref-email-learning"
           checked={prefs.email_learning_reminders}
-          onChange={() => !saving && toggle("email_learning_reminders")}
+          onChange={() => !saveMutation.isPending && toggle("email_learning_reminders")}
           label={t("settings.notifications.emailLearningReminders")}
           description={t("settings.notifications.emailLearningRemindersDesc")}
         />
         <Toggle
           id="pref-email-course"
           checked={prefs.email_course_blast}
-          onChange={() => !saving && toggle("email_course_blast")}
+          onChange={() => !saveMutation.isPending && toggle("email_course_blast")}
           label={t("settings.notifications.emailCourseBlast")}
         />
         <Toggle
           id="pref-email-track"
           checked={prefs.email_track_blast}
-          onChange={() => !saving && toggle("email_track_blast")}
+          onChange={() => !saveMutation.isPending && toggle("email_track_blast")}
           label={t("settings.notifications.emailTrackBlast")}
         />
         <Toggle
           id="pref-inapp-course"
           checked={prefs.in_app_course_blast}
-          onChange={() => !saving && toggle("in_app_course_blast")}
+          onChange={() => !saveMutation.isPending && toggle("in_app_course_blast")}
           label={t("settings.notifications.inAppCourseBlast")}
         />
         <Toggle
           id="pref-inapp-track"
           checked={prefs.in_app_track_blast}
-          onChange={() => !saving && toggle("in_app_track_blast")}
+          onChange={() => !saveMutation.isPending && toggle("in_app_track_blast")}
           label={t("settings.notifications.inAppTrackBlast")}
         />
       </div>

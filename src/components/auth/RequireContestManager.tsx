@@ -4,8 +4,8 @@ import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
 import { useAuth } from "@/stores/authStore";
 import { canAccessContestManagementCatalog } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
-import { hasHackathonCoOrganizerAccess } from "@/lib/hackathons";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { hackathonCoOrganizerAccessQueryOptions } from "@/features/hackathons/hackathonQueries";
 
 interface RequireContestManagerProps {
   children: React.ReactNode;
@@ -27,63 +27,16 @@ export function RequireContestManager({
   const { isAuthenticated, authInitialized, profileLoading, profile, user, refreshProfile } =
     useAuth();
   const location = useLocation();
-  const [coOrganizerAllowed, setCoOrganizerAllowed] = useState(false);
-  const [checkingScoped, setCheckingScoped] = useState(false);
   const roleAllowed = canAccessContestManagementCatalog(profile);
-
-  useEffect(() => {
-    if (!authInitialized || !isAuthenticated || profileLoading) return;
-    let cancelled = false;
-
-    if (!profile?.email) {
-      queueMicrotask(() => {
-        if (cancelled) return;
-        setCoOrganizerAllowed(false);
-        setCheckingScoped(false);
-      });
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    if (roleAllowed) {
-      queueMicrotask(() => {
-        if (cancelled) return;
-        setCoOrganizerAllowed(true);
-        setCheckingScoped(false);
-      });
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    queueMicrotask(() => {
-      if (cancelled) return;
-      setCheckingScoped(true);
-    });
-    void hasHackathonCoOrganizerAccess(profile.email)
-      .then((ok) => {
-        queueMicrotask(() => {
-          if (cancelled) return;
-          setCoOrganizerAllowed(ok);
-        });
-      })
-      .finally(() => {
-        queueMicrotask(() => {
-          if (cancelled) return;
-          setCheckingScoped(false);
-        });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    authInitialized,
-    isAuthenticated,
-    profileLoading,
-    profile?.email,
-    roleAllowed,
-  ]);
+  const scopedAccessQuery = useQuery(
+    hackathonCoOrganizerAccessQueryOptions(
+      user?.id,
+      profile?.email,
+      authInitialized && isAuthenticated && !profileLoading && !roleAllowed,
+    ),
+  );
+  const coOrganizerAllowed = scopedAccessQuery.data === true;
+  const checkingScoped = scopedAccessQuery.isPending && scopedAccessQuery.isEnabled;
 
   if (!authInitialized) {
     return <AuthGateLoading />;
@@ -116,4 +69,3 @@ export function RequireContestManager({
 
   return <>{children}</>;
 }
-

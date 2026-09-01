@@ -1,7 +1,7 @@
 import { invokeCoreliaApi, callCoreliaApi } from "@/lib/coreliaEdgeApi";
 import i18n from "@/i18n";
 import { supabase } from "@/lib/supabase";
-import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
+import { removeUndefinedFields } from "@/lib/utils";
 import { deleteStorageObjectByPath } from "@/lib/storage";
 import { getProfileForUser } from "@/lib/profile";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
@@ -45,20 +45,6 @@ const PUBLIC_CONTEST_STATUSES: Contest["status"][] = ["published", "running", "e
 
 /** PostgREST row columns needed to build `Contest` via `contestFromRow` (avoids `select("*")`). */
 const CONTEST_ROW_SELECT = "id,status,created_at,updated_at,document" as const;
-
-const contestListCache = makeTTLCache<Contest[]>(2 * 60 * 1000);
-
-/** Same-bucket concurrent `listContests` calls share one in-flight fetch (race-safe vs TTL cache). */
-const listContestsInFlight = new Map<string, Promise<Contest[]>>();
-
-/** `ContestPublicLayout` + detail payload can overlap; collapse duplicate `getContest` rows. */
-const getContestByIdInFlight = new Map<string, Promise<Contest | null>>();
-const getContestBySlugInFlight = new Map<string, Promise<Contest | null>>();
-
-const LOCALE_CACHE_TTL = 5 * 60 * 1000;
-const hackathonLocaleCache = makeTTLCache<ContestI18nContent | null>(LOCALE_CACHE_TTL);
-/** Dedup concurrent fetches for the same key — separate from TTL so TTL starts on resolution. */
-const hackathonLocaleInFlight = new Map<string, Promise<ContestI18nContent | null>>();
 
 function sanitizeSlug(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -108,37 +94,23 @@ function applyContestLocaleContent(contest: Contest, localized: ContestI18nConte
 export async function getHackathonLocaleContent(
   contestId: string,
   locale: Locale,
+  signal?: AbortSignal,
 ): Promise<ContestI18nContent | null> {
   const normalized = normalizeContentLocale(locale);
-  const key = `${contestId}:${normalized}`;
-
-  const cached = hackathonLocaleCache.get(key);
-  if (cached) return cached;
-
-  const inflight = hackathonLocaleInFlight.get(key);
-  if (inflight) return inflight;
-
-  const promise = (async () => {
-    try {
-      const { data, error } = await supabase
-        .from("hackathon_locales")
-        .select("data")
-        .eq("hackathon_id", contestId)
-        .eq("locale", normalized)
-        .maybeSingle();
-      const result: ContestI18nContent | null =
-        error || !data?.data
-          ? null
-          : { ...(data.data as ContestI18nContent), updated_at: (data.data as ContestI18nContent).updated_at };
-      hackathonLocaleCache.set(key, Promise.resolve(result));
-      return result;
-    } finally {
-      hackathonLocaleInFlight.delete(key);
-    }
-  })();
-
-  hackathonLocaleInFlight.set(key, promise);
-  return promise;
+  let request = supabase
+    .from("hackathon_locales")
+    .select("data")
+    .eq("hackathon_id", contestId)
+    .eq("locale", normalized);
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request.maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.data
+    ? {
+        ...(data.data as ContestI18nContent),
+        updated_at: (data.data as ContestI18nContent).updated_at,
+      }
+    : null;
 }
 
 export async function getBatchHackathonLocaleContent(
@@ -150,29 +122,16 @@ export async function getBatchHackathonLocaleContent(
   const ids = Array.from(new Set(contestIds.map((v) => v.trim()).filter(Boolean)));
   if (ids.length === 0) return result;
 
-  const uncachedIds: string[] = [];
-  for (const id of ids) {
-    const cached = hackathonLocaleCache.get(`${id}:${normalized}`);
-    if (cached) {
-      const content = await cached;
-      if (content) result.set(id, content);
-    } else {
-      uncachedIds.push(id);
-    }
-  }
-  if (uncachedIds.length === 0) return result;
-
   const { data, error } = await supabase
     .from("hackathon_locales")
     .select("hackathon_id,data")
-    .in("hackathon_id", uncachedIds)
+    .in("hackathon_id", ids)
     .eq("locale", normalized);
 
   if (!error && data) {
     for (const row of data as Array<{ hackathon_id: string; data: unknown }>) {
       if (!row.data) continue;
       const content = row.data as ContestI18nContent;
-      hackathonLocaleCache.set(`${row.hackathon_id}:${normalized}`, Promise.resolve(content));
       result.set(row.hackathon_id, content);
     }
   }
@@ -195,7 +154,6 @@ export async function setHackathonLocaleContent(
     { onConflict: "hackathon_id,locale" },
   );
   if (error) throw new Error(error.message);
-  hackathonLocaleCache.delete(`${contestId}:${normalized}`);
 }
 
 function sanitizeEmail(email: string): string {
@@ -584,17 +542,6 @@ export async function listContests(
   }
   const profile = user ? await getProfileForUser(user).catch(() => null) : null;
   const isManager = canManageContests(profile);
-  const visibilityCacheKey = isManager
-    ? `manager:${user?.id ?? "unknown"}`
-    : "public";
-  const cacheKey = `${visibilityCacheKey}:${normalizedUiLocale}`;
-
-  const inflight = listContestsInFlight.get(cacheKey);
-  if (inflight) return inflight;
-
-  const cached = contestListCache.get(cacheKey);
-  if (cached) return cached;
-
   const promise = (async () => {
     let q = supabase
       .from("hackathons")
@@ -631,19 +578,27 @@ export async function listContests(
     });
   })();
 
-  listContestsInFlight.set(cacheKey, promise);
-  promise.finally(() => {
-    listContestsInFlight.delete(cacheKey);
-  });
-
-  contestListCache.set(cacheKey, promise);
-  promise.catch(() => contestListCache.delete(cacheKey));
   return promise;
 }
 
-export function invalidateContestListCache() {
-  contestListCache.clear();
-  listContestsInFlight.clear();
+export async function listPublicProfileContestPortfolio(
+  profileId: string,
+  includeParticipations: boolean,
+  uiLocale: string,
+) {
+  const contests = await listContests(null, uiLocale);
+  const organized = contests.filter((contest) => contest.created_by === profileId);
+  if (!includeParticipations) return { organized, participations: [] as Contest[] };
+  const { data, error } = await supabase
+    .from("contest_submissions")
+    .select("contest_id")
+    .eq("user_id", profileId);
+  if (error) throw new Error(error.message);
+  const participatedIds = new Set((data ?? []).map((row) => row.contest_id));
+  return {
+    organized,
+    participations: contests.filter((contest) => participatedIds.has(contest.id)),
+  };
 }
 
 export async function hasHackathonCoOrganizerAccess(email: string): Promise<boolean> {
@@ -664,32 +619,17 @@ export async function hasHackathonCoOrganizerAccess(email: string): Promise<bool
 
 export async function getContest(contestId: string, uiLocale?: string | null): Promise<Contest | null> {
   const normalizedUiLocale = normalizeContentLocale(uiLocale ?? i18n.resolvedLanguage ?? i18n.language);
-  const inflightKey = `${contestId}:${normalizedUiLocale}`;
-
-  const existing = getContestByIdInFlight.get(inflightKey);
-  if (existing) return existing;
-
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("hackathons")
-      .select(CONTEST_ROW_SELECT)
-      .eq("id", contestId)
-      .maybeSingle();
-    if (error || !data) return null;
-    const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
-    const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
-    const localized = await getHackathonLocaleContent(contest.id, desired);
-    return applyContestLocaleContent(contest, localized);
-  })();
-
-  getContestByIdInFlight.set(inflightKey, promise);
-  promise.finally(() => {
-    if (getContestByIdInFlight.get(inflightKey) === promise) {
-      getContestByIdInFlight.delete(inflightKey);
-    }
-  });
-
-  return promise;
+  const { data, error } = await supabase
+    .from("hackathons")
+    .select(CONTEST_ROW_SELECT)
+    .eq("id", contestId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
+  const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
+  const localized = await getHackathonLocaleContent(contest.id, desired);
+  return applyContestLocaleContent(contest, localized);
 }
 
 export async function getContestBySlug(slug: string, uiLocale?: string | null): Promise<Contest | null> {
@@ -698,31 +638,17 @@ export async function getContestBySlug(slug: string, uiLocale?: string | null): 
   const normalized = sanitizeSlug(slug);
   if (!normalized) return null;
 
-  const inflightKey = `${normalized}:${normalizedUiLocale}`;
-  const existing = getContestBySlugInFlight.get(inflightKey);
-  if (existing) return existing;
-
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("hackathons")
-      .select(CONTEST_ROW_SELECT)
-      .eq("document->>slug", normalized)
-      .maybeSingle();
-    if (error || !data) return null;
-    const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
-    const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
-    const localized = await getHackathonLocaleContent(contest.id, desired);
-    return applyContestLocaleContent(contest, localized);
-  })();
-
-  getContestBySlugInFlight.set(inflightKey, promise);
-  promise.finally(() => {
-    if (getContestBySlugInFlight.get(inflightKey) === promise) {
-      getContestBySlugInFlight.delete(inflightKey);
-    }
-  });
-
-  return promise;
+  const { data, error } = await supabase
+    .from("hackathons")
+    .select(CONTEST_ROW_SELECT)
+    .eq("document->>slug", normalized)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const contest = contestFromRow(data as Parameters<typeof contestFromRow>[0]);
+  const desired = pickContentLocale(contest.i18n ?? null, normalizedUiLocale);
+  const localized = await getHackathonLocaleContent(contest.id, desired);
+  return applyContestLocaleContent(contest, localized);
 }
 
 export async function createContest(data: ContestInsert): Promise<Contest> {
@@ -781,7 +707,7 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
   return normalizeContest({ id, status, ...document } as unknown as Contest);
 }
 
-export async function updateContest(contestId: string, updates: ContestUpdate): Promise<void> {
+export async function updateContest(contestId: string, updates: ContestUpdate): Promise<Contest> {
   const { uid } = await requireContestManager();
   const { data: row, error: fetchErr } = await supabase
     .from("hackathons")
@@ -847,11 +773,14 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
   const nextDoc = { ...prevDoc, ...payload };
   const nextStatus = updates.status ?? (row.status as string);
   const now = new Date().toISOString();
-  const { error } = await supabase
+  const { data: updatedRow, error } = await supabase
     .from("hackathons")
     .update({ status: nextStatus, document: nextDoc, updated_at: now })
-    .eq("id", contestId);
+    .eq("id", contestId)
+    .select(CONTEST_ROW_SELECT)
+    .single();
   if (error) throw new Error(error.message);
+  return contestFromRow(updatedRow as Parameters<typeof contestFromRow>[0]);
 }
 
 export async function deleteContest(contestId: string): Promise<void> {

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { fetchProjectInviteDisplayContextByProjectIds } from "@/lib/notificationInviteContext";
 
 export type UserNotificationRow = {
   id: string;
@@ -139,9 +140,6 @@ export async function peekProjectInviteByToken(
   let hackathonHref: string | null = null;
   if (data.project_id) {
     try {
-      const { fetchProjectInviteDisplayContextByProjectIds } = await import(
-        "@/lib/notificationInviteContext"
-      );
       const ctx = await fetchProjectInviteDisplayContextByProjectIds([data.project_id]);
       projectTitle = ctx[data.project_id]?.projectTitle ?? null;
       hackathonHref = ctx[data.project_id]?.hackathonHref ?? null;

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, ExternalLink, Loader2, SearchX, ShieldX } from "lucide-react";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { invokeVerifyCertificate, type VerifiedCertificate } from "@/lib/certificatesEdge";
+import { verifyCertificateQueryOptions } from "@/features/credentials/credentialQueries";
 import { openCampusCredentialExplorerUrl } from "@/lib/credentialIssuances";
 import { intlLocale } from "@/lib/intl";
 import { renderCertificateBlob } from "@/pages/achievements/utils/renderCertificate";
@@ -31,13 +32,7 @@ export function VerifyCertificatePage() {
   const { code: codeParam } = useParams();
   const code = (codeParam ?? "").trim();
 
-  // Tagged with the code it belongs to, so status/result can be derived rather than
-  // reset from inside an effect when the URL changes.
-  const [fetched, setFetched] = useState<{
-    code: string;
-    status: Status;
-    result: VerifiedCertificate | null;
-  }>({ code: "", status: "idle", result: null });
+  const verifyQuery = useQuery(verifyCertificateQueryOptions(code));
   const [input, setInput] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageZoomOpen, setImageZoomOpen] = useState(false);
@@ -64,30 +59,18 @@ export function VerifyCertificatePage() {
     return () => window.removeEventListener("resize", measureImage);
   }, []);
 
-  const settled = fetched.code === code;
-  const status: Status = !code ? "idle" : settled ? fetched.status : "loading";
-  const result = settled ? fetched.result : null;
-
-  useEffect(() => {
-    if (!code) return;
-    let cancelled = false;
-    invokeVerifyCertificate(code)
-      .then((res) => {
-        if (cancelled) return;
-        const next: Status = res.status === "valid"
+  const result = verifyQuery.data ?? null;
+  const status: Status = !code
+    ? "idle"
+    : verifyQuery.isPending
+      ? "loading"
+      : verifyQuery.isError
+        ? "error"
+        : result?.status === "valid"
           ? "valid"
-          : res.status === "revoked"
+          : result?.status === "revoked"
             ? "revoked"
             : "notfound";
-        setFetched({ code, status: next, result: res });
-      })
-      .catch(() => {
-        if (!cancelled) setFetched({ code, status: "error", result: null });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [code]);
 
   // Re-render the artifact from trusted data once we have a verified result.
   useEffect(() => {

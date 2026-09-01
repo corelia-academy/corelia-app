@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, NavLink, useLocation } from "react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -25,29 +26,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { supabase } from "@/lib/supabase";
 import { BetaAnnouncementBanner } from "@/components/layouts/BetaAnnouncementBanner";
-
-type SearchEntityType =
-  | "project"
-  | "hackathon"
-  | "course"
-  | "career_track"
-  | "profile";
-
-type SearchResultRow = {
-  entity_type: SearchEntityType;
-  entity_id: string;
-  title: string;
-  subtitle: string | null;
-  href: string;
-  rank: number;
-};
-
-type TrendingSearchRow = {
-  query: string;
-  searches: number;
-};
+import {
+  searchResultsQueryOptions,
+  trendingSearchesQueryOptions,
+} from "@/features/search/searchQueries";
+import { logSearchQuery } from "@/lib/search";
+import { prefetchRouteChunk } from "@/lib/routePrefetch";
 
 const RECENT_SEARCHES_KEY = "corelia.recentSearches.v1";
 const MAX_RECENT_SEARCHES = 8;
@@ -109,16 +94,23 @@ export default function Header() {
   const [ocConnectLoading, setOcConnectLoading] = useState(false);
   const [ocConnectError, setOcConnectError] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
+  const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [suggestions, setSuggestions] = useState<SearchResultRow[]>([]);
-  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
-  const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
-  const [trending, setTrending] = useState<TrendingSearchRow[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>(() =>
     readRecentSearches(),
   );
   const searchWrapRef = useRef<HTMLDivElement | null>(null);
-  const latestReqIdRef = useRef(0);
+  const trendingQuery = useQuery(trendingSearchesQueryOptions());
+  const suggestionsQuery = useQuery(
+    searchResultsQueryOptions(debouncedSearchText, MAX_SUGGESTIONS, searchOpen),
+  );
+  const logSearchMutation = useMutation({ mutationFn: logSearchQuery });
+  const trending = trendingQuery.data ?? [];
+  const suggestions = suggestionsQuery.data ?? [];
+  const suggestionsLoading = Boolean(debouncedSearchText.trim()) && suggestionsQuery.isFetching;
+  const suggestionsError = suggestionsQuery.error instanceof Error
+    ? suggestionsQuery.error.message
+    : suggestionsQuery.error ? t("search.errors.loadFailed") : null;
 
   const metaName =
     typeof user?.user_metadata?.full_name === "string"
@@ -197,7 +189,7 @@ export default function Header() {
         icon: <Settings className="mr-2 size-4 shrink-0" aria-hidden />,
       },
     ],
-    [profile?.id, profile?.ocid, profile?.role, profile?.username, t, tAccount],
+    [profile, t, tAccount],
   );
 
   const ocConnectDisabled = useMemo(() => {
@@ -246,65 +238,9 @@ export default function Header() {
   }, [searchOpen]);
 
   useEffect(() => {
-    let cancelled = false;
-    async function loadTrending() {
-      try {
-        const { data, error } = await supabase.rpc("list_trending_searches", {
-          p_limit: 8,
-        });
-        if (error) throw new Error(error.message);
-        if (cancelled) return;
-        setTrending((data ?? []) as TrendingSearchRow[]);
-      } catch {
-        if (!cancelled) setTrending([]);
-      }
-    }
-    void loadTrending();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    const q = searchText.trim();
-    setRecentSearches(readRecentSearches());
-    if (!searchOpen) return;
-    if (!q) {
-      setSuggestions([]);
-      setSuggestionsLoading(false);
-      setSuggestionsError(null);
-      return;
-    }
-
-    const reqId = ++latestReqIdRef.current;
-    setSuggestionsLoading(true);
-    setSuggestionsError(null);
-
-    const handle = window.setTimeout(async () => {
-      try {
-        const { data, error } = await supabase.rpc("search_public", {
-          p_query: q,
-          p_limit: MAX_SUGGESTIONS,
-          p_offset: 0,
-        });
-        if (error) throw new Error(error.message);
-        if (latestReqIdRef.current !== reqId) return;
-        setSuggestions((data ?? []) as SearchResultRow[]);
-      } catch (e) {
-        if (latestReqIdRef.current !== reqId) return;
-        setSuggestions([]);
-        setSuggestionsError(
-          e instanceof Error ? e.message : t("search.errors.loadFailed"),
-        );
-      } finally {
-        if (latestReqIdRef.current === reqId) setSuggestionsLoading(false);
-      }
-    }, 180);
-
-    return () => {
-      window.clearTimeout(handle);
-    };
-  }, [searchOpen, searchText, t]);
+    const handle = window.setTimeout(() => setDebouncedSearchText(searchText.trim()), 180);
+    return () => window.clearTimeout(handle);
+  }, [searchText]);
 
   async function handleSearchSubmit(query: string) {
     const q = query.trim();
@@ -314,7 +250,7 @@ export default function Header() {
     setSearchOpen(false);
     navigate(`/search?q=${encodeURIComponent(q)}`);
     if (isAuthenticated) {
-      await supabase.rpc("log_search_query", { p_query: q });
+      logSearchMutation.mutate(q);
     }
   }
 
@@ -329,6 +265,8 @@ export default function Header() {
           <NavLink
             to="/"
             className="flex h-10 items-center gap-2 text-sm font-medium"
+            onPointerEnter={() => prefetchRouteChunk("/")}
+            onFocus={() => prefetchRouteChunk("/")}
           >
             <img
               src={
@@ -559,6 +497,8 @@ export default function Header() {
                     <DropdownMenuItem
                       key={item.to}
                       onClick={() => navigate(item.to)}
+                      onPointerEnter={() => prefetchRouteChunk(item.to)}
+                      onFocus={() => prefetchRouteChunk(item.to)}
                       className="min-h-11 text-sm leading-relaxed"
                     >
                       <div className="pl-2">{item.icon}</div>
@@ -615,6 +555,8 @@ export default function Header() {
               to="/login"
               state={{ from: location }}
               className="inline-flex items-center rounded-full border border-border bg-surface-base px-3 py-1.5 text-sm text-foreground transition-colors duration-150 hover:bg-surface-raised"
+              onPointerEnter={() => prefetchRouteChunk("/login")}
+              onFocus={() => prefetchRouteChunk("/login")}
             >
               {t("tabs.signIn")}
             </NavLink>

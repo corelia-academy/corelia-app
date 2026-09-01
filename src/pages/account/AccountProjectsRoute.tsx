@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Copy, Languages, Save, UserRoundCheck, UserRoundPlus } from "lucide-react";
@@ -8,13 +9,17 @@ import { Input } from "@/components/ui/input";
 import type { MyProjectEntry } from "@/lib/projectCollaboration";
 import { setMyProjectCollaborationVisibility } from "@/lib/projectCollaboration";
 import {
-  getProjectLocaleContent,
-  listMyProjectsForAccount,
   setProjectLocaleContent,
   updateProjectI18n,
 } from "@/lib/projects";
 import type { Locale } from "@/types/database";
 import type { EntityI18nConfig } from "@/types/entityLocales";
+import {
+  accountKeys,
+  accountProjectLocaleQueryOptions,
+  accountProjectsQueryOptions,
+} from "@/features/account/accountQueries";
+import { useAuth } from "@/stores/authStore";
 
 function normalizeLocale(value: string | null | undefined): Locale {
   return value === "en" ? "en" : "vi";
@@ -33,13 +38,15 @@ function configSupported(config: EntityI18nConfig | null | undefined): Locale[] 
 
 export function AccountProjectsRoute() {
   const { t } = useTranslation(["common", "account"]);
-  const [entries, setEntries] = useState<MyProjectEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const projectsQuery = useQuery(accountProjectsQueryOptions(user?.id));
+  const entries = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const effectiveSelectedProjectId = selectedProjectId || entries[0]?.project.id || "";
   const selectedEntry = useMemo(
-    () => entries.find((entry) => entry.project.id === selectedProjectId) ?? null,
-    [entries, selectedProjectId],
+    () => entries.find((entry) => entry.project.id === effectiveSelectedProjectId) ?? null,
+    [effectiveSelectedProjectId, entries],
   );
   const selected = selectedEntry?.project ?? null;
   const selectedAccess = selectedEntry?.access ?? null;
@@ -56,31 +63,7 @@ export function AccountProjectsRoute() {
 
   const [translation, setTranslation] = useState({ title: "", summary: "" });
   const [loadedAt, setLoadedAt] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [savingConfig, setSavingConfig] = useState(false);
-  const [savingVisibility, setSavingVisibility] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    void listMyProjectsForAccount()
-      .then((rows) => {
-        if (cancelled) return;
-        setEntries(rows);
-        setSelectedProjectId(rows[0]?.project.id ?? "");
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : t("projects.errors.loadFailed"));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [t]);
 
   useEffect(() => {
     if (!selected) return;
@@ -96,95 +79,108 @@ export function AccountProjectsRoute() {
     setTargetLocale(normalized.primary_content_locale === "vi" ? "en" : "vi");
   }, [selected?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const localeQuery = useQuery(
+    accountProjectLocaleQueryOptions(
+      user?.id,
+      selected?.id,
+      targetLocale,
+      selectedIsOwner && targetLocale !== primaryLocale,
+    ),
+  );
+
   useEffect(() => {
     if (!selected || !selectedIsOwner) return;
-    let cancelled = false;
     setSaveError(null);
-    if (targetLocale === primaryLocale) {
-      setTranslation({ title: selected.title ?? "", summary: selected.summary ?? "" });
-      setLoadedAt(null);
-      return;
-    }
-    void (async () => {
-      try {
-        const localized = await getProjectLocaleContent(selected.id, targetLocale);
-        if (cancelled) return;
-        setTranslation({
-          title: String(localized?.title ?? ""),
-          summary: String(localized?.summary ?? ""),
+    const localized = targetLocale === primaryLocale ? null : localeQuery.data;
+    setTranslation({
+      title: String(localized?.title ?? (targetLocale === primaryLocale ? selected.title : "") ?? ""),
+      summary: String(localized?.summary ?? (targetLocale === primaryLocale ? selected.summary : "") ?? ""),
+    });
+    setLoadedAt(localized?.updated_at ?? null);
+  }, [localeQuery.data, primaryLocale, selected, selectedIsOwner, targetLocale]);
+
+  const saveTranslationMutation = useMutation({
+    mutationFn: async () => {
+      if (!selected) return null;
+      return setProjectLocaleContent(selected.id, targetLocale, {
+        title: translation.title.trim() || undefined,
+        summary: translation.summary.trim() || null,
+      });
+    },
+    onSuccess: () => {
+      setLoadedAt(new Date().toISOString());
+      if (user?.id && selected) {
+        void queryClient.invalidateQueries({
+          queryKey: accountKeys.projectLocale(user.id, selected.id, targetLocale),
         });
-        setLoadedAt(localized?.updated_at ?? null);
-      } catch (e) {
-        if (!cancelled) setSaveError(e instanceof Error ? e.message : t("projects.errors.loadFailed"));
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [primaryLocale, selected, selectedIsOwner, t, targetLocale]);
+    },
+  });
+  const saveConfigMutation = useMutation({
+    mutationFn: async (normalized: EntityI18nConfig) => {
+      if (!selected) return;
+      await updateProjectI18n(selected.id, normalized);
+      return normalized;
+    },
+    onSuccess: (normalized) => {
+      if (normalized) setI18nDraft(normalized);
+      if (user?.id) void queryClient.invalidateQueries({ queryKey: accountKeys.projects(user.id) });
+    },
+  });
+  const visibilityMutation = useMutation({
+    mutationFn: async (nextValue: boolean) => {
+      if (!selected) return nextValue;
+      await setMyProjectCollaborationVisibility(selected.id, nextValue);
+      return nextValue;
+    },
+    onSuccess: (nextValue) => {
+      if (!user?.id || !selected) return;
+      queryClient.setQueryData<MyProjectEntry[]>(
+        accountKeys.projects(user.id),
+        (previous = []) => previous.map((entry) =>
+          entry.project.id === selected.id
+            ? { ...entry, access: { ...entry.access, show_in_portfolio: nextValue } }
+            : entry,
+        ),
+      );
+    },
+  });
 
   async function handleSaveTranslation() {
     if (!selected || !selectedIsOwner) return;
     if (!targetEnabled || targetLocale === primaryLocale) return;
-    setSaving(true);
     setSaveError(null);
     try {
-      await setProjectLocaleContent(selected.id, targetLocale, {
-        title: translation.title.trim() || undefined,
-        summary: translation.summary.trim() || null,
-      });
-      setLoadedAt(new Date().toISOString());
+      await saveTranslationMutation.mutateAsync();
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : t("projects.errors.loadFailed"));
-    } finally {
-      setSaving(false);
-    }
+    } finally { /* mutation owns pending state */ }
   }
 
   async function handleSaveConfig() {
     if (!selected || !selectedIsOwner) return;
-    setSavingConfig(true);
     setSaveError(null);
     try {
       const normalized: EntityI18nConfig = {
         supported_locales: configSupported(i18nDraft),
         primary_content_locale: configPrimary(i18nDraft),
       };
-      await updateProjectI18n(selected.id, normalized);
-      setI18nDraft(normalized);
+      await saveConfigMutation.mutateAsync(normalized);
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : t("projects.errors.loadFailed"));
-    } finally {
-      setSavingConfig(false);
-    }
+    } finally { /* mutation owns pending state */ }
   }
 
   async function handlePortfolioVisibilityChange(nextValue: boolean) {
     if (!selected || !selectedAccess || selectedIsOwner) return;
-    setSavingVisibility(true);
     setSaveError(null);
     try {
-      await setMyProjectCollaborationVisibility(selected.id, nextValue);
-      setEntries((prev) =>
-        prev.map((entry) =>
-          entry.project.id === selected.id
-            ? {
-                ...entry,
-                access: {
-                  ...entry.access,
-                  show_in_portfolio: nextValue,
-                },
-              }
-            : entry,
-        ),
-      );
+      await visibilityMutation.mutateAsync(nextValue);
     } catch (e) {
       setSaveError(
         e instanceof Error ? e.message : t("account:projects.errors.visibilityFailed"),
       );
-    } finally {
-      setSavingVisibility(false);
-    }
+    } finally { /* mutation owns pending state */ }
   }
 
   function copyFromPrimary() {
@@ -192,11 +188,11 @@ export function AccountProjectsRoute() {
     setTranslation({ title: selected.title ?? "", summary: selected.summary ?? "" });
   }
 
-  if (loading) {
+  if (projectsQuery.isPending) {
     return <div className="text-sm text-foreground-muted">{t("status.loading")}</div>;
   }
-  if (error) {
-    return <div className="text-sm text-destructive">{error}</div>;
+  if (projectsQuery.error) {
+    return <div className="text-sm text-destructive">{projectsQuery.error instanceof Error ? projectsQuery.error.message : t("projects.errors.loadFailed")}</div>;
   }
 
   return (
@@ -226,7 +222,7 @@ export function AccountProjectsRoute() {
                     type="button"
                     onClick={() => setSelectedProjectId(project.id)}
                     className={`rounded-md border px-3 py-2 text-left text-sm ${
-                      project.id === selectedProjectId
+                      project.id === effectiveSelectedProjectId
                         ? "border-primary/30 bg-primary-muted text-primary"
                         : "border-border-subtle bg-surface-base text-foreground-muted hover:bg-surface-raised hover:text-foreground"
                     }`}
@@ -270,7 +266,7 @@ export function AccountProjectsRoute() {
                           type="checkbox"
                           className="mt-0.5"
                           checked={Boolean(selectedAccess.show_in_portfolio)}
-                          disabled={savingVisibility}
+                          disabled={visibilityMutation.isPending}
                           onChange={(e) =>
                             void handlePortfolioVisibilityChange(e.target.checked)
                           }
@@ -349,10 +345,10 @@ export function AccountProjectsRoute() {
                       <Button
                         type="button"
                         variant="outline"
-                        disabled={savingConfig}
+                        disabled={saveConfigMutation.isPending}
                         onClick={() => void handleSaveConfig()}
                       >
-                        {savingConfig
+                        {saveConfigMutation.isPending
                           ? t("detail.labels.saving", { defaultValue: "Saving…" })
                           : t("account:projects.saveSettings")}
                       </Button>
@@ -393,11 +389,11 @@ export function AccountProjectsRoute() {
                         </Button>
                         <Button
                           type="button"
-                          disabled={!targetEnabled || targetLocale === primaryLocale || saving}
+                          disabled={!targetEnabled || targetLocale === primaryLocale || saveTranslationMutation.isPending}
                           onClick={() => void handleSaveTranslation()}
                         >
                           <Save className="size-4" aria-hidden />
-                          {saving
+                          {saveTranslationMutation.isPending
                             ? t("account:projects.savingTranslation")
                             : t("account:projects.saveTranslation")}
                         </Button>

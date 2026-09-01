@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import { makeTTLCache } from "@/lib/utils";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import type {
   CareerTrack,
@@ -8,19 +7,6 @@ import type {
 } from "@/types/career";
 import type { Course } from "@/types/courses";
 import type { Locale, PublicProfile } from "@/types/database";
-
-const CATALOG_CACHE_TTL = 3 * 60 * 1000;
-const tracksListCache = makeTTLCache<CareerTrackDetail[]>(CATALOG_CACHE_TTL);
-const trackBySlugCache = makeTTLCache<CareerTrackDetail | null>(CATALOG_CACHE_TTL);
-
-const LOCALE_CACHE_TTL = 5 * 60 * 1000;
-const careerTrackLocaleCache = makeTTLCache<Partial<CareerTrack> | null>(LOCALE_CACHE_TTL);
-
-export function invalidateCareerTracksCache(): void {
-  tracksListCache.clear();
-  trackBySlugCache.clear();
-  careerTrackLocaleCache.clear();
-}
 
 type CareerTrackRow = CareerTrack;
 type CareerTrackCourseRow = {
@@ -169,26 +155,14 @@ export async function getCareerTrackLocaleContent(
   locale: Locale,
 ): Promise<Partial<CareerTrack> | null> {
   const normalized = normalizeContentLocale(locale);
-  const key = `${trackId}:${normalized}`;
-  const existing = careerTrackLocaleCache.get(key);
-  if (existing) return existing;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("career_track_locales")
-      .select("data")
-      .eq("career_track_id", trackId)
-      .eq("locale", normalized)
-      .maybeSingle();
-    if (error || !data?.data) return null;
-    return data.data as Partial<CareerTrack>;
-  })();
-  careerTrackLocaleCache.set(key, promise);
-  try {
-    return await promise;
-  } catch (e) {
-    careerTrackLocaleCache.delete(key);
-    throw e;
-  }
+  const { data, error } = await supabase
+    .from("career_track_locales")
+    .select("data")
+    .eq("career_track_id", trackId)
+    .eq("locale", normalized)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.data ? data.data as Partial<CareerTrack> : null;
 }
 
 export async function getBatchCareerTrackLocaleContent(
@@ -200,29 +174,16 @@ export async function getBatchCareerTrackLocaleContent(
   const ids = Array.from(new Set(trackIds.map((v) => v.trim()).filter(Boolean)));
   if (ids.length === 0) return result;
 
-  const uncachedIds: string[] = [];
-  for (const id of ids) {
-    const cached = careerTrackLocaleCache.get(`${id}:${normalized}`);
-    if (cached) {
-      const content = await cached;
-      if (content) result.set(id, content);
-    } else {
-      uncachedIds.push(id);
-    }
-  }
-  if (uncachedIds.length === 0) return result;
-
   const { data, error } = await supabase
     .from("career_track_locales")
     .select("career_track_id,data")
-    .in("career_track_id", uncachedIds)
+    .in("career_track_id", ids)
     .eq("locale", normalized);
 
   if (!error && data) {
     for (const row of data as Array<{ career_track_id: string; data: unknown }>) {
       if (!row.data) continue;
       const content = row.data as Partial<CareerTrack>;
-      careerTrackLocaleCache.set(`${row.career_track_id}:${normalized}`, Promise.resolve(content));
       result.set(row.career_track_id, content);
     }
   }
@@ -245,59 +206,10 @@ export async function setCareerTrackLocaleContent(
     { onConflict: "career_track_id,locale" },
   );
   if (error) throw new Error(error.message);
-  careerTrackLocaleCache.delete(`${trackId}:${normalized}`);
 }
 
 export async function listCareerTracks(uiLocale?: string | null): Promise<CareerTrackDetail[]> {
   const normalizedUiLocale = normalizeContentLocale(uiLocale);
-  const cacheKey = `all:${normalizedUiLocale}`;
-
-  const cachedPromise = tracksListCache.get(cacheKey);
-  if (cachedPromise) {
-    const cached = await cachedPromise.catch(() => null);
-    if (cached) {
-      // Revalidate against DB to check for modifications or new/updated tracks from other sessions
-      const [tracksRes, localesRes] = await Promise.all([
-        supabase
-          .from("career_tracks")
-          .select("id,updated_at")
-          .eq("published", true)
-          .order("updated_at", { ascending: false }),
-        supabase
-          .from("career_track_locales")
-          .select("career_track_id,locale,data")
-          .in("career_track_id", cached.map((t) => t.id)),
-      ]);
-
-      const currentRows = tracksRes.data;
-      const localeRows = localesRes.data as Array<{ career_track_id: string; locale: string; data: unknown }> | null;
-
-      if (!tracksRes.error && !localesRes.error && currentRows && currentRows.length === cached.length) {
-        const localeMap = new Map<string, string | undefined>();
-        if (localeRows) {
-          for (const row of localeRows) {
-            const rowLocale = normalizeContentLocale(row.locale);
-            const dataObj = row.data as Record<string, unknown> | null;
-            localeMap.set(`${row.career_track_id}:${rowLocale}`, dataObj?.updated_at as string | undefined);
-          }
-        }
-
-        const isMatch = currentRows.every((row, idx) => {
-          if (row.id !== cached[idx]?.id || row.updated_at !== cached[idx]?.updated_at) {
-            return false;
-          }
-          const desired = pickContentLocale(cached[idx]?.i18n ?? null, normalizedUiLocale);
-          const currentLocaleUpdatedAt = localeMap.get(`${row.id}:${desired}`);
-          return currentLocaleUpdatedAt === (cached[idx] as Record<string, unknown>)._locale_updated_at;
-        });
-
-        if (isMatch) {
-          return cached;
-        }
-      }
-      tracksListCache.delete(cacheKey);
-    }
-  }
 
   const promise = (async () => {
     const { data, error } = await supabase
@@ -371,7 +283,6 @@ export async function listCareerTracks(uiLocale?: string | null): Promise<Career
         if (!row.data) continue;
         const normalized = normalizeContentLocale(row.locale);
         const content = row.data as Partial<CareerTrack>;
-        careerTrackLocaleCache.set(`${row.career_track_id}:${normalized}`, Promise.resolve(content));
         localeMap.set(`${row.career_track_id}:${normalized}`, content);
       }
     }
@@ -387,8 +298,6 @@ export async function listCareerTracks(uiLocale?: string | null): Promise<Career
     });
   })();
 
-  tracksListCache.set(cacheKey, promise);
-  promise.catch(() => tracksListCache.delete(cacheKey));
   return promise;
 }
 
@@ -399,44 +308,6 @@ export async function getCareerTrackBySlug(
   const normalizedUiLocale = normalizeContentLocale(uiLocale);
   const normalizedSlug = slug.trim();
   if (!normalizedSlug) return null;
-
-  const cacheKey = `slug:${normalizedSlug}:${normalizedUiLocale}`;
-  const cachedPromise = trackBySlugCache.get(cacheKey);
-  if (cachedPromise) {
-    const cached = await cachedPromise.catch(() => null);
-    if (cached) {
-      // Check if parent track or locale content was updated in another session
-      const desired = pickContentLocale(cached.i18n ?? null, normalizedUiLocale);
-      const [trackRes, localeRes] = await Promise.all([
-        supabase
-          .from("career_tracks")
-          .select("updated_at")
-          .eq("id", cached.id)
-          .maybeSingle(),
-        supabase
-          .from("career_track_locales")
-          .select("data")
-          .eq("career_track_id", cached.id)
-          .eq("locale", desired)
-          .maybeSingle(),
-      ]);
-
-      const trackUpdatedAt = trackRes.data?.updated_at;
-      const localeDataObj = localeRes.data?.data as Record<string, unknown> | null;
-      const localeUpdatedAt = localeDataObj?.updated_at as string | undefined;
-
-      if (
-        !trackRes.error &&
-        !localeRes.error &&
-        trackUpdatedAt === cached.updated_at &&
-        localeUpdatedAt === (cached as Record<string, unknown>)._locale_updated_at
-      ) {
-        return cached;
-      }
-      trackBySlugCache.delete(cacheKey);
-      careerTrackLocaleCache.delete(`${cached.id}:${desired}`);
-    }
-  }
 
   const promise = (async () => {
     const { data, error } = await supabase
@@ -500,8 +371,6 @@ export async function getCareerTrackBySlug(
     } as CareerTrackDetail;
   })();
 
-  trackBySlugCache.set(cacheKey, promise);
-  promise.catch(() => trackBySlugCache.delete(cacheKey));
   return promise;
 }
 
@@ -655,7 +524,6 @@ export async function createInstructorCareerTrack(
 
   if (error) throw new Error(error.message);
 
-  invalidateCareerTracksCache();
   const track = data as unknown as CareerTrackRow;
   return await computeDetail(track, []);
 }
@@ -695,7 +563,6 @@ export async function updateInstructorCareerTrack(
 
   if (error) throw new Error(error.message);
 
-  invalidateCareerTracksCache();
 }
 
 export async function setInstructorCareerTrackPublished(
@@ -763,5 +630,4 @@ export async function setInstructorCareerTrackCourses(
     if (error) throw new Error(error.message);
   }
 
-  invalidateCareerTracksCache();
 }

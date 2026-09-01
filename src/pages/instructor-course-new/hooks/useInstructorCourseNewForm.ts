@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -16,12 +17,23 @@ import type {
   CourseOwnerType,
   SupportedCourseLocale,
 } from "@/types/courses";
+import { courseKeys } from "@/features/courses/courseQueries";
 
 export function useInstructorCourseNewForm() {
   const { t } = useTranslation("instructor");
   const { profile, user } = useAuth();
   const navigate = useNavigate();
-  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const operationMutation = useMutation({
+    mutationFn: (operation: () => Promise<unknown>) => operation(),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: courseKeys.all });
+    },
+  });
+  const saving = operationMutation.isPending;
+  async function executeWrite<T>(operation: () => Promise<T>): Promise<T> {
+    return (await operationMutation.mutateAsync(operation)) as T;
+  }
   const [uploadingThumb, setUploadingThumb] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -99,7 +111,7 @@ export function useInstructorCourseNewForm() {
       setError(t("courseNew.errors.missingTitle"));
       return;
     }
-    setSaving(true);
+    const instructorName = profile.full_name;
     setError(null);
     try {
       const sanitizedOutcomes = (form.learning_outcomes ?? [])
@@ -116,8 +128,8 @@ export function useInstructorCourseNewForm() {
         ).values(),
       ).slice(0, 20);
 
-      const course = await createCourse(
-        {
+      const course = await executeWrite(() =>
+        createCourse({
           title: form.title.trim(),
           slug:
             form.slug.trim() ||
@@ -128,7 +140,7 @@ export function useInstructorCourseNewForm() {
           short_description: form.short_description.trim() || "",
           thumbnail_url: form.thumbnail_url.trim(),
           instructor_id: profile.id,
-          instructor_name: profile.full_name,
+          instructor_name: instructorName,
           level: form.level,
           total_duration_seconds: 0,
           published: form.published,
@@ -146,25 +158,28 @@ export function useInstructorCourseNewForm() {
             subtitle_note_policy: "suggest",
           },
           owner_type: form.owner_type,
-        },
-        user ?? undefined,
+        }, user ?? undefined),
       );
 
-      await setCourseLocaleContent(course.id, form.primary_content_locale, {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        short_description: form.short_description.trim() || "",
-        learning_outcomes: sanitizedOutcomes,
-        slug: form.slug.trim() || undefined,
-      });
+      await executeWrite(() =>
+        setCourseLocaleContent(course.id, form.primary_content_locale, {
+          title: form.title.trim(),
+          description: form.description.trim(),
+          short_description: form.short_description.trim() || "",
+          learning_outcomes: sanitizedOutcomes,
+          slug: form.slug.trim() || undefined,
+        }),
+      );
 
       if (thumbnailFile) {
         setUploadingThumb(true);
         try {
-          const result = await uploadCourseThumbnail(course.id, thumbnailFile);
-          await updateCourse(course.id, {
-            thumbnail_url: result.url,
-            thumbnail_path: result.path,
+          await executeWrite(async () => {
+            const result = await uploadCourseThumbnail(course.id, thumbnailFile);
+            await updateCourse(course.id, {
+              thumbnail_url: result.url,
+              thumbnail_path: result.path,
+            });
           });
         } finally {
           setUploadingThumb(false);
@@ -177,8 +192,6 @@ export function useInstructorCourseNewForm() {
       setError(
         err instanceof Error ? err.message : t("courseNew.errors.createFailed"),
       );
-    } finally {
-      setSaving(false);
     }
   };
 

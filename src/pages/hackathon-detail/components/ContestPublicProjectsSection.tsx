@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { HackathonSectionCard } from "@/pages/hackathon-detail/components/HackathonSectionCard";
 import { getProjectCoverImageUrl } from "@/lib/projects";
-import { supabase } from "@/lib/supabase";
-import { listContestShowcaseProjects } from "@/lib/projects";
-import { listMyProjectHeartIds } from "@/lib/projectSocial";
+import { publicHackathonShowcaseQueryOptions } from "@/features/hackathons/hackathonQueries";
+import { projectHeartsQueryOptions } from "@/features/projects/projectSocialQueries";
 import type { Contest } from "@/types/hackathons";
 import type { ContestLinkedShowcaseProject } from "@/types/projects";
 import {
@@ -15,51 +16,26 @@ import {
 } from "@/pages/hackathon-detail/utils/contestShowcase";
 import { useAuth } from "@/stores/authStore";
 
+const EMPTY_SHOWCASE_PROJECTS: ContestLinkedShowcaseProject[] = [];
+const EMPTY_TEAM_BY_SUBMISSION: Record<string, string> = {};
+const EMPTY_HEART_IDS = new Set<string>();
+
 export function ContestPublicProjectsSection(props: {
   contest: Contest;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   const { contest, t } = props;
   const { user } = useAuth();
-  const [showcaseProjects, setShowcaseProjects] = useState<ContestLinkedShowcaseProject[]>(
-    [],
+  const portfolioQuery = useQuery(publicHackathonShowcaseQueryOptions(contest.id));
+  const showcaseProjects = portfolioQuery.data?.projects ?? EMPTY_SHOWCASE_PROJECTS;
+  const teamBySubmission =
+    portfolioQuery.data?.teamBySubmission ?? EMPTY_TEAM_BY_SUBMISSION;
+  const projectIds = useMemo(
+    () => showcaseProjects.map((project) => project.id).filter(Boolean),
+    [showcaseProjects],
   );
-  const [heartedByProjectId, setHeartedByProjectId] = useState<Record<string, boolean>>({});
-  const [teamBySubmission, setTeamBySubmission] = useState<Record<string, string>>(
-    {},
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-    void listContestShowcaseProjects(contest.id)
-      .then((rows) => {
-        if (!cancelled) setShowcaseProjects(rows);
-      })
-      .catch(() => {
-        if (!cancelled) setShowcaseProjects([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [contest.id]);
-
-  useEffect(() => {
-    const ids = showcaseProjects.map((p) => p.id).filter(Boolean);
-    if (ids.length === 0 || !user) {
-      queueMicrotask(() => setHeartedByProjectId({}));
-      return;
-    }
-    let cancelled = false;
-    void listMyProjectHeartIds(ids).then((set) => {
-      if (cancelled) return;
-      const next: Record<string, boolean> = {};
-      for (const id of ids) next[id] = set.has(id);
-      setHeartedByProjectId(next);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [showcaseProjects, user]);
+  const heartsQuery = useQuery(projectHeartsQueryOptions(user?.id, projectIds));
+  const heartedIds = heartsQuery.data ?? EMPTY_HEART_IDS;
 
   const displayRows: ContestShowcaseDisplayRow[] = useMemo(
     () =>
@@ -70,64 +46,6 @@ export function ContestPublicProjectsSection(props: {
     [contest.published_leaderboard, showcaseProjects],
   );
 
-  useEffect(() => {
-    if (showcaseProjects.length === 0) {
-      queueMicrotask(() => setTeamBySubmission({}));
-      return;
-    }
-    let cancelled = false;
-    const projectIds = showcaseProjects.map((p) => p.id);
-    void (async () => {
-      const { data: collabs } = await supabase
-        .from("project_collaborators")
-        .select("project_id,user_id")
-        .in("project_id", projectIds);
-      if (cancelled) return;
-
-      const userIds = new Set<string>();
-      for (const c of collabs ?? []) {
-        userIds.add(c.user_id);
-      }
-      for (const p of showcaseProjects) {
-        userIds.add(p.owner_id);
-      }
-
-      const { data: profiles } =
-        userIds.size > 0
-          ? await supabase
-              .from("public_profiles")
-              .select("id,full_name,username")
-              .in("id", Array.from(userIds))
-          : { data: [] };
-      if (cancelled) return;
-
-      const label = (uid: string) => {
-        const pr = (profiles ?? []).find((x) => x.id === uid);
-        return (
-          (pr?.full_name as string | undefined)?.trim() ||
-          (pr?.username as string | undefined)?.trim() ||
-          uid
-        );
-      };
-
-      const next: Record<string, string> = {};
-      for (const proj of showcaseProjects) {
-        const sid = proj.source_submission_id ?? proj.id;
-        const names: string[] = [label(proj.owner_id)];
-        for (const c of collabs ?? []) {
-          if (c.project_id === proj.id && c.user_id !== proj.owner_id) {
-            names.push(label(c.user_id));
-          }
-        }
-        next[sid] = names.filter(Boolean).join(", ");
-      }
-      if (!cancelled) setTeamBySubmission(next);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [showcaseProjects]);
-
   const submissionsTotal = Number(contest.metrics_snapshot?.submissions_total ?? 0);
 
   return (
@@ -136,7 +54,13 @@ export function ContestPublicProjectsSection(props: {
       title={t("detail.projects.sectionTitle")}
       description={t("detail.projects.sectionDescription")}
     >
-      {displayRows.length === 0 ? (
+      {portfolioQuery.isPending ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} className="h-72 w-full rounded-2xl" />
+          ))}
+        </div>
+      ) : displayRows.length === 0 ? (
         <div className="rounded-md border border-dashed border-border-subtle bg-surface-base px-4 py-8 text-center">
           <div className="text-sm font-medium text-foreground">
             {t("detail.projects.emptyTitle")}
@@ -273,7 +197,7 @@ export function ContestPublicProjectsSection(props: {
                       ""
                     }
                     likeCount={row.likeCount}
-                    hearted={heartedByProjectId[row.projectId] ?? false}
+                    hearted={heartedIds.has(row.projectId)}
                     variant="compact"
                     className="mt-3"
                   />

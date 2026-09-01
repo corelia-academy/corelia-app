@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { NavLink, useNavigate, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
@@ -20,15 +21,13 @@ import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
 import { ProjectFilterBar } from "@/components/projects/ProjectFilterBar";
 import { Button } from "@/components/ui/button";
 import {
-  listPublicDirectoryItems,
   type PublicDirectoryItem,
   type PublicProjectSort,
   type PublicProjectSourceFilter,
 } from "@/lib/projects";
+import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types/projects";
-
-const PAGE_SIZE = 12;
 
 function normalizeSourceParam(value: string | null): PublicProjectSourceFilter {
   if (value === "hackathon" || value === "course" || value === "standalone") return value;
@@ -228,12 +227,19 @@ export default function ProjectsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const source = normalizeSourceParam(searchParams.get("source"));
   const sort = normalizeSortParam(searchParams.get("sort"));
-  const [items, setItems] = useState<PublicDirectoryItem[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const query = useInfiniteQuery(
+    publicProjectDirectoryQueryOptions(locale, source, sort),
+  );
+  const items = query.data?.pages.flatMap((page) => page.items) ?? [];
+  const loading = query.isPending;
+  const loadingMore = query.isFetchingNextPage;
+  const hasMore = query.hasNextPage;
+  const error = query.error
+    ? query.error instanceof Error
+      ? query.error.message
+      : t("projects.errorDescription")
+    : null;
 
   const updateSearch = useCallback(
     (next: { source?: PublicProjectSourceFilter; sort?: PublicProjectSort }) => {
@@ -249,85 +255,6 @@ export default function ProjectsPage() {
     },
     [searchParams, setSearchParams, sort, source],
   );
-
-  const loadFirstPage = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await listPublicDirectoryItems({
-        locale: i18n.language,
-        source,
-        sort,
-        limit: PAGE_SIZE,
-        cursor: null,
-      });
-      setItems(result.items);
-      setNextCursor(result.nextCursor);
-      setHasMore(result.hasMore);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("projects.errorDescription"));
-      setItems([]);
-      setNextCursor(null);
-      setHasMore(false);
-    } finally {
-      setLoading(false);
-    }
-  }, [i18n.language, sort, source, t]);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const result = await listPublicDirectoryItems({
-          locale: i18n.language,
-          source,
-          sort,
-          limit: PAGE_SIZE,
-          cursor: null,
-        });
-        if (cancelled) return;
-        setItems(result.items);
-        setNextCursor(result.nextCursor);
-        setHasMore(result.hasMore);
-      } catch (e) {
-        if (cancelled) return;
-        setError(e instanceof Error ? e.message : t("projects.errorDescription"));
-        setItems([]);
-        setNextCursor(null);
-        setHasMore(false);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [i18n.language, sort, source, t]);
-
-  async function handleLoadMore() {
-    if (!nextCursor || loadingMore) return;
-    setLoadingMore(true);
-    setError(null);
-    try {
-      const result = await listPublicDirectoryItems({
-        locale: i18n.language,
-        source,
-        sort,
-        limit: PAGE_SIZE,
-        cursor: nextCursor,
-      });
-      setItems((current) => [...current, ...result.items]);
-      setNextCursor(result.nextCursor);
-      setHasMore(result.hasMore);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("projects.errorDescription"));
-    } finally {
-      setLoadingMore(false);
-    }
-  }
 
   return (
     <div className="container-app py-6 sm:py-8">
@@ -368,7 +295,7 @@ export default function ProjectsPage() {
                 {error || t("projects.errorDescription")}
               </p>
             </div>
-            <Button type="button" onClick={() => void loadFirstPage()}>
+            <Button type="button" onClick={() => void query.refetch()}>
               {t("projects.retry")}
             </Button>
           </div>
@@ -403,7 +330,7 @@ export default function ProjectsPage() {
 
             {hasMore ? (
               <div className="mt-6 flex justify-center">
-                <Button type="button" variant="outline" disabled={loadingMore} onClick={() => void handleLoadMore()}>
+                <Button type="button" variant="outline" disabled={loadingMore} onClick={() => void query.fetchNextPage()}>
                   {loadingMore ? t("projects.loading") : t("projects.loadMore")}
                 </Button>
               </div>
@@ -414,4 +341,3 @@ export default function ProjectsPage() {
     </div>
   );
 }
-

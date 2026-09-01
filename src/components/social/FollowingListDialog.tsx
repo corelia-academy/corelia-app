@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
@@ -15,7 +15,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { listUserFollowing, type FollowerPreviewRow } from "@/lib/follows";
+import type { FollowerPreviewRow } from "@/lib/follows";
+import { userFollowingQueryOptions } from "@/features/social/socialQueries";
 
 function profileLabel(row: FollowerPreviewRow): string {
   return row.full_name?.trim() || row.username?.trim() || row.ocid?.trim() || "Corelia";
@@ -36,37 +37,12 @@ export function FollowingListDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const { t } = useTranslation("feed");
-  const [items, setItems] = useState<FollowerPreviewRow[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const next = await listUserFollowing(userId);
-        if (!cancelled) setItems(next);
-      } catch (reason) {
-        if (!cancelled) {
-          setError(
-            reason instanceof Error ? reason.message : t("following.errors.load"),
-          );
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    void load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [open, t, userId]);
+  const query = useQuery(userFollowingQueryOptions(userId, open));
+  const items = query.data ?? [];
+  const loading = open && query.isPending;
+  const error = query.error instanceof Error
+    ? query.error.message
+    : query.error ? t("following.errors.load") : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

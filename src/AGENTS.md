@@ -15,19 +15,20 @@ These instructions apply under `src/`.
 ## React, Data, and Auth
 
 - Use `@/…` for internal imports and follow the local file's formatting.
-- Put data fetching, polling, subscriptions, redirects, and other side effects in hooks/helpers with cleanup for stale async work. Keep components presentational where practical.
-- Parallelize independent reads using the established feature patterns; do not introduce a second cache/data-fetching framework.
+- Follow `docs/front-end-rules/` as the architecture source of truth. During migration, use TanStack Query as the sole server-state cache and do not introduce another data-fetching framework.
+- Put Supabase access in domain services and server-state orchestration in query hooks/options. Keep components presentational; use effects only for external-system synchronization with cleanup.
+- Parallelize independent reads and reuse canonical query options/keys for fetching and prefetching.
 - Auth uses Supabase, `useAuth()`/`useAuthStore`, `AuthSync`, and the guards in `components/auth/`. Do not add Firebase code or duplicate auth listeners.
 - Use `RequireAuth`, `RequireRole`, and feature-specific guards. Role groups belong in `config/roles.ts`, not inline route arrays.
 - Preserve route paths, params, query/hash behavior, and redirects unless explicitly changing navigation behavior.
 
 ## UI and i18n
 
-- For UI work, read `docs/DESIGN.md`; do not load it for non-visual tasks.
-- Reuse `components/ui/*`, Tailwind v4 semantic tokens, and `cn` from `lib/utils`. Do not add hard-coded palette values or another icon library; current general-purpose icons use `lucide-react`.
+- UI is code-defined: inspect `components/ui/*`, shared components, styles, and representative feature code. Reuse existing primitives before adding another, but update code when product requirements need a new visual behavior.
+- Use Tailwind v4 and `cn` from `lib/utils`. Do not add another UI framework or icon library; current general-purpose icons use `lucide-react`.
 - Keep interactive controls accessible: explicit non-submit button types, labels for icon-only controls, meaningful alt text, focus behavior, and adequate touch targets.
 - User-facing text uses an existing i18next namespace from `i18n.ts`. Add matching keys to both `locales/vi/<namespace>.json` and `locales/en/<namespace>.json`.
-- Keep loading, error, and empty states consistent with representative pages in the same feature.
+- Keep responsive behavior, layout stability, and loading/error/empty states consistent with representative pages in the same feature.
 
 ## Placement and Validation
 

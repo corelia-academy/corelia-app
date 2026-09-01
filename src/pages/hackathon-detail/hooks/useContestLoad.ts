@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState, type SetStateAction } from "react";
 import type { Contest } from "@/types/hackathons";
 
 export function useContestLoad({
@@ -8,27 +8,25 @@ export function useContestLoad({
   contestSlug: string | undefined;
   prefetchedContest?: Contest | null;
 }) {
-  const [contest, setContest] = useState<Contest | null>(() =>
+  const [localContest, setLocalContest] = useState<Contest | null>(() =>
     prefetchedContest && prefetchedContest.slug && prefetchedContest.slug === contestSlug
       ? prefetchedContest
       : null,
   );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!prefetchedContest || !prefetchedContest.slug || prefetchedContest.slug !== contestSlug) return;
-    // Parent outlet context updates (e.g. banner/thumbnail) must flow into local contest state.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync external prefetched snapshot from router outlet
-    setContest(prefetchedContest);
-  }, [contestSlug, prefetchedContest]);
+  const contest: Contest | null =
+    localContest?.slug === contestSlug
+      ? localContest
+      : prefetchedContest?.slug === contestSlug
+        ? (prefetchedContest ?? null)
+        : null;
+  const setContest = useCallback((action: SetStateAction<Contest | null>) => {
+    setLocalContest((current) =>
+      typeof action === "function" ? action(current) : action,
+    );
+  }, []);
 
   return {
     contest,
     setContest,
-    loading,
-    setLoading,
-    error,
-    setError,
   };
 }

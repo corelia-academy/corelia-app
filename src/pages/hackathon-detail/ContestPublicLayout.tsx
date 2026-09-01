@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, Outlet, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
-import { getContestBySlug } from "@/lib/hackathons";
+import { publicHackathonDetailQueryOptions } from "@/features/hackathons/hackathonQueries";
 import type { Contest } from "@/types/hackathons";
 import { useTranslation } from "react-i18next";
 import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
@@ -11,47 +12,33 @@ const PUBLIC_STATUSES: Contest["status"][] = ["published", "running", "ended"];
 
 export default function ContestPublicLayout() {
   const { slug } = useParams<{ slug: string }>();
-  const { t } = useTranslation("contests");
+  const { t, i18n } = useTranslation("contests");
+  const queryClient = useQueryClient();
   const translate = useCallback(
     (key: string, options?: Record<string, unknown>) =>
       String(t(key as never, options as never)),
     [t],
   );
-  const [contest, setContest] = useState<Contest | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const options = publicHackathonDetailQueryOptions(slug, locale);
+  const query = useQuery(options);
+  const loadedContest = query.data;
+  const contest =
+    loadedContest &&
+    loadedContest.slug === slug &&
+    PUBLIC_STATUSES.includes(loadedContest.status)
+      ? loadedContest
+      : null;
+  const setContest = useCallback(
+    (next: Contest) => queryClient.setQueryData(options.queryKey, next),
+    [options.queryKey, queryClient],
+  );
 
-  useEffect(() => {
-    if (!slug) return;
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    void (async () => {
-      try {
-        const data = await getContestBySlug(slug);
-        if (cancelled) return;
-        if (!data || !data.slug || data.slug !== slug || !PUBLIC_STATUSES.includes(data.status)) {
-          setContest(null);
-          setError(translate("detail.errors.notFound"));
-          return;
-        }
-        setContest(data);
-      } catch {
-        if (!cancelled) setError(translate("detail.errors.loadFailed"));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [slug, translate]);
-
-  if (loading) {
+  if (query.isPending) {
     return <ContestDetailLoadingCard translate={translate} />;
   }
 
-  if (error || !contest || !slug) {
+  if (query.error || !contest || !slug) {
     return (
       <PageContainer width="default">
         <div
@@ -60,7 +47,9 @@ export default function ContestPublicLayout() {
           aria-live="assertive"
         >
           <p className="text-sm font-medium text-foreground">
-            {error ?? translate("detail.errors.notFound")}
+            {query.error
+              ? translate("detail.errors.loadFailed")
+              : translate("detail.errors.notFound")}
           </p>
           <Button
             render={<NavLink to="/hackathons" />}

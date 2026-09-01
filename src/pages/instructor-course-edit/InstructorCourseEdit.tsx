@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
 import {
   ArrowLeft,
@@ -27,24 +36,15 @@ import {
 } from "lucide-react";
 import {
   getCourse,
-  getCourseSections,
   getCourseLessons,
-  getEnrollmentsForCourse,
-  getLessonProgressForCourse,
   getLessonDistinctLearnerCountsForCourse,
-  computeProgressPercent,
   checkAndIssueCertificate,
   updateCourse,
   isCourseCoInstructorWithAnyPermission,
   toCoInstructorSnapshot,
   applyCourseLessonLocaleContent,
   applyCourseSectionLocaleContent,
-  getCourseLessonLocaleContent,
-  getCourseLessonLocaleContentMap,
-  getCourseLocaleContent,
   getCoursePrimaryLocale,
-  getCourseSectionLocaleContent,
-  getCourseSectionLocaleContentMap,
   getCourseSupportedLocales,
   normalizeCourseLocale,
   setCourseLessonLocaleContent,
@@ -65,13 +65,15 @@ import {
   courseHasCertificate,
 } from "@/lib/courses";
 import {
-  getSubmissionsForCourse,
-  updateSubmissionStatus,
-} from "@/lib/finalAssignment";
-import {
-  getProfile,
-  listCourseCoInstructorCandidates,
-} from "@/lib/profile";
+  instructorCourseCoInstructorsQueryOptions,
+  instructorCourseLocaleQueryOptions,
+  instructorCourseLessonLocaleQueryOptions,
+  instructorCourseSectionLocaleQueryOptions,
+  instructorCourseWorkspaceQueryOptions,
+  type InstructorCourseWorkspace,
+} from "@/features/courses/instructorCourseEditorQueries";
+import { courseKeys } from "@/features/courses/courseQueries";
+import { updateSubmissionStatus } from "@/lib/finalAssignment";
 import { fetchYoutubeVideoMetadata, getYoutubeVideoDuration } from "@/lib/youtube";
 import {
   buildSegmentsFromChapterStarts,
@@ -116,9 +118,7 @@ import {
   getNextActivityLessonTitle,
   isLessonDraftForLearners,
 } from "@/lib/lessonFormat";
-import type { Profile } from "@/types/database";
 import { useAuth } from "@/stores/authStore";
-import { trackLoadingPromise } from "@/stores/loadingStore";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -175,7 +175,6 @@ import type {
 import { createSponsorId, getNextOrder, isValidHttpUrl } from "./utils/helpers";
 import {
   inviteCoInstructor,
-  listPendingCoInstructorInvites,
   revokeCoInstructorInvite,
   type CoInstructorInviteRow,
 } from "@/lib/coInstructorInvites";
@@ -184,6 +183,20 @@ import {
 const LONG_VIDEO_SPLIT_SECONDS = 3600;
 const QUIZ_OPTION_IDS = ["a", "b", "c", "d"] as const;
 const NEW_QUIZ_COUNT_OPTIONS = [3, 5, 7, 10] as const;
+const EMPTY_COURSE_SECTIONS: CourseSection[] = [];
+const EMPTY_COURSE_LESSONS: CourseLesson[] = [];
+const EMPTY_ENROLLMENTS: Enrollment[] = [];
+const EMPTY_SUBMISSIONS: FinalAssignmentSubmission[] = [];
+const EMPTY_PROFILES: InstructorCourseWorkspace["studentProfiles"] = {};
+const EMPTY_PROGRESS: InstructorCourseWorkspace["studentProgress"] = {};
+const EMPTY_SUBMISSIONS_BY_USER: InstructorCourseWorkspace["submissionByUser"] = {};
+const EMPTY_LEARNER_COUNTS: InstructorCourseWorkspace["lessonLearnerCounts"] = {};
+
+function resolveStateUpdate<T>(update: SetStateAction<T>, current: T): T {
+  return typeof update === "function"
+    ? (update as (previous: T) => T)(current)
+    : update;
+}
 
 type CoverageFieldKey =
   | "title"
@@ -208,19 +221,83 @@ const InstructorCourseEdit = () => {
   };
   const { id } = useParams<{ id: string }>();
   const { profile } = useAuth();
-  const [course, setCourse] = useState<Course | null>(null);
-  const [sections, setSections] = useState<CourseSection[]>([]);
-  const [lessons, setLessons] = useState<CourseLesson[]>([]);
-  const [sectionLocaleMap, setSectionLocaleMap] = useState<Map<string, CourseSectionLocaleContent>>(new Map());
-  const [lessonLocaleMap, setLessonLocaleMap] = useState<Map<string, CourseLessonLocaleContent>>(new Map());
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-  const [studentProfiles, setStudentProfiles] = useState<
-    Record<string, Profile | null>
-  >({});
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const workspaceOptions = instructorCourseWorkspaceQueryOptions({ courseId: id, profile });
+  const workspaceQuery = useQuery(workspaceOptions);
+  const { mutateAsync: executeOperation } = useMutation({
+    mutationFn: (operation: () => Promise<unknown>) => operation(),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: courseKeys.all });
+    },
+  });
+  const runMutation = useCallback(
+    <T,>(operation: () => Promise<T>) => executeOperation(operation) as Promise<T>,
+    [executeOperation],
+  );
+  const course = workspaceQuery.data?.course ?? null;
+  const sections = workspaceQuery.data?.sections ?? EMPTY_COURSE_SECTIONS;
+  const lessons = workspaceQuery.data?.lessons ?? EMPTY_COURSE_LESSONS;
+  const enrollments = workspaceQuery.data?.enrollments ?? EMPTY_ENROLLMENTS;
+  const studentProfiles = workspaceQuery.data?.studentProfiles ?? EMPTY_PROFILES;
+  const studentProgress = workspaceQuery.data?.studentProgress ?? EMPTY_PROGRESS;
+  const submissions = workspaceQuery.data?.submissions ?? EMPTY_SUBMISSIONS;
+  const submissionByUser = workspaceQuery.data?.submissionByUser ?? EMPTY_SUBMISSIONS_BY_USER;
+  const lessonLearnerCounts = workspaceQuery.data?.lessonLearnerCounts ?? EMPTY_LEARNER_COUNTS;
+  const setWorkspaceField = useCallback(
+    <K extends keyof InstructorCourseWorkspace>(
+      field: K,
+      update: SetStateAction<InstructorCourseWorkspace[K]>,
+    ) => {
+      queryClient.setQueryData(workspaceOptions.queryKey, (current) =>
+        current
+          ? { ...current, [field]: resolveStateUpdate(update, current[field]) }
+          : current,
+      );
+    },
+    [queryClient, workspaceOptions.queryKey],
+  );
+  const setCourse: Dispatch<SetStateAction<Course | null>> = useCallback(
+    (update) => setWorkspaceField("course", update),
+    [setWorkspaceField],
+  );
+  const setSections: Dispatch<SetStateAction<CourseSection[]>> = useCallback(
+    (update) => setWorkspaceField("sections", update),
+    [setWorkspaceField],
+  );
+  const setLessons: Dispatch<SetStateAction<CourseLesson[]>> = useCallback(
+    (update) => setWorkspaceField("lessons", update),
+    [setWorkspaceField],
+  );
+  const setEnrollments: Dispatch<SetStateAction<Enrollment[]>> = useCallback(
+    (update) => setWorkspaceField("enrollments", update),
+    [setWorkspaceField],
+  );
+  const setSubmissions: Dispatch<SetStateAction<FinalAssignmentSubmission[]>> = useCallback(
+    (update) => setWorkspaceField("submissions", update),
+    [setWorkspaceField],
+  );
+  const setSubmissionByUser: Dispatch<
+    SetStateAction<Record<string, FinalAssignmentSubmission>>
+  > = useCallback(
+    (update) => setWorkspaceField("submissionByUser", update),
+    [setWorkspaceField],
+  );
+  const setLessonLearnerCounts: Dispatch<SetStateAction<Record<string, number>>> =
+    useCallback(
+      (update) => setWorkspaceField("lessonLearnerCounts", update),
+      [setWorkspaceField],
+    );
+  const loading = workspaceQuery.isPending;
   const [saving, setSaving] = useState(false);
   const [refreshingTotal, setRefreshingTotal] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [mutationError, setError] = useState<string | null>(null);
+  const error = mutationError ?? (
+    workspaceQuery.error instanceof Error
+      ? workspaceQuery.error.message
+      : workspaceQuery.error
+        ? t("courseEdit.errors.loadCourseFailed")
+        : null
+  );
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [addingSection, setAddingSection] = useState(false);
   const [newSectionDescription, setNewSectionDescription] = useState("");
@@ -290,7 +367,6 @@ const InstructorCourseEdit = () => {
   >([]);
   const [editingLessonFormat, setEditingLessonFormat] = useState<LessonFormat>("video");
   const [editingLessonMinutes, setEditingLessonMinutes] = useState<number | "">("");
-  const [lessonLearnerCounts, setLessonLearnerCounts] = useState<Record<string, number>>({});
   const [longVideoSplitOpen, setLongVideoSplitOpen] = useState(false);
   const [longVideoSplitPayload, setLongVideoSplitPayload] = useState<{
     sectionId: string;
@@ -390,13 +466,6 @@ const InstructorCourseEdit = () => {
   const [coInstructorPermissions, setCoInstructorPermissions] = useState<
     Record<string, CourseCoInstructorPermissions>
   >({});
-  const [instructorDirectory, setInstructorDirectory] = useState<Profile[]>([]);
-  const [loadingInstructorDirectory, setLoadingInstructorDirectory] =
-    useState(false);
-  // Pending invites for this course (manager view). Source of truth = DB.
-  const [pendingCoInstructorInvites, setPendingCoInstructorInvites] = useState<
-    CoInstructorInviteRow[]
-  >([]);
   // Snapshot of ids that were already accepted at load-time. Used to decide
   // which uids in coInstructorIds need an invite (newly added) vs perms update.
   const [acceptedCoInstructorIdsSnapshot, setAcceptedCoInstructorIdsSnapshot] =
@@ -409,6 +478,41 @@ const InstructorCourseEdit = () => {
   const [defaultVideoPrimaryLocale, setDefaultVideoPrimaryLocale] =
     useState<SupportedCourseLocale>("vi");
   const [activeContentLocale, setActiveContentLocale] = useState<SupportedCourseLocale>("vi");
+  const localeOptions = instructorCourseLocaleQueryOptions({
+    courseId: id,
+    locale: activeContentLocale,
+    userId: profile?.id,
+    enabled: Boolean(course),
+  });
+  const localeQuery = useQuery(localeOptions);
+  const sectionLocaleMap = localeQuery.data?.sectionLocaleMap ?? new Map<string, CourseSectionLocaleContent>();
+  const lessonLocaleMap = localeQuery.data?.lessonLocaleMap ?? new Map<string, CourseLessonLocaleContent>();
+  const setSectionLocaleMap: Dispatch<
+    SetStateAction<Map<string, CourseSectionLocaleContent>>
+  > = useCallback(
+    (update) => queryClient.setQueryData(localeOptions.queryKey, (current) =>
+      current
+        ? {
+            ...current,
+            sectionLocaleMap: resolveStateUpdate(update, current.sectionLocaleMap),
+          }
+        : current,
+    ),
+    [localeOptions.queryKey, queryClient],
+  );
+  const setLessonLocaleMap: Dispatch<
+    SetStateAction<Map<string, CourseLessonLocaleContent>>
+  > = useCallback(
+    (update) => queryClient.setQueryData(localeOptions.queryKey, (current) =>
+      current
+        ? {
+            ...current,
+            lessonLocaleMap: resolveStateUpdate(update, current.lessonLocaleMap),
+          }
+        : current,
+    ),
+    [localeOptions.queryKey, queryClient],
+  );
   // Per-locale draft cache for section & lesson dialogs
   type SectionDraft = { title: string; description: string };
   type LessonDraft = {
@@ -432,6 +536,7 @@ const InstructorCourseEdit = () => {
     final_assignment_description: "",
     final_assignment_instructions: "",
   });
+  const contentHydratedSelectionRef = useRef("");
   const [courseSkills, setCourseSkills] = useState<string[]>([]);
   const [descriptionGeneratorOpen, setDescriptionGeneratorOpen] = useState(false);
   const [descriptionGeneratorRequest, setDescriptionGeneratorRequest] =
@@ -441,15 +546,6 @@ const InstructorCourseEdit = () => {
   const [questionGeneratorSection, setQuestionGeneratorSection] = useState<CourseSection | null>(null);
   const [lessonQuizDialogOpen, setLessonQuizDialogOpen] = useState(false);
   const [lessonQuizDialogLesson, setLessonQuizDialogLesson] = useState<CourseLesson | null>(null);
-  const [submissions, setSubmissions] = useState<FinalAssignmentSubmission[]>(
-    [],
-  );
-  const [studentProgress, setStudentProgress] = useState<
-    Record<string, number>
-  >({});
-  const [submissionByUser, setSubmissionByUser] = useState<
-    Record<string, FinalAssignmentSubmission>
-  >({});
   const [reviewingSubmissionId, setReviewingSubmissionId] = useState<
     string | null
   >(null);
@@ -710,6 +806,27 @@ const InstructorCourseEdit = () => {
   const canEditCoInstructors = Boolean(
     course && (isAdmin || isSupportStaff || course.instructor_id === profile?.id),
   );
+  const coInstructorOptions = instructorCourseCoInstructorsQueryOptions({
+    courseId: course?.id,
+    userId: profile?.id,
+    enabled: canEditCoInstructors,
+  });
+  const coInstructorQuery = useQuery(coInstructorOptions);
+  const instructorDirectory = coInstructorQuery.data?.candidates ?? [];
+  const pendingCoInstructorInvites = coInstructorQuery.data?.pendingInvites ?? [];
+  const loadingInstructorDirectory = canEditCoInstructors && coInstructorQuery.isPending;
+  const setPendingCoInstructorInvites: Dispatch<SetStateAction<CoInstructorInviteRow[]>> =
+    useCallback(
+      (update) => queryClient.setQueryData(coInstructorOptions.queryKey, (current) =>
+        current
+          ? {
+              ...current,
+              pendingInvites: resolveStateUpdate(update, current.pendingInvites),
+            }
+          : current,
+      ),
+      [coInstructorOptions.queryKey, queryClient],
+    );
   const isCoreliaCourse = (form.owner_type ?? course?.owner_type ?? "corelia") === "corelia";
   const isCoreliaInstructor = profile?.instructor_origin === "corelia";
   const canManageCourseOcb = Boolean(
@@ -807,7 +924,7 @@ const InstructorCourseEdit = () => {
     }
     setTranslatingBundle(params.busyKey);
     try {
-      const response = await invokeGenerateDescription({
+      const response = await runMutation(() => invokeGenerateDescription({
         action: "translate",
         type: params.type,
         targetField: "description",
@@ -818,7 +935,7 @@ const InstructorCourseEdit = () => {
         courseId: params.courseId,
         sectionId: params.sectionId,
         lessonId: params.lessonId,
-      });
+      }));
       if (!response.bundle) {
         throw new Error(t("courseEdit.descriptionGenerator.errors.generic"));
       }
@@ -922,41 +1039,6 @@ const InstructorCourseEdit = () => {
     setCoInstructorVisibility(vis);
   }, [course]);
 
-  // Load pending co-instructor invites for this course (manager view).
-  useEffect(() => {
-    if (!course?.id || !canEditCoInstructors) return;
-    let cancelled = false;
-    void listPendingCoInstructorInvites(course.id)
-      .then((rows) => {
-        if (!cancelled) setPendingCoInstructorInvites(rows);
-      })
-      .catch(() => {
-        if (!cancelled) setPendingCoInstructorInvites([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [course?.id, canEditCoInstructors]);
-
-  useEffect(() => {
-    if (!course?.id || !canEditCoInstructors) return;
-    let cancelled = false;
-    setLoadingInstructorDirectory(true);
-    void listCourseCoInstructorCandidates(course.id)
-      .then((rows) => {
-        if (!cancelled) setInstructorDirectory(rows);
-      })
-      .catch(() => {
-        if (!cancelled) setInstructorDirectory([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingInstructorDirectory(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [course?.id, canEditCoInstructors]);
-
   useEffect(() => {
     if (course) {
       setForm({
@@ -1037,8 +1119,9 @@ const InstructorCourseEdit = () => {
   }, [course]);
 
   useEffect(() => {
-    if (!id || !course) return;
-    let cancelled = false;
+    if (!id || !course || !localeQuery.isSuccess) return;
+    const selection = `${id}:${activeContentLocale}`;
+    if (contentHydratedSelectionRef.current === selection) return;
     const fallbackFromCourse = () => ({
       title: course.title ?? "",
       short_description: course.short_description ?? "",
@@ -1048,15 +1131,10 @@ const InstructorCourseEdit = () => {
       final_assignment_description: course.final_assignment_description ?? "",
       final_assignment_instructions: course.final_assignment_instructions ?? "",
     });
-    setContentForm(fallbackFromCourse());
-    void (async () => {
-      const localized = await getCourseLocaleContent(id, activeContentLocale).catch(() => null);
-      if (cancelled) return;
-      if (!localized) {
-        setContentForm(fallbackFromCourse());
-        return;
-      }
-      setContentForm({
+    const localized = localeQuery.data.courseContent;
+    const next = !localized
+      ? fallbackFromCourse()
+      : {
         title: localized.title ?? fallbackFromCourse().title,
         short_description: localized.short_description ?? fallbackFromCourse().short_description,
         description: localized.description ?? fallbackFromCourse().description,
@@ -1069,143 +1147,31 @@ const InstructorCourseEdit = () => {
         final_assignment_instructions:
           (localized.final_assignment_instructions ?? "") ||
           fallbackFromCourse().final_assignment_instructions,
-      });
-    })();
+      };
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setContentForm(next);
+      contentHydratedSelectionRef.current = selection;
+    });
     return () => {
       cancelled = true;
     };
-  }, [activeContentLocale, course, id]);
-
-  useEffect(() => {
-    if (!id || activeContentLocale === primaryContentLocale) {
-      setSectionLocaleMap(new Map());
-      setLessonLocaleMap(new Map());
-      return;
-    }
-    let cancelled = false;
-    void Promise.all([
-      getCourseSectionLocaleContentMap(id, activeContentLocale),
-      getCourseLessonLocaleContentMap(id, activeContentLocale),
-    ]).then(([secMap, lesMap]) => {
-      if (!cancelled) {
-        setSectionLocaleMap(secMap);
-        setLessonLocaleMap(lesMap);
-      }
-    }).catch(() => {});
-    return () => { cancelled = true; };
-  }, [id, activeContentLocale, primaryContentLocale]);
-
-  useEffect(() => {
-    if (!id) return;
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-
-    void (async () => {
-      try {
-        const c = await getCourse(id);
-        if (cancelled) return;
-        setCourse(c ?? null);
-        if (!c) return;
-
-        const isOwner = c.instructor_id === profile?.id;
-        const perms = (profile?.id && c.co_instructor_permissions?.[profile.id]) || {};
-        const hasAny = Object.values(perms).some(Boolean);
-        const canAccess = isAdmin || isSupportStaff || isOwner || hasAny;
-        if (!canAccess) return;
-
-        const canContent = isAdmin || isSupportStaff || isOwner || perms.content === true;
-        const canStudents = isAdmin || isSupportStaff || isOwner || perms.students === true;
-        const canSubmissions =
-          isAdmin || isSupportStaff || isOwner || perms.submissions === true;
-
-        const [secs, less] = await Promise.all([
-          canContent ? getCourseSections(id) : Promise.resolve([] as CourseSection[]),
-          canContent ? getCourseLessons(id) : Promise.resolve([] as CourseLesson[]),
-        ]);
-        if (cancelled) return;
-        setSections(secs);
-        setLessons(less);
-
-        if (canStudents) {
-          void getLessonDistinctLearnerCountsForCourse(id)
-            .then((counts) => {
-              if (!cancelled) setLessonLearnerCounts(counts);
-            })
-            .catch(() => {});
-        } else {
-          setLessonLearnerCounts({});
-        }
-
-        const [enrs, subs] = await Promise.all([
-          canStudents ? getEnrollmentsForCourse(id) : Promise.resolve([] as Enrollment[]),
-          canSubmissions
-            ? getSubmissionsForCourse(id)
-            : Promise.resolve([] as FinalAssignmentSubmission[]),
-        ]);
-        if (cancelled) return;
-        setEnrollments(enrs);
-        setSubmissions(subs);
-
-        const subByUser: Record<string, FinalAssignmentSubmission> = {};
-        for (const s of subs) subByUser[s.user_id] = s;
-        setSubmissionByUser(subByUser);
-
-        if (canStudents) {
-          const profiles: Record<string, Profile | null> = {};
-          const progress: Record<string, number> = {};
-          for (const e of enrs) {
-            const [profileResult, progressResult] = await Promise.allSettled([
-              getProfile(e.user_id),
-              getLessonProgressForCourse(e.user_id, id),
-            ]);
-            const p =
-              profileResult.status === "fulfilled" ? profileResult.value : null;
-            const progList =
-              progressResult.status === "fulfilled" ? progressResult.value : [];
-            if (!cancelled) {
-              profiles[e.user_id] = p;
-              progress[e.user_id] = computeProgressPercent(less, progList);
-            }
-          }
-          if (!cancelled) {
-            setStudentProfiles(profiles);
-            setStudentProgress(progress);
-          }
-        } else {
-          setStudentProfiles({});
-          setStudentProgress({});
-        }
-      } catch (e) {
-        if (!cancelled)
-          setError(
-            e instanceof Error
-              ? e.message
-              : t("courseEdit.errors.loadCourseFailed"),
-          );
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id, isAdmin, isSupportStaff, profile?.id, t]);
+  }, [activeContentLocale, course, id, localeQuery.data, localeQuery.isSuccess]);
 
   // Backfill tổng thời lượng khi mở trang (để danh sách khoá học bên ngoài hiển thị đúng)
   useEffect(() => {
     if (!id || !course || lessons.length === 0) return;
     const total = Number(course.total_duration_seconds) || 0;
     if (total > 0) return;
-    refreshCourseTotalDuration(id).catch(() => {});
-  }, [id, course, lessons.length]);
+    void runMutation(() => refreshCourseTotalDuration(id));
+  }, [id, course, lessons.length, runMutation]);
 
   const handleRefreshTotalDuration = async () => {
     if (!id) return;
     setRefreshingTotal(true);
     try {
-      await refreshCourseTotalDuration(id);
+      await runMutation(() => refreshCourseTotalDuration(id));
       toast.success(t("courseEdit.toasts.totalDurationRefreshed"));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("courseEdit.errors.refreshTotalFailed"));
@@ -1223,15 +1189,17 @@ const InstructorCourseEdit = () => {
     setUploadingThumb(true);
     setError(null);
     try {
-      const result = await uploadCourseThumbnail(
-        id,
-        file,
-        course.thumbnail_path,
-      );
-
-      await updateCourse(id, {
-        thumbnail_url: result.url,
-        thumbnail_path: result.path,
+      const result = await runMutation(async () => {
+        const uploaded = await uploadCourseThumbnail(
+          id,
+          file,
+          course.thumbnail_path,
+        );
+        await updateCourse(id, {
+          thumbnail_url: uploaded.url,
+          thumbnail_path: uploaded.path,
+        });
+        return uploaded;
       });
 
       setCourse((prev) =>
@@ -1312,7 +1280,7 @@ const InstructorCourseEdit = () => {
 
     setSaving(true);
     setError(null);
-    const savePromise = (async () => {
+    const savePromise = runMutation(async () => {
       const sanitizedOutcomes = (contentForm.learning_outcomes ?? [])
         .map((item) => item.trim())
         .filter(Boolean)
@@ -1591,16 +1559,18 @@ const InstructorCourseEdit = () => {
           return next;
         });
         try {
-          const refreshed = await listPendingCoInstructorInvites(course.id);
-          setPendingCoInstructorInvites(refreshed);
+          await queryClient.fetchQuery({
+            ...coInstructorOptions,
+            staleTime: 0,
+          });
         } catch (err) {
           console.error("[co-instructor invite] refresh pending", err);
         }
       }
-    })();
+    });
 
     try {
-      await trackLoadingPromise(savePromise, "save-course-info");
+      await savePromise;
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     } finally {
@@ -1611,7 +1581,7 @@ const InstructorCourseEdit = () => {
   const handleRevokeCoInstructorInvite = async (inviteId: string) => {
     if (!course?.id) return;
     try {
-      await revokeCoInstructorInvite(inviteId);
+      await runMutation(() => revokeCoInstructorInvite(inviteId));
       setPendingCoInstructorInvites((prev) =>
         prev.filter((i) => i.id !== inviteId),
       );
@@ -1628,7 +1598,7 @@ const InstructorCourseEdit = () => {
   ) => {
     setReviewingSubmissionId(submissionId);
     try {
-      await updateSubmissionStatus(submissionId, status, comment || null);
+      await runMutation(() => updateSubmissionStatus(submissionId, status, comment || null));
       const sub = submissions.find((s) => s.id === submissionId);
       if (sub) {
         setSubmissions((prev) =>
@@ -1644,7 +1614,7 @@ const InstructorCourseEdit = () => {
         }));
       }
       if (status === "approved" && sub) {
-        const result = await checkAndIssueCertificate(sub.user_id, id ?? "");
+        const result = await runMutation(() => checkAndIssueCertificate(sub.user_id, id ?? ""));
         if (result.issued) {
           setEnrollments((prev) =>
             prev.map((e) =>
@@ -1671,7 +1641,7 @@ const InstructorCourseEdit = () => {
     if (!id) return;
     setIssuingCertForUser(userId);
     try {
-      const result = await checkAndIssueCertificate(userId, id);
+      const result = await runMutation(() => checkAndIssueCertificate(userId, id));
       if (result.issued) {
         setEnrollments((prev) =>
           prev.map((e) =>
@@ -1697,15 +1667,18 @@ const InstructorCourseEdit = () => {
     setUploadingCert(true);
     setError(null);
     try {
-      const result = await uploadCertificateTemplate(
-        id,
-        file,
-        course.certificate_template_path,
-      );
-      await updateCourse(id, {
-        has_certificate: true,
-        certificate_template_url: result.url,
-        certificate_template_path: result.path,
+      const result = await runMutation(async () => {
+        const uploaded = await uploadCertificateTemplate(
+          id,
+          file,
+          course.certificate_template_path,
+        );
+        await updateCourse(id, {
+          has_certificate: true,
+          certificate_template_url: uploaded.url,
+          certificate_template_path: uploaded.path,
+        });
+        return uploaded;
       });
       setCourse((prev) =>
         prev
@@ -1740,10 +1713,10 @@ const InstructorCourseEdit = () => {
   const handleOnchainCertificateUploaded = async (result: { url: string; path: string }) => {
     if (!id) return;
     try {
-      await updateCourse(id, {
+      await runMutation(() => updateCourse(id, {
         onchain_certificate_template_url: result.url,
         onchain_certificate_template_path: result.path,
-      });
+      }));
       setCourse((prev) =>
         prev
           ? {
@@ -1766,10 +1739,10 @@ const InstructorCourseEdit = () => {
   const handleClearOnchainCertificate = async () => {
     if (!id) return;
     try {
-      await updateCourse(id, {
+      await runMutation(() => updateCourse(id, {
         onchain_certificate_template_url: null,
         onchain_certificate_template_path: null,
-      });
+      }));
       setCourse((prev) =>
         prev
           ? {
@@ -1797,7 +1770,7 @@ const InstructorCourseEdit = () => {
     setSponsors(nextSponsors);
     setCourse((prev) => (prev ? { ...prev, sponsors: nextSponsors } : prev));
     try {
-      await updateCourse(id, { sponsors: nextSponsors });
+      await runMutation(() => updateCourse(id, { sponsors: nextSponsors }));
       if (toastKey) toast.success(String(t(toastKey as never)));
     } catch (e) {
       toast.error(
@@ -1844,12 +1817,12 @@ const InstructorCourseEdit = () => {
     if (!sid) return;
     setUploadingSponsorLogo(true);
     try {
-      const result = await uploadCourseSponsorLogo(
+      const result = await runMutation(() => uploadCourseSponsorLogo(
         id,
         sid,
         file,
         sponsorForm.logo_path,
-      );
+      ));
       setSponsorForm((p) => ({ ...p, logo_url: result.url, logo_path: result.path }));
 
       const nextSponsors = (() => {
@@ -1943,7 +1916,7 @@ const InstructorCourseEdit = () => {
     if (!confirm(String(t("courseEdit.sponsors.confirm.remove")))) return;
     const nextSponsors = sponsors.filter((x) => String(x.id ?? "").trim() !== sid);
     await persistSponsors(nextSponsors, "courseEdit.sponsors.toasts.removed");
-    await deleteStorageObjectByPath(s.logo_path ?? null);
+    await runMutation(() => deleteStorageObjectByPath(s.logo_path ?? null));
   };
 
   const persistPartners = async (nextPartners: CoursePartner[], toastKey?: string) => {
@@ -1951,7 +1924,7 @@ const InstructorCourseEdit = () => {
     setPartners(nextPartners);
     setCourse((prev) => (prev ? { ...prev, partners: nextPartners } : prev));
     try {
-      await updateCourse(id, { partners: nextPartners });
+      await runMutation(() => updateCourse(id, { partners: nextPartners }));
       if (toastKey) toast.success(String(t(toastKey as never)));
     } catch (e) {
       toast.error(
@@ -1996,12 +1969,12 @@ const InstructorCourseEdit = () => {
     if (!pid) return;
     setUploadingPartnerLogo(true);
     try {
-      const result = await uploadCoursePartnerLogo(
+      const result = await runMutation(() => uploadCoursePartnerLogo(
         id,
         pid,
         file,
         partnerForm.logo_path,
-      );
+      ));
       setPartnerForm((p) => ({ ...p, logo_url: result.url, logo_path: result.path }));
 
       const nextPartners = (() => {
@@ -2099,7 +2072,7 @@ const InstructorCourseEdit = () => {
     if (!confirm(String(t("courseEdit.partners.confirm.remove")))) return;
     const nextPartners = partners.filter((x) => String(x.id ?? "").trim() !== pid);
     await persistPartners(nextPartners, "courseEdit.partners.toasts.removed");
-    await deleteStorageObjectByPath(p.logo_path ?? null);
+    await runMutation(() => deleteStorageObjectByPath(p.logo_path ?? null));
   };
 
   const handleGenerateCourseDescription = (
@@ -2381,7 +2354,7 @@ const InstructorCourseEdit = () => {
   const handleAddLessonDirect = async () => {
     if (!id) return;
     try {
-      const defaultSec = await getOrCreateDefaultSection(id);
+      const defaultSec = await runMutation(() => getOrCreateDefaultSection(id));
       if (!sections.some((s) => s.id === defaultSec.id)) {
         setSections((prev) => [...prev, defaultSec]);
       }
@@ -2395,16 +2368,21 @@ const InstructorCourseEdit = () => {
     if (!id || !newSectionTitle.trim()) return;
     setAddingSection(true);
     try {
-      const sec = await addSection(id, {
-        title: newSectionTitle.trim(),
-        description: newSectionDescription.trim() || undefined,
-        order: getNextOrder(sections),
-      });
-      if (activeContentLocale !== primaryContentLocale) {
-        await setCourseSectionLocaleContent(id, sec.id, activeContentLocale, {
+      const sec = await runMutation(async () => {
+        const created = await addSection(id, {
           title: newSectionTitle.trim(),
           description: newSectionDescription.trim() || undefined,
+          order: getNextOrder(sections),
         });
+        if (activeContentLocale !== primaryContentLocale) {
+          await setCourseSectionLocaleContent(id, created.id, activeContentLocale, {
+            title: newSectionTitle.trim(),
+            description: newSectionDescription.trim() || undefined,
+          });
+        }
+        return created;
+      });
+      if (activeContentLocale !== primaryContentLocale) {
         setSections((prev) => [
           ...prev,
           applyCourseSectionLocaleContent(sec, {
@@ -2414,7 +2392,7 @@ const InstructorCourseEdit = () => {
           }),
         ]);
       } else {
-      setSections((prev) => [...prev, sec]);
+        setSections((prev) => [...prev, sec]);
       }
       setNewSectionTitle("");
       setNewSectionDescription("");
@@ -2568,14 +2546,14 @@ const InstructorCourseEdit = () => {
     setNewQuizGenerateError(null);
     try {
       const sourceLessonIds = Array.from(newQuizSourceLessonIds);
-      const res = await invokeGenerateQuestions({
+      const res = await runMutation(() => invokeGenerateQuestions({
         courseId: id,
         // The quiz lesson does not exist yet, so we anchor generation on the first source lesson.
         lessonId: sourceLessonIds[0],
         sourceLessonIds,
         locale: activeContentLocale,
         count: newQuizQuestionCount,
-      });
+      }));
       setNewQuizGeneratedSources(res.sources);
       setNewQuizQuestions(res.questions.map(questionDataToNewQuizDraft));
     } catch (err) {
@@ -2603,7 +2581,12 @@ const InstructorCourseEdit = () => {
           description: section.description ?? "",
         });
       } else {
-        void getCourseSectionLocaleContent(id, section.id, loc).catch(() => null).then((localized) => {
+        void queryClient.fetchQuery(instructorCourseSectionLocaleQueryOptions({
+          courseId: id,
+          sectionId: section.id,
+          locale: loc,
+          userId: profile?.id,
+        })).catch(() => null).then((localized) => {
           if (!sectionDraftRef.current.has(loc)) {
             sectionDraftRef.current.set(loc, {
               title: localized?.title ?? section.title ?? "",
@@ -2634,7 +2617,7 @@ const InstructorCourseEdit = () => {
 
   const handleSaveSectionDetails = async () => {
     if (!id || !editingSection) return;
-    const savePromise = (async () => {
+    const savePromise = runMutation(async () => {
       // Flush current dialog locale into draft map before saving
       sectionDraftRef.current.set(dialogSectionLocale, {
         title: editingSectionTitle,
@@ -2671,10 +2654,10 @@ const InstructorCourseEdit = () => {
         }
       }
       setEditingSection(null);
-    })();
+    });
 
     try {
-      await trackLoadingPromise(savePromise, "save-section");
+      await savePromise;
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     }
@@ -2706,6 +2689,7 @@ const InstructorCourseEdit = () => {
     },
   ): Promise<CourseLesson> => {
     if (!id) throw new Error(t("courseEdit.errors.addLessonFailed"));
+    return runMutation(async () => {
 
     const lessonFormat = opts.lessonFormat ?? newLessonFormat;
     const isArticleFormat = lessonFormat === "article";
@@ -2820,7 +2804,8 @@ const InstructorCourseEdit = () => {
       setLessons((prev) => [...prev, les]);
     }
 
-    return les;
+      return les;
+    });
   };
 
   const executeReplaceLessonWithSegments = async (
@@ -2830,6 +2815,7 @@ const InstructorCourseEdit = () => {
   ) => {
     const rc = pv.replaceContext;
     if (!id || !rc || segments.length === 0) return;
+    return runMutation(async () => {
 
     const { replaceLessonId, orderedSectionLessonIds } = rc;
     const idx = orderedSectionLessonIds.indexOf(replaceLessonId);
@@ -2893,6 +2879,7 @@ const InstructorCourseEdit = () => {
     void getLessonDistinctLearnerCountsForCourse(id)
       .then(setLessonLearnerCounts)
       .catch(() => {});
+    });
   };
 
   const finalizeReplaceKeepSingleLesson = async (
@@ -2900,6 +2887,7 @@ const InstructorCourseEdit = () => {
     lessonBeingEdited: CourseLesson,
   ) => {
     if (!id) return;
+    return runMutation(async () => {
 
     const lessonId = lessonBeingEdited.id;
     const ytTrim = pv.youtubeUrl.trim();
@@ -2944,6 +2932,7 @@ const InstructorCourseEdit = () => {
     void getLessonDistinctLearnerCountsForCourse(id)
       .then(setLessonLearnerCounts)
       .catch(() => {});
+    });
   };
 
   const resetNewLessonFormFields = () => {
@@ -3067,7 +3056,7 @@ const InstructorCourseEdit = () => {
       resetNewLessonFormFields();
       setLongVideoSplitPayload(null);
       setLongVideoSplitOpen(false);
-      await refreshCourseTotalDuration(id);
+      await runMutation(() => refreshCourseTotalDuration(id));
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.addLessonFailed"));
     } finally {
@@ -3121,7 +3110,7 @@ const InstructorCourseEdit = () => {
       resetNewLessonFormFields();
       setLongVideoSplitPayload(null);
       setLongVideoSplitOpen(false);
-      await refreshCourseTotalDuration(id);
+      await runMutation(() => refreshCourseTotalDuration(id));
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.addLessonFailed"));
     } finally {
@@ -3218,7 +3207,7 @@ const InstructorCourseEdit = () => {
       setLongVideoSplitPayload(null);
       setManualSegmentRows([{ start: "0:00", end: "", title: "" }]);
       setLongVideoSplitOpen(false);
-      await refreshCourseTotalDuration(id);
+      await runMutation(() => refreshCourseTotalDuration(id));
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.addLessonFailed"));
     } finally {
@@ -3323,12 +3312,12 @@ const InstructorCourseEdit = () => {
       resetNewLessonFormFields();
       if (newLessonFormat === "quiz") {
         if (quizQuestionPayload.length > 0) {
-          await setLessonQuestions(id, createdLesson.id, quizQuestionPayload);
+          await runMutation(() => setLessonQuestions(id, createdLesson.id, quizQuestionPayload));
         } else {
           openLessonQuizGenerator(createdLesson);
         }
       }
-      await refreshCourseTotalDuration(id);
+      await runMutation(() => refreshCourseTotalDuration(id));
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.addLessonFailed"));
     } finally {
@@ -3399,7 +3388,12 @@ const InstructorCourseEdit = () => {
     // Pre-load non-primary locales in background
     for (const loc of supportedLocales) {
       if (loc === primaryContentLocale) continue;
-      void getCourseLessonLocaleContent(id, lesson.id, loc).catch(() => null).then((localized) => {
+      void queryClient.fetchQuery(instructorCourseLessonLocaleQueryOptions({
+        courseId: id,
+        lessonId: lesson.id,
+        locale: loc,
+        userId: profile?.id,
+      })).catch(() => null).then((localized) => {
         const draft: LessonDraft = {
           title: localized?.title ?? lesson.title ?? "",
           youtubeUrl: localized?.youtube_url ?? lesson.youtube_url ?? "",
@@ -3441,7 +3435,7 @@ const InstructorCourseEdit = () => {
 
   const handleSaveLessonDetails = async () => {
     if (!id || !editingLesson) return;
-    const savePromise = (async () => {
+    const savePromise = runMutation(async () => {
       // Flush current dialog state into draft map
       lessonDraftRef.current.set(dialogLessonLocale, captureLessonDraftFromState());
 
@@ -3670,10 +3664,10 @@ const InstructorCourseEdit = () => {
         .then(setLessonLearnerCounts)
         .catch(() => {});
       setEditingLesson(null);
-    })();
+    });
 
     try {
-      await trackLoadingPromise(savePromise, "save-lesson");
+      await savePromise;
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.updateFailed"));
     }
@@ -3683,14 +3677,16 @@ const InstructorCourseEdit = () => {
     if (!id || !confirm(t("courseEdit.confirm.deleteSection"))) return;
     const secLessons = lessons.filter((l) => l.section_id === sectionId);
     try {
-      await deleteSection(
-        id,
-        sectionId,
-        secLessons.map((l) => l.id),
-      );
+      await runMutation(async () => {
+        await deleteSection(
+          id,
+          sectionId,
+          secLessons.map((l) => l.id),
+        );
+        await refreshCourseTotalDuration(id);
+      });
       setSections((prev) => prev.filter((s) => s.id !== sectionId));
       setLessons((prev) => prev.filter((l) => l.section_id !== sectionId));
-      await refreshCourseTotalDuration(id);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.deleteSectionFailed"));
     }
@@ -3699,9 +3695,11 @@ const InstructorCourseEdit = () => {
   const handleDeleteLesson = async (lessonId: string) => {
     if (!id || !confirm(t("courseEdit.confirm.deleteLesson"))) return;
     try {
-      await deleteLesson(id, lessonId);
+      await runMutation(async () => {
+        await deleteLesson(id, lessonId);
+        await refreshCourseTotalDuration(id);
+      });
       setLessons((prev) => prev.filter((l) => l.id !== lessonId));
-      await refreshCourseTotalDuration(id);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.deleteLessonFailed"));
     }
@@ -3714,7 +3712,7 @@ const InstructorCourseEdit = () => {
     )
       return;
     try {
-      await deleteCourse(id);
+      await runMutation(() => deleteCourse(id));
       window.location.href = "/instructor/courses";
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.errors.deleteCourseFailed"));
@@ -3801,14 +3799,14 @@ const InstructorCourseEdit = () => {
     clearLessonDragState();
 
     try {
-      await reorderCourseLessons(
+      await runMutation(() => reorderCourseLessons(
         id,
         nextSectionLessons.map(({ id: lessonId, order, section_id }) => ({
           id: lessonId,
           order,
           section_id,
         })),
-      );
+      ));
     } catch (e) {
       setLessons(previousLessons);
       const message =
@@ -3981,13 +3979,13 @@ const InstructorCourseEdit = () => {
     clearSectionDragState();
 
     try {
-      await reorderCourseSections(
+      await runMutation(() => reorderCourseSections(
         id,
         nextOrderedSections.map(({ id: sectionId, order }) => ({
           id: sectionId,
           order,
         })),
-      );
+      ));
     } catch (e) {
       setSections(previousSections);
       const message =
@@ -8579,6 +8577,7 @@ const InstructorCourseEdit = () => {
         section={questionGeneratorSection}
         courseId={id ?? ""}
         locale={activeContentLocale}
+        userId={profile?.id}
         onOpenChange={(open) => {
           setQuestionGeneratorOpen(open);
           if (!open) setQuestionGeneratorSection(null);
@@ -8589,6 +8588,7 @@ const InstructorCourseEdit = () => {
         section={null}
         courseId={id ?? ""}
         locale={activeContentLocale}
+        userId={profile?.id}
         mode="lesson"
         lessonId={lessonQuizDialogLesson?.id}
         lessonTitle={lessonQuizDialogLesson?.title}

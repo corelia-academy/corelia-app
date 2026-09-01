@@ -41,9 +41,6 @@ import {
 import { LessonPlayerCard } from "./components/LessonPlayerCard";
 import { FinalAssignmentPanel } from "./components/FinalAssignmentPanel";
 import { SectionQuiz } from "./components/SectionQuiz";
-import { getSectionQuestions } from "@/lib/sectionQuestions";
-import { getSectionQuizResult } from "@/lib/quizAttempts";
-import type { SectionQuestion, SectionQuizResult } from "@/types/questions";
 import { useLearnCourseLoad } from "./hooks/useLearnCourseLoad";
 import { useLearnEnrollmentAccess } from "./hooks/useLearnEnrollmentAccess";
 import { useLearnProgress } from "./hooks/useLearnProgress";
@@ -65,6 +62,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  sectionQuizQueryOptions,
+  type SectionQuizQueryData,
+} from "@/features/courses/quizQueries";
 
 const DESKTOP_BREAKPOINT_QUERY = "(min-width: 1280px)";
 
@@ -97,6 +99,7 @@ export default function Learn() {
   }>();
   const navigate = useNavigate();
   const { profile, user } = useAuth();
+  const queryClient = useQueryClient();
   const isDesktop = useSyncExternalStore(
     subscribeDesktopBreakpoint,
     getDesktopBreakpointSnapshot,
@@ -113,11 +116,6 @@ export default function Learn() {
   const [certificateIssueReason, setCertificateIssueReason] =
     useState<CertificateIssueReason | null>(null);
   const [certificateIssueError, setCertificateIssueError] = useState<string | null>(null);
-  const [sectionQuestions, setSectionQuestions] = useState<SectionQuestion[]>(
-    [],
-  );
-  const [sectionQuizResult, setSectionQuizResult] =
-    useState<SectionQuizResult | null>(null);
 
   const courseLoad = useLearnCourseLoad({
     courseId,
@@ -313,43 +311,14 @@ export default function Learn() {
     visibleLessons,
   ]);
 
-  // Load quiz questions and existing result whenever the current lesson (and its section) changes
-  useEffect(() => {
-    if (!courseId || !currentLesson?.section_id) {
-      queueMicrotask(() => {
-        setSectionQuestions([]);
-        setSectionQuizResult(null);
-      });
-      return;
-    }
-    const sectionId = currentLesson.section_id;
-    let cancelled = false;
-
-    getSectionQuestions(courseId, sectionId)
-      .then((questions) => {
-        if (cancelled) return;
-        setSectionQuestions(questions);
-        if (questions.length === 0) {
-          setSectionQuizResult(null);
-          return;
-        }
-        return getSectionQuizResult(courseId, sectionId, questions.length).then(
-          (result) => {
-            if (!cancelled) setSectionQuizResult(result);
-          },
-        );
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setSectionQuestions([]);
-          setSectionQuizResult(null);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [courseId, currentLesson?.section_id]);
+  const sectionQuizOptions = sectionQuizQueryOptions({
+    userId: user?.id,
+    courseId: courseId ?? "",
+    sectionId: currentLesson?.section_id ?? "",
+  });
+  const sectionQuizQuery = useQuery(sectionQuizOptions);
+  const sectionQuestions = sectionQuizQuery.data?.questions ?? [];
+  const sectionQuizResult = sectionQuizQuery.data?.existingResult ?? null;
 
   const nextLesson = progress.nextLesson;
   const currentLessonIndex = currentLesson
@@ -547,7 +516,13 @@ export default function Learn() {
           }
           questions={sectionQuestions}
           existingResult={sectionQuizResult}
-          onResultUpdate={setSectionQuizResult}
+          onResultUpdate={(existingResult) => {
+            queryClient.setQueryData<SectionQuizQueryData>(
+              sectionQuizOptions.queryKey,
+              (current) =>
+                current ? { ...current, existingResult } : current,
+            );
+          }}
         />
       )}
 

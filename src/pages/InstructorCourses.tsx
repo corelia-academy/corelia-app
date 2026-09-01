@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { useNavigate } from "react-router";
 import {
   BookOpen,
@@ -9,12 +10,11 @@ import {
   EyeOff,
   Pencil,
 } from "lucide-react";
-import { getCoursesForManagement } from "@/lib/courses";
+import { managedCoursesQueryOptions } from "@/features/instructor/instructorQueries";
 import {
   getCourseLevelLabel,
   getCourseOwnerTypeLabel,
 } from "@/types/courses";
-import type { Course } from "@/types/courses";
 import { useAuth } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -24,48 +24,24 @@ const InstructorCourses = () => {
   const { t } = useTranslation("instructor");
   const { profile, authInitialized, profileLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const isAdmin = profile?.role === "admin";
   const canViewAll = isAdmin;
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!authInitialized || profileLoading) return () => { cancelled = true; };
-    if (!isAuthenticated || !profile?.id) {
-      queueMicrotask(() => {
-        if (cancelled) return;
-        setLoading(false);
-        setCourses([]);
-        setError(t("courseListPage.errors.loadFailed"));
-      });
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    queueMicrotask(() => {
-      if (cancelled) return;
-      setLoading(true);
-      setError(null);
-    });
-    getCoursesForManagement(profile.id, canViewAll)
-      .then((data) => {
-        if (!cancelled) setCourses(data);
-      })
-      .catch((e) => {
-        if (!cancelled)
-          setError(e instanceof Error ? e.message : t("courseListPage.errors.loadFailed"));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [authInitialized, profileLoading, isAuthenticated, profile?.id, canViewAll, t]);
+  const coursesQuery = useQuery(
+    managedCoursesQueryOptions(
+      profile?.id,
+      canViewAll,
+      authInitialized && !profileLoading && isAuthenticated,
+    ),
+  );
+  const courses = useMemo(() => coursesQuery.data ?? [], [coursesQuery.data]);
+  const loading = profileLoading || (Boolean(profile?.id) && coursesQuery.isPending);
+  const error = !isAuthenticated
+    ? t("courseListPage.errors.loadFailed")
+    : coursesQuery.error instanceof Error
+      ? coursesQuery.error.message
+      : coursesQuery.error
+        ? t("courseListPage.errors.loadFailed")
+        : null;
 
   const stats = useMemo(() => {
     const published = courses.filter((course) => course.published).length;

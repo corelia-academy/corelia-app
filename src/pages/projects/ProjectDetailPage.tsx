@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { NavLink, useParams } from "react-router";
 import {
   ArrowLeft,
@@ -16,10 +17,9 @@ import { useTranslation } from "react-i18next";
 import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getProjectById, getProjectCoverImageUrl, type PublicProjectEntry } from "@/lib/projects";
-import { listMyProjectHeartIds } from "@/lib/projectSocial";
+import { getProjectCoverImageUrl, type PublicProjectEntry } from "@/lib/projects";
+import { publicProjectDetailQueryOptions } from "@/features/projects/projectQueries";
 import { isHackathonProjectSource, projectSourceLabelKey } from "@/lib/projectSource";
-import { useAuth } from "@/stores/authStore";
 import type { Project } from "@/types/projects";
 
 function sourceLink(project: Project): string | null {
@@ -80,59 +80,18 @@ function DetailSkeleton() {
 export default function ProjectDetailPage() {
   const { id } = useParams();
   const { t, i18n } = useTranslation("common");
-  const { user } = useAuth();
-  const [entry, setEntry] = useState<PublicProjectEntry | null>(null);
-  const [hearted, setHearted] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [notFound, setNotFound] = useState(false);
-
-  const load = useCallback(async () => {
-    if (!id) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setNotFound(false);
-    try {
-      const result = await getProjectById(id, i18n.language);
-      if (!result) {
-        setEntry(null);
-        setNotFound(true);
-        return;
-      }
-      setEntry(result);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("projects.errorDescription"));
-    } finally {
-      setLoading(false);
-    }
-  }, [id, i18n.language, t]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  useEffect(() => {
-    if (!user || !entry?.project.id) {
-      setHearted(false);
-      return;
-    }
-    let cancelled = false;
-    void listMyProjectHeartIds([entry.project.id]).then((set) => {
-      if (!cancelled) setHearted(set.has(entry.project.id));
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [entry?.project.id, user]);
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const query = useQuery(publicProjectDetailQueryOptions(id, locale));
+  const entry = query.data;
+  const loading = query.isPending;
+  const notFound = !id || (query.isSuccess && entry === null);
+  const error = query.error
+    ? query.error instanceof Error
+      ? query.error.message
+      : t("projects.errorDescription")
+    : null;
 
   const owner = useMemo(() => ownerDisplay(entry?.owner ?? null), [entry?.owner]);
-
-  if (loading) return <DetailSkeleton />;
 
   if (notFound) {
     return (
@@ -157,6 +116,8 @@ export default function ProjectDetailPage() {
     );
   }
 
+  if (loading) return <DetailSkeleton />;
+
   if (error || !entry) {
     return (
       <div className="container-app py-6 sm:py-8">
@@ -171,7 +132,7 @@ export default function ProjectDetailPage() {
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-2">
-            <Button type="button" onClick={() => void load()}>
+            <Button type="button" onClick={() => void query.refetch()}>
               {t("projects.retry")}
             </Button>
             <Button variant="outline" render={<NavLink to="/projects" />} nativeButton={false}>
@@ -332,7 +293,6 @@ export default function ProjectDetailPage() {
               projectId={project.id}
               ownerId={project.owner_id}
               likeCount={Number(project.like_count ?? 0)}
-              hearted={hearted}
               variant="default"
             />
           </div>
@@ -341,4 +301,3 @@ export default function ProjectDetailPage() {
     </div>
   );
 }
-

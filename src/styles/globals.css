@@ -330,7 +330,7 @@
   color: oklch(1 0 0);
 }
 
-/* Design system component utilities (docs/DESIGN.md) */
+/* Shared component utilities; visual behavior is defined by the codebase. */
 @utility ds-card {
   border-radius: var(--radius-2xl);
   border-width: 1px;
@@ -381,4 +381,3 @@
     transform: translateY(0);
   }
 }
-

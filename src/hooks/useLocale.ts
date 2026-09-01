@@ -1,8 +1,9 @@
 import { useCallback, useMemo } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import i18n, { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 import { updateProfileForUser } from "@/lib/profile";
-import { supabase } from "@/lib/supabase";
+import { updateAuthLocale } from "@/lib/auth";
 import { useAuth } from "@/stores/authStore";
 
 function isSupportedLanguage(value: string): value is SupportedLanguage {
@@ -12,6 +13,18 @@ function isSupportedLanguage(value: string): value is SupportedLanguage {
 export function useLocale() {
   const { i18n: i18nFromHook } = useTranslation();
   const { user, profile, refreshProfile } = useAuth();
+  const persistMutation = useMutation({
+    mutationFn: async ({ lng }: { lng: SupportedLanguage }) => {
+      if (!user) return;
+      await updateProfileForUser(user, { locale: lng });
+      await updateAuthLocale(lng).catch((error) => {
+        console.warn("[useLocale] update auth locale:", error);
+      });
+    },
+    onSuccess: async () => {
+      if (user) await refreshProfile(user);
+    },
+  });
 
   const language = useMemo<SupportedLanguage>(() => {
     const lng = i18nFromHook.resolvedLanguage ?? i18nFromHook.language;
@@ -24,25 +37,13 @@ export function useLocale() {
       await i18n.changeLanguage(lng);
 
       if (user) {
-        try {
-          await updateProfileForUser(user, { locale: lng });
-          await refreshProfile(user);
-        } catch {
-          // If Firestore update fails, keep local preference (localStorage via i18next).
-        }
-        try {
-          const { error } = await supabase.auth.updateUser({ data: { locale: lng } });
-          if (error) console.warn("[useLocale] updateUser locale:", error.message);
-        } catch {
-          // Auth metadata is best-effort for email template personalization.
-        }
+        await persistMutation.mutateAsync({ lng }).catch(() => undefined);
       }
     },
-    [user, refreshProfile],
+    [persistMutation, user],
   );
 
   const canPersistToProfile = Boolean(user && profile);
 
   return { language, setLanguage, canPersistToProfile };
 }
-

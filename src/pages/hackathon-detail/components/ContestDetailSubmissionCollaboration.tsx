@@ -1,17 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileCombobox } from "@/components/ui/profile-combobox";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ContestDetailViewModel } from "@/pages/hackathon-detail/viewModel";
-import { supabase } from "@/lib/supabase";
-
-type ProfileMini = {
-  id: string;
-  username: string | null;
-  full_name: string | null;
-};
+import { collaborationProfilesQueryOptions } from "@/features/projects/projectCollaborationQueries";
 
 export function ContestDetailSubmissionCollaboration({
   vm,
@@ -35,8 +30,6 @@ export function ContestDetailSubmissionCollaboration({
     user,
   } = vm;
 
-  const [profilesById, setProfilesById] = useState<Record<string, ProfileMini>>({});
-
   const userIdsToResolve = useMemo(() => {
     const ids = new Set<string>();
     for (const m of collabMembers) {
@@ -47,29 +40,8 @@ export function ContestDetailSubmissionCollaboration({
     }
     return Array.from(ids);
   }, [collabMembers, collabInvites]);
-
-  useEffect(() => {
-    if (userIdsToResolve.length === 0) {
-      queueMicrotask(() => setProfilesById({}));
-      return;
-    }
-    let cancelled = false;
-    void supabase
-      .from("public_profiles")
-      .select("id,username,full_name")
-      .in("id", userIdsToResolve)
-      .then(({ data }) => {
-        if (cancelled || !data) return;
-        const next: Record<string, ProfileMini> = {};
-        for (const row of data as ProfileMini[]) {
-          next[row.id] = row;
-        }
-        setProfilesById(next);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [userIdsToResolve]);
+  const profilesQuery = useQuery(collaborationProfilesQueryOptions(userIdsToResolve));
+  const profilesById = profilesQuery.data ?? {};
 
   const comboboxOptions = useMemo(
     () =>

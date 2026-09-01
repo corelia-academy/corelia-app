@@ -178,6 +178,26 @@ export async function countIssuancesForTemplate(templateId: string): Promise<num
   return count ?? 0;
 }
 
+export async function countIssuancesByTemplateIds(
+  templateIds: string[],
+): Promise<Record<string, number>> {
+  const uniqueIds = Array.from(new Set(templateIds.filter(Boolean)));
+  if (uniqueIds.length === 0) return {};
+  const { data, error } = await supabase
+    .from("credential_issuances")
+    .select("template_id")
+    .in("template_id", uniqueIds);
+  if (error) throw new Error(error.message);
+  const counts: Record<string, number> = Object.fromEntries(
+    uniqueIds.map((id) => [id, 0]),
+  );
+  for (const row of data ?? []) {
+    const id = String(row.template_id ?? "");
+    if (id) counts[id] = (counts[id] ?? 0) + 1;
+  }
+  return counts;
+}
+
 export async function listActivityMilestoneTemplates(): Promise<CredentialTemplateRow[]> {
   const { data, error } = await supabase
     .from("credential_templates")

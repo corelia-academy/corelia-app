@@ -1,10 +1,12 @@
+import { useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import type { User } from "@supabase/supabase-js";
 
-import { supabase } from "@/lib/supabase";
-import { getCurrentProfile, getProfileForUser } from "@/lib/profile";
-import type { Profile, UserRole } from "@/types/database";
+import { currentProfileQueryOptions } from "@/features/auth/profileQueries";
+import { clearPrivateQueryCache, queryClient } from "@/lib/queryClient";
+import { signOutFromSupabase } from "@/lib/auth";
+import type { UserRole } from "@/types/database";
 import { hasRole as checkRole } from "@/types/database";
 
 /** Fallback nếu `signOut()` lỗi — xóa session Supabase khỏi localStorage (sb-*-auth-token). */
@@ -22,116 +24,105 @@ function clearSupabaseAuthFromLocalStorage(): void {
   }
 }
 
+export type AuthStatus = "booting" | "anonymous" | "authenticated" | "recovery";
+
 interface AuthStore {
   user: User | null;
-  profile: Profile | null;
-  /** True while the signed-in user's profile row is being fetched (not session bootstrap). */
-  profileLoading: boolean;
-  authInitialized: boolean;
+  status: AuthStatus;
   /** True when the current session was established via a password-recovery email link. */
   isPasswordRecovery: boolean;
-  setUser: (user: User | null) => void;
-  setProfile: (profile: Profile | null) => void;
-  setProfileLoading: (profileLoading: boolean) => void;
-  setAuthInitialized: (authInitialized: boolean) => void;
+  setAuthState: (user: User | null, status: AuthStatus) => void;
   setPasswordRecovery: (value: boolean) => void;
   signOut: () => Promise<void>;
-  refreshProfile: (user?: User | null) => Promise<void>;
 }
 
-export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set) => ({
-      user: null,
-      profile: null,
-      profileLoading: false,
-      authInitialized: false,
-      isPasswordRecovery: false,
+export const useAuthStore = create<AuthStore>((set, get) => ({
+  user: null,
+  status: "booting",
+  isPasswordRecovery: false,
 
-      setUser: (user) => set({ user }),
-      setProfile: (profile) => set({ profile }),
-      setProfileLoading: (profileLoading) => set({ profileLoading }),
-      setAuthInitialized: (authInitialized) => set({ authInitialized }),
-      setPasswordRecovery: (value) => set({ isPasswordRecovery: value }),
+  setAuthState: (user, status) =>
+    set({ user, status, isPasswordRecovery: status === "recovery" }),
+  setPasswordRecovery: (value) =>
+    set((state) => ({
+      isPasswordRecovery: value,
+      status: value
+        ? "recovery"
+        : state.user
+          ? "authenticated"
+          : state.status === "booting"
+            ? "booting"
+            : "anonymous",
+    })),
 
-      signOut: async () => {
-        const signOutDeadlineMs = 12_000;
-        try {
-          const raced = await Promise.race([
-            supabase.auth.signOut(),
-            new Promise<"timeout">((resolve) => {
-              setTimeout(() => resolve("timeout"), signOutDeadlineMs);
-            }),
-          ]);
-          if (raced === "timeout") {
-            console.warn("[authStore] signOut timed out; clearing local Supabase session keys.");
-            clearSupabaseAuthFromLocalStorage();
-          } else if (raced && typeof raced === "object" && "error" in raced && raced.error) {
-            console.error("[authStore] signOut:", raced.error.message);
-            clearSupabaseAuthFromLocalStorage();
-          }
-        } catch (e) {
-          console.error("[authStore] signOut:", e);
-          clearSupabaseAuthFromLocalStorage();
-        } finally {
-          try {
-            set({
-              user: null,
-              profile: null,
-              profileLoading: false,
-              authInitialized: true,
-            });
-          } catch (e2) {
-            console.error("[authStore] signOut clear state:", e2);
-          }
-        }
-      },
-
-      refreshProfile: async (user?: User | null) => {
-        try {
-          const profile = user
-            ? await getProfileForUser(user)
-            : await getCurrentProfile();
-          set({ profile });
-        } catch (err) {
-          console.error("[authStore] refreshProfile failed:", err);
-        }
-      },
-    }),
-    {
-      name: "corelia-auth",
-      // v2: stop persisting `profile` to avoid mismatch with non-persisted `user`.
-      // We rely on Supabase session persistence + `AuthSync` to load profile.
-      version: 2,
-      migrate: () => ({}),
-      partialize: () => ({}),
-    },
-  ),
-);
+  signOut: async () => {
+    const previousUserId = get().user?.id;
+    const signOutDeadlineMs = 12_000;
+    try {
+      const raced = await Promise.race([
+        signOutFromSupabase(),
+        new Promise<"timeout">((resolve) => {
+          setTimeout(() => resolve("timeout"), signOutDeadlineMs);
+        }),
+      ]);
+      if (raced === "timeout") {
+        console.warn("[authStore] signOut timed out; clearing local Supabase session keys.");
+        clearSupabaseAuthFromLocalStorage();
+      } else if (raced && typeof raced === "object" && "error" in raced && raced.error) {
+        console.error("[authStore] signOut:", raced.error.message);
+        clearSupabaseAuthFromLocalStorage();
+      }
+    } catch (e) {
+      console.error("[authStore] signOut:", e);
+      clearSupabaseAuthFromLocalStorage();
+    } finally {
+      try {
+        await clearPrivateQueryCache(previousUserId);
+      } catch (e2) {
+        console.error("[authStore] signOut clear state:", e2);
+      } finally {
+        set({ user: null, status: "anonymous", isPasswordRecovery: false });
+      }
+    }
+  },
+}));
 
 export function useAuth() {
   const user = useAuthStore((s) => s.user);
-  const profile = useAuthStore((s) => s.profile);
-  const profileLoading = useAuthStore((s) => s.profileLoading);
-  const authInitialized = useAuthStore((s) => s.authInitialized);
+  const status = useAuthStore((s) => s.status);
   const signOut = useAuthStore((s) => s.signOut);
-  const refreshProfile = useAuthStore((s) => s.refreshProfile);
-  const setAuthInitialized = useAuthStore((s) => s.setAuthInitialized);
+  const profileQuery = useQuery(currentProfileQueryOptions(user));
+  const profile = user ? (profileQuery.data ?? null) : null;
+  const profileLoading = user != null && profileQuery.isPending;
+  const authInitialized = status !== "booting";
+
+  const refreshProfile = useCallback(
+    async (targetUser?: User | null) => {
+      const target = targetUser ?? user;
+      if (!target) return;
+      await queryClient.fetchQuery({
+        ...currentProfileQueryOptions(target),
+        staleTime: 0,
+      });
+    },
+    [user],
+  );
 
   const role = profile?.role;
-  const isAuthenticated = !!user;
+  const isAuthenticated = status === "authenticated" || status === "recovery";
   const hasRole = (allowed: readonly UserRole[]) =>
     role ? checkRole(role, allowed) : false;
   return {
     user,
+    status,
     profile,
     profileLoading,
+    profileError: profileQuery.error,
     /** @deprecated Prefer `profileLoading` — same value (profile fetch gate, not session init). */
     loading: profileLoading,
     authInitialized,
     signOut,
     refreshProfile,
-    setAuthInitialized,
     isAuthenticated,
     role,
     hasRole,

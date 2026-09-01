@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
@@ -17,8 +18,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { listFollowers, type FollowerPreviewRow } from "@/lib/follows";
+import type { FollowerPreviewRow } from "@/lib/follows";
 import type { FollowSubject } from "@/types/feed";
+import { followersQueryOptions } from "@/features/social/socialQueries";
 
 function followerLabel(row: FollowerPreviewRow): string {
   return row.full_name?.trim() || row.username?.trim() || row.ocid?.trim() || "Corelia";
@@ -47,36 +49,15 @@ export function FollowerPreview({
   onOpenChange?: (open: boolean) => void;
 }) {
   const { t } = useTranslation("feed");
-  const [items, setItems] = useState<FollowerPreviewRow[]>([]);
   const [internalDialogOpen, setInternalDialogOpen] = useState(false);
-  const [dialogItems, setDialogItems] = useState<FollowerPreviewRow[]>([]);
-  const [dialogLoading, setDialogLoading] = useState(false);
-  const [dialogError, setDialogError] = useState<string | null>(null);
   const { type, id } = subject;
   const dialogOpen = open ?? internalDialogOpen;
   const setDialogOpen = onOpenChange ?? setInternalDialogOpen;
 
-  useEffect(() => {
-    if (!showSummary) {
-      return;
-    }
-
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const next = await listFollowers({ type, id }, limit);
-        if (!cancelled) setItems(next);
-      } catch {
-        if (!cancelled) setItems([]);
-      }
-    }
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [id, limit, showSummary, type]);
+  const summaryQuery = useQuery(
+    followersQueryOptions({ type, id }, limit, showSummary),
+  );
+  const items = summaryQuery.data ?? [];
 
   const count = typeof totalCount === "number" ? totalCount : items.length;
   if (showSummary && count <= 0 && !dialogOpen) return null;
@@ -87,12 +68,6 @@ export function FollowerPreview({
       onOpenChange={setDialogOpen}
       subject={{ type, id }}
       fallbackItems={items}
-      items={dialogItems}
-      setItems={setDialogItems}
-      loading={dialogLoading}
-      setLoading={setDialogLoading}
-      error={dialogError}
-      setError={setDialogError}
     />
   );
 
@@ -142,52 +117,19 @@ function FollowerListDialog({
   onOpenChange,
   subject,
   fallbackItems,
-  items,
-  setItems,
-  loading,
-  setLoading,
-  error,
-  setError,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   subject: FollowSubject;
   fallbackItems: FollowerPreviewRow[];
-  items: FollowerPreviewRow[];
-  setItems: (items: FollowerPreviewRow[]) => void;
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
-  error: string | null;
-  setError: (error: string | null) => void;
 }) {
   const { t } = useTranslation("feed");
-  const subjectType = subject.type;
-  const subjectId = subject.id;
-
-  useEffect(() => {
-    if (!open) return;
-
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    void listFollowers({ type: subjectType, id: subjectId }, 50)
-      .then((next) => {
-        if (!cancelled) setItems(next);
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : t("followers.errors.load"));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [open, setError, setItems, setLoading, subjectId, subjectType, t]);
-
+  const query = useQuery(followersQueryOptions(subject, 50, open));
+  const items = query.data ?? [];
+  const loading = open && query.isPending;
+  const error = query.error instanceof Error
+    ? query.error.message
+    : query.error ? t("followers.errors.load") : null;
   const visibleItems = items.length > 0 ? items : fallbackItems;
 
   return (

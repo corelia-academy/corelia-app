@@ -3,35 +3,6 @@ import { uploadUserAvatar } from "@/lib/storage";
 import type { User } from "@supabase/supabase-js";
 import type { Profile, ProfileInsert, ProfileUpdate, PublicProfile } from "@/types/database";
 import { sortLocale } from "@/lib/intl";
-import { makeTTLCache } from "@/lib/utils";
-
-/** Per-handle single-flight: concurrent `/u/:handle` mounts dedupe public_profiles. */
-const publicProfileByHandleInFlight = new Map<string, Promise<PublicProfile | null>>();
-
-const instructorProfilesCache = makeTTLCache<Profile[]>(3 * 60 * 1000);
-
-/** Per-user cache so switching accounts cannot reuse another user's in-flight/resolved profile. */
-const profilePromiseCache = new Map<string, { promise: Promise<Profile | null>; ts: number }>();
-const CURRENT_PROFILE_TTL = 30_000;
-
-export function invalidateCurrentProfileCache(userId?: string) {
-  if (userId) profilePromiseCache.delete(userId);
-  else profilePromiseCache.clear();
-}
-
-function getCachedProfilePromise(userId: string): Promise<Profile | null> | null {
-  const entry = profilePromiseCache.get(userId);
-  if (entry && Date.now() - entry.ts < CURRENT_PROFILE_TTL) return entry.promise;
-  return null;
-}
-
-function setCachedProfilePromise(userId: string, promise: Promise<Profile | null>) {
-  profilePromiseCache.set(userId, { promise, ts: Date.now() });
-  promise.catch(() => {
-    const cur = profilePromiseCache.get(userId);
-    if (cur?.promise === promise) profilePromiseCache.delete(userId);
-  });
-}
 
 function rowToProfile(row: Record<string, unknown>): Profile {
   return {
@@ -224,11 +195,7 @@ export function getCurrentProfile(): Promise<Profile | null> {
  * during auth initialization / refresh, which can contend on the auth-token lock).
  */
 export function getProfileForUser(user: User): Promise<Profile | null> {
-  const hit = getCachedProfilePromise(user.id);
-  if (hit) return hit;
-  const promise = _fetchProfileForUser(user);
-  setCachedProfilePromise(user.id, promise);
-  return promise;
+  return _fetchProfileForUser(user);
 }
 
 function fallbackProfile(user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }): Profile {
@@ -254,6 +221,34 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
   if (error || !data) return null;
   return rowToProfile(data as Record<string, unknown>);
+}
+
+export async function getProfilesByIds(
+  userIds: string[],
+  signal?: AbortSignal,
+): Promise<Record<string, Profile | null>> {
+  const ids = Array.from(new Set(userIds.filter(Boolean)));
+  if (ids.length === 0) return {};
+  let request = supabase.from("profiles").select("*").in("id", ids);
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request;
+  if (error) throw new Error(error.message);
+  const profiles = Object.fromEntries(
+    ids.map((userId) => [userId, null] as const),
+  ) as Record<string, Profile | null>;
+  for (const row of data ?? []) {
+    const profile = rowToProfile(row as Record<string, unknown>);
+    profiles[profile.id] = profile;
+  }
+  return profiles;
+}
+
+export async function clearPendingCredentialsClaimedAt(userId: string): Promise<void> {
+  const { error } = await supabase
+    .from("profiles")
+    .update({ pending_credentials_claimed_at: null })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
 }
 
 /** Admin/support_staff only — profiles_select_self_or_staff RLS gates this to staff for
@@ -289,7 +284,6 @@ export async function setNewUserProfileForUser(
     { onConflict: "id" },
   );
   if (error) throw new Error(error.message);
-  invalidateCurrentProfileCache(user.id);
 }
 
 export async function setNewUserProfile(data: {
@@ -334,7 +328,6 @@ export async function updateProfileForUser(
     .select("*")
     .single();
   if (error || !updated) throw new Error(error?.message ?? "Cập nhật profile thất bại");
-  invalidateCurrentProfileCache(user.id);
   return rowToProfile(updated as Record<string, unknown>);
 }
 
@@ -368,7 +361,6 @@ export async function updateOCIDProfileForUser(
     if (error.code === "23505") throw new Error("OCID_ALREADY_LINKED");
     throw new Error(error.message);
   }
-  invalidateCurrentProfileCache(user.id);
 }
 
 export async function updateOCIDProfile(input: {
@@ -392,26 +384,19 @@ export async function getAllProfiles(): Promise<Profile[]> {
 }
 
 export async function listCoreliaInstructorProfiles(): Promise<Profile[]> {
-  const cached = instructorProfilesCache.get("all");
-  if (cached) return cached;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("role", "instructor")
-      .eq("instructor_origin", "corelia");
-    if (error) throw new Error(error.message);
-    return (data ?? [])
-      .map((r) => rowToProfile(r as Record<string, unknown>))
-      .sort((a, b) => {
-        const nameA = (a.full_name ?? a.email ?? a.id).toLowerCase();
-        const nameB = (b.full_name ?? b.email ?? b.id).toLowerCase();
-        return nameA.localeCompare(nameB, sortLocale());
-      });
-  })();
-  instructorProfilesCache.set("all", promise);
-  promise.catch(() => instructorProfilesCache.delete("all"));
-  return promise;
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("role", "instructor")
+    .eq("instructor_origin", "corelia");
+  if (error) throw new Error(error.message);
+  return (data ?? [])
+    .map((r) => rowToProfile(r as Record<string, unknown>))
+    .sort((a, b) => {
+      const nameA = (a.full_name ?? a.email ?? a.id).toLowerCase();
+      const nameB = (b.full_name ?? b.email ?? b.id).toLowerCase();
+      return nameA.localeCompare(nameB, sortLocale());
+    });
 }
 
 /**
@@ -425,10 +410,6 @@ export async function listCourseCoInstructorCandidates(courseId: string): Promis
   });
   if (error) throw new Error(error.message);
   return (data ?? []).map((row: unknown) => rowToProfile(row as Record<string, unknown>));
-}
-
-export function invalidateInstructorProfilesCache() {
-  instructorProfilesCache.clear();
 }
 
 export async function uploadAvatarForUser(user: User, file: File): Promise<string> {
@@ -467,7 +448,6 @@ export async function updateProfileAdmin(userId: string, updates: ProfileUpdate)
   if (updates.role && data[0].role !== updates.role) {
     throw new Error("Cập nhật vai trò bị từ chối bởi cơ sở dữ liệu (Privilege Guard).");
   }
-  invalidateCurrentProfileCache(userId);
 }
 
 async function fetchPublicProfileByHandleOnce(handle: string): Promise<PublicProfile | null> {
@@ -516,16 +496,5 @@ export async function getPublicProfileById(id: string): Promise<PublicProfile | 
 }
 
 export async function getPublicProfileByHandle(handle: string): Promise<PublicProfile | null> {
-  const key = handle.trim().replace(/^@+/, "").toLowerCase();
-  if (!key) return null;
-  const inflight = publicProfileByHandleInFlight.get(key);
-  if (inflight) return inflight;
-  const promise = fetchPublicProfileByHandleOnce(handle);
-  publicProfileByHandleInFlight.set(key, promise);
-  promise.finally(() => {
-    if (publicProfileByHandleInFlight.get(key) === promise) {
-      publicProfileByHandleInFlight.delete(key);
-    }
-  });
-  return promise;
+  return fetchPublicProfileByHandleOnce(handle);
 }

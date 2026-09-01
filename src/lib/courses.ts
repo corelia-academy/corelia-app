@@ -1,7 +1,7 @@
 import { invokeCheckCourseCredential } from "@/lib/credentialsEdge";
 import { coreliaEdgeUrl, supabaseFunctionHeaders } from "@/lib/coreliaEdgeApi";
 import { supabase } from "@/lib/supabase";
-import { removeUndefinedFields, makeTTLCache } from "@/lib/utils";
+import { removeUndefinedFields } from "@/lib/utils";
 import { getYoutubeVideoId } from "@/types/courses";
 import type {
   Course,
@@ -25,21 +25,6 @@ import type { User } from "@supabase/supabase-js";
 const CERTIFICATE_API =
   import.meta.env.VITE_CERTIFICATE_ISSUE_API || coreliaEdgeUrl("certificates.issue");
 const COURSE_COMPLETION_API = coreliaEdgeUrl("courses.syncCompletion");
-
-const LOCALE_CACHE_TTL = 5 * 60 * 1000;
-const courseLocaleCache = makeTTLCache<CourseLocaleContent | null>(LOCALE_CACHE_TTL);
-const sectionLocaleCache = makeTTLCache<CourseSectionLocaleContent | null>(LOCALE_CACHE_TTL);
-const lessonLocaleCache = makeTTLCache<CourseLessonLocaleContent | null>(LOCALE_CACHE_TTL);
-const lessonLocaleMapCache = makeTTLCache<Map<string, CourseLessonLocaleContent>>(LOCALE_CACHE_TTL);
-const sectionLocaleMapCache = makeTTLCache<Map<string, CourseSectionLocaleContent>>(LOCALE_CACHE_TTL);
-
-const CATALOG_CACHE_TTL = 3 * 60 * 1000;
-const publishedCoursesCache = makeTTLCache<Course[]>(CATALOG_CACHE_TTL);
-const courseByIdCache = makeTTLCache<Course | null>(CATALOG_CACHE_TTL);
-const enrollmentsCache = makeTTLCache<Enrollment[]>(30_000);
-const sectionsCache = makeTTLCache<CourseSection[]>(2 * 60 * 1000);
-const lessonsCache = makeTTLCache<CourseLesson[]>(2 * 60 * 1000);
-const lessonProgressCache = makeTTLCache<LessonProgress[]>(30_000);
 
 type CourseRow = {
   id: string;
@@ -100,24 +85,6 @@ function lessonRowToLesson(
 
 export function normalizeCourseLocale(input?: string | null): SupportedCourseLocale {
   return input === "en" ? "en" : "vi";
-}
-
-export function clearCourseLocaleCaches(courseId?: string): void {
-  if (!courseId) {
-    courseLocaleCache.clear();
-    sectionLocaleCache.clear();
-    lessonLocaleCache.clear();
-    return;
-  }
-  for (const key of Array.from(courseLocaleCache.keys())) {
-    if (key.startsWith(`${courseId}:`)) courseLocaleCache.delete(key);
-  }
-  for (const key of Array.from(sectionLocaleCache.keys())) {
-    if (key.startsWith(`${courseId}:`)) sectionLocaleCache.delete(key);
-  }
-  for (const key of Array.from(lessonLocaleCache.keys())) {
-    if (key.startsWith(`${courseId}:`)) lessonLocaleCache.delete(key);
-  }
 }
 
 export function getCoursePrimaryLocale(course?: Pick<Course, "i18n"> | null): SupportedCourseLocale {
@@ -208,26 +175,16 @@ export async function getCourseLocaleContent(
   courseId: string,
   locale: SupportedCourseLocale,
 ): Promise<CourseLocaleContent | null> {
-  const key = `${courseId}:${locale}`;
-  const existing = courseLocaleCache.get(key);
-  if (existing) return existing;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("course_locales")
-      .select("data")
-      .eq("course_id", courseId)
-      .eq("locale", locale)
-      .maybeSingle();
-    if (error || !data?.data) return null;
-    return { ...(data.data as Omit<CourseLocaleContent, "locale">), locale };
-  })();
-  courseLocaleCache.set(key, promise);
-  try {
-    return await promise;
-  } catch (e) {
-    courseLocaleCache.delete(key);
-    throw e;
-  }
+  const { data, error } = await supabase
+    .from("course_locales")
+    .select("data")
+    .eq("course_id", courseId)
+    .eq("locale", locale)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.data
+    ? { ...(data.data as Omit<CourseLocaleContent, "locale">), locale }
+    : null;
 }
 
 export async function getBatchCourseLocaleContent(
@@ -237,30 +194,16 @@ export async function getBatchCourseLocaleContent(
   const result = new Map<string, CourseLocaleContent>();
   if (courseIds.length === 0) return result;
 
-  const uncachedIds: string[] = [];
-  for (const id of courseIds) {
-    const cached = courseLocaleCache.get(`${id}:${locale}`);
-    if (cached) {
-      const content = await cached;
-      if (content) result.set(id, content);
-    } else {
-      uncachedIds.push(id);
-    }
-  }
-
-  if (uncachedIds.length === 0) return result;
-
   const { data, error } = await supabase
     .from("course_locales")
     .select("course_id,data")
-    .in("course_id", uncachedIds)
+    .in("course_id", courseIds)
     .eq("locale", locale);
 
   if (!error && data) {
     for (const row of data) {
       if (!row.data) continue;
       const content = { ...(row.data as Omit<CourseLocaleContent, "locale">), locale };
-      courseLocaleCache.set(`${row.course_id}:${locale}`, Promise.resolve(content));
       result.set(row.course_id, content);
     }
   }
@@ -282,7 +225,6 @@ export async function setCourseLocaleContent(
     { onConflict: "course_id,locale" },
   );
   if (error) throw new Error(error.message);
-  courseLocaleCache.delete(`${courseId}:${locale}`);
 }
 
 export async function getCourseSectionLocaleContent(
@@ -290,27 +232,17 @@ export async function getCourseSectionLocaleContent(
   sectionId: string,
   locale: SupportedCourseLocale,
 ): Promise<CourseSectionLocaleContent | null> {
-  const key = `${courseId}:${sectionId}:${locale}`;
-  const existing = sectionLocaleCache.get(key);
-  if (existing) return existing;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("course_section_locales")
-      .select("data")
-      .eq("course_id", courseId)
-      .eq("section_id", sectionId)
-      .eq("locale", locale)
-      .maybeSingle();
-    if (error || !data?.data) return null;
-    return { ...(data.data as Omit<CourseSectionLocaleContent, "locale">), locale };
-  })();
-  sectionLocaleCache.set(key, promise);
-  try {
-    return await promise;
-  } catch (e) {
-    sectionLocaleCache.delete(key);
-    throw e;
-  }
+  const { data, error } = await supabase
+    .from("course_section_locales")
+    .select("data")
+    .eq("course_id", courseId)
+    .eq("section_id", sectionId)
+    .eq("locale", locale)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.data
+    ? { ...(data.data as Omit<CourseSectionLocaleContent, "locale">), locale }
+    : null;
 }
 
 export async function setCourseSectionLocaleContent(
@@ -328,8 +260,6 @@ export async function setCourseSectionLocaleContent(
     { onConflict: "course_id,section_id,locale" },
   );
   if (error) throw new Error(error.message);
-  sectionLocaleCache.delete(`${courseId}:${sectionId}:${locale}`);
-  sectionLocaleMapCache.delete(`${courseId}:${locale}`);
 }
 
 export async function getCourseLessonLocaleContent(
@@ -337,27 +267,17 @@ export async function getCourseLessonLocaleContent(
   lessonId: string,
   locale: SupportedCourseLocale,
 ): Promise<CourseLessonLocaleContent | null> {
-  const key = `${courseId}:${lessonId}:${locale}`;
-  const existing = lessonLocaleCache.get(key);
-  if (existing) return existing;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("course_lesson_locales")
-      .select("data")
-      .eq("course_id", courseId)
-      .eq("lesson_id", lessonId)
-      .eq("locale", locale)
-      .maybeSingle();
-    if (error || !data?.data) return null;
-    return { ...(data.data as Omit<CourseLessonLocaleContent, "locale">), locale };
-  })();
-  lessonLocaleCache.set(key, promise);
-  try {
-    return await promise;
-  } catch (e) {
-    lessonLocaleCache.delete(key);
-    throw e;
-  }
+  const { data, error } = await supabase
+    .from("course_lesson_locales")
+    .select("data")
+    .eq("course_id", courseId)
+    .eq("lesson_id", lessonId)
+    .eq("locale", locale)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.data
+    ? { ...(data.data as Omit<CourseLessonLocaleContent, "locale">), locale }
+    : null;
 }
 
 export async function setCourseLessonLocaleContent(
@@ -375,89 +295,56 @@ export async function setCourseLessonLocaleContent(
     { onConflict: "course_id,lesson_id,locale" },
   );
   if (error) throw new Error(error.message);
-  lessonLocaleCache.delete(`${courseId}:${lessonId}:${locale}`);
-  lessonLocaleMapCache.delete(`${courseId}:${locale}`);
 }
 
 export async function getCourseLessonLocaleContentMap(
   courseId: string,
   locale: SupportedCourseLocale,
 ): Promise<Map<string, CourseLessonLocaleContent>> {
-  const key = `${courseId}:${locale}`;
-  const existing = lessonLocaleMapCache.get(key);
-  if (existing) return existing;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("course_lesson_locales")
-      .select("lesson_id, data")
-      .eq("course_id", courseId)
-      .eq("locale", locale);
-    if (error) throw new Error(error.message);
-    const map = new Map<string, CourseLessonLocaleContent>();
-    for (const row of data ?? []) {
-      const raw = row.data as Partial<CourseLessonLocaleContent> & { lesson_id?: string };
-      const lessonId = String(row.lesson_id ?? raw.lesson_id ?? "").trim();
-      if (!lessonId) continue;
-      map.set(lessonId, { ...(raw as CourseLessonLocaleContent), locale });
-    }
-    return map;
-  })();
-  lessonLocaleMapCache.set(key, promise);
-  try {
-    return await promise;
-  } catch (e) {
-    lessonLocaleMapCache.delete(key);
-    throw e;
+  const { data, error } = await supabase
+    .from("course_lesson_locales")
+    .select("lesson_id, data")
+    .eq("course_id", courseId)
+    .eq("locale", locale);
+  if (error) throw new Error(error.message);
+  const map = new Map<string, CourseLessonLocaleContent>();
+  for (const row of data ?? []) {
+    const raw = row.data as Partial<CourseLessonLocaleContent> & { lesson_id?: string };
+    const lessonId = String(row.lesson_id ?? raw.lesson_id ?? "").trim();
+    if (!lessonId) continue;
+    map.set(lessonId, { ...(raw as CourseLessonLocaleContent), locale });
   }
+  return map;
 }
 
 export async function getCourseSectionLocaleContentMap(
   courseId: string,
   locale: SupportedCourseLocale,
 ): Promise<Map<string, CourseSectionLocaleContent>> {
-  const key = `${courseId}:${locale}`;
-  const existing = sectionLocaleMapCache.get(key);
-  if (existing) return existing;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("course_section_locales")
-      .select("section_id, data")
-      .eq("course_id", courseId)
-      .eq("locale", locale);
-    if (error) throw new Error(error.message);
-    const map = new Map<string, CourseSectionLocaleContent>();
-    for (const row of data ?? []) {
-      const raw = row.data as Partial<CourseSectionLocaleContent> & { section_id?: string };
-      const sectionId = String(row.section_id ?? raw.section_id ?? "").trim();
-      if (!sectionId) continue;
-      map.set(sectionId, { ...(raw as CourseSectionLocaleContent), locale });
-    }
-    return map;
-  })();
-  sectionLocaleMapCache.set(key, promise);
-  try {
-    return await promise;
-  } catch (e) {
-    sectionLocaleMapCache.delete(key);
-    throw e;
+  const { data, error } = await supabase
+    .from("course_section_locales")
+    .select("section_id, data")
+    .eq("course_id", courseId)
+    .eq("locale", locale);
+  if (error) throw new Error(error.message);
+  const map = new Map<string, CourseSectionLocaleContent>();
+  for (const row of data ?? []) {
+    const raw = row.data as Partial<CourseSectionLocaleContent> & { section_id?: string };
+    const sectionId = String(row.section_id ?? raw.section_id ?? "").trim();
+    if (!sectionId) continue;
+    map.set(sectionId, { ...(raw as CourseSectionLocaleContent), locale });
   }
+  return map;
 }
 
 export async function getPublishedCourses(): Promise<Course[]> {
-  const cached = publishedCoursesCache.get("all");
-  if (cached) return cached;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("courses")
-      .select(COURSE_ROW_SELECT)
-      .eq("published", true)
-      .order("updated_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    return (data ?? []).map((r) => rowToCourse(r as CourseRow));
-  })();
-  publishedCoursesCache.set("all", promise);
-  promise.catch(() => publishedCoursesCache.delete("all"));
-  return promise;
+  const { data, error } = await supabase
+    .from("courses")
+    .select(COURSE_ROW_SELECT)
+    .eq("published", true)
+    .order("updated_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => rowToCourse(r as CourseRow));
 }
 
 export async function getPublishedCoursesByInstructor(instructorId: string): Promise<Course[]> {
@@ -481,25 +368,32 @@ export async function getPublishedCoursesByInstructor(instructorId: string): Pro
 }
 
 export async function getCourse(courseId: string): Promise<Course | null> {
-  const cached = courseByIdCache.get(courseId);
-  if (cached) return cached;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("courses")
-      .select(COURSE_ROW_SELECT)
-      .eq("id", courseId)
-      .maybeSingle();
-    if (error || !data) return null;
-    return rowToCourse(data as CourseRow);
-  })();
-  courseByIdCache.set(courseId, promise);
-  promise.catch(() => courseByIdCache.delete(courseId));
-  return promise;
+  const { data, error } = await supabase
+    .from("courses")
+    .select(COURSE_ROW_SELECT)
+    .eq("id", courseId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? rowToCourse(data as CourseRow) : null;
 }
 
-export function invalidateCourseCache(courseId?: string) {
-  publishedCoursesCache.delete("all");
-  if (courseId) courseByIdCache.delete(courseId);
+/** Batch course read for dashboards that already have a bounded set of ids. */
+export async function getCoursesByIds(courseIds: string[]): Promise<Map<string, Course>> {
+  const ids = Array.from(new Set(courseIds.filter(Boolean)));
+  if (ids.length === 0) return new Map();
+
+  const { data, error } = await supabase
+    .from("courses")
+    .select(COURSE_ROW_SELECT)
+    .in("id", ids);
+  if (error) throw new Error(error.message);
+
+  return new Map(
+    ((data ?? []) as CourseRow[]).map((row) => {
+      const course = rowToCourse(row);
+      return [course.id, course] as const;
+    }),
+  );
 }
 
 export async function getCourseBySlug(slug: string, viewer?: User | null): Promise<Course | null> {
@@ -514,8 +408,8 @@ export async function getCourseBySlug(slug: string, viewer?: User | null): Promi
     .maybeSingle();
   if (pub) return rowToCourse(pub as CourseRow);
 
-  let resolvedViewer = viewer ?? null;
-  if (!resolvedViewer) {
+  let resolvedViewer = viewer;
+  if (resolvedViewer === undefined) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -533,40 +427,26 @@ export async function getCourseBySlug(slug: string, viewer?: User | null): Promi
 }
 
 export async function getCourseSections(courseId: string): Promise<CourseSection[]> {
-  const cached = sectionsCache.get(courseId);
-  if (cached) return cached;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("course_sections")
-      .select("*")
-      .eq("course_id", courseId)
-      .order("sort_order", { ascending: true });
-    if (error) throw new Error(error.message);
-    return (data ?? []).map((r) => sectionRowToSection(courseId, r as CourseRow & { sort_order: number }));
-  })();
-  sectionsCache.set(courseId, promise);
-  promise.catch(() => sectionsCache.delete(courseId));
-  return promise;
+  const { data, error } = await supabase
+    .from("course_sections")
+    .select("*")
+    .eq("course_id", courseId)
+    .order("sort_order", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => sectionRowToSection(courseId, r as CourseRow & { sort_order: number }));
 }
 
 export async function getCourseLessons(
   courseId: string,
   options?: { previewOnly?: boolean },
 ): Promise<CourseLesson[]> {
-  const cached = lessonsCache.get(courseId);
-  if (cached) return cached;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("course_lessons")
-      .select("*")
-      .eq("course_id", courseId)
-      .order("sort_order", { ascending: true });
-    if (error) throw new Error(error.message);
-    return (data ?? []).map((r) => lessonRowToLesson(r as CourseRow & { section_id: string; sort_order: number }));
-  })();
-  lessonsCache.set(courseId, promise);
-  promise.catch(() => lessonsCache.delete(courseId));
-  const rows = await promise;
+  const { data, error } = await supabase
+    .from("course_lessons")
+    .select("*")
+    .eq("course_id", courseId)
+    .order("sort_order", { ascending: true });
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []).map((r) => lessonRowToLesson(r as CourseRow & { section_id: string; sort_order: number }));
   if (options?.previewOnly) return rows.filter((l) => l.is_preview_free === true);
   return rows;
 }
@@ -589,27 +469,20 @@ export async function getEnrollment(userId: string, courseId: string): Promise<E
 }
 
 export async function getMyEnrollments(userId: string): Promise<Enrollment[]> {
-  const cached = enrollmentsCache.get(userId);
-  if (cached) return cached;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("enrollments")
-      .select("*")
-      .eq("user_id", userId)
-      .order("last_accessed_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    const list = (data ?? []).map((d) => ({ id: d.id, ...d } as Enrollment));
-    const seen = new Set<string>();
-    return list.filter((e) => {
-      if (!e.course_id) return false;
-      if (seen.has(e.course_id)) return false;
-      seen.add(e.course_id);
-      return true;
-    });
-  })();
-  enrollmentsCache.set(userId, promise);
-  promise.catch(() => enrollmentsCache.delete(userId));
-  return promise;
+  const { data, error } = await supabase
+    .from("enrollments")
+    .select("*")
+    .eq("user_id", userId)
+    .order("last_accessed_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  const list = (data ?? []).map((d) => ({ id: d.id, ...d } as Enrollment));
+  const seen = new Set<string>();
+  return list.filter((e) => {
+    if (!e.course_id) return false;
+    if (seen.has(e.course_id)) return false;
+    seen.add(e.course_id);
+    return true;
+  });
 }
 
 /** Text skills earned from completed courses, respecting the profile's privacy setting. */
@@ -629,10 +502,6 @@ export async function getProfileCourseSkills(profileId: string): Promise<string[
         .map((skill) => [skill.toLocaleLowerCase(), skill] as const),
     ).values(),
   );
-}
-
-export function invalidateEnrollmentsCache(userId: string) {
-  enrollmentsCache.delete(userId);
 }
 
 /** Public verification codes for the signed-in learner's own certificates,
@@ -683,7 +552,6 @@ export async function enrollCourse(courseId: string, viewer?: User | null): Prom
   });
 
   if (!rpcError && (rpcData as { ok?: boolean } | null)?.ok) {
-    invalidateEnrollmentsCache(user.id);
     const refreshed = await getEnrollment(user.id, courseId);
     if (refreshed) return refreshed;
   }
@@ -702,7 +570,6 @@ export async function enrollCourse(courseId: string, viewer?: User | null): Prom
     .select("*")
     .single();
   if (error) throw new Error(error.message);
-  invalidateEnrollmentsCache(user.id);
   return { id: data.id, ...data } as Enrollment;
 }
 
@@ -719,7 +586,6 @@ export async function touchEnrollment(courseId: string, viewer?: User | null): P
     .from("enrollments")
     .update({ last_accessed_at: new Date().toISOString() })
     .eq("id", enr.id);
-  invalidateEnrollmentsCache(user.id);
 }
 
 const LESSON_LEARNER_COUNT_PAGE = 1000;
@@ -755,30 +621,117 @@ export async function getLessonProgressForCourse(
   userId: string,
   courseId: string,
 ): Promise<LessonProgress[]> {
-  const key = `${userId}_${courseId}`;
-  const cached = lessonProgressCache.get(key);
-  if (cached) return cached;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("lesson_progress")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("course_id", courseId);
-    if (error) throw new Error(error.message);
-    return (data ?? []).map((d) => ({ id: d.id, ...d } as LessonProgress));
-  })();
-  lessonProgressCache.set(key, promise);
-  promise.catch(() => lessonProgressCache.delete(key));
-  return promise;
+  const { data, error } = await supabase
+    .from("lesson_progress")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("course_id", courseId);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((d) => ({ id: d.id, ...d } as LessonProgress));
 }
 
-export function invalidateLessonProgressCache(userId: string, courseId: string) {
-  lessonProgressCache.delete(`${userId}_${courseId}`);
+export async function getLessonProgressForUsersInCourse(
+  userIds: string[],
+  courseId: string,
+  signal?: AbortSignal,
+): Promise<Map<string, LessonProgress[]>> {
+  const ids = Array.from(new Set(userIds.filter(Boolean)));
+  const result = new Map<string, LessonProgress[]>(ids.map((id) => [id, []]));
+  if (ids.length === 0) return result;
+  let request = supabase
+    .from("lesson_progress")
+    .select("*")
+    .eq("course_id", courseId)
+    .in("user_id", ids);
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request;
+  if (error) throw new Error(error.message);
+  for (const row of data ?? []) {
+    const progress = { id: row.id, ...row } as LessonProgress;
+    const rows = result.get(progress.user_id) ?? [];
+    rows.push(progress);
+    result.set(progress.user_id, rows);
+  }
+  return result;
 }
 
-export function invalidateSectionsCache(courseId: string) {
-  sectionsCache.delete(courseId);
-  lessonsCache.delete(courseId);
+export type LearnerCourseProgressSnapshot = {
+  courseIds: string[];
+  lessonsByCourse: Map<string, CourseLesson[]>;
+  progressByCourse: Map<string, LessonProgress[]>;
+};
+
+/**
+ * Read the learner's progress once and batch-load all matching lessons. This is
+ * used by cross-course dashboards to avoid one lessons/progress request per course.
+ */
+export async function getLearnerCourseProgressSnapshot(
+  userId: string,
+): Promise<LearnerCourseProgressSnapshot> {
+  const { data: progressData, error: progressError } = await supabase
+    .from("lesson_progress")
+    .select("*")
+    .eq("user_id", userId);
+  if (progressError) throw new Error(progressError.message);
+
+  const progressRows = (progressData ?? []).map(
+    (row) => ({ id: row.id, ...row } as LessonProgress),
+  );
+  const courseIds = Array.from(
+    new Set(progressRows.map((row) => row.course_id).filter(Boolean)),
+  );
+  const progressByCourse = new Map<string, LessonProgress[]>();
+  for (const row of progressRows) {
+    const rows = progressByCourse.get(row.course_id) ?? [];
+    rows.push(row);
+    progressByCourse.set(row.course_id, rows);
+  }
+
+  const lessonsByCourse = new Map<string, CourseLesson[]>();
+  if (courseIds.length === 0) return { courseIds, lessonsByCourse, progressByCourse };
+
+  const { data: lessonData, error: lessonError } = await supabase
+    .from("course_lessons")
+    .select("id,course_id,section_id,sort_order,data")
+    .in("course_id", courseIds)
+    .order("sort_order", { ascending: true });
+  if (lessonError) throw new Error(lessonError.message);
+
+  for (const row of lessonData ?? []) {
+    const courseId = String(row.course_id ?? "");
+    if (!courseId) continue;
+    const rows = lessonsByCourse.get(courseId) ?? [];
+    rows.push(
+      lessonRowToLesson(
+        row as {
+          id: string;
+          section_id: string;
+          sort_order: number;
+          data: Record<string, unknown> | null;
+        },
+      ),
+    );
+    lessonsByCourse.set(courseId, rows);
+  }
+
+  return { courseIds, lessonsByCourse, progressByCourse };
+}
+
+export async function getLessonCountsByCourseIds(
+  courseIds: string[],
+): Promise<Map<string, number>> {
+  const ids = Array.from(new Set(courseIds.filter(Boolean)));
+  const counts = new Map<string, number>();
+  if (ids.length === 0) return counts;
+  const { data, error } = await supabase
+    .from("course_lessons")
+    .select("course_id")
+    .in("course_id", ids);
+  if (error) throw new Error(error.message);
+  for (const row of data ?? []) {
+    counts.set(row.course_id, (counts.get(row.course_id) ?? 0) + 1);
+  }
+  return counts;
 }
 
 export function sortLessonsByCurriculum(lessons: CourseLesson[], sections: CourseSection[]): CourseLesson[] {
@@ -871,7 +824,6 @@ export async function checkAndIssueCertificate(
     course_title: string | null;
   }>;
   if (!res.ok) throw new Error(body.message || "Không thể cấp chứng nhận lúc này.");
-  if (body.issued === true) invalidateEnrollmentsCache(userId);
   return {
     issued: body.issued === true,
     reason: body.reason ?? (body.issued ? "issued" : "unknown"),
@@ -902,7 +854,6 @@ export async function syncCourseCompletion(
 
   const body = (await res.json().catch(() => ({}))) as Partial<CourseCompletionSyncResult>;
   if (!res.ok) throw new Error(body.message || "Không thể đồng bộ hoàn thành khoá học.");
-  if (body.completed === true) invalidateEnrollmentsCache(userId);
   return {
     ok: body.ok === true,
     completed: body.completed === true,
@@ -943,8 +894,6 @@ export async function setLessonProgress(
 
   const { error } = await supabase.from("lesson_progress").upsert(row, { onConflict: "id" });
   if (error) throw new Error(error.message);
-
-  invalidateLessonProgressCache(user.id, courseId);
 
   if (completed) {
     await ensureEnrollmentForProgress(user.id, courseId, now);
@@ -999,7 +948,6 @@ export async function ensureEnrollmentForProgress(
       });
       return null;
     }
-    invalidateEnrollmentsCache(userId);
     return await getEnrollment(userId, courseId);
   } catch (err) {
     console.error("[ensureEnrollmentForProgress] unexpected error", {
@@ -1058,7 +1006,6 @@ export async function backfillMissingEnrollmentsForUser(userId: string): Promise
       });
       return 0;
     }
-    invalidateEnrollmentsCache(userId);
     return missing.length;
   } catch (err) {
     console.error("[backfillMissingEnrollmentsForUser] unexpected error", {
@@ -1176,7 +1123,6 @@ export async function addSection(courseId: string, data: CourseSectionInsert): P
     data: dataDoc,
   });
   if (error) throw new Error(error.message);
-  invalidateSectionsCache(courseId);
   return { id, ...payload } as CourseSection;
 }
 
@@ -1220,8 +1166,6 @@ export async function addLesson(courseId: string, data: CourseLessonInsert): Pro
     data: dataDoc,
   });
   if (error) throw new Error(error.message);
-  invalidateSectionsCache(courseId);
-  invalidateCourseCache(courseId);
   return { id, ...payload } as CourseLesson;
 }
 
@@ -1269,7 +1213,6 @@ export async function updateCourse(courseId: string, data: CourseUpdate): Promis
     .update({ ...top, data: nextData })
     .eq("id", courseId);
   if (error) throw new Error(error.message);
-  invalidateCourseCache(courseId);
 }
 
 export async function refreshCourseTotalDuration(courseId: string): Promise<void> {
@@ -1277,7 +1220,6 @@ export async function refreshCourseTotalDuration(courseId: string): Promise<void
     p_course_id: courseId,
   });
   if (error) throw new Error(error.message);
-  invalidateCourseCache(courseId);
 }
 
 export async function updateSection(
@@ -1301,8 +1243,6 @@ export async function updateSection(
     .eq("course_id", courseId)
     .eq("id", sectionId);
   if (upErr) throw new Error(upErr.message);
-  invalidateSectionsCache(courseId);
-  invalidateCourseCache(courseId);
 }
 
 export async function updateLesson(
@@ -1341,7 +1281,6 @@ export async function updateLesson(
     .eq("course_id", courseId)
     .eq("id", lessonId);
   if (upErr) throw new Error(upErr.message);
-  invalidateSectionsCache(courseId);
 }
 
 export async function reorderCourseLessons(
@@ -1354,7 +1293,6 @@ export async function reorderCourseLessons(
     p_updates: lessons.map((l) => ({ id: l.id, sort_order: l.order, section_id: l.section_id })),
   });
   if (error) throw new Error(error.message);
-  invalidateSectionsCache(courseId);
 }
 
 export async function reorderCourseSections(
@@ -1367,7 +1305,6 @@ export async function reorderCourseSections(
     p_updates: sections.map((s) => ({ id: s.id, sort_order: s.order })),
   });
   if (error) throw new Error(error.message);
-  invalidateSectionsCache(courseId);
 }
 
 export async function deleteSection(
@@ -1389,15 +1326,11 @@ export async function deleteSection(
       .in("id", lessonIdsInSection);
     if (lessonsError) throw new Error(lessonsError.message);
   }
-  invalidateSectionsCache(courseId);
-  invalidateCourseCache(courseId);
 }
 
 export async function deleteLesson(courseId: string, lessonId: string): Promise<void> {
   const { error } = await supabase.from("course_lessons").delete().eq("course_id", courseId).eq("id", lessonId);
   if (error) throw new Error(error.message);
-  invalidateSectionsCache(courseId);
-  invalidateCourseCache(courseId);
 }
 
 export async function deleteCourse(courseId: string): Promise<void> {

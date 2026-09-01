@@ -2,36 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { LanguageSwitcher } from "@/components/base/LanguageSwitcher";
-import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/stores/authStore";
 import { useTranslation } from "react-i18next";
-import type { Session } from "@supabase/supabase-js";
 
 const SESSION_WAIT_MS = 12_000;
 const REDIRECT_SECONDS = 5;
-
-async function waitForActiveSession(maxMs: number): Promise<Session | null> {
-  const {
-    data: { session: initial },
-  } = await supabase.auth.getSession();
-  if (initial?.user) return initial;
-
-  return new Promise((resolve) => {
-    const timer = window.setTimeout(() => {
-      subscription.unsubscribe();
-      resolve(null);
-    }, maxMs);
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        window.clearTimeout(timer);
-        subscription.unsubscribe();
-        resolve(session);
-      }
-    });
-  });
-}
 
 function parseAuthErrorFromLocation(): string | null {
   const hash = window.location.hash.startsWith("#")
@@ -63,6 +38,7 @@ function parseAuthErrorFromLocation(): string | null {
 export default function SignupVerified() {
   const { t } = useTranslation("auth");
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const initialError = useMemo(() => parseAuthErrorFromLocation(), []);
 
@@ -75,23 +51,21 @@ export default function SignupVerified() {
   useEffect(() => {
     if (initialError) return;
 
-    let cancelled = false;
-    void (async () => {
-      const session = await waitForActiveSession(SESSION_WAIT_MS);
-      if (cancelled) return;
-      if (session?.user) {
+    if (user) {
+      let cancelled = false;
+      queueMicrotask(() => {
+        if (cancelled) return;
         setSecondsLeft(REDIRECT_SECONDS);
         setPhase("success");
-        return;
-      }
+      });
+      return () => { cancelled = true; };
+    }
+    const timeoutId = window.setTimeout(() => {
       setFailureReason(parseAuthErrorFromLocation());
       setPhase("error");
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [initialError]);
+    }, SESSION_WAIT_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [initialError, user]);
 
   useEffect(() => {
     if (phase !== "success") return;

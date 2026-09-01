@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Calendar, Gavel, ShieldCheck, Trophy } from "lucide-react";
 import { toast } from "sonner";
@@ -19,10 +20,12 @@ import { useTranslation } from "react-i18next";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { datetimeLocalToIso } from "@/pages/hackathon-detail/utils/datetime";
 import { normalizeSlug, slugifyTitle } from "@/pages/hackathon-detail/utils/slug";
+import { hackathonKeys } from "@/features/hackathons/hackathonQueries";
 
 export default function ContestNew() {
   const { t } = useTranslation("contests");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
@@ -42,42 +45,77 @@ export default function ContestNew() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [bannerPreviewUrl, setBannerPreviewUrl] = useState<string | null>(null);
   const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const effectiveSlug = slugTouched ? slug : slugifyTitle(title);
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const contest = await createContest({
+        slug: effectiveSlug,
+        title,
+        tagline,
+        description,
+        rules,
+        location,
+        status,
+        starts_at: datetimeLocalToIso(startsAt),
+        ends_at: datetimeLocalToIso(endsAt),
+        registration_deadline: datetimeLocalToIso(registrationDeadline),
+        submission_deadline: datetimeLocalToIso(submissionDeadline),
+        config: { auto_approve_registrations: autoApproveRegistrations },
+        max_participants: maxParticipants.trim() ? Number(maxParticipants) : null,
+        prize_pool_summary: prizePoolSummary.trim() || null,
+      });
+
+      let imagesFailed = false;
+      try {
+        const [banner, thumbnail] = await Promise.all([
+          bannerFile
+            ? uploadContestBanner(contest.id, bannerFile)
+            : Promise.resolve(null),
+          thumbnailFile
+            ? uploadContestThumbnail(contest.id, thumbnailFile)
+            : Promise.resolve(null),
+        ]);
+        if (banner || thumbnail) {
+          await updateContest(contest.id, {
+            ...(banner
+              ? { cover_image_url: banner.url, cover_image_path: banner.path }
+              : {}),
+            ...(thumbnail
+              ? { thumbnail_url: thumbnail.url, thumbnail_path: thumbnail.path }
+              : {}),
+          });
+        }
+      } catch {
+        imagesFailed = true;
+      }
+      return { contest, imagesFailed };
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: [...hackathonKeys.all, "catalog"] }),
+  });
+  const submitting = createMutation.isPending;
 
   useEffect(() => {
-    if (!bannerFile) {
-      setBannerPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(bannerFile);
-    setBannerPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [bannerFile]);
+    return () => {
+      if (bannerPreviewUrl) URL.revokeObjectURL(bannerPreviewUrl);
+    };
+  }, [bannerPreviewUrl]);
 
   useEffect(() => {
-    if (!thumbnailFile) {
-      setThumbnailPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(thumbnailFile);
-    setThumbnailPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [thumbnailFile]);
-
-  useEffect(() => {
-    if (slugTouched) return;
-    setSlug(slugifyTitle(title));
-  }, [slugTouched, title]);
+    return () => {
+      if (thumbnailPreviewUrl) URL.revokeObjectURL(thumbnailPreviewUrl);
+    };
+  }, [thumbnailPreviewUrl]);
 
   const canSubmit = useMemo(() => {
-    const normalized = normalizeSlug(slug);
+    const normalized = normalizeSlug(effectiveSlug);
     return (
       title.trim().length >= 3 &&
       tagline.trim().length >= 8 &&
       normalized.length >= 3 &&
       normalized.length <= 80
     );
-  }, [slug, tagline, title]);
+  }, [effectiveSlug, tagline, title]);
   const readinessItems = useMemo(
     () => [
       {
@@ -113,53 +151,9 @@ export default function ContestNew() {
       );
       return;
     }
-    setSubmitting(true);
     try {
-      const contest = await createContest({
-        slug,
-        title,
-        tagline,
-        description,
-        rules,
-        location,
-        status,
-        starts_at: datetimeLocalToIso(startsAt),
-        ends_at: datetimeLocalToIso(endsAt),
-        registration_deadline: datetimeLocalToIso(registrationDeadline),
-        submission_deadline: datetimeLocalToIso(submissionDeadline),
-        config: { auto_approve_registrations: autoApproveRegistrations },
-        max_participants: maxParticipants.trim() ? Number(maxParticipants) : null,
-        prize_pool_summary: prizePoolSummary.trim() || null,
-      });
-
-      try {
-        let cover_image_url: string | undefined;
-        let cover_image_path: string | undefined;
-        let thumbnail_url: string | undefined;
-        let thumbnail_path: string | undefined;
-        if (bannerFile) {
-          const uploaded = await uploadContestBanner(contest.id, bannerFile);
-          cover_image_url = uploaded.url;
-          cover_image_path = uploaded.path;
-        }
-        if (thumbnailFile) {
-          const uploaded = await uploadContestThumbnail(contest.id, thumbnailFile);
-          thumbnail_url = uploaded.url;
-          thumbnail_path = uploaded.path;
-        }
-        if (cover_image_url || thumbnail_url) {
-          await updateContest(contest.id, {
-            ...(cover_image_url != null && cover_image_path != null
-              ? { cover_image_url, cover_image_path }
-              : {}),
-            ...(thumbnail_url != null && thumbnail_path != null
-              ? { thumbnail_url, thumbnail_path }
-              : {}),
-          });
-        }
-      } catch {
-        toast.error(t("instructorNew.toasts.imagesUploadFailed"));
-      }
+      const { contest, imagesFailed } = await createMutation.mutateAsync();
+      if (imagesFailed) toast.error(t("instructorNew.toasts.imagesUploadFailed"));
 
       toast.success(t("instructorNew.toasts.created"));
       if (!contest.slug) {
@@ -170,8 +164,6 @@ export default function ContestNew() {
       navigate(`/hackathons/${contest.slug}/manage/overview`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("instructorNew.toasts.createFailed"));
-    } finally {
-      setSubmitting(false);
     }
   }
 
@@ -290,7 +282,7 @@ export default function ContestNew() {
                 <FieldLabel htmlFor="contest-slug">{t("instructorNew.form.slugLabel")}</FieldLabel>
                 <Input
                   id="contest-slug"
-                  value={slug}
+                    value={effectiveSlug}
                   onChange={(e) => {
                     setSlugTouched(true);
                     setSlug(e.target.value);
@@ -302,7 +294,7 @@ export default function ContestNew() {
                   inputMode="url"
                 />
                 <FieldDescription>
-                  {t("instructorNew.form.slugDescription", { slug: normalizeSlug(slug) })}
+                  {t("instructorNew.form.slugDescription", { slug: normalizeSlug(effectiveSlug) })}
                 </FieldDescription>
               </Field>
 
@@ -461,7 +453,11 @@ export default function ContestNew() {
                     type="file"
                     accept="image/*"
                     className="cursor-pointer"
-                    onChange={(e) => setBannerFile(e.target.files?.[0] ?? null)}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] ?? null;
+                      setBannerFile(file);
+                      setBannerPreviewUrl(file ? URL.createObjectURL(file) : null);
+                    }}
                   />
                   <FieldDescription>{t("instructorNew.form.bannerHint")}</FieldDescription>
                   {bannerPreviewUrl ? (
@@ -483,7 +479,11 @@ export default function ContestNew() {
                     type="file"
                     accept="image/*"
                     className="cursor-pointer"
-                    onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] ?? null;
+                      setThumbnailFile(file);
+                      setThumbnailPreviewUrl(file ? URL.createObjectURL(file) : null);
+                    }}
                   />
                   <FieldDescription>{t("instructorNew.form.thumbnailHint")}</FieldDescription>
                   {thumbnailPreviewUrl ? (

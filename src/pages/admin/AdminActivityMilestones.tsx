@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2, Plus, Upload, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -17,13 +18,13 @@ import { Input } from "@/components/ui/input";
 const TEXTAREA_CLASS =
   "min-h-[88px] w-full rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15";
 import {
-  countIssuancesForTemplate,
-  listActivityMilestoneTemplates,
   saveActivityMilestoneTemplate,
   type CredentialTemplateRow,
 } from "@/lib/credentialTemplates";
 import { uploadActivityMilestoneBadgeImage } from "@/lib/storage";
 import { validatePngSignature } from "@/lib/imageValidation";
+import { activityMilestonesQueryOptions, adminKeys } from "@/features/admin/adminQueries";
+import { useAuth } from "@/stores/authStore";
 
 type MilestoneEventKey =
   | "courses_completed"
@@ -49,13 +50,13 @@ function buildTriggerRule(
 
 export default function AdminActivityMilestones() {
   const { t } = useTranslation("admin");
-  const [rows, setRows] = useState<CredentialTemplateRow[]>([]);
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const milestonesQuery = useQuery(activityMilestonesQueryOptions(user?.id));
+  const rows = milestonesQuery.data?.rows ?? [];
+  const counts = milestonesQuery.data?.counts ?? {};
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -65,38 +66,27 @@ export default function AdminActivityMilestones() {
   const [track, setTrack] = useState("ai");
   const [isActive, setIsActive] = useState(true);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const list = await listActivityMilestoneTemplates();
-      // One-off manual OCA/OCB grants (Admin Manual Mint tab) reuse this same
-      // scope+table but aren't recurring milestones — keep them off this list.
-      const milestonesOnly = list.filter((r) => r.trigger_type !== "manual");
-      setRows(milestonesOnly);
-      const next: Record<string, number> = {};
-      await Promise.all(
-        list.map(async (r) => {
-          next[r.id] = await countIssuancesForTemplate(r.id).catch(() => 0);
-        }),
-      );
-      setCounts(next);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("activityMilestones.loadFailed"));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+  const uploadMutation = useMutation({
+    mutationFn: uploadActivityMilestoneBadgeImage,
+    onSuccess: ({ url }) => setImageUrl(url),
+  });
+  const saveMutation = useMutation({
+    mutationFn: saveActivityMilestoneTemplate,
+    onSuccess: () => {
+      toast.success(t("activityMilestones.saved"));
+      setDialogOpen(false);
+      void queryClient.invalidateQueries({
+        queryKey: adminKeys.activityMilestones(user?.id ?? "missing"),
+      });
+    },
+  });
 
   const handleUpload = async (file: File) => {
-    setUploading(true);
     try {
-      const { url } = await uploadActivityMilestoneBadgeImage(file);
-      setImageUrl(url);
+      await uploadMutation.mutateAsync(file);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setUploading(false);
-    }
+    } finally { /* mutation owns pending state */ }
   };
 
   const onFileSelect = async (file: File | null) => {
@@ -117,10 +107,6 @@ export default function AdminActivityMilestones() {
 
     await handleUpload(file);
   };
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
 
   function describeRule(row: CredentialTemplateRow): string {
     const rule = row.trigger_rule as Record<string, unknown> | null;
@@ -179,10 +165,9 @@ export default function AdminActivityMilestones() {
   };
 
   const handleSave = async () => {
-    setSaving(true);
     try {
       const triggerRule = buildTriggerRule(eventKey, count, track);
-      await saveActivityMilestoneTemplate({
+      await saveMutation.mutateAsync({
         templateId: editId,
         isActive,
         name,
@@ -192,14 +177,9 @@ export default function AdminActivityMilestones() {
         triggerType: "auto",
         triggerRule,
       });
-      toast.success(t("activityMilestones.saved"));
-      setDialogOpen(false);
-      await refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("activityMilestones.saveFailed"));
-    } finally {
-      setSaving(false);
-    }
+    } finally { /* mutation owns pending state */ }
   };
 
 
@@ -217,7 +197,7 @@ export default function AdminActivityMilestones() {
         </Button>
       </div>
 
-      {loading ? (
+      {milestonesQuery.isPending ? (
         <div className="flex items-center gap-2 text-sm text-foreground-muted">
           <Loader2 className="size-4 animate-spin" aria-hidden />
           {t("activityMilestones.loading")}
@@ -282,12 +262,12 @@ export default function AdminActivityMilestones() {
                 <input
                   type="file"
                   accept="image/png"
-                  disabled={uploading}
+                  disabled={uploadMutation.isPending}
                   className="absolute inset-0 cursor-pointer opacity-0"
                   onChange={(e: ChangeEvent<HTMLInputElement>) => void onFileSelect(e.target.files?.[0] ?? null)}
                 />
                 <div className="flex flex-col items-center gap-2 text-sm text-foreground-muted">
-                  {uploading ? (
+                  {uploadMutation.isPending ? (
                     <>
                       <Loader2 className="size-6 animate-spin text-primary" aria-hidden />
                       <span className="font-medium text-primary">
@@ -398,8 +378,8 @@ export default function AdminActivityMilestones() {
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
               {t("activityMilestones.cancel")}
             </Button>
-            <Button type="button" disabled={saving || !name.trim() || !imageUrl.trim()} onClick={() => void handleSave()}>
-              {saving ? t("activityMilestones.saving") : t("activityMilestones.save")}
+            <Button type="button" disabled={saveMutation.isPending || !name.trim() || !imageUrl.trim()} onClick={() => void handleSave()}>
+              {saveMutation.isPending ? t("activityMilestones.saving") : t("activityMilestones.save")}
             </Button>
           </DialogFooter>
         </DialogContent>

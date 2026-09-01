@@ -1,11 +1,13 @@
 import { useEffect, useReducer, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, Loader2, RotateCcw, Trophy, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getLessonQuestions } from "@/lib/sectionQuestions";
-import { getLessonQuizResult, submitLessonQuizAttempts } from "@/lib/quizAttempts";
-import type { SectionQuestion, SectionQuizResult } from "@/types/questions";
+import { submitLessonQuizAttempts } from "@/lib/quizAttempts";
+import type { SectionQuizResult } from "@/types/questions";
+import { lessonQuizQueryOptions } from "@/features/courses/quizQueries";
+import { useAuth } from "@/stores/authStore";
 
 type QuizStatus = "loading" | "idle" | "submitting" | "done" | "error";
 
@@ -67,42 +69,37 @@ export function LessonQuiz({
   onPassed?: () => void;
 }) {
   const { t } = useTranslation("courses");
-  const [questions, setQuestions] = useState<SectionQuestion[]>([]);
+  const { user } = useAuth();
+  const quizQuery = useQuery(
+    lessonQuizQueryOptions({ userId: user?.id, courseId, lessonId }),
+  );
+  const questions = quizQuery.data?.questions ?? [];
   const [quizUIState, dispatch] = useReducer(quizReducer, initialQuizState);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const submitMutation = useMutation({ mutationFn: submitLessonQuizAttempts });
 
   const { status: quizState, selectedAnswers, result } = quizUIState;
 
   useEffect(() => {
-    let cancelled = false;
     dispatch({ type: "RESET" });
-
-    async function load() {
-      try {
-        const qs = await getLessonQuestions(courseId, lessonId);
-        const existingResult =
-          qs.length > 0
-            ? await getLessonQuizResult(courseId, lessonId, qs.length).catch(() => null)
-            : null;
-        if (cancelled) return;
-        setQuestions(qs);
-        if (existingResult && existingResult.completed) {
+    if (!quizQuery.isSuccess) return;
+        if (quizQuery.data.existingResult?.completed) {
           const answers: Record<string, number> = {};
-          for (const a of existingResult.attempts) {
+          for (const a of quizQuery.data.existingResult.attempts) {
             answers[a.question_id] = a.selected_index;
           }
-          dispatch({ type: "LOADED_DONE", answers, result: { ...existingResult, total: qs.length } });
+          dispatch({
+            type: "LOADED_DONE",
+            answers,
+            result: {
+              ...quizQuery.data.existingResult,
+              total: quizQuery.data.questions.length,
+            },
+          });
         } else {
           dispatch({ type: "LOADED_IDLE" });
         }
-      } catch {
-        if (!cancelled) dispatch({ type: "ERROR" });
-      }
-    }
-
-    void load();
-    return () => { cancelled = true; };
-  }, [courseId, lessonId]);
+  }, [courseId, lessonId, quizQuery.data, quizQuery.isSuccess]);
 
   const answeredCount = Object.keys(selectedAnswers).length;
   const allAnswered = questions.length > 0 && answeredCount === questions.length;
@@ -118,7 +115,7 @@ export function LessonQuiz({
         questionId: q.id,
         selectedIndex: selectedAnswers[q.id] ?? 0,
       }));
-      const saved = await submitLessonQuizAttempts(attempts);
+      const saved = await submitMutation.mutateAsync(attempts);
       const correct = saved.filter((a) => a.is_correct).length;
       const newResult: SectionQuizResult = {
         section_id: lessonId,
@@ -142,7 +139,7 @@ export function LessonQuiz({
     setSubmitError(null);
   }
 
-  if (quizState === "loading") {
+  if (quizQuery.isPending || quizState === "loading") {
     return (
       <div className="flex items-center justify-center py-12 text-foreground-muted">
         <Loader2 className="size-5 animate-spin mr-2" aria-hidden />
@@ -151,10 +148,10 @@ export function LessonQuiz({
     );
   }
 
-  if (quizState === "error" || questions.length === 0) {
+  if (quizQuery.isError || quizState === "error" || questions.length === 0) {
     return (
       <div className="px-4 py-8 sm:px-6 text-center text-sm text-foreground-muted">
-        {quizState === "error"
+        {quizQuery.isError || quizState === "error"
           ? t("detail.learn.quiz.loadError")
           : t("detail.learn.quiz.emptyQuestions")}
       </div>

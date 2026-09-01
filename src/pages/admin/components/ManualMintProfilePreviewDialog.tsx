@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getPublicProfileById } from "@/lib/profile";
-import { getRoleLabel, type PublicProfile } from "@/types/database";
+import { adminProfilePreviewQueryOptions } from "@/features/admin/adminQueries";
+import { getRoleLabel } from "@/types/database";
+import { useAuth } from "@/stores/authStore";
 
 /** Floating preview of a student's public profile — lets an admin visually confirm
  *  they picked the right person before minting, without leaving the manual-mint form. */
@@ -19,31 +20,10 @@ export function ManualMintProfilePreviewDialog({
   onOpenChange: (v: boolean) => void;
 }) {
   const { t } = useTranslation("admin");
-  const [profile, setProfile] = useState<PublicProfile | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!open || !userId) return;
-    let cancelled = false;
-
-    queueMicrotask(() => {
-      if (!cancelled) {
-        setLoading(true);
-        setProfile(null);
-      }
-    });
-
-    getPublicProfileById(userId)
-      .then((p) => {
-        if (!cancelled) setProfile(p);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open, userId]);
+  const { user } = useAuth();
+  const query = useQuery(adminProfilePreviewQueryOptions(userId, user?.id, open));
+  const profile = query.data ?? null;
+  const loading = open && Boolean(userId) && query.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

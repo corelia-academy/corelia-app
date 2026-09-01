@@ -1,13 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 import { Bell, BellOff, BellPlus, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
-import { followSubject, isFollowing, unfollowSubject } from "@/lib/follows";
+import { followSubject, unfollowSubject } from "@/lib/follows";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import type { FollowSubject } from "@/types/feed";
+import { followingStateQueryOptions, socialKeys } from "@/features/social/socialQueries";
 
 interface FollowButtonProps {
   subject: FollowSubject;
@@ -31,56 +33,55 @@ export function FollowButton({
   onFollowerCountChange,
 }: FollowButtonProps) {
   const { t } = useTranslation("feed");
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
-  const [following, setFollowing] = useState(initialFollowing);
-  const [count, setCount] = useState<number | null>(
-    typeof followerCount === "number" ? followerCount : null,
-  );
-  const [checking, setChecking] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const subjectType = subject.type;
   const subjectId = subject.id;
+  const baselineCount = typeof followerCount === "number" ? followerCount : null;
+  const countContextKey = `${subjectType}:${subjectId}`;
+  const [countOverride, setCountOverride] = useState<{
+    contextKey: string;
+    baseline: number | null;
+    value: number | null;
+  } | null>(null);
+  const count = countOverride?.contextKey === countContextKey && countOverride.baseline === baselineCount
+    ? countOverride.value
+    : baselineCount;
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setCount(typeof followerCount === "number" ? followerCount : null);
-  }, [followerCount]);
-
-  useEffect(() => {
-    if (!isAuthenticated || disabled) {
-      setFollowing(initialFollowing);
-      return;
-    }
-
-    let cancelled = false;
-    setChecking(true);
-    setError(null);
-    void isFollowing({ type: subjectType, id: subjectId })
-      .then((next) => {
-        if (!cancelled) setFollowing(next);
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : t("follow.errors.check"));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setChecking(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [disabled, initialFollowing, isAuthenticated, subjectId, subjectType, t]);
+  const nextSubject = { type: subjectType, id: subjectId } as FollowSubject;
+  const followingQuery = useQuery(
+    followingStateQueryOptions(user?.id, nextSubject, isAuthenticated && !disabled),
+  );
+  const following = followingQuery.data ?? initialFollowing;
+  const mutation = useMutation({
+    mutationFn: async (nextFollowing: boolean) => {
+      if (nextFollowing) await followSubject(nextSubject);
+      else await unfollowSubject(nextSubject);
+      return nextFollowing;
+    },
+    onMutate: async (nextFollowing) => {
+      if (!user?.id) return undefined;
+      const key = socialKeys.followingState(user.id, nextSubject);
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<boolean>(key) ?? initialFollowing;
+      queryClient.setQueryData(key, nextFollowing);
+      return { key, previous };
+    },
+    onError: (cause, _next, context) => {
+      if (context) queryClient.setQueryData(context.key, context.previous);
+      setError(cause instanceof Error ? cause.message : t("follow.errors.save"));
+    },
+  });
 
   const handleClick = useCallback(async () => {
     if (!isAuthenticated) {
       navigate("/login", { state: { from: location } });
       return;
     }
-    if (disabled || saving) return;
+    if (disabled || mutation.isPending) return;
 
     const nextFollowing = !following;
     const previousCount = count;
@@ -88,38 +89,31 @@ export function FollowButton({
       previousCount === null
         ? null
         : Math.max(0, previousCount + (nextFollowing ? 1 : -1));
-    setSaving(true);
     setError(null);
-    setFollowing(nextFollowing);
-    setCount(nextCount);
+    setCountOverride({ contextKey: countContextKey, baseline: baselineCount, value: nextCount });
 
     try {
-      const nextSubject = { type: subjectType, id: subjectId };
-      if (nextFollowing) await followSubject(nextSubject);
-      else await unfollowSubject(nextSubject);
+      await mutation.mutateAsync(nextFollowing);
       if (nextCount !== null) onFollowerCountChange?.(nextCount);
     } catch (e) {
-      setFollowing(following);
-      setCount(previousCount);
-      setError(e instanceof Error ? e.message : t("follow.errors.save"));
-    } finally {
-      setSaving(false);
+      setCountOverride({ contextKey: countContextKey, baseline: baselineCount, value: previousCount });
+      if (!(e instanceof Error)) setError(t("follow.errors.save"));
     }
   }, [
     count,
+    baselineCount,
+    countContextKey,
     disabled,
     following,
     isAuthenticated,
     location,
     navigate,
     onFollowerCountChange,
-    saving,
-    subjectId,
-    subjectType,
+    mutation,
     t,
   ]);
 
-  const busy = checking || saving;
+  const busy = (isAuthenticated && followingQuery.isPending) || mutation.isPending;
   const Icon = busy ? Loader2 : following ? BellOff : BellPlus;
   const label = following ? t("follow.following") : t("follow.follow");
   const title = error ?? label;

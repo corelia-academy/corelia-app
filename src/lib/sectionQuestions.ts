@@ -32,6 +32,7 @@ export async function getSectionQuestions(
   courseId: string,
   sectionId: string,
   locale?: string,
+  signal?: AbortSignal,
 ): Promise<SectionQuestion[]> {
   let query = supabase
     .from("course_section_questions")
@@ -42,6 +43,8 @@ export async function getSectionQuestions(
   if (locale) {
     query = query.eq("data->>locale", locale);
   }
+
+  if (signal) query = query.abortSignal(signal);
 
   const { data, error } = await query.order("sort_order", { ascending: true });
 
@@ -140,6 +143,7 @@ export async function getLessonQuestions(
   courseId: string,
   lessonId: string,
   locale?: string,
+  signal?: AbortSignal,
 ): Promise<SectionQuestion[]> {
   let query = supabase
     .from("course_section_questions")
@@ -150,6 +154,8 @@ export async function getLessonQuestions(
   if (locale) {
     query = query.eq("data->>locale", locale);
   }
+
+  if (signal) query = query.abortSignal(signal);
 
   const { data, error } = await query.order("sort_order", { ascending: true });
 

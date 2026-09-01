@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ImageIcon, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -7,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { uploadCoreliaLogo } from "@/lib/storage";
-import { getSystemSetting, setSystemSetting } from "@/lib/systemSettings";
+import { setSystemSetting } from "@/lib/systemSettings";
+import { adminBrandingQueryOptions, adminKeys } from "@/features/admin/adminQueries";
+import { useAuth } from "@/stores/authStore";
 
 const LOGO_KEY = "corelia_logo_url";
 const APP_BASE_URL_KEY = "corelia_app_base_url";
@@ -21,59 +24,64 @@ const APP_BASE_URL_REGEX = /^https:\/\/[a-z0-9.-]+(:\d+)?$/i;
 
 export default function AdminBranding() {
   const { t } = useTranslation("admin");
+  const { user } = useAuth();
   const fileRef = useRef<HTMLInputElement | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const brandingQuery = useQuery(
+    adminBrandingQueryOptions(LOGO_KEY, APP_BASE_URL_KEY, user?.id),
+  );
   const [logoUrl, setLogoUrl] = useState("");
   const [appBaseUrl, setAppBaseUrl] = useState("");
-  const [savingAppBaseUrl, setSavingAppBaseUrl] = useState(false);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [v, base] = await Promise.all([
-        getSystemSetting(LOGO_KEY),
-        getSystemSetting(APP_BASE_URL_KEY),
-      ]);
-      setLogoUrl(v ?? "");
-      setAppBaseUrl(base ?? "");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("branding.loadFailed"));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (!brandingQuery.data) return;
+    setLogoUrl(brandingQuery.data.logoUrl);
+    setAppBaseUrl(brandingQuery.data.appBaseUrl);
+  }, [brandingQuery.data]);
+
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const { url } = await uploadCoreliaLogo(file);
+      await setSystemSetting(LOGO_KEY, url);
+      return url;
+    },
+    onSuccess: (url) => {
+      setLogoUrl(url);
+      toast.success(t("branding.uploaded"));
+      void queryClient.invalidateQueries({ queryKey: adminKeys.branding(user?.id ?? "missing") });
+    },
+  });
+  const saveLogoMutation = useMutation({
+    mutationFn: (url: string) => setSystemSetting(LOGO_KEY, url),
+    onSuccess: () => {
+      toast.success(t("branding.saved"));
+      void queryClient.invalidateQueries({ queryKey: adminKeys.branding(user?.id ?? "missing") });
+    },
+  });
+  const saveBaseUrlMutation = useMutation({
+    mutationFn: (url: string) => setSystemSetting(APP_BASE_URL_KEY, url),
+    onSuccess: (_result, url) => {
+      setAppBaseUrl(url);
+      toast.success(t("branding.saved"));
+      void queryClient.invalidateQueries({ queryKey: adminKeys.branding(user?.id ?? "missing") });
+    },
+  });
 
   const handleUpload = async (file: File | null) => {
     if (!file) return;
-    setUploading(true);
     try {
-      const { url } = await uploadCoreliaLogo(file);
-      setLogoUrl(url);
-      await setSystemSetting(LOGO_KEY, url);
-      toast.success(t("branding.uploaded"));
+      await uploadMutation.mutateAsync(file);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("branding.uploadFailed"));
-    } finally {
-      setUploading(false);
-    }
+    } finally { /* mutation owns pending state */ }
   };
 
   const handleSaveUrl = async () => {
-    setSaving(true);
     try {
-      await setSystemSetting(LOGO_KEY, logoUrl.trim());
-      toast.success(t("branding.saved"));
+      await saveLogoMutation.mutateAsync(logoUrl.trim());
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("branding.saveFailed"));
-    } finally {
-      setSaving(false);
-    }
+    } finally { /* mutation owns pending state */ }
   };
 
   const handleSaveAppBaseUrl = async () => {
@@ -82,19 +90,14 @@ export default function AdminBranding() {
       toast.error(t("branding.appBaseUrl.invalidUrl"));
       return;
     }
-    setSavingAppBaseUrl(true);
     try {
-      await setSystemSetting(APP_BASE_URL_KEY, trimmed);
-      setAppBaseUrl(trimmed);
-      toast.success(t("branding.saved"));
+      await saveBaseUrlMutation.mutateAsync(trimmed);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("branding.saveFailed"));
-    } finally {
-      setSavingAppBaseUrl(false);
-    }
+    } finally { /* mutation owns pending state */ }
   };
 
-  if (loading) {
+  if (brandingQuery.isPending) {
     return (
       <div className="flex items-center gap-2 p-6 text-sm text-foreground-muted">
         <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -132,12 +135,12 @@ export default function AdminBranding() {
               type="button"
               variant="outline"
               size="sm"
-              disabled={uploading}
+              disabled={uploadMutation.isPending}
               onClick={() => fileRef.current?.click()}
               className="gap-2"
             >
-              {uploading ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Upload className="size-4" aria-hidden />}
-              {uploading ? t("branding.uploading") : t("branding.logo.uploadButton")}
+              {uploadMutation.isPending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Upload className="size-4" aria-hidden />}
+              {uploadMutation.isPending ? t("branding.uploading") : t("branding.logo.uploadButton")}
             </Button>
             <p className="mt-1.5 text-xs text-foreground-muted">{t("branding.logo.hint")}</p>
           </div>
@@ -153,8 +156,8 @@ export default function AdminBranding() {
               placeholder="https://cdn.corelia.academy/brand/corelia-logo-1300.png"
               className="min-w-0 flex-1"
             />
-            <Button type="button" disabled={saving} onClick={() => void handleSaveUrl()}>
-              {saving ? t("branding.saving") : t("branding.logo.saveUrl")}
+            <Button type="button" disabled={saveLogoMutation.isPending} onClick={() => void handleSaveUrl()}>
+              {saveLogoMutation.isPending ? t("branding.saving") : t("branding.logo.saveUrl")}
             </Button>
           </div>
           <p className="mt-1 text-xs text-foreground-muted">{t("branding.logo.urlHint")}</p>
@@ -176,8 +179,8 @@ export default function AdminBranding() {
               placeholder="https://staging.corelia.academy"
               className="min-w-0 flex-1"
             />
-            <Button type="button" disabled={savingAppBaseUrl} onClick={() => void handleSaveAppBaseUrl()}>
-              {savingAppBaseUrl ? t("branding.saving") : t("branding.appBaseUrl.saveUrl")}
+            <Button type="button" disabled={saveBaseUrlMutation.isPending} onClick={() => void handleSaveAppBaseUrl()}>
+              {saveBaseUrlMutation.isPending ? t("branding.saving") : t("branding.appBaseUrl.saveUrl")}
             </Button>
           </div>
         </Field>

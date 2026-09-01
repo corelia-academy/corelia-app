@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { makeTTLCache, removeUndefinedFields } from "@/lib/utils";
+import { removeUndefinedFields } from "@/lib/utils";
 import { normalizeContentLocale, pickContentLocale } from "@/lib/entityLocales";
 import { getPublishedCourses } from "@/lib/courses";
 import { listContests } from "@/lib/hackathons";
@@ -22,8 +22,66 @@ export function getProjectCoverImageUrl(
   return project.cover_image_url || project.screenshot_url || null;
 }
 
-const LOCALE_CACHE_TTL = 5 * 60 * 1000;
-const projectLocaleCache = makeTTLCache<ProjectI18nContent | null>(LOCALE_CACHE_TTL);
+const PUBLIC_PORTFOLIO_PROJECT_SELECT =
+  "id,owner_id,title,summary,demo_url,repo_url,slide_url,screenshot_url,cover_image_url,video_url,visibility,source_type,source_id,source_submission_id,i18n,created_at,updated_at,like_count" as const;
+
+export async function listPublicPortfolioProjects(
+  profileId: string,
+  uiLocale: string,
+): Promise<Project[]> {
+  const [{ data: owned, error: ownedError }, { data: collaborations, error: collaborationError }] =
+    await Promise.all([
+      supabase
+        .from("projects")
+        .select(PUBLIC_PORTFOLIO_PROJECT_SELECT)
+        .eq("owner_id", profileId)
+        .eq("visibility", "public")
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("project_collaborators")
+        .select("project_id")
+        .eq("user_id", profileId)
+        .eq("show_in_portfolio", true),
+    ]);
+  if (ownedError) throw new Error(ownedError.message);
+  if (collaborationError) throw new Error(collaborationError.message);
+
+  const collaboratorIds = Array.from(
+    new Set((collaborations ?? []).map((row) => row.project_id).filter(Boolean)),
+  );
+  let collaboratorProjects: Project[] = [];
+  if (collaboratorIds.length > 0) {
+    const { data, error } = await supabase
+      .from("projects")
+      .select(PUBLIC_PORTFOLIO_PROJECT_SELECT)
+      .in("id", collaboratorIds)
+      .eq("visibility", "public")
+      .order("updated_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    collaboratorProjects = (data ?? []) as Project[];
+  }
+
+  const byId = new Map<string, Project>();
+  for (const project of [...((owned ?? []) as Project[]), ...collaboratorProjects]) {
+    byId.set(project.id, project);
+  }
+  const projects = Array.from(byId.values()).sort((a, b) =>
+    String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")),
+  );
+  const idsByLocale = new Map<Locale, string[]>();
+  for (const project of projects) {
+    const locale = pickContentLocale(project.i18n ?? null, uiLocale);
+    idsByLocale.set(locale, [...(idsByLocale.get(locale) ?? []), project.id]);
+  }
+  const localeMaps = new Map<Locale, Map<string, ProjectI18nContent>>();
+  await Promise.all(Array.from(idsByLocale.entries()).map(async ([locale, ids]) => {
+    localeMaps.set(locale, await getBatchProjectLocaleContent(ids, locale));
+  }));
+  return projects.map((project) => {
+    const locale = pickContentLocale(project.i18n ?? null, uiLocale);
+    return applyProjectLocaleContent(project, localeMaps.get(locale)?.get(project.id) ?? null);
+  });
+}
 
 export function applyProjectLocaleContent(project: Project, localized: ProjectI18nContent | null): Project {
   if (!localized) return project;
@@ -39,26 +97,14 @@ export async function getProjectLocaleContent(
   locale: Locale,
 ): Promise<ProjectI18nContent | null> {
   const normalized = normalizeContentLocale(locale);
-  const key = `${projectId}:${normalized}`;
-  const existing = projectLocaleCache.get(key);
-  if (existing) return existing;
-  const promise = (async () => {
-    const { data, error } = await supabase
-      .from("project_locales")
-      .select("data")
-      .eq("project_id", projectId)
-      .eq("locale", normalized)
-      .maybeSingle();
-    if (error || !data?.data) return null;
-    return data.data as ProjectI18nContent;
-  })();
-  projectLocaleCache.set(key, promise);
-  try {
-    return await promise;
-  } catch (e) {
-    projectLocaleCache.delete(key);
-    throw e;
-  }
+  const { data, error } = await supabase
+    .from("project_locales")
+    .select("data")
+    .eq("project_id", projectId)
+    .eq("locale", normalized)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.data ? data.data as ProjectI18nContent : null;
 }
 
 export async function getBatchProjectLocaleContent(
@@ -70,29 +116,16 @@ export async function getBatchProjectLocaleContent(
   const ids = Array.from(new Set(projectIds.map((v) => v.trim()).filter(Boolean)));
   if (ids.length === 0) return result;
 
-  const uncachedIds: string[] = [];
-  for (const id of ids) {
-    const cached = projectLocaleCache.get(`${id}:${normalized}`);
-    if (cached) {
-      const content = await cached;
-      if (content) result.set(id, content);
-    } else {
-      uncachedIds.push(id);
-    }
-  }
-  if (uncachedIds.length === 0) return result;
-
   const { data, error } = await supabase
     .from("project_locales")
     .select("project_id,data")
-    .in("project_id", uncachedIds)
+    .in("project_id", ids)
     .eq("locale", normalized);
 
   if (!error && data) {
     for (const row of data as Array<{ project_id: string; data: unknown }>) {
       if (!row.data) continue;
       const content = row.data as ProjectI18nContent;
-      projectLocaleCache.set(`${row.project_id}:${normalized}`, Promise.resolve(content));
       result.set(row.project_id, content);
     }
   }
@@ -115,7 +148,6 @@ export async function setProjectLocaleContent(
     { onConflict: "project_id,locale" },
   );
   if (error) throw new Error(error.message);
-  projectLocaleCache.delete(`${projectId}:${normalized}`);
 }
 
 /** Public/unlisted project cards linked to a hackathon (synced from submissions). */
@@ -135,6 +167,64 @@ export async function listContestShowcaseProjects(
 
   if (error) throw new Error(error.message);
   return (data ?? []) as ContestLinkedShowcaseProject[];
+}
+
+export async function listContestShowcasePortfolio(contestId: string): Promise<{
+  projects: ContestLinkedShowcaseProject[];
+  teamBySubmission: Record<string, string>;
+}> {
+  const projects = await listContestShowcaseProjects(contestId);
+  const projectIds = projects.map((project) => project.id).filter(Boolean);
+  if (projectIds.length === 0) return { projects, teamBySubmission: {} };
+
+  const { data: collaborators, error: collaboratorError } = await supabase
+    .from("project_collaborators")
+    .select("project_id,user_id")
+    .in("project_id", projectIds);
+  if (collaboratorError) throw new Error(collaboratorError.message);
+
+  const userIds = Array.from(
+    new Set([
+      ...projects.map((project) => project.owner_id),
+      ...(collaborators ?? []).map((row) => row.user_id),
+    ].filter(Boolean)),
+  );
+  const { data: profiles, error: profileError } = userIds.length
+    ? await supabase
+        .from("public_profiles")
+        .select("id,full_name,username")
+        .in("id", userIds)
+    : { data: [], error: null };
+  if (profileError) throw new Error(profileError.message);
+
+  const labelByUserId = new Map(
+    (profiles ?? []).map((profile) => [
+      profile.id,
+      profile.full_name?.trim() || profile.username?.trim() || profile.id,
+    ]),
+  );
+  const collaboratorsByProject = new Map<string, string[]>();
+  for (const row of collaborators ?? []) {
+    const ids = collaboratorsByProject.get(row.project_id) ?? [];
+    ids.push(row.user_id);
+    collaboratorsByProject.set(row.project_id, ids);
+  }
+
+  const teamBySubmission: Record<string, string> = {};
+  for (const project of projects) {
+    const memberIds = Array.from(
+      new Set([
+        project.owner_id,
+        ...(collaboratorsByProject.get(project.id) ?? []),
+      ]),
+    );
+    teamBySubmission[project.source_submission_id ?? project.id] = memberIds
+      .map((userId) => labelByUserId.get(userId) ?? userId)
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  return { projects, teamBySubmission };
 }
 
 /** Canonical name for new code. The legacy export remains for compatibility. */

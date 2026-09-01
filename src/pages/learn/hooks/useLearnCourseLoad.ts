@@ -1,19 +1,9 @@
 import type { User } from "@supabase/supabase-js";
-import { useEffect, useState } from "react";
-import {
-  applyCourseLessonLocaleContent,
-  applyCourseLocaleContent,
-  applyCourseSectionLocaleContent,
-  getCourse,
-  getCourseLessonLocaleContentMap,
-  getCourseLessons,
-  getCourseLocaleContent,
-  getCourseSectionLocaleContentMap,
-  getCourseSections,
-  pickCourseContentLocale,
-  touchEnrollment,
-} from "@/lib/courses";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
+import { touchEnrollment } from "@/lib/courses";
 import i18n from "@/i18n";
+import { courseBundleQueryOptions } from "@/features/courses/courseQueries";
 import type { Course, CourseLesson, CourseSection } from "@/types/courses";
 
 interface UseLearnCourseLoadInput {
@@ -36,77 +26,50 @@ export function useLearnCourseLoad({
   loadCourseErrorFallback,
   viewer,
 }: UseLearnCourseLoadInput): UseLearnCourseLoadResult {
-  const [course, setCourse] = useState<Course | null>(null);
-  const [sections, setSections] = useState<CourseSection[]>([]);
-  const [lessons, setLessons] = useState<CourseLesson[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const requestKey = `${courseId ?? "missing"}:${i18n.language}:${viewer?.id ?? "anonymous"}`;
+  const [manualError, setManualError] = useState<{
+    requestKey: string;
+    message: string | null;
+  }>({ requestKey: "", message: null });
+  const query = useQuery(
+    courseBundleQueryOptions({
+      courseRef: courseId,
+      locale: i18n.language,
+      viewer: viewer ?? null,
+    }),
+  );
+  const touchMutation = useMutation({
+    mutationFn: ({ id, user }: { id: string; user: User | null }) =>
+      touchEnrollment(id, user),
+  });
 
   useEffect(() => {
     if (!courseId) return;
-    let cancelled = false;
-    touchEnrollment(courseId, viewer).catch(() => {});
+    touchMutation.mutate({ id: courseId, user: viewer ?? null });
+  // Touching last_accessed_at is a route-entry side effect, not a read cache.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId, viewer?.id]);
 
-    Promise.all([getCourse(courseId), getCourseSections(courseId), getCourseLessons(courseId)])
-      .then(([courseRow, sectionsRow, lessonsRow]) => {
-        if (cancelled) return;
-        const base = courseRow ?? null;
-        if (!base) {
-          setCourse(null);
-          setSections(sectionsRow);
-          setLessons(lessonsRow);
-          return;
-        }
-
-        // Avoid flashing the error state: we render once `loading` flips false,
-        // so ensure we have a non-null course before locale content finishes loading.
-        setCourse(base);
-        setSections(sectionsRow);
-        setLessons(lessonsRow);
-
-        const contentLocale = pickCourseContentLocale(base, i18n.language);
-        void (async () => {
-          const localizedCourse = applyCourseLocaleContent(
-            base,
-            await getCourseLocaleContent(courseId, contentLocale).catch(() => null),
-          );
-          const [sectionMap, lessonMap] = await Promise.all([
-            getCourseSectionLocaleContentMap(courseId, contentLocale).catch(() => new Map()),
-            getCourseLessonLocaleContentMap(courseId, contentLocale).catch(() => new Map()),
-          ]);
-          const localizedSections = sectionsRow.map((s) =>
-            applyCourseSectionLocaleContent(s, sectionMap.get(s.id) ?? null),
-          );
-          const localizedLessons = lessonsRow.map((l) =>
-            applyCourseLessonLocaleContent(l, lessonMap.get(l.id) ?? null),
-          );
-          if (cancelled) return;
-          setCourse(localizedCourse);
-          setSections(localizedSections);
-          setLessons(localizedLessons);
-        })();
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : loadCourseErrorFallback);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [courseId, loadCourseErrorFallback, viewer]);
+  const setError = useCallback(
+    (message: string | null) => setManualError({ requestKey, message }),
+    [requestKey],
+  );
+  const queryError = query.error
+    ? query.error instanceof Error
+      ? query.error.message
+      : loadCourseErrorFallback
+    : null;
+  const error =
+    manualError.requestKey === requestKey
+      ? manualError.message ?? queryError
+      : queryError;
 
   return {
-    course,
-    sections,
-    lessons,
-    loading: courseId ? loading : false,
+    course: query.data?.course ?? null,
+    sections: query.data?.sections ?? [],
+    lessons: query.data?.lessons ?? [],
+    loading: Boolean(courseId) && query.isPending,
     error,
     setError,
   };
 }
-

@@ -1,16 +1,14 @@
-import { useEffect, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Activity } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getActorActivity } from "@/lib/feed";
+import { publicProfileActivityQueryOptions } from "@/features/profiles/publicProfileQueries";
 import type { PublicProfile } from "@/types/database";
 import type { ActivityEvent } from "@/types/feed";
 import { profileTitle } from "../utils/profileDisplay";
-
-const PROFILE_ACTIVITY_LIMIT = 5;
 
 function payloadText(payload: Record<string, unknown>, keys: string[]): string | null {
   for (const key of keys) {
@@ -149,56 +147,12 @@ export function UserProfileActivitySection({
 }) {
   const { t, i18n } = useTranslation("common");
   const { t: tFeed } = useTranslation("feed");
-  const [items, setItems] = useState<ActivityEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const next = await getActorActivity(profile.id, {
-          limit: PROFILE_ACTIVITY_LIMIT,
-        });
-        if (cancelled) return;
-        setItems(next);
-        setHasMore(next.length === PROFILE_ACTIVITY_LIMIT);
-      } catch {
-        if (cancelled) return;
-        setError(t("userProfile.errors.loadFailed"));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [profile.id, t]);
-
-  const handleLoadMore = async () => {
-    if (loadingMore || !items.length) return;
-    setLoadingMore(true);
-    try {
-      const lastItem = items[items.length - 1];
-      const next = await getActorActivity(profile.id, {
-        limit: PROFILE_ACTIVITY_LIMIT,
-        cursor: lastItem.created_at,
-      });
-      setItems((prev) => [...prev, ...next]);
-      setHasMore(next.length === PROFILE_ACTIVITY_LIMIT);
-    } catch {
-      // Keep existing items
-    } finally {
-      setLoadingMore(false);
-    }
-  };
+  const query = useInfiniteQuery(publicProfileActivityQueryOptions(profile.id));
+  const items = query.data?.pages.flat() ?? [];
+  const loading = query.isPending;
+  const loadingMore = query.isFetchingNextPage;
+  const hasMore = query.hasNextPage;
+  const error = query.error ? t("userProfile.errors.loadFailed") : null;
 
   return (
     <section className="space-y-3">
@@ -237,7 +191,7 @@ export function UserProfileActivitySection({
             <div className="pt-2 text-center">
               <button
                 type="button"
-                onClick={handleLoadMore}
+                onClick={() => void query.fetchNextPage()}
                 disabled={loadingMore}
                 className="inline-flex items-center justify-center rounded-md border border-border px-4 py-1.5 text-xs font-medium text-foreground hover:bg-surface-elevated disabled:opacity-50"
               >

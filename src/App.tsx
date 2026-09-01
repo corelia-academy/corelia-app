@@ -1,7 +1,6 @@
 import { Suspense, lazy, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { LoadingBar } from "@/components/ui/LoadingBar";
-import { useLoadingStore } from "@/stores/loadingStore";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthGateLoading } from "@/components/auth/AuthGateLoading";
@@ -16,6 +15,7 @@ import {
 } from "react-router";
 import { ThemeProvider } from "next-themes";
 import { AuthSync } from "@/components/auth/AuthSync";
+import { AuthBootstrapScreen } from "@/components/auth/AuthBootstrapScreen";
 import CredentialRealtimeSync from "@/components/base/CredentialRealtimeSync";
 import { PendingCredentialsWelcomeModal } from "@/components/base/PendingCredentialsWelcomeModal";
 import { RequireAuth } from "@/components/auth/RequireAuth";
@@ -167,22 +167,12 @@ function ScrollToTop() {
 
 export default function App() {
   const { i18n } = useTranslation();
-  const profileLoading = useAuthStore((s) => s.profileLoading);
-  const startLoading = useLoadingStore((s) => s.startLoading);
-  const stopLoading = useLoadingStore((s) => s.stopLoading);
+  const authStatus = useAuthStore((s) => s.status);
 
   useEffect(() => {
     document.documentElement.lang =
       i18n.resolvedLanguage ?? i18n.language ?? "vi";
   }, [i18n.resolvedLanguage, i18n.language]);
-
-  useEffect(() => {
-    if (profileLoading) {
-      startLoading("profile-loading");
-    } else {
-      stopLoading("profile-loading");
-    }
-  }, [profileLoading, startLoading, stopLoading]);
 
   if (import.meta.env.VITE_MAINTENANCE_MODE === "true") {
     return (
@@ -198,7 +188,10 @@ export default function App() {
       <LoadingBar />
       <Toaster />
       <AuthSync />
-      <TooltipProvider>
+      {authStatus === "booting" ? (
+        <AuthBootstrapScreen />
+      ) : (
+        <TooltipProvider>
         <BrowserRouter>
           <CredentialRealtimeSync />
           <ScrollToTop />
@@ -642,7 +635,8 @@ export default function App() {
             </Route>
           </Routes>
         </BrowserRouter>
-      </TooltipProvider>
+        </TooltipProvider>
+      )}
     </ThemeProvider>
     </ErrorBoundary>
   );

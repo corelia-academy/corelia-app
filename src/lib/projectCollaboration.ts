@@ -82,6 +82,30 @@ export type InvitableUserRow = {
   avatar_url: string | null;
 };
 
+export type CollaborationProfileMini = {
+  id: string;
+  username: string | null;
+  full_name: string | null;
+};
+
+export async function listCollaborationProfiles(
+  userIds: string[],
+  signal?: AbortSignal,
+): Promise<Record<string, CollaborationProfileMini>> {
+  const ids = Array.from(new Set(userIds.filter(Boolean)));
+  if (ids.length === 0) return {};
+  let request = supabase
+    .from("public_profiles")
+    .select("id,username,full_name")
+    .in("id", ids);
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request;
+  if (error) throw new Error(error.message);
+  return Object.fromEntries(
+    ((data ?? []) as CollaborationProfileMini[]).map((profile) => [profile.id, profile]),
+  );
+}
+
 export async function listInvitableHackathonUsers(
   projectId: string,
   search: string,

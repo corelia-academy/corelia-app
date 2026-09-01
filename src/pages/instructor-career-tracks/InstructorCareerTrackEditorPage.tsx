@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router";
 import { ArrowDown, ArrowUp, ImagePlus, Plus, Save, Sparkles, Trash2, Youtube } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -13,7 +14,6 @@ import { cn } from "@/lib/utils";
 import { invokeGenerateDescription } from "@/lib/descriptionGenerator";
 import { normalizeYoutubeVideoId } from "@/lib/youtubeVideoId";
 import { useAuth } from "@/stores/authStore";
-import { getCoursesForManagement } from "@/lib/courses";
 import { uploadCareerTrackThumbnail } from "@/lib/storage";
 import type {
   Course,
@@ -21,20 +21,24 @@ import type {
   CoursePartnerBrand,
   CourseSponsor,
 } from "@/types/courses";
-import type { CareerTrackDetail } from "@/types/career";
 import {
   createInstructorCareerTrack,
-  getCareerTrackLocaleContent,
-  listCareerTracksForInstructor,
   setInstructorCareerTrackCourses,
   setCareerTrackLocaleContent,
   updateInstructorCareerTrack,
   type CareerTrackUpsertInput,
 } from "@/lib/careerTracks";
+import {
+  careerKeys,
+  instructorCareerTrackEditorQueryOptions,
+  instructorCareerTrackTranslationQueryOptions,
+} from "@/features/career/careerQueries";
 import type { Locale } from "@/types/database";
 import type { EntityI18nConfig } from "@/types/entityLocales";
 
 type HeroMediaType = "image" | "youtube";
+
+const EMPTY_COURSES: Course[] = [];
 
 function normalizeLocale(value: string | null | undefined): Locale {
   return value === "en" ? "en" : "vi";
@@ -64,18 +68,25 @@ function splitLines(value: string): string[] {
 }
 
 export default function InstructorCareerTrackEditorPage() {
-  const { t } = useTranslation("instructor");
+  const { t, i18n } = useTranslation("instructor");
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const isNew = !id;
 
-  const { profile } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const { profile, profileLoading } = useAuth();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
-  const [track, setTrack] = useState<CareerTrackDetail | null>(null);
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const editorQuery = useQuery(
+    instructorCareerTrackEditorQueryOptions({
+      userId: profile?.id,
+      trackId: id,
+      locale,
+    }),
+  );
+  const availableCourses = editorQuery.data?.courses ?? EMPTY_COURSES;
+  const track = editorQuery.data?.track ?? null;
   const [form, setForm] = useState({
     title: "",
     slug: "",
@@ -110,34 +121,58 @@ export default function InstructorCareerTrackEditorPage() {
   });
   const [savingTranslation, setSavingTranslation] = useState(false);
   const translationInitialRef = useRef<string>("");
+  const editorHydrationKeyRef = useRef<string>("");
+  const translationHydrationKeyRef = useRef<string>("");
   const [translating, setTranslating] = useState(false);
+  const operationMutation = useMutation({
+    mutationFn: (operation: () => Promise<unknown>) => operation(),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: careerKeys.all });
+    },
+  });
+  async function executeWrite<T>(operation: () => Promise<T>): Promise<T> {
+    return (await operationMutation.mutateAsync(operation)) as T;
+  }
+  const loading =
+    profileLoading || (editorQuery.isPending && editorQuery.fetchStatus !== "idle");
+  const queryError = editorQuery.error
+    ? editorQuery.error instanceof Error
+      ? editorQuery.error.message
+      : t("careerTracks.errors.loadFailed")
+    : null;
+  const displayError = error ?? queryError;
 
   useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        if (!profile?.id) throw new Error(t("careerTracks.errors.loadFailed"));
-        const courses = await getCoursesForManagement(profile.id, false);
-        if (cancelled) return;
-        setAvailableCourses(courses);
+    if (!editorQuery.data) return;
+    const hydrationKey = id ?? "new";
+    if (editorHydrationKeyRef.current === hydrationKey) return;
+    editorHydrationKeyRef.current = hydrationKey;
 
-        if (isNew) {
-          setTrack(null);
-          setCourseIds([]);
-          setForm((prev) => ({ ...prev, published: false }));
-          return;
-        }
+    if (isNew) {
+      setCourseIds([]);
+      setForm({
+        title: "",
+        slug: "",
+        description: "",
+        shortDescription: "",
+        whatYoullLearnText: "",
+        prerequisitesText: "",
+        hasCertificate: false,
+        published: false,
+        heroMediaType: "image",
+        heroYoutubeUrl: "",
+        heroYoutubeVideoId: "",
+        thumbnailUrl: "",
+        thumbnailPath: "",
+      });
+      setSponsors([]);
+      setPartnerBrand(null);
+      setPartners([]);
+      return;
+    }
 
-        const rows = await listCareerTracksForInstructor();
-        const found = rows.find((r) => r.id === id) ?? null;
-        if (cancelled) return;
-        setTrack(found);
-        if (!found) {
-          setError(t("careerTracks.errors.notFound"));
-          return;
-        }
+    const found = editorQuery.data.track;
+    if (!found) return;
         const config = (found.i18n ?? defaultI18nConfig()) as EntityI18nConfig;
         const normalizedConfig: EntityI18nConfig = {
           supported_locales: configSupportedLocales(config),
@@ -165,17 +200,7 @@ export default function InstructorCareerTrackEditorPage() {
         setPartnerBrand(found.partner_brand ?? null);
         setPartners(Array.isArray(found.partners) ? found.partners : []);
         setCourseIds(found.includedCourses.map((x) => x.course.id));
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : t("careerTracks.errors.loadFailed"));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [id, isNew, profile?.id, t]);
+  }, [editorQuery.data, id, isNew]);
 
   const primaryLocale = useMemo(
     () => configPrimaryLocale(i18nConfigDraft),
@@ -187,15 +212,22 @@ export default function InstructorCareerTrackEditorPage() {
   );
   const isTranslating = activeContentLocale !== primaryLocale;
   const previewYoutubeVideoId = normalizeYoutubeVideoId(form.heroYoutubeUrl);
+  const translationQuery = useQuery(
+    instructorCareerTrackTranslationQueryOptions({
+      userId: profile?.id,
+      trackId: track?.id,
+      locale: activeContentLocale,
+      enabled: isTranslating,
+    }),
+  );
 
   // Load translation content when switching to a non-primary locale
   useEffect(() => {
-    if (!track?.id || !isTranslating) return;
-    let cancelled = false;
-    void (async () => {
-      try {
-        const content = await getCareerTrackLocaleContent(track.id, activeContentLocale);
-        if (cancelled) return;
+    if (!track?.id || !isTranslating || !translationQuery.isSuccess) return;
+    const hydrationKey = `${track.id}:${activeContentLocale}`;
+    if (translationHydrationKeyRef.current === hydrationKey) return;
+    translationHydrationKeyRef.current = hydrationKey;
+    const content = translationQuery.data;
         const next = {
           title: String(content?.title ?? ""),
           description: String(content?.description ?? ""),
@@ -208,12 +240,7 @@ export default function InstructorCareerTrackEditorPage() {
         };
         setTranslationDraft(next);
         translationInitialRef.current = JSON.stringify(next);
-      } catch {
-        // ignore — draft stays empty
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [activeContentLocale, isTranslating, track?.id]);
+  }, [activeContentLocale, isTranslating, track?.id, translationQuery.data, translationQuery.isSuccess]);
 
   const availableById = useMemo(() => {
     const map = new Map<string, Course>();
@@ -285,15 +312,17 @@ export default function InstructorCareerTrackEditorPage() {
         throw new Error(t("careerTracks.errors.missingRequired"));
       }
 
-      let trackId = id ?? "";
-      if (isNew) {
-        const created = await createInstructorCareerTrack(payload);
-        trackId = created.id;
-      } else {
-        await updateInstructorCareerTrack(trackId, payload);
-      }
-
-      await setInstructorCareerTrackCourses(trackId, courseIds);
+      const trackId = await executeWrite(async () => {
+        let nextTrackId = id ?? "";
+        if (isNew) {
+          const created = await createInstructorCareerTrack(payload);
+          nextTrackId = created.id;
+        } else {
+          await updateInstructorCareerTrack(nextTrackId, payload);
+        }
+        await setInstructorCareerTrackCourses(nextTrackId, courseIds);
+        return nextTrackId;
+      });
 
       navigate(`/instructor/career-tracks/${trackId}/edit`, { replace: true });
     } catch (e) {
@@ -307,12 +336,14 @@ export default function InstructorCareerTrackEditorPage() {
     if (!track?.id) return;
     setSavingTranslation(true);
     try {
-      await setCareerTrackLocaleContent(track.id, activeContentLocale, {
-        title: translationDraft.title.trim() || undefined,
-        description: translationDraft.description.trim() || undefined,
-        what_youll_learn: splitLines(translationDraft.whatYoullLearnText),
-        prerequisites: splitLines(translationDraft.prerequisitesText),
-      });
+      await executeWrite(() =>
+        setCareerTrackLocaleContent(track.id, activeContentLocale, {
+          title: translationDraft.title.trim() || undefined,
+          description: translationDraft.description.trim() || undefined,
+          what_youll_learn: splitLines(translationDraft.whatYoullLearnText),
+          prerequisites: splitLines(translationDraft.prerequisitesText),
+        }),
+      );
       translationInitialRef.current = JSON.stringify(translationDraft);
         toast.success(t("careerTracks.actions.translationSaved"));
     } catch (e) {
@@ -331,21 +362,23 @@ export default function InstructorCareerTrackEditorPage() {
     if (!isTranslating || !form.title) return;
     setTranslating(true);
     try {
-      const response = await invokeGenerateDescription({
-        action: "translate",
-        type: "course",
-        targetField: "description",
-        locale: activeContentLocale,
-        sourceLocale: primaryLocale,
-        bundleKind: "course_info",
-        sourceBundle: {
-          title: form.title,
-          shortDescription: form.shortDescription,
-          description: form.description,
-          learningOutcomes: splitLines(form.whatYoullLearnText),
-        },
-        careerTrackId: id,
-      });
+      const response = await executeWrite(() =>
+        invokeGenerateDescription({
+          action: "translate",
+          type: "course",
+          targetField: "description",
+          locale: activeContentLocale,
+          sourceLocale: primaryLocale,
+          bundleKind: "course_info",
+          sourceBundle: {
+            title: form.title,
+            shortDescription: form.shortDescription,
+            description: form.description,
+            learningOutcomes: splitLines(form.whatYoullLearnText),
+          },
+          careerTrackId: id,
+        }),
+      );
       if (!response.bundle) {
         throw new Error(t("courseEdit.descriptionGenerator.errors.noBundle"));
       }
@@ -372,7 +405,7 @@ export default function InstructorCareerTrackEditorPage() {
         supported_locales: configSupportedLocales(i18nConfigDraft),
         primary_content_locale: configPrimaryLocale(i18nConfigDraft),
       };
-      await updateInstructorCareerTrack(id, { i18n: normalized });
+      await executeWrite(() => updateInstructorCareerTrack(id, { i18n: normalized }));
       setI18nConfigDraft(normalized);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("careerTracks.errors.saveFailed"));
@@ -389,16 +422,23 @@ export default function InstructorCareerTrackEditorPage() {
     setUploadingThumbnail(true);
     setError(null);
     try {
-      const result = await uploadCareerTrackThumbnail(id, file, form.thumbnailPath || null);
+      const result = await executeWrite(async () => {
+        const uploaded = await uploadCareerTrackThumbnail(
+          id,
+          file,
+          form.thumbnailPath || null,
+        );
+        await updateInstructorCareerTrack(id, {
+          thumbnail_url: uploaded.url,
+          thumbnail_path: uploaded.path,
+        });
+        return uploaded;
+      });
       setForm((p) => ({
         ...p,
         thumbnailUrl: result.url,
         thumbnailPath: result.path,
       }));
-      await updateInstructorCareerTrack(id, {
-        thumbnail_url: result.url,
-        thumbnail_path: result.path,
-      });
     } catch (e) {
       setError(e instanceof Error ? e.message : t("courseEdit.careerTracks.uploadFailed"));
     } finally {
@@ -467,7 +507,7 @@ export default function InstructorCareerTrackEditorPage() {
       <PageContainer width="default">
         <PageSectionCard className="mb-4">
           <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
-            {error || t("careerTracks.errors.notFound")}
+            {displayError || t("careerTracks.errors.notFound")}
           </div>
           <div className="mt-4">
             <Button
@@ -486,9 +526,9 @@ export default function InstructorCareerTrackEditorPage() {
 
   return (
     <PageContainer width="default">
-      {error ? (
+      {displayError ? (
         <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
-          {error}
+          {displayError}
         </div>
       ) : null}
 

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -8,9 +9,8 @@ import { useAuth } from "@/stores/authStore";
 import {
   acceptCoInstructorInviteByToken,
   declineCoInstructorInviteByToken,
-  peekCoInstructorInviteByToken,
-  type CoInstructorInvitePreview,
 } from "@/lib/coInstructorInvites";
+import { coInstructorInvitePreviewQueryOptions } from "@/features/invites/inviteQueries";
 import type { TFunction } from "i18next";
 
 function formatCoInstructorError(err: unknown, t: TFunction<"courses">): string {
@@ -27,44 +27,40 @@ export default function CoInstructorInvitePage() {
   const { t } = useTranslation("courses");
   const { t: tc } = useTranslation("common");
   const { isAuthenticated, authInitialized, user, signOut } = useAuth();
-  const [busy, setBusy] = useState<"accept" | "decline" | "switch" | null>(null);
+  const [switching, setSwitching] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [preview, setPreview] = useState<CoInstructorInvitePreview | null>(null);
-  const [previewError, setPreviewError] = useState<string | null>(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [wrongAccount, setWrongAccount] = useState(false);
+  const [mutationWrongAccount, setMutationWrongAccount] = useState(false);
 
   const safeToken = (token ?? "").trim();
 
-  useEffect(() => {
-    if (!authInitialized || !isAuthenticated || !safeToken) return;
-    let cancelled = false;
-    setPreviewLoading(true);
-    setPreviewError(null);
-    setWrongAccount(false);
-    peekCoInstructorInviteByToken(safeToken)
-      .then((data) => {
-        if (!cancelled) setPreview(data);
-      })
-      .catch((e) => {
-        if (cancelled) return;
-        const msg = e instanceof Error ? e.message : "invite_preview_failed";
-        if (msg === "forbidden") {
-          setWrongAccount(true);
-        } else {
-          setPreviewError(formatCoInstructorError(e, t));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setPreviewLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [authInitialized, isAuthenticated, safeToken, t]);
+  const previewQuery = useQuery(coInstructorInvitePreviewQueryOptions({
+    token: safeToken,
+    userId: user?.id,
+    enabled: authInitialized && isAuthenticated,
+  }));
+  const preview = previewQuery.data ?? null;
+  const wrongAccount = mutationWrongAccount || (
+    previewQuery.error instanceof Error && previewQuery.error.message === "forbidden"
+  );
+  const previewError = previewQuery.error && !wrongAccount
+    ? formatCoInstructorError(previewQuery.error, t)
+    : null;
+  const acceptMutation = useMutation({
+    mutationFn: acceptCoInstructorInviteByToken,
+  });
+  const declineMutation = useMutation({
+    mutationFn: declineCoInstructorInviteByToken,
+  });
+  const busy = switching
+    ? "switch"
+    : acceptMutation.isPending
+      ? "accept"
+      : declineMutation.isPending
+        ? "decline"
+        : null;
 
   async function onSignOutAndSwitch() {
-    setBusy("switch");
+    setSwitching(true);
     try {
       await signOut();
       navigate("/login", {
@@ -73,16 +69,15 @@ export default function CoInstructorInvitePage() {
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("inviteCoInstructor.errorFallback"));
     } finally {
-      setBusy(null);
+      setSwitching(false);
     }
   }
 
   async function onAccept() {
     if (!safeToken) return;
-    setBusy("accept");
     setMessage(null);
     try {
-      const res = await acceptCoInstructorInviteByToken(safeToken);
+      const res = await acceptMutation.mutateAsync(safeToken);
       toast.success(t("inviteCoInstructor.accepted"));
       if (res?.course_id) {
         navigate(`/instructor/courses/${res.course_id}/edit`, { replace: true });
@@ -92,36 +87,31 @@ export default function CoInstructorInvitePage() {
     } catch (e) {
       const raw = e instanceof Error ? e.message : "";
       if (raw === "forbidden") {
-        setWrongAccount(true);
+        setMutationWrongAccount(true);
       } else {
         const friendly = formatCoInstructorError(e, t);
         setMessage(friendly);
         toast.error(friendly);
       }
-    } finally {
-      setBusy(null);
     }
   }
 
   async function onDecline() {
     if (!safeToken) return;
-    setBusy("decline");
     setMessage(null);
     try {
-      await declineCoInstructorInviteByToken(safeToken);
+      await declineMutation.mutateAsync(safeToken);
       setMessage(t("inviteCoInstructor.declined"));
       toast.success(t("inviteCoInstructor.declined"));
     } catch (e) {
       const raw = e instanceof Error ? e.message : "";
       if (raw === "forbidden") {
-        setWrongAccount(true);
+        setMutationWrongAccount(true);
       } else {
         const friendly = formatCoInstructorError(e, t);
         setMessage(friendly);
         toast.error(friendly);
       }
-    } finally {
-      setBusy(null);
     }
   }
 
@@ -183,7 +173,7 @@ export default function CoInstructorInvitePage() {
                   : t("inviteCoInstructor.signOutAndSwitch")}
               </Button>
             </div>
-          ) : previewLoading ? (
+          ) : previewQuery.isPending ? (
             <p className="text-sm text-foreground-muted">{tc("status.loading")}</p>
           ) : previewError ? (
             <p className="text-sm text-destructive">{previewError}</p>

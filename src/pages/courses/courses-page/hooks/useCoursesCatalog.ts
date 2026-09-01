@@ -1,115 +1,43 @@
-import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  applyCourseLocaleContent,
-  getBatchCourseLocaleContent,
-  getPublishedCourses,
-} from "@/lib/courses";
-import type { Course, CourseLevel, SupportedCourseLocale } from "@/types/courses";
-
-import {
-  filterAndSortCourses,
-  type OwnerFilter,
-  type SortMode,
-} from "../utils/catalog";
+import { coursesCatalogQueryOptions } from "@/features/courses/courseQueries";
+import type { CourseLevel, SupportedCourseLocale } from "@/types/courses";
+import { filterAndSortCourses, type OwnerFilter, type SortMode } from "../utils/catalog";
 
 export function useCoursesCatalog() {
   const { t, i18n } = useTranslation("courses");
-  const currentLocale: SupportedCourseLocale = i18n.language?.startsWith("en") ? "en" : "vi";
-  const [rawCourses, setRawCourses] = useState<Course[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  const locale: SupportedCourseLocale = i18n.language?.startsWith("en") ? "en" : "vi";
+  const catalogQuery = useQuery(coursesCatalogQueryOptions(locale));
+  const courses = useMemo(() => catalogQuery.data ?? [], [catalogQuery.data]);
   const [query, setQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<"all" | CourseLevel>("all");
   const [ownerFilter, setOwnerFilter] = useState<OwnerFilter>("all");
   const [sortMode, setSortMode] = useState<SortMode>("featured");
-
-  useEffect(() => {
-    let cancelled = false;
-
-    getPublishedCourses()
-      .then((onlineRows) => {
-        if (cancelled) return;
-        setRawCourses(onlineRows);
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setError(
-            e instanceof Error ? e.message : t("catalog.loadErrorFallback"),
-          );
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [t]);
-
-  // Apply locale translations whenever raw courses or locale changes.
-  useEffect(() => {
-    let cancelled = false;
-
-    if (rawCourses.length === 0 || currentLocale === "vi") {
-      queueMicrotask(() => {
-        if (!cancelled) setCourses(rawCourses);
-      });
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    const ids = rawCourses.map((c) => c.id);
-    getBatchCourseLocaleContent(ids, currentLocale).then((localeMap) => {
-      if (cancelled) return;
-      setCourses(
-        rawCourses.map((c) =>
-          applyCourseLocaleContent(c, localeMap.get(c.id) ?? null),
-        ),
-      );
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [rawCourses, currentLocale]);
-
   const filteredOnlineCourses = useMemo(
-    () =>
-      filterAndSortCourses(courses, {
-        query,
-        levelFilter,
-        ownerFilter,
-        sortMode,
-      }),
+    () => filterAndSortCourses(courses, { query, levelFilter, ownerFilter, sortMode }),
     [courses, levelFilter, ownerFilter, query, sortMode],
   );
-
   const activeFilterCount = [
     levelFilter !== "all",
     ownerFilter !== "all",
     query.trim() !== "",
   ].filter(Boolean).length;
 
-  const hasActiveFilters = activeFilterCount > 0;
-
-  const resetFilters = () => {
-    setQuery("");
-    setLevelFilter("all");
-    setOwnerFilter("all");
-    setSortMode("featured");
-  };
-
   return {
-    loading,
-    error,
+    loading: catalogQuery.isPending,
+    error: catalogQuery.error instanceof Error
+      ? catalogQuery.error.message
+      : catalogQuery.error ? t("catalog.loadErrorFallback") : null,
     filteredOnlineCourses,
-    hasActiveFilters,
+    hasActiveFilters: activeFilterCount > 0,
     activeFilterCount,
-    resetFilters,
+    resetFilters: () => {
+      setQuery("");
+      setLevelFilter("all");
+      setOwnerFilter("all");
+      setSortMode("featured");
+    },
   };
 }
