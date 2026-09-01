@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Plus, Sparkles, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 
 import {
@@ -162,6 +162,8 @@ type Props = {
   sectionLessons?: SourceLesson[];
 };
 
+const EMPTY_SECTION_LESSONS: SourceLesson[] = [];
+
 export function QuestionGeneratorDialog({
   open,
   section,
@@ -171,7 +173,7 @@ export function QuestionGeneratorDialog({
   mode = "section",
   lessonId,
   lessonTitle,
-  sectionLessons = [],
+  sectionLessons = EMPTY_SECTION_LESSONS,
 }: Props) {
   const { t } = useTranslation("instructor");
   const [questions, setQuestions] = useState<DraftQuestion[]>([]);
@@ -180,65 +182,120 @@ export function QuestionGeneratorDialog({
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [count, setCount] = useState<number>(5);
   // Lesson mode: which source lessons are selected for generation
   const [selectedSourceIds, setSelectedSourceIds] = useState<Set<string>>(new Set());
   const listEndRef = useRef<HTMLDivElement>(null);
+  const loadRequestIdRef = useRef(0);
+  const generateRequestIdRef = useRef(0);
+  const activeContextRef = useRef("");
+  const openRef = useRef(open);
 
   const isLessonMode = mode === "lesson";
+  const sectionId = section?.id;
 
-  // Load existing questions when dialog opens
   useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+
+  const loadQuestions = useCallback(() => {
     if (!open || !courseId) return;
     if (isLessonMode && !lessonId) return;
-    if (!isLessonMode && !section) return;
+    if (!isLessonMode && !sectionId) return;
+
+    const activeRequestId = ++loadRequestIdRef.current;
+    const activeContext = `${courseId}:${mode}:${lessonId || ""}:${sectionId || ""}:${locale}`;
+    activeContextRef.current = activeContext;
 
     setLoading(true);
     setGenerateError(null);
+    setLoadError(null);
 
     const loadPromise = isLessonMode
       ? getLessonQuestions(courseId, lessonId!, locale)
-      : getSectionQuestions(courseId, section!.id, locale);
+      : getSectionQuestions(courseId, sectionId!, locale);
 
     loadPromise
       .then((existing) => {
+        if (
+          loadRequestIdRef.current !== activeRequestId ||
+          activeContextRef.current !== activeContext ||
+          !openRef.current
+        ) {
+          return;
+        }
         setQuestions(existing.map(dataToDraft));
+        setLoadError(null);
       })
-      .catch(() => {
+      .catch((err) => {
+        if (
+          loadRequestIdRef.current !== activeRequestId ||
+          activeContextRef.current !== activeContext ||
+          !openRef.current
+        ) {
+          return;
+        }
         setQuestions([]);
+        setLoadError(
+          err instanceof Error
+            ? err.message
+            : t("courseEdit.questions.loadFailed", {
+                defaultValue: "Không thể tải câu hỏi hiện có.",
+              }),
+        );
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (loadRequestIdRef.current === activeRequestId) {
+          setLoading(false);
+        }
+      });
+  }, [open, courseId, isLessonMode, lessonId, sectionId, mode, locale, t]);
 
-    if (isLessonMode && lessonId) {
-      const currentIndex = sectionLessons.findIndex((l) => l.id === lessonId);
-      const contentSources = sectionLessons.filter(
-        (l) => l.id !== lessonId && l.hasSourceContent !== false,
-      );
-      const priorContentSources =
-        currentIndex > 0
-          ? sectionLessons
-              .slice(0, currentIndex)
-              .filter((l) => l.hasSourceContent !== false)
-          : [];
-      const current = sectionLessons.find((l) => l.id === lessonId);
-      const defaults =
-        priorContentSources.length > 0
-          ? priorContentSources
-          : contentSources.length > 0
-            ? contentSources
-            : current && current.hasSourceContent !== false
-              ? [current]
-              : [];
-      setSelectedSourceIds(new Set(defaults.map((l) => l.id)));
-    }
-  }, [open, section, courseId, isLessonMode, lessonId, locale, sectionLessons]);
+  // Load existing questions when dialog opens or context changes
+  useEffect(() => {
+    loadQuestions();
+    const ref = loadRequestIdRef;
+    return () => {
+      ref.current += 1;
+    };
+  }, [loadQuestions]);
+
+  // Initialize selected source lessons in lesson mode
+  useEffect(() => {
+    if (!open || !isLessonMode || !lessonId) return;
+
+    const currentIndex = sectionLessons.findIndex((l) => l.id === lessonId);
+    const contentSources = sectionLessons.filter(
+      (l) => l.id !== lessonId && l.hasSourceContent !== false,
+    );
+    const priorContentSources =
+      currentIndex > 0
+        ? sectionLessons
+            .slice(0, currentIndex)
+            .filter((l) => l.hasSourceContent !== false)
+        : [];
+    const current = sectionLessons.find((l) => l.id === lessonId);
+    const defaults =
+      priorContentSources.length > 0
+        ? priorContentSources
+        : contentSources.length > 0
+          ? contentSources
+          : current && current.hasSourceContent !== false
+            ? [current]
+            : [];
+    setSelectedSourceIds(new Set(defaults.map((l) => l.id)));
+  }, [open, isLessonMode, lessonId, sectionLessons]);
 
   // Reset when closed
   useEffect(() => {
     if (!open) {
+      loadRequestIdRef.current += 1;
+      generateRequestIdRef.current += 1;
       setQuestions([]);
       setSources([]);
       setGenerateError(null);
+      setLoadError(null);
       setGenerating(false);
       setSaving(false);
       setSelectedSourceIds(new Set());
@@ -249,12 +306,23 @@ export function QuestionGeneratorDialog({
     if (!courseId) return;
     if (!isLessonMode && !section) return;
     if (isLessonMode && !lessonId) return;
+    if (loadError !== null) {
+      setGenerateError(
+        t("courseEdit.questions.loadFailedBeforeGenerate", {
+          defaultValue: "Không thể tạo câu hỏi khi chưa tải được dữ liệu hiện có.",
+        }),
+      );
+      return;
+    }
     if (
       questions.length > 0 &&
       !window.confirm(t("courseEdit.questionGenerator.replaceDraftConfirm"))
     ) {
       return;
     }
+
+    const activeGenerateId = ++generateRequestIdRef.current;
+    const activeContext = `${courseId}:${mode}:${lessonId || ""}:${sectionId || ""}:${locale}`;
 
     setGenerating(true);
     setGenerateError(null);
@@ -270,15 +338,31 @@ export function QuestionGeneratorDialog({
         : { courseId, sectionId: section!.id, locale, count };
 
       const res = await invokeGenerateQuestions(req);
+      if (
+        generateRequestIdRef.current !== activeGenerateId ||
+        activeContextRef.current !== activeContext ||
+        !openRef.current
+      ) {
+        return;
+      }
       setSources(res.sources);
       setQuestions(res.questions.map(dataToDraft));
       setTimeout(() => listEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (err) {
+      if (
+        generateRequestIdRef.current !== activeGenerateId ||
+        activeContextRef.current !== activeContext ||
+        !openRef.current
+      ) {
+        return;
+      }
       setGenerateError(
         err instanceof Error ? err.message : t("courseEdit.questions.generateFailed"),
       );
     } finally {
-      setGenerating(false);
+      if (generateRequestIdRef.current === activeGenerateId) {
+        setGenerating(false);
+      }
     }
   }
 
@@ -286,6 +370,14 @@ export function QuestionGeneratorDialog({
     if (!courseId) return;
     if (!isLessonMode && !section) return;
     if (isLessonMode && !lessonId) return;
+    if (loadError !== null) {
+      toast.error(
+        t("courseEdit.questions.loadFailedBeforeSave", {
+          defaultValue: "Không thể lưu khi trạng thái tải câu hỏi đang bị lỗi.",
+        }),
+      );
+      return;
+    }
 
     const invalid = questions.find(
       (q) => !q.question.trim() || q.options.filter((o) => o.text.trim()).length < 2,
@@ -429,7 +521,12 @@ export function QuestionGeneratorDialog({
               type="button"
               size="sm"
               className="w-full"
-              disabled={generating || loading || (isLessonMode && selectedSourceIds.size === 0)}
+              disabled={
+                generating ||
+                loading ||
+                loadError !== null ||
+                (isLessonMode && selectedSourceIds.size === 0)
+              }
               onClick={handleGenerate}
             >
               {generating ? (
@@ -479,7 +576,21 @@ export function QuestionGeneratorDialog({
               </div>
             )}
 
-            {!loading && questions.length === 0 && (
+            {loadError && !loading && (
+              <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-center space-y-3">
+                <p className="text-sm font-medium text-destructive">{loadError}</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={loadQuestions}
+                >
+                  {t("courseEdit.questions.retry", { defaultValue: "Thử lại" })}
+                </Button>
+              </div>
+            )}
+
+            {!loading && !loadError && questions.length === 0 && (
               <p className="text-sm text-foreground-muted py-4 text-center">
                 {t("courseEdit.questions.empty")}
               </p>
@@ -500,6 +611,7 @@ export function QuestionGeneratorDialog({
               variant="outline"
               size="sm"
               className="w-full"
+              disabled={loading || loadError !== null}
               onClick={addBlankQuestion}
             >
               <Plus className="size-4 mr-1.5" aria-hidden />
@@ -521,7 +633,13 @@ export function QuestionGeneratorDialog({
           </Button>
           <Button
             type="button"
-            disabled={questions.length === 0 || saving || generating}
+            disabled={
+              questions.length === 0 ||
+              saving ||
+              generating ||
+              loading ||
+              loadError !== null
+            }
             onClick={handleSave}
           >
             {saving ? (

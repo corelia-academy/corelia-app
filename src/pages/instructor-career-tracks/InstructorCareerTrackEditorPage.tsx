@@ -462,6 +462,28 @@ export default function InstructorCareerTrackEditorPage() {
     );
   }
 
+  if (!isNew && !track) {
+    return (
+      <PageContainer width="default">
+        <PageSectionCard className="mb-4">
+          <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+            {error || t("careerTracks.errors.notFound")}
+          </div>
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              render={<Link to="/instructor/career-tracks" />}
+              nativeButton={false}
+            >
+              {t("careerTracks.actions.back")}
+            </Button>
+          </div>
+        </PageSectionCard>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer width="default">
       {error ? (

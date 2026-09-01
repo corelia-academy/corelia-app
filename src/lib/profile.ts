@@ -504,7 +504,8 @@ async function fetchPublicProfileByHandleOnce(handle: string): Promise<PublicPro
  */
 export async function getPublicProfileById(id: string): Promise<PublicProfile | null> {
   const trimmed = id?.trim();
-  if (!trimmed) return null;
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!trimmed || !UUID_REGEX.test(trimmed)) return null;
   const { data, error } = await supabase
     .from("public_profiles")
     .select("*")

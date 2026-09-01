@@ -41,8 +41,6 @@ VITE_OCID_REDIRECT_URI="https://<your-prod-domain>/ocid-redirect"
 # Tuỳ chọn: lấy thời lượng video từ YouTube khi thêm bài học
 # VITE_YOUTUBE_API_KEY=""
 
-# Tuỳ chọn: Google Form tiếp nhận lỗi/báo cáo beta
-# VITE_BETA_FEEDBACK_FORM_URL="https://docs.google.com/forms/d/e/your-form-id/viewform"
 ```
 
 **Fix — Thay toàn bộ nội dung `.env.example` thành:**
@@ -68,8 +66,6 @@ VITE_OCID_REDIRECT_URI="https://<your-prod-domain>/ocid-redirect"
 # Tuỳ chọn: lấy thời lượng video từ YouTube khi thêm bài học
 # VITE_YOUTUBE_API_KEY=""
 
-# Tuỳ chọn: Google Form tiếp nhận lỗi/báo cáo beta
-# VITE_BETA_FEEDBACK_FORM_URL="https://docs.google.com/forms/d/e/your-form-id/viewform"
 ```
 
 ---

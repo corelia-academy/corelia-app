@@ -1,11 +1,10 @@
 import { useCallback, useMemo } from "react";
-import { BookOpen, Rocket, Trophy } from "lucide-react";
+import { BookOpen, Rocket } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   CoreliaSpotlight,
   type CoreliaSpotlightItem,
 } from "@/components/spotlight/CoreliaSpotlight";
-import { intlLocale } from "@/lib/intl";
 import type { Contest } from "@/types/hackathons";
 import type { CourseLesson } from "@/types/courses";
 
@@ -14,7 +13,7 @@ interface CourseSpotlightSectionProps {
   courseTitle: string;
   hasFullCourseAccess: boolean;
   nextLesson: CourseLesson | null;
-  spotlightContests: Contest[];
+  spotlightContests?: Contest[];
 }
 
 export function CourseSpotlightSection({
@@ -22,7 +21,6 @@ export function CourseSpotlightSection({
   courseTitle,
   hasFullCourseAccess,
   nextLesson,
-  spotlightContests,
 }: CourseSpotlightSectionProps) {
   const { t } = useTranslation("courses");
   const translate = useCallback(
@@ -62,33 +60,17 @@ export function CourseSpotlightSection({
       });
     }
 
-    const liveContest = spotlightContests[0];
-    if (liveContest) {
-      const registrationDeadlineText =
-        liveContest.registration_deadline != null
-          ? new Date(liveContest.registration_deadline).toLocaleDateString(
-              intlLocale(),
-            )
-          : null;
-      list.push({
-        id: `contest-${liveContest.id}`,
-        badge:
-          liveContest.status === "running"
-            ? translate("detail.spotlight.runningContestBadge")
-            : translate("detail.spotlight.newContestBadge"),
-        title: liveContest.title,
-        description: liveContest.tagline,
-        href: `/hackathons/${liveContest.slug ?? liveContest.id}`,
-        ctaLabel: translate("detail.spotlight.exploreContest"),
-        meta: registrationDeadlineText
-          ? translate("detail.spotlight.contestDeadlineMeta", {
-              date: registrationDeadlineText,
-            })
-          : translate("detail.spotlight.contestMetaNoDeadline"),
-        icon: <Trophy className="size-5 shrink-0" aria-hidden />,
-        accent: "amber",
-      });
-    }
+    list.push({
+      id: "career-tracks",
+      badge: translate("detail.spotlight.careerTrackBadge"),
+      title: translate("detail.spotlight.careerTrackTitle"),
+      description: translate("detail.spotlight.careerTrackDescription"),
+      href: "/career",
+      ctaLabel: translate("detail.spotlight.exploreCareerTracks"),
+      meta: translate("detail.spotlight.careerTrackMeta"),
+      icon: <Rocket className="size-5 shrink-0" aria-hidden />,
+      accent: "amber",
+    });
 
     if (list.length < 2) {
       list.push({
@@ -110,7 +92,6 @@ export function CourseSpotlightSection({
     hasFullCourseAccess,
     nextLesson,
     resolvedCourseId,
-    spotlightContests,
     translate,
   ]);
 

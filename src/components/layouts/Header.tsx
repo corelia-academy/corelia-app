@@ -323,7 +323,7 @@ export default function Header() {
       <BetaAnnouncementBanner />
       <div className="mx-auto flex h-14 w-full max-w-[1990px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
         <div className="flex items-center gap-4">
-          <SidebarTrigger className="hidden md:inline-flex shrink-0 size-7">
+          <SidebarTrigger className="size-7 shrink-0 lg:hidden">
             <MenuIcon className="size-5" aria-hidden />
           </SidebarTrigger>
           <NavLink

@@ -3,7 +3,6 @@ import { Link } from "react-router";
 import { ArrowRight, BadgeCheck, Briefcase, Clock, Layers } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CareerTrackDetail } from "@/types/career";
@@ -133,7 +132,6 @@ export default function CareerListPage() {
           <p className="mt-2 text-sm leading-relaxed text-destructive/90">
             {error}
           </p>
-          <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
         </div>
       </div>
     );

@@ -461,13 +461,22 @@ export async function getPublishedCourses(): Promise<Course[]> {
 }
 
 export async function getPublishedCoursesByInstructor(instructorId: string): Promise<Course[]> {
+  const trimmed = instructorId?.trim();
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!trimmed || !UUID_REGEX.test(trimmed)) return [];
+
   const { data, error } = await supabase
     .from("courses")
     .select(COURSE_ROW_SELECT)
     .eq("published", true)
-    .eq("instructor_id", instructorId)
+    .eq("instructor_id", trimmed)
     .order("updated_at", { ascending: false });
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.code === "22P02" || /invalid input syntax for type uuid/i.test(error.message)) {
+      return [];
+    }
+    throw new Error(error.message);
+  }
   return (data ?? []).map((r) => rowToCourse(r as CourseRow));
 }
 

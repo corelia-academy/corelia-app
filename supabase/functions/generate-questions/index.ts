@@ -172,8 +172,12 @@ async function verifyBearerUser(req: Request, db: SupabaseClient): Promise<User>
 }
 
 async function getUserRole(db: SupabaseClient, userId: string): Promise<Role> {
-  const { data, error } = await db.from("profiles").select("role").eq("id", userId).single();
-  if (error || !data) throw new Error("Không thể kiểm tra quyền người dùng.");
+  const { data, error } = await db.from("profiles").select("role").eq("id", userId).maybeSingle();
+  if (error) {
+    console.error("[generate-questions] db error in profiles:", error);
+    throw new Error("Không thể kết nối cơ sở dữ liệu.");
+  }
+  if (!data) throw new Error("Không tìm thấy thông tin người dùng.");
   return (data as ProfileRow).role;
 }
 
@@ -187,8 +191,12 @@ async function ensureCanManageCourse(
     .from("courses")
     .select("instructor_id,data")
     .eq("id", courseId)
-    .single();
-  if (error || !data) throw new Error("Không tìm thấy khoá học.");
+    .maybeSingle();
+  if (error) {
+    console.error("[generate-questions] db error in courses:", error);
+    throw new Error("Không thể kết nối cơ sở dữ liệu.");
+  }
+  if (!data) throw new HttpStatusError(404, "Không tìm thấy khoá học.");
   const row = data as CourseRow;
   if (role === "admin" || role === "support_staff") return;
   if (row.instructor_id === userId) return;
@@ -213,8 +221,12 @@ async function ensureQuestionResourcesBelongToCourse(
       .from("course_sections")
       .select("course_id")
       .eq("id", params.sectionId)
-      .single();
-    if (error || !data?.course_id) throw new Error("Không tìm thấy chương học.");
+      .maybeSingle();
+    if (error) {
+      console.error("[generate-questions] db error in course_sections:", error);
+      throw new Error("Không thể kết nối cơ sở dữ liệu.");
+    }
+    if (!data?.course_id) throw new HttpStatusError(404, "Không tìm thấy chương học.");
     if (String(data.course_id) !== params.courseId) {
       throw new Error("Chương học không thuộc khoá học đã yêu cầu.");
     }
@@ -225,8 +237,12 @@ async function ensureQuestionResourcesBelongToCourse(
       .from("course_lessons")
       .select("course_id,section_id")
       .eq("id", params.lessonId)
-      .single();
-    if (error || !data?.course_id) throw new Error("Không tìm thấy bài học.");
+      .maybeSingle();
+    if (error) {
+      console.error("[generate-questions] db error in course_lessons:", error);
+      throw new Error("Không thể kết nối cơ sở dữ liệu.");
+    }
+    if (!data?.course_id) throw new HttpStatusError(404, "Không tìm thấy bài học.");
     if (String(data.course_id) !== params.courseId) {
       throw new Error("Bài học không thuộc khoá học đã yêu cầu.");
     }
@@ -274,8 +290,26 @@ function parseBody(body: RequestBody): {
           .slice(0, 8)
       : null;
   const locale = body.locale === "en" ? "en" : "vi";
-  const rawCount = typeof body.count === "number" ? body.count : parseInt(String(body.count ?? "5"), 10);
-  const count = isNaN(rawCount) ? 5 : Math.min(10, Math.max(1, rawCount));
+  let count = 5;
+  if (body.count !== undefined && body.count !== null && body.count !== "") {
+    if (typeof body.count === "number") {
+      if (!Number.isInteger(body.count)) {
+        throw new HttpStatusError(400, "Số lượng câu hỏi phải là số nguyên (1–10).");
+      }
+      count = body.count;
+    } else if (typeof body.count === "string") {
+      const str = (body.count as string).trim();
+      if (!/^\d+$/.test(str)) {
+        throw new HttpStatusError(400, "Số lượng câu hỏi phải là số nguyên (1–10).");
+      }
+      count = parseInt(str, 10);
+    } else {
+      throw new HttpStatusError(400, "Số lượng câu hỏi không hợp lệ.");
+    }
+    if (count < 1 || count > 10) {
+      throw new HttpStatusError(400, "Số lượng câu hỏi phải nằm trong khoảng từ 1 đến 10.");
+    }
+  }
   if (!courseId) throw new Error("Thiếu courseId.");
   if (!lessonId && !sectionId) throw new Error("Thiếu sectionId hoặc lessonId.");
   return { courseId, sectionId, lessonId, sourceLessonIds, locale, count };
@@ -615,7 +649,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return withCors(req, json({ message: "Bạn không có quyền dùng tính năng này." }, 403));
     }
 
-    const { courseId, sectionId, lessonId, sourceLessonIds, locale, count } = parseBody((await req.json()) as RequestBody);
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      throw new HttpStatusError(400, "Payload JSON không hợp lệ.");
+    }
+    if (!rawBody || typeof rawBody !== "object" || Array.isArray(rawBody)) {
+      throw new HttpStatusError(400, "Payload JSON phải là một object.");
+    }
+    const { courseId, sectionId, lessonId, sourceLessonIds, locale, count } = parseBody(rawBody as RequestBody);
 
     await ensureCanManageCourse(db, user.id, role, courseId);
     await ensureQuestionResourcesBelongToCourse(db, {
@@ -696,11 +739,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
       ? error.status
       : /không có quyền/i.test(message)
         ? 403
-        : /Thiếu|Missing|hợp lệ|Không tìm thấy|không thuộc/.test(message)
-          ? 400
-          : /chưa có nội dung|chưa có bài/.test(message)
-            ? 422
-            : 500;
-    return withCors(req, json({ message }, status));
+        : /Không tìm thấy/i.test(message)
+          ? 404
+          : /Thiếu|Missing|hợp lệ|không thuộc/i.test(message)
+            ? 400
+            : /chưa có nội dung|chưa có bài/i.test(message)
+              ? 422
+              : 500;
+    const safeMessage = status === 500 ? "Đã xảy ra lỗi hệ thống khi xử lý yêu cầu." : message;
+    return withCors(req, json({ message: safeMessage }, status));
   }
 });

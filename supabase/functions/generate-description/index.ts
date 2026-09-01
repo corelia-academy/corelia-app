@@ -494,8 +494,12 @@ async function getUserRole(db: SupabaseClient, userId: string): Promise<Role> {
 }
 
 async function getCourseAccessRow(db: SupabaseClient, courseId: string): Promise<CourseRow> {
-  const { data, error } = await db.from("courses").select("instructor_id,data").eq("id", courseId).single();
-  if (error || !data) throw new Error("Không tìm thấy khoá học.");
+  const { data, error } = await db.from("courses").select("instructor_id,data").eq("id", courseId).maybeSingle();
+  if (error) {
+    console.error("[generate-description] db error in courses:", error);
+    throw new Error("Không thể kết nối cơ sở dữ liệu.");
+  }
+  if (!data) throw new HttpStatusError(404, "Không tìm thấy khoá học.");
   return data as CourseRow;
 }
 
@@ -525,8 +529,12 @@ async function ensureCanManageCareerTrack(
     .from("career_tracks")
     .select("instructor_id")
     .eq("id", careerTrackId)
-    .single();
-  if (error || !data) throw new Error("Không tìm thấy lộ trình nghề nghiệp.");
+    .maybeSingle();
+  if (error) {
+    console.error("[generate-description] db error in career_tracks:", error);
+    throw new Error("Không thể kết nối cơ sở dữ liệu.");
+  }
+  if (!data) throw new HttpStatusError(404, "Không tìm thấy lộ trình nghề nghiệp.");
   if (role === "admin" || role === "support_staff") return;
   const row = data as CareerTrackRow;
   if (row.instructor_id === userId) return;
@@ -551,8 +559,9 @@ async function resolveAndValidateCourseScope(
       .from("course_sections")
       .select("course_id")
       .eq("id", params.sectionId)
-      .single();
-    if (error || !data?.course_id) throw new Error("Không tìm thấy chương học.");
+      .maybeSingle();
+    if (error) throw new Error(`Lỗi kết nối cơ sở dữ liệu: ${error.message}`);
+    if (!data?.course_id) throw new HttpStatusError(404, "Không tìm thấy chương học.");
     const sectionCourseId = String(data.course_id);
     if (resolvedCourseId && resolvedCourseId !== sectionCourseId) {
       throw new Error("Chương học không thuộc khoá học đã yêu cầu.");
@@ -566,8 +575,9 @@ async function resolveAndValidateCourseScope(
       .from("course_lessons")
       .select("course_id,section_id")
       .eq("id", params.lessonId)
-      .single();
-    if (error || !data?.course_id) throw new Error("Không tìm thấy bài học.");
+      .maybeSingle();
+    if (error) throw new Error(`Lỗi kết nối cơ sở dữ liệu: ${error.message}`);
+    if (!data?.course_id) throw new HttpStatusError(404, "Không tìm thấy bài học.");
     const lessonCourseId = String(data.course_id);
     if (resolvedCourseId && resolvedCourseId !== lessonCourseId) {
       throw new Error("Bài học không thuộc khoá học đã yêu cầu.");
@@ -597,10 +607,10 @@ async function resolveAndValidateCourseScope(
       .in("id", sourceLessonIds);
     if (error) throw new Error("Không thể kiểm tra nguồn bài học.");
     const rows = (data ?? []) as Array<{ id: string; course_id: string }>;
-    if (
-      rows.length !== sourceLessonIds.length ||
-      rows.some((row) => String(row.course_id) !== resolvedCourseId)
-    ) {
+    if (rows.length !== sourceLessonIds.length) {
+      throw new HttpStatusError(404, "Một hoặc nhiều bài học nguồn không tìm thấy.");
+    }
+    if (rows.some((row) => String(row.course_id) !== resolvedCourseId)) {
       throw new Error("Nguồn bài học không thuộc khoá học đã yêu cầu.");
     }
   }
@@ -622,8 +632,9 @@ async function resolveLessonRows(
       .select("id,course_id,section_id,data")
       .eq("id", params.lessonId);
     if (params.courseId) query.eq("course_id", params.courseId);
-    const { data, error } = await query.single();
-    if (error || !data) throw new Error("Không tìm thấy bài học.");
+    const { data, error } = await query.maybeSingle();
+    if (error) throw new Error(`Lỗi kết nối cơ sở dữ liệu: ${error.message}`);
+    if (!data) throw new HttpStatusError(404, "Không tìm thấy bài học.");
     return [data as LessonRow];
   }
   if (params.sectionId) {
@@ -1086,7 +1097,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return withCors(req, json({ message: "Bạn không có quyền dùng tính năng này." }, 403));
     }
 
-    const parsed = parseBody((await req.json()) as RequestBody);
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      throw new HttpStatusError(400, "Payload JSON không hợp lệ.");
+    }
+    if (!rawBody || typeof rawBody !== "object" || Array.isArray(rawBody)) {
+      throw new HttpStatusError(400, "Payload JSON phải là một object.");
+    }
+    const parsed = parseBody(rawBody as RequestBody);
     const normalizedYoutubeVideoId = parsed.youtubeUrl ? normalizeYoutubeVideoId(parsed.youtubeUrl) : null;
 
     let guardCourseId: string | null = null;
@@ -1236,17 +1256,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
   } catch (error) {
     console.error("[generate-description]", error);
-    const message =
+    const rawMessage =
       error instanceof Error ? error.message : "Không thể generate description lúc này.";
     const status = error instanceof HttpStatusError
       ? error.status
-      : /không có quyền|permission/i.test(message)
+      : /không có quyền|permission/i.test(rawMessage)
         ? 403
-        : /Thiếu|Missing|hợp lệ|Không xác định|Không tìm thấy|không thuộc/.test(message)
-          ? 400
-          : /không đủ nội dung|rỗng/i.test(message)
-            ? 422
-            : 500;
+        : /Không tìm thấy/i.test(rawMessage)
+          ? 404
+          : /Thiếu|Missing|hợp lệ|Không xác định|không thuộc/i.test(rawMessage)
+            ? 400
+            : /không đủ nội dung|rỗng/i.test(rawMessage)
+              ? 422
+              : 500;
+    const message = status === 500 ? "Đã xảy ra lỗi hệ thống khi xử lý yêu cầu." : rawMessage;
     return withCors(req, json({ message }, status));
   }
 });

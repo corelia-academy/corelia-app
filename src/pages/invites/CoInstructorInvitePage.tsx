@@ -11,6 +11,15 @@ import {
   peekCoInstructorInviteByToken,
   type CoInstructorInvitePreview,
 } from "@/lib/coInstructorInvites";
+import type { TFunction } from "i18next";
+
+function formatCoInstructorError(err: unknown, t: TFunction<"courses">): string {
+  const raw = err instanceof Error ? err.message : String(err ?? "");
+  if (/invalid_token|not_found|expired|missing/i.test(raw)) {
+    return t("inviteCoInstructor.invalid");
+  }
+  return t("inviteCoInstructor.errorFallback");
+}
 
 export default function CoInstructorInvitePage() {
   const { token } = useParams<{ token: string }>();
@@ -43,7 +52,7 @@ export default function CoInstructorInvitePage() {
         if (msg === "forbidden") {
           setWrongAccount(true);
         } else {
-          setPreviewError(msg);
+          setPreviewError(formatCoInstructorError(e, t));
         }
       })
       .finally(() => {
@@ -52,7 +61,7 @@ export default function CoInstructorInvitePage() {
     return () => {
       cancelled = true;
     };
-  }, [authInitialized, isAuthenticated, safeToken]);
+  }, [authInitialized, isAuthenticated, safeToken, t]);
 
   async function onSignOutAndSwitch() {
     setBusy("switch");
@@ -81,13 +90,13 @@ export default function CoInstructorInvitePage() {
       }
       setMessage(t("inviteCoInstructor.accepted"));
     } catch (e) {
-      const msg =
-        e instanceof Error ? e.message : t("inviteCoInstructor.errorFallback");
-      if (msg === "forbidden") {
+      const raw = e instanceof Error ? e.message : "";
+      if (raw === "forbidden") {
         setWrongAccount(true);
       } else {
-        setMessage(msg);
-        toast.error(msg);
+        const friendly = formatCoInstructorError(e, t);
+        setMessage(friendly);
+        toast.error(friendly);
       }
     } finally {
       setBusy(null);
@@ -103,13 +112,13 @@ export default function CoInstructorInvitePage() {
       setMessage(t("inviteCoInstructor.declined"));
       toast.success(t("inviteCoInstructor.declined"));
     } catch (e) {
-      const msg =
-        e instanceof Error ? e.message : t("inviteCoInstructor.errorFallback");
-      if (msg === "forbidden") {
+      const raw = e instanceof Error ? e.message : "";
+      if (raw === "forbidden") {
         setWrongAccount(true);
       } else {
-        setMessage(msg);
-        toast.error(msg);
+        const friendly = formatCoInstructorError(e, t);
+        setMessage(friendly);
+        toast.error(friendly);
       }
     } finally {
       setBusy(null);

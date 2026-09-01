@@ -243,7 +243,7 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issues #328 and #331)", 
       expect(content).toContain("Không được gửi đồng thời courseId và careerTrackId.");
       expect(content).toContain("careerTrackId chỉ hợp lệ cho luồng dịch toàn bộ Career Track.");
       expect(content).toMatch(
-        /async function ensureCanManageCareerTrack[\s\S]*?\.from\("career_tracks"\)[\s\S]*?\.eq\("id", careerTrackId\)[\s\S]*?if \(error \|\| !data\)[\s\S]*?if \(role === "admin" \|\| role === "support_staff"\) return/,
+        /async function ensureCanManageCareerTrack[\s\S]*?\.from\("career_tracks"\)[\s\S]*?\.eq\("id", careerTrackId\)[\s\S]*?if \(error\)[\s\S]*?if \(!data\)[\s\S]*?if \(role === "admin" \|\| role === "support_staff"\) return/,
       );
     });
 
@@ -261,7 +261,7 @@ describe("Wave C Retirement Contract Tests (Epic #332 / Issues #328 and #331)", 
         /async function ensureCanManageCourse[\s\S]*?const row = await getCourseAccessRow\(db, courseId\)[\s\S]*?if \(role === "admin" \|\| role === "support_staff"\) return/,
       );
       expect(questionFunction).toMatch(
-        /async function ensureCanManageCourse[\s\S]*?\.from\("courses"\)[\s\S]*?if \(error \|\| !data\)[\s\S]*?if \(role === "admin" \|\| role === "support_staff"\) return/,
+        /async function ensureCanManageCourse[\s\S]*?\.from\("courses"\)[\s\S]*?if \(error\)[\s\S]*?if \(!data\)[\s\S]*?if \(role === "admin" \|\| role === "support_staff"\) return/,
       );
     });
 
