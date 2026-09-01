@@ -77,7 +77,7 @@ Workflows under [.github/workflows](.github/workflows) build with Vite and expec
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY` and/or `VITE_SUPABASE_ANON_KEY` (at least one must be set for the client key)
-- Optional: `VITE_OCID_CLIENT_ID`, `VITE_OCID_REDIRECT_URI`, `VITE_YOUTUBE_API_KEY`, `VITE_BETA_FEEDBACK_FORM_URL`
+- Optional: `VITE_OCID_CLIENT_ID`, `VITE_OCID_REDIRECT_URI`, `VITE_YOUTUBE_API_KEY`
 
 Replace the placeholder “Hosting deploy” step in each workflow with your real host command (e.g. `wrangler deploy` or Cloudflare Pages) when ready.
 

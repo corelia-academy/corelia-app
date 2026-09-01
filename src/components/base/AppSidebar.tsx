@@ -18,11 +18,12 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
-  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { ShowForRole } from "@/components/auth/ShowForRole";
 import { useTranslation } from "react-i18next";
 import { ROLE_GROUPS } from "@/config/roles";
+import { useTheme } from "next-themes";
 
 const primaryNav = [
   { labelKey: "nav.home" as const, href: "/", icon: Home, end: true },
@@ -33,38 +34,38 @@ const primaryNav = [
 
 export default function AppSidebar({
   collapsible = "icon",
-  showDesktopTrigger = true,
+  className,
 }: {
   collapsible?: "offcanvas" | "icon" | "none";
-  showDesktopTrigger?: boolean;
+  className?: string;
 }) {
   const { t } = useTranslation("common");
+  const { isMobile } = useSidebar();
+  const { resolvedTheme } = useTheme();
   const location = useLocation();
   const pathname = location.pathname;
 
   return (
-    <Sidebar collapsible={collapsible} variant="sidebar">
-      <SidebarHeader className="p-2">
-        <div className="flex items-center justify-between gap-2 group-data-[collapsible=icon]:justify-center">
-          <NavLink
-            to="/"
-            className="flex min-w-0 items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-1"
-          >
-            <img src="/corelia_favicon.svg" alt="Corelia" className="size-6" />
-            <span className="truncate group-data-[collapsible=icon]:hidden">
-              Corelia
-            </span>
+    <Sidebar
+      collapsible={collapsible}
+      variant="sidebar"
+      className={className}
+    >
+      {isMobile ? (
+        <SidebarHeader className="border-b border-sidebar-border px-4 py-3">
+          <NavLink to="/" className="inline-flex w-fit items-center">
+            <img
+              src={
+                resolvedTheme === "dark"
+                  ? "/logo/corelia-full-logo-white.png"
+                  : "/logo/corelia-full-logo-black.png"
+              }
+              alt="Corelia Academy"
+              className="h-9 w-auto"
+            />
           </NavLink>
-
-          {showDesktopTrigger ? (
-            <div className="hidden group-data-[collapsible=icon]:hidden md:block">
-              <SidebarTrigger />
-            </div>
-          ) : null}
-        </div>
-      </SidebarHeader>
-
-      <SidebarSeparator />
+        </SidebarHeader>
+      ) : null}
 
       <SidebarContent>
         <SidebarGroup>

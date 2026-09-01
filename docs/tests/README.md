@@ -33,7 +33,7 @@ Chi tiết thêm (auth lock, perf markers): xem trực tiếp [docs/STAGING_BUIL
 
 ### Biến môi trường (tham khảo cho dev / CI)
 
-Client build cần tối thiểu `VITE_SUPABASE_URL` và một trong `VITE_SUPABASE_PUBLISHABLE_KEY` hoặc `VITE_SUPABASE_ANON_KEY`. OCID và form feedback là tùy chọn — xem [.env.example](../../.env.example) và [README.md](../../README.md).
+Client build cần tối thiểu `VITE_SUPABASE_URL` và một trong `VITE_SUPABASE_PUBLISHABLE_KEY` hoặc `VITE_SUPABASE_ANON_KEY`. OCID là tùy chọn — xem [.env.example](../../.env.example) và [README.md](../../README.md).
 
 ---
 
@@ -81,7 +81,7 @@ Client build cần tối thiểu `VITE_SUPABASE_URL` và một trong `VITE_SUPAB
 | [01-auth-session-ocid.md](./01-auth-session-ocid.md) | Đăng ký, đăng nhập, phiên, OCID |
 | [02-home-discovery.md](./02-home-discovery.md) | Trang chủ (khách / đã login) |
 | [03-courses-catalog-detail-checkout-learn.md](./03-courses-catalog-detail-checkout-learn.md) | Khóa học, checkout, học |
-| [04-career-roadmap.md](./04-career-roadmap.md) | Career + roadmap |
+| [04-career.md](./04-career.md) | Career |
 | [05-projects-invites-search.md](./05-projects-invites-search.md) | Projects, invite, search |
 | [06-public-profiles.md](./06-public-profiles.md) | Hồ sơ công khai `/u/:handle` |
 | [07-account-hub.md](./07-account-hub.md) | `/account/*` |
@@ -94,9 +94,3 @@ Client build cần tối thiểu `VITE_SUPABASE_URL` và một trong `VITE_SUPAB
 | [13-activity-feed-follow-runtime-report.md](./13-activity-feed-follow-runtime-report.md) | Báo cáo QA issue #96, tách phần cần test tay runtime |
 | [13-activity-feed-follow-manual.html](./13-activity-feed-follow-manual.html) | Checklist HTML cơ bản cho sub-issue QA #96, có export/import JSON |
 | [14-oca-mint-course-flow.md](./14-oca-mint-course-flow.md) | Mint OCA (course credential): happy path, case biên, idempotency |
-
----
-
-## Báo lỗi
-
-Template và quy trình gợi ý: [GOOGLE_FORM_BUG_REPORT.md](../GOOGLE_FORM_BUG_REPORT.md).

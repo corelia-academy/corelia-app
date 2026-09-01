@@ -10,7 +10,6 @@ import {
 import { useTranslation } from "react-i18next";
 
 import NotFound from "@/pages/NotFound";
-import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -83,7 +82,6 @@ export default function CareerDetailPage() {
           <p className="mt-2 text-sm leading-relaxed text-destructive/90">
             {error}
           </p>
-          <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-destructive hover:text-destructive" />
         </div>
       </div>
     );

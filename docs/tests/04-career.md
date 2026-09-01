@@ -1,10 +1,10 @@
-# 04 — Career & Roadmap
+# 04 — Career
 
 Xem hub: [README.md](./README.md).
 
 ## Mục tiêu
 
-Phủ `/career`, `/career/corelia/:slug`, `/career/:handle/:slug`, `/roadmap`.
+Phủ `/career`, `/career/corelia/:slug`, `/career/:handle/:slug`.
 
 ## Tiền đề staging
 
@@ -19,8 +19,7 @@ Phủ `/career`, `/career/corelia/:slug`, `/career/:handle/:slug`, `/roadmap`.
 1. `/career` — danh sách hiển thị; filter/tab hoạt động nếu có.
 2. Mở `/career/corelia/:slug` với slug tồn tại trên staging — chi tiết load.
 3. Nếu có seed `/career/:handle/:slug` — URL đúng format handle + slug.
-4. `/roadmap` — trang load đầy đủ (timeline/graph theo UI hiện tại).
-5. Link nội bộ từ career sang instructor hoặc khóa học không gây 404 khi dữ liệu có seed.
+4. Link nội bộ từ career sang instructor hoặc khóa học không gây 404 khi dữ liệu có seed.
 
 ## Kết quả mong đợi
 
