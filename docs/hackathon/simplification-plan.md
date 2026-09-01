@@ -21,6 +21,8 @@ Các field localize qua `hackathon_locales`:
 
 Primary locale mặc định là VI; EN có draft độc lập.
 
+Banner và host logo được upload qua Supabase Storage trong Admin editor; admin không nhập URL ảnh thủ công. Document lưu URL hiển thị cùng storage path để hỗ trợ thay và xóa file.
+
 ## Project contract
 
 `projects` thêm:

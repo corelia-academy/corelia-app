@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
 import { createContest, deleteContest, getContest, getHackathonLocaleContent, setHackathonLocaleContent, updateContest } from "@/lib/hackathons";
+import { deleteStorageObjectByPath, uploadContestBanner, uploadContestHostLogo } from "@/lib/storage";
 import type { Contest, ContestI18nContent, ContestLocation, ContestStatus, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
 
 type Locale = "vi" | "en";
@@ -28,9 +29,11 @@ type Draft = {
   slug: string;
   status: ContestStatus;
   cover_image_url: string;
+  cover_image_path: string;
   mode: ContestLocation;
   host_name: string;
   host_logo_url: string;
+  host_logo_path: string;
   host_website_url: string;
   telegram: string;
   x: string;
@@ -81,7 +84,7 @@ function emptyLocale(): LocaleDraft {
 }
 
 function emptyDraft(): Draft {
-  return { slug: "", status: "draft", cover_image_url: "", mode: "online", host_name: "", host_logo_url: "", host_website_url: "", telegram: "", x: "", facebook: "", registration_deadline: "", submission_deadline: "", prize_amount: "0", prize_currency: "VND", winner_awards: [], locales: { vi: emptyLocale(), en: emptyLocale() } };
+  return { slug: "", status: "draft", cover_image_url: "", cover_image_path: "", mode: "online", host_name: "", host_logo_url: "", host_logo_path: "", host_website_url: "", telegram: "", x: "", facebook: "", registration_deadline: "", submission_deadline: "", prize_amount: "0", prize_currency: "VND", winner_awards: [], locales: { vi: emptyLocale(), en: emptyLocale() } };
 }
 
 function Section({ id, title, description, children, onSave, saving }: { id: string; title: string; description?: string; children: React.ReactNode; onSave: () => void; saving: boolean }) {
@@ -102,6 +105,12 @@ export default function AdminHackathonEditorPage() {
   const [locale, setLocale] = useState<Locale>("vi");
   const [draftState, setDraftState] = useState<Draft | null>(isNew ? emptyDraft() : null);
   const [dirty, setDirty] = useState(false);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [hostLogoFile, setHostLogoFile] = useState<File | null>(null);
+  const [bannerPreviewUrl, setBannerPreviewUrl] = useState<string | null>(null);
+  const [hostLogoPreviewUrl, setHostLogoPreviewUrl] = useState<string | null>(null);
+  const [bannerRemoved, setBannerRemoved] = useState(false);
+  const [hostLogoRemoved, setHostLogoRemoved] = useState(false);
   const editorQuery = useQuery({
     queryKey: ["admin", "hackathons", id ?? "new", "editor"],
     queryFn: async () => {
@@ -120,9 +129,11 @@ export default function AdminHackathonEditorPage() {
       slug: contest.slug ?? "",
       status: contest.status,
       cover_image_url: contest.cover_image_url ?? "",
+      cover_image_path: contest.cover_image_path ?? "",
       mode: contest.mode ?? contest.location,
       host_name: contest.host?.name ?? "",
       host_logo_url: contest.host?.logo_url ?? "",
+      host_logo_path: contest.host?.logo_path ?? "",
       host_website_url: contest.host?.website_url ?? "",
       telegram: contest.social_links?.telegram ?? "",
       x: contest.social_links?.x ?? "",
@@ -148,6 +159,8 @@ export default function AdminHackathonEditorPage() {
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
+  useEffect(() => () => { if (bannerPreviewUrl) URL.revokeObjectURL(bannerPreviewUrl); }, [bannerPreviewUrl]);
+  useEffect(() => () => { if (hostLogoPreviewUrl) URL.revokeObjectURL(hostLogoPreviewUrl); }, [hostLogoPreviewUrl]);
 
   const projectsQuery = useInfiniteQuery(publicProjectDirectoryQueryOptions("vi", "hackathon", "newest", { hackathonId: id ?? null, winnerProjectIds: draft.winner_awards.map((award) => award.project_id) }));
   const projects = projectsQuery.data?.pages.flatMap((page) => page.items) ?? [];
@@ -185,8 +198,9 @@ export default function AdminHackathonEditorPage() {
     submission_deadline: draft.submission_deadline ? new Date(draft.submission_deadline).toISOString() : null,
     location: draft.mode,
     mode: draft.mode,
-    cover_image_url: draft.cover_image_url || null,
-    host: { name: draft.host_name, logo_url: draft.host_logo_url || null, website_url: draft.host_website_url || null },
+    cover_image_url: bannerRemoved ? null : draft.cover_image_url || null,
+    cover_image_path: bannerRemoved ? null : draft.cover_image_path || null,
+    host: { name: draft.host_name, logo_url: hostLogoRemoved ? null : draft.host_logo_url || null, logo_path: hostLogoRemoved ? null : draft.host_logo_path || null, website_url: draft.host_website_url || null },
     social_links: { telegram: draft.telegram || null, x: draft.x || null, facebook: draft.facebook || null },
     prize_pool: { amount: draft.prize_amount || "0", currency: draft.prize_currency.trim().toUpperCase(), description_markdown: draft.locales.vi.prize_description_markdown },
     tracks: draft.locales.vi.tracks,
@@ -198,16 +212,50 @@ export default function AdminHackathonEditorPage() {
   const saveMutation = useMutation({
     mutationFn: async () => {
       validate();
+      let contest: Contest;
       if (isNew) {
-        const created = await createContest(payload());
-        await Promise.all([setHackathonLocaleContent(created.id, "vi", localePayload("vi")), setHackathonLocaleContent(created.id, "en", localePayload("en"))]);
-        return created;
+        contest = await createContest(payload());
+        await Promise.all([setHackathonLocaleContent(contest.id, "vi", localePayload("vi")), setHackathonLocaleContent(contest.id, "en", localePayload("en"))]);
+      } else {
+        contest = await updateContest(id!, payload());
+        await setHackathonLocaleContent(id!, locale, localePayload(locale));
       }
-      const updated = await updateContest(id!, payload());
-      await setHackathonLocaleContent(id!, locale, localePayload(locale));
-      return updated;
+
+      const [banner, hostLogo] = await Promise.all([
+        bannerFile ? uploadContestBanner(contest.id, bannerFile, draft.cover_image_path || null) : Promise.resolve(null),
+        hostLogoFile ? uploadContestHostLogo(contest.id, hostLogoFile, draft.host_logo_path || null) : Promise.resolve(null),
+      ]);
+      if (banner || hostLogo) {
+        contest = await updateContest(contest.id, {
+          ...(banner ? { cover_image_url: banner.url, cover_image_path: banner.path } : {}),
+          ...(hostLogo ? { host: { name: draft.host_name, website_url: draft.host_website_url || null, logo_url: hostLogo.url, logo_path: hostLogo.path } } : {}),
+        });
+      }
+      await Promise.all([
+        bannerRemoved && !bannerFile ? deleteStorageObjectByPath(draft.cover_image_path) : Promise.resolve(),
+        hostLogoRemoved && !hostLogoFile ? deleteStorageObjectByPath(draft.host_logo_path) : Promise.resolve(),
+      ]);
+      return { contest, banner, hostLogo };
     },
-    onSuccess: async (contest) => { setDirty(false); toast.success(t("hackathons.editor.saved")); await queryClient.invalidateQueries({ queryKey: ["hackathons"] }); if (isNew) navigate(`/admin/hackathons/${contest.id}/edit`, { replace: true }); },
+    onSuccess: async ({ contest, banner, hostLogo }) => {
+      setDraft((current) => ({
+        ...current,
+        cover_image_url: banner?.url ?? (bannerRemoved ? "" : current.cover_image_url),
+        cover_image_path: banner?.path ?? (bannerRemoved ? "" : current.cover_image_path),
+        host_logo_url: hostLogo?.url ?? (hostLogoRemoved ? "" : current.host_logo_url),
+        host_logo_path: hostLogo?.path ?? (hostLogoRemoved ? "" : current.host_logo_path),
+      }));
+      setBannerFile(null);
+      setHostLogoFile(null);
+      setBannerPreviewUrl(null);
+      setHostLogoPreviewUrl(null);
+      setBannerRemoved(false);
+      setHostLogoRemoved(false);
+      setDirty(false);
+      toast.success(t("hackathons.editor.saved"));
+      await queryClient.invalidateQueries({ queryKey: ["hackathons"] });
+      if (isNew) navigate(`/admin/hackathons/${contest.id}/edit`, { replace: true });
+    },
     onError: (error) => toast.error(error instanceof Error ? error.message : t("hackathons.editor.saveFailed")),
   });
   const save = () => saveMutation.mutate();
@@ -255,8 +303,19 @@ export default function AdminHackathonEditorPage() {
             <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium">Slug<Input className="mt-2" value={draft.slug} onChange={(event) => change({ slug: event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} /></label><label className="text-sm font-medium">Mode<select className={inputClass} value={draft.mode} onChange={(event) => change({ mode: event.target.value as ContestLocation })}><option value="online">Online</option><option value="offline">Offline</option><option value="hybrid">Hybrid</option></select></label></div>
             <label className="block text-sm font-medium">{t("hackathons.editor.fields.title")} ({locale.toUpperCase()})<Input className="mt-2" value={localized.title} onChange={(event) => changeLocale({ title: event.target.value })} /></label>
             <label className="block text-sm font-medium">{t("hackathons.editor.fields.shortDescription")}<textarea className={textareaClass} value={localized.short_description} onChange={(event) => changeLocale({ short_description: event.target.value })} /></label>
-            <label className="block text-sm font-medium">Banner URL<Input className="mt-2" type="url" value={draft.cover_image_url} onChange={(event) => change({ cover_image_url: event.target.value })} /></label>
-            <div className="grid gap-4 sm:grid-cols-3"><label className="text-sm font-medium">Host<Input className="mt-2" value={draft.host_name} onChange={(event) => change({ host_name: event.target.value })} /></label><label className="text-sm font-medium">Host logo URL<Input className="mt-2" type="url" value={draft.host_logo_url} onChange={(event) => change({ host_logo_url: event.target.value })} /></label><label className="text-sm font-medium">Host website<Input className="mt-2" type="url" value={draft.host_website_url} onChange={(event) => change({ host_website_url: event.target.value })} /></label></div>
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)]">
+              <div className="rounded-xl border border-border p-4">
+                <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-medium">{t("hackathons.editor.fields.banner")}</p><p className="mt-1 text-xs text-foreground-muted">{t("hackathons.editor.fields.bannerHint")}</p></div>{bannerPreviewUrl || (!bannerRemoved && draft.cover_image_url) ? <Button type="button" variant="ghost" size="icon" aria-label={t("hackathons.editor.removeImage")} onClick={() => { setBannerFile(null); setBannerPreviewUrl(null); setBannerRemoved(true); setDirty(true); }}><Trash2 className="size-4" /></Button> : null}</div>
+                <Input className="mt-3 cursor-pointer" type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0] ?? null; setBannerFile(file); setBannerPreviewUrl(file ? URL.createObjectURL(file) : null); setBannerRemoved(false); if (file) setDirty(true); event.target.value = ""; }} />
+                {bannerPreviewUrl || (!bannerRemoved && draft.cover_image_url) ? <img src={bannerPreviewUrl ?? draft.cover_image_url} alt={t("hackathons.editor.fields.bannerPreviewAlt")} className="mt-3 aspect-[21/9] w-full rounded-lg border border-border-subtle object-cover" /> : null}
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-medium">{t("hackathons.editor.fields.hostLogo")}</p><p className="mt-1 text-xs text-foreground-muted">{t("hackathons.editor.fields.hostLogoHint")}</p></div>{hostLogoPreviewUrl || (!hostLogoRemoved && draft.host_logo_url) ? <Button type="button" variant="ghost" size="icon" aria-label={t("hackathons.editor.removeImage")} onClick={() => { setHostLogoFile(null); setHostLogoPreviewUrl(null); setHostLogoRemoved(true); setDirty(true); }}><Trash2 className="size-4" /></Button> : null}</div>
+                <Input className="mt-3 cursor-pointer" type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0] ?? null; setHostLogoFile(file); setHostLogoPreviewUrl(file ? URL.createObjectURL(file) : null); setHostLogoRemoved(false); if (file) setDirty(true); event.target.value = ""; }} />
+                {hostLogoPreviewUrl || (!hostLogoRemoved && draft.host_logo_url) ? <img src={hostLogoPreviewUrl ?? draft.host_logo_url} alt={t("hackathons.editor.fields.hostLogoPreviewAlt")} className="mt-3 size-28 rounded-lg border border-border-subtle bg-white object-contain p-2" /> : null}
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium">Host<Input className="mt-2" value={draft.host_name} onChange={(event) => change({ host_name: event.target.value })} /></label><label className="text-sm font-medium">Host website<Input className="mt-2" type="url" value={draft.host_website_url} onChange={(event) => change({ host_website_url: event.target.value })} /></label></div>
             <div className="grid gap-4 sm:grid-cols-3"><label className="text-sm font-medium">Telegram<Input className="mt-2" type="url" value={draft.telegram} onChange={(event) => change({ telegram: event.target.value })} /></label><label className="text-sm font-medium">X<Input className="mt-2" type="url" value={draft.x} onChange={(event) => change({ x: event.target.value })} /></label><label className="text-sm font-medium">Facebook<Input className="mt-2" type="url" value={draft.facebook} onChange={(event) => change({ facebook: event.target.value })} /></label></div>
             <div className="grid gap-4 sm:grid-cols-2">{(["registration_deadline", "submission_deadline"] as const).map((key) => <label key={key} className="text-sm font-medium">{t(`hackathons.editor.fields.${key}`)}<Input className="mt-2" type="datetime-local" value={draft[key]} onChange={(event) => change({ [key]: event.target.value })} /></label>)}</div>
           </Section>

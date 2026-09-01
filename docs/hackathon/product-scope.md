@@ -41,7 +41,7 @@ Editor dùng layout tương tự course editor: status/metrics header, sticky si
 
 Các section:
 
-1. Overview
+1. Overview — banner và host logo dùng uploader Supabase Storage, không nhập URL ảnh thủ công
 2. Description
 3. Prize & Tracks
 4. Timeline
