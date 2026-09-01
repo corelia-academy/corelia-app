@@ -48,6 +48,8 @@ Migration `20260901093558_simplify_hackathons_and_projects.sql`:
 - drop `hackathon_scores`, `hackathon_access_invites` cùng policy/function/trigger phụ thuộc;
 - giữ nguyên credential issuance lịch sử; FK nguồn hiện hành dùng `ON DELETE SET NULL`.
 
+Forward migration `20260901104414_harden_hackathon_project_rpc_boundary.sql` chuyển implementation đặc quyền của RPC project vào schema private và giữ public RPC dưới dạng `SECURITY INVOKER`. Hai migration này là cùng một pending release batch cho Production.
+
 Không sửa migration lịch sử.
 
 ## Rollout cleanup dữ liệu cũ

@@ -44,6 +44,7 @@
 - [ ] Xóa trực tiếp toàn bộ score/access-invite legacy; không tạo snapshot hoặc export.
 - [ ] `hackathon_scores` và `hackathon_access_invites` không còn tồn tại.
 - [ ] RPC/function/trigger scoring và scoped invite không còn tồn tại.
+- [ ] Public `upsert_hackathon_project` là `SECURITY INVOKER`; implementation đặc quyền nằm ngoài exposed schema.
 - [ ] URL workspace cũ trả Not Found.
 - [ ] Không còn UI runtime judging, review application, analytics, email blast hoặc credential award.
 - [ ] Project và credential issuance lịch sử được bảo toàn.

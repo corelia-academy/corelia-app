@@ -5,8 +5,8 @@
   "git_tree_sha": "34f840f2c0d54c1714db5c6466fae6ff779debf7",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 165,
-  "latest_migration": "20260901093558_simplify_hackathons_and_projects.sql",
+  "migration_count": 166,
+  "latest_migration": "20260901104414_harden_hackathon_project_rpc_boundary.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "source_sha": "a1b04f069c50c23e63fd8fb6c4138223d5a2574a",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
@@ -1138,6 +1138,10 @@
       {
         "path": "supabase/migrations/20260901093558_simplify_hackathons_and_projects.sql",
         "sha256": "c3701a71925c32b018ae6835bfe4a521e5ac7892d302723dd2ae69535bbf6eb0"
+      },
+      {
+        "path": "supabase/migrations/20260901104414_harden_hackathon_project_rpc_boundary.sql",
+        "sha256": "e84ef4ce8f04ef62a0b2526aa943a48ac2c5cdc43c9c69fe941bd197dd7435c7"
       }
     ]
   }

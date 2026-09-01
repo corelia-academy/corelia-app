@@ -28,17 +28,18 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260831232819_restore_enrollment_rpc_security_boundary.sql",
   "supabase/migrations/20260901002156_remove_dashboard_configs_and_tier_limits.sql",
   "supabase/migrations/20260901093558_simplify_hackathons_and_projects.sql",
+  "supabase/migrations/20260901104414_harden_hackathon_project_rpc_boundary.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Every approved migration except the final entry is already released. Keep
-// the reviewed history distinct from the migration pending this rollout.
+// Production is released through 20260901002156. The Hackathon schema change
+// and its forward-only security reconciliation ship as one pending batch.
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
-  APPROVED_PENDING_VERSIONS.slice(0, -1),
+  APPROVED_PENDING_VERSIONS.slice(0, -2),
 );
-export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-1));
+export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-2));
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);
