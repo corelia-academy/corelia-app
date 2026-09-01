@@ -141,8 +141,6 @@
         "title": "Title",
         "shortDescription": "Short description",
         "totalPrize": "Total prize pool",
-        "starts_at": "Starts",
-        "ends_at": "Ends",
         "registration_deadline": "Registration deadline",
         "submission_deadline": "Submission deadline",
         "sectors": "Sectors",

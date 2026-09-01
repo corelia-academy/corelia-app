@@ -141,8 +141,6 @@
         "title": "Tiêu đề",
         "shortDescription": "Mô tả ngắn",
         "totalPrize": "Tổng prize pool",
-        "starts_at": "Bắt đầu",
-        "ends_at": "Kết thúc",
         "registration_deadline": "Hạn đăng ký",
         "submission_deadline": "Hạn nộp dự án",
         "sectors": "Sectors",

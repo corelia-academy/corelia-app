@@ -35,8 +35,6 @@ type Draft = {
   telegram: string;
   x: string;
   facebook: string;
-  starts_at: string;
-  ends_at: string;
   registration_deadline: string;
   submission_deadline: string;
   prize_amount: string;
@@ -83,7 +81,7 @@ function emptyLocale(): LocaleDraft {
 }
 
 function emptyDraft(): Draft {
-  return { slug: "", status: "draft", cover_image_url: "", mode: "online", host_name: "", host_logo_url: "", host_website_url: "", telegram: "", x: "", facebook: "", starts_at: "", ends_at: "", registration_deadline: "", submission_deadline: "", prize_amount: "0", prize_currency: "VND", winner_awards: [], locales: { vi: emptyLocale(), en: emptyLocale() } };
+  return { slug: "", status: "draft", cover_image_url: "", mode: "online", host_name: "", host_logo_url: "", host_website_url: "", telegram: "", x: "", facebook: "", registration_deadline: "", submission_deadline: "", prize_amount: "0", prize_currency: "VND", winner_awards: [], locales: { vi: emptyLocale(), en: emptyLocale() } };
 }
 
 function Section({ id, title, description, children, onSave, saving }: { id: string; title: string; description?: string; children: React.ReactNode; onSave: () => void; saving: boolean }) {
@@ -129,8 +127,6 @@ export default function AdminHackathonEditorPage() {
       telegram: contest.social_links?.telegram ?? "",
       x: contest.social_links?.x ?? "",
       facebook: contest.social_links?.facebook ?? "",
-      starts_at: dateInput(contest.starts_at),
-      ends_at: dateInput(contest.ends_at),
       registration_deadline: dateInput(contest.registration_deadline),
       submission_deadline: dateInput(contest.submission_deadline),
       prize_amount: contest.prize_pool?.amount ?? "0",
@@ -185,8 +181,6 @@ export default function AdminHackathonEditorPage() {
     description_markdown: draft.locales.vi.description_markdown,
     resources_markdown: draft.locales.vi.resources_markdown,
     status: draft.status,
-    starts_at: draft.starts_at ? new Date(draft.starts_at).toISOString() : null,
-    ends_at: draft.ends_at ? new Date(draft.ends_at).toISOString() : null,
     registration_deadline: draft.registration_deadline ? new Date(draft.registration_deadline).toISOString() : null,
     submission_deadline: draft.submission_deadline ? new Date(draft.submission_deadline).toISOString() : null,
     location: draft.mode,
@@ -264,7 +258,7 @@ export default function AdminHackathonEditorPage() {
             <label className="block text-sm font-medium">Banner URL<Input className="mt-2" type="url" value={draft.cover_image_url} onChange={(event) => change({ cover_image_url: event.target.value })} /></label>
             <div className="grid gap-4 sm:grid-cols-3"><label className="text-sm font-medium">Host<Input className="mt-2" value={draft.host_name} onChange={(event) => change({ host_name: event.target.value })} /></label><label className="text-sm font-medium">Host logo URL<Input className="mt-2" type="url" value={draft.host_logo_url} onChange={(event) => change({ host_logo_url: event.target.value })} /></label><label className="text-sm font-medium">Host website<Input className="mt-2" type="url" value={draft.host_website_url} onChange={(event) => change({ host_website_url: event.target.value })} /></label></div>
             <div className="grid gap-4 sm:grid-cols-3"><label className="text-sm font-medium">Telegram<Input className="mt-2" type="url" value={draft.telegram} onChange={(event) => change({ telegram: event.target.value })} /></label><label className="text-sm font-medium">X<Input className="mt-2" type="url" value={draft.x} onChange={(event) => change({ x: event.target.value })} /></label><label className="text-sm font-medium">Facebook<Input className="mt-2" type="url" value={draft.facebook} onChange={(event) => change({ facebook: event.target.value })} /></label></div>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{(["starts_at", "ends_at", "registration_deadline", "submission_deadline"] as const).map((key) => <label key={key} className="text-sm font-medium">{t(`hackathons.editor.fields.${key}`)}<Input className="mt-2" type="datetime-local" value={draft[key]} onChange={(event) => change({ [key]: event.target.value })} /></label>)}</div>
+            <div className="grid gap-4 sm:grid-cols-2">{(["registration_deadline", "submission_deadline"] as const).map((key) => <label key={key} className="text-sm font-medium">{t(`hackathons.editor.fields.${key}`)}<Input className="mt-2" type="datetime-local" value={draft[key]} onChange={(event) => change({ [key]: event.target.value })} /></label>)}</div>
           </Section>
           <Section id="description" title={t("hackathons.editor.sections.description")} onSave={save} saving={saveMutation.isPending}><label className="block text-sm font-medium">Markdown ({locale.toUpperCase()})<textarea className={`${textareaClass} min-h-80 font-mono`} value={localized.description_markdown} onChange={(event) => changeLocale({ description_markdown: event.target.value })} /></label></Section>
           <Section id="prizes" title={t("hackathons.editor.sections.prizes")} onSave={save} saving={saveMutation.isPending}>

@@ -5,7 +5,7 @@
 Các field dùng chung giữa locale:
 
 - `slug`, `mode`, `host`, `social_links`
-- `registration_deadline`, `submission_deadline`, `starts_at`, `ends_at`
+- `registration_deadline`, `submission_deadline`
 - prize `amount`, `currency`
 - taxonomy ID, `active`, `sort_order`
 - timeline ID/timestamps/order
