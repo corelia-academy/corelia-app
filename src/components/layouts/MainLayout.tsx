@@ -37,7 +37,7 @@ function MainAppSidebar() {
   return (
     <AppSidebar
       collapsible={isMobile ? "icon" : "none"}
-      className="sticky top-(--app-header-height) h-[calc(100svh-var(--app-header-height))] self-start overflow-hidden"
+      className="sticky top-(--app-header-height) h-[calc(100svh-var(--app-header-height))] self-start overflow-hidden border-r border-sidebar-border"
     />
   );
 }
