@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageContainer } from "@/components/layouts/PagePrimitives";
-import { ReportIssueLink } from "@/components/feedback/ReportIssueLink";
 
 export function ContestDetailLoadingCard({
   translate,
@@ -100,7 +99,6 @@ export function ContestDetailErrorCard({
           <div className="mt-2 max-w-xl text-sm text-foreground-muted">
             {translate("detail.errorState.description")}
           </div>
-          <ReportIssueLink className="mt-3 h-8 rounded-full px-3 text-xs text-foreground-muted hover:text-foreground" />
           <Button
             render={<NavLink to="/hackathons" />}
             nativeButton={false}

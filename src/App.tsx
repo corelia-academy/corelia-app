@@ -36,7 +36,6 @@ const CourseDetail = lazy(() => import("@/pages/course-details"));
 const Learn = lazy(() => import("@/pages/learn"));
 const LearnLayout = lazy(() => import("@/pages/learn/LearnLayout"));
 const InstructorDetail = lazy(() => import("@/pages/InstructorDetail"));
-const RoadmapPage = lazy(() => import("@/pages/roadmap"));
 const CareerList = lazy(() => import("@/pages/career"));
 const CareerDetail = lazy(() => import("@/pages/career/CareerDetailPage"));
 const ProjectInvitePage = lazy(() => import("@/pages/invites/ProjectInvitePage"));
@@ -397,14 +396,6 @@ export default function App() {
                       <AchievementsPage />
                     </Suspense>
                   </RequireAuth>
-                }
-              />
-              <Route
-                path="roadmap"
-                element={
-                  <Suspense fallback={<PageFallback />}>
-                    <RoadmapPage />
-                  </Suspense>
                 }
               />
               <Route path="hackathons/*" element={<Navigate to="/" replace />} />
