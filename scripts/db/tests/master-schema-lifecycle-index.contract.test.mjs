@@ -74,8 +74,6 @@ describe("Master Wave 3: Schema Classification, Lifecycle Invariants & Index Opt
       "ai_voucher_redemptions",
       "search_query_events",
       "system_settings",
-      "tier_limits",
-      "dashboard_configs",
       "payment_transactions",
       "payment_refunds",
     ];
@@ -208,4 +206,3 @@ describe("Master Wave 3: Schema Classification, Lifecycle Invariants & Index Opt
     assert.ok(version120000, "Migration 20260825120000 must exist in migrations directory");
   });
 });
-

@@ -3,24 +3,20 @@ import { NavLink } from "react-router";
 import type { TFunction } from "i18next";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { FocusCard, PinnedProgramCard } from "../utils/homeTypes";
+import type { FocusCard } from "../utils/homeTypes";
 
 export function HomeHeader({
   t,
   loading,
   firstName,
-  activePinnedProgram,
   featuredFocus,
 }: {
   t: TFunction<"common">;
   loading: boolean;
   firstName: string;
-  activePinnedProgram: PinnedProgramCard | null;
   featuredFocus: FocusCard | null;
 }) {
-  const featuredWrapperClassName = activePinnedProgram
-    ? "rounded-lg border border-primary/20 ring-1 ring-brand-accent/10 transition-colors duration-300 hover:border-primary/50 hover:ring-brand-accent/25"
-    : "rounded-lg border border-border-subtle";
+  const featuredWrapperClassName = "rounded-lg border border-border-subtle";
 
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface-base shadow-card p-4 sm:p-5">
@@ -51,23 +47,6 @@ export function HomeHeader({
             <Skeleton className="h-4 w-32 rounded-full" />
             <Skeleton className="h-5 w-full max-w-sm rounded" />
             <Skeleton className="h-4 w-full max-w-md rounded" />
-          </div>
-        ) : activePinnedProgram ? (
-          <div className={featuredWrapperClassName}>
-            <div className="p-4">
-              <div className="inline-flex items-center rounded-full border border-border bg-primary-muted px-3 py-1 text-xs font-medium text-primary">
-                {activePinnedProgram.badge}
-              </div>
-              <div className="mt-2 line-clamp-2 text-sm font-medium text-foreground">
-                {activePinnedProgram.title}
-              </div>
-              <div className="mt-1 line-clamp-2 text-sm leading-relaxed text-foreground-muted">
-                {activePinnedProgram.description}
-              </div>
-              <div className="mt-3 text-xs text-foreground-muted">
-                {activePinnedProgram.meta}
-              </div>
-            </div>
           </div>
         ) : featuredFocus ? (
           <div className={featuredWrapperClassName}>
@@ -113,13 +92,12 @@ export function HomeHeader({
             <>
               <Button
                 render={
-                  <NavLink to={activePinnedProgram?.to ?? featuredFocus?.action ?? "/courses"} />
+                  <NavLink to={featuredFocus?.action ?? "/courses"} />
                 }
                 nativeButton={false}
                 size="sm"
               >
-                {activePinnedProgram?.cta ??
-                  (featuredFocus ? t("home.continueLearning") : t("home.exploreCourses"))}
+                {featuredFocus ? t("home.continueLearning") : t("home.exploreCourses")}
                 <ArrowRight className="size-4 shrink-0" aria-hidden />
               </Button>
               <Button
@@ -137,4 +115,3 @@ export function HomeHeader({
     </section>
   );
 }
-

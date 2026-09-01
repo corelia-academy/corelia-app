@@ -34,7 +34,7 @@ export function verifyProductionPostMigration({ migrationOutput, inspectionOutpu
   }
 
   if (audit) {
-    for (const key of ["learner_ai_relations", "learner_ai_functions", "learner_ai_quota_columns"]) {
+    for (const key of ["learner_ai_relations", "learner_ai_functions", "retired_config_relations"]) {
       if (!Array.isArray(audit[key]) || audit[key].length !== 0) {
         errors.push(`${key} must be an empty array.`);
       }

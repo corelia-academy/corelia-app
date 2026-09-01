@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import type { TFunction } from "i18next";
-import type { HomeDashboardConfig } from "@/types/dashboard";
 import type { Enrollment } from "@/types/courses";
 import { intlLocale } from "@/lib/intl";
 import type { FocusCard } from "../utils/homeTypes";
@@ -12,8 +11,6 @@ export function useHomeUserDashboard(user: User | null, t: TFunction<"common">) 
   const [loading, setLoading] = useState(true);
   const [focusCards, setFocusCards] = useState<FocusCard[]>([]);
   const [issuedCertificates, setIssuedCertificates] = useState(0);
-  const [dashboardConfig, setDashboardConfig] =
-    useState<HomeDashboardConfig | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -27,15 +24,9 @@ export function useHomeUserDashboard(user: User | null, t: TFunction<"common">) 
       perfMeasureStart("home.dashboard_wave");
 
       try {
-        const [{ getMyEnrollments, getCourse, getCourseLessons, getCourseSections, getLessonProgressForCourse, sortLessonsByCurriculum, computeProgressPercent, getNextLesson, backfillMissingEnrollmentsForUser }, { getHomeDashboardConfig }] = await Promise.all([
-          import("@/lib/courses"),
-          import("@/lib/dashboardConfig"),
-        ]);
+        const { getMyEnrollments, getCourse, getCourseLessons, getCourseSections, getLessonProgressForCourse, sortLessonsByCurriculum, computeProgressPercent, getNextLesson, backfillMissingEnrollmentsForUser } = await import("@/lib/courses");
 
-        const [enrollmentsInitial, homeConfig] = await Promise.all([
-          getMyEnrollments(user.id).catch(() => [] as Enrollment[]),
-          getHomeDashboardConfig().catch(() => null),
-        ]);
+        const enrollmentsInitial = await getMyEnrollments(user.id).catch(() => [] as Enrollment[]);
 
         const created = await backfillMissingEnrollmentsForUser(user.id).catch(() => 0);
         const enrollments = created > 0
@@ -88,7 +79,6 @@ export function useHomeUserDashboard(user: User | null, t: TFunction<"common">) 
           setIssuedCertificates(
             enrollments.filter((item) => !!item.certificate_issued_at).length,
           );
-          setDashboardConfig(homeConfig);
         }
       } finally {
         if (!cancelled) {
@@ -104,5 +94,5 @@ export function useHomeUserDashboard(user: User | null, t: TFunction<"common">) 
     };
   }, [user, t]);
 
-  return { loading, focusCards, issuedCertificates, dashboardConfig };
+  return { loading, focusCards, issuedCertificates };
 }
