@@ -287,7 +287,12 @@ select vault.create_secret(
 ```
 
 Các câu lệnh trên chỉ tạo/rotate Vault secret; không copy scheduler secret vào
-migration. Sau khi migration chạy, kiểm tra đúng ba lịch và không còn lịch cũ:
+migration. Hai workflow staging/production chạy
+`scripts/db/verify-jobs-scheduler-vault.sql` sau migrations và dừng release nếu
+một trong hai giá trị thiếu, rỗng hoặc project URL không hợp lệ. Guard này chỉ
+kiểm tra trong database, không in giá trị secret ra log.
+
+Sau khi migration chạy, kiểm tra đúng ba lịch và không còn lịch cũ:
 
 ```sql
 select jobid, jobname, schedule, active
