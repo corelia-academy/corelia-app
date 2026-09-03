@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "3c70dcdd0e017e7db86371b688eb11ca62821b52",
-  "git_tree_sha": "4c121f199ec162083d78a36e63471b1a08f8cc97",
+  "rc_sha": "7955a712b1b572ffc1031b6c331aea9c5cfa153f",
+  "git_tree_sha": "d533bfdb7bbf3489ae7492abea59fdc31c538af9",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 181,
   "latest_migration": "20260903111914_grant_job_company_source_for_connected_adapters.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "3c70dcdd0e017e7db86371b688eb11ca62821b52",
+  "source_sha": "7955a712b1b572ffc1031b6c331aea9c5cfa153f",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "f3807596a1eb01f3fdf5fca1a9891e841ca23b985ae95d36cd1003e2e424aa50",
+  "candidate_tree_sha256": "56f0ffc8aff2a394dc57542fad9ce41f81f1db7065fde61949572924eb5a350a",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -203,7 +203,7 @@
     },
     {
       "path": "docs/jobs/TEST_CHECKLIST.md",
-      "sha256": "5b6dbbba90b89cb65f8d541d458513858ba51c1ae3d5c5d0e68fa8909831419c"
+      "sha256": "edcdbbf8f187e4570fa731fc6f036c33b48b8f23bf5fad2fe54fcfe2cfde4a48"
     },
     {
       "path": "docs/learning/admin-ui.md",
@@ -419,7 +419,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
-      "sha256": "38aee87948c373ca4736522cd1d4ed315e75f6c7f32a1a973c6d8d5ad8f89d18"
+      "sha256": "cf2719d7a2e00a7e7219850480e0c225fed0fea4292fd935fe66fc75b4319cfc"
     },
     {
       "path": "scripts/db/tests/learner-ai-database-retirement.contract.test.mjs",
@@ -515,7 +515,7 @@
     },
     {
       "path": "scripts/jobs/generate-sitemap.mjs",
-      "sha256": "7421280d4e6c7d5ae786a28938438459b7df671f2d2dbbe9db09a2e72417983e"
+      "sha256": "84e514274ca57d22d316b9ef6d01f2d091974ebc26d02e39dddd029bc5f1315f"
     },
     {
       "path": "scripts/purge-financial-storage.mjs",
@@ -563,7 +563,7 @@
     },
     {
       "path": "src/components/base/AppSidebar.tsx",
-      "sha256": "5ff991054ee8e69b9a4961c6a97a32b31aacff4a184b392f15376537dad52aca"
+      "sha256": "eae926e0222f12791bfb4a67515d5cc79f2b568843bc2dfbb53880bff7ef2b85"
     },
     {
       "path": "src/components/base/CredentialRealtimeSync.tsx",
@@ -762,8 +762,16 @@
       "sha256": "01f76ce241aa203292840e0c2eb7ce600ccab0dedb07df09c2226628ca35ec7a"
     },
     {
+      "path": "src/features/jobs/jobPagination.ts",
+      "sha256": "ed7dc979c5a44301ccefae32b8c395c41d549d33b48788374168c7368702ea83"
+    },
+    {
+      "path": "src/features/jobs/jobQueries.test.ts",
+      "sha256": "5724298c4c3488704d37b531d02a0873e5093a62df144b3bbf9f010793d00476"
+    },
+    {
       "path": "src/features/jobs/jobQueries.ts",
-      "sha256": "725f3addfca37b6359dafe972ab7f4f117744c69a9527815f2f7e9940b744768"
+      "sha256": "43de55361e227afe0d54de31595bd2955eca754c706591f71d609a4cc1f1d607"
     },
     {
       "path": "src/features/jobs/JobsNav.tsx",
@@ -1035,7 +1043,7 @@
     },
     {
       "path": "src/locales/en/jobs.json",
-      "sha256": "57acd7ffa81b8b5e6a9341ea7d18d2deb710ebc5f034205443c7f14102d26588"
+      "sha256": "fd675fd3acc926df831dbf659c6a68df607eb8680621a1bcb6200f9e2e907cf6"
     },
     {
       "path": "src/locales/vi/account.json",
@@ -1063,7 +1071,7 @@
     },
     {
       "path": "src/locales/vi/jobs.json",
-      "sha256": "c661630e4957e4dd84474b8e0429ffc09e9a05477fd658ffa11654baf7ce7f2b"
+      "sha256": "f8d9228d216d054861b7388432b2009d24d42f6a3d50bce5e27840061ba3cfea"
     },
     {
       "path": "src/main.tsx",
@@ -1431,7 +1439,7 @@
     },
     {
       "path": "src/pages/jobs/JobsPage.tsx",
-      "sha256": "179be0cdc6916c59a950923e8eb34d7a24789ffef47b986fb90d4316423cc79f"
+      "sha256": "d4987c9ef9ba696b50fed8ca9dfbfa582d6353b3b331c096c13d4e00a37cebb4"
     },
     {
       "path": "src/pages/jobs/UserJobsPage.tsx",
