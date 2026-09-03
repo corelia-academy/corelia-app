@@ -120,8 +120,8 @@ export interface ContestLeaderboardEntry {
   demo_url?: string | null;
   repo_url?: string | null;
   slide_url?: string | null;
-  screenshot_url?: string | null;
-  cover_image_url?: string | null;
+  logo_path?: string | null;
+  screenshot_paths?: string[];
   video_url?: string | null;
   summary?: string | null;
 }
@@ -468,22 +468,23 @@ export interface ContestSubmission {
   demo_url: string | null;
   repo_url: string | null;
   slide_url: string | null;
-  screenshot_url: string | null;
-  cover_image_url: string | null;
   video_url: string | null;
+  logo_path: string | null;
+  screenshot_paths: string[];
   submitted_at: string;
   updated_at: string;
 }
 
 export interface ContestSubmissionInsert {
+  project_id?: string;
   title: string;
   summary?: string | null;
   demo_url?: string | null;
   repo_url?: string | null;
   slide_url?: string | null;
-  screenshot_url?: string | null;
-  cover_image_url?: string | null;
   video_url?: string | null;
+  logo_path?: string | null;
+  screenshot_paths?: string[];
   slug?: string | null;
   track_ids?: string[];
   sector_ids?: string[];

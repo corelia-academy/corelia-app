@@ -2,11 +2,9 @@ import type { KeyboardEvent, MouseEvent } from "react";
 import { NavLink, useNavigate } from "react-router";
 import {
   ExternalLink,
-  FileImage,
   Github,
   Heart,
   ImageIcon,
-  MessageCircle,
   Package,
   PlayCircle,
   Presentation,
@@ -43,7 +41,7 @@ function ProjectCover({ project }: { project: Project }) {
       <img
         src={coverUrl}
         alt={project.title}
-        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+        className="h-full w-full object-contain p-6 transition-transform duration-200 group-hover:scale-[1.02]"
         loading="lazy"
       />
     );
@@ -72,12 +70,6 @@ export function ProjectCard({
     { key: "demo", label: t("projects.detail.demo"), href: project.demo_url, icon: ExternalLink },
     { key: "repo", label: t("projects.detail.repo"), href: project.repo_url, icon: Github },
     { key: "slides", label: t("projects.detail.slides"), href: project.slide_url, icon: Presentation },
-    {
-      key: "screenshot",
-      label: t("projects.detail.screenshot"),
-      href: project.screenshot_url,
-      icon: FileImage,
-    },
     { key: "video", label: t("projects.detail.video"), href: project.video_url, icon: PlayCircle },
   ].filter((action) => Boolean(action.href));
   const visibleActions = actions.slice(0, 4);
@@ -142,14 +134,10 @@ export function ProjectCard({
         </p>
 
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-          <div className="flex items-center gap-3 text-xs text-foreground-muted">
+          <div className="flex items-center text-xs text-foreground-muted">
             <span className="inline-flex items-center gap-1">
               <Heart className="size-4" aria-hidden />
               <span className="tabular-nums">{Number(project.like_count ?? 0)}</span>
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <MessageCircle className="size-4" aria-hidden />
-              <span className="tabular-nums">{Number(project.comment_count ?? 0)}</span>
             </span>
           </div>
 

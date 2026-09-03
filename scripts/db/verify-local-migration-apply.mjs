@@ -4,7 +4,10 @@ import { existsSync } from "node:fs";
 
 const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const pnpmShell = process.platform === "win32";
-const sqlTestPath = resolve(process.cwd(), "scripts/db/tests/learner-ai-retirement.integration.sql");
+const sqlTestPaths = [
+  "scripts/db/tests/learner-ai-retirement.integration.sql",
+  "scripts/db/tests/project-submission.integration.sql",
+].map((path) => resolve(process.cwd(), path));
 
 console.log("===============================================================================");
 console.log(" CORELIA DB OPTIMIZATION: LOCAL DISPOSABLE DATABASE INTEGRATION GATE");
@@ -46,19 +49,21 @@ try {
 
 // 3. Execute retained SQL integration suite.
 console.log("[STEP 3/3] Executing retained SQL integration assertions...");
-if (!existsSync(sqlTestPath)) {
-  console.error(`\n[HARNESS_CONFIGURATION_FAILURE] SQL integration test file missing at ${sqlTestPath}`);
-  process.exit(1);
-}
+for (const sqlTestPath of sqlTestPaths) {
+  if (!existsSync(sqlTestPath)) {
+    console.error(`\n[HARNESS_CONFIGURATION_FAILURE] SQL integration test file missing at ${sqlTestPath}`);
+    process.exit(1);
+  }
 
-try {
-  const queryArgs = ["exec", "supabase", "db", "query", "--local", "--file", sqlTestPath];
-  execFileSync(command, queryArgs, { stdio: "inherit", shell: pnpmShell });
-  console.log("✓ SQL integration test suite executed successfully.\n");
-} catch (sqlErr) {
-  console.error("\n[INTEGRATION_SQL_FAILURE] SQL assertion failed during database integration testing.");
-  process.exit(1);
+  try {
+    const queryArgs = ["exec", "supabase", "db", "query", "--local", "--file", sqlTestPath];
+    execFileSync(command, queryArgs, { stdio: "inherit", shell: pnpmShell });
+  } catch (sqlErr) {
+    console.error(`\n[INTEGRATION_SQL_FAILURE] SQL assertion failed in ${sqlTestPath}.`);
+    process.exit(1);
+  }
 }
+console.log("✓ SQL integration test suites executed successfully.\n");
 
 console.log("===============================================================================");
 console.log(" ALL DATABASE INTEGRATION GATES PASSED (100% SUCCESS)");

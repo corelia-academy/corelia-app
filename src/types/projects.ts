@@ -11,9 +11,12 @@ export interface Project {
   demo_url: string | null;
   repo_url: string | null;
   slide_url: string | null;
-  screenshot_url: string | null;
-  cover_image_url: string | null;
   video_url: string | null;
+  logo_path: string | null;
+  screenshot_paths: string[];
+  /** Short-lived client-resolved URLs for private Storage objects. */
+  logo_url?: string | null;
+  screenshot_urls?: string[];
   visibility: ProjectVisibility;
   source_type: ProjectSourceType;
   source_id: string | null;
@@ -25,8 +28,6 @@ export interface Project {
   like_count?: number;
   /** Denormalized count from follows (server-maintained). */
   follower_count?: number;
-  /** Derived count from project_comments for public gallery/detail UI. */
-  comment_count?: number;
   /** Text-only content localization config */
   i18n?: import("@/types/entityLocales").EntityI18nConfig;
   created_at: string;
@@ -43,9 +44,11 @@ export type ContestLinkedShowcaseProject = Pick<
   | "demo_url"
   | "repo_url"
   | "slide_url"
-  | "screenshot_url"
-  | "cover_image_url"
   | "video_url"
+  | "logo_path"
+  | "screenshot_paths"
+  | "logo_url"
+  | "screenshot_urls"
   | "owner_id"
   | "source_submission_id"
   | "updated_at"
@@ -55,18 +58,3 @@ export type ContestLinkedShowcaseProject = Pick<
   | "hackathon_sector_ids"
   | "hackathon_tech_stack_ids"
 >;
-
-export interface ProjectComment {
-  id: string;
-  project_id: string;
-  author_id: string;
-  body: string;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
-export interface ProjectCommentWithAuthor extends ProjectComment {
-  author_username: string | null;
-  author_full_name: string | null;
-}

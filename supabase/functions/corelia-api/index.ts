@@ -24,6 +24,11 @@ import { handleHackathonBlastEmail } from "./hackathons/blast_email.ts";
 import { handleHackathonNotifyRegistrationReview } from "./hackathons/handlers.ts";
 import { corsHeadersForRequest, json, withCors } from "./lib/http.ts";
 import { handleNotificationsUnsubscribe } from "./notifications/unsubscribe.ts";
+import {
+  handleProjectMediaDelete,
+  handleProjectMediaUpload,
+  handleProjectSave,
+} from "./projects/handlers.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
 
 const PROTECTED_OPS = new Set<string>([
@@ -48,6 +53,9 @@ const PROTECTED_OPS = new Set<string>([
   "credentials.listActiveOcaTemplates",
   "credentials.listActiveCourseCredentialTemplates",
   "credentials.grantPending",
+  "projects.save",
+  "projects.media.upload",
+  "projects.media.delete",
   // credentials.claimLookup is PUBLIC — intentionally omitted from PROTECTED_OPS
 ]);
 
@@ -131,6 +139,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleGrantPendingCredential(req, db);
     } else if (op === "credentials.claimLookup" && req.method === "POST") {
       response = await handleClaimLookup(req, db);
+    } else if (op === "projects.save" && req.method === "POST") {
+      response = await handleProjectSave(req, db);
+    } else if (op === "projects.media.upload" && req.method === "POST") {
+      response = await handleProjectMediaUpload(req, db);
+    } else if (op === "projects.media.delete" && req.method === "POST") {
+      response = await handleProjectMediaDelete(req, db);
     } else {
       response = json({ message: "Not found" }, 404);
     }

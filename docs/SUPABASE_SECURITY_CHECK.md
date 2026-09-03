@@ -69,7 +69,6 @@ too heavily on client-side rules.
   - `project_locales`
   - `project_collaborators`
   - `project_collaboration_invites`
-  - `project_comments`
   - `project_hearts`
 - Client/RPC entrypoints:
   - `src/lib/projects.ts`

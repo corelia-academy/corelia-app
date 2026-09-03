@@ -208,24 +208,6 @@ export function UserProfileProjectsSection({
                         {t("userProfile.projects.slides")}
                       </Button>
                     ) : null}
-                    {project.screenshot_url ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        render={
-                          <a
-                            href={project.screenshot_url}
-                            target="_blank"
-                            rel="noreferrer"
-                          />
-                        }
-                        nativeButton={false}
-                        className="gap-1"
-                      >
-                        <ExternalLink className="size-4" aria-hidden />
-                        {t("userProfile.projects.screenshot")}
-                      </Button>
-                    ) : null}
                     {project.video_url ? (
                       <Button
                         size="sm"
@@ -244,10 +226,8 @@ export function UserProfileProjectsSection({
 
                   <ProjectSocialBlock
                     projectId={project.id}
-                    ownerId={project.owner_id}
                     likeCount={Number(project.like_count ?? 0)}
                     hearted={heartedIds.has(project.id)}
-                    variant="default"
                     className="mt-4"
                   />
                 </div>

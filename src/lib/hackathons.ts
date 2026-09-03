@@ -1,4 +1,5 @@
 import { invokeCoreliaApi, callCoreliaApi } from "@/lib/coreliaEdgeApi";
+import { saveProject } from "@/lib/projectSubmission";
 import i18n from "@/i18n";
 import { supabase } from "@/lib/supabase";
 import { removeUndefinedFields } from "@/lib/utils";
@@ -1255,6 +1256,8 @@ export async function getMyContestSubmission(
     user_id: data.user_id,
     project_id: data.project_id ?? null,
     ...d,
+    logo_path: typeof d.logo_path === "string" ? d.logo_path : null,
+    screenshot_paths: sanitizeStringList(Array.isArray(d.screenshot_paths) ? d.screenshot_paths.filter((value): value is string => typeof value === "string") : []),
   } as ContestSubmission;
 }
 
@@ -1281,25 +1284,26 @@ export async function upsertContestSubmission(
   if (!trackIds.length || !sectorIds.length || !techStackIds.length) {
     throw new Error("invalid_input:project_taxonomy_required");
   }
-  const projectId = existing?.project_id ?? crypto.randomUUID();
+  const projectId = existing?.project_id ?? input.project_id ?? crypto.randomUUID();
   const slug = sanitizeSlug(input.slug) ?? projectSlug(input.title, projectId);
-  const { error } = await supabase.rpc("upsert_hackathon_project", {
-    p_hackathon_id: contestId,
-    p_project_id: projectId,
-    p_slug: slug,
-    p_title: input.title.trim(),
-    p_summary: input.summary?.trim() || null,
-    p_demo_url: input.demo_url?.trim() || null,
-    p_repo_url: input.repo_url?.trim() || null,
-    p_slide_url: input.slide_url?.trim() || null,
-    p_screenshot_url: input.screenshot_url?.trim() || null,
-    p_cover_image_url: input.cover_image_url?.trim() || null,
-    p_video_url: input.video_url?.trim() || null,
-    p_track_ids: trackIds,
-    p_sector_ids: sectorIds,
-    p_tech_stack_ids: techStackIds,
+  await saveProject({
+    project_id: projectId,
+    slug,
+    title: input.title,
+    summary: input.summary,
+    demo_url: input.demo_url,
+    repo_url: input.repo_url,
+    slide_url: input.slide_url,
+    video_url: input.video_url,
+    logo_path: input.logo_path,
+    screenshot_paths: input.screenshot_paths,
+    visibility: "public",
+    source_type: "hackathon",
+    source_id: contestId,
+    track_ids: trackIds,
+    sector_ids: sectorIds,
+    tech_stack_ids: techStackIds,
   });
-  if (error) throw new Error(error.message);
   const saved = await getMyContestSubmission(contestId, user);
   if (!saved) throw new Error("not_found:submission_after_save");
   return saved;
@@ -1321,6 +1325,8 @@ export async function listContestSubmissions(
       user_id: row.user_id,
       project_id: typeof row.project_id === "string" ? row.project_id : null,
       ...d,
+      logo_path: typeof d.logo_path === "string" ? d.logo_path : null,
+      screenshot_paths: sanitizeStringList(Array.isArray(d.screenshot_paths) ? d.screenshot_paths.filter((value): value is string => typeof value === "string") : []),
     } as ContestSubmission;
   }
 
@@ -1442,8 +1448,8 @@ export function buildContestLeaderboard(
         demo_url: submission.demo_url ?? null,
         repo_url: submission.repo_url ?? null,
         slide_url: submission.slide_url ?? null,
-        screenshot_url: submission.screenshot_url ?? null,
-        cover_image_url: submission.cover_image_url ?? submission.screenshot_url ?? null,
+        logo_path: submission.logo_path ?? null,
+        screenshot_paths: submission.screenshot_paths ?? [],
         video_url: submission.video_url ?? null,
         summary: submission.summary ?? null,
       };

@@ -4,7 +4,6 @@ import { NavLink, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
   ExternalLink,
-  FileImage,
   Github,
   ImageIcon,
   Package,
@@ -18,6 +17,8 @@ import { ProjectSocialBlock } from "@/components/projects/ProjectSocialBlock";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProjectCoverImageUrl, type PublicProjectEntry } from "@/lib/projects";
+import { listPublicProjectTeam } from "@/lib/projectCollaboration";
+import { projectVideoEmbed } from "@/lib/projectVideo";
 import { publicProjectDetailQueryOptions } from "@/features/projects/projectQueries";
 import { getContest } from "@/lib/hackathons";
 import { isHackathonProjectSource, projectSourceLabelKey } from "@/lib/projectSource";
@@ -43,21 +44,19 @@ function ownerDisplay(owner: PublicProjectEntry["owner"]): {
   return { label, handle };
 }
 
-function ProjectHero({ project }: { project: Project }) {
+function ProjectLogo({ project }: { project: Project }) {
   const coverUrl = getProjectCoverImageUrl(project);
   if (coverUrl) {
     return (
-      <div className="max-h-[480px] overflow-hidden rounded-lg border border-border-subtle bg-surface-raised shadow-card">
-        <img src={coverUrl} alt={project.title} className="h-full max-h-[480px] w-full object-cover" />
+      <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-subtle bg-surface-raised">
+        <img src={coverUrl} alt={project.title} className="h-full w-full object-contain p-2" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-64 items-center justify-center rounded-lg border border-border-subtle bg-surface-raised shadow-card">
-      <div className="flex size-20 items-center justify-center rounded-full border border-border-subtle bg-surface-base text-foreground-subtle">
-        <ImageIcon className="size-10" aria-hidden />
-      </div>
+    <div className="flex size-24 shrink-0 items-center justify-center rounded-xl border border-border-subtle bg-surface-raised text-foreground-subtle">
+      <ImageIcon className="size-10" aria-hidden />
     </div>
   );
 }
@@ -91,6 +90,12 @@ export default function ProjectDetailPage() {
     queryKey: ["hackathons", "source", entry?.project.source_id ?? "missing", locale],
     queryFn: () => getContest(entry!.project.source_id!, locale),
     enabled: Boolean(entry?.project.source_id && isHackathonProjectSource(entry.project.source_type)),
+    staleTime: 60_000,
+  });
+  const teamQuery = useQuery({
+    queryKey: ["projects", entry?.project.id ?? "missing", "public-team"],
+    queryFn: () => listPublicProjectTeam(entry!.project.id),
+    enabled: Boolean(entry?.project.id),
     staleTime: 60_000,
   });
   const loading = query.isPending;
@@ -164,6 +169,7 @@ export default function ProjectDetailPage() {
   const href = sourceLink(project, sourceQuery.data?.slug);
   const canEdit = user?.id === project.owner_id || profile?.role === "admin" || profile?.role === "support_staff";
   const description = project.summary || t("projects.detail.noDescription");
+  const videoEmbed = projectVideoEmbed(project.video_url);
 
   const actions = [
     href
@@ -202,16 +208,7 @@ export default function ProjectDetailPage() {
           icon: Presentation,
         }
       : null,
-    project.screenshot_url
-      ? {
-          key: "screenshot",
-          label: t("projects.detail.screenshot"),
-          href: project.screenshot_url,
-          external: true,
-          icon: FileImage,
-        }
-      : null,
-    project.video_url
+    project.video_url && !videoEmbed
       ? {
           key: "video",
           label: t("projects.detail.video"),
@@ -235,11 +232,12 @@ export default function ProjectDetailPage() {
         {t("projects.detail.backToProjects")}
       </Button>
 
-      <ProjectHero project={project} />
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <main className="min-w-0">
           <div className="rounded-lg border border-border-subtle bg-surface-base p-4 shadow-card sm:p-6">
+            <div className="flex items-start gap-4">
+              <ProjectLogo project={project} />
+              <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 {project.title}
@@ -264,6 +262,8 @@ export default function ProjectDetailPage() {
                 )}
               </p>
             ) : null}
+              </div>
+            </div>
 
             {actions.length > 0 ? (
               <div className="mt-4 flex flex-wrap gap-2">
@@ -299,6 +299,52 @@ export default function ProjectDetailPage() {
               </Button>
             ) : null}
 
+            {videoEmbed ? (
+              <section className="mt-6">
+                <h2 className="text-base font-semibold text-foreground">{t("projects.detail.video")}</h2>
+                <iframe
+                  className="mt-3 aspect-video w-full rounded-lg border border-border-subtle"
+                  src={videoEmbed.src}
+                  title={t("projects.detail.video")}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </section>
+            ) : null}
+
+            {(project.screenshot_urls?.length ?? 0) > 0 ? (
+              <section className="mt-6">
+                <h2 className="text-base font-semibold text-foreground">{t("projects.form.screenshots")}</h2>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {project.screenshot_urls?.map((url, index) => (
+                    <a key={url} href={url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-lg border border-border-subtle">
+                      <img src={url} alt={t("projects.form.screenshotAlt", { index: index + 1 })} className="aspect-video w-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            {(teamQuery.data?.length ?? 0) > 0 ? (
+              <section className="mt-6">
+                <h2 className="text-base font-semibold text-foreground">{t("projects.team.publicTitle")}</h2>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  {teamQuery.data?.map((member) => {
+                    const label = member.full_name?.trim() || member.username?.trim() || member.user_id;
+                    const content = <>
+                        {member.avatar_url ? <img src={member.avatar_url} alt="" className="size-7 rounded-full object-cover" /> : <span className="flex size-7 items-center justify-center rounded-full bg-surface-raised text-xs">{label.slice(0, 1).toUpperCase()}</span>}
+                        <span>{label}</span>
+                      </>;
+                    return member.username ? (
+                      <NavLink key={member.user_id} to={`/@${member.username}`} className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-sm hover:bg-surface-raised">{content}</NavLink>
+                    ) : (
+                      <span key={member.user_id} className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-sm">{content}</span>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
+
             <section className="mt-6">
               <h2 className="text-base font-semibold text-foreground">
                 {t("projects.detail.description")}
@@ -314,9 +360,7 @@ export default function ProjectDetailPage() {
           <div className="rounded-lg border border-border-subtle bg-surface-base p-4 shadow-card">
             <ProjectSocialBlock
               projectId={project.id}
-              ownerId={project.owner_id}
               likeCount={Number(project.like_count ?? 0)}
-              variant="default"
             />
           </div>
         </aside>

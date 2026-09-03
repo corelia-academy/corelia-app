@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -7,13 +7,22 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ProjectMediaEditor, type ProjectMediaItem } from "@/features/projects/ProjectMediaEditor";
+import { ProjectTeamEditor } from "@/features/projects/ProjectTeamEditor";
+import { createProjectCollaborationInvite } from "@/lib/projectCollaboration";
 import { getContestBySlug, getMyContestRegistration, upsertContestSubmission } from "@/lib/hackathons";
 import { generateCanonicalProjectSlug } from "@/lib/hackathonContract";
+import { deleteProjectMedia, saveProject } from "@/lib/projectSubmission";
 import { normalizeSlugDraft } from "@/lib/slug";
 import { useAuth } from "@/stores/authStore";
 import type { HackathonTaxonomyOption } from "@/types/hackathons";
 
-function Choices({ label, options, value, onChange }: { label: string; options: Array<Pick<HackathonTaxonomyOption, "id" | "name"> & { active?: boolean }>; value: string[]; onChange: (value: string[]) => void }) {
+function Choices({ label, options, value, onChange }: {
+  label: string;
+  options: Array<Pick<HackathonTaxonomyOption, "id" | "name"> & { active?: boolean }>;
+  value: string[];
+  onChange: (value: string[]) => void;
+}) {
   return (
     <fieldset>
       <legend className="text-sm font-medium text-foreground">{label}</legend>
@@ -39,42 +48,118 @@ export default function ProjectNewPage() {
   const contestQuery = useQuery({ queryKey: ["hackathons", "project-new", hackathonSlug, locale], queryFn: () => getContestBySlug(hackathonSlug, locale), enabled: Boolean(hackathonSlug) });
   const contest = contestQuery.data ?? null;
   const registrationQuery = useQuery({ queryKey: ["hackathons", contest?.id, "my-registration", user?.id], queryFn: () => getMyContestRegistration(contest!.id, user), enabled: Boolean(contest && user) });
+  const eligibleRegistration = registrationQuery.data && ["registered", "approved"].includes(registrationQuery.data.status);
+  const [projectId] = useState(() => crypto.randomUUID());
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
+  const [slugTouched, setSlugTouched] = useState(false);
   const [summary, setSummary] = useState("");
   const [demoUrl, setDemoUrl] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
+  const [slideUrl, setSlideUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [logo, setLogo] = useState<ProjectMediaItem | null>(null);
+  const [screenshots, setScreenshots] = useState<ProjectMediaItem[]>([]);
+  const [teamIds, setTeamIds] = useState<string[]>([]);
   const [tracks, setTracks] = useState<string[]>([]);
   const [sectors, setSectors] = useState<string[]>([]);
   const [tech, setTech] = useState<string[]>([]);
-  const effectiveSlug = useMemo(() => generateCanonicalProjectSlug(slug || title), [slug, title]);
+  const mediaRef = useRef<ProjectMediaItem[]>([]);
+  const savedRef = useRef(false);
+  const effectiveSlug = useMemo(() => generateCanonicalProjectSlug(slugTouched ? slug : title), [slug, slugTouched, title]);
+
+  useEffect(() => {
+    mediaRef.current = [...(logo ? [logo] : []), ...screenshots];
+  }, [logo, screenshots]);
+  useEffect(() => () => {
+    if (savedRef.current) return;
+    for (const item of mediaRef.current) {
+      void deleteProjectMedia(projectId, item.path).catch(() => undefined);
+    }
+  }, [projectId]);
+
+  async function clearTemporaryMedia() {
+    const current = mediaRef.current;
+    await Promise.allSettled(current.map((item) => deleteProjectMedia(projectId, item.path)));
+    mediaRef.current = [];
+    setLogo(null);
+    setScreenshots([]);
+  }
+
   const mutation = useMutation({
-    mutationFn: () => upsertContestSubmission(contest!.id, { title, slug: effectiveSlug, summary, demo_url: demoUrl, repo_url: repoUrl, track_ids: tracks, sector_ids: sectors, tech_stack_ids: tech }),
-    onSuccess: (submission) => {
+    mutationFn: async () => {
+      const submission = contest
+        ? await upsertContestSubmission(contest.id, {
+            project_id: projectId,
+            title,
+            slug: effectiveSlug,
+            summary,
+            demo_url: demoUrl,
+            repo_url: repoUrl,
+            slide_url: slideUrl,
+            video_url: videoUrl,
+            logo_path: logo?.path ?? null,
+            screenshot_paths: screenshots.map((item) => item.path),
+            track_ids: tracks,
+            sector_ids: sectors,
+            tech_stack_ids: tech,
+          })
+        : await saveProject({
+            project_id: projectId,
+            title,
+            slug: effectiveSlug,
+            summary,
+            demo_url: demoUrl,
+            repo_url: repoUrl,
+            slide_url: slideUrl,
+            video_url: videoUrl,
+            logo_path: logo?.path ?? null,
+            screenshot_paths: screenshots.map((item) => item.path),
+            visibility: "public",
+            source_type: "standalone",
+          });
+      const invites = await Promise.allSettled(teamIds.map((id) => createProjectCollaborationInvite(projectId, id)));
+      return { submission, inviteFailed: invites.some((result) => result.status === "rejected") };
+    },
+    onSuccess: ({ submission, inviteFailed }) => {
+      savedRef.current = true;
       toast.success(t("projects.form.created"));
+      if (inviteFailed) toast.warning(t("projects.team.someInvitesFailed"));
       navigate(`/projects/${effectiveSlug || submission.project_id}`);
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : t("projects.form.saveFailed")),
+    onError: async (error) => {
+      await clearTemporaryMedia();
+      toast.error(error instanceof Error ? error.message : t("projects.form.saveFailed"));
+    },
   });
 
-  if (contestQuery.isPending || registrationQuery.isPending) return <div className="container-app py-16 text-center text-sm text-foreground-muted">{t("projects.loading")}</div>;
-  if (!contest || !registrationQuery.data) return <div className="container-app py-16 text-center"><Package className="mx-auto size-8 text-foreground-subtle" /><h1 className="mt-3 font-semibold">{t("projects.form.notEligible")}</h1><p className="mt-1 text-sm text-foreground-muted">{t("projects.form.notEligibleDescription")}</p><Button className="mt-4" render={<NavLink to={contest ? `/hackathons/${contest.slug}/overview` : "/hackathons"} />} nativeButton={false}>{t("projects.detail.goBack")}</Button></div>;
+  if ((hackathonSlug && contestQuery.isPending) || (contest && registrationQuery.isPending)) return <div className="container-app py-16 text-center text-sm text-foreground-muted">{t("projects.loading")}</div>;
+  if (hackathonSlug && (!contest || !eligibleRegistration)) return <div className="container-app py-16 text-center"><Package className="mx-auto size-8 text-foreground-subtle" /><h1 className="mt-3 font-semibold">{t("projects.form.notEligible")}</h1><p className="mt-1 text-sm text-foreground-muted">{t("projects.form.notEligibleDescription")}</p><Button className="mt-4" render={<NavLink to={contest ? `/hackathons/${contest.slug}/overview` : "/hackathons"} />} nativeButton={false}>{t("projects.detail.goBack")}</Button></div>;
 
   return (
     <div className="container-app max-w-4xl py-6 sm:py-8">
-      <Button variant="ghost" render={<NavLink to={`/hackathons/${contest.slug}/projects`} />} nativeButton={false}><ArrowLeft className="size-4" />{t("projects.form.back")}</Button>
-      <header className="mt-4"><h1 className="text-2xl font-semibold text-foreground">{t("projects.form.createTitle")}</h1><p className="mt-1 text-sm text-foreground-muted">{contest.title}</p></header>
+      <Button variant="ghost" render={<NavLink to={contest ? `/hackathons/${contest.slug}/projects` : "/projects"} />} nativeButton={false}><ArrowLeft className="size-4" />{t("projects.form.back")}</Button>
+      <header className="mt-4"><h1 className="text-2xl font-semibold text-foreground">{t("projects.form.createTitle")}</h1>{contest ? <p className="mt-1 text-sm text-foreground-muted">{contest.title}</p> : null}</header>
       <form className="mt-6 space-y-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-7" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="text-sm font-medium">{t("projects.form.title")}<Input className="mt-2" required value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-          <label className="text-sm font-medium">{t("projects.form.slug")}<Input className="mt-2" required value={slug || effectiveSlug} onChange={(event) => setSlug(normalizeSlugDraft(event.target.value))} onBlur={() => setSlug((current) => current ? generateCanonicalProjectSlug(current) : current)} /></label>
+          <label className="text-sm font-medium">{t("projects.form.title")}<Input className="mt-2" required maxLength={160} value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+          <label className="text-sm font-medium">{t("projects.form.slug")}<Input className="mt-2" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={slugTouched ? slug : effectiveSlug} onChange={(event) => { setSlugTouched(true); setSlug(normalizeSlugDraft(event.target.value)); }} onBlur={() => setSlug((current) => generateCanonicalProjectSlug(current))} /></label>
         </div>
-        <label className="block text-sm font-medium">{t("projects.form.summary")}<textarea className="mt-2 min-h-28 w-full rounded-md border border-border bg-background px-3 py-2" rows={5} value={summary} onChange={(event) => setSummary(event.target.value)} /></label>
-        <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium">{t("projects.form.demoUrl")}<Input className="mt-2" type="url" value={demoUrl} onChange={(event) => setDemoUrl(event.target.value)} /></label><label className="text-sm font-medium">{t("projects.form.repoUrl")}<Input className="mt-2" type="url" value={repoUrl} onChange={(event) => setRepoUrl(event.target.value)} /></label></div>
-        <Choices label={t("projects.filters.tracks")} options={contest.tracks ?? []} value={tracks} onChange={setTracks} />
-        <Choices label={t("projects.filters.sectors")} options={contest.sectors ?? []} value={sectors} onChange={setSectors} />
-        <Choices label={t("projects.filters.techStacks")} options={contest.tech_stacks ?? []} value={tech} onChange={setTech} />
-        <div className="flex justify-end"><Button type="submit" disabled={mutation.isPending || !title.trim() || !effectiveSlug || !tracks.length || !sectors.length || !tech.length}>{mutation.isPending ? t("projects.form.saving") : t("projects.form.create")}</Button></div>
+        <label className="block text-sm font-medium">{t("projects.form.summary")}<textarea className="mt-2 min-h-28 w-full rounded-md border border-border bg-background px-3 py-2" rows={5} maxLength={1000} value={summary} onChange={(event) => setSummary(event.target.value)} /></label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-medium">{t("projects.form.demoUrl")}<Input className="mt-2" type="url" value={demoUrl} onChange={(event) => setDemoUrl(event.target.value)} /></label>
+          <label className="text-sm font-medium">{t("projects.form.repoUrl")}<Input className="mt-2" type="url" value={repoUrl} onChange={(event) => setRepoUrl(event.target.value)} /></label>
+          <label className="text-sm font-medium">{t("projects.form.slideUrl")}<Input className="mt-2" type="url" value={slideUrl} onChange={(event) => setSlideUrl(event.target.value)} /></label>
+          <label className="text-sm font-medium">{t("projects.form.videoUrl")}<Input className="mt-2" type="url" value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} /></label>
+        </div>
+        <ProjectMediaEditor projectId={projectId} logo={logo} screenshots={screenshots} onLogoChange={setLogo} onScreenshotsChange={setScreenshots} />
+        <ProjectTeamEditor projectId={projectId} sourceType={contest ? "hackathon" : "standalone"} sourceId={contest?.id} persisted={false} selectedIds={teamIds} onSelectedIdsChange={setTeamIds} />
+        {contest ? <>
+          <Choices label={t("projects.filters.tracks")} options={contest.tracks ?? []} value={tracks} onChange={setTracks} />
+          <Choices label={t("projects.filters.sectors")} options={contest.sectors ?? []} value={sectors} onChange={setSectors} />
+          <Choices label={t("projects.filters.techStacks")} options={contest.tech_stacks ?? []} value={tech} onChange={setTech} />
+        </> : null}
+        <div className="flex justify-end"><Button type="submit" disabled={mutation.isPending || !title.trim() || !effectiveSlug || (Boolean(contest) && (!tracks.length || !sectors.length || !tech.length))}>{mutation.isPending ? t("projects.form.saving") : t("projects.form.create")}</Button></div>
       </form>
     </div>
   );

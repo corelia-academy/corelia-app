@@ -83,7 +83,7 @@ export function ContestPublicProjectsSection(props: {
                     <img
                       src={getProjectCoverImageUrl(row) ?? ""}
                       alt={row.title}
-                      className="h-44 w-full object-cover"
+                      className="h-44 w-full object-contain p-3"
                       loading="lazy"
                     />
                   </div>
@@ -159,20 +159,6 @@ export function ContestPublicProjectsSection(props: {
                       {t("detail.projects.viewSlides")}
                     </Button>
                   ) : null}
-                  {row.screenshot_url ? (
-                    <Button
-                      render={
-                        <a href={row.screenshot_url} target="_blank" rel="noreferrer" />
-                      }
-                      nativeButton={false}
-                      size="sm"
-                      variant="outline"
-                      className="gap-1"
-                    >
-                      <ExternalLink className="size-3.5" aria-hidden />
-                      {t("common:projects.screenshot")}
-                    </Button>
-                  ) : null}
                   {row.video_url ? (
                     <Button
                       render={
@@ -191,14 +177,8 @@ export function ContestPublicProjectsSection(props: {
                 {row.projectId ? (
                   <ProjectSocialBlock
                     projectId={row.projectId}
-                    ownerId={
-                      row.ownerId ??
-                      showcaseProjects.find((p) => p.id === row.projectId)?.owner_id ??
-                      ""
-                    }
                     likeCount={row.likeCount}
                     hearted={heartedIds.has(row.projectId)}
-                    variant="compact"
                     className="mt-3"
                   />
                 ) : null}

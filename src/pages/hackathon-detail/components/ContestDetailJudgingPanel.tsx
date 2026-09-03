@@ -195,11 +195,6 @@ export function ContestDetailJudgingPanel({
                         translate("detail.labels.noDemo")}
                     </div>
                     <div className="rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
-                      {translate("common:projects.screenshot")}{" "}
-                      {submission.screenshot_url ||
-                        translate("detail.labels.noDemo")}
-                    </div>
-                    <div className="rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground-muted">
                       {translate("common:projects.video")}{" "}
                       {submission.video_url ||
                         translate("detail.labels.noDemo")}
