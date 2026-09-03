@@ -44,7 +44,7 @@ export function rewriteDeploymentOrigin(content, origin) {
   return content.replaceAll(DEFAULT_ORIGIN, origin.replace(/\/$/, ""));
 }
 
-async function fetchIndexableJobs(supabaseUrl, publicKey) {
+export async function fetchIndexableJobs(supabaseUrl, publicKey, fetcher = fetch) {
   const jobs = [];
   const pageSize = 1_000;
   for (let offset = 0; offset < 100_000; offset += pageSize) {
@@ -56,10 +56,16 @@ async function fetchIndexableJobs(supabaseUrl, publicKey) {
       limit: String(pageSize),
       offset: String(offset),
     });
-    const response = await fetch(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/jobs?${params}`, {
+    const response = await fetcher(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/jobs?${params}`, {
       headers: { apikey: publicKey, authorization: `Bearer ${publicKey}` },
     });
-    if (!response.ok) throw new Error(`jobs_sitemap_fetch_failed:${response.status}`);
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      if (offset === 0 && response.status === 404 && error?.code === "PGRST205") {
+        return [];
+      }
+      throw new Error(`jobs_sitemap_fetch_failed:${response.status}`);
+    }
     const rows = await response.json();
     if (!Array.isArray(rows)) throw new Error("jobs_sitemap_invalid_response");
     jobs.push(...rows);
