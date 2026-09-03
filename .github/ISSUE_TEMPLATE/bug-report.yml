@@ -1,0 +1,179 @@
+name: Báo cáo lỗi
+description: Báo lỗi có thể tái hiện trên Corelia Local, Staging hoặc Production.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cảm ơn bạn đã báo lỗi. Hãy tìm issue trùng trước khi gửi và cung cấp đủ bằng chứng để nhóm có thể tái hiện.
+
+        **Không đăng access token, API key, mật khẩu, cookie, dữ liệu cá nhân hoặc nội dung riêng tư. Hãy che thông tin nhạy cảm trong ảnh, video và log.**
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Môi trường
+      description: Lỗi xảy ra ở môi trường nào?
+      options:
+        - Staging
+        - Production
+        - Local development
+        - Chưa xác định
+    validations:
+      required: true
+
+  - type: input
+    id: release
+    attributes:
+      label: Release, commit hoặc build
+      description: Điền tag, commit SHA hoặc build ID nếu biết.
+      placeholder: "Ví dụ: v0.8.2-rc.1 / 2ac74ce / Cloudflare build ID"
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Khu vực bị ảnh hưởng
+      options:
+        - Project submission hoặc chỉnh sửa
+        - AI moderation hoặc link validation
+        - Logo, screenshots hoặc video
+        - Project team hoặc invitation
+        - Project detail, gallery hoặc bộ lọc
+        - Heart hoặc social interaction
+        - Hackathon Admin
+        - Hackathon public hoặc registration
+        - Authentication hoặc authorization
+        - Responsive hoặc accessibility
+        - Database, Storage hoặc Edge Function
+        - Khu vực khác
+    validations:
+      required: true
+
+  - type: input
+    id: route
+    attributes:
+      label: Route hoặc màn hình
+      description: URL path hoặc tên màn hình nơi lỗi xuất hiện. Không dán query chứa token.
+      placeholder: "Ví dụ: /projects/my-project/edit"
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Tóm tắt lỗi
+      description: Mô tả ngắn gọn lỗi và tác động tới người dùng.
+      placeholder: "Khi..., hệ thống... khiến người dùng..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: preconditions
+    attributes:
+      label: Điều kiện và dữ liệu chuẩn bị
+      description: Ghi role/status cần có và fixture ID/slug không nhạy cảm. Không ghi thông tin đăng nhập.
+      placeholder: |
+        - Role: project owner
+        - Hackathon status: running
+        - Project slug: qa-demo-project
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Các bước tái hiện
+      description: Viết các bước tối thiểu, tuần tự và có thể lặp lại.
+      placeholder: |
+        1. Đăng nhập bằng tài khoản có role...
+        2. Mở...
+        3. Nhập/chọn...
+        4. Nhấn...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Kết quả thực tế
+      description: Điều gì đã xảy ra? Ghi cả error code/message nếu có, sau khi đã che dữ liệu nhạy cảm.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Kết quả mong đợi
+      description: Hành vi đúng theo checklist hoặc product requirement là gì?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Mức độ ảnh hưởng đề xuất
+      description: Nhóm phụ trách sẽ xác nhận lại priority sau khi triage.
+      options:
+        - "P0 — Sự cố nghiêm trọng, mất dữ liệu hoặc rò rỉ bảo mật đang diễn ra"
+        - "P1 — Chặn luồng chính, không có workaround phù hợp"
+        - "P2 — Chức năng sai nhưng có workaround"
+        - "P3 — Lỗi nhỏ về UI, nội dung hoặc trải nghiệm"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Tần suất tái hiện
+      options:
+        - Luôn luôn
+        - Thường xuyên
+        - Thỉnh thoảng
+        - Chỉ xảy ra một lần
+        - Chưa thể tái hiện lại
+    validations:
+      required: true
+
+  - type: textarea
+    id: client
+    attributes:
+      label: Trình duyệt và thiết bị
+      description: Ghi browser/version, OS, thiết bị, viewport và light/dark theme nếu liên quan.
+      placeholder: "Chrome 128, macOS, 390x844, dark mode"
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Ảnh, video, console hoặc network evidence
+      description: Kéo thả file hoặc dán link. Với network request, ghi method, endpoint, status và response đã được che secret.
+      placeholder: |
+        - Screenshot/video:
+        - Console error:
+        - Request method + endpoint:
+        - HTTP status + safe response:
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround hoặc phạm vi ảnh hưởng khác
+      description: Có cách tạm thời để tiếp tục không? Lỗi có ảnh hưởng tài khoản/project/hackathon khác không?
+
+  - type: input
+    id: checklist_reference
+    attributes:
+      label: Checklist hoặc issue liên quan
+      description: Liên kết mục QA, release, issue hoặc pull request có liên quan.
+      placeholder: "Ví dụ: #357, phần 7 — AI content gate"
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Xác nhận trước khi gửi
+      options:
+        - label: Tôi đã tìm issue trùng và chưa thấy báo cáo tương tự còn hiệu lực.
+          required: true
+        - label: Tôi đã xóa hoặc che token, secret, cookie, thông tin đăng nhập và dữ liệu cá nhân khỏi nội dung đính kèm.
+          required: true
+        - label: Tôi đã cung cấp đủ bước tái hiện hoặc giải thích rõ vì sao chưa thể tái hiện lại.
+          required: true
