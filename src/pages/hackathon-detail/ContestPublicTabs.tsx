@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { CalendarDays, Coins, FolderOpen, Package, Sparkles } from "lucide-react";
+import { CalendarDays, Coins, FolderOpen, Package, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useOutletContext, useSearchParams } from "react-router";
 
@@ -104,10 +104,18 @@ function FilterGroup({ label, options, selected, toggle }: { label: string; opti
   const visible = options.filter((option) => option.active !== false);
   if (!visible.length) return null;
   return (
-    <fieldset>
-      <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-foreground-muted">{label}</legend>
-      <div className="flex flex-wrap gap-2">{visible.map((option) => <button key={option.id} type="button" aria-pressed={selected.includes(option.id)} className={cn("min-h-11 rounded-full border px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40", selected.includes(option.id) ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-foreground hover:bg-surface-raised")} onClick={() => toggle(option.id)}>{option.name}</button>)}</div>
-    </fieldset>
+    <div role="group" aria-label={label} className="grid min-w-0 gap-2 py-3 sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:items-start sm:gap-3">
+      <div className="flex min-h-10 items-center gap-2 text-xs font-semibold uppercase tracking-wide text-foreground-muted">
+        <span>{label}</span>
+        {selected.length > 0 ? <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] tabular-nums text-primary">{selected.length}</span> : null}
+      </div>
+      <div className="-mx-1 flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
+        {visible.map((option) => {
+          const isSelected = selected.includes(option.id);
+          return <button key={option.id} type="button" aria-pressed={isSelected} className={cn("min-h-11 shrink-0 rounded-full border px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:min-h-10", isSelected ? "border-primary bg-primary text-primary-foreground" : "border-border-subtle bg-background text-foreground hover:border-border hover:bg-surface-raised")} onClick={() => toggle(option.id)}>{option.name}</button>;
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -120,6 +128,7 @@ export function HackathonProjectsTab() {
   const tracks = read("tracks");
   const sectors = read("sectors");
   const tech = read("tech");
+  const activeFilterCount = tracks.length + sectors.length + tech.length;
   const sort = params.get("sort") === "oldest" ? "oldest" : "newest";
   const query = useInfiniteQuery(publicProjectDirectoryQueryOptions(locale, "hackathon", sort, { hackathonId: contest.id, trackIds: tracks, sectorIds: sectors, techStackIds: tech, winnerProjectIds: (contest.winner_awards ?? []).map((award) => award.project_id) }));
   const winnerOrder = useMemo(() => new Map((contest.winner_awards ?? []).map((award) => [award.project_id, award.sort_order])), [contest.winner_awards]);
@@ -130,16 +139,32 @@ export function HackathonProjectsTab() {
     const values = read(key);
     const updated = values.includes(id) ? values.filter((value) => value !== id) : [...values, id];
     if (updated.length) next.set(key, updated.join(",")); else next.delete(key);
-    setParams(next);
+    setParams(next, { preventScrollReset: true });
+  };
+  const clearFilters = () => {
+    const next = new URLSearchParams(params);
+    next.delete("tracks");
+    next.delete("sectors");
+    next.delete("tech");
+    setParams(next, { preventScrollReset: true });
   };
   return (
     <div className="space-y-6">
-      <section className="space-y-5 rounded-2xl border border-border-subtle bg-surface-base p-4 shadow-card">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 className="font-semibold text-foreground">{t("public.projects.filters")}</h2>
-          <label className="text-sm text-foreground-muted">{t("public.projects.sort")}<select className="ml-2 min-h-11 rounded-md border border-border bg-background px-3 text-foreground" value={sort} onChange={(event) => { const next = new URLSearchParams(params); next.set("sort", event.target.value); setParams(next); }}><option value="newest">{t("public.projects.newest")}</option><option value="oldest">{t("public.projects.oldest")}</option></select></label>
+      <section className="rounded-xl border border-border-subtle bg-surface-base px-4 sm:px-5">
+        <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-border-subtle py-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface-raised text-foreground-muted"><SlidersHorizontal className="size-4" /></span>
+            <div className="min-w-0">
+              <h2 className="font-semibold text-foreground">{t("public.projects.filters")}</h2>
+              {activeFilterCount > 0 ? <p className="text-xs text-foreground-muted">{t("public.projects.selectedCount", { count: activeFilterCount })}</p> : null}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {activeFilterCount > 0 ? <Button type="button" variant="ghost" size="sm" className="min-h-10 px-2 text-foreground-muted" onClick={clearFilters}><X className="size-4" />{t("public.projects.clearFilters")}</Button> : null}
+            <label className="flex items-center gap-2 text-sm text-foreground-muted"><span className="sr-only sm:not-sr-only">{t("public.projects.sort")}</span><select className="min-h-10 rounded-md border border-border bg-background px-2.5 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40" value={sort} onChange={(event) => { const next = new URLSearchParams(params); if (event.target.value === "oldest") next.set("sort", "oldest"); else next.delete("sort"); setParams(next, { preventScrollReset: true }); }}><option value="newest">{t("public.projects.newest")}</option><option value="oldest">{t("public.projects.oldest")}</option></select></label>
+          </div>
         </div>
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="divide-y divide-border-subtle">
           <FilterGroup label={t("public.projects.tracks")} options={(contest.tracks ?? []) as ContestTrack[]} selected={tracks} toggle={(id) => toggle("tracks", id)} />
           <FilterGroup label={t("public.projects.sectors")} options={contest.sectors ?? []} selected={sectors} toggle={(id) => toggle("sectors", id)} />
           <FilterGroup label={t("public.projects.techStacks")} options={contest.tech_stacks ?? []} selected={tech} toggle={(id) => toggle("tech", id)} />

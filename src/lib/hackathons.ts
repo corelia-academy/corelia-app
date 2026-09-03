@@ -716,6 +716,15 @@ export async function getContestBySlug(slug: string, uiLocale?: string | null): 
   return applyContestLocaleContent(contest, localized);
 }
 
+export async function getPublicContestBySlug(slug: string, uiLocale?: string | null): Promise<Contest | null> {
+  const contest = await getContestBySlug(slug, uiLocale);
+  return contest && PUBLIC_CONTEST_STATUSES.includes(contest.status) ? contest : null;
+}
+
+export function listPublicContests(uiLocale?: string | null): Promise<Contest[]> {
+  return listContests(null, uiLocale ?? null);
+}
+
 export async function createContest(data: ContestInsert): Promise<Contest> {
   const { uid } = await requireContestManager();
   const id = crypto.randomUUID();
@@ -753,6 +762,7 @@ export async function createContest(data: ContestInsert): Promise<Contest> {
     winner_announcements: [],
     prize_pool_summary: data.prize_pool_summary?.trim() || null,
     prize_pool: data.prize_pool ?? { amount: "0", currency: "VND" },
+    tracks: normalizeTracks(data.tracks),
     sectors: sanitizeTaxonomyOptions(data.sectors),
     tech_stacks: sanitizeTaxonomyOptions(data.tech_stacks),
     timeline: sanitizeTimeline(data.timeline),
@@ -839,6 +849,8 @@ export async function updateContest(contestId: string, updates: ContestUpdate): 
         ? undefined
         : updates.prize_pool_summary?.trim() || null,
     prize_pool: updates.prize_pool,
+    tracks:
+      updates.tracks === undefined ? undefined : normalizeTracks(updates.tracks),
     sectors:
       updates.sectors === undefined ? undefined : sanitizeTaxonomyOptions(updates.sectors),
     tech_stacks:

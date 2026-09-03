@@ -12,7 +12,7 @@ import type { Contest } from "@/types/hackathons";
 import { intlLocale } from "@/lib/intl";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { hackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
+import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import {
   contestListLocationLabel,
   contestListStatusLabel,
@@ -59,9 +59,9 @@ export default function Contests() {
       String(t(key as never, options as never)),
     [t],
   );
-  const { profile, user } = useAuth();
+  const { profile } = useAuth();
   const locale = i18n.resolvedLanguage ?? i18n.language;
-  const catalogQuery = useQuery(hackathonCatalogQueryOptions(user, locale));
+  const catalogQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
   const items = catalogQuery.data ?? EMPTY_CONTESTS;
   const loading = catalogQuery.isPending;
   const error = catalogQuery.error

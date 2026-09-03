@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +23,7 @@ import { RequireRole } from "@/components/auth/RequireRole";
 import { ROLE_GROUPS } from "@/config/roles";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
+import { ScrollToTop } from "@/components/navigation/ScrollToTop";
 
 // Lazy-load all routes not needed on the initial render
 const Home = lazy(() => import("@/pages/home/index"));
@@ -119,44 +120,6 @@ function RecoveryGuard() {
       void navigate("/auth/reset-password", { replace: true });
     }
   }, [isPasswordRecovery, location.pathname, navigate]);
-
-  return null;
-}
-
-function ScrollToTop() {
-  const location = useLocation();
-  const prevRef = useRef<{ pathname: string; hash: string } | null>(null);
-
-  useEffect(() => {
-    const prev = prevRef.current;
-    prevRef.current = {
-      pathname: location.pathname,
-      hash: location.hash,
-    };
-
-    if (
-      prev &&
-      prev.pathname === location.pathname &&
-      prev.hash !== location.hash
-    ) {
-      return;
-    }
-
-    const publicHackathonTabRe = /^\/hackathons\/([^/]+)\/(?:overview|prizes|timeline|resources|projects)$/;
-    const prevManage = prev?.pathname.match(publicHackathonTabRe);
-    const nextManage = location.pathname.match(publicHackathonTabRe);
-    if (
-      prev &&
-      prevManage &&
-      nextManage &&
-      prevManage[1] === nextManage[1] &&
-      prev.pathname !== location.pathname
-    ) {
-      return;
-    }
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [location.pathname, location.search, location.hash]);
 
   return null;
 }

@@ -33,9 +33,13 @@
 
 - [ ] Chỉ admin/support mở được ba route admin hackathon.
 - [ ] Create/edit/publish/end/delete hoạt động.
-- [ ] Sidebar sticky và lưu từng section hoạt động.
+- [ ] Route create chỉ mở Overview; tạo draft xong redirect sang edit và mở khóa các section còn lại.
+- [ ] Editor dùng cùng layout primitives với course editor: header metrics, sidebar sticky, locale switcher trong sidebar và nút lưu cuối section.
+- [ ] Mỗi lần chỉ render một section; hash, refresh và back/forward giữ đúng section.
 - [ ] Cảnh báo khi đóng tab lúc còn draft chưa lưu.
-- [ ] VI/EN giữ nội dung draft độc lập.
+- [ ] VI/EN giữ nội dung draft độc lập và một lần lưu ghi cả hai locale.
+- [ ] Sau khi có draft, nút dịch AI dịch toàn bộ nội dung localizable từ locale nguồn sang locale đang chọn, cảnh báo trước khi thay nội dung đã có và không tự lưu/publish.
+- [ ] AI translation chỉ dành cho admin/support; backend xác thực `hackathonId` và giữ nguyên ID taxonomy/timeline cùng các field dùng chung.
 - [ ] Tổng prize theo track không vượt prize pool.
 - [ ] Registration deadline không sau submission deadline.
 

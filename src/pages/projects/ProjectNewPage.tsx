@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getContestBySlug, getMyContestRegistration, upsertContestSubmission } from "@/lib/hackathons";
 import { generateCanonicalProjectSlug } from "@/lib/hackathonContract";
+import { normalizeSlugDraft } from "@/lib/slug";
 import { useAuth } from "@/stores/authStore";
 import type { HackathonTaxonomyOption } from "@/types/hackathons";
 
@@ -66,7 +67,7 @@ export default function ProjectNewPage() {
       <form className="mt-6 space-y-6 rounded-2xl border border-border-subtle bg-surface-base p-5 shadow-card sm:p-7" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }}>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-medium">{t("projects.form.title")}<Input className="mt-2" required value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-          <label className="text-sm font-medium">{t("projects.form.slug")}<Input className="mt-2" required value={slug || effectiveSlug} onChange={(event) => setSlug(generateCanonicalProjectSlug(event.target.value))} /></label>
+          <label className="text-sm font-medium">{t("projects.form.slug")}<Input className="mt-2" required value={slug || effectiveSlug} onChange={(event) => setSlug(normalizeSlugDraft(event.target.value))} onBlur={() => setSlug((current) => current ? generateCanonicalProjectSlug(current) : current)} /></label>
         </div>
         <label className="block text-sm font-medium">{t("projects.form.summary")}<textarea className="mt-2 min-h-28 w-full rounded-md border border-border bg-background px-3 py-2" rows={5} value={summary} onChange={(event) => setSummary(event.target.value)} /></label>
         <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium">{t("projects.form.demoUrl")}<Input className="mt-2" type="url" value={demoUrl} onChange={(event) => setDemoUrl(event.target.value)} /></label><label className="text-sm font-medium">{t("projects.form.repoUrl")}<Input className="mt-2" type="url" value={repoUrl} onChange={(event) => setRepoUrl(event.target.value)} /></label></div>

@@ -22,7 +22,7 @@ vi.mock("@/lib/courses", () => ({
 }));
 
 vi.mock("@/lib/finalAssignment", () => ({ getSubmission: vi.fn() }));
-vi.mock("@/lib/hackathons", () => ({ listContests: vi.fn() }));
+vi.mock("@/lib/hackathons", () => ({ listPublicContests: vi.fn() }));
 vi.mock("@/lib/profile", () => ({ getPublicProfileById: vi.fn() }));
 
 import {

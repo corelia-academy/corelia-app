@@ -1,4 +1,5 @@
 import type { Contest, ContestI18nContent, ContestTrack, HackathonTaxonomyOption, HackathonTimelineItem, HackathonWinnerAward } from "@/types/hackathons";
+import { canonicalizeSlug } from "@/lib/slug";
 
 export function applyHackathonLocaleContent(contest: Contest, localized: ContestI18nContent | null): Contest {
   if (!localized) return contest;
@@ -83,13 +84,7 @@ export function orderWinnerFirst<T extends { id: string }>(items: T[], awards: H
 }
 
 export function generateCanonicalProjectSlug(title: string, suffix = ""): string {
-  const base = title
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 80) || "project";
+  const base = canonicalizeSlug(title) || "project";
   const normalizedSuffix = suffix.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8);
   return normalizedSuffix ? `${base}-${normalizedSuffix}` : base;
 }

@@ -37,11 +37,17 @@ Tab trống vẫn tồn tại và hiển thị empty state. Trên mobile, tab ba
 
 ## Admin editor
 
-Editor dùng layout tương tự course editor: status/metrics header, sticky sidebar, locale switcher VI/EN, section cards, lưu theo section và cảnh báo draft chưa lưu.
+Editor dùng cùng interaction pattern với course editor: status/metrics header, sticky sidebar, locale switcher VI/EN trong sidebar, chỉ render một section đang chọn và lưu ở cuối section. Hash URL giữ section hiện tại khi refresh hoặc chia sẻ link; cảnh báo draft chưa lưu vẫn hiển thị trong sidebar.
+
+Route tạo mới chỉ mở `Overview`; các section sau bị khóa cho đến khi admin tạo bản nháp. Sau khi tạo thành công, editor chuyển sang route edit và mở khóa toàn bộ sidebar, giống luồng tạo rồi hoàn thiện khóa học.
+
+Draft VI/EN được giữ độc lập trong editor; một lần lưu ghi cả hai locale để việc chuyển ngôn ngữ trước khi lưu không làm mất bản nháp còn lại.
+
+Sau khi đã tạo draft, admin có thể dịch toàn bộ nội dung localizable từ locale còn lại sang locale đang chọn bằng AI. Bản dịch bao gồm title, short description, các nội dung Markdown, tên/mô tả track, taxonomy và timeline; ID taxonomy, prize amount, trạng thái và timestamp không được AI thay đổi. Kết quả chỉ được áp dụng vào draft để admin rà lại rồi lưu, không tự động publish hoặc ghi đè im lặng lên bản dịch đã có.
 
 Các section:
 
-1. Overview — media editor dạng profile: logo host chồng trên banner, thao tác tải/đổi/xóa ngay trên ảnh; file dùng Supabase Storage và không nhập URL thủ công
+1. Overview — banner full-width và logo host trong card thông tin riêng; thao tác tải/đổi/xóa trực tiếp bằng Supabase Storage, không nhập URL ảnh thủ công
 2. Description
 3. Prize & Tracks
 4. Timeline
@@ -49,6 +55,8 @@ Các section:
 6. Project Taxonomy
 7. Projects & Winners
 8. Publish, end & delete
+
+Hackathon mới được soạn sẵn taxonomy VI/EN gồm các lĩnh vực phổ biến và nhóm công nghệ chính. ID giữa hai locale dùng chung và ổn định; admin có thể đổi tên, thêm hoặc archive mục không dùng.
 
 ## Ngoài phạm vi
 

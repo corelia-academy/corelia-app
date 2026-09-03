@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, ExternalLink, Facebook, Globe2, MapPin, Send, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -7,14 +7,14 @@ import { toast } from "sonner";
 
 import { PageContainer } from "@/components/layouts/PagePrimitives";
 import { Button } from "@/components/ui/button";
-import { publicHackathonDetailQueryOptions } from "@/features/hackathons/hackathonQueries";
+import { hackathonPreviewQueryOptions, publicHackathonDetailQueryOptions } from "@/features/hackathons/hackathonQueries";
 import { getMyContestRegistration, registerForContest } from "@/lib/hackathons";
+import { canManageContests } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/stores/authStore";
 import type { Contest, ContestRegistration } from "@/types/hackathons";
 import { ContestDetailLoadingCard } from "@/pages/hackathon-detail/components/ContestDetailGateStates";
 
-const PUBLIC_STATUSES: Contest["status"][] = ["published", "running", "ended"];
 const TABS = ["overview", "prizes", "timeline", "resources", "projects"] as const;
 
 export type HackathonOutletContext = {
@@ -30,19 +30,25 @@ function formatDate(value: string | null, locale: string): string {
 export default function ContestPublicLayout() {
   const { slug } = useParams<{ slug: string }>();
   const { t, i18n } = useTranslation("contests");
-  const { user } = useAuth();
+  const { user, profile, profileLoading, authInitialized } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const locale = i18n.resolvedLanguage ?? i18n.language;
-  const options = publicHackathonDetailQueryOptions(slug, locale);
-  const contestQuery = useQuery(options);
+  const previewRequested = new URLSearchParams(location.search).get("preview") === "1";
+  const previewAuthorized = previewRequested && canManageContests(profile);
+  const options = publicHackathonDetailQueryOptions(slug, locale, !previewRequested);
+  const publicContestQuery = useQuery(options);
+  const previewOptions = hackathonPreviewQueryOptions(slug, locale, user?.id, previewAuthorized);
+  const previewContestQuery = useQuery(previewOptions);
+  const contestQuery = previewRequested ? previewContestQuery : publicContestQuery;
   const loaded = contestQuery.data;
-  const contest = loaded && loaded.slug === slug && PUBLIC_STATUSES.includes(loaded.status) ? loaded : null;
+  const contest = loaded && loaded.slug === slug && (!previewRequested || previewAuthorized) ? loaded : null;
+  const previewAccessPending = previewRequested && (!authInitialized || profileLoading);
   const registrationQuery = useQuery({
     queryKey: ["hackathons", contest?.id, "my-registration", user?.id ?? "anonymous"],
     queryFn: () => getMyContestRegistration(contest!.id, user),
-    enabled: Boolean(contest && user),
+    enabled: Boolean(contest && user && !previewRequested),
     staleTime: 30_000,
   });
   const registration = registrationQuery.data ?? null;
@@ -69,7 +75,27 @@ export default function ContestPublicLayout() {
     [t],
   );
 
-  if (contestQuery.isPending) return <ContestDetailLoadingCard translate={translate} />;
+  const tabsScrollerRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef(new Map<(typeof TABS)[number], HTMLAnchorElement>());
+  const activeTab = TABS.find((tab) => location.pathname.endsWith(`/${tab}`)) ?? "overview";
+  const revealTabHorizontally = useCallback((element: HTMLAnchorElement | null) => {
+    const scroller = tabsScrollerRef.current;
+    if (!scroller || !element) return;
+    const scrollerRect = scroller.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+    if (elementRect.left < scrollerRect.left) {
+      scroller.scrollTo({ left: scroller.scrollLeft - (scrollerRect.left - elementRect.left), behavior: "smooth" });
+    } else if (elementRect.right > scrollerRect.right) {
+      scroller.scrollTo({ left: scroller.scrollLeft + (elementRect.right - scrollerRect.right), behavior: "smooth" });
+    }
+  }, []);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => revealTabHorizontally(tabRefs.current.get(activeTab) ?? null));
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeTab, contest?.id, revealTabHorizontally]);
+
+  if (previewAccessPending || (!previewRequested && publicContestQuery.isPending) || (previewAuthorized && previewContestQuery.isPending)) return <ContestDetailLoadingCard translate={translate} />;
   if (contestQuery.error || !contest || !slug) {
     return (
       <PageContainer width="default">
@@ -81,7 +107,7 @@ export default function ContestPublicLayout() {
     );
   }
 
-  const cta = registration ? (
+  const cta = previewRequested ? null : registration ? (
     <Button
       type="button"
       disabled={submissionClosed}
@@ -107,17 +133,18 @@ export default function ContestPublicLayout() {
 
   return (
     <div className="pb-10">
+      {previewAuthorized ? <div className="border-b border-warning/30 bg-warning-muted px-4 py-2 text-center text-sm font-medium text-foreground" role="status">{t("public.previewNotice")}</div> : null}
       <PageContainer width="default" className="pb-0">
-        <header className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
-          <div className="relative aspect-[16/6] min-h-48 overflow-hidden bg-surface-raised">
+        <header className="min-w-0 overflow-hidden rounded-2xl border border-border-subtle bg-surface-base shadow-card">
+          <div className="relative h-48 overflow-hidden bg-surface-raised sm:h-auto sm:aspect-[16/6] sm:min-h-48">
             {contest.cover_image_url ? <img src={contest.cover_image_url} alt="" className="h-full w-full object-cover" /> : null}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-8">
+            <div className="absolute inset-x-0 bottom-0 min-w-0 p-5 text-white sm:p-8">
               <div className="mb-3 flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide">
                 <span className="rounded-full bg-white/15 px-3 py-1 backdrop-blur">{t(`public.mode.${contest.mode ?? contest.location}`)}</span>
                 <span className="rounded-full bg-white/15 px-3 py-1 backdrop-blur">{t(`public.status.${contest.status}`)}</span>
               </div>
-              <h1 className="max-w-4xl text-2xl font-bold sm:text-4xl">{contest.title}</h1>
+              <h1 className="min-w-0 max-w-4xl break-words text-2xl font-bold [overflow-wrap:anywhere] sm:text-4xl">{contest.title}</h1>
               <p className="mt-2 max-w-3xl text-sm text-white/85 sm:text-base">{contest.short_description || contest.tagline}</p>
             </div>
           </div>
@@ -125,7 +152,7 @@ export default function ContestPublicLayout() {
           <div className="grid gap-5 p-5 lg:grid-cols-[1fr_auto] lg:items-center sm:p-6">
             <div className="grid gap-3 text-sm text-foreground-muted sm:grid-cols-2 xl:grid-cols-4">
               <div className="flex min-w-0 items-center gap-2">
-                {contest.host?.logo_url ? <img src={contest.host.logo_url} alt="" className="size-8 rounded-md object-contain" /> : <Globe2 className="size-5" aria-hidden />}
+                {contest.host?.logo_url ? <img src={contest.host.logo_url} alt="" className="size-8 rounded-md bg-white object-contain p-0.5" /> : <Globe2 className="size-5" aria-hidden />}
                 <div className="min-w-0"><div className="text-xs">{t("public.hostedBy")}</div>{contest.host?.website_url ? <a href={contest.host.website_url} target="_blank" rel="noreferrer" className="truncate font-medium text-foreground hover:underline">{contest.host.name || "—"}</a> : <div className="truncate font-medium text-foreground">{contest.host?.name || "—"}</div>}</div>
               </div>
               <div className="flex items-center gap-2"><Users className="size-5" aria-hidden /><div><div className="text-xs">{t("public.participants")}</div><div className="font-medium text-foreground">{contest.participants_count ?? 0}</div></div></div>
@@ -143,19 +170,27 @@ export default function ContestPublicLayout() {
       </PageContainer>
 
       <div className="sticky top-11 z-20 mt-4 border-y border-border-subtle bg-background/95 backdrop-blur">
-        <PageContainer width="default" className="overflow-x-auto py-0">
-          <nav className="flex min-w-max" aria-label={t("public.tabsLabel")}>
-            {TABS.map((tab) => (
-              <NavLink
-                key={tab}
-                to={`/hackathons/${slug}/${tab}`}
-                className={({ isActive }) => cn("flex min-h-11 items-center border-b-2 px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40", isActive ? "border-primary text-primary" : "border-transparent text-foreground-muted hover:text-foreground")}
-              >
-                {t(`public.tabs.${tab}`)}
-              </NavLink>
-            ))}
-          </nav>
-        </PageContainer>
+        <div ref={tabsScrollerRef} className="overflow-x-auto overscroll-x-contain scroll-px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <PageContainer width="default" className="py-0">
+            <nav className="flex min-w-max" aria-label={t("public.tabsLabel")}>
+              {TABS.map((tab) => (
+                <NavLink
+                  key={tab}
+                  ref={(node) => { if (node) tabRefs.current.set(tab, node); else tabRefs.current.delete(tab); }}
+                  to={`/hackathons/${slug}/${tab}${previewRequested ? "?preview=1" : ""}`}
+                  onFocus={(event) => {
+                    const scrollY = window.scrollY;
+                    event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" });
+                    if (window.scrollY !== scrollY) window.scrollTo({ top: scrollY });
+                  }}
+                  className={({ isActive }) => cn("flex min-h-11 items-center border-b-2 px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40", isActive ? "border-primary text-primary" : "border-transparent text-foreground-muted hover:text-foreground")}
+                >
+                  {t(`public.tabs.${tab}`)}
+                </NavLink>
+              ))}
+            </nav>
+          </PageContainer>
+        </div>
       </div>
 
       <PageContainer width="default" className="pt-6">

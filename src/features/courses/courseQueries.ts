@@ -22,7 +22,7 @@ import {
   pickCourseContentLocale,
 } from "@/lib/courses";
 import { getSubmission } from "@/lib/finalAssignment";
-import { listContests } from "@/lib/hackathons";
+import { listPublicContests } from "@/lib/hackathons";
 import { getPublicProfileById } from "@/lib/profile";
 import type {
   Course,
@@ -244,7 +244,7 @@ export function spotlightContestsQueryOptions(
   return queryOptions<Contest[]>({
     queryKey: courseKeys.spotlight(user?.id ?? null, locale),
     queryFn: async () => {
-      const contests = await listContests(user);
+      const contests = await listPublicContests(locale);
       return contests.filter(
         (contest) =>
           contest.status === "published" || contest.status === "running",

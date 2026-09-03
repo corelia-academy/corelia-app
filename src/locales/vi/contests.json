@@ -78,6 +78,7 @@
     "listCardImageAlt": "Ảnh đại diện contest — {{title}}"
   },
   "public": {
+    "previewNotice": "Bản xem trước — hackathon này chưa được công khai.",
     "registered": "Đăng ký thành công.",
     "registerFailed": "Không thể đăng ký hackathon.",
     "register": "Đăng ký ngay",
@@ -114,8 +115,10 @@
       "newest": "Mới nhất",
       "oldest": "Cũ nhất",
       "tracks": "Tracks",
-      "sectors": "Sectors",
-      "techStacks": "Tech stacks",
+      "sectors": "Chuyên môn kỹ thuật",
+      "techStacks": "Công nghệ",
+      "selectedCount": "Đã chọn {{count}} bộ lọc",
+      "clearFilters": "Xóa lọc",
       "loading": "Đang tải…",
       "loadMore": "Tải thêm",
       "openCatalog": "Mở trang tổng hợp dự án"

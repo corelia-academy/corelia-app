@@ -38,7 +38,7 @@ export function homeCatalogQueryOptions(user: User | null, locale: string) {
       ]);
       const [publishedCourses, contestList] = await Promise.all([
         coursesModule.getPublishedCourses(),
-        hackathonsModule.listContests(user),
+        hackathonsModule.listPublicContests(locale),
       ]);
       const previewCourses = publishedCourses.slice(0, 8);
       const contentLocale = coursesModule.pickCourseContentLocale(previewCourses[0], locale);

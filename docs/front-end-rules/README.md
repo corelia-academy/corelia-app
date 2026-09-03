@@ -35,6 +35,10 @@ Corelia không duy trì một design-system specification bằng Markdown. Code 
 
 Không được lưu cùng một dữ liệu ở nhiều owner. Đặc biệt, dữ liệu do Supabase trả về không được copy sang Zustand hoặc `useState` chỉ để tạo cache thứ hai.
 
+## Remote delivery
+
+Frontend work is local-only by default. Chỉ commit, push hoặc deploy lên `staging`/remote khi người dùng yêu cầu rõ cho thay đổi hiện tại. Yêu cầu đưa staging ở một lượt trước không phải quyền mặc định cho các lượt sửa frontend sau.
+
 ## Nguyên tắc quyết định
 
 - Nếu dữ liệu có thể thay đổi ngoài component hoặc cần fetch/cache/refetch, dùng TanStack Query.

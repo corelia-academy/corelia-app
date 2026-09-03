@@ -78,6 +78,7 @@
     "listCardImageAlt": "Contest thumbnail — {{title}}"
   },
   "public": {
+    "previewNotice": "Preview — this hackathon is not public yet.",
     "registered": "Registration complete.",
     "registerFailed": "Could not register for this hackathon.",
     "register": "Register now",
@@ -114,8 +115,10 @@
       "newest": "Newest",
       "oldest": "Oldest",
       "tracks": "Tracks",
-      "sectors": "Sectors",
-      "techStacks": "Tech stacks",
+      "sectors": "Engineering areas",
+      "techStacks": "Technologies",
+      "selectedCount": "{{count}} filters selected",
+      "clearFilters": "Clear",
       "loading": "Loading…",
       "loadMore": "Load more",
       "openCatalog": "Open project catalog"

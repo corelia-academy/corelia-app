@@ -55,5 +55,6 @@ describe("simplified hackathon contract", () => {
 
   it("generates deterministic lowercase slugs", () => {
     expect(generateCanonicalProjectSlug("Ứng dụng Giáo dục", "A1B2C3D4-extra")).toBe("ung-dung-giao-duc-a1b2c3d4");
+    expect(generateCanonicalProjectSlug("manual-slug-")).toBe("manual-slug");
   });
 });

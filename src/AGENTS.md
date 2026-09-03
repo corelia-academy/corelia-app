@@ -36,3 +36,4 @@ These instructions apply under `src/`.
 - Cross-page domain UI/logic → `features/<domain>/`; broadly reusable UI → `components/`; data/RPC/Edge helper → `lib/`.
 - Place tests next to the relevant helper or in `src/tests/` when they cover cross-cutting regressions.
 - Start with `pnpm vitest run <relevant-test-file>`, then run `pnpm lint` and `pnpm build` when TypeScript/UI behavior changed. Add the broader suite when the change crosses features or release parity requires it.
+- Frontend implementation is local-only by default. Do not commit, push, or deploy frontend changes to `staging` or another remote unless the user explicitly requests remote delivery for the current change; a request from an earlier turn does not carry forward.

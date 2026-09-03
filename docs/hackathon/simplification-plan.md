@@ -23,6 +23,10 @@ Primary locale mặc định là VI; EN có draft độc lập.
 
 Banner và host logo được upload qua Supabase Storage trong Admin editor; admin không nhập URL ảnh thủ công. Document lưu URL hiển thị cùng storage path để hỗ trợ thay và xóa file.
 
+Admin create/edit dùng cùng UI pattern với course editor: create chỉ nhập thông tin chung để tạo draft; edit có header metrics, locale switcher và sidebar theo hash, mỗi lần chỉ hiển thị một section với action lưu ở cuối.
+
+Editor tái sử dụng Edge Function dịch AI của course cho một bundle hackathon có cấu trúc. Dịch AI chỉ cập nhật locale draft đang chọn để admin rà lại; các ID và field dùng chung không đi qua model.
+
 ## Project contract
 
 `projects` thêm:

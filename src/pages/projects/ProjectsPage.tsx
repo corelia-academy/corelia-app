@@ -7,11 +7,10 @@ import { useSearchParams } from "react-router";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/projects/ProjectCardSkeleton";
 import { Button } from "@/components/ui/button";
-import { hackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
+import { publicHackathonCatalogQueryOptions } from "@/features/hackathons/hackathonQueries";
 import { publicProjectDirectoryQueryOptions } from "@/features/projects/projectQueries";
 import type { PublicProjectEntry, PublicProjectSort } from "@/lib/projects";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/stores/authStore";
 import type { Contest, HackathonTaxonomyOption } from "@/types/hackathons";
 
 type FilterOption = Pick<HackathonTaxonomyOption, "id" | "name"> & { active?: boolean };
@@ -87,7 +86,6 @@ function winnerFirst(items: PublicProjectEntry[], contest: Contest | null): Publ
 
 export default function ProjectsPage() {
   const { t, i18n } = useTranslation("common");
-  const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const hackathonSlug = params.get("hackathon") ?? "";
@@ -96,7 +94,7 @@ export default function ProjectsPage() {
   const techStackIds = csv(params.get("tech"));
   const sort = sortParam(params.get("sort"));
 
-  const hackathonsQuery = useQuery(hackathonCatalogQueryOptions(user, locale));
+  const hackathonsQuery = useQuery(publicHackathonCatalogQueryOptions(locale));
   const hackathons = hackathonsQuery.data ?? [];
   const selectedHackathon = hackathons.find((item) => item.slug === hackathonSlug) ?? null;
   const projectsQuery = useInfiniteQuery(
