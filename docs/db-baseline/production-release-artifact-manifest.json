@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "6eac177764f15baca28f07bd09b51107867ed966",
-  "git_tree_sha": "00b03f76eaed6e4709a7bf0632a10678e0f0f21f",
+  "rc_sha": "cf6a1faee53ce3e1c09c83df7d0d3cfdfe924a7c",
+  "git_tree_sha": "3f2a42fedea0aa0b66d8bc883cc02dcd3d6ce463",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 171,
   "latest_migration": "20260903062207_normalize_job_ai_quality_score.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "6eac177764f15baca28f07bd09b51107867ed966",
+  "source_sha": "cf6a1faee53ce3e1c09c83df7d0d3cfdfe924a7c",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "96479ef0918592c5601d7dab4cfd40c865a857639b36f328e10abfaf5323ecae",
+  "candidate_tree_sha256": "6922a0bb32fcc9a6289d7670d6b6edf9c597d61ff14a699091c164b51e45c0f0",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -47,11 +47,11 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "634715dcd3da51e567c8d6eb4ec2fb2d17a0ae66290e2c7fa5b96e79bc80ce8d"
+      "sha256": "6a0b0f940e8a9451f00bd73c0f6362a0bf11dc4df31d07a71088d3a88311ea0c"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
-      "sha256": "09cb1271f1ee2628b6314daa30c600a530350c24c6332698b02a677928e85135"
+      "sha256": "a00d4d6e519b2d8018423e5668f0f549f39bc59ee0585cd2a2d2e535c782f574"
     },
     {
       "path": ".gitignore",
@@ -415,7 +415,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "5fb7006d16dc24d6954a52b4ea353514bba33d0d0ae387d59d1fbc7ab8d9c907"
+      "sha256": "acb7a30d34648190b7fa1f6c16f9524ff771d6a10824976705ee7fff3443c4c6"
     },
     {
       "path": "scripts/db/tests/learner-ai-database-retirement.contract.test.mjs",
