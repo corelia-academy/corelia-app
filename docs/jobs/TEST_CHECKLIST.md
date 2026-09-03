@@ -221,9 +221,12 @@ redact secret.
   và posted date trả đúng kết quả.
 - [ ] Minimum salary disabled khi chưa chọn currency.
 - [ ] Salary filter chỉ so trong currency đã chọn và không trộn đơn vị tiền.
-- [ ] Đổi filter xóa `page`; **Xóa lọc** trả URL/filter về mặc định.
-- [ ] Pagination 24 item/page không lặp hoặc bỏ sót; previous/next và query URL
-  đúng.
+- [ ] Đổi filter và **Xóa lọc** trả URL/filter về đúng trạng thái; catalog không
+  thêm hoặc phụ thuộc query parameter `page`.
+- [ ] Infinite scroll tải theo batch 24 item khi gần cuối danh sách, không lặp
+  hoặc bỏ sót job giữa các batch và dừng khi đã tải đủ tổng số kết quả.
+- [ ] Batch tiếp theo đang tải có status accessible; lỗi giữ nguyên các job đã
+  tải và cho phép retry mà không chuyển trang.
 - [ ] Card hiển thị company, title, location/work mode, salary/date/tags đúng và
   không vỡ khi thiếu logo/salary/description.
 - [ ] User đã hide một job không còn thấy job đó trong catalog của chính mình;
@@ -328,7 +331,7 @@ Kiểm tra tối thiểu ở 390px, 768px, 1024px và 1440px, cả light/dark th
 - [ ] Logo thật dùng `object-contain`, không méo; job thiếu logo không hiện
   generic company icon giống nhau trên mọi card/detail.
 - [ ] Icon trang trí không tạo accessible name thừa.
-- [ ] Zoom 200% vẫn thao tác được search, filters, actions và pagination.
+- [ ] Zoom 200% vẫn thao tác được search, filters, actions và infinite scroll.
 
 ## 14. Regression và release smoke
 

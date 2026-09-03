@@ -18,7 +18,7 @@
   "actions": { "save": "Lưu việc làm", "unsave": "Bỏ lưu", "markApplied": "Đánh dấu đã ứng tuyển", "applied": "Đã ứng tuyển", "hide": "Ẩn việc làm", "unhide": "Hiện lại việc làm", "apply": "Ứng tuyển trên trang công ty" },
   "card": { "salaryNotShown": "Không công khai lương" },
   "empty": { "title": "Không có việc làm phù hợp", "description": "Hãy mở rộng tìm kiếm hoặc xóa bớt bộ lọc." },
-  "pagination": { "previous": "Trước", "next": "Tiếp", "page": "Trang {{page}} / {{total}}" },
+  "infinite": { "loading": "Đang tải thêm việc làm…", "loadMore": "Tải thêm việc làm", "retry": "Thử tải thêm việc làm", "ready": "Việc làm tiếp theo sẽ tự tải khi bạn cuộn xuống." },
   "messages": { "loginRequired": "Đăng nhập để lưu, ẩn hoặc theo dõi đơn ứng tuyển.", "updateFailed": "Không thể cập nhật việc làm này.", "loadFailed": "Không thể tải danh sách việc làm.", "hidden": "Đã ẩn việc làm.", "viewHidden": "Xem việc đã ẩn", "unhidden": "Đã đưa việc làm về danh sách chính." },
   "detail": {
     "back": "Quay lại danh sách", "notFound": "Việc làm này không còn khả dụng hoặc đã hết hạn.", "about": "Mô tả công việc", "noDescription": "Nguồn chưa cung cấp mô tả đầy đủ.", "requiredSkills": "Kỹ năng bắt buộc", "preferredSkills": "Kỹ năng ưu tiên", "overview": "Tổng quan", "salary": "Mức lương", "jobType": "Nhóm công việc", "seniority": "Cấp độ", "role": "Vai trò", "source": "Nguồn", "sourceAttribution": "Tin tuyển dụng do {{source}} cung cấp."

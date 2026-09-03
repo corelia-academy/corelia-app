@@ -84,10 +84,11 @@
     "title": "No matching jobs",
     "description": "Try broadening your search or clearing some filters."
   },
-  "pagination": {
-    "previous": "Previous",
-    "next": "Next",
-    "page": "Page {{page}} of {{total}}"
+  "infinite": {
+    "loading": "Loading more jobs…",
+    "loadMore": "Load more jobs",
+    "retry": "Retry loading more jobs",
+    "ready": "More jobs load automatically as you scroll."
   },
   "messages": {
     "loginRequired": "Sign in to save, hide, or track applications.",

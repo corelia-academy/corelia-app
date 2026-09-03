@@ -1,5 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BriefcaseBusiness, Search, SlidersHorizontal } from "lucide-react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -9,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { JobCard } from "@/features/jobs/JobCard";
 import { humanizeJobSlug } from "@/features/jobs/jobFormat";
 import { JobsNav } from "@/features/jobs/JobsNav";
-import { jobKeys, jobsCatalogQueryOptions, jobSourceConnectionsQueryOptions, jobTaxonomyQueryOptions } from "@/features/jobs/jobQueries";
+import { jobKeys, jobsInfiniteCatalogQueryOptions, jobSourceConnectionsQueryOptions, jobTaxonomyQueryOptions } from "@/features/jobs/jobQueries";
 import { setUserJobState } from "@/lib/jobs";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useAuth } from "@/stores/authStore";
@@ -46,8 +47,6 @@ export default function JobsPage() {
   const route = useParams<{ skill?: string; domain?: string; role?: string }>();
   const [params, setParams] = useSearchParams();
   const landing = landingFilters(location.pathname, route);
-  const requestedPage = Number(params.get("page") ?? 1);
-  const page = Number.isFinite(requestedPage) ? Math.max(1, Math.min(10_000, Math.trunc(requestedPage))) : 1;
   const filters: JobFilters = {
     query: params.get("q") || undefined,
     jobType: params.get("type") === "tech" || params.get("type") === "non_tech"
@@ -63,7 +62,6 @@ export default function JobsPage() {
     postedWithinDays: Number(params.get("days")) || undefined,
     salaryMin: Number(params.get("salary")) || undefined,
     salaryCurrency: params.get("currency") || undefined,
-    page,
     pageSize: 24,
     ...landing?.filters,
   };
@@ -77,7 +75,7 @@ export default function JobsPage() {
     canonicalUrl,
     robots: "index,follow",
   });
-  const jobsQuery = useQuery(jobsCatalogQueryOptions(filters, user?.id));
+  const jobsQuery = useInfiniteQuery(jobsInfiniteCatalogQueryOptions(filters, user?.id));
   const taxonomyQuery = useQuery(jobTaxonomyQueryOptions());
   const sourcesQuery = useQuery(jobSourceConnectionsQueryOptions());
   const stateMutation = useMutation({
@@ -108,8 +106,35 @@ export default function JobsPage() {
     }
     stateMutation.mutate({ jobId, patch });
   };
-  const result = jobsQuery.data;
-  const totalPages = Math.max(1, Math.ceil((result?.total ?? 0) / 24));
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const jobs = useMemo(() => {
+    const seen = new Set<string>();
+    return jobsQuery.data?.pages.flatMap((pageResult) => pageResult.items.filter((job) => {
+      if (seen.has(job.id)) return false;
+      seen.add(job.id);
+      return true;
+    })) ?? [];
+  }, [jobsQuery.data]);
+  const stateByJobId = useMemo(() => jobsQuery.data?.pages.reduce<Record<string, UserJobState>>(
+    (states, pageResult) => Object.assign(states, pageResult.stateByJobId),
+    {},
+  ) ?? {}, [jobsQuery.data]);
+  const latestPage = jobsQuery.data?.pages.at(-1);
+  const { fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError } = jobsQuery;
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target || !hasNextPage || isFetchNextPageError || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting && !isFetchingNextPage) {
+        void fetchNextPage();
+      }
+    }, { rootMargin: "600px 0px" });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError]);
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-5">
@@ -144,12 +169,12 @@ export default function JobsPage() {
             <Button type="button" variant="ghost" onClick={() => setParams({})}>{t("filters.clear")}</Button>
           </div>
         </section>
-        <div className="flex items-center justify-between gap-3"><p className="text-sm text-foreground-muted">{t("results", { count: result?.total ?? 0 })}{result?.hiddenCount ? <> · <Link to="/jobs/hidden" className="underline-offset-4 hover:underline">{t("hiddenCount", { count: result.hiddenCount })}</Link></> : null}</p></div>
-        {jobsQuery.isPending ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : jobsQuery.isError ? <div className="rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive" role="alert">{t("messages.loadFailed")} <Button type="button" variant="outline" className="ml-2" onClick={() => void jobsQuery.refetch()}>{t("retry")}</Button></div> : result?.items.length ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{result.items.map((job) => {
-          const state = result.stateByJobId[job.id];
+        <div className="flex items-center justify-between gap-3"><p className="text-sm text-foreground-muted">{t("results", { count: latestPage?.total ?? 0 })}{latestPage?.hiddenCount ? <> · <Link to="/jobs/hidden" className="underline-offset-4 hover:underline">{t("hiddenCount", { count: latestPage.hiddenCount })}</Link></> : null}</p></div>
+        {jobsQuery.isPending ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-2xl bg-surface-raised" />)}</div> : jobsQuery.isError && !jobsQuery.data ? <div className="rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive" role="alert">{t("messages.loadFailed")} <Button type="button" variant="outline" className="ml-2" onClick={() => void jobsQuery.refetch()}>{t("retry")}</Button></div> : jobs.length ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{jobs.map((job) => {
+          const state = stateByJobId[job.id];
           return <JobCard key={job.id} job={job} state={state} busy={stateMutation.isPending && stateMutation.variables?.jobId === job.id} onToggleSaved={() => mutateState(job.id, { saved: !state?.saved })} onToggleApplied={() => mutateState(job.id, { applied: !state?.applied })} onToggleHidden={() => mutateState(job.id, { hidden: true })} />;
         })}</div> : <div className="rounded-xl border border-border-subtle bg-surface-base p-12 text-center"><BriefcaseBusiness className="mx-auto size-8 text-foreground-subtle" aria-hidden /><h2 className="mt-3 font-semibold">{t("empty.title")}</h2><p className="mt-1 text-sm text-foreground-muted">{t("empty.description")}</p></div>}
-        {totalPages > 1 ? <div className="flex items-center justify-center gap-3"><Button type="button" variant="outline" disabled={page <= 1} onClick={() => updateParam("page", String(page - 1))}>{t("pagination.previous")}</Button><span className="text-sm text-foreground-muted">{t("pagination.page", { page, total: totalPages })}</span><Button type="button" variant="outline" disabled={page >= totalPages} onClick={() => updateParam("page", String(page + 1))}>{t("pagination.next")}</Button></div> : null}
+        {jobsQuery.hasNextPage ? <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center text-sm text-foreground-muted" role="status" aria-live="polite">{jobsQuery.isFetchingNextPage ? t("infinite.loading") : jobsQuery.isFetchNextPageError ? <Button type="button" variant="outline" onClick={() => void jobsQuery.fetchNextPage()}>{t("infinite.retry")}</Button> : typeof IntersectionObserver === "undefined" ? <Button type="button" variant="outline" onClick={() => void jobsQuery.fetchNextPage()}>{t("infinite.loadMore")}</Button> : <span className="sr-only">{t("infinite.ready")}</span>}</div> : null}
         {sourcesQuery.data?.length ? <footer className="border-t border-border-subtle pt-4 text-center text-xs text-foreground-muted">{t("sources.connected", { sources: sourcesQuery.data.map((source) => source.name).join(" · ") })}</footer> : null}
       </div>
     </div>

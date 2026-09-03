@@ -83,10 +83,10 @@ export default function AppSidebar({
         );
         await queryClient.prefetchQuery(careerCatalogQueryOptions(locale));
       } else if (href === "/jobs") {
-        const { jobsCatalogQueryOptions } = await import(
+        const { jobsInfiniteCatalogQueryOptions } = await import(
           "@/features/jobs/jobQueries"
         );
-        await queryClient.prefetchQuery(jobsCatalogQueryOptions({ page: 1, pageSize: 24 }, user?.id));
+        await queryClient.prefetchInfiniteQuery(jobsInfiniteCatalogQueryOptions({ pageSize: 24 }, user?.id));
       }
     } catch {
       // Speculative work must never affect navigation.

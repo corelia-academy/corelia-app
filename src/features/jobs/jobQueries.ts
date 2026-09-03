@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 import {
   getJobBySlug,
@@ -14,6 +14,7 @@ import {
   listJobSourcesAdmin,
   listUserJobs,
 } from "@/lib/jobs";
+import { getInfiniteJobsFilters, getNextJobsPageParam } from "./jobPagination";
 import type { JobFilters } from "@/types/jobs";
 
 const publicMeta = { scope: "public", showInGlobalLoading: false } as const;
@@ -35,10 +36,13 @@ export const jobKeys = {
   adminAlerts: () => [...jobKeys.admin, "alerts"] as const,
 };
 
-export function jobsCatalogQueryOptions(filters: JobFilters, userId?: string) {
-  return queryOptions({
-    queryKey: jobKeys.catalog(filters, userId ?? "public"),
-    queryFn: () => listJobs(filters, userId),
+export function jobsInfiniteCatalogQueryOptions(filters: JobFilters, userId?: string) {
+  const catalogFilters = getInfiniteJobsFilters(filters);
+  return infiniteQueryOptions({
+    queryKey: jobKeys.catalog(catalogFilters, userId ?? "public"),
+    queryFn: ({ pageParam }) => listJobs({ ...catalogFilters, page: pageParam }, userId),
+    initialPageParam: 1,
+    getNextPageParam: getNextJobsPageParam,
     staleTime: 60_000,
     meta: userId
       ? { scope: "private", userId, showInGlobalLoading: false }
