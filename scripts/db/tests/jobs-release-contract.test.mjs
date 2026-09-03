@@ -6,6 +6,9 @@ import test from "node:test";
 const read = (path) => readFileSync(resolve(process.cwd(), path), "utf8");
 
 test("Jobs release wiring deploys both Edge Functions and fails closed on a missing scheduler secret", () => {
+  const vaultGuardPath = "scripts/db/verify-jobs-scheduler-vault.sql";
+  const vaultGuard = read(vaultGuardPath);
+
   for (const [path, projectRef] of [
     [".github/workflows/deploy-staging.yml", "opoozbmfbezkrpzxsusx"],
     [".github/workflows/deploy-prod.yml", "lawhkvyyoznwygzsycan"],
@@ -14,13 +17,28 @@ test("Jobs release wiring deploys both Edge Functions and fails closed on a miss
     assert.match(workflow, new RegExp(`test \\\"\\$SUPABASE_PROJECT_REF\\\" = \\\"${projectRef}\\\"`));
     assert.match(workflow, /supabase secrets list[^\n]+--output json/);
     assert.match(workflow, /index\("CORELIA_JOBS_CRON_SECRET"\) != null/);
+    assert.match(workflow, new RegExp(`supabase db query --linked --file ${vaultGuardPath.replaceAll("/", "\\/")}`));
     assert.match(workflow, /supabase functions deploy corelia-api\b/);
     assert.match(workflow, /supabase functions deploy cron-jobs\b/);
     assert.ok(
       workflow.lastIndexOf("supabase functions deploy cron-jobs") > workflow.indexOf("supabase migration"),
       `${path} must deploy cron-jobs after its migration step`,
     );
+    assert.ok(
+      workflow.indexOf(vaultGuardPath) > workflow.indexOf("supabase migration up"),
+      `${path} must verify Vault after applying migrations`,
+    );
+    assert.ok(
+      workflow.indexOf(vaultGuardPath) < workflow.lastIndexOf("supabase functions deploy cron-jobs"),
+      `${path} must fail before deploying cron-jobs when Vault is incomplete`,
+    );
   }
+
+  assert.match(vaultGuard, /corelia_jobs_project_url/);
+  assert.match(vaultGuard, /corelia_jobs_cron_secret/);
+  assert.match(vaultGuard, /vault\.decrypted_secrets/);
+  assert.match(vaultGuard, /missing or empty/);
+  assert.doesNotMatch(vaultGuard, /opoozbmfbezkrpzxsusx|lawhkvyyoznwygzsycan/);
 });
 
 test("Jobs scheduler keeps JWT verification off only because both hops enforce the custom secret", () => {

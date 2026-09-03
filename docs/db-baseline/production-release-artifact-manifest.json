@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "7955a712b1b572ffc1031b6c331aea9c5cfa153f",
-  "git_tree_sha": "d533bfdb7bbf3489ae7492abea59fdc31c538af9",
+  "rc_sha": "5f52fde4fe0598b00697fb7895509115650e9b27",
+  "git_tree_sha": "17c808eb0be6b56e9913752213ad831ed5bfc328",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
   "migration_count": 181,
   "latest_migration": "20260903111914_grant_job_company_source_for_connected_adapters.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "7955a712b1b572ffc1031b6c331aea9c5cfa153f",
+  "source_sha": "5f52fde4fe0598b00697fb7895509115650e9b27",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "56f0ffc8aff2a394dc57542fad9ce41f81f1db7065fde61949572924eb5a350a",
+  "candidate_tree_sha256": "0576f674faa6aa657e404c3f304b59194b109ab9a746a88a0b56c4020e8c7e58",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -47,11 +47,11 @@
     },
     {
       "path": ".github/workflows/deploy-prod.yml",
-      "sha256": "6a0b0f940e8a9451f00bd73c0f6362a0bf11dc4df31d07a71088d3a88311ea0c"
+      "sha256": "cbe72208264a85e09622bbd97635f231e4256b117837c96a79dd73b0bbe29cbe"
     },
     {
       "path": ".github/workflows/deploy-staging.yml",
-      "sha256": "a00d4d6e519b2d8018423e5668f0f549f39bc59ee0585cd2a2d2e535c782f574"
+      "sha256": "9691c2de7a290146cf68f2b9df5a17a2c5adac2ac4d94a1f0d5750d447d05e76"
     },
     {
       "path": ".gitignore",
@@ -199,7 +199,7 @@
     },
     {
       "path": "docs/jobs/README.md",
-      "sha256": "4315a4b914114a1acc3ee04f02128d7b790815d390345d118efa20dbdf741f9a"
+      "sha256": "94ffef1a536da928d8af3516b9c3dcf49c9474b6c392a520e76367bed20e7618"
     },
     {
       "path": "docs/jobs/TEST_CHECKLIST.md",
@@ -415,7 +415,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "942ebdb4435572b80fcde5f699f300e46cb13a0f3492ad5c5d1e45334172c96e"
+      "sha256": "bd4893f6592bfeb7ba990b786a0f5557e874fc21535fc28857f88f38c4120e72"
     },
     {
       "path": "scripts/db/tests/jobs-sitemap.test.mjs",
@@ -484,6 +484,10 @@
     {
       "path": "scripts/db/verify-drift-allowlist.mjs",
       "sha256": "2769b99d902e430ed417b0467c21d0cc751efe35bf583a9ce3ebe158e22b026c"
+    },
+    {
+      "path": "scripts/db/verify-jobs-scheduler-vault.sql",
+      "sha256": "6f82ac6efad2cd3a7ffe937f8846e8241cef864532c129114c5fe4edfce3bc2e"
     },
     {
       "path": "scripts/db/verify-live-history.mjs",

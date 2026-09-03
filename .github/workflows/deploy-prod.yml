@@ -149,6 +149,15 @@ jobs:
           node scripts/db/verify-production-migration-state.mjs "$RUNNER_TEMP/production-pre-migration-list.txt"
           supabase migration up --linked --dns-resolver https
 
+      - name: Verify Jobs scheduler Vault configuration
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          test "$SUPABASE_PROJECT_REF" = "lawhkvyyoznwygzsycan"
+          supabase db query --linked --file scripts/db/verify-jobs-scheduler-vault.sql --agent=no
+
       - name: Verify live DB post-migration state and data invariants (Pre-Edge Gate)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
