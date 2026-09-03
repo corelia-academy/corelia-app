@@ -141,6 +141,18 @@ describe("deterministic job classifier", () => {
     expect(result.preferredSkills).toEqual([]);
   });
 
+  it("keeps an engineering role technical when social describes the product area", () => {
+    const result = classifyJobDeterministically(job({
+      title: "Senior Software Engineer: Social & AI - MetaMask",
+      sourceTags: ["Engineering"],
+      descriptionPlain: "Build React and React Native social experiences across web and mobile using modern JavaScript. 6+ years of software engineering experience required.",
+    }));
+    expect(result.jobType).toBe("tech");
+    expect(result.primaryRole).toBe("general-software-engineering");
+    expect(result.roles).not.toContain("social-media");
+    expect(result.requiredSkills).toEqual(expect.arrayContaining(["javascript", "react"]));
+  });
+
   it("drops AI skills that are not backed by the returned source evidence", async () => {
     const output = {
       is_relevant: true,

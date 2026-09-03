@@ -40,12 +40,20 @@ test("Jobs migration is an approved forward migration", async () => {
   const release = await import("../production-release-migrations.mjs");
   assert.equal(
     release.CURRENT_PENDING_VERSIONS.at(-1),
-    "20260903071137",
+    "20260903081100",
   );
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20260903071137",
+    "20260903081100",
   );
+});
+
+test("Jobs Social backfill preserves engineering titles and staff overrides", () => {
+  const migration = read("supabase/migrations/20260903081100_repair_social_engineering_job_type.sql");
+
+  assert.match(migration, /primary_role = 'general-software-engineering'/);
+  assert.match(migration, /title ~\* '[^']*engineer/);
+  assert.match(migration, /NOT \(manual_overrides \?\| ARRAY\['job_type', 'primary_role', 'roles'\]\)/);
 });
 
 test("Jobs type migration adds the public contract and non-tech role taxonomy", () => {
