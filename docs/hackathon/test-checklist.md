@@ -303,9 +303,18 @@ Kiểm tra tối thiểu ở 1440px, 1024px, 768px và 390px.
 - [x] `pnpm db:verify` xanh: 127/127 database guardrails.
 - [x] Hai migration Project đã được thêm vào approved pending release manifest; release candidate không chứa migration Jobs đang làm dở.
 - [x] Secret scan trên staged diff không phát hiện credential/API key được điền giá trị.
-- [ ] Workflow **Deploy Staging** xanh khi push chạm `supabase/**`.
-- [ ] Xác nhận frontend Staging pipeline đã publish đúng commit trước khi manual QA.
-- [ ] Ghi lại commit SHA, build/deploy URL và thời gian test.
+- [x] Workflow [Deploy Staging](https://github.com/corelia-academy/corelia-app/actions/runs/33714720803) xanh cho release candidate `5de36a9`.
+- [x] Cloudflare **Workers Builds: corelia-staging** đã publish release candidate `5de36a9` thành công.
+- [x] Commit SHA, build/deploy URL và thời gian release gate được ghi lại bên dưới.
+
+### Release gate evidence
+
+| Trường | Giá trị |
+|---|---|
+| Release candidate | `5de36a92af182a425756bdd705efeb1e5f039e86` |
+| Supabase Staging | [Deploy Staging #355](https://github.com/corelia-academy/corelia-app/actions/runs/33714720803), hoàn tất `2026-09-03 11:28 ICT` |
+| Frontend Staging | [Cloudflare build `aff172cf`](https://dash.cloudflare.com/d982b6ea7fca20bb1cb1ad64d3fd3aa6/workers/services/view/corelia-staging/production/builds/aff172cf-8acd-4198-8803-8d1f6c7c3a4a), version `3ed64580-c3d9-4711-83ce-2ea470d967cc` |
+| Kết quả automated gate | Pass: tests, lint, staging build, migration governance, clean migration recreation, SQL integration và Security Advisor |
 
 ## 13. Biên bản chạy test
 
