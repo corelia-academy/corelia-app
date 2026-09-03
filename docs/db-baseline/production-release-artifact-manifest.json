@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "artifact_id": "R5_RELEASE_CANDIDATE",
-  "rc_sha": "72658fbe04d604e48c359506df9a6f2c432c269b",
-  "git_tree_sha": "02c0c83588a2980e207d9f037a7d5742328fcc2a",
+  "rc_sha": "4a621c7af5652ca0c62847d8802da97f8589136b",
+  "git_tree_sha": "6678cccb007e780e41a74a561e53ac2c398aadfc",
   "production_base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
   "target_production_project_ref": "lawhkvyyoznwygzsycan",
-  "migration_count": 172,
-  "latest_migration": "20260903071137_add_job_type_and_non_tech_roles.sql",
+  "migration_count": 173,
+  "latest_migration": "20260903081100_repair_social_engineering_job_type.sql",
   "base_sha": "66981c2044b515a6fa07a71d06f8265d171d6a74",
-  "source_sha": "72658fbe04d604e48c359506df9a6f2c432c269b",
+  "source_sha": "4a621c7af5652ca0c62847d8802da97f8589136b",
   "manifest_path": "docs/db-baseline/production-release-artifact-manifest.json",
-  "candidate_tree_sha256": "4bf470b63aca468760551e1c13652d412bd06159e43faf9f259129755d63b012",
+  "candidate_tree_sha256": "bc655cf1dab1eea456a2411813bbab5457b5fc8b766befb5c7ee0c4738cf7421",
   "recipe": {
     "patches": [],
     "materialized_files": [],
@@ -355,7 +355,7 @@
     },
     {
       "path": "scripts/db/production-release-migrations.mjs",
-      "sha256": "71eeaf13d5e4a9cfeaf31a358e1db1266776b45f4220f3e6d41f60f1afdd7552"
+      "sha256": "03a1519d8038f92377541953d84187ccfa210d80d55da68d9f8be79bf3a1e9b6"
     },
     {
       "path": "scripts/db/r4-catalog-fingerprint.sql",
@@ -415,7 +415,7 @@
     },
     {
       "path": "scripts/db/tests/jobs-release-contract.test.mjs",
-      "sha256": "6f21d72db658d10cc1ba23b04ed78c87d7c6f740236ddbbe7588e2af87256f59"
+      "sha256": "bbc8f91ca886b54068fe6babce0ee6cb5d178e36b66c62decdda10065b369ce0"
     },
     {
       "path": "scripts/db/tests/learner-ai-database-retirement.contract.test.mjs",
@@ -1635,7 +1635,7 @@
     },
     {
       "path": "supabase/functions/corelia-api/jobs/classify.test.ts",
-      "sha256": "95ee34d0d1eac9f9164288eaa60add94979531c03c5492f48451c92317a16e53"
+      "sha256": "a72aa694fb4ab7f2dd80c4b42c61f87c199ba26ac5410390bb55e00013df83dc"
     },
     {
       "path": "supabase/functions/corelia-api/jobs/classify.ts",
@@ -1888,6 +1888,10 @@
     {
       "path": "supabase/migrations/20260903071137_add_job_type_and_non_tech_roles.sql",
       "sha256": "3eb766d3d278f86fb3c52904f6582c2020d640a0dcfb00fdeeb18fcb77c96976"
+    },
+    {
+      "path": "supabase/migrations/20260903081100_repair_social_engineering_job_type.sql",
+      "sha256": "29424f7676fcfe8b52722967eb5794680c5a34afd784433f29fd511348555593"
     },
     {
       "path": "vite.config.ts",
@@ -2158,6 +2162,10 @@
       {
         "path": "supabase/migrations/20260903071137_add_job_type_and_non_tech_roles.sql",
         "sha256": "3eb766d3d278f86fb3c52904f6582c2020d640a0dcfb00fdeeb18fcb77c96976"
+      },
+      {
+        "path": "supabase/migrations/20260903081100_repair_social_engineering_job_type.sql",
+        "sha256": "29424f7676fcfe8b52722967eb5794680c5a34afd784433f29fd511348555593"
       }
     ]
   }
