@@ -91,6 +91,34 @@ BEGIN
     RAISE EXCEPTION 'Jobs direct source inventory or CryptoJobsList policy gate is incomplete';
   END IF;
 
+  IF (SELECT count(*) FROM cron.job WHERE jobname LIKE 'corelia-jobs-%') <> 3
+    OR NOT EXISTS (
+      SELECT 1 FROM cron.job
+      WHERE jobname = 'corelia-jobs-discovery'
+        AND schedule = '7 * * * *'
+        AND command LIKE '%''mode'', ''discovery''%'
+    )
+    OR NOT EXISTS (
+      SELECT 1 FROM cron.job
+      WHERE jobname = 'corelia-jobs-revalidation'
+        AND schedule = '17 */6 * * *'
+        AND command LIKE '%''mode'', ''revalidation''%'
+    )
+    OR NOT EXISTS (
+      SELECT 1 FROM cron.job
+      WHERE jobname = 'corelia-jobs-analytics'
+        AND schedule = '30 4 * * *'
+        AND command LIKE '%''mode'', ''analytics''%'
+    )
+    OR EXISTS (
+      SELECT 1 FROM cron.job
+      WHERE jobname LIKE 'corelia-jobs-%'
+        AND command NOT LIKE '%vault.decrypted_secrets%'
+    )
+  THEN
+    RAISE EXCEPTION 'Jobs Vault-backed schedules are missing or misconfigured';
+  END IF;
+
   IF EXISTS (
     SELECT 1
     FROM (VALUES

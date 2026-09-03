@@ -40,12 +40,26 @@ test("Jobs migration is an approved forward migration", async () => {
   const release = await import("../production-release-migrations.mjs");
   assert.equal(
     release.CURRENT_PENDING_VERSIONS.at(-1),
-    "20260903103822",
+    "20260903110012",
   );
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20260903103822",
+    "20260903110012",
   );
+});
+
+test("Jobs schedules are Vault-backed, staggered, and mode-specific", () => {
+  const migration = read("supabase/migrations/20260903110012_configure_jobs_schedules.sql");
+
+  for (const schedule of ["corelia-jobs-discovery", "corelia-jobs-revalidation", "corelia-jobs-analytics"]) {
+    assert.match(migration, new RegExp(schedule));
+  }
+  assert.match(migration, /'7 \* \* \* \*'/);
+  assert.match(migration, /'17 \*\/6 \* \* \*'/);
+  assert.match(migration, /'30 4 \* \* \*'/);
+  assert.match(migration, /corelia_jobs_project_url/);
+  assert.match(migration, /corelia_jobs_cron_secret/);
+  assert.doesNotMatch(migration, /opoozbmfbezkrpzxsusx|lawhkvyyoznwygzsycan/);
 });
 
 test("CryptoJobsList uses its documented API contract and stays disabled until access review", () => {

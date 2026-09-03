@@ -42,6 +42,7 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260903094501_jobs_operational_alerts.sql",
   "supabase/migrations/20260903100928_add_cryptojobslist_adapter_contract.sql",
   "supabase/migrations/20260903103822_add_jobs_ai_failure_observability.sql",
+  "supabase/migrations/20260903110012_configure_jobs_schedules.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
@@ -54,11 +55,11 @@ export const APPROVED_PENDING_VERSIONS = Object.freeze(
 // the follow-up Social-vs-engineering backfill repair, web3.career, and the
 // reviewed structured API/RSS feeds, provider-specific source instances,
 // revalidation state, operational alerts, the CryptoJobsList API contract,
-// and AI fallback observability
+// AI fallback observability, and reproducible Vault-backed schedules
 // ship as one forward-only pending batch.
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
-  APPROVED_PENDING_VERSIONS.slice(0, -15),
+  APPROVED_PENDING_VERSIONS.slice(0, -16),
 );
-export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-15));
+export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-16));
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);

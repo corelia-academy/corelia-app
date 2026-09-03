@@ -16,7 +16,7 @@ generic RSS/Atom, pipeline phân loại, revalidation và lịch crawl.
 | Migration `20260903033132_jobs_mvp_foundation.sql` | Có | Tạo schema, taxonomy, source policy, RLS, grants, lifecycle và market tables |
 | Migration `20260903055155_jobs_advisor_remediation.sql` | Có | Bổ sung index phủ foreign key và hợp nhất policy đọc theo khuyến nghị Advisor |
 | Migration `20260903062207_normalize_job_ai_quality_score.sql` | Có | Chuẩn hóa output AI dạng tỷ lệ `0–1` về thang quality gate `0–100` và sửa dữ liệu lịch sử bị reject sai |
-| Migrations Jobs đến `20260903103822_add_jobs_ai_failure_observability.sql` | Có | Thêm Tech/Non-tech, structured feeds, provider-specific RSS, revalidation, operational alerts, CryptoJobsList contract và AI fallback counters |
+| Migrations Jobs đến `20260903110012_configure_jobs_schedules.sql` | Có | Thêm Tech/Non-tech, structured feeds, provider-specific RSS, revalidation, operational alerts, CryptoJobsList contract, AI fallback counters và ba lịch Vault-backed |
 | Frontend env Supabase | Có | Cho browser đọc catalog/taxonomy và ghi trạng thái Saved/Applied qua RLS |
 | Edge Function `corelia-api` | Có để vận hành | Admin CRUD, crawl thủ công, review và refresh analytics |
 | Edge Function `cron-jobs` | Có cho tự động hóa | Endpoint nhỏ nhận lịch và gọi `jobs.runScheduled` |
@@ -58,7 +58,7 @@ pnpm exec supabase migration list --local
 ```
 
 Danh sách migration local phải có các dòng từ `20260903033132` đến
-`20260903103822` ở cả cột local và database.
+`20260903110012` ở cả cột local và database.
 `migration up --local` áp dụng migration còn thiếu mà không chủ động xóa dữ
 liệu hiện có.
 
@@ -259,15 +259,17 @@ platform quản lý.
 
 ## 7. Cấu hình Supabase Cron
 
-Khuyến nghị chạy mỗi giờ với batch nhỏ; handler chỉ chọn company thực sự đến
-hạn theo cadence mặc định 24 giờ. Cấu hình này phân tán tải thay vì crawl mọi
-company trong một invocation dài.
+Migration `20260903110012_configure_jobs_schedules.sql` quản lý ba lịch với
+batch nhỏ; handler chỉ chọn company thực sự đến hạn theo cadence mặc định 24
+giờ. Cấu hình này phân tán tải thay vì crawl mọi company trong một invocation
+dài và tránh live configuration drift.
 
 1. Bật `pg_cron` và `pg_net` trong project nếu chưa có.
 2. Lưu project URL và cron secret trong Supabase Vault.
-3. Tạo ba schedule gọi `POST /functions/v1/cron-jobs` với cùng header:
-   discovery theo giờ, revalidation theo giờ lệch phút và analytics hằng ngày.
-   Cadence trong DB vẫn quyết định target nào thực sự đến hạn.
+3. Apply migration cuối. Migration thay mọi lịch Jobs cũ bằng ba schedule gọi
+   `POST /functions/v1/cron-jobs`: discovery lúc phút 7 mỗi giờ, revalidation
+   lúc phút 17 mỗi 6 giờ, và analytics lúc 04:30 UTC hằng ngày. Cadence trong
+   DB vẫn quyết định target nào thực sự đến hạn.
 
 Template SQL sau dùng tên Vault riêng cho Corelia Jobs:
 
@@ -282,65 +284,10 @@ select vault.create_secret(
   'corelia_jobs_cron_secret'
 );
 
-select cron.schedule(
-  'corelia-jobs-hourly',
-  '7 * * * *',
-  $$
-  select net.http_post(
-    url := (
-      select decrypted_secret
-      from vault.decrypted_secrets
-      where name = 'corelia_jobs_project_url'
-    ) || '/functions/v1/cron-jobs',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'x-corelia-jobs-cron-secret', (
-        select decrypted_secret
-        from vault.decrypted_secrets
-        where name = 'corelia_jobs_cron_secret'
-      )
-    ),
-    body := '{"mode":"discovery","max_targets":1}'::jsonb,
-    timeout_milliseconds := 120000
-  );
-  $$
-);
-
-select cron.schedule(
-  'corelia-jobs-revalidation-hourly',
-  '17 * * * *',
-  $$
-  select net.http_post(
-    url := (select decrypted_secret from vault.decrypted_secrets where name = 'corelia_jobs_project_url') || '/functions/v1/cron-jobs',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'x-corelia-jobs-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'corelia_jobs_cron_secret')
-    ),
-    body := '{"mode":"revalidation","max_targets":1}'::jsonb,
-    timeout_milliseconds := 120000
-  );
-  $$
-);
-
-select cron.schedule(
-  'corelia-jobs-analytics-daily',
-  '30 4 * * *',
-  $$
-  select net.http_post(
-    url := (select decrypted_secret from vault.decrypted_secrets where name = 'corelia_jobs_project_url') || '/functions/v1/cron-jobs',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'x-corelia-jobs-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'corelia_jobs_cron_secret')
-    ),
-    body := '{"mode":"analytics"}'::jsonb,
-    timeout_milliseconds := 120000
-  );
-  $$
-);
 ```
 
-Chọn phút `7` chỉ để tránh dồn tải đúng đầu giờ; có thể đổi theo vận hành. Trước
-khi tạo lại schedule, kiểm tra tránh trùng:
+Các câu lệnh trên chỉ tạo/rotate Vault secret; không copy scheduler secret vào
+migration. Sau khi migration chạy, kiểm tra đúng ba lịch và không còn lịch cũ:
 
 ```sql
 select jobid, jobname, schedule, active

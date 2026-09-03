@@ -69,18 +69,18 @@ current Corelia architecture instead of introducing a separate service.
 ## Runtime setup
 
 1. Apply the ordered Jobs migrations through
-   `20260903103822_add_jobs_ai_failure_observability.sql` using the normal
+   `20260903110012_configure_jobs_schedules.sql` using the normal
    migration release flow.
 2. Deploy both `corelia-api` and `cron-jobs`.
 3. Set a strong `CORELIA_JOBS_CRON_SECRET` on both functions. Set
    `OPENAI_API_KEY` to enable automatic AI-gated publishing and optionally set
    `CORELIA_JOBS_CLASSIFIER_MODEL` (default: `gpt-5.4-mini`).
 4. Register and verify employer ATS identifiers in `/admin/jobs/companies`.
-5. Configure Supabase Cron to call `POST /functions/v1/cron-jobs` hourly with
-   `x-corelia-jobs-cron-secret`. Each company still inherits a 24-hour source
-   cadence, while the default `{ "max_targets": 1 }` batch distributes due
-   companies across small Edge invocations. Increase it only after observing
-   duration and AI rate limits.
+5. Create the two required Vault entries before applying the final scheduler
+   migration. The migration installs three staggered Supabase Cron calls to
+   `POST /functions/v1/cron-jobs`: hourly discovery, six-hour revalidation, and
+   daily analytics. Each company still inherits a 24-hour source cadence, while
+   the discovery batch distributes due companies across small Edge invocations.
 6. Run a manual crawl, inspect `/admin/jobs/review`, then verify `/jobs` and
    `/jobs/market` before enabling the recurring schedule.
 
