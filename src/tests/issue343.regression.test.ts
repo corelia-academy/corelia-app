@@ -642,10 +642,14 @@ describe("Issue #343 Behavioral Regression Test Suite (Real DOM & Lifecycle Exec
 
       await act(async () => {
         rejectLoad(new Error("Database connection lost"));
-        await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
-      expect(container.textContent).toContain("Database connection lost");
+      await vi.waitFor(async () => {
+        await act(async () => {
+          await Promise.resolve();
+        });
+        expect(container.textContent).toContain("Database connection lost");
+      });
 
       const generateBtn = Array.from(container.querySelectorAll("button")).find((btn) =>
         btn.textContent?.includes("courseEdit.questions.generate"),
