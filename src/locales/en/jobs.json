@@ -159,6 +159,7 @@
     },
     "messages": {
       "runComplete": "Crawler run completed.",
+      "noEligibleCompanies": "No active company matched this source. Add and verify a company before running it.",
       "saved": "Changes saved.",
       "analyticsRefreshed": "Market analytics refreshed.",
       "actionFailed": "The operation could not be completed."

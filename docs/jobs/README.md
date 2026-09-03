@@ -14,6 +14,7 @@ admin vận hành nguồn, bốn ATS adapter, pipeline phân loại và lịch c
 |---|---:|---|
 | Migration `20260903033132_jobs_mvp_foundation.sql` | Có | Tạo schema, taxonomy, source policy, RLS, grants, lifecycle và market tables |
 | Migration `20260903055155_jobs_advisor_remediation.sql` | Có | Bổ sung index phủ foreign key và hợp nhất policy đọc theo khuyến nghị Advisor |
+| Migration `20260903062207_normalize_job_ai_quality_score.sql` | Có | Chuẩn hóa output AI dạng tỷ lệ `0–1` về thang quality gate `0–100` và sửa dữ liệu lịch sử bị reject sai |
 | Frontend env Supabase | Có | Cho browser đọc catalog/taxonomy và ghi trạng thái Saved/Applied qua RLS |
 | Edge Function `corelia-api` | Có để vận hành | Admin CRUD, crawl thủ công, review và refresh analytics |
 | Edge Function `cron-jobs` | Có cho tự động hóa | Endpoint nhỏ nhận lịch và gọi `jobs.runScheduled` |
@@ -51,9 +52,10 @@ pnpm exec supabase migration up --local
 pnpm exec supabase migration list --local
 ```
 
-Danh sách migration local phải có các dòng `20260903033132` và
-`20260903055155` ở cả cột local và database. `migration up --local` áp dụng migration còn thiếu mà không chủ động
-xóa dữ liệu hiện có.
+Danh sách migration local phải có các dòng `20260903033132`,
+`20260903055155` và `20260903062207` ở cả cột local và database.
+`migration up --local` áp dụng migration còn thiếu mà không chủ động xóa dữ
+liệu hiện có.
 
 Khi cần xác minh toàn bộ migration chain trên database local có thể tạo lại:
 
@@ -144,6 +146,15 @@ tiếp trên production chỉ để smoke test.
 Migration seed sẵn bốn source policy đã review: Greenhouse, Lever, Ashby và
 SmartRecruiters. Migration **không** seed company thật, nên `/jobs` hiển thị
 empty state hợp lệ cho đến khi có company được crawl và job được publish.
+Các dòng trong `/admin/jobs/sources` là adapter/policy, không phải feed có thể
+tự suy ra công ty. Nếu bấm **Run now** khi source chưa có company active phù
+hợp, API chọn `0 target`, không tạo `crawler_runs` và giao diện sẽ cảnh báo thay
+vì báo hoàn tất.
+
+`CryptoJobsList` và `web3.career` thuộc Tier A trong product direction nhưng
+chưa nằm trong adapter set hiện tại. Cả hai cần source-level ingestion riêng,
+điều khoản attribution/canonical được duyệt và credential do nhà cung cấp cấp;
+không dùng token mẫu công khai hoặc HTML scraping để thay thế.
 
 1. Đăng nhập bằng `admin` hoặc `support_staff`.
 2. Mở `/admin/jobs/companies` và chọn **Thêm công ty**.
@@ -269,7 +280,8 @@ select cron.schedule(
         where name = 'corelia_jobs_cron_secret'
       )
     ),
-    body := '{"max_targets":1}'::jsonb
+    body := '{"max_targets":1}'::jsonb,
+    timeout_milliseconds := 120000
   );
   $$
 );

@@ -55,7 +55,11 @@ export default function AdminJobsPage() {
   };
   const runMutation = useMutation({
     mutationFn: ({ type, value }: { type: "company" | "source" | "adapter" | "all"; value?: string }) => runJobsTarget(type, value),
-    onSuccess: async () => { toast.success(t("admin.messages.runComplete")); await invalidate(); },
+    onSuccess: async (result) => {
+      if (Number(result.companies ?? 0) === 0) toast.warning(t("admin.messages.noEligibleCompanies"));
+      else toast.success(t("admin.messages.runComplete"));
+      await invalidate();
+    },
     onError: () => toast.error(t("admin.messages.actionFailed")),
   });
   const reviewMutation = useMutation({

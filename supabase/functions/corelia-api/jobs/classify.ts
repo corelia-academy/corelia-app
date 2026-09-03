@@ -9,7 +9,7 @@ import {
 } from "./registry.ts";
 import type { JobClassification, NormalizedSourceJob } from "./types.ts";
 
-export const CLASSIFIER_VERSION = "jobs-ai-1";
+export const CLASSIFIER_VERSION = "jobs-ai-2";
 export const DETERMINISTIC_VERSION = "jobs-deterministic-1";
 const OPENAI_TIMEOUT_MS = 30_000;
 
@@ -151,6 +151,14 @@ function clampNumber(value: unknown, min: number, max: number, fallback: number)
   return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
 }
 
+function normalizeQualityScore(value: unknown, fallback: number): number {
+  const score = clampNumber(value, 0, 100, fallback);
+  // Some models express an otherwise valid percentage as a 0..1 ratio even
+  // when the JSON schema requests 0..100. Accept both representations so a
+  // high-quality listing cannot be rejected solely because of scale.
+  return score > 0 && score <= 1 ? score * 100 : score;
+}
+
 function nullableNumber(value: unknown): number | null {
   if (value == null) return null;
   const parsed = Number(value);
@@ -220,7 +228,7 @@ function parseAiClassification(
     regions: Array.isArray(value.regions) ? value.regions.map(String).filter((item) => ["APAC", "EMEA", "AMER"].includes(item)) : [],
     remoteEligibility: typeof value.remote_eligibility === "string" && value.remote_eligibility.trim() ? value.remote_eligibility.trim() : null,
     summary: typeof value.summary === "string" && value.summary.trim() ? value.summary.trim().slice(0, 500) : fallback.summary,
-    qualityScore: clampNumber(value.quality_score, 0, 100, fallback.qualityScore),
+    qualityScore: normalizeQualityScore(value.quality_score, fallback.qualityScore),
     confidence: clampNumber(value.confidence, 0, 1, fallback.confidence),
     evidence: value.evidence && typeof value.evidence === "object" && !Array.isArray(value.evidence)
       ? value.evidence as Record<string, unknown>

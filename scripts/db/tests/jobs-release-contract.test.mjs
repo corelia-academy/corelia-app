@@ -40,12 +40,23 @@ test("Jobs migration is an approved forward migration", async () => {
   const release = await import("../production-release-migrations.mjs");
   assert.equal(
     release.CURRENT_PENDING_VERSIONS.at(-1),
-    "20260903055155",
+    "20260903062207",
   );
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20260903055155",
+    "20260903062207",
   );
+});
+
+test("Jobs classifier scale repair normalizes historical ratios without overriding staff decisions", () => {
+  const migration = read("supabase/migrations/20260903062207_normalize_job_ai_quality_score.sql");
+  const classifier = read("supabase/functions/corelia-api/jobs/classify.ts");
+
+  assert.match(migration, /quality_score > 0[\s\S]*quality_score <= 1/);
+  assert.match(migration, /NOT \(manual_overrides \? 'status'\)/);
+  assert.match(migration, /processing_status = 'processed'/);
+  assert.match(classifier, /CLASSIFIER_VERSION = "jobs-ai-2"/);
+  assert.match(classifier, /score > 0 && score <= 1 \? score \* 100 : score/);
 });
 
 test("Jobs advisor remediation covers foreign keys and avoids overlapping read policies", () => {

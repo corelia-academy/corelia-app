@@ -58,9 +58,10 @@ current Corelia architecture instead of introducing a separate service.
 
 ## Runtime setup
 
-1. Apply `20260903033132_jobs_mvp_foundation.sql` and the forward-only
-   `20260903055155_jobs_advisor_remediation.sql` through the normal migration
-   release flow.
+1. Apply `20260903033132_jobs_mvp_foundation.sql`, the forward-only
+   `20260903055155_jobs_advisor_remediation.sql`, and
+   `20260903062207_normalize_job_ai_quality_score.sql` through the normal
+   migration release flow.
 2. Deploy both `corelia-api` and `cron-jobs`.
 3. Set a strong `CORELIA_JOBS_CRON_SECRET` on both functions. Set
    `OPENAI_API_KEY` to enable automatic AI-gated publishing and optionally set
@@ -812,6 +813,13 @@ Public postings can be listed by company identifier. Before production, validate
 ---
 
 ## Tier A — Structured job feeds
+
+> **Implementation status:** these source-level aggregators are part of the
+> product direction, not the current MVP adapter set. The repository currently
+> implements only the four company ATS adapters above. CryptoJobsList and
+> web3.career remain unchecked in the Definition of Done until provider
+> credentials, attribution policy, source-level pagination and ingestion are
+> implemented end to end.
 
 ### CryptoJobsList
 

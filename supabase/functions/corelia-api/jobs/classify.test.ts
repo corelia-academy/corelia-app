@@ -67,6 +67,34 @@ describe("deterministic job classifier", () => {
     expect(result.experienceMaxYears).toBeNull();
   });
 
+  it("normalizes an AI quality ratio to the canonical 0..100 scale", async () => {
+    const output = {
+      is_relevant: true,
+      primary_role: "backend-engineering",
+      roles: ["backend-engineering"],
+      domains: ["web3"],
+      required_skills: ["typescript"],
+      preferred_skills: [],
+      seniority: "senior",
+      experience_min_years: 5,
+      experience_max_years: null,
+      remote_type: "remote",
+      country_codes: [],
+      regions: [],
+      remote_eligibility: "Worldwide",
+      summary: "Senior backend role grounded in the supplied posting.",
+      quality_score: 0.95,
+      confidence: 0.98,
+      evidence: { role: "Backend Engineer", skills: ["TypeScript"], seniority: "Senior", experience: "5 years", location: "Remote" },
+    };
+    const result = await classifyJob(job(), {
+      apiKey: "test-key",
+      fetcher: async () => new Response(JSON.stringify({ output_text: JSON.stringify(output) }), { status: 200 }),
+    });
+    expect(result.qualityScore).toBe(95);
+    expect(result.classifierVersion).toBe("jobs-ai-2");
+  });
+
   it("falls back safely when the provider output does not match the required schema", async () => {
     const result = await classifyJob(job(), {
       apiKey: "test-key",

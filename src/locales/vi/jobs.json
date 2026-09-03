@@ -35,7 +35,7 @@
     "nav": { "overview": "Tổng quan", "review": "Chờ duyệt", "sources": "Nguồn", "companies": "Công ty", "crawlers": "Lượt crawl", "analytics": "Analytics" },
     "overview": { "active": "Việc làm đang mở", "review": "Cần duyệt", "companies": "Công ty", "sources": "Nguồn", "failedRuns": "Lượt chạy lỗi" },
     "actions": { "run": "Chạy ngay", "runAll": "Chạy một lô crawl", "publish": "Đăng", "reject": "Từ chối", "enable": "Bật", "disable": "Tắt", "verify": "Xác minh", "unverify": "Bỏ xác minh", "save": "Lưu", "cancel": "Hủy", "refreshAnalytics": "Làm mới analytics" },
-    "messages": { "runComplete": "Đã hoàn tất lượt crawl.", "saved": "Đã lưu thay đổi.", "analyticsRefreshed": "Đã làm mới dữ liệu thị trường.", "actionFailed": "Không thể hoàn tất thao tác." },
+    "messages": { "runComplete": "Đã hoàn tất lượt crawl.", "noEligibleCompanies": "Nguồn này chưa có công ty active phù hợp. Hãy thêm và xác minh công ty trước khi chạy.", "saved": "Đã lưu thay đổi.", "analyticsRefreshed": "Đã làm mới dữ liệu thị trường.", "actionFailed": "Không thể hoàn tất thao tác." },
     "review": { "reason": "Lý do cần duyệt", "empty": "Hiện không có việc làm cần duyệt." },
     "columns": { "source": "Nguồn", "type": "Loại", "cadence": "Chu kỳ", "policy": "Đã duyệt chính sách", "lastRun": "Lần thành công cuối", "status": "Trạng thái", "actions": "Thao tác", "started": "Bắt đầu", "trigger": "Kích hoạt", "target": "Đối tượng", "fetched": "Đã lấy", "published": "Đã đăng", "review": "Chờ duyệt", "rejected": "Từ chối", "failed": "Lỗi" },
     "status": { "enabled": "Đang bật", "disabled": "Đã tắt", "error": "Có lỗi" },
