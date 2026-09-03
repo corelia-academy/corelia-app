@@ -40,12 +40,37 @@ test("Jobs migration is an approved forward migration", async () => {
   const release = await import("../production-release-migrations.mjs");
   assert.equal(
     release.CURRENT_PENDING_VERSIONS.at(-1),
-    "20260903033132",
+    "20260903055155",
   );
   assert.equal(
     release.EXPECTED_POST_MIGRATION_LATEST,
-    "20260903033132",
+    "20260903055155",
   );
+});
+
+test("Jobs advisor remediation covers foreign keys and avoids overlapping read policies", () => {
+  const migration = read("supabase/migrations/20260903055155_jobs_advisor_remediation.sql");
+
+  for (const index of [
+    "crawler_runs_company_id_idx",
+    "crawler_runs_created_by_idx",
+    "crawler_runs_source_id_idx",
+    "job_events_source_id_idx",
+  ]) {
+    assert.match(migration, new RegExp(`CREATE INDEX ${index}\\b`));
+  }
+  for (const policy of [
+    "job_sources_read",
+    "job_companies_read",
+    "job_roles_read",
+    "job_domains_read",
+    "job_skills_read",
+    "jobs_read",
+    "job_source_links_read",
+  ]) {
+    assert.match(migration, new RegExp(`CREATE POLICY ${policy}\\b[^;]+FOR SELECT`, "s"));
+  }
+  assert.doesNotMatch(migration, /CREATE POLICY \w+_staff_manage[^;]+FOR ALL/);
 });
 
 test("Jobs crawl failures remain operational failures instead of quality rejections", () => {

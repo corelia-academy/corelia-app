@@ -58,7 +58,8 @@ current Corelia architecture instead of introducing a separate service.
 
 ## Runtime setup
 
-1. Apply `20260903033132_jobs_mvp_foundation.sql` through the normal migration
+1. Apply `20260903033132_jobs_mvp_foundation.sql` and the forward-only
+   `20260903055155_jobs_advisor_remediation.sql` through the normal migration
    release flow.
 2. Deploy both `corelia-api` and `cron-jobs`.
 3. Set a strong `CORELIA_JOBS_CRON_SECRET` on both functions. Set

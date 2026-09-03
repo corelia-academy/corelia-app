@@ -13,6 +13,7 @@ admin vận hành nguồn, bốn ATS adapter, pipeline phân loại và lịch c
 | Thành phần | Bắt buộc | Mục đích |
 |---|---:|---|
 | Migration `20260903033132_jobs_mvp_foundation.sql` | Có | Tạo schema, taxonomy, source policy, RLS, grants, lifecycle và market tables |
+| Migration `20260903055155_jobs_advisor_remediation.sql` | Có | Bổ sung index phủ foreign key và hợp nhất policy đọc theo khuyến nghị Advisor |
 | Frontend env Supabase | Có | Cho browser đọc catalog/taxonomy và ghi trạng thái Saved/Applied qua RLS |
 | Edge Function `corelia-api` | Có để vận hành | Admin CRUD, crawl thủ công, review và refresh analytics |
 | Edge Function `cron-jobs` | Có cho tự động hóa | Endpoint nhỏ nhận lịch và gọi `jobs.runScheduled` |
@@ -50,8 +51,8 @@ pnpm exec supabase migration up --local
 pnpm exec supabase migration list --local
 ```
 
-Danh sách migration local phải có dòng `20260903033132` ở cả cột local và
-database. `migration up --local` áp dụng migration còn thiếu mà không chủ động
+Danh sách migration local phải có các dòng `20260903033132` và
+`20260903055155` ở cả cột local và database. `migration up --local` áp dụng migration còn thiếu mà không chủ động
 xóa dữ liệu hiện có.
 
 Khi cần xác minh toàn bộ migration chain trên database local có thể tạo lại:

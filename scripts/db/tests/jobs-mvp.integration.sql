@@ -46,6 +46,34 @@ BEGIN
     RAISE EXCEPTION 'crawler_runs.failed_count is missing';
   END IF;
 
+  IF EXISTS (
+    SELECT 1
+    FROM (VALUES
+      ('crawler_runs_company_id_idx'),
+      ('crawler_runs_created_by_idx'),
+      ('crawler_runs_source_id_idx'),
+      ('job_events_source_id_idx')
+    ) AS expected(name)
+    WHERE to_regclass('public.' || expected.name) IS NULL
+  ) THEN
+    RAISE EXCEPTION 'Jobs foreign-key advisor indexes are missing';
+  END IF;
+
+  IF EXISTS (
+    SELECT tablename
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename IN (
+        'job_sources', 'job_companies', 'job_roles', 'job_domains',
+        'job_skills', 'jobs', 'job_source_links'
+      )
+      AND cmd = 'SELECT'
+    GROUP BY tablename
+    HAVING count(*) <> 1
+  ) THEN
+    RAISE EXCEPTION 'Jobs tables have overlapping SELECT policies';
+  END IF;
+
   IF has_table_privilege('anon', 'public.raw_jobs', 'SELECT')
     OR has_table_privilege('anon', 'public.job_classifications', 'SELECT')
     OR has_table_privilege('anon', 'public.crawler_runs', 'SELECT')
