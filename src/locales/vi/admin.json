@@ -15,6 +15,10 @@
         "label": "Tài khoản",
         "tooltip": "Tài khoản"
       },
+      "jobs": {
+        "label": "Việc làm",
+        "tooltip": "Nguồn, crawler và duyệt việc làm"
+      },
       "instructors": {
         "label": "Giảng viên",
         "tooltip": "Giảng viên"
@@ -48,6 +52,10 @@
       "users": {
         "title": "Quản lý tài khoản",
         "description": "Kiểm soát vai trò và sức khoẻ truy cập của toàn bộ người dùng."
+      },
+      "jobs": {
+        "title": "Vận hành Jobs",
+        "description": "Quản lý nguồn, công ty, hàng đợi duyệt, lượt crawl và dữ liệu thị trường."
       },
       "instructors": {
         "title": "Quản lý giảng viên",

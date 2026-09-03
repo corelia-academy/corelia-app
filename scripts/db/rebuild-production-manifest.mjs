@@ -20,6 +20,17 @@ function git(args, options = {}) {
   });
 }
 
+export function parseNameStatusLine(line) {
+  const [status = "", ...paths] = line.split("\t");
+  if (!status || paths.length === 0) throw new Error(`Malformed git diff row: ${line}`);
+
+  // Rename/copy rows are: status, source path, target path. `git diff
+  // --name-only` reports only the target path, so the manifest must do the
+  // same to remain compatible with the release verifier.
+  const path = status.startsWith("R") || status.startsWith("C") ? paths.at(-1) : paths[0];
+  return { status, path: normalizeRepositoryPath(path) };
+}
+
 export function generateCanonicalManifest() {
   const baseSha = EXPECTED_BASE_MAIN_SHA;
   const targetRef = "HEAD";
@@ -36,8 +47,7 @@ export function generateCanonicalManifest() {
   const readBlob = (path) => git(["show", `${targetRef}:${path}`], { encoding: "buffer" });
 
   for (const line of diffLines) {
-    const [status, ...rest] = line.split(/\t+/);
-    const path = normalizeRepositoryPath(rest.join("\t"));
+    const { status, path } = parseNameStatusLine(line);
     if (path === DEFAULT_MANIFEST_PATH) continue;
 
     if (status.startsWith("D")) {

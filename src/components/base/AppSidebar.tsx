@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router";
 import {
   Briefcase,
+  BriefcaseBusiness,
   BookOpen,
   GraduationCap,
   FolderKanban,
@@ -37,6 +38,7 @@ const primaryNav = [
   { labelKey: "nav.career" as const, href: "/career", icon: Briefcase },
   { labelKey: "nav.contests" as const, href: "/hackathons", icon: Trophy },
   { labelKey: "nav.projects" as const, href: "/projects", icon: FolderKanban },
+  { labelKey: "nav.jobs" as const, href: "/jobs", icon: BriefcaseBusiness },
 ] as const;
 
 export default function AppSidebar({
@@ -80,6 +82,11 @@ export default function AppSidebar({
           "@/features/career/careerQueries"
         );
         await queryClient.prefetchQuery(careerCatalogQueryOptions(locale));
+      } else if (href === "/jobs") {
+        const { jobsCatalogQueryOptions } = await import(
+          "@/features/jobs/jobQueries"
+        );
+        await queryClient.prefetchQuery(jobsCatalogQueryOptions({ page: 1, pageSize: 24 }, user?.id));
       }
     } catch {
       // Speculative work must never affect navigation.

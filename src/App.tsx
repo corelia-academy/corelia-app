@@ -67,6 +67,11 @@ const ProjectsPage = lazy(() => import("@/pages/projects/ProjectsPage"));
 const ProjectDetailPage = lazy(() => import("@/pages/projects/ProjectDetailPage"));
 const ProjectNewPage = lazy(() => import("@/pages/projects/ProjectNewPage"));
 const ProjectEditPage = lazy(() => import("@/pages/projects/ProjectEditPage"));
+const JobsPage = lazy(() => import("@/pages/jobs/JobsPage"));
+const JobDetailPage = lazy(() => import("@/pages/jobs/JobDetailPage"));
+const SavedJobsPage = lazy(() => import("@/pages/jobs/UserJobsPage").then((m) => ({ default: m.SavedJobsPage })));
+const AppliedJobsPage = lazy(() => import("@/pages/jobs/UserJobsPage").then((m) => ({ default: m.AppliedJobsPage })));
+const JobMarketPage = lazy(() => import("@/pages/jobs/JobMarketPage"));
 
 const Account = lazy(() => import("@/pages/account/Account"));
 const AccountProfileRoute = lazy(() =>
@@ -107,6 +112,7 @@ const AdminManualMint = lazy(() => import("@/pages/admin/AdminManualMint"));
 const AdminBranding = lazy(() => import("@/pages/admin/AdminBranding"));
 const AdminHackathons = lazy(() => import("@/pages/admin/hackathons/AdminHackathonsPage"));
 const AdminHackathonEditor = lazy(() => import("@/pages/admin/hackathons/AdminHackathonEditorPage"));
+const AdminJobsPage = lazy(() => import("@/pages/admin/jobs/AdminJobsPage"));
 
 const PageFallback = () => <AuthGateLoading />;
 
@@ -366,6 +372,11 @@ export default function App() {
               <Route path="projects/new" element={<RequireAuth><Suspense fallback={<PageFallback />}><ProjectNewPage /></Suspense></RequireAuth>} />
               <Route path="projects/:slug/edit" element={<RequireAuth><Suspense fallback={<PageFallback />}><ProjectEditPage /></Suspense></RequireAuth>} />
               <Route path="projects/:slug" element={<Suspense fallback={<PageFallback />}><ProjectDetailPage /></Suspense>} />
+              <Route path="jobs" element={<Suspense fallback={<PageFallback />}><JobsPage /></Suspense>} />
+              <Route path="jobs/saved" element={<RequireAuth><Suspense fallback={<PageFallback />}><SavedJobsPage /></Suspense></RequireAuth>} />
+              <Route path="jobs/applied" element={<RequireAuth><Suspense fallback={<PageFallback />}><AppliedJobsPage /></Suspense></RequireAuth>} />
+              <Route path="jobs/market" element={<Suspense fallback={<PageFallback />}><JobMarketPage /></Suspense>} />
+              <Route path="jobs/:slug" element={<Suspense fallback={<PageFallback />}><JobDetailPage /></Suspense>} />
               <Route
                 path="search"
                 element={
@@ -488,6 +499,12 @@ export default function App() {
                 <Route path="hackathons" element={<Suspense fallback={<PageFallback />}><AdminHackathons /></Suspense>} />
                 <Route path="hackathons/new" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
                 <Route path="hackathons/:id/edit" element={<Suspense fallback={<PageFallback />}><AdminHackathonEditor /></Suspense>} />
+                <Route path="jobs" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/review" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/sources" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/companies" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/crawlers" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
+                <Route path="jobs/analytics" element={<Suspense fallback={<PageFallback />}><AdminJobsPage /></Suspense>} />
               </Route>
               <Route
                 path="instructor"

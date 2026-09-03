@@ -31,17 +31,19 @@ export const APPROVED_PENDING_MIGRATION_PATHS = Object.freeze([
   "supabase/migrations/20260901104414_harden_hackathon_project_rpc_boundary.sql",
   "supabase/migrations/20260903023210_project_media_ai_gate.sql",
   "supabase/migrations/20260903032312_disable_project_comments.sql",
+  "supabase/migrations/20260903033132_jobs_mvp_foundation.sql",
 ]);
 
 export const APPROVED_PENDING_VERSIONS = Object.freeze(
   APPROVED_PENDING_MIGRATION_PATHS.map((path) => path.match(/\/(\d{14})_/)[1]),
 );
 
-// Production is released through 20260901002156. The Hackathon schema changes
-// and the Project submission/media gate ship as one forward-only pending batch.
+// Production is released through 20260901002156. The Hackathon schema changes,
+// Project submission/media gate, comment retirement, and Jobs foundation ship
+// as one forward-only pending batch.
 export const PREVIOUSLY_RELEASED_APPROVED_VERSIONS = Object.freeze(
-  APPROVED_PENDING_VERSIONS.slice(0, -4),
+  APPROVED_PENDING_VERSIONS.slice(0, -5),
 );
-export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-4));
+export const CURRENT_PENDING_VERSIONS = Object.freeze(APPROVED_PENDING_VERSIONS.slice(-5));
 export const EXPECTED_POST_MIGRATION_COUNT = PRODUCTION_BASELINE_COUNT + APPROVED_PENDING_VERSIONS.length;
 export const EXPECTED_POST_MIGRATION_LATEST = APPROVED_PENDING_VERSIONS.at(-1);

@@ -15,6 +15,10 @@
         "label": "Users",
         "tooltip": "Users"
       },
+      "jobs": {
+        "label": "Jobs",
+        "tooltip": "Jobs ingestion and review"
+      },
       "instructors": {
         "label": "Instructors",
         "tooltip": "Instructors"
@@ -48,6 +52,10 @@
       "users": {
         "title": "User management",
         "description": "Control roles and access health across all users."
+      },
+      "jobs": {
+        "title": "Jobs operations",
+        "description": "Manage sources, companies, review queues, crawler runs, and market analytics."
       },
       "instructors": {
         "title": "Instructor management",

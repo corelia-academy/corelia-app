@@ -11,7 +11,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Award, GraduationCap, ImageIcon, Medal, Settings, Trophy, Users } from "lucide-react";
+import { Award, BriefcaseBusiness, GraduationCap, ImageIcon, Medal, Settings, Trophy, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function AdminSidebar() {
@@ -63,6 +63,19 @@ export function AdminSidebar() {
                     >
                       <Users className="size-4" aria-hidden />
                       <span>{t("layout.sidebar.users.label")}</span>
+                    </NavLink>
+                  }
+                />
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="rounded-md"
+                  tooltip={t("layout.sidebar.jobs.tooltip")}
+                  isActive={pathname.startsWith("/admin/jobs")}
+                  render={
+                    <NavLink to="/admin/jobs" className="flex w-full items-center gap-2">
+                      <BriefcaseBusiness className="size-4" aria-hidden />
+                      <span>{t("layout.sidebar.jobs.label")}</span>
                     </NavLink>
                   }
                 />

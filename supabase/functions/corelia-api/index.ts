@@ -29,6 +29,13 @@ import {
   handleProjectMediaUpload,
   handleProjectSave,
 } from "./projects/handlers.ts";
+import {
+  handleJobsAdmin,
+  handleJobsRefreshAnalytics,
+  handleJobsReview,
+  handleJobsRun,
+  handleJobsRunScheduled,
+} from "./jobs/handlers.ts";
 import { createServiceClient, type SupabaseClient } from "./lib/supabase.ts";
 
 const PROTECTED_OPS = new Set<string>([
@@ -56,6 +63,11 @@ const PROTECTED_OPS = new Set<string>([
   "projects.save",
   "projects.media.upload",
   "projects.media.delete",
+  "jobs.run",
+  "jobs.runScheduled",
+  "jobs.refreshAnalytics",
+  "jobs.review",
+  "jobs.admin",
   // credentials.claimLookup is PUBLIC — intentionally omitted from PROTECTED_OPS
 ]);
 
@@ -70,6 +82,12 @@ function hasLearningReminderCronSecret(req: Request): boolean {
   return Boolean(expected && provided && expected === provided);
 }
 
+function hasJobsCronSecret(req: Request): boolean {
+  const expected = Deno.env.get("CORELIA_JOBS_CRON_SECRET")?.trim() ?? "";
+  const provided = req.headers.get("x-corelia-jobs-cron-secret")?.trim() ?? "";
+  return Boolean(expected && provided && expected === provided);
+}
+
 Deno.serve(async (req: Request): Promise<Response> => {
   const cors = corsHeadersForRequest(req);
   if (req.method === "OPTIONS") {
@@ -81,7 +99,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const url = new URL(req.url);
     const op = url.searchParams.get("op") ?? "";
     const isLearningReminderCron = op === "courses.sendLearningReminders" && hasLearningReminderCronSecret(req);
-    if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req) && !isLearningReminderCron) {
+    const isJobsCron = op === "jobs.runScheduled" && hasJobsCronSecret(req);
+    if (PROTECTED_OPS.has(op) && !hasBearerAuthHeader(req) && !isLearningReminderCron && !isJobsCron) {
       return withCors(req, json({ message: "Missing Authorization header" }, 401));
     }
     let db: SupabaseClient;
@@ -145,6 +164,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
       response = await handleProjectMediaUpload(req, db);
     } else if (op === "projects.media.delete" && req.method === "POST") {
       response = await handleProjectMediaDelete(req, db);
+    } else if (op === "jobs.run" && req.method === "POST") {
+      response = await handleJobsRun(req, db);
+    } else if (op === "jobs.runScheduled" && req.method === "POST") {
+      response = await handleJobsRunScheduled(req, db);
+    } else if (op === "jobs.refreshAnalytics" && req.method === "POST") {
+      response = await handleJobsRefreshAnalytics(req, db);
+    } else if (op === "jobs.review" && req.method === "POST") {
+      response = await handleJobsReview(req, db);
+    } else if (op === "jobs.admin" && req.method === "POST") {
+      response = await handleJobsAdmin(req, db);
     } else {
       response = json({ message: "Not found" }, 404);
     }
